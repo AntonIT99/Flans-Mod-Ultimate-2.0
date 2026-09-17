@@ -18,8 +18,6 @@ TurnRightSpeed 0.3
 Drag 1.0
 //Moment of Inertia (in crazy units. Just fiddle with this until you find something nice)
 MomentOfInertia 10.0
-//More bounciness means the vehicle will bounce more upon going up slopes, but fall through the ground less
-Bounciness 0.3
 //For calculating whether wheels are on the ground or not for driving
 WheelRadius 1.0
 //Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.

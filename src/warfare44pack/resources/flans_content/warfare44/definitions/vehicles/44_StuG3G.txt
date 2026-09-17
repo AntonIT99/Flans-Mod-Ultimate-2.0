@@ -30,8 +30,6 @@ WheelPosition 2 32 -8 18
 WheelPosition 3 32 -8 -18
 WheelSpringStrength 0.5
 
-//Bouncy bouncy
-Bounciness 0.3
 
 //If true, then all wheels will apply drive forces
 //----------------------------Tank mode activate

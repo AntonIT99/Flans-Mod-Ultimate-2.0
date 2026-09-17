@@ -84,7 +84,7 @@ Confidence: HIGH
 
 ### ARMOR / ItemID — UNPARSED
 
-Observed: `DAK by Plume.zip, Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip, Wolff's Modern Technology Pack 1.2.zip, Wolff's Rome Pack 1.0.zip; run/flan/DAK by Plume.zip!/armorFiles/pp_afrikakorpsboots.txt; run/flan/DAK by Plume.zip!/armorFiles/pp_afrikakorpscap.txt; run/flan/DAK by Plume.zip!/armorFiles/pp_afrikakorpschest.txt; 461 occurrence(s)`
+Observed: `DAK by Plume.zip, Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/DAK by Plume.zip!/armorFiles/pp_afrikakorpsboots.txt; run/flan/DAK by Plume.zip!/armorFiles/pp_afrikakorpscap.txt; run/flan/DAK by Plume.zip!/armorFiles/pp_afrikakorpschest.txt; 461 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/ArmorType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -324,7 +324,7 @@ Confidence: HIGH
 
 ### BULLET / ItemID — UNPARSED
 
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/12.7cmShellAP.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/12.7cmShellHE.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/15cmSKC25AAShell.txt; 613 occurrence(s)`
+Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/12.7cmShellAP.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/12.7cmShellHE.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/bullets/15cmSKC25AAShell.txt; 613 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -458,14 +458,6 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### BULLET / Skin — UNPARSED
-
-Observed: `Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Wolff's Germany WW2 Pack 2.3.2.zip!/bullets/Panzerbuechse39Ammo.txt; 1 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/BulletType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### BULLET / Skin44_W44Bullet_Tracer_White — UNPARSED
 
 Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/AA concentrated light flak.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/TSA Generic Star shell naval.txt; run/flan/Tyrants And Plebeians OHIO.zip!/bullets/TSA Generic Star shell.txt; 3 occurrence(s)`
@@ -572,7 +564,7 @@ Confidence: HIGH
 
 ### GRENADE / ItemID — UNPARSED
 
-Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip, Wolff's Modern Technology Pack 1.2.zip; run/flan/TaP Northern Aggression Pack.zip!/grenades/Bomb.txt; run/flan/Tyrants And Plebeians OHIO.zip!/grenades/AntiTank AT Mine.txt; run/flan/Tyrants And Plebeians OHIO.zip!/grenades/AT GeballteLadung.txt; 11 occurrence(s)`
+Observed: `TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/TaP Northern Aggression Pack.zip!/grenades/Bomb.txt; run/flan/Tyrants And Plebeians OHIO.zip!/grenades/AntiTank AT Mine.txt; run/flan/Tyrants And Plebeians OHIO.zip!/grenades/AT GeballteLadung.txt; 11 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/GrenadeType.java#read; common/types/ShootableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -642,17 +634,9 @@ Consumers checked: `src/main/java` and `src/main/resources` exact-key and normal
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
 Confidence: HIGH
 
-### GUN / DamageVsVehicles — UNPARSED
-
-Observed: `Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Wolff's Germany WW2 Pack 2.3.2.zip!/guns/MG34.txt; run/flan/Wolff's Germany WW2 Pack 2.3.2.zip!/guns/MG42.txt; 2 occurrence(s)`
-Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
-Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
-Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
-Confidence: HIGH
-
 ### GUN / DeployableModel — UNPARSED
 
-Observed: `Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Tyrants And Plebeians OHIO.zip!/guns/AT Panzerbuechse 39.txt; run/flan/Tyrants And Plebeians OHIO.zip!/guns/AT Wz35.txt; run/flan/Wolff's Germany WW2 Pack 2.3.2.zip!/guns/MG34.txt; 5 occurrence(s)`
+Observed: `Tyrants And Plebeians OHIO.zip; run/flan/Tyrants And Plebeians OHIO.zip!/guns/AT Panzerbuechse 39.txt; run/flan/Tyrants And Plebeians OHIO.zip!/guns/AT Wz35.txt; 5 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -716,7 +700,7 @@ Confidence: HIGH
 
 ### GUN / ItemID — UNPARSED
 
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/guns/AMR_wtfRifle.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/guns/AMR_XM109.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/guns/ARD_K11.txt; 428 occurrence(s)`
+Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/guns/AMR_wtfRifle.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/guns/AMR_XM109.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/guns/ARD_K11.txt; 428 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/GunType.java#read/readLine; common/types/GunAnimationConfig.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/guns/AmmoOverrides.java#read; common/guns/RemovedAmmo.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -1092,7 +1076,7 @@ Confidence: HIGH
 
 ### TOOL / ItemID — UNPARSED
 
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/hardtack.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/MegaBlowTorch.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/OBAMACARE.txt; 10 occurrence(s)`
+Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/hardtack.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/MegaBlowTorch.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/OBAMACARE.txt; 10 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/ToolType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -1124,7 +1108,7 @@ Confidence: HIGH
 
 ### TOOL / StackSize — UNPARSED
 
-Observed: `Plume Pack WW1 1.0.8.zip, Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Plume Pack WW1 1.0.8.zip!/tools/medicalsupplies.txt; run/flan/Plume Pack WW1 1.0.8.zip!/tools/russiantabaco.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/hardtack.txt; 12 occurrence(s)`
+Observed: `Plume Pack WW1 1.0.8.zip, Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Tyrants And Plebeians OHIO.zip; run/flan/Plume Pack WW1 1.0.8.zip!/tools/medicalsupplies.txt; run/flan/Plume Pack WW1 1.0.8.zip!/tools/russiantabaco.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/tools/hardtack.txt; 12 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/ToolType.java#read; common/types/InfoType.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -1580,7 +1564,7 @@ Confidence: HIGH
 
 ### VEHICLE / ItemID — UNPARSED
 
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk19Mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk28mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAM_Mk13GMLS.txt; 308 occurrence(s)`
+Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk19Mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk28mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAM_Mk13GMLS.txt; 308 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.
@@ -1660,7 +1644,7 @@ Confidence: HIGH
 
 ### VEHICLE / NumWheels — UNPARSED
 
-Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Roman Pack.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip, Wolff's Germany WW2 Pack 2.3.2.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk19Mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk28mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAM_Mk13GMLS.txt; 211 occurrence(s)`
+Observed: `Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip, Roman Pack.zip, TaP Northern Aggression Pack.zip, Tyrants And Plebeians OHIO.zip; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk19Mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAH_5inMk28mod2Mount.txt; run/flan/Rainfire5's Arsenal 1.9.7 - Battle Squadrons.zip!/vehicles/AAM_Mk13GMLS.txt; 211 occurrence(s)`
 Parser checked: `src/main/java/com/flansmodultimate/common/types/VehicleType.java#read; common/types/DriveableType.java#read; common/types/PaintableType.java#read; common/types/InfoType.java#read; common/driveables/armor/VehicleArmorSpecReader.java#read; common/driveables/physics/RealWorldSpecReader.java#read`; no matching parser for this concrete type.
 Consumers checked: `src/main/java` and `src/main/resources` exact-key and normalized-key searches, plus `TypeFile` direct lookups; no parsed value is created for a consumer.
 Finding: The current case-insensitive definition reader does not accept this parameter for the observed type, so the configured line has no effect.

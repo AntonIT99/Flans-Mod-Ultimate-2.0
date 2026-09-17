@@ -22,8 +22,6 @@ WheelPosition 1 -25 -10 18
 WheelPosition 2 25 -10 18
 WheelPosition 3 25 -10 -18
 WheelSpringStrength 0.5
-//Bouncy bouncy
-Bounciness 0.3
 //If true, then all wheels will apply drive forces
 FourWheelDrive true
 //Tank mode activate
