@@ -20,15 +20,12 @@ Rewrite all packs with the new gun and vehicle systems using categories as sourc
 Reorganize parameters, remove one parameter comments, make groups
 - missing ammo groups for shells in categories
 Manus
-- Check allowAllAmmo
 - Add shell types
 WW2
 - Add muzzle flashes just like w44
 - Fix Scope Attachment Points -> to check
 - Fix Barrel Attachment and Muzzle Flash -> to check
-- Remove Minigun Mode for some guns
 MW
-- Check all modern warfare helicopters
 - See if we can fix the tail rotor not centered arround rotation point for the Apache
 - Fix Chinook model: no rotors moving at all
 

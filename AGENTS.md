@@ -24,6 +24,23 @@ Nested `AGENTS.md` files add rules for their directories.
   repository should be updated too.
 - In a mixed worktree, preserve unrelated changes and stage explicit paths only.
 
+## External Reference Paths
+
+These sibling directories live outside this repository, next to it in the parent
+directory. Read them directly when behaviour, formats, or prior implementations need
+checking. They are read-only references: never edit them unless explicitly asked.
+
+- `../Flans-Mod-Ultimate-2.0.wiki` - this project's wiki repository. Consult it for
+  documented behaviour, and update it for every feature or significant change.
+- `../Flans-Mod-Ultimate-1.7.10` - the original 1.7.10 project. **Primary** reference for
+  legacy behaviour, content-pack formats, and expected gameplay semantics.
+- `../FlansMod` - the original 1.12.2 project. **Secondary** reference; use when 1.7.10 is
+  ambiguous or the question concerns newer-loader concerns. If the two disagree, 1.7.10
+  wins unless the user says otherwise.
+- `../Flan's Mod Aryan Indian Edition Krishna Mk6C` - a heavily modified 1.7.10 fork, used
+  occasionally as an extra reference for alternative implementations. Treat it as
+  inspiration, not authority.
+
 ## Build and Validation
 
 Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
