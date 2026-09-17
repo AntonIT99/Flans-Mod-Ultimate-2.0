@@ -32,3 +32,6 @@ src/*/resources/flan
 .claude
 
 reports/temp
+
+# Plaintext authoring input for encrypted optional resources
+/src/*/resources/encrypted/

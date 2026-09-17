@@ -32,6 +32,7 @@ public final class PackagedContentRepositorySource
             {
                 addPack(acceptor, packType, module.modId() + ":assets",
                     "Official Flan content assets", module.resourceRoot());
+                addEncryptedResourcePack(acceptor, module);
                 continue;
             }
 
@@ -45,6 +46,23 @@ public final class PackagedContentRepositorySource
                 }
             }
         }
+    }
+
+    private static void addEncryptedResourcePack(Consumer<Pack> acceptor,
+                                                 PackagedContentPackApi.RegisteredModule module)
+    {
+        Path bundlePath = module.resourceRoot().resolve(EncryptedResourcePack.BUNDLE_FILE_NAME);
+        if (!java.nio.file.Files.isRegularFile(bundlePath))
+            return;
+
+        String id = module.modId() + ":uncensored_assets";
+        int packFormat = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
+        Pack.Info info = new Pack.Info(Component.literal("Optional uncensored Flan content"),
+            packFormat, packFormat, FeatureFlagSet.of(), false);
+        Pack.ResourcesSupplier resources = packId -> new EncryptedResourcePack(packId, module.modId(), bundlePath);
+        Pack pack = Pack.create(id, Component.literal("Optional uncensored Flan content"), true, resources,
+            info, PackType.CLIENT_RESOURCES, Pack.Position.TOP, true, PackSource.BUILT_IN);
+        acceptor.accept(pack);
     }
 
     private static void addPack(Consumer<Pack> acceptor, PackType packType, String id,

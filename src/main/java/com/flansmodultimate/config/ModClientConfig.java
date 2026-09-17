@@ -1,11 +1,14 @@
 package com.flansmodultimate.config;
 
+import com.flansmodultimate.client.UncensoredResources;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.common.types.InfoType;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -14,6 +17,7 @@ public final class ModClientConfig
     public static final ForgeConfigSpec configSpec;
 
     public final boolean showPackNameInItemDescriptions;
+    public final boolean enableUncensoredContent;
     public final boolean loadAllModelsInCache;
     public final boolean searchModelsInOtherContentPacks;
     public final boolean preferBuiltInModelClasses;
@@ -80,6 +84,7 @@ public final class ModClientConfig
     public final boolean alwaysEnableMechaCullingByDefault;
 
     private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
+    private static final ForgeConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
     private static final ForgeConfigSpec.BooleanValue SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     private static final ForgeConfigSpec.BooleanValue PREFER_BUILT_IN_MODEL_CLASSES;
@@ -154,6 +159,9 @@ public final class ModClientConfig
         SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS = builder
                 .comment("Show content pack names in item descriptions")
                 .define("showPackNameInItemDescriptions", true);
+        ENABLE_UNCENSORED_CONTENT = builder
+                .comment("Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources.")
+                .define("enableUncensoredContent", false);
         LOAD_ALL_MODELS_IN_CACHE = builder
                 .comment("""
                     If true, loads and caches ALL models up-front during resource reload.
@@ -347,6 +355,7 @@ public final class ModClientConfig
     private ModClientConfig()
     {
         showPackNameInItemDescriptions = SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS.get();
+        enableUncensoredContent = ENABLE_UNCENSORED_CONTENT.get();
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
         searchModelsInOtherContentPacks = SEARCH_MODELS_IN_OTHER_CONTENT_PACKS.get();
         preferBuiltInModelClasses = PREFER_BUILT_IN_MODEL_CLASSES.get();
@@ -479,6 +488,10 @@ public final class ModClientConfig
 
         if (old == null)
             return;
+
+        if (old.enableUncensoredContent != get().enableUncensoredContent
+            && FMLEnvironment.dist == Dist.CLIENT)
+            UncensoredResources.reload();
 
         if (old.searchModelsInOtherContentPacks != get().searchModelsInOtherContentPacks
             || old.preferBuiltInModelClasses != get().preferBuiltInModelClasses

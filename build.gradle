@@ -163,6 +163,9 @@ ext.registerFmuModule = { Map module ->
         }
         resources {
             srcDirs = [new File(moduleDirectory, 'resources')]
+            // Plain optional-content sources are encrypted separately and must
+            // never be copied into the module JAR as readable resources.
+            exclude 'encrypted/**'
         }
     }
 
@@ -176,6 +179,106 @@ ext.registerFmuModule = { Map module ->
 
     // Pack modules can compile against classes produced by the main mod.
     dependencies.add(moduleSourceSet.implementationConfigurationName, sourceSets.main.output)
+
+    // Optional plaintext assets live with their pack under resources/encrypted
+    // and are gitignored. Only the authenticated encrypted bundle produced here
+    // is added to the module JAR.
+    File encryptedInputDirectory = new File(moduleDirectory, 'resources/encrypted')
+    File encryptedGeneratedResources = file("${buildDir}/generated/encrypted/${sourceSetName}")
+    File encryptedBundle = new File(encryptedGeneratedResources, 'encrypted-content.fmu')
+    String encryptionTaskName = "encrypt${sourceSetName.capitalize()}UncensoredContent"
+    def encryptionTask = tasks.register(encryptionTaskName) {
+        group = 'flans mod ultimate'
+        description = "Encrypt optional uncensored translations and textures for ${sourceSetName}."
+        if (encryptedInputDirectory.isDirectory())
+            inputs.dir(encryptedInputDirectory).withPathSensitivity(PathSensitivity.RELATIVE)
+        else
+            inputs.property('uncensoredInputPresent', false)
+        outputs.file(encryptedBundle)
+
+        doLast {
+            project.delete(encryptedGeneratedResources)
+            if (!encryptedInputDirectory.isDirectory()) {
+                logger.lifecycle("No encrypted-content input directory for ${sourceSetName}: ${encryptedInputDirectory}")
+                return
+            }
+
+            List<File> sourceFiles = fileTree(encryptedInputDirectory)
+                    .files
+                    .findAll { it.isFile() }
+                    .sort { left, right -> left.absolutePath <=> right.absolutePath }
+            if (sourceFiles.isEmpty()) {
+                logger.lifecycle("No uncensored resources found for ${sourceSetName}.")
+                return
+            }
+
+            Map<File, String> resourcePaths = new LinkedHashMap<>()
+            sourceFiles.each { sourceFile ->
+                String relativePath = encryptedInputDirectory.toPath().relativize(sourceFile.toPath())
+                        .toString().replace(File.separator, '/')
+                String[] segments = relativePath.split('/')
+                if (segments.length < 4 || segments[0] != 'assets' || segments[1].isBlank())
+                    throw new GradleException("Uncensored resources must use assets/<namespace>/... paths: ${relativePath}")
+
+                String assetPath = segments.drop(2).join('/')
+                if (!(assetPath.startsWith('lang/') || assetPath.startsWith('textures/')))
+                    throw new GradleException("Only lang and textures assets may be encrypted: ${relativePath}")
+                resourcePaths.put(sourceFile, relativePath)
+            }
+
+            def archiveBytes = new ByteArrayOutputStream()
+            def archive = new DataOutputStream(archiveBytes)
+            archive.writeInt(0x464D5552) // FMUR
+            archive.writeInt(1)
+            archive.writeInt(resourcePaths.size())
+            resourcePaths.each { sourceFile, relativePath ->
+                byte[] data = java.nio.file.Files.readAllBytes(sourceFile.toPath())
+                archive.writeUTF(relativePath)
+                archive.writeInt(data.length)
+                archive.write(data)
+            }
+            archive.close()
+            byte[] plaintext = archiveBytes.toByteArray()
+
+            String keySalt = 'Flans Mod Ultimate uncensored resources v1'
+            def keyDigest = java.security.MessageDigest.getInstance('SHA-256')
+            keyDigest.update(keySalt.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+            keyDigest.update((byte) 0)
+            byte[] key = keyDigest.digest(moduleModId.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+
+            def ivDigest = java.security.MessageDigest.getInstance('SHA-256')
+            ivDigest.update(plaintext)
+            ivDigest.update((byte) 0)
+            byte[] iv = java.util.Arrays.copyOf(
+                    ivDigest.digest(moduleModId.getBytes(java.nio.charset.StandardCharsets.UTF_8)), 12)
+
+            byte[] magic = 'FMUENC01'.getBytes(java.nio.charset.StandardCharsets.US_ASCII)
+            def cipher = javax.crypto.Cipher.getInstance('AES/GCM/NoPadding')
+            cipher.init(javax.crypto.Cipher.ENCRYPT_MODE,
+                    new javax.crypto.spec.SecretKeySpec(key, 'AES'),
+                    new javax.crypto.spec.GCMParameterSpec(128, iv))
+            def aad = new ByteArrayOutputStream()
+            aad.write(magic)
+            aad.write(moduleModId.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+            cipher.updateAAD(aad.toByteArray())
+            byte[] encrypted = cipher.doFinal(plaintext)
+
+            java.nio.file.Files.createDirectories(encryptedGeneratedResources.toPath())
+            def output = new DataOutputStream(new FileOutputStream(encryptedBundle))
+            output.write(magic)
+            output.writeInt(1)
+            output.writeByte(iv.length)
+            output.write(iv)
+            output.writeInt(encrypted.length)
+            output.write(encrypted)
+            output.close()
+            logger.lifecycle("Encrypted ${resourcePaths.size()} optional resource(s) into ${encryptedBundle}.")
+        }
+    }
+    moduleSourceSet.resources.srcDir(encryptedGeneratedResources)
+    tasks.named(moduleSourceSet.processResourcesTaskName).configure {
+        dependsOn encryptionTask
+    }
 
     // Make the module available in every ForgeGradle development run.
     minecraft.runs.configureEach { runConfig ->
