@@ -2,8 +2,8 @@ package com.flansmodultimate;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.SharedConstants;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
@@ -98,6 +98,12 @@ public final class FilteringPackResources implements PackResources
     public String packId()
     {
         return delegate.packId();
+    }
+
+    @Override
+    public boolean isBuiltin()
+    {
+        return delegate.isBuiltin();
     }
 
     @Override

@@ -77,6 +77,39 @@ class DriveableControlPhysicsTest
     }
 
     @Test
+    void oneSurvivingTrackConvertsThrottleToHalfSpeedRotation()
+    {
+        assertEquals(-10F, DriveableControlPhysics.singleTrackTurnControl(1F, 0F, false,
+            true, false), EPSILON);
+        assertEquals(10F, DriveableControlPhysics.singleTrackTurnControl(1F, 0F, false,
+            false, true), EPSILON);
+        assertEquals(10F, DriveableControlPhysics.singleTrackTurnControl(-1F, 0F, false,
+            true, false), EPSILON);
+        assertEquals(-10F, DriveableControlPhysics.singleTrackTurnControl(-1F, 0F, false,
+            false, true), EPSILON);
+    }
+
+    @Test
+    void steeringKeepsItsDirectionWithEitherSurvivingTrack()
+    {
+        assertEquals(4.5F, DriveableControlPhysics.singleTrackTurnControl(0.8F, 9F, true,
+            true, false), EPSILON);
+        assertEquals(4.5F, DriveableControlPhysics.singleTrackTurnControl(0.8F, 9F, true,
+            false, true), EPSILON);
+        assertEquals(-4.5F, DriveableControlPhysics.singleTrackTurnControl(-0.8F, -9F, true,
+            true, false), EPSILON);
+    }
+
+    @Test
+    void zeroOrTwoSurvivingTracksDoNotUseTheDamagedTrackControl()
+    {
+        assertEquals(0F, DriveableControlPhysics.singleTrackTurnControl(1F, 9F, true,
+            true, true), EPSILON);
+        assertEquals(0F, DriveableControlPhysics.singleTrackTurnControl(1F, 9F, true,
+            false, false), EPSILON);
+    }
+
+    @Test
     void damageReducesAccelerationAndMaximumControlThrottle()
     {
         assertEquals(1F, DriveableControlPhysics.damagedThrottleLimit(0F), EPSILON);

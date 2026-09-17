@@ -75,6 +75,26 @@ public final class DriveableControlPhysics
             -MAX_CONTROL_ANGLE, MAX_CONTROL_ANGLE);
     }
 
+    /**
+     * Converts the surviving side of a tracked vehicle into rotation-only control.
+     *
+     * <p>A steering key keeps its ordinary turn direction. Without a steering key,
+     * forward or reverse drives the remaining track and therefore yaws toward the
+     * broken side. One moving track has half the turning authority of two tracks
+     * counter-rotating.</p>
+     */
+    public static float singleTrackTurnControl(float throttle, float steeringControl, boolean steeringHeld,
+                                               boolean leftTrackIntact, boolean rightTrackIntact)
+    {
+        if (leftTrackIntact == rightTrackIntact)
+            return 0F;
+        if (steeringHeld)
+            return clamp(steeringControl, -MAX_CONTROL_ANGLE, MAX_CONTROL_ANGLE) * 0.5F;
+        float safeThrottle = Float.isFinite(throttle) ? clamp(throttle, -1F, 1F) : 0F;
+        float survivingSide = rightTrackIntact ? 1F : -1F;
+        return safeThrottle * survivingSide * MAX_CONTROL_ANGLE * 0.5F;
+    }
+
     /** Engine-room damage reduced both acceleration and the attainable normalized throttle. */
     public static float damagedThrottleLimit(float damageNerf)
     {

@@ -121,9 +121,14 @@ public class Vehicle extends Driveable
 
         float traction = traction();
         boolean tracked = type.isTank();
-        if (tracked && (!isPartIntact(EnumDriveablePart.LEFT_TRACK) || !isPartIntact(EnumDriveablePart.RIGHT_TRACK)))
-        {
+        boolean leftTrackIntact = isPartIntact(EnumDriveablePart.LEFT_TRACK);
+        boolean rightTrackIntact = isPartIntact(EnumDriveablePart.RIGHT_TRACK);
+        boolean singleTrackDrive = tracked && leftTrackIntact != rightTrackIntact;
+        boolean noTrackDrive = tracked && !leftTrackIntact && !rightTrackIntact;
+        if (tracked && (!leftTrackIntact || !rightTrackIntact))
             traction = 0F;
+        if (noTrackDrive)
+        {
             setThrottle(approach(getThrottle(), 0F, 0.04F));
             prevWheelYaw = wheelYaw;
             wheelYaw = 0F;
@@ -165,7 +170,13 @@ public class Vehicle extends Driveable
         if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion())
             targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(),
                 Math.signum(normalizedThrottle), physics.powerToWeightKwPerKg(), physics.driveType());
-        float steeringModifier = wheelYaw > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
+        boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING)
+            && axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) != 0F;
+        float turnControl = singleTrackDrive
+            ? DriveableControlPhysics.singleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld,
+                leftTrackIntact, rightTrackIntact)
+            : wheelYaw;
+        float steeringModifier = turnControl > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
         float directionalThrottle = effectiveThrottle > 0F
             ? (isInWater() ? type.getMaxThrottleInWater() : type.getMaxThrottle())
             : type.getMaxNegativeThrottle();
@@ -174,7 +185,7 @@ public class Vehicle extends Driveable
             * Math.max(0F, directionalThrottle) * getEngineSpeed();
         double steeringScale = 0.1D * Math.max(0F, steeringModifier);
         float yawDelta = isEngineActive()
-            ? (float) Math.toDegrees(wheelYaw * steeringScale * velocityScale) : 0F;
+            ? (float) Math.toDegrees(turnControl * steeringScale * velocityScale) : 0F;
         if (!isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
         boolean supported = onGround() || hasWheelContact();
@@ -476,8 +487,29 @@ public class Vehicle extends Driveable
             wheelAngle = Mth.wrapDegrees(wheelAngle + WheelAnimationPhysics.angularStepDegrees(
                 velocity.x, velocity.z, forward.x, forward.z));
         }
-        leftTrackProgress += getThrottle() * 0.075F - wheelYaw * 0.0025F;
-        rightTrackProgress += getThrottle() * 0.075F + wheelYaw * 0.0025F;
+        float leftTrackStep = getThrottle() * 0.075F - wheelYaw * 0.0025F;
+        float rightTrackStep = getThrottle() * 0.075F + wheelYaw * 0.0025F;
+        boolean leftTrackIntact = isPartIntact(EnumDriveablePart.LEFT_TRACK);
+        boolean rightTrackIntact = isPartIntact(EnumDriveablePart.RIGHT_TRACK);
+        if (type.isTank() && leftTrackIntact != rightTrackIntact)
+        {
+            boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING)
+                && axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) != 0F;
+            float survivingTrackStep = steeringHeld
+                ? wheelYaw * 0.0025F * (rightTrackIntact ? 1F : -1F)
+                : getThrottle() * 0.075F;
+            if (leftTrackIntact)
+                leftTrackProgress += survivingTrackStep;
+            else
+                rightTrackProgress += survivingTrackStep;
+        }
+        else
+        {
+            if (!type.isTank() || leftTrackIntact)
+                leftTrackProgress += leftTrackStep;
+            if (!type.isTank() || rightTrackIntact)
+                rightTrackProgress += rightTrackStep;
+        }
         leftTrackProgress -= Mth.floor(leftTrackProgress);
         rightTrackProgress -= Mth.floor(rightTrackProgress);
     }
