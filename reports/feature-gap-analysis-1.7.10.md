@@ -4,9 +4,10 @@ Initial audit: 2026-09-10. Last updated: 2026-09-18. Direction is strictly refer
 
 - Reference: `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-1.7.10`, HEAD `9b669b12149c3c9fa3a69f1a4ac5d8a55367506d`.
 - Target initially audited: `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, HEAD `08494f8a4972c249feb4e7d8522e981547439c4e`.
-- Sources inspected were the current working trees, not pristine commit snapshots. Existing staged reference texture deletions and the target's unrelated `warfare44/pack_names.json` change were left untouched.
+- Target revalidated: HEAD `e0b68dc60fc7060324ee4293678183aca93650b7` plus the current working tree.
+- Sources inspected were the current working trees, not pristine commit snapshots. Existing unrelated target command and image changes were left untouched; the reference working tree was clean.
 - Completed findings are removed as they are implemented, so the report remains a backlog rather than a historical snapshot.
-- Remaining: **3 MISSING, 2 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
+- Remaining: **2 MISSING, 2 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
 
 ## Scope and evidence conventions
 
@@ -44,18 +45,6 @@ Input suppression depends on the bound button, selected gun function, and hit re
 
 Missing: Separate configurable inventory-block and all-block interaction suppression while armed.
 
-## Vehicles, aircraft, and mechas
-
-### BuildCraft oil/fuel bucket refueling — MISSING
-
-Reference: `R/common/FlansHooks.java#hook`, called by `R/common/FlansMod.java`; `R/common/driveables/EntityDriveable.java` (BuildCraft bucket branches).
-When BuildCraft Energy is installed, a non-electric engine can consume its oil/fuel bucket if the whole transfer fits. Oil adds 2,000 fuel units and fuel adds 4,000 with the reference multiplier, replacing the consumed stack with an empty bucket.
-
-Target checked: `T/common/entity/Driveable.java#refuelFromInventory`, `#refuelFromEnergyItems`, `T/common/driveables/DriveableData.java`, and target-wide BuildCraft/fluid-capability searches.
-Combustion refueling accepts Flan fuel parts. The Forge energy capability path serves electric engines and is not an oil/fuel fluid-container equivalent. No BuildCraft bucket mapping or general fluid-fuel adapter was found.
-
-Missing: The reference's external oil/fuel-container integration. Availability of a compatible external mod on the target Minecraft version is outside this local source audit.
-
 ## Teams and administration
 
 ### Detailed explosion-kill audit and spawn-kill warning log — MISSING
@@ -85,9 +74,7 @@ Missing: Independent ammo-HUD visibility and user-selectable legacy ammo-HUD lay
 | Subsystem | Feature | Status | Confidence |
 | --------- | ------- | ------ | ---------- |
 | Multiplayer | Content-definition mismatch enforcement | MISSING | HIGH |
-| Inventory | Per-player reload preferences | PARTIAL | HIGH |
 | Interactions | Configurable armed block-use suppression | PARTIAL | HIGH |
-| Driveables | BuildCraft oil/fuel bucket integration | MISSING | HIGH |
 | Administration | Explosion-kill audit/spawn-kill warning | MISSING | HIGH |
 | HUD | Ammo-HUD visibility/layout controls | PARTIAL | HIGH |
 
@@ -95,6 +82,5 @@ Missing: Independent ammo-HUD visibility and user-selectable legacy ammo-HUD lay
 
 - Driveable physics, collision response, aircraft controls, mecha movement, and legacy model animation have substantially different implementations. This audit does not establish trajectory-level or visual equivalence across representative packs, especially articulated vehicles and custom model transforms.
 - Exercise multiplayer reconnect/reload, late entity tracking, occupied-seat synchronization, and persisted rounds in-game to assess timing-dependent parity. Source-level searches do not prove absence of subtle synchronization differences.
-- The BuildCraft finding is a source integration gap. Choosing an applicable modern fluid ecosystem would require a separate compatibility investigation.
 
 These follow-up areas are validation limits, not additional counted missing features.

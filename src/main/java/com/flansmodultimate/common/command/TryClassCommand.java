@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.PlayerClass;
@@ -28,30 +27,29 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+
+import static com.flansmodultimate.common.command.TryCommandSupport.*;
 
 /**
  * Equips a Teams player class outside of a round, so that a class can be tried without setting
  * up a map, a game type and two teams first.
  *
  * <p>It does what the respawn loadout does for a spawning player, minus the parts only a round
- * can supply: the inventory is emptied, the class armour is worn, the starting items are handed
- * over and the class is recorded on the player so its SkinOverride is broadcast. No team is
- * joined, so team armour and ranked loadout pools are deliberately left out of it.</p>
+ * can supply: the carried items are emptied, the class armour is worn, the starting items are
+ * handed over and the class is recorded on the player so its SkinOverride is broadcast. No team
+ * is joined, so ranked loadout pools are deliberately left out of it.</p>
  *
- * <p>{@code clear} only forgets the class, which drops the skin override again; whatever the
- * player is carrying stays theirs.</p>
+ * <p>The armour slots are treated the way a real spawn treats them: a class only writes the
+ * pieces it actually defines, and whatever is worn in the other slots stays. That is what makes
+ * {@code /tryteam} useful next to this command, since team armour set up there survives trying
+ * one class after another. {@code clear} empties the carried items and drops the skin override,
+ * again leaving the armour alone.</p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TryClassCommand
 {
-    private static final List<EquipmentSlot> ARMOUR_SLOTS =
-        List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
-
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
         // Registered twice rather than redirected, so the prefixed spelling accepts the same
@@ -95,16 +93,24 @@ public final class TryClassCommand
             return 0;
         }
 
-        player.getInventory().clearContent();
+        clearCarriedItems(player);
+
+        // A slot the class leaves undefined keeps what is worn, exactly as a real spawn lets team
+        // armour fill the gaps the class does not cover.
+        int worn = 0;
         for (EquipmentSlot slot : ARMOUR_SLOTS)
-            player.setItemSlot(slot, playerClass.getArmour(slot).copy());
+        {
+            ItemStack armour = playerClass.getArmour(slot);
+            if (armour.isEmpty())
+                continue;
+            player.setItemSlot(slot, armour.copy());
+            worn++;
+        }
 
         int given = 0;
         for (ItemStack stack : playerClass.createStartingItems())
         {
-            ItemStack copy = stack.copy();
-            if (!player.getInventory().add(copy))
-                player.drop(copy, false);
+            give(player, stack);
             given++;
         }
         player.getInventory().setChanged();
@@ -113,8 +119,11 @@ public final class TryClassCommand
         applyClass(player, playerClass);
 
         int items = given;
+        int pieces = worn;
         context.getSource().sendSuccess(() -> Component.literal("Equipped class " + playerClass.getName()
-            + " (" + items + (items == 1 ? " item" : " items") + ")").withStyle(ChatFormatting.GREEN), true);
+            + " (" + items + (items == 1 ? " item" : " items")
+            + ", " + pieces + (pieces == 1 ? " armour piece" : " armour pieces") + ")")
+            .withStyle(ChatFormatting.GREEN), true);
         if (playerClass.getSkinOverride().isBlank())
             send(context, ChatFormatting.DARK_GRAY, "This class defines no SkinOverride");
         return 1;
@@ -122,8 +131,11 @@ public final class TryClassCommand
 
     private static int clearClass(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
-        applyClass(context.getSource().getPlayerOrException(), null);
-        send(context, ChatFormatting.GREEN, "Player class skin cleared; your inventory was left untouched");
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        clearCarriedItems(player);
+        applyClass(player, null);
+        send(context, ChatFormatting.GREEN,
+            "Class cleared and carried items emptied; your armour was left on. Use /tryteam clear to take it off");
         return 1;
     }
 
@@ -158,7 +170,7 @@ public final class TryClassCommand
             }
             else
             {
-                String pack = matchingContentPack(filter);
+                String pack = matchingContentPack(filter, PlayerClass.values());
                 if (pack == null)
                 {
                     context.getSource().sendFailure(Component.literal(
@@ -184,49 +196,13 @@ public final class TryClassCommand
 
     private static Component classLine(PlayerClass playerClass)
     {
-        // The unique name is what has to be typed; the pack's own spelling is only worth showing
-        // when another pack claimed it first and this class had to be given an alias.
-        MutableComponent line = Component.literal(playerClass.getShortName())
-            .withStyle(ChatFormatting.GREEN);
-        if (!playerClass.getShortName().equalsIgnoreCase(playerClass.getOriginalShortName()))
-            line.append(Component.literal(" (= " + playerClass.getOriginalShortName() + ")")
-                .withStyle(ChatFormatting.DARK_GRAY));
-        line.append(Component.literal(" - ").withStyle(ChatFormatting.GOLD))
+        MutableComponent line = idPrefix(playerClass)
+            .append(Component.literal(" - ").withStyle(ChatFormatting.GOLD))
             .append(Component.literal(playerClass.getName()).withStyle(ChatFormatting.WHITE));
         if (playerClass.getUnlockLevel() > 0)
             line.append(Component.literal(" (rank " + playerClass.getUnlockLevel() + ")")
                 .withStyle(ChatFormatting.YELLOW));
-        String pack = packName(playerClass);
-        if (pack != null)
-            line.append(Component.literal(" [" + pack + "]").withStyle(ChatFormatting.LIGHT_PURPLE));
-        return line;
-    }
-
-    /** Content pack names may contain spaces, so they are matched loosely rather than by equality. */
-    @Nullable
-    private static String matchingContentPack(String filter)
-    {
-        String wanted = normalize(filter);
-        return contentPacks().stream().filter(pack -> normalize(pack).equals(wanted)).findFirst().orElse(null);
-    }
-
-    private static Set<String> contentPacks()
-    {
-        Set<String> packs = new LinkedHashSet<>();
-        PlayerClass.values().stream().map(TryClassCommand::packName).filter(Objects::nonNull).forEach(packs::add);
-        return packs;
-    }
-
-    @Nullable
-    private static String packName(PlayerClass playerClass)
-    {
-        IContentProvider pack = playerClass.getContentPack();
-        return pack == null ? null : pack.getName();
-    }
-
-    private static String normalize(String value)
-    {
-        return value.trim().toLowerCase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "");
+        return line.append(packSuffix(playerClass));
     }
 
     private static CompletableFuture<Suggestions> suggestClasses(CommandContext<CommandSourceStack> context,
@@ -241,12 +217,7 @@ public final class TryClassCommand
     {
         Set<String> filters = new LinkedHashSet<>();
         Team.values().forEach(team -> filters.add(team.getShortName()));
-        filters.addAll(contentPacks());
+        filters.addAll(contentPacks(PlayerClass.values()));
         return SharedSuggestionProvider.suggest(filters, builder);
-    }
-
-    private static void send(CommandContext<CommandSourceStack> context, ChatFormatting colour, String message)
-    {
-        context.getSource().sendSuccess(() -> Component.literal(message).withStyle(colour), false);
     }
 }
