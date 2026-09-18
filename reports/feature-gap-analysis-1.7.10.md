@@ -7,7 +7,7 @@ Initial audit: 2026-09-10. Last updated: 2026-09-18. Direction is strictly refer
 - Target revalidated: HEAD `e0b68dc60fc7060324ee4293678183aca93650b7` plus the current working tree.
 - Sources inspected were the current working trees, not pristine commit snapshots. Existing unrelated target command and image changes were left untouched; the reference working tree was clean.
 - Completed findings are removed as they are implemented, so the report remains a backlog rather than a historical snapshot.
-- Remaining: **1 MISSING, 2 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
+- Remaining: **1 MISSING, 1 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
 
 ## Scope and evidence conventions
 
@@ -45,25 +45,12 @@ Input suppression depends on the bound button, selected gun function, and hit re
 
 Missing: Separate configurable inventory-block and all-block interaction suppression while armed.
 
-## HUD and rendering preferences
-
-### Independent ammo-HUD visibility and legacy layout selection — PARTIAL
-
-Reference: `R/client/TickHandlerClient.java` (HOTBAR overlay and `renderAmmoHudPrimary`/`renderAmmoHudSecondary`), `R/common/FlansMod.java` (`bulletGuiEnable`, `fancyBulletGui`).
-The ammo HUD can be disabled independently. When enabled, the fancy setting selects between two reference layouts for primary/secondary ammunition.
-
-Target checked: `T/client/render/ClientHudOverlays.java#HUD`, `#renderPlayerAmmo`, `T/config/ModClientConfig.java`, and `T/config/CommonConfigSnapshot.java`.
-The target draws an ammo HUD but exposes neither an independent ammo-HUD toggle nor the reference layout selector. The shootable durability-bar option controls item bars, and hiding the entire vanilla GUI is a different capability.
-
-Missing: Independent ammo-HUD visibility and user-selectable legacy ammo-HUD layouts.
-
 ## Findings table
 
 | Subsystem | Feature | Status | Confidence |
 | --------- | ------- | ------ | ---------- |
 | Multiplayer | Content-definition mismatch enforcement | MISSING | HIGH |
 | Interactions | Configurable armed block-use suppression | PARTIAL | HIGH |
-| HUD | Ammo-HUD visibility/layout controls | PARTIAL | HIGH |
 
 ## Areas requiring deeper audit
 

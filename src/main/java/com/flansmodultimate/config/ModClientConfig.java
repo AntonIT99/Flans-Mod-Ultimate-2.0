@@ -34,6 +34,8 @@ public final class ModClientConfig
     public final boolean preferBuiltInModelClasses;
     public final boolean showShootableDurabilityBars;
     public final boolean showArmorDamageAbsorptionBar;
+    public final boolean showAmmoHud;
+    public final EnumAmmoHudLayout ammoHudLayout;
     public final EnumSpeedUnit driveableSpeedUnit;
     public final EnumHitMarkerStyle hitMarkerStyle;
     public final boolean hdHitMarker;
@@ -104,6 +106,8 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.BooleanValue PREFER_BUILT_IN_MODEL_CLASSES;
     private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     private static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
+    private static final ForgeConfigSpec.BooleanValue SHOW_AMMO_HUD;
+    private static final ForgeConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     private static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
     private static final ForgeConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
     private static final ForgeConfigSpec.BooleanValue HD_HIT_MARKER;
@@ -235,6 +239,15 @@ public final class ModClientConfig
                     valid player skin sheet, or when another mod draws that player with its own model.
                     """)
                 .define("enablePlayerClassSkinOverrides", true);
+        builder.pop();
+
+        builder.push("Ammo HUD Settings");
+        SHOW_AMMO_HUD = builder
+            .comment("Show the held-gun ammunition HUD independently of the rest of the Minecraft HUD.")
+            .define("showAmmoHud", true);
+        AMMO_HUD_LAYOUT = builder
+            .comment("Ammo HUD layout. CURRENT preserves the existing Ultimate 2.0 layout; LEGACY_FANCY and LEGACY_DEFAULT reproduce the two Ultimate 1.7.10 placements.")
+            .defineEnum("ammoHudLayout", EnumAmmoHudLayout.CURRENT);
         builder.pop();
 
         builder.push("Entity Rendering Settings");
@@ -394,6 +407,8 @@ public final class ModClientConfig
         preferBuiltInModelClasses = PREFER_BUILT_IN_MODEL_CLASSES.get();
         showShootableDurabilityBars = SHOW_SHOOTABLE_DURABILITY_BARS.get();
         showArmorDamageAbsorptionBar = SHOW_ARMOR_DAMAGE_ABSORPTION_BAR.get();
+        showAmmoHud = SHOW_AMMO_HUD.get();
+        ammoHudLayout = AMMO_HUD_LAYOUT.get();
         driveableSpeedUnit = DRIVEABLE_SPEED_UNIT.get();
         hitMarkerStyle = HIT_MARKER_STYLE.get();
         hdHitMarker = HD_HIT_MARKER.get();

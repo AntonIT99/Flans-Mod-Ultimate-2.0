@@ -22,6 +22,7 @@ import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.config.EnumAmmoHudLayout;
 import com.flansmodultimate.config.EnumHitMarkerStyle;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -479,6 +480,15 @@ public final class ClientHudOverlays
 
     public static void renderPlayerAmmo(GuiGraphics g, int sw, int sh)
     {
+        ModClientConfig config = ModClientConfig.get();
+        if (!config.showAmmoHud)
+            return;
+        if (config.ammoHudLayout.isLegacy())
+        {
+            renderLegacyPlayerAmmo(g, sw, sh, config.ammoHudLayout);
+            return;
+        }
+
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null)
@@ -583,6 +593,84 @@ public final class ClientHudOverlays
                 xAccum += 16 + font.width(s);
             }
         }
+    }
+
+    private static void renderLegacyPlayerAmmo(GuiGraphics g, int sw, int sh, EnumAmmoHudLayout layout)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null)
+            return;
+
+        for (InteractionHand hand : InteractionHand.values())
+        {
+            ItemStack gunStack = player.getItemInHand(hand);
+            if (gunStack.isEmpty() || !(gunStack.getItem() instanceof GunItem gunItem))
+                continue;
+
+            renderLegacyAmmoHand(g, mc.font, gunStack, gunItem, hand, layout, sw, sh);
+        }
+    }
+
+    private static void renderLegacyAmmoHand(GuiGraphics g, Font font, ItemStack gunStack, GunItem gunItem,
+                                             InteractionHand hand, EnumAmmoHudLayout layout, int sw, int sh)
+    {
+        GunType gunType = gunItem.getConfigType();
+        EnumAmmoHudLayout.Placement placement = layout.placement(hand);
+        int x = 0;
+
+        for (ItemStack bulletStack : gunItem.getBulletItemStackList(gunStack))
+        {
+            if (bulletStack == null || bulletStack.isEmpty() || !(bulletStack.getItem() instanceof ShootableItem shootableItem))
+                continue;
+
+            int roundsPerItem = shootableItem.getConfigType().getRoundsPerItem();
+            int remaining = roundsPerItem <= 1 ? bulletStack.getCount() : ShootableItem.getRoundsRemaining(bulletStack);
+            if (remaining <= 0)
+                continue;
+
+            String text = legacyAmmoText(gunType, gunStack, bulletStack, roundsPerItem, remaining, layout);
+            int iconX;
+            int textX;
+            if (hand == InteractionHand.MAIN_HAND)
+            {
+                iconX = sw / 2 + placement.iconX() + x;
+                textX = sw / 2 + placement.textX() + x;
+                x += 16 + font.width(text);
+            }
+            else
+            {
+                iconX = sw / 2 - placement.iconX() - x;
+                x += 16 + font.width(text);
+                textX = sw / 2 - placement.textX() - x;
+            }
+
+            int iconY = sh - placement.iconY();
+            int textY = sh - placement.textY();
+            g.renderItem(bulletStack, iconX, iconY);
+            g.renderItemDecorations(font, bulletStack, iconX, iconY);
+            g.drawString(font, text, textX, textY, 0x000000, false);
+            g.drawString(font, text, textX + (hand == InteractionHand.MAIN_HAND ? 1 : -1), textY - 1, 0xFFFFFF, false);
+        }
+    }
+
+    static String legacyAmmoText(GunType gunType, ItemStack gunStack, ItemStack bulletStack,
+                                 int roundsPerItem, int remaining, EnumAmmoHudLayout layout)
+    {
+        if (roundsPerItem <= 1)
+            return "";
+
+        String text = remaining + "/" + roundsPerItem;
+        if (bulletStack.getCount() > 1)
+            text += " x" + bulletStack.getCount();
+        if (gunType.canSwitchFireMode(gunStack))
+        {
+            String mode = gunType.getFireMode(gunStack).name();
+            if (layout == EnumAmmoHudLayout.LEGACY_FANCY)
+                mode = mode.replace("AUTO", "");
+            text += (layout == EnumAmmoHudLayout.LEGACY_FANCY ? " [" : "[") + mode + "]";
+        }
+        return text;
     }
 
     public static void renderDigitalAmmo(GuiGraphics g, int sw, int sh)
