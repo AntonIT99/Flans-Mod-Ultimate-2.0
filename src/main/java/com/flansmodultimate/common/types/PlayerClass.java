@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.util.ModUtils;
@@ -17,10 +18,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
@@ -30,7 +29,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValuesInLines;
 @NoArgsConstructor
 public class PlayerClass extends InfoType
 {
-    private static final Map<String, PlayerClass> CLASSES = new LinkedHashMap<>();
+    private static final ItemlessTypeRegistry<PlayerClass> CLASSES = new ItemlessTypeRegistry<>("player class");
 
     @Getter
     private int unlockLevel;
@@ -48,8 +47,7 @@ public class PlayerClass extends InfoType
     public void load(TypeFile file)
     {
         super.load(file);
-        if (StringUtils.isNotBlank(originalShortName))
-            CLASSES.put(normalize(originalShortName), this);
+        uniqueShortName = CLASSES.register(this);
     }
 
     @Override
@@ -117,8 +115,12 @@ public class PlayerClass extends InfoType
     private ItemStack createStack(StartingItem definition)
     {
         String[] parts = definition.itemAndAttachments().split("\\+");
-        ItemStack stack = ModUtils.getItemStack(parts[0], definition.amount(), definition.damage()).orElseGet(() ->
-            ModUtils.getItemStack(InfoType.getInfoType(parts[0], contentPack), definition.amount(), definition.damage()).orElse(ItemStack.EMPTY));
+        // Content pack shortnames are resolved first: an unqualified AddItem name means pack content in
+        // every legacy pack, and a namespaced id such as "minecraft:stone" is never a shortname anyway.
+        ItemStack stack = ModUtils
+            .getItemStack(InfoType.getInfoType(parts[0], contentPack), definition.amount(), definition.damage())
+            .or(() -> ModUtils.getItemStack(parts[0], definition.amount(), definition.damage()))
+            .orElse(ItemStack.EMPTY);
         if (stack.isEmpty())
         {
             FlansMod.log.warn("Unknown starting item '{}' in player class {}", parts[0], originalShortName);
@@ -176,13 +178,21 @@ public class PlayerClass extends InfoType
 
     public static java.util.Collection<PlayerClass> values()
     {
-        return Collections.unmodifiableCollection(CLASSES.values());
+        return CLASSES.values();
     }
 
+    /** Resolves a class by the unique name {@link #getShortName()} reports. */
     @Nullable
     public static PlayerClass getPlayerClass(@Nullable String id)
     {
-        return StringUtils.isBlank(id) ? null : CLASSES.get(normalize(id));
+        return CLASSES.get(id);
+    }
+
+    /** Resolves a class named inside {@code provider}, such as the {@code AddClass} line of a team. */
+    @Nullable
+    public static PlayerClass getPlayerClass(@Nullable String id, @Nullable IContentProvider provider)
+    {
+        return CLASSES.get(id, provider);
     }
 
     private static int parsePositive(String[] values, int index, int fallback)
@@ -197,11 +207,6 @@ public class PlayerClass extends InfoType
         {
             return fallback;
         }
-    }
-
-    private static String normalize(String value)
-    {
-        return value.trim().toLowerCase(Locale.ROOT);
     }
 
     private record StartingItem(String itemAndAttachments, int amount, int damage) {}

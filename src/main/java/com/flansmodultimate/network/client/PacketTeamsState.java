@@ -68,8 +68,8 @@ public final class PacketTeamsState implements IClientPacket
         packet.playerVote = viewerData.getVote();
         Team selectedTeam = viewerData.getNewTeam();
         PlayerClass selectedClass = viewerData.getNewPlayerClass();
-        packet.selectedTeam = selectedTeam == null ? "" : selectedTeam.getOriginalShortName();
-        packet.selectedClass = selectedClass == null ? "" : selectedClass.getOriginalShortName();
+        packet.selectedTeam = selectedTeam == null ? "" : selectedTeam.getShortName();
+        packet.selectedClass = selectedClass == null ? "" : selectedClass.getShortName();
 
         TeamsRound round = manager.getCurrentRound().orElse(null);
         if (round == null)
@@ -100,7 +100,7 @@ public final class PacketTeamsState implements IClientPacket
         if (openScreen == OpenScreen.CLASS_SELECT && selectedTeam != null && selectedTeam != Team.SPECTATORS)
         {
             packet.classChoices = selectedTeam.getClasses().stream().map(playerClass ->
-                new ClassChoice(playerClass.getOriginalShortName(), playerClass.getName(), playerClass.getUnlockLevel(),
+                new ClassChoice(playerClass.getShortName(), playerClass.getName(), playerClass.getUnlockLevel(),
                     playerClass.createStartingItemPreviews())).toList();
         }
 

@@ -83,6 +83,13 @@ public abstract class InfoType
     protected String name = StringUtils.EMPTY;
     @Getter
     protected String originalShortName;
+    /**
+     * Unique name of an item-less type, assigned by its {@link ItemlessTypeRegistry} and differing
+     * from {@link #originalShortName} only when two content packs picked the same shortname.
+     * Types that have an item take their unique name from the item registry instead.
+     */
+    @Nullable
+    protected String uniqueShortName;
     @Getter
     protected String icon;
     @Getter
@@ -139,12 +146,17 @@ public abstract class InfoType
         return result.overrides();
     }
 
+    /**
+     * The name this type is uniquely reachable under across every loaded content pack. It equals
+     * {@link #getOriginalShortName()} unless another pack claimed that shortname first, in which
+     * case this carries the {@code _2} alias. Always prefer it over the original shortname when
+     * storing an identifier in a save, a packet or a command.
+     */
     public String getShortName()
     {
-        if (type.isHasItem())
+        if (type != null && type.isHasItem())
             return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
-        else
-            return originalShortName;
+        return uniqueShortName != null ? uniqueShortName : originalShortName;
     }
 
     public Optional<ResourceLocation> getOverlay()

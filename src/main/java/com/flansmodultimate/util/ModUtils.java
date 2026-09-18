@@ -34,6 +34,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -53,6 +54,8 @@ public final class ModUtils
 {
     private static final GameProfile BLOCK_BREAK_FAKE_PLAYER = new GameProfile(
         UUID.fromString("8b90a6f3-93ce-4a42-bd86-88ec5eb17b5d"), "[FlansMod]");
+    /** The value the defaulted item registry hands back for any id it does not know. */
+    private static final ResourceLocation AIR_ID = ResourceLocation.fromNamespaceAndPath("minecraft", "air");
 
     public static boolean isVehicleLike(Entity entity)
     {
@@ -203,9 +206,25 @@ public final class ModUtils
     {
         if (infoType != null && infoType.getType().isHasItem())
         {
-            return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
+            return resolveItem(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName()));
         }
         return Optional.empty();
+    }
+
+    /**
+     * The Forge item registry is a defaulted registry, so an unknown id resolves to {@code minecraft:air}
+     * instead of null. Passing that on would hand callers a present-but-empty stack and hide the failure,
+     * so an air result is only accepted when air is what was actually asked for.
+     */
+    private static Optional<Item> resolveItem(@Nullable ResourceLocation id)
+    {
+        if (id == null)
+            return Optional.empty();
+
+        Item item = ForgeRegistries.ITEMS.getValue(id);
+        if (item == null || (item == Items.AIR && !AIR_ID.equals(id)))
+            return Optional.empty();
+        return Optional.of(item);
     }
 
     /**
@@ -245,11 +264,7 @@ public final class ModUtils
             id = "minecraft:" + ResourceUtils.sanitize(id);
         }
 
-        ResourceLocation rl = ResourceLocation.tryParse(id);
-        if (rl == null)
-            return Optional.empty();
-
-        return Optional.ofNullable(ForgeRegistries.ITEMS.getValue(rl));
+        return resolveItem(ResourceLocation.tryParse(id));
     }
 
     private static boolean isInteger(String s)
@@ -293,7 +308,7 @@ public final class ModUtils
             return Optional.empty();
         }
 
-        return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.ITEMS::getValue).map(ItemStack::new);
+        return resolveItem(ResourceLocation.tryParse(id)).map(ItemStack::new);
     }
 
     public static boolean isGlass(BlockState state)

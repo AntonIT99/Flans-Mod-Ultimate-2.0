@@ -42,11 +42,11 @@ public final class TeamsCommand
             .then(Commands.literal("help").executes(TeamsCommand::help))
             .then(Commands.literal("join")
                 .then(Commands.argument("team", StringArgumentType.word())
-                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().map(Team::getOriginalShortName), builder))
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(Team.values().stream().map(Team::getShortName), builder))
                     .executes(TeamsCommand::joinTeam)))
             .then(Commands.literal("class")
                 .then(Commands.argument("class", StringArgumentType.word())
-                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(PlayerClass.values().stream().map(PlayerClass::getOriginalShortName), builder))
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(PlayerClass.values().stream().map(PlayerClass::getShortName), builder))
                     .executes(TeamsCommand::selectClass)))
             .then(Commands.literal("score").executes(TeamsCommand::score))
             .then(Commands.literal("motd").executes(TeamsCommand::showMotd)
@@ -84,7 +84,7 @@ public final class TeamsCommand
             .then(Commands.literal("getOpKit").requires(source -> source.hasPermission(2)).executes(TeamsCommand::giveKit))
             .then(Commands.literal("setloadoutpool").requires(source -> source.hasPermission(2))
                 .then(Commands.argument("id", StringArgumentType.word()).suggests((context, builder) ->
-                    SharedSuggestionProvider.suggest(java.util.stream.Stream.concat(java.util.stream.Stream.of("none"), LoadoutPool.values().stream().map(LoadoutPool::getOriginalShortName)), builder))
+                    SharedSuggestionProvider.suggest(java.util.stream.Stream.concat(java.util.stream.Stream.of("none"), LoadoutPool.values().stream().map(LoadoutPool::getShortName)), builder))
                     .executes(TeamsCommand::setLoadoutPool)))
             .then(Commands.literal("xpmultiplier").requires(source -> source.hasPermission(2))
                 .then(Commands.argument("value", FloatArgumentType.floatArg(0F, 100F)).executes(TeamsCommand::setExperienceMultiplier)))
@@ -94,7 +94,7 @@ public final class TeamsCommand
                 .then(Commands.argument("player", EntityArgument.player()).executes(TeamsCommand::resetRank)))
             .then(Commands.literal("giverewardbox").requires(source -> source.hasPermission(2)).then(Commands.argument("player", EntityArgument.player())
                 .then(Commands.argument("box", StringArgumentType.word()).suggests((context, builder) ->
-                    SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getOriginalShortName), builder)).executes(TeamsCommand::giveRewardBox))))
+                    SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getShortName), builder)).executes(TeamsCommand::giveRewardBox))))
             .then(adminCommands());
 
         com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> node = dispatcher.register(root);
@@ -157,7 +157,7 @@ public final class TeamsCommand
             .then(Commands.literal("kit").executes(TeamsCommand::giveKit))
             .then(Commands.literal("loadoutpool")
                 .then(Commands.argument("id", StringArgumentType.word()).suggests((context, builder) ->
-                    SharedSuggestionProvider.suggest(java.util.stream.Stream.concat(java.util.stream.Stream.of("none"), LoadoutPool.values().stream().map(LoadoutPool::getOriginalShortName)), builder))
+                    SharedSuggestionProvider.suggest(java.util.stream.Stream.concat(java.util.stream.Stream.of("none"), LoadoutPool.values().stream().map(LoadoutPool::getShortName)), builder))
                     .executes(TeamsCommand::setLoadoutPool)))
             .then(Commands.literal("xpmultiplier")
                 .then(Commands.argument("value", FloatArgumentType.floatArg(0F, 100F)).executes(TeamsCommand::setExperienceMultiplier)))
@@ -169,7 +169,7 @@ public final class TeamsCommand
             .then(Commands.literal("giverewardbox")
                 .then(Commands.argument("player", EntityArgument.player())
                     .then(Commands.argument("box", StringArgumentType.word()).suggests((context, builder) ->
-                        SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getOriginalShortName), builder))
+                        SharedSuggestionProvider.suggest(RewardBox.values().stream().map(RewardBox::getShortName), builder))
                         .executes(TeamsCommand::giveRewardBox))))
             .then(Commands.literal("map")
                 .then(Commands.literal("add")
@@ -254,13 +254,13 @@ public final class TeamsCommand
 
     private static int listLoadoutPools(CommandContext<CommandSourceStack> context)
     {
-        LoadoutPool.values().forEach(pool -> context.getSource().sendSuccess(() -> Component.literal(pool.getOriginalShortName() + " — " + pool.getName()), false));
+        LoadoutPool.values().forEach(pool -> context.getSource().sendSuccess(() -> Component.literal(pool.getShortName() + " — " + pool.getName()), false));
         return LoadoutPool.values().size();
     }
 
     private static int listRewardBoxes(CommandContext<CommandSourceStack> context)
     {
-        RewardBox.values().forEach(box -> context.getSource().sendSuccess(() -> Component.literal(box.getOriginalShortName() + " — " + box.getName()), false));
+        RewardBox.values().forEach(box -> context.getSource().sendSuccess(() -> Component.literal(box.getShortName() + " — " + box.getName()), false));
         return RewardBox.values().size();
     }
 
@@ -361,13 +361,13 @@ public final class TeamsCommand
 
     private static int listTeams(CommandContext<CommandSourceStack> context)
     {
-        Team.values().forEach(team -> context.getSource().sendSuccess(() -> Component.literal(team.getOriginalShortName() + " — " + team.getName()), false));
+        Team.values().forEach(team -> context.getSource().sendSuccess(() -> Component.literal(team.getShortName() + " — " + team.getName()), false));
         return Team.values().size();
     }
 
     private static int listClasses(CommandContext<CommandSourceStack> context)
     {
-        PlayerClass.values().forEach(type -> context.getSource().sendSuccess(() -> Component.literal(type.getOriginalShortName() + " — " + type.getName() + " (rank " + type.getUnlockLevel() + ")"), false));
+        PlayerClass.values().forEach(type -> context.getSource().sendSuccess(() -> Component.literal(type.getShortName() + " — " + type.getName() + " (rank " + type.getUnlockLevel() + ")"), false));
         return PlayerClass.values().size();
     }
 

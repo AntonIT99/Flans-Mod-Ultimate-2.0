@@ -155,7 +155,7 @@ public final class PlayerStats
 
     public List<PlayerLoadout> getLoadouts(LoadoutPool pool)
     {
-        return loadoutProfiles.computeIfAbsent(pool.getOriginalShortName(), ignored -> {
+        return loadoutProfiles.computeIfAbsent(pool.getShortName(), ignored -> {
             List<PlayerLoadout> created = new ArrayList<>(LoadoutPool.LOADOUT_COUNT);
             for (int i = 0; i < LoadoutPool.LOADOUT_COUNT; i++) created.add(pool.getDefaultLoadout(i));
             for (String boxId : pool.getRewardsForRank(1)) addRewardBox(boxId, RewardBoxInstance.Origin.LEVEL_UP);

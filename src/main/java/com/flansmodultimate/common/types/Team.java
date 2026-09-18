@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +31,7 @@ public class Team extends InfoType
     public static final String SPECTATORS_ID = "spectators";
     public static final Team SPECTATORS = new Team(SPECTATORS_ID, "Spectators", 0x404040, ChatFormatting.GRAY);
 
-    private static final Map<String, Team> TEAMS = new LinkedHashMap<>();
+    private static final ItemlessTypeRegistry<Team> TEAMS = new ItemlessTypeRegistry<>("team");
 
     @Getter
     private int teamColour = 0xFFFFFF;
@@ -54,8 +54,7 @@ public class Team extends InfoType
     public void load(TypeFile file)
     {
         super.load(file);
-        if (StringUtils.isNotBlank(originalShortName))
-            TEAMS.put(normalize(originalShortName), this);
+        uniqueShortName = TEAMS.register(this);
     }
 
     @Override
@@ -97,9 +96,14 @@ public class Team extends InfoType
         return Component.literal(name).withStyle(textColour);
     }
 
+    /**
+     * The classes this team's {@code AddClass} lines name, resolved against this team's own content
+     * pack first so that a shortname another pack also uses cannot pull in the wrong class.
+     */
     public List<PlayerClass> getClasses()
     {
-        return classIds.stream().map(PlayerClass::getPlayerClass).filter(java.util.Objects::nonNull).toList();
+        return classIds.stream().map(id -> PlayerClass.getPlayerClass(id, contentPack))
+            .filter(java.util.Objects::nonNull).toList();
     }
 
     public ItemStack getArmour(EquipmentSlot slot)
@@ -113,22 +117,27 @@ public class Team extends InfoType
 
     public static Collection<Team> values()
     {
-        return Collections.unmodifiableCollection(TEAMS.values());
+        return TEAMS.values();
     }
 
+    /** Resolves a team by the unique name {@link #getShortName()} reports. */
     @Nullable
     public static Team getTeam(@Nullable String id)
     {
         if (StringUtils.isBlank(id))
             return null;
-        if (SPECTATORS_ID.equalsIgnoreCase(id))
+        if (SPECTATORS_ID.equalsIgnoreCase(id.trim()))
             return SPECTATORS;
-        return TEAMS.get(normalize(id));
+        return TEAMS.get(id);
     }
 
-    private static String normalize(String value)
+    /** Resolves a team named inside {@code provider}, so a pack always sees its own teams first. */
+    @Nullable
+    public static Team getTeam(@Nullable String id, @Nullable IContentProvider provider)
     {
-        return value.trim().toLowerCase(Locale.ROOT);
+        if (StringUtils.isNotBlank(id) && SPECTATORS_ID.equalsIgnoreCase(id.trim()))
+            return SPECTATORS;
+        return TEAMS.get(id, provider);
     }
 
     private static ChatFormatting parseFormatting(@Nullable String value)

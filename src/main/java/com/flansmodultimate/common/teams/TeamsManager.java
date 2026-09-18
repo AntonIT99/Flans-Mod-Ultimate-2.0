@@ -368,7 +368,7 @@ public final class TeamsManager
         }
         LoadoutPool pool = LoadoutPool.get(id);
         if (pool == null) return false;
-        currentLoadoutPoolId = pool.getOriginalShortName();
+        currentLoadoutPoolId = pool.getShortName();
         saveRuntime();
         return true;
     }
@@ -797,7 +797,7 @@ public final class TeamsManager
             data.setNewPlayerClass(null);
             data.setPlayerClass(null);
         }
-        getStats(player).setSelection(team.getOriginalShortName(), data.getNewPlayerClass() == null ? "" : data.getNewPlayerClass().getOriginalShortName());
+        getStats(player).setSelection(team.getShortName(), data.getNewPlayerClass() == null ? "" : data.getNewPlayerClass().getShortName());
         markDirty();
         return true;
     }
@@ -827,7 +827,7 @@ public final class TeamsManager
         if (getStats(player).getRank() < playerClass.getUnlockLevel())
             return false;
         data.setNewPlayerClass(playerClass);
-        getStats(player).setSelection(team.getOriginalShortName(), playerClass.getOriginalShortName());
+        getStats(player).setSelection(team.getShortName(), playerClass.getShortName());
         markDirty();
         return true;
     }
@@ -1070,7 +1070,7 @@ public final class TeamsManager
     {
         RewardBox box = RewardBox.get(boxId);
         if (box == null) return false;
-        getStats(player).addRewardBox(box.getOriginalShortName(), origin);
+        getStats(player).addRewardBox(box.getShortName(), origin);
         markDirty();
         return true;
     }
@@ -1128,7 +1128,7 @@ public final class TeamsManager
     }
 
     public int getRoundTeamIndex(@Nullable Team team) {
-        return getCurrentRound().map(round -> round.getTeamIds().indexOf(team == null ? "" : team.getOriginalShortName())).orElse(-1);
+        return getCurrentRound().map(round -> round.getTeamIds().indexOf(team == null ? "" : team.getShortName())).orElse(-1);
     }
 
     public List<ServerPlayer> getPlayersOnRoundTeam(int index)
@@ -1148,12 +1148,12 @@ public final class TeamsManager
 
     public int getTeamScore(@Nullable Team team)
     {
-        return team == null ? 0 : teamScores.getOrDefault(team.getOriginalShortName(), 0);
+        return team == null ? 0 : teamScores.getOrDefault(team.getShortName(), 0);
     }
 
     public void addTeamScore(Team team, int amount)
     {
-        teamScores.merge(team.getOriginalShortName(), amount, Integer::sum);
+        teamScores.merge(team.getShortName(), amount, Integer::sum);
         saveRuntime();
     }
 
@@ -1297,7 +1297,7 @@ public final class TeamsManager
         {
             PlayerClass playerClass = PlayerData.getInstance(player).getPlayerClass();
             if (playerClass != null && !playerClass.getSkinOverride().isBlank())
-                current.put(player.getUUID(), playerClass.getOriginalShortName());
+                current.put(player.getUUID(), playerClass.getShortName());
         }
         if (!force && current.equals(lastSyncedPlayerClassSkins))
             return;

@@ -184,9 +184,14 @@ public final class TryClassCommand
 
     private static Component classLine(PlayerClass playerClass)
     {
-        MutableComponent line = Component.literal(playerClass.getOriginalShortName())
-            .withStyle(ChatFormatting.GREEN)
-            .append(Component.literal(" - ").withStyle(ChatFormatting.GOLD))
+        // The unique name is what has to be typed; the pack's own spelling is only worth showing
+        // when another pack claimed it first and this class had to be given an alias.
+        MutableComponent line = Component.literal(playerClass.getShortName())
+            .withStyle(ChatFormatting.GREEN);
+        if (!playerClass.getShortName().equalsIgnoreCase(playerClass.getOriginalShortName()))
+            line.append(Component.literal(" (= " + playerClass.getOriginalShortName() + ")")
+                .withStyle(ChatFormatting.DARK_GRAY));
+        line.append(Component.literal(" - ").withStyle(ChatFormatting.GOLD))
             .append(Component.literal(playerClass.getName()).withStyle(ChatFormatting.WHITE));
         if (playerClass.getUnlockLevel() > 0)
             line.append(Component.literal(" (rank " + playerClass.getUnlockLevel() + ")")
@@ -228,14 +233,14 @@ public final class TryClassCommand
         SuggestionsBuilder builder)
     {
         return SharedSuggestionProvider.suggest(
-            PlayerClass.values().stream().map(PlayerClass::getOriginalShortName), builder);
+            PlayerClass.values().stream().map(PlayerClass::getShortName), builder);
     }
 
     private static CompletableFuture<Suggestions> suggestFilters(CommandContext<CommandSourceStack> context,
         SuggestionsBuilder builder)
     {
         Set<String> filters = new LinkedHashSet<>();
-        Team.values().forEach(team -> filters.add(team.getOriginalShortName()));
+        Team.values().forEach(team -> filters.add(team.getShortName()));
         filters.addAll(contentPacks());
         return SharedSuggestionProvider.suggest(filters, builder);
     }

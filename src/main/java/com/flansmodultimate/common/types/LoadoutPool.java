@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
@@ -28,7 +27,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 public final class LoadoutPool extends InfoType
 {
     public static final int LOADOUT_COUNT = 5;
-    private static final Map<String, LoadoutPool> POOLS = new LinkedHashMap<>();
+    private static final ItemlessTypeRegistry<LoadoutPool> POOLS = new ItemlessTypeRegistry<>("loadout pool");
 
     public record ExtraItem(String itemId, int count) {}
     public record LoadoutEntry(String typeId, int unlockRank, List<ExtraItem> extraItems) {}
@@ -45,7 +44,6 @@ public final class LoadoutPool extends InfoType
     private final int[] loadoutUnlockLevels = { 0, 0, 5, 10, 20 };
     private final Map<LoadoutSlot, List<LoadoutEntry>> entries = new EnumMap<>(LoadoutSlot.class);
     private final List<PlayerLoadout> defaults = new ArrayList<>(LOADOUT_COUNT);
-    @Getter
     private List<String> rewardBoxIds = List.of();
     private final Map<Integer, List<String>> rewardsPerLevel = new LinkedHashMap<>();
 
@@ -55,7 +53,7 @@ public final class LoadoutPool extends InfoType
         for (LoadoutSlot slot : LoadoutSlot.values()) entries.put(slot, new ArrayList<>());
         for (int i = 0; i < LOADOUT_COUNT; i++) defaults.add(new PlayerLoadout());
         super.load(file);
-        if (StringUtils.isNotBlank(originalShortName)) POOLS.put(normalize(originalShortName), this);
+        uniqueShortName = POOLS.register(this);
     }
 
     @Override
@@ -130,7 +128,22 @@ public final class LoadoutPool extends InfoType
 
     public List<String> getRewardsForRank(int rank)
     {
-        return List.copyOf(rewardsPerLevel.getOrDefault(rank, List.of()));
+        return rewardsPerLevel.getOrDefault(rank, List.of()).stream().map(this::resolveBoxId).toList();
+    }
+
+    public List<String> getRewardBoxIds()
+    {
+        return rewardBoxIds.stream().map(this::resolveBoxId).toList();
+    }
+
+    /**
+     * Turns a reward box name as this pool's own pack wrote it into the unique name that box
+     * registered under, so a name two packs share still yields this pack's box. Resolved on demand
+     * rather than while reading, because the alias is only known once every pack has been loaded.
+     */
+    private String resolveBoxId(String id)
+    {
+        return InfoType.getInfoType(id, contentPack) instanceof RewardBox box ? box.getShortName() : id;
     }
 
     /** XP needed to advance from the supplied one-based rank. */
@@ -206,9 +219,8 @@ public final class LoadoutPool extends InfoType
         return true;
     }
 
-    public static Collection<LoadoutPool> values() { return Collections.unmodifiableCollection(POOLS.values()); }
-    @Nullable public static LoadoutPool get(@Nullable String id) { return StringUtils.isBlank(id) ? null : POOLS.get(normalize(id)); }
-    private static String normalize(String value) { return value.trim().toLowerCase(Locale.ROOT); }
+    public static Collection<LoadoutPool> values() { return POOLS.values(); }
+    @Nullable public static LoadoutPool get(@Nullable String id) { return POOLS.get(id); }
     private static int parseInt(String value, int fallback)
     {
         try { return Integer.parseInt(value); }

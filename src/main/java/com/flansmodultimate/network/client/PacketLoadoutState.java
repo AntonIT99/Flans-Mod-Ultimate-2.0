@@ -73,7 +73,7 @@ public final class PacketLoadoutState implements IClientPacket
         LoadoutPool pool = manager.getCurrentLoadoutPool().orElse(null);
         if (pool == null) return packet;
         PlayerStats stats = manager.getStats(player);
-        packet.poolId = pool.getOriginalShortName();
+        packet.poolId = pool.getShortName();
         packet.poolName = pool.getName();
         packet.rank = stats.getRank();
         packet.experience = stats.getExperience();
