@@ -106,6 +106,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.ConfigValue<String> DEFAULT_MECHA_ENGINE;
     private static final ForgeConfigSpec.DoubleValue NAME_TAG_RENDER_RANGE;
     private static final ForgeConfigSpec.DoubleValue NAME_TAG_SNEAK_RENDER_RANGE;
+    private static final ForgeConfigSpec.IntValue NOTICE_SPAWN_KILL_TIME;
 
     private static final ForgeConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final ForgeConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
@@ -252,6 +253,10 @@ public final class ModCommonConfig
         NAME_TAG_SNEAK_RENDER_RANGE = builder
             .comment("Maximum distance in blocks from which sneaking living-entity name tags can be seen.")
             .defineInRange("nameTagSneakRenderRange", 32D, 0D, 1000D);
+        NOTICE_SPAWN_KILL_TIME = builder
+            .comment("Warn in the server log when a Flan bullet or grenade explosion kills a player younger than this many seconds.",
+                "Set to 0 to disable the spawn-kill warning. Detailed explosion-kill audit records are still written.")
+            .defineInRange("noticeSpawnKillTime", 10, 0, 600);
         DISABLE_CROSSHAIR_FOR_GUNS = builder
             .comment("Disables crosshair for guns except melee weapons")
             .define("disableCrosshairForGuns", false);
@@ -671,6 +676,7 @@ public final class ModCommonConfig
             DEFAULT_MECHA_ENGINE.get(),
             NAME_TAG_RENDER_RANGE.get().floatValue(),
             NAME_TAG_SNEAK_RENDER_RANGE.get().floatValue(),
+            NOTICE_SPAWN_KILL_TIME.get(),
 
             DISABLE_CROSSHAIR_FOR_GUNS.get(),
             EXPLOSIONS_BREAK_BLOCKS.get(),

@@ -15,6 +15,7 @@ public record CommonConfigSnapshot(
     String defaultMechaEngine,
     float nameTagRenderRange,
     float nameTagSneakRenderRange,
+    int noticeSpawnKillTime,
 
     boolean disableCrosshairForGuns,
     boolean explosionsBreakBlocks,
@@ -121,7 +122,7 @@ public record CommonConfigSnapshot(
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 31;
+    public static final int CURRENT_VERSION = 32;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -134,6 +135,7 @@ public record CommonConfigSnapshot(
         buf.writeUtf(s.defaultMechaEngine, 32767);
         buf.writeFloat(s.nameTagRenderRange);
         buf.writeFloat(s.nameTagSneakRenderRange);
+        buf.writeVarInt(s.noticeSpawnKillTime);
 
         buf.writeBoolean(s.disableCrosshairForGuns);
         buf.writeBoolean(s.explosionsBreakBlocks);
@@ -258,6 +260,7 @@ public record CommonConfigSnapshot(
             buf.readUtf(32767),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readVarInt(),
 
             buf.readBoolean(),
             buf.readBoolean(),

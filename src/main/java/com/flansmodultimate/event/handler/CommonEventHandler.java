@@ -3,6 +3,7 @@ package com.flansmodultimate.event.handler;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.AmbientMobArmor;
+import com.flansmodultimate.common.ExplosionKillAudit;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.KillMessageData;
 import com.flansmodultimate.common.PlayerData;
@@ -440,6 +441,7 @@ public final class CommonEventHandler
         {
             FlansMod.teamsManager.playerDied(player, event.getSource());
             sendKillMessage(player, event.getSource());
+            ExplosionKillAudit.logIfApplicable(player, event.getSource());
         }
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();

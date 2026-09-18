@@ -7,7 +7,7 @@ Initial audit: 2026-09-10. Last updated: 2026-09-18. Direction is strictly refer
 - Target revalidated: HEAD `e0b68dc60fc7060324ee4293678183aca93650b7` plus the current working tree.
 - Sources inspected were the current working trees, not pristine commit snapshots. Existing unrelated target command and image changes were left untouched; the reference working tree was clean.
 - Completed findings are removed as they are implemented, so the report remains a backlog rather than a historical snapshot.
-- Remaining: **2 MISSING, 2 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
+- Remaining: **1 MISSING, 2 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
 
 ## Scope and evidence conventions
 
@@ -45,18 +45,6 @@ Input suppression depends on the bound button, selected gun function, and hit re
 
 Missing: Separate configurable inventory-block and all-block interaction suppression while armed.
 
-## Teams and administration
-
-### Detailed explosion-kill audit and spawn-kill warning log — MISSING
-
-Reference: `R/common/eventhandlers/PlayerDeathEventListener.java#PlayerDied`, `#logKillMessage`, instantiated in `R/common/FlansMod.java`.
-For player deaths entering its Flan bullet/grenade explosion branch, the listener logs the weapon, positions, victim lifetime, and armor information. It also logs a possible spawn-kill warning when the victim's lifetime is below `noticeSpawnKillTime`. This finding is limited to the branch the reference actually implements.
-
-Target checked: `T/event/handler/CommonEventHandler.java#onLivingDeath`, `#sendKillMessage`, `T/common/teams/PlayerStats.java`, `T/common/teams/TeamsManager.java`, and target log/configuration searches.
-Kill feed packets and persistent statistics do not provide this detailed event log or its configurable lifetime-based warning.
-
-Missing: The reference's detailed explosion-kill server audit records and possible spawn-kill warning. This is logging, not spawn protection or automatic moderation.
-
 ## HUD and rendering preferences
 
 ### Independent ammo-HUD visibility and legacy layout selection — PARTIAL
@@ -75,7 +63,6 @@ Missing: Independent ammo-HUD visibility and user-selectable legacy ammo-HUD lay
 | --------- | ------- | ------ | ---------- |
 | Multiplayer | Content-definition mismatch enforcement | MISSING | HIGH |
 | Interactions | Configurable armed block-use suppression | PARTIAL | HIGH |
-| Administration | Explosion-kill audit/spawn-kill warning | MISSING | HIGH |
 | HUD | Ammo-HUD visibility/layout controls | PARTIAL | HIGH |
 
 ## Areas requiring deeper audit
