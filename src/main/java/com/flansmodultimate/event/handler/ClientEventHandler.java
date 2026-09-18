@@ -2,6 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.ReloadPreferencesSync;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.debug.DriveableHitboxRenderer;
@@ -319,6 +320,12 @@ public final class ClientEventHandler
                 event.setSwingHand(false);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onLogin(ClientPlayerNetworkEvent.LoggingIn event)
+    {
+        ReloadPreferencesSync.sendToServer();
     }
 
     @SubscribeEvent

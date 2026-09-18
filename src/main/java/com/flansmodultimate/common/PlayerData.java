@@ -8,6 +8,7 @@ import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -87,6 +88,15 @@ public class PlayerData
     /** In a teams round, the first reload after respawning is instant so that players are not defenceless on spawn */
     @Getter @Setter
     private boolean reloadedAfterRespawn;
+    /**
+     * The player's own reload inventory preferences, sent by the client on login and whenever they are changed.
+     * Null means the player never announced a preference (vanilla or outdated client), in which case the
+     * server configuration decides on its own.
+     */
+    @Setter
+    private Boolean combineAmmoOnReloadPreference;
+    @Setter
+    private Boolean ammoToUpperInventoryOnReloadPreference;
     @Getter
     private Vector3f[] lastMeleePositions;
 
@@ -303,6 +313,24 @@ public class PlayerData
     public static void removeServerData(UUID playerId)
     {
         serverSideData.remove(playerId);
+    }
+
+    /**
+     * Whether a reload by this player combines the unloaded ammo with damaged ammo in the inventory.
+     * The player can opt out, but the server can also forbid it for everyone.
+     */
+    public boolean shouldCombineAmmoOnReload()
+    {
+        return ModCommonConfig.get().combineAmmoOnReload()
+            && (combineAmmoOnReloadPreference == null || combineAmmoOnReloadPreference);
+    }
+
+    /** Whether a reload by this player puts the unloaded ammo in the upper inventory first. */
+    public boolean shouldPutAmmoToUpperInventoryOnReload()
+    {
+        return ammoToUpperInventoryOnReloadPreference != null
+            ? ammoToUpperInventoryOnReloadPreference
+            : ModCommonConfig.get().ammoToUpperInventoryOnReload();
     }
 
     public void playerKilled()

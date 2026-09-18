@@ -3,6 +3,7 @@ General:
 - Check if ConfigReference in Wiki is exhaustive / up to date -> create a skill for this
 - Check if all FMU features are implemented in the mod -> use the skills
 - Implement TaP Flan's Mod Features
+- UI Mod Options
 
 Driveables:
 - Vehicle scopes

@@ -3,6 +3,7 @@ package com.flansmodultimate.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.ReloadPreferencesSync;
 import com.flansmodultimate.client.UncensoredResources;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.EnumMouseButton;
@@ -65,6 +66,9 @@ public final class ModClientConfig
     public final EnumMouseButton shootButtonOffhand;
     public final EnumMouseButton aimButton;
     public final EnumAimType aimType;
+
+    public final boolean combineAmmoOnReload;
+    public final boolean ammoToUpperInventoryOnReload;
 
     public final boolean enableArms;
     public final boolean enableGunAnimationsInThirdPerson;
@@ -132,6 +136,9 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
     private static final ForgeConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
+
+    private static final ForgeConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
+    private static final ForgeConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_ARMS;
     private static final ForgeConfigSpec.BooleanValue ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
@@ -314,6 +321,22 @@ public final class ModClientConfig
                 .defineEnum("aimType", EnumAimType.TOGGLE);
         builder.pop();
 
+        builder.push("Reload Settings");
+        COMBINE_AMMO_ON_RELOAD = builder
+                .comment("""
+                    Combine the unloaded ammo with matching damaged ammo in the inventory.
+                    This is a personal preference. A server that turns its own combineAmmoOnReload
+                    setting off forbids it for everyone and this option then has no effect.
+                    """)
+                .define("combineAmmoOnReload", true);
+        AMMO_TO_UPPER_INVENTORY_ON_RELOAD = builder
+                .comment("""
+                    Try to put the unloaded ammo in the upper inventory first instead of the hotbar.
+                    This is a personal preference and overrides the server's ammoToUpperInventoryOnReload setting.
+                    """)
+                .define("ammoToUpperInventoryOnReload", false);
+        builder.pop();
+
         builder.push("Gun Rendering Settings");
         ENABLE_ARMS = builder
             .comment("Enable arms rendering")
@@ -403,6 +426,9 @@ public final class ModClientConfig
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();
         aimButton = AIM_BUTTON.get();
         aimType = AIM_TYPE.get();
+
+        combineAmmoOnReload = COMBINE_AMMO_ON_RELOAD.get();
+        ammoToUpperInventoryOnReload = AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get();
 
         enableArms = ENABLE_ARMS.get();
         enableGunAnimationsInThirdPerson = ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON.get();
@@ -543,6 +569,12 @@ public final class ModClientConfig
         if (old != null && old.enableUncensoredContent != get().enableUncensoredContent
             && FMLEnvironment.dist == Dist.CLIENT)
             UncensoredResources.reload();
+
+        if (FMLEnvironment.dist == Dist.CLIENT
+            && (old == null
+                || old.combineAmmoOnReload != get().combineAmmoOnReload
+                || old.ammoToUpperInventoryOnReload != get().ammoToUpperInventoryOnReload))
+            ReloadPreferencesSync.sendToServer();
 
         if (old == null)
             return;

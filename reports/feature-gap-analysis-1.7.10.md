@@ -1,12 +1,12 @@
 # Feature gap analysis: Ultimate 1.7.10 → Ultimate 2.0
 
-Initial audit: 2026-09-10. Last updated: 2026-09-13. Direction is strictly reference → target.
+Initial audit: 2026-09-10. Last updated: 2026-09-18. Direction is strictly reference → target.
 
 - Reference: `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-1.7.10`, HEAD `9b669b12149c3c9fa3a69f1a4ac5d8a55367506d`.
 - Target initially audited: `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, HEAD `08494f8a4972c249feb4e7d8522e981547439c4e`.
 - Sources inspected were the current working trees, not pristine commit snapshots. Existing staged reference texture deletions and the target's unrelated `warfare44/pack_names.json` change were left untouched.
 - Completed findings are removed as they are implemented, so the report remains a backlog rather than a historical snapshot.
-- Remaining: **3 MISSING, 3 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
+- Remaining: **3 MISSING, 2 PARTIAL, 0 UNCERTAIN**. These counts describe the findings below, not a percentage of port completeness.
 
 ## Scope and evidence conventions
 
@@ -33,16 +33,6 @@ Configuration synchronization and protocol registration do not compare client/se
 Missing: Optional enforcement that clients and the server loaded matching content definitions.
 
 ## Handheld weapons and inventory preferences
-
-### Per-player reload inventory preferences — PARTIAL
-
-Reference: `R/client/gui/GuiModOptions.java`, `R/client/FlansModClient.java` (reload preference setters), `R/client/KeyInputHandler.java`, `R/common/network/PacketReload.java`.
-Players independently choose whether reloading combines damaged ammo and whether returned ammo goes to the upper inventory. Reload requests carry those choices; the normal client request also honors the server's allowance for combining ammo.
-
-Target checked: `T/config/ModClientConfig.java`, `T/config/CommonConfigSnapshot.java`, `T/network/server/PacketGunReload.java`, `T/common/item/GunItemHandler.java#doPlayerReload`, `T/common/guns/reload/GunReloader.java`.
-Combining ammo and upper-inventory placement exist, but `doPlayerReload` takes both choices from common configuration. The reload packet carries only the hand. No client preference or per-player override was found.
-
-Missing: Independent player choices for these two reload behaviors, subject to server policy, including the reference's in-game preference controls.
 
 ### Configurable blocking of block interactions while holding guns — PARTIAL
 

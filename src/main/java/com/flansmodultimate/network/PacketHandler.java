@@ -52,6 +52,7 @@ import com.flansmodultimate.network.server.PacketGunSwitchDelay;
 import com.flansmodultimate.network.server.PacketGunVariableZoom;
 import com.flansmodultimate.network.server.PacketLoadoutAction;
 import com.flansmodultimate.network.server.PacketManualGuidance;
+import com.flansmodultimate.network.server.PacketReloadPreferences;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
@@ -84,7 +85,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler {
 
-    public static final String PROTOCOL = "10";
+    public static final String PROTOCOL = "11";
     public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -151,6 +152,7 @@ public final class PacketHandler {
         registerC2S(PacketGunInput.class);
         registerC2S(PacketGunPreferredAmmo.class);
         registerC2S(PacketGunReload.class);
+        registerC2S(PacketReloadPreferences.class);
         registerC2S(PacketGunScopedState.class);
         registerC2S(PacketGunSpread.class);
         registerC2S(PacketGunSwitchDelay.class);

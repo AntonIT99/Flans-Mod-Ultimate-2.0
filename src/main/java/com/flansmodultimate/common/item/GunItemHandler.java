@@ -304,7 +304,7 @@ public class GunItemHandler
         if (instantRespawnReload)
             reloadTime = 0F;
 
-        boolean reloaded = gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().ammoToUpperInventoryOnReload(), reloadTime, reloadSoundUUID);
+        boolean reloaded = gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, data.shouldCombineAmmoOnReload(), data.shouldPutAmmoToUpperInventoryOnReload(), reloadTime, reloadSoundUUID);
         if (reloaded)
         {
             if (instantRespawnReload)
