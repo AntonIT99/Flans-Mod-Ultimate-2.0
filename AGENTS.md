@@ -9,6 +9,9 @@ Nested `AGENTS.md` files add rules for their directories.
 - For built-in `*_categories.json` research or maintenance, read
   `src/main/resources/config/AGENTS.md`, then
   `.agents/skills/flans-category-research/SKILL.md` and the references it routes to.
+- For reorganizing or synchronizing source content-pack `.txt` definitions from
+  built-in category values, read
+  `.agents/skills/content-pack-definition-sync/SKILL.md` before editing.
 
 ## Repository Rules
 
