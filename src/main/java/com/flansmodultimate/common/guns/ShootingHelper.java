@@ -570,9 +570,8 @@ public final class ShootingHelper
 
         new FlanExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
 
-        // Despawn bullets (not grenades)
-        if (explosive instanceof Bullet bullet)
-            bullet.discard();
+        // The caller owns the projectile lifecycle. In particular, smoke shells must remain as
+        // stationary smoke sources after their explosive payload has been processed.
     }
 
     private static void spreadFire(Level level, ShootableType type, Vec3 position, boolean volumetric)

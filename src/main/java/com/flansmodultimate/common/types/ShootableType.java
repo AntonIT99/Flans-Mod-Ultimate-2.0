@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
@@ -284,6 +285,21 @@ public abstract class ShootableType extends InfoType
     protected int explodeParticles;
     @Getter
     protected String explodeParticleType = FlanParticles.LARGE_SMOKE;
+    /** Time in ticks that the projectile remains as a smoke source after detonation. */
+    @Getter
+    protected int smokeTime;
+    /** Particles emitted by the smoke source. */
+    @Getter
+    protected String smokeParticleType = FlanParticles.EXPLODE;
+    /** Number of smoke particles emitted per tick. */
+    protected int smokeParticlesCount;
+    protected boolean readSmokeParticlesCount;
+    /** Effects applied to unprotected living entities inside the smoke. */
+    @Getter
+    protected final List<MobEffectInstance> smokeEffects = new ArrayList<>();
+    /** Radius in blocks in which smoke effects are applied. */
+    @Getter
+    protected float smokeRadius = 5F;
 
     @Override
     public void onItemRegistration(String registeredItemId)
@@ -470,6 +486,18 @@ public abstract class ShootableType extends InfoType
         explodeParticles = readValue("NumExplodeParticles", explodeParticles, file);
         explodeParticles = readValue("ExplodeParticles", explodeParticles, file);
         explodeParticleType = readValue("ExplodeParticleType", explodeParticleType, file);
+        smokeTime = readValue("SmokeTime", smokeTime, file);
+        smokeParticleType = readValue("SmokeParticles", smokeParticleType, file);
+        smokeParticleType = readValue("SmokeParticleType", smokeParticleType, file);
+        smokeParticlesCount = readValue("SmokeParticlesCount", smokeParticlesCount, file);
+        readSmokeParticlesCount = hasValueForConfigField("SmokeParticlesCount", file);
+        smokeRadius = readValue("SmokeRadius", smokeRadius, file);
+        addEffects("SmokeEffect", smokeEffects, file, false, false);
+    }
+
+    public int getSmokeParticlesCount()
+    {
+        return readSmokeParticlesCount ? smokeParticlesCount : ModCommonConfig.smokeParticlesCount();
     }
 
     public boolean useKineticDamageSystem()

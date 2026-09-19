@@ -2,9 +2,12 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,12 +24,16 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -38,15 +45,20 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
 
     public static final String NBT_TYPE_NAME = "type";
+    public static final String NBT_SMOKE_TIME = "smoke_time";
+    public static final String NBT_DETONATED = "detonated";
 
     protected static final EntityDataAccessor<String> DATA_SHOOTABLE_TYPE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_HITBOX_SIZE = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Boolean> DATA_SMOKING = SynchedEntityData.defineId(Shootable.class, EntityDataSerializers.BOOLEAN);
 
     protected String shortname = StringUtils.EMPTY;
     protected Vec3 velocity = new Vec3(0, 0, 0);
     /** Stop repeat detonations */
     @Getter
     protected boolean detonated;
+    /** Remaining server-side lifetime of the smoke source after detonation. */
+    protected int smokeTime;
 
     protected Shootable(EntityType<?> entityType, Level level)
     {
@@ -128,6 +140,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     {
         entityData.define(DATA_SHOOTABLE_TYPE, StringUtils.EMPTY);
         entityData.define(DATA_HITBOX_SIZE, DEFAULT_HITBOX_SIZE);
+        entityData.define(DATA_SMOKING, false);
     }
 
     @Override
@@ -171,12 +184,83 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         setShortName(tag.getString(NBT_TYPE_NAME));
+        smokeTime = tag.getInt(NBT_SMOKE_TIME);
+        entityData.set(DATA_SMOKING, smokeTime > 0);
+        detonated = tag.getBoolean(NBT_DETONATED) || smokeTime > 0;
     }
 
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
         tag.putString(NBT_TYPE_NAME, shortname);
+        if (smokeTime > 0)
+            tag.putInt(NBT_SMOKE_TIME, smokeTime);
+        if (detonated)
+            tag.putBoolean(NBT_DETONATED, true);
+    }
+
+    protected boolean isSmoking()
+    {
+        return entityData.get(DATA_SMOKING);
+    }
+
+    /** Starts the common smoke-cloud lifecycle for bullets and grenades. */
+    protected boolean startSmoke()
+    {
+        int duration = getConfigType().getSmokeTime();
+        if (duration <= 0)
+            return false;
+
+        smokeTime = duration;
+        entityData.set(DATA_SMOKING, true);
+        return true;
+    }
+
+    /**
+     * Emits smoke and applies its configured effects. Particle and gameplay work is server-authoritative;
+     * clients merely retain the projectile while the synchronized smoking flag is set.
+     *
+     * @return whether this shootable is currently acting as a smoke source
+     */
+    protected boolean handleSmoke(Level level)
+    {
+        if (!isSmoking())
+            return false;
+        if (level.isClientSide)
+            return true;
+
+        ShootableType type = getConfigType();
+        PacketHandler.sendToAllAround(new PacketFlak(position(), type.getSmokeParticlesCount(), type.getSmokeParticleType()),
+            position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
+
+        double radius = type.getSmokeRadius();
+        double radiusSquared = radius * radius;
+        AABB bounds = getBoundingBox().inflate(radius, radius, radius);
+        for (LivingEntity entity : ModUtils.queryLivingEntities(level, bounds))
+        {
+            if (entity.distanceToSqr(this) >= radiusSquared || hasSmokeProtection(entity))
+                continue;
+            type.getSmokeEffects().forEach(effect -> entity.addEffect(new MobEffectInstance(effect)));
+        }
+
+        if (--smokeTime <= 0)
+        {
+            entityData.set(DATA_SMOKING, false);
+            discard();
+        }
+        return true;
+    }
+
+    private static boolean hasSmokeProtection(LivingEntity entity)
+    {
+        for (EquipmentSlot slot : EquipmentSlot.values())
+        {
+            ItemStack stack = entity.getItemBySlot(slot);
+            if (!stack.isEmpty() && stack.getItem() instanceof CustomArmorItem armour
+                && armour.getConfigType().isSmokeProtection())
+                return true;
+        }
+        return false;
     }
 
     protected void applyDragAndGravity()

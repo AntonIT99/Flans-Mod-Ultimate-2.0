@@ -1,7 +1,5 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.config.ModCommonConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -102,23 +100,6 @@ public class GrenadeType extends ShootableType
     @Getter
     protected boolean spinWhenThrown = true;
 
-    //Smoke
-    /** Time to remain after detonation */
-    @Getter
-    protected int smokeTime;
-    /** Particles given off after detonation */
-    @Getter
-    protected String smokeParticleType = FlanParticles.EXPLODE;
-    /** Number of smoke particles given off after detonation */
-    protected int smokeParticlesCount;
-    protected boolean readSmokeParticlesCount;
-    /** The effects to be given to people coming too close */
-    @Getter
-    protected List<MobEffectInstance> smokeEffects = new ArrayList<>();
-    /** The radius for smoke effects to take place in */
-    @Getter
-    protected float smokeRadius = 5F;
-
     //Deployed bag functionality
     /** If true, then right clicking this "grenade" will give the player health or buffs or ammo as defined below */
     @Getter
@@ -187,14 +168,6 @@ public class GrenadeType extends ShootableType
         addEffects("AddFlashEffect", flashEffectInstances, file, false, false, flashEffectsDuration, flashEffectsLevel);
         flashBang = readValue("FlashBang", flashBang, file);
 
-        smokeTime = readValue("SmokeTime", smokeTime, file);
-        smokeParticleType = readValue("SmokeParticles", smokeParticleType, file);
-        smokeParticleType = readValue("SmokeParticleType", smokeParticleType, file);
-        smokeParticlesCount = readValue("SmokeParticlesCount", smokeParticlesCount, file);
-        readSmokeParticlesCount = hasValueForConfigField("SmokeParticlesCount", file);
-        smokeRadius = readValue("SmokeRadius", smokeRadius, file);
-        addEffects("SmokeEffect", smokeEffects, file, false, false);
-
         detonateWhenShot = readValue("DetonateWhenShot", detonateWhenShot, file);
 
         //Deployable Bag Stuff
@@ -207,10 +180,5 @@ public class GrenadeType extends ShootableType
         addEffects("PotionEffect", potionEffects, file, false, false);
 
         numClips = readValue("NumClips", numClips, file);
-    }
-
-    public int getSmokeParticlesCount()
-    {
-        return readSmokeParticlesCount ? smokeParticlesCount : ModCommonConfig.smokeParticlesCount();
     }
 }

@@ -4,7 +4,6 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.GrenadeType;
@@ -43,7 +42,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -82,10 +80,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     protected Vec3 angularVelocity = new Vec3(0, 0, 0);
     @Getter
     protected float prevRotationRoll;
-    /** Set to the smoke amount when the grenade detonates and decremented every tick after that */
-    protected int smokeTime;
-    /** Set to true when smoke grenade detonates */
-    protected boolean smoking;
     /** Set to true when a sticky grenade sticks. Impedes further movement */
     @Getter
     protected boolean stuck;
@@ -420,6 +414,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             decrementMotionTime();
             spawnTrailParticles(level);
             handleSmoke(level);
+            if (isRemoved())
+                return;
             handleDetonationConditions(level);
             updateStuckState(level);
             handlePhysicsAndMotion(level);
@@ -476,47 +472,6 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
             ClientHooks.RENDER.spawnParticle(configType.getTrailParticleType(), x, y, z, 1F);
         }
-    }
-
-    protected void handleSmoke(Level level)
-    {
-        if (!smoking)
-            return;
-
-        // Send flak packet to spawn particles
-        if (!level.isClientSide)
-            PacketHandler.sendToAllAround(new PacketFlak(position(), configType.getSmokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
-
-        // Apply potion effects in smoke radius
-        double r = configType.getSmokeRadius();
-        double rSq = r * r;
-        AABB aabb = getBoundingBox().inflate(r, r, r);
-
-        List<LivingEntity> list = ModUtils.queryLivingEntities(level, aabb);
-        for (LivingEntity entity : list)
-        {
-            if (entity.distanceToSqr(this) >= rSq)
-                continue;
-
-            // Check for gas masks / smoke protection
-            boolean smokeThem = true;
-            for (EquipmentSlot slot : EquipmentSlot.values())
-            {
-                ItemStack stack = entity.getItemBySlot(slot);
-                if (!stack.isEmpty() && stack.getItem() instanceof CustomArmorItem armour && armour.getConfigType().isSmokeProtection())
-                {
-                    smokeThem = false;
-                    break;
-                }
-            }
-
-            if (smokeThem)
-                configType.getSmokeEffects().forEach(effect -> entity.addEffect(new MobEffectInstance(effect)));
-        }
-
-        smokeTime--;
-        if (smokeTime <= 0)
-            discard();
     }
 
     protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity)
@@ -808,15 +763,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected void startSmokeCounter()
     {
-        if (configType.getSmokeTime() > 0)
-        {
-            smoking = true;
-            smokeTime = configType.getSmokeTime();
-        }
-        else
-        {
+        if (!startSmoke())
             discard();
-        }
     }
 
     protected void handleFlashbang(Level level)

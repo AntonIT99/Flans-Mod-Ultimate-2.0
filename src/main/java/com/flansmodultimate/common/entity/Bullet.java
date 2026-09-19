@@ -449,6 +449,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             setInitialSpeed();
             updatePreviousPosition();
 
+            if (handleSmoke(level))
+                return;
+
             if (shouldDespawn())
             {
                 detonated = true;
@@ -473,6 +476,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             ClientHooks.RENDER.spawnDebugVector(position(), velocity, 1000);
 
             performRaytraceAndApplyHits(level);
+            if (isSmoking())
+                return;
             applyDragAndGravity();
             updatePenetrationPower();
             applyHomingIfLocked(level);
@@ -612,7 +617,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 setDead(level);
         }
 
-        return isRemoved();
+        return isRemoved() || isSmoking();
     }
 
     /** returns true if bullet was discarded */
@@ -629,7 +634,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             setDead(level);
         }
 
-        return isRemoved();
+        return isRemoved() || isSmoking();
     }
 
     @Override
@@ -1110,7 +1115,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
     }
 
-    /** detonate() also discards bullet entities */
+    /** Detonate and retain the bullet as a stationary smoke source when configured. */
     @Override
     public void detonate(Level level)
     {
@@ -1118,6 +1123,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
 
         detonate(level, firedShot.getAttacker().orElse(null));
+        if (startSmoke())
+            setDeltaMovement(Vec3.ZERO);
+        else
+            discard();
     }
 
     public void setDead(Level level)
@@ -1126,7 +1135,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
 
         ShootingHelper.onBulletDeath(level, configType, position(), this, Optional.ofNullable(firedShot).flatMap(FiredShot::getAttacker).orElse(null));
-        discard();
+        detonated = true;
+        if (startSmoke())
+            setDeltaMovement(Vec3.ZERO);
+        else
+            discard();
     }
 
     protected void clientTick(Level level)
