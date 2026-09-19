@@ -20,6 +20,8 @@ public class Category
     private EnumType type;
     private String name;
     private Map<String, List<String>> properties = new HashMap<>();
+    /** Property name -> append, replace or ifAbsent. Missing entries preserve legacy append behavior. */
+    private Map<String, String> propertyModes = new HashMap<>();
     private List<String> items = new ArrayList<>();
     /** Property name -> items of this category that must NOT receive that property */
     private Map<String, List<String>> exceptions = new HashMap<>();
@@ -47,6 +49,19 @@ public class Category
                 result.put(entry.getKey(), entry.getValue());
         }
         return result;
+    }
+
+    public CategoryPropertyMode getPropertyMode(String property)
+    {
+        if (propertyModes == null || propertyModes.isEmpty())
+            return CategoryPropertyMode.APPEND;
+
+        for (Map.Entry<String, String> entry : propertyModes.entrySet())
+        {
+            if (entry.getKey().equalsIgnoreCase(property))
+                return CategoryPropertyMode.fromConfigValue(entry.getValue());
+        }
+        return CategoryPropertyMode.APPEND;
     }
 
     private boolean isExcepted(String property, String itemKey)

@@ -2,6 +2,7 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.config.Category;
+import com.flansmodultimate.config.CategoryPropertyMode;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -66,7 +67,21 @@ public class TypeFile
 
     public void addCategoryConfigMap(Category category, String shortname)
     {
-        category.getPropertiesFor(shortname).forEach((field, value) -> configMap.computeIfAbsent(field.toLowerCase(Locale.ROOT), key -> new ArrayList<>()).addAll(value));
+        category.getPropertiesFor(shortname).forEach((field, value) -> {
+            String key = field.toLowerCase(Locale.ROOT);
+            List<String> categoryValues = value == null ? List.of() : value;
+            CategoryPropertyMode mode = category.getPropertyMode(field);
+
+            switch (mode)
+            {
+                case REPLACE -> configMap.put(key, new ArrayList<>(categoryValues));
+                case IF_ABSENT -> {
+                    if (!configMap.containsKey(key) || configMap.get(key).isEmpty())
+                        configMap.put(key, new ArrayList<>(categoryValues));
+                }
+                case APPEND -> configMap.computeIfAbsent(key, ignored -> new ArrayList<>()).addAll(categoryValues);
+            }
+        });
     }
 
     public String toString()
