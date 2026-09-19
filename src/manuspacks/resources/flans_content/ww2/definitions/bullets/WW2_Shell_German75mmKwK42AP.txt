@@ -4,25 +4,25 @@
 
 //---Standard-------------------------------------
 //Naming
-Name German 88mm KwK 43 L/71 AP Shell
-ShortName WW2_Shell_German88mmAPLong
+Name German 75 mm Pzgr. 39/42 APCBC-HE (KwK 42)
+ShortName WW2_Shell_German75mmAPLong
 
 
 //Visuals
 model Bullet
-Icon Icon_WW2_Shell_German88mmAPLong
+Icon Icon_WW2_Shell_German75mmAPLong
 
 
 //Recipe
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
 F  
-GGG
-  S
+GG 
+SS 
 RecipeOutput 3
 
 
 //Misc
-description Amunition for Tiger II Tank
+description Amunition for Panther Tank and Jagdpanzer IV Tank
 
 //------------------------------------------------
 
@@ -40,6 +40,11 @@ Shell True
 Damage 1
 DamageVsLiving 25
 DamageVsVehicles 0
+Mass 6800
+MuzzleVelocity 935
+ExplosiveMassTNTg 29
+PenetrationAt100m 188
+HasSubmunitions False
 
 
 //Bullet Behavior
@@ -62,9 +67,11 @@ HitBoxSize 1.0
 //Parctical
 FlakParticles 0
 SmokeTrail True
-ExplodeParticles 10
-TrailParticleType flansmod.fmflame
+ExplodeParticles 8
+TrailParticleType flansmod.fmtracer
 HasLight True
+FlareParticleCount 4
+DebrisParticleCount 3
 
 //Sound
 HitSound bomb

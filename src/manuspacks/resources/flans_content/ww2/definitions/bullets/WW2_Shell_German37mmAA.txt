@@ -4,7 +4,7 @@
 
 //---Standard-------------------------------------
 //Naming
-Name German 37mm L/57 Flak Shell
+Name German 37 mm FlaK 36/37 HE Belt
 ShortName WW2_Shell_German37mmAA
 
 
@@ -40,6 +40,10 @@ Shell True
 DamageVsLiving 400
 DamageVsVehicles 400
 DamageVsPlanes 20
+Mass 640
+MuzzleVelocity 820
+ExplosiveMassTNTg 21
+PenetrationAt100m 35
 
 
 //Bullet Behavior
@@ -62,7 +66,8 @@ HitBoxSize 2.0
 //Parctical
 FlakParticles 0
 SmokeTrail True
-TrailParticleType smoke
+TrailParticleType flansmod.fmsmoke
+HasLight True
 
 
 //Sound

@@ -1,9 +1,14 @@
-Name NATO 20mm Shell
+Name 20x102 mm M61 Vulcan Ammunition
 ShortName ShellNATO20mm
 Model Bullet
 //Colour of icon and model
 Colour 255 255 255
 Icon IconAmmoNATO20mm
+Mass 102
+MuzzleVelocity 1030
+ExplosiveMassTNTg 14
+PenetrationAt100m 16
+FragType HE_SHELL
 //How affected by gravity the bullet is
 FallSpeed 1
 //The number of rounds each item has. Limited to 32000.
@@ -28,8 +33,9 @@ HitSound bomb
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
 SmokeTrail True
+TrailParticleType flansmod.fmsmoke
 //True if this is a bomb
 Bomb False
 Shell True
 RecipeOutput 32
-Description Amunition for M61 GAU-4 20 mm Vulcan and Boxer with 20mm Gun
+Description Ammunition for the M61A1 Vulcan (GAU-4/A)

@@ -1,0 +1,78 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name German 75 mm Sprgr. 34 HE (KwK 40)
+ShortName WW2_Shell_German75mmHE
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_German75mmAP
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+F
+G
+SS
+RecipeOutput 3
+
+
+//Misc
+description High-explosive ammunition for the 75 mm KwK 40
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 50
+DamageVsLiving 1000
+DamageVsVehicles 1000
+Mass 5740
+MuzzleVelocity 550
+ExplosiveMassTNTg 725
+PenetrationAt100m 10
+FragType HE_SHELL
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 4
+Fire 0
+FallSpeed 1
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 10
+TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 8
+DebrisParticleCount 4
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 16
+RoundsPerItem 1
+
+//------------------------------------------------

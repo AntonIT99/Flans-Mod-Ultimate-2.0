@@ -1,0 +1,77 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name US 76 mm M93 HVAP-T (M1)
+ShortName WW2_Shell_USA76mmM93HVAP
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_USA76mmAP
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder B SMP_Part_Mat_Block_Steel
+B
+GGG
+SSS
+RecipeOutput 3
+
+
+//Misc
+description High-velocity armor-piercing ammunition for the M4A3 76 mm gun
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 1
+DamageVsLiving 25
+DamageVsVehicles 0
+Mass 4260
+MuzzleVelocity 1036
+PenetrationAt100m 190
+HasSubmunitions False
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 0
+Fire 0
+FallSpeed 1
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 2
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlareParticleCount 2
+DebrisParticleCount 1
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 16
+RoundsPerItem 1
+
+//------------------------------------------------

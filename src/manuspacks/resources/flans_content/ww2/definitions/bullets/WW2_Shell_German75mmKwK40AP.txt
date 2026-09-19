@@ -1,0 +1,84 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name German 75 mm Pzgr. 39 APCBC-HE (KwK 40)
+ShortName WW2_Shell_German75mmAP
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_German75mmAP
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+F  
+G  
+SS 
+RecipeOutput 3
+
+
+//Misc
+description Amunition for Panzer IV Tan
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 1
+DamageVsLiving 25
+DamageVsVehicles 0
+Mass 6800
+MuzzleVelocity 770
+ExplosiveMassTNTg 29
+PenetrationAt100m 143
+HasSubmunitions False
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 1
+Fire 0
+FallSpeed 1
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Drop
+
+
+//Lock On
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 8
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlareParticleCount 4
+DebrisParticleCount 3
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 16
+RoundsPerItem 1
+
+//------------------------------------------------

@@ -4,25 +4,25 @@
 
 //---Standard-------------------------------------
 //Naming
-Name German 75mm KwK 40 L/48 AP Shell
-ShortName WW2_Shell_German75mmAP
+Name Soviet 100 mm OF-412 HE-Frag (D-10S)
+ShortName WW2_Shell_USSR100mmHE
 
 
 //Visuals
 model Bullet
-Icon Icon_WW2_Shell_German75mmAP
+Icon Icon_WW2_Shell_USSR100mmAP
 
 
 //Recipe
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
-F  
-G  
-SS 
+ F
+GGG
+SSS
 RecipeOutput 3
 
 
 //Misc
-description Amunition for Panzer IV Tan
+description High-explosive fragmentation ammunition for the 100 mm D-10S
 
 //------------------------------------------------
 
@@ -37,14 +37,19 @@ Shell True
 
 
 //Damage
-Damage 1
-DamageVsLiving 25
-DamageVsVehicles 0
+Damage 50
+DamageVsLiving 2000
+DamageVsVehicles 2000
+Mass 15600
+MuzzleVelocity 900
+ExplosiveMassTNTKg 1.46
+PenetrationAt100m 27
+FragType HE_SHELL
 
 
 //Bullet Behavior
 ExplodeOnImpact True
-Explosion 1
+Explosion 5
 Fire 0
 FallSpeed 1
 Fuse 200
@@ -53,18 +58,14 @@ BreaksGlass True
 HitBoxSize 1.0
 
 
-//Drop
-
-
-//Lock On
-
-
 //Parctical
 FlakParticles 0
 SmokeTrail True
-ExplodeParticles 8
+ExplodeParticles 12
 TrailParticleType flansmod.fmflame
 HasLight True
+FlareParticleCount 12
+DebrisParticleCount 5
 
 //Sound
 HitSound bomb

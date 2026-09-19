@@ -1,9 +1,13 @@
-Name NATO 120mm DM53 LKE Shell
+Name 120 mm DM53 APFSDS-T Shell
 ShortName ShellNATO120mmDM53LKE
 Model Bullet
 //Colour of icon and model
 Colour 255 255 255
 Icon IconShellNATO120mmDM53LKE
+Mass 5000
+MuzzleVelocity 1750
+PenetrationAt100m 750
+HasSubmunitions False
 //How affected by gravity the bullet is
 FallSpeed 1
 //The number of rounds each item has. Limited to 32000.
@@ -28,6 +32,8 @@ HitSound bomb
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
 SmokeTrail True
+TrailParticleType flansmod.fmtracer
+HasLight True
 //True if this is a bomb
 Bomb False
 Shell True
@@ -36,4 +42,4 @@ Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Pa
  B 
 GFG
  S 
-Description Amunition for Leopard 2 MBT
+Description Long-rod kinetic-energy ammunition for the Leopard 2 Rh-120 L/55

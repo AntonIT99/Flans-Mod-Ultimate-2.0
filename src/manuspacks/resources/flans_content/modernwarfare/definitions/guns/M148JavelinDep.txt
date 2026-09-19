@@ -1,4 +1,4 @@
-Name M-148 Javelin Deployable
+Name FGM-148 Javelin Deployable
 ShortName M148JavelinDep
 //The ammo this gun uses (shortName)
 Ammo AmmoNATOM148Javelin

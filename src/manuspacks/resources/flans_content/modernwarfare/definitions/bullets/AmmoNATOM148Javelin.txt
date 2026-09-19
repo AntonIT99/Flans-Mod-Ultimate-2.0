@@ -1,10 +1,15 @@
-Name M148 Javelin Missile
+Name FGM-148 Javelin Missile
 ShortName AmmoNATOM148Javelin
 Model Bullet //manus_modern_warfare.ATMissile
 Texture SkinAmmoATMissile
 //Colour of icon and model
 Colour 255 255 255
 Icon IconAmmoNATOM148Javelin
+Mass 22300
+MuzzleVelocity 290
+ExplosiveMassTNTKg 6
+PenetrationAt100m 750
+FragType HE_SHELL
 //How affected by gravity the bullet is
 FallSpeed 0.25
 //The maximum stack size
@@ -28,5 +33,15 @@ HitBoxSize 1.0
 HitSound bullet
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
-SmokeTrail False
-Description Amunition for M148 Javelin Launcher
+SmokeTrail True
+TrailParticleType flame
+LockOnForce 8
+LockOnToPlanes False
+LockOnToVehicles True
+LockOnToMechas True
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 200
+WeaponType Missile
+Missile True
+Description Ammunition for the FGM-148 Javelin launcher

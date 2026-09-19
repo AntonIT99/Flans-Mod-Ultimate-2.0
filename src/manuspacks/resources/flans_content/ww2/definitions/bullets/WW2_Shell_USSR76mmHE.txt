@@ -4,25 +4,25 @@
 
 //---Standard-------------------------------------
 //Naming
-Name German 88mm KwK 36 L/56 AP Shell
-ShortName WW2_Shell_German88mmAP
+Name Soviet 76.2 mm OF-350 HE-Frag (L-11)
+ShortName WW2_Shell_USSR76mmHE
 
 
 //Visuals
 model Bullet
-Icon Icon_WW2_Shell_German88mmAP
+Icon Icon_WW2_Shell_USSR76mmAP
 
 
 //Recipe
-Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse P SMP_Part_Mat_Plate_Steel
- F 
-PGP
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+ F
+GGG
 SSS
 RecipeOutput 3
 
 
 //Misc
-description Amunition for Flak 88mm, Tiger I Tank and Jagdpanther Tank
+description High-explosive fragmentation ammunition for the 76.2 mm L-11
 
 //------------------------------------------------
 
@@ -37,14 +37,19 @@ Shell True
 
 
 //Damage
-Damage 1
-DamageVsLiving 25
-DamageVsVehicles 0
+Damage 50
+DamageVsLiving 1000
+DamageVsVehicles 1000
+Mass 6210
+MuzzleVelocity 612
+ExplosiveMassTNTg 710
+PenetrationAt100m 10
+FragType HE_SHELL
 
 
 //Bullet Behavior
 ExplodeOnImpact True
-Explosion 1
+Explosion 4
 Fire 0
 FallSpeed 1
 Fuse 200
@@ -53,18 +58,14 @@ BreaksGlass True
 HitBoxSize 1.0
 
 
-//Drop
-
-
-//Lock On
-
-
 //Parctical
 FlakParticles 0
 SmokeTrail True
-ExplodeParticles 9
+ExplodeParticles 10
 TrailParticleType flansmod.fmflame
 HasLight True
+FlareParticleCount 8
+DebrisParticleCount 4
 
 //Sound
 HitSound bomb

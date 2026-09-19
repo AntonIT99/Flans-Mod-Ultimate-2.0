@@ -1,6 +1,7 @@
 //Naming
-Name GTK Boxer with with 20mm Cannon
+Name GTK Boxer with 20 mm Cannon
 ShortName Boxer4
+AddAmmo ShellNATO20x139mmDM63Belt
 //Visuals
 Icon IconVehicleBoxer4
 Model manus_modern_warfare.Boxer4

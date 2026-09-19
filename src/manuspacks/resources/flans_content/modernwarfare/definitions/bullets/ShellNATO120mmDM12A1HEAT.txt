@@ -1,0 +1,36 @@
+Name 120 mm DM12A1 HEAT-MP-T Shell
+ShortName ShellNATO120mmDM12A1HEAT
+Model Bullet
+Colour 255 255 255
+Icon IconShellNATO120mmDM11HE
+Mass 14100
+MuzzleVelocity 1140
+FallSpeed 1
+ExplosiveMassTNTKg 1.62
+PenetrationAt100m 480
+FragType HE_SHELL
+RoundsPerItem 1
+MaxStackSize 16
+Damage 350
+DamageVsVehicles 480
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+FlakParticles 16
+FlakParticleType hugeexplosion
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound bomb
+Penetrates False
+SmokeTrail True
+TrailParticleType flame
+HasLight True
+Bomb False
+Shell True
+RecipeOutput 5
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Titan
+ G
+GFG
+ S
+Description Multipurpose shaped-charge ammunition for the Leopard 2 Rh-120 L/55

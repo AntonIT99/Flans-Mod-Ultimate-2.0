@@ -4,7 +4,7 @@
 
 //---Standard-------------------------------------
 //Naming
-Name US 76mm M3 L/52 AP Shell
+Name US 76 mm M62 APCBC-HE (M1)
 ShortName WW2_Shell_USA76mmAP
 
 
@@ -40,6 +40,11 @@ Shell True
 Damage 1
 DamageVsLiving 25
 DamageVsVehicles 0
+Mass 7000.0
+MuzzleVelocity 792
+ExplosiveMassTNTg 60
+PenetrationAt100m 125
+HasSubmunitions False
 
 
 //Bullet Behavior
@@ -63,8 +68,10 @@ HitBoxSize 1.0
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 8
-TrailParticleType flansmod.fmflame
+TrailParticleType flansmod.fmtracer
 HasLight True
+FlareParticleCount 4
+DebrisParticleCount 3
 
 //Sound
 HitSound bomb

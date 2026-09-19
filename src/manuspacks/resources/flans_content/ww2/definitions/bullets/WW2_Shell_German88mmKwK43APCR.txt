@@ -1,0 +1,77 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name German 88 mm Pzgr. 40/43 APCR (KwK 43)
+ShortName WW2_Shell_German88mmKwK43APCR
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_German88mmAPLong
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder B SMP_Part_Mat_Block_Steel
+B
+GGG
+SSS
+RecipeOutput 3
+
+
+//Misc
+description High-velocity tungsten-core ammunition for Tiger II and Jagdpanther vehicles
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 1
+DamageVsLiving 25
+DamageVsVehicles 0
+Mass 7300
+MuzzleVelocity 1130
+PenetrationAt100m 274
+HasSubmunitions False
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 0
+Fire 0
+FallSpeed 1
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 2
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlareParticleCount 2
+DebrisParticleCount 1
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 16
+RoundsPerItem 1
+
+//------------------------------------------------

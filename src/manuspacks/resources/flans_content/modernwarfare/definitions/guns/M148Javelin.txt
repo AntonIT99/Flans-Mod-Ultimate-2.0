@@ -1,4 +1,4 @@
-Name M-148 Javelin
+Name FGM-148 Javelin
 ShortName M148Javelin
 //The ammo this gun uses (shortName)
 Ammo AmmoNATOM148Javelin

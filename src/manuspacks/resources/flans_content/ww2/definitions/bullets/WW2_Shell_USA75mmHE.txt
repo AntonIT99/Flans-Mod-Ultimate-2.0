@@ -1,0 +1,78 @@
+//---Standard Bullet Config for Flans Mod---------
+//Created by Minecraft-SMP Toolbox 2.0.0.0
+
+
+//---Standard-------------------------------------
+//Naming
+Name US 75 mm M48 HE (M3)
+ShortName WW2_Shell_USA75mmHE
+
+
+//Visuals
+model Bullet
+Icon Icon_WW2_Shell_USA75mmAP
+
+
+//Recipe
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Steel
+ F
+GBG
+ S
+RecipeOutput 3
+
+
+//Misc
+description High-explosive ammunition for the US 75 mm M3
+
+//------------------------------------------------
+
+//---Bullet---------------------------------------
+//Visuals
+Model Bullet
+
+
+// Bullet Type
+Bomb False
+Shell True
+
+
+//Damage
+Damage 50
+DamageVsLiving 1000
+DamageVsVehicles 1000
+Mass 6760
+MuzzleVelocity 594
+ExplosiveMassTNTg 680
+PenetrationAt100m 10
+FragType HE_SHELL
+
+
+//Bullet Behavior
+ExplodeOnImpact True
+Explosion 4
+Fire 0
+FallSpeed 1
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+
+//Parctical
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 10
+TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 8
+DebrisParticleCount 4
+
+//Sound
+HitSound bomb
+
+
+/Inventory
+MaxStackSize 16
+RoundsPerItem 1
+
+//------------------------------------------------

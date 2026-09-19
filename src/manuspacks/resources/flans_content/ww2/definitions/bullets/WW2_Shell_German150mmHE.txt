@@ -4,7 +4,7 @@
 
 //---Standard-------------------------------------
 //Naming
-Name German 150mm sFH 18/1 L/30 HE Shell
+Name German 150 mm Gr. 36 HE (sFH 18/1)
 ShortName WW2_Shell_German150mmHE
 
 
@@ -40,13 +40,18 @@ Shell True
 Damage 1
 DamageVsLiving 2500
 DamageVsVehicles 2500
+Mass 43500
+MuzzleVelocity 520
+ExplosiveMassTNTKg 5.1
+PenetrationAt100m 41
+FragType HE_SHELL
 
 
 //Bullet Behavior
 ExplodeOnImpact True
 Explosion 8
 Fire 0
-FallSpeed 3
+FallSpeed 1
 Fuse 200
 Penetrates False
 BreaksGlass True
@@ -64,6 +69,9 @@ FlakParticles 0
 SmokeTrail True
 ExplodeParticles 15
 TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 15
+DebrisParticleCount 6
 
 //Sound
 HitSound bomb

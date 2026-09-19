@@ -4,7 +4,7 @@
 
 //---Standard-------------------------------------
 //Naming
-Name US M8A1 114mm Rocket
+Name US 114 mm M8A1 HE Rocket
 ShortName WW2_Shell_USA114mmRocketHE
 
 
@@ -39,13 +39,17 @@ Shell True
 //Damage
 Damage 1000
 DamageVsVehicles 1000
+Mass 17600
+MuzzleVelocity 259
+ExplosiveMassTNTKg 1.9
+FragType HE_SHELL
 
 
 //Bullet Behavior
 ExplodeOnImpact True
 Explosion 4
 Fire 0
-FallSpeed 3
+FallSpeed 1
 Fuse 200
 Penetrates False
 BreaksGlass True
@@ -61,6 +65,11 @@ HitBoxSize 1.0
 //Parctical
 FlakParticles 0
 SmokeTrail True
+ExplodeParticles 12
+TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 12
+DebrisParticleCount 5
 
 
 //Sound

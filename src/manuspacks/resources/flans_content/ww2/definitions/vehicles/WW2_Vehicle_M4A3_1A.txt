@@ -1,4 +1,4 @@
-﻿//---Standard Vehicle Config for Flans Mod--------
+//---Standard Vehicle Config for Flans Mod--------
 //Created by Minecraft-SMP Toolbox 2.0.0.0
 
 
@@ -62,6 +62,8 @@ AddDye 10 green
 //Weapons
 AllowAllAmmo False
 AddAmmo WW2_Shell_USA76mmAP
+AddAmmo WW2_Shell_USA76mmHE
+AddAmmo WW2_Shell_USA76mmM93HVAP
 AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A
 BarrelPosition 0 35 0
 ShellDelay 110

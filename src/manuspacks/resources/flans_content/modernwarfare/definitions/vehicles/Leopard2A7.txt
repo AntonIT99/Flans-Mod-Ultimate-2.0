@@ -1,6 +1,10 @@
 //Naming
 Name Leopard 2 - Version A7+ PSO
 ShortName Leopard2A7
+AddAmmo ShellNATO120mmDM11HE
+AddAmmo ShellNATO120mmDM12A1HEAT
+AddAmmo ShellNATO120mmDM43KE
+AddAmmo ShellNATO120mmDM53LKE
 //Visuals
 Icon IconVehicleLeopard2A7
 Model manus_modern_warfare.Leopard2A7

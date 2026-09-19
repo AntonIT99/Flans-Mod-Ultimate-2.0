@@ -1,11 +1,15 @@
-Name NATO 40 mm Granade Ammo - 50 Granade Box
+Name 40x53 mm HEDP Grenade Belt - 50 Rounds
 ShortName AmmoNATO40mm
 Model Bullet
 //Colour of icon and model
 Colour 255 255 255
 Icon IconAmmoNATO40mm
+Mass 240
+MuzzleVelocity 241
+ExplosiveMassTNTg 43
+FragType HE_SHELL
 //How affected by gravity the bullet is
-FallSpeed 0.6
+FallSpeed 1
 //The maximum stack size
 MaxStackSize 1
 //The number of rounds each item has. Limited to 32000.
@@ -27,5 +31,6 @@ HitBoxSize 1.0
 HitSound bullet
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
-SmokeTrail False
-Description Amunition for H&K 40mm GMG
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+Description Ammunition for the HK GMG 40x53 mm grenade machine gun

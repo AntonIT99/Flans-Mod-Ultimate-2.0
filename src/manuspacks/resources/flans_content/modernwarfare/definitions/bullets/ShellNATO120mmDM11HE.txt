@@ -1,9 +1,14 @@
-Name NATO 120mm DM11 HE Shell
+Name 120 mm DM11 HE-FRAG-T Shell
 ShortName ShellNATO120mmDM11HE
 Model Bullet
 //Colour of icon and model
 Colour 255 255 255
 Icon IconShellNATO120mmDM11HE
+Mass 12900
+MuzzleVelocity 1000
+ExplosiveMassTNTKg 2.6
+PenetrationAt100m 30
+FragType HE_SHELL
 //How affected by gravity the bullet is
 FallSpeed 1
 //The number of rounds each item has. Limited to 32000.
@@ -18,7 +23,8 @@ Explosion 4
 //True if bullet explodes on hitting anything. Fuse denotes the maximum time it may spend in the air before detonating
 ExplodeOnImpact True
 Fuse 200
-FlakParticles 0
+FlakParticles 24
+FlakParticleType hugeexplosion
 //Amount of fire to spread on exploding; for each increment, it will increase the dimensions of the burning area by 2. i.e. 1 will burn a 3x3 square, 2 will burn a 5x5 square
 Fire 0
 BreaksGlass True
@@ -28,6 +34,8 @@ HitSound bomb
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
 SmokeTrail True
+TrailParticleType flame
+HasLight True
 //True if this is a bomb
 Bomb False
 Shell True
@@ -36,4 +44,4 @@ Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Pa
  G 
 GBG
  S 
-Description Amunition for Leopard 2 MBT
+Description Programmable high-explosive ammunition for the Leopard 2 Rh-120 L/55

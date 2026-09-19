@@ -4,7 +4,7 @@
 
 //---Standard-------------------------------------
 //Naming
-Name Russian 122mm M-30S L/23 HE Shell
+Name Soviet 122 mm OF-462 HE-Frag (M-30S)
 ShortName WW2_Shell_USSR122mmHE
 
 
@@ -40,13 +40,18 @@ Shell True
 Damage 50
 DamageVsLiving 2000
 DamageVsVehicles 2000
+Mass 21760
+MuzzleVelocity 515
+ExplosiveMassTNTKg 3.67
+PenetrationAt100m 12
+FragType HE_SHELL
 
 
 //Bullet Behavior
 ExplodeOnImpact True
 Explosion 7
 Fire 0
-FallSpeed 3
+FallSpeed 1
 Fuse 200
 Penetrates False
 BreaksGlass True
@@ -64,6 +69,9 @@ FlakParticles 0
 SmokeTrail True
 ExplodeParticles 12
 TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 12
+DebrisParticleCount 5
 
 //Sound
 HitSound bomb

@@ -4,8 +4,9 @@ Model Bullet
 //Colour of icon and model
 Colour 255 255 255
 Icon IconAmmoNATO762mmM134
+Mass 9.5
 //How affected by gravity the bullet is
-FallSpeed 0.25
+FallSpeed 1
 //The maximum stack size
 MaxStackSize 1
 //The number of rounds each item has. Limited to 32000.
@@ -28,4 +29,4 @@ HitSound bullet
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
 SmokeTrail False
-Description Amunition for M134 Minigun
+Description Ammunition for the M134 Minigun

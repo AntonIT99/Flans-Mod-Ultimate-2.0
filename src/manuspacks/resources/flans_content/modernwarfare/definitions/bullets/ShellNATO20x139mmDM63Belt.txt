@@ -1,0 +1,32 @@
+Name 20x139 mm DM63 APDS Belt
+ShortName ShellNATO20x139mmDM63Belt
+Model Bullet
+Colour 255 255 255
+Icon IconAmmoNATO20mm
+FallSpeed 1
+FragType HE_SHELL
+RoundsPerItem 100
+MaxStackSize 1
+Damage 80
+DamageVsVehicles 80
+Explosion 0
+ExplodeOnImpact True
+Fuse 0
+FlakParticles 1
+FlakParticleType hugeexplosion
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound bomb
+Penetrates False
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+HasLight True
+Bomb False
+Shell True
+RecipeOutput 32
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder B SMP_Part_Mat_Block_Aluminium
+B
+G
+SS
+Description Three DM63 APDS-T rounds to one DM81 HEI-T round for the 20 mm Rh 202

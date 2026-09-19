@@ -1,4 +1,4 @@
-﻿//---Standard Vehicle Config for Flans Mod--------
+//---Standard Vehicle Config for Flans Mod--------
 //Created by Minecraft-SMP Toolbox 2.0.0.0
 
 
@@ -31,6 +31,11 @@ Texture Skin_WW2_Vehicle_M4A1_2A
 MaxThrottle 0.6
 MaxNegativeThrottle 0.3
 Drag 1.0
+RealMassKg 31400
+RealEnginePowerHp 400
+RealMaxSpeedKmh 39
+RealMaxReverseSpeedKmh 5
+DriveType TRACKED
 
 
 //Wheels
@@ -62,10 +67,14 @@ AddDye 10 green
 //Weapons
 AllowAllAmmo False
 AddAmmo WW2_Shell_USA114mmRocketHE
+AddAmmo WW2_Shell_USA75mmAP
+AddAmmo WW2_Shell_USA75mmHE
 AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A
 BarrelPosition 0 62 0
 ShellDelay 110
 ShootDelay 5
+ShootDelayPrimarySeconds 0.5
+ReadWeaponsFromGunTypes true
 
 
 //Driver and Passengers
@@ -90,6 +99,16 @@ SetupPart core 500 -53 -4 -16 104 32 32
 SetupPart leftTrack 200 -53 -10 17 106 23 9
 SetupPart rightTrack 200 -53 -10 -26 106 23 9
 BulletDetection 7
+ArmorFrontMm 50
+ArmorSideMm 38
+ArmorRearMm 38
+ArmorTopMm 19
+ArmorBottomMm 13
+TurretArmorFrontMm 76
+TurretArmorSideMm 50
+TurretArmorRearMm 50
+TurretArmorTopMm 25
+UseRealisticVehicleHealth true
 
 
 //Misc

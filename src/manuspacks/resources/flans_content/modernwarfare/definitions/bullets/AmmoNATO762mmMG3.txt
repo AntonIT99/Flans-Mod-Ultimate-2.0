@@ -1,11 +1,12 @@
-Name NATO 7.62mm Ammo for MG3 - 250 Bullet Box
+Name NATO 7.62mm Ammo for MG 3 - 250 Bullet Box
 ShortName AmmoNATO762mmMG3
 Model Bullet
 //Colour of icon and model
 Colour 255 255 255
 Icon IconAmmoNATO762mmMG3
+Mass 9.5
 //How affected by gravity the bullet is
-FallSpeed 0.25
+FallSpeed 1
 //The maximum stack size
 MaxStackSize 1
 //The number of rounds each item has. Limited to 32000.
@@ -28,4 +29,4 @@ HitSound bullet
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
 SmokeTrail False
-Description Amunition for MG3
+Description Ammunition for the MG3

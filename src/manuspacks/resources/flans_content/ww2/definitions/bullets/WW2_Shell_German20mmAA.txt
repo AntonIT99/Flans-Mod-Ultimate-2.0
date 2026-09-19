@@ -4,7 +4,7 @@
 
 //---Standard-------------------------------------
 //Naming
-Name German 20mm L/65 Flak Shell
+Name German 20 mm FlaK 38 Mixed Belt
 ShortName WW2_Shell_German20mmAA
 
 
@@ -40,6 +40,10 @@ Shell True
 DamageVsLiving 80
 DamageVsVehicles 80
 DamageVsPlanes 10
+Mass 115
+MuzzleVelocity 900
+ExplosiveMassTNTg 6
+PenetrationAt100m 25
 
 
 //Bullet Behavior
@@ -63,7 +67,7 @@ HitBoxSize 2.0
 //Parctical
 FlakParticles 0
 SmokeTrail True
-TrailParticleType smoke
+TrailParticleType flansmod.fmsmoke
 
 
 //Sound

@@ -1,4 +1,4 @@
-Name M61 GAU-4 20 mm Vulcan
+Name M61A1 Vulcan (GAU-4/A)
 ShortName GAU4
 //The ammo this gun uses (shortName)
 Ammo ShellNATO20mm

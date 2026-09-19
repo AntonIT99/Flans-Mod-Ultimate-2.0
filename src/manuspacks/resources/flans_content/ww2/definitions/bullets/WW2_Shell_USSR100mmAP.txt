@@ -4,7 +4,7 @@
 
 //---Standard-------------------------------------
 //Naming
-Name Russian 100mm D-10S L/56 AP Shell
+Name Soviet 100 mm BR-412B APHEBC (D-10S)
 ShortName WW2_Shell_USSR100mmAP
 
 
@@ -40,6 +40,11 @@ Shell True
 Damage 1
 DamageVsLiving 25
 DamageVsVehicles 0
+Mass 15900.0
+MuzzleVelocity 895
+ExplosiveMassTNTg 100.1
+PenetrationAt100m 175
+HasSubmunitions False
 
 
 //Bullet Behavior
@@ -63,8 +68,10 @@ HitBoxSize 1.0
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 8
-TrailParticleType flansmod.fmflame
+TrailParticleType flansmod.fmtracer
 HasLight True
+FlareParticleCount 12
+DebrisParticleCount 3
 
 //Sound
 HitSound bomb

@@ -4,7 +4,7 @@
 
 //---Standard-------------------------------------
 //Naming
-Name Russian 85mm SiS-S-53  L/53 AP Shell
+Name Soviet 85 mm BR-365 APHEBC (D-5S/ZiS-S-53)
 ShortName WW2_Shell_USSR85mmAP
 
 
@@ -40,6 +40,11 @@ Shell True
 Damage 1
 DamageVsLiving 25
 DamageVsVehicles 0
+Mass 9200
+MuzzleVelocity 792
+ExplosiveMassTNTg 164
+PenetrationAt100m 111
+HasSubmunitions False
 
 
 //Bullet Behavior
@@ -63,8 +68,10 @@ HitBoxSize 1.0
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 9
-TrailParticleType flansmod.fmflame
+TrailParticleType flansmod.fmtracer
 HasLight True
+FlareParticleCount 5
+DebrisParticleCount 5
 
 //Sound
 HitSound bomb

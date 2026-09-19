@@ -4,6 +4,9 @@ Model manus_modern_warfare.LargeBomb
 //Colour of icon and model
 Colour 255 255 255
 Icon IconBombUSSRRDS220
+Mass 27000000
+ExplosiveMassTNTKg 50000000000
+FragType THICK_CASE
 //How affected by gravity the bullet is
 FallSpeed 1
 //The number of rounds each item has. Limited to 32000.

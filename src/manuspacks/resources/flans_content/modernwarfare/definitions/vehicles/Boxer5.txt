@@ -1,6 +1,8 @@
 //Naming
 Name GTK Boxer with Skyranger AD
 ShortName Boxer5
+AddAmmo ShellNATO35mm
+AddAmmo ShellNATO35mmPMD062AHEAD
 //Visuals
 Icon IconVehicleBoxer5
 Model manus_modern_warfare.Boxer5
@@ -61,7 +63,7 @@ AddRecipeParts frontLeftWheel 2 Part_Wheel_APC
 AddRecipeParts frontRightWheel 2 Part_Wheel_APC
 AddRecipeParts backLeftWheel 2 Part_Wheel_APC
 AddRecipeParts backRightWheel 2 Part_Wheel_APC
-Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
+//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
 AddDye 10 green
 //Health and collision
 SetupPart turret 250 -17 32 -13 33 14 26

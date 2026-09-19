@@ -1,4 +1,4 @@
-﻿//---Standard Vehicle Config for Flans Mod--------
+//---Standard Vehicle Config for Flans Mod--------
 //Created by Minecraft-SMP Toolbox 2.0.0.0
 
 
@@ -31,6 +31,11 @@ Texture Skin_WW2_Vehicle_Jagdtiger_1A
 MaxThrottle 0.4
 MaxNegativeThrottle 0.3
 Drag 1.0
+RealMassKg 75200
+RealEnginePowerPS 600
+RealMaxSpeedKmh 34.6
+RealMaxReverseSpeedKmh 10
+DriveType TRACKED
 
 
 //Wheels
@@ -62,10 +67,12 @@ AddDye 10 gray
 //Weapons
 AllowAllAmmo False
 AddAmmo WW2_Shell_German128mmAP
-AddAmmo 44_128APShell
+AddAmmo WW2_Shell_German128mmHE
 BarrelPosition 0 34 0
 ShellDelay 210
 ShootDelay 5
+ShootDelayPrimarySeconds 15
+ReadWeaponsFromGunTypes true
 
 
 //Driver and Passengers
@@ -98,6 +105,16 @@ SetupPart turret 9000 -32 28 -26 60 20 52
 SetupPart leftTrack 400 -65 -10 22 130 26 17
 SetupPart rightTrack 400 -65 -10 -39 130 26 17
 BulletDetection 7
+ArmorFrontMm 250
+ArmorSideMm 80
+ArmorRearMm 80
+ArmorTopMm 40
+ArmorBottomMm 25
+TurretArmorFrontMm 250
+TurretArmorSideMm 80
+TurretArmorRearMm 80
+TurretArmorTopMm 40
+UseRealisticVehicleHealth true
 
 
 //Misc

@@ -1,11 +1,16 @@
-Name NATO 30mm Shell
+Name 30x173 mm GAU-8/A AC56 Combat Mix
 ShortName ShellNATO30mm
 Model Bullet
 //Colour of icon and model
 Colour 255 255 255
 Icon IconAmmoNATO30mm
+Mass 360
+MuzzleVelocity 1020
+ExplosiveMassTNTg 49
+PenetrationAt100m 25
+FragType HE_SHELL
 //How affected by gravity the bullet is
-FallSpeed 0.25
+FallSpeed 1
 //The number of rounds each item has. Limited to 32000.
 RoundsPerItem 150
 //The maximum stack size of a stack of these
@@ -28,8 +33,9 @@ HitSound bomb
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
 SmokeTrail True
+TrailParticleType flansmod.fmsmoke
 //True if this is a bomb
 Bomb False
 Shell True
 RecipeOutput 32
-Description Amunition for GAU-8/A Avenger
+Description Two PGU-14/B API rounds to one PGU-13/B HEI round for the GAU-8/A Avenger

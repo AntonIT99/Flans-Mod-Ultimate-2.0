@@ -1,4 +1,4 @@
-﻿//---Standard Vehicle Config for Flans Mod--------
+//---Standard Vehicle Config for Flans Mod--------
 //Created by Minecraft-SMP Toolbox 2.0.0.0
 
 
@@ -62,6 +62,8 @@ AddDye 10 gray
 //Weapons
 AllowAllAmmo False
 AddAmmo WW2_Shell_German75mmAPLong
+AddAmmo WW2_Shell_German75mmHELong
+AddAmmo WW2_Shell_German75mmKwK42APCR
 BarrelPosition 0 34 0
 ShellDelay 98
 ShootDelay 2

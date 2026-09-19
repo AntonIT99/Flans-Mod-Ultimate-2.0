@@ -4,25 +4,25 @@
 
 //---Standard-------------------------------------
 //Naming
-Name German 88mm KwK 36 L/56 HE Shell
-ShortName WW2_Shell_German88mmHE
+Name US 76 mm M42A1 HE (M1)
+ShortName WW2_Shell_USA76mmHE
 
 
 //Visuals
 model Bullet
-Icon Icon_WW2_Shell_German88mmHE
+Icon Icon_WW2_Shell_USA76mmAP
 
 
 //Recipe
-Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse P SMP_Part_Mat_Plate_Steel
- F 
-GGG
-SPS
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Steel
+ F
+GBG
+ S
 RecipeOutput 3
 
 
 //Misc
-description Amunition for Flak 88mm
+description High-explosive ammunition for the US 76 mm M1
 
 //------------------------------------------------
 
@@ -38,32 +38,34 @@ Shell True
 
 //Damage
 Damage 50
-DamageVsLiving 2000
-DamageVsVehicles 2000
+DamageVsLiving 1000
+DamageVsVehicles 1000
+Mass 5840
+MuzzleVelocity 823
+ExplosiveMassTNTg 390
+PenetrationAt100m 12
+FragType HE_SHELL
 
 
 //Bullet Behavior
 ExplodeOnImpact True
-Explosion 5
+Explosion 4
 Fire 0
 FallSpeed 1
 Fuse 200
 Penetrates False
 BreaksGlass True
-HitBoxSize 2.0
-
-
-//Drop
-
-
-//Lock On
+HitBoxSize 1.0
 
 
 //Parctical
-FlakParticles 5
+FlakParticles 0
 SmokeTrail True
-ExplodeParticles 12
+ExplodeParticles 10
 TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 8
+DebrisParticleCount 4
 
 //Sound
 HitSound bomb
