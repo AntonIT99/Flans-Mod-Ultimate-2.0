@@ -3058,6 +3058,7 @@
             "TurretArmorTopMm": 0,
             "RealMaxReverseSpeedKmh": 7,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "20mm Flak 38",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -3381,6 +3382,24 @@
             "boxer2",
             "boxer3",
             "boxer4",
+            "boxer5"
+        ]
+    },
+
+    "GTK Boxer 20 mm Cannon Armament": {
+        "properties": {
+            "UseAmmoGroup": "20mm Rh 202"
+        },
+        "items": [
+            "boxer4"
+        ]
+    },
+
+    "GTK Boxer Skyranger 35 Armament": {
+        "properties": {
+            "UseAmmoGroup": "35mm Oerlikon KDG"
+        },
+        "items": [
             "boxer5"
         ]
     },
@@ -5351,24 +5370,7 @@
                 "leftTrack 30",
                 "rightTrack 30"
             ],
-            "AmmoMass": [
-                "shell 5000",
-                "heshell 12900"
-            ],
-            "AmmoMuzzleVelocity": [
-                "shell 1750",
-                "heshell 1000"
-            ],
-            "AmmoExplosiveMassTNTg": [
-                "shell 0"
-            ],
-            "AmmoExplosiveMassTNTKg": [
-                "heshell 2.6"
-            ],
-            "AmmoPenetrationAt100m": [
-                "shell 750",
-                "heshell 30"
-            ],
+            "UseAmmoGroup": "120mm Rh-120 L/55",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -5399,24 +5401,7 @@
                 "leftTrack 30",
                 "rightTrack 30"
             ],
-            "AmmoMass": [
-                "shell 5000",
-                "heshell 12900"
-            ],
-            "AmmoMuzzleVelocity": [
-                "shell 1750",
-                "heshell 1000"
-            ],
-            "AmmoExplosiveMassTNTg": [
-                "shell 0"
-            ],
-            "AmmoExplosiveMassTNTKg": [
-                "heshell 2.6"
-            ],
-            "AmmoPenetrationAt100m": [
-                "shell 750",
-                "heshell 30"
-            ],
+            "UseAmmoGroup": "120mm Rh-120 L/55",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -6072,6 +6057,7 @@
             "TurretArmorRearMm": 50,
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "75mm M3",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -6100,6 +6086,7 @@
             "TurretArmorRearMm": 51,
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "75mm M3",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -6226,7 +6213,7 @@
         ]
     },
 
-    "Medium Tank M4A3 Sherman (75 mm)": {
+    "Medium Tank M4A3 Sherman (76 mm)": {
         "properties": {
             "RealMassKg": 30300,
             "RealEnginePowerHp": 450,
@@ -6244,6 +6231,7 @@
             "TurretArmorRearMm": 51,
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "76mm M1",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -9051,6 +9039,7 @@
             "TurretArmorRearMm": 45,
             "TurretArmorTopMm": 45,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "85mm D-5S/ZiS-S-53",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
@@ -9095,6 +9084,7 @@
             "TurretArmorRearMm": 45,
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "100mm D-10S",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
@@ -9139,6 +9129,7 @@
                 "leftTrack 15",
                 "rightTrack 15"
             ],
+            "UseAmmoGroup": "122mm M-30S",
             "AmmoMass": "ww2_shell_ussr122mmhe 21800",
             "AmmoMuzzleVelocity": "ww2_shell_ussr122mmhe 515",
             "AmmoExplosiveMassTNTKg": "ww2_shell_ussr122mmhe 3.7",
@@ -9373,6 +9364,7 @@
             "TurretArmorRearMm": 53,
             "TurretArmorTopMm": 16,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "76mm L-11",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
@@ -9417,6 +9409,7 @@
             "TurretArmorRearMm": 52,
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
+            "UseAmmoGroup": "85mm D-5S/ZiS-S-53",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [

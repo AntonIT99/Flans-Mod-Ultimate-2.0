@@ -69,6 +69,7 @@
             "RoundsPerMin": 1000.0,
             "Dispersion": 0.10,
             "RealMassKg": 3200.0,
+            "UseAmmoGroup": "35mm Oerlikon KDG",
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
