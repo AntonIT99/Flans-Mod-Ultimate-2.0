@@ -35,6 +35,15 @@ file name, or registry ID. Add short names in lowercase. Search all bundled,
 official, and available runtime packs for aliases, skins, variants, and duplicate
 representations before considering membership complete.
 
+Category membership is backward-compatible by default. When an item's `ShortName`
+changes, add the new sanitized short name to the applicable category but retain every
+former short name already listed there. Do not remove a legacy short name merely
+because the current source definition no longer uses it or the coverage scanner cannot
+find it; older content-pack versions and external packs may still depend on that
+membership. Remove a former short name only when the user explicitly requests its
+retirement. If old and new definitions coexist, validate that their shared category
+properties remain semantically compatible.
+
 Consult the sibling `Flans-Mod-Ultimate-2.0.wiki` repository first for format and
 parser behavior, especially `Category-System.md`, `ConfigReference.md`,
 `Realistic-Vehicle-Physics.md`, and `Vehicle-Armour-and-Damage.md`. Confirm behavior
@@ -68,6 +77,11 @@ Use this shape:
 - Single-value properties normally use the last applied line and override the
   content definition. Repeatable properties accumulate. Confirm parser behavior
   before assuming how a new property applies.
+- Use a category-level `propertyModes` entry when a property needs explicit merge
+  behavior. Supported values are `append`, `replace`, and `ifAbsent`; omitted modes
+  preserve the legacy `append` behavior. Complete category-authored `AddRound`
+  belts normally use `replace` so an equivalent belt in the content definition is
+  not accumulated a second time.
 - A short name normally appears in exactly one type file. The one sanctioned
   exception is a hull being migrated between `definitions/planes` and
   `definitions/vehicles`: register it in both, because only the file matching the
@@ -117,6 +131,8 @@ Scanner-only work validates discovery and coverage without loading domain tables
 1. Strictly parse every changed JSON file.
 2. Locate every added `items` short name in source definitions; confirm sanitized
    spelling, lowercase, category type, identity, aliases, and variant boundaries.
+   Review every removed short name and confirm that the user explicitly requested its
+   retirement; a rename alone never authorizes removal of the former name.
 3. Run `scripts/scanShortnames.py` after coverage changes. Inspect all remaining
    relevant rows. For historical/generic/fictional research, classify by resolution
    step in [generic-and-fictional.md](generic-and-fictional.md). A generic or fictional row

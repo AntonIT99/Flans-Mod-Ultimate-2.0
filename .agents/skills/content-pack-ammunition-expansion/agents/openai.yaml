@@ -1,0 +1,4 @@
+interface:
+  display_name: "Content Pack Ammunition Expansion"
+  short_description: "Audit and expand historical Flan ammunition"
+  default_prompt: "Use $content-pack-ammunition-expansion to audit and expand the historical ammunition of a selected Flan content pack."

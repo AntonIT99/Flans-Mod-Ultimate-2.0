@@ -12,6 +12,9 @@ Nested `AGENTS.md` files add rules for their directories.
 - For reorganizing or synchronizing source content-pack `.txt` definitions from
   built-in category values, read
   `.agents/skills/content-pack-definition-sync/SKILL.md` before editing.
+- For auditing, repairing, or historically expanding ammunition in a selected
+  source content pack, read
+  `.agents/skills/content-pack-ammunition-expansion/SKILL.md` before editing.
 
 ## Repository Rules
 
