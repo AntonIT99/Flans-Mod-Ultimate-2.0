@@ -11,13 +11,11 @@ Driveables:
 
 Content Packs:
 - run flans-category-research to add missing fields to categories
-- Check vehicle sided ammo parameters
 - Create a skill and add particles, sounds, visual affects to content packs just like Warfare 44:
 visuals for shootables, harmonize particles and sounds for vehicles / planes
 - Create a skill:
 Rewrite all packs with the new gun and vehicle systems using categories as source
 Reorganize parameters, remove one parameter comments, make groups
-- Create a skill: missing ammo groups for shells in categories
 - Fix shooting points on vehicles based on new debug commands
 Manus
 - Add shell types

@@ -234,6 +234,13 @@ round. The item supplies its own statistics and joins a compatible cannon family
   `UseAmmoGroup`. Matching is case-insensitive and names may contain spaces. Group
   weapons only when ammunition is actually compatible, not merely similar in
   calibre.
+- Strongly prefer ammo groups for shells used exclusively by consumers whose primary
+  weapons have materially equivalent statistics. Define the primary-weapon family
+  by giving every compatible shell that family's `AddToAmmoGroup`, then give every
+  gun, AA gun, or driveable consumer the matching `UseAmmoGroup`. Name and scope the
+  group for the weapon family, not for a broad calibre that includes materially
+  different guns. This is the normal representation for the equivalent-stat case
+  that does not require per-ammo overrides.
 - `Mass` is complete fired projectile/shell mass in grams, excluding case and
   propellant. Author it in grams as `Mass`, or in kilograms as `MassKg` — the two are the
   same stat at different scales, so never set both.
@@ -313,9 +320,17 @@ Rules that matter when authoring them:
   velocity only the weapon's `BulletSpeed`.
 - An override may give a mass to a round that had none, which puts that round on the
   kinetic scale for that weapon alone. Use this deliberately, not accidentally.
-- Overriding is the preferred answer to shared generic ammunition, because it lets
-  every consumer fire its real round. See
-  [generic-and-fictional.md](generic-and-fictional.md) R3.
+- Inspect the complete consumer set reachable through both source definitions and
+  category-supplied ammunition. A vehicle, gun, or AA gun **must** provide coherent
+  per-ammo overrides for every shell it can fire when that shell is generic, or when
+  it is shared with a materially different primary weapon whose real projectile
+  mass, muzzle velocity, explosive filler, penetration, or belt composition differs.
+  This includes broad shared items such as `44_SmallHEShell` and `44_75APShell`.
+  Overrides may be omitted only when the shell is used exclusively by consumers
+  whose primary weapons have materially equivalent statistics: for example,
+  `WW2_Shell_German75mmAP` when it is exclusive to the 75 mm KwK 40 L/48 family, or
+  `WW2_Shell_German88mmAP` when it is exclusive to the near-equivalent 88 mm KwK 36
+  L/56 and FlaK 36. See [generic-and-fictional.md](generic-and-fictional.md) R3.
 - Keep an overridden set coherent: a weapon that restates velocity and penetration
   but leaves the item's mass alone is describing two different shells.
 
