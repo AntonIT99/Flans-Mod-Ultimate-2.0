@@ -40,9 +40,13 @@ a queue; parser tracing decides semantics.
 1. Determine the definition type from the folder mapping in `EnumType`, then select
    only its matching `src/main/resources/config/<identifier>_categories.json`.
    Match category `items` against the sanitized `ShortName`, case-insensitively.
-2. Apply every matching category and its property-level `exceptions`. Same-file
-   multi-category membership is valid only when the resolved properties do not
-   conflict. Stop on a conflict instead of selecting a convenient value.
+2. Apply every matching category in file order, including its property-level
+   `exceptions` and `propertyModes`. Modes are case-insensitive: omitted or unknown
+   modes preserve legacy `append`, `replace` discards values from the definition and
+   earlier categories, and `ifAbsent` applies only while the effective property has
+   no values. Same-file multi-category membership is valid only when the ordered
+   result is intentional. Stop on an unresolved conflict instead of selecting a
+   convenient value.
 3. Preserve the category key spelling and value tokens. Trace alias families and
    parser read order: a differently named legacy alias can write the same field
    after the category key and defeat the intended value. Keep one coherent semantic
@@ -50,12 +54,24 @@ a queue; parser tracing decides semantics.
 4. For an ordinary single-value property, add or replace the definition line so its
    value agrees with the resolved category value. Remove obsolete duplicates and
    contradictory aliases after confirming they do not serve a distinct fallback.
-5. Category values are appended after definition lines. A repeatable property can
-   therefore double-apply if mirrored in the file. Trace its parser and consumer:
-   mirror only when duplicate application is demonstrably idempotent. For an
-   accumulating or ordered property such as ammo groups, ammo overrides, belts, or
-   per-part armour, do not add/remove mirrored lines silently; leave it category-owned
-   and report the textual gap, or stop on an existing behavior-affecting overlap.
+5. Resolve repeatable properties using their effective mode chain before deciding
+   whether to mirror them:
+   - `append` remains definition-dependent and can double-apply mirrored values. For
+     ammo groups, ammo overrides, belts, per-part armour, and other accumulating or
+     ordered properties, leave append-owned lines in the category and report the
+     textual gap unless duplicate application is demonstrably idempotent.
+   - `replace` makes the final sequence from the last replacement onward independent
+     of earlier definition values. Mirror that complete resolved sequence into the
+     definition as the categories-disabled fallback; with categories enabled it is
+     replaced rather than accumulated. Complete category-authored `AddRound` belts
+     should follow this path.
+   - `ifAbsent` is a fallback. Preserve an existing definition sequence because it
+     deliberately prevents the category value from applying. If the definition is
+     empty, mirroring the resolved fallback is safe: the category then skips an
+     identical effective value.
+   Evaluate later categories after earlier ones. A later `replace` may make earlier
+   `append` values irrelevant, while a later `append` becomes part of the complete
+   replacement-owned sequence.
 
 ## Preserve and improve fallbacks
 
@@ -104,8 +120,9 @@ numeric style merely for aesthetics.
 ## Validate
 
 1. Re-run `scripts/audit_definition_sync.py` on exactly the changed files. Resolve
-   every scalar gap/mismatch and explain every repeatable overlap or category-only
-   repeatable. Confirm every scoped file has a valid `ShortName` and type match.
+   every scalar gap/mismatch, every safe `replace`/empty-`ifAbsent` repeatable sync
+   gap, and explain every remaining `append` overlap or category-only repeatable.
+   Confirm every scoped file has a valid `ShortName` and type match.
 2. Compare the before/after semantic inventory. Apart from category synchronization
    and explicitly derived fallbacks, every active line and every ordered/repeatable
    sequence must be preserved. Confirm aliases, inline comments, blank values, and
@@ -122,6 +139,7 @@ numeric style merely for aesthetics.
    semantics changed. Ordinary definition cleanup and synchronization do not require
    a documentation edit.
 
-Report scoped files, category-owned scalar changes, derived fallbacks with formulas
-and assumptions, preserved unresolved fallbacks, repeatable-property hazards,
-removed comment count, and validation performed or omitted.
+Report scoped files, category-owned scalar changes, category property modes used,
+mirrored `replace` or `ifAbsent` sequences, derived fallbacks with formulas and
+assumptions, preserved unresolved fallbacks, remaining `append` hazards, removed
+comment count, and validation performed or omitted.

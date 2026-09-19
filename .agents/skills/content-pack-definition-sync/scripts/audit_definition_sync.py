@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit scalar category/definition drift without modifying content packs."""
+"""Audit category/definition drift without modifying content packs."""
 
 from __future__ import annotations
 
@@ -48,6 +48,7 @@ class CategoryProperty:
     category: str
     key: str
     values: tuple[str, ...]
+    mode: str
 
 
 def sanitize_shortname(value: str) -> str:
@@ -66,6 +67,37 @@ def json_values(value: object) -> tuple[str, ...]:
         else:
             result.append(str(entry))
     return tuple(result)
+
+
+def property_mode(category: dict[str, object], key: str) -> str:
+    modes = category.get("propertyModes") or {}
+    if not isinstance(modes, dict):
+        return "append"
+    value = next(
+        (mode for mode_key, mode in modes.items() if str(mode_key).lower() == key.lower()),
+        "append",
+    )
+    normalized = str(value).strip().lower()
+    return normalized if normalized in {"replace", "ifabsent"} else "append"
+
+
+def apply_property_modes(
+    initial: Iterable[str], assignments: Iterable[CategoryProperty]
+) -> tuple[str, ...]:
+    effective = list(initial)
+    for assignment in assignments:
+        if assignment.mode == "replace":
+            effective = list(assignment.values)
+        elif assignment.mode == "ifabsent":
+            if not effective:
+                effective = list(assignment.values)
+        else:
+            effective.extend(assignment.values)
+    return tuple(effective)
+
+
+def canonical_lines(values: Iterable[str]) -> tuple[tuple[str, ...], ...]:
+    return tuple(canonical_value(value) for value in values)
 
 
 def strip_inline_comment(value: str) -> str:
@@ -190,7 +222,12 @@ def load_categories(repo: Path) -> dict[str, dict[str, list[CategoryProperty]]]:
                     )
                     if not excluded:
                         membership[item_key].append(
-                            CategoryProperty(category_name, key, json_values(value))
+                            CategoryProperty(
+                                category_name,
+                                key,
+                                json_values(value),
+                                property_mode(category, key),
+                            )
                         )
         result[identifier] = membership
     return result
@@ -257,23 +294,65 @@ def main() -> int:
 
         for key_lower, assignments in sorted(by_key.items()):
             key = assignments[-1].key
-            expected_lines = tuple(value for assignment in assignments for value in assignment.values)
+            expected_lines = tuple(
+                value for assignment in assignments for value in assignment.values
+            )
             observed = tuple(value for value in fields.get(key_lower, []) if value is not None)
             if key_lower in REPEATABLE_KEYS or len(expected_lines) > 1:
-                if observed:
+                modes = ", ".join(
+                    f"{assignment.category}:{assignment.mode}" for assignment in assignments
+                )
+                if any(assignment.mode == "replace" for assignment in assignments):
+                    expected_fallback = apply_property_modes((), assignments)
+                    if not observed:
+                        counts["repeatable_sync_gaps"] += 1
+                        findings.append(
+                            f"GAP   {relative(path, repo)} :: {key} mode chain [{modes}] "
+                            f"resolves to {len(expected_fallback)} fallback line(s); "
+                            "definition is missing them"
+                        )
+                    elif canonical_lines(observed) != canonical_lines(expected_fallback):
+                        counts["repeatable_sync_mismatches"] += 1
+                        findings.append(
+                            f"DIFF  {relative(path, repo)} :: {key} mode chain [{modes}] "
+                            f"resolves to {expected_fallback!r}, definition has {observed!r}"
+                        )
+                elif all(assignment.mode == "ifabsent" for assignment in assignments):
+                    if observed:
+                        counts["repeatable_if_absent_preserved"] += 1
+                    else:
+                        expected_fallback = apply_property_modes((), assignments)
+                        counts["repeatable_sync_gaps"] += 1
+                        findings.append(
+                            f"GAP   {relative(path, repo)} :: {key} mode chain [{modes}] "
+                            f"provides {len(expected_fallback)} safe fallback line(s); "
+                            "definition is missing them"
+                        )
+                elif observed:
                     counts["repeatable_overlaps"] += 1
                     findings.append(
                         f"INFO  {relative(path, repo)} :: {key} is repeatable; "
-                        f"definition has {len(observed)} line(s) and categories append {len(expected_lines)}"
+                        f"definition has {len(observed)} line(s), category mode chain [{modes}] "
+                        f"contributes {len(expected_lines)} line(s)"
                     )
                 else:
                     counts["repeatable_category_only"] += 1
                 continue
 
+            all_if_absent = all(assignment.mode == "ifabsent" for assignment in assignments)
+            if all_if_absent and observed:
+                counts["scalar_if_absent_preserved"] += 1
+                continue
+
             effective_values = {
-                canonical_value(assignment.values[-1]) for assignment in assignments
+                canonical_value(assignment.values[-1])
+                for assignment in assignments
+                if assignment.values
             }
-            if len(effective_values) > 1:
+            if (
+                all(assignment.mode == "append" for assignment in assignments)
+                and len(effective_values) > 1
+            ):
                 counts["errors"] += 1
                 sources = ", ".join(
                     f"{assignment.category}={assignment.values[-1]!r}"
@@ -284,7 +363,10 @@ def main() -> int:
                 )
                 continue
 
-            expected = assignments[-1].values[-1]
+            resolved = apply_property_modes((), assignments)
+            if not resolved:
+                continue
+            expected = resolved[-1]
             if not observed:
                 counts["scalar_gaps"] += 1
                 findings.append(
@@ -309,12 +391,22 @@ def main() -> int:
                 "scalar_mismatches",
                 "repeatable_overlaps",
                 "repeatable_category_only",
+                "repeatable_sync_gaps",
+                "repeatable_sync_mismatches",
+                "repeatable_if_absent_preserved",
+                "scalar_if_absent_preserved",
                 "uncategorized",
                 "errors",
             )
         )
     )
-    return 1 if counts["scalar_gaps"] or counts["scalar_mismatches"] or counts["errors"] else 0
+    return 1 if (
+        counts["scalar_gaps"]
+        or counts["scalar_mismatches"]
+        or counts["repeatable_sync_gaps"]
+        or counts["repeatable_sync_mismatches"]
+        or counts["errors"]
+    ) else 0
 
 
 if __name__ == "__main__":
