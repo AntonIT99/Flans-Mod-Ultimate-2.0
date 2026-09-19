@@ -53,6 +53,7 @@ Passengers 0
 // X + 5 , -Y -20
 //----------------------------Ammo
 AddAmmo 44_MediumHEShell
+AddAmmo 44_75HEATShellShort
 AllowAllAmmo False
 //Secondary gun
 AddGun 15 42 7 turret 44_50Cal

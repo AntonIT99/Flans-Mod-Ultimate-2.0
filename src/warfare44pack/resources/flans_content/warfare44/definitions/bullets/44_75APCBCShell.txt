@@ -1,0 +1,43 @@
+Name 75mm M61 APCBC-HE (M3/M6)
+ShortName 44_75APCBCShell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+Icon 44_75apshell
+RoundsPerItem 1
+MaxStackSize 3
+Damage 1
+DamageVsLiving 200
+DamageVsVehicles 1002
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+FlakParticles 0
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound
+Penetrates False
+SmokeTrail True
+Bomb False
+Shell True
+WeaponType Shell
+
+Mass 6790
+MuzzleVelocity 618
+FallSpeed 1
+ExplosiveMassTNTg 65
+PenetrationAt100m 102
+HasSubmunitions false
+
+ExplodeParticles 8
+TrailParticleType flansmod.fmtracer
+
+HasLight True
+
+HasLight True
+
+FlareParticleCount 4
+DebrisParticleCount 3
+
+Description Armour-piercing capped ballistic-capped shell for the 75 mm M3 and M6

@@ -1,0 +1,41 @@
+Name 17-pdr Shot SV Mk 1 APDS
+ShortName 44_17PdrAPDSShell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+Icon 44_76apshelllong
+RoundsPerItem 1
+MaxStackSize 2
+Damage 1
+DamageVsLiving 125
+DamageVsVehicles 1248
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+FlakParticles 0
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound
+Penetrates False
+SmokeTrail True
+Bomb False
+Shell True
+WeaponType Shell
+
+Mass 3570
+MuzzleVelocity 1203
+FallSpeed 1
+PenetrationAt100m 231
+
+ExplodeParticles 8
+TrailParticleType flansmod.fmtracer
+
+HasLight True
+
+HasLight True
+
+FlareParticleCount 4
+DebrisParticleCount 4
+
+Description Discarding-sabot shot for the QF 17-pounder

@@ -40,6 +40,8 @@ AddGun 8 30 -8 turret browning
 BarrelPosition 55 30 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Allied75APShell
+AddAmmo Allied75HEShell
 AllowAllAmmo false
 //Delays are in ticks or 1/20ths of seconds
 ShootDelay 2

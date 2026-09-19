@@ -5,15 +5,15 @@ Model Bullet
 Colour 255 255 255
 Icon 44_57APShell
 //How affected by gravity the bullet is
-FallSpeed 0.3
+FallSpeed 1.0
 //The number of rounds each item has. Limited to 32000.
 RoundsPerItem 1
 //The maximum stack size of a stack of these
 MaxStackSize 4
 //The damage multiplier caused by the bullet on hitting an entity
 Damage 1
-DamageVsLiving 50
-DamageVsVehicles 0
+DamageVsLiving 100
+DamageVsVehicles 550
 //Size of explosion caused
 Explosion 1
 //True if bullet explodes on hitting anything. Fuse denotes the maximum time it may spend in the air before detonating
@@ -34,16 +34,15 @@ Bomb False
 Shell True
 //WeaponType : One of Missile, Shell, Bomb, Gun, None. Only affects driveable entities
 WeaponType Shell
+Mass 2850
+MuzzleVelocity 892
+PenetrationAt100m 88
+HasSubmunitions false
 
 ExplodeParticles 7
 TrailParticleType flansmod.fmtracer
 
 HasLight True
-HasSubmunitions true
-Submunition 44_57Sub
-NumSubmunitions 2
-SubmunitionDelay 0
-SubmunitionSpread 0
 
 HasLight True
 

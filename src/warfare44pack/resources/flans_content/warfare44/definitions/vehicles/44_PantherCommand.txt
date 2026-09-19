@@ -53,6 +53,7 @@ GunOrigin 1 54 2 11
 //----------------------------Ammo
 AddAmmo 44_75APShell
 AddAmmo 44_MediumHEShell
+AddAmmo 44_75APCRShellLong
 AllowAllAmmo False
 //Secondary gun
 AddGun 25 33 6 turret 44_Mg34

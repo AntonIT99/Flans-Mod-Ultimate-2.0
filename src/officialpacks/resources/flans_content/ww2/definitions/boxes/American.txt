@@ -42,3 +42,14 @@ AddAmmo browningAmmo 25 ingotIron 15 gunpowder
 AddGun 50Cal 28 ingotIron 2 log
 AddAmmo 50CalAmmo 35 ingotIron 20 gunpowder
 AddGun mk2Frag 4 ingotIron 2 gunpowder
+SetPage Tank Shells 1
+AddGun Allied75APShell 4 ingotIron 4 gunpowder
+AddGun Allied75HEShell 4 ingotIron 2 gunpowder 2 tnt
+AddGun American76APShell 4 ingotIron 4 gunpowder
+AddGun American76HEShell 4 ingotIron 2 gunpowder 2 tnt
+AddGun American3inAPShell 4 ingotIron 4 gunpowder
+AddGun American3inHEShell 4 ingotIron 2 gunpowder 2 tnt
+SetPage Tank Shells 2
+AddGun American37APShell 2 ingotIron 2 gunpowder
+AddGun American37HEShell 2 ingotIron 1 gunpowder 1 tnt
+AddGun American57APShell 3 ingotIron 3 gunpowder

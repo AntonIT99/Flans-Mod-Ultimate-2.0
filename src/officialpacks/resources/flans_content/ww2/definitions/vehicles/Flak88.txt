@@ -38,6 +38,8 @@ BarrelPosition 0 15 0
 //Delays are in ticks or 1/20ths of seconds
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo German88APShell
+AddAmmo German88HEShell
 ShootDelay 1
 ShellDelay 150
 //Sounds

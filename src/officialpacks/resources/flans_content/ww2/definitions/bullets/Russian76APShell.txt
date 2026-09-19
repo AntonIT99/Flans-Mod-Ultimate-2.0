@@ -1,0 +1,39 @@
+// Identity
+Name Soviet 76 mm BR-350A APHEBC (L-11/F-32)
+ShortName Russian76APShell
+Description Armour-piercing ammunition for the 76 mm L-11 and F-32 tank guns
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell76rAP
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 6300
+MuzzleVelocity 612
+FallSpeed 1
+ExplosiveMassTNTg 119
+PenetrationAt100m 69
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 25
+DamageVsVehicles 100
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+HasSubmunitions false
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlakParticles 0

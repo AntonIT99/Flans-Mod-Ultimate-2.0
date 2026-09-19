@@ -38,6 +38,8 @@ BarrelPosition 0 34 0
 Passengers 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Russian76APShell
+AddAmmo Russian76HEShell
 //Secondary gun
 AddGun 8 34 8 turret dp28
 //Delays are in ticks or 1/20ths of seconds

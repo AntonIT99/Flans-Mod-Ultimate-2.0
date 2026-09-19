@@ -42,6 +42,9 @@ GunOrigin 1 -10 16 -12
 BarrelPosition 110 20 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Shell125mm3BM60
+AddAmmo Shell125mm3BK18M
+AddAmmo Shell125mm3OF26
 //Secondary gun
 AddGun 8 34 8 turret rpd
 //Delays are in ticks or 1/20ths of seconds

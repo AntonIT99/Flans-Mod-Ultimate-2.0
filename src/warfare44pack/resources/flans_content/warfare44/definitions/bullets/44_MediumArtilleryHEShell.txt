@@ -4,7 +4,7 @@ ShortName 44_MediumArtilleryHEShell
 Colour 255 255 255
 Icon 44_MediumArtilleryHEShell
 //How affected by gravity the bullet is
-FallSpeed 0.65
+FallSpeed 1.0
 //The number of rounds each item has. Limited to 32000.
 RoundsPerItem 1
 //The maximum stack size of a stack of these
@@ -35,6 +35,10 @@ TrailParticleType explode
 //True if this is a bomb
 Bomb False
 Shell True
+Mass 14810
+MuzzleVelocity 470
+ExplosiveMassTNTKg 1.38
+PenetrationAt100m 20
 Description 105mm-120mm HE Artillery Shell
 
 HasLight True

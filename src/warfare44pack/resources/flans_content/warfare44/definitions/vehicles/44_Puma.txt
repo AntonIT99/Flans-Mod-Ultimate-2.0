@@ -53,6 +53,8 @@ Passengers 0
 //----------------------------Ammo
 AddAmmo 44_50APShell
 AddAmmo 44_SmallHEShell
+AddAmmo 44_50APCRShellLong
+AddAmmo 44_50APCRHeavyShell
 AllowAllAmmo False
 //Secondary gun
 AddGun 21 34 3 turret 44_Mg42

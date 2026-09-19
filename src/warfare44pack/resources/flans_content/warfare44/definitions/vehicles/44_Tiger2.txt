@@ -40,6 +40,7 @@ Passengers 0
 //GunOrigin 1 0 40 0
 AddAmmo 44_88APShellLong
 AddAmmo 44_LargeHEShell
+AddAmmo 44_88APCRShellLong
 //Secondary gun
 //Delays are in ticks or 1/20ths of seconds
 AddGun 28 35 -6 turret 44_Mg34

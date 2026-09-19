@@ -1,0 +1,39 @@
+// Identity
+Name German 88 mm Pzgr. 39 APCBC-HE (KwK 36)
+ShortName German88APShell
+Description Armour-piercing ammunition for the 8.8 cm KwK 36 and FlaK 18/36/37
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell88gAP
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 10200
+MuzzleVelocity 773
+FallSpeed 1
+ExplosiveMassTNTg 109
+PenetrationAt100m 162
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 25
+DamageVsVehicles 100
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+HasSubmunitions false
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlakParticles 0

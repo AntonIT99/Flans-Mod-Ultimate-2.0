@@ -39,6 +39,8 @@ Passengers 0
 BarrelPosition 0 34 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Russian122APShell
+AddAmmo Russian122HEShell
 //Secondary gun
 AddGun 8 20 0 turret dp28
 //Delays are in ticks or 1/20ths of seconds

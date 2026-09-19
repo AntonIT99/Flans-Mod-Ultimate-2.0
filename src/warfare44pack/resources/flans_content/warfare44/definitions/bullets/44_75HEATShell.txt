@@ -1,0 +1,41 @@
+Name 75mm Gr. 38 Hl/C HEAT (KwK 37 L/24)
+ShortName 44_75HEATShell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+Icon 44_mediumheshell
+RoundsPerItem 1
+MaxStackSize 3
+Damage 1
+DamageVsLiving 75
+DamageVsVehicles 1300
+Explosion 4
+ExplodeOnImpact True
+Fuse 500
+FlakParticles 0
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound
+Penetrates False
+SmokeTrail True
+Bomb False
+Shell True
+
+WeaponType Shell
+
+Mass 4800
+MuzzleVelocity 450
+FallSpeed 1
+ExplosiveMassTNTg 530
+PenetrationAt100m 100
+
+ExplodeParticles 10
+TrailParticleType flansmod.fmflame
+
+HasLight True
+
+FlareParticleCount 8
+DebrisParticleCount 4
+
+Description Shaped-charge shell for the short 7.5 cm KwK 37 L/24

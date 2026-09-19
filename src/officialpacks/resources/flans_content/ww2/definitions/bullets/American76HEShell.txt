@@ -1,0 +1,39 @@
+// Identity
+Name American 76 mm M42A1 HE (M1)
+ShortName American76HEShell
+Description High-explosive ammunition for the 76 mm gun M1
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell76aHE
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 5840
+MuzzleVelocity 823
+FallSpeed 1
+ExplosiveMassTNTg 390
+PenetrationAt100m 12
+FragType HE_SHELL
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+HasLight True
+FlakParticles 6

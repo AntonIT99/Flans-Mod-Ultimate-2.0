@@ -1,0 +1,39 @@
+// Identity
+Name British 6-pdr HE Shell Mk 10T (L/43)
+ShortName British6pdrHEShell
+Description High-explosive ammunition for the 6-pdr 7 cwt Mk III
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell6pdrHE
+MaxStackSize 16
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 3000
+MuzzleVelocity 820
+FallSpeed 1
+ExplosiveMassTNTg 186
+PenetrationAt100m 9
+FragType HE_SHELL
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+HasLight True
+FlakParticles 6

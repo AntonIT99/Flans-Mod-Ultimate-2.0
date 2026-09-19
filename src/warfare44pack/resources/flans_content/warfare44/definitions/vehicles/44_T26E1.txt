@@ -43,6 +43,7 @@ GunOrigin 1 43 -8 12
 //
 AddAmmo 44_90APShell
 AddAmmo 44_LargeHEShell
+AddAmmo 44_90HVAPShellLong
 //Secondary gun
 //Delays are in ticks or 1/20ths of seconds
 AddGun 28 32 -7 turret 44_30Cal

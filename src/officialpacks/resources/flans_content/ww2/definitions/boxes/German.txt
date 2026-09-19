@@ -45,3 +45,10 @@ AddAmmo 20mmAmmo 2 ingotIron 2 gunpowder
 AddGun Flak42 2 aaBarrel 1 leather 2 blockIron 6 ingotIron
 AddAmmo 37mmAmmo 3 ingotIron 3 gunpowder
 
+SetPage Tank Shells
+AddGun German75APShell 4 ingotIron 4 gunpowder
+AddGun German75HEShell 4 ingotIron 2 gunpowder 2 tnt
+AddGun German88APShell 5 ingotIron 5 gunpowder
+AddGun German88HEShell 5 ingotIron 3 gunpowder 2 tnt
+AddGun German88L71APShell 6 ingotIron 6 gunpowder
+AddGun German88L71HEShell 6 ingotIron 4 gunpowder 2 tnt

@@ -40,6 +40,8 @@ AddAmmo shell
 AddAmmo HEshell
 BarrelPosition 0 34 0
 AddAmmo shell
+AddAmmo American76APShell
+AddAmmo American76HEShell
 //Delays are in ticks or 1/20ths of seconds
 ShootDelay 1
 ShellDelay 100

@@ -5,7 +5,7 @@ Model Bullet
 Colour 255 255 255
 Icon TankShell2pdrAP
 //How affected by gravity the bullet is
-FallSpeed 0.1
+FallSpeed 1.0
 //The number of rounds each item has. Limited to 32000.
 RoundsPerItem 1
 //The maximum stack size of a stack of these
@@ -32,4 +32,7 @@ SmokeTrail True
 //True if this is a bomb
 Bomb False
 Shell True
+Mass 1080.0
+MuzzleVelocity 792
+PenetrationAt100m 62
 RecipeOutput 3

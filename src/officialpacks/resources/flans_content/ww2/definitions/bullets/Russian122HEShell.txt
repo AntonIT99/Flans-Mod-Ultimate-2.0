@@ -1,0 +1,39 @@
+// Identity
+Name Soviet 122 mm OF-471 HE-Frag (D-25T)
+ShortName Russian122HEShell
+Description High-explosive fragmentation ammunition for the 122 mm D-25T tank gun
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell85rHE
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 25000
+MuzzleVelocity 795
+FallSpeed 1
+ExplosiveMassTNTKg 3.6
+PenetrationAt100m 37
+FragType HE_SHELL
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 4
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+HasLight True
+FlakParticles 10

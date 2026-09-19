@@ -5,7 +5,7 @@ Model Bullet
 Colour 255 255 255
 Icon flakvierlingAmmo
 //How affected by gravity the bullet is
-FallSpeed 0.25
+FallSpeed 1.0
 //The maximum stack size
 MaxStackSize 16
 //The number of rounds each item has. Limited to 32000.
@@ -13,6 +13,10 @@ RoundsPerItem 20
 //The damage multiplier caused by the bullet on hitting an entity
 //WeaponType : One of Missile, Shell, Bomb, Gun, None. Only affects driveable entities
 WeaponType Shell
+Mass 115
+MuzzleVelocity 900
+ExplosiveMassTNTg 6
+PenetrationAt100m 25
 DamageVsLiving 3
 DamageVsVehicles 250
 //Size of explosion caused

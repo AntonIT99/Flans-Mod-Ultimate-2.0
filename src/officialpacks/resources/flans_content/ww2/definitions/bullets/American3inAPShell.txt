@@ -1,0 +1,38 @@
+// Identity
+Name American 3-inch M62 APCBC-HE (M7)
+ShortName American3inAPShell
+Description Armour-piercing ammunition for the 3-inch gun M7
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell76aAP
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 7000
+MuzzleVelocity 792
+FallSpeed 1
+ExplosiveMassTNTg 60
+PenetrationAt100m 125
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 25
+DamageVsVehicles 100
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlakParticles 0

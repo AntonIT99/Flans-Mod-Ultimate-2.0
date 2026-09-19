@@ -1,0 +1,41 @@
+Name 76mm BR-354P APCR (ZiS-3)
+ShortName 44_76APCRShell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+Icon 44_76apshell
+RoundsPerItem 1
+MaxStackSize 3
+Damage 1
+DamageVsLiving 100
+DamageVsVehicles 832
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+FlakParticles 0
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound
+Penetrates False
+SmokeTrail True
+Bomb False
+Shell True
+WeaponType Shell
+
+Mass 3020
+MuzzleVelocity 950
+FallSpeed 1
+PenetrationAt100m 92
+
+ExplodeParticles 8
+TrailParticleType flansmod.fmtracer
+
+HasLight True
+
+HasLight True
+
+FlareParticleCount 3
+DebrisParticleCount 3
+
+Description Sub-calibre armour-piercing shot for the 76 mm ZiS-3

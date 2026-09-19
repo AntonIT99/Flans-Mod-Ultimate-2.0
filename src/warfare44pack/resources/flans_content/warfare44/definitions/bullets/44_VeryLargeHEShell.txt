@@ -5,7 +5,7 @@ Model Bullet
 Colour 255 255 255
 Icon 44_VeryLargeHEShell
 //How affected by gravity the bullet is
-FallSpeed 1.2
+FallSpeed 1.0
 //The number of rounds each item has. Limited to 32000.
 RoundsPerItem 1
 //The maximum stack size of a stack of these
@@ -35,6 +35,10 @@ Shell True
 
 //WeaponType : One of Missile, Shell, Bomb, Gun, None. Only affects driveable entities
 WeaponType Shell
+Mass 43500.0
+MuzzleVelocity 520
+ExplosiveMassTNTKg 5.1
+PenetrationAt100m 41
 Description 130mm - 152mm Calibers
 
 ExplodeParticles 15

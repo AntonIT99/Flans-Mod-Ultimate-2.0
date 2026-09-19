@@ -1,0 +1,38 @@
+// Identity
+Name American 57 mm M86 APC-T (M1)
+ShortName American57APShell
+Description Armour-piercing ammunition for the 57 mm gun M1
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell57aAP
+MaxStackSize 16
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 3300
+MuzzleVelocity 823
+FallSpeed 1
+ExplosiveMassTNTg 32
+PenetrationAt100m 118
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 25
+DamageVsVehicles 100
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlakParticles 0

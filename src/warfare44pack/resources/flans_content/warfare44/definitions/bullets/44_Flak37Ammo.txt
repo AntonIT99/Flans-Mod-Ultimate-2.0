@@ -6,7 +6,7 @@ Texture defaultBullet
 Colour 255 255 255
 Icon 44_Flak37Ammo
 //How affected by gravity the bullet is
-FallSpeed 0.05
+FallSpeed 1.0
 //The maximum stack size
 MaxStackSize 2
 //The number of rounds each item has. Limited to 32000.
@@ -29,6 +29,10 @@ HitBoxSize 10
 HitSound bullet
 //WeaponType : One of Missile, Shell, Bomb, Gun, None. Only affects driveable entities
 WeaponType Shell
+Mass 640
+MuzzleVelocity 820
+ExplosiveMassTNTg 21
+PenetrationAt100m 35
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
 SmokeTrail True

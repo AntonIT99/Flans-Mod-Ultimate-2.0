@@ -38,6 +38,8 @@ Passengers 0
 //Delays are in ticks or 1/20ths of seconds
 AddAmmo 44_76APShell
 AddAmmo 44_MediumHEShell
+AddAmmo 44_76APCRShell
+AddAmmo 44_76HEATShell
 AllowAllAmmo false
 ShootDelay 1
 ShellDelay 100

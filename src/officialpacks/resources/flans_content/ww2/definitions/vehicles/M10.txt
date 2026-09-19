@@ -42,6 +42,8 @@ GunOrigin 1 5 20 -11
 BarrelPosition 75 28 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo American3inAPShell
+AddAmmo American3inHEShell
 //Delays are in ticks or 1/20ths of seconds
 ShootDelay 1
 ShellDelay 100

@@ -40,6 +40,7 @@ ShootDelay 1
 ShellDelay 98
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo American57APShell
 AllowAllAmmo false
 //Sounds
 StartSound

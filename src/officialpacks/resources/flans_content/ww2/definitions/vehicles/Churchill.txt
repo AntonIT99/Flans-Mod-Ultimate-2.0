@@ -38,6 +38,8 @@ RotatedDriverOffset -8 0 -4
 BarrelPosition 0 34 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Allied75APShell
+AddAmmo Allied75HEShell
 Passengers 0
 //Secondary gun
 AddGun 8 34 8 turret bren

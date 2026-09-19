@@ -42,6 +42,8 @@ Passenger 1 32 12 -11 core -10 10 -10 10 44_DT28 PassengerGun1
 GunOrigin 1 55 0 -10
 // X + 5 , -Y -20
 AddAmmo 44_VeryLargeHEShell
+AddAmmo 44_152CPShell
+AddAmmo 44_152APShell
 //Secondary gun
 //Delays are in ticks or 1/20ths of seconds
 AddGun 31 51 5 turret 44_DT28

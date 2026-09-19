@@ -54,6 +54,7 @@ Passengers 0
 //----------------------------Ammo
 AddAmmo 44_100APShell
 AddAmmo 44_LargeHEShell
+AddAmmo 44_100APCBCShell
 AllowAllAmmo False
 //Secondary gun
 AddGun 38 35 6 turret 44_DT28

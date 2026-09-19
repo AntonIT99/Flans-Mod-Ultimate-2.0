@@ -6,15 +6,15 @@ Texture Skin44_W44Shell_Orange
 Colour 255 255 255
 Icon 44_88APShell
 //How affected by gravity the bullet is
-FallSpeed 0.3
+FallSpeed 1.0
 //The number of rounds each item has. Limited to 32000.
 RoundsPerItem 1
 //The maximum stack size of a stack of these
 MaxStackSize 3
 //The damage multiplier caused by the bullet on hitting an entity
 Damage 1
-DamageVsLiving 50
-DamageVsVehicles 0
+DamageVsLiving 150
+DamageVsVehicles 1800
 //Size of explosion caused
 Explosion 1
 //True if bullet explodes on hitting anything. Fuse denotes the maximum time it may spend in the air before detonating
@@ -35,16 +35,16 @@ Bomb False
 Shell True
 //WeaponType : One of Missile, Shell, Bomb, Gun, None. Only affects driveable entities
 WeaponType Shell
+Mass 10200
+MuzzleVelocity 773
+ExplosiveMassTNTg 109
+PenetrationAt100m 162
+HasSubmunitions false
 
 ExplodeParticles 9
 TrailParticleType flansmod.fmtracer
 
 HasLight True
-HasSubmunitions true
-Submunition 44_88Sub
-NumSubmunitions 4
-SubmunitionDelay 0
-SubmunitionSpread 0
 
 HasLight True
 

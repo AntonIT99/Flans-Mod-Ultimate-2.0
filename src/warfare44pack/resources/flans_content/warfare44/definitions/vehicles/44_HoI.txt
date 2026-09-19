@@ -53,6 +53,7 @@ GunOrigin 1 24 -6 -5
 // X + 5 , -Y -20
 //----------------------------Ammo
 AddAmmo 44_MediumHEShell
+AddAmmo 44_75HEATShellType2
 AllowAllAmmo False
 //Secondary gun
 AddGun 21 47 6 turret 44_Type99

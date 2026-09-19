@@ -6,7 +6,7 @@ Texture Skin44_W44Shell_Orange
 Colour 255 255 255
 Icon 44_LargeHEShell
 //How affected by gravity the bullet is
-FallSpeed 0.5
+FallSpeed 1.0
 //The number of rounds each item has. Limited to 32000.
 RoundsPerItem 1
 //The maximum stack size of a stack of these
@@ -36,6 +36,10 @@ Shell True
 
 //WeaponType : One of Missile, Shell, Bomb, Gun, None. Only affects driveable entities
 WeaponType Shell
+Mass 9000.0
+MuzzleVelocity 820
+ExplosiveMassTNTg 900
+PenetrationAt100m 18
 Description 88mm - 122mm Calibers
 
 ExplodeParticles 12

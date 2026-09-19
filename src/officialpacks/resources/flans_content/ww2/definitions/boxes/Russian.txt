@@ -29,3 +29,10 @@ AddAmmo panzerfaustAmmo 3 ingotIron 2 gunpowder
 AddGun dp28 20 ingotIron 5 log
 AddAmmo dp28Ammo 4 ingotIron 3 gunpowder
 AddGun rgd33 2 ingotIron 2 gunpowder
+SetPage Tank Shells
+AddGun Russian76APShell 4 ingotIron 4 gunpowder
+AddGun Russian76HEShell 4 ingotIron 2 gunpowder 2 tnt
+AddGun Russian85APShell 5 ingotIron 5 gunpowder
+AddGun Russian85HEShell 5 ingotIron 3 gunpowder 2 tnt
+AddGun Russian122APShell 7 ingotIron 7 gunpowder
+AddGun Russian122HEShell 7 ingotIron 4 gunpowder 3 tnt

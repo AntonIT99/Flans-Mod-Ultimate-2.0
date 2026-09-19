@@ -1,0 +1,39 @@
+// Identity
+Name German 88 mm Sprgr. 43 HE (KwK 43)
+ShortName German88L71HEShell
+Description High-explosive ammunition for the 8.8 cm KwK 43 L/71
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell88gHE
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 9400
+MuzzleVelocity 820
+FallSpeed 1
+ExplosiveMassTNTKg 1
+PenetrationAt100m 19
+FragType HE_SHELL
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+HasLight True
+FlakParticles 6

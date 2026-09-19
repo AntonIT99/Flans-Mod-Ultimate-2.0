@@ -36,3 +36,8 @@ AddGun boforsAmmo 1 ingotIron 2 gunpowder
 AddGun millsBomb 2 ingotIron 2 gunpowder
 AddGun 2Pdr 9 ingotIron
 AddAmmo British2pdrAPShell 3 ingotIron 3 gunpowder
+SetPage Tank Shells
+AddGun British6pdrAPShell 3 ingotIron 3 gunpowder
+AddGun British6pdrHEShell 3 ingotIron 2 gunpowder 1 tnt
+AddGun Allied75APShell 4 ingotIron 4 gunpowder
+AddGun Allied75HEShell 4 ingotIron 2 gunpowder 2 tnt

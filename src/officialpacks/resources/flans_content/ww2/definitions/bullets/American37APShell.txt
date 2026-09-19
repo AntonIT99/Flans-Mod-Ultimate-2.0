@@ -1,0 +1,37 @@
+// Identity
+Name American 37 mm M51B1 APCBC (M6)
+ShortName American37APShell
+Description Armour-piercing ammunition for the 37 mm gun M5/M6
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell37AP
+MaxStackSize 16
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 870
+MuzzleVelocity 884
+FallSpeed 1
+PenetrationAt100m 61
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 25
+DamageVsVehicles 100
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlakParticles 0

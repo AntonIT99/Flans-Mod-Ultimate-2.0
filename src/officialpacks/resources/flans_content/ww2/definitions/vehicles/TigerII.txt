@@ -38,6 +38,8 @@ Passengers 0
 BarrelPosition 0 34 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo German88L71APShell
+AddAmmo German88L71HEShell
 AllowAllAmmo false
 //Secondary gun
 AddGun 10 32 10 turret mg42

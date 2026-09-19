@@ -32,6 +32,9 @@ SmokeTrail True
 //True if this is a bomb
 Bomb False
 Shell True
+Mass 800000
+ExplosiveMassTNTKg 250
+FragType THICK_CASE
 RecipeOutput 3
 Recipe I ingotIron G gunpowder
  G 

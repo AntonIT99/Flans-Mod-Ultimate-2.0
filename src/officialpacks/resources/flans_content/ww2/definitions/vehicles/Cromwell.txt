@@ -39,6 +39,8 @@ AddGun 8 34 8 turret bren
 AllowAllAmmo False
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Allied75APShell
+AddAmmo Allied75HEShell
 Passengers 0
 //Delays are in ticks or 1/20ths of seconds
 ShootDelay 1

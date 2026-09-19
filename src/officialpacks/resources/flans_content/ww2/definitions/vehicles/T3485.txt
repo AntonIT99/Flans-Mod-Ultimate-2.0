@@ -41,6 +41,8 @@ AddGun 8 34 8 turret dp28
 AllowAllAmmo False
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Russian85APShell
+AddAmmo Russian85HEShell
 //Delays are in ticks or 1/20ths of seconds
 ShootDelay 1
 ShellDelay 90

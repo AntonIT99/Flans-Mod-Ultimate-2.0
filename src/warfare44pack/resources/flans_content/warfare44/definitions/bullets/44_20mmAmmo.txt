@@ -6,7 +6,7 @@ Texture Skin44_W44Shell_Red
 Colour 255 255 255
 Icon 44_20mmAmmo
 //How affected by gravity the bullet is
-FallSpeed 0.2
+FallSpeed 1.0
 //The maximum stack size
 MaxStackSize 4
 //The number of rounds each item has. Limited to 32000.
@@ -28,6 +28,10 @@ HitBoxSize 0.1
 HitSound bullet
 //WeaponType : One of Missile, Shell, Bomb, Gun, None. Only affects driveable entities
 WeaponType Shell
+Mass 148
+MuzzleVelocity 780
+ExplosiveMassTNTg 4
+PenetrationAt100m 23
 //Whether or not the bullet can travel through an entity having hit it
 Penetrates False
 SmokeTrail True

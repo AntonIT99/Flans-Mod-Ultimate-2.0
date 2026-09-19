@@ -31,6 +31,9 @@ SmokeTrail True
 TrailParticleType smoke
 Bomb False
 Shell True
+Mass 17600
+MuzzleVelocity 259
+ExplosiveMassTNTKg 1.9
 TrailParticles true
 
 ExplodeParticles 8

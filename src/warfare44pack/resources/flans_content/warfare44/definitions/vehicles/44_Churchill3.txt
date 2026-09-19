@@ -44,6 +44,8 @@ GunOrigin 1 120 -1 -8
 
 AddAmmo 44_57APShell
 AddAmmo 44_SmallHEShell
+AddAmmo 44_6PdrAPCRShell
+AddAmmo 44_6PdrAPDSShell
 //Secondary gun
 //Delays are in ticks or 1/20ths of seconds
 AddGun 28 33 -4 turret 44_Bren

@@ -38,6 +38,8 @@ Passengers 0
 BarrelPosition 0 34 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo German88APShell
+AddAmmo German88HEShell
 //Secondary gun
 AddGun 8 20 0 turret mg42
 //Delays are in ticks or 1/20ths of seconds

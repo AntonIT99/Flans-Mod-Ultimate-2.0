@@ -50,6 +50,8 @@ PassengerLegacyAiming 1 true
 GunOrigin 1 12 30 1
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Shell120mmM829A2
+AddAmmo Shell120mmM830A1
 BarrelPosition 110 30 0
 //Secondary gun
 AddGun 46 31 4 turret m60

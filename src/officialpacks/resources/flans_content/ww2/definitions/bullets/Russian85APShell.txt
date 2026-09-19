@@ -1,0 +1,39 @@
+// Identity
+Name Soviet 85 mm BR-365 APHEBC (ZiS-S-53)
+ShortName Russian85APShell
+Description Armour-piercing ammunition for the 85 mm D-5 and ZiS-S-53 tank guns
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell85rAP
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 9200
+MuzzleVelocity 792
+FallSpeed 1
+ExplosiveMassTNTg 164
+PenetrationAt100m 111
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 25
+DamageVsVehicles 100
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+HasSubmunitions false
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlakParticles 0

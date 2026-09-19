@@ -57,6 +57,9 @@ ShellDelay 70
 AllowAllAmmo false
 AddAmmo shell		
 AddAmmo HEshell
+AddAmmo hvshell120mm
+AddAmmo gpshell120mm
+AddAmmo heshell120mm
 //Sounds
 StartSound ChallengerIdle
 StartSoundLength 40

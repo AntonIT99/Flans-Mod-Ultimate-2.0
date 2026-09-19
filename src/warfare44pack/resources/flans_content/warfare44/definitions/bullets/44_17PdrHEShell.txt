@@ -1,0 +1,42 @@
+Name 17-pdr Shell Mk 1 HE
+ShortName 44_17PdrHEShell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+Icon 44_mediumheshell
+RoundsPerItem 1
+MaxStackSize 3
+Damage 1
+DamageVsLiving 75
+DamageVsVehicles 1300
+Explosion 4
+ExplodeOnImpact True
+Fuse 500
+FlakParticles 0
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound
+Penetrates False
+SmokeTrail True
+Bomb False
+Shell True
+
+WeaponType Shell
+
+Mass 6100
+MuzzleVelocity 550
+FallSpeed 1
+ExplosiveMassTNTg 480
+PenetrationAt100m 10
+FragType HE_SHELL
+
+ExplodeParticles 10
+TrailParticleType flansmod.fmflame
+
+HasLight True
+
+FlareParticleCount 8
+DebrisParticleCount 4
+
+Description High-explosive shell for the QF 17-pounder

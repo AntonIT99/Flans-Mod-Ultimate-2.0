@@ -76,19 +76,28 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_76apshelllong 6800",
-                "44_mediumheshell 5800"
+                "44_mediumheshell 5800",
+                "shell 7000",
+                "heshell 5840"
             ],
             "AmmoMuzzleVelocity": [
                 "44_76apshelllong 792",
-                "44_mediumheshell 853"
+                "44_mediumheshell 853",
+                "shell 792",
+                "heshell 853"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_mediumheshell 390"
+                "44_mediumheshell 390",
+                "shell 60",
+                "heshell 390"
             ],
             "AmmoPenetrationAt100m": [
                 "44_76apshelllong 132",
-                "44_mediumheshell 16"
-            ]
+                "44_mediumheshell 16",
+                "shell 125",
+                "heshell 12"
+            ],
+            "UseAmmoGroup": "3-inch M7"
         },
         "items": [
             "44_m10wolverine",
@@ -203,22 +212,31 @@
             "ArmorBottomMm": 0,
             "AmmoMass": [
                 "44_75apshell 6800",
-                "44_mediumheshell 5700"
+                "44_mediumheshell 5700",
+                "shell 6800",
+                "heshell 5740"
             ],
             "AmmoMuzzleVelocity": [
                 "44_75apshell 770",
-                "44_mediumheshell 770"
+                "44_mediumheshell 770",
+                "shell 770",
+                "heshell 550"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_75apshell 29",
-                "44_mediumheshell 686"
+                "44_mediumheshell 686",
+                "shell 29",
+                "heshell 725"
             ],
             "AmmoPenetrationAt100m": [
                 "44_75apshell 143",
-                "44_mediumheshell 10"
+                "44_mediumheshell 10",
+                "shell 143",
+                "heshell 10"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm KwK/PaK 40"
         },
         "items": [
             "44_pak40",
@@ -253,22 +271,31 @@
             "ArmorBottomMm": 0,
             "AmmoMass": [
                 "44_88apshell 10200",
-                "44_largeheshell 9000"
+                "44_largeheshell 9000",
+                "shell 10200",
+                "heshell 9000"
             ],
             "AmmoMuzzleVelocity": [
                 "44_88apshell 773",
-                "44_largeheshell 820"
+                "44_largeheshell 820",
+                "shell 773",
+                "heshell 820"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_88apshell 109",
-                "44_largeheshell 900"
+                "44_largeheshell 900",
+                "shell 109",
+                "heshell 900"
             ],
             "AmmoPenetrationAt100m": [
                 "44_88apshell 162",
-                "44_largeheshell 18"
+                "44_largeheshell 18",
+                "shell 162",
+                "heshell 18"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "88mm KwK/Flak 36"
         },
         "items": [
             "44_flak88",
@@ -468,7 +495,8 @@
             "AmmoPenetrationAt100m": [
                 "44_76apshelllong 168",
                 "44_mediumheshell 20"
-            ]
+            ],
+            "UseAmmoGroup": "76mm QF 17-pdr"
         },
         "items": [
             "achilles",
@@ -708,12 +736,25 @@
             "ArmorRearMm": 0,
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
-            "AmmoMass": "44_57apshell 3300",
-            "AmmoMuzzleVelocity": "44_57apshell 822",
-            "AmmoExplosiveMassTNTg": "44_57apshell 41",
-            "AmmoPenetrationAt100m": "44_57apshell 118",
+            "AmmoMass": [
+                "44_57apshell 3300",
+                "shell 3300"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_57apshell 822",
+                "shell 823"
+            ],
+            "AmmoExplosiveMassTNTg": [
+                "44_57apshell 41",
+                "shell 32"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_57apshell 118",
+                "shell 118"
+            ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "57mm M1"
         },
         "items": [
             "44_m157mm",
@@ -761,7 +802,8 @@
             "AmmoMass": "44_mediumheshell 6300",
             "AmmoMuzzleVelocity": "44_mediumheshell 381",
             "AmmoExplosiveMassTNTg": "44_mediumheshell 666",
-            "AmmoPenetrationAt100m": "44_mediumheshell 6"
+            "AmmoPenetrationAt100m": "44_mediumheshell 6",
+            "UseAmmoGroup": "75mm M2/M3 Howitzer"
         },
         "items": [
             "44_m8hmcscott"
@@ -1383,7 +1425,8 @@
             "AmmoPenetrationAt100m": [
                 "44_75apshell 88",
                 "44_mediumheshell 7"
-            ]
+            ],
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "m4shermanjumbo",
@@ -2387,19 +2430,28 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_75apshell 6300",
-                "44_mediumheshell 6300"
+                "44_mediumheshell 6300",
+                "shell 6790",
+                "heshell 6760"
             ],
             "AmmoMuzzleVelocity": [
                 "44_75apshell 619",
-                "44_mediumheshell 463"
+                "44_mediumheshell 463",
+                "shell 618",
+                "heshell 594"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_mediumheshell 666"
+                "44_mediumheshell 666",
+                "shell 65",
+                "heshell 680"
             ],
             "AmmoPenetrationAt100m": [
                 "44_75apshell 88",
-                "44_mediumheshell 7"
-            ]
+                "44_mediumheshell 7",
+                "shell 102",
+                "heshell 10"
+            ],
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "cromwell",
@@ -2437,7 +2489,8 @@
             "AmmoPenetrationAt100m": [
                 "44_76apshelllong 168",
                 "44_mediumheshell 20"
-            ]
+            ],
+            "UseAmmoGroup": "76mm QF 17-pdr"
         },
         "items": [
             "44_challenger"
@@ -2466,19 +2519,28 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_57apshell 2800",
-                "44_smallheshell 2700"
+                "44_smallheshell 3000",
+                "shell 2860",
+                "heshell 3000"
             ],
             "AmmoMuzzleVelocity": [
                 "44_57apshell 815",
-                "44_smallheshell 655"
+                "44_smallheshell 820",
+                "shell 846",
+                "heshell 820"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_smallheshell 590"
+                "44_smallheshell 186",
+                "shell 0",
+                "heshell 186"
             ],
             "AmmoPenetrationAt100m": [
                 "44_57apshell 97",
-                "44_smallheshell 9"
-            ]
+                "44_smallheshell 9",
+                "shell 106",
+                "heshell 9"
+            ],
+            "UseAmmoGroup": "57mm QF 6-pdr L/43"
         },
         "items": [
             "crusadermkiii",
@@ -3206,7 +3268,8 @@
                 "heshell 20"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "120mm L30A1"
         },
         "items": [
             "challyii"
@@ -4710,7 +4773,24 @@
             "TurretArmorTopMm": 20,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm M3",
+            "AmmoMass": [
+                "shell 6790",
+                "heshell 6760"
+            ],
+            "AmmoMuzzleVelocity": [
+                "shell 618",
+                "heshell 594"
+            ],
+            "AmmoExplosiveMassTNTg": [
+                "shell 65",
+                "heshell 680"
+            ],
+            "AmmoPenetrationAt100m": [
+                "shell 102",
+                "heshell 10"
+            ]
         },
         "items": [
             "churchill7",
@@ -4777,7 +4857,8 @@
             "AmmoPenetrationAt100m": [
                 "44_37apshell 68",
                 "44_smallheshell 62"
-            ]
+            ],
+            "UseAmmoGroup": "40mm QF 2-pdr"
         },
         "items": [
             "valentinemk2",
@@ -4807,19 +4888,20 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_57apshell 2900",
-                "44_smallheshell 2700"
+                "44_smallheshell 3000"
             ],
             "AmmoMuzzleVelocity": [
                 "44_57apshell 883",
-                "44_smallheshell 655"
+                "44_smallheshell 820"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_smallheshell 590"
+                "44_smallheshell 186"
             ],
             "AmmoPenetrationAt100m": [
                 "44_57apshell 111",
                 "44_smallheshell 9"
-            ]
+            ],
+            "UseAmmoGroup": "57mm QF 6-pdr L/50"
         },
         "items": [
             "churchillmk3",
@@ -4849,22 +4931,31 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_122apshell 25000",
-                "44_largeheshell 25000"
+                "44_largeheshell 25000",
+                "shell 25000",
+                "heshell 25000"
             ],
             "AmmoMuzzleVelocity": [
                 "44_122apshell 795",
-                "44_largeheshell 795"
+                "44_largeheshell 795",
+                "shell 781",
+                "heshell 795"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_122apshell 246"
+                "44_122apshell 246",
+                "shell 156"
             ],
             "AmmoExplosiveMassTNTKg": [
-                "44_largeheshell 3.6"
+                "44_largeheshell 3.6",
+                "heshell 3.6"
             ],
             "AmmoPenetrationAt100m": [
                 "44_122apshell 201",
-                "44_largeheshell 25"
-            ]
+                "44_largeheshell 25",
+                "shell 165",
+                "heshell 37"
+            ],
+            "UseAmmoGroup": "122mm D-25T"
         },
         "items": [
             "stalin1944",
@@ -5150,20 +5241,29 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_76apshell 6300",
-                "44_mediumheshell 6200"
+                "44_mediumheshell 6200",
+                "shell 6300",
+                "heshell 6210"
             ],
             "AmmoMuzzleVelocity": [
                 "44_76apshell 612",
-                "44_mediumheshell 612"
+                "44_mediumheshell 612",
+                "shell 612",
+                "heshell 612"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_76apshell 150",
-                "44_mediumheshell 621"
+                "44_mediumheshell 621",
+                "shell 119",
+                "heshell 710"
             ],
             "AmmoPenetrationAt100m": [
                 "44_76apshell 76",
-                "44_mediumheshell 11"
-            ]
+                "44_mediumheshell 11",
+                "shell 69",
+                "heshell 10"
+            ],
+            "UseAmmoGroup": "76mm L-11"
         },
         "items": [
             "kv1",
@@ -5194,7 +5294,8 @@
             "AmmoMass": "44_verylargeheshell 40000",
             "AmmoMuzzleVelocity": "44_verylargeheshell 530",
             "AmmoExplosiveMassTNTKg": "44_verylargeheshell 5.8",
-            "AmmoPenetrationAt100m": "44_verylargeheshell 16"
+            "AmmoPenetrationAt100m": "44_verylargeheshell 16",
+            "UseAmmoGroup": "152mm M-10T"
         },
         "items": [
             "kv2normal",
@@ -5372,7 +5473,21 @@
             ],
             "UseAmmoGroup": "120mm Rh-120 L/55",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "AmmoMass": [
+                "shell 5000",
+                "heshell 12900"
+            ],
+            "AmmoMuzzleVelocity": [
+                "shell 1750",
+                "heshell 1000"
+            ],
+            "AmmoExplosiveMassTNTg": "shell 0",
+            "AmmoPenetrationAt100m": [
+                "shell 750",
+                "heshell 30"
+            ],
+            "AmmoExplosiveMassTNTKg": "heshell 2.6"
         },
         "items": [
             "leo2a6",
@@ -5431,19 +5546,28 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_37apshell 870",
-                "44_smallheshell 610"
+                "44_smallheshell 610",
+                "shell 870",
+                "heshell 730"
             ],
             "AmmoMuzzleVelocity": [
                 "44_37apshell 883",
-                "44_smallheshell 792"
+                "44_smallheshell 792",
+                "shell 884",
+                "heshell 792"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_smallheshell 39"
+                "44_smallheshell 39",
+                "shell 0",
+                "heshell 39"
             ],
             "AmmoPenetrationAt100m": [
                 "44_37apshell 76",
-                "44_smallheshell 5"
-            ]
+                "44_smallheshell 5",
+                "shell 61",
+                "heshell 0"
+            ],
+            "UseAmmoGroup": "37mm M5/M6"
         },
         "items": [
             "m8greyhound",
@@ -5563,19 +5687,28 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_75apshell 6300",
-                "44_mediumheshell 6300"
+                "44_mediumheshell 6300",
+                "shell 6790",
+                "heshell 6760"
             ],
             "AmmoMuzzleVelocity": [
                 "44_75apshell 619",
-                "44_mediumheshell 463"
+                "44_mediumheshell 463",
+                "shell 618",
+                "heshell 594"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_mediumheshell 666"
+                "44_mediumheshell 666",
+                "shell 65",
+                "heshell 680"
             ],
             "AmmoPenetrationAt100m": [
                 "44_75apshell 88",
-                "44_mediumheshell 7"
-            ]
+                "44_mediumheshell 7",
+                "shell 102",
+                "heshell 10"
+            ],
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "44_m24chaffee",
@@ -5623,7 +5756,8 @@
                 "heshell 30"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "120mm M256"
         },
         "items": [
             "abrams"
@@ -5680,7 +5814,8 @@
                 "44_mediumheshell 7"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "44_m8a1gmc"
@@ -5709,19 +5844,28 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "AmmoMass": [
                 "44_76apshelllong 6800",
-                "44_mediumheshell 5800"
+                "44_mediumheshell 5800",
+                "shell 7000",
+                "heshell 5840"
             ],
             "AmmoMuzzleVelocity": [
                 "44_76apshelllong 792",
-                "44_mediumheshell 823"
+                "44_mediumheshell 823",
+                "shell 792",
+                "heshell 823"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_mediumheshell 390"
+                "44_mediumheshell 390",
+                "shell 60",
+                "heshell 390"
             ],
             "AmmoPenetrationAt100m": [
                 "44_76apshelllong 132",
-                "44_mediumheshell 16"
-            ]
+                "44_mediumheshell 16",
+                "shell 125",
+                "heshell 12"
+            ],
+            "UseAmmoGroup": "76mm M1"
         },
         "items": [
             "44_m18hellcat",
@@ -6017,20 +6161,29 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_75apshell 6300",
-                "44_mediumheshell 6300"
+                "44_mediumheshell 6300",
+                "shell 6790",
+                "heshell 6760"
             ],
             "AmmoMuzzleVelocity": [
                 "44_75apshell 619",
-                "44_mediumheshell 463"
+                "44_mediumheshell 463",
+                "shell 618",
+                "heshell 594"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_75apshell 62",
-                "44_mediumheshell 666"
+                "44_mediumheshell 666",
+                "shell 65",
+                "heshell 680"
             ],
             "AmmoPenetrationAt100m": [
                 "44_75apshell 88",
-                "44_mediumheshell 7"
-            ]
+                "44_mediumheshell 7",
+                "shell 102",
+                "heshell 10"
+            ],
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "m4sherman",
@@ -6134,7 +6287,8 @@
             "AmmoPenetrationAt100m": [
                 "44_75apshell 88",
                 "44_mediumheshell 7"
-            ]
+            ],
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "44_m4a1shermandd"
@@ -6163,19 +6317,28 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_76apshelllong 6800",
-                "44_mediumheshell 5800"
+                "44_mediumheshell 5800",
+                "shell 7000",
+                "heshell 5840"
             ],
             "AmmoMuzzleVelocity": [
                 "44_76apshelllong 792",
-                "44_mediumheshell 823"
+                "44_mediumheshell 823",
+                "shell 792",
+                "heshell 823"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_mediumheshell 390"
+                "44_mediumheshell 390",
+                "shell 60",
+                "heshell 390"
             ],
             "AmmoPenetrationAt100m": [
                 "44_76apshelllong 132",
-                "44_mediumheshell 16"
-            ]
+                "44_mediumheshell 16",
+                "shell 125",
+                "heshell 12"
+            ],
+            "UseAmmoGroup": "76mm M1"
         },
         "items": [
             "m4a3sherman76",
@@ -6274,7 +6437,8 @@
             "AmmoPenetrationAt100m": [
                 "44_90apshell 172",
                 "44_largeheshell 20"
-            ]
+            ],
+            "UseAmmoGroup": "90mm M3"
         },
         "items": [
             "pershing",
@@ -6797,7 +6961,8 @@
             "AmmoMuzzleVelocity": "44_47apshell 792",
             "AmmoPenetrationAt100m": "44_47apshell 62",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "40mm QF 2-pdr"
         },
         "items": [
             "44_qf2pdr",
@@ -7010,7 +7175,8 @@
             "AmmoPenetrationAt100m": [
                 "44_37apshell 59",
                 "44_smallheshell 5"
-            ]
+            ],
+            "UseAmmoGroup": "37mm KwK 38(t)"
         },
         "items": [
             "38t",
@@ -7110,7 +7276,8 @@
             "AmmoPenetrationAt100m": [
                 "44_50apshell 76",
                 "44_smallheshell 6"
-            ]
+            ],
+            "UseAmmoGroup": "50mm KwK 38"
         },
         "items": [
             "panzer3f",
@@ -7178,7 +7345,8 @@
             "AmmoPenetrationAt100m": [
                 "44_50apshell 101",
                 "44_smallheshell 11"
-            ]
+            ],
+            "UseAmmoGroup": "50mm KwK 39"
         },
         "items": [
             "panzer3m",
@@ -7209,22 +7377,23 @@
             ],
             "AmmoMass": [
                 "shell 6800",
-                "heshell 5700"
+                "heshell 5740"
             ],
             "AmmoMuzzleVelocity": [
                 "shell 770",
-                "heshell 770"
+                "heshell 550"
             ],
             "AmmoExplosiveMassTNTg": [
                 "shell 29",
-                "heshell 686"
+                "heshell 725"
             ],
             "AmmoPenetrationAt100m": [
                 "shell 143",
                 "heshell 10"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm KwK/PaK 40"
         },
         "items": [
             "panzer"
@@ -7279,7 +7448,8 @@
             "AmmoMass": "44_mediumheshell 5700",
             "AmmoMuzzleVelocity": "44_mediumheshell 420",
             "AmmoExplosiveMassTNTg": "44_mediumheshell 686",
-            "AmmoPenetrationAt100m": "44_mediumheshell 6"
+            "AmmoPenetrationAt100m": "44_mediumheshell 6",
+            "UseAmmoGroup": "75mm KwK 37"
         },
         "items": [
             "44_panzerivf1"
@@ -7427,20 +7597,28 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_88apshelllong 10200",
-                "44_largeheshell 9000"
+                "44_largeheshell 9000",
+                "shell 10200",
+                "heshell 9400"
             ],
             "AmmoMuzzleVelocity": [
                 "44_88apshelllong 1000",
-                "44_largeheshell 820"
+                "44_largeheshell 820",
+                "shell 1000",
+                "heshell 820"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_88apshelllong 109",
-                "44_largeheshell 900"
+                "44_largeheshell 900",
+                "shell 109"
             ],
             "AmmoPenetrationAt100m": [
                 "44_88apshelllong 234",
-                "44_largeheshell 18"
-            ]
+                "44_largeheshell 18",
+                "shell 234",
+                "heshell 19"
+            ],
+            "AmmoExplosiveMassTNTKg": "heshell 1"
         },
         "items": [
             "tigerdos",
@@ -7633,19 +7811,27 @@
             "UseAmmoGroup": "88mm KwK/Flak 36",
             "AmmoMass": [
                 "44_88apshell 10200",
-                "44_largeheshell 9000"
+                "44_largeheshell 9000",
+                "shell 10200",
+                "heshell 9000"
             ],
             "AmmoMuzzleVelocity": [
                 "44_88apshell 773",
-                "44_largeheshell 820"
+                "44_largeheshell 820",
+                "shell 773",
+                "heshell 820"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_88apshell 109",
-                "44_largeheshell 900"
+                "44_largeheshell 900",
+                "shell 109",
+                "heshell 900"
             ],
             "AmmoPenetrationAt100m": [
                 "44_88apshell 162",
-                "44_largeheshell 18"
+                "44_largeheshell 18",
+                "shell 162",
+                "heshell 18"
             ]
         },
         "items": [
@@ -8583,7 +8769,8 @@
             "AmmoPenetrationAt100m": [
                 "44_50apshell 101",
                 "44_smallheshell 11"
-            ]
+            ],
+            "UseAmmoGroup": "50mm KwK 39"
         },
         "items": [
             "pumaww2",
@@ -8723,7 +8910,8 @@
             "AmmoPenetrationAt100m": [
                 "44_76apshelllong 168",
                 "44_mediumheshell 20"
-            ]
+            ],
+            "UseAmmoGroup": "76mm QF 17-pdr"
         },
         "items": [
             "firefly",
@@ -8915,19 +9103,27 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_75apshell 6800",
-                "44_mediumheshell 5700"
+                "44_mediumheshell 5700",
+                "shell 6800",
+                "heshell 5740"
             ],
             "AmmoMuzzleVelocity": [
                 "44_75apshell 770",
-                "44_mediumheshell 770"
+                "44_mediumheshell 770",
+                "shell 770",
+                "heshell 550"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_75apshell 29",
-                "44_mediumheshell 686"
+                "44_mediumheshell 686",
+                "shell 29",
+                "heshell 725"
             ],
             "AmmoPenetrationAt100m": [
                 "44_75apshell 143",
-                "44_mediumheshell 10"
+                "44_mediumheshell 10",
+                "shell 143",
+                "heshell 10"
             ]
         },
         "items": [
@@ -9014,6 +9210,9 @@
             "AmmoPenetrationAt100m": [
                 "44_76apshell 85",
                 "44_mediumheshell 12"
+            ],
+            "UseAmmoGroup": [
+                "76mm F-34/ZiS-3"
             ]
         },
         "items": [
@@ -9230,7 +9429,8 @@
                 "44_largeheshell 25"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "90mm T15E1"
         },
         "items": [
             "44_t26e1"
@@ -9271,7 +9471,8 @@
                 "44_mediumheshell 7"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "44_m38wolfhound"
@@ -9338,7 +9539,8 @@
             "AmmoPenetrationAt100m": [
                 "44_76apshell 76",
                 "44_mediumheshell 11"
-            ]
+            ],
+            "UseAmmoGroup": "76mm L-11"
         },
         "items": [
             "t3476mod40",
@@ -9364,7 +9566,7 @@
             "TurretArmorRearMm": 53,
             "TurretArmorTopMm": 16,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
-            "UseAmmoGroup": "76mm L-11",
+            "UseAmmoGroup": "76mm F-34/ZiS-3",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
@@ -9414,19 +9616,27 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_85apshell 9200",
-                "44_mediumheshell 9500"
+                "44_mediumheshell 9500",
+                "shell 9200",
+                "heshell 9620"
             ],
             "AmmoMuzzleVelocity": [
                 "44_85apshell 792",
-                "44_mediumheshell 785"
+                "44_mediumheshell 785",
+                "shell 792",
+                "heshell 785"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_85apshell 77",
-                "44_mediumheshell 741"
+                "44_mediumheshell 741",
+                "shell 164",
+                "heshell 780"
             ],
             "AmmoPenetrationAt100m": [
                 "44_85apshell 143",
-                "44_mediumheshell 18"
+                "44_mediumheshell 18",
+                "shell 111",
+                "heshell 18"
             ]
         },
         "items": [
@@ -9477,7 +9687,8 @@
                 "44_largeheshell 27"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "100mm D-10S"
         },
         "items": [
             "44_t34100",
@@ -9594,7 +9805,8 @@
             "AmmoPenetrationAt100m": [
                 "44_47apshell 67",
                 "44_smallheshell 6"
-            ]
+            ],
+            "UseAmmoGroup": "45mm 20-K"
         },
         "items": [
             "t70",
@@ -9642,7 +9854,8 @@
                 "heshell 30"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "125mm 2A46M-5"
         },
         "items": [
             "t90"
@@ -10027,7 +10240,8 @@
             "AmmoMass": "44_mediumheshell 6000",
             "AmmoMuzzleVelocity": "44_mediumheshell 522",
             "AmmoExplosiveMassTNTg": "44_mediumheshell 810",
-            "AmmoPenetrationAt100m": "44_mediumheshell 8"
+            "AmmoPenetrationAt100m": "44_mediumheshell 8",
+            "UseAmmoGroup": "75mm Type 99"
         },
         "items": [
             "44_hoi"
@@ -10094,20 +10308,29 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_75apshell 6600",
-                "44_mediumheshell 6000"
+                "44_mediumheshell 6000",
+                "shell 6600",
+                "heshell 6000"
             ],
             "AmmoMuzzleVelocity": [
                 "44_75apshell 668",
-                "44_mediumheshell 522"
+                "44_mediumheshell 522",
+                "shell 668",
+                "heshell 522"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_75apshell 104",
-                "44_mediumheshell 810"
+                "44_mediumheshell 810",
+                "shell 55",
+                "heshell 810"
             ],
             "AmmoPenetrationAt100m": [
                 "44_75apshell 100",
-                "44_mediumheshell 8"
-            ]
+                "44_mediumheshell 8",
+                "shell 80",
+                "heshell 12"
+            ],
+            "UseAmmoGroup": "75mm Type 3"
         },
         "items": [
             "44_chinu",
@@ -10153,7 +10376,8 @@
                 "44_mediumheshell 17"
             ],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm Type 5"
         },
         "items": [
             "44_chinu2"
@@ -10214,10 +10438,22 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
-            "AmmoMass": "44_verylargeheshell 36000",
-            "AmmoMuzzleVelocity": "44_verylargeheshell 290",
-            "AmmoExplosiveMassTNTKg": "44_verylargeheshell 7.7",
-            "AmmoPenetrationAt100m": "44_verylargeheshell 6"
+            "AmmoMass": [
+                "44_verylargeheshell 36000",
+                "heshell 36000"
+            ],
+            "AmmoMuzzleVelocity": [
+                "44_verylargeheshell 290",
+                "heshell 290"
+            ],
+            "AmmoExplosiveMassTNTKg": [
+                "44_verylargeheshell 7.7",
+                "heshell 7.7"
+            ],
+            "AmmoPenetrationAt100m": [
+                "44_verylargeheshell 6",
+                "heshell 6"
+            ]
         },
         "items": [
             "horo",
@@ -10261,7 +10497,8 @@
             "AmmoPenetrationAt100m": [
                 "44_75apshelllong 145",
                 "44_mediumheshell 17"
-            ]
+            ],
+            "UseAmmoGroup": "75mm Type 5"
         },
         "items": [
             "44_chiri"
@@ -10312,20 +10549,21 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_57apshell 2600",
-                "44_smallheshell 2600"
+                "44_smallheshell 2360"
             ],
             "AmmoMuzzleVelocity": [
                 "44_57apshell 349",
-                "44_smallheshell 349"
+                "44_smallheshell 355"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_57apshell 103",
-                "44_smallheshell 103"
+                "44_57apshell 100",
+                "44_smallheshell 250"
             ],
             "AmmoPenetrationAt100m": [
                 "44_57apshell 21",
-                "44_smallheshell 21"
-            ]
+                "44_smallheshell 0"
+            ],
+            "UseAmmoGroup": "57mm Type 97"
         },
         "items": [
             "44_igo"
@@ -10493,20 +10731,29 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_57apshell 2600",
-                "44_smallheshell 2600"
+                "44_smallheshell 2360",
+                "shell 2580",
+                "heshell 2360"
             ],
             "AmmoMuzzleVelocity": [
                 "44_57apshell 349",
-                "44_smallheshell 349"
+                "44_smallheshell 355",
+                "shell 350",
+                "heshell 355"
             ],
             "AmmoExplosiveMassTNTg": [
-                "44_57apshell 103",
-                "44_smallheshell 103"
+                "44_57apshell 100",
+                "44_smallheshell 250",
+                "shell 100",
+                "heshell 250"
             ],
             "AmmoPenetrationAt100m": [
                 "44_57apshell 21",
-                "44_smallheshell 21"
-            ]
+                "44_smallheshell 0",
+                "shell 25",
+                "heshell 0"
+            ],
+            "UseAmmoGroup": "57mm Type 97"
         },
         "items": [
             "chiha",
@@ -12505,7 +12752,8 @@
             "AmmoMuzzleVelocity": "44_57apshell 990",
             "AmmoPenetrationAt100m": "44_57apshell 112",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "57mm ZiS-2"
         },
         "items": [
             "44_zis2",
@@ -12526,7 +12774,10 @@
             "AmmoMuzzleVelocity": "44_76apshell 655",
             "AmmoPenetrationAt100m": "44_76apshell 78",
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": [
+                "76mm F-34/ZiS-3"
+            ]
         },
         "items": [
             "44_zis3",
@@ -12565,7 +12816,8 @@
             "AmmoPenetrationAt100m": [
                 "44_57apshell 142",
                 "44_smallheshell 12"
-            ]
+            ],
+            "UseAmmoGroup": "57mm ZiS-2"
         },
         "items": [
             "zis30",

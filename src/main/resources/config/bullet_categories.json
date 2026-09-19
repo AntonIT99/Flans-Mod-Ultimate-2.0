@@ -1890,13 +1890,29 @@
 
     "37mm M51B1 APCBC": {
         "properties": {
+            "AddToAmmoGroup": "37mm M5/M6",
             "Mass": 870,
             "MuzzleVelocity": 884,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 61
         },
         "items": [
-            "37mmstuart"
+            "37mmstuart",
+            "american37apshell"
+        ]
+    },
+
+    "37mm M63 HE": {
+        "properties": {
+            "AddToAmmoGroup": "37mm M5/M6",
+            "Mass": 730,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 39,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "american37heshell"
         ]
     },
 
@@ -1948,6 +1964,19 @@
         },
         "items": [
             "37mmpz38"
+        ]
+    },
+
+    "37mm Pzgr. 40 APCR (KwK 38(t))": {
+        "properties": {
+            "AddToAmmoGroup": "37mm KwK 38(t)",
+            "Mass": 368,
+            "MuzzleVelocity": 1020,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 77
+        },
+        "items": [
+            "44_37apcrshell"
         ]
     },
 
@@ -2046,6 +2075,19 @@
         "items": [
             "british2pdrapshell",
             "40mmshell"
+        ]
+    },
+
+    "40mm QF 2-pdr Shot Mk IXB APCBC": {
+        "properties": {
+            "AddToAmmoGroup": "40mm QF 2-pdr",
+            "Mass": 1200,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 86
+        },
+        "items": [
+            "44_40apcbcshell"
         ]
     },
 
@@ -2184,6 +2226,19 @@
         ]
     },
 
+    "45mm BR-240P APCR (20-K)": {
+        "properties": {
+            "AddToAmmoGroup": "45mm 20-K",
+            "Mass": 850,
+            "MuzzleVelocity": 985,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 87
+        },
+        "items": [
+            "44_45apcrshell"
+        ]
+    },
+
     "47mm Granata Perforante mod.35 APHE": {
         "properties": {
             "Mass": 1440,
@@ -2248,19 +2303,6 @@
         ]
     },
 
-    "50mm KwK 39 Pzgr. 39": {
-        "properties": {
-            "Mass": 2060,
-            "MuzzleVelocity": 835,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 17,
-            "PenetrationAt100m": 67
-        },
-        "items": [
-            "5cmkwk39shellap"
-        ]
-    },
-
     "50mm KwK 39 Sprgr. 38": {
         "properties": {
             "Mass": 1820,
@@ -2292,10 +2334,11 @@
             "MuzzleVelocity": 835,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 17,
-            "PenetrationAt100m": 67
+            "PenetrationAt100m": 101
         },
         "items": [
-            "50mmap"
+            "50mmap",
+            "5cmkwk39shellap"
         ]
     },
 
@@ -2305,7 +2348,7 @@
             "MuzzleVelocity": 685,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 17,
-            "PenetrationAt100m": 55
+            "PenetrationAt100m": 76
         },
         "items": [
             "50mmapshort"
@@ -2314,25 +2357,42 @@
 
     "50mm PzGr. 40 APCR (L/42)": {
         "properties": {
+            "AddToAmmoGroup": "50mm KwK 38",
             "Mass": 925,
             "MuzzleVelocity": 1050,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 94
         },
         "items": [
-            "50mmapcrshort"
+            "50mmapcrshort",
+            "44_50apcrshell"
         ]
     },
 
     "50mm PzGr. 40 APCR (L/60)": {
         "properties": {
+            "AddToAmmoGroup": "50mm KwK 39",
             "Mass": 925,
             "MuzzleVelocity": 1180,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 130
         },
         "items": [
-            "50mmapcr"
+            "50mmapcr",
+            "44_50apcrshelllong"
+        ]
+    },
+
+    "50mm PzGr. 40/1 APCR (L/60)": {
+        "properties": {
+            "AddToAmmoGroup": "50mm KwK 39",
+            "Mass": 1100,
+            "MuzzleVelocity": 1130,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 121
+        },
+        "items": [
+            "44_50apcrheavyshell"
         ]
     },
 
@@ -2442,17 +2502,19 @@
 
     "57mm BR-271P APCR": {
         "properties": {
+            "AddToAmmoGroup": "57mm ZiS-2",
             "Mass": 1790,
             "MuzzleVelocity": 1270,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 145
         },
         "items": [
-            "57mmapcrrussia"
+            "57mmapcrrussia",
+            "44_57apcrshell"
         ]
     },
 
-    "57mm M86 APCBC": {
+    "57mm M70 AP Shot (57 mm M1)": {
         "properties": {
             "Mass": 2850,
             "MuzzleVelocity": 853,
@@ -2464,27 +2526,73 @@
         ]
     },
 
+    "57mm M86 APC-T (57 mm M1)": {
+        "properties": {
+            "AddToAmmoGroup": "57mm M1",
+            "Mass": 3300,
+            "MuzzleVelocity": 823,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 32,
+            "PenetrationAt100m": 118
+        },
+        "items": [
+            "american57apshell"
+        ]
+    },
+
+    "57mm Shell Mark 10T HE (6-pdr L/43)": {
+        "properties": {
+            "AddToAmmoGroup": "57mm QF 6-pdr L/43",
+            "Mass": 3000,
+            "MuzzleVelocity": 820,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 186,
+            "PenetrationAt100m": 9,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "british6pdrheshell"
+        ]
+    },
+
     "57mm Shot Mark 1T APCR": {
         "properties": {
+            "AddToAmmoGroup": "57mm QF 6-pdr L/50",
             "Mass": 1930,
             "MuzzleVelocity": 1120,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 110
         },
         "items": [
-            "57mmapcr"
+            "57mmapcr",
+            "44_6pdrapcrshell"
         ]
     },
 
     "57mm Shot Mark 1T APDS": {
         "properties": {
+            "AddToAmmoGroup": "57mm QF 6-pdr L/50",
             "Mass": 1470,
             "MuzzleVelocity": 1326,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 160
         },
         "items": [
-            "57mmapds"
+            "57mmapds",
+            "44_6pdrapdsshell"
+        ]
+    },
+
+    "57mm Shot Mark 8T APC (6-pdr L/43)": {
+        "properties": {
+            "AddToAmmoGroup": "57mm QF 6-pdr L/43",
+            "Mass": 2860,
+            "MuzzleVelocity": 846,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 106
+        },
+        "items": [
+            "british6pdrapshell"
         ]
     },
 
@@ -2515,27 +2623,45 @@
 
     "57mm Type 3 HEAT": {
         "properties": {
-            "Mass": 2900,
-            "MuzzleVelocity": 350,
+            "AddToAmmoGroup": "57mm Type 97",
+            "Mass": 1800,
+            "MuzzleVelocity": 380,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 300,
+            "ExplosiveMassTNTg": 303,
             "PenetrationAt100m": 55
         },
         "items": [
-            "chiahaheat"
+            "chiahaheat",
+            "44_57heatshell"
+        ]
+    },
+
+    "57mm Type 90 HE (Type 97/Type 90 Tank Gun)": {
+        "properties": {
+            "AddToAmmoGroup": "57mm Type 97",
+            "Mass": 2360,
+            "MuzzleVelocity": 355,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 250,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "japanese57heshell"
         ]
     },
 
     "57mm Type 92 APHE": {
         "properties": {
+            "AddToAmmoGroup": "57mm Type 97",
             "Mass": 2580,
             "MuzzleVelocity": 350,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 80,
+            "ExplosiveMassTNTg": 100,
             "PenetrationAt100m": 25
         },
         "items": [
-            "chiaha57"
+            "chiaha57",
+            "japanese57apshell"
         ]
     },
 
@@ -2690,8 +2816,23 @@
         ]
     },
 
+    "75mm Hl.Gr. 38B HEAT (KwK 40)": {
+        "properties": {
+            "AddToAmmoGroup": "75mm KwK/PaK 40",
+            "Mass": 4400,
+            "MuzzleVelocity": 450,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 872,
+            "PenetrationAt100m": 80
+        },
+        "items": [
+            "44_75heatshellb"
+        ]
+    },
+
     "75mm Hl.Gr. 38C HEAT": {
         "properties": {
+            "AddToAmmoGroup": "75mm KwK 37",
             "Mass": 4800,
             "MuzzleVelocity": 450,
             "FallSpeed": 1.0,
@@ -2699,12 +2840,14 @@
             "PenetrationAt100m": 100
         },
         "items": [
-            "75mmheatgermany"
+            "75mmheatgermany",
+            "44_75heatshell"
         ]
     },
 
     "75mm K.Gr.rot Pz. APCBC (KwK 37)": {
         "properties": {
+            "AddToAmmoGroup": "75mm KwK 37",
             "Mass": 6800,
             "MuzzleVelocity": 385,
             "FallSpeed": 1.0,
@@ -2712,33 +2855,8 @@
             "PenetrationAt100m": 41
         },
         "items": [
-            "german75short"
-        ]
-    },
-
-    "75mm KwK 40 Pzgr. 39": {
-        "properties": {
-            "Mass": 6800,
-            "MuzzleVelocity": 790,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 19,
-            "PenetrationAt100m": 106
-        },
-        "items": [
-            "7.5cmkwk40shellap"
-        ]
-    },
-
-    "75mm KwK 40 Sprgr. 34": {
-        "properties": {
-            "Mass": 5740,
-            "MuzzleVelocity": 590,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 660,
-            "PenetrationAt100m": 10
-        },
-        "items": [
-            "7.5cmkwk40shellhe"
+            "german75short",
+            "44_75apshellshort"
         ]
     },
 
@@ -2779,7 +2897,8 @@
             "FragType": "HE_SHELL"
         },
         "items": [
-            "ww2_shell_usa75mmhe"
+            "ww2_shell_usa75mmhe",
+            "allied75heshell"
         ]
     },
 
@@ -2795,7 +2914,23 @@
         },
         "items": [
             "ww2_shell_usa75mmap",
-            "75mmap"
+            "75mmap",
+            "allied75apshell",
+            "44_75apcbcshell"
+        ]
+    },
+
+    "75mm M66 HEAT (M2/M3 Howitzer)": {
+        "properties": {
+            "AddToAmmoGroup": "75mm M2/M3 Howitzer",
+            "Mass": 6000,
+            "MuzzleVelocity": 304,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 548,
+            "PenetrationAt100m": 89
+        },
+        "items": [
+            "44_75heatshellshort"
         ]
     },
 
@@ -2850,7 +2985,8 @@
             "HasSubmunitions": "false"
         },
         "items": [
-            "ww2_shell_german75mmaplong"
+            "ww2_shell_german75mmaplong",
+            "panther75"
         ]
     },
 
@@ -2866,7 +3002,10 @@
         },
         "items": [
             "ww2_shell_german75mmkwk40ap",
-            "ww2_shell_german75mmap"
+            "ww2_shell_german75mmap",
+            "german75apshell",
+            "7.5cmkwk40shellap",
+            "german75"
         ]
     },
 
@@ -2880,44 +3019,8 @@
             "HasSubmunitions": "false"
         },
         "items": [
-            "ww2_shell_german75mmkwk40apcr"
-        ]
-    },
-
-    "75mm PzGr. 39 AP-T (KwK 40)": {
-        "properties": {
-            "Mass": 6800,
-            "MuzzleVelocity": 790,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 19,
-            "PenetrationAt100m": 106
-        },
-        "items": [
-            "german75"
-        ]
-    },
-
-    "75mm PzGr. 39/42 APCBC (KwK 42)": {
-        "properties": {
-            "Mass": 6800,
-            "MuzzleVelocity": 925,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 18,
-            "PenetrationAt100m": 149
-        },
-        "items": [
-            "panther75"
-        ]
-    },
-
-    "75mm PzGr. 40 APCR (KwK 40)": {
-        "properties": {
-            "Mass": 4100,
-            "MuzzleVelocity": 990,
-            "FallSpeed": 1.0,
-            "PenetrationAt100m": 143
-        },
-        "items": [
+            "ww2_shell_german75mmkwk40apcr",
+            "44_75apcrshell",
             "german75apcr"
         ]
     },
@@ -2933,7 +3036,8 @@
         },
         "items": [
             "panther75apcr",
-            "ww2_shell_german75mmkwk42apcr"
+            "ww2_shell_german75mmkwk42apcr",
+            "44_75apcrshelllong"
         ]
     },
 
@@ -2962,7 +3066,9 @@
         },
         "items": [
             "ww2_shell_german75mmkwk40he",
-            "ww2_shell_german75mmhe"
+            "ww2_shell_german75mmhe",
+            "german75heshell",
+            "7.5cmkwk40shellhe"
         ]
     },
 
@@ -3008,6 +3114,7 @@
 
     "75mm Type 1 APHE": {
         "properties": {
+            "AddToAmmoGroup": "75mm Type 3",
             "Mass": 6600,
             "MuzzleVelocity": 668,
             "FallSpeed": 1.0,
@@ -3015,12 +3122,28 @@
             "PenetrationAt100m": 80
         },
         "items": [
-            "chinu75"
+            "chinu75",
+            "japanese75apshell"
+        ]
+    },
+
+    "75mm Type 2 HEAT (Type 99)": {
+        "properties": {
+            "AddToAmmoGroup": "75mm Type 99",
+            "Mass": 3600,
+            "MuzzleVelocity": 350,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 640,
+            "PenetrationAt100m": 90
+        },
+        "items": [
+            "44_75heatshelltype2"
         ]
     },
 
     "75mm Type 4 APHE": {
         "properties": {
+            "AddToAmmoGroup": "75mm Type 5",
             "Mass": 6600,
             "MuzzleVelocity": 865,
             "FallSpeed": 1.0,
@@ -3029,6 +3152,21 @@
         },
         "items": [
             "chiri75"
+        ]
+    },
+
+    "75mm Type 94 HE": {
+        "properties": {
+            "AddToAmmoGroup": "75mm Type 3",
+            "Mass": 6000,
+            "MuzzleVelocity": 522,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 810,
+            "PenetrationAt100m": 12,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "japanese75heshell"
         ]
     },
 
@@ -3045,6 +3183,20 @@
         ]
     },
 
+    "76mm BP-353A HEAT (F-34/ZiS-3)": {
+        "properties": {
+            "AddToAmmoGroup": "76mm F-34/ZiS-3",
+            "Mass": 3900,
+            "MuzzleVelocity": 355,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 600,
+            "PenetrationAt100m": 80
+        },
+        "items": [
+            "44_76heatshell"
+        ]
+    },
+
     "76mm BR-350A APBC (L-11)": {
         "properties": {
             "AddToAmmoGroup": "76mm L-11",
@@ -3056,12 +3208,14 @@
             "HasSubmunitions": "false"
         },
         "items": [
-            "ww2_shell_ussr76mmap"
+            "ww2_shell_ussr76mmap",
+            "russian76apshell"
         ]
     },
 
     "76mm BR-350A APHEBC (F-34)": {
         "properties": {
+            "AddToAmmoGroup": "76mm F-34/ZiS-3",
             "Mass": 6300,
             "MuzzleVelocity": 662,
             "FallSpeed": 1.0,
@@ -3088,13 +3242,15 @@
 
     "76mm BR-354P APCR": {
         "properties": {
+            "AddToAmmoGroup": "76mm F-34/ZiS-3",
             "Mass": 3020,
             "MuzzleVelocity": 950,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 92
         },
         "items": [
-            "76mmapcrru"
+            "76mmapcrru",
+            "44_76apcrshell"
         ]
     },
 
@@ -3112,6 +3268,7 @@
 
     "76mm F-34 HE Shell": {
         "properties": {
+            "AddToAmmoGroup": "76mm F-34/ZiS-3",
             "Mass": 6200,
             "MuzzleVelocity": 680,
             "FallSpeed": 1.0,
@@ -3224,7 +3381,23 @@
             "FragType": "HE_SHELL"
         },
         "items": [
-            "ww2_shell_usa76mmhe"
+            "ww2_shell_usa76mmhe",
+            "american76heshell"
+        ]
+    },
+
+    "76mm M42A1 HE (3-inch M7)": {
+        "properties": {
+            "AddToAmmoGroup": "3-inch M7",
+            "Mass": 5840,
+            "MuzzleVelocity": 853,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 390,
+            "PenetrationAt100m": 12,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "american3inheshell"
         ]
     },
 
@@ -3240,7 +3413,24 @@
         },
         "items": [
             "ww2_shell_usa76mmap",
-            "76mmapus"
+            "76mmapus",
+            "american76apshell",
+            "44_76apcbcshell"
+        ]
+    },
+
+    "76mm M62 APCBC (3-inch M7)": {
+        "properties": {
+            "AddToAmmoGroup": "3-inch M7",
+            "Mass": 7000.0,
+            "MuzzleVelocity": 792,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 60,
+            "PenetrationAt100m": 125
+        },
+        "items": [
+            "american3inapshell",
+            "44_3inapcbcshell"
         ]
     },
 
@@ -3255,7 +3445,21 @@
         },
         "items": [
             "76mmapcrusa",
-            "ww2_shell_usa76mmm93hvap"
+            "ww2_shell_usa76mmm93hvap",
+            "44_76hvapshell"
+        ]
+    },
+
+    "76mm M93 HVAP (3-inch M7)": {
+        "properties": {
+            "AddToAmmoGroup": "3-inch M7",
+            "Mass": 4260,
+            "MuzzleVelocity": 1036,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 190
+        },
+        "items": [
+            "44_3inhvapshell"
         ]
     },
 
@@ -3283,31 +3487,51 @@
             "FragType": "HE_SHELL"
         },
         "items": [
-            "ww2_shell_ussr76mmhe"
+            "ww2_shell_ussr76mmhe",
+            "russian76heshell"
         ]
     },
 
     "76mm QF 17-pdr APDS": {
         "properties": {
+            "AddToAmmoGroup": "76mm QF 17-pdr",
             "Mass": 3570,
             "MuzzleVelocity": 1203,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 231
         },
         "items": [
-            "17pounderapds"
+            "17pounderapds",
+            "44_17pdrapdsshell"
+        ]
+    },
+
+    "76mm QF 17-pdr Shell Mk 1 HE": {
+        "properties": {
+            "AddToAmmoGroup": "76mm QF 17-pdr",
+            "Mass": 6100,
+            "MuzzleVelocity": 550,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 480,
+            "PenetrationAt100m": 10,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "44_17pdrheshell"
         ]
     },
 
     "76mm QF 17-pdr Shot Mark 8": {
         "properties": {
+            "AddToAmmoGroup": "76mm QF 17-pdr",
             "Mass": 7650,
             "MuzzleVelocity": 884,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 148
         },
         "items": [
-            "17pounderap"
+            "17pounderap",
+            "44_17pdrapcbcshell"
         ]
     },
 
@@ -3519,12 +3743,14 @@
             "HasSubmunitions": "false"
         },
         "items": [
-            "ww2_shell_ussr85mmap"
+            "ww2_shell_ussr85mmap",
+            "russian85apshell"
         ]
     },
 
     "85mm BR-365K APHE": {
         "properties": {
+            "AddToAmmoGroup": "85mm D-5S/ZiS-S-53",
             "Mass": 9200,
             "MuzzleVelocity": 792,
             "FallSpeed": 1.0,
@@ -3532,7 +3758,8 @@
             "PenetrationAt100m": 130
         },
         "items": [
-            "85mmap"
+            "85mmap",
+            "44_85apheshell"
         ]
     },
 
@@ -3547,7 +3774,8 @@
         },
         "items": [
             "85mmapcr",
-            "ww2_shell_ussr85mmbr365papcr"
+            "ww2_shell_ussr85mmbr365papcr",
+            "44_85apcrshell"
         ]
     },
 
@@ -3576,7 +3804,8 @@
             "FragType": "HE_SHELL"
         },
         "items": [
-            "ww2_shell_ussr85mmhe"
+            "ww2_shell_ussr85mmhe",
+            "russian85heshell"
         ]
     },
 
@@ -3602,33 +3831,8 @@
             "PenetrationAt100m": 110
         },
         "items": [
-            "ww2_shell_german88mmkwk36heat"
-        ]
-    },
-
-    "88mm KwK 36 Pzgr. 39": {
-        "properties": {
-            "Mass": 10200,
-            "MuzzleVelocity": 773,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 109,
-            "PenetrationAt100m": 162
-        },
-        "items": [
-            "8.8cmkwk36shellap"
-        ]
-    },
-
-    "88mm KwK 36 Sprgr. L/4.5": {
-        "properties": {
-            "Mass": 9000,
-            "MuzzleVelocity": 820,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 900,
-            "PenetrationAt100m": 18
-        },
-        "items": [
-            "8.8cmkwk36shellhe"
+            "ww2_shell_german88mmkwk36heat",
+            "44_88heatshell"
         ]
     },
 
@@ -3645,7 +3849,10 @@
         "items": [
             "ww2_shell_german88mmap",
             "ww2_shell_german88mmkwk36ap",
-            "44_88apshell"
+            "44_88apshell",
+            "german88apshell",
+            "8.8cmkwk36shellap",
+            "88mmap"
         ]
     },
 
@@ -3661,7 +3868,9 @@
         },
         "items": [
             "ww2_shell_german88mmaplong",
-            "44_88apshelllong"
+            "44_88apshelllong",
+            "german88l71apshell",
+            "88mmaplong"
         ]
     },
 
@@ -3675,44 +3884,8 @@
             "HasSubmunitions": "false"
         },
         "items": [
-            "ww2_shell_german88mmkwk36apcr"
-        ]
-    },
-
-    "88mm PzGr. 39 APCBC (KwK 36)": {
-        "properties": {
-            "Mass": 10200,
-            "MuzzleVelocity": 773,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 59,
-            "PenetrationAt100m": 162
-        },
-        "items": [
-            "88mmap"
-        ]
-    },
-
-    "88mm PzGr. 39/43 APCBC (KwK 43)": {
-        "properties": {
-            "Mass": 10160,
-            "MuzzleVelocity": 1000,
-            "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 64,
-            "PenetrationAt100m": 217
-        },
-        "items": [
-            "88mmaplong"
-        ]
-    },
-
-    "88mm PzGr. 40 APCR (KwK 36)": {
-        "properties": {
-            "Mass": 7300,
-            "MuzzleVelocity": 930,
-            "FallSpeed": 1.0,
-            "PenetrationAt100m": 200
-        },
-        "items": [
+            "ww2_shell_german88mmkwk36apcr",
+            "44_88apcrshell",
             "88mmapcr"
         ]
     },
@@ -3728,7 +3901,22 @@
         },
         "items": [
             "88mmapcrlong",
-            "ww2_shell_german88mmkwk43apcr"
+            "ww2_shell_german88mmkwk43apcr",
+            "44_88apcrshelllong"
+        ]
+    },
+
+    "88mm Pzgr. APCBC-HE (KwK 36)": {
+        "properties": {
+            "AddToAmmoGroup": "88mm KwK/Flak 36",
+            "Mass": 9500,
+            "MuzzleVelocity": 810,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 215,
+            "PenetrationAt100m": 151
+        },
+        "items": [
+            "44_88apshellearly"
         ]
     },
 
@@ -3769,7 +3957,8 @@
             "FragType": "HE_SHELL"
         },
         "items": [
-            "ww2_shell_german88mmhelong"
+            "ww2_shell_german88mmhelong",
+            "german88l71heshell"
         ]
     },
 
@@ -3785,7 +3974,9 @@
         },
         "items": [
             "ww2_shell_german88mmhe",
-            "ww2_shell_german88mmkwk36he"
+            "ww2_shell_german88mmkwk36he",
+            "german88heshell",
+            "8.8cmkwk36shellhe"
         ]
     },
 
@@ -3817,11 +4008,11 @@
 
     "90mm Heavy Tank AP (Generic)": {
         "properties": {
-            "Mass": 10900,
-            "MuzzleVelocity": 823,
+            "Mass": 10940,
+            "MuzzleVelocity": 808,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 71,
-            "PenetrationAt100m": 129,
+            "ExplosiveMassTNTg": 133,
+            "PenetrationAt100m": 164,
             "HasSubmunitions": "false"
         },
         "items": [
@@ -3831,14 +4022,29 @@
 
     "90mm M82 APHE": {
         "properties": {
-            "Mass": 10900,
-            "MuzzleVelocity": 823,
+            "AddToAmmoGroup": "90mm M3",
+            "Mass": 10940,
+            "MuzzleVelocity": 808,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTg": 71,
-            "PenetrationAt100m": 129
+            "ExplosiveMassTNTg": 133,
+            "PenetrationAt100m": 164
         },
         "items": [
-            "90mmap"
+            "90mmap",
+            "44_90apcbcshell"
+        ]
+    },
+
+    "90mm M304 HVAP (M3)": {
+        "properties": {
+            "AddToAmmoGroup": "90mm M3",
+            "Mass": 7600,
+            "MuzzleVelocity": 1021,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 281
+        },
+        "items": [
+            "44_90hvapshell"
         ]
     },
 
@@ -3865,6 +4071,19 @@
         },
         "items": [
             "90mmapfrenchy"
+        ]
+    },
+
+    "90mm T44 HVAP (T15E1)": {
+        "properties": {
+            "AddToAmmoGroup": "90mm T15E1",
+            "Mass": 7600,
+            "MuzzleVelocity": 1143,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 330
+        },
+        "items": [
+            "44_90hvapshelllong"
         ]
     },
 
@@ -3949,6 +4168,7 @@
 
     "100mm BR-412D APHE": {
         "properties": {
+            "AddToAmmoGroup": "100mm D-10S",
             "Mass": 15880,
             "MuzzleVelocity": 895,
             "FallSpeed": 1.0,
@@ -3956,7 +4176,8 @@
             "PenetrationAt100m": 200
         },
         "items": [
-            "100mmap"
+            "100mmap",
+            "44_100apcbcshell"
         ]
     },
 
@@ -4354,7 +4575,8 @@
             "FragType": "HE_SHELL"
         },
         "items": [
-            "shellnato120mmdm11he"
+            "shellnato120mmdm11he",
+            "heshell120mm"
         ]
     },
 
@@ -4369,7 +4591,8 @@
             "FragType": "HE_SHELL"
         },
         "items": [
-            "shellnato120mmdm12a1heat"
+            "shellnato120mmdm12a1heat",
+            "gpshell120mm"
         ]
     },
 
@@ -4397,7 +4620,8 @@
             "HasSubmunitions": "false"
         },
         "items": [
-            "shellnato120mmdm53lke"
+            "shellnato120mmdm53lke",
+            "hvshell120mm"
         ]
     },
 
@@ -4439,6 +4663,34 @@
         ]
     },
 
+    "120mm L27A1 APFSDS (L30A1)": {
+        "properties": {
+            "AddToAmmoGroup": "120mm L30A1",
+            "Mass": 4300,
+            "MuzzleVelocity": 1650,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 563
+        },
+        "items": [
+            "shell120mml27a1"
+        ]
+    },
+
+    "120mm L31A7 HESH (L30A1)": {
+        "properties": {
+            "AddToAmmoGroup": "120mm L30A1",
+            "Mass": 17300,
+            "MuzzleVelocity": 670,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 6.5,
+            "PenetrationAt100m": 152,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "shell120mml31a7"
+        ]
+    },
+
     "120mm M829 APFSDS-DU": {
         "properties": {
             "Mass": 9000,
@@ -4448,6 +4700,34 @@
         },
         "items": [
             "120mmdeathshell"
+        ]
+    },
+
+    "120mm M829A2 APFSDS (M256)": {
+        "properties": {
+            "AddToAmmoGroup": "120mm M256",
+            "Mass": 4900,
+            "MuzzleVelocity": 1680,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 628
+        },
+        "items": [
+            "shell120mmm829a2"
+        ]
+    },
+
+    "120mm M830A1 HEAT-MP-T (M256)": {
+        "properties": {
+            "AddToAmmoGroup": "120mm M256",
+            "Mass": 11400,
+            "MuzzleVelocity": 1410,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 1.4,
+            "PenetrationAt100m": 350,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "shell120mmm830a1"
         ]
     },
 
@@ -4572,6 +4852,7 @@
 
     "122mm BR-471B APHE": {
         "properties": {
+            "AddToAmmoGroup": "122mm D-25T",
             "Mass": 25000,
             "MuzzleVelocity": 795,
             "FallSpeed": 1.0,
@@ -4579,12 +4860,14 @@
             "PenetrationAt100m": 175
         },
         "items": [
-            "122mmaphe"
+            "122mmaphe",
+            "44_122aphebcshell"
         ]
     },
 
     "122mm D-25T BR-471": {
         "properties": {
+            "AddToAmmoGroup": "122mm D-25T",
             "Mass": 25000,
             "MuzzleVelocity": 781,
             "FallSpeed": 1.0,
@@ -4593,7 +4876,8 @@
             "HasSubmunitions": "false"
         },
         "items": [
-            "44_122apshell"
+            "44_122apshell",
+            "russian122apshell"
         ]
     },
 
@@ -4609,6 +4893,64 @@
         },
         "items": [
             "ww2_shell_ussr122mmhe"
+        ]
+    },
+
+    "122mm OF-471 HE-Frag (D-25T)": {
+        "properties": {
+            "AddToAmmoGroup": "122mm D-25T",
+            "Mass": 25000,
+            "MuzzleVelocity": 795,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 3.6,
+            "PenetrationAt100m": 37,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "russian122heshell"
+        ]
+    },
+
+    "125mm 3BK18M HEAT-FS": {
+        "properties": {
+            "AddToAmmoGroup": "125mm 2A46M-5",
+            "Mass": 19000,
+            "MuzzleVelocity": 905,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 2.8,
+            "PenetrationAt100m": 550,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "shell125mm3bk18m"
+        ]
+    },
+
+    "125mm 3BM60 Svinets-2 APFSDS": {
+        "properties": {
+            "AddToAmmoGroup": "125mm 2A46M-5",
+            "Mass": 5100,
+            "MuzzleVelocity": 1660,
+            "FallSpeed": 1.0,
+            "PenetrationAt100m": 578
+        },
+        "items": [
+            "shell125mm3bm60"
+        ]
+    },
+
+    "125mm 3OF26 HE-Frag": {
+        "properties": {
+            "AddToAmmoGroup": "125mm 2A46M-5",
+            "Mass": 23000,
+            "MuzzleVelocity": 850,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 5.2,
+            "PenetrationAt100m": 42,
+            "FragType": "HE_SHELL"
+        },
+        "items": [
+            "shell125mm3of26"
         ]
     },
 
@@ -5321,6 +5663,7 @@
 
     "152mm G-530 Concrete-Piercing Shell": {
         "properties": {
+            "AddToAmmoGroup": "152mm M-10T",
             "Mass": 40000,
             "MuzzleVelocity": 436,
             "FallSpeed": 1.0,
@@ -5328,7 +5671,8 @@
             "PenetrationAt100m": 72
         },
         "items": [
-            "kv2ammo"
+            "kv2ammo",
+            "44_152cpshell"
         ]
     },
 
@@ -5368,6 +5712,20 @@
         },
         "items": [
             "152mmrusshell"
+        ]
+    },
+
+    "152mm PB-35 APCBC (M-10T)": {
+        "properties": {
+            "AddToAmmoGroup": "152mm M-10T",
+            "Mass": 51100,
+            "MuzzleVelocity": 436,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTKg": 4.9,
+            "PenetrationAt100m": 85
+        },
+        "items": [
+            "44_152apshell"
         ]
     },
 

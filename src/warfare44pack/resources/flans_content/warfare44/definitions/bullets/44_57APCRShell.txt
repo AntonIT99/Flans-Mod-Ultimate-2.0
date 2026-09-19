@@ -1,0 +1,40 @@
+Name 57mm BR-271P APCR (ZiS-2)
+ShortName 44_57APCRShell
+Model Bullet
+Colour 255 255 255
+Icon 44_57apshell
+RoundsPerItem 1
+MaxStackSize 4
+Damage 1
+DamageVsLiving 100
+DamageVsVehicles 550
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+FlakParticles 0
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound
+Penetrates False
+SmokeTrail True
+Bomb False
+Shell True
+WeaponType Shell
+
+Mass 1790
+MuzzleVelocity 1270
+FallSpeed 1
+PenetrationAt100m 145
+
+ExplodeParticles 7
+TrailParticleType flansmod.fmtracer
+
+HasLight True
+
+HasLight True
+
+FlareParticleCount 3
+DebrisParticleCount 2
+
+Description Sub-calibre armour-piercing shot for the 57 mm ZiS-2

@@ -40,6 +40,8 @@ AllowAllAmmo False
 Passengers 0
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo Japanese57APShell
+AddAmmo Japanese57HEShell
 //Delays are in ticks or 1/20ths of seconds
 ShootDelay 1
 ShellDelay 70

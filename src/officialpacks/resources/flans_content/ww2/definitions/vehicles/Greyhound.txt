@@ -42,6 +42,8 @@ AddGun 8 20 10 turret browning
 AllowAllAmmo False
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo American37APShell
+AddAmmo American37HEShell
 BarrelPosition 40 28 0
 //Delays are in ticks or 1/20ths of seconds
 ShootDelay 1

@@ -29,3 +29,8 @@ AddAmmo panzerschreckAmmo 5 ingotIron 3 gunpowder
 AddGun type99 20 ingotIron 5 log
 AddAmmo type99Ammo 4 ingotIron 3 gunpowder
 AddGun type97 2 ingotIron 2 gunpowder
+SetPage Tank Shells
+AddGun Japanese57APShell 3 ingotIron 3 gunpowder
+AddGun Japanese57HEShell 3 ingotIron 2 gunpowder 1 tnt
+AddGun Japanese75APShell 4 ingotIron 4 gunpowder
+AddGun Japanese75HEShell 4 ingotIron 2 gunpowder 2 tnt

@@ -42,6 +42,7 @@ Passengers 0
 // X + 5 , -Y -20
 AddAmmo 44_122APShell
 AddAmmo 44_LargeHEShell
+AddAmmo 44_122APHEBCShell
 //Secondary gun
 //Delays are in ticks or 1/20ths of seconds
 //AddGun 28 34 6 turret 44_DT28

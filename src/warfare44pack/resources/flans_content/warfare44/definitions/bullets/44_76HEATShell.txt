@@ -1,0 +1,41 @@
+Name 76mm BP-353A HEAT (F-34/ZiS-3)
+ShortName 44_76HEATShell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+Icon 44_mediumheshell
+RoundsPerItem 1
+MaxStackSize 3
+Damage 1
+DamageVsLiving 75
+DamageVsVehicles 1300
+Explosion 4
+ExplodeOnImpact True
+Fuse 500
+FlakParticles 0
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+HitSound
+Penetrates False
+SmokeTrail True
+Bomb False
+Shell True
+
+WeaponType Shell
+
+Mass 3900
+MuzzleVelocity 355
+FallSpeed 1
+ExplosiveMassTNTg 600
+PenetrationAt100m 80
+
+ExplodeParticles 10
+TrailParticleType flansmod.fmflame
+
+HasLight True
+
+FlareParticleCount 8
+DebrisParticleCount 4
+
+Description Shaped-charge shell for the 76 mm F-34 and ZiS-3

@@ -1,0 +1,39 @@
+// Identity
+Name German 88 mm Sprgr. L/4.5 HE (KwK 36)
+ShortName German88HEShell
+Description High-explosive ammunition for the 8.8 cm KwK 36 and FlaK 18/36/37
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell88gHE
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 9000
+MuzzleVelocity 820
+FallSpeed 1
+ExplosiveMassTNTg 900
+PenetrationAt100m 18
+FragType HE_SHELL
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+HasLight True
+FlakParticles 6

@@ -1,0 +1,39 @@
+// Identity
+Name German 120 mm DM11 HE-T (Rh-120 L/55)
+ShortName heshell120mm
+Description High-explosive ammunition for the Leopard 2A6 Rh-120 L/55
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon heshell120mm
+MaxStackSize 4
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+Mass 12900
+MuzzleVelocity 1000
+FallSpeed 1
+ExplosiveMassTNTKg 2.6
+PenetrationAt100m 30
+FragType HE_SHELL
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 4
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+HasLight True
+FlakParticles 10

@@ -32,4 +32,8 @@ SmokeTrail True
 //True if this is a bomb
 Bomb False
 Shell True
+Mass 640
+MuzzleVelocity 820
+ExplosiveMassTNTg 21
+PenetrationAt100m 35
 RecipeOutput 3

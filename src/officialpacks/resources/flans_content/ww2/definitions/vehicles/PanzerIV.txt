@@ -41,6 +41,8 @@ AddGun 8 34 8 turret mg42
 AllowAllAmmo False
 AddAmmo shell
 AddAmmo HEshell
+AddAmmo German75APShell
+AddAmmo German75HEShell
 //Delays are in ticks or 1/20ths of seconds
 ShootDelay 1
 ShellDelay 95
