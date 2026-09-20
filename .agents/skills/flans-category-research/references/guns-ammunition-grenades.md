@@ -11,6 +11,7 @@ For each identifiable gun, research and normally define:
 | --- | --- | --- |
 | `MuzzleVelocity` | metres per second | Required only when the gun is velocity-authoritative: normal service load from the represented barrel. A cartridge velocity from another barrel length is not equivalent. |
 | `RoundsPerMin` | rounds per minute | Mandatory for a gun that fires ammunition; omit on a melee-only gun. Cyclic rate for automatic weapons; credible practical/mechanical rate for manual or semiautomatic weapons. Never use magazine capacity. |
+| `ReloadTime` | ticks | Mandatory for a gun that fires ammunition; omit on a melee-only gun. The documented time to change a magazine, clip, belt box or single round, at 20 ticks per second. It is what actually sets the rate of fire of anything that reloads often — a bolt-action rifle or a single-shot launcher spends most of its time here, not in `RoundsPerMin`. |
 | `Dispersion` | degrees | Mandatory for a gun that fires ammunition; omit on a melee-only gun. Actual angular accuracy/spread for the configuration. Convert MOA with `degrees = MOA / 60`; do not infer it from effective range. |
 
 Two kinds of `guns` definition are outside the cadence and spread requirement:
@@ -37,8 +38,21 @@ Keep shotgun dispersion representative of the full shot pattern and ordinary gun
 dispersion representative of the base weapon without movement or attachment
 modifiers. `MuzzleVelocity` is internally divided by 20 to obtain blocks/tick.
 `RoundsPerMin` overrides legacy `ShootDelay`; its delay is `1200 / RPM` ticks.
-Treat 1200 RPM as the maximum ordinary supported rate because gun updates occur on
-the Minecraft tick cadence.
+Fractional delays are preserved and a gun fires as many times in a tick as its
+delay allows, so rates above 1200 RPM are represented faithfully. Author the real
+cyclic rate of a minigun or an aircraft cannon rather than clamping it.
+
+An entry sitting at exactly `1200` is a clamping suspect, because that used to be
+the ceiling. When a task touches such an entry, re-check the source: a minigun at
+`1200` is wrong and should carry its real several-thousand RPM. A weapon whose
+researched rate genuinely is 1200 needs no change; say which it was in the report.
+
+`ReloadTime` and `RoundsPerMin` describe different halves of the same behaviour
+and are researched together. The wait after the round that empties the gun is
+`max(ReloadTime, the cadence)`, so a quick reload can never make a slow action
+cycle faster than it really does. How often that wait arrives is set by the
+ammunition's `RoundsPerItem`: a weapon whose round is a single item reloads after
+every shot, which is how launchers and break-action weapons should behave.
 
 When reliable research and configuration-compatible game sources cannot establish
 either mandatory value, author a gameplay-coherent fallback rather than omitting
@@ -85,6 +99,7 @@ For each identifiable AA gun or complete AA mounting, research and define:
 | Property | Unit | Requirement |
 | --- | --- | --- |
 | `RoundsPerMin` | firing events per minute | Required. Use the represented mounting's mechanical cadence and interpret it with the definition's barrel behavior as described below. This overrides `ShootDelay` using `1200 / RPM` ticks, as for guns. |
+| `ReloadTime` | ticks | Required. Time to reload the whole mounting, at 20 ticks per second. A multi-barrel mount reloads every barrel together and only once all of them have run dry, so research the figure for the complete mounting, not for one barrel. Together with the loaded round's `RoundsPerItem` this produces the burst-then-reload signature of a clip- or magazine-fed AA gun such as the 2 cm Flak 30 or the Bofors 40 mm. |
 | `Dispersion` | degrees | Required. Convert MOA with `degrees = MOA / 60`; never derive it from range. |
 | `RealMassKg` | kilograms | Required firing/operational mass of the complete represented gun and integral mounting, carriage, or shield. Exclude crew, towing vehicle, and non-integral ammunition reserves. |
 | `UseRealisticVehicleHealth` | quoted boolean | Required as `"true"`. Total entity HP becomes `realisticVehicleHealthScale * RealMassKg^(2/3)`, rounded to the nearest integer with a minimum of one. |
@@ -108,15 +123,17 @@ actual definition:
   by `NumBarrels` for non-alternating fire. Do not multiply a documented combined
   rate a second time.
 
-Minecraft permits at most one AA-gun firing event per tick, so 1200 event RPM is
-the ordinary maximum representable cadence. A simultaneous multi-barrel mounting
-may legitimately emit more than 1200 projectiles per minute while remaining at or
-below 1200 firing events per minute.
+Firing events may now fall closer together than one tick, so event rates above
+1200 RPM are representable and should be authored at their real value. A
+simultaneous multi-barrel mounting still emits several projectiles per event, so
+its projectile output remains event RPM multiplied by `NumBarrels` and
+`NumBullets`.
 
 When reliable research and configuration-compatible game sources cannot establish
-AA-gun `RoundsPerMin` or `Dispersion`, author a gameplay-coherent fallback rather
-than omitting it. Base it on the gun calibre, era, mounting, barrel count, firing
-mode, and comparable categorized AA guns; report it explicitly as invented.
+AA-gun `RoundsPerMin`, `ReloadTime` or `Dispersion`, author a gameplay-coherent
+fallback rather than omitting it. Base it on the gun calibre, era, mounting,
+barrel count, firing mode, and comparable categorized AA guns; report it
+explicitly as invented.
 
 Projectile mass, muzzle velocity, explosive filler, penetration, and belt/shell
 composition belong to the compatible `bullet_categories.json` entries because

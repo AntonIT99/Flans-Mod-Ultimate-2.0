@@ -1,6 +1,6 @@
 ---
 name: flans-category-research
-description: Research, maintain, and audit Flan's Mod Ultimate category JSON and shortname coverage, including historical statistics and armor, fictional-item, and mecha balancing.
+description: Research, maintain, and audit Flan's Mod Ultimate category JSON and shortname coverage, including historical statistics, weapon cadence and reload cycles, and armor, fictional-item, and mecha balancing.
 ---
 
 # Flans Category Research

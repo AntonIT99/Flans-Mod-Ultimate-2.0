@@ -28,11 +28,16 @@ Which cadence key a category needs follows from that, and is set out below.
 This section applies to ground vehicles and aircraft alike; the keys live on
 `DriveableType`.
 
-A driveable has two weapon banks, primary and secondary, and each resolves its
-firing cadence like this:
+A driveable has two weapon banks, primary and secondary. Each has **two** timings
+to research, not one: the cadence between rounds inside a magazine, and the reload
+that separates magazines. A category that authors only the first describes a
+weapon that never stops to reload.
+
+### Cadence
 
 ```text
-ReadWeaponsFromGunTypes true AND this bank has a PilotGun/AddGun mount
+this bank has a PilotGun/AddGun mount, and either ReadWeaponsFromGunTypes is
+true or the bank states no cadence key of its own
     -> the mounted GunType's own RoundsPerMin
 otherwise
     -> ShootDelayPrimarySeconds
@@ -44,34 +49,74 @@ otherwise
 with `ShootDelaySecondarySeconds`, `RoundsPerMinSecondary`,
 `ShootDelaySecondary`, and `ShootDelay` as the secondary bank's equivalents.
 
-The consequence that decides everything: **`ReadWeaponsFromGunTypes` only takes over
-the cadence when that bank's shoot points include a real gun mount.** A bank made of
-bare `ShootPointPrimary` lines firing shells or bombs straight out of the ammo bank
-has no `GunType` at all, so it falls through to the driveable's own keys, and if
-none is authored it silently sits at the default 60 rounds per minute — one shot
-per second, for a Tiger's 8.8 cm as much as for a Sherman's 75 mm.
+The consequence that decides everything: **a bank only defers to a gun when its
+shoot points include a real gun mount.** A bank made of bare `ShootPointPrimary`
+lines firing shells or bombs straight out of the ammo bank has no `GunType` at
+all, so it uses the driveable's own keys, and if none is authored it silently sits
+at the default 60 rounds per minute — one shot per second, for a Tiger's 8.8 cm as
+much as for a Sherman's 75 mm.
 
-So decide per bank, by inspecting the definition's shoot points:
+### Reload
+
+For a bank firing the vehicle's own ordnance the reload actually used is the
+**longest** of every timing figure the definition states for that bank:
+
+```text
+max( ReloadTime, ReloadTimePrimary,
+     ShootDelayPrimarySeconds, RoundsPerMinPrimary,
+     ShootDelayPrimary, ShellDelay, BombDelay, ShootDelay,
+     the resolved cadence )
+```
+
+Taking the maximum is what keeps single-key legacy definitions working: a
+definition expressing a tank's whole loading cycle as `ShellDelay 60` reloads in
+three seconds without stating a reload time at all. It also means a fast cadence
+can never make a bank reload faster than its cadence.
+
+For a bank firing mounted guns the gun's own `ReloadTime` applies instead, unless
+the vehicle states `ReloadTimePrimary` / `ReloadTimeSecondary`. `ReadWeaponsFromGunTypes`
+makes the gun authoritative for both cadence and reload unconditionally.
+
+### How many rounds before the reload
+
+`ReloadRoundsPrimary` / `ReloadRoundsSecondary` (with `ReloadRounds` as a shared
+fallback) state how many rounds the bank fires between reloads. Without them the
+loaded ammunition's own `RoundsPerItem` decides, which for an ordinary shell is
+one round — so a tank gun reloads after every shot whether or not anyone authors
+anything.
+
+### Deciding per bank
+
+Inspect the definition's shoot points, then author from this table. **An
+autocannon needs all three rows of research**, because its historical signature is
+a burst at a cyclic rate followed by a magazine change, and a category that gives
+it only an RPM turns it into an unrealistic belt-fed weapon that never pauses:
 
 | The bank is | Author | Because |
 | --- | --- | --- |
-| A main gun firing shells, one round at a time | `ShootDelayPrimarySeconds` | Sources give tank and naval guns a *loading cycle in seconds*. Author the sustained rate a trained crew held, not a burst-of-three record. |
-| An autocannon, machine gun, or rocket pod on a bare shoot point | `RoundsPerMinPrimary` | Sources give automatic weapons a cyclic rate. It is the same unit, and the same 1200 ceiling, as `RoundsPerMin` in `gun_categories.json`. |
-| Backed by a `PilotGun` / `AddGun` mount | nothing | With `ReadWeaponsFromGunTypes: "true"` the cadence comes from that gun's own researched category. A driveable-level key here is dead: it is shadowed, and it will silently diverge from the gun category the day someone corrects the gun. |
-| A bomb or torpedo release | `ShootDelaySecondarySeconds` | Release interval in seconds, matching how bomb-bay intervals are documented. |
+| A main gun firing shells, one round at a time | `ShootDelayPrimarySeconds` | Sources give tank and naval guns a *loading cycle in seconds*. Author the sustained rate a trained crew held, not a burst-of-three record. With one round per item the cadence and the reload are the same wait, so this single key is enough. |
+| **An autocannon or automatic cannon** | `RoundsPerMinPrimary` **and** `ReloadTimePrimary` **and** `ReloadRoundsPrimary` | The cyclic rate, the magazine or clip change, and the rounds it holds. A 2 cm KwK 30 is `RoundsPerMinPrimary 280`, `ReloadRoundsPrimary 10` for its ten-round magazine, and a `ReloadTimePrimary` covering the change — **in ticks, so multiply the documented seconds by 20**, unlike the cadence keys which take seconds or RPM. Research all three from the same source configuration; a rate without a magazine size is not a usable answer. |
+| A machine gun or rocket pod on a bare shoot point | `RoundsPerMinPrimary`, plus `ReloadRoundsPrimary` and `ReloadTimePrimary` when the source documents a belt or pod capacity and a reload | Sources give automatic weapons a cyclic rate. A belt-fed hull machine gun with a long belt reasonably has no authored reload; a pod that empties and is not reloadable in the field does. |
+| Backed by a `PilotGun` / `AddGun` mount | nothing | The cadence and reload come from that gun's own researched category. A driveable-level key here is a future contradiction: it overrides the gun today and silently diverges from it the day someone corrects the gun. Set `ReadWeaponsFromGunTypes: "true"` to make that impossible. |
+| A bomb or torpedo release | `ShootDelaySecondarySeconds` | Release interval in seconds, matching how bomb-bay intervals are documented. Bombs and missiles are selected on their racks, not loaded, so they need no reload research. |
 
-Author exactly one cadence key per bank. Two are not an error, but the loser is
-invisible, and a category that carries both is a future contradiction.
+Author exactly one **cadence** key per bank. Two are not an error, but the loser
+is invisible for cadence while still counting towards the reload maximum, so a
+category carrying both says something it did not mean.
 
-Both keys floor at one tick. `RoundsPerMinPrimary` therefore caps at 1200, exactly
-as gun `RoundsPerMin` does, and `ShootDelayPrimarySeconds` cannot express anything
-faster than 0.05 s. `ReloadTimePrimary` and `PlaceTimePrimary` are separate floors
-applied on top of the resolved delay, not alternatives to it.
+Fractional delays are preserved, so `RoundsPerMinPrimary` is no longer capped at
+1200 and `ShootDelayPrimarySeconds` can express anything down to 0.0025 s. Use the
+real cyclic rate; do not clamp a 1500 RPM aircraft cannon to 1200. An entry
+sitting at exactly `1200` is a clamping suspect from when that was the ceiling —
+a 2 cm Flakvierling 38's four barrels are not 1200 rounds per minute between them.
+Re-check the source when a task touches one, and say in the report whether the
+value was corrected or confirmed.
 
-Passenger and turret mounts are outside all of this. A passenger gun always uses its
-own `GunType` cadence regardless of `ReadWeaponsFromGunTypes` and of every key
-above, so a hull with twenty passenger mounts needs no driveable cadence key for
-them — only correct `gun_categories.json` entries.
+Passenger and turret mounts are outside all of this. A passenger gun always uses
+its own `GunType` cadence **and its own `ReloadTime`**, regardless of
+`ReadWeaponsFromGunTypes` and of every key above, so a hull with twenty passenger
+mounts needs no driveable timing key for them — only correct `gun_categories.json`
+entries, reload times included.
 
 ## Ground vehicles
 
@@ -129,9 +174,11 @@ Additional properties:
   and disclose estimates. An explicit `DriverAimSpeed` overrides the legacy
   `TurretRotationSpeed`; do not convert that older mouse-input coefficient as though
   it were an angular-rate unit.
-- Cadence keys for a bank with no gun mount, as set out in
+- Cadence and reload keys for a bank with no gun mount, as set out in
   [Mounted weapon cadence](#mounted-weapon-cadence): `ShootDelayPrimarySeconds` for a
-  shell-firing main gun, `RoundsPerMinPrimary` for an autocannon or machine gun.
+  shell-firing main gun; `RoundsPerMinPrimary` with `ReloadRoundsPrimary` and
+  `ReloadTimePrimary` for an autocannon, so its burst-then-reload signature is
+  represented rather than a continuous stream.
 - `UseAmmoGroup`: exact group already created by shell categories. It is repeatable,
   so use an array for several cannon families. Validate both producers and
   consumers as described in the weapons reference.
@@ -215,11 +262,14 @@ Optional, and researched only where a source actually states it:
 | --- | --- | --- |
 | `RealAirBrakeAreaM2` | m², finite and > 0 | Total frontal area the speed brake panels present when fully deployed. Omit it and the air brake is sized at a fixed small fraction of wing area; author `HasAirBrake False` for a type that carries no such surfaces at all. |
 
-Aircraft cadence follows [Mounted weapon cadence](#mounted-weapon-cadence) unchanged.
-Most fighters mount their guns as `PilotGun` entries and therefore need no cadence
-key at all: `ReadWeaponsFromGunTypes: "true"` pulls the rate from the researched gun
-category. Author `RoundsPerMinPrimary` only for a bare-shoot-point gun bank, and
-`ShootDelaySecondarySeconds` for a bomb or torpedo release interval.
+Aircraft timings follow [Mounted weapon cadence](#mounted-weapon-cadence) unchanged.
+Most fighters mount their guns as `PilotGun` entries and therefore need no timing
+key at all: the rate and reload come from the researched gun category, and
+`ReadWeaponsFromGunTypes: "true"` makes that permanent. Author `RoundsPerMinPrimary`
+only for a bare-shoot-point gun bank — with `ReloadRoundsPrimary` and
+`ReloadTimePrimary` when it is an autocannon fed from drums or belts of a
+documented size, which is the usual case for interwar and early-war fighter
+cannon — and `ShootDelaySecondarySeconds` for a bomb or torpedo release interval.
 
 ### Rotorcraft
 
