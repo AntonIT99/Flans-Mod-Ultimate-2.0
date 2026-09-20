@@ -193,7 +193,10 @@ public final class ClientHudOverlays
         Component pitchText = Component.translatable("hud.flansmodultimate.aa_gun.gun_pitch", Math.round(-pitch));
 
         Component currentAmmoName = aaGun.getCurrentAmmoName();
-        boolean hasCurrentAmmo = !currentAmmoName.getString().isEmpty();
+        // The mask is the authoritative loaded-state sync. The display name is
+        // presentation data and can briefly be empty while a saved entity is
+        // being spawned on the client.
+        boolean hasCurrentAmmo = aaGun.getAmmoMask() != 0;
         // An AA gun reads its readiness from the same builder a driveable shell
         // bank does, so the two say the same thing in the same words.
         List<OrdnanceLine> readiness = new ArrayList<>();

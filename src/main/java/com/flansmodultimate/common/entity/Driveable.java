@@ -1611,7 +1611,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (rounds > entityData.get(left))
                 bankMagazineCapacity[index] = rounds;
             setIfChanged(size, bankMagazineCapacity[index]);
-            setIfChanged(left, rounds);
+            // Creative firing deliberately does not damage the ammunition item,
+            // but it still advances the bank's magazine and triggers reloads.
+            // Clamp the physical item count by that logical magazine count so
+            // both creative and survival HUDs show the same shots remaining.
+            int magazineLeft = Math.max(0, bankMagazineCapacity[index] - bankRoundsFired[index]);
+            setIfChanged(left, Math.min(rounds, magazineLeft));
             return;
         }
         int magazine = bankMagazineSize(secondary);
