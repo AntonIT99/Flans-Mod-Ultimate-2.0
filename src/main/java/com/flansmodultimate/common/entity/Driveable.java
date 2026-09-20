@@ -323,6 +323,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
      * cooldown as before.
      */
     protected final float[] bankReloadTicks = { 0F, 0F };
+    /** Rounds a gun bank's ammunition slot held when it was last restocked, for its HUD readout. */
+    protected final int[] bankMagazineCapacity = { 0, 0 };
     /** The same, per seat gun. */
     protected float[] passengerReloadTicks = new float[0];
     /** Rounds each seat gun's slot held when it was last restocked, for its HUD readout. */
@@ -1591,12 +1593,42 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         publishMagazine(true, DATA_SECONDARY_MAGAZINE_LEFT, DATA_SECONDARY_MAGAZINE_SIZE);
     }
 
+    /**
+     * What a bank reports to the HUD, which is a different question for each kind
+     * of bank.
+     *
+     * <p>Ordnance counts down to its next reload, because that is what a crew
+     * firing a magazine wants to know. A mounted gun reports everything left in
+     * its ammunition slot against what went in at the last restock, matching the
+     * seat guns and deployed guns it is the same weapon as.
+     */
     private void publishMagazine(boolean secondary, EntityDataAccessor<Integer> left, EntityDataAccessor<Integer> size)
     {
         int index = secondary ? 1 : 0;
+        if (isGunBank(secondary))
+        {
+            int rounds = gunBankRounds(secondary);
+            if (rounds > entityData.get(left))
+                bankMagazineCapacity[index] = rounds;
+            setIfChanged(size, bankMagazineCapacity[index]);
+            setIfChanged(left, rounds);
+            return;
+        }
         int magazine = bankMagazineSize(secondary);
         setIfChanged(size, magazine);
         setIfChanged(left, magazine <= 0 ? 0 : Math.max(0, magazine - bankRoundsFired[index]));
+    }
+
+    /** Everything the ammunition slot feeding a bank's mounted guns still holds. */
+    private int gunBankRounds(boolean secondary)
+    {
+        for (ShootPoint point : configType.shootPoints(secondary))
+        {
+            AmmoSelection selection = selectAmmo(point, EnumWeaponType.GUN, secondary);
+            if (selection != null && !selection.stack().isEmpty())
+                return ShootableItem.getTotalRounds(selection.stack());
+        }
+        return 0;
     }
 
     private void setIfChanged(EntityDataAccessor<Integer> accessor, int value)

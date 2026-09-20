@@ -22,6 +22,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.EnumAmmoHudLayout;
@@ -313,6 +314,34 @@ public final class ClientHudOverlays
     }
 
     private record OrdnanceLine(Component text, int color) {}
+
+    /**
+     * The readout for one of the driver's weapon banks.
+     *
+     * <p>A bank firing mounted guns is reported as the gun it is, named and
+     * counted exactly as the same weapon would be on a seat or a bipod, because
+     * to the driver it is a machine gun and not an "ordnance bank". A bank firing
+     * the vehicle's own ordnance gets the Shell/Bomb/Missile readiness line.
+     */
+    private static void addBankLine(List<OrdnanceLine> lines, Driveable driveable, boolean secondary, Component ammoName)
+    {
+        DriveableType type = driveable.getConfigType();
+        EnumWeaponType weapon = type.weaponType(secondary);
+        int reloadTicks = secondary ? driveable.getSecondaryReloadTicks() : driveable.getPrimaryReloadTicks();
+        int left = driveable.getMagazineLeft(secondary);
+        int size = driveable.getMagazineSize(secondary);
+
+        if (weapon == EnumWeaponType.GUN)
+        {
+            GunType gun = type.getPilotGunType(secondary);
+            if (gun != null)
+                addGunAmmoLines(lines, ModUtils.getDisplayName(gun), left, size, reloadTicks);
+            else
+                addWeaponLine(lines, "hud.flansmodultimate.driveable.gun", reloadTicks, left > 0, left, size);
+            return;
+        }
+        addOrdnanceLine(lines, weapon, reloadTicks, ammoName, left, size);
+    }
 
     /** Appends a Shell/Bomb/Missile readiness line for a weapon bank, if that bank fires ordnance. */
     private static void addOrdnanceLine(List<OrdnanceLine> lines, EnumWeaponType weapon, int reloadTicks,
@@ -1039,10 +1068,8 @@ public final class ClientHudOverlays
         Component primaryAmmoName = driveable.getCurrentPrimaryAmmoName();
         Component secondaryAmmoName = driveable.getCurrentSecondaryAmmoName();
         List<OrdnanceLine> ordnanceLines = new ArrayList<>();
-        addOrdnanceLine(ordnanceLines, driveable.getConfigType().weaponType(false), driveable.getPrimaryReloadTicks(),
-            primaryAmmoName, driveable.getMagazineLeft(false), driveable.getMagazineSize(false));
-        addOrdnanceLine(ordnanceLines, driveable.getConfigType().weaponType(true), driveable.getSecondaryReloadTicks(),
-            secondaryAmmoName, driveable.getMagazineLeft(true), driveable.getMagazineSize(true));
+        addBankLine(ordnanceLines, driveable, false, primaryAmmoName);
+        addBankLine(ordnanceLines, driveable, true, secondaryAmmoName);
         // A gunner is working their own seat's gun rather than the driver's weapon
         // banks, so they get that gun named, with its rounds and its readiness.
         if (player.getVehicle() instanceof Seat ridden)
