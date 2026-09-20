@@ -290,3 +290,11 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight puma
+gunsightZoom 2.5
+heliGuiSeat 1 true
+heliGUI gercomm
+passengerZoom 1 3

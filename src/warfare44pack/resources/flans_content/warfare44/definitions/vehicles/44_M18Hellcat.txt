@@ -301,3 +301,10 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+// Optics
+heliGuiSeat 1 true
+heliGUI uscomm
+hasScope true
+Gunsight sherman
+gunsightZoom 3.5

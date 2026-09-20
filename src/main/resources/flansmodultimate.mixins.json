@@ -19,7 +19,8 @@
       "LivingEntityNameTagRangeMixin",
       "MountedRiderTurnMixin",
       "PlayerSkinOverrideMixin",
-      "SeatedPlayerRendererMixin"
+      "SeatedPlayerRendererMixin",
+      "VehicleOpticsLightMixin"
   ],
   "server": [
   ],

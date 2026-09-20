@@ -3161,6 +3161,26 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             modelLocalDirectionToWorld(new Vec3(0D, ridingOffset, 0D), yaw, pitch, roll));
     }
 
+    /** Optics anchors use the same authored attachment basis and interpolation as seats and guns. */
+    public Vec3 getInterpolatedOpticsPosition(Seat seat, float partialTick)
+    {
+        var optics = seat.getOptics();
+        if (optics == null || !optics.isHasCamera())
+            return getInterpolatedRiderWorldPosition(seat.getSeatIndex(), 1.12D, partialTick);
+        float partial = Mth.clamp(partialTick, 0F, 1F);
+        Vec3 root = new Vec3(Mth.lerp((double) partial, xo, getX()),
+            Mth.lerp((double) partial, yo, getY()), Mth.lerp((double) partial, zo, getZ()));
+        Vec3 local = attachmentModelLocal(optics.getCamera());
+        if (optics.isDriverDefinition())
+            local = turretPointToLocal(local, Mth.rotLerp(partial, prevTurretYaw, getTurretYaw()), 0F);
+        else if (seat.getSeatInfo() != null && isTurretMountedPart(seat.getSeatInfo().getPart()))
+            local = turretPointToLocal(local, Mth.rotLerp(partial, prevTurretYaw, getTurretYaw()),
+                seat.getSeatInfo().getPart() == EnumDriveablePart.BARREL ? Mth.rotLerp(partial, prevTurretPitch, getTurretPitch()) : 0F);
+        return root.add(modelLocalDirectionToWorld(local,
+            Mth.rotLerp(partial, prevYaw, getYaw()), Mth.rotLerp(partial, prevPitch, getPitch()),
+            Mth.rotLerp(partial, prevRoll, getRoll())));
+    }
+
     /**
      * Basis conversion for a point authored as an attachment on the driveable:
      * seat positions and their rotated offsets, passenger gun origins and the

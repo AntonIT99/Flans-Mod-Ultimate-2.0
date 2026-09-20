@@ -119,3 +119,8 @@ IsExplosionWhenDestroyed true
 Tank true
 
 //------------------------------------------------
+
+// Optics
+hasScope true
+Gunsight italian1
+gunsightZoom 2

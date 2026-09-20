@@ -18,6 +18,8 @@ import com.flansmodultimate.client.render.KillMessageFeed;
 import com.flansmodultimate.client.render.MountedCameraView;
 import com.flansmodultimate.client.render.OpStickConnectionRenderer;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
+import com.flansmodultimate.client.render.VehicleOpticsClient;
+import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
@@ -36,6 +38,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
@@ -138,6 +141,7 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event)
     {
+        VehicleThermalRenderer.render(event);
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick(), event.getCamera());
@@ -172,7 +176,9 @@ public final class ClientEventHandler
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
         if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type()
-            && (ModClient.getCurrentScope() != null || gunConfigHidesCrosshair || (ModCommonConfig.get().disableCrosshairForGuns() && holdingNonMeleeGun)))
+            && (VehicleOpticsClient.activeSeat() != null
+                && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
+                || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair || (ModCommonConfig.get().disableCrosshairForGuns() && holdingNonMeleeGun)))
         {
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();
@@ -331,7 +337,8 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
-        ModClient.resetVehicleZoom();
+        VehicleOpticsClient.reset();
+        VehicleThermalRenderer.reset();
         ModClient.clearTransientLighting();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
@@ -362,7 +369,19 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onRenderNameTag(RenderNameTagEvent event)
     {
+        if (VehicleThermalRenderer.isRenderingMask())
+        {
+            event.setResult(Event.Result.DENY);
+            return;
+        }
         if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
             event.setResult(Event.Result.DENY);
+    }
+
+    @SubscribeEvent
+    public static void onRenderScopedHand(RenderHandEvent event)
+    {
+        if (VehicleOpticsClient.activeSeat() != null)
+            event.setCanceled(true);
     }
 }

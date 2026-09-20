@@ -15,6 +15,7 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.DriveableData;
@@ -122,7 +123,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         AnimationHistory history = animationStates.computeIfAbsent(driveable, ignored -> new AnimationHistory());
         history.advance(driveable, type);
         history.updatePassengerGunPivots(driveable, type, model);
-        renderDiagnosticMarkers(driveable, type);
+        boolean thermalMask = VehicleThermalRenderer.isRenderingMask();
+        if (!thermalMask)
+            renderDiagnosticMarkers(driveable, type);
         ResourceLocation texture = getTextureLocation(driveable);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
         boolean cull = ModClientConfig.get().useCullingRendering(type);
@@ -152,7 +155,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         // camera through a perspective projection. A menu draws the same entity
         // under the GUI's orthographic matrix at a pose only tens of pixels from
         // the origin, which those measurements read as vanishingly small.
-        boolean preview = isRenderingPreview();
+        // A heat silhouette must use geometry: an impostor's transparent texels
+        // cannot be recovered after the mask substitutes its white texture.
+        boolean preview = isRenderingPreview() || thermalMask;
         DriveableImpostorCache.Result lodResult = DriveableImpostorCache.Result.notRendered();
         if (!preview && !locallyControlled)
         {

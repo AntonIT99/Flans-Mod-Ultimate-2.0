@@ -122,3 +122,8 @@ IsExplosionWhenDestroyed true
 Tank true
 
 //------------------------------------------------
+
+// Optics
+hasScope true
+Gunsight m4a3
+gunsightZoom 4

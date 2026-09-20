@@ -2,6 +2,7 @@ package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.render.MountedCameraView;
+import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.entity.Seat;
 import org.spongepowered.asm.mixin.Mixin;
@@ -68,6 +69,8 @@ public abstract class DriveableCameraMixin
         double eyeOffset = seat.getPassengerRidingOffset(player) + (position.y - vanillaFeetY);
         setPosition(seat.getDriveable().getInterpolatedRiderWorldPosition(
             seat.getSeatIndex(), eyeOffset, partialTick));
+        if (!detached && VehicleOpticsClient.activeSeat() == seat && seat.getOptics() != null && seat.getOptics().isHasCamera())
+            setPosition(seat.getDriveable().getInterpolatedOpticsPosition(seat, partialTick));
 
         // Build the boom from the same composed seat view this frame renders
         // with. The rider's own rotation only catches up once per tick, so a

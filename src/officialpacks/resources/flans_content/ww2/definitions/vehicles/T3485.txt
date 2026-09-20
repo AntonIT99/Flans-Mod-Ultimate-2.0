@@ -84,3 +84,8 @@ PitchSoundLength 61
 
 YawSound TurretTraverse2
 YawSoundLength 38
+
+// Optics
+hasScope true
+Gunsight T3485
+gunsightZoom 3.5

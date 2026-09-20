@@ -146,3 +146,11 @@ IsExplosionWhenDestroyed true
 Tank true
 
 //------------------------------------------------
+
+// Optics
+hasScope true
+Gunsight jagd
+gunsightZoom 3.5
+hasScope true
+Gunsight stug
+gunsightZoom 4.5

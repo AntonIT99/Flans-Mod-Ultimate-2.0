@@ -311,3 +311,8 @@ WheelStepHeight 2
 Buoyancy 0.6
 
 FloatOffset -1.2
+
+// Optics
+hasScope true
+Gunsight m4a3
+gunsightZoom 4

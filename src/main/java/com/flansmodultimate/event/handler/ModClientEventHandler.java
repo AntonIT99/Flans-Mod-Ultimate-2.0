@@ -28,6 +28,7 @@ import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
+import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
 import com.flansmodultimate.client.render.entity.AAGunRenderer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
@@ -250,6 +251,7 @@ public final class ModClientEventHandler
     public static void onClientReload(RegisterClientReloadListenersEvent event)
     {
         event.registerReloadListener((ResourceManagerReloadListener) rm -> {
+            VehicleThermalRenderer.reset();
             ModelCache.reload();
             PlayerSkinOverrides.clearValidationCache();
             ContentManager.logMissingModelTextures(rm);

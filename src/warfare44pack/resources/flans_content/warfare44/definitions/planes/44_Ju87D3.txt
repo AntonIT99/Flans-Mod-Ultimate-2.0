@@ -113,3 +113,7 @@ BulletSpeed 12
 BulletSpread 4
 
 Description German Ground Attack Aircraft __Uses MG 17 / 250kg/500lb Bomb __Year Introduced : 1943
+
+// Optics
+heliGuiSeat 1 true
+heliGUI bombsightgui

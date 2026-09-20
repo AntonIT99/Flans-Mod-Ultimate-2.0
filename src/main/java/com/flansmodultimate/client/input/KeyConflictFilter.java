@@ -95,6 +95,8 @@ public final class KeyConflictFilter
         // mounted, so reporting these deliberate overlaps would be misleading.
         if (isVanillaAttackOrUse(outsider))
             return isDriveableWeaponBind(ours);
+        if ("key.pickItem".equals(outsider.getName()))
+            return (OURS_PREFIX + "vehicle.zoom").equals(ours.getName());
 
         return isInertWhileRiding(outsider) || KeyInputHandler.isClaimableVanillaAction(outsider);
     }

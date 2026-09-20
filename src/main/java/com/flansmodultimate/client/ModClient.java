@@ -11,15 +11,14 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.KillMessageFeed;
 import com.flansmodultimate.client.render.MountedCameraView;
+import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
-import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
-import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
@@ -153,9 +152,6 @@ public class ModClient
     private static float lastFOVZoomLevel = 1F;
     /** The player's mouse sensitivity setting, as it was before being hacked by my mod */
     private static double originalMouseSensitivity = 0.5;
-    private static final double VEHICLE_ZOOM_FACTOR = 7D;
-    private static boolean vehicleZoomActive;
-    private static double originalVehicleMouseSensitivity = 0.5D;
     /** The original CameraType */
     private static CameraType originalCameraType = CameraType.FIRST_PERSON;
     private static boolean changedCameraEntity;
@@ -366,11 +362,11 @@ public class ModClient
 
         if (player == null || level  == null)
         {
-            resetVehicleZoom();
+            VehicleOpticsClient.reset();
             return;
         }
 
-        validateVehicleZoom(player);
+        VehicleOpticsClient.tick();
 
         PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
 
@@ -812,7 +808,7 @@ public class ModClient
     private static boolean canUseScope(Player player)
     {
         ItemStack stack = player.getMainHandItem();
-        if (player.isSprinting() || !(stack.getItem() instanceof GunItem))
+        if (player.getVehicle() instanceof Seat || player.isSprinting() || !(stack.getItem() instanceof GunItem))
             return false;
 
         GunAnimations mainAnims = getGunAnimations(player, InteractionHand.MAIN_HAND);
@@ -900,47 +896,9 @@ public class ModClient
             event.setFOV(event.getFOV() / Math.max(lastZoomLevel, lastFOVZoomLevel));
         }
 
-        if (vehicleZoomActive)
-            event.setFOV(event.getFOV() / VEHICLE_ZOOM_FACTOR);
-    }
-
-    public static void toggleVehicleZoom(LocalPlayer player)
-    {
-        if (!canUseVehicleZoom(player) || currentScope != null)
-            return;
-        if (vehicleZoomActive)
-        {
-            resetVehicleZoom();
-            return;
-        }
-
-        Options options = Minecraft.getInstance().options;
-        originalVehicleMouseSensitivity = options.sensitivity().get();
-        options.sensitivity().set(originalVehicleMouseSensitivity / Math.sqrt(VEHICLE_ZOOM_FACTOR));
-        vehicleZoomActive = true;
-    }
-
-    public static void resetVehicleZoom()
-    {
-        if (!vehicleZoomActive)
-            return;
-        Minecraft.getInstance().options.sensitivity().set(originalVehicleMouseSensitivity);
-        vehicleZoomActive = false;
-    }
-
-    private static void validateVehicleZoom(LocalPlayer player)
-    {
-        if (vehicleZoomActive && (!canUseVehicleZoom(player) || currentScope != null))
-            resetVehicleZoom();
-    }
-
-    private static boolean canUseVehicleZoom(Player player)
-    {
-        if (!TeamsClientState.vehiclesCanZoom())
-            return false;
-        Entity mount = player.getVehicle();
-        return mount instanceof Vehicle
-            || mount instanceof Seat seat && seat.isDriverSeat() && seat.getDriveable() instanceof Vehicle;
+        float vehicleZoom = VehicleOpticsClient.zoom();
+        if (vehicleZoom > 1F)
+            event.setFOV(Math.toDegrees(2D * Math.atan(Math.tan(Math.toRadians(event.getFOV()) / 2D) / vehicleZoom)));
     }
 
     public static void renderTick()

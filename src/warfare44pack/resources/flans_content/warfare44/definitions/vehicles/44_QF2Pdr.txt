@@ -143,3 +143,8 @@ YawSoundLength 38
 BulletSpeed 9
 BulletSpread 2
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight 2pdr
+gunsightZoom 4

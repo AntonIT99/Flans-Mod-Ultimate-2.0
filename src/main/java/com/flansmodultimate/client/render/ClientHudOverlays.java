@@ -117,6 +117,8 @@ public final class ClientHudOverlays
         if (player == null || Minecraft.getInstance().options.getCameraType() != CameraType.FIRST_PERSON)
             return;
 
+        if (VehicleOpticsHud.render(g, partialTick, sw, sh))
+            return;
         ResourceLocation scopeTexture = null;
 
         boolean hasScope = ModClient.getCurrentScope() != null && ModClient.getCurrentScope().hasZoomOverlay();

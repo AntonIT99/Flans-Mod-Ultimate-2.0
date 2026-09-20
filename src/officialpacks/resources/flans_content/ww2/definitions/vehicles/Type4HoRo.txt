@@ -63,3 +63,8 @@ SetupPart rightTrack 7000 -48 -10 -25 102 19 7
 SetupPart leftTrack 7000 -48 -10 18 102 19 7
 BulletDetection 7
 Description Japanese Light SPG
+
+// Optics
+hasScope true
+Gunsight jap
+gunsightZoom 2.5

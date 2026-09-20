@@ -139,3 +139,8 @@ AddEmitter largesmoke 1 [-53,5,-5] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
 
 AddEmitter flame 1 [-53,5,5] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
 AddEmitter flame 1 [-53,5,-5] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+// Optics
+hasScope true
+Gunsight m4a3
+gunsightZoom 4

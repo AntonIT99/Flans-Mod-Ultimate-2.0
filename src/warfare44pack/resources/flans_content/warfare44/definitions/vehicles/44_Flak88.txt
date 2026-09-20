@@ -141,3 +141,8 @@ YawSoundLength 38
 BulletSpeed 10
 BulletSpread 1
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight tiger
+gunsightZoom 4

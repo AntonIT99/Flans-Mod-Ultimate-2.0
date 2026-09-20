@@ -2,6 +2,7 @@ package com.flansmodultimate.client.input;
 
 import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.client.render.MountedCameraView;
+import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import lombok.AccessLevel;
@@ -128,8 +129,9 @@ public final class MouseInputHandler
         if (MountedCameraView.isViewLockedToDriveable(seat.getDriveable(), seat))
             return false;
 
-        seat.applyClientAimDelta((float) yawDelta * TURN_DEGREES_PER_UNIT,
-            (float) pitchDelta * TURN_DEGREES_PER_UNIT);
+        float zoom = VehicleOpticsClient.zoom();
+        seat.applyClientAimDelta((float) yawDelta * TURN_DEGREES_PER_UNIT / zoom,
+            (float) pitchDelta * TURN_DEGREES_PER_UNIT / zoom);
         return true;
     }
 

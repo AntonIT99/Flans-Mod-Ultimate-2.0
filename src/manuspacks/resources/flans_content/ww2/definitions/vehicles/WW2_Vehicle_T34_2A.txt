@@ -123,3 +123,8 @@ IsExplosionWhenDestroyed true
 Tank true
 
 //------------------------------------------------
+
+// Optics
+hasScope true
+Gunsight T3485
+gunsightZoom 3.5

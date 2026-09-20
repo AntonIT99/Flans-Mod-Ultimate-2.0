@@ -287,3 +287,10 @@ IsExplosionWhenDestroyed true
 //Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
 
 advpaintjob Christmas 44_Churchill3GunCarrierWinter 44_Churchill3GunCarrier_Winter white 8
+
+// Optics
+hasScope true
+Gunsight 6pdrat
+gunsightZoom 3
+heliGuiSeat 1 true
+heliGUI scope

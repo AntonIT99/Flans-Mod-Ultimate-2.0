@@ -262,3 +262,8 @@ LeftLinkPoint [34,6.6,16]
 BulletSpeed 11
 BulletSpread 2
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight t34
+gunsightZoom 4

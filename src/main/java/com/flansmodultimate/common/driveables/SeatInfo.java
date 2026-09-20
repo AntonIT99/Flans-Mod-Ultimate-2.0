@@ -16,6 +16,7 @@ import net.minecraft.util.Mth;
 public final class SeatInfo
 {
     private final int id;
+    private final VehicleOptics optics = new VehicleOptics();
     private final Vector3f position;
     private final EnumDriveablePart part;
     private final boolean driver;

@@ -288,3 +288,8 @@ LeftLinkPoint [-69,9,24.5]
 BulletSpeed 8
 BulletSpread 3
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight T3476Sight
+gunsightZoom 3.5

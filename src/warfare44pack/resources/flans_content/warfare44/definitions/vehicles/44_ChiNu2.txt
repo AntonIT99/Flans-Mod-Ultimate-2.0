@@ -343,3 +343,8 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight jap
+gunsightZoom 2.5

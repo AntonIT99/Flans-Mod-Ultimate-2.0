@@ -291,3 +291,8 @@ LeftLinkPoint [-69,9,24.5]
 BulletSpeed 10
 BulletSpread 2
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight T3485
+gunsightZoom 3.5

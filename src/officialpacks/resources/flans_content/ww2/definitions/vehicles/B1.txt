@@ -74,3 +74,10 @@ BulletDetection 5
 
 //Size Multiplier; scales up the model
 ModelScale 1.1
+
+// Optics
+heliGuiSeat 2 true
+heliGUI b1bisHull
+hasScope true
+Gunsight b1bis
+gunsightZoom 3.5

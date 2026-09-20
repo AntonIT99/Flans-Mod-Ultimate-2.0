@@ -46,7 +46,10 @@ public final class DriveableInput
     /** Chamber the next shell, bomb or missile in slot order. The server owns the selection. */
     public static final int SWITCH_AMMO = 1 << 24;
 
-    public static final int VALID_MASK = (1 << 25) - 1;
+    public static final int TOGGLE_SCOPE = 1 << 25;
+    public static final int CYCLE_SIGHT = 1 << 26;
+
+    public static final int VALID_MASK = (1 << 27) - 1;
     public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND
         | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE
         | THROTTLE_INCREASE | THROTTLE_DECREASE;

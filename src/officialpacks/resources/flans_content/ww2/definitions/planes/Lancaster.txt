@@ -152,3 +152,8 @@ CollisionPoint -100 28 16 tail
 CollisionPoint -140 28 -16 tail
 CollisionPoint -120 28 -16 tail
 CollisionPoint -100 28 -16 tail
+
+// Optics
+heliGuiSeat 1 true
+heliGUI bombsightgui
+passengerZoom 1 0.5

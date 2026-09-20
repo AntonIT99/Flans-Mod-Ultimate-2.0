@@ -10,6 +10,7 @@ import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.gui.GunAmmoSelectScreen;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.VehicleOpticsHud;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.entity.Driveable;
@@ -96,7 +97,11 @@ public final class KeyInputHandler
     private static final KeyMapping brakeKey = key("vehicle.brake", InputConstants.KEY_SPACE, EnumKeyConflictContext.GROUND_DRIVEABLE, CATEGORY_VEHICLES);
     private static final KeyMapping decreaseVehicleThrottleKey = key("vehicle.throttle_decrease", InputConstants.KEY_Q, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
     private static final KeyMapping increaseVehicleThrottleKey = key("vehicle.throttle_increase", InputConstants.KEY_E, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
-    private static final KeyMapping vehicleZoomKey = key("vehicle.zoom", InputConstants.KEY_C, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
+    private static final KeyMapping vehicleZoomKey = mouseKey("vehicle.zoom", GLFW.GLFW_MOUSE_BUTTON_MIDDLE, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping cycleSightKey = key("driveable.cycle_sight", InputConstants.KEY_B, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping rangefinderKey = key("driveable.rangefinder", InputConstants.KEY_Y, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping resetRangeKey = key("driveable.reset_range", InputConstants.KEY_H, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping opticsEditorKey = key("driveable.optics_editor", InputConstants.KEY_F8, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
 
     // Planes and helicopters. Aircraft fly on their own binds rather than the
     // vanilla movement keys, so the flight axes can be rebound without changing
@@ -124,21 +129,24 @@ public final class KeyInputHandler
         preferredAmmoKey, secondaryModeKey, increaseZoomKey, decreaseZoomKey);
 
     private static final List<KeyMapping> DRIVEABLE_BINDS = List.of(driveableInventoryKey, driveablePlayerInventoryKey,
-        primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey);
+        primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey,
+        vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
     /** Binds that claim their key while the player is at the controls of an aircraft. */
     private static final List<KeyMapping> AIRCRAFT_BINDS = List.of(pitchDownKey, pitchUpKey,
         yawLeftKey, yawRightKey, rollLeftKey, rollRightKey, throttleUpKey, throttleDownKey,
         controlModeKey, gearKey, airBrakeKey, modeKey,
         driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
-        changeSeatKey, doorKey, engineKey, flareKey, driveablePlayerInventoryKey);
+        changeSeatKey, doorKey, engineKey, flareKey, driveablePlayerInventoryKey,
+        vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
     /** Binds that claim their key while the player is at the controls of anything else. */
     private static final List<KeyMapping> GROUND_BINDS = List.of(driveForwardKey, driveBackwardKey,
         steerLeftKey, steerRightKey, brakeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey,
-        secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, flareKey, driveablePlayerInventoryKey);
+        secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, flareKey, driveablePlayerInventoryKey,
+        vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
     /** Ground binds plus the persistent throttle lever that only vehicles answer. */
     private static final List<KeyMapping> VEHICLE_BINDS = List.of(driveForwardKey, driveBackwardKey,
         steerLeftKey, steerRightKey, brakeKey, decreaseVehicleThrottleKey, increaseVehicleThrottleKey,
-        vehicleZoomKey,
+        vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey,
         driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
         changeSeatKey, doorKey, engineKey, flareKey, driveablePlayerInventoryKey);
     /**
@@ -147,7 +155,8 @@ public final class KeyInputHandler
      * would fire the moment the player mounts. These are drained instead.
      */
     private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey,
-        flareKey, controlModeKey, gearKey, airBrakeKey, modeKey, driveablePlayerInventoryKey, vehicleZoomKey);
+        flareKey, controlModeKey, gearKey, airBrakeKey, modeKey, driveablePlayerInventoryKey, vehicleZoomKey,
+        cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
 
     private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18};
 
@@ -203,6 +212,10 @@ public final class KeyInputHandler
         event.register(decreaseVehicleThrottleKey);
         event.register(increaseVehicleThrottleKey);
         event.register(vehicleZoomKey);
+        event.register(cycleSightKey);
+        event.register(rangefinderKey);
+        event.register(resetRangeKey);
+        event.register(opticsEditorKey);
         event.register(pitchDownKey);
         event.register(pitchUpKey);
         event.register(yawLeftKey);
@@ -451,7 +464,6 @@ public final class KeyInputHandler
                 {
                     if (increaseVehicleThrottleKey.isDown()) mask |= DriveableInput.THROTTLE_INCREASE;
                     if (decreaseVehicleThrottleKey.isDown()) mask |= DriveableInput.THROTTLE_DECREASE;
-                    if (vehicleZoomKey.consumeClick()) ModClient.toggleVehicleZoom(player);
                 }
             }
 
@@ -468,6 +480,11 @@ public final class KeyInputHandler
             if (driveableInventoryKey.consumeClick())
                 edgeMask |= DriveableInput.MENU;
             if (changeSeatKey.consumeClick()) edgeMask |= DriveableInput.CHANGE_SEAT;
+            if (vehicleZoomKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_SCOPE;
+            if (cycleSightKey.consumeClick()) edgeMask |= DriveableInput.CYCLE_SIGHT;
+            if (rangefinderKey.consumeClick()) VehicleOpticsHud.requestRange();
+            if (resetRangeKey.consumeClick()) VehicleOpticsHud.resetRange();
+            if (opticsEditorKey.consumeClick()) VehicleOpticsHud.openEditor();
             if (gearKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_GEAR;
             if (airBrakeKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_AIR_BRAKE;
             if (doorKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_DOOR;
@@ -484,6 +501,8 @@ public final class KeyInputHandler
         else
         {
             wasSneaking = false;
+            for (KeyMapping key : List.of(vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey))
+                while (key.consumeClick()) { /* do not defer optics actions until a screen closes */ }
         }
 
         mask |= edgeMask;
@@ -506,7 +525,8 @@ public final class KeyInputHandler
             aimPitch = player.getXRot();
         }
 
-        boolean mouseControl = driveable instanceof Plane && ModClient.isMouseControlEnabled();
+        boolean mouseControl = driveable instanceof Plane && ModClient.isMouseControlEnabled()
+            && !(mount instanceof Seat opticSeat && opticSeat.isScoped());
         float flightPitch = mouseControl ? MouseInputHandler.getFlightPitchControl() : 0F;
         float flightRoll = mouseControl ? MouseInputHandler.getFlightRollControl() : 0F;
 

@@ -13,6 +13,8 @@ import com.flansmodultimate.common.driveables.ParticleEmitter;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.VehicleOptics;
+import com.flansmodultimate.common.driveables.VehicleOpticsReader;
 import com.flansmodultimate.common.driveables.armor.ResolvedVehicleArmor;
 import com.flansmodultimate.common.driveables.armor.VehicleArmorResolver;
 import com.flansmodultimate.common.driveables.armor.VehicleArmorSpec;
@@ -65,6 +67,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmmoOverrideUser
 {
+    protected VehicleOptics optics = new VehicleOptics();
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
     /** Slightly narrower than the former hard-coded 0.5-to-1.5 engine pitch sweep. */
@@ -332,6 +335,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         super.read(file);
         engine = readValue("Engine", engine, file).trim();
         readSeats(file);
+        optics = VehicleOpticsReader.read(file, seats, warning -> logError(warning, file));
         readWheels(file);
         readPartsAndRecipes(file);
         readWeapons(file);

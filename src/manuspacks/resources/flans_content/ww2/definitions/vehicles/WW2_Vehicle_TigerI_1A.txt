@@ -150,3 +150,10 @@ IsExplosionWhenDestroyed true
 Tank true
 
 //------------------------------------------------
+
+// Optics
+hasScope true
+Gunsight tiger
+gunsightZoom 4
+heliGuiSeat 2 true
+heliGUI gercomm

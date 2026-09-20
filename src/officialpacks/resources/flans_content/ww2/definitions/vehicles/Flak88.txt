@@ -62,3 +62,8 @@ SetupPart core 2500 -40 -8 -18 60 24 36
 BulletDetection 7
 ModelScale 1.2
 Description German Anti-Aircraft/Tank Gun
+
+// Optics
+hasScope true
+Gunsight tiger
+gunsightZoom 4

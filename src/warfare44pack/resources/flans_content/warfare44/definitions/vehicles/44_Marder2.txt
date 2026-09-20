@@ -260,3 +260,10 @@ LeftLinkPoint [22,11,19.2]
 BulletSpeed 9
 BulletSpread 2
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight pak36
+gunsightZoom 2.5
+heliGuiSeat 2 true
+heliGUI gercomm

@@ -364,3 +364,13 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight m4a3
+gunsightZoom 4
+hasScope true
+Gunsight m4a3
+gunsightZoom 4
+heliGuiSeat 2 true
+heliGUI uscomm

@@ -302,3 +302,8 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight m4a3
+gunsightZoom 4

@@ -110,3 +110,7 @@ BulletSpeed 12
 BulletSpread 4
 
 Description German Ground Attack Aircraft __Uses 37mm AP Tank Shell __Year Introduced : 1943
+
+// Optics
+heliGuiSeat 1 true
+heliGUI bombsightgui

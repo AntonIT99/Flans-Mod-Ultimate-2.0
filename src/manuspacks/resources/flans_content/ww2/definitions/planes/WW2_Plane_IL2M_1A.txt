@@ -171,3 +171,7 @@ PropSoundLength 30
 PropSound propSound
 
 //------------------------------------------------
+
+// Optics
+heliGuiSeat 1 true
+heliGUI bombsightgui

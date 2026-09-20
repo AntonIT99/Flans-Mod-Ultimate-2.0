@@ -81,3 +81,10 @@ SetupPart backRightWheel 3000 -44 -10 -22 18 18 6
 BulletDetection 7
 ModelScale 0.9
 Description American Armored Car
+
+// Optics
+hasScope true
+Gunsight t17
+gunsightZoom 3
+heliGuiSeat 1 true
+heliGUI uscomm

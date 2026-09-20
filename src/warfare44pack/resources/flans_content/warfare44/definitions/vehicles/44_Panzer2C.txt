@@ -242,3 +242,10 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+// Optics
+heliGuiSeat 1 true
+heliGUI gercomm
+hasScope true
+Gunsight 20mmtank
+gunsightZoom 3.5

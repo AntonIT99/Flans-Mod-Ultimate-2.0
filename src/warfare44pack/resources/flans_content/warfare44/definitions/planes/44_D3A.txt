@@ -131,3 +131,7 @@ ShootParticlesPrimary flansmod.fmflame 0 0 0
 //Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
 
 advpaintjob Green 44_D3A_Green 44_D3A_Green AddDye 4 green
+
+// Optics
+heliGuiSeat 1 true
+heliGUI bombsightgui

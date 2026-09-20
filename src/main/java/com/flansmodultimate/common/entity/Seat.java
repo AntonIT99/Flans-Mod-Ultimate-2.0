@@ -5,7 +5,11 @@ import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.OpticsHud;
+import com.flansmodultimate.common.driveables.OpticsState;
 import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.driveables.VehicleOptics;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,6 +21,8 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -38,6 +44,70 @@ import net.minecraft.world.phys.Vec3;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Seat extends Entity implements IControllable
 {
+    private static final EntityDataAccessor<Boolean> DATA_SCOPED = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_SIGHT = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_THERMAL = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.BOOLEAN);
+    private final OpticsState opticsState = new OpticsState();
+    private Entity opticsOccupant;
+
+    @Nullable
+    public VehicleOptics getOptics()
+    {
+        if (seatInfo == null || driveable == null || driveable.getConfigType() == null) return null;
+        return isDriverSeat() && !seatInfo.getOptics().isOpticsMode()
+            ? driveable.getConfigType().getOptics() : seatInfo.getOptics();
+    }
+
+    public boolean isScoped() { return entityData.get(DATA_SCOPED); }
+    public int getCurrentSight() { return entityData.get(DATA_SIGHT); }
+    public boolean isThermalScoped() { return isScoped() && entityData.get(DATA_THERMAL); }
+    public boolean isNightSightActive()
+    {
+        return isScoped() && getOptics() != null && (getOptics().isNightSight()
+            || driveable.getConfigType().getOptics().isNightSight());
+    }
+    public float getScopeZoom()
+    {
+        VehicleOptics optics = getOptics();
+        return !isScoped() || optics == null ? 1F : optics.available() ? optics.zoom(getCurrentSight()) : 7F;
+    }
+
+    @Nullable
+    public OpticsHud getOpticsHud()
+    {
+        if (seatInfo == null || driveable == null || driveable.getConfigType() == null) return null;
+        OpticsHud own = seatInfo.getOptics().getHud();
+        int source = own.getInheritSeat();
+        if (source == -2 && isDriverSeat() && !own.isOverridePilotDefaults()) source = 1;
+        SeatInfo inherited = source >= 0 ? driveable.getConfigType().getSeat(source) : null;
+        return inherited == null ? own : inherited.getOptics().getHud();
+    }
+
+    private void updateOptics(boolean toggle, boolean cycle)
+    {
+        Entity occupant = getFirstPassenger();
+        if (opticsOccupant != occupant)
+        {
+            opticsState.reset();
+            opticsOccupant = occupant;
+        }
+        VehicleOptics definition = getOptics();
+        // As in the reference, authored optics work independently of the teams
+        // permission for the optional, unconfigured driver zoom.
+        boolean allowed = occupant instanceof Player && occupant.isAlive() && definition != null
+            && driveable != null && driveable.isAlive()
+            && (definition.available() || isDriverSeat() && driveable instanceof Vehicle
+                && TeamsManager.getInstance().isVehiclesCanZoom());
+        boolean wasActive = opticsState.isActive();
+        if (definition == null) opticsState.reset();
+        else opticsState.update(definition, allowed, level().getGameTime(), toggle, cycle);
+        entityData.set(DATA_SCOPED, opticsState.isActive());
+        entityData.set(DATA_SIGHT, opticsState.getSight());
+        entityData.set(DATA_THERMAL, opticsState.isThermal());
+        if (wasActive != opticsState.isActive() && occupant != null)
+            level().playSound(null, occupant.blockPosition(), SoundEvents.SPYGLASS_USE,
+                SoundSource.PLAYERS, 0.35F, opticsState.isActive() ? 1F : 0.8F);
+    }
     private static final EntityDataAccessor<Integer> DATA_PARENT_ID = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_SEAT_INDEX = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> DATA_AIM_YAW = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.FLOAT);
@@ -93,6 +163,7 @@ public class Seat extends Entity implements IControllable
     private int lastInputSequence;
     private long lastInputGameTime;
     private boolean receivedInputSequence;
+    private Entity inputOccupant;
 
     public Seat(EntityType<?> entityType, Level level)
     {
@@ -263,6 +334,9 @@ public class Seat extends Entity implements IControllable
     @Override
     protected void defineSynchedData()
     {
+        entityData.define(DATA_SCOPED, false);
+        entityData.define(DATA_SIGHT, 0);
+        entityData.define(DATA_THERMAL, false);
         entityData.define(DATA_PARENT_ID, -1);
         entityData.define(DATA_SEAT_INDEX, -1);
         entityData.define(DATA_AIM_YAW, 0F);
@@ -348,6 +422,13 @@ public class Seat extends Entity implements IControllable
         }
         if (passenger == null && level().isClientSide)
             clientViewAimInitialized = false;
+        if (passenger == null && !level().isClientSide)
+        {
+            inputOccupant = null;
+            receivedInputSequence = false;
+        }
+        if (!level().isClientSide)
+            updateOptics(false, false);
     }
 
     private boolean resolveParent()
@@ -482,7 +563,17 @@ public class Seat extends Entity implements IControllable
 
     public boolean acceptInput(@NotNull ServerPlayer player, int mask, float requestedYaw, float requestedPitch, int sequence)
     {
-        if (getFirstPassenger() != player || driveable == null || !isNewSequence(sequence))
+        if (getFirstPassenger() != player || driveable == null)
+            return false;
+        // Sequences belong to a client's session, not to the seat another client
+        // previously occupied. A new gunner must not inherit the old replay floor.
+        if (inputOccupant != player)
+        {
+            inputOccupant = player;
+            receivedInputSequence = false;
+            entityData.set(DATA_INPUT_MASK, 0);
+        }
+        if (!isNewSequence(sequence))
             return false;
 
         long now = level().getGameTime();
@@ -517,6 +608,7 @@ public class Seat extends Entity implements IControllable
         entityData.set(DATA_AIM_PITCH, pitch);
         previousInputMask = getInputMask();
         entityData.set(DATA_INPUT_MASK, DriveableInput.sanitize(mask));
+        updateOptics(isInputRising(DriveableInput.TOGGLE_SCOPE), isInputRising(DriveableInput.CYCLE_SIGHT));
         return true;
     }
 

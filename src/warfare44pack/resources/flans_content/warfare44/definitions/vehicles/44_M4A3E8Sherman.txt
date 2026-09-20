@@ -296,3 +296,10 @@ LeftLinkPoint [37,9,19.1]
 BulletSpeed 10
 BulletSpread 2
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight m4a3
+gunsightZoom 4
+heliGuiSeat 2 true
+heliGUI uscomm

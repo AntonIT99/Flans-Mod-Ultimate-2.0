@@ -283,3 +283,10 @@ LeftLinkPoint [37,9,19.2]
 BulletSpeed 10
 BulletSpread 4
 IsExplosionWhenDestroyed true
+
+// Optics
+heliGuiSeat 2 true
+heliGUI uscomm
+hasScope true
+Gunsight m5stuart
+gunsightZoom 3.5

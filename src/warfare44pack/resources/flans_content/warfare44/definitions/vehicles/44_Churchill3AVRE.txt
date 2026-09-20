@@ -286,3 +286,10 @@ LeftLinkPoint [60,20,21]
 BulletSpeed 5
 BulletSpread 5
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight artysight
+gunsightZoom 3
+heliGuiSeat 2 true
+heliGUI scope

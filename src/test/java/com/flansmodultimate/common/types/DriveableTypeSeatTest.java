@@ -13,6 +13,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class DriveableTypeSeatTest
 {
     @Test
+    void opticsAreReadAfterSeatConstructionForVehiclesAndPlanes()
+    {
+        VehicleType vehicle = readVehicle("Driver 0 0 0", "HasScope true", "Gunsight day thermal", "GunsightZoom 3 8",
+            "Passenger 1 16 32 48 core", "OpticsModeSeat 1 true", "SeatGunsight 1 periscope");
+        assertEquals(8F, vehicle.getOptics().zoom(1));
+        org.junit.jupiter.api.Assertions.assertTrue(vehicle.getSeat(1).getOptics().isOpticsMode());
+        assertEquals("periscope", vehicle.getSeat(1).getOptics().overlay(0));
+
+        PlaneType plane = new PlaneType();
+        plane.read(new TypeFile("plane", EnumType.PLANE,
+            new ContentPack("test", Path.of("build", "test-packs", "seats")), List.of(
+                "Pilot 0 0 0", "PilotOptics true", "SeatGunsight 0 tv flir", "SeatGunsightZoom 0 2 10")));
+        org.junit.jupiter.api.Assertions.assertTrue(plane.getSeat(0).getOptics().isOpticsMode());
+        assertEquals(10F, plane.getSeat(0).getOptics().zoom(1));
+    }
+
+    @Test
     void passengerAndGunOriginUseLegacyModelPixels()
     {
         IContentProvider pack = new ContentPack("test", Path.of("build", "test-packs", "seats"));

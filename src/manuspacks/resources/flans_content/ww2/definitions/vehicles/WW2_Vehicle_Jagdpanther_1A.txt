@@ -149,3 +149,10 @@ IsExplosionWhenDestroyed true
 Tank true
 
 //------------------------------------------------
+
+// Optics
+hasScope true
+Gunsight panther
+gunsightZoom 3.5
+heliGuiSeat 2 true
+heliGUI gercomm

@@ -221,3 +221,7 @@ Propeller 2 0 0 0 rightWing SMP_Part_Propeller_RotorPlane
 Propeller 3 0 0 0 leftWing SMP_Part_Propeller_RotorPlane
 
 //------------------------------------------------
+
+// Optics
+heliGuiSeat 1 true
+heliGUI bombsightgui

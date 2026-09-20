@@ -71,3 +71,8 @@ SetupPart leftTrack 8000 -68 -10 -33 117 20 14
 SetupPart rightTrack 8000 -68 -10 19 117 20 14
 BulletDetection 7
 Description Soviet Heavy Tank
+
+// Optics
+hasScope true
+Gunsight T3476Sight
+gunsightZoom 3.5

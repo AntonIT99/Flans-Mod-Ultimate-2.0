@@ -19,6 +19,15 @@ class KeyConflictFilterTest
     private static final int ANY_KEY = InputConstants.KEY_R;
 
     @Test
+    void vehicleScopeMayShareMiddleMouseWithVanillaPickBlock()
+    {
+        KeyMapping scope = mapping("key.flansmodultimate.vehicle.zoom",
+            EnumKeyConflictContext.DRIVEABLE, "key.categories.flansmodultimate.driveables");
+        assertTrue(KeyConflictFilter.cannotOverlap(scope,
+            mapping("key.pickItem", KeyConflictContext.UNIVERSAL, "key.categories.gameplay")));
+    }
+
+    @Test
     void aDriveableBindNeverClashesWithFlansModReloaded()
     {
         KeyMapping ours = mapping("key.flansmodultimate.plane.control_mode",

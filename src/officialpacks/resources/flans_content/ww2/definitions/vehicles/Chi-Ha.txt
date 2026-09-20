@@ -71,3 +71,8 @@ SetupPart leftTrack 6000 -36 -10 16 78 18 8
 SetupPart rightTrack 6000 -36 -10 -24 78 18 8
 BulletDetection 7
 Description Japanese Light Tank
+
+// Optics
+hasScope true
+Gunsight jap
+gunsightZoom 2.5

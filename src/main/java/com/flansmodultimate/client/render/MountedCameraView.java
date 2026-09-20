@@ -32,7 +32,7 @@ public final class MountedCameraView
     public static boolean isViewLockedToDriveable(@Nullable Driveable driveable, @Nullable Seat seat)
     {
         return driveable instanceof Plane && seat != null && seat.isDriverSeat()
-            && ModClient.isMouseControlEnabled();
+            && ModClient.isMouseControlEnabled() && !seat.isScoped();
     }
 
     /** Camera angles of the seat this entity rides, or null if it rides none. */

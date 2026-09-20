@@ -1,0 +1,12 @@
+{
+  "targets": ["heat", "swap"],
+  "passes": [
+    {
+      "name": "flansmodultimate:vehicle_thermal",
+      "intarget": "minecraft:main",
+      "outtarget": "swap",
+      "auxtargets": [{"name": "HeatSampler", "id": "heat"}]
+    },
+    {"name": "blit", "intarget": "swap", "outtarget": "minecraft:main"}
+  ]
+}

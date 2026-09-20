@@ -289,3 +289,11 @@ LeftLinkPoint [53,11,-22.2]
 BulletSpeed 13
 BulletSpread 1
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight tiger2
+gunsightZoom 5
+heliGuiSeat 1 true
+heliGUI gercomm
+passengerZoom 1 0.5

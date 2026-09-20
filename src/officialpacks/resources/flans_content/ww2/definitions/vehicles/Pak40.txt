@@ -66,3 +66,8 @@ SetupPart rightTrack 1200 -12 -8 22 16 16 4
 BulletDetection 7
 ModelScale 1.1
 Description German Anti-Tank Gun
+
+// Optics
+hasScope true
+Gunsight stug
+gunsightZoom 4.5

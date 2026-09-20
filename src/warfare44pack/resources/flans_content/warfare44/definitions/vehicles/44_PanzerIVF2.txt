@@ -286,3 +286,10 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight PZ4
+gunsightZoom 3.5
+heliGuiSeat 2 true
+heliGUI gercomm

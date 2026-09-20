@@ -72,3 +72,10 @@ SetupPart rightTrack 8000 -65 -10 21 110 20 7
 BulletDetection 7
 ModelScale 1
 Description British Medium Tank
+
+// Optics
+heliGuiSeat 2 true
+heliGUI tap_scope
+hasScope true
+Gunsight churchill75
+gunsightZoom 4
