@@ -3767,6 +3767,7 @@
         "properties": {
             "Mass": 1800,
             "MuzzleVelocity": 285,
+            "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 550,
             "PenetrationAt100m": 420
         },
@@ -4044,6 +4045,7 @@
         "properties": {
             "Mass": 1130,
             "MuzzleVelocity": 76,
+            "FallSpeed": 1.0,
             "PenetrationAt100m": 100,
             "ExplosiveMassTNTg": 400
         },
@@ -4487,6 +4489,7 @@
         "properties": {
             "Mass": 3900,
             "MuzzleVelocity": 152,
+            "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 1,
             "PenetrationAt100m": 700
         },
@@ -5533,6 +5536,7 @@
         "properties": {
             "Mass": 2900,
             "MuzzleVelocity": 45,
+            "FallSpeed": 1.0,
             "PenetrationAt100m": 200,
             "ExplosiveMassTNTg": 950
         },
@@ -8059,7 +8063,8 @@
 
     "Blaster Bolt, Droid (Fictional)": {
         "properties": {
-            "Damage": 8
+            "Damage": 8,
+            "FallSpeed": 0.0
         },
         "items": [
             "e-5ammo"
@@ -8068,7 +8073,8 @@
 
     "Blaster Bolt, Full-Power (Fictional)": {
         "properties": {
-            "Damage": 16
+            "Damage": 16,
+            "FallSpeed": 0.0
         },
         "items": [
             "dc15afullammo"
@@ -8077,7 +8083,8 @@
 
     "Blaster Bolt, Sidearm (Fictional)": {
         "properties": {
-            "Damage": 5
+            "Damage": 5,
+            "FallSpeed": 0.0
         },
         "items": [
             "dc17ammo"
@@ -8086,7 +8093,8 @@
 
     "Blaster Bolt, Standard (Fictional)": {
         "properties": {
-            "Damage": 10
+            "Damage": 10,
+            "FallSpeed": 0.0
         },
         "items": [
             "dc15ammo",
@@ -8097,7 +8105,8 @@
 
     "Blaster Bolt, Stun (Fictional)": {
         "properties": {
-            "Damage": 0
+            "Damage": 0,
+            "FallSpeed": 0.0
         },
         "items": [
             "blasterstunammo"
@@ -8297,6 +8306,8 @@
     "Energy Cannon Powerpack, Fighter (Fictional)": {
         "properties": {
             "Damage": 38,
+            "MuzzleVelocity": 700.0,
+            "FallSpeed": 0.0,
             "PenetrationAt100m": 24
         },
         "items": [
@@ -8310,6 +8321,8 @@
     "Energy Cannon Powerpack, Heavy Mech (Fictional)": {
         "properties": {
             "Damage": 316,
+            "MuzzleVelocity": 1000.0,
+            "FallSpeed": 0.0,
             "PenetrationAt100m": 143
         },
         "items": [
@@ -8763,6 +8776,8 @@
     "Las Bolt, Heavy Lascannon (Fictional)": {
         "properties": {
             "Damage": 390,
+            "MuzzleVelocity": 1000.0,
+            "FallSpeed": 0.0,
             "PenetrationAt100m": 162
         },
         "items": [
@@ -8772,7 +8787,8 @@
 
     "Las Bolt, Infantry (Fictional)": {
         "properties": {
-            "Damage": 10
+            "Damage": 10,
+            "FallSpeed": 0.0
         },
         "items": [
             "wh40k_ammo_powerpacklasgun"
@@ -8782,6 +8798,8 @@
     "Las Bolt, Lascannon (Fictional)": {
         "properties": {
             "Damage": 316,
+            "MuzzleVelocity": 1000.0,
+            "FallSpeed": 0.0,
             "PenetrationAt100m": 143
         },
         "items": [
@@ -8792,6 +8810,8 @@
     "Las Bolt, Multi-Laser (Fictional)": {
         "properties": {
             "Damage": 38,
+            "MuzzleVelocity": 700.0,
+            "FallSpeed": 0.0,
             "PenetrationAt100m": 24
         },
         "items": [
@@ -8801,7 +8821,8 @@
 
     "Laser Bolt, Unassigned Colour Variants (Fictional)": {
         "properties": {
-            "Damage": 10
+            "Damage": 10,
+            "FallSpeed": 0.0
         },
         "items": [
             "blacklaser",
@@ -9665,7 +9686,8 @@
 
     "Titan Inferno Cannon Fuel (Fictional)": {
         "properties": {
-            "Damage": 4
+            "Damage": 4,
+            "FallSpeed": 0.3
         },
         "items": [
             "wh40k_ammo_warhoundinfernocannon"
@@ -9687,6 +9709,8 @@
         "properties": {
             "Damage": 780,
             "Explosion": 27,
+            "MuzzleVelocity": 900.0,
+            "FallSpeed": 0.0,
             "PenetrationAt100m": 700
         },
         "items": [
@@ -9698,6 +9722,8 @@
         "properties": {
             "Damage": 1200,
             "Explosion": 31,
+            "MuzzleVelocity": 1200.0,
+            "FallSpeed": 0.0,
             "PenetrationAt100m": 900
         },
         "items": [
@@ -9733,6 +9759,7 @@
             "Damage": 1040,
             "Explosion": 27,
             "MuzzleVelocity": 1200,
+            "FallSpeed": 0.0,
             "PenetrationAt100m": 700
         },
         "items": [

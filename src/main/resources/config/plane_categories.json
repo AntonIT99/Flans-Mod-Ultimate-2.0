@@ -2,11 +2,16 @@
     "Admiral Hipper-class Heavy Cruiser": {
         "properties": {
             "RealDisplacementT": 19050,
+            "RealEnginePowerPS": 132000,
+            "RealMaxSpeedKn": 32,
+            "DriveType": "MARINE",
+            "RealMaxReverseSpeedKn": 13,
             "RealDraftM": 7.2,
             "ArmorBeltMm": 80,
             "ArmorDeckMm": 30,
             "ArmorCitadelMm": 80,
             "ArmorConningTowerMm": 150,
+            "ArmorBulkheadMm": 80,
             "TurretArmorFrontMm": 105,
             "TurretArmorSideMm": 70,
             "TurretArmorRearMm": 70,

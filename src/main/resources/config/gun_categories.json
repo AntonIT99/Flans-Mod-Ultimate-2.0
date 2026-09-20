@@ -2740,6 +2740,8 @@
 
     "Debug And Test Utility Weapon (Fictional)": {
         "properties": {
+            "RoundsPerMin": 80.0,
+            "Dispersion": 0.5
         },
         "items": [
             "bullettestgun",
@@ -2749,6 +2751,7 @@
 
     "Dematerializing Rifle (Fictional)": {
         "properties": {
+            "Damage": 1,
             "MuzzleVelocity": 400,
             "RoundsPerMin": 60,
             "Dispersion": 0.1
@@ -3863,9 +3866,11 @@
 
     "Laspistol (Fictional)": {
         "properties": {
+            "Damage": 1,
             "MuzzleVelocity": 400.0,
             "RoundsPerMin": 350.0,
-            "Dispersion": 0.65
+            "Dispersion": 0.65,
+            "AmmoMuzzleVelocity": "wh40k_ammo_powerpacklasgun 400"
         },
         "items": [
             "wh40k_gun_m38laspistol_1a"
@@ -4452,6 +4457,7 @@
 
     "Medical Syringe": {
         "properties": {
+            "Damage": 1,
             "RoundsPerMin": 40.0,
             "Dispersion": 0.5
         },
@@ -5067,6 +5073,7 @@
 
     "Neuroi Laser Gun (Fictional)": {
         "properties": {
+            "Damage": 1,
             "MuzzleVelocity": 800,
             "RoundsPerMin": 300,
             "Dispersion": 0.2
@@ -5166,6 +5173,7 @@
 
     "PHASR Dazzler": {
         "properties": {
+            "Damage": 1,
             "RoundsPerMin": 60,
             "Dispersion": 0.1
         },
@@ -5222,7 +5230,10 @@
 
     "Polearm (Generic)": {
         "properties": {
-            "MeleeDamage": 9
+            "MeleeDamage": 9,
+            "MuzzleVelocity": 20.0,
+            "RoundsPerMin": 15.0,
+            "Dispersion": 3.0
         },
         "items": [
             "spear",
@@ -5371,6 +5382,8 @@
 
     "Regimental Colours (Generic)": {
         "properties": {
+            "RoundsPerMin": 2.0,
+            "Dispersion": 3.0
         },
         "items": [
             "csaflag",

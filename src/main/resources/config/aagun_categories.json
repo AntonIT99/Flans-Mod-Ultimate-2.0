@@ -56,6 +56,8 @@
 
     "Imperial Throne (Fictional)": {
         "properties": {
+            "RoundsPerMin": 120.0,
+            "Dispersion": 0.1,
             "RealMassKg": 400,
             "UseRealisticVehicleHealth": "true"
         },
