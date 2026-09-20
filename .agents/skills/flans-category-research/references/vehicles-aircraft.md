@@ -91,6 +91,35 @@ Every ground vehicle requires:
 The realistic propulsion profile activates only when mass, maximum speed, and one
 engine-power value are valid. Never leave an accidental half-profile.
 
+### Emplacements and other driveables that do not drive
+
+A large share of `definitions/vehicles` is not vehicles at all. Packs author towed
+anti-tank guns, tripod machine guns, standalone naval turret and missile-launcher
+mounts, and pillboxes as `VehicleType` because that is what gives them a turret, a
+crew seat and an ammunition bank. Identify them from the definition, not the name:
+`MaxThrottle 0` or a token value like `0.1`, no engine, and often no real wheels.
+
+These do not receive a propulsion profile, and the mandatory ground-vehicle rows
+above do not apply to them:
+
+- Author `RealMassKg`, quoted `UseRealisticVehicleHealth`, quoted
+  `ReadWeaponsFromGunTypes`, the armour faces the mounting genuinely has, the
+  bank cadence keys, and the ammunition group. These are the keys that do work.
+- **Omit** `DriveType`, the engine key, `RealMaxSpeedKmh`, and
+  `RealMaxReverseSpeedKmh`. The completeness-over-omission rule never licenses
+  inventing horsepower for a PaK 40 or a road speed for a pillbox: no source tier
+  failed, the represented object simply has no engine. Authoring them would also
+  leave exactly the accidental half-profile the section above forbids.
+- Report them as a class in the completion report, so the omission reads as a
+  decision rather than an oversight.
+
+A towed gun is still towed, but the tractor is not part of the represented object
+and its `DriveType` is not inheritable. An airship or balloon filed under
+`definitions/vehicles` takes the same treatment for the same reason; see the
+rotorcraft and airship notes under [Aircraft](#aircraft) for the `planes/` side.
+Sailing craft are the marine equivalent and are covered in
+[ships.md](ships.md) under *Craft That Are Not Warships*.
+
 Additional properties:
 
 - `DriverAimSpeed`: for an armed ground vehicle whose driver controls the turret or

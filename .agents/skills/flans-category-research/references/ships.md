@@ -41,16 +41,25 @@ Eugen as a plane with `Mode Plane` and `Boat True`.
 That routing is not cosmetic. The physics resolver gates the coupled real-world
 profile on the definition's category:
 
-| Authored as | Realistic propulsion | Realistic health | Armour keys | `RealDraftM` |
-| --- | --- | --- | --- | --- |
-| `vehicles/` | yes, via the ground profile | yes | yes | yes |
-| `planes/` | no — the aircraft profile would demand a wing span and area | yes | yes | yes |
+| Authored as | Ground profile | Aircraft profile | Marine profile | Realistic health | Armour keys | `RealDraftM` |
+| --- | --- | --- | --- | --- | --- | --- |
+| `vehicles/` | yes | no | yes, if it floats | yes | yes | yes |
+| `planes/` | no | no — it would demand a wing span and area | yes, if it floats | yes | yes | yes |
 
-So a ship authored as a plane still gets mass-derived health, armour, and draft, but
-never gets `RealMaxSpeedKmh` propulsion; its speed stays on the legacy
-`MaxThrottle` curve. Author the mass, armour, and draft anyway, omit the propulsion
-keys rather than leaving a half-profile, and report the definition as a
-misfiled hull so it can be moved later.
+The marine profile is deliberately **category-independent**: `VehiclePhysicsResolver`
+gates it on `floatOnWater` and a complete marine spec, not on the type class, because
+what makes a hull a hull is that it floats. The ground and aircraft profiles are
+gated on category and a hull satisfies neither.
+
+So a ship authored as a plane is still a fully specified ship. Author the complete
+marine set on both entries — displacement, one engine key, speed, astern speed,
+`DriveType MARINE`, `RealDraftM`, armour and the flags — and report the definition as
+a misfiled hull so it can be moved later.
+
+`hasCompleteMarineProfile()` requires mass, maximum speed, engine power **and** draft
+together. An entry carrying only displacement and draft is the half-profile, not the
+safe option: it activates nothing and leaves the hull on the legacy `MaxThrottle`
+curve. Verify with `/vehiclephysics` rather than assuming.
 
 Misfiling is rare and worth checking before assuming it. Across every bundled and
 runtime pack there are 21 floating `planes/` definitions, and 20 of them are genuine
@@ -68,10 +77,14 @@ release is installed, but it does not need to: **register the same short name in
 the definition type named by its file, so exactly one of the two ever matches and the
 other is inert.
 
-- The `vehicle_categories.json` entry carries the full ship profile: displacement,
-  `DriveType MARINE`, speed, astern speed, `RealDraftM`, naval armour, and the flags.
-- The `plane_categories.json` entry carries only what a `PlaneType` can use -
-  displacement, draft, armour and the flags - and omits the propulsion keys.
+- Both entries carry the full ship profile: displacement, one engine key,
+  `RealMaxSpeedKn`, `RealMaxReverseSpeedKn`, `DriveType MARINE`, `RealDraftM`, naval
+  armour, and the flags. The marine profile is category-independent, so the
+  `plane_categories.json` entry is not a reduced copy — whichever entry matches the
+  installed definition has to stand on its own.
+- Keep the two in step. When only one side is corrected, the hull silently loses its
+  propulsion on whichever release matches the other side; audit the pair as a unit
+  and compare them key by key.
 
 Give both entries the same label so they are obviously one ship. If the pack also
 renames the short name during the move, add the new name to the vehicle entry and
@@ -424,8 +437,8 @@ Before finishing a naval batch, confirm the shape of the result:
   unit, per ship;
 - power rating condition and whether it is total or per-shaft in the source;
 - derived astern speeds and the fraction used;
-- ships misfiled as `planes/` definitions, with the propulsion keys that were
-  therefore omitted;
+- ships misfiled as `planes/` definitions, and for a hull registered in both type
+  files, confirmation that the two entries carry the same keys;
 - definitions whose authored `core` health weight is grossly out of band, with the
   fraction observed;
 - torpedo-defence systems whose rated capacity could not be represented;

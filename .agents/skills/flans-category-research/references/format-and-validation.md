@@ -165,6 +165,12 @@ Scanner-only work validates discovery and coverage without loading domain tables
    require ammunition velocity.
 7. Validate mandatory fields and resolved values using only the applicable domain
    reference: weapons/ammunition, vehicles/aircraft, ships, armor or mechas.
+   Evaluate completeness **per short name, not per category**: a mandatory property
+   is satisfied when any one category the item belongs to supplies it. Adding it to a
+   second category is not completeness, it is the property conflict in step 9 — a
+   mixed-belt category whose item already takes `FallSpeed` from its sibling shell
+   category must not restate it. Audit the union of properties across every category
+   containing the short name, and fix the gap in whichever category owns that concept.
    Armor uses fixed slot/coverage tables; mechas use chassis tables and preserve
    collision geometry. Neither uses the generic/fictional real-item ceiling.
 8. Recheck configuration consistency and every value based only on a game, broad

@@ -13,6 +13,26 @@ For each identifiable gun, research and normally define:
 | `RoundsPerMin` | rounds per minute | Mandatory for a gun that fires ammunition; omit on a melee-only gun. Cyclic rate for automatic weapons; credible practical/mechanical rate for manual or semiautomatic weapons. Never use magazine capacity. |
 | `Dispersion` | degrees | Mandatory for a gun that fires ammunition; omit on a melee-only gun. Actual angular accuracy/spread for the configuration. Convert MOA with `degrees = MOA / 60`; do not infer it from effective range. |
 
+Two kinds of `guns` definition are outside the cadence and spread requirement:
+
+- **Melee-only weapons.** `MeleeDamage` with no `Ammo`, as the table says.
+- **Signal, marker and utility devices.** Binoculars, whistles, bugles, horns,
+  shouted orders, regimental standards and similar props are authored as guns that
+  fire a zero-damage, massless token so the pack gets a sound or a visual cue. They
+  fire ammunition in the parser's sense but are not weapons, and their `ShootDelay`
+  is usually a deliberate cooldown — a trench whistle on `ShootDelay 1200` is a
+  one-minute cycle, and a category `RoundsPerMin` would silently cut it to seconds.
+  Leave them with an empty property block and say so in the report.
+
+The distinction is what the token does, not what the item is called. A "flag" that
+fires a real gas grenade, and a "polearm" that throws a projectile with mass, are
+weapons and take the full mandatory set.
+
+A gun whose ammunition is damage-authoritative — an energy weapon whose bolt carries
+`Damage` instead of `Mass` — additionally requires its own `Damage: 1`, because the
+legacy path multiplies the two. See *Energy and exotic ammunition* in
+[generic-and-fictional.md](generic-and-fictional.md).
+
 Keep shotgun dispersion representative of the full shot pattern and ordinary gun
 dispersion representative of the base weapon without movement or attachment
 modifiers. `MuzzleVelocity` is internally divided by 20 to obtain blocks/tick.
@@ -130,6 +150,13 @@ Every category requires:
 - `FallSpeed: 1.0` for ordinary ballistic projectiles. Omit it, or use a separately
   justified value, only for a self-propelled projectile capable of sustaining its
   flight.
+
+  "Rocket" in the pack's name is not that test. A recoilless or spigot weapon —
+  Panzerfaust, PIAT, AT4, Panzerfaust 3 — burns its propellant before the round
+  leaves the tube, so the projectile is ballistic for its entire flight and takes
+  `FallSpeed: 1.0` like any shell. Ask whether a motor is still burning downrange:
+  a Hydra 70, an HVAR, a Nebelwerfer round or any guided missile sustains flight and
+  correctly omits the key; a launcher that is a tube with a charge in it does not.
 
 Also define when applicable:
 

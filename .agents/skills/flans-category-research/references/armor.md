@@ -314,6 +314,11 @@ pack's unharmonized value in place.
 | `ArmorPoints` | Protection class table, times coverage |
 | `Toughness` | Protection class table |
 
+The one exception is `PenetrationResistance` on a `B0` item whose short names collide
+across slots: omit it entirely, per
+[Cross-Pack Slot Collisions](#cross-pack-slot-collisions). An audit that flags such a
+category as incomplete has found a correct omission, not a gap.
+
 Optional, written only when the represented equipment genuinely has the feature:
 
 | Property | Write it for |

@@ -279,7 +279,8 @@ Author its effect **directly** on the ammunition category:
 | `Damage` | `Mass` | The kinetic system is only active when `Mass > 0`, so leaving mass out keeps the bolt off it entirely and makes this value authoritative. |
 | `DamageVsLiving`, `DamageVsVehicles` | — | Optional. Both inherit from `Damage`; set one when the fiction makes the bolt markedly better or worse against armour. |
 | `Explosion` | `ExplosiveMassTNTg`/`ExplosiveMassTNTKg` | A radius in blocks, for a bolt that bursts. The derived-blast system is only active when `ExplosiveMass > 0`, so omitting it leaves this radius in force. |
-| `MuzzleVelocity` | — | Still authored. The projectile has to travel at some speed, and it drives the visible flight time. |
+| `MuzzleVelocity` | — | Mandatory. The projectile has to travel at some speed, and it drives the visible flight time. |
+| `FallSpeed` | — | Mandatory. Well below `1.0`, or `0` for a flat-trajectory beam. Omitting it leaves the bolt on full projectile gravity. |
 
 This applies to blaster bolts, laser and turbolaser pulses, plasma, disruptor beams,
 and any other projectile that is not a physical object. It does **not** apply to
@@ -295,8 +296,21 @@ such value as invented, because none of it is researched.
 Set the gun category's own `Damage` to `1.0` so the ammunition stays authoritative:
 the legacy path multiplies the two together.
 
-Give energy ammunition a `FallSpeed` well below 1.0, or `0` when the fiction
-genuinely shows a flat-trajectory beam, and report the choice.
+Report the chosen `FallSpeed` either way.
+
+Velocity ownership still follows the ordinary rule, and energy content hits it hard
+because one bolt item is routinely shared by a sidearm, a rifle and a rotary cannon.
+An ammunition `MuzzleVelocity` overrides every gun that fires it, so before authoring
+one, resolve the consumer set:
+
+- **One consuming weapon, or several with the same velocity**: author the bolt's
+  `MuzzleVelocity` at that value. Nothing changes at runtime and the ammunition
+  becomes self-describing.
+- **Consumers that genuinely differ**: author the bolt at the standard weapon's
+  velocity and give each divergent weapon an `AmmoMuzzleVelocity` override in its
+  own category, exactly as R3 requires for shared solid shot.
+
+Do not flatten several weapons onto one velocity just to fill the field.
 
 ## Fictional Power Tiers
 

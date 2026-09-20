@@ -17,11 +17,11 @@ visuals for shootables, harmonize particles and sounds for vehicles / planes
 Rewrite all packs with the new gun and vehicle systems using categories as source
 Reorganize parameters, remove one parameter comments, make groups
 - Fix shooting points on vehicles based on new debug commands
-WW2
+Official WW2
 - Add muzzle flashes just like w44
 - Fix Scope Attachment Points -> to check
 - Fix Barrel Attachment and Muzzle Flash -> to check
-
+Official MW
 - See if we can fix the tail rotor not centered arround rotation point for the Apache
 - Fix Chinook model: no rotors moving at all
 
