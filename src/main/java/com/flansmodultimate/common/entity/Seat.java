@@ -45,7 +45,9 @@ public class Seat extends Entity implements IControllable
     private static final EntityDataAccessor<Integer> DATA_INPUT_MASK = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
     /** Rounds this seat's gun still has to fire, or -1 when the seat mounts no gun. */
     private static final EntityDataAccessor<Integer> DATA_GUN_ROUNDS = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
-    /** Ticks until this seat's gun may fire again, reload and shot delay alike. */
+    /** What a full magazine of this seat's gun holds. */
+    private static final EntityDataAccessor<Integer> DATA_GUN_MAGAZINE_SIZE = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
+    /** Ticks of reload this seat's gun still owes, excluding the ordinary delay between shots. */
     private static final EntityDataAccessor<Integer> DATA_GUN_RELOAD_TICKS = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
 
     private static final int MAX_ORPHAN_TICKS = 100;
@@ -267,18 +269,23 @@ public class Seat extends Entity implements IControllable
         entityData.define(DATA_AIM_PITCH, 0F);
         entityData.define(DATA_INPUT_MASK, 0);
         entityData.define(DATA_GUN_ROUNDS, -1);
+        entityData.define(DATA_GUN_MAGAZINE_SIZE, 0);
         entityData.define(DATA_GUN_RELOAD_TICKS, 0);
     }
 
     public int getGunRounds() { return entityData.get(DATA_GUN_ROUNDS); }
 
+    public int getGunMagazineSize() { return entityData.get(DATA_GUN_MAGAZINE_SIZE); }
+
     public int getGunReloadTicks() { return entityData.get(DATA_GUN_RELOAD_TICKS); }
 
     /** Publishes what this seat's gunner needs on their HUD. Server side; only changes go out. */
-    public void setGunState(int rounds, int reloadTicks)
+    public void setGunState(int rounds, int magazineSize, int reloadTicks)
     {
         if (entityData.get(DATA_GUN_ROUNDS) != rounds)
             entityData.set(DATA_GUN_ROUNDS, rounds);
+        if (entityData.get(DATA_GUN_MAGAZINE_SIZE) != magazineSize)
+            entityData.set(DATA_GUN_MAGAZINE_SIZE, magazineSize);
         if (entityData.get(DATA_GUN_RELOAD_TICKS) != reloadTicks)
             entityData.set(DATA_GUN_RELOAD_TICKS, reloadTicks);
     }

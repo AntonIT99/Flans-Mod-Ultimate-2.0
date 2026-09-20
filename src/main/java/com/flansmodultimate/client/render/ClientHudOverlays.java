@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;
@@ -192,12 +193,12 @@ public final class ClientHudOverlays
 
         Component currentAmmoName = aaGun.getCurrentAmmoName();
         boolean hasCurrentAmmo = !currentAmmoName.getString().isEmpty();
-        Component reloadText = !hasCurrentAmmo
-            ? Component.translatable("hud.flansmodultimate.aa_gun.no_ammo")
-            : aaGun.getReloadTimer() > 0
-                ? Component.translatable("hud.flansmodultimate.aa_gun.reload_time", String.format(Locale.ROOT, "%.1f", aaGun.getReloadTimer() / 20F))
-                : Component.translatable("hud.flansmodultimate.aa_gun.ready");
-        int reloadColor = !hasCurrentAmmo || aaGun.getReloadTimer() > 0 ? HUD_RED : HUD_GREEN;
+        // An AA gun reads its readiness from the same builder a driveable shell
+        // bank does, so the two say the same thing in the same words.
+        List<OrdnanceLine> readiness = new ArrayList<>();
+        addWeaponLine(readiness, "hud.flansmodultimate.driveable.shell", aaGun.getReloadTimer(),
+            hasCurrentAmmo, aaGun.getMagazineLeft(), aaGun.getMagazineSize());
+        Component reloadText = readiness.get(0).text();
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
 
         int rightX = Math.max(LEGACY_HUD_LEFT, sw - HUD_RIGHT_MARGIN - maxWidth(font, yawText, pitchText, reloadText, ammoHeading,
@@ -205,7 +206,7 @@ public final class ClientHudOverlays
 
         g.drawString(font, yawText, rightX, LEGACY_HUD_TOP, HUD_WHITE, false);
         g.drawString(font, pitchText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
-        g.drawString(font, reloadText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2, reloadColor, false);
+        g.drawString(font, reloadText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2, readiness.get(0).color(), false);
 
         if (hasCurrentAmmo)
         {
@@ -233,7 +234,7 @@ public final class ClientHudOverlays
         g.drawString(font, ModUtils.getDisplayName(type), LEGACY_HUD_LEFT, LEGACY_HUD_TOP, HUD_WHITE, false);
 
         List<OrdnanceLine> lines = new ArrayList<>();
-        addGunAmmoLines(lines, gun.getRoundsLeft(), gun.getReloadTimer());
+        addGunAmmoLines(lines, ModUtils.getDisplayName(type), gun.getRoundsLeft(), gun.getMagazineSize(), gun.getReloadTimer());
         int rightX = Math.max(LEGACY_HUD_LEFT, sw - HUD_RIGHT_MARGIN - maxLineWidth(font, lines));
         int line = 0;
         for (OrdnanceLine ordnance : lines)
@@ -241,26 +242,47 @@ public final class ClientHudOverlays
     }
 
     /**
-     * The rounds-remaining and readiness pair shown for any gun a player is
-     * working directly: a deployed gun, or the gun on the seat they are riding.
+     * The one line shown for a gun a player is working directly: a deployed gun,
+     * or the gun on the seat they are riding. Both read identically, naming the
+     * gun so a gunner knows which weapon the numbers belong to.
      *
      * @param rounds      rounds left to fire, or a negative number when there is no gun to report on
-     * @param reloadTicks ticks until the gun may fire again, reload and shot delay alike
+     * @param reloadTicks ticks of reload still owed, excluding the ordinary delay between shots
      */
-    private static void addGunAmmoLines(List<OrdnanceLine> lines, int rounds, int reloadTicks)
+    private static void addGunAmmoLines(List<OrdnanceLine> lines, Component gunName, int rounds,
+        int magazineSize, int reloadTicks)
     {
         if (rounds < 0)
             return;
-        if (rounds == 0)
+        if (reloadTicks > 0)
         {
-            lines.add(new OrdnanceLine(Component.translatable("hud.flansmodultimate.gun.no_ammo"), HUD_RED));
+            lines.add(new OrdnanceLine(Component.translatable("hud.flansmodultimate.gun.reloading", gunName,
+                String.format(Locale.ROOT, "%.1f", reloadTicks / 20F)), HUD_RED));
             return;
         }
-        lines.add(new OrdnanceLine(Component.translatable("hud.flansmodultimate.gun.rounds", rounds), HUD_AMMO_GREEN));
-        lines.add(reloadTicks > 0
-            ? new OrdnanceLine(Component.translatable("hud.flansmodultimate.gun.reloading",
-                String.format(Locale.ROOT, "%.1f", reloadTicks / 20F)), HUD_RED)
-            : new OrdnanceLine(Component.translatable("hud.flansmodultimate.gun.ready"), HUD_GREEN));
+        lines.add(rounds == 0
+            ? new OrdnanceLine(Component.translatable("hud.flansmodultimate.gun.no_ammo", gunName), HUD_RED)
+            : new OrdnanceLine(Component.translatable("hud.flansmodultimate.gun.rounds", gunName, rounds,
+                Math.max(magazineSize, rounds)), HUD_AMMO_GREEN));
+        // magazineSize is the capacity recorded at the last restock, so it can only
+        // lag behind rounds if a restock has not been seen yet; max keeps the pair sane.
+    }
+
+    /**
+     * The seat gun line for the seat a player is riding. The gun's name comes from
+     * the driveable's own definition, which the client already has, so only the
+     * numbers travel.
+     */
+    private static void addSeatGunLine(List<OrdnanceLine> lines, Driveable driveable, Seat seat)
+    {
+        if (seat.getGunRounds() < 0 || driveable.getConfigType() == null)
+            return;
+        SeatInfo info = driveable.getConfigType().getSeat(seat.getSeatIndex());
+        GunType gun = info == null ? null : info.getGunType();
+        if (gun == null)
+            return;
+        addGunAmmoLines(lines, ModUtils.getDisplayName(gun), seat.getGunRounds(),
+            seat.getGunMagazineSize(), seat.getGunReloadTicks());
     }
 
     private static int maxLineWidth(Font font, List<OrdnanceLine> lines)
@@ -293,20 +315,44 @@ public final class ClientHudOverlays
     private record OrdnanceLine(Component text, int color) {}
 
     /** Appends a Shell/Bomb/Missile readiness line for a weapon bank, if that bank fires ordnance. */
-    private static void addOrdnanceLine(List<OrdnanceLine> lines, EnumWeaponType weapon, int reloadTicks, Component ammoName)
+    private static void addOrdnanceLine(List<OrdnanceLine> lines, EnumWeaponType weapon, int reloadTicks,
+        Component ammoName, int magazineLeft, int magazineSize)
     {
         if (!EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(weapon))
             return;
+        addWeaponLine(lines, "hud.flansmodultimate.driveable." + weapon.name().toLowerCase(Locale.ROOT),
+            reloadTicks, !ammoName.getString().isEmpty(), magazineLeft, magazineSize);
+    }
 
-        String labelKey = "hud.flansmodultimate.driveable." + weapon.name().toLowerCase(Locale.ROOT);
-        boolean hasAmmo = !ammoName.getString().isEmpty();
+    /**
+     * The readiness line shared by driveable weapon banks and AA guns, so the two
+     * read identically.
+     *
+     * <p>A weapon is called ready whenever it is not reloading. The ordinary delay
+     * between shots deliberately does not show as a reload: a gunner holding the
+     * trigger on an autocannon would otherwise see it flicker between reloading
+     * and ready at the cyclic rate, which says nothing useful.
+     *
+     * @param magazineSize rounds a full magazine holds; one or zero hides the count,
+     *                     since a weapon that reloads after every shot has none to show
+     */
+    private static void addWeaponLine(List<OrdnanceLine> lines, String labelKey, int reloadTicks,
+        boolean hasAmmo, int magazineLeft, int magazineSize)
+    {
         if (!hasAmmo)
+        {
             lines.add(new OrdnanceLine(Component.translatable(labelKey + ".no_ammo"), HUD_RED));
-        else if (reloadTicks > 0)
+            return;
+        }
+        if (reloadTicks > 0)
+        {
             lines.add(new OrdnanceLine(Component.translatable(labelKey + ".reload_time",
                 String.format(Locale.ROOT, "%.1f", reloadTicks / 20F)), HUD_RED));
-        else
-            lines.add(new OrdnanceLine(Component.translatable(labelKey + ".ready"), HUD_GREEN));
+            return;
+        }
+        lines.add(magazineSize > 1
+            ? new OrdnanceLine(Component.translatable(labelKey + ".ready_rounds", magazineLeft, magazineSize), HUD_GREEN)
+            : new OrdnanceLine(Component.translatable(labelKey + ".ready"), HUD_GREEN));
     }
 
     private static Component compassDirection(float yaw)
@@ -993,12 +1039,14 @@ public final class ClientHudOverlays
         Component primaryAmmoName = driveable.getCurrentPrimaryAmmoName();
         Component secondaryAmmoName = driveable.getCurrentSecondaryAmmoName();
         List<OrdnanceLine> ordnanceLines = new ArrayList<>();
-        addOrdnanceLine(ordnanceLines, driveable.getConfigType().weaponType(false), driveable.getPrimaryReloadTicks(), primaryAmmoName);
-        addOrdnanceLine(ordnanceLines, driveable.getConfigType().weaponType(true), driveable.getSecondaryReloadTicks(), secondaryAmmoName);
+        addOrdnanceLine(ordnanceLines, driveable.getConfigType().weaponType(false), driveable.getPrimaryReloadTicks(),
+            primaryAmmoName, driveable.getMagazineLeft(false), driveable.getMagazineSize(false));
+        addOrdnanceLine(ordnanceLines, driveable.getConfigType().weaponType(true), driveable.getSecondaryReloadTicks(),
+            secondaryAmmoName, driveable.getMagazineLeft(true), driveable.getMagazineSize(true));
         // A gunner is working their own seat's gun rather than the driver's weapon
-        // banks, so they get its rounds and its readiness instead.
+        // banks, so they get that gun named, with its rounds and its readiness.
         if (player.getVehicle() instanceof Seat ridden)
-            addGunAmmoLines(ordnanceLines, ridden.getGunRounds(), ridden.getGunReloadTicks());
+            addSeatGunLine(ordnanceLines, driveable, ridden);
         Component currentAmmoName = !primaryAmmoName.getString().isEmpty() ? primaryAmmoName : secondaryAmmoName;
         boolean hasCurrentAmmo = !currentAmmoName.getString().isEmpty();
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");

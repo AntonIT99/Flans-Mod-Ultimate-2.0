@@ -69,6 +69,8 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     protected static final EntityDataAccessor<Integer> DATA_GUN_DIRECTION = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
     /** Rounds the loaded ammunition still has to fire, for the gunner's HUD. */
     protected static final EntityDataAccessor<Integer> DATA_ROUNDS_LEFT = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
+    /** What a full magazine of the loaded ammunition holds. */
+    protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_SIZE = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
 
     protected GunType configType;
     protected String shortname = StringUtils.EMPTY;
@@ -196,6 +198,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         entityData.define(DATA_RELOAD_TIMER, 0);
         entityData.define(DATA_GUN_DIRECTION, 0);
         entityData.define(DATA_ROUNDS_LEFT, 0);
+        entityData.define(DATA_MAGAZINE_SIZE, 0);
     }
 
     public int getRoundsLeft()
@@ -207,9 +210,18 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     protected void updateAmmoState()
     {
         int rounds = ShootableItem.getTotalRounds(ammo);
+        // The capacity to count down from is what went in at the last reload, so a
+        // belt reads 247/300 rather than against one item's worth.
+        if (rounds > entityData.get(DATA_ROUNDS_LEFT))
+            entityData.set(DATA_MAGAZINE_SIZE, rounds);
         if (entityData.get(DATA_ROUNDS_LEFT) != rounds)
             entityData.set(DATA_ROUNDS_LEFT, rounds);
         setHasAmmo(rounds > 0);
+    }
+
+    public int getMagazineSize()
+    {
+        return entityData.get(DATA_MAGAZINE_SIZE);
     }
 
     @Override

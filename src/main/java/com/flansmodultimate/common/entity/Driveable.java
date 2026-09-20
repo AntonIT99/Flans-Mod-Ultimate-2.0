@@ -219,6 +219,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected static final EntityDataAccessor<Component> DATA_PRIMARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Component> DATA_SECONDARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Integer> DATA_SECONDARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    /** Rounds each bank has left before its next reload, and what a full magazine holds. */
+    protected static final EntityDataAccessor<Integer> DATA_PRIMARY_MAGAZINE_LEFT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_PRIMARY_MAGAZINE_SIZE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_SECONDARY_MAGAZINE_LEFT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_SECONDARY_MAGAZINE_SIZE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
 
     private static final int INPUT_TIMEOUT_TICKS = 12;
     private static final int CHILD_REPAIR_INTERVAL = 20;
@@ -311,6 +316,17 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected final int[] bankRoundsFired = { 0, 0 };
     /** The same count for each seat gun, so a gunner reloads on schedule in creative too. */
     protected int[] passengerRoundsFired = new int[0];
+    /**
+     * The part of each bank's cooldown that is a reload rather than the ordinary
+     * wait between shots, indexed by bank. The two are tracked apart only so the
+     * HUD can tell a crew which one they are waiting on; firing is gated on the
+     * cooldown as before.
+     */
+    protected final float[] bankReloadTicks = { 0F, 0F };
+    /** The same, per seat gun. */
+    protected float[] passengerReloadTicks = new float[0];
+    /** Rounds each seat gun's slot held when it was last restocked, for its HUD readout. */
+    protected int[] passengerMagazineCapacity = new int[0];
     /**
      * The order the weapon slots were filled in, one entry per weapon slot, zero
      * for an empty slot. A bank loads the oldest round aboard, so a crew that
@@ -450,6 +466,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         {
             passengerShootDelay = Arrays.copyOf(passengerShootDelay, seatCount);
             passengerRoundsFired = Arrays.copyOf(passengerRoundsFired, seatCount);
+            passengerReloadTicks = Arrays.copyOf(passengerReloadTicks, seatCount);
+            passengerMagazineCapacity = Arrays.copyOf(passengerMagazineCapacity, seatCount);
             passengerBurstRemaining = Arrays.copyOf(passengerBurstRemaining, seatCount);
             passengerHeldTicks = Arrays.copyOf(passengerHeldTicks, seatCount);
         }
@@ -542,14 +560,31 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public int getInputMask() { return entityData.get(DATA_INPUT_MASK); }
     public int getDriveableMode() { return entityData.get(DATA_MODE); }
     public float getFuel() { return entityData.get(DATA_FUEL); }
+    /**
+     * Ticks of <em>reload</em> a bank still owes, which is not the whole wait
+     * before it may fire: the ordinary delay between shots is excluded, so a crew
+     * is told it is reloading only when it actually is.
+     */
     public int getSecondaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : ShotCooldown.displayTicks(secondaryShootDelay);
+        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : ShotCooldown.displayTicks(bankReloadTicks[1]);
     }
 
     public int getPrimaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : ShotCooldown.displayTicks(primaryShootDelay);
+        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : ShotCooldown.displayTicks(bankReloadTicks[0]);
+    }
+
+    /** Rounds a bank has left before its next reload; zero when it has nothing loaded. */
+    public int getMagazineLeft(boolean secondary)
+    {
+        return entityData.get(secondary ? DATA_SECONDARY_MAGAZINE_LEFT : DATA_PRIMARY_MAGAZINE_LEFT);
+    }
+
+    /** What a full magazine of a bank holds. One means the bank reloads after every shot. */
+    public int getMagazineSize(boolean secondary)
+    {
+        return entityData.get(secondary ? DATA_SECONDARY_MAGAZINE_SIZE : DATA_PRIMARY_MAGAZINE_SIZE);
     }
 
     public Component getCurrentPrimaryAmmoName()
@@ -736,6 +771,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         entityData.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
         entityData.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
         entityData.define(DATA_SECONDARY_RELOAD_TICKS, 0);
+        entityData.define(DATA_PRIMARY_MAGAZINE_LEFT, 0);
+        entityData.define(DATA_PRIMARY_MAGAZINE_SIZE, 0);
+        entityData.define(DATA_SECONDARY_MAGAZINE_LEFT, 0);
+        entityData.define(DATA_SECONDARY_MAGAZINE_SIZE, 0);
     }
 
     @Override
@@ -1025,6 +1064,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         int previousPrimaryShootDelay = ShotCooldown.displayTicks(primaryShootDelay);
         setPrimaryShootDelay(ShotCooldown.tick(primaryShootDelay));
         setSecondaryShootDelay(ShotCooldown.tick(secondaryShootDelay));
+        bankReloadTicks[0] = Math.max(0F, bankReloadTicks[0] - 1F);
+        bankReloadTicks[1] = Math.max(0F, bankReloadTicks[1] - 1F);
+        publishBankState();
         tickTimedWeaponSounds(previousPrimaryShootDelay);
         applyPlacementEffects();
         if (flareDelay > 0)
@@ -1126,8 +1168,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!placementEffectsPending || configType == null)
             return;
         placementEffectsPending = false;
-        setPrimaryShootDelay(Math.max(primaryShootDelay, Math.max(0, configType.getPlaceTimePrimary())));
-        setSecondaryShootDelay(Math.max(secondaryShootDelay, Math.max(0, configType.getPlaceTimeSecondary())));
+        beginBankReload(false, Math.max(0, configType.getPlaceTimePrimary()));
+        beginBankReload(true, Math.max(0, configType.getPlaceTimeSecondary()));
 
         String primarySound = configType.getPlaceSoundPrimary();
         String secondarySound = configType.getPlaceSoundSecondary();
@@ -1495,12 +1537,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         boolean restockedGunBank = false;
         if (isGunBank(false))
         {
-            setPrimaryShootDelay(Math.max(primaryShootDelay, configType.reloadTime(false) * reloadFactor));
+            beginBankReload(false, configType.reloadTime(false) * reloadFactor);
             restockedGunBank = true;
         }
         if (isGunBank(true))
         {
-            setSecondaryShootDelay(Math.max(secondaryShootDelay, configType.reloadTime(true) * reloadFactor));
+            beginBankReload(true, configType.reloadTime(true) * reloadFactor);
             restockedGunBank = true;
         }
         if (!restockedGunBank)
@@ -1519,15 +1561,75 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     private void setPrimaryShootDelay(float delay)
     {
         primaryShootDelay = delay;
-        if (!level().isClientSide)
-            entityData.set(DATA_PRIMARY_RELOAD_TICKS, ShotCooldown.displayTicks(primaryShootDelay));
     }
 
     private void setSecondaryShootDelay(float delay)
     {
         secondaryShootDelay = delay;
-        if (!level().isClientSide)
-            entityData.set(DATA_SECONDARY_RELOAD_TICKS, ShotCooldown.displayTicks(secondaryShootDelay));
+    }
+
+    /**
+     * Holds a bank up for a reload: the cooldown that gates firing, and alongside
+     * it the reload portion of that cooldown, which is what the crew is shown.
+     */
+    private void beginBankReload(boolean secondary, float reloadTicks)
+    {
+        int index = secondary ? 1 : 0;
+        bankReloadTicks[index] = Math.max(bankReloadTicks[index], reloadTicks);
+        if (secondary)
+            setSecondaryShootDelay(Math.max(secondaryShootDelay, reloadTicks));
+        else
+            setPrimaryShootDelay(Math.max(primaryShootDelay, reloadTicks));
+    }
+
+    /** Publishes what the driver's HUD reports about each bank. Server side; only changes go out. */
+    private void publishBankState()
+    {
+        setIfChanged(DATA_PRIMARY_RELOAD_TICKS, ShotCooldown.displayTicks(bankReloadTicks[0]));
+        setIfChanged(DATA_SECONDARY_RELOAD_TICKS, ShotCooldown.displayTicks(bankReloadTicks[1]));
+        publishMagazine(false, DATA_PRIMARY_MAGAZINE_LEFT, DATA_PRIMARY_MAGAZINE_SIZE);
+        publishMagazine(true, DATA_SECONDARY_MAGAZINE_LEFT, DATA_SECONDARY_MAGAZINE_SIZE);
+    }
+
+    private void publishMagazine(boolean secondary, EntityDataAccessor<Integer> left, EntityDataAccessor<Integer> size)
+    {
+        int index = secondary ? 1 : 0;
+        int magazine = bankMagazineSize(secondary);
+        setIfChanged(size, magazine);
+        setIfChanged(left, magazine <= 0 ? 0 : Math.max(0, magazine - bankRoundsFired[index]));
+    }
+
+    private void setIfChanged(EntityDataAccessor<Integer> accessor, int value)
+    {
+        if (entityData.get(accessor) != value)
+            entityData.set(accessor, value);
+    }
+
+    /**
+     * What a full magazine of a bank holds, or zero when the bank has nothing to
+     * fire and so has no magazine to report.
+     */
+    private int bankMagazineSize(boolean secondary)
+    {
+        if (configType == null || driveableData == null)
+            return 0;
+        if (isOrdnanceBank(secondary))
+        {
+            int index = secondary ? 1 : 0;
+            if (loadedOrdnanceSlot[index] < 0)
+                return 0;
+            AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+            return magazineSize(getWeaponSlot(bank, loadedOrdnanceSlot[index]), configType.reloadRounds(secondary));
+        }
+        if (!isGunBank(secondary))
+            return 0;
+        for (ShootPoint point : configType.shootPoints(secondary))
+        {
+            AmmoSelection selection = selectAmmo(point, EnumWeaponType.GUN, secondary);
+            if (selection != null && !selection.stack().isEmpty())
+                return magazineSize(selection.stack(), configType.reloadRounds(secondary));
+        }
+        return 0;
     }
 
     /**
@@ -1666,11 +1768,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (slot < 0)
             return;
 
-        float reload = configType.reloadTime(secondary);
-        if (secondary)
-            setSecondaryShootDelay(Math.max(secondaryShootDelay, reload));
-        else
-            setPrimaryShootDelay(Math.max(primaryShootDelay, reload));
+        beginBankReload(secondary, configType.reloadTime(secondary));
 
         String sound = configType.reloadSound(secondary);
         if (StringUtils.isNotBlank(sound))
@@ -1954,11 +2052,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!magazineSpent(++bankRoundsFired[index], size, fired))
             return;
         bankRoundsFired[index] = 0;
-        float reload = configType.reloadTime(secondary);
-        if (secondary)
-            setSecondaryShootDelay(Math.max(secondaryShootDelay, reload));
-        else
-            setPrimaryShootDelay(Math.max(primaryShootDelay, reload));
+        beginBankReload(secondary, configType.reloadTime(secondary));
 
         String sound = StringUtils.firstNonBlank(gunType.getReloadSound(null), configType.reloadSound(secondary));
         if (StringUtils.isNotBlank(sound))
@@ -2336,6 +2430,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         for (int index = 0; index < seats.length; index++)
         {
             passengerShootDelay[index] = ShotCooldown.tick(passengerShootDelay[index]);
+            passengerReloadTicks[index] = Math.max(0F, passengerReloadTicks[index] - 1F);
             Seat seat = seats[index];
             SeatInfo info = seat == null ? null : seat.getSeatInfo();
             GunType gun = info == null ? null : info.getGunType();
@@ -2378,11 +2473,16 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         int ammoSlot = info == null ? -1 : info.getGunnerID();
         if (gun == null || ammoSlot < 0)
         {
-            seat.setGunState(-1, 0);
+            seat.setGunState(-1, 0, 0);
             return;
         }
-        seat.setGunState(ShootableItem.getTotalRounds(driveableData.getAmmo(ammoSlot)),
-            ShotCooldown.displayTicks(passengerShootDelay[index]));
+        // The capacity to count down from is what went into the slot at the last
+        // restock, so a gunner reads 247/300 of the belt they actually have.
+        int rounds = ShootableItem.getTotalRounds(driveableData.getAmmo(ammoSlot));
+        if (rounds > seat.getGunRounds())
+            passengerMagazineCapacity[index] = rounds;
+        seat.setGunState(rounds, passengerMagazineCapacity[index],
+            ShotCooldown.displayTicks(passengerReloadTicks[index]));
     }
 
     /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
@@ -2435,8 +2535,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!magazineSpent(++passengerRoundsFired[index], magazineSize(fired, 0), fired))
             return;
         passengerRoundsFired[index] = 0;
-        passengerShootDelay[index] = Math.max(passengerShootDelay[index],
-            Math.max(gun.getReloadTime(), gun.getShootDelay(null)));
+        float reload = Math.max(gun.getReloadTime(), gun.getShootDelay(null));
+        passengerShootDelay[index] = Math.max(passengerShootDelay[index], reload);
+        passengerReloadTicks[index] = Math.max(passengerReloadTicks[index], reload);
         String reloadSound = gun.getReloadSound(null);
         if (StringUtils.isNotBlank(reloadSound))
             PacketPlaySound.sendSoundPacket(this, gun.getReloadSoundRange(), reloadSound, false);

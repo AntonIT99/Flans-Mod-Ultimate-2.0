@@ -86,6 +86,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     protected static final EntityDataAccessor<Integer> DATA_CURRENT_BARREL = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_HEALTH = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Component> DATA_CURRENT_AMMO_NAME = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.COMPONENT);
+    protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_LEFT = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_SIZE = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
 
     protected AAGunType configType;
     protected String shortname = StringUtils.EMPTY;
@@ -290,6 +292,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         }
         setAmmoMask(mask);
         updateCurrentAmmoName();
+        updateMagazineState();
     }
 
     private void updateCurrentAmmoName()
@@ -309,6 +312,41 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             }
         }
         entityData.set(DATA_CURRENT_AMMO_NAME, Component.empty());
+    }
+
+    /**
+     * Rounds the whole mounting still has, and what it holds when full. Every
+     * barrel reloads together, so the crew is shown the mounting's total rather
+     * than whichever barrel happens to be next.
+     */
+    private void updateMagazineState()
+    {
+        // The client never holds the ammunition stacks themselves, only the synced
+        // counts, so letting it recompute them here would zero what it was sent.
+        if (level().isClientSide)
+            return;
+        int left = 0;
+        for (ItemStack stack : ammo)
+            left += ShootableItem.getTotalRounds(stack);
+
+        // The capacity to count down from is whatever went aboard at the last
+        // restock, which is the only figure that means anything here: the gun
+        // reloads when every barrel is dry, so a mounting loaded with three
+        // forty-round drums is forty short after forty rounds, not after one item.
+        if (left > entityData.get(DATA_MAGAZINE_LEFT))
+            entityData.set(DATA_MAGAZINE_SIZE, left);
+        if (entityData.get(DATA_MAGAZINE_LEFT) != left)
+            entityData.set(DATA_MAGAZINE_LEFT, left);
+    }
+
+    public int getMagazineLeft()
+    {
+        return entityData.get(DATA_MAGAZINE_LEFT);
+    }
+
+    public int getMagazineSize()
+    {
+        return entityData.get(DATA_MAGAZINE_SIZE);
     }
 
     @Override
@@ -355,6 +393,8 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         entityData.define(DATA_CURRENT_BARREL, 0);
         entityData.define(DATA_HEALTH, 0);
         entityData.define(DATA_CURRENT_AMMO_NAME, Component.empty());
+        entityData.define(DATA_MAGAZINE_LEFT, 0);
+        entityData.define(DATA_MAGAZINE_SIZE, 0);
     }
 
     @Override
