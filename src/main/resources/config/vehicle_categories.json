@@ -3,6 +3,8 @@
         "properties": {
             "RealMassKg": 4900,
             "RoundsPerMinPrimary": 600,
+            "ReloadTimePrimary": 32,
+            "ReloadRoundsPrimary": 32,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
@@ -24,6 +26,8 @@
             "DriveType": "AWD",
             "RealMaxReverseSpeedKmh": 3,
             "RoundsPerMinPrimary": 480,
+            "ReloadTimePrimary": 59,
+            "ReloadRoundsPrimary": 20,
             "ArmorFrontMm": 8,
             "ArmorSideMm": 8,
             "ArmorRearMm": 8,
@@ -40,7 +44,9 @@
     "2 cm Flakvierling 38": {
         "properties": {
             "RealMassKg": 1514,
-            "RoundsPerMinPrimary": 1200,
+            "RoundsPerMinPrimary": 1400,
+            "ReloadTimePrimary": 51,
+            "ReloadRoundsPrimary": 80,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
@@ -109,6 +115,8 @@
         "properties": {
             "RealMassKg": 1544,
             "RoundsPerMinPrimary": 160,
+            "ReloadTimePrimary": 45,
+            "ReloadRoundsPrimary": 6,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
@@ -1734,6 +1742,8 @@
         "properties": {
             "RealMassKg": 1981,
             "RoundsPerMinPrimary": 120,
+            "ReloadTimePrimary": 20,
+            "ReloadRoundsPrimary": 4,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
@@ -1756,6 +1766,8 @@
             "TurretArmorRearMm": 0,
             "TurretArmorTopMm": 0,
             "RoundsPerMinPrimary": 480,
+            "ReloadTimePrimary": 20,
+            "ReloadRoundsPrimary": 16,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -3108,7 +3120,9 @@
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
-            "RoundsPerMinPrimary": 1200,
+            "RoundsPerMinPrimary": 1400,
+            "ReloadTimePrimary": 51,
+            "ReloadRoundsPrimary": 80,
             "ArmorFrontMm": 80,
             "ArmorSideMm": 30,
             "ArmorRearMm": 30,
@@ -5898,7 +5912,7 @@
     "M45 Quadmount .50 Cal": {
         "properties": {
             "RealMassKg": 1087,
-            "RoundsPerMinPrimary": 1200,
+            "RoundsPerMinPrimary": 2300,
             "ArmorFrontMm": 6.35,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
@@ -6784,6 +6798,8 @@
             "DriveType": "RWD",
             "RealMaxReverseSpeedKmh": 3,
             "RoundsPerMinPrimary": 180,
+            "ReloadTimePrimary": 60,
+            "ReloadRoundsPrimary": 15,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
@@ -7192,6 +7208,8 @@
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 8,
             "RoundsPerMinPrimary": 280,
+            "ReloadTimePrimary": 57,
+            "ReloadRoundsPrimary": 10,
             "ArmorFrontMm": 20,
             "ArmorSideMm": 14,
             "ArmorRearMm": 15,
@@ -7223,6 +7241,8 @@
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 10,
             "RoundsPerMinPrimary": 480,
+            "ReloadTimePrimary": 30,
+            "ReloadRoundsPrimary": 10,
             "ArmorFrontMm": 30,
             "ArmorSideMm": 20,
             "ArmorRearMm": 20,
@@ -7354,52 +7374,6 @@
         ]
     },
 
-    "Panzerkampfwagen IV (Generic)": {
-        "properties": {
-            "RealMassKg": 25000,
-            "RealEnginePowerPS": 272,
-            "RealMaxSpeedKmh": 38,
-            "DriveType": "TRACKED",
-            "RealMaxReverseSpeedKmh": 10,
-            "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 80,
-            "ArmorSideMm": 30,
-            "ArmorRearMm": 20,
-            "ArmorTopMm": 11,
-            "ArmorBottomMm": 10,
-            "TurretArmorFrontMm": 50,
-            "TurretArmorSideMm": 30,
-            "TurretArmorRearMm": 30,
-            "TurretArmorTopMm": 16,
-            "PartArmorMm": [
-                "leftTrack 15",
-                "rightTrack 15"
-            ],
-            "AmmoMass": [
-                "shell 6800",
-                "heshell 5740"
-            ],
-            "AmmoMuzzleVelocity": [
-                "shell 770",
-                "heshell 550"
-            ],
-            "AmmoExplosiveMassTNTg": [
-                "shell 29",
-                "heshell 725"
-            ],
-            "AmmoPenetrationAt100m": [
-                "shell 143",
-                "heshell 10"
-            ],
-            "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true",
-            "UseAmmoGroup": "75mm KwK/PaK 40"
-        },
-        "items": [
-            "panzer"
-        ]
-    },
-
     "Panzerkampfwagen IV Ausf. D": {
         "properties": {
             "RealMassKg": 20000,
@@ -7516,7 +7490,7 @@
             "TurretArmorFrontMm": 50,
             "TurretArmorSideMm": 30,
             "TurretArmorRearMm": 30,
-            "TurretArmorTopMm": 25,
+            "TurretArmorTopMm": 16,
             "RealMaxReverseSpeedKmh": 7,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseAmmoGroup": "75mm KwK/PaK 40",
@@ -7524,26 +7498,35 @@
             "ReadWeaponsFromGunTypes": "true",
             "AmmoMass": [
                 "44_75apshell 6800",
-                "44_mediumheshell 5700"
+                "44_mediumheshell 5740",
+                "shell 6800",
+                "heshell 5740"
             ],
             "AmmoMuzzleVelocity": [
                 "44_75apshell 770",
-                "44_mediumheshell 770"
+                "44_mediumheshell 550",
+                "shell 770",
+                "heshell 550"
             ],
             "AmmoExplosiveMassTNTg": [
                 "44_75apshell 29",
-                "44_mediumheshell 686"
+                "44_mediumheshell 725",
+                "shell 29",
+                "heshell 725"
             ],
             "AmmoPenetrationAt100m": [
                 "44_75apshell 143",
-                "44_mediumheshell 10"
+                "44_mediumheshell 10",
+                "shell 143",
+                "heshell 10"
             ]
         },
         "items": [
             "panzer4h",
             "44_panzerivh",
             "ww2_vehicle_panzeriv_2a",
-            "panzerkampfvageniv"
+            "panzerkampfvageniv",
+            "panzer"
         ]
     },
 
@@ -8000,7 +7983,9 @@
             "RealMaxSpeedKmh": 55,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 10,
-            "RoundsPerMinPrimary": 480,
+            "RoundsPerMinPrimary": 320,
+            "ReloadTimePrimary": 40,
+            "ReloadRoundsPrimary": 5,
             "ArmorFrontMm": 17,
             "ArmorSideMm": 13,
             "ArmorRearMm": 13,
@@ -8693,6 +8678,8 @@
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 6,
             "RoundsPerMinPrimary": 480,
+            "ReloadTimePrimary": 30,
+            "ReloadRoundsPrimary": 10,
             "ArmorFrontMm": 50,
             "ArmorSideMm": 30,
             "ArmorRearMm": 30,
@@ -8721,6 +8708,8 @@
             "RealMaxSpeedKmh": 85,
             "DriveType": "AWD",
             "RoundsPerMinPrimary": 280,
+            "ReloadTimePrimary": 57,
+            "ReloadRoundsPrimary": 10,
             "ArmorFrontMm": 30,
             "ArmorSideMm": 8,
             "ArmorRearMm": 8,
@@ -10679,6 +10668,8 @@
             "TurretArmorRearMm": 0,
             "TurretArmorTopMm": 0,
             "RoundsPerMinPrimary": 660,
+            "ReloadTimePrimary": 82,
+            "ReloadRoundsPrimary": 45,
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -10808,6 +10799,8 @@
         "properties": {
             "RealMassKg": 373,
             "RoundsPerMinPrimary": 300,
+            "ReloadTimePrimary": 120,
+            "ReloadRoundsPrimary": 20,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
@@ -12573,7 +12566,7 @@
             "RealMaxSpeedKmh": 105,
             "DriveType": "AWD",
             "RealMaxReverseSpeedKmh": 15,
-            "RoundsPerMinPrimary": 1200,
+            "RoundsPerMinPrimary": 2300,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
