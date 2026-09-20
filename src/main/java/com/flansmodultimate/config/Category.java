@@ -19,6 +19,8 @@ public class Category
 {
     private EnumType type;
     private String name;
+    /** Same-type parent name, or default:Name to explicitly select a built-in parent. */
+    private String inherits;
     private Map<String, List<String>> properties = new HashMap<>();
     /** Property name -> append, replace or ifAbsent. Missing entries preserve legacy append behavior. */
     private Map<String, String> propertyModes = new HashMap<>();

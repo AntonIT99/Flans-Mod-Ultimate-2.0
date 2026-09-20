@@ -95,7 +95,8 @@ public final class ContentLoadingConfig
             The new category system allows items to be grouped and modified without modifying their config files in content packs.
             Categories can apply or override settings for all items within them.
             By default, this mod provides preconfigured categories in .minecraft/config/flansmodultimate/default.
-            Set this option to false if you want to disable these default categories.""");
+            Set this option to false if you want to disable these default categories.
+            User categories can still explicitly inherit them with "inherits": "default:Category Name" in category JSON.""");
 
         config.set("overrideConfiguredSoundLengths", overrideConfiguredSoundLengths);
         config.setComment("overrideConfiguredSoundLengths", """
