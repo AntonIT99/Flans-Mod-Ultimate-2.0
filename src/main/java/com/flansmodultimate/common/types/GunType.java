@@ -10,6 +10,7 @@ import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.guns.RemovedAmmo;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -1677,12 +1678,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         if (stack != null && getGrip(stack) != null && getSecondaryFire(stack))
             stackShootDelay = getGrip(stack).secondaryShootDelay;
-        else if (roundsPerMin != 0F)
-            stackShootDelay = 1200F / roundsPerMin;
-        else if (shootDelay != 0F)
-            stackShootDelay = shootDelay;
         else
-            stackShootDelay = DEFAULT_SHOOT_DELAY;
+            stackShootDelay = ShotCooldown.baseDelay(roundsPerMin, shootDelay, DEFAULT_SHOOT_DELAY);
 
         if (stack != null)
         {

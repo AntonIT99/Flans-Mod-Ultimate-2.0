@@ -37,6 +37,20 @@ class AAGunTypeTest
     }
 
     @Test
+    void gunDeclaringNoRateKeepsItsOneShotPerTickCadence()
+    {
+        AAGunType type = read("ShortName testAaGun");
+        assertEquals(1F, type.getShootDelay(), 1.0E-6F);
+    }
+
+    @Test
+    void rateAboveTwelveHundredRoundsPerMinuteStaysSubTick()
+    {
+        AAGunType type = read("ShortName testAaGun", "RoundsPerMin 2400");
+        assertEquals(0.5F, type.getShootDelay(), 1.0E-6F);
+    }
+
+    @Test
     void realisticHealthUsesMass()
     {
         AAGunType scaled = read("ShortName testAaGun", "Health 20", "RealMassKg 1000",

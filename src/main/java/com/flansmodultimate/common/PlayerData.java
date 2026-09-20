@@ -339,11 +339,18 @@ public class PlayerData
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
 
-    public void doGunReload(InteractionHand hand, float reloadTime)
+    /**
+     * @param reloadTime how long the reload itself takes, which drives the animation
+     * @param blockTime  how long the player may not shoot for, which is the reload
+     *                   time or the gun's own cadence, whichever is longer: a quick
+     *                   reload must not let a slow gun outrun its rate of fire
+     */
+    public void doGunReload(InteractionHand hand, float reloadTime, float blockTime)
     {
         // Set player shoot delay to be the reload delay - Set both gun delays to avoid reloading two guns at once
-        shootTimeRight = reloadTime;
-        shootTimeLeft = reloadTime;
+        float delay = Math.max(reloadTime, blockTime);
+        shootTimeRight = delay;
+        shootTimeLeft = delay;
         setReloading(hand, true);
         setBurstRoundsRemaining(hand,0);
     }

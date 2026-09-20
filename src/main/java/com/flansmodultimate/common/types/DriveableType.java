@@ -30,6 +30,7 @@ import com.flansmodultimate.common.driveables.physics.VehiclePhysicsResolver;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.RemovedAmmo;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -140,8 +141,30 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     private final Map<Integer, Vector3f> authoredGunOrigins = new HashMap<>();
     protected int reloadTimePrimary;
     protected int reloadTimeSecondary;
+    /** Shared {@code ReloadTime}, counted into both banks' reload time the way the bank keys are. */
+    protected int reloadTimeShared;
+    /**
+     * Whether the pack stated a rate of fire for this bank at all. A bank that
+     * states none falls back to {@link #DEFAULT_ROUNDS_PER_MIN}, and for a bank
+     * firing mounted guns that fallback must not outrank the gun's own cadence.
+     */
+    protected boolean shootDelayDeclaredPrimary;
+    protected boolean shootDelayDeclaredSecondary;
+    /** The longest delay any of this bank's timing keys states, in ticks; see {@link #reloadTime(boolean)}. */
+    protected float longestDeclaredDelayPrimary;
+    protected float longestDeclaredDelaySecondary;
+    /**
+     * Rounds this bank puts out between full reloads, when that is fewer than the
+     * loaded ammunition carries. A Panzer II feeding its 2 cm gun from ten-round
+     * magazines states {@code ReloadRoundsPrimary 10} whatever the ammunition item
+     * holds. Zero leaves the ammunition item's own round count in charge.
+     */
+    protected int reloadRoundsPrimary;
+    protected int reloadRoundsSecondary;
     protected String reloadSoundPrimary = StringUtils.EMPTY;
     protected String reloadSoundSecondary = StringUtils.EMPTY;
+    /** Shared {@code ReloadSound}, used by a bank that names none of its own. */
+    protected String reloadSoundShared = StringUtils.EMPTY;
     protected int placeTimePrimary = 5;
     protected int placeTimeSecondary = 5;
     protected String placeSoundPrimary = StringUtils.EMPTY;
@@ -592,14 +615,27 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierSecondary = readValue("DamageMultiplierSecondary", damageMultiplierSecondary, file);
         damageMultiplierSecondary = readValue("DamageModifierSecondary", damageMultiplierSecondary, file);
-        shootDelayPrimary = resolveShootDelay(file, shootDelayPrimary, "ShootDelayPrimarySeconds", "RoundsPerMinPrimary", "ShootDelayPrimary", "ShellDelay", "BombDelay");
-        shootDelaySecondary = resolveShootDelay(file, shootDelaySecondary, "ShootDelaySecondarySeconds", "RoundsPerMinSecondary", "ShootDelaySecondary", "ShootDelay");
+        BankTiming primaryTiming = resolveBankTiming(file, shootDelayPrimary,
+            "ShootDelayPrimarySeconds", "RoundsPerMinPrimary", "ShootDelayPrimary", "ShellDelay", "BombDelay");
+        shootDelayPrimary = primaryTiming.delay();
+        shootDelayDeclaredPrimary = primaryTiming.declared();
+        longestDeclaredDelayPrimary = primaryTiming.longestDeclared();
+        BankTiming secondaryTiming = resolveBankTiming(file, shootDelaySecondary,
+            "ShootDelaySecondarySeconds", "RoundsPerMinSecondary", "ShootDelaySecondary", "ShootDelay");
+        shootDelaySecondary = secondaryTiming.delay();
+        shootDelayDeclaredSecondary = secondaryTiming.declared();
+        longestDeclaredDelaySecondary = secondaryTiming.longestDeclared();
         readWeaponsFromGunTypes = readValue("ReadSecondaryWeaponFromGunType", readWeaponsFromGunTypes, file);
         readWeaponsFromGunTypes = readValue("ReadWeaponsFromGunTypes", readWeaponsFromGunTypes, file);
         placeTimePrimary = Math.max(0, readOptionalValue("PlaceTimePrimary", placeTimePrimary, file));
         placeTimeSecondary = Math.max(0, readOptionalValue("PlaceTimeSecondary", placeTimeSecondary, file));
+        reloadTimeShared = Math.max(0, readOptionalValue("ReloadTime", reloadTimeShared, file));
         reloadTimePrimary = Math.max(0, readOptionalValue("ReloadTimePrimary", reloadTimePrimary, file));
         reloadTimeSecondary = Math.max(0, readOptionalValue("ReloadTimeSecondary", reloadTimeSecondary, file));
+        reloadRoundsPrimary = Math.max(0, readOptionalValue("ReloadRounds", reloadRoundsPrimary, file));
+        reloadRoundsSecondary = reloadRoundsPrimary;
+        reloadRoundsPrimary = Math.max(0, readOptionalValue("ReloadRoundsPrimary", reloadRoundsPrimary, file));
+        reloadRoundsSecondary = Math.max(0, readOptionalValue("ReloadRoundsSecondary", reloadRoundsSecondary, file));
         alternatePrimary = readValue("AlternatePrimary", alternatePrimary, file);
         alternateSecondary = readValue("AlternateSecondary", alternateSecondary, file);
         modePrimary = EnumFireMode.getFireMode(readValue("ModePrimary", modePrimary.name(), file));
@@ -763,6 +799,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         shootSoundSecondary = aliasSound(shootSoundSecondary, file, "ShootSecondarySound", "ShootSoundSecondary");
         placeSoundPrimary = readSound("PlaceSoundPrimary", placeSoundPrimary, file);
         placeSoundSecondary = readSound("PlaceSoundSecondary", placeSoundSecondary, file);
+        reloadSoundShared = readSound("ReloadSound", reloadSoundShared, file);
         reloadSoundPrimary = readSound("ReloadSoundPrimary", reloadSoundPrimary, file);
         reloadSoundSecondary = readSound("ReloadSoundSecondary", reloadSoundSecondary, file);
         lockedOnSound = readSound("LockedOnSound", lockedOnSound, file);
@@ -1172,15 +1209,66 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         return secondaryWeapon ? alternateSecondary : alternatePrimary;
     }
 
+    /**
+     * The cadence between shots of a weapon bank.
+     *
+     * <p>A bank firing mounted guns takes its cadence from the gun, because the
+     * gun is what fires: the vehicle only overrides that by stating a rate of its
+     * own for the bank. {@code ReadWeaponsFromGunTypes} removes even that, handing
+     * the gun the last word. A bank firing the vehicle's own ordnance has no gun
+     * to defer to and always uses the bank's figure.
+     */
     public float shootDelay(boolean secondaryWeapon)
     {
-        if (readWeaponsFromGunTypes)
-        {
-            GunType gunType = getPilotGunType(secondaryWeapon);
-            if (gunType != null)
-                return gunType.getShootDelay(null);
-        }
+        GunType gunType = getPilotGunType(secondaryWeapon);
+        if (gunType != null && (readWeaponsFromGunTypes || !shootDelayDeclared(secondaryWeapon)))
+            return gunType.getShootDelay(null);
         return secondaryWeapon ? shootDelaySecondary : shootDelayPrimary;
+    }
+
+    public boolean shootDelayDeclared(boolean secondaryWeapon)
+    {
+        return secondaryWeapon ? shootDelayDeclaredSecondary : shootDelayDeclaredPrimary;
+    }
+
+    /**
+     * How long a full reload of this bank takes, in ticks.
+     *
+     * <p>For the vehicle's own ordnance this is the longest figure the pack states
+     * anywhere for the bank - its reload keys and every one of its timing keys -
+     * so a pack that expresses a tank's cycle as {@code ShellDelay} alone keeps the
+     * cycle it always had, and one that states both gets the slower of the two
+     * rather than whichever key happens to be read last.
+     *
+     * <p>For a bank firing mounted guns the gun's own reload time stands in,
+     * unless the vehicle states a reload time for the bank;
+     * {@code ReadWeaponsFromGunTypes} again hands the gun the last word.
+     */
+    public float reloadTime(boolean secondaryWeapon)
+    {
+        int bankReload = secondaryWeapon ? reloadTimeSecondary : reloadTimePrimary;
+        GunType gunType = getPilotGunType(secondaryWeapon);
+        if (gunType != null && (readWeaponsFromGunTypes || bankReload <= 0 && reloadTimeShared <= 0))
+            return Math.max(gunType.getReloadTime(), gunType.getShootDelay(null));
+
+        float longestDelay = secondaryWeapon ? longestDeclaredDelaySecondary : longestDeclaredDelayPrimary;
+        return Math.max(Math.max(bankReload, reloadTimeShared), Math.max(longestDelay, shootDelay(secondaryWeapon)));
+    }
+
+    /**
+     * Rounds this bank fires between full reloads, or zero to let the loaded
+     * ammunition item's own round count decide.
+     */
+    public int reloadRounds(boolean secondaryWeapon)
+    {
+        return Math.max(0, secondaryWeapon ? reloadRoundsSecondary : reloadRoundsPrimary);
+    }
+
+    /** The sound a full reload of this bank plays, preferring the bank's own over the shared one. */
+    public String reloadSound(boolean secondaryWeapon)
+    {
+        return StringUtils.firstNonBlank(
+            secondaryWeapon ? reloadSoundSecondary : reloadSoundPrimary, reloadSoundShared, StringUtils.EMPTY);
     }
 
     /** The GunType referenced by the AddGun/PilotGun mount used for this weapon bank, if any. */
@@ -1207,11 +1295,6 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     public List<ShootParticle> shootParticle(boolean secondaryWeapon)
     {
         return Collections.unmodifiableList(secondaryWeapon ? shootParticlesSecondary : shootParticlesPrimary);
-    }
-
-    public int reloadTime(boolean secondaryWeapon)
-    {
-        return secondaryWeapon ? reloadTimeSecondary : reloadTimePrimary;
     }
 
     public EnumFireMode fireMode(boolean secondaryWeapon)
@@ -1671,21 +1754,48 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
      * <p>{@link #aliasFloat} cannot express this, because it lets the
      * <em>last</em> key present win.
      */
-    private static float resolveShootDelay(TypeFile file, float current, String secondsKey, String roundsPerMinKey, String... delayKeys)
+    /**
+     * What one weapon bank's timing keys add up to.
+     *
+     * @param delay           the cadence between shots, by the precedence above
+     * @param declared        whether the pack stated any of these keys at all
+     * @param longestDeclared the longest delay any stated key works out to, in ticks
+     */
+    private record BankTiming(float delay, boolean declared, float longestDeclared) {}
+
+    private static BankTiming resolveBankTiming(TypeFile file, float current, String secondsKey, String roundsPerMinKey, String... delayKeys)
     {
+        float chosen = -1F;
+        float longest = 0F;
+
         Float seconds = readOptionalFloat(secondsKey, file);
         if (seconds != null)
-            return Math.max(1F, seconds * 20F);
+        {
+            chosen = ShotCooldown.clampDelay(seconds * 20F);
+            longest = Math.max(longest, chosen);
+        }
         Float roundsPerMin = readOptionalFloat(roundsPerMinKey, file);
         if (roundsPerMin != null)
-            return delayFromRoundsPerMin(roundsPerMin);
+        {
+            float fromRate = delayFromRoundsPerMin(roundsPerMin);
+            if (chosen < 0F)
+                chosen = fromRate;
+            longest = Math.max(longest, fromRate);
+        }
         for (String key : delayKeys)
         {
             Float delay = readOptionalFloat(key, file);
-            if (delay != null)
-                return Math.max(1F, delay);
+            if (delay == null)
+                continue;
+            float fromDelay = ShotCooldown.clampDelay(delay);
+            if (chosen < 0F)
+                chosen = fromDelay;
+            longest = Math.max(longest, fromDelay);
         }
-        return current >= 0F ? current : delayFromRoundsPerMin(DEFAULT_ROUNDS_PER_MIN);
+
+        if (chosen >= 0F)
+            return new BankTiming(chosen, true, longest);
+        return new BankTiming(current >= 0F ? current : delayFromRoundsPerMin(DEFAULT_ROUNDS_PER_MIN), false, 0F);
     }
 
     /** A number of legacy vehicle definitions declare unused delay fields with no value. */
@@ -1696,7 +1806,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
 
     private static float delayFromRoundsPerMin(float roundsPerMin)
     {
-        return Math.max(1F, 1200F / Math.max(1F, roundsPerMin));
+        return ShotCooldown.clampDelay(1200F / Math.max(1F, roundsPerMin));
     }
 
     private static float aliasFloat(float fallback, TypeFile file, String... keys)

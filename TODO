@@ -5,9 +5,9 @@ General:
 - Implement TaP Flan's Mod Features
 - UI Mod Options
 
+
 Driveables:
 - Vehicle scopes
-- Differentiate reload time and Shoot Delay for vehicles (for example Panzer II C)
 
 Content Packs:
 - run flans-category-research to add missing fields to categories
@@ -24,6 +24,8 @@ Official WW2
 Official MW
 - See if we can fix the tail rotor not centered arround rotation point for the Apache
 - Fix Chinook model: no rotors moving at all
+Manus:
+- Check deployable guns
 
 Feature Ideas:
 - Muzzle Flashes for deployed guns

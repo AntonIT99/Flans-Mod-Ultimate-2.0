@@ -15,6 +15,7 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.PlayerShootingHandler;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.reload.GunReloader;
@@ -211,9 +212,9 @@ public class GunItemHandler
         EnumFireMode fireMode = item.configType.getFireMode(gunStack);
         boolean automaticFire = fireMode.isAutomaticFire();
         float shootTime = data.getShootTime(hand);
-        float shootDelay = item.configType.getShootDelay(gunStack);
+        float shootDelay = ShotCooldown.clampDelay(item.configType.getShootDelay(gunStack));
 
-        while (shootTime <= 0F)
+        while (ShotCooldown.isReady(shootTime))
         {
             AmmoSlot ammoSlot = findLoadedAmmoInGun(item, gunStack, item.configType).orElse(null);
             if (ammoSlot == null)
@@ -316,7 +317,7 @@ public class GunItemHandler
             boolean hasMultipleAmmo = (maxAmmo > 1);
             int reloadCount = item.getReloadCount(gunStack);
 
-            data.doGunReload(hand, reloadTime);
+            data.doGunReload(hand, reloadTime, item.configType.getShootDelay(gunStack));
             PacketHandler.sendToDimension(level.dimension(), new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo));
 
             String reloadSound = item.configType.getReloadSound(gunStack);

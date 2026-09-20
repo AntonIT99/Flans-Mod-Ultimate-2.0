@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.teams.TeamsManager;
@@ -66,6 +67,8 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     protected static final EntityDataAccessor<Boolean> DATA_HAS_AMMO = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.BOOLEAN);
     protected static final EntityDataAccessor<Integer> DATA_RELOAD_TIMER = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_GUN_DIRECTION = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
+    /** Rounds the loaded ammunition still has to fire, for the gunner's HUD. */
+    protected static final EntityDataAccessor<Integer> DATA_ROUNDS_LEFT = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
 
     protected GunType configType;
     protected String shortname = StringUtils.EMPTY;
@@ -192,6 +195,21 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         entityData.define(DATA_HAS_AMMO, false);
         entityData.define(DATA_RELOAD_TIMER, 0);
         entityData.define(DATA_GUN_DIRECTION, 0);
+        entityData.define(DATA_ROUNDS_LEFT, 0);
+    }
+
+    public int getRoundsLeft()
+    {
+        return entityData.get(DATA_ROUNDS_LEFT);
+    }
+
+    /** Keeps the synced ammunition state in step with the stack the gun is firing. */
+    protected void updateAmmoState()
+    {
+        int rounds = ShootableItem.getTotalRounds(ammo);
+        if (entityData.get(DATA_ROUNDS_LEFT) != rounds)
+            entityData.set(DATA_ROUNDS_LEFT, rounds);
+        setHasAmmo(rounds > 0);
     }
 
     @Override
@@ -521,8 +539,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
             discard();
 
         // Timers
-        if (shootTimer > 0)
-            shootTimer--;
+        shootTimer = ShotCooldown.tick(shootTimer);
         if (soundTimer > 0)
             soundTimer--;
         if (reloadTimer > 0)
@@ -530,10 +547,8 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
         // Ammo broken/empty
         if (!ammo.isEmpty() && ammo.isDamageableItem() && ammo.getDamageValue() >= ammo.getMaxDamage())
-        {
             ammo = ItemStack.EMPTY;
-            setHasAmmo(false);
-        }
+        updateAmmoState();
 
         if (getFirstPassenger() instanceof LivingEntity living)
         {
@@ -602,15 +617,15 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
     public void fireGun(Level level, LivingEntity gunner)
     {
-        if (level.isClientSide || !gunner.isAlive() || ammo.isEmpty() || reloadTimer > 0 || shootTimer > 0 || !(ammo.getItem() instanceof ShootableItem shootableItem))
+        if (level.isClientSide || !gunner.isAlive() || !ShootableItem.hasRoundsLeft(ammo) || reloadTimer > 0 || !ShotCooldown.isReady(shootTimer) || !(ammo.getItem() instanceof ShootableItem shootableItem))
             return;
 
         boolean automaticFire = configType.getFireMode(null).isAutomaticFire();
         if ((automaticFire && shootKeyPressed) || (!automaticFire && shootKeyPressed && !prevShootKeyPressed))
         {
-            float shootDelay = configType.getShootDelay(null);
+            float shootDelay = ShotCooldown.clampDelay(configType.getShootDelay(null));
 
-            while (shootTimer <= 0)
+            while (ShotCooldown.isReady(shootTimer))
             {
                 ShootingHelper.fireGun(level, gunner, this, shootableItem.getConfigType(), ammo, new DeployableGunShootingHandler(ammo));
 
@@ -636,7 +651,9 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
     public void reloadGun(Level level, Player gunner)
     {
-        if (level.isClientSide || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+        // The gun reloads once the loaded item has no rounds left in it, which is
+        // not the same as the slot being empty: a spent belt is still an item.
+        if (level.isClientSide || !gunner.isAlive() || ShootableItem.hasRoundsLeft(ammo) || reloadTimer > 0)
             return;
 
         int slot = findAmmo(gunner); // you port this to modern inventory below
@@ -656,14 +673,16 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
 
     public void reloadGun(Level level, LivingEntity gunner, ItemStack newAmmo)
     {
-        if (level.isClientSide || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+        if (level.isClientSide || !gunner.isAlive() || ShootableItem.hasRoundsLeft(ammo) || reloadTimer > 0)
             return;
 
         ammo = newAmmo.copy();
         setHasAmmo(true);
         float reloadFactor = ammo.getItem() instanceof ShootableItem shootableItem
             ? shootableItem.getConfigType().getReloadTimeMultiplier() : 1F;
-        setReloadTimer(Math.round(configType.getReloadTime() * reloadFactor));
+        // Reloading never lets the gun outrun its own rate of fire, so the wait
+        // after the round that emptied it is the longer of the two.
+        setReloadTimer(Mth.ceil(Math.max(configType.getReloadTime() * reloadFactor, configType.getShootDelay(null))));
         String reloadSound = configType.getReloadSound(null);
 
         // Play reload sound

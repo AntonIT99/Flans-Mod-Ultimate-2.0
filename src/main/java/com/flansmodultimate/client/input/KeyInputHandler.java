@@ -475,6 +475,9 @@ public final class KeyInputHandler
                 edgeMask |= DriveableInput.TOGGLE_ENGINE;
             if (modeKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_MODE;
             if (flareKey.consumeClick()) edgeMask |= DriveableInput.FLARE;
+            // The same key that picks a handheld gun's ammunition chambers the
+            // next shell, bomb or missile while the player is at the controls.
+            if (preferredAmmoKey.consumeClick()) edgeMask |= DriveableInput.SWITCH_AMMO;
             if (controlModeKey.consumeClick() && ModClient.tryToggleDriveableControlMode(player, driveable))
                 edgeMask |= DriveableInput.CONTROL_MODE;
         }

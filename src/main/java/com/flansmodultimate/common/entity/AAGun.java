@@ -5,6 +5,7 @@ import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
@@ -636,8 +637,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             return;
         }
 
-        if (shootDelay > 0)
-            shootDelay--;
+        shootDelay = ShotCooldown.tick(shootDelay);
         if (soundTimer > 0)
             soundTimer--;
         if (getReloadTimer() > 0)
@@ -775,13 +775,31 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     private void fireGun(Level level, @Nullable LivingEntity attacker, boolean requireInput)
     {
         AAGunType type = getConfigType();
-        if (type == null || shootDelay > 0 || getReloadTimer() > 0)
+        if (type == null || !ShotCooldown.isReady(shootDelay) || getReloadTimer() > 0)
             return;
         if (requireInput && !shootKeyPressed)
             return;
         if (!requireInput && target == null)
             return;
 
+        // A delay shorter than a tick puts more than one volley into this tick.
+        // Charging the delay rather than assigning it carries the remainder, so a
+        // rate that does not divide evenly into ticks stays honest over time.
+        while (ShotCooldown.isReady(shootDelay))
+        {
+            if (!fireVolley(level, attacker, requireInput))
+                return;
+            shootDelay = ShotCooldown.charge(shootDelay, type.getShootDelay());
+        }
+    }
+
+    /**
+     * One pass over the barrels. Returns false when the gun fired nothing, either
+     * because no barrel had ammunition or because the gun destroyed itself.
+     */
+    private boolean fireVolley(Level level, @Nullable LivingEntity attacker, boolean requireInput)
+    {
+        AAGunType type = getConfigType();
         boolean attempted = false;
         for (int barrel = 0; barrel < type.getNumBarrels(); barrel++)
         {
@@ -797,11 +815,13 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
                 && type.getCountExplodeAfterShoot() != -1 && shotsFired >= type.getCountExplodeAfterShoot())
             {
                 discard();
+                return false;
             }
         }
 
         if (attempted)
             setCurrentBarrel(getCurrentBarrelIndex() + 1);
+        return attempted;
     }
 
     private boolean fireBarrel(Level level, @Nullable LivingEntity attacker, int barrel, int slot, boolean sentryShot)
@@ -823,7 +843,6 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 
         ShootingHelper.fireGun(level, firedShot, type.getNumBullets(), barrelOrigin, shootingDir, () -> damageAmmo(slot));
 
-        shootDelay = type.getShootDelay();
         barrelRecoil[barrel] = type.getRecoil() * bulletType.getRecoilMultiplier();
         shotsFired++;
 
@@ -842,23 +861,13 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             return;
 
         ItemStack stack = ammo[slot];
-        if (stack.getItem() instanceof ShootableItem shootableItem)
+        if (stack.getItem() instanceof ShootableItem)
         {
-            int roundsPerItem = shootableItem.getConfigType().getRoundsPerItem();
-            if (roundsPerItem > 1)
-            {
-                int remaining = ShootableItem.getRoundsRemaining(stack) - 1;
-                if (remaining <= 0)
-                    ammo[slot] = ItemStack.EMPTY;
-                else
-                    ShootableItem.setRoundsRemaining(stack, remaining);
-            }
-            else
-            {
-                stack.shrink(1);
-                if (stack.isEmpty())
-                    ammo[slot] = ItemStack.EMPTY;
-            }
+            // Spending a round is the item's own business: a magazine or belt
+            // holding several rounds has to move on to the next item of the stack
+            // when the current one runs dry, rather than throwing the rest away.
+            if (!ShootableItem.consumeRound(stack) || !ShootableItem.hasRoundsLeft(stack))
+                ammo[slot] = ItemStack.EMPTY;
         }
         else
         {
@@ -872,7 +881,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     private void reloadGun(Level level, Player player)
     {
         AAGunType type = getConfigType();
-        if (level.isClientSide || type == null || getReloadTimer() > 0)
+        if (level.isClientSide || type == null || getReloadTimer() > 0 || !isFullySpent())
             return;
 
         boolean loadedAny = false;
@@ -901,10 +910,30 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         if (loadedAny)
         {
             updateAmmoMask();
-            setReloadTimer(Math.round(type.getReloadTime() * reloadFactor));
+            // Reloading never lets the gun outrun its own rate of fire, so the wait
+            // after the round that emptied a barrel is the longer of the two.
+            setReloadTimer(Mth.ceil(Math.max(type.getReloadTime() * reloadFactor, type.getShootDelay())));
             if (StringUtils.isNotBlank(type.getReloadSound()))
                 PacketPlaySound.sendSoundPacket(this, type.getReloadSoundRange(), type.getReloadSound(), false);
         }
+    }
+
+    /**
+     * Whether every barrel has run dry.
+     *
+     * <p>A multi-barrel mount is worked as one weapon, so the crew reloads it in
+     * one go once nothing is left to fire. Reloading the moment a single barrel
+     * emptied would stand the whole mount down while its other barrels still had
+     * rounds in them, which is the opposite of what a second barrel is for.
+     */
+    private boolean isFullySpent()
+    {
+        for (ItemStack stack : ammo)
+        {
+            if (ShootableItem.hasRoundsLeft(stack))
+                return false;
+        }
+        return true;
     }
 
     private int findAmmo(Player player)

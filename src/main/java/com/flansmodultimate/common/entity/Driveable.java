@@ -39,6 +39,7 @@ import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.PartItem;
@@ -159,6 +160,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public static final String NBT_ENGINE_START_TICKS = "engine_start_ticks";
     public static final String NBT_PRIMARY_SHOOT_DELAY = "primary_shoot_delay";
     public static final String NBT_SECONDARY_SHOOT_DELAY = "secondary_shoot_delay";
+    public static final String NBT_LOADED_ORDNANCE_SLOT = "loaded_ordnance_slot";
+    public static final String NBT_ORDNANCE_ROUNDS_FIRED = "ordnance_rounds_fired";
+    public static final String NBT_WEAPON_SLOT_LOAD_ORDER = "weapon_slot_load_order";
+    public static final String NBT_WEAPON_SLOT_LOAD_SEQUENCE = "weapon_slot_load_sequence";
     public static final String NBT_RECOIL_TICKS = "recoil_ticks";
     public static final String NBT_RECOIL_DURATION = "recoil_duration";
     public static final String NBT_IT1_STAGE = "it1_stage";
@@ -287,15 +292,34 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected int localInputMask;
     protected int previousInputMask;
     protected int inputTimeout;
-    protected int primaryShootDelay;
-    protected int secondaryShootDelay;
+    protected float primaryShootDelay;
+    protected float secondaryShootDelay;
     protected int primaryShootPointIndex;
     protected int secondaryShootPointIndex;
     protected int primaryBurstRemaining;
     protected int secondaryBurstRemaining;
     protected int primaryHeldTicks;
     protected int secondaryHeldTicks;
-    protected int[] passengerShootDelay = new int[0];
+    /**
+     * Which ammunition slot each weapon bank has chambered, indexed by bank
+     * (0 primary, 1 secondary); -1 while a bank has nothing loaded. Only banks
+     * firing the vehicle's own ordnance use this - a bank firing mounted guns
+     * feeds from its gun's own slot and has nothing to choose between.
+     */
+    protected final int[] loadedOrdnanceSlot = { -1, -1 };
+    /** Rounds each bank has put out since its last full reload, counted whether or not the item was consumed. */
+    protected final int[] bankRoundsFired = { 0, 0 };
+    /** The same count for each seat gun, so a gunner reloads on schedule in creative too. */
+    protected int[] passengerRoundsFired = new int[0];
+    /**
+     * The order the weapon slots were filled in, one entry per weapon slot, zero
+     * for an empty slot. A bank loads the oldest round aboard, so a crew that
+     * stows armour-piercing first has armour-piercing chambered; slots filled in
+     * the same tick are ranked by slot number.
+     */
+    protected int[] weaponSlotLoadOrder = new int[0];
+    protected int weaponSlotLoadSequence;
+    protected float[] passengerShootDelay = new float[0];
     protected int[] passengerBurstRemaining = new int[0];
     protected int[] passengerHeldTicks = new int[0];
     protected int weaponInventoryFingerprint;
@@ -425,6 +449,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (passengerShootDelay.length != seatCount)
         {
             passengerShootDelay = Arrays.copyOf(passengerShootDelay, seatCount);
+            passengerRoundsFired = Arrays.copyOf(passengerRoundsFired, seatCount);
             passengerBurstRemaining = Arrays.copyOf(passengerBurstRemaining, seatCount);
             passengerHeldTicks = Arrays.copyOf(passengerHeldTicks, seatCount);
         }
@@ -519,12 +544,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public float getFuel() { return entityData.get(DATA_FUEL); }
     public int getSecondaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : secondaryShootDelay;
+        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : ShotCooldown.displayTicks(secondaryShootDelay);
     }
 
     public int getPrimaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : primaryShootDelay;
+        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : ShotCooldown.displayTicks(primaryShootDelay);
     }
 
     public Component getCurrentPrimaryAmmoName()
@@ -552,7 +577,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         EnumWeaponType weapon = configType.weaponType(secondary);
         for (ShootPoint point : configType.shootPoints(secondary))
         {
-            AmmoSelection selection = selectAmmo(point, weapon);
+            AmmoSelection selection = selectAmmo(point, weapon, secondary);
             if (selection != null && !selection.stack().isEmpty())
                 return selection.stack().getHoverName();
         }
@@ -786,6 +811,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             ? Math.max(0, tag.getInt(NBT_PRIMARY_SHOOT_DELAY)) : 0);
         setSecondaryShootDelay(tag.contains(NBT_SECONDARY_SHOOT_DELAY, Tag.TAG_INT)
             ? Math.max(0, tag.getInt(NBT_SECONDARY_SHOOT_DELAY)) : 0);
+        readOrdnanceLoadingState(tag);
         recoilTicksRemaining = tag.contains(NBT_RECOIL_TICKS, Tag.TAG_INT)
             ? Math.max(0, tag.getInt(NBT_RECOIL_TICKS)) : 0;
         recoilDuration = tag.contains(NBT_RECOIL_DURATION, Tag.TAG_INT)
@@ -838,8 +864,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         tag.putBoolean(NBT_LOCKED, locked);
         tag.putBoolean(NBT_ENGINE_REQUESTED, engineRequested);
         tag.putInt(NBT_ENGINE_START_TICKS, Math.max(0, engineStartTicks));
-        tag.putInt(NBT_PRIMARY_SHOOT_DELAY, Math.max(0, primaryShootDelay));
-        tag.putInt(NBT_SECONDARY_SHOOT_DELAY, Math.max(0, secondaryShootDelay));
+        tag.putInt(NBT_PRIMARY_SHOOT_DELAY, ShotCooldown.displayTicks(primaryShootDelay));
+        tag.putInt(NBT_SECONDARY_SHOOT_DELAY, ShotCooldown.displayTicks(secondaryShootDelay));
+        tag.putIntArray(NBT_LOADED_ORDNANCE_SLOT, loadedOrdnanceSlot.clone());
+        tag.putIntArray(NBT_ORDNANCE_ROUNDS_FIRED, bankRoundsFired.clone());
+        tag.putIntArray(NBT_WEAPON_SLOT_LOAD_ORDER, weaponSlotLoadOrder.clone());
+        tag.putInt(NBT_WEAPON_SLOT_LOAD_SEQUENCE, weaponSlotLoadSequence);
         tag.putInt(NBT_RECOIL_TICKS, Math.max(0, recoilTicksRemaining));
         tag.putInt(NBT_RECOIL_DURATION, Math.max(0, recoilDuration));
         tag.putInt(NBT_IT1_STAGE, Mth.clamp(it1Stage, 1, 8));
@@ -992,11 +1022,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             setFlightControls(0F, 0F, isMouseControlEnabled());
         }
 
-        int previousPrimaryShootDelay = primaryShootDelay;
-        if (primaryShootDelay > 0)
-            setPrimaryShootDelay(primaryShootDelay - 1);
-        if (secondaryShootDelay > 0)
-            setSecondaryShootDelay(secondaryShootDelay - 1);
+        int previousPrimaryShootDelay = ShotCooldown.displayTicks(primaryShootDelay);
+        setPrimaryShootDelay(ShotCooldown.tick(primaryShootDelay));
+        setSecondaryShootDelay(ShotCooldown.tick(secondaryShootDelay));
         tickTimedWeaponSounds(previousPrimaryShootDelay);
         applyPlacementEffects();
         if (flareDelay > 0)
@@ -1084,9 +1112,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     private void tickTimedWeaponSounds(int previousPrimaryShootDelay)
     {
+        int ticksLeft = ShotCooldown.displayTicks(primaryShootDelay);
         if (configType == null || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET
-            || previousPrimaryShootDelay <= primaryShootDelay
-            || primaryShootDelay != configType.getReloadSoundTick()
+            || previousPrimaryShootDelay <= ticksLeft
+            || ticksLeft != configType.getReloadSoundTick()
             || StringUtils.isBlank(configType.getShootReloadSound()))
             return;
         PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), configType.getShootReloadSound(), false);
@@ -1172,6 +1201,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return;
 
         handleInventoryReloadState();
+        trackWeaponSlotLoadOrder();
+        tickOrdnanceLoading(false);
+        tickOrdnanceLoading(true);
         boolean primaryDown = DriveableInput.isDown(getInputMask(), DriveableInput.PRIMARY_FIRE);
         boolean secondaryDown = DriveableInput.isDown(getInputMask(), DriveableInput.SECONDARY_FIRE);
         primaryHeldTicks = primaryDown ? primaryHeldTicks + 1 : 0;
@@ -1186,23 +1218,31 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (secondaryMode == EnumFireMode.BURST && secondaryRising)
             secondaryBurstRemaining = 3;
 
-        if (primaryShootDelay <= 0 && shouldFire(primaryMode, primaryDown, primaryRising, primaryHeldTicks, primaryBurstRemaining))
+        // Each bank keeps firing for as long as its cooldown is spent, so a bank
+        // whose delay is shorter than a tick gets all of its shots away in this
+        // one. A semi-automatic bank stops after a single shot regardless: its
+        // trigger only rises once, however much cooldown is left over.
+        while (ShotCooldown.isReady(primaryShootDelay)
+            && shouldFire(primaryMode, primaryDown, primaryRising, primaryHeldTicks, primaryBurstRemaining))
         {
-            if (fireWeaponBank(false))
-            {
-                setPrimaryShootDelay(Math.max(1, Mth.ceil(getConfiguredShootDelay(false))));
-                if (primaryMode == EnumFireMode.BURST && primaryBurstRemaining > 0)
-                    --primaryBurstRemaining;
-            }
+            if (!fireWeaponBank(false))
+                break;
+            setPrimaryShootDelay(ShotCooldown.charge(primaryShootDelay, getConfiguredShootDelay(false)));
+            if (primaryMode == EnumFireMode.BURST && primaryBurstRemaining > 0)
+                --primaryBurstRemaining;
+            if (primaryMode == EnumFireMode.SEMIAUTO)
+                break;
         }
-        if (secondaryShootDelay <= 0 && shouldFire(secondaryMode, secondaryDown, secondaryRising, secondaryHeldTicks, secondaryBurstRemaining))
+        while (ShotCooldown.isReady(secondaryShootDelay)
+            && shouldFire(secondaryMode, secondaryDown, secondaryRising, secondaryHeldTicks, secondaryBurstRemaining))
         {
-            if (fireWeaponBank(true))
-            {
-                setSecondaryShootDelay(Math.max(1, Mth.ceil(getConfiguredShootDelay(true))));
-                if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
-                    --secondaryBurstRemaining;
-            }
+            if (!fireWeaponBank(true))
+                break;
+            setSecondaryShootDelay(ShotCooldown.charge(secondaryShootDelay, getConfiguredShootDelay(true)));
+            if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
+                --secondaryBurstRemaining;
+            if (secondaryMode == EnumFireMode.SEMIAUTO)
+                break;
         }
 
         tickPassengerGuns();
@@ -1447,28 +1487,279 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         driveableData.setInventoryChanged(false);
         if (!ammunitionChanged)
             return;
-        // A driveable reloads its whole weapon inventory in one go, so the
-        // slowest round now aboard sets how long the crew is held up.
+        // Restocking a bank that feeds mounted guns holds the crew up for a
+        // reload, the slowest round now aboard setting how long. A bank firing the
+        // vehicle's own ordnance is left alone here: chambering a round is what
+        // costs it a reload, and loadOrdnance charges and announces that itself.
         float reloadFactor = loadedReloadTimeMultiplier();
-        setPrimaryShootDelay(Math.max(primaryShootDelay, Math.max(0, Math.round(configType.getReloadTimePrimary() * reloadFactor))));
-        setSecondaryShootDelay(Math.max(secondaryShootDelay, Math.max(0, Math.round(configType.getReloadTimeSecondary() * reloadFactor))));
-        String sound = StringUtils.firstNonBlank(configType.getShootReloadSound(), configType.getReloadSoundPrimary(), configType.getReloadSoundSecondary());
+        boolean restockedGunBank = false;
+        if (isGunBank(false))
+        {
+            setPrimaryShootDelay(Math.max(primaryShootDelay, configType.reloadTime(false) * reloadFactor));
+            restockedGunBank = true;
+        }
+        if (isGunBank(true))
+        {
+            setSecondaryShootDelay(Math.max(secondaryShootDelay, configType.reloadTime(true) * reloadFactor));
+            restockedGunBank = true;
+        }
+        if (!restockedGunBank)
+            return;
+        String sound = StringUtils.firstNonBlank(configType.getShootReloadSound(),
+            configType.getReloadSoundPrimary(), configType.getReloadSoundSecondary());
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 96D, sound, false);
     }
 
-    private void setPrimaryShootDelay(int delay)
+    /**
+     * Weapon-bank cooldowns are kept as ticks-and-a-fraction so a bank may fire
+     * faster than once per tick, but they are published to the client as whole
+     * ticks remaining, which is all the HUD counts down.
+     */
+    private void setPrimaryShootDelay(float delay)
     {
-        primaryShootDelay = Math.max(0, delay);
+        primaryShootDelay = delay;
         if (!level().isClientSide)
-            entityData.set(DATA_PRIMARY_RELOAD_TICKS, primaryShootDelay);
+            entityData.set(DATA_PRIMARY_RELOAD_TICKS, ShotCooldown.displayTicks(primaryShootDelay));
     }
 
-    private void setSecondaryShootDelay(int delay)
+    private void setSecondaryShootDelay(float delay)
     {
-        secondaryShootDelay = Math.max(0, delay);
+        secondaryShootDelay = delay;
         if (!level().isClientSide)
-            entityData.set(DATA_SECONDARY_RELOAD_TICKS, secondaryShootDelay);
+            entityData.set(DATA_SECONDARY_RELOAD_TICKS, ShotCooldown.displayTicks(secondaryShootDelay));
+    }
+
+    /**
+     * Restores what each bank had chambered. A vehicle saved mid-reload comes back
+     * with its cooldown intact, so the wait is not something a crew can skip by
+     * leaving and returning.
+     */
+    private void readOrdnanceLoadingState(CompoundTag tag)
+    {
+        int[] slots = tag.getIntArray(NBT_LOADED_ORDNANCE_SLOT);
+        for (int index = 0; index < loadedOrdnanceSlot.length; index++)
+            loadedOrdnanceSlot[index] = index < slots.length ? slots[index] : -1;
+        int[] fired = tag.getIntArray(NBT_ORDNANCE_ROUNDS_FIRED);
+        for (int index = 0; index < bankRoundsFired.length; index++)
+            bankRoundsFired[index] = index < fired.length ? Math.max(0, fired[index]) : 0;
+        weaponSlotLoadOrder = tag.getIntArray(NBT_WEAPON_SLOT_LOAD_ORDER).clone();
+        weaponSlotLoadSequence = Math.max(0, tag.getInt(NBT_WEAPON_SLOT_LOAD_SEQUENCE));
+    }
+
+    /**
+     * Whether this bank fires the vehicle's own ordnance, which is what the
+     * loading rules below govern. A bank firing mounted guns feeds from the gun's
+     * own ammunition slot and has nothing to chamber.
+     */
+    protected boolean isOrdnanceBank(boolean secondary)
+    {
+        if (configType == null)
+            return false;
+        EnumWeaponType weapon = configType.weaponType(secondary);
+        return weapon != EnumWeaponType.NONE && weapon != EnumWeaponType.GUN;
+    }
+
+    /** Whether this bank fires mounted guns, which keep their own timings. */
+    protected boolean isGunBank(boolean secondary)
+    {
+        return configType != null && configType.weaponType(secondary) == EnumWeaponType.GUN;
+    }
+
+    private static AmmoBank ordnanceBankFor(EnumWeaponType weapon)
+    {
+        return weapon == EnumWeaponType.BOMB || weapon == EnumWeaponType.MINE ? AmmoBank.BOMB : AmmoBank.MISSILE;
+    }
+
+    private int ordnanceSlotCount(AmmoBank bank)
+    {
+        return bank == AmmoBank.BOMB ? driveableData.getNumBombSlots() : driveableData.getNumMissileSlots();
+    }
+
+    /** Whether the given slot of a bank's magazine holds something that bank could chamber. */
+    private boolean canChamber(boolean secondary, int slot)
+    {
+        EnumWeaponType weapon = configType.weaponType(secondary);
+        AmmoBank bank = ordnanceBankFor(weapon);
+        return slot >= 0 && slot < ordnanceSlotCount(bank) && validAmmo(getWeaponSlot(bank, slot), weapon);
+    }
+
+    /**
+     * Records the order the weapon slots were filled in, so a bank with nothing
+     * chambered can load the round that went aboard first. Slots that fill in the
+     * same tick are ranked by slot number, because this walks them in that order.
+     */
+    private void trackWeaponSlotLoadOrder()
+    {
+        int slots = driveableData.getCargoInventoryStart();
+        if (weaponSlotLoadOrder.length != slots)
+            weaponSlotLoadOrder = Arrays.copyOf(weaponSlotLoadOrder, slots);
+        for (int slot = 0; slot < slots; slot++)
+        {
+            if (driveableData.getItem(slot).isEmpty())
+                weaponSlotLoadOrder[slot] = 0;
+            else if (weaponSlotLoadOrder[slot] == 0)
+                weaponSlotLoadOrder[slot] = ++weaponSlotLoadSequence;
+        }
+    }
+
+    private int loadOrderOf(AmmoBank bank, int slot)
+    {
+        int absolute = (bank == AmmoBank.BOMB ? driveableData.getBombInventoryStart() : driveableData.getMissileInventoryStart()) + slot;
+        return absolute >= 0 && absolute < weaponSlotLoadOrder.length ? weaponSlotLoadOrder[absolute] : 0;
+    }
+
+    /** The round this bank should chamber next: the one that went aboard first. */
+    private int oldestChamberableSlot(boolean secondary)
+    {
+        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        int best = -1;
+        int bestOrder = Integer.MAX_VALUE;
+        for (int slot = 0; slot < ordnanceSlotCount(bank); slot++)
+        {
+            if (!canChamber(secondary, slot))
+                continue;
+            int order = loadOrderOf(bank, slot);
+            if (order > 0 && order < bestOrder)
+            {
+                best = slot;
+                bestOrder = order;
+            }
+            else if (best < 0)
+                best = slot;
+        }
+        return best;
+    }
+
+    /** The next round the crew can swap to, walking the magazine in slot order. */
+    private int nextChamberableSlot(boolean secondary, int from)
+    {
+        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        int count = ordnanceSlotCount(bank);
+        for (int step = 1; step <= count; step++)
+        {
+            int slot = Math.floorMod(from + step, count);
+            if (canChamber(secondary, slot))
+                return slot;
+        }
+        return from;
+    }
+
+    /** Puts a round in the breech without charging anything for it. */
+    private void chamberOrdnance(boolean secondary, int slot)
+    {
+        int index = secondary ? 1 : 0;
+        loadedOrdnanceSlot[index] = slot;
+        bankRoundsFired[index] = 0;
+    }
+
+    /**
+     * Chambers a bank's next round and makes the crew wait out the reload.
+     *
+     * <p>Loading is what costs the reload time, so this is the single place that
+     * charges it: the first round aboard, the round after a magazine runs out and
+     * a round the crew swaps to all pay the same price.
+     */
+    private void loadOrdnance(boolean secondary, int slot)
+    {
+        chamberOrdnance(secondary, slot);
+        if (slot < 0)
+            return;
+
+        float reload = configType.reloadTime(secondary);
+        if (secondary)
+            setSecondaryShootDelay(Math.max(secondaryShootDelay, reload));
+        else
+            setPrimaryShootDelay(Math.max(primaryShootDelay, reload));
+
+        String sound = configType.reloadSound(secondary);
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), sound, false);
+    }
+
+    /** Keeps a bank's chambered round honest: reloads when what it held is gone. */
+    private void tickOrdnanceLoading(boolean secondary)
+    {
+        if (!isOrdnanceBank(secondary))
+            return;
+        int index = secondary ? 1 : 0;
+        if (canChamber(secondary, loadedOrdnanceSlot[index]))
+            return;
+        int next = oldestChamberableSlot(secondary);
+        if (next < 0)
+        {
+            loadedOrdnanceSlot[index] = -1;
+            bankRoundsFired[index] = 0;
+            return;
+        }
+        loadOrdnance(secondary, next);
+    }
+
+    /**
+     * How many rounds a weapon puts out between reloads: whichever is smaller of
+     * the magazine the vehicle states and what the loaded item itself holds.
+     */
+    private static int magazineSize(ItemStack loaded, int declaredReloadRounds)
+    {
+        int perItem = Math.max(1, ShootableItem.getMaxRounds(loaded));
+        return declaredReloadRounds > 0 ? Math.min(declaredReloadRounds, perItem) : perItem;
+    }
+
+    /**
+     * Whether a weapon that has just fired now owes a reload.
+     *
+     * <p>Two things can call for one: the magazine has put out every round it
+     * holds, or the item being fired ran out early, which a partly spent belt
+     * does. Counting rounds rather than watching the item is what keeps this
+     * honest in creative, where the item is never consumed at all - a creative
+     * gunner reloads on exactly the schedule everyone else does.
+     */
+    private static boolean magazineSpent(int roundsFired, int magazineSize, ItemStack fired)
+    {
+        return roundsFired >= magazineSize || !ShootableItem.hasRoundsLeft(fired);
+    }
+
+    /**
+     * Counts a round out of a bank firing the vehicle's own ordnance and reloads
+     * once its magazine is spent.
+     */
+    private void countOrdnanceRound(boolean secondary)
+    {
+        if (!isOrdnanceBank(secondary))
+            return;
+        int index = secondary ? 1 : 0;
+        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        ItemStack chambered = loadedOrdnanceSlot[index] < 0 ? ItemStack.EMPTY : getWeaponSlot(bank, loadedOrdnanceSlot[index]);
+        int size = magazineSize(chambered, configType.reloadRounds(secondary));
+        if (!magazineSpent(++bankRoundsFired[index], size, chambered))
+            return;
+        loadOrdnance(secondary, oldestChamberableSlot(secondary));
+    }
+
+    /**
+     * Swaps the bank's chambered round for the next one in slot order.
+     *
+     * <p>Swapping a shell means working one out of the breech and another in, so
+     * it costs a fresh reload; swapping again interrupts that reload and starts
+     * another, and a crew may keep changing its mind for as long as it is willing
+     * to keep waiting. Bombs and missiles are selected rather than loaded - they
+     * are already on their racks - so choosing a different one costs nothing.
+     */
+    public void switchLoadedOrdnance()
+    {
+        if (configType == null || driveableData == null || level().isClientSide)
+            return;
+        boolean secondary = !isOrdnanceBank(false) && isOrdnanceBank(true);
+        if (!isOrdnanceBank(secondary))
+            return;
+        int index = secondary ? 1 : 0;
+        int next = nextChamberableSlot(secondary, loadedOrdnanceSlot[index]);
+        if (next < 0 || next == loadedOrdnanceSlot[index])
+            return;
+        if (configType.weaponType(secondary) == EnumWeaponType.SHELL)
+            loadOrdnance(secondary, next);
+        else
+            chamberOrdnance(secondary, next);
     }
 
     /** The heaviest {@code ReloadTimeMultiplier} among the rounds currently in the weapon inventory. */
@@ -1623,7 +1914,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected boolean fireFromPoint(ShootPoint point, EnumWeaponType weapon, boolean secondary, @Nullable LivingEntity attacker)
     {
-        AmmoSelection selection = selectAmmo(point, weapon);
+        AmmoSelection selection = selectAmmo(point, weapon, secondary);
         if (selection == null || !ShootableItem.hasRoundsLeft(selection.stack()))
             return false;
         if (!(selection.stack().getItem() instanceof ShootableItem item))
@@ -1643,7 +1934,35 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 if (!creative)
                     consumeAmmo(selection);
             });
+        if (selection.gunType() != null)
+            chargeGunBankReload(secondary, selection.gunType(), selection.stack());
+        else
+            countOrdnanceRound(secondary);
         return true;
+    }
+
+    /**
+     * Counts a round out of a bank firing mounted guns and makes it wait out a
+     * reload once its magazine is spent. The item that was fired is what decides
+     * this, not the slot, which may already hold a fresh magazine pulled from
+     * cargo. The gun's own reload sound plays whoever owns the timings.
+     */
+    private void chargeGunBankReload(boolean secondary, GunType gunType, ItemStack fired)
+    {
+        int index = secondary ? 1 : 0;
+        int size = magazineSize(fired, configType.reloadRounds(secondary));
+        if (!magazineSpent(++bankRoundsFired[index], size, fired))
+            return;
+        bankRoundsFired[index] = 0;
+        float reload = configType.reloadTime(secondary);
+        if (secondary)
+            setSecondaryShootDelay(Math.max(secondaryShootDelay, reload));
+        else
+            setPrimaryShootDelay(Math.max(primaryShootDelay, reload));
+
+        String sound = StringUtils.firstNonBlank(gunType.getReloadSound(null), configType.reloadSound(secondary));
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(this, gunType.getReloadSoundRange(), sound, false);
     }
 
     /**
@@ -1721,7 +2040,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Nullable
-    protected AmmoSelection selectAmmo(ShootPoint point, EnumWeaponType weapon)
+    protected AmmoSelection selectAmmo(ShootPoint point, EnumWeaponType weapon, boolean secondary)
     {
         if (point.getRootPos() instanceof PilotGun pilotGun)
         {
@@ -1751,15 +2070,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return null;
         }
 
-        boolean bombBank = weapon == EnumWeaponType.BOMB || weapon == EnumWeaponType.MINE;
-        int size = bombBank ? driveableData.getNumBombSlots() : driveableData.getNumMissileSlots();
-        for (int slot = 0; slot < size; slot++)
-        {
-            ItemStack stack = bombBank ? driveableData.getBomb(slot) : driveableData.getMissile(slot);
-            if (validAmmo(stack, weapon))
-                return new AmmoSelection(bombBank ? AmmoBank.BOMB : AmmoBank.MISSILE, slot, stack, null);
-        }
-        return null;
+        // The vehicle's own ordnance fires what the crew has chambered, not simply
+        // whatever sits in the lowest slot.
+        AmmoBank bank = ordnanceBankFor(weapon);
+        int slot = loadedOrdnanceSlot[secondary ? 1 : 0];
+        if (!canChamber(secondary, slot))
+            return null;
+        return new AmmoSelection(bank, slot, getWeaponSlot(bank, slot), null);
     }
 
     /**
@@ -2018,11 +2335,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         for (int index = 0; index < seats.length; index++)
         {
-            if (passengerShootDelay[index] > 0)
-                --passengerShootDelay[index];
+            passengerShootDelay[index] = ShotCooldown.tick(passengerShootDelay[index]);
             Seat seat = seats[index];
             SeatInfo info = seat == null ? null : seat.getSeatInfo();
             GunType gun = info == null ? null : info.getGunType();
+            if (seat != null)
+                publishSeatGunState(seat, info, gun, index);
             if (seat == null || info == null || gun == null || seat.getRiddenByEntity() == null
                 || !isPartIntact(info.getPart()) && !ModCommonConfig.gunsInDestroyedPartsWork())
                 continue;
@@ -2033,44 +2351,95 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             EnumFireMode mode = gun.getFireMode(null);
             if (mode == EnumFireMode.BURST && rising)
                 passengerBurstRemaining[index] = Math.max(1, gun.getNumBurstRounds());
-            if (passengerShootDelay[index] > 0 || !shouldFire(mode, held, rising, passengerHeldTicks[index], passengerBurstRemaining[index]))
-                continue;
-
-            int ammoSlot = info.getGunnerID();
-            if (ammoSlot < 0)
-                continue;
-            ItemStack ammo = driveableData.getAmmo(ammoSlot);
-            if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable))
-                continue;
-            if (MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
-                continue;
-
-            ShootableType shootableType = shootable.getConfigType();
-            FireableGun fireable = new FireableGun(gun);
-            LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-            Vec3 origin = getPassengerShootOrigin(info);
-            Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
-            boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
-            ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType),
-                origin, direction, this, attacker, ShootableItem.getRoundsFired(ammo), () -> {
-                    if (!creative)
-                    {
-                        Item ammoItem = ammo.getItem();
-                        ShootableItem.consumeRound(ammo);
-                        boolean depleted = !ShootableItem.hasRoundsLeft(ammo);
-                        driveableData.setAmmo(ammoSlot, depleted ? ItemStack.EMPTY : ammo);
-                        if (depleted)
-                            refillWeaponSlot(AmmoBank.AMMO, ammoSlot, ammoItem);
-                        acknowledgeInternalWeaponInventoryChange();
-                    }
-                });
-            passengerShootDelay[index] = Math.max(1, Mth.ceil(gun.getShootDelay(null)));
-            if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
-                --passengerBurstRemaining[index];
-            String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
-            if (StringUtils.isNotBlank(sound))
-                PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
+            // A seat gun keeps the cadence its GunType declares, sub-tick rates
+            // included, so a mounted minigun fires as fast here as it does in
+            // a player's hands.
+            while (ShotCooldown.isReady(passengerShootDelay[index])
+                && shouldFire(mode, held, rising, passengerHeldTicks[index], passengerBurstRemaining[index]))
+            {
+                if (!firePassengerGun(seat, info, gun, index))
+                    break;
+                passengerShootDelay[index] = ShotCooldown.charge(passengerShootDelay[index], gun.getShootDelay(null));
+                if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
+                    --passengerBurstRemaining[index];
+                if (mode == EnumFireMode.SEMIAUTO)
+                    break;
+            }
         }
+    }
+
+    /**
+     * Tells a seat what its gunner's HUD should say: how much the gun has left to
+     * fire and how long until it may fire again. A seat mounting no gun reports
+     * -1 rounds, which is how the HUD knows to say nothing at all.
+     */
+    private void publishSeatGunState(Seat seat, @Nullable SeatInfo info, @Nullable GunType gun, int index)
+    {
+        int ammoSlot = info == null ? -1 : info.getGunnerID();
+        if (gun == null || ammoSlot < 0)
+        {
+            seat.setGunState(-1, 0);
+            return;
+        }
+        seat.setGunState(ShootableItem.getTotalRounds(driveableData.getAmmo(ammoSlot)),
+            ShotCooldown.displayTicks(passengerShootDelay[index]));
+    }
+
+    /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
+    private boolean firePassengerGun(Seat seat, SeatInfo info, GunType gun, int index)
+    {
+        int ammoSlot = info.getGunnerID();
+        if (ammoSlot < 0)
+            return false;
+        ItemStack ammo = driveableData.getAmmo(ammoSlot);
+        if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable))
+            return false;
+        if (MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
+            return false;
+
+        ShootableType shootableType = shootable.getConfigType();
+        FireableGun fireable = new FireableGun(gun);
+        LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
+        Vec3 origin = getPassengerShootOrigin(info);
+        Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
+        boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
+        ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType),
+            origin, direction, this, attacker, ShootableItem.getRoundsFired(ammo), () -> {
+                if (!creative)
+                {
+                    Item ammoItem = ammo.getItem();
+                    ShootableItem.consumeRound(ammo);
+                    boolean depleted = !ShootableItem.hasRoundsLeft(ammo);
+                    driveableData.setAmmo(ammoSlot, depleted ? ItemStack.EMPTY : ammo);
+                    if (depleted)
+                        refillWeaponSlot(AmmoBank.AMMO, ammoSlot, ammoItem);
+                    acknowledgeInternalWeaponInventoryChange();
+                }
+            });
+        String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
+        reloadPassengerGun(index, gun, ammo);
+        return true;
+    }
+
+    /**
+     * Counts a round out of a seat gun and makes its gunner wait out the gun's
+     * reload once the magazine is spent, exactly as the same gun would in their
+     * hands and never less than the gun's own cadence.
+     */
+    private void reloadPassengerGun(int index, GunType gun, ItemStack fired)
+    {
+        if (index < 0 || index >= passengerShootDelay.length || index >= passengerRoundsFired.length)
+            return;
+        if (!magazineSpent(++passengerRoundsFired[index], magazineSize(fired, 0), fired))
+            return;
+        passengerRoundsFired[index] = 0;
+        passengerShootDelay[index] = Math.max(passengerShootDelay[index],
+            Math.max(gun.getReloadTime(), gun.getShootDelay(null)));
+        String reloadSound = gun.getReloadSound(null);
+        if (StringUtils.isNotBlank(reloadSound))
+            PacketPlaySound.sendSoundPacket(this, gun.getReloadSoundRange(), reloadSound, false);
     }
 
     /** Current passenger muzzle position, shared by firing and debug rendering. */
@@ -2857,6 +3226,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             setOrientation(getYaw(), 0F, 0F);
         if (DriveableInput.isDown(rising, DriveableInput.FLARE))
             deployFlare();
+        if (DriveableInput.isDown(rising, DriveableInput.SWITCH_AMMO))
+            switchLoadedOrdnance();
     }
 
     /** Landing gear toggle. Driveables without retractable gear ignore it. */

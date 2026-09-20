@@ -7,6 +7,7 @@ import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.RemovedAmmo;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
@@ -212,10 +213,17 @@ public class AAGunType extends InfoType implements IAmmoGroupUser, IAmmoOverride
         return shareAmmo ? 1 : numBarrels;
     }
 
-    /** {@code RoundsPerMin} overrides the legacy tick delay, matching {@link GunType}. */
+    /**
+     * {@code RoundsPerMin} overrides the legacy tick delay, matching {@link GunType}.
+     *
+     * <p>A gun declaring neither key falls back to one tick, which is the cadence
+     * such a gun has always had: its delay of zero left it ready on every tick.
+     * Naming it keeps the firing loop, which charges this value back onto the
+     * cooldown, from being handed a delay of nothing.
+     */
     public float getShootDelay()
     {
-        return roundsPerMin != 0F ? 1200F / roundsPerMin : shootDelay;
+        return ShotCooldown.baseDelay(roundsPerMin, shootDelay, 1F);
     }
 
     public float getGunSoundRange()

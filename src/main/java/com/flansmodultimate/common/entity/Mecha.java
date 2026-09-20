@@ -13,6 +13,7 @@ import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
@@ -91,7 +92,7 @@ public class Mecha extends Driveable
     private boolean lastHipsIntact;
     private boolean legYawInitialized;
     private final int[] toolCooldown = new int[2];
-    private final int[] handGunCooldown = new int[2];
+    private final float[] handGunCooldown = new float[2];
     private final int[] handGunHeldTicks = new int[2];
     private final int[] handGunBurstRemaining = new int[2];
     @Nullable private BlockPos breakingBlock;
@@ -169,8 +170,7 @@ public class Mecha extends Driveable
         {
             if (toolCooldown[index] > 0)
                 --toolCooldown[index];
-            if (handGunCooldown[index] > 0)
-                --handGunCooldown[index];
+            handGunCooldown[index] = ShotCooldown.tick(handGunCooldown[index]);
         }
 
         updateAddonSystems();
@@ -459,17 +459,33 @@ public class Mecha extends Driveable
         EnumFireMode mode = gunType.getFireMode(gunStack);
         if (mode == EnumFireMode.BURST && rising)
             handGunBurstRemaining[index] = Math.max(1, gunType.getNumBurstRounds());
-        if (handGunCooldown[index] > 0
-            || !shouldFireHandGun(mode, held, rising, handGunHeldTicks[index], handGunBurstRemaining[index]))
-            return;
+        // Sub-tick fire rates get all of their shots away in this tick, exactly as
+        // the same gun would in a player's hands. Every path that does not fire a
+        // shot returns outright, so the loop only repeats on a shot that landed.
+        while (ShotCooldown.isReady(handGunCooldown[index])
+            && shouldFireHandGun(mode, held, rising, handGunHeldTicks[index], handGunBurstRemaining[index]))
+        {
+            if (!fireHandGun(slot, left, rising, mode, gunItem, gunType, gunStack, index))
+                return;
+            if (mode == EnumFireMode.SEMIAUTO)
+                return;
+        }
+    }
 
+    /**
+     * One shot from a mecha hand gun, or the reload it needs first. Returns false
+     * once the hand has stopped putting rounds out this tick.
+     */
+    private boolean fireHandGun(EnumMechaSlotType slot, boolean left, boolean rising, EnumFireMode mode,
+        GunItem gunItem, GunType gunType, ItemStack gunStack, int index)
+    {
         LoadedHandAmmo loaded = findLoadedHandAmmo(gunItem, gunType, gunStack);
         if (loaded == null)
         {
             float reloadTime = gunItem.getActualReloadTime(gunStack, oppositeHandStack(left));
             if (reloadHandGun(slot, gunItem, gunType, gunStack))
             {
-                handGunCooldown[index] = Math.max(1, Mth.ceil(Math.max(0F, reloadTime)));
+                handGunCooldown[index] = Math.max(1F, reloadTime);
                 String reloadSound = gunType.getReloadSound(gunStack);
                 if (StringUtils.isNotBlank(reloadSound))
                     PacketPlaySound.sendSoundPacket(this, gunType.getReloadSoundRange(), reloadSound, false);
@@ -479,12 +495,12 @@ public class Mecha extends Driveable
                 String clickSound = gunType.getClickSoundOnEmpty(!rising);
                 if (StringUtils.isNotBlank(clickSound))
                     PacketPlaySound.sendSoundPacket(this, gunType.getReloadSoundRange(), clickSound, true);
-                handGunCooldown[index] = Math.max(4, Mth.ceil(Math.max(1F, gunType.getShootDelay(gunStack))));
+                handGunCooldown[index] = Math.max(4F, gunType.getShootDelay(gunStack));
             }
-            return;
+            return false;
         }
         if (!weaponEnabled(EnumWeaponType.GUN) || MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
-            return;
+            return false;
 
         LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
         ItemStack otherHand = oppositeHandStack(left);
@@ -498,7 +514,7 @@ public class Mecha extends Driveable
         boolean lastBullet = countLoadedHandRounds(gunItem, gunType, gunStack) <= 1;
         MechaType mechaType = getMechaType();
         if (mechaType == null)
-            return;
+            return false;
         Vec3 origin = handGunOrigin(mechaType, left);
         Vec3 direction = aimDirection();
         ShootingHelper.fireGun(level(), shot, Math.max(1, gunType.getNumBullets(gunStack, loaded.bulletType())),
@@ -520,9 +536,10 @@ public class Mecha extends Driveable
         float delay = gunType.getShootDelay(gunStack);
         if (mode == EnumFireMode.SEMIAUTO)
             delay = Math.max(delay, 5F);
-        handGunCooldown[index] = Math.max(1, Mth.ceil(Math.max(1F, delay)));
+        handGunCooldown[index] = ShotCooldown.charge(handGunCooldown[index], delay);
         if (mode == EnumFireMode.BURST && handGunBurstRemaining[index] > 0)
             --handGunBurstRemaining[index];
+        return true;
     }
 
     @Nullable
