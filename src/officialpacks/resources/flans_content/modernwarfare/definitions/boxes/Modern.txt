@@ -245,11 +245,14 @@ SetPage Tank Shells 1
 AddGun hvshell120mm 6 iron 6 gunpowder
 AddGun gpshell120mm 6 iron 4 gunpowder 2 tnt
 AddGun heshell120mm 6 iron 4 gunpowder 2 tnt
+AddGun SmokeShell120mm 6 iron 4 gunpowder 2 dyePowder.15
 AddGun Shell120mmM829A2 6 iron 6 gunpowder
 AddGun Shell120mmM830A1 6 iron 4 gunpowder 2 tnt
 SetPage Tank Shells 2
 AddGun Shell120mmL27A1 6 iron 6 gunpowder
 AddGun Shell120mmL31A7 6 iron 4 gunpowder 2 tnt
+AddGun Shell120mmL34 6 iron 4 gunpowder 2 dyePowder.15
 AddGun Shell125mm3BM60 6 iron 6 gunpowder
 AddGun Shell125mm3BK18M 6 iron 4 gunpowder 2 tnt
 AddGun Shell125mm3OF26 6 iron 4 gunpowder 2 tnt
+AddGun Shell125mmSmoke 6 iron 4 gunpowder 2 dyePowder.15

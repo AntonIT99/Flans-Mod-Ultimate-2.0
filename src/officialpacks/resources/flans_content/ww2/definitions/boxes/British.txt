@@ -41,3 +41,4 @@ AddGun British6pdrAPShell 3 ingotIron 3 gunpowder
 AddGun British6pdrHEShell 3 ingotIron 2 gunpowder 1 tnt
 AddGun Allied75APShell 4 ingotIron 4 gunpowder
 AddGun Allied75HEShell 4 ingotIron 2 gunpowder 2 tnt
+AddGun Allied75SmokeShell 4 ingotIron 2 gunpowder 2 dyePowder.15

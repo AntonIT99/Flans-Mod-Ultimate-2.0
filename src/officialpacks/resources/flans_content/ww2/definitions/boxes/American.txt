@@ -45,10 +45,13 @@ AddGun mk2Frag 4 ingotIron 2 gunpowder
 SetPage Tank Shells 1
 AddGun Allied75APShell 4 ingotIron 4 gunpowder
 AddGun Allied75HEShell 4 ingotIron 2 gunpowder 2 tnt
+AddGun Allied75SmokeShell 4 ingotIron 2 gunpowder 2 dyePowder.15
 AddGun American76APShell 4 ingotIron 4 gunpowder
 AddGun American76HEShell 4 ingotIron 2 gunpowder 2 tnt
+AddGun American76SmokeShell 4 ingotIron 2 gunpowder 2 dyePowder.15
 AddGun American3inAPShell 4 ingotIron 4 gunpowder
 AddGun American3inHEShell 4 ingotIron 2 gunpowder 2 tnt
+AddGun American3inSmokeShell 4 ingotIron 2 gunpowder 2 dyePowder.15
 SetPage Tank Shells 2
 AddGun American37APShell 2 ingotIron 2 gunpowder
 AddGun American37HEShell 2 ingotIron 1 gunpowder 1 tnt

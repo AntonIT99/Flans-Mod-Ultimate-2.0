@@ -1,0 +1,43 @@
+// Identity
+Name US 76 mm M88 HC Smoke (M1)
+ShortName 44_76M88SmokeShell
+Description Base-emission smoke ammunition for the US 76 mm M1
+
+// Item and rendering
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+Icon 44_MediumHEShell
+MaxStackSize 3
+RoundsPerItem 1
+
+// Ballistics
+Bomb False
+Shell True
+WeaponType Shell
+Mass 3450
+MuzzleVelocity 274
+FallSpeed 1
+
+// Damage and detonation
+Damage 10
+DamageVsLiving 10
+DamageVsVehicles 5
+Explosion 0
+ExplodeOnImpact True
+Fuse 500
+Fire 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Smoke and presentation
+SmokeTime 250
+SmokeParticleType cloud
+SmokeRadius 5
+SmokeEffect 15 25 0
+SmokeEffect 2 25 2
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+HasLight False
+FlakParticles 0

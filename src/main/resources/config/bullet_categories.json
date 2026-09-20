@@ -2920,6 +2920,22 @@
         ]
     },
 
+    "75mm M64 WP Smoke": {
+        "properties": {
+            "AddToAmmoGroup": "75mm M3",
+            "Mass": 6620,
+            "MuzzleVelocity": 594,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 36,
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "ww2_shell_usa75mmm64smoke",
+            "allied75smokeshell",
+            "44_smokeshell"
+        ]
+    },
+
     "75mm M66 HEAT (M2/M3 Howitzer)": {
         "properties": {
             "AddToAmmoGroup": "75mm M2/M3 Howitzer",
@@ -2958,6 +2974,22 @@
         },
         "items": [
             "75mmapfrance"
+        ]
+    },
+
+    "75mm Nbgr. Patr. 34 (KwK 40)": {
+        "properties": {
+            "AddToAmmoGroup": "75mm KwK/PaK 40",
+            "Mass": 6214,
+            "MuzzleVelocity": 540,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 62,
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "ww2_shell_german75mmnbgrsmoke",
+            "german75smokeshell",
+            "44_75nbgrsmokeshell"
         ]
     },
 
@@ -3435,6 +3467,25 @@
         "items": [
             "american3inapshell",
             "44_3inapcbcshell"
+        ]
+    },
+
+    "76mm M88 HC Smoke": {
+        "properties": {
+            "AddToAmmoGroup": [
+                "76mm M1",
+                "3-inch M7"
+            ],
+            "Mass": 3450,
+            "MuzzleVelocity": 274,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "ww2_shell_usa76mmm88smoke",
+            "american76smokeshell",
+            "american3insmokeshell",
+            "44_76m88smokeshell",
+            "44_3inm88smokeshell"
         ]
     },
 
@@ -4700,6 +4751,20 @@
         ]
     },
 
+    "120mm L34 WP Smoke (L30A1)": {
+        "properties": {
+            "AddToAmmoGroup": "120mm L30A1",
+            "Mass": 17300,
+            "MuzzleVelocity": 670,
+            "FallSpeed": 1.0,
+            "ExplosiveMassTNTg": 138,
+            "FragType": "LOW_FRAG"
+        },
+        "items": [
+            "shell120mml34"
+        ]
+    },
+
     "120mm M829 APFSDS-DU": {
         "properties": {
             "Mass": 9000,
@@ -4737,6 +4802,22 @@
         },
         "items": [
             "shell120mmm830a1"
+        ]
+    },
+
+    "120mm NATO Smoothbore Smoke (Generic)": {
+        "properties": {
+            "AddToAmmoGroup": [
+                "120mm Rh-120 L/55",
+                "120mm M256"
+            ],
+            "Mass": 12900,
+            "MuzzleVelocity": 1000,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "shellnato120mmsmoke",
+            "smokeshell120mm"
         ]
     },
 
@@ -4917,6 +4998,18 @@
         },
         "items": [
             "russian122heshell"
+        ]
+    },
+
+    "125mm 2A46M-5 Smoke (Generic)": {
+        "properties": {
+            "AddToAmmoGroup": "125mm 2A46M-5",
+            "Mass": 23000,
+            "MuzzleVelocity": 850,
+            "FallSpeed": 1.0
+        },
+        "items": [
+            "shell125mmsmoke"
         ]
     },
 

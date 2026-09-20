@@ -46,8 +46,11 @@ AddGun 44_Type98AAAmmo 1 gunpowder 1 ingotIron 1 44_Magazine
 SetPage Medium Cal.
 
 AddGun 44_75APShell 4 gunpowder 3 ingotIron
+AddGun 44_SmokeShell 3 gunpowder 2 ingotIron 1 dyePowder.15
+AddGun 44_75NbgrSmokeShell 3 gunpowder 2 ingotIron 1 dyePowder.15
 AddGun 44_75APShellLong 4 gunpowder 4 ingotIron
 AddGun 44_76APShell 3 gunpowder 3 ingotIron
+AddGun 44_76M88SmokeShell 3 gunpowder 2 ingotIron 1 dyePowder.15
 AddGun 44_76APShellLong 4 gunpowder 4 ingotIron
 AddGun 44_85APShell 4 gunpowder 4 ingotIron
 AddGun 44_88APShell 5 gunpowder 4 ingotIron
@@ -119,6 +122,7 @@ AddGun 44_90HVAPShellLong 6 gunpowder 7 ingotIron
 AddGun 44_17PdrAPCBCShell 4 gunpowder 4 ingotIron
 AddGun 44_76APCBCShell 4 gunpowder 4 ingotIron
 AddGun 44_3inAPCBCShell 4 gunpowder 4 ingotIron
+AddGun 44_3inM88SmokeShell 3 gunpowder 2 ingotIron 1 dyePowder.15
 AddGun 44_75APCBCShell 4 gunpowder 3 ingotIron
 AddGun 44_75HEATShellShort 2 tnt 2 gunpowder 2 ingotIron
 AddGun 44_76HEATShell 2 tnt 2 gunpowder 2 ingotIron
