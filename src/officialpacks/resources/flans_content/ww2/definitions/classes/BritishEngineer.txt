@@ -1,5 +1,5 @@
 Name Engineer
-ShortName britishEngineer
+ShortName OfficialWW2_BritishEngineer
 AddItem sten
 AddItem webley
 AddItem millsBomb 2

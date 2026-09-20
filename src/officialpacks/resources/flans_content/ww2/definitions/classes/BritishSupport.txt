@@ -1,5 +1,5 @@
 Name Support
-ShortName britishSupport
+ShortName OfficialWW2_BritishSupport
 AddItem bren
 AddItem PIAT
 AddItem webley

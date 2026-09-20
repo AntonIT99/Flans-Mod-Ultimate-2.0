@@ -1,5 +1,5 @@
 Name Support
-ShortName japaneseSupport
+ShortName OfficialWW2_JapaneseSupport
 AddItem type99
 AddItem panzerschreck
 AddItem type14

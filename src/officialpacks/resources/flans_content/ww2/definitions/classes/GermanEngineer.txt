@@ -1,5 +1,5 @@
 Name Engineer
-ShortName germanEngineer
+ShortName OfficialWW2_GermanEngineer
 AddItem mp40
 AddItem luger
 AddItem stielhandgranate 1

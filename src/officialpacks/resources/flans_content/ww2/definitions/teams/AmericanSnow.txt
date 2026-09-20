@@ -10,10 +10,10 @@ Hat americanSnowHelmet
 Chest americanSnowCoat
 Legs americanSnowPants
 Shoes americanSnowBoots
-AddClass americanScout
-AddClass americanAssault
-AddClass americanSupport
-AddClass americanEngineer
-AddClass americanMedic
+AddClass OfficialWW2_AmericanScout
+AddClass OfficialWW2_AmericanAssault
+AddClass OfficialWW2_AmericanSupport
+AddClass OfficialWW2_AmericanEngineer
+AddClass OfficialWW2_AmericanMedic
 
 

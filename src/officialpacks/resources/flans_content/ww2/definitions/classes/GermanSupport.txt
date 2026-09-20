@@ -1,5 +1,5 @@
 Name Support
-ShortName germanSupport
+ShortName OfficialWW2_GermanSupport
 AddItem mg42
 AddItem panzerschreck
 AddItem luger

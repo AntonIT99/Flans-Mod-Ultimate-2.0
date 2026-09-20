@@ -1,5 +1,5 @@
 Name Scout
-ShortName americanScout
+ShortName OfficialWW2_AmericanScout
 AddItem springfield
 AddItem colt
 AddItem mk2Frag 2

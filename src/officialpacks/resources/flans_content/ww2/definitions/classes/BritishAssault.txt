@@ -1,5 +1,5 @@
 Name Assault
-ShortName britishAssault
+ShortName OfficialWW2_BritishAssault
 AddItem sten
 AddItem webley
 AddItem millsBomb 3

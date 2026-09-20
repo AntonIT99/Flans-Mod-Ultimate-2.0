@@ -5,7 +5,7 @@
 //---Standard-------------------------------------
 //Naming
 Name German 75 mm Pzgr. 39/42 APCBC-HE (KwK 42)
-ShortName WW2_Shell_German75mmAPLong
+ShortName WW2_Shell_German75mmKwK42AP
 
 
 //Visuals

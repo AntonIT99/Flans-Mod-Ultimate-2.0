@@ -1,5 +1,5 @@
 Name Medic
-ShortName germanMedic
+ShortName OfficialWW2_GermanMedic
 AddItem kar98k
 AddItem luger
 AddItem stielhandgranate 2

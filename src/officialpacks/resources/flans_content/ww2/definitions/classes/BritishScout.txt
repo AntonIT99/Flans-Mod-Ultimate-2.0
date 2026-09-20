@@ -1,5 +1,5 @@
 Name Scout
-ShortName britishScout
+ShortName OfficialWW2_BritishScout
 AddItem leeEnfieldSniper
 AddItem webley
 AddItem millsBomb 2

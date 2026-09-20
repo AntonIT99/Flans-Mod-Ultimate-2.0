@@ -1,5 +1,5 @@
 Name Medic
-ShortName japaneseMedic
+ShortName OfficialWW2_JapaneseMedic
 AddItem type38
 AddItem type14
 AddItem type97 2

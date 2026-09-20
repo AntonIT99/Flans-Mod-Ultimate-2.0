@@ -1,5 +1,5 @@
 Name Assault
-ShortName americanAssault
+ShortName OfficialWW2_AmericanAssault
 AddItem BAR
 AddItem colt
 AddItem mk2Frag 2

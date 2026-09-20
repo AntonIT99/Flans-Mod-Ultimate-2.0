@@ -1,9 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "F ",
-    "GG",
-    "SS"
+    "F  ",
+    "GGG",
+    "  S"
   ],
   "key": {
     "S": {
@@ -17,7 +17,7 @@
     }
   },
   "result": {
-    "item": "flansmod:ww2_shell_german75mmaplong",
+    "item": "flansmod:ww2_shell_german88mmkwk43ap",
     "count": 3
   }
 }

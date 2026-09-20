@@ -1,5 +1,5 @@
 Name Engineer
-ShortName americanEngineer
+ShortName OfficialWW2_AmericanEngineer
 AddItem thompson
 AddItem colt
 AddItem mk2Frag 1

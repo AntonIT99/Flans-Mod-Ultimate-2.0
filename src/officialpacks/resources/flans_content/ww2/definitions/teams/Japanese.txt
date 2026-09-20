@@ -10,9 +10,9 @@ Hat japaneseHelmet
 Chest japaneseCoat
 Legs japanesePants
 Shoes japaneseBoots
-AddClass japaneseScout
-AddClass japaneseAssault
-AddClass japaneseSupport
-AddClass japaneseEngineer
-AddClass japaneseMedic
+AddClass OfficialWW2_JapaneseScout
+AddClass OfficialWW2_JapaneseAssault
+AddClass OfficialWW2_JapaneseSupport
+AddClass OfficialWW2_JapaneseEngineer
+AddClass OfficialWW2_JapaneseMedic
 

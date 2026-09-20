@@ -1,5 +1,5 @@
 Name Support
-ShortName americanSupport
+ShortName OfficialWW2_AmericanSupport
 AddItem browning
 AddItem bazooka
 AddItem colt

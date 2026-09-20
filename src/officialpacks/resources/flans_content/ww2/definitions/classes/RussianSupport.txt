@@ -1,5 +1,5 @@
 Name Support
-ShortName russianSupport
+ShortName OfficialWW2_RussianSupport
 AddItem dp28
 AddItem bazooka
 AddItem tt33

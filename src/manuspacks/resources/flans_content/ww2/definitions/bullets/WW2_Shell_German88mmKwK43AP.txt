@@ -5,7 +5,7 @@
 //---Standard-------------------------------------
 //Naming
 Name German 88 mm Pzgr. 39/43 APCBC-HE (KwK 43)
-ShortName WW2_Shell_German88mmAPLong
+ShortName WW2_Shell_German88mmKwK43AP
 
 
 //Visuals

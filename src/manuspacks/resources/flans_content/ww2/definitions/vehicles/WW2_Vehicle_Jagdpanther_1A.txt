@@ -66,7 +66,7 @@ AddDye 10 gray
 
 //Weapons
 AllowAllAmmo False
-AddAmmo WW2_Shell_German88mmAPLong
+AddAmmo WW2_Shell_German88mmKwK43AP
 AddAmmo WW2_Shell_German88mmHELong
 AddAmmo WW2_Shell_German88mmKwK43APCR
 AddAmmo 44_88APShellLong

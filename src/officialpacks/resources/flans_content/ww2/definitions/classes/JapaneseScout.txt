@@ -1,5 +1,5 @@
 Name Scout
-ShortName japaneseScout
+ShortName OfficialWW2_JapaneseScout
 AddItem type38Sniper
 AddItem type14
 AddItem type97 2

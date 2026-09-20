@@ -1,5 +1,5 @@
 Name Medic
-ShortName britishMedic
+ShortName OfficialWW2_BritishMedic
 AddItem leeEnfield
 AddItem webley
 AddItem millsBomb 2

@@ -1,5 +1,5 @@
 Name Scout
-ShortName germanScout
+ShortName OfficialWW2_GermanScout
 AddItem kar98kSniper
 AddItem luger
 AddItem stielhandgranate 2

@@ -61,7 +61,7 @@ AddDye 10 gray
 
 //Weapons
 AllowAllAmmo False
-AddAmmo WW2_Shell_German75mmAP
+AddAmmo WW2_Shell_German75mmKwK40AP
 AddAmmo WW2_Shell_German75mmHE
 AddAmmo WW2_Shell_German75mmKwK40APCR
 AddGun 28 32 8 turret WW2_MG_MG42ZB_1A

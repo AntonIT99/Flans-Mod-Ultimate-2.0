@@ -1,5 +1,5 @@
 Name Assault
-ShortName germanAssault
+ShortName OfficialWW2_GermanAssault
 AddItem mp44
 AddItem luger
 AddItem stielhandgranate 2

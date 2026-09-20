@@ -1,4 +1,4 @@
-﻿//---Standard AAGun Config for Flans Mod----------
+//---Standard AAGun Config for Flans Mod----------
 //Created by Minecraft-SMP Toolbox 2.0.0.0
 
 
@@ -31,8 +31,8 @@ Texture Skin_WW2_AAGun_Flak88_1A
 
 
 //Ammo
-Ammo WW2_Shell_German88mmAP
-Ammo WW2_Shell_German88mmHE
+Ammo WW2_Shell_German88mmKwK36AP
+Ammo WW2_Shell_German88mmKwK36HE
 
 
 // Sentry Settings

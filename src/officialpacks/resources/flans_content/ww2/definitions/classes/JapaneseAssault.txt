@@ -1,5 +1,5 @@
 Name Assault
-ShortName japaneseAssault
+ShortName OfficialWW2_JapaneseAssault
 AddItem type100
 AddItem type14
 AddItem type97 2

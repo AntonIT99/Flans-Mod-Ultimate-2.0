@@ -10,10 +10,10 @@ Hat britishDesertHelmet
 Chest britishDesertCoat
 Legs britishDesertPants
 Shoes britishDesertBoots
-AddClass britishScout
-AddClass britishAssault
-AddClass britishSupport
-AddClass britishEngineer
-AddClass britishMedic
+AddClass OfficialWW2_BritishScout
+AddClass OfficialWW2_BritishAssault
+AddClass OfficialWW2_BritishSupport
+AddClass OfficialWW2_BritishEngineer
+AddClass OfficialWW2_BritishMedic
 
 

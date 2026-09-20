@@ -1,14 +1,11 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    " F ",
-    "PGP",
-    "SSS"
+    "F ",
+    "GG",
+    "SS"
   ],
   "key": {
-    "P": {
-      "item": "flansmod:smp_part_mat_plate_steel"
-    },
     "S": {
       "item": "flansmod:smp_part_misc_ammo_shell"
     },
@@ -20,7 +17,7 @@
     }
   },
   "result": {
-    "item": "flansmod:ww2_shell_german88mmap",
+    "item": "flansmod:ww2_shell_german75mmkwk42ap",
     "count": 3
   }
 }

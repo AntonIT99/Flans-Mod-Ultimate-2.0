@@ -2986,6 +2986,7 @@
         },
         "items": [
             "ww2_shell_german75mmaplong",
+            "ww2_shell_german75mmkwk42ap",
             "panther75"
         ]
     },
@@ -3001,6 +3002,7 @@
             "HasSubmunitions": "false"
         },
         "items": [
+            "wolffgermany_shell_german75mmkwk40ap",
             "ww2_shell_german75mmkwk40ap",
             "ww2_shell_german75mmap",
             "german75apshell",
@@ -3019,6 +3021,7 @@
             "HasSubmunitions": "false"
         },
         "items": [
+            "wolffgermany_shell_german75mmkwk40apcr",
             "ww2_shell_german75mmkwk40apcr",
             "44_75apcrshell",
             "german75apcr"
@@ -3065,6 +3068,7 @@
             "FragType": "HE_SHELL"
         },
         "items": [
+            "wolffgermany_shell_german75mmkwk40he",
             "ww2_shell_german75mmkwk40he",
             "ww2_shell_german75mmhe",
             "german75heshell",
@@ -3831,6 +3835,7 @@
             "PenetrationAt100m": 110
         },
         "items": [
+            "wolffgermany_shell_german88mmkwk36heat",
             "ww2_shell_german88mmkwk36heat",
             "44_88heatshell"
         ]
@@ -3847,6 +3852,7 @@
             "HasSubmunitions": "false"
         },
         "items": [
+            "wolffgermany_shell_german88mmkwk36ap",
             "ww2_shell_german88mmap",
             "ww2_shell_german88mmkwk36ap",
             "44_88apshell",
@@ -3868,6 +3874,7 @@
         },
         "items": [
             "ww2_shell_german88mmaplong",
+            "ww2_shell_german88mmkwk43ap",
             "44_88apshelllong",
             "german88l71apshell",
             "88mmaplong"
@@ -3884,6 +3891,7 @@
             "HasSubmunitions": "false"
         },
         "items": [
+            "wolffgermany_shell_german88mmkwk36apcr",
             "ww2_shell_german88mmkwk36apcr",
             "44_88apcrshell",
             "88mmapcr"
@@ -3973,6 +3981,7 @@
             "FragType": "HE_SHELL"
         },
         "items": [
+            "wolffgermany_shell_german88mmkwk36he",
             "ww2_shell_german88mmhe",
             "ww2_shell_german88mmkwk36he",
             "german88heshell",

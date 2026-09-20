@@ -1,5 +1,5 @@
 Name Medic
-ShortName russianMedic
+ShortName OfficialWW2_RussianMedic
 AddItem nagant
 AddItem tt33
 AddItem rgd33 2

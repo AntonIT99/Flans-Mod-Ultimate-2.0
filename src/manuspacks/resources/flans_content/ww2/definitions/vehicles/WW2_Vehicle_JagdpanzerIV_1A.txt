@@ -61,7 +61,7 @@ AddDye 10 gray
 
 //Weapons
 AllowAllAmmo False
-AddAmmo WW2_Shell_German75mmAPLong
+AddAmmo WW2_Shell_German75mmKwK42AP
 AddAmmo WW2_Shell_German75mmHELong
 AddAmmo WW2_Shell_German75mmKwK42APCR
 BarrelPosition 0 34 0

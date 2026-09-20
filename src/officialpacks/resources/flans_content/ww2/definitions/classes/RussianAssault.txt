@@ -1,5 +1,5 @@
 Name Assault
-ShortName russianAssault
+ShortName OfficialWW2_RussianAssault
 AddItem ppsh
 AddItem tt33
 AddItem rgd33 2

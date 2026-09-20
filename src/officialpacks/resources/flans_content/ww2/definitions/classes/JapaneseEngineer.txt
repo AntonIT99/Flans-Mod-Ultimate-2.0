@@ -1,5 +1,5 @@
 Name Engineer
-ShortName japaneseEngineer
+ShortName OfficialWW2_JapaneseEngineer
 AddItem type100
 AddItem type14
 AddItem type97 2

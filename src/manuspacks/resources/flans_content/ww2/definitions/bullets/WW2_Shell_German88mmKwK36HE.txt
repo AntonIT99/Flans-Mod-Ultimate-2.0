@@ -5,7 +5,7 @@
 //---Standard-------------------------------------
 //Naming
 Name German 88 mm Sprgr. L/4.5 HE (KwK 36)
-ShortName WW2_Shell_German88mmHE
+ShortName WW2_Shell_German88mmKwK36HE
 
 
 //Visuals

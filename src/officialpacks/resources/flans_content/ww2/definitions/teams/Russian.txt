@@ -10,9 +10,9 @@ Hat russianHelmet
 Chest russianCoat
 Legs russianPants
 Shoes russianBoots
-AddClass russianScout
-AddClass russianAssault
-AddClass russianSupport
-AddClass russianEngineer
-AddClass russianMedic
+AddClass OfficialWW2_RussianScout
+AddClass OfficialWW2_RussianAssault
+AddClass OfficialWW2_RussianSupport
+AddClass OfficialWW2_RussianEngineer
+AddClass OfficialWW2_RussianMedic
 
