@@ -116,5 +116,4 @@ CollisionPoint 46 28 0 nose
 CollisionPoint -134 29 0 tail
 
 // Optics
-heliGuiSeat 2 true
 heliGUI official_jetcassight

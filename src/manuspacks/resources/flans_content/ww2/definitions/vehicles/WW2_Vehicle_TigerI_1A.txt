@@ -155,5 +155,5 @@ Tank true
 hasScope true
 Gunsight manus_tiger
 gunsightZoom 4
-heliGuiSeat 2 true
+heliGuiSeat 1 true
 heliGUI manus_gercomm

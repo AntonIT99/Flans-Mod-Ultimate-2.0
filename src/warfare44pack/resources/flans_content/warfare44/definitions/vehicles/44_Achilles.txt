@@ -295,5 +295,4 @@ IsExplosionWhenDestroyed true
 hasScope true
 Gunsight warfare44_17pdr
 gunsightZoom 3
-heliGuiSeat 1 true
 heliGUI warfare44_uscomm

@@ -289,5 +289,5 @@ IsExplosionWhenDestroyed true
 hasScope true
 Gunsight warfare44_m4a3
 gunsightZoom 4
-heliGuiSeat 2 true
+heliGuiSeat 1 true
 heliGUI warfare44_uscomm

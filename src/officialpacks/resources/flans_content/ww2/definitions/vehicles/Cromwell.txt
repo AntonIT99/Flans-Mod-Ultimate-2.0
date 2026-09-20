@@ -74,7 +74,6 @@ ModelScale 1
 Description British Medium Tank
 
 // Optics
-heliGuiSeat 2 true
 heliGUI official_tap_scope
 hasScope true
 Gunsight official_churchill75

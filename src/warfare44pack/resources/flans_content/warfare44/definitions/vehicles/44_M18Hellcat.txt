@@ -303,7 +303,6 @@ FixTrackLink 4
 SquashMobs True
 
 // Optics
-heliGuiSeat 1 true
 heliGUI warfare44_uscomm
 hasScope true
 Gunsight warfare44_sherman

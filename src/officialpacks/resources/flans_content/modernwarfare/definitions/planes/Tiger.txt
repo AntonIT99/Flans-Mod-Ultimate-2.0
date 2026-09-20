@@ -96,6 +96,6 @@ SetupPart blades 1000 -125 63 -125 250 4 250
 BulletDetection 10
 
 // Optics
-heliGuiSeat 2 true
+heliGuiSeat 1 true
 heliGUI official_helioptics
-passengerZoom 2 2
+passengerZoom 1 2

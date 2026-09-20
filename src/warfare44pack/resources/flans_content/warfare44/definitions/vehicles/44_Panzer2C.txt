@@ -244,7 +244,6 @@ FixTrackLink 4
 SquashMobs True
 
 // Optics
-heliGuiSeat 1 true
 heliGUI warfare44_gercomm
 hasScope true
 Gunsight warfare44_20mmtank

@@ -272,5 +272,4 @@ SquashMobs True
 hasScope true
 Gunsight warfare44_t17
 gunsightZoom 3
-heliGuiSeat 1 true
 heliGUI warfare44_uscomm

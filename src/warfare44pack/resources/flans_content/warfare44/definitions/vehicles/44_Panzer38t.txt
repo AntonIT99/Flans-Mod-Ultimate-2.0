@@ -291,5 +291,5 @@ SquashMobs True
 hasScope true
 Gunsight warfare44_panzer38t2
 gunsightZoom 3.5
-heliGuiSeat 2 true
+heliGuiSeat 1 true
 heliGUI warfare44_gercomm

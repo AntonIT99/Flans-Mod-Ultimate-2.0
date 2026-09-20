@@ -265,5 +265,5 @@ IsExplosionWhenDestroyed true
 hasScope true
 Gunsight warfare44_pak36
 gunsightZoom 2.5
-heliGuiSeat 2 true
+heliGuiSeat 1 true
 heliGUI warfare44_gercomm

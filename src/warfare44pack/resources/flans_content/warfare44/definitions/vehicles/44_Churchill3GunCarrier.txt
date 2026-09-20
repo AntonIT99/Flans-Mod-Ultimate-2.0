@@ -292,5 +292,4 @@ advpaintjob Christmas 44_Churchill3GunCarrierWinter 44_Churchill3GunCarrier_Wint
 hasScope true
 Gunsight warfare44_6pdrat
 gunsightZoom 3
-heliGuiSeat 1 true
 heliGUI warfare44_scope
