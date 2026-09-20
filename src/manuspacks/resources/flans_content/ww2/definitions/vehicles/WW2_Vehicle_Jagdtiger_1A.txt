@@ -149,8 +149,8 @@ Tank true
 
 // Optics
 hasScope true
-Gunsight jagd
+Gunsight manus_jagd
 gunsightZoom 3.5
 hasScope true
-Gunsight stug
+Gunsight manus_stug
 gunsightZoom 4.5

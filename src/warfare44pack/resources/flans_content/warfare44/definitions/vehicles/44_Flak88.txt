@@ -144,5 +144,5 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight tiger
+Gunsight warfare44_tiger
 gunsightZoom 4

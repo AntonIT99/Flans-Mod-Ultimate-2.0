@@ -71,3 +71,8 @@ SetupPart leftTrack 8000 -48 -10 18 102 19 7
 BulletDetection 7
 ModelScale 1
 Description Soviet Light SPG
+
+// Optics
+hasScope true
+Gunsight official_t3476sight
+gunsightZoom 3

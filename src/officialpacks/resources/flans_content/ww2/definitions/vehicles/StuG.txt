@@ -73,3 +73,8 @@ SetupPart leftTrack 7000 -55 -12 23 101 21 7
 BulletDetection 7
 ModelScale 0.85
 Description German Medium Tank Destroyer
+
+// Optics
+hasScope true
+Gunsight official_stug
+gunsightZoom 4.5

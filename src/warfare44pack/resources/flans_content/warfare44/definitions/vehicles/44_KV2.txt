@@ -282,5 +282,5 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight panhard
+Gunsight warfare44_panhard
 gunsightZoom 3

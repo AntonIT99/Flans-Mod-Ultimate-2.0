@@ -292,8 +292,8 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight tiger2
+Gunsight warfare44_tiger2
 gunsightZoom 5
 heliGuiSeat 1 true
-heliGUI gercomm
+heliGUI warfare44_gercomm
 passengerZoom 1 0.5

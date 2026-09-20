@@ -113,4 +113,4 @@ Description German Ground Attack Aircraft __Uses 37mm AP Tank Shell __Year Intro
 
 // Optics
 heliGuiSeat 1 true
-heliGUI bombsightgui
+heliGUI warfare44_bombsightgui

@@ -281,3 +281,8 @@ LeftLinkPoint [23,10,-19]
 BulletSpeed 8
 BulletSpread 2
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight warfare44_su
+gunsightZoom 3.5

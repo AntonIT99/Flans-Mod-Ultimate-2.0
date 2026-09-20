@@ -303,5 +303,5 @@ SquashMobs True
 
 // Optics
 hasScope true
-Gunsight stug
+Gunsight warfare44_stug
 gunsightZoom 4.5

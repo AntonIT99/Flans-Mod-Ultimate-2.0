@@ -116,4 +116,4 @@ Description German Ground Attack Aircraft __Uses MG 17 / 250kg/500lb Bomb __Year
 
 // Optics
 heliGuiSeat 1 true
-heliGUI bombsightgui
+heliGUI warfare44_bombsightgui

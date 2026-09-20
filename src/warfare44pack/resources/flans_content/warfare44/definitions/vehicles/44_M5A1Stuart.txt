@@ -286,7 +286,7 @@ IsExplosionWhenDestroyed true
 
 // Optics
 heliGuiSeat 2 true
-heliGUI uscomm
+heliGUI warfare44_uscomm
 hasScope true
-Gunsight m5stuart
+Gunsight warfare44_m5stuart
 gunsightZoom 3.5

@@ -316,3 +316,10 @@ FlipLinkFix false
 FixTrackLink 6
 
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight warfare44_tiger
+gunsightZoom 4
+heliGuiSeat 1 true
+heliGUI warfare44_gercomm

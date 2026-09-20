@@ -107,3 +107,8 @@ IsExplosionWhenDestroyed true
 //Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
 
 advpaintjob British 44_Bofors40mm_British 44_Bofors40mm_British gray 3
+
+// Optics
+hasScope true
+Gunsight warfare44_flak20
+gunsightZoom 2.5

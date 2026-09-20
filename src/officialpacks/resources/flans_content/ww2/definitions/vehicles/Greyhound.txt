@@ -84,7 +84,7 @@ Description American Armored Car
 
 // Optics
 hasScope true
-Gunsight t17
+Gunsight official_t17
 gunsightZoom 3
 heliGuiSeat 1 true
-heliGUI uscomm
+heliGUI official_uscomm

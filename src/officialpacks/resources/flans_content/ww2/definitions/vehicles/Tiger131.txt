@@ -171,3 +171,9 @@ PitchSoundLength 61
 
 YawSound TurretTraverse2
 YawSoundLength 38
+
+
+// Optics
+hasScope true
+Gunsight official_tiger
+gunsightZoom 4

@@ -97,5 +97,5 @@ BulletDetection 10
 
 // Optics
 heliGuiSeat 2 true
-heliGUI HeliOptics
+heliGUI official_helioptics
 passengerZoom 2 2

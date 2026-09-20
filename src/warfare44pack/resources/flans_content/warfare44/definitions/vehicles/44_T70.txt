@@ -284,5 +284,5 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight t70
+Gunsight warfare44_t70
 gunsightZoom 4

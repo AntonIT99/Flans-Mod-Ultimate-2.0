@@ -304,7 +304,7 @@ SquashMobs True
 
 // Optics
 heliGuiSeat 1 true
-heliGUI uscomm
+heliGUI warfare44_uscomm
 hasScope true
-Gunsight sherman
+Gunsight warfare44_sherman
 gunsightZoom 3.5

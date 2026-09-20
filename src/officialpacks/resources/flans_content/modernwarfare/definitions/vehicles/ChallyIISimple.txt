@@ -78,3 +78,10 @@ BulletDetection 7
 
 RotateWheels true
 Description British Main Battle Tank
+
+// Optics
+hasScope true
+Gunsight official_leo2a6 official_leo2a6 official_leo2a6 official_leo2a6
+gunsightZoom 3 12 3 12
+thermalSight true
+ThermalGuis 3 4

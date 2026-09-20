@@ -105,7 +105,7 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight flak20
+Gunsight warfare44_flak20
 gunsightZoom 2.5
 heliGuiSeat 1 true
-heliGUI tap_binoculars
+heliGUI warfare44_tap_binoculars

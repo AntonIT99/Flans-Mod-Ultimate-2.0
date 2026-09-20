@@ -129,3 +129,11 @@ ShellDelay 100
 //Sound
 
 //------------------------------------------------
+
+// Optics
+hasScope true
+Gunsight gui_wh40k_mkvbboltgunscope
+gunsightZoom 3.5
+SeatOpticsMode 1 true
+SeatGunsight 1 gui_wh40k_mkvbboltgunscope
+SeatGunsightZoom 1 2

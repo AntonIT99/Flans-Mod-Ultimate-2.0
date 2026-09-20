@@ -122,5 +122,5 @@ Tank true
 
 // Optics
 hasScope true
-Gunsight italian1
+Gunsight manus_italian1
 gunsightZoom 2

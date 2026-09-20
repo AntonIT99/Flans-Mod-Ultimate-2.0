@@ -298,3 +298,8 @@ FlipLinkFix false
 FixTrackLink 4
 
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight warfare44_panther
+gunsightZoom 3.5

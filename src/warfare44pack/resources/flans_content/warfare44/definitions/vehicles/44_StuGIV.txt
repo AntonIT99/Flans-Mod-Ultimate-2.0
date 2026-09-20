@@ -274,7 +274,7 @@ SquashMobs True
 
 // Optics
 hasScope true
-Gunsight stug
+Gunsight warfare44_stug
 gunsightZoom 3
 heliGuiSeat 2 true
-heliGUI gercomm
+heliGUI warfare44_gercomm

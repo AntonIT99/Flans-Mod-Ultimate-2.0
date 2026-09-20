@@ -75,7 +75,7 @@ Description British Medium Tank
 
 // Optics
 heliGuiSeat 2 true
-heliGUI tap_scope
+heliGUI official_tap_scope
 hasScope true
-Gunsight churchill75
+Gunsight official_churchill75
 gunsightZoom 4

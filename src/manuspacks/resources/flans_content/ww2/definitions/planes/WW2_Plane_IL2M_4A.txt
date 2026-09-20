@@ -173,4 +173,4 @@ PropSound propSound
 
 // Optics
 heliGuiSeat 1 true
-heliGUI bombsightgui
+heliGUI manus_bombsightgui

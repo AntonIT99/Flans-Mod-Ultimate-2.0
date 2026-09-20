@@ -77,7 +77,7 @@ ModelScale 1.1
 
 // Optics
 heliGuiSeat 2 true
-heliGUI b1bisHull
+heliGUI official_b1bishull
 hasScope true
-Gunsight b1bis
+Gunsight official_b1bis
 gunsightZoom 3.5

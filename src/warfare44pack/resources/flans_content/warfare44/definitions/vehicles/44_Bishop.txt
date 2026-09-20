@@ -271,7 +271,7 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight mortar
+Gunsight warfare44_mortar
 gunsightZoom 0.5
 heliGuiSeat 1 true
-heliGUI scope
+heliGUI warfare44_scope

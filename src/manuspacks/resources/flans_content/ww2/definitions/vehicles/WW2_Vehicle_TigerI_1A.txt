@@ -153,7 +153,7 @@ Tank true
 
 // Optics
 hasScope true
-Gunsight tiger
+Gunsight manus_tiger
 gunsightZoom 4
 heliGuiSeat 2 true
-heliGUI gercomm
+heliGUI manus_gercomm

@@ -73,3 +73,8 @@ SetupPart leftTrack 6000 -50 -10 21 94 19 7
 BulletDetection 7
 ModelScale 1
 Description American Light Tank
+
+// Optics
+hasScope true
+Gunsight official_m4a3
+gunsightZoom 4

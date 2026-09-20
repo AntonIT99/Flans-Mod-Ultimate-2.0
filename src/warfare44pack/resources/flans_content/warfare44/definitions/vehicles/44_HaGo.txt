@@ -272,5 +272,5 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight jap
+Gunsight warfare44_jap
 gunsightZoom 2.5

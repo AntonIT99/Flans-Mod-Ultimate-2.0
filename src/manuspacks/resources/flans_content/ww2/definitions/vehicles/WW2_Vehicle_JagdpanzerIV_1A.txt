@@ -132,3 +132,9 @@ IsExplosionWhenDestroyed true
 Tank true
 
 //------------------------------------------------
+
+
+// Optics
+hasScope true
+Gunsight manus_jagd
+gunsightZoom 4

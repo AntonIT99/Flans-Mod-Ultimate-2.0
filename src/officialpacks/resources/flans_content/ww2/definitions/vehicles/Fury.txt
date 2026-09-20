@@ -72,3 +72,8 @@ SetupPart rightTrack 8000 -61 -10 15 112 17 13
 BulletDetection 7
 ModelScale 1.1
 Description American Medium Tank from the Movie "Fury"
+
+// Optics
+hasScope true
+Gunsight official_sherman
+gunsightZoom 4

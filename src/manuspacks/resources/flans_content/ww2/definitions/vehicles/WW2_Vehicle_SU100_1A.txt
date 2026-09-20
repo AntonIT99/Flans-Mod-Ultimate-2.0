@@ -123,5 +123,5 @@ Tank true
 
 // Optics
 hasScope true
-Gunsight T3485
+Gunsight manus_t3485
 gunsightZoom 3.5

@@ -195,3 +195,8 @@ BulletSpread 4
 FixedPrimary True
 PrimaryAngle 0 0.25 -0.90
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight warfare44_artysight
+gunsightZoom 0.5

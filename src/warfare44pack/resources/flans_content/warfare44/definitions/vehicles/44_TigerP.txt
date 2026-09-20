@@ -282,3 +282,10 @@ LeftLinkPoint [30,9.5,21]
 BulletSpeed 10
 BulletSpread 2
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight warfare44_tiger
+gunsightZoom 4
+heliGuiSeat 1 true
+heliGUI warfare44_gercomm

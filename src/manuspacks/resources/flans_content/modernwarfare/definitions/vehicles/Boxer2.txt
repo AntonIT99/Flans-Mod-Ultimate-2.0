@@ -73,3 +73,8 @@ WheelPosition 0 -37 -8 -23
 WheelPosition 1 -37 -8 23
 WheelPosition 2 49 -8 23
 WheelPosition 3 49 -8 -23
+
+// Optics
+SeatOpticsMode 8 true
+SeatGunsight 8 manus_crows
+SeatGunsightZoom 8 3

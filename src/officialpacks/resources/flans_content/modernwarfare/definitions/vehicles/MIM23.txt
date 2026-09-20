@@ -80,3 +80,9 @@ SetupPart leftTrack 200 -24 -8 -16 48 12 8
 SetupPart rightTrack 200 -24 -8 8 48 12 8
 BulletDetection 7
 Description Russian AA Rocket Emplacement
+
+// Optics
+hasScope true
+Gunsight official_helioptics
+gunsightZoom 3
+thermalSight true

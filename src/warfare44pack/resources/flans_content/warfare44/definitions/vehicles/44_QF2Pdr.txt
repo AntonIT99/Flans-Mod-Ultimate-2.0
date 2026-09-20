@@ -146,5 +146,5 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight 2pdr
+Gunsight warfare44_2pdr
 gunsightZoom 4

@@ -80,3 +80,8 @@ SetupPart rightTrack 20 -20 -8 8 40 6 2
 BulletDetection 7
 ModelScale 1
 Description Amercian AA Gun
+
+// Optics
+hasScope true
+Gunsight official_20mmtank
+gunsightZoom 2.5

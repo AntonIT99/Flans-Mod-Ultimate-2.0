@@ -75,6 +75,6 @@ WheelPosition 3 49 -8 -23
 
 // Optics
 hasScope true
-Gunsight CROWS
+Gunsight manus_crows
 gunsightZoom 3
 thermalSight true

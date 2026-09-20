@@ -77,3 +77,8 @@ SetupPart core 2000 -41 -10 -26 75 35 52
 BulletDetection 7
 ModelScale 1.5
 Description German AA Gun
+
+// Optics
+hasScope true
+Gunsight official_20mmtank
+gunsightZoom 2.5

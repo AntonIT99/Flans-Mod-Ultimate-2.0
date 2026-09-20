@@ -233,3 +233,8 @@ BulletSpread 5
 //Extras
 
 SquashMobs True
+
+// Optics
+hasScope true
+Gunsight warfare44_artysight
+gunsightZoom 0.5

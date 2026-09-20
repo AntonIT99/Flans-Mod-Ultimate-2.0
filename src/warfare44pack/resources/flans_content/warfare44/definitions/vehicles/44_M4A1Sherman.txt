@@ -314,5 +314,5 @@ FloatOffset -1.2
 
 // Optics
 hasScope true
-Gunsight m4a3
+Gunsight warfare44_m4a3
 gunsightZoom 4

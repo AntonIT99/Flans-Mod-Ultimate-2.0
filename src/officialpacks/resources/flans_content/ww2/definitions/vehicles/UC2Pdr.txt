@@ -66,3 +66,8 @@ SetupPart leftTrack 5600 -39 -10 14 73 14 6
 BulletDetection 7
 ModelScale 1
 Description British Armored Vehicle
+
+// Optics
+SeatOpticsMode 2 true
+SeatGunsight 2 official_6pdrat
+SeatGunsightZoom 2 3

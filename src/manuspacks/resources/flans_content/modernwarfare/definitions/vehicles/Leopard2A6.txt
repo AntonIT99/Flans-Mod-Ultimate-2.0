@@ -68,3 +68,10 @@ WheelPosition 0 -46 -8 -26
 WheelPosition 1 -46 -8 26
 WheelPosition 2 37 -8 26
 WheelPosition 3 37 -8 -26
+
+// Optics
+hasScope true
+Gunsight manus_leo2a6 manus_leo2a6 manus_leo2a6 manus_leo2a6
+gunsightZoom 3 12 3 12
+thermalSight true
+ThermalGuis 3 4

@@ -78,3 +78,10 @@ SetupPart rightTrack 10000 -45 -10 -33 116 20 11
 BulletDetection 7
 RotateWheels true
 Description Russian Main Battle Tank
+
+// Optics
+hasScope true
+Gunsight official_leo2a6 official_leo2a6 official_leo2a6 official_leo2a6
+gunsightZoom 3 12 3 12
+thermalSight true
+ThermalGuis 3 4

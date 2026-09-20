@@ -72,3 +72,8 @@ SetupPart leftTrack 8000 -69 -10 17 118 25 8
 BulletDetection 7
 ModelScale 1.25
 Description Japanese Medium Tank
+
+// Optics
+hasScope true
+Gunsight official_jap
+gunsightZoom 2.5

@@ -89,5 +89,5 @@ YawSoundLength 38
 
 // Optics
 hasScope true
-Gunsight M10Scope
+Gunsight official_m10scope
 gunsightZoom 3.5

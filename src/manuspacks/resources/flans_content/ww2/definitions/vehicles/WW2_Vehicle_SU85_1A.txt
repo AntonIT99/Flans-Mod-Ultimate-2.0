@@ -124,5 +124,5 @@ Tank true
 
 // Optics
 hasScope true
-Gunsight su
+Gunsight manus_su
 gunsightZoom 3.5

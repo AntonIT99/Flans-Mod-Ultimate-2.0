@@ -74,5 +74,5 @@ Description Japanese Light Tank
 
 // Optics
 hasScope true
-Gunsight jap
+Gunsight official_jap
 gunsightZoom 2.5

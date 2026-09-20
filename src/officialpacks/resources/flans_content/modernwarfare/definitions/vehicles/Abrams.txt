@@ -112,3 +112,11 @@ AddEmitter explode 2 [-80,19,0] [1,5,5] [-1.5,0,0] 0.66 2 0 1 core
 AddEmitter largesmoke 2 [-80,19,0] [1,5,5] [-1.5,0,0] 0.66 2 0 1 core
 //Stage 3 shift
 AddEmitter explode 1 [-80,19,0] [1,5,5] [-3,0,0] 0.66 0.67 0 1 core
+
+
+// Optics
+hasScope true
+Gunsight official_leo2a6 official_leo2a6 official_leo2a6 official_leo2a6
+gunsightZoom 3 12 3 12
+thermalSight true
+ThermalGuis 3 4

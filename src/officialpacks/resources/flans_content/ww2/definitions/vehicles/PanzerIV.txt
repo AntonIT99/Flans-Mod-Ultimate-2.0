@@ -73,3 +73,8 @@ SetupPart leftTrack 8270 -48 -10 18 102 19 7
 BulletDetection 7
 ModelScale 0.9
 Description German Medium Tank
+
+// Optics
+hasScope true
+Gunsight official_stug
+gunsightZoom 3.5

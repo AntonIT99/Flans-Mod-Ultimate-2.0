@@ -77,3 +77,8 @@ BulletDetection 5
 //Size Multiplier; scales up the model
 ModelScale 0.8
 Description British Heavy Tank
+
+// Optics
+hasScope true
+Gunsight official_churchill75
+gunsightZoom 4

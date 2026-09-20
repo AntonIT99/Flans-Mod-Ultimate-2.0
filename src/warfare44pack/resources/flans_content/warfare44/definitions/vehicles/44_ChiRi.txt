@@ -295,5 +295,5 @@ SquashMobs True
 
 // Optics
 hasScope true
-Gunsight jap
+Gunsight warfare44_jap
 gunsightZoom 4.5

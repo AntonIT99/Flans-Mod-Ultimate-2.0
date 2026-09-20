@@ -69,3 +69,9 @@ SetupPart leftTrack 6000 -39 -10 17 85 20 10
 BulletDetection 7
 ModelScale 1.1
 Description German Light Tank
+
+
+// Optics
+hasScope true
+Gunsight official_20mmtank
+gunsightZoom 3.5

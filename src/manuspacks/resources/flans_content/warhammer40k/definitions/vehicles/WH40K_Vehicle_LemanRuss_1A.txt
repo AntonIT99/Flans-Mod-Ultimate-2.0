@@ -114,3 +114,8 @@ TurnRightSpeed 1
 Tank true
 
 //------------------------------------------------
+
+// Optics
+hasScope true
+Gunsight gui_wh40k_mkvbboltgunscope
+gunsightZoom 3

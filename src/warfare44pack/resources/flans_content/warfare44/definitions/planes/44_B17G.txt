@@ -126,4 +126,4 @@ Description American Bomber__250kg/500lb Bomb__Year Introduced : 1945
 
 // Optics
 heliGuiSeat 1 true
-heliGUI bombsightgui
+heliGUI warfare44_bombsightgui

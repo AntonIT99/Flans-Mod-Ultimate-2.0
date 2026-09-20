@@ -74,5 +74,5 @@ Description Soviet Heavy Tank
 
 // Optics
 hasScope true
-Gunsight T3476Sight
+Gunsight official_t3476sight
 gunsightZoom 3.5

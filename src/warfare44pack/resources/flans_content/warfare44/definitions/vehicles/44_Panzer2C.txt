@@ -245,7 +245,7 @@ SquashMobs True
 
 // Optics
 heliGuiSeat 1 true
-heliGUI gercomm
+heliGUI warfare44_gercomm
 hasScope true
-Gunsight 20mmtank
+Gunsight warfare44_20mmtank
 gunsightZoom 3.5

@@ -88,7 +88,7 @@ YawSoundLength 38
 
 // Optics
 heliGuiSeat 1 true
-heliGUI uscomm
+heliGUI official_uscomm
 hasScope true
-Gunsight sherman
+Gunsight official_sherman
 gunsightZoom 3.5

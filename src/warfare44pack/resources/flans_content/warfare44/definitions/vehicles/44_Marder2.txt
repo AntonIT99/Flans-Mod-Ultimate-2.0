@@ -263,7 +263,7 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight pak36
+Gunsight warfare44_pak36
 gunsightZoom 2.5
 heliGuiSeat 2 true
-heliGUI gercomm
+heliGUI warfare44_gercomm

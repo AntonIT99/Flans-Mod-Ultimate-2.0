@@ -151,3 +151,9 @@ IsExplosionWhenDestroyed true
 Tank true
 
 //------------------------------------------------
+
+
+// Optics
+hasScope true
+Gunsight manus_20mmtank
+gunsightZoom 3.5

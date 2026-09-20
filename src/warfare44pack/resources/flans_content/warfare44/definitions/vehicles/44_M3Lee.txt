@@ -272,5 +272,5 @@ SquashMobs True
 
 // Optics
 hasScope true
-Gunsight m5stuart
+Gunsight warfare44_m5stuart
 gunsightZoom 3

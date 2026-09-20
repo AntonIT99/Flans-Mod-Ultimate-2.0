@@ -69,5 +69,5 @@ Description German Anti-Tank Gun
 
 // Optics
 hasScope true
-Gunsight stug
+Gunsight official_stug
 gunsightZoom 4.5

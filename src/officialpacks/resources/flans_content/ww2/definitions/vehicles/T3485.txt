@@ -87,5 +87,5 @@ YawSoundLength 38
 
 // Optics
 hasScope true
-Gunsight T3485
+Gunsight official_t3485
 gunsightZoom 3.5

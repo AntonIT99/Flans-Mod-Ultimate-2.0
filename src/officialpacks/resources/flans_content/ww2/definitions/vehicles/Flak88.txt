@@ -65,5 +65,5 @@ Description German Anti-Aircraft/Tank Gun
 
 // Optics
 hasScope true
-Gunsight tiger
+Gunsight official_tiger
 gunsightZoom 4

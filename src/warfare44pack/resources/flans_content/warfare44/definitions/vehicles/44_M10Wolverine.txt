@@ -290,5 +290,5 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight M10Scope
+Gunsight warfare44_m10scope
 gunsightZoom 3.5

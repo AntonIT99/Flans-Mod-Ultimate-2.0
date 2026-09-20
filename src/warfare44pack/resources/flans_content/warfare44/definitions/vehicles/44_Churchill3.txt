@@ -291,7 +291,7 @@ IsExplosionWhenDestroyed true
 
 // Optics
 hasScope true
-Gunsight 6pdr2
+Gunsight warfare44_6pdr2
 gunsightZoom 4
 heliGuiSeat 2 true
-heliGUI scope
+heliGUI warfare44_scope

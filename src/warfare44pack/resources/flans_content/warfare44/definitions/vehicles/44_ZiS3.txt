@@ -140,3 +140,8 @@ YawSoundLength 38
 BulletSpeed 8
 BulletSpread 1
 IsExplosionWhenDestroyed true
+
+// Optics
+hasScope true
+Gunsight warfare44_t34
+gunsightZoom 3.5
