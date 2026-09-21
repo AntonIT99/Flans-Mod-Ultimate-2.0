@@ -15,8 +15,8 @@ Nested `AGENTS.md` files add rules for their directories.
 - For auditing, repairing, or historically expanding ammunition in a selected
   source content pack, read
   `.agents/skills/content-pack-ammunition-expansion/SKILL.md` before editing.
-- For checking whether the wiki `ConfigReference.md` exhaustively and accurately
-  documents the current legacy content-pack parsers, read
+- For auditing and updating the wiki `ConfigReference.md` so it exhaustively and
+  accurately documents the current legacy content-pack parsers, read
   `.agents/skills/config-reference-audit/SKILL.md` before auditing.
 
 ## Repository Rules

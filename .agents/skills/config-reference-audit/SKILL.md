@@ -1,11 +1,11 @@
 ---
 name: config-reference-audit
-description: Audit the Flan's Mod Ultimate wiki ConfigReference against the current legacy content-pack parser code, reporting missing, stale, inaccurate, and uncertain parameter documentation. Use for documentation completeness checks, not parser implementation, installed-pack compatibility, or runtime TOML/properties config.
+description: Audit and update the Flan's Mod Ultimate wiki ConfigReference against the current legacy content-pack parser code, correcting missing, stale, and inaccurate parameter documentation while reporting uncertainty. Use for documentation maintenance, not parser implementation, installed-pack compatibility, or runtime TOML/properties config.
 ---
 
 # Config Reference Audit
 
-Check whether the wiki's `ConfigReference.md` is an exhaustive and accurate reference for the content-pack `.txt` parameters accepted by the current code.
+Bring the wiki's `ConfigReference.md` up to date as an exhaustive and accurate reference for the content-pack `.txt` parameters accepted by the current code.
 
 ## Inputs and scope
 
@@ -44,11 +44,23 @@ Reconcile base-class documentation through inheritance: a parameter accurately d
 
 Do not report capitalization-only differences. Do not count one alias row as multiple findings unless the aliases have different problems. Avoid style, wording, or desired-feature suggestions that do not affect correctness or completeness.
 
-## Report
+## Update the wiki
+
+Correct every `MISSING`, `STALE`, and `INACCURATE` finding supported by high- or medium-confidence code evidence:
+
+- Preserve the page's existing organization and concise table style. Add a parameter to its owning base or concrete type rather than duplicating inherited keys under descendants.
+- Group true aliases in one row. Keep separate rows when similarly named keys have different parsing, defaults, units, precedence, or behavior.
+- Update parser rules, inheritance/folder tables, special-system prose, and examples when the mismatch is broader than one parameter row.
+- Describe current observable behavior without promising behavior that the parser does not implement. Mention accepted legacy misspellings as aliases when they remain supported.
+- Do not guess at `UNCERTAIN` findings. Leave ambiguous documentation unchanged unless the existing statement is demonstrably false, and record the unresolved issue in the report.
+
+After editing, repeat the code-to-wiki and wiki-to-code reconciliation. A corrected key is not complete until its applicable type, format, default, units, aliases, and purpose agree with the parser and consumers.
+
+## Record the audit
 
 Write `reports/config-reference-audit.md` under `TARGET`. Update it when it is already the report for this same target and page; if it contains unrelated material, add a numeric suffix instead of overwriting it.
 
-Start with the resolved target and wiki page, the audited parser/type count, the number of accepted distinct normalized keys or finite variants, and any dynamic families or unreadable inputs. Then use these sections, omitting empty ones:
+Start with the resolved target and wiki page, the audited parser/type count, the number of accepted distinct normalized keys or finite variants, and any dynamic families or unreadable inputs. State that confirmed findings were applied to the wiki. Then use these sections, omitting empty ones:
 
 ```markdown
 ## Missing documentation
@@ -64,7 +76,7 @@ For every finding include:
 
 Code evidence: `<paths and symbols>`
 Wiki evidence: `<heading, table row, or absent after checking relevant sections>`
-Finding: <Exact mismatch and the documentation correction required.>
+Finding: <Exact mismatch and the documentation correction applied, or why it remains unresolved.>
 Confidence: HIGH|MEDIUM|LOW
 ```
 
@@ -72,8 +84,8 @@ End with one compact table containing every finding, its applicable type(s), sta
 
 ## Safety and completion
 
-This skill is analysis-only. Do not edit parser code, tests, content packs, the wiki, or other documentation. Create or update only the audit report and disposable analysis artifacts outside tracked source inputs.
+Edit only the target wiki `ConfigReference.md` and the audit report. Do not edit parser code, tests, content packs, generated output, runtime files, or unrelated documentation. Preserve unrelated changes in both repositories.
 
-Before finishing, verify that every registered `EnumType` was covered; inherited, delegated, raw-line, alias, and pattern-based parsing were checked; every wiki parameter row was reconciled back to code; and zero findings is reported explicitly when the page is exhaustive and accurate.
+Before finishing, verify that every registered `EnumType` was covered; inherited, delegated, raw-line, alias, and pattern-based parsing were checked; every wiki parameter row was reconciled back to code; confirmed findings were corrected; uncertain findings were not guessed; and both repositories pass `git diff --check` for scoped changes. Report zero findings explicitly when the page was already exhaustive and accurate.
 
-Keep the final chat response short: counts for `MISSING`, `STALE`, `INACCURATE`, and `UNCERTAIN`, the report path, and the 3-5 most important findings. Detailed evidence belongs in the report.
+Keep the final chat response short: corrected counts for `MISSING`, `STALE`, and `INACCURATE`, the unresolved `UNCERTAIN` count, the wiki and report paths, and the 3-5 most important changes. Detailed evidence belongs in the report.
