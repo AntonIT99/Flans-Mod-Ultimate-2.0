@@ -207,4 +207,12 @@ class LegacyPlanePhysicsTest
         assertEquals(0F, none.roll(), 1.0E-6F);
     }
 
+    @Test
+    void turbulenceKicksAreAnEighthOfADegreeEitherWay()
+    {
+        assertEquals(-0.125F, LegacyPlanePhysics.turbulenceKick(0F), EPSILON);
+        assertEquals(0F, LegacyPlanePhysics.turbulenceKick(0.5F), EPSILON);
+        assertEquals(0.125F, LegacyPlanePhysics.turbulenceKick(1F), EPSILON);
+        assertEquals(-0.125F, LegacyPlanePhysics.turbulenceKick(Float.NaN), EPSILON);
+    }
 }

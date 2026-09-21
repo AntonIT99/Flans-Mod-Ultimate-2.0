@@ -4,7 +4,10 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MechaPhysicsTest
 {
@@ -88,6 +91,30 @@ class MechaPhysicsTest
         assertEquals(1F, MechaPhysics.throttle(0F, 1F), EPSILON);
         assertEquals(1F, MechaPhysics.throttle(-1F, 0F), EPSILON);
         assertEquals(1F, MechaPhysics.throttle(1F, 1F), EPSILON);
+    }
+
+    @Test
+    void miningUsesThe1710CombinedRate()
+    {
+        // 0.1 x Speed / hardness per tick for one effective tool.
+        assertEquals(0.1F * 5F / 3F, MechaPhysics.miningProgressPerTick(3F, List.of(5F)), EPSILON);
+        // Without an effective tool the mecha still digs at the bare rate of one.
+        assertEquals(0.1F / 3F, MechaPhysics.miningProgressPerTick(3F, List.of()), EPSILON);
+    }
+
+    @Test
+    void twoEffectiveToolsMultiplyTheirSpeeds()
+    {
+        // The Titan diamond drill and saw together: 0.1 x 5 x 5 / hardness.
+        assertEquals(2.5F / 3F, MechaPhysics.miningProgressPerTick(3F, List.of(5F, 5F)), EPSILON);
+    }
+
+    @Test
+    void softBlocksBreakAtOnceAndUnbreakableOnesNever()
+    {
+        assertTrue(MechaPhysics.miningProgressPerTick(0F, List.of()) >= 1F);
+        assertEquals(0F, MechaPhysics.miningProgressPerTick(-1F, List.of(5F, 5F)), EPSILON);
+        assertEquals(0F, MechaPhysics.miningProgressPerTick(Float.NaN, List.of(5F)), EPSILON);
     }
 
     private static void assertVector(Vec3 actual, double x, double y, double z)

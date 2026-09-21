@@ -13,6 +13,10 @@ public final class MechaPhysics
     public static final double LEGACY_SPEED_PER_TICK = 4.3D / 20D;
     /** Mounted mecha cameras are defined ninety degrees clockwise from the legacy torso axes. */
     public static final float DRIVER_YAW_OFFSET = 90F;
+    /** Share of the combined mining speed added to block progress each tick in 1.7.10. */
+    private static final float LEGACY_MINING_RATE = 0.1F;
+    /** 1.7.10's speed for blocks of about zero hardness. */
+    private static final float LEGACY_INSTANT_MINE_SPEED = 9001F;
 
     private MechaPhysics() {}
 
@@ -90,5 +94,26 @@ public final class MechaPhysics
         if (!Float.isFinite(forwardInput) || !Float.isFinite(strafeInput))
             return 0F;
         return Mth.clamp(Mth.sqrt(forwardInput * forwardInput + strafeInput * strafeInput), 0F, 1F);
+    }
+
+    /**
+     * 1.7.10 mecha digging progress for one tick, where 1 breaks the block. The rate
+     * starts at 1, is multiplied by the Speed of every effective tool and divided by
+     * the block hardness, and a tenth of it is added per tick. Blocks of about zero
+     * hardness break at once and unbreakable blocks never do.
+     */
+    public static float miningProgressPerTick(float hardness, Iterable<Float> effectiveToolSpeeds)
+    {
+        if (!Float.isFinite(hardness) || hardness < -0.01F)
+            return 0F;
+        if (Math.abs(hardness) < 0.01F)
+            return LEGACY_MINING_RATE * LEGACY_INSTANT_MINE_SPEED;
+        float speed = 1F;
+        for (Float toolSpeed : effectiveToolSpeeds)
+        {
+            if (toolSpeed != null && Float.isFinite(toolSpeed))
+                speed *= toolSpeed;
+        }
+        return Math.max(0F, LEGACY_MINING_RATE * speed / hardness);
     }
 }

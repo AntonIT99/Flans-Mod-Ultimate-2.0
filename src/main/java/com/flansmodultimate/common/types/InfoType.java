@@ -3,6 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.api.IInfoType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.util.DynamicReference;
@@ -19,6 +20,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +29,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
@@ -56,7 +59,7 @@ import java.util.function.Supplier;
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class InfoType
+public abstract class InfoType implements IInfoType
 {
     private static final String LOOT_POOL_NAME = "FlansMod";
 
@@ -157,6 +160,16 @@ public abstract class InfoType
         if (type != null && type.isHasItem())
             return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
         return uniqueShortName != null ? uniqueShortName : originalShortName;
+    }
+
+    @Override
+    @Nullable
+    public Item getItem()
+    {
+        if (type == null || !type.isHasItem())
+            return null;
+        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, getShortName()));
+        return item == null || item == Items.AIR ? null : item;
     }
 
     public Optional<ResourceLocation> getOverlay()

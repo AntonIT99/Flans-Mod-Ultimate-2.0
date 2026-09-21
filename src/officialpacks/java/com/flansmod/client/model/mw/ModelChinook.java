@@ -11,6 +11,7 @@ package com.flansmod.client.model.mw; //Path where the model is located
 
 import com.flansmod.client.model.ModelPlane;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 
 public class ModelChinook extends ModelPlane //Same as Filename
 {
@@ -19,7 +20,8 @@ public class ModelChinook extends ModelPlane //Same as Filename
 
 	public ModelChinook() //Same as Filename
 	{
-		bodyModel = new ModelRendererTurbo[361];
+		bodyModel = new ModelRendererTurbo[311];
+		heliMainRotorModels = new ModelRendererTurbo[2][25];
 		bodyModel[0] = new ModelRendererTurbo(this, 0, 248, textureX, textureY); // Import ImportBox33
 		bodyModel[1] = new ModelRendererTurbo(this, 0, 341, textureX, textureY); // Import ImportBox34
 		bodyModel[2] = new ModelRendererTurbo(this, 0, 152, textureX, textureY); // Import ImportBox30
@@ -331,56 +333,56 @@ public class ModelChinook extends ModelPlane //Same as Filename
 		bodyModel[308] = new ModelRendererTurbo(this, 0, 983, textureX, textureY); // Import ImportBox9
 		bodyModel[309] = new ModelRendererTurbo(this, 0, 983, textureX, textureY); // Import ImportBox11
 		bodyModel[310] = new ModelRendererTurbo(this, 442, 31, textureX, textureY); // Import ImportBox0
-		bodyModel[311] = new ModelRendererTurbo(this, 22, 1111, textureX, textureY); // Import FrontRotor1
-		bodyModel[312] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import FrontRotor2
-		bodyModel[313] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor3
-		bodyModel[314] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import FrontRotor4
-		bodyModel[315] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import FrontRotor5
-		bodyModel[316] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor6
-		bodyModel[317] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor7
-		bodyModel[318] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor8
-		bodyModel[319] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor9
-		bodyModel[320] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import FrontRotor10
-		bodyModel[321] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor11
-		bodyModel[322] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor12
-		bodyModel[323] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor13
-		bodyModel[324] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor14
-		bodyModel[325] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor15
-		bodyModel[326] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import FrontRotor16
-		bodyModel[327] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import FrontRotor17
-		bodyModel[328] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor18
-		bodyModel[329] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor19
-		bodyModel[330] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import FrontRotor20
-		bodyModel[331] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import FrontRotor21
-		bodyModel[332] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor22
-		bodyModel[333] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor23
-		bodyModel[334] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor24
-		bodyModel[335] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import FrontRotor25
-		bodyModel[336] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor1
-		bodyModel[337] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor2
-		bodyModel[338] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import BackRotor3
-		bodyModel[339] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import BackRotor4
-		bodyModel[340] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor5
-		bodyModel[341] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor6
-		bodyModel[342] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor7
-		bodyModel[343] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import BackRotor8
-		bodyModel[344] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import BackRotor9
-		bodyModel[345] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor10
-		bodyModel[346] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor11
-		bodyModel[347] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor12
-		bodyModel[348] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor13
-		bodyModel[349] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor14
-		bodyModel[350] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import BackRotor15
-		bodyModel[351] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import BackRotor16
-		bodyModel[352] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import BackRotor17
-		bodyModel[353] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import BackRotor18
-		bodyModel[354] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor19
-		bodyModel[355] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor20
-		bodyModel[356] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor21
-		bodyModel[357] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor22
-		bodyModel[358] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor23
-		bodyModel[359] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import BackRotor24
-		bodyModel[360] = new ModelRendererTurbo(this, 22, 1111, textureX, textureY); // Import BackRotor25
+		heliMainRotorModels[0][0] = new ModelRendererTurbo(this, 22, 1111, textureX, textureY); // Import FrontRotor1
+		heliMainRotorModels[0][1] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import FrontRotor2
+		heliMainRotorModels[0][2] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor3
+		heliMainRotorModels[0][3] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import FrontRotor4
+		heliMainRotorModels[0][4] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import FrontRotor5
+		heliMainRotorModels[0][5] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor6
+		heliMainRotorModels[0][6] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor7
+		heliMainRotorModels[0][7] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor8
+		heliMainRotorModels[0][8] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor9
+		heliMainRotorModels[0][9] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import FrontRotor10
+		heliMainRotorModels[0][10] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor11
+		heliMainRotorModels[0][11] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor12
+		heliMainRotorModels[0][12] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor13
+		heliMainRotorModels[0][13] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor14
+		heliMainRotorModels[0][14] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor15
+		heliMainRotorModels[0][15] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import FrontRotor16
+		heliMainRotorModels[0][16] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import FrontRotor17
+		heliMainRotorModels[0][17] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor18
+		heliMainRotorModels[0][18] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import FrontRotor19
+		heliMainRotorModels[0][19] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import FrontRotor20
+		heliMainRotorModels[0][20] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import FrontRotor21
+		heliMainRotorModels[0][21] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor22
+		heliMainRotorModels[0][22] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor23
+		heliMainRotorModels[0][23] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import FrontRotor24
+		heliMainRotorModels[0][24] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import FrontRotor25
+		heliMainRotorModels[1][0] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor1
+		heliMainRotorModels[1][1] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor2
+		heliMainRotorModels[1][2] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import BackRotor3
+		heliMainRotorModels[1][3] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import BackRotor4
+		heliMainRotorModels[1][4] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor5
+		heliMainRotorModels[1][5] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor6
+		heliMainRotorModels[1][6] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor7
+		heliMainRotorModels[1][7] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import BackRotor8
+		heliMainRotorModels[1][8] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import BackRotor9
+		heliMainRotorModels[1][9] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor10
+		heliMainRotorModels[1][10] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor11
+		heliMainRotorModels[1][11] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor12
+		heliMainRotorModels[1][12] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor13
+		heliMainRotorModels[1][13] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor14
+		heliMainRotorModels[1][14] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import BackRotor15
+		heliMainRotorModels[1][15] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import BackRotor16
+		heliMainRotorModels[1][16] = new ModelRendererTurbo(this, 125, 1111, textureX, textureY); // Import BackRotor17
+		heliMainRotorModels[1][17] = new ModelRendererTurbo(this, 96, 1111, textureX, textureY); // Import BackRotor18
+		heliMainRotorModels[1][18] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor19
+		heliMainRotorModels[1][19] = new ModelRendererTurbo(this, 71, 1111, textureX, textureY); // Import BackRotor20
+		heliMainRotorModels[1][20] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor21
+		heliMainRotorModels[1][21] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor22
+		heliMainRotorModels[1][22] = new ModelRendererTurbo(this, 52, 1111, textureX, textureY); // Import BackRotor23
+		heliMainRotorModels[1][23] = new ModelRendererTurbo(this, 35, 1111, textureX, textureY); // Import BackRotor24
+		heliMainRotorModels[1][24] = new ModelRendererTurbo(this, 22, 1111, textureX, textureY); // Import BackRotor25
 
 		bodyModel[0].addShapeBox(0F, 0F, 0F, 32, 5, 32, 0F, 0F, 0F, -3F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -3F, 0F, -1F, -3F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -3F); // Import ImportBox33
 		bodyModel[0].setRotationPoint(-153F, -9F, -16F);
@@ -1315,187 +1317,193 @@ public class ModelChinook extends ModelPlane //Same as Filename
 		bodyModel[310].addShapeBox(0F, 0F, 0F, 18, 12, 6, 0F, 0F, 0F, 0F, -1F, -4F, 0F, -1F, -4F, 0F, 0F, 0F, 0F, 0F, -0.5F, 0F, 0F, -0.5F, 0F, 0F, -0.5F, 0F, 0F, -0.5F, 0F); // Import ImportBox0
 		bodyModel[310].setRotationPoint(-169F, -20F, -3F);
 
-		bodyModel[311].addShapeBox(-1F, 0F, -1F, 2, 20, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor1
-		bodyModel[311].setRotationPoint(-155F, -74F, 0F);
+		heliMainRotorModels[0][0].addShapeBox(-1F, 0F, -1F, 2, 20, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor1
+		heliMainRotorModels[0][0].setRotationPoint(-155F, -74F, 0F);
 
-		bodyModel[312].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor2
-		bodyModel[312].setRotationPoint(-155F, -73F, 0F);
+		heliMainRotorModels[0][1].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor2
+		heliMainRotorModels[0][1].setRotationPoint(-155F, -73F, 0F);
 
-		bodyModel[313].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor3
-		bodyModel[313].setRotationPoint(-155F, -72.5F, 0F);
+		heliMainRotorModels[0][2].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor3
+		heliMainRotorModels[0][2].setRotationPoint(-155F, -72.5F, 0F);
 
-		bodyModel[314].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor4
-		bodyModel[314].setRotationPoint(-155F, -72.5F, 0F);
+		heliMainRotorModels[0][3].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor4
+		heliMainRotorModels[0][3].setRotationPoint(-155F, -72.5F, 0F);
 
-		bodyModel[315].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor5
-		bodyModel[315].setRotationPoint(-155F, -73.5F, 0F);
+		heliMainRotorModels[0][4].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor5
+		heliMainRotorModels[0][4].setRotationPoint(-155F, -73.5F, 0F);
 
-		bodyModel[316].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor6
-		bodyModel[316].setRotationPoint(-155F, -73.5F, 0F);
+		heliMainRotorModels[0][5].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor6
+		heliMainRotorModels[0][5].setRotationPoint(-155F, -73.5F, 0F);
 
-		bodyModel[317].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor7
-		bodyModel[317].setRotationPoint(-155F, -71.5F, 0F);
+		heliMainRotorModels[0][6].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor7
+		heliMainRotorModels[0][6].setRotationPoint(-155F, -71.5F, 0F);
 
-		bodyModel[318].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor8
-		bodyModel[318].setRotationPoint(-155F, -73F, 0F);
+		heliMainRotorModels[0][7].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor8
+		heliMainRotorModels[0][7].setRotationPoint(-155F, -73F, 0F);
 
-		bodyModel[319].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor9
-		bodyModel[319].setRotationPoint(-155F, -72F, 0F);
+		heliMainRotorModels[0][8].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor9
+		heliMainRotorModels[0][8].setRotationPoint(-155F, -72F, 0F);
 
-		bodyModel[320].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor10
-		bodyModel[320].setRotationPoint(-155F, -73F, 0F);
-		bodyModel[320].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[0][9].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor10
+		heliMainRotorModels[0][9].setRotationPoint(-155F, -73F, 0F);
+		heliMainRotorModels[0][9].rotateAngleY = -2.0943951F;
 
-		bodyModel[321].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor11
-		bodyModel[321].setRotationPoint(-155F, -73.5F, 0F);
-		bodyModel[321].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[0][10].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor11
+		heliMainRotorModels[0][10].setRotationPoint(-155F, -73.5F, 0F);
+		heliMainRotorModels[0][10].rotateAngleY = -2.0943951F;
 
-		bodyModel[322].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor12
-		bodyModel[322].setRotationPoint(-155F, -72.5F, 0F);
-		bodyModel[322].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[0][11].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor12
+		heliMainRotorModels[0][11].setRotationPoint(-155F, -72.5F, 0F);
+		heliMainRotorModels[0][11].rotateAngleY = -2.0943951F;
 
-		bodyModel[323].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor13
-		bodyModel[323].setRotationPoint(-155F, -71.5F, 0F);
-		bodyModel[323].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[0][12].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor13
+		heliMainRotorModels[0][12].setRotationPoint(-155F, -71.5F, 0F);
+		heliMainRotorModels[0][12].rotateAngleY = -2.0943951F;
 
-		bodyModel[324].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor14
-		bodyModel[324].setRotationPoint(-155F, -73F, 0F);
-		bodyModel[324].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[0][13].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor14
+		heliMainRotorModels[0][13].setRotationPoint(-155F, -73F, 0F);
+		heliMainRotorModels[0][13].rotateAngleY = -2.0943951F;
 
-		bodyModel[325].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor15
-		bodyModel[325].setRotationPoint(-155F, -72F, 0F);
-		bodyModel[325].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[0][14].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor15
+		heliMainRotorModels[0][14].setRotationPoint(-155F, -72F, 0F);
+		heliMainRotorModels[0][14].rotateAngleY = -2.0943951F;
 
-		bodyModel[326].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor16
-		bodyModel[326].setRotationPoint(-155F, -72.5F, 0F);
-		bodyModel[326].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[0][15].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor16
+		heliMainRotorModels[0][15].setRotationPoint(-155F, -72.5F, 0F);
+		heliMainRotorModels[0][15].rotateAngleY = -2.0943951F;
 
-		bodyModel[327].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor17
-		bodyModel[327].setRotationPoint(-155F, -73.5F, 0F);
-		bodyModel[327].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[0][16].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor17
+		heliMainRotorModels[0][16].setRotationPoint(-155F, -73.5F, 0F);
+		heliMainRotorModels[0][16].rotateAngleY = -2.0943951F;
 
-		bodyModel[328].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor18
-		bodyModel[328].setRotationPoint(-155F, -73F, 0F);
-		bodyModel[328].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[0][17].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor18
+		heliMainRotorModels[0][17].setRotationPoint(-155F, -73F, 0F);
+		heliMainRotorModels[0][17].rotateAngleY = 2.0943951F;
 
-		bodyModel[329].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor19
-		bodyModel[329].setRotationPoint(-155F, -72F, 0F);
-		bodyModel[329].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[0][18].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor19
+		heliMainRotorModels[0][18].setRotationPoint(-155F, -72F, 0F);
+		heliMainRotorModels[0][18].rotateAngleY = 2.0943951F;
 
-		bodyModel[330].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor20
-		bodyModel[330].setRotationPoint(-155F, -72.5F, 0F);
-		bodyModel[330].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[0][19].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor20
+		heliMainRotorModels[0][19].setRotationPoint(-155F, -72.5F, 0F);
+		heliMainRotorModels[0][19].rotateAngleY = 2.0943951F;
 
-		bodyModel[331].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor21
-		bodyModel[331].setRotationPoint(-155F, -73.5F, 0F);
-		bodyModel[331].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[0][20].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor21
+		heliMainRotorModels[0][20].setRotationPoint(-155F, -73.5F, 0F);
+		heliMainRotorModels[0][20].rotateAngleY = 2.0943951F;
 
-		bodyModel[332].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor22
-		bodyModel[332].setRotationPoint(-155F, -73.5F, 0F);
-		bodyModel[332].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[0][21].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor22
+		heliMainRotorModels[0][21].setRotationPoint(-155F, -73.5F, 0F);
+		heliMainRotorModels[0][21].rotateAngleY = 2.0943951F;
 
-		bodyModel[333].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor23
-		bodyModel[333].setRotationPoint(-155F, -72.5F, 0F);
-		bodyModel[333].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[0][22].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor23
+		heliMainRotorModels[0][22].setRotationPoint(-155F, -72.5F, 0F);
+		heliMainRotorModels[0][22].rotateAngleY = 2.0943951F;
 
-		bodyModel[334].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor24
-		bodyModel[334].setRotationPoint(-155F, -71.5F, 0F);
-		bodyModel[334].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[0][23].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import FrontRotor24
+		heliMainRotorModels[0][23].setRotationPoint(-155F, -71.5F, 0F);
+		heliMainRotorModels[0][23].rotateAngleY = 2.0943951F;
 
-		bodyModel[335].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor25
-		bodyModel[335].setRotationPoint(-155F, -73F, 0F);
-		bodyModel[335].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[0][24].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import FrontRotor25
+		heliMainRotorModels[0][24].setRotationPoint(-155F, -73F, 0F);
+		heliMainRotorModels[0][24].rotateAngleY = 2.0943951F;
 
-		bodyModel[336].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor1
-		bodyModel[336].setRotationPoint(70F, -98F, 0F);
-		bodyModel[336].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[1][0].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor1
+		heliMainRotorModels[1][0].setRotationPoint(70F, -98F, 0F);
+		heliMainRotorModels[1][0].rotateAngleY = 2.0943951F;
 
-		bodyModel[337].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor2
-		bodyModel[337].setRotationPoint(70F, -97F, 0F);
-		bodyModel[337].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[1][1].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor2
+		heliMainRotorModels[1][1].setRotationPoint(70F, -97F, 0F);
+		heliMainRotorModels[1][1].rotateAngleY = 2.0943951F;
 
-		bodyModel[338].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor3
-		bodyModel[338].setRotationPoint(70F, -97.5F, 0F);
-		bodyModel[338].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[1][2].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor3
+		heliMainRotorModels[1][2].setRotationPoint(70F, -97.5F, 0F);
+		heliMainRotorModels[1][2].rotateAngleY = 2.0943951F;
 
-		bodyModel[339].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor4
-		bodyModel[339].setRotationPoint(70F, -98.5F, 0F);
-		bodyModel[339].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[1][3].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor4
+		heliMainRotorModels[1][3].setRotationPoint(70F, -98.5F, 0F);
+		heliMainRotorModels[1][3].rotateAngleY = 2.0943951F;
 
-		bodyModel[340].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor5
-		bodyModel[340].setRotationPoint(70F, -98.5F, 0F);
-		bodyModel[340].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[1][4].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor5
+		heliMainRotorModels[1][4].setRotationPoint(70F, -98.5F, 0F);
+		heliMainRotorModels[1][4].rotateAngleY = 2.0943951F;
 
-		bodyModel[341].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor6
-		bodyModel[341].setRotationPoint(70F, -97.5F, 0F);
-		bodyModel[341].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[1][5].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor6
+		heliMainRotorModels[1][5].setRotationPoint(70F, -97.5F, 0F);
+		heliMainRotorModels[1][5].rotateAngleY = 2.0943951F;
 
-		bodyModel[342].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor7
-		bodyModel[342].setRotationPoint(70F, -96.5F, 0F);
-		bodyModel[342].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[1][6].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor7
+		heliMainRotorModels[1][6].setRotationPoint(70F, -96.5F, 0F);
+		heliMainRotorModels[1][6].rotateAngleY = 2.0943951F;
 
-		bodyModel[343].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor8
-		bodyModel[343].setRotationPoint(70F, -98F, 0F);
-		bodyModel[343].rotateAngleY = 2.0943951F;
+		heliMainRotorModels[1][7].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor8
+		heliMainRotorModels[1][7].setRotationPoint(70F, -98F, 0F);
+		heliMainRotorModels[1][7].rotateAngleY = 2.0943951F;
 
-		bodyModel[344].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor9
-		bodyModel[344].setRotationPoint(70F, -98F, 0F);
-		bodyModel[344].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[1][8].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor9
+		heliMainRotorModels[1][8].setRotationPoint(70F, -98F, 0F);
+		heliMainRotorModels[1][8].rotateAngleY = -2.0943951F;
 
-		bodyModel[345].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor10
-		bodyModel[345].setRotationPoint(70F, -98.5F, 0F);
-		bodyModel[345].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[1][9].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor10
+		heliMainRotorModels[1][9].setRotationPoint(70F, -98.5F, 0F);
+		heliMainRotorModels[1][9].rotateAngleY = -2.0943951F;
 
-		bodyModel[346].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor11
-		bodyModel[346].setRotationPoint(70F, -97.5F, 0F);
-		bodyModel[346].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[1][10].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor11
+		heliMainRotorModels[1][10].setRotationPoint(70F, -97.5F, 0F);
+		heliMainRotorModels[1][10].rotateAngleY = -2.0943951F;
 
-		bodyModel[347].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor12
-		bodyModel[347].setRotationPoint(70F, -96.5F, 0F);
-		bodyModel[347].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[1][11].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor12
+		heliMainRotorModels[1][11].setRotationPoint(70F, -96.5F, 0F);
+		heliMainRotorModels[1][11].rotateAngleY = -2.0943951F;
 
-		bodyModel[348].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor13
-		bodyModel[348].setRotationPoint(70F, -98F, 0F);
-		bodyModel[348].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[1][12].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor13
+		heliMainRotorModels[1][12].setRotationPoint(70F, -98F, 0F);
+		heliMainRotorModels[1][12].rotateAngleY = -2.0943951F;
 
-		bodyModel[349].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor14
-		bodyModel[349].setRotationPoint(70F, -97F, 0F);
-		bodyModel[349].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[1][13].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor14
+		heliMainRotorModels[1][13].setRotationPoint(70F, -97F, 0F);
+		heliMainRotorModels[1][13].rotateAngleY = -2.0943951F;
 
-		bodyModel[350].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor15
-		bodyModel[350].setRotationPoint(70F, -97.5F, 0F);
-		bodyModel[350].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[1][14].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor15
+		heliMainRotorModels[1][14].setRotationPoint(70F, -97.5F, 0F);
+		heliMainRotorModels[1][14].rotateAngleY = -2.0943951F;
 
-		bodyModel[351].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor16
-		bodyModel[351].setRotationPoint(70F, -98.5F, 0F);
-		bodyModel[351].rotateAngleY = -2.0943951F;
+		heliMainRotorModels[1][15].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor16
+		heliMainRotorModels[1][15].setRotationPoint(70F, -98.5F, 0F);
+		heliMainRotorModels[1][15].rotateAngleY = -2.0943951F;
 
-		bodyModel[352].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor17
-		bodyModel[352].setRotationPoint(70F, -98.5F, 0F);
+		heliMainRotorModels[1][16].addShapeBox(23F, 0F, -1F, 145, 2, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor17
+		heliMainRotorModels[1][16].setRotationPoint(70F, -98.5F, 0F);
 
-		bodyModel[353].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor18
-		bodyModel[353].setRotationPoint(70F, -97.5F, 0F);
+		heliMainRotorModels[1][17].addShapeBox(15F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor18
+		heliMainRotorModels[1][17].setRotationPoint(70F, -97.5F, 0F);
 
-		bodyModel[354].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor19
-		bodyModel[354].setRotationPoint(70F, -98F, 0F);
+		heliMainRotorModels[1][18].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor19
+		heliMainRotorModels[1][18].setRotationPoint(70F, -98F, 0F);
 
-		bodyModel[355].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor20
-		bodyModel[355].setRotationPoint(70F, -97F, 0F);
+		heliMainRotorModels[1][19].addShapeBox(7F, 0F, -1F, 8, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor20
+		heliMainRotorModels[1][19].setRotationPoint(70F, -97F, 0F);
 
-		bodyModel[356].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor21
-		bodyModel[356].setRotationPoint(70F, -98.5F, 0F);
+		heliMainRotorModels[1][20].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor21
+		heliMainRotorModels[1][20].setRotationPoint(70F, -98.5F, 0F);
 
-		bodyModel[357].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor22
-		bodyModel[357].setRotationPoint(70F, -96.5F, 0F);
+		heliMainRotorModels[1][21].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import BackRotor22
+		heliMainRotorModels[1][21].setRotationPoint(70F, -96.5F, 0F);
 
-		bodyModel[358].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor23
-		bodyModel[358].setRotationPoint(70F, -97.5F, 0F);
+		heliMainRotorModels[1][22].addShapeBox(4F, 0F, -1.5F, 3, 1, 3, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor23
+		heliMainRotorModels[1][22].setRotationPoint(70F, -97.5F, 0F);
 
-		bodyModel[359].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor24
-		bodyModel[359].setRotationPoint(70F, -98F, 0F);
+		heliMainRotorModels[1][23].addShapeBox(1F, 0F, -1F, 3, 2, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor24
+		heliMainRotorModels[1][23].setRotationPoint(70F, -98F, 0F);
 
-		bodyModel[360].addShapeBox(-1F, 0F, -1F, 2, 20, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor25
-		bodyModel[360].setRotationPoint(70F, -99F, 0F);
+		heliMainRotorModels[1][24].addShapeBox(-1F, 0F, -1F, 2, 20, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import BackRotor25
+		heliMainRotorModels[1][24].setRotationPoint(70F, -99F, 0F);
+
+		// Rotor 0 is the forward rotor (HeliPropeller 0, inside the core hitbox), rotor 1 the aft
+		// rotor (HeliPropeller 1, inside the tail hitbox). Tandem rotors counter-rotate.
+		// Origins are the rotor masts after flipAll(), in blocks.
+		heliMainRotorOrigins = new Vector3f[] { new Vector3f(-155F / 16F, 74F / 16F, 0F), new Vector3f(70F / 16F, 99F / 16F, 0F) };
+		heliRotorSpeeds = new float[] { 1F, -1F };
 
 
 		noseModel = new ModelRendererTurbo[27];

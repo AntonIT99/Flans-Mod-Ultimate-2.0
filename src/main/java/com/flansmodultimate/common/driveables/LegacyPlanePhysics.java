@@ -22,8 +22,19 @@ public final class LegacyPlanePhysics
     private static final double ROTOR_THROTTLE_DIVISOR = 7D;
     /** The legacy renderer scaled the raw rotor accumulator by this factor. */
     private static final double ROTOR_RENDER_SCALE = 1440D / Math.PI;
+    /** Legacy-model planes buffeted above this many blocks per tick. */
+    public static final double HIGH_SPEED_TURBULENCE = 2D;
+    /** NewFlightControl planes buffeted between these speeds, their "sound barrier". */
+    public static final double SOUND_BARRIER_BUFFET_MIN = 1.9D;
+    public static final double SOUND_BARRIER_BUFFET_MAX = 2.05D;
 
     private LegacyPlanePhysics() {}
+
+    /** One random turbulence kick, in degrees, from a uniform sample in [0, 1). */
+    public static float turbulenceKick(float uniform)
+    {
+        return (finite(uniform) - 0.5F) / 4F;
+    }
 
     public static float flap(float current, float input)
     {

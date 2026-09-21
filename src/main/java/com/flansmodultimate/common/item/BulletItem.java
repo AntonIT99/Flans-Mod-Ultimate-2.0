@@ -34,6 +34,9 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        // FancyDescription false keeps the plain pack name and description, as in 1.7.10.
+        if (!configType.isFancyDescription())
+            return;
         tooltipComponents.add(Component.empty());
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())

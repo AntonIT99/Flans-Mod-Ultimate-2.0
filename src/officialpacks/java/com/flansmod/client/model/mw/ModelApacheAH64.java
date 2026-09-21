@@ -1248,7 +1248,8 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         heliTailRotorModels[0][8].setRotationPoint(195F, -89F, -13F);
 
         //The helicopter rotor origins for rendering. Better than the old propeller rotation point code
-        heliTailRotorOrigins = new Vector3f[] { new Vector3f(195F / 16F, 91F / 16F, -13F / 16F) };
+        // The hub is centred on the parts' pivot (195, -89), i.e. y = 89 after flipAll(). 1.7.10 used 91, which made the rotor orbit.
+        heliTailRotorOrigins = new Vector3f[] { new Vector3f(195F / 16F, 89F / 16F, -13F / 16F) };
 
         translateAll(0F, 0F, 0F);
 

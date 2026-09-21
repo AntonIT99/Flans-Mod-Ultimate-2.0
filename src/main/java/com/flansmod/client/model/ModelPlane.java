@@ -5,6 +5,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
+import com.flansmodultimate.common.driveables.ValkyrieAnimation;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.types.DriveableType;
@@ -12,6 +13,7 @@ import com.flansmodultimate.common.types.PlaneType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 
 /** Extensible, pass-aware model base for legacy plane content packs. */
@@ -72,7 +74,7 @@ public class ModelPlane extends ModelDriveable
     public ModelRendererTurbo[] leftWingPos2Model = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] hudModel = new ModelRendererTurbo[0];
 
-    /** Experimental multi-part animation frames retained for pack compatibility. */
+    /** Valkyrie joint geometry, indexed like {@link ValkyrieAnimation} joints. Used when the type sets Valkyrie. */
     public ModelRendererTurbo[][] valkyrie = new ModelRendererTurbo[0][0];
 
     @Override
@@ -130,13 +132,9 @@ public class ModelPlane extends ModelDriveable
         renderWithRotation(hudModel, RotationAxis.X, -state.roll() * Mth.DEG_TO_RAD,
             poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        if (driveable.getConfigType() instanceof PlaneType planeType && planeType.isValkyrie() && valkyrie.length > 0)
-        {
-            int frameCount = Math.min(valkyrie.length, Math.max(1, planeType.getAnimFrames() + 1));
-            int frame = Mth.clamp(Math.round(state.modeProgress() * (frameCount - 1)), 0, frameCount - 1);
-            renderPart(valkyrie[frame], poseStack, vertexConsumer, packedLight, packedOverlay,
-                red, green, blue, alpha, scale, renderPass);
-        }
+        if (driveable instanceof Plane plane && plane.getValkyrieAnimation() != null && valkyrie.length > 0)
+            renderValkyriePart(plane, state, plane.getValkyrieAnimation().getCore(), null, poseStack, vertexConsumer,
+                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.PLANE,
             poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
@@ -477,12 +475,48 @@ public class ModelPlane extends ModelDriveable
             ? vectors[index] : null;
     }
 
+    /**
+     * 1.7.10 RenderPlane.renderAnimPart: each joint is placed relative to its parent,
+     * rotated X, Y, Z, then shifted by its animated offset, and carries its children.
+     */
+    void renderValkyriePart(Plane plane, RenderState state, ValkyrieAnimation.Part part,
+                            @Nullable org.joml.Vector3f parentPosition, PoseStack poseStack,
+                            VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                            float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        org.joml.Vector3f joint = new org.joml.Vector3f(part.getPosition());
+        if (parentPosition != null)
+            joint.sub(parentPosition);
+        org.joml.Vector3f offset = part.getOffset(state.partialTick());
+        org.joml.Vector3f rotation = part.getRotation(state.partialTick());
+        float unit = MODEL_SCALE * scale;
+        poseStack.pushPose();
+        poseStack.translate(joint.x * unit, -joint.y * unit, -joint.z * unit);
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotation.x));
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotation.y));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotation.z));
+        poseStack.translate(offset.x * unit, offset.y * unit, offset.z * unit);
+        renderValk(plane, state, part.getId(), poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+        for (ValkyrieAnimation.Part child : part.getChildren())
+            renderValkyriePart(plane, state, child, part.getPosition(), poseStack, vertexConsumer,
+                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        poseStack.popPose();
+    }
+
     public void renderValk(Driveable plane, RenderState state, int id, PoseStack poseStack, VertexConsumer vertexConsumer,
                            int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
                            float scale, EnumRenderPass renderPass)
     {
-        if (id >= 0 && id < valkyrie.length)
-            renderPart(valkyrie[id], poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (id < 0 || id >= valkyrie.length || valkyrie[id] == null)
+            return;
+        // Like the legacy renderValk, joints use ordinary TMT rotation order.
+        for (ModelRendererTurbo part : valkyrie[id])
+        {
+            if (part != null)
+                part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                    red, green, blue, alpha, scale, renderPass, false);
+        }
     }
 
     @Override

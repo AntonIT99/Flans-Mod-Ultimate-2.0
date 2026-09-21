@@ -1,6 +1,5 @@
 General:
 - Check if ConfigReference in Wiki is exhaustive / up to date (create a skill)
-- Check if all FMU features are implemented in the mod
 - Implement TaP Flan's Mod Features
 
 Content Packs:
@@ -15,9 +14,6 @@ Official WW2
 - Add muzzle flashes just like w44
 - Fix Scope Attachment Points -> to check
 - Fix Barrel Attachment and Muzzle Flash -> to check
-Official MW
-- See if we can fix the tail rotor not centered arround rotation point for the Apache
-- Fix Chinook model: no rotors moving at all
 Manus:
 - Check deployable guns
 

@@ -97,6 +97,10 @@ public class Mecha extends Driveable
     private final int[] handGunBurstRemaining = new int[2];
     @Nullable private BlockPos breakingBlock;
     private float breakingProgress;
+    /** Block the held mining arms reached this tick, consumed by {@link #tickMining()}. */
+    @Nullable private BlockPos miningAim;
+    private int miningHand;
+    @Nullable private MechaItemType miningSoundTool;
 
     public Mecha(EntityType<?> entityType, Level level)
     {
@@ -235,6 +239,7 @@ public class Mecha extends Driveable
         updateLegAnimation(type, walking && canMove);
         useHandTool(EnumMechaSlotType.LEFT_TOOL, true, DriveableInput.isDown(input, DriveableInput.PRIMARY_FIRE));
         useHandTool(EnumMechaSlotType.RIGHT_TOOL, false, DriveableInput.isDown(input, DriveableInput.SECONDARY_FIRE));
+        tickMining();
         if (walking && canMove)
         {
             consumeFuel(20F);
@@ -438,7 +443,7 @@ public class Mecha extends Driveable
         if (tool.getFunction() == EnumMechaToolType.SWORD)
             useMeleeTool(tool, index);
         else
-            useMiningTool(tool, index);
+            aimMiningTool(tool, index);
     }
 
     private void useHandGun(EnumMechaSlotType slot, boolean left, boolean held, GunItem gunItem, ItemStack gunStack)
@@ -678,7 +683,8 @@ public class Mecha extends Driveable
         toolCooldown[index] = Math.max(4, Mth.ceil(10F / Math.max(0.1F, tool.getSpeed())));
     }
 
-    private void useMiningTool(MechaItemType tool, int index)
+    /** Points a held mining arm at the block it reaches. The right arm wins when both do, as in 1.7.10. */
+    private void aimMiningTool(MechaItemType tool, int index)
     {
         if (!(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof Player player)
             || !FlansMod.teamsManager.isDriveablesBreakBlocks())
@@ -692,32 +698,64 @@ public class Mecha extends Driveable
             ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (hit.getType() != HitResult.Type.BLOCK || !serverLevel.mayInteract(player, hit.getBlockPos())
             || !player.mayUseItemAt(hit.getBlockPos(), hit.getDirection(), ItemStack.EMPTY))
+            return;
+        miningAim = hit.getBlockPos().immutable();
+        miningHand = index;
+        miningSoundTool = tool;
+    }
+
+    /**
+     * Digs the block the arms aimed at this tick. As in 1.7.10 the mecha digs one
+     * block with one combined rate: every effective tool in an intact arm multiplies
+     * it, so two tools working together dig far faster than either alone.
+     */
+    private void tickMining()
+    {
+        BlockPos target = miningAim;
+        int hand = miningHand;
+        MechaItemType soundTool = miningSoundTool;
+        miningAim = null;
+        miningSoundTool = null;
+        if (target == null || !(level() instanceof ServerLevel serverLevel)
+            || !(getControllingEntity() instanceof Player player) || driveableData == null)
         {
             breakingBlock = null;
             breakingProgress = 0F;
             return;
         }
-        BlockPos pos = hit.getBlockPos();
-        BlockState state = serverLevel.getBlockState(pos);
-        float hardness = state.getDestroySpeed(serverLevel, pos);
-        if (state.isAir() || hardness < 0F || serverLevel.getBlockEntity(pos) != null)
+        BlockState state = serverLevel.getBlockState(target);
+        float hardness = state.getDestroySpeed(serverLevel, target);
+        if (state.isAir() || hardness < 0F || serverLevel.getBlockEntity(target) != null)
             return;
-        if (!pos.equals(breakingBlock))
+        if (!target.equals(breakingBlock))
         {
-            breakingBlock = pos.immutable();
+            breakingBlock = target;
             breakingProgress = 0F;
         }
-        boolean effective = effectiveAgainst(tool.getFunction(), state) && tool.getToolHardness() + 0.001F >= hardness;
-        float speed = effective ? Math.max(0.05F, tool.getSpeed()) : 0.1F;
-        breakingProgress += hardness <= 0F ? 1F : speed / Math.max(1F, hardness * 20F);
+        List<Float> effectiveSpeeds = new ArrayList<>(2);
+        addEffectiveToolSpeed(EnumMechaSlotType.LEFT_TOOL, EnumDriveablePart.LEFT_ARM, state, hardness, effectiveSpeeds);
+        addEffectiveToolSpeed(EnumMechaSlotType.RIGHT_TOOL, EnumDriveablePart.RIGHT_ARM, state, hardness, effectiveSpeeds);
+        breakingProgress += MechaPhysics.miningProgressPerTick(hardness, effectiveSpeeds);
         if (breakingProgress < 1F)
             return;
 
-        harvestMinedBlock(serverLevel, player, pos, state, effective);
+        harvestMinedBlock(serverLevel, player, target, state, !effectiveSpeeds.isEmpty());
         breakingBlock = null;
         breakingProgress = 0F;
-        toolCooldown[index] = 2;
-        playToolSound(tool);
+        toolCooldown[hand] = 2;
+        if (soundTool != null)
+            playToolSound(soundTool);
+    }
+
+    private void addEffectiveToolSpeed(EnumMechaSlotType slot, EnumDriveablePart arm, BlockState state, float hardness,
+                                       List<Float> speeds)
+    {
+        if (isPartIntact(arm) && driveableData.getMechaAddon(slot).getItem() instanceof MechaAddonItem addon)
+        {
+            MechaItemType tool = addon.getConfigType();
+            if (effectiveAgainst(tool.getFunction(), state) && tool.getToolHardness() + 0.001F >= hardness)
+                speeds.add(tool.getSpeed());
+        }
     }
 
     private void harvestMinedBlock(ServerLevel level, Player player, BlockPos pos, BlockState state, boolean effective)

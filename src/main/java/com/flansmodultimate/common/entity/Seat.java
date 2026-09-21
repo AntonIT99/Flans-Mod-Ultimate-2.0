@@ -11,8 +11,10 @@ import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.VehicleOptics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -517,9 +519,20 @@ public class Seat extends Entity implements IControllable
             player.stopRiding();
             return InteractionResult.CONSUME;
         }
+        return tryEnter(player) ? InteractionResult.CONSUME : InteractionResult.PASS;
+    }
+
+    /**
+     * Seats {@code player} here unless a {@link PlayerEnterSeatEvent} listener cancels
+     * it, as the 1.7.10 seat did. Server side.
+     */
+    public boolean tryEnter(@NotNull Player player)
+    {
+        if (MinecraftForge.EVENT_BUS.post(new PlayerEnterSeatEvent(this, player)))
+            return false;
         if (player.getVehicle() != null)
             player.stopRiding();
-        return player.startRiding(this, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
+        return player.startRiding(this, true);
     }
 
     @Override

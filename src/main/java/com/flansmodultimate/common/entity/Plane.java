@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableCrashExplosion;
 import com.flansmodultimate.common.driveables.DriveableExplosion;
@@ -16,6 +17,7 @@ import com.flansmodultimate.common.driveables.PlaneCrashDamage;
 import com.flansmodultimate.common.driveables.Propeller;
 import com.flansmodultimate.common.driveables.SuspensionPhysics;
 import com.flansmodultimate.common.driveables.ThrottleLeverRamp;
+import com.flansmodultimate.common.driveables.ValkyrieAnimation;
 import com.flansmodultimate.common.driveables.physics.AircraftPerformancePhysics;
 import com.flansmodultimate.common.driveables.physics.EnumDriveType;
 import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
@@ -28,6 +30,7 @@ import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
+import com.flansmodultimate.network.client.PacketParticle;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -66,6 +69,10 @@ public class Plane extends Driveable
     private static final float GOVERNED_ROTOR_ANIMATION_IDLE = 0.6F;
     /** Rudder deflection forced on a SpinWithoutTail plane once its tail is gone. */
     private static final float SPIN_WITHOUT_TAIL_FLAP_YAW = 15F;
+    /** 1.7.10 stopped counting a lost tail or wing here and doubled the core wear instead. */
+    private static final int SHOOT_DOWN_TICK_CAP = 1500;
+    /** How far the shoot-down fire and explosions are sent, as in 1.7.10. */
+    private static final double SHOOT_DOWN_EFFECT_RANGE = 150D;
 
     @Getter protected float propellerAngle;
     @Getter protected float prevPropellerAngle;
@@ -91,6 +98,12 @@ public class Plane extends Driveable
     private int crashImpactCooldown;
     /** Progressive throttle lever state. Transient, and tracked per side. */
     private final ThrottleLeverRamp throttleRamp = new ThrottleLeverRamp();
+    /** Articulated skeleton of a legacy Valkyrie type. Client-side visual state. */
+    @Getter @Nullable private ValkyrieAnimation valkyrieAnimation;
+    /** Progress of the NewFlightControl shoot-down sequence. Transient, as in 1.7.10. */
+    private int shootDownTicks;
+    /** A tail or wing has been lost during the current shoot-down sequence. */
+    private boolean lostFlightSurface;
 
     public Plane(EntityType<?> entityType, Level level)
     {
@@ -419,6 +432,43 @@ public class Plane extends Driveable
     protected void tickClientDriveable()
     {
         advanceAnimations();
+        tickValkyrieAnimation();
+    }
+
+    /** 1.7.10 EntityPlane: step the Valkyrie skeleton and, under throttle, fire the foot exhausts. */
+    private void tickValkyrieAnimation()
+    {
+        PlaneType type = getPlaneType();
+        if (type == null || !type.isValkyrie())
+        {
+            valkyrieAnimation = null;
+            return;
+        }
+        if (valkyrieAnimation == null)
+            valkyrieAnimation = new ValkyrieAnimation();
+        valkyrieAnimation.tick(isWingFolded());
+        if (getThrottle() > 0.2F)
+        {
+            emitFootExhaust(valkyrieAnimation.leftFootExhaust());
+            emitFootExhaust(valkyrieAnimation.rightFootExhaust());
+        }
+    }
+
+    private void emitFootExhaust(@Nullable org.joml.Vector3f local)
+    {
+        if (local == null)
+            return;
+        Vec3 position = legacyPointToWorld(new Vec3(local.x, local.y, local.z));
+        for (int i = 0; i < 4; i++)
+            level().addParticle(FlansMod.afterburnParticle.get(), position.x, position.y, position.z, 0D, 0D, 0D);
+    }
+
+    /** 1.7.10 raised a Valkyrie's wheels by 90/16 blocks in fighter mode, where its legs are stowed. */
+    @Override
+    protected double wheelAnchorLift()
+    {
+        PlaneType type = getPlaneType();
+        return type != null && type.isValkyrie() && isWingFolded() ? 90D / 16D : 0D;
     }
 
     private void advanceAnimations()
@@ -559,7 +609,170 @@ public class Plane extends Driveable
             velocity = velocity.multiply(0.98D, 1D, 0.98D);
         if (getControllingEntity() == null)
             velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
+        if (type.isNewFlightControl())
+            velocity = applyShootDownSequence(type, velocity);
+        applyLegacyTurbulence(type.isNewFlightControl() ? speed : velocity.length(), type.isNewFlightControl());
         return velocity;
+    }
+
+    /**
+     * 1.7.10 FlightController shook the airframe with a small random attitude kick
+     * every tick: legacy-model planes above 2 blocks per tick, NewFlightControl planes
+     * only in a band just below it, their "sound barrier". On the wheels the ground
+     * contact owns the attitude, so the runway run is left alone.
+     */
+    private void applyLegacyTurbulence(double speed, boolean newFlightControl)
+    {
+        boolean buffeting = newFlightControl
+            ? speed > LegacyPlanePhysics.SOUND_BARRIER_BUFFET_MIN && speed < LegacyPlanePhysics.SOUND_BARRIER_BUFFET_MAX
+            : speed > LegacyPlanePhysics.HIGH_SPEED_TURBULENCE;
+        if (!buffeting || isSupportedByGround())
+            return;
+        axes.rotateLocalPitch(LegacyPlanePhysics.turbulenceKick(random.nextFloat()));
+        axes.rotateLocalYaw(LegacyPlanePhysics.turbulenceKick(random.nextFloat()));
+        axes.rotateLocalRoll(LegacyPlanePhysics.turbulenceKick(random.nextFloat()));
+        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+    }
+
+    /**
+     * 1.7.10 NewFlightControl's shoot-down sequence ("doomsday", by LabJac). A lost
+     * airframe noses the plane into a dive with the throttle cut; a lost tail or wing
+     * sends it pitching or rolling away. Each lost surface drags the plane down and
+     * wears the core away every tick, and the wreck burns and explodes as the count
+     * rises, so a crippled plane is lost even if it never touches the ground.
+     * <p>
+     * Deliberate differences from 1.7.10: a lost right wing sinks the plane like the
+     * other surfaces, where 1.7.10 added lift instead, and the sequence ends once
+     * every surface is repaired rather than burning on forever.
+     */
+    private Vec3 applyShootDownSequence(PlaneType type, Vec3 velocity)
+    {
+        return applyShootDownSequence(type, velocity, false);
+    }
+
+    /**
+     * {@code derivedModel} adapts the sequence to the real-world flight model, which
+     * already takes the lift and control of a lost wing or tail away physically:
+     * there the lost surfaces only add the core wear, fire and explosions, without
+     * the legacy extra sink and attitude kicks. A lost airframe still cuts the
+     * throttle and noses the plane into a dive. The sequence pauses while the plane
+     * rests on the ground, so a damaged aircraft that lands is not burnt away.
+     */
+    private Vec3 applyShootDownSequence(PlaneType type, Vec3 velocity, boolean derivedModel)
+    {
+        boolean airframeLost = isPartDestroyed(EnumDriveablePart.AIRFRAME);
+        boolean tailLost = isPartDestroyed(EnumDriveablePart.TAIL);
+        boolean leftWingLost = isPartDestroyed(EnumDriveablePart.LEFT_WING);
+        boolean rightWingLost = isPartDestroyed(EnumDriveablePart.RIGHT_WING);
+        if (!airframeLost && !tailLost && !leftWingLost && !rightWingLost)
+        {
+            shootDownTicks = 0;
+            lostFlightSurface = false;
+            return velocity;
+        }
+        if (derivedModel && isSupportedByGround())
+            return velocity;
+
+        axes.setAngles(getYaw(), getPitch(), getRoll());
+        int lostSurfaces = 0;
+        if (airframeLost)
+        {
+            ++lostSurfaces;
+            setThrottle(0F);
+            if (axes.getRoll() > 0.1F)
+                axes.rotateLocalRoll(-5F);
+            if (axes.getRoll() < -0.1F)
+                axes.rotateLocalRoll(5F);
+            ++shootDownTicks;
+            if (axes.getPitch() < 35F)
+                axes.rotateLocalPitch(-0.05F * shootDownTicks);
+            wearCore(1F);
+        }
+        if (tailLost)
+        {
+            ++lostSurfaces;
+            advanceShootDown();
+            if (!derivedModel)
+                axes.rotateLocalPitch(type.getLookUpModifier() / 2F);
+        }
+        if (leftWingLost)
+        {
+            ++lostSurfaces;
+            advanceShootDown();
+            if (!derivedModel)
+                axes.rotateLocalRoll(type.getRollRightModifier());
+        }
+        if (rightWingLost)
+        {
+            ++lostSurfaces;
+            advanceShootDown();
+            if (!derivedModel)
+                axes.rotateLocalRoll(-type.getRollLeftModifier() / 15F);
+        }
+        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+        spawnShootDownEffects();
+        if (derivedModel)
+            return velocity;
+        return velocity.add(0D, -LegacyPlanePhysics.GRAVITY * lostSurfaces, 0D);
+    }
+
+    /** A lost tail or wing: count towards the end, capped as in 1.7.10, and wear the core. */
+    private void advanceShootDown()
+    {
+        lostFlightSurface = true;
+        if (shootDownTicks < SHOOT_DOWN_TICK_CAP)
+            ++shootDownTicks;
+        if (shootDownTicks >= SHOOT_DOWN_TICK_CAP)
+            wearCore(1F);
+        wearCore(1F);
+    }
+
+    private void wearCore(float amount)
+    {
+        damagePart(EnumDriveablePart.CORE, amount, level().damageSources().generic());
+    }
+
+    private boolean isPartDestroyed(EnumDriveablePart part)
+    {
+        DriveablePart state = driveableData == null ? null : driveableData.getPart(part);
+        return state != null && state.isDestroyed();
+    }
+
+    /** The fire, smoke and explosion schedule of the 1.7.10 sequence, around the plane origin. */
+    private void spawnShootDownEffects()
+    {
+        int ticks = shootDownTicks;
+        if (ticks >= 100)
+        {
+            shootDownParticle(FlanParticles.LARGE_EXPLODE, 0D, 1D, 0D);
+            shootDownParticle(FlanParticles.LARGE_SMOKE, 0D, 0D, 0D);
+        }
+        if (ticks >= 20)
+        {
+            shootDownParticle(FlanParticles.FM_FLAME, 0D, 0D, 1D);
+            shootDownParticle(FlanParticles.FM_FLAME, 0D, 3D, -0.7D);
+            shootDownParticle(FlanParticles.FM_FLAME, 0D, 1D, 1.3D);
+        }
+        if (ticks >= 100)
+        {
+            shootDownParticle(FlanParticles.LARGE_SMOKE, 0D, 1.5D, 0.5D);
+            shootDownParticle(FlanParticles.LAVA, 0D, 1D, -0.5D);
+            shootDownParticle(FlanParticles.LAVA, 0D, 0D, 0.5D);
+            shootDownParticle(FlanParticles.LAVA, 0D, -0.5D, -2D);
+            shootDownParticle(FlanParticles.FM_FLAME, 0D, 1D, 0D);
+        }
+        if (ticks == 5 || ticks == 100)
+            shootDownParticle(FlanParticles.HUGE_EXPLOSION, 0D, 1D, 0D);
+        if (ticks == 18 || ticks == 30)
+            shootDownParticle(FlanParticles.LARGE_EXPLODE, 0D, 1D, 0D);
+        if (lostFlightSurface && (ticks == 700 || ticks == 720 || ticks == 725 || ticks == 740 || ticks == 748))
+            shootDownParticle(FlanParticles.HUGE_EXPLOSION, 0D, 1D, 0D);
+    }
+
+    private void shootDownParticle(String particle, double x, double y, double z)
+    {
+        PacketHandler.sendToAllAround(new PacketParticle(particle, getX() + x, getY() + y, getZ() + z, 0D, 0D, 0D),
+            getX(), getY(), getZ(), SHOOT_DOWN_EFFECT_RANGE, level().dimension());
     }
 
     /**
@@ -648,6 +861,9 @@ public class Plane extends Driveable
 
         int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0)
             + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
+        // A broken airframe carries no load, whatever is left of the wings.
+        if (isPartDestroyed(EnumDriveablePart.AIRFRAME))
+            intactWings = 0;
         double referenceSpeedMs = physics.referenceSpeedMs(speedScale,
             ModCommonConfig.realisticAircraftReferenceSpeedScale());
         // What the wing can make at this speed, which is what decides whether it
@@ -701,6 +917,7 @@ public class Plane extends Driveable
             velocity = velocity.multiply(0.98D, 1D, 0.98D);
         if (getControllingEntity() == null)
             velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
+        velocity = applyShootDownSequence(type, velocity, true);
         return velocity;
     }
 

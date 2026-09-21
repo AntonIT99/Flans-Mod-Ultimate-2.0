@@ -641,6 +641,9 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         setStagedtranslateClip(Optional.ofNullable(config.getStagedtranslateClip()).orElse(getStagedtranslateClip()));
         setStagedReload(Optional.ofNullable(config.getStagedReload()).orElse(isStagedReload()));
 
+        setAnimationType(Optional.ofNullable(config.getAnimationType()).orElse(getAnimationType()));
+        setMeleeAnimation(Optional.ofNullable(config.getMeleeAnimation()).orElse(getMeleeAnimation()));
+
         setThirdPersonOffset(Optional.ofNullable(config.getThirdPersonOffset()).orElse(getThirdPersonOffset()));
         setItemFrameOffset(Optional.ofNullable(config.getItemFrameOffset()).orElse(getItemFrameOffset()));
         setStillRenderGunWhenScopedOverlay(Optional.ofNullable(config.getStillRenderGunWhenScopedOverlay()).orElse(isStillRenderGunWhenScopedOverlay()));

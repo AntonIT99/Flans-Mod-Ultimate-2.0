@@ -60,6 +60,7 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
+import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
@@ -3235,7 +3236,20 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         // the nose and also rotated wheel anchors incorrectly with pitch.
         Vec3 local = configuredModelLocal(wheel.getPosition());
         double scale = modelScale();
-        return modelLocalToWorld(new Vec3(local.x * scale, local.y * wheelAnchorHeightScale(), local.z * scale));
+        return modelLocalToWorld(new Vec3(local.x * scale, (local.y + wheelAnchorLift()) * wheelAnchorHeightScale(),
+            local.z * scale));
+    }
+
+    /** Blocks added to every authored wheel anchor height, before scaling. */
+    protected double wheelAnchorLift()
+    {
+        return 0D;
+    }
+
+    /** A point in legacy type-file coordinates (blocks), scaled with the model, in world space. */
+    public Vec3 legacyPointToWorld(@NotNull Vec3 legacy)
+    {
+        return modelLocalToWorld(configuredModelLocal(legacy).scale(modelScale()));
     }
 
     /** Factor applied to authored wheel anchor heights and ground clearance. */
@@ -3550,6 +3564,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return isUsableSeat(candidate) && candidate.getFirstPassenger() == null;
         });
         if (targetIndex < 0)
+            return false;
+        if (MinecraftForge.EVENT_BUS.post(new PlayerEnterSeatEvent(seats[targetIndex], player)))
             return false;
         setInputMask(0);
         setFlightControls(0F, 0F, isMouseControlEnabled());
@@ -4274,9 +4290,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             target = findPreferredAvailableSeat();
         if (target == null)
             return InteractionResult.PASS;
-        if (player.getVehicle() != null)
-            player.stopRiding();
-        return player.startRiding(target, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
+        return target.tryEnter(player) ? InteractionResult.CONSUME : InteractionResult.PASS;
     }
 
     @Nullable

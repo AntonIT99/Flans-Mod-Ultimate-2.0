@@ -178,6 +178,10 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean destroyOnDeploySubmunition;
 
+    /** Whether the ammo tooltip offers the detailed statistics, as the 1.7.10 FancyDescription did. */
+    @Getter
+    protected boolean fancyDescription = true;
+
     /** 0 = disable, otherwise sets velocity scale on block hit particle fx */
     @Getter
     protected float blockHitFXScale;
@@ -287,6 +291,7 @@ public class BulletType extends ShootableType
         laserGuidance = readValue("LaserGuidance", laserGuidance, file);
         maxRange = readValue("MaxRange", maxRange, file);
 
+        fancyDescription = readValue("FancyDescription", fancyDescription, file);
         blockHitFXScale = readValue("BlockHitFXScale", blockHitFXScale, file);
         readBlockHitFXScale = file.hasConfigLine("BlockHitFXScale");
 
