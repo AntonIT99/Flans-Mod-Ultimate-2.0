@@ -58,7 +58,7 @@ After editing, repeat the code-to-wiki and wiki-to-code reconciliation. A correc
 
 ## Record the audit
 
-Write `reports/config-reference-audit.md` under `TARGET`. Update it when it is already the report for this same target and page; if it contains unrelated material, add a numeric suffix instead of overwriting it.
+Write `../../../reports/temp/config-reference-audit.md` under `TARGET`. Update it when it is already the report for this same target and page; if it contains unrelated material, add a numeric suffix instead of overwriting it.
 
 Start with the resolved target and wiki page, the audited parser/type count, the number of accepted distinct normalized keys or finite variants, and any dynamic families or unreadable inputs. State that confirmed findings were applied to the wiki. Then use these sections, omitting empty ones:
 
