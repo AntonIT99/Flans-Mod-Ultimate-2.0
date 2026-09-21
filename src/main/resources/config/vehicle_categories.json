@@ -10133,6 +10133,24 @@
         ]
     },
 
+    "Type 1 47 mm Anti-Tank Gun": {
+        "properties": {
+            "RealMassKg": 754,
+            "ShootDelayPrimarySeconds": 5,
+            "ArmorFrontMm": 4,
+            "ArmorSideMm": 0,
+            "ArmorRearMm": 0,
+            "ArmorTopMm": 0,
+            "ArmorBottomMm": 0,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "47mm Type 1"
+        },
+        "items": [
+            "type_1_47mm_at"
+        ]
+    },
+
     "Type 1 Chi-He": {
         "properties": {
             "RealMassKg": 17200,
@@ -10833,6 +10851,36 @@
         },
         "items": [
             "type99aa"
+        ]
+    },
+
+    "Type 1934-class Destroyer": {
+        "properties": {
+            "RealDisplacementT": 3156,
+            "RealEnginePowerHp": 70000,
+            "RealMaxSpeedKn": 36,
+            "DriveType": "MARINE",
+            "RealMaxReverseSpeedKn": 14.4,
+            "RealDraftM": 4.23,
+            "ArmorBeltMm": 0,
+            "ArmorDeckMm": 0,
+            "ArmorCitadelMm": 0,
+            "ArmorBulkheadMm": 0,
+            "ArmorConningTowerMm": 0,
+            "ArmorTorpedoBulgeMm": 0,
+            "ArmorMachineryMm": 0,
+            "ArmorSuperstructureMm": 0,
+            "ArmorBowMm": 0,
+            "ArmorSternMm": 0,
+            "TurretArmorFrontMm": 8,
+            "TurretArmorSideMm": 8,
+            "TurretArmorRearMm": 8,
+            "TurretArmorTopMm": 8,
+            "UseRealisticVehicleHealth": "true",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "t1934generic"
         ]
     },
 

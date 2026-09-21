@@ -277,10 +277,10 @@
             "FlakParticles": 0
         },
         "items": [
-            "g3Ammo",
-            "m14Ammo",
-            "m21Ammo",
-            "l96Ammo",
+            "g3ammo",
+            "m14ammo",
+            "m21ammo",
+            "l96ammo",
             "7.62x51mm10rounds",
             "7.62x51mm20rounds",
             "7.62x51mm30rounds",
@@ -498,8 +498,8 @@
             "kar98kammo",
             "g43ammo",
             "g41ammo",
-            "maschninengewehrAmmo50",
-            "maschninengewehrAmmo250",
+            "maschninengewehrammo50",
+            "maschninengewehrammo250",
             "44_fg42ammo",
             "44_g43ammo",
             "44_kar98kammo",
@@ -689,7 +689,7 @@
             "FlakParticles": 0
         },
         "items": [
-            "bizonAmmo",
+            "bizonammo",
             "makarovammo",
             "makarovpmammo"
         ]
@@ -702,7 +702,7 @@
             "FlakParticles": 0
         },
         "items": [
-            "lugerAmmo",
+            "lugerammo",
             "mp34ammo",
             "mp40ammo",
             "stenammo",
@@ -879,10 +879,10 @@
         },
         "items": [
             "thompsonammo",
-            "m3A1ammo",
+            "m3a1ammo",
             "coltammo",
             "uspammo",
-            "uspPoisonammo",
+            "usppoisonammo",
             "krissvectorammo",
             "44_coltammo",
             "44_greasegunammo",
@@ -2292,6 +2292,7 @@
 
     "47mm Type 1 APHE": {
         "properties": {
+            "AddToAmmoGroup": "47mm Type 1",
             "Mass": 1530,
             "MuzzleVelocity": 830,
             "FallSpeed": 1.0,

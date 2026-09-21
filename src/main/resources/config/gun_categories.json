@@ -2791,7 +2791,7 @@
             "Dispersion": 0.72
         },
         "items": [
-            "desertEagle"
+            "deserteagle"
         ]
     },
 
@@ -4051,7 +4051,7 @@
         },
         "items": [
             "thompson",
-            "44_Thompsonm1a1",
+            "44_thompsonm1a1",
             "thompsonearly"
         ]
     },
@@ -5875,13 +5875,50 @@
             "romanaquila",
             "flaggermanww2",
             "flagspecial",
-            "flagss",
             "flaghistoryunit",
-            "flagssdasreich",
             "flagguard",
-            "flagssleibstandarte",
-            "historybook",
-            "meinkampfbuch"
+            "flagalsace",
+            "flagaustralia",
+            "flagaustria",
+            "flagaustriahungary",
+            "flagaustrianempire",
+            "flagbelgium",
+            "flagberlin",
+            "flagcanada",
+            "flagcanadacommonwealth",
+            "flagczechrepublic",
+            "flagdenmark",
+            "flagfinland",
+            "flagfrance",
+            "flaggermanddr",
+            "flaggermanempire",
+            "flaggermanempiremarine",
+            "flaggermanempirewar",
+            "flaggermany",
+            "flaggermanybundesdienst",
+            "flaggermanycoatofarms",
+            "flaggermanyww2",
+            "flaghungary",
+            "flagiceland",
+            "flagireland",
+            "flagitaly",
+            "flagjapan",
+            "flagmedic",
+            "flagnetherland",
+            "flagnorthkorea",
+            "flagnorway",
+            "flagpoland",
+            "flagprussia",
+            "flagprussiawar",
+            "flagrussia",
+            "flagslovakia",
+            "flagsweden",
+            "flagswitzerland",
+            "flaguk",
+            "flagusa",
+            "flagussr",
+            "flagwhite",
+            "historybook"
         ]
     },
 
