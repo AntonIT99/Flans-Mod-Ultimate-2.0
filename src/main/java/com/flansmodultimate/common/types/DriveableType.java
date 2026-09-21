@@ -225,6 +225,8 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     protected float buoyancy = 0.0165F;
     protected float floatOffset;
     protected float bulletDetectionRadius = -1F;
+    /** Largest detection radius of any loaded type; only grows, so it stays a safe bound across reloads. */
+    private static volatile float maxBulletDetectionRadius = 8F;
     protected boolean onRadar;
     protected int animFrames = 2;
 
@@ -870,6 +872,7 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
                 bulletDetectionRadius = Math.max(bulletDetectionRadius, box.getRootPosition().length() + box.getRadius());
             bulletDetectionRadius += 1F;
         }
+        maxBulletDetectionRadius = Math.max(maxBulletDetectionRadius, bulletDetectionRadius);
         deriveWheelContactClearance();
         resolvedPhysics = VehiclePhysicsResolver.resolve(physicsCategory(), realWorldSpec,
             deriveGeometry(), legacyPhysicsHints());
@@ -887,6 +890,12 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
      * are rounded to floats. Legacy driveables instead define their total as the
      * sum of the authored health of every part.</p>
      */
+    /** How far any driveable's hull can reach from its centre, for bounding bullet searches. */
+    public static float getMaxBulletDetectionRadius()
+    {
+        return maxBulletDetectionRadius;
+    }
+
     public float getTotalHp()
     {
         if (resolvedHealth != null && resolvedHealth.enabled())

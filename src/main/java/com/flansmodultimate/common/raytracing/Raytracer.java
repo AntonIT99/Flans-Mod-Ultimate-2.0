@@ -9,6 +9,7 @@ import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
@@ -38,6 +39,12 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Raytracer
 {
+    /**
+     * Upper bound on how far past the segment a non-driveable target is searched. It covers
+     * hitbox inflation, the swept box of a fast mover and lag-compensated player snapshots.
+     */
+    private static final double ENTITY_SEARCH_MARGIN = 10D;
+
     public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter, float gunPenetration, float bulletHitBoxSize, BulletType type)
     {
         //Create a list for all bullet hits
@@ -45,10 +52,17 @@ public class Raytracer
 
         final Vec3 destination = origin.add(motion);
 
-        // Query only entities along the ray segment
-        AABB search = new AABB(origin, destination).inflate(motion.length());
+        // Query only entities along the ray segment. Driveable hulls reach well past
+        // their compact entity box, so they get a separate class-filtered query sized
+        // by the largest hull radius instead of widening the search for every entity.
+        AABB segment = new AABB(origin, destination);
+        AABB search = segment.inflate(Math.min(motion.length(), ENTITY_SEARCH_MARGIN));
+        List<Entity> candidates = new ArrayList<>(ModUtils.queryEntities(level, bullet, search,
+            entity -> !(entity instanceof Driveable)));
+        candidates.addAll(ModUtils.queryEntities(level, bullet,
+            segment.inflate(DriveableType.getMaxBulletDetectionRadius()), Driveable.class, null));
 
-        for (Entity entity : ModUtils.queryEntities(level, bullet, search))
+        for (Entity entity : candidates)
         {
             if (!entity.isAlive() || (entity instanceof LivingEntity living && living.isDeadOrDying()) || entitiesToIgnore.contains(entity) || !ModUtils.canEntityBeHitByBullets(entity))
                 continue;
