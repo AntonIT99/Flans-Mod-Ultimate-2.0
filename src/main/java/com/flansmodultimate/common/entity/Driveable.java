@@ -233,6 +233,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     private static final int INPUT_TIMEOUT_TICKS = 12;
     private static final int CHILD_REPAIR_INTERVAL = 20;
+    /** Matches the radius the server used when it still broadcast emitter particles. */
+    private static final double EMITTER_PARTICLE_RANGE = 128D;
     private static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     private static final double MAX_SPAWN_COORDINATE = 29_999_984D;
     private static final double MAX_DISMOUNT_DISTANCE = 12D;
@@ -1110,6 +1112,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (collisionHelper != null)
                 collisionHelper.tick(this);
             emitPartParticles();
+            emitConfiguredParticles();
             return;
         }
 
@@ -1160,7 +1163,6 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             if (seat != null)
                 seat.finishInputTick();
         }
-        emitConfiguredParticles();
         updateProxyPositions();
         syncChangedPartState();
         syncRenderInventoryState();
@@ -4308,9 +4310,16 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
     }
 
+    /**
+     * Purely visual, so each client spawns these from the replicated throttle, engine
+     * and part state instead of the server streaming one packet per emission.
+     */
     protected void emitConfiguredParticles()
     {
-        if (configType == null || (configType.isEmittersRequireOccupant() && !hasDriveableOccupant()))
+        if (!level().isClientSide || configType == null || configType.getEmitters().isEmpty()
+            || !ClientHooks.PLAYER.isLocalPlayerWithinSqr(this, EMITTER_PARTICLE_RANGE * EMITTER_PARTICLE_RANGE))
+            return;
+        if (configType.isEmittersRequireOccupant() && !hasDriveableOccupant())
             return;
         if ((this instanceof Vehicle || this instanceof Plane) && !isEngineActive())
             return;
@@ -4350,8 +4359,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 origin = modelLocalToWorld(localOrigin);
                 direction = modelLocalDirectionToWorld(localVelocity);
             }
-            PacketHandler.sendToAllAround(new PacketParticle(emitter.getParticleType(), origin.x, origin.y, origin.z,
-                direction.x, direction.y, direction.z), origin, 128D, level().dimension());
+            ClientHooks.RENDER.spawnParticle(emitter.getParticleType(), origin.x, origin.y, origin.z,
+                direction.x, direction.y, direction.z, 1F);
         });
     }
 
