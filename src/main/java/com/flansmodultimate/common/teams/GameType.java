@@ -19,8 +19,10 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 public abstract class GameType
@@ -112,6 +114,39 @@ public abstract class GameType
 
     public void baseClicked(TeamsManager manager, ServerPlayer player, Flagpole base) {}
 
+    /** Called after {@link #roundEnded} once the round's bases have been reset, to clear per-round state. */
+    public void roundCleanup(TeamsManager manager) {}
+
+    /** The teams a player may join through the team menu. Forced assignments bypass this. */
+    public List<Team> getTeamsCanSpawnAs(TeamsManager manager, TeamsRound round, ServerPlayer player)
+    {
+        return round.getTeamIds().stream().map(Team::getTeam).filter(Objects::nonNull).toList();
+    }
+
+    /** A player logged in while this game type's round was running. */
+    public void playerJoined(TeamsManager manager, ServerPlayer player) {}
+
+    /** A player is logging out while this game type's round is running. */
+    public void playerQuit(TeamsManager manager, ServerPlayer player) {}
+
+    /** A player was just placed at their spawn point with their kit. */
+    public void playerRespawned(TeamsManager manager, ServerPlayer player) {}
+
+    /** A player picked a team from the team menu, before the choice is stored. */
+    public void playerChoseTeam(TeamsManager manager, ServerPlayer player, @Nullable Team oldTeam, Team newTeam) {}
+
+    /** A player who was not yet in play took the field. */
+    public void playerEnteredTheGame(TeamsManager manager, ServerPlayer player, Team team, @Nullable PlayerClass playerClass) {}
+
+    /** Something tried to damage a base. Bases stay invulnerable; this only reports the attempt. */
+    public void baseAttacked(TeamsManager manager, ITeamBase base, DamageSource source) {}
+
+    /** Something tried to damage a team object such as a flag. It stays invulnerable. */
+    public void objectAttacked(TeamsManager manager, ITeamObject object, DamageSource source) {}
+
+    /** Any living entity other than a player died; players go through {@link #playerKilled}. */
+    public void entityKilled(TeamsManager manager, Entity entity, DamageSource source) {}
+
     public boolean canPlayerPickup(TeamsManager manager, ServerPlayer player, ItemStack stack)
     {
         return true;
@@ -161,6 +196,16 @@ public abstract class GameType
     protected Team getPlayerTeam(ServerPlayer player)
     {
         return TeamsManager.getInstance().getPlayerTeam(player);
+    }
+
+    /** Adds {@code points} to a player's score and to their team's score. */
+    public static void givePoints(ServerPlayer player, int points)
+    {
+        PlayerData data = PlayerData.getInstance(player);
+        data.setScore(data.getScore() + points);
+        Team team = data.getTeam();
+        if (team != null && team != Team.SPECTATORS)
+            TeamsManager.getInstance().addTeamScore(team, points);
     }
 
     @Nullable

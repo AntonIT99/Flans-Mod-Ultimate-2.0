@@ -12,6 +12,27 @@
   },
   "spawners": {},
   "spawn_costs": {},
-  "carvers": {},
-  "features": []
+  "carvers": {
+    "air": [
+      "minecraft:canyon"
+    ]
+  },
+  "features": [
+    [],
+    [],
+    [],
+    [
+      "flansmodapocalypse:monster_room"
+    ],
+    [],
+    [],
+    [
+      "flansmodapocalypse:ore_dirt",
+      "flansmodapocalypse:ore_gravel",
+      "flansmodapocalypse:ore_diorite",
+      "flansmodapocalypse:ore_granite",
+      "flansmodapocalypse:ore_andesite",
+      "flansmodapocalypse:ore_iron"
+    ]
+  ]
 }

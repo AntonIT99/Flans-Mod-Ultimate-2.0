@@ -17,14 +17,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -40,9 +38,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseWorldgen
 {
-    private static final int SULPHUR_POOL_RARITY = 8;
-    private static final int BOSS_PILLAR_RARITY = 5000;
-
     public static void generate(ServerLevel level, ChunkAccess chunk)
     {
         if (!ModApocalypseConfig.apocalypseWorldgenEnabled())
@@ -56,14 +51,12 @@ public final class ApocalypseWorldgen
 
         if (apocalypse)
         {
+            // Ores, sulphur-pit acid lakes, dungeons, ravines and mineshafts are regular biome
+            // features and structures in the flansmodapocalypse worldgen data.
             ApocalypseRoads.generate(level, chunk);
+            ApocalypseStructures.generateBossPillars(level, chunkPos, random);
             ApocalypseVillage.generate(level, chunk);
 
-            // Sulphur wells up where the ground is already poisoned, as the 1.7.10 sulphur
-            // pit decorator did, rather than anywhere in the wasteland.
-            BlockPos poolSite = randomSurfacePos(chunk, random);
-            if (isBiome(level, poolSite, ApocalypseContent.BIOME_SULPHUR_PITS) && random.nextInt(SULPHUR_POOL_RARITY) == 0)
-                generateSulphurPool(level, random, poolSite);
             if (random.nextInt(ModApocalypseConfig.apocalypseDeadTreeRarity()) == 0)
                 generateDeadTree(level, randomSurfacePos(chunk, random));
             if (random.nextInt(ModApocalypseConfig.apocalypseSkeletonRarity()) == 0)
@@ -73,19 +66,14 @@ public final class ApocalypseWorldgen
                 && random.nextInt(ModApocalypseConfig.apocalypseAbandonedPortalRarity()) == 0)
                 generateAbandonedPortal(level, random, randomSurfacePos(chunk, random));
 
-            // Labs and runways were built on the high ground, and still only appear there.
-            BlockPos labSite = randomSurfacePos(chunk, random);
-            if (isBiome(level, labSite, ApocalypseContent.BIOME_HIGH_PLATEAU) && random.nextInt(ModApocalypseConfig.apocalypseLabRarity()) == 0)
-                generateResearchLab(level, random, labSite);
+            // Labs and airfields span several chunks: each chunk decides from its region's seed
+            // whether it holds a piece, and builds only that piece. Both need the high plateau.
+            ApocalypseStructures.generateResearchLab(level, chunkPos);
+            ApocalypseStructures.generateRunway(level, chunkPos);
             if (random.nextInt(ModApocalypseConfig.apocalypseDyeFactoryRarity()) == 0)
-                generateFactory(level, random, randomSurfacePos(chunk, random));
-            BlockPos runwaySite = randomSurfacePos(chunk, random);
-            if (isBiome(level, runwaySite, ApocalypseContent.BIOME_HIGH_PLATEAU) && random.nextInt(ModApocalypseConfig.apocalypseAirportRarity()) == 0)
-                generateRunway(level, runwaySite);
+                ApocalypseStructures.generateDyeFactory(level, chunkPos, random);
             if (random.nextInt(ModApocalypseConfig.apocalypseVehicleRarity()) == 0)
                 generateAbandonedVehicle(level, random, randomSurfacePos(chunk, random));
-            if (random.nextInt(BOSS_PILLAR_RARITY) == 0)
-                generateBossPillar(level, randomSurfacePos(chunk, random));
             if (ModApocalypseConfig.apocalypseMobsEnabled() && random.nextInt(ModApocalypseConfig.apocalypseSurvivorRarity()) == 0)
                 spawnSurvivor(level, randomSurfacePos(chunk, random));
         }
@@ -162,31 +150,6 @@ public final class ApocalypseWorldgen
         });
     }
 
-    private static void generateSulphurPool(ServerLevel level, RandomSource random, BlockPos center)
-    {
-        if (center.getY() <= level.getMinBuildHeight() + 2)
-            return;
-        int radius = 3 + random.nextInt(3);
-        for (int dx = -radius; dx <= radius; dx++)
-        {
-            for (int dz = -radius; dz <= radius; dz++)
-            {
-                double dist = Math.sqrt(dx * dx + dz * dz);
-                if (dist > radius + random.nextDouble() * 0.75D)
-                    continue;
-                BlockPos pos = center.offset(dx, 0, dz);
-                BlockPos floor = pos.below();
-                if (!level.getWorldBorder().isWithinBounds(pos))
-                    continue;
-                level.setBlock(floor, ApocalypseContent.blockSulphur.get().defaultBlockState(), 2);
-                if (dist < radius - 1)
-                    level.setBlock(pos, ApocalypseContent.blockSulphuricAcid.get().defaultBlockState(), 2);
-                else if (level.getBlockState(pos).isAir())
-                    level.setBlock(pos, ApocalypseContent.blockSulphur.get().defaultBlockState(), 2);
-            }
-        }
-    }
-
     private static void generateDeadTree(ServerLevel level, BlockPos base)
     {
         if (!isClear(level, base))
@@ -219,20 +182,14 @@ public final class ApocalypseWorldgen
         });
     }
 
-    private static void generateResearchLab(ServerLevel level, RandomSource random, BlockPos origin)
-    {
-        buildRoom(level, origin, 7, 4, 7, ApocalypseContent.blockLabStone.get().defaultBlockState());
-        placeChest(level, random, origin.offset(2, 1, 2));
-        placeChest(level, random, origin.offset(4, 1, 4));
-        flanBlock("flangunrack").ifPresent(block -> placeItemHolder(level, random, block, origin.offset(3, 1, 1), Direction.SOUTH, true));
-        postGuard(level, random, origin.getX() + 3, origin.getZ() - 3);
-    }
-
     /** Abandoned portals were the way in, and are still watched over. */
     private static void generateAbandonedPortal(ServerLevel level, RandomSource random, BlockPos origin)
     {
+        // The 1.12.2 ruin: a stepped lab-stone foundation and a cache with spare portal parts.
+        ApocalypseStructures.buildPortalRuin(level, origin);
         if (!ApocalypsePortalManager.createPortal(level, origin, null))
             return;
+        ApocalypseStructures.placePortalCache(level, random, origin);
         if (random.nextBoolean())
             postGuard(level, random, origin.getX() + (random.nextBoolean() ? 6 : -3), origin.getZ() + (random.nextBoolean() ? 6 : -3));
     }
@@ -246,64 +203,6 @@ public final class ApocalypseWorldgen
         if (!isClear(level, ground))
             return;
         ApocalypseDriveableHelper.spawnGuardMecha(level, ground, random);
-    }
-
-    private static void generateFactory(ServerLevel level, RandomSource random, BlockPos origin)
-    {
-        buildRoom(level, origin, 9, 3, 5, Blocks.GRAY_CONCRETE.defaultBlockState());
-        for (int x = 1; x < 8; x += 2)
-            level.setBlock(origin.offset(x, 1, 2), Blocks.CAULDRON.defaultBlockState(), 3);
-        placeChest(level, random, origin.offset(7, 1, 3));
-    }
-
-    private static void generateRunway(ServerLevel level, BlockPos origin)
-    {
-        for (int x = -2; x <= 2; x++)
-        {
-            for (int z = -12; z <= 12; z++)
-            {
-                BlockPos pos = surfacePos(level, origin.getX() + x, origin.getZ() + z).below();
-                level.setBlock(pos, Blocks.BLACK_CONCRETE.defaultBlockState(), 2);
-                if (x == 0 && z % 4 == 0)
-                    level.setBlock(pos.above(), Blocks.WHITE_CARPET.defaultBlockState(), 2);
-            }
-        }
-    }
-
-    private static void generateBossPillar(ServerLevel level, BlockPos origin)
-    {
-        for (int y = 0; y < 18; y++)
-        {
-            BlockPos center = origin.above(y);
-            level.setBlock(center, Blocks.OBSIDIAN.defaultBlockState(), 3);
-            if (y % 4 == 0)
-            {
-                level.setBlock(center.north(), Blocks.OBSIDIAN.defaultBlockState(), 3);
-                level.setBlock(center.south(), Blocks.OBSIDIAN.defaultBlockState(), 3);
-                level.setBlock(center.east(), Blocks.OBSIDIAN.defaultBlockState(), 3);
-                level.setBlock(center.west(), Blocks.OBSIDIAN.defaultBlockState(), 3);
-            }
-        }
-        ApocalypseBossFightManager.generateAltar(level, origin.offset(-1, 18, -1));
-    }
-
-    private static void buildRoom(ServerLevel level, BlockPos origin, int width, int height, int depth, BlockState wall)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            for (int z = 0; z < depth; z++)
-            {
-                level.setBlock(origin.offset(x, 0, z), wall, 3);
-                level.setBlock(origin.offset(x, height, z), wall, 3);
-                for (int y = 1; y < height; y++)
-                {
-                    boolean edge = x == 0 || z == 0 || x == width - 1 || z == depth - 1;
-                    level.setBlock(origin.offset(x, y, z), edge ? wall : Blocks.AIR.defaultBlockState(), 3);
-                }
-            }
-        }
-        level.setBlock(origin.offset(width / 2, 1, 0), Blocks.AIR.defaultBlockState(), 3);
-        level.setBlock(origin.offset(width / 2, 2, 0), Blocks.AIR.defaultBlockState(), 3);
     }
 
     static void placeChest(ServerLevel level, RandomSource random, BlockPos pos)
@@ -343,11 +242,6 @@ public final class ApocalypseWorldgen
     static boolean isClear(ServerLevel level, BlockPos pos)
     {
         return level.getWorldBorder().isWithinBounds(pos) && level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir();
-    }
-
-    private static boolean isBiome(ServerLevel level, BlockPos pos, ResourceKey<Biome> biome)
-    {
-        return level.getBiome(pos).is(biome);
     }
 
     static Optional<Block> flanBlock(String path)

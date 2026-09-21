@@ -43,7 +43,9 @@ public final class ApocalypseGunHelper
         {
             if (!(type instanceof GunType gun))
                 continue;
-            if (gun.isDeployable() || gun.isShield() || !gun.isUsableByPlayers())
+            // As 1.12.2, only guns allowed in dungeon loot arm the wasteland, which keeps
+            // novelty weapons such as the Nerf blasters out of it.
+            if (gun.isDeployable() || gun.isShield() || !gun.isUsableByPlayers() || gun.getDungeonChance() == 0)
                 continue;
             if (preferSemiAuto && gun.getMode() != EnumFireMode.SEMIAUTO)
                 continue;

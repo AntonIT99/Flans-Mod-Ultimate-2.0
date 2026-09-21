@@ -88,7 +88,7 @@ public final class PacketTeamsState implements IClientPacket
             for (String id : round.getTeamIds())
             {
                 Team team = Team.getTeam(id);
-                if (team != null)
+                if (team != null && manager.canChooseTeam(viewer, team))
                     teamChoices.add(new TeamChoice(id, team.getName(), team.getTeamColour()));
             }
             teamChoices.add(new TeamChoice(Team.SPECTATORS_ID, Team.SPECTATORS.getName(), Team.SPECTATORS.getTeamColour()));

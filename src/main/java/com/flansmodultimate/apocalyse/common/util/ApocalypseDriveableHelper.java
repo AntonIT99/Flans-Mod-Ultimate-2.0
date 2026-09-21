@@ -3,11 +3,16 @@ package com.flansmodultimate.apocalyse.common.util;
 import com.flansmodultimate.apocalyse.common.entity.AiMechaEntity;
 import com.flansmodultimate.apocalyse.common.entity.FlyByPlaneEntity;
 import com.flansmodultimate.common.driveables.DriveableData;
+import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
+import com.flansmodultimate.common.driveables.EnumPlaneMode;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
+import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.PlaneType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -74,6 +79,62 @@ public final class ApocalypseDriveableHelper
         return level.addFreshEntity(mecha) ? Optional.of(mecha) : Optional.empty();
     }
 
+    /**
+     * Stands a lab guard: the 1.12.2 research lab only drew mechas short enough (3 blocks or less)
+     * to fit its 5-block-high rooms.
+     */
+    public static Optional<AiMechaEntity> spawnDungeonMecha(ServerLevel level, BlockPos pos, RandomSource random)
+    {
+        List<MechaType> candidates = sortedTypes(MechaType.class).stream()
+            .filter(type -> type.getHeight() <= 3F)
+            .toList();
+        if (candidates.isEmpty())
+            return Optional.empty();
+
+        MechaType type = candidates.get(random.nextInt(candidates.size()));
+        AiMechaEntity mecha = new AiMechaEntity(level, type,
+            pos.getX() + 0.5D, pos.getY() + type.getYOffset(), pos.getZ() + 0.5D, random.nextFloat() * 360F);
+        arm(mecha, type, random);
+        return level.addFreshEntity(mecha) ? Optional.of(mecha) : Optional.empty();
+    }
+
+    /**
+     * Parks an aircraft on an airfield, as the 1.12.2 runway did: a random fixed-wing plane
+     * with a random compatible engine and every part worn down by a random amount.
+     */
+    public static Optional<Driveable> spawnParkedPlane(ServerLevel level, double x, double y, double z, RandomSource random)
+    {
+        List<PlaneType> planes = sortedTypes(PlaneType.class).stream()
+            .filter(type -> type.getMode() == EnumPlaneMode.PLANE)
+            .toList();
+        if (planes.isEmpty())
+            return Optional.empty();
+
+        PlaneType type = planes.get(random.nextInt(planes.size()));
+        List<PartType> engines = InfoType.getInfoTypes().values().stream()
+            .filter(PartType.class::isInstance)
+            .map(PartType.class::cast)
+            .distinct()
+            .filter(part -> part.getCategory() == PartType.Category.ENGINE && !part.isAiChip() && part.worksWith(EnumType.PLANE))
+            .sorted(Comparator.comparing(PartType::getShortName, String.CASE_INSENSITIVE_ORDER))
+            .toList();
+
+        return Driveable.spawn(level, type, x, y, z, 0F, null, null).map(plane -> {
+            DriveableData data = plane.getDriveableData();
+            if (!engines.isEmpty())
+                data.setEngineShortName(engines.get(random.nextInt(engines.size())).getShortName());
+            // Never destroy a part here: that would trigger combat drops and chained part loss.
+            for (DriveablePart part : data.getParts().values())
+            {
+                float maxHealth = part.getMaxHealth();
+                if (maxHealth > 1F)
+                    part.damage(random.nextFloat() * (maxHealth - 1F), false);
+            }
+            data.setChanged();
+            return plane;
+        });
+    }
+
     /** Puts a loaded gun in each hand and spare magazines in the cargo hold. */
     private static void arm(AiMechaEntity mecha, MechaType type, RandomSource random)
     {
@@ -113,12 +174,17 @@ public final class ApocalypseDriveableHelper
      */
     private static <T extends DriveableType> Optional<T> randomType(Class<T> kind, RandomSource random)
     {
-        List<T> candidates = InfoType.getInfoTypes().values().stream()
+        List<T> candidates = sortedTypes(kind);
+        return candidates.isEmpty() ? Optional.empty() : Optional.of(candidates.get(random.nextInt(candidates.size())));
+    }
+
+    private static <T extends DriveableType> List<T> sortedTypes(Class<T> kind)
+    {
+        return InfoType.getInfoTypes().values().stream()
             .filter(kind::isInstance)
             .map(kind::cast)
             .distinct()
             .sorted(Comparator.comparing(DriveableType::getShortName, String.CASE_INSENSITIVE_ORDER))
             .toList();
-        return candidates.isEmpty() ? Optional.empty() : Optional.of(candidates.get(random.nextInt(candidates.size())));
     }
 }

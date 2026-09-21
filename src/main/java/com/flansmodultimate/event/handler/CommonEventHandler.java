@@ -449,6 +449,10 @@ public final class CommonEventHandler
             sendKillMessage(player, event.getSource());
             ExplosionKillAudit.logIfApplicable(player, event.getSource());
         }
+        else if (!entity.level().isClientSide)
+        {
+            FlansMod.teamsManager.entityDied(entity, event.getSource());
+        }
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
     }

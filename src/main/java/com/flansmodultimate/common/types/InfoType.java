@@ -126,6 +126,7 @@ public abstract class InfoType implements IInfoType
      * Scaled so that each chest is likely to have a fixed number of Flan's Mod items.
      * Must be greater than or equal to 0, and should probably not exceed 100
      */
+    @Getter
     protected int dungeonChance = 1;
 
     @Getter

@@ -70,6 +70,14 @@ public final class GameTypeZombies extends GameType
         }
     }
 
+    /** As in 1.12.2, newcomers join the humans until the plague breaks out and the zombies after. */
+    @Override
+    public List<Team> getTeamsCanSpawnAs(TeamsManager manager, TeamsRound round, ServerPlayer player)
+    {
+        Team team = round.getTeam(infectionStarted ? 1 : 0);
+        return team == null ? super.getTeamsCanSpawnAs(manager, round, player) : List.of(team);
+    }
+
     @Override
     public boolean isFriendlyFireEnabled()
     {

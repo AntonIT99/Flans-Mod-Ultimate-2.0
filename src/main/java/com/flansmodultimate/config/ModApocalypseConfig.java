@@ -103,13 +103,13 @@ public final class ModApocalypseConfig
             .comment("Chunk generation rarity for damaged, empty-fuel vehicles supplied by installed content packs.")
             .defineInRange("apocalypseVehicleRarity", 2000, 1, Integer.MAX_VALUE);
         APOCALYPSE_AIRPORT_RARITY = builder
-            .comment("Chunk generation rarity for simple runway/airport structures.")
+            .comment("Rarity of four-chunk airfields, rolled once per four-chunk strip on the High Plateau.")
             .defineInRange("apocalypseAirportRarity", 125, 1, Integer.MAX_VALUE);
         APOCALYPSE_DYE_FACTORY_RARITY = builder
-            .comment("Chunk generation rarity for simple dye factory structures.")
+            .comment("Chunk generation rarity for dye factories on flat Deep Canyon floor.")
             .defineInRange("apocalypseDyeFactoryRarity", 400, 1, Integer.MAX_VALUE);
         APOCALYPSE_LAB_RARITY = builder
-            .comment("Chunk generation rarity for simple research lab structures.")
+            .comment("Rarity of 3x3-chunk research labs, rolled once per 3x3-chunk region on the High Plateau.")
             .defineInRange("apocalypseLabRarity", 100, 1, Integer.MAX_VALUE);
         APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY = builder
             .comment("Chunk generation rarity for abandoned portals in the apocalypse dimension.")

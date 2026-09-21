@@ -27,6 +27,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -515,6 +516,7 @@ public final class TeamsManager
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
+        getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
         rotationIndex = index;
         currentRoundId = next.getId();
         roundTimeLeftTicks = next.getTimeLimitTicks();
@@ -564,6 +566,7 @@ public final class TeamsManager
         getCurrentGameType().ifPresent(type -> type.roundEnded(this));
         updateActiveChunkTickets(false);
         liveBases.values().forEach(ITeamBase::roundCleanup);
+        getCurrentGameType().ifPresent(type -> type.roundCleanup(this));
         roundRunning = false;
         currentRoundId = null;
         roundTimeLeftTicks = 0;
@@ -787,7 +790,14 @@ public final class TeamsManager
             return false;
         if (!force && team != Team.SPECTATORS && wouldUnbalance(team))
             return false;
+        if (!force && team != Team.SPECTATORS && !canChooseTeam(player, team))
+            return false;
         PlayerData data = PlayerData.getInstance(player);
+        if (!force)
+        {
+            Team chosen = team;
+            getCurrentGameType().ifPresent(type -> type.playerChoseTeam(this, player, data.getTeam(), chosen));
+        }
         data.setBuilder(false);
         data.setNewTeam(team);
         if (force || !player.isAlive())
@@ -800,6 +810,14 @@ public final class TeamsManager
         getStats(player).setSelection(team.getShortName(), data.getNewPlayerClass() == null ? "" : data.getNewPlayerClass().getShortName());
         markDirty();
         return true;
+    }
+
+    /** Whether the running game type lets this player pick {@code team} from the team menu. */
+    public boolean canChooseTeam(ServerPlayer player, Team team)
+    {
+        Optional<TeamsRound> round = getCurrentRound();
+        Optional<com.flansmodultimate.common.teams.GameType> type = getCurrentGameType();
+        return round.isEmpty() || type.isEmpty() || type.get().getTeamsCanSpawnAs(this, round.get(), player).contains(team);
     }
 
     public boolean selectBuilder(ServerPlayer player)
@@ -855,6 +873,9 @@ public final class TeamsManager
         if (!roundRunning || current == null || next == null || current == Team.SPECTATORS)
         {
             respawnPlayer(player, true);
+            Team entered = data.getTeam();
+            if (roundRunning && entered != null && entered != Team.SPECTATORS)
+                getCurrentGameType().ifPresent(type -> type.playerEnteredTheGame(this, player, entered, data.getPlayerClass()));
             return;
         }
 
@@ -964,10 +985,14 @@ public final class TeamsManager
         else
             syncPlayer(player, roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS)
                 ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.NONE);
+        if (roundRunning)
+            getCurrentGameType().ifPresent(type -> type.playerJoined(this, player));
     }
 
     public void playerLoggedOut(ServerPlayer player)
     {
+        if (roundRunning)
+            getCurrentGameType().ifPresent(type -> type.playerQuit(this, player));
         dropFlag(player);
         PlayerData.removeServerData(player.getUUID());
         markDirty();
@@ -999,6 +1024,27 @@ public final class TeamsManager
         });
         if (immediate)
             player.setHealth(player.getMaxHealth());
+        getCurrentGameType().ifPresent(type -> type.playerRespawned(this, player));
+    }
+
+    /** Reports a non-player death to the running game type, as the 1.12.2 death handler did. */
+    public void entityDied(Entity entity, net.minecraft.world.damagesource.DamageSource source)
+    {
+        if (roundRunning)
+            getCurrentGameType().ifPresent(type -> type.entityKilled(this, entity, source));
+    }
+
+    /** Reports an attempt to damage an invulnerable base or team object to the running game type. */
+    public void teamEntityAttacked(Object target, net.minecraft.world.damagesource.DamageSource source)
+    {
+        if (!roundRunning)
+            return;
+        getCurrentGameType().ifPresent(type -> {
+            if (target instanceof ITeamBase base && isBaseInCurrentMap(base))
+                type.baseAttacked(this, base, source);
+            else if (target instanceof ITeamObject object)
+                type.objectAttacked(this, object, source);
+        });
     }
 
     private void applyLoadout(ServerPlayer player)

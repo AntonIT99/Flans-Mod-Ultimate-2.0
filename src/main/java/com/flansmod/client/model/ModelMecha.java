@@ -27,6 +27,14 @@ public class ModelMecha extends ModelDriveable
     public ModelRendererTurbo[] rightLegModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] leftFootModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] rightFootModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] leftRearLegModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] rightRearLegModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] leftRearFootModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] rightRearFootModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] leftFrontLegModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] rightFrontLegModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] leftFrontFootModel = new ModelRendererTurbo[0];
+    public ModelRendererTurbo[] rightFrontFootModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] headModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] barrelModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] leftAnimLegUpperModel = new ModelRendererTurbo[0];
@@ -118,9 +126,25 @@ public class ModelMecha extends ModelDriveable
                             float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         float legLength = type == null ? 1F : Math.max(0F, type.getLegLength());
-        renderSimpleLeg(leftLegModel, leftFootModel, legLength, leftSwing,
+        float legTrans = type == null ? 0F : type.getLegTrans();
+        renderSimpleLeg(leftLegModel, leftFootModel, legTrans, legLength, leftSwing,
             poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderSimpleLeg(rightLegModel, rightFootModel, legLength, rightSwing,
+        renderSimpleLeg(rightLegModel, rightFootModel, legTrans, legLength, rightSwing,
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
+        // 1.12.2 multi-legged mechas: rear and front pairs swing opposite to the main pair.
+        float rearLegLength = type == null ? 1F : Math.max(0F, type.getRearLegLength());
+        float rearLegTrans = type == null ? 0F : type.getRearLegTrans();
+        renderSimpleLeg(leftRearLegModel, leftRearFootModel, rearLegTrans, rearLegLength, rightSwing,
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderSimpleLeg(rightRearLegModel, rightRearFootModel, rearLegTrans, rearLegLength, leftSwing,
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
+        float frontLegLength = type == null ? 1F : Math.max(0F, type.getFrontLegLength());
+        float frontLegTrans = type == null ? 0F : type.getFrontLegTrans();
+        renderSimpleLeg(leftFrontLegModel, leftFrontFootModel, frontLegTrans, frontLegLength, rightSwing,
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderSimpleLeg(rightFrontLegModel, rightFrontFootModel, frontLegTrans, frontLegLength, leftSwing,
             poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         LegAnimation animation = state.legAnimation();
@@ -144,14 +168,16 @@ public class ModelMecha extends ModelDriveable
             packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    private void renderSimpleLeg(ModelRendererTurbo[] leg, ModelRendererTurbo[] foot, float legLength,
+    private void renderSimpleLeg(ModelRendererTurbo[] leg, ModelRendererTurbo[] foot, float legTrans, float legLength,
                                  float swingDegrees, PoseStack poseStack, VertexConsumer vertexConsumer,
                                  int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
                                  float scale, EnumRenderPass renderPass)
     {
+        if ((leg == null || leg.length == 0) && (foot == null || foot.length == 0))
+            return;
         float swing = swingDegrees * Mth.DEG_TO_RAD;
         poseStack.pushPose();
-        poseStack.translate(0F, legLength, 0F);
+        poseStack.translate(legTrans, legLength, 0F);
         poseStack.pushPose();
         poseStack.mulPose(Axis.ZP.rotationDegrees(swingDegrees));
         poseStack.translate(0F, -legLength, 0F);
@@ -224,6 +250,14 @@ public class ModelMecha extends ModelDriveable
         renderPart(rightLegModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(leftFootModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(rightFootModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(leftRearLegModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(rightRearLegModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(leftRearFootModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(rightRearFootModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(leftFrontLegModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(rightFrontLegModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(leftFrontFootModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(rightFrontFootModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(leftAnimLegUpperModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(rightAnimLegUpperModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(leftAnimLegLowerModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -288,6 +322,8 @@ public class ModelMecha extends ModelDriveable
         super.flipAll();
         flip(leftArmModel); flip(rightArmModel); flip(leftHandModel); flip(rightHandModel); flip(hipsModel);
         flip(leftLegModel); flip(rightLegModel); flip(leftFootModel); flip(rightFootModel); flip(headModel); flip(barrelModel);
+        flip(leftRearLegModel); flip(rightRearLegModel); flip(leftRearFootModel); flip(rightRearFootModel);
+        flip(leftFrontLegModel); flip(rightFrontLegModel); flip(leftFrontFootModel); flip(rightFrontFootModel);
         flip(leftAnimLegUpperModel); flip(rightAnimLegUpperModel); flip(leftAnimLegLowerModel); flip(rightAnimLegLowerModel);
         flip(leftAnimFootModel); flip(rightAnimFootModel);
     }
@@ -304,5 +340,9 @@ public class ModelMecha extends ModelDriveable
         translate(rightAnimLegUpperModel, x, y, z); translate(leftAnimLegLowerModel, x, y, z);
         translate(rightAnimLegLowerModel, x, y, z); translate(leftAnimFootModel, x, y, z);
         translate(rightAnimFootModel, x, y, z);
+        translate(leftRearLegModel, x, y, z); translate(rightRearLegModel, x, y, z);
+        translate(leftRearFootModel, x, y, z); translate(rightRearFootModel, x, y, z);
+        translate(leftFrontLegModel, x, y, z); translate(rightFrontLegModel, x, y, z);
+        translate(leftFrontFootModel, x, y, z); translate(rightFrontFootModel, x, y, z);
     }
 }

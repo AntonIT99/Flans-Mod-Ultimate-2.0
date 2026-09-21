@@ -28,6 +28,12 @@ public class MechaType extends DriveableType
     protected Vector3f rightArmOrigin = new Vector3f();
     protected float armLength = 1F;
     protected float legLength = 1F;
+    /** 1.12.2 leg-group geometry. As in 1.12.2, the rear and front groups do not inherit LegLength. */
+    protected float legTrans;
+    protected float rearLegLength = 1F;
+    protected float frontLegLength = 1F;
+    protected float rearLegTrans;
+    protected float frontLegTrans;
     protected float heldItemScale = 1F;
     protected float height = 3F;
     protected float width = 2F;
@@ -75,6 +81,11 @@ public class MechaType extends DriveableType
         rightArmOrigin = modelVector("RightArmOrigin", rightArmOrigin, file);
         armLength = Math.max(0F, readValue("ArmLength", armLength * 16F, file) / 16F);
         legLength = Math.max(0F, readValue("LegLength", legLength * 16F, file) / 16F);
+        legTrans = readValue("LegTrans", legTrans * 16F, file) / 16F;
+        rearLegLength = Math.max(0F, readValue("RearLegLength", rearLegLength * 16F, file) / 16F);
+        frontLegLength = Math.max(0F, readValue("FrontLegLength", frontLegLength * 16F, file) / 16F);
+        rearLegTrans = readValue("RearLegTrans", rearLegTrans * 16F, file) / 16F;
+        frontLegTrans = readValue("FrontLegTrans", frontLegTrans * 16F, file) / 16F;
         heldItemScale = Math.max(0F, readValue("HeldItemScale", heldItemScale, file));
         height = Math.max(0.1F, readValue("Height", height * 16F, file) / 16F);
         width = Math.max(0.1F, readValue("Width", width * 16F, file) / 16F);

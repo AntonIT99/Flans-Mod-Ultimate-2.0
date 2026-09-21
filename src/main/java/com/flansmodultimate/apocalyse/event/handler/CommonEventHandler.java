@@ -23,7 +23,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
 import java.util.Collections;
@@ -35,6 +37,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public final class CommonEventHandler
 {
     private static final int MAX_WORLDGEN_CHUNKS_PER_TICK = 64;
+    private static final long WORLDGEN_BUDGET_NANOS_PER_TICK = 20_000_000L;
+    private static final double WANDERING_SURVIVOR_DISTANCE = 50.0D;
     private static final Queue<PendingWorldgen> PENDING_WORLDGEN = new ConcurrentLinkedQueue<>();
 
     @SubscribeEvent
@@ -125,14 +129,20 @@ public final class CommonEventHandler
     private static void spawnWanderingSurvivor(ServerPlayer player)
     {
         ServerLevel level = player.serverLevel();
-        AABB nearby = player.getBoundingBox().inflate(48.0D);
+        AABB nearby = player.getBoundingBox().inflate(WANDERING_SURVIVOR_DISTANCE + 16.0D);
         if (level.getEntitiesOfClass(SurvivorEntity.class, nearby).size() >= 4)
             return;
 
-        BlockPos center = player.blockPosition();
-        ApocalypseWorldgen.findSafeSurface(level, center, 32, level.random)
-            .filter(pos -> pos.distSqr(center) > 144.0D)
-            .ifPresent(pos -> ApocalypseWorldgen.spawnSurvivor(level, pos));
+        // As in 1.12.2: only after dark, and on a ring 50 blocks out from the player.
+        if (level.isDay())
+            return;
+        double angle = level.random.nextDouble() * Math.PI * 2.0D;
+        int x = Mth.floor(player.getX() + Math.cos(angle) * WANDERING_SURVIVOR_DISTANCE);
+        int z = Mth.floor(player.getZ() + Math.sin(angle) * WANDERING_SURVIVOR_DISTANCE);
+        if (!level.hasChunkAt(new BlockPos(x, player.getBlockY(), z)))
+            return;
+        BlockPos pos = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z), z);
+        ApocalypseWorldgen.spawnSurvivor(level, pos);
     }
 
     private static void runPendingWorldgen(MinecraftServer server)
@@ -140,7 +150,10 @@ public final class CommonEventHandler
         // Only process the snapshot queued before this tick. Generation may load
         // neighbouring new chunks, whose work must wait for the following tick too.
         int pendingCount = Math.min(PENDING_WORLDGEN.size(), MAX_WORLDGEN_CHUNKS_PER_TICK);
-        for (int i = 0; i < pendingCount; i++)
+        // A research lab piece alone places tens of thousands of blocks, so also stop once
+        // this tick's budget is spent and leave the rest of the queue for the next ticks.
+        long deadline = System.nanoTime() + WORLDGEN_BUDGET_NANOS_PER_TICK;
+        for (int i = 0; i < pendingCount && System.nanoTime() < deadline; i++)
         {
             PendingWorldgen pending = PENDING_WORLDGEN.poll();
             if (pending == null)
