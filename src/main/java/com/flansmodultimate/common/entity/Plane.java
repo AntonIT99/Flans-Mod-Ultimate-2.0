@@ -372,15 +372,9 @@ public class Plane extends Driveable
         advanceAnimations();
         updateThrottle(type);
 
-        if (!type.isHasGear())
-            setGearDeployed(true);
-        if (type.isHasGear() && type.isAutoDeployLandingGearNearGround() && getThrottle() <= 0.4F
-            && isNearGround(LANDING_APPROACH_CLEARANCE))
-            deployGearForLanding();
-        if (type.isHasWing() && type.isFoldWingForLand() && getThrottle() <= 0.4F
-            && isNearGround(LANDING_APPROACH_CLEARANCE))
-            extendWingsForLanding();
-        updateAutomaticDoors(type);
+        // Gear, wings and doors are synced state the server decides; a predicting client reads them.
+        if (!level().isClientSide)
+            updateLandingAutomation(type);
 
         Vec3 velocity = switch (getPlaneMode())
         {
@@ -428,10 +422,36 @@ public class Plane extends Driveable
                 getEngineSpeed()));
     }
 
+    private void updateLandingAutomation(PlaneType type)
+    {
+        if (!type.isHasGear())
+            setGearDeployed(true);
+        if (type.isHasGear() && type.isAutoDeployLandingGearNearGround() && getThrottle() <= 0.4F
+            && isNearGround(LANDING_APPROACH_CLEARANCE))
+            deployGearForLanding();
+        if (type.isHasWing() && type.isFoldWingForLand() && getThrottle() <= 0.4F
+            && isNearGround(LANDING_APPROACH_CLEARANCE))
+            extendWingsForLanding();
+        updateAutomaticDoors(type);
+    }
+
     @Override
     protected void tickClientDriveable()
     {
         advanceAnimations();
+        tickValkyrieAnimation();
+    }
+
+    @Override
+    public boolean supportsClientPrediction()
+    {
+        return true;
+    }
+
+    @Override
+    protected void tickPredictedClientDriveable()
+    {
+        // The predicted step has already advanced the flaps, propellers and rotors.
         tickValkyrieAnimation();
     }
 
@@ -626,7 +646,8 @@ public class Plane extends Driveable
         boolean buffeting = newFlightControl
             ? speed > LegacyPlanePhysics.SOUND_BARRIER_BUFFET_MIN && speed < LegacyPlanePhysics.SOUND_BARRIER_BUFFET_MAX
             : speed > LegacyPlanePhysics.HIGH_SPEED_TURBULENCE;
-        if (!buffeting || isSupportedByGround())
+        // Random kicks cannot be predicted; a predicting driver receives the server's.
+        if (!buffeting || isSupportedByGround() || level().isClientSide)
             return;
         axes.rotateLocalPitch(LegacyPlanePhysics.turbulenceKick(random.nextFloat()));
         axes.rotateLocalYaw(LegacyPlanePhysics.turbulenceKick(random.nextFloat()));
@@ -741,6 +762,8 @@ public class Plane extends Driveable
     /** The fire, smoke and explosion schedule of the 1.7.10 sequence, around the plane origin. */
     private void spawnShootDownEffects()
     {
+        if (level().isClientSide)
+            return;
         int ticks = shootDownTicks;
         if (ticks >= 100)
         {
@@ -1253,7 +1276,7 @@ public class Plane extends Driveable
      */
     private void handleGroundImpact(@NotNull PlaneType type, @NotNull Vec3 impactVelocity)
     {
-        if (crashImpactCooldown > 0 || impactVelocity.y >= -0.01D
+        if (level().isClientSide || crashImpactCooldown > 0 || impactVelocity.y >= -0.01D
             || !verticalCollision && !horizontalCollision && !isSupportedByGround())
             return;
 

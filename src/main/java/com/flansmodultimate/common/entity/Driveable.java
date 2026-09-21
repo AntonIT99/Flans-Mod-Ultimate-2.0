@@ -15,6 +15,7 @@ import com.flansmodultimate.common.driveables.DriveableImpactDamage;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
+import com.flansmodultimate.common.driveables.DriveablePrediction;
 import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
@@ -64,6 +65,7 @@ import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
+import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
@@ -134,7 +136,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 /**
@@ -289,6 +293,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     private float clientVisualTurretPitch;
     private float clientTargetTurretYaw;
     private float clientTargetTurretPitch;
+    /** Prediction of the local driver's own movement. Client only, and null while not predicting. */
+    @Nullable
+    private DriveablePrediction prediction;
+    /** The throttle a prediction simulates with; the synced one is a round trip old. */
+    private float predictedThrottle;
     /** Pitch pivot read from the loaded vehicle model and converted to the driveable-local basis. */
     @Nullable
     private Vec3 modelBarrelPitchPivot;
@@ -532,7 +541,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     /** Initial model pitch used when this driveable is placed in the world. */
     public float getInitialPlacementPitch() { return 0F; }
-    public float getThrottle() { return entityData.get(DATA_THROTTLE); }
+    public float getThrottle() { return prediction != null ? predictedThrottle : entityData.get(DATA_THROTTLE); }
 
     /** Reverse-to-forward top-speed ratio used to scale the engine sound's reverse pitch sweep. */
     public float getEngineSoundReverseSpeedRatio()
@@ -548,9 +557,24 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
     public float getTurretYaw() { return useClientVisualTransform() ? clientVisualTurretYaw : getSyncedTurretYaw(); }
     public float getTurretPitch() { return useClientVisualTransform() ? clientVisualTurretPitch : getSyncedTurretPitch(); }
-    public float getFlightPitchControl() { return entityData.get(DATA_FLIGHT_PITCH); }
-    public float getFlightRollControl() { return entityData.get(DATA_FLIGHT_ROLL); }
-    public boolean isMouseControlEnabled() { return entityData.get(DATA_MOUSE_CONTROL); }
+    // While the local driver predicts, the controls are its own, not the synced ones a round trip old.
+    public float getFlightPitchControl()
+    {
+        DriveablePrediction.Frame frame = predictedFrame();
+        return frame != null ? clampFlightControl(frame.flightPitch()) : entityData.get(DATA_FLIGHT_PITCH);
+    }
+
+    public float getFlightRollControl()
+    {
+        DriveablePrediction.Frame frame = predictedFrame();
+        return frame != null ? clampFlightControl(frame.flightRoll()) : entityData.get(DATA_FLIGHT_ROLL);
+    }
+
+    public boolean isMouseControlEnabled()
+    {
+        DriveablePrediction.Frame frame = predictedFrame();
+        return frame != null ? frame.mouseControl() && this instanceof Plane : entityData.get(DATA_MOUSE_CONTROL);
+    }
     public float getRecoilProgress() { return entityData.get(DATA_RECOIL_PROGRESS); }
     public float getIT1DoorAngle() { return entityData.get(DATA_IT1_DOOR_ANGLE); }
     public float getPrevIT1DoorAngle() { return entityData.get(DATA_PREV_IT1_DOOR_ANGLE); }
@@ -560,7 +584,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     public float getPrevIT1RailAngle() { return entityData.get(DATA_PREV_IT1_RAIL_ANGLE); }
     public boolean isCanFireIT1() { return getFlag(FLAG_IT1_CAN_FIRE); }
     public boolean isReloadingDrakon() { return getFlag(FLAG_IT1_RELOADING); }
-    public int getInputMask() { return entityData.get(DATA_INPUT_MASK); }
+    public int getInputMask()
+    {
+        DriveablePrediction.Frame frame = predictedFrame();
+        return frame != null ? DriveableInput.sanitize(frame.inputMask()) : entityData.get(DATA_INPUT_MASK);
+    }
     public int getDriveableMode() { return entityData.get(DATA_MODE); }
     public float getFuel() { return entityData.get(DATA_FUEL); }
     /**
@@ -666,9 +694,19 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (!Float.isFinite(yaw) || !Float.isFinite(pitch) || !Float.isFinite(roll))
             return;
-        entityData.set(DATA_YAW, Mth.wrapDegrees(yaw));
-        entityData.set(DATA_PITCH, Mth.clamp(pitch, -89.9F, 89.9F));
-        entityData.set(DATA_ROLL, Mth.wrapDegrees(roll));
+        if (prediction != null)
+        {
+            // Predicted attitude lives in the client transform that getYaw() and the renderer read.
+            clientVisualYaw = Mth.wrapDegrees(yaw);
+            clientVisualPitch = Mth.clamp(pitch, -89.9F, 89.9F);
+            clientVisualRoll = Mth.wrapDegrees(roll);
+        }
+        else
+        {
+            entityData.set(DATA_YAW, Mth.wrapDegrees(yaw));
+            entityData.set(DATA_PITCH, Mth.clamp(pitch, -89.9F, 89.9F));
+            entityData.set(DATA_ROLL, Mth.wrapDegrees(roll));
+        }
         setYRot(getEntityFacingYaw(getYaw()));
         setXRot(getEntityFacingPitch(getPitch()));
         axes.setAngles(getYaw(), getPitch(), getRoll());
@@ -677,7 +715,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected void setThrottle(float throttle)
     {
         float reversePower = configType == null ? 1F : configType.getMaxNegativeThrottle();
-        entityData.set(DATA_THROTTLE, DriveableControlPhysics.normalizedThrottle(throttle, reversePower));
+        float normalized = DriveableControlPhysics.normalizedThrottle(throttle, reversePower);
+        if (prediction != null)
+            predictedThrottle = normalized;
+        else
+            entityData.set(DATA_THROTTLE, normalized);
     }
 
     protected void setTurretAim(float yaw, float pitch)
@@ -690,10 +732,15 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected void setFlightControls(float pitch, float roll, boolean mouseControl)
     {
-        float limit = this instanceof Plane ? 20F : 1F;
-        entityData.set(DATA_FLIGHT_PITCH, Mth.clamp(Float.isFinite(pitch) ? pitch : 0F, -limit, limit));
-        entityData.set(DATA_FLIGHT_ROLL, Mth.clamp(Float.isFinite(roll) ? roll : 0F, -limit, limit));
+        entityData.set(DATA_FLIGHT_PITCH, clampFlightControl(pitch));
+        entityData.set(DATA_FLIGHT_ROLL, clampFlightControl(roll));
         entityData.set(DATA_MOUSE_CONTROL, mouseControl && this instanceof Plane);
+    }
+
+    private float clampFlightControl(float value)
+    {
+        float limit = this instanceof Plane ? 20F : 1F;
+        return Mth.clamp(Float.isFinite(value) ? value : 0F, -limit, limit);
     }
 
     protected void setInputMask(int mask)
@@ -977,6 +1024,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             yaw, this instanceof Plane);
         clientTargetPitch = Mth.clamp(LegacyDriveableCoordinates.driveablePitchFromRenderedForward(
             pitch, this instanceof Plane), -89.9F, 89.9F);
+        // A predicted driveable already moves ahead of these packets. The target is
+        // kept for when prediction ends; its reports correct the prediction instead.
+        if (prediction != null)
+            return;
 
         double distanceSquared = distanceToSqr(x, y, z);
         if (teleport || !Double.isFinite(distanceSquared) || distanceSquared > 4096D)
@@ -998,6 +1049,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
+    public void lerpMotion(double x, double y, double z)
+    {
+        if (prediction == null)
+            super.lerpMotion(x, y, z);
+    }
+
+    @Override
     public void tick()
     {
         super.tick();
@@ -1009,7 +1067,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             prevRoll = clientVisualRoll;
             prevTurretYaw = clientVisualTurretYaw;
             prevTurretPitch = clientVisualTurretPitch;
-            tickClientTransformInterpolation();
+            if (prediction == null)
+                tickClientTransformInterpolation();
             tickClientTurretInterpolation();
         }
         else
@@ -1039,7 +1098,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (level().isClientSide)
         {
             tickEngineSounds();
-            tickClientDriveable();
+            if (prediction != null && tickPredictedMovement())
+                tickPredictedClientDriveable();
+            else
+                tickClientDriveable();
             if (collisionHelper != null)
                 collisionHelper.tick(this);
             emitPartParticles();
@@ -1098,13 +1160,143 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         syncChangedPartState();
         syncRenderInventoryState();
         updateLifetime();
+        sendPredictionReport();
     }
 
-    /** Subclass server physics tick. */
+    /**
+     * Subclass physics tick. It also runs on the driver's client to predict the
+     * driveable's movement, so anything beyond moving it, such as damage, fuel, sounds,
+     * messages or effects on other entities, must be limited to the server.
+     */
     protected abstract void tickDriveable();
 
     /** Lightweight visual state update; world simulation remains server-owned. */
     protected void tickClientDriveable() {}
+
+    /**
+     * Visual update that replaces {@link #tickClientDriveable()} while the local driver
+     * predicts, after {@link #tickDriveable()} has already advanced the controls.
+     */
+    protected void tickPredictedClientDriveable() {}
+
+    /** Whether the driver's client may predict this driveable's movement. */
+    public boolean supportsClientPrediction()
+    {
+        return false;
+    }
+
+    /**
+     * Hands the local driver's input for the next tick to the movement prediction,
+     * starting one if needed. Client only.
+     */
+    public void submitPredictedInput(@NotNull DriveablePrediction.Frame frame)
+    {
+        if (!level().isClientSide || !supportsClientPrediction())
+            return;
+        if (prediction == null)
+            startPrediction();
+        prediction.submit(frame);
+    }
+
+    /** Corrects the local driver's prediction with a server report. Client only. */
+    public void acceptPredictionReport(int serverStep, int acknowledgedStep, @NotNull DriveablePrediction.State server)
+    {
+        if (prediction == null)
+            return;
+        DriveablePrediction.Reconciliation result = prediction.reconcile(serverStep, acknowledgedStep, server);
+        switch (result.outcome())
+        {
+            case CORRECTED ->
+            {
+                setDeltaMovement(getDeltaMovement().add(result.vx(), result.vy(), result.vz()));
+                setThrottle(getThrottle() + result.throttle());
+            }
+            case RESYNC ->
+            {
+                DriveablePrediction.State state = Objects.requireNonNull(result.resyncTo());
+                setPos(state.x(), state.y(), state.z());
+                setDeltaMovement(state.vx(), state.vy(), state.vz());
+                setOrientation(state.yaw(), state.pitch(), state.roll());
+                setThrottle(state.throttle());
+            }
+            default -> { }
+        }
+    }
+
+    private void startPrediction()
+    {
+        initializeClientTransform();
+        prediction = new DriveablePrediction();
+        predictedThrottle = entityData.get(DATA_THROTTLE);
+        // Start from the latest server transform, not from an interpolation still catching up with it.
+        setPos(clientTargetX, clientTargetY, clientTargetZ);
+        clientTransformLerpSteps = 0;
+        setOrientation(clientTargetYaw, clientTargetPitch, clientTargetRoll);
+    }
+
+    private void endPrediction()
+    {
+        prediction = null;
+        // Interpolate back onto the server's state, which lerpTo kept as the target.
+        clientTargetYaw = getSyncedYaw();
+        clientTargetPitch = getSyncedPitch();
+        clientTargetRoll = getSyncedRoll();
+        clientTransformLerpSteps = 3;
+    }
+
+    /**
+     * Simulates the local driver's next input step with the same movement code the
+     * server runs. False once the driver has stopped sending input.
+     */
+    private boolean tickPredictedMovement()
+    {
+        DriveablePrediction.Frame frame = prediction.nextFrame();
+        if (frame == null)
+        {
+            endPrediction();
+            return false;
+        }
+        DriveablePrediction.Blend blend = prediction.drainBlend();
+        if (blend != DriveablePrediction.Blend.NONE)
+        {
+            setPos(getX() + blend.x(), getY() + blend.y(), getZ() + blend.z());
+            setOrientation(getYaw() + blend.yaw(), getPitch() + blend.pitch(), getRoll() + blend.roll());
+        }
+        // The one rising control that moves the driveable at once on the server.
+        if (DriveableInput.isDown(prediction.risingInputs(), DriveableInput.TRIM))
+            setOrientation(getYaw(), 0F, 0F);
+        tickDriveable();
+        prediction.record(frame.sequence(), predictionState());
+        return true;
+    }
+
+    private DriveablePrediction.State predictionState()
+    {
+        Vec3 velocity = getDeltaMovement();
+        return new DriveablePrediction.State(getX(), getY(), getZ(), velocity.x, velocity.y, velocity.z,
+            getYaw(), getPitch(), getRoll(), getThrottle());
+    }
+
+    @Nullable
+    private DriveablePrediction.Frame predictedFrame()
+    {
+        return prediction == null ? null : prediction.currentFrame();
+    }
+
+    /** Tells a predicting driver where the server has the driveable after this tick. */
+    private void sendPredictionReport()
+    {
+        if (isRemoved() || !supportsClientPrediction())
+            return;
+        Seat driver = getDriverSeat();
+        if (driver == null || !driver.isInputPredicted()
+            || !(driver.getRiddenByEntity() instanceof ServerPlayer player))
+            return;
+        OptionalInt acknowledged = driver.getAcknowledgedInputSequence();
+        if (acknowledged.isPresent())
+            PacketHandler.sendTo(new PacketDriveablePrediction(this, tickCount, acknowledged.getAsInt(),
+                predictionState()), player);
+    }
 
     private void initializeClientTransform()
     {
@@ -4969,7 +5161,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected void handleCollisionConsequences(@NotNull Vec3 requestedVelocity)
     {
-        if (configType == null)
+        // Pushing, damaging and squashing others is the server's; a predicting client only moves.
+        if (configType == null || level().isClientSide)
             return;
         boolean legacyKnockback = ModCommonConfig.forceLegacyVehicleKnockback();
         if (!legacyKnockback)

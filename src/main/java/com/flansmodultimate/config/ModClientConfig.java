@@ -73,6 +73,7 @@ public final class ModClientConfig
     public final EnumMouseButton aimButton;
     public final EnumAimType aimType;
     public final EnumGunBlockInteraction gunBlockInteraction;
+    public final boolean predictDriveableMovement;
 
     public final boolean combineAmmoOnReload;
     public final boolean ammoToUpperInventoryOnReload;
@@ -149,6 +150,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
     public static final ForgeConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
     public static final ForgeConfigSpec.EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
+    public static final ForgeConfigSpec.BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
 
     private static final ForgeConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
     private static final ForgeConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
@@ -372,6 +374,9 @@ public final class ModClientConfig
                     NONE: no block is used while armed, doors, levers and buttons included, sneaking or not.
                     """)
                 .defineEnum("gunBlockInteraction", EnumGunBlockInteraction.NO_CONTAINERS);
+        PREDICT_DRIVEABLE_MOVEMENT = builder
+                .comment("Simulate the vehicle or plane you are driving on your own client, so it answers the controls at once instead of a network round trip later. The server stays authoritative and corrects any difference. Off shows only the movement the server reports.")
+                .define("predictDriveableMovement", true);
         builder.pop();
 
         builder.push("Reload Settings");
@@ -485,6 +490,7 @@ public final class ModClientConfig
         aimButton = AIM_BUTTON.get();
         aimType = AIM_TYPE.get();
         gunBlockInteraction = GUN_BLOCK_INTERACTION.get();
+        predictDriveableMovement = PREDICT_DRIVEABLE_MOVEMENT.get();
 
         combineAmmoOnReload = COMBINE_AMMO_ON_RELOAD.get();
         ammoToUpperInventoryOnReload = AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get();

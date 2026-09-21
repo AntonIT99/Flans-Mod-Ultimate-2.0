@@ -13,12 +13,14 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.VehicleOpticsHud;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePrediction;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketDriveableInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
@@ -538,8 +540,11 @@ public final class KeyInputHandler
         boolean changedFlightControl = Math.abs(flightPitch - lastFlightPitch) >= FLIGHT_CONTROL_EPSILON
             || Math.abs(flightRoll - lastFlightRoll) >= FLIGHT_CONTROL_EPSILON || mouseControl != lastMouseControl;
         boolean keepAlive = ++ticksSinceInputPacket >= INPUT_KEEPALIVE_TICKS;
+        // A predicting driver simulates every tick, so every tick is one acknowledged input step.
+        boolean predicting = mount instanceof Seat driverSeat && driverSeat.isDriverSeat()
+            && driveable.supportsClientPrediction() && ModClientConfig.get().predictDriveableMovement;
 
-        if (changedMount || changedMask || changedAim || pendingAim || changedFlightControl || keepAlive)
+        if (predicting || changedMount || changedMask || changedAim || pendingAim || changedFlightControl || keepAlive)
         {
             Vec3 barrelPitchPivot = getActiveModelAimPivot(driveable, mount);
             if (mount instanceof Seat seat && !seat.isDriverSeat())
@@ -551,7 +556,10 @@ public final class KeyInputHandler
                     mouseControl, barrelPitchPivot, ++inputSequence)
                 : new PacketDriveableInput(driveable, mask, aimYaw, aimPitch, flightPitch, flightRoll,
                     mouseControl, barrelPitchPivot, ++inputSequence);
-            PacketHandler.sendToServer(packet);
+            PacketHandler.sendToServer(packet.withPrediction(predicting));
+            if (predicting)
+                driveable.submitPredictedInput(new DriveablePrediction.Frame(inputSequence, mask,
+                    flightPitch, flightRoll, mouseControl));
             lastControlEntityId = driveable.getId();
             lastInputMask = mask;
             lastAimYaw = aimYaw;

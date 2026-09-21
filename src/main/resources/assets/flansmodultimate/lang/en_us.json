@@ -306,6 +306,7 @@
   "options.flansmodultimate.groundVehicleLodDistanceFactor": "Ground Vehicle LOD Distance Factor",
   "options.flansmodultimate.gunAccuracySpreadModifier": "Gun Accuracy Spread Modifier",
   "options.flansmodultimate.gunBlockInteraction": "Block Use While Armed",
+  "options.flansmodultimate.predictDriveableMovement": "Predict Driven Movement",
   "options.flansmodultimate.gunDamageModifier": "Gun Damage Modifier",
   "options.flansmodultimate.gunDispersionModifier": "Gun Dispersion Modifier",
   "options.flansmodultimate.gunFireSoundRange": "Gun Fire Sound Range",

@@ -18,6 +18,7 @@ Manus:
 - Check deployable guns
 
 Feature Ideas:
+- Continue improving rendering performance
 - Muzzle Flashes for deployed guns
 - Centralize all the gravity effects in a usable API for other mods. Also provide a command to test other gravities.
 - Banners

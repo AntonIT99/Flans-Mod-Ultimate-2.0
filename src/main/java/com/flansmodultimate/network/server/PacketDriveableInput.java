@@ -35,6 +35,8 @@ public final class PacketDriveableInput implements IServerPacket
     @Nullable
     private Vec3 barrelPitchPivot;
     private int sequence;
+    /** The client predicts the driveable and wants the server's movement reports. */
+    private boolean predicting;
 
     public PacketDriveableInput()
     {
@@ -90,6 +92,13 @@ public final class PacketDriveableInput implements IServerPacket
         this.sequence = sequence;
     }
 
+    /** Marks this input as coming from a client that predicts the driveable's movement. */
+    public PacketDriveableInput withPrediction(boolean predicting)
+    {
+        this.predicting = predicting;
+        return this;
+    }
+
     @Override
     public void encodeInto(FriendlyByteBuf data)
     {
@@ -108,6 +117,7 @@ public final class PacketDriveableInput implements IServerPacket
             data.writeDouble(barrelPitchPivot.z);
         }
         data.writeVarInt(sequence);
+        data.writeBoolean(predicting);
     }
 
     @Override
@@ -123,6 +133,7 @@ public final class PacketDriveableInput implements IServerPacket
         barrelPitchPivot = data.readBoolean()
             ? new Vec3(data.readDouble(), data.readDouble(), data.readDouble()) : null;
         sequence = data.readVarInt();
+        predicting = data.readBoolean();
     }
 
     @Override
@@ -137,6 +148,8 @@ public final class PacketDriveableInput implements IServerPacket
         if (entity instanceof Driveable driveable)
         {
             Seat seat = driveable.getSeat(player);
+            if (seat != null)
+                seat.setInputPredicted(predicting && seat.isDriverSeat());
             if (seat != null && seat.isDriverSeat())
                 driveable.setModelBarrelPitchPivot(barrelPitchPivot);
             else if (seat != null)

@@ -14,6 +14,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +36,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.OptionalInt;
 
 /**
  * Lightweight mount proxy for a driveable seat.
@@ -166,6 +169,9 @@ public class Seat extends Entity implements IControllable
     private long lastInputGameTime;
     private boolean receivedInputSequence;
     private Entity inputOccupant;
+    /** The rider's client predicts the driveable's movement and wants the server's reports. */
+    @Getter @Setter
+    private boolean inputPredicted;
 
     public Seat(EntityType<?> entityType, Level level)
     {
@@ -637,6 +643,12 @@ public class Seat extends Entity implements IControllable
         float yawSpeed = info == null ? 0.15F : Math.max(0.01F, Math.abs(info.getAimingSpeed().x) * 0.075F);
         float pitchSpeed = info == null ? 0.15F : Math.max(0.01F, Math.abs(info.getAimingSpeed().y) * 0.075F);
         applyClientAimDelta((float) deltaX * yawSpeed, -(float) deltaY * pitchSpeed);
+    }
+
+    /** The latest input step accepted from the rider, which prediction reports acknowledge. */
+    public OptionalInt getAcknowledgedInputSequence()
+    {
+        return receivedInputSequence ? OptionalInt.of(lastInputSequence) : OptionalInt.empty();
     }
 
     /** Applies a local view impulse while retaining the limits declared by this seat. */

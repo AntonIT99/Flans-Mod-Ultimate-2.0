@@ -13,6 +13,7 @@ import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketDebugShootPoint;
 import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
+import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
@@ -88,7 +89,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler {
 
-    public static final String PROTOCOL = "12";
+    public static final String PROTOCOL = "13";
     public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -119,6 +120,7 @@ public final class PacketHandler {
         registerS2C(PacketDebugShootPoint.class);
         registerS2C(PacketDriveableCrashFireball.class);
         registerS2C(PacketDriveableDamage.class);
+        registerS2C(PacketDriveablePrediction.class);
         registerS2C(PacketDriveableRenderState.class);
         registerS2C(PacketExplodeParticles.class);
         registerS2C(PacketFlak.class);

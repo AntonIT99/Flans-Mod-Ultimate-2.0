@@ -256,6 +256,13 @@ public class Vehicle extends Driveable
         }
     }
 
+    /** The predicted step steers the wheels and advances the tracks itself. */
+    @Override
+    public boolean supportsClientPrediction()
+    {
+        return true;
+    }
+
     @Override
     protected void handleRisingInputs(Seat seat, Player player, int rising)
     {
