@@ -124,6 +124,26 @@ public class Wheel extends Entity
         setXRot(driveable.getEntityFacingPitch());
     }
 
+    /**
+     * Once bound, the wheel follows the already-interpolated parent locally; its own
+     * sparse movement packets would only snap it back to a stale position.
+     */
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
+    {
+        if (level().isClientSide && driveable != null)
+            return;
+        super.lerpTo(x, y, z, yaw, pitch, steps, teleport);
+    }
+
+    @Override
+    public void lerpMotion(double x, double y, double z)
+    {
+        if (level().isClientSide && driveable != null)
+            return;
+        super.lerpMotion(x, y, z);
+    }
+
     /** A blown-off wheel leaves no hitbox behind until it is repaired. */
     @Override
     public boolean isPickable()

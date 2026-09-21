@@ -252,6 +252,12 @@ public class FlansMod
     public static final RegistryObject<SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
 
     // Entities
+    /**
+     * Seats and wheels snap to their parent on both sides every tick, so their own movement
+     * packets carry nothing a client uses. Synced data such as seat aim is still sent as soon
+     * as it changes, independently of this interval.
+     */
+    private static final int PROXY_UPDATE_INTERVAL = 20;
     public static final RegistryObject<EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () -> EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.bulletRegistrationTrackingRange())
@@ -317,7 +323,7 @@ public class FlansMod
     public static final RegistryObject<EntityType<Seat>> seatEntity = entityRegistry.register("driveable_seat", () -> EntityType.Builder.<Seat>of(Seat::new, MobCategory.MISC)
         .sized(0.6F, 0.6F)
         .clientTrackingRange(128)
-        .updateInterval(1)
+        .updateInterval(PROXY_UPDATE_INTERVAL)
         .setShouldReceiveVelocityUpdates(false)
         .noSave()
         .noSummon()
@@ -326,7 +332,7 @@ public class FlansMod
     public static final RegistryObject<EntityType<Wheel>> wheelEntity = entityRegistry.register("driveable_wheel", () -> EntityType.Builder.<Wheel>of(Wheel::new, MobCategory.MISC)
         .sized(0.75F, 0.75F)
         .clientTrackingRange(128)
-        .updateInterval(1)
+        .updateInterval(PROXY_UPDATE_INTERVAL)
         .setShouldReceiveVelocityUpdates(false)
         .noSave()
         .noSummon()
