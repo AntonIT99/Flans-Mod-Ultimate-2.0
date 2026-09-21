@@ -336,6 +336,9 @@ public class PlayerData
     public void playerKilled()
     {
         isShootingRight = isShootingLeft = false;
+        // Nobody keeps aiming through their own death: the client stops sending scope
+        // state once it is out of the world, so the end of it has to be assumed here.
+        scoped = false;
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
 

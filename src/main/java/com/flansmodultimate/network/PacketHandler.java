@@ -47,7 +47,6 @@ import com.flansmodultimate.network.server.PacketGunPreferredAmmo;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSecondaryMode;
-import com.flansmodultimate.network.server.PacketGunSpread;
 import com.flansmodultimate.network.server.PacketGunSwitchDelay;
 import com.flansmodultimate.network.server.PacketGunVariableZoom;
 import com.flansmodultimate.network.server.PacketLoadoutAction;
@@ -155,7 +154,6 @@ public final class PacketHandler {
         registerC2S(PacketGunReload.class);
         registerC2S(PacketReloadPreferences.class);
         registerC2S(PacketGunScopedState.class);
-        registerC2S(PacketGunSpread.class);
         registerC2S(PacketGunSwitchDelay.class);
         registerC2S(PacketGunSecondaryMode.class);
         registerC2S(PacketGunVariableZoom.class);

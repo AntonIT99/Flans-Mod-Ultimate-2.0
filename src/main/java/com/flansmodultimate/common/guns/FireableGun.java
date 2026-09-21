@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.guns;
 
+import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -46,6 +48,21 @@ public class FireableGun
         this(gunType, gunType.getDamage(gunStack), gunType.getSpread(gunStack, enumMovement, airborne),
             gunType.getBaseBulletSpeed(gunStack), gunType.getBulletSpeedMultiplier(gunStack), gunType.getSpreadPattern(gunStack));
         EnchantmentModule.modifyGun(this, shooter, otherHandStack);
+
+        if (isAimingDownSights(shooter))
+            multiplySpread(gunType.getAdsSpreadMultiplier(gunStack));
+    }
+
+    /**
+     * Whether the shot being composed is aimed down the sights.
+     *
+     * <p>The client owns nothing here beyond telling the server that it raised the sights; what
+     * that is worth is the weapon's own number, resolved per shot against the stance the shooter
+     * is actually in at the moment it is fired.
+     */
+    private static boolean isAimingDownSights(@Nullable LivingEntity shooter)
+    {
+        return shooter instanceof Player player && PlayerData.getInstance(player).isScoped();
     }
 
     /** A mounted gun, which has no item stack and therefore no attachments. */

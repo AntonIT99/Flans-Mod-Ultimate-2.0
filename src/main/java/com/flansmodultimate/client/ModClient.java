@@ -22,15 +22,12 @@ import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
-import com.flansmodultimate.network.server.PacketGunSpread;
-import com.flansmodultimate.util.ModUtils;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
@@ -320,9 +317,7 @@ public class ModClient
             // force first-person while scoped
             opts.setCameraType(CameraType.FIRST_PERSON);
 
-            //Send ads spread packet to server
-            sendADSSpreadToServer(gunStack, gunItem, ModUtils.getEnumMovement(player), !player.onGround());
-
+            // The server applies the gun's ADS spread itself, per shot, from this state
             PacketHandler.sendToServer(new PacketGunScopedState(true));
         }
         else
@@ -334,24 +329,9 @@ public class ModClient
             opts.sensitivity().set(originalMouseSensitivity);
             opts.setCameraType(originalCameraType);
 
-            //Send default spread packet to server
-            PacketHandler.sendToServer(new PacketGunSpread(gunStack, gunItem.getConfigType().getDefaultSpread(gunStack)));
-
             PacketHandler.sendToServer(new PacketGunScopedState(false));
         }
         scopeTime = 10;
-    }
-
-    private static void sendADSSpreadToServer(ItemStack gunStack, GunItem gunItem, EnumMovement enumMovement, boolean airborne)
-    {
-        float spread = gunItem.getConfigType().getSpread(gunStack, enumMovement, airborne);
-
-        if (gunItem.getConfigType().getNumBullets() == 1)
-            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplier() : gunItem.getConfigType().getAdsSpreadModifier();
-        else
-            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplierShotgun() : gunItem.getConfigType().getAdsSpreadModifierShotgun();
-
-        PacketHandler.sendToServer(new PacketGunSpread(gunStack, spread));
     }
 
     public static void tick()
@@ -766,12 +746,7 @@ public class ModClient
         {
             if (!canUseScope(player))
             {
-                currentScope = null;
-
-                mc.options.sensitivity().set(originalMouseSensitivity);
-                mc.options.setCameraType(originalCameraType);
-
-                PacketHandler.sendToServer(new PacketGunScopedState(false));
+                exitScope(mc);
                 return;
             }
 
@@ -786,9 +761,7 @@ public class ModClient
 
             if (guiOpen || notAGun || differentScope)
             {
-                currentScope = null;
-                mc.options.sensitivity().set(originalMouseSensitivity);
-                mc.options.setCameraType(originalCameraType);
+                exitScope(mc);
             }
             else if (itemInHand instanceof GunItem gunItem)
             {
@@ -803,6 +776,22 @@ public class ModClient
                 }
             }
         }
+    }
+
+    /**
+     * Leaves the scope and restores the options it borrowed.
+     *
+     * <p>The server has to hear about every one of these: aim state it is told about but never
+     * told the end of would leave the player aiming forever as far as the aimed spread and the
+     * scope's night vision are concerned.
+     */
+    private static void exitScope(Minecraft mc)
+    {
+        currentScope = null;
+        mc.options.sensitivity().set(originalMouseSensitivity);
+        mc.options.setCameraType(originalCameraType);
+
+        PacketHandler.sendToServer(new PacketGunScopedState(false));
     }
 
     private static boolean canUseScope(Player player)

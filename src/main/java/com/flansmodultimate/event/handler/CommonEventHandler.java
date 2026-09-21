@@ -276,6 +276,9 @@ public final class CommonEventHandler
     {
         if (e.getEntity() instanceof ServerPlayer sp)
         {
+            // Player data outlives the connection, so a player who disconnected while
+            // aiming would come back still aiming until they next raised the sights.
+            PlayerData.getInstance(sp).setScoped(false);
             ModCommonConfigSync.syncClientIfServer(sp);
             FlansMod.teamsManager.playerLoggedIn(sp);
         }

@@ -19,7 +19,6 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
@@ -163,7 +162,6 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /**
      * The amount that bullets spread out when fired from this gun
      */
-    @Setter
     protected float bulletSpread;
     protected boolean readDispersion;
     protected EnumSpreadPattern spreadPattern = EnumSpreadPattern.CIRCLE;
@@ -647,10 +645,6 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected float knockbackModifier;
-    /**
-     * Default spread of the gun. Do not modify.
-     */
-    protected float defaultSpread;
     /** Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg */
     @Getter
     protected float adsSpreadModifier = -1F;
@@ -938,7 +932,6 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             secondaryFunction = EnumFunction.CUSTOM_MELEE;
         secondaryFunction = EnumFunction.get(readValue("SecondaryFunction", secondaryFunction.toString(), file));
 
-        defaultSpread = bulletSpread;
         recoilYaw /= 10F;
         // Zero means "not authored", which is what hands crouching over to
         // RecoilSneakingMultiplierYaw. A divisor of zero or less cannot decrease
@@ -1478,16 +1471,21 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     }
 
     /**
-     * Get the default spread of a specific gun, taking into account attachments
+     * What aiming down the sights does to this gun's spread.
+     *
+     * <p>Shotguns use their own modifier, because tightening a pellet cone the way a single
+     * bullet's spread tightens would turn every shotgun into a slug gun. A modifier of -1 means
+     * the pack did not author one, so the server's configured default applies.
+     *
+     * <p>Aim state is player state, so this is a multiplier rather than a spread: the caller
+     * folds it into the shot it is composing and nothing here is stored on the shared type.
      */
-    public float getDefaultSpread(ItemStack stack)
+    public float getAdsSpreadMultiplier(@Nullable ItemStack stack)
     {
-        float stackSpread = defaultSpread;
-
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-            stackSpread *= attachment.spreadMultiplier;
-
-        return stackSpread;
+        if (getNumBullets(stack, null) == 1)
+            return adsSpreadModifier == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplier() : adsSpreadModifier;
+        else
+            return adsSpreadModifierShotgun == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplierShotgun() : adsSpreadModifierShotgun;
     }
 
     public EnumSpreadPattern getSpreadPattern(@Nullable ItemStack stack)

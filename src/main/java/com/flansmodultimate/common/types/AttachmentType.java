@@ -6,7 +6,6 @@ import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.item.AttachmentItem;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,7 +84,7 @@ public class AttachmentType extends PaintableType implements IScope
     /** The delay between shots in ticks (1/20ths of seconds) */
     protected float secondaryDamage = 1;
     /** The delay between shots in ticks (1/20ths of seconds) */
-    @Getter @Setter
+    @Getter
     protected float secondarySpread = 1;
     /** The speed of bullets upon leaving this gun */
     protected float secondarySpeed = 5.0F;
