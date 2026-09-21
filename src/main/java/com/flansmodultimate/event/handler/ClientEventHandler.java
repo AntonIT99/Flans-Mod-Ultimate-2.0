@@ -7,6 +7,8 @@ import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.debug.DriveableHitboxRenderer;
 import com.flansmodultimate.client.debug.PlayerHitboxRenderer;
+import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
+import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.input.KeyInputHandler;
@@ -43,6 +45,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
@@ -52,8 +55,15 @@ import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.OptionsScreen;
+import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -63,6 +73,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientEventHandler
@@ -71,6 +83,43 @@ public final class ClientEventHandler
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
         ModClient.updateCameraZoom(event);
+    }
+
+    /** Adds the mod's options button to the vanilla options screen and pause menu, as configured. */
+    @SubscribeEvent
+    public static void onScreenInit(ScreenEvent.Init.Post event)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null)
+            return;
+
+        Screen screen = event.getScreen();
+        boolean wanted = screen instanceof OptionsScreen && config.optionsButtonPlacement.inOptionsScreen()
+            || screen instanceof PauseScreen && config.optionsButtonPlacement.inPauseMenu();
+        if (!wanted)
+            return;
+
+        List<MenuButtonPlacement.Rect> buttons = event.getListenersList().stream()
+            .filter(Button.class::isInstance)
+            .map(Button.class::cast)
+            .map(button -> new MenuButtonPlacement.Rect(button.getX(), button.getY(), button.getWidth(), button.getHeight()))
+            .toList();
+
+        // The pause screen shown while the game is still loading has no menu to hang the button on
+        MenuButtonPlacement.Placement placement = MenuButtonPlacement.compute(buttons, screen.width, screen.height);
+        if (placement == null)
+            return;
+
+        // The row the button takes over, and everything below it, moves down to make room
+        for (GuiEventListener listener : event.getListenersList())
+        {
+            if (listener instanceof AbstractWidget widget && widget.getY() >= placement.shiftFromY())
+                widget.setY(widget.getY() + placement.shiftBy());
+        }
+
+        event.addListener(Button.builder(Component.translatable("gui.flansmodultimate.options.menu_button"), button -> FlansOptionsScreen.open())
+            .bounds(placement.x(), placement.y(), placement.width(), placement.height())
+            .build());
     }
 
     @SubscribeEvent
@@ -178,7 +227,8 @@ public final class ClientEventHandler
         if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type()
             && (VehicleOpticsClient.activeSeat() != null
                 && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
-                || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair || (ModCommonConfig.get().disableCrosshairForGuns() && holdingNonMeleeGun)))
+                || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
+                || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun)))
         {
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();

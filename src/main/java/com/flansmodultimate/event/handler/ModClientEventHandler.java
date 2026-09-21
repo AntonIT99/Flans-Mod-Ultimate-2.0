@@ -9,6 +9,7 @@ import com.flansmodultimate.client.gui.GunBoxScreen;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
 import com.flansmodultimate.client.gui.MechaInventoryScreen;
 import com.flansmodultimate.client.gui.PaintjobTableScreen;
+import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
@@ -48,6 +49,7 @@ import com.flansmodultimate.common.types.TypeFile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
@@ -58,6 +60,7 @@ import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.sound.SoundEngineLoadEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -90,6 +93,11 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
     {
+        // The Config button of the mod list opens the same screen as the pause menu button
+        ModList.get().getModContainerById(FlansMod.MOD_ID).ifPresent(container ->
+            container.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new FlansOptionsScreen(parent))));
+
         event.enqueueWork(() -> {
             CustomItemRenderers.registerAll();
 

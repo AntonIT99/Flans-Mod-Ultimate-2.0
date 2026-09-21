@@ -56,6 +56,7 @@ import com.flansmodultimate.network.server.PacketReloadPreferences;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
+import com.flansmodultimate.network.server.PacketSetServerOption;
 import com.flansmodultimate.network.server.PacketTeamsAction;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -162,6 +163,7 @@ public final class PacketHandler {
         registerC2S(PacketRequestDebug.class);
         registerC2S(PacketRequestDismount.class);
         registerC2S(PacketSelectPaintjob.class);
+        registerC2S(PacketSetServerOption.class);
         registerC2S(PacketTeamsAction.class);
         registerC2S(PacketLoadoutAction.class);
 

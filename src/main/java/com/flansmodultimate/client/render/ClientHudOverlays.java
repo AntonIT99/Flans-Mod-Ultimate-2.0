@@ -161,6 +161,9 @@ public final class ClientHudOverlays
     };
 
     public static final IGuiOverlay HUD = (gui, g, partialTick, sw, sh) -> {
+        if (!ModClientConfig.get().showFlansHud || gui.getMinecraft().options.hideGui)
+            return;
+
         renderAAGunHud(g, partialTick, sw);
         renderDeployedGunHud(g, sw);
         renderPlayerAmmo(g, sw, sh);

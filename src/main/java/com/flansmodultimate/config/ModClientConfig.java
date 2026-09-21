@@ -17,6 +17,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ModClientConfig
@@ -29,6 +30,9 @@ public final class ModClientConfig
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean enableUncensoredContent;
+    public final EnumOptionsButtonPlacement optionsButtonPlacement;
+    public final boolean showFlansHud;
+    public final boolean hideCrosshairForGuns;
     public final boolean loadAllModelsInCache;
     public final boolean searchModelsInOtherContentPacks;
     public final boolean preferBuiltInModelClasses;
@@ -100,19 +104,22 @@ public final class ModClientConfig
     public final boolean alwaysEnableMechaCullingByDefault;
 
     private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
+    public static final ForgeConfigSpec.EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
+    public static final ForgeConfigSpec.BooleanValue SHOW_FLANS_HUD;
+    public static final ForgeConfigSpec.BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
     private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
     private static final ForgeConfigSpec.BooleanValue SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     private static final ForgeConfigSpec.BooleanValue PREFER_BUILT_IN_MODEL_CLASSES;
-    private static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
-    private static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
-    private static final ForgeConfigSpec.BooleanValue SHOW_AMMO_HUD;
-    private static final ForgeConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
-    private static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
-    private static final ForgeConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
+    public static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
+    public static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
+    public static final ForgeConfigSpec.BooleanValue SHOW_AMMO_HUD;
+    public static final ForgeConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
+    public static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
+    public static final ForgeConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
     private static final ForgeConfigSpec.BooleanValue HD_HIT_MARKER;
-    private static final ForgeConfigSpec.BooleanValue FANCY_HIT_MARKER;
-    private static final ForgeConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
+    public static final ForgeConfigSpec.BooleanValue FANCY_HIT_MARKER;
+    public static final ForgeConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
     private static final ForgeConfigSpec.BooleanValue ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     private static final ForgeConfigSpec.IntValue BULLET_RENDER_DISTANCE;
     private static final ForgeConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
@@ -139,7 +146,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
-    private static final ForgeConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
+    public static final ForgeConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
 
     private static final ForgeConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
     private static final ForgeConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
@@ -173,6 +180,8 @@ public final class ModClientConfig
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
+    /** Option changes the options screen has made in memory but not written to the file yet. */
+    private static final AtomicBoolean pendingChanges = new AtomicBoolean();
 
     static
     {
@@ -183,6 +192,26 @@ public final class ModClientConfig
         ENABLE_UNCENSORED_CONTENT = builder
                 .comment("Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources.")
                 .define("enableUncensoredContent", false);
+        OPTIONS_BUTTON_PLACEMENT = builder
+                .comment("""
+                    Where the button opening the Flan's Mod options screen is added.
+                    OPTIONS_SCREEN: in the vanilla options screen. PAUSE_MENU: in the pause menu.
+                    BOTH: in either one. NONE: nowhere; the screen stays reachable from the mod list.
+                    """)
+                .defineEnum("optionsButtonPlacement", EnumOptionsButtonPlacement.OPTIONS_SCREEN);
+        SHOW_FLANS_HUD = builder
+                .comment("""
+                    Show Flan's Mod's own in-world HUD: gun and vehicle ammunition, AA gun and deployed gun
+                    readouts, team information and the kill feed. The vanilla HUD is not affected.
+                    """)
+                .define("showFlansHud", true);
+        HIDE_CROSSHAIR_FOR_GUNS = builder
+                .comment("""
+                    Personal preference: hide the vanilla crosshair while holding a non-melee Flan gun.
+                    The server's own disableCrosshairForGuns setting hides it for everyone regardless of this
+                    option, which can only hide the crosshair, never bring it back.
+                    """)
+                .define("hideCrosshairForGuns", false);
         LOAD_ALL_MODELS_IN_CACHE = builder
                 .comment("""
                     If true, loads and caches ALL models up-front during resource reload.
@@ -402,6 +431,9 @@ public final class ModClientConfig
     {
         showPackNameInItemDescriptions = SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS.get();
         enableUncensoredContent = ENABLE_UNCENSORED_CONTENT.get();
+        optionsButtonPlacement = OPTIONS_BUTTON_PLACEMENT.get();
+        showFlansHud = SHOW_FLANS_HUD.get();
+        hideCrosshairForGuns = HIDE_CROSSHAIR_FOR_GUNS.get();
         loadAllModelsInCache = LOAD_ALL_MODELS_IN_CACHE.get();
         searchModelsInOtherContentPacks = SEARCH_MODELS_IN_OTHER_CONTENT_PACKS.get();
         preferBuiltInModelClasses = PREFER_BUILT_IN_MODEL_CLASSES.get();
@@ -574,6 +606,48 @@ public final class ModClientConfig
         return builder
             .comment("Render " + typeName + " with face culling by default. Disable this only for content that needs double-sided model faces.")
             .define(configName, defaultValue);
+    }
+
+    /**
+     * Persist a value the in-game options screen just changed and apply it immediately. The config watcher
+     * would re-read the file on its own eventually; baking here makes the change visible on the next frame.
+     */
+    public static <T> void setAndSave(ForgeConfigSpec.ConfigValue<T> value, T newValue)
+    {
+        if (set(value, newValue))
+            flushPendingChanges();
+    }
+
+    /**
+     * Change a value without writing the file yet, for a slider the player is still dragging. The change
+     * takes effect on the next {@link #flushPendingChanges()}, which the options screen does when it closes.
+     *
+     * @return whether the value changed
+     */
+    public static <T> boolean set(ForgeConfigSpec.ConfigValue<T> value, T newValue)
+    {
+        if (!configSpec.isLoaded())
+        {
+            FlansMod.log.warn("Ignoring a client option change made before {} was loaded", CONFIG_FILE_NAME);
+            return false;
+        }
+
+        if (newValue.equals(value.get()))
+            return false;
+
+        value.set(newValue);
+        pendingChanges.set(true);
+        return true;
+    }
+
+    /** Writes any deferred option changes to the config file and applies them. */
+    public static void flushPendingChanges()
+    {
+        if (!pendingChanges.getAndSet(false) || !configSpec.isLoaded())
+            return;
+
+        configSpec.save();
+        bake();
     }
 
     public static void bake()

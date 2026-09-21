@@ -2,7 +2,6 @@ General:
 - Check if ConfigReference in Wiki is exhaustive / up to date (create a skill)
 - Check if all FMU features are implemented in the mod
 - Implement TaP Flan's Mod Features
-- UI Mod Options (display / hide HUD + censored / uncensored)
 
 Content Packs:
 - run flans-category-research to add missing fields to categories

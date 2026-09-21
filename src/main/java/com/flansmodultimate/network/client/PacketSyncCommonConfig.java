@@ -1,5 +1,6 @@
 package com.flansmodultimate.network.client;
 
+import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.config.ApocalypseConfigSnapshot;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModApocalypseConfig;
@@ -43,5 +44,7 @@ public class PacketSyncCommonConfig implements IClientPacket
     {
         ModCommonConfig.applyServerSnapshot(commonSnapshot);
         ModApocalypseConfig.applyServerSnapshot(apocalypseSnapshot);
+        // An open options screen shows server settings, which have just changed under it
+        FlansOptionsScreen.onServerConfigSynced();
     }
 }
