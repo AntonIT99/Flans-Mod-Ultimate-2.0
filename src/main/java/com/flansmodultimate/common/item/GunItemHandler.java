@@ -179,7 +179,7 @@ public class GunItemHandler
             PacketPlaySound.sendSoundPacket(player, item.configType.getMeleeSoundRange(), item.configType.getMeleeSound(), true);
 
         data.doMelee(player, item.configType.getMeleeTime(), item.configType);
-        PacketHandler.sendToDimension(level.dimension(), new PacketGunMeleeClient(player.getUUID(), hand));
+        PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
     }
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
@@ -202,12 +202,12 @@ public class GunItemHandler
         if (gunFireEvent.isCanceled())
         {
             data.setShooting(hand, false);
-            PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, false));
+            PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
             return;
         }
 
         data.setShooting(hand, true);
-        PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, true));
+        PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, true), player);
 
         EnumFireMode fireMode = item.configType.getFireMode(gunStack);
         boolean automaticFire = fireMode.isAutomaticFire();
@@ -318,7 +318,7 @@ public class GunItemHandler
             int reloadCount = item.getReloadCount(gunStack);
 
             data.doGunReload(hand, reloadTime, item.configType.getShootDelay(gunStack));
-            PacketHandler.sendToDimension(level.dimension(), new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo));
+            PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo), player);
 
             String reloadSound = item.configType.getReloadSound(gunStack);
             // Play reload sound

@@ -17,6 +17,7 @@ import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.DriveablePrediction;
 import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
+import com.flansmodultimate.common.driveables.DriveableVisualCache;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.FluidFuel;
@@ -354,6 +355,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected boolean weaponInventoryFingerprintInitialized;
     protected int renderInventoryFingerprint;
     protected boolean renderInventoryFingerprintInitialized;
+    private final DriveableVisualCache ammoNameCache = new DriveableVisualCache();
+    private final DriveableVisualCache renderInventoryCache = new DriveableVisualCache();
     protected int flareDelay;
     @Getter protected int ticksFlareUsing;
     protected int ticksSinceUsed;
@@ -630,7 +633,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     private void updateCurrentAmmoNames()
     {
-        if (level().isClientSide)
+        if (level().isClientSide || driveableData == null
+            || !ammoNameCache.needsRefresh(driveableData, driveableData.getInventoryRevision(),
+                loadedOrdnanceSlot[0], loadedOrdnanceSlot[1], tickCount))
             return;
         entityData.set(DATA_PRIMARY_AMMO_NAME, findCurrentAmmoName(false));
         entityData.set(DATA_SECONDARY_AMMO_NAME, findCurrentAmmoName(true));
@@ -2147,7 +2152,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     private void syncRenderInventoryState()
     {
-        int paintjobId = driveableData == null ? 0 : driveableData.getPaintjobID();
+        if (driveableData == null || !renderInventoryCache.needsRefresh(driveableData,
+            driveableData.getInventoryRevision(), 0, 0, tickCount))
+            return;
+        int paintjobId = driveableData.getPaintjobID();
         if (entityData.get(DATA_PAINTJOB_ID) != paintjobId)
             entityData.set(DATA_PAINTJOB_ID, paintjobId);
 

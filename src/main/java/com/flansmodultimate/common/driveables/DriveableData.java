@@ -11,7 +11,6 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import lombok.Getter;
-import lombok.Setter;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -58,8 +57,10 @@ public final class DriveableData implements Container
     @Getter private final Map<EnumDriveablePart, DriveablePart> parts;
     @Getter private final NonNullList<ItemStack> inventory;
     @Getter private float fuelInTank;
-    @Getter @Setter private int paintjobID;
-    @Getter @Setter private boolean inventoryChanged;
+    @Getter private int paintjobID;
+    @Getter private boolean inventoryChanged;
+    /** Independent of the reload dirty flag, which firing/reloading may consume before visual sync. */
+    @Getter private long inventoryRevision;
     @Getter private String engineShortName = StringUtils.EMPTY;
     private CompoundTag preservedTag = new CompoundTag();
 
@@ -239,6 +240,24 @@ public final class DriveableData implements Container
     public void setChanged()
     {
         inventoryChanged = true;
+        ++inventoryRevision;
+    }
+
+    public void setInventoryChanged(boolean changed)
+    {
+        if (changed)
+            setChanged();
+        else
+            inventoryChanged = false;
+    }
+
+    public void setPaintjobID(int paintjobID)
+    {
+        if (this.paintjobID != paintjobID)
+        {
+            this.paintjobID = paintjobID;
+            ++inventoryRevision;
+        }
     }
 
     @Override
@@ -487,6 +506,7 @@ public final class DriveableData implements Container
             parts.values().forEach(part -> part.loadLegacy(data));
         }
         inventoryChanged = false;
+        ++inventoryRevision;
     }
 
     private float readFuel(CompoundTag data, @Nullable CompoundTag root)

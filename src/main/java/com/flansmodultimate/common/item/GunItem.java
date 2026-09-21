@@ -604,7 +604,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (data.isShooting(hand) && decision != EnumFireDecision.SHOOT)
             {
                 data.setShooting(hand, false);
-                PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, false));
+                PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
             }
         }
         else if (configType.getPrimaryFunction() == EnumFunction.CUSTOM_MELEE && data.isShootKeyPressed(hand))

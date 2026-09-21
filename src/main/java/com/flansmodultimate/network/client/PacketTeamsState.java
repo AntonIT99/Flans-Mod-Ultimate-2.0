@@ -32,6 +32,8 @@ public final class PacketTeamsState implements IClientPacket
     public record PlayerScore(String name, int score, int kills, int deaths, int zombieScore, String playerClass) {}
     public record TeamScore(String id, String name, int colour, int score, List<PlayerScore> players) {}
     public record VoteOption(String mapName, String gameType, String teams, int votes) {}
+    /** Viewer-independent data, built once for each broadcast rather than once per player. */
+    public record SharedScoreboard(List<TeamScore> teamScores, List<VoteOption> voteOptions) {}
 
     private OpenScreen openScreen = OpenScreen.NONE;
     private boolean enabled;
@@ -54,6 +56,12 @@ public final class PacketTeamsState implements IClientPacket
     private List<VoteOption> voteOptions = List.of();
 
     public static PacketTeamsState create(TeamsManager manager, ServerPlayer viewer, OpenScreen openScreen)
+    {
+        return create(manager, viewer, openScreen, createSharedScoreboard(manager));
+    }
+
+    public static PacketTeamsState create(TeamsManager manager, ServerPlayer viewer, OpenScreen openScreen,
+                                         SharedScoreboard shared)
     {
         PacketTeamsState packet = new PacketTeamsState();
         packet.openScreen = openScreen;
@@ -104,6 +112,17 @@ public final class PacketTeamsState implements IClientPacket
                     playerClass.createStartingItemPreviews())).toList();
         }
 
+        packet.teamScores = shared.teamScores();
+        packet.voteOptions = shared.voteOptions();
+        return packet;
+    }
+
+    public static SharedScoreboard createSharedScoreboard(TeamsManager manager)
+    {
+        TeamsRound round = manager.getCurrentRound().orElse(null);
+        if (round == null)
+            return new SharedScoreboard(List.of(), List.of());
+
         List<TeamScore> scores = new ArrayList<>();
         for (String id : round.getTeamIds())
         {
@@ -116,7 +135,6 @@ public final class PacketTeamsState implements IClientPacket
                 .toList();
             scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), players));
         }
-        packet.teamScores = List.copyOf(scores);
 
         int[] votes = new int[manager.getVoteOptions().size()];
         for (ServerPlayer player : manager.getServer().getPlayerList().getPlayers())
@@ -135,8 +153,7 @@ public final class PacketTeamsState implements IClientPacket
                 .map(Team::getName).reduce((left, right) -> left + " vs " + right).orElse("");
             options.add(new VoteOption(map, type == null ? option.getGameTypeId() : type.getName(), teams, votes[i]));
         }
-        packet.voteOptions = List.copyOf(options);
-        return packet;
+        return new SharedScoreboard(List.copyOf(scores), List.copyOf(options));
     }
 
     private static PlayerScore playerScore(ServerPlayer player)

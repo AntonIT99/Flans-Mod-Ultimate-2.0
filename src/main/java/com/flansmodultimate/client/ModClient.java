@@ -25,7 +25,6 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
@@ -59,7 +58,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
@@ -67,9 +65,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -190,10 +186,10 @@ public class ModClient
     }
 
     /** Lighting */
-    private static final List<BlockPos> blockLightOverrides = new ArrayList<>();
+    private static final DynamicLightUpdates dynamicLights = new DynamicLightUpdates();
+    private static ClientLevel lightingLevel;
     /** Immutable-after-publication lookup read by the render/light threads. */
     private static volatile Long2ByteMap forceDarkSkyLight = Long2ByteMaps.EMPTY_MAP;
-    private static int lightOverrideRefreshRate = 5;
 
     // Gun animations
     /** Gun animation variables for each entity holding a gun. Currently only applicable to the player */
@@ -350,7 +346,7 @@ public class ModClient
 
         PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
 
-        updateFlashlights(mc, level);
+        updateFlashlights(level);
         InstantBulletRenderer.updateAllTrails();
         KillMessageFeed.tick();
         updateTimers();
@@ -424,27 +420,43 @@ public class ModClient
     }
 
     /** Handle flashlight block light override */
-    private static void updateFlashlights(Minecraft mc, ClientLevel level)
+    private static void updateFlashlights(ClientLevel level)
     {
-        if (!shouldRunFlashlightUpdate(mc))
+        if (lightingLevel != level)
+        {
+            clearTransientLighting();
+            lightingLevel = level;
+        }
+        if (!dynamicLights.tick(hasFancyGraphics() ? 10 : 20))
             return;
 
-        updateRefreshRate();
-        clearOldLightBlocks(level);
-        handlePlayerFlashlights(level);
+        Long2ByteOpenHashMap requested = new Long2ByteOpenHashMap();
+        handlePlayerFlashlights(level, requested);
         Long2ByteOpenHashMap darkSkyLight = new Long2ByteOpenHashMap();
-        handleDynamicEntityLights(level, darkSkyLight);
+        handleDynamicEntityLights(level, requested, darkSkyLight);
+        dynamicLights.apply(requested, new DynamicLightUpdates.Access()
+        {
+            @Override
+            public int lightAt(long position)
+            {
+                BlockPos pos = BlockPos.of(position);
+                if (!level.hasChunkAt(pos))
+                    return -1;
+                BlockState state = level.getBlockState(pos);
+                if (state.isAir())
+                    return 0;
+                return state.is(Blocks.LIGHT) && state.getValue(LightBlock.LEVEL) > 0
+                    ? state.getValue(LightBlock.LEVEL) : -1;
+            }
+
+            @Override
+            public void setLight(long position, int light)
+            {
+                level.setBlock(BlockPos.of(position), light == 0 ? Blocks.AIR.defaultBlockState()
+                    : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light), Block.UPDATE_CLIENTS);
+            }
+        });
         forceDarkSkyLight = darkSkyLight.isEmpty() ? Long2ByteMaps.EMPTY_MAP : Long2ByteMaps.unmodifiable(darkSkyLight);
-    }
-
-    private static boolean shouldRunFlashlightUpdate(Minecraft mc)
-    {
-        return mc.level != null && CommonEventHandler.getTicker() % lightOverrideRefreshRate == 0;
-    }
-
-    private static void updateRefreshRate()
-    {
-        lightOverrideRefreshRate = hasFancyGraphics() ? 10 : 20;
     }
 
     public static boolean hasFancyGraphics()
@@ -453,29 +465,19 @@ public class ModClient
         return graphics != GraphicsStatus.FAST;
     }
 
-    private static void clearOldLightBlocks(ClientLevel level)
-    {
-        for (BlockPos pos : blockLightOverrides)
-        {
-            if (level.getBlockState(pos).is(Blocks.LIGHT))
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-        }
-        blockLightOverrides.clear();
-    }
-
     /** Handle lights from player-held flashlights. */
-    private static void handlePlayerFlashlights(ClientLevel level)
+    private static void handlePlayerFlashlights(ClientLevel level, Long2ByteMap requested)
     {
         for (Player player : level.players())
         {
             AttachmentType grip = getFlashlightGrip(player);
             if (grip != null)
-                placeFlashlightLightsForPlayer(level, player, grip);
+                placeFlashlightLightsForPlayer(player, grip, requested);
         }
     }
 
     /** Handle lights from bullets and mechas. */
-    private static void handleDynamicEntityLights(ClientLevel level, Long2ByteOpenHashMap darkSkyLight)
+    private static void handleDynamicEntityLights(ClientLevel level, Long2ByteMap requested, Long2ByteOpenHashMap darkSkyLight)
     {
         LocalPlayer localPlayer = Minecraft.getInstance().player;
         if (localPlayer == null)
@@ -488,9 +490,9 @@ public class ModClient
                 continue;
 
             if (entity instanceof Shootable shootable)
-                handleShootableLight(level, shootable);
+                handleShootableLight(shootable, requested);
             else if (entity instanceof Mecha mecha)
-                handleMechaLight(level, mecha, darkSkyLight);
+                handleMechaLight(mecha, requested, darkSkyLight);
         }
     }
 
@@ -509,7 +511,7 @@ public class ModClient
         return null;
     }
 
-    private static void placeFlashlightLightsForPlayer(ClientLevel level, Player player, AttachmentType grip)
+    private static void placeFlashlightLightsForPlayer(Player player, AttachmentType grip, Long2ByteMap requested)
     {
         for (int i = 0; i < 2; i++)
         {
@@ -520,46 +522,33 @@ public class ModClient
             if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK)
             {
                 BlockPos targetPos = blockHit.getBlockPos().relative(blockHit.getDirection());
-                placeLightIfAir(level, targetPos, 12);
+                DynamicLightUpdates.request(requested, targetPos.asLong(), 12);
             }
         }
     }
 
-    private static void handleShootableLight(ClientLevel level, Shootable shootable)
+    private static void handleShootableLight(Shootable shootable, Long2ByteMap requested)
     {
         if (shootable.isRemoved() || !shootable.getConfigType().isHasDynamicLight())
             return;
 
         BlockPos pos = shootable.blockPosition();
-        placeLightIfAir(level, pos, 15);
+        DynamicLightUpdates.request(requested, pos.asLong(), 15);
     }
 
-    private static void handleMechaLight(ClientLevel level, Mecha mecha, Long2ByteOpenHashMap darkSkyLight)
+    private static void handleMechaLight(Mecha mecha, Long2ByteMap requested, Long2ByteOpenHashMap darkSkyLight)
     {
         BlockPos mechaPos = mecha.blockPosition();
 
         // Mecha light
         int mechaLight = mecha.lightLevel();
         if (mechaLight > 0)
-        {
-            int existing = level.getBrightness(LightLayer.BLOCK, mechaPos);
-            int lightLevel = Math.max(existing, mechaLight);
-            placeLightIfAir(level, mechaPos, lightLevel);
-        }
+            // The light engine combines ambient sources; sampling our previous light here
+            // would keep a formerly brighter source alive after it moves away.
+            DynamicLightUpdates.request(requested, mechaPos.asLong(), mechaLight);
 
         if (mecha.forceDark())
             addForceDarkOverrides(mechaPos, darkSkyLight);
-    }
-
-    private static void placeLightIfAir(ClientLevel level, BlockPos pos, int lightLevel)
-    {
-        if (!level.getBlockState(pos).isAir())
-            return;
-
-        int clamped = Mth.clamp(lightLevel, 0, 15);
-        BlockState lightState = Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, clamped);
-        level.setBlock(pos, lightState, Block.UPDATE_CLIENTS);
-        blockLightOverrides.add(pos.immutable());
     }
 
     private static void addForceDarkOverrides(BlockPos center, Long2ByteOpenHashMap overrides)
@@ -591,7 +580,8 @@ public class ModClient
     public static void clearTransientLighting()
     {
         forceDarkSkyLight = Long2ByteMaps.EMPTY_MAP;
-        blockLightOverrides.clear();
+        dynamicLights.reset();
+        lightingLevel = null;
     }
 
     /** Refreshes the blood flash timer while the player is taking damage, then lets it fade out. */

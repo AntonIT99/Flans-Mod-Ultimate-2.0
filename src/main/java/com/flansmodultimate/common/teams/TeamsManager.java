@@ -1370,8 +1370,11 @@ public final class TeamsManager
 
     public void syncAll(PacketTeamsState.OpenScreen openScreen)
     {
-        if (server != null && savedData != null)
-            server.getPlayerList().getPlayers().forEach(player -> syncPlayer(player, openScreen));
+        if (server == null || savedData == null || server.getPlayerList().getPlayers().isEmpty())
+            return;
+        PacketTeamsState.SharedScoreboard shared = PacketTeamsState.createSharedScoreboard(this);
+        for (ServerPlayer player : server.getPlayerList().getPlayers())
+            PacketHandler.sendTo(PacketTeamsState.create(this, player, openScreen, shared), player);
     }
 
     private void updateActiveChunkTickets(boolean add)
