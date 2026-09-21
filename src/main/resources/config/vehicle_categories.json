@@ -11,7 +11,8 @@
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "1.1-inch/75 AA"
         },
         "items": [
             "chicagopianoquadmount"
@@ -34,7 +35,8 @@
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "20mm Flak 38"
         },
         "items": [
             "flak20"
@@ -53,7 +55,8 @@
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "20mm Flak 38"
         },
         "items": [
             "flakvierling"
@@ -325,7 +328,8 @@
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "88mm KwK/Pak 43"
         },
         "items": [
             "pak43"
@@ -735,7 +739,7 @@
         ]
     },
 
-    "57 mm Gun M1": {
+    "57mm Gun M1": {
         "properties": {
             "RealMassKg": 1225,
             "ShootDelayPrimarySeconds": 4,
@@ -770,7 +774,7 @@
         ]
     },
 
-    "75 mm Gun Motor Carriage M3": {
+    "75mm Gun Motor Carriage M3": {
         "properties": {
             "RealMassKg": 9070,
             "RealEnginePowerHp": 147,
@@ -784,14 +788,15 @@
             "ArmorBottomMm": 6,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "m3gmc"
         ]
     },
 
-    "75 mm Howitzer Motor Carriage M8 Scott": {
+    "75mm Howitzer Motor Carriage M8 Scott": {
         "properties": {
             "RealMassKg": 15700,
             "RealEnginePowerHp": 220,
@@ -897,7 +902,7 @@
         ]
     },
 
-    "90 mm Gun M1": {
+    "90mm Gun M1": {
         "properties": {
             "RealMassKg": 8618,
             "RealEnginePowerHp": 6,
@@ -911,14 +916,15 @@
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "90mm M3"
         },
         "items": [
             "m190"
         ]
     },
 
-    "105 mm Gun Motor Carriage T95": {
+    "105mm Gun Motor Carriage T95": {
         "properties": {
             "RealMassKg": 86300,
             "RealEnginePowerHp": 500,
@@ -943,7 +949,7 @@
         ]
     },
 
-    "105 mm Howitzer Motor Carriage M7 Priest": {
+    "105mm Howitzer Motor Carriage M7 Priest": {
         "properties": {
             "RealMassKg": 22970,
             "RealEnginePowerHp": 400,
@@ -1632,7 +1638,8 @@
             "TurretArmorRearMm": 45,
             "TurretArmorTopMm": 15,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "76mm F-34/ZiS-3"
         },
         "items": [
             "bk1124"
@@ -1738,7 +1745,7 @@
         ]
     },
 
-    "Bofors 40 mm L/60 Towed Mount": {
+    "Bofors 40mm L/60 Towed Mount": {
         "properties": {
             "RealMassKg": 1981,
             "RoundsPerMinPrimary": 120,
@@ -1758,7 +1765,7 @@
         ]
     },
 
-    "Bofors 40 mm Mark 4 Quadruple Mount": {
+    "Bofors 40mm Mark 4 Quadruple Mount": {
         "properties": {
             "RealMassKg": 10600,
             "TurretArmorFrontMm": 0,
@@ -1776,7 +1783,7 @@
         ]
     },
 
-    "Bofors 57 mm SAK Mark 3": {
+    "Bofors 57mm SAK Mark 3": {
         "properties": {
             "RealMassKg": 14000,
             "TurretArmorFrontMm": 0,
@@ -1893,7 +1900,7 @@
         ]
     },
 
-    "Canon de 47 mm SA mle 1937": {
+    "Canon de 47mm SA mle 1937": {
         "properties": {
             "RealMassKg": 1070,
             "RealEnginePowerHp": 4,
@@ -3463,7 +3470,7 @@
         ]
     },
 
-    "GTK Boxer 20 mm Cannon Armament": {
+    "GTK Boxer 20mm Cannon Armament": {
         "properties": {
             "UseAmmoGroup": "20mm Rh 202"
         },
@@ -4996,7 +5003,8 @@
             "TurretArmorTopMm": 30,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "122mm D-25T"
         },
         "items": [
             "is3"
@@ -5630,7 +5638,8 @@
             "TurretArmorTopMm": 13,
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "37mm M5/M6"
         },
         "items": [
             "m3stuartlittle"
@@ -5657,6 +5666,7 @@
             "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "37mm M5/M6",
             "AmmoMass": [
                 "44_37apshell 870",
                 "44_smallheshell 730"
@@ -5794,7 +5804,7 @@
         ]
     },
 
-    "M8A1 75 mm Gun Motor Carriage": {
+    "M8A1 75mm Gun Motor Carriage": {
         "properties": {
             "RealMassKg": 15600,
             "RealEnginePowerHp": 296,
@@ -6153,7 +6163,7 @@
         ]
     },
 
-    "Medium Tank M4 Sherman (75 mm)": {
+    "Medium Tank M4 Sherman (75mm)": {
         "properties": {
             "RealMassKg": 30300,
             "RealEnginePowerHp": 400,
@@ -6235,7 +6245,7 @@
         ]
     },
 
-    "Medium Tank M4A1 Sherman (75 mm)": {
+    "Medium Tank M4A1 Sherman (75mm)": {
         "properties": {
             "RealMassKg": 30300,
             "RealEnginePowerHp": 400,
@@ -6390,7 +6400,7 @@
         ]
     },
 
-    "Medium Tank M4A3 Sherman (76 mm)": {
+    "Medium Tank M4A3 Sherman (76mm)": {
         "properties": {
             "RealMassKg": 30300,
             "RealEnginePowerHp": 450,
@@ -6790,7 +6800,7 @@
         ]
     },
 
-    "Nimbus Type C With 20 mm Madsen": {
+    "Nimbus Type C With 20mm Madsen": {
         "properties": {
             "RealMassKg": 300,
             "RealEnginePowerHp": 18,
@@ -7000,7 +7010,8 @@
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "57mm QF 6-pdr L/50"
         },
         "items": [
             "qf6pdr"
@@ -7021,7 +7032,8 @@
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "76mm QF 17-pdr"
         },
         "items": [
             "qf17pdr"
@@ -7392,7 +7404,8 @@
             "TurretArmorTopMm": 10,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm KwK 37"
         },
         "items": [
             "panzer4c"
@@ -9728,7 +9741,8 @@
             "TurretArmorRearMm": 75,
             "TurretArmorTopMm": 30,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "100mm D-10S"
         },
         "items": [
             "t44"
@@ -10002,7 +10016,8 @@
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 20", "rightTrack 20"],
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "76mm QF 17-pdr"
         },
         "items": [
             "tog2redemption"
@@ -10133,7 +10148,7 @@
         ]
     },
 
-    "Type 1 47 mm Anti-Tank Gun": {
+    "Type 1 47mm Anti-Tank Gun": {
         "properties": {
             "RealMassKg": 754,
             "ShootDelayPrimarySeconds": 5,
@@ -10205,6 +10220,7 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm Type 3",
             "AmmoMass": [
                 "44_75apshell 6600",
                 "44_mediumheshell 6000"
@@ -10593,7 +10609,7 @@
         ]
     },
 
-    "Type 94 37 mm Anti-Tank Gun": {
+    "Type 94 37mm Anti-Tank Gun": {
         "properties": {
             "RealMassKg": 324,
             "RealEnginePowerHp": 2,
@@ -10678,7 +10694,7 @@
         ]
     },
 
-    "Type 96 25 mm Triple Mount": {
+    "Type 96 25mm Triple Mount": {
         "properties": {
             "RealMassKg": 1800,
             "TurretArmorFrontMm": 0,
@@ -10689,7 +10705,8 @@
             "ReloadTimePrimary": 82,
             "ReloadRoundsPrimary": 45,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "25mm Type 96"
         },
         "items": [
             "type96triplemount",
@@ -10790,6 +10807,7 @@
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "47mm Type 1",
             "AmmoMass": [
                 "44_47apshell 1500",
                 "44_smallheshell 1400"
@@ -10813,7 +10831,7 @@
         ]
     },
 
-    "Type 98 20 mm AA Machine Cannon": {
+    "Type 98 20mm AA Machine Cannon": {
         "properties": {
             "RealMassKg": 373,
             "RoundsPerMinPrimary": 300,
@@ -10833,7 +10851,7 @@
         ]
     },
 
-    "Type 99 88 mm AA Gun": {
+    "Type 99 88mm AA Gun": {
         "properties": {
             "RealMassKg": 6500,
             "RealEnginePowerHp": 4,
@@ -12780,7 +12798,7 @@
         ]
     },
 
-    "ZiS-2 57 mm Anti-Tank Gun": {
+    "ZiS-2 57mm Anti-Tank Gun": {
         "properties": {
             "RealMassKg": 1250,
             "ShootDelayPrimarySeconds": 4,
@@ -12802,7 +12820,7 @@
         ]
     },
 
-    "ZiS-3 76 mm Divisional Gun": {
+    "ZiS-3 76mm Divisional Gun": {
         "properties": {
             "RealMassKg": 1116,
             "ShootDelayPrimarySeconds": 5,

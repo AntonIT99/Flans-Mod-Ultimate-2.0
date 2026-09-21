@@ -5,6 +5,7 @@
             "RoundsPerMin": 800.0,
             "Dispersion": 0.35,
             "RealMassKg": 1518.0,
+            "UseAmmoGroup": "20mm Flak 38",
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
@@ -18,6 +19,7 @@
             "RoundsPerMin": 200.0,
             "Dispersion": 0.35,
             "RealMassKg": 1518.0,
+            "UseAmmoGroup": "20mm Flak 38",
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
@@ -31,6 +33,7 @@
             "RoundsPerMin": 20.0,
             "Dispersion": 0.03,
             "RealMassKg": 4980.0,
+            "UseAmmoGroup": "88mm KwK/Flak 36",
             "UseRealisticVehicleHealth": "true"
         },
         
@@ -79,11 +82,12 @@
         ]
     },
 
-    "Type 96 25 mm Triple Mount": {
+    "Type 96 25mm Triple Mount": {
         "properties": {
             "RoundsPerMin": 660,
             "Dispersion": 0.3,
             "RealMassKg": 1800,
+            "UseAmmoGroup": "25mm Type 96",
             "UseRealisticVehicleHealth": "true"
         },
         "items": [

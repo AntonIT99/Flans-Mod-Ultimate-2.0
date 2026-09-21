@@ -4,7 +4,8 @@
         "properties": {
             "MuzzleVelocity": 823,
             "RoundsPerMin": 150,
-            "Dispersion": 0.4
+            "Dispersion": 0.4,
+            "UseAmmoGroup": "1.1-inch/75 AA"
         },
         "items": [
             "28mmgun"
@@ -15,7 +16,8 @@
         "properties": {
             "MuzzleVelocity": 899.0,
             "RoundsPerMin": 450.0,
-            "Dispersion": 0.35
+            "Dispersion": 0.35,
+            "UseAmmoGroup": "20mm Flak 38"
         },
         "items": [
             "flak38",
@@ -716,7 +718,7 @@
         ]
     },
 
-    "20 mm Oerlikon Autocannon": {
+    "20mm Oerlikon Autocannon": {
         "properties": {
             "MuzzleVelocity": 835,
             "RoundsPerMin": 450,
@@ -977,7 +979,7 @@
         ]
     },
 
-    "30 mm Type 5 Autocannon": {
+    "30mm Type 5 Autocannon": {
         "properties": {
             "MuzzleVelocity": 710,
             "RoundsPerMin": 400,
@@ -1147,7 +1149,8 @@
         "properties": {
             "MuzzleVelocity": 830,
             "RoundsPerMin": 15,
-            "Dispersion": 0.12
+            "Dispersion": 0.12,
+            "UseAmmoGroup": "47mm Type 1"
         },
         "items": [
             "47mmtype1"
@@ -1187,7 +1190,7 @@
         ]
     },
 
-    "57 mm Bofors Mark 110 Naval Gun": {
+    "57mm Bofors Mark 110 Naval Gun": {
         "properties": {
             "MuzzleVelocity": 1035,
             "RoundsPerMin": 220,
@@ -1209,7 +1212,7 @@
         ]
     },
 
-    "75 mm Gun M3": {
+    "75mm Gun M3": {
         "properties": {
             "MuzzleVelocity": 618.0,
             "RoundsPerMin": 20.0,
@@ -1220,7 +1223,7 @@
         ]
     },
 
-    "75 mm Tsar Tank Howitzer": {
+    "75mm Tsar Tank Howitzer": {
         "properties": {
             "MuzzleVelocity": 381,
             "RoundsPerMin": 8,
@@ -1246,7 +1249,8 @@
         "properties": {
             "MuzzleVelocity": 385,
             "RoundsPerMin": 10,
-            "Dispersion": 0.15
+            "Dispersion": 0.15,
+            "UseAmmoGroup": "75mm KwK 37"
         },
         "items": [
             "75mmpz4"
@@ -1257,7 +1261,8 @@
         "properties": {
             "MuzzleVelocity": 619,
             "RoundsPerMin": 10,
-            "Dispersion": 0.1
+            "Dispersion": 0.1,
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "75mmlee"
@@ -1297,11 +1302,12 @@
         ]
     },
 
-    "76 mm Gun M1": {
+    "76mm Gun M1": {
         "properties": {
             "MuzzleVelocity": 792,
             "RoundsPerMin": 20,
-            "Dispersion": 0.08
+            "Dispersion": 0.08,
+            "UseAmmoGroup": "76mm M1"
         },
         "items": [
             "76mmgunm1"
@@ -6137,7 +6143,7 @@
         ]
     },
 
-    "Type 1 47 mm Tank Gun": {
+    "Type 1 47mm Tank Gun": {
         "properties": {
             "MuzzleVelocity": 808.0,
             "RoundsPerMin": 20.0,
@@ -6223,7 +6229,8 @@
         "properties": {
             "MuzzleVelocity": 900.0,
             "RoundsPerMin": 220.0,
-            "Dispersion": 0.3
+            "Dispersion": 0.3,
+            "UseAmmoGroup": "25mm Type 96"
         },
         "items": [
             "type96gun"

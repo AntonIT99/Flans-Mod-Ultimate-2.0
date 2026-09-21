@@ -590,7 +590,8 @@
             "RealWingAreaM2": 42.18,
             "RealClimbRateMs": 3.6,
             "ReadWeaponsFromGunTypes": "true",
-            "UseRealisticVehicleHealth": "true"
+            "UseRealisticVehicleHealth": "true",
+            "UseAmmoGroup": "57mm QF 6-pdr L/50"
         },
         "items": [
             "mosquito57"
@@ -1346,7 +1347,8 @@
             "RealWingAreaM2": 29,
             "RealClimbRateMs": 5.9,
             "ReadWeaponsFromGunTypes": "true",
-            "UseRealisticVehicleHealth": "true"
+            "UseRealisticVehicleHealth": "true",
+            "UseAmmoGroup": "75mm KwK/PaK 40"
         },
         "items": [
             "hs129"
@@ -2109,7 +2111,8 @@
             "RealWingAreaM2": 21.7,
             "RealClimbRateMs": 15.1,
             "ReadWeaponsFromGunTypes": "true",
-            "UseRealisticVehicleHealth": "true"
+            "UseRealisticVehicleHealth": "true",
+            "UseAmmoGroup": "50mm KwK 39"
         },
         "items": [
             "me26250mm"
@@ -2595,7 +2598,8 @@
             "RealWingAreaM2": 57.41,
             "RealClimbRateMs": 5.4,
             "UseRealisticVehicleHealth": "true",
-            "ReadWeaponsFromGunTypes": "true"
+            "ReadWeaponsFromGunTypes": "true",
+            "UseAmmoGroup": "75mm M3"
         },
         "items": [
             "b25h"

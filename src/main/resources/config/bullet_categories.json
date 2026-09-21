@@ -1542,6 +1542,7 @@
 
     "20x138mmB Flak 30/38": {
         "properties": {
+            "AddToAmmoGroup": "20mm Flak 38",
             "Mass": 115,
             "MuzzleVelocity": 900,
             "FallSpeed": 1.0,
@@ -1554,7 +1555,12 @@
             "ships_shell_german20mmaa",
             "20mmpz280rnd",
             "20mmpz280rndhe"
-        ]
+        ],
+        "exceptions": {
+            "AddToAmmoGroup": [
+                "ww2_shell_german20mmaa"
+            ]
+        }
     },
 
     "20x138mmB Flak 38 Mixed Belt": {
@@ -1647,6 +1653,7 @@
 
     "25x163mm Type 96 AP Round": {
         "properties": {
+            "AddToAmmoGroup": "25mm Type 96",
             "Mass": 250,
             "MuzzleVelocity": 900,
             "FallSpeed": 1.0,
@@ -1663,6 +1670,7 @@
 
     "25x163mm Type 96 HE Round": {
         "properties": {
+            "AddToAmmoGroup": "25mm Type 96",
             "Mass": 250,
             "MuzzleVelocity": 900,
             "FallSpeed": 1.0,
@@ -1689,6 +1697,7 @@
 
     "28x199mmR 1.1-inch/75 AA Round": {
         "properties": {
+            "AddToAmmoGroup": "1.1-inch/75 AA",
             "Mass": 416,
             "MuzzleVelocity": 823,
             "FallSpeed": 1.0,
@@ -2515,7 +2524,7 @@
         ]
     },
 
-    "57mm M70 AP Shot (57 mm M1)": {
+    "57mm M70 AP Shot (57mm M1)": {
         "properties": {
             "Mass": 2850,
             "MuzzleVelocity": 853,
@@ -2527,7 +2536,7 @@
         ]
     },
 
-    "57mm M86 APC-T (57 mm M1)": {
+    "57mm M86 APC-T (57mm M1)": {
         "properties": {
             "AddToAmmoGroup": "57mm M1",
             "Mass": 3300,
