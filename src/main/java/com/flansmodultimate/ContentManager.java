@@ -4,6 +4,7 @@ import com.flansmodultimate.common.block.BlockFactory;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
+import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.DriveableType;
@@ -689,6 +690,9 @@ public class ContentManager
         {
             try
             {
+                // Before the categories are applied: what is fingerprinted is the pack's own text,
+                // and the categories are the mod's, identical on both sides.
+                ContentFingerprint.record(typeFile);
                 CategoryManager.applyCategoriesToFile(typeFile);
                 EnumType type = typeFile.getType();
                 Constructor<? extends InfoType> constructor = typeConstructors.get(type);

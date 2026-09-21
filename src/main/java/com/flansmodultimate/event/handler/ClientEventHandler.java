@@ -1,6 +1,7 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.CommonConfigMirror;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.ReloadPreferencesSync;
 import com.flansmodultimate.client.debug.DebugColor;
@@ -29,6 +30,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.config.EnumGunBlockInteraction;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
@@ -52,6 +54,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -63,6 +66,7 @@ import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -70,6 +74,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -354,6 +360,15 @@ public final class ClientEventHandler
 
         if (player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
         {
+            // Aiming is a right-click, so a player lining up a shot at a chest opens it instead.
+            // This suppresses the block, not the aim, which is read from the key itself.
+            if (event.isUseItem() && isBlockUseSuppressed(player, mc.hitResult))
+            {
+                event.setCanceled(true);
+                event.setSwingHand(false);
+                return;
+            }
+
             EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfig.get().shootButtonOffhand : ModClientConfig.get().shootButton;
             EnumMouseButton secondaryButton = ModClientConfig.get().aimButton;
 
@@ -378,10 +393,38 @@ public final class ClientEventHandler
         }
     }
 
+    /**
+     * Whether the player's own preference says to leave the block they are looking at alone while
+     * they are armed.
+     *
+     * <p>Sneaking is the way through {@link EnumGunBlockInteraction#NO_CONTAINERS}, so a chest can
+     * still be opened without putting the gun away; that is what {@code GunItem.doesSneakBypassUse}
+     * already allows for. {@link EnumGunBlockInteraction#NONE} has no way through on purpose: a
+     * player who asked for nothing to be used while armed means it.
+     */
+    private static boolean isBlockUseSuppressed(Player player, @Nullable HitResult hitResult)
+    {
+        EnumGunBlockInteraction policy = ModClientConfig.get().gunBlockInteraction;
+        if (policy == EnumGunBlockInteraction.ALLOW || !(hitResult instanceof BlockHitResult blockHit))
+            return false;
+
+        if (policy == EnumGunBlockInteraction.NONE)
+            return true;
+
+        if (player.isShiftKeyDown())
+            return false;
+
+        Level level = player.level();
+        BlockPos pos = blockHit.getBlockPos();
+        return level.getBlockState(pos).getMenuProvider(level, pos) != null;
+    }
+
     @SubscribeEvent
     public static void onLogin(ClientPlayerNetworkEvent.LoggingIn event)
     {
         ReloadPreferencesSync.sendToServer();
+        // Fetched up front so the options screen can show the server settings without a visible delay
+        CommonConfigMirror.request();
     }
 
     @SubscribeEvent
@@ -394,6 +437,7 @@ public final class ClientEventHandler
         TeamsClientState.clear();
         PlayerSkinOverrides.clear();
         KillMessageFeed.clear();
+        CommonConfigMirror.clear();
     }
 
     @SubscribeEvent

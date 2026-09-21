@@ -72,6 +72,7 @@ public final class ModClientConfig
     public final EnumMouseButton shootButtonOffhand;
     public final EnumMouseButton aimButton;
     public final EnumAimType aimType;
+    public final EnumGunBlockInteraction gunBlockInteraction;
 
     public final boolean combineAmmoOnReload;
     public final boolean ammoToUpperInventoryOnReload;
@@ -147,6 +148,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
     private static final ForgeConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
     public static final ForgeConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
+    public static final ForgeConfigSpec.EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
 
     private static final ForgeConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
     private static final ForgeConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
@@ -361,6 +363,15 @@ public final class ModClientConfig
         AIM_TYPE = builder
                 .comment("Aim behavior")
                 .defineEnum("aimType", EnumAimType.TOGGLE);
+        GUN_BLOCK_INTERACTION = builder
+                .comment("""
+                    What right-clicking a block does while holding a gun, since aiming is a right-click too.
+                    ALLOW: blocks behave as they do with any other item.
+                    NO_CONTAINERS: chests, furnaces and anything else that opens a screen are left alone;
+                    sneak to open one anyway, without putting the gun away.
+                    NONE: no block is used while armed, doors, levers and buttons included, sneaking or not.
+                    """)
+                .defineEnum("gunBlockInteraction", EnumGunBlockInteraction.NO_CONTAINERS);
         builder.pop();
 
         builder.push("Reload Settings");
@@ -473,6 +484,7 @@ public final class ModClientConfig
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();
         aimButton = AIM_BUTTON.get();
         aimType = AIM_TYPE.get();
+        gunBlockInteraction = GUN_BLOCK_INTERACTION.get();
 
         combineAmmoOnReload = COMBINE_AMMO_ON_RELOAD.get();
         ammoToUpperInventoryOnReload = AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get();

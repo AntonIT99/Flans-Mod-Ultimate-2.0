@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -1173,63 +1172,42 @@ public final class ModCommonConfig
     }
 
     /**
-     * The server settings the in-game Flan's Mod options screen may toggle while a world is running, for
-     * operators only. Every one of them takes effect from the next tick without a restart, and the change is
-     * written to the config file like any other edit.
+     * The few server settings the quick options screen offers directly, so that an operator does not have
+     * to walk the full common settings list for the ones that come up during a game.
      */
     @Getter
     @AllArgsConstructor
     public enum RuntimeOption
     {
-        DISABLE_CROSSHAIR_FOR_GUNS(CommonConfigSnapshot::disableCrosshairForGuns, () -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS),
-        EXPLOSIONS_BREAK_BLOCKS(CommonConfigSnapshot::explosionsBreakBlocks, () -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS),
-        FLAN_EXPLOSIONS_DROP_BLOCKS(CommonConfigSnapshot::flanExplosionsDropBlocks, () -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS),
-        DRIVEABLE_COLLISIONS_BREAK_BLOCKS(CommonConfigSnapshot::driveableCollisionsBreakBlocks, () -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS),
-        SHOOTABLES_CAN_BREAK_GLASS(CommonConfigSnapshot::shootablesCanBreakGlass, () -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS);
+        DISABLE_CROSSHAIR_FOR_GUNS(() -> ModCommonConfig.DISABLE_CROSSHAIR_FOR_GUNS),
+        EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS),
+        FLAN_EXPLOSIONS_DROP_BLOCKS(() -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS),
+        DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS),
+        SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS);
 
-        /** Reads the value in force, which on a client is the one the server sent. */
-        private final Predicate<CommonConfigSnapshot> snapshotValue;
         /** Deferred so that the enum can be loaded before the outer config spec is built. */
         private final Supplier<ForgeConfigSpec.BooleanValue> configValue;
-
-        /** The name used in the config file, for operator feedback messages. */
-        public String configPath()
-        {
-            return configValue.get().getPath().get(configValue.get().getPath().size() - 1);
-        }
-    }
-
-    /** The value currently in force, which on a connected client is the server's. */
-    public static boolean getRuntimeOption(RuntimeOption option)
-    {
-        CommonConfigSnapshot config = get();
-        return config != null ? option.getSnapshotValue().test(config) : option.getConfigValue().get().get();
     }
 
     /**
-     * Change a server setting while the game runs, persist it and tell every connected client. Server side
-     * only: the caller is responsible for checking that the player is allowed to make the change.
+     * Change one common config entry while the game runs, persist it and tell every connected client. The
+     * spec validates the value first. Server side only: the caller is responsible for checking that the
+     * player is allowed to make the change.
      *
      * @return whether the setting actually changed
      */
-    public static boolean setRuntimeOption(RuntimeOption option, boolean value)
+    public static boolean setRuntimeValue(List<String> path, Object value)
     {
-        ForgeConfigSpec.BooleanValue configValue = option.getConfigValue().get();
-        if (!configSpec.isLoaded())
-        {
-            FlansMod.log.warn("Ignoring a runtime change of {} made before the common config was loaded", option.configPath());
-            return false;
-        }
-
-        if (configValue.get() == value)
+        if (!ConfigSpecValues.apply(configSpec, path, value))
             return false;
 
-        configValue.set(value);
         configSpec.save();
         bake();
         ModCommonConfigSync.resyncAllClientsIfServer();
+        ModCommonConfigSync.resyncCommonConfigValuesIfServer();
         return true;
     }
+
 
     public static void bake()
     {

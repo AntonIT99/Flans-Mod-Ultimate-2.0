@@ -27,6 +27,7 @@ import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
+import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.Team;
@@ -34,6 +35,7 @@ import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketKillMessage;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -279,6 +281,7 @@ public final class CommonEventHandler
             // Player data outlives the connection, so a player who disconnected while
             // aiming would come back still aiming until they next raised the sights.
             PlayerData.getInstance(sp).setScoped(false);
+            PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
             ModCommonConfigSync.syncClientIfServer(sp);
             FlansMod.teamsManager.playerLoggedIn(sp);
         }

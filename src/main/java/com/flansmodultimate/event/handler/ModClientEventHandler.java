@@ -9,7 +9,7 @@ import com.flansmodultimate.client.gui.GunBoxScreen;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
 import com.flansmodultimate.client.gui.MechaInventoryScreen;
 import com.flansmodultimate.client.gui.PaintjobTableScreen;
-import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
+import com.flansmodultimate.client.gui.options.FlansSettingsHubScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
@@ -96,7 +96,7 @@ public final class ModClientEventHandler
         // The Config button of the mod list opens the same screen as the pause menu button
         ModList.get().getModContainerById(FlansMod.MOD_ID).ifPresent(container ->
             container.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
-                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new FlansOptionsScreen(parent))));
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new FlansSettingsHubScreen(parent))));
 
         event.enqueueWork(() -> {
             CustomItemRenderers.registerAll();

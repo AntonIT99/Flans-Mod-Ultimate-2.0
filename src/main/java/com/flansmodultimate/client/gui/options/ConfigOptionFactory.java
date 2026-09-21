@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.gui.options;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
-import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.serialization.Codec;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -19,16 +18,16 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Turns client config entries into the option widgets the options screen shows. Captions come from the
- * language file, tooltips from the comment already written in the config file, so a new config entry shows
- * up with its documentation without a second description having to be maintained here.
+ * Turns config entries into the option widgets the options screen shows. Captions come from the language
+ * file, tooltips from the comment already written in the config file, so a new config entry shows up with
+ * its documentation without a second description having to be maintained here.
  *
  * <p>Booleans, enums and bounded numbers are editable on screen. Free text and lists are left to the config
- * file itself. A toggle applies at once; a slider only marks the config dirty while it is being dragged, and
- * the options screen writes the file once it closes.</p>
+ * file itself. A toggle applies at once; a slider only records its value while it is being dragged, and the
+ * options screen applies it once it closes.</p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ClientConfigOptions
+public final class ConfigOptionFactory
 {
     private static final String KEY_PREFIX = "options.flansmodultimate.";
     private static final String VALUE_KEY_PREFIX = KEY_PREFIX + "value.";
@@ -40,84 +39,98 @@ public final class ClientConfigOptions
     {
     }
 
-    /** Every client config section, in the order the config file declares them. */
-    public static List<Section> sections()
+    /** Every section of the target's config, in the order the config file declares them. */
+    public static List<Section> sections(ConfigTarget target)
     {
         List<Section> sections = new ArrayList<>();
-        collectSections(ModClientConfig.configSpec, ModClientConfig.configSpec.getValues(), sections);
+        collectSections(target, target.spec().getValues(), "", sections);
         return sections;
     }
 
-    private static void collectSections(ForgeConfigSpec spec, UnmodifiableConfig values, List<Section> sections)
+    private static void collectSections(ConfigTarget target, UnmodifiableConfig values, String prefix, List<Section> sections)
     {
         for (Map.Entry<String, Object> entry : values.valueMap().entrySet())
         {
             if (!(entry.getValue() instanceof UnmodifiableConfig section))
                 continue;
 
-            List<OptionInstance<?>> options = new ArrayList<>();
-            for (Object child : section.valueMap().values())
-            {
-                if (child instanceof ForgeConfigSpec.ConfigValue<?> value)
-                {
-                    OptionInstance<?> option = option(value);
-                    if (option != null)
-                        options.add(option);
-                }
-            }
-
+            String title = prefix.isEmpty() ? entry.getKey() : prefix + " / " + entry.getKey();
+            List<OptionInstance<?>> options = optionsOf(target, section);
             if (!options.isEmpty())
-                sections.add(new Section(Component.literal(entry.getKey()), options));
+                sections.add(new Section(Component.literal(title), options));
+
+            // A nested section follows the one it belongs to, under its own heading
+            collectSections(target, section, title, sections);
         }
+    }
+
+    private static List<OptionInstance<?>> optionsOf(ConfigTarget target, UnmodifiableConfig section)
+    {
+        List<OptionInstance<?>> options = new ArrayList<>();
+        for (Object child : section.valueMap().values())
+        {
+            if (!(child instanceof ForgeConfigSpec.ConfigValue<?> value))
+                continue;
+
+            OptionInstance<?> option = option(target, value);
+            if (option != null)
+                options.add(option);
+        }
+        return options;
     }
 
     /** The option widget for one config entry, or null when its type cannot be edited on screen. */
     @Nullable
-    public static OptionInstance<?> option(ForgeConfigSpec.ConfigValue<?> value)
+    public static OptionInstance<?> option(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value)
     {
-        ForgeConfigSpec.ValueSpec valueSpec = ModClientConfig.configSpec.get(value.getPath());
+        ForgeConfigSpec.ValueSpec valueSpec = target.spec().get(value.getPath());
         if (valueSpec == null)
             return null;
 
-        if (value instanceof ForgeConfigSpec.BooleanValue booleanValue)
-            return booleanOption(booleanValue, valueSpec);
+        Object current = target.get(value);
+        if (current instanceof Boolean flag)
+            return booleanOption(target, value, valueSpec, flag);
 
-        if (value instanceof ForgeConfigSpec.EnumValue<?> enumValue)
-            return enumOption(enumValue, valueSpec);
+        if (current instanceof Enum<?>)
+            return enumOption(target, value, valueSpec, valueSpec.getClazz(), current);
 
-        if (value instanceof ForgeConfigSpec.IntValue intValue)
-            return intOption(intValue, valueSpec);
+        if (current instanceof Integer number)
+            return intOption(target, value, valueSpec, number);
 
-        if (value instanceof ForgeConfigSpec.DoubleValue doubleValue)
-            return doubleOption(doubleValue, valueSpec);
+        if (current instanceof Double number)
+            return doubleOption(target, value, valueSpec, number);
 
         return null;
     }
 
-    public static OptionInstance<Boolean> booleanOption(ForgeConfigSpec.BooleanValue value, ForgeConfigSpec.ValueSpec valueSpec)
+    private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value,
+                                                         ForgeConfigSpec.ValueSpec valueSpec, boolean current)
     {
-        return OptionInstance.createBoolean(captionKey(value), tooltip(value, valueSpec), value.get(),
-            newValue -> ModClientConfig.setAndSave(value, newValue));
+        return OptionInstance.createBoolean(captionKey(value), tooltip(value, valueSpec), current,
+            newValue -> target.set(value, newValue));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static OptionInstance<?> enumOption(ForgeConfigSpec.EnumValue<?> value, ForgeConfigSpec.ValueSpec valueSpec)
+    private static OptionInstance<?> enumOption(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value,
+                                                ForgeConfigSpec.ValueSpec valueSpec, Class<?> type, Object current)
     {
-        return enumOption((ForgeConfigSpec.EnumValue) value, valueSpec, (Class) valueSpec.getClazz());
+        return enumOption(target, value, valueSpec, (Class) type, (Enum) current);
     }
 
-    private static <T extends Enum<T>> OptionInstance<T> enumOption(ForgeConfigSpec.EnumValue<T> value, ForgeConfigSpec.ValueSpec valueSpec, Class<T> type)
+    private static <T extends Enum<T>> OptionInstance<T> enumOption(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value,
+                                                                    ForgeConfigSpec.ValueSpec valueSpec, Class<T> type, T current)
     {
         Codec<T> codec = Codec.STRING.xmap(constant -> Enum.valueOf(type, constant), Enum::name);
         return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
             (caption, constant) -> valueLabel(type, constant),
             new OptionInstance.Enum<>(List.of(type.getEnumConstants()), codec),
-            value.get(),
-            newValue -> ModClientConfig.setAndSave(value, newValue));
+            current,
+            newValue -> target.set(value, newValue));
     }
 
     @Nullable
-    private static OptionInstance<Integer> intOption(ForgeConfigSpec.IntValue value, ForgeConfigSpec.ValueSpec valueSpec)
+    private static OptionInstance<Integer> intOption(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value,
+                                                     ForgeConfigSpec.ValueSpec valueSpec, int current)
     {
         ForgeConfigSpec.Range<Integer> range = valueSpec.getRange();
         if (range == null)
@@ -126,12 +139,13 @@ public final class ClientConfigOptions
         return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
             (caption, number) -> Options.genericValueLabel(caption, Component.literal(String.valueOf(number))),
             new OptionInstance.IntRange(range.getMin(), range.getMax()),
-            value.get(),
-            newValue -> ModClientConfig.set(value, newValue));
+            current,
+            newValue -> target.setWhileDragging(value, newValue));
     }
 
     @Nullable
-    private static OptionInstance<Double> doubleOption(ForgeConfigSpec.DoubleValue value, ForgeConfigSpec.ValueSpec valueSpec)
+    private static OptionInstance<Double> doubleOption(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value,
+                                                       ForgeConfigSpec.ValueSpec valueSpec, double current)
     {
         ForgeConfigSpec.Range<Double> range = valueSpec.getRange();
         if (range == null)
@@ -147,8 +161,8 @@ public final class ClientConfigOptions
             new OptionInstance.IntRange(0, DOUBLE_SLIDER_STEPS).xmap(
                 steps -> min + steps * step,
                 number -> (int) Math.round((number - min) / step)),
-            value.get(),
-            newValue -> ModClientConfig.set(value, newValue));
+            current,
+            newValue -> target.setWhileDragging(value, newValue));
     }
 
     /** Vanilla builds the caption from a translation key, so every editable entry needs one. */
