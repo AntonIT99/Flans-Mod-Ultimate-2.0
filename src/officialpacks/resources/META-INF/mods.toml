@@ -5,7 +5,8 @@ license="All Rights Reserved"
 [[mods]]
 modId="flansmodultimate_officialpacks"
 version="1.0"
-displayName="Flan's Mod Official Content Packs"
+displayName="Flan's Mod Ultimate 2: Classic Packs"
+logoFile="classicpacks.png"
 authors="Wolff"
 displayTest = "NONE"
 description=''''''
