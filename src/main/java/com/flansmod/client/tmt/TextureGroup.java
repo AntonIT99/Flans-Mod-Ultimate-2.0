@@ -31,21 +31,36 @@ public class TextureGroup
     private static final class PolygonList extends AbstractList<TexturedPolygon> implements RandomAccess
     {
         private final ArrayList<TexturedPolygon> values = new ArrayList<>();
-        @Override public int size() { return values.size(); }
-        @Override public TexturedPolygon get(int index) { return values.get(index); }
-        @Override public TexturedPolygon set(int index, TexturedPolygon value)
+
+        @Override
+        public int size()
+        {
+            return values.size();
+        }
+
+        @Override
+        public TexturedPolygon get(int index)
+        {
+            return values.get(index);
+        }
+
+        @Override
+        public TexturedPolygon set(int index, TexturedPolygon value)
         {
             TexturedPolygon old = values.set(index, value);
             GeometryRevision.changed();
             return old;
         }
-        @Override public void add(int index, TexturedPolygon value)
+
+        @Override
+        public void add(int index, TexturedPolygon value)
         {
             values.add(index, value);
             modCount++;
             GeometryRevision.changed();
         }
-        @Override public TexturedPolygon remove(int index)
+        @Override
+        public TexturedPolygon remove(int index)
         {
             TexturedPolygon old = values.remove(index);
             modCount++;
