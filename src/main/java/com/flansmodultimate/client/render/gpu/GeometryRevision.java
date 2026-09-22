@@ -1,16 +1,16 @@
 package com.flansmodultimate.client.render.gpu;
 
 /** Cheap invalidation hint, not an ownership graph. Geometry edits happen during load or on the render thread. */
-final class GeometryRevision
+public final class GeometryRevision
 {
     private static long epoch;
 
-    static long current()
+    public static long current()
     {
         return epoch;
     }
 
-    static void changed()
+    public static void changed()
     {
         epoch++;
     }
