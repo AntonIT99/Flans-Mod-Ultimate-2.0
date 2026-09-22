@@ -272,6 +272,12 @@ public class PlayerData
         if (!player.level().isClientSide)
             GunReloader.handlePendingReload(player.level(), (ServerPlayer) player, this);
 
+        // Snapshots exist for the server's lag-compensated hit detection, so the client keeps none:
+        // a bullet there is only a visual, and both it and the melee sweep fall back to the plain
+        // hitbox when a snapshot is missing. This is one snapshot per player per tick not built.
+        if (player.level().isClientSide)
+            return;
+
         //Move all snapshots along one place
         System.arraycopy(snapshots, 0, snapshots, 1, snapshots.length - 2 + 1);
         //Take new snapshot

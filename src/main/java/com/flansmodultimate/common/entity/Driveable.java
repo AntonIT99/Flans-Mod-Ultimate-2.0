@@ -2981,7 +2981,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
         partSyncInitialized = true;
         if (!changed.isEmpty())
-            PacketHandler.sendToAllAround(new PacketDriveableDamage(getId(), changed), position(), 192D, level().dimension());
+            // Everyone who can see the driveable, not just those within 192 blocks: a client that
+            // missed a change would keep stale part health and draw the wrong fire and smoke.
+            PacketHandler.sendToTracking(new PacketDriveableDamage(getId(), changed), this);
     }
 
     /** Applies a validated server snapshot without running destructive gameplay effects on the client. */
