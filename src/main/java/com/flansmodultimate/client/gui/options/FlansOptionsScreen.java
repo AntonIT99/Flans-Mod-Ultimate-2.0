@@ -65,6 +65,8 @@ public class FlansOptionsScreen extends Screen
             ModClientConfig.HIDE_CROSSHAIR_FOR_GUNS,
             ModClientConfig.HIT_MARKER_STYLE,
             ModClientConfig.FANCY_HIT_MARKER)),
+        new QuickSection("rendering", List.of(
+            ModClientConfig.ENABLE_GPU_MODEL_CACHE)),
         new QuickSection("gameplay", List.of(
             ModClientConfig.AIM_TYPE,
             ModClientConfig.GUN_BLOCK_INTERACTION,

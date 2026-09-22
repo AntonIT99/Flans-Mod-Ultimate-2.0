@@ -9,6 +9,7 @@ import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.types.InfoType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -52,6 +53,7 @@ public final class ModClientConfig
     public final int aaGunRenderDistance;
     public final double minimumDriveablePartPixelSize;
     public final boolean enableDriveableLod;
+    public final boolean enableGpuModelCache;
     public final double maximumDriveableLodPartPixelSize;
     public final double driveableLodDetailMultiplier;
     public final double groundVehicleLodDistanceFactor;
@@ -129,6 +131,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
     private static final ForgeConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
     private static final ForgeConfigSpec.BooleanValue ENABLE_DRIVEABLE_LOD;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_GPU_MODEL_CACHE;
     private static final ForgeConfigSpec.DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
     private static final ForgeConfigSpec.DoubleValue DRIVEABLE_LOD_DETAIL_MULTIPLIER;
     private static final ForgeConfigSpec.DoubleValue GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
@@ -284,6 +287,9 @@ public final class ModClientConfig
         builder.pop();
 
         builder.push("Entity Rendering Settings");
+        ENABLE_GPU_MODEL_CACHE = builder
+            .comment("Experimental GPU cache for rigid full-detail vehicle and gun model parts. Uses up to 64 MiB of vertex buffers and keeps animated transforms, tint and lighting live. Unsupported geometry, sorted transparency, Fabulous graphics and known shader integrations use the standard renderer. Disable if rendering artifacts or slower frame times occur. No restart required.")
+            .define("enableGpuModelCache", false);
         BULLET_RENDER_DISTANCE = builder
             .comment("Client-side render distance in blocks for bullets.")
             .defineInRange("bulletRenderDistance", 128, 1, 4096);
@@ -469,6 +475,7 @@ public final class ModClientConfig
         aaGunRenderDistance = AA_GUN_RENDER_DISTANCE.get();
         minimumDriveablePartPixelSize = MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get();
         enableDriveableLod = ENABLE_DRIVEABLE_LOD.get();
+        enableGpuModelCache = ENABLE_GPU_MODEL_CACHE.get();
         maximumDriveableLodPartPixelSize = MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get();
         driveableLodDetailMultiplier = DRIVEABLE_LOD_DETAIL_MULTIPLIER.get();
         groundVehicleLodDistanceFactor = GROUND_VEHICLE_LOD_DISTANCE_FACTOR.get();
@@ -685,6 +692,9 @@ public final class ModClientConfig
 
         if (old == null)
             return;
+
+        if (FMLEnvironment.dist == Dist.CLIENT && old.enableGpuModelCache != get().enableGpuModelCache)
+            GpuModelCache.clear();
 
         if (old.searchModelsInOtherContentPacks != get().searchModelsInOtherContentPacks
             || old.preferBuiltInModelClasses != get().preferBuiltInModelClasses

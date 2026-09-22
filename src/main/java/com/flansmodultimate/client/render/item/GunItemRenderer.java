@@ -13,6 +13,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -162,9 +163,10 @@ public final class GunItemRenderer
         boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
-            renderGunAndComponents(model, stack, animations, numRounds, poseStack,
-                buffer.getBuffer(renderPass.getRenderType(gunTexture, translucent, cull)),
-                packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+            GpuModelCache.render(buffer, renderPass, gunTexture, translucent, cull,
+                ctx != ItemDisplayContext.GUI && !stack.hasFoil(), consumer ->
+                    renderGunAndComponents(model, stack, animations, numRounds, poseStack, consumer,
+                        packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass));
         }
         if (firstPersonRight)
             renderAnimArm(model, animations, poseStack, buffer, packedLight);

@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render;
 
 import org.lwjgl.opengl.GL11C;
 
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -23,6 +24,25 @@ public class CustomRenderType
 {
     private record TexDepthCullKey(ResourceLocation texture, boolean depthWrite, boolean cull) {}
     private record TexCullKey(ResourceLocation texture, boolean cull) {}
+    private record GpuKey(ResourceLocation texture, boolean translucent, boolean cull) {}
+    private static final Function<GpuKey, RenderType> GPU_MODELS = Util.memoize(key -> {
+        RenderType.CompositeState state = RenderType.CompositeState.builder()
+            .setShaderState(new RenderStateShard.ShaderStateShard(GpuModelCache::shader))
+            .setTextureState(new RenderStateShard.TextureStateShard(key.texture(), false, false))
+            .setTransparencyState(key.translucent() ? CustomRenderType.EMISSIVE_ALPHA_TRANSPARENCY
+                : new RenderStateShard.TransparencyStateShard("gpu_opaque", RenderSystem::disableBlend, () -> {}))
+            .setCullState(new RenderStateShard.CullStateShard(key.cull()))
+            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
+            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
+            .createCompositeState(false);
+        return RenderType.create("rigid_model", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
+            256, false, false, state);
+    });
+
+    public static RenderType gpuModel(ResourceLocation texture, boolean translucent, boolean cull)
+    {
+        return GPU_MODELS.apply(new GpuKey(texture, translucent, cull));
+    }
 
     /** Standard alpha blending */
     private static final RenderStateShard.TransparencyStateShard EMISSIVE_ALPHA_TRANSPARENCY =

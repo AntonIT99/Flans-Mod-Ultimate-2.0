@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Records the packed submission path without creating an OpenGL context. */
-final class RecordingVertexConsumer implements VertexConsumer
+class RecordingVertexConsumer implements VertexConsumer
 {
     final List<float[]> vertices = new ArrayList<>();
 

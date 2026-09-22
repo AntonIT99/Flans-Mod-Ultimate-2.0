@@ -23,6 +23,7 @@ import com.flansmodultimate.client.render.OpStickConnectionRenderer;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
@@ -433,6 +434,7 @@ public final class ClientEventHandler
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
         ModClient.clearTransientLighting();
+        GpuModelCache.clear();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
         PlayerSkinOverrides.clear();

@@ -39,6 +39,7 @@ import com.flansmodultimate.client.render.entity.GrenadeRenderer;
 import com.flansmodultimate.client.render.entity.InvisibleEntityRenderer;
 import com.flansmodultimate.client.render.entity.ParachuteRenderer;
 import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
@@ -264,6 +265,12 @@ public final class ModClientEventHandler
             PlayerSkinOverrides.clearValidationCache();
             ContentManager.logMissingModelTextures(rm);
         });
+    }
+
+    @SubscribeEvent
+    public static void registerGpuModelShader(net.minecraftforge.client.event.RegisterShadersEvent event)
+    {
+        GpuModelCache.registerShader(event);
     }
 
     @SubscribeEvent

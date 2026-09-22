@@ -16,6 +16,7 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.DriveableData;
@@ -240,9 +241,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         {
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
             {
-                model.render(driveable, state, poseStack,
-                    buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                    packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
+                GpuModelCache.render(buffer, renderPass, texture, translucent, cull,
+                    !preview, consumer -> model.render(driveable, state, poseStack, consumer,
+                        packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass));
             }
             poseStack.popPose();
             if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)

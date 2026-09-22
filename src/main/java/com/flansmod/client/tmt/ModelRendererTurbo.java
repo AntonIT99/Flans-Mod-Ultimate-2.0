@@ -3,6 +3,8 @@ package com.flansmod.client.tmt;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelRenderer;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.gpu.RigidGeometry;
+import com.flansmodultimate.client.render.gpu.RigidGeometryConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -62,6 +64,7 @@ public class ModelRendererTurbo extends ModelRenderer
     private TexturedPolygon[] faces;
     private TexturedPolygon[] renderFaces;
     private RenderPoseCache renderPoseCache;
+    private RigidGeometry gpuGeometry;
     private boolean boundsDirty = true;
     private boolean hasStaticBounds;
     private float boundsCenterX;
@@ -2346,6 +2349,17 @@ public class ModelRendererTurbo extends ModelRenderer
     protected void compile(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         TexturedPolygon[] polygons = getRenderFaces();
+        if (vertexConsumer instanceof RigidGeometryConsumer gpu && getClass() == ModelRendererTurbo.class
+            && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler)
+        {
+            if (gpuGeometry == null || !gpuGeometry.matches(polygons))
+                gpuGeometry = new RigidGeometry(polygons);
+            if (gpuGeometry.supported())
+            {
+                gpu.submit(gpuGeometry, pose, packedLight, packedOverlay, red, green, blue, alpha);
+                return;
+            }
+        }
         long currentTransformationSequence = ++transformationSequence;
         boolean glowing = glow || glowAdditive || glowNoDepthWrite;
         for (TexturedPolygon poly : polygons)
