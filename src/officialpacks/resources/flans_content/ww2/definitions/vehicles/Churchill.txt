@@ -47,11 +47,11 @@ AddGun 8 34 8 turret bren
 ShootDelay 1
 ShellDelay 70
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank4Shoot
+StartSound tankidle3
+StartSoundLength 41
+EngineSound engine_mt_m26
+EngineSoundLength 39
+ShootSoundPrimary 75mmGun
 ShootSoundSecondary BrenShoot
 TurretRotationSpeed 0.03
 DamageModifierPrimary 22

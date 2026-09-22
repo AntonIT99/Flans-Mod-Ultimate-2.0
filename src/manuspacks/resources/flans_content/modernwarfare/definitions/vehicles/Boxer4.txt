@@ -50,8 +50,7 @@ StartSound engineidle_ifv_stryker
 StartSoundLength 20
 EngineSound engine_ifv_stryker
 EngineSoundLength 20
-ShootSound bullet
-ShellSound shoot_20mmaade
+ShootSoundPrimary shoot_20mmaade
 //Recipe
 //Each section of the plane may have many parts
 //The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,

@@ -2649,7 +2649,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
 
     protected void playBankEffects(boolean secondary, List<ShootPoint> firedPoints)
     {
-        String sound = secondary ? configType.getShootSoundSecondary() : configType.getShootSoundPrimary();
+        String sound = configType.shootSound(secondary);
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 128D, sound, true);
         List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();

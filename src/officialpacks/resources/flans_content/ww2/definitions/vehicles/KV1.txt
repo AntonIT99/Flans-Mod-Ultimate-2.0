@@ -46,11 +46,11 @@ AddGun 8 34 8 turret dp28
 ShootDelay 1
 ShellDelay 110
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank1Shoot
+StartSound tankidle3
+StartSoundLength 41
+EngineSound engine_ht_is
+EngineSoundLength 39
+ShootSoundPrimary shoot_76mmussr
 ShootSoundSecondary DP28Shoot
 TurretRotationSpeed 0.01
 DamageModifierPrimary 42

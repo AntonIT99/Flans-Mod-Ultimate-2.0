@@ -51,11 +51,11 @@ AddAmmo none
 ShootDelay 1
 ShellDelay 100
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank3Shoot
+StartSound tankidle1
+StartSoundLength 41
+EngineSound engine_tr_halftrack
+EngineSoundLength 39
+ShootSoundPrimary None
 ShootSoundSecondary MG42Shoot
 //Recipe
 //Each section of the plane may have many parts

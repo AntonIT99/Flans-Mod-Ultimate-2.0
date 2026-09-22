@@ -47,7 +47,7 @@ StartSound
 StartSoundLength 0
 EngineSound
 EngineSoundLength 0
-ShootSoundPrimary Tank3Shoot
+ShootSoundPrimary shoot_75mmde
 TurretRotationSpeed 0.02
 DamageModifierPrimary 44
 //Recipe

@@ -44,10 +44,10 @@ Harvester True
 HarvestToolType Drill
 HarvestToolType Spade
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
-EngineSoundLength 20
+StartSound enginestart
+StartSoundLength 24
+EngineSound steamengine
+EngineSoundLength 40
 //Recipe
 //Each section of the plane may have many parts
 //The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,

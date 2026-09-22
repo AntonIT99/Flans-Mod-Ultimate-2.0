@@ -58,10 +58,10 @@ Driver 0 6 0 -360 360 0 75
 RotatedDriverOffset 8 0 0
 Passengers 0
 // ------------------------------------------------------ Sounds ------------------------------------------------------
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
-EngineSoundLength 20
+StartSound ural4320start
+StartSoundLength 40
+EngineSound kamazenginerun
+EngineSoundLength 101
 ShootSoundPrimary RocketFire2
 // ------------------------------------------------------ Recipe ------------------------------------------------------
 //Each section of the plane may have many parts

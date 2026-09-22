@@ -62,7 +62,7 @@ StartSound None
 StartSoundLength 0
 EngineSound None
 EngineSoundLength 0
-ShootSoundPrimary AAfire
+ShootSoundPrimary shoot_20mmaade
 TurretRotationSpeed 0.06
 //Recipe
 //Each section of the plane may have many parts

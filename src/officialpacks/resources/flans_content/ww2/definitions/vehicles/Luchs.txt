@@ -44,10 +44,10 @@ AddAmmo 20mmAmmo
 ShootDelay 1
 ShellDelay 12
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
+StartSound tankidle1
+StartSoundLength 41
+EngineSound engine_lt_pzii
+EngineSoundLength 39
 ShootSoundPrimary Flak1Shoot
 ShootSoundSecondary MG42Shoot
 TurretRotationSpeed 0.03

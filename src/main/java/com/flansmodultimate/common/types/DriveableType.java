@@ -129,6 +129,10 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     protected EnumFireMode modeSecondary = EnumFireMode.FULLAUTO;
     protected String shootSoundPrimary = StringUtils.EMPTY;
     protected String shootSoundSecondary = StringUtils.EMPTY;
+    /** Legacy generic and weapon-type sounds used when a bank has no explicit modern sound. */
+    protected String shootSound = StringUtils.EMPTY;
+    protected String shellSound = StringUtils.EMPTY;
+    protected String bombSound = StringUtils.EMPTY;
     protected String shootReloadSound = StringUtils.EMPTY;
     protected final List<ShootPoint> shootPointsPrimary = new ArrayList<>();
     protected final List<ShootPoint> shootPointsSecondary = new ArrayList<>();
@@ -800,7 +804,10 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         idleSound = aliasSound(idleSound, file, "IdleSound", "IdleEngineSound");
         exitSound = readSound("ExitSound", exitSound, file);
         backSound = readSound("BackSound", backSound, file);
-        shootSoundPrimary = aliasSound(shootSoundPrimary, file, "ShootMainSound", "BombSound", "ShootSoundPrimary", "ShellSound");
+        shootSound = readSound("ShootSound", shootSound, file);
+        shellSound = readSound("ShellSound", shellSound, file);
+        bombSound = readSound("BombSound", bombSound, file);
+        shootSoundPrimary = aliasSound(shootSoundPrimary, file, "ShootMainSound", "ShootSoundPrimary");
         shootReloadSound = readSound("ShootReloadSound", shootReloadSound, file);
         shootSoundSecondary = aliasSound(shootSoundSecondary, file, "ShootSecondarySound", "ShootSoundSecondary");
         placeSoundPrimary = readSound("PlaceSoundPrimary", placeSoundPrimary, file);
@@ -1302,7 +1309,15 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
 
     public String shootSound(boolean secondaryWeapon)
     {
-        return secondaryWeapon ? shootSoundSecondary : shootSoundPrimary;
+        String bankSound = secondaryWeapon ? shootSoundSecondary : shootSoundPrimary;
+        if (StringUtils.isNotBlank(bankSound))
+            return bankSound;
+        EnumWeaponType bankType = weaponType(secondaryWeapon);
+        if (bankType == EnumWeaponType.SHELL && StringUtils.isNotBlank(shellSound))
+            return shellSound;
+        if (bankType == EnumWeaponType.BOMB && StringUtils.isNotBlank(bombSound))
+            return bombSound;
+        return shootSound;
     }
 
     public List<ShootParticle> shootParticle(boolean secondaryWeapon)

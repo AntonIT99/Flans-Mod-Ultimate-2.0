@@ -47,10 +47,10 @@ AddGun 10 32 10 turret mg42
 ShootDelay 2
 ShellDelay 290
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
+StartSound tankidle3
+StartSoundLength 41
+EngineSound engine_ht_pzvikt
+EngineSoundLength 39
 ShootSoundPrimary 88mmGun
 ShootSoundSecondary MG42Shoot
 DamageModifierPrimary 78

@@ -86,8 +86,6 @@ public class VehicleType extends DriveableType
         trackLinkFix = readValue("TrackLinkFix", trackLinkFix, file);
         vehicleShootDelay = Math.max(0, Math.round(readValue("ShootDelay", (float) vehicleShootDelay, file)));
         vehicleShellDelay = Math.max(0, Math.round(readValue("ShellDelay", (float) vehicleShellDelay, file)));
-        shootSoundPrimary = readSound("ShootSound", shootSoundPrimary, file);
-        shootSoundSecondary = readSound("ShellSound", shootSoundSecondary, file);
 
         doorPos1 = readVector("DoorPosition1", doorPos1, file);
         doorPos2 = readVector("DoorPosition2", doorPos2, file);

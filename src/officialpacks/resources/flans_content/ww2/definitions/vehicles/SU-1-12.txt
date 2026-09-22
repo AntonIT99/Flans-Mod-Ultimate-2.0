@@ -45,11 +45,11 @@ AddAmmo ArtilleryHEShell
 ShootDelay 1
 ShellDelay 90
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank3Shoot
+StartSound jeepidle
+StartSoundLength 7
+EngineSound engine_lt_truck
+EngineSoundLength 39
+ShootSoundPrimary shoot_76mmussr
 ShootSoundSecondary MG42Shoot
 TurretRotationSpeed 0.035
 //Recipe

@@ -47,7 +47,7 @@ StartSound jeepidle
 StartSoundLength 7
 EngineSound jeepmove
 EngineSoundLength 61
-ShootSoundPrimary Tank3Shoot
+ShootSoundPrimary shoot_20mmpzii
 ShootSoundSecondary MG42Shoot
 //Recipe
 //Each section of the plane may have many parts

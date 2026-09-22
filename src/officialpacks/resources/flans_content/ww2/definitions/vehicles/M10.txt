@@ -48,11 +48,11 @@ AddAmmo American3inHEShell
 ShootDelay 1
 ShellDelay 100
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank3Shoot
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_m4
+EngineSoundLength 39
+ShootSoundPrimary shoot_76mmus
 ShootSoundSecondary BrowningShoot
 TurretRotationSpeed 0.025
 DamageModifierPrimary 44

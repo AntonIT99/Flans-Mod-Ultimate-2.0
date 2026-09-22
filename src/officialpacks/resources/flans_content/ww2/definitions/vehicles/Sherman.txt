@@ -47,10 +47,10 @@ AllowAllAmmo false
 ShootDelay 2
 ShellDelay 110
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_m4
+EngineSoundLength 39
 ShootSoundPrimary 75mmGun
 ShootSoundSecondary BrowningShoot
 DamageModifierPrimary 44

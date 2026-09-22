@@ -55,7 +55,7 @@ StartSound ptboatidle
 StartSoundLength 10
 EngineSound ptboatmove
 EngineSoundLength 10
-ShootSoundPrimary Tank4Shoot
+ShootSoundPrimary rocketfire1
 ShootSoundSecondary BrenShoot
 //Recipe
 //Each section of the plane may have many parts

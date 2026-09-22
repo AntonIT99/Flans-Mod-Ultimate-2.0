@@ -15,7 +15,7 @@ Damage 1
 Accuracy 5
 //Time in ticks between rounds
 ShootDelay 55
-ShootSound Tank4Shoot
+ShootSound 40uk
 //The length of the sound. 0 for a single shot sound. Other values are for looping sounds
 SoundLength 0
 DistortSound False

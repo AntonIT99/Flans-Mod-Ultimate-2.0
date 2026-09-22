@@ -46,8 +46,7 @@ StartSound leodieselstart
 StartSoundLength 80
 EngineSound leodieselenginestronk
 EngineSoundLength 24
-ShootSound bullet
-ShellSound shoot_tnk_120mm
+ShootSoundPrimary shoot_tnk_120mm
 //Recipe
 //Each section of the plane may have many parts
 //The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,

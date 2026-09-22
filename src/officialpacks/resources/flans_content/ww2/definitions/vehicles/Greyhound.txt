@@ -49,11 +49,11 @@ BarrelPosition 40 28 0
 ShootDelay 1
 ShellDelay 70
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
-EngineSoundLength 20
-ShootSoundPrimary Tank4Shoot
+StartSound jeepidle
+StartSoundLength 7
+EngineSound engine_lt_armoredcar
+EngineSoundLength 39
+ShootSoundPrimary shoot_37mus
 ShootSoundSecondary BrowningShoot
 TurretRotationSpeed 0.035
 DamageModifierPrimary 22

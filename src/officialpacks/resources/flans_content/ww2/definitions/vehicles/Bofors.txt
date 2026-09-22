@@ -58,7 +58,7 @@ StartSound None
 StartSoundLength 0
 EngineSound None
 EngineSoundLength 0
-ShootSoundPrimary AAfire
+ShootSoundPrimary aagun_40mm_boforsfire
 TurretRotationSpeed 0.03
 //Recipe
 //Each section of the plane may have many parts

@@ -43,11 +43,11 @@ BarrelPosition 0 0 0
 ShootDelay 1
 ShellDelay 70
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
+StartSound willystart
+StartSoundLength 40
+EngineSound reom35loop
 EngineSoundLength 20
-ShootSoundPrimary TankShell
+ShootSoundPrimary None
 ShootSoundSecondary M60Shoot
 //Recipe
 //Each section of the plane may have many parts

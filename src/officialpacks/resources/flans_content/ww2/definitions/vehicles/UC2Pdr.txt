@@ -44,11 +44,11 @@ AllowAllAmmo False
 ShootDelay 1
 ShellDelay 70
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank4Shoot
+StartSound tankidle1
+StartSoundLength 41
+EngineSound engine_lt_bt
+EngineSoundLength 39
+ShootSoundPrimary 40uk
 ShootSoundSecondary BrenShoot
 //Recipe
 //Each section of the plane may have many parts

@@ -47,11 +47,11 @@ ShootDelay 1
 ShellDelay 75
 TurretRotationSpeed 0.08
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank4Shoot
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_m4
+EngineSoundLength 39
+ShootSoundPrimary shoot_47mm
 ShootSoundSecondary BrenShoot
 //Recipe
 //Each section of the plane may have many parts

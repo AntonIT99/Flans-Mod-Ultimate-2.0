@@ -47,11 +47,11 @@ AddAmmo German75HEShell
 ShootDelay 1
 ShellDelay 95
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank3Shoot
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_pziv
+EngineSoundLength 39
+ShootSoundPrimary shoot_75mmde
 ShootSoundSecondary MG42Shoot
 TurretRotationSpeed 0.02
 DamageModifierPrimary 41

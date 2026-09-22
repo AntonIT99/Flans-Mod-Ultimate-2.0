@@ -10,14 +10,11 @@ Check if it rewrites all packs with the new gun and vehicle systems using catego
 and reorganize parameters, remove one parameter comments, make groups
 - Fix shooting points on vehicles based on new debug commands
 Official WW2
-- Better engine and shoot sounds
 - Add muzzle flashes just like w44
 - Fix Scope Attachment Points -> to check
 - Fix Barrel Attachment and Muzzle Flash -> to check
 Manus:
-- Better engine and shoot sounds
 - Check deployable guns
-
 
 Feature Ideas:
 - Button in UI for creative mode to load ammo automatically into driveable

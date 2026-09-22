@@ -46,11 +46,11 @@ AddAmmo Japanese57HEShell
 ShootDelay 1
 ShellDelay 70
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank4Shoot
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_chinu
+EngineSoundLength 39
+ShootSoundPrimary shoot_57mm
 ShootSoundSecondary BrenShoot
 TurretRotationSpeed 0.03
 DamageModifierPrimary 28

@@ -47,11 +47,11 @@ AddAmmo British6pdrHEShell
 ShootDelay 1
 ShellDelay 70
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank4Shoot
+StartSound tankidle1
+StartSoundLength 41
+EngineSound engine_lt_lvt
+EngineSoundLength 39
+ShootSoundPrimary shoot_57mmuk
 ShootSoundSecondary BrenShoot
 TurretRotationSpeed 0.04
 DamageModifierPrimary 22

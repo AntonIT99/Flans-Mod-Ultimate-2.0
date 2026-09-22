@@ -46,11 +46,11 @@ Passengers 0
 ShootDelay 1
 ShellDelay 85
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary Tank4Shoot
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_comet
+EngineSoundLength 39
+ShootSoundPrimary 75mmGun
 ShootSoundSecondary BrenShoot
 TurretRotationSpeed 0.08
 DamageModifierPrimary 38

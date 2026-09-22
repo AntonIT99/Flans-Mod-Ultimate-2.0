@@ -166,8 +166,6 @@ public class PlaneType extends DriveableType
         readPropellers("HeliTailPropeller", heliTailPropellers, file);
         engineSoundLength = readSoundLength("PropSoundLength", engineSoundLength, file);
         engineSound = readSound("PropSound", engineSound, file);
-        shootSoundPrimary = readSound("ShootSound", shootSoundPrimary, file);
-        shootSoundSecondary = readSound("BombSound", shootSoundSecondary, file);
         registerSoundTimer("PropSoundLength", () -> engineSound, () -> engineSoundLength, length -> engineSoundLength = length);
 
         hasGear = readValue("HasGear", hasGear, file);

@@ -44,10 +44,10 @@ GunOrigin 4 13 16 0
 ShootDelay 999
 ShellDelay 999
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
-EngineSoundLength 20
+StartSound engine_jep_humvee
+StartSoundLength 40
+EngineSound engine_jep_humvee
+EngineSoundLength 40
 ShootSound bullet
 ShellSound shell
 //Recipe

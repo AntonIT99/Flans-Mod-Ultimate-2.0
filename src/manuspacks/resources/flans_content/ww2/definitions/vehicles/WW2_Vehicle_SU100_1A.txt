@@ -80,7 +80,6 @@ StartSound tankidle2
 StartSoundLength 41
 EngineSound engine_mt_t34
 EngineSoundLength 39
-ShellSound shoot_100mmussr
 
 
 //Health and collision
@@ -110,8 +109,7 @@ TurnRightSpeed 1
 
 
 //Sound
-ShellSound shoot_100mmussr
-ShootSound bullet
+ShootSoundPrimary shoot_100mmussr
 
 
 //Misc

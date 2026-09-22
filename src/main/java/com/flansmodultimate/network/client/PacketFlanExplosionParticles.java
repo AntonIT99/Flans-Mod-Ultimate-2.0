@@ -132,7 +132,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
         spawnFragmentation(level, groundBurst);
         for (ExplosionVisuals.Layer layer : ExplosionVisuals.LAYERS)
             spawnLayer(level, layer, lifetimeScale, groundBurst);
-        spawnSmokeColumn(level, lifetimeScale);
+        spawnSmokeColumn(level);
     }
 
     /**
@@ -329,7 +329,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
      * the curve is allowed to linger: the crater is only visible from close up, but the column is
      * visible from across the map.
      */
-    private void spawnSmokeColumn(Level level, float lifetimeScale)
+    private void spawnSmokeColumn(Level level)
     {
         int count = ExplosionVisuals.smokeColumnCount(explosionRadius);
         if (count <= 0)
@@ -338,10 +338,10 @@ public class PacketFlanExplosionParticles implements IClientPacket
         RandomSource random = level.random;
         double rise = explosionRadius * COLUMN_RISE_PER_RADIUS;
         double foot = explosionRadius * COLUMN_FOOT_SHARE;
-        // The column source is already the longest-lived particle in the explosion - fifteen
-        // seconds of smoke on its own - and it only exists on charges the scale wants to linger,
-        // so it is allowed to be cut short but never stretched past what it was authored for.
-        float columnLifetime = Math.min(lifetimeScale, 1.0F);
+        // The source is authored as a fifteen-second smoke-screen emitter. Explosion columns use
+        // only a brief tail of that effect, while direct flansmod.smoker / bigsmoke uses remain
+        // long-lived for smoke screens.
+        float columnLifetime = ExplosionVisuals.smokeColumnLifetimeScale(explosionRadius);
 
         for (int i = 0; i < count; i++)
         {
