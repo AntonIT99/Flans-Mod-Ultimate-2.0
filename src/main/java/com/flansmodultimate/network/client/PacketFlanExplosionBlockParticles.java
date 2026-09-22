@@ -1,7 +1,7 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.common.ExplosionVisuals;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;

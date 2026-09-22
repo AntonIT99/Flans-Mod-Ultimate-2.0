@@ -1,6 +1,6 @@
 package com.flansmodultimate.hooks.server;
 
-import com.flansmodultimate.common.KillMessageData;
+import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.IClientRenderHooks;

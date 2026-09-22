@@ -2,7 +2,6 @@ package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
-import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Bullet;
@@ -11,6 +10,7 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ShootableFactory;
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;

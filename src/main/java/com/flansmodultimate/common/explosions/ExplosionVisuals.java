@@ -1,5 +1,6 @@
-package com.flansmodultimate.common;
+package com.flansmodultimate.common.explosions;
 
+import com.flansmodultimate.common.FlanParticles;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

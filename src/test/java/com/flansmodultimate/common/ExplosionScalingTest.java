@@ -1,5 +1,6 @@
 package com.flansmodultimate.common;
 
+import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.types.ShootableType.EnumFragType;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.junit.jupiter.api.DisplayName;

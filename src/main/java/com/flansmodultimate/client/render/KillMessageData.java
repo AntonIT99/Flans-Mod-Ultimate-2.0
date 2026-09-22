@@ -1,4 +1,4 @@
-package com.flansmodultimate.common;
+package com.flansmodultimate.client.render;
 
 import net.minecraft.ChatFormatting;
 

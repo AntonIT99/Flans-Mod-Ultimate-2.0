@@ -1,10 +1,15 @@
 package com.flansmodultimate.common.command;
 
+import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.driveables.DriveableAmmoLoader;
 import com.flansmodultimate.common.driveables.DriveableAmmoLoader.BankReport;
 import com.flansmodultimate.common.driveables.DriveableAmmoLoader.LoadReport;
 import com.flansmodultimate.common.driveables.DriveableData;
+import com.flansmodultimate.common.driveables.MountedGunAmmoLoader;
+import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -31,10 +36,11 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Loads a driveable's bombs, missiles, shells and mounted-gun ammunition in one step.
+ * Loads a driveable's weapons or a ridden AA/deployed gun in one step.
  *
  * <p>The vehicle equivalent of {@code /defaultammo}: an operator sitting in an aircraft
  * should not have to open the inventory and drag seven bombs into it to test a bomb run.
@@ -49,7 +55,7 @@ import java.util.concurrent.CompletableFuture;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RearmCommand
 {
-    private static final String NO_TARGET = "Ride a driveable or hold a driveable item to rearm it";
+    private static final String NO_TARGET = "Ride a driveable, AA gun, or deployed gun, or hold a driveable item to rearm it";
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
@@ -83,7 +89,7 @@ public final class RearmCommand
         ShootableType requested = null;
         if (ammoName != null)
         {
-            requested = ShootableType.findAmmoType(ammoName, target.type().getContentPack()).orElse(null);
+            requested = ShootableType.findAmmoType(ammoName, target.contentPack()).orElse(null);
             if (requested == null)
             {
                 context.getSource().sendFailure(Component.literal("Unknown ammunition: " + ammoName));
@@ -91,11 +97,11 @@ public final class RearmCommand
             }
         }
 
-        LoadReport report = DriveableAmmoLoader.load(target.type(), target.data(), requested);
+        LoadReport report = target.load(requested);
         if (report.isEmpty())
         {
             context.getSource().sendFailure(Component.literal(
-                target.type().getName() + " has no weapon or mounted-gun slots to load"));
+                target.name() + " has no ammunition slots to load"));
             return 0;
         }
 
@@ -108,13 +114,13 @@ public final class RearmCommand
                 player.drop(displaced, false);
         }
 
-        send(context, ChatFormatting.GOLD, "=== " + target.type().getName() + target.suffix() + " ===");
+        send(context, ChatFormatting.GOLD, "=== " + target.name() + target.suffix() + " ===");
         for (BankReport bank : report.banks())
             context.getSource().sendSuccess(() -> bankLine(bank), false);
 
         String summary = changed > 0
-            ? "Rearmed " + target.type().getName() + ": " + changed + (changed == 1 ? " slot" : " slots")
-            : "Nothing to load on " + target.type().getName() + "; everything is already loaded";
+            ? "Rearmed " + target.name() + ": " + changed + (changed == 1 ? " slot" : " slots")
+            : "Nothing to load on " + target.name() + "; everything is already loaded";
         context.getSource().sendSuccess(() -> Component.literal(summary), true);
         return changed;
     }
@@ -146,24 +152,29 @@ public final class RearmCommand
         Entity executor = context.getSource().getEntity();
         Target target = executor instanceof ServerPlayer player ? findTarget(player) : null;
         return target == null ? Suggestions.empty()
-            : SharedSuggestionProvider.suggest(DriveableAmmoLoader.loadableAmmo(target.type(), target.data())
-                .stream().map(ShootableType::getShortName), builder);
+            : SharedSuggestionProvider.suggest(target.loadableAmmo().stream().map(ShootableType::getShortName), builder);
     }
 
     @Nullable
     private static Target findTarget(ServerPlayer player)
     {
         Entity vehicle = player.getVehicle();
+        if (vehicle instanceof AAGun aaGun && aaGun.getConfigType() != null)
+            return new AAGunTarget(aaGun);
+        if (vehicle instanceof DeployedGun deployedGun && deployedGun.getConfigType() != null)
+            return new DeployedGunTarget(deployedGun);
+
         Driveable driveable = vehicle instanceof Driveable direct ? direct
+            : vehicle instanceof Seat seat ? seat.getDriveable()
             : vehicle != null && vehicle.getVehicle() instanceof Driveable parent ? parent : null;
         if (driveable != null && driveable.getConfigType() != null && driveable.getDriveableData() != null)
-            return new Target(driveable.getConfigType(), driveable.getDriveableData(), null);
+            return new DriveableTarget(driveable.getConfigType(), driveable.getDriveableData(), null);
 
         for (InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
             if (stack.getItem() instanceof DriveableItem<?, ?> item)
-                return new Target(item.getConfigType(), DriveableData.fromStack(item.getConfigType(), stack), stack);
+                return new DriveableTarget(item.getConfigType(), DriveableData.fromStack(item.getConfigType(), stack), stack);
         }
         return null;
     }
@@ -174,20 +185,70 @@ public final class RearmCommand
     }
 
     /**
-     * The driveable being loaded. A ridden one owns its inventory and needs nothing written
-     * back; an item carries it in NBT, so the loaded state has to be copied onto the stack.
+     * A rearmable ridden entity or held driveable item. Entity targets own their ammunition;
+     * a held driveable carries it in NBT, so its loaded state must be copied onto the stack.
      */
-    private record Target(DriveableType type, DriveableData data, @Nullable ItemStack stack)
+    private interface Target
     {
-        void commit()
+        String name();
+        IContentProvider contentPack();
+        LoadReport load(@Nullable ShootableType requested);
+        Set<ShootableType> loadableAmmo();
+        void commit();
+        String suffix();
+    }
+
+    private record DriveableTarget(DriveableType type, DriveableData data, @Nullable ItemStack stack) implements Target
+    {
+        @Override
+        public String name() { return type.getName(); }
+
+        @Override
+        public IContentProvider contentPack() { return type.getContentPack(); }
+
+        @Override
+        public LoadReport load(@Nullable ShootableType requested)
+        {
+            return DriveableAmmoLoader.load(type, data, requested);
+        }
+
+        @Override
+        public Set<ShootableType> loadableAmmo()
+        {
+            return DriveableAmmoLoader.loadableAmmo(type, data);
+        }
+
+        @Override
+        public void commit()
         {
             if (stack != null)
                 data.copyToStack(stack);
         }
 
-        String suffix()
+        @Override
+        public String suffix()
         {
             return stack == null ? " rearmed" : " rearmed (held item)";
         }
+    }
+
+    private record AAGunTarget(AAGun gun) implements Target
+    {
+        @Override public String name() { return gun.getConfigType().getName(); }
+        @Override public IContentProvider contentPack() { return gun.getConfigType().getContentPack(); }
+        @Override public LoadReport load(@Nullable ShootableType requested) { return MountedGunAmmoLoader.load(gun, requested); }
+        @Override public Set<ShootableType> loadableAmmo() { return MountedGunAmmoLoader.loadableAmmo(gun); }
+        @Override public void commit() {}
+        @Override public String suffix() { return " rearmed (AA gun)"; }
+    }
+
+    private record DeployedGunTarget(DeployedGun gun) implements Target
+    {
+        @Override public String name() { return gun.getConfigType().getName(); }
+        @Override public IContentProvider contentPack() { return gun.getConfigType().getContentPack(); }
+        @Override public LoadReport load(@Nullable ShootableType requested) { return MountedGunAmmoLoader.load(gun, requested); }
+        @Override public Set<ShootableType> loadableAmmo() { return MountedGunAmmoLoader.loadableAmmo(gun); }
+        @Override public void commit() {}
+        @Override public String suffix() { return " rearmed (deployed gun)"; }
     }
 }

@@ -267,6 +267,24 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         return entityData.get(DATA_AMMO_MASK);
     }
 
+    public int getAmmoSlotCount()
+    {
+        return ammo.length;
+    }
+
+    public ItemStack getAmmo(int slot)
+    {
+        return slot >= 0 && slot < ammo.length ? ammo[slot] : ItemStack.EMPTY;
+    }
+
+    public void setAmmo(int slot, ItemStack stack)
+    {
+        if (slot < 0 || slot >= ammo.length)
+            return;
+        ammo[slot] = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack;
+        updateAmmoMask();
+    }
+
     public void setAmmoMask(int mask)
     {
         entityData.set(DATA_AMMO_MASK, mask);
@@ -284,6 +302,12 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 
     private void updateAmmoMask()
     {
+        // The client never holds the ammunition stacks, only what the server
+        // syncs about them. Recomputing here on the client - initType does, when
+        // a loaded gun comes back into view - would publish "no ammo" over the
+        // real state until the server next changed it.
+        if (level().isClientSide)
+            return;
         int mask = 0;
         for (int i = 0; i < Math.min(ammo.length, Integer.SIZE); i++)
         {
@@ -321,10 +345,6 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
      */
     private void updateMagazineState()
     {
-        // The client never holds the ammunition stacks themselves, only the synced
-        // counts, so letting it recompute them here would zero what it was sent.
-        if (level().isClientSide)
-            return;
         int left = 0;
         for (ItemStack stack : ammo)
             left += ShootableItem.getTotalRounds(stack);

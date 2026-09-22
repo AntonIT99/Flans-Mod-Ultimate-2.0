@@ -1,6 +1,5 @@
 package com.flansmodultimate.client.render;
 
-import com.flansmodultimate.common.KillMessageData;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;

@@ -1,6 +1,6 @@
 package com.flansmodultimate.hooks;
 
-import com.flansmodultimate.common.KillMessageData;
+import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.types.DriveableType;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;

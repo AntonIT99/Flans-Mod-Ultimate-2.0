@@ -2,7 +2,6 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
-import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
@@ -36,6 +35,7 @@ import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
@@ -1469,9 +1469,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         while (ShotCooldown.isReady(primaryShootDelay)
             && shouldFire(primaryMode, primaryDown, primaryRising, primaryHeldTicks, primaryBurstRemaining))
         {
+            // Charge the shot delay against the cooldown as it stood before the shot:
+            // a round that emptied the magazine has already raised the cooldown to
+            // the reload, and adding the delay on top of that would double the wait.
+            float primaryBefore = primaryShootDelay;
             if (!fireWeaponBank(false))
                 break;
-            setPrimaryShootDelay(ShotCooldown.charge(primaryShootDelay, getConfiguredShootDelay(false)));
+            setPrimaryShootDelay(Math.max(primaryShootDelay, ShotCooldown.charge(primaryBefore, getConfiguredShootDelay(false))));
             if (primaryMode == EnumFireMode.BURST && primaryBurstRemaining > 0)
                 --primaryBurstRemaining;
             if (primaryMode == EnumFireMode.SEMIAUTO)
@@ -1480,9 +1484,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         while (ShotCooldown.isReady(secondaryShootDelay)
             && shouldFire(secondaryMode, secondaryDown, secondaryRising, secondaryHeldTicks, secondaryBurstRemaining))
         {
+            float secondaryBefore = secondaryShootDelay;
             if (!fireWeaponBank(true))
                 break;
-            setSecondaryShootDelay(ShotCooldown.charge(secondaryShootDelay, getConfiguredShootDelay(true)));
+            setSecondaryShootDelay(Math.max(secondaryShootDelay, ShotCooldown.charge(secondaryBefore, getConfiguredShootDelay(true))));
             if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
                 --secondaryBurstRemaining;
             if (secondaryMode == EnumFireMode.SEMIAUTO)
@@ -2692,9 +2697,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             while (ShotCooldown.isReady(passengerShootDelay[index])
                 && shouldFire(mode, held, rising, passengerHeldTicks[index], passengerBurstRemaining[index]))
             {
+                float before = passengerShootDelay[index];
                 if (!firePassengerGun(seat, info, gun, index))
                     break;
-                passengerShootDelay[index] = ShotCooldown.charge(passengerShootDelay[index], gun.getShootDelay(null));
+                passengerShootDelay[index] = Math.max(passengerShootDelay[index], ShotCooldown.charge(before, gun.getShootDelay(null)));
                 if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
                     --passengerBurstRemaining[index];
                 if (mode == EnumFireMode.SEMIAUTO)

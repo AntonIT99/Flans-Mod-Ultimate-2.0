@@ -1,6 +1,7 @@
-package com.flansmodultimate.common;
+package com.flansmodultimate.common.explosions;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Shootable;
@@ -32,27 +33,28 @@ public final class ExplosionKillAudit
             return;
 
         int lifetimeSeconds = victim.tickCount / 20;
-        FlansMod.log.info(formatKillRecord(
-            killer.getGameProfile().getName(), victim.getGameProfile().getName(), weaponName(weapon),
-            lifetimeSeconds,
+        String message = formatKillRecord(
+            killer.getGameProfile().getName(), victim.getGameProfile().getName(), weaponName(weapon), lifetimeSeconds,
             (int) victim.getX(), (int) victim.getY(), (int) victim.getZ(),
             (int) killer.getX(), (int) killer.getY(), (int) killer.getZ(),
             armorName(victim.getItemBySlot(EquipmentSlot.CHEST)),
-            armorName(killer.getItemBySlot(EquipmentSlot.CHEST))));
+            armorName(killer.getItemBySlot(EquipmentSlot.CHEST)));
+        FlansMod.log.info(message);
 
         int warningThresholdSeconds = ModCommonConfig.get().noticeSpawnKillTime();
         if (isPossibleSpawnKill(lifetimeSeconds, warningThresholdSeconds))
-            FlansMod.log.warn(formatSpawnKillWarning(
-                killer.getGameProfile().getName(), victim.getGameProfile().getName(),
-                lifetimeSeconds, warningThresholdSeconds));
+        {
+            String warning = formatSpawnKillWarning(killer.getGameProfile().getName(), victim.getGameProfile().getName(), lifetimeSeconds, warningThresholdSeconds);
+            FlansMod.log.warn(warning);
+        }
     }
 
-    static boolean isPossibleSpawnKill(int victimLifetimeSeconds, int warningThresholdSeconds)
+    public static boolean isPossibleSpawnKill(int victimLifetimeSeconds, int warningThresholdSeconds)
     {
         return warningThresholdSeconds > 0 && victimLifetimeSeconds < warningThresholdSeconds;
     }
 
-    static String formatKillRecord(String killer, String victim, String weapon, int victimLifetimeSeconds,
+    public static String formatKillRecord(String killer, String victim, String weapon, int victimLifetimeSeconds,
                                    int victimX, int victimY, int victimZ,
                                    int killerX, int killerY, int killerZ,
                                    String victimChestArmor, String killerChestArmor)
@@ -65,7 +67,7 @@ public final class ExplosionKillAudit
             victimChestArmor, killerChestArmor);
     }
 
-    static String formatSpawnKillWarning(String killer, String victim, int victimLifetimeSeconds, int warningThresholdSeconds)
+    public static String formatSpawnKillWarning(String killer, String victim, int victimLifetimeSeconds, int warningThresholdSeconds)
     {
         return String.format(
             "Possible spawn kill: killer=%s victim=%s victimLifetimeSeconds=%d warningThresholdSeconds=%d",

@@ -6,6 +6,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.driveables.FluidFuel;
 import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
+import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.types.EnumType;
 import lombok.AccessLevel;
@@ -58,10 +59,10 @@ public final class ModCommonConfig
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
     /**
-     * Hard ceiling on the CRATER radius, in blocks. This drives the block-breaking loop, but
-     * FlanExplosion.doBreakBlocks scales its ray-march step with the radius, which keeps that
-     * loop's cost roughly flat from a few dozen blocks radius all the way up to this ceiling -
-     * so the value here is a design choice about how big a crater gets to be, not a performance
+     * Hard ceiling on the CRATER radius, in blocks. ExplosionCrater's ray pass costs about the
+     * same at any radius, and a crater too big for one tick is carved over the following ticks
+     * by CraterCarver, so a larger value mainly means a larger hole that takes longer to carve.
+     * The value here is a design choice about how big a crater gets to be, not a performance
      * knob. Conventional ordnance stays far below it (a 250 kg bomb craters about 28 blocks);
      * 256 lets a small (~1 kt) tactical nuke reach close to its natural ~238 block crater while
      * staying under Minecraft's 384 block total world height, so one detonation cannot already
@@ -74,9 +75,9 @@ public final class ModCommonConfig
      * and can be allowed a much larger ceiling before anything needs clamping.
      */
     public static final double DEFAULT_MAX_BLAST_RADIUS = 512D;
-    /** Cratering radius of a 1 kg TNT-equivalent charge, in blocks. See {@link com.flansmodultimate.common.ExplosionScaling}. */
+    /** Cratering radius of a 1 kg TNT-equivalent charge, in blocks. See {@link ExplosionScaling}. */
     public static final double DEFAULT_CRATER_RADIUS_REFERENCE = 5.5D;
-    /** Blast radius of a 1 kg TNT-equivalent charge, in blocks. See {@link com.flansmodultimate.common.ExplosionScaling}. */
+    /** Blast radius of a 1 kg TNT-equivalent charge, in blocks. See {@link ExplosionScaling}. */
     public static final double DEFAULT_BLAST_RADIUS_REFERENCE = 22.0D;
 
     private static final double MIN_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.05D;

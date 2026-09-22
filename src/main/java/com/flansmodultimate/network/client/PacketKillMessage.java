@@ -1,6 +1,6 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.common.KillMessageData;
+import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;

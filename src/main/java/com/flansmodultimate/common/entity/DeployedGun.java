@@ -206,6 +206,17 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         return entityData.get(DATA_ROUNDS_LEFT);
     }
 
+    public ItemStack getAmmo()
+    {
+        return ammo;
+    }
+
+    public void setAmmo(ItemStack stack)
+    {
+        ammo = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack;
+        updateAmmoState();
+    }
+
     /** Keeps the synced ammunition state in step with the stack the gun is firing. */
     protected void updateAmmoState()
     {

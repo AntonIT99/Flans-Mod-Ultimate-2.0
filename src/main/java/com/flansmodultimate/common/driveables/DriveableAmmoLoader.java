@@ -143,6 +143,41 @@ public final class DriveableAmmoLoader
         return ammo;
     }
 
+    /** Every distinct default round needed by the driveable's installed weapons and banks. */
+    public static Set<ShootableType> defaultAmmo(DriveableType type, DriveableData data)
+    {
+        Set<ShootableType> ammo = new LinkedHashSet<>();
+        for (int slot = 0; slot < data.getNumAmmoSlots(); slot++)
+        {
+            GunType gunType = type.getGunTypeForAmmoSlot(slot);
+            if (gunType != null)
+                gunType.getDefaultAmmo().ifPresent(ammo::add);
+        }
+        if (type instanceof MechaType)
+        {
+            for (EnumMechaSlotType handSlot : List.of(EnumMechaSlotType.LEFT_TOOL, EnumMechaSlotType.RIGHT_TOOL))
+            {
+                if (data.getMechaAddon(handSlot).getItem() instanceof GunItem gunItem)
+                    gunItem.getConfigType().getDefaultAmmo().ifPresent(ammo::add);
+            }
+        }
+        if (data.getNumBombSlots() > 0)
+        {
+            ShootableType bombs = resolveBankAmmo(type,
+                bankWeaponTypes(type.weaponType(false), type.weaponType(true), true));
+            if (bombs != null)
+                ammo.add(bombs);
+        }
+        if (data.getNumMissileSlots() > 0)
+        {
+            ShootableType missiles = resolveBankAmmo(type,
+                bankWeaponTypes(type.weaponType(false), type.weaponType(true), false));
+            if (missiles != null)
+                ammo.add(missiles);
+        }
+        return ammo;
+    }
+
     /** One report line per distinct mounted gun, however many slots feed it. */
     private static void loadGunSlots(DriveableType type, DriveableData data, @Nullable ShootableType requested,
         List<BankReport> banks, List<ItemStack> displaced)

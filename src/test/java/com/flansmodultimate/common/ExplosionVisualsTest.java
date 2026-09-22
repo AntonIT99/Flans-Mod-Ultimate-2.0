@@ -1,5 +1,7 @@
 package com.flansmodultimate.common;
 
+import com.flansmodultimate.common.explosions.ExplosionScaling;
+import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

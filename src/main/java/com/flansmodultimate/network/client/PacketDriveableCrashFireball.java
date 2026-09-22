@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ import net.minecraft.world.phys.Vec3;
  * The spectacle of an aircraft going in, sent separately from the blast that
  * does the damage.
  *
- * <p>{@link com.flansmodultimate.common.FlanExplosion} ties its visuals to the
+ * <p>{@link FlanExplosion} ties its visuals to the
  * radius that breaks blocks and hurts entities, and it emits a single explosion
  * emitter at one point, which reads as a grenade rather than as a fuelled
  * airframe hitting the ground. This spreads emitters, flame, smoke and debris

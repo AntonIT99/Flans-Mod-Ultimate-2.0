@@ -1,5 +1,6 @@
 package com.flansmodultimate.common;
 
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.config.ModCommonConfig;
 import org.junit.jupiter.api.Test;

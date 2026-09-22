@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.common.FlanExplosion;
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.ShootableType;

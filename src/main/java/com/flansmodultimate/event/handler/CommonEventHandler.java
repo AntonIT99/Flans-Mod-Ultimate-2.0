@@ -2,10 +2,9 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.common.AmbientMobArmor;
-import com.flansmodultimate.common.ExplosionKillAudit;
 import com.flansmodultimate.common.FlanDamageSources;
-import com.flansmodultimate.common.KillMessageData;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.command.DefaultAmmoCommand;
 import com.flansmodultimate.common.command.DigitalAmmoCommand;
@@ -24,6 +23,8 @@ import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.explosions.CraterCarver;
+import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
@@ -201,6 +202,7 @@ public final class CommonEventHandler
     public static void onServerStopping(ServerStoppingEvent event)
     {
         FlansMod.teamsManager.detachServer();
+        CraterCarver.clear();
         contentReferencesValidated = false;
     }
 
@@ -220,6 +222,7 @@ public final class CommonEventHandler
             return;
 
         FlansMod.teamsManager.tick();
+        CraterCarver.tick();
 
         Iterator<UUID> it = nightVisionPlayers.iterator();
         while (it.hasNext())

@@ -1,6 +1,7 @@
-package com.flansmodultimate.common;
+package com.flansmodultimate.common.explosions;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.ExplosionVehicleDamageResolver;
 import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,7 +46,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -59,8 +60,11 @@ public class FlanExplosion extends Explosion
 {
     protected static final double EXPLOSION_PARTICLE_RANGE = 256;
     protected static final float KNOCKBACK_MULTIPLAYER = 1F;
-    /** Upper bound on ray-march steps per direction in {@link #doBreakBlocks()}, independent of radius. */
-    protected static final float MAX_RAY_STEPS = 100F;
+    /**
+     * Largest crater carved in the same tick as the explosion. Anything bigger is handed to
+     * {@link CraterCarver} to be carved over the following ticks.
+     */
+    protected static final float MAX_IMMEDIATE_CRATER_RADIUS = 24F;
     /** Upper bound on per-block burst particles in {@link #finalizeExplosion(boolean)}, independent of blocks destroyed. */
     protected static final int MAX_BLOCK_BURST_PARTICLES = 40;
     
@@ -83,6 +87,9 @@ public class FlanExplosion extends Explosion
     protected final ExplosionDamageCalculator damageCalculator;
     protected final List<BlockPos> affectedBlockPositions;
     protected final Map<Player, Vec3> hitPlayers = Maps.newHashMap();
+    /** Set when the crater is too big for one tick; {@link #affectedBlockPositions} then only holds a sample of it. */
+    @Nullable
+    protected ExplosionCrater deferredCrater;
 
     /**
      * Stats of the Explosion
@@ -227,33 +234,13 @@ public class FlanExplosion extends Explosion
         if (interactsWithBlocks())
         {
             for (BlockPos pos : getToBlow())
-            {
-                BlockState state = level.getBlockState(pos);
-                if (state.isAir())
-                    continue;
-
-                if (ModCommonConfig.get().flanExplosionsDropBlocks() && state.canDropFromExplosion(level, pos, this))
-                {
-                    BlockEntity be = level.getBlockEntity(pos);
-                    Entity attacker = getIndirectSourceEntity();
-                    Block.dropResources(state, level, pos, be, attacker, ItemStack.EMPTY);
-                }
-
-                state.onBlockExploded(level, pos, this);
-            }
-        }
-
-        if (causesFire)
-        {
+                blowUpBlock(pos);
             for (BlockPos pos : getToBlow())
-            {
-                if (level.isEmptyBlock(pos)
-                    && level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP)
-                    && level.random.nextInt(3) == 0)
-                {
-                    level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
-                }
-            }
+                maybeIgnite(pos);
+
+            // An explosion event handler that emptied the block list vetoed the whole crater.
+            if (deferredCrater != null && !getToBlow().isEmpty())
+                CraterCarver.start(this, deferredCrater, deferredCrater.chunksRefusedBy(getToBlow()));
         }
 
         if (spawnParticles)
@@ -306,90 +293,57 @@ public class FlanExplosion extends Explosion
         return affectedBlockPositions;
     }
 
+    protected void blowUpBlock(BlockPos pos)
+    {
+        BlockState state = level.getBlockState(pos);
+        if (state.isAir())
+            return;
+
+        if (ModCommonConfig.get().flanExplosionsDropBlocks() && state.canDropFromExplosion(level, pos, this))
+        {
+            BlockEntity be = level.getBlockEntity(pos);
+            Entity attacker = getIndirectSourceEntity();
+            Block.dropResources(state, level, pos, be, attacker, ItemStack.EMPTY);
+        }
+
+        state.onBlockExploded(level, pos, this);
+    }
+
+    protected void maybeIgnite(BlockPos pos)
+    {
+        if (causesFire
+            && level.isEmptyBlock(pos)
+            && level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP)
+            && level.random.nextInt(3) == 0)
+        {
+            level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
+        }
+    }
+
+    /**
+     * Works out the crater; see {@link ExplosionCrater}. A crater small enough to carve at once
+     * lists every block it breaks, as any explosion does. A bigger one lists only the first block
+     * each ray hit, which still gives event handlers and the debris particles a fair picture of
+     * it, and the rest is carved over the next ticks once the explosion is finalized.
+     */
     protected void doBreakBlocks()
     {
         affectedBlockPositions.clear();
+        deferredCrater = null;
+        if (!breaksBlocks || !(level instanceof ServerLevel serverLevel) || stats.explosionRadius <= 0F)
+            return;
 
-        // Prevent extreme CPU load when radius gets big
-        int samples = Mth.clamp(Mth.ceil(stats.explosionRadius * 2.0F), 16, 48);
-
-        Set<BlockPos> toBlow = new HashSet<>();
-        BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
-
-        // Step size: smaller = more accurate, slower. Fixed at 0.3 for small/medium charges
-        // (unchanged from before), but a huge crater radius would otherwise march the same
-        // 0.3-block step all the way out, so cost against radius alone (not just sample count)
-        // would grow linearly with radius. Scaling the step with radius bounds the number of
-        // steps per ray to roughly MAX_RAY_STEPS regardless of how big the explosion gets.
-        float step = Math.max(0.3F, stats.explosionRadius / MAX_RAY_STEPS);
-
-        // A "ray energy" budget. Since you set power ∝ cbrt(W) and radius ∝ cbrt(W),
-        // power * radius ∝ W^(2/3), which is already strongly scaling.
-        float rayStartBudget = stats.explosionPower * (0.7F + level.random.nextFloat() * 0.6F);
-
-        for (int j = 0; j < samples; ++j)
+        ExplosionCrater crater = ExplosionCrater.trace(serverLevel, this, damageCalculator, center, stats.explosionRadius, stats.explosionPower);
+        if (stats.explosionRadius <= MAX_IMMEDIATE_CRATER_RADIUS)
         {
-            for (int k = 0; k < samples; ++k)
-            {
-                for (int l = 0; l < samples; ++l)
-                {
-                    // only rays from the cube shell
-                    if (j != 0 && j != samples - 1 && k != 0 && k != samples - 1 && l != 0 && l != samples - 1)
-                        continue;
-
-                    double dx = (j / (samples - 1.0D) * 2.0D - 1.0D);
-                    double dy = (k / (samples - 1.0D) * 2.0D - 1.0D);
-                    double dz = (l / (samples - 1.0D) * 2.0D - 1.0D);
-
-                    double invLen = 1.0D / Math.sqrt(dx * dx + dy * dy + dz * dz);
-                    dx *= invLen;
-                    dy *= invLen;
-                    dz *= invLen;
-
-                    // Ray "energy" budget
-                    float budget = rayStartBudget;
-
-                    double px = center.x;
-                    double py = center.y;
-                    double pz = center.z;
-
-                    // march until out of energy or out of radius
-                    for (float traveled = 0.0F; budget > 0.0F && traveled < stats.explosionRadius; traveled += step)
-                    {
-                        int bx = Mth.floor(px);
-                        int by = Mth.floor(py);
-                        int bz = Mth.floor(pz);
-                        mpos.set(bx, by, bz);
-
-                        BlockState state = level.getBlockState(mpos);
-                        FluidState fluid = level.getFluidState(mpos);
-
-                        boolean isEmpty = state.isAir() && fluid.isEmpty();
-                        if (!isEmpty)
-                        {
-                            float resistance = damageCalculator.getBlockExplosionResistance(this, level, mpos, state, fluid).orElse(0F);
-
-                            budget -= (0.25F * step); // free-space attenuation
-                            budget -= (resistance + 0.3F) * 0.35F; // material attenuation
-
-                            if (budget > 0.0F && damageCalculator.shouldBlockExplode(this, level, mpos, state, budget))
-                                toBlow.add(mpos.immutable());
-                        }
-                        else
-                        {
-                            // even in air, budget should decay a bit with distance
-                            budget -= (0.25F * step);
-                        }
-
-                        px += dx * step;
-                        py += dy * step;
-                        pz += dz * step;
-                    }
-                }
-            }
+            for (SectionPos section : crater.sectionsByDistance())
+                crater.collectSection(section, affectedBlockPositions::add);
         }
-
-        affectedBlockPositions.addAll(toBlow);
+        else
+        {
+            affectedBlockPositions.addAll(crater.firstHits());
+            deferredCrater = crater;
+        }
     }
 
     protected void doHurtEntities()

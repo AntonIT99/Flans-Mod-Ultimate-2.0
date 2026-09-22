@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.driveables.armor;
 
-import com.flansmodultimate.common.ExplosionScaling;
+import com.flansmodultimate.common.explosions.ExplosionScaling;
 
 import net.minecraft.util.Mth;
 
