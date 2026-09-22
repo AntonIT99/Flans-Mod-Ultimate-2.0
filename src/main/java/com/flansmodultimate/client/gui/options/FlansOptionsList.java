@@ -66,6 +66,21 @@ public class FlansOptionsList extends ContainerObjectSelectionList<FlansOptionsL
         addEntry(new OptionEntry(rowWidgets));
     }
 
+    /** Adds widgets with the same two-column placement as ordinary options. */
+    public void addWidgetRow(AbstractWidget left, @Nullable AbstractWidget right)
+    {
+        int rowLeft = width / 2 - ROW_HALF_WIDTH;
+        left.setX(rowLeft);
+        if (right == null)
+        {
+            addEntry(new OptionEntry(List.of(left)));
+            return;
+        }
+
+        right.setX(rowLeft + COLUMN_GAP);
+        addEntry(new OptionEntry(List.of(left, right)));
+    }
+
     /** The widget built for an option, so that the screen can disable it or explain why it is disabled. */
     @Nullable
     public AbstractWidget findWidget(OptionInstance<?> option)

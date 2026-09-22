@@ -674,7 +674,7 @@ public final class ModClientConfig
     /** The last position is a read-only indication that individual config values differ from every preset. */
     public enum RenderPreset
     {
-        OFF, QUALITY, BALANCED, PERFORMANCE, MAXIMUM_FPS, CUSTOM;
+        OFF, QUALITY, BALANCED, PERFORMANCE, AGGRESSIVE, EXTREME, MAXIMUM_FPS, CUSTOM;
 
         public static RenderPreset at(int index)
         {
@@ -682,12 +682,13 @@ public final class ModClientConfig
         }
     }
 
-    private record LodValues(double nearPixels, double farPixels, double detailMultiplier,
-                             double trackPixels, double groupedTrackPixels)
+    public record LodValues(double nearPixels, double farPixels, double detailMultiplier,
+                            double trackPixels, double groupedTrackPixels)
     {
     }
 
-    private record ImpostorValues(double pixels, int minimumDistance, int maximumDistance)
+    public record ImpostorValues(double pixels, int minimumDistance, int maximumDistance,
+                                 int qualityMultiplier, int resolution, int yawAngles)
     {
     }
 
@@ -699,7 +700,9 @@ public final class ModClientConfig
             case QUALITY -> new LodValues(0.5, 1, 1, 4, 0);
             case BALANCED -> new LodValues(0.75, 2, 2, 8, 8);
             case PERFORMANCE -> new LodValues(1.5, 4, 2, 12, 12);
-            case MAXIMUM_FPS -> new LodValues(3, 8, 3, 16, 16);
+            case AGGRESSIVE -> new LodValues(3, 8, 3, 16, 16);
+            case EXTREME -> new LodValues(4, 12, 3.5, 24, 16);
+            case MAXIMUM_FPS -> new LodValues(6, 16, 4, 32, 16);
             case CUSTOM -> throw new IllegalArgumentException("Custom is not a preset");
         };
     }
@@ -708,11 +711,13 @@ public final class ModClientConfig
     {
         return switch (preset)
         {
-            case OFF -> new ImpostorValues(0, 64, 0);
-            case QUALITY -> new ImpostorValues(16, 96, 192);
-            case BALANCED -> new ImpostorValues(32, 64, 128);
-            case PERFORMANCE -> new ImpostorValues(64, 48, 96);
-            case MAXIMUM_FPS -> new ImpostorValues(96, 32, 64);
+            case OFF -> new ImpostorValues(0, 64, 0, 2, 64, 8);
+            case QUALITY -> new ImpostorValues(16, 96, 192, 2, 64, 8);
+            case BALANCED -> new ImpostorValues(32, 64, 128, 2, 64, 8);
+            case PERFORMANCE -> new ImpostorValues(64, 48, 96, 2, 64, 8);
+            case AGGRESSIVE -> new ImpostorValues(96, 32, 64, 2, 64, 8);
+            case EXTREME -> new ImpostorValues(128, 24, 48, 2, 64, 8);
+            case MAXIMUM_FPS -> new ImpostorValues(160, 16, 32, 2, 64, 8);
             case CUSTOM -> throw new IllegalArgumentException("Custom is not a preset");
         };
     }
@@ -722,10 +727,7 @@ public final class ModClientConfig
         if (!ENABLE_DRIVEABLE_LOD.get())
             return RenderPreset.CUSTOM;
 
-        LodValues current = new LodValues(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get(),
-            MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get(), DRIVEABLE_LOD_DETAIL_MULTIPLIER.get(),
-            DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE.get(),
-            DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE.get());
+        LodValues current = currentLodValues();
         for (RenderPreset preset : RenderPreset.values())
             if (preset != RenderPreset.CUSTOM && lodValues(preset).equals(current))
                 return preset;
@@ -740,16 +742,28 @@ public final class ModClientConfig
         if (DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get() == 0 && DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get() == 0)
             return RenderPreset.OFF;
 
-        ImpostorValues current = new ImpostorValues(DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get(),
-            DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.get(), DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get());
+        ImpostorValues current = currentImpostorValues();
         for (RenderPreset preset : RenderPreset.values())
             if (preset != RenderPreset.OFF && preset != RenderPreset.CUSTOM
-                && impostorValues(preset).equals(current)
-                && DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER.get() == 2
-                && DRIVEABLE_IMPOSTOR_RESOLUTION.get() == 64
-                && DRIVEABLE_IMPOSTOR_YAW_ANGLES.get() == 8)
+                && impostorValues(preset).equals(current))
                 return preset;
         return RenderPreset.CUSTOM;
+    }
+
+    /** Reads pending option values, so the tooltip also reflects a slider still being dragged. */
+    public static LodValues currentLodValues()
+    {
+        return new LodValues(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get(),
+            MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get(), DRIVEABLE_LOD_DETAIL_MULTIPLIER.get(),
+            DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE.get(), DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE.get());
+    }
+
+    public static ImpostorValues currentImpostorValues()
+    {
+        return new ImpostorValues(DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get(),
+            DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.get(), DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get(),
+            DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER.get(), DRIVEABLE_IMPOSTOR_RESOLUTION.get(),
+            DRIVEABLE_IMPOSTOR_YAW_ANGLES.get());
     }
 
     /** Changes only model/track LOD controls. Zero thresholds keep impostors available independently. */
@@ -796,9 +810,9 @@ public final class ModClientConfig
         if (preset != RenderPreset.OFF)
         {
             set(DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE, values.minimumDistance());
-            set(DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER, 2);
-            set(DRIVEABLE_IMPOSTOR_RESOLUTION, 64);
-            set(DRIVEABLE_IMPOSTOR_YAW_ANGLES, 8);
+            set(DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER, values.qualityMultiplier());
+            set(DRIVEABLE_IMPOSTOR_RESOLUTION, values.resolution());
+            set(DRIVEABLE_IMPOSTOR_YAW_ANGLES, values.yawAngles());
         }
     }
 

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -146,14 +145,14 @@ public class FlansOptionsScreen extends Screen
                     options.add(option);
             }
 
-            if (section.name().equals("rendering"))
-                options.addAll(renderingPresetOptions());
-
             if (options.isEmpty())
                 continue;
 
             list.addHeader(Component.translatable(SECTION_KEY_PREFIX + section.name()));
             list.addOptions(options);
+            if (section.name().equals("rendering"))
+                list.addWidgetRow(new RenderingPresetSlider(150, RenderingPresetSlider.Kind.LOD),
+                    new RenderingPresetSlider(150, RenderingPresetSlider.Kind.IMPOSTOR));
         }
     }
 
@@ -193,26 +192,6 @@ public class FlansOptionsScreen extends Screen
             list.addHeader(section.title());
             list.addOptions(section.options());
         }
-    }
-
-    private static List<OptionInstance<?>> renderingPresetOptions()
-    {
-        return List.of(presetOption("lodPreset", ModClientConfig.currentLodPreset(), ModClientConfig::applyLodPreset),
-            presetOption("impostorPreset", ModClientConfig.currentImpostorPreset(), ModClientConfig::applyImpostorPreset));
-    }
-
-    private static OptionInstance<Integer> presetOption(String name, ModClientConfig.RenderPreset current,
-                                                        java.util.function.Consumer<ModClientConfig.RenderPreset> apply)
-    {
-        String key = "options.flansmodultimate." + name;
-        return new OptionInstance<>(key,
-            OptionInstance.cachedConstantTooltip(Component.translatable(key + ".tooltip")),
-            (caption, value) -> Options.genericValueLabel(caption, Component.translatable(
-                "options.flansmodultimate.value.renderpreset."
-                    + ModClientConfig.RenderPreset.at(value).name().toLowerCase(java.util.Locale.ROOT))),
-            new OptionInstance.IntRange(0, ModClientConfig.RenderPreset.CUSTOM.ordinal()),
-            current.ordinal(),
-            value -> apply.accept(ModClientConfig.RenderPreset.at(value)));
     }
 
     private void lockCommonOptions()

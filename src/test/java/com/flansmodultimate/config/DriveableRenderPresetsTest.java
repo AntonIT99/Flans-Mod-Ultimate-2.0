@@ -57,6 +57,20 @@ class DriveableRenderPresetsTest
             ModClientConfig.applyLodPreset(ModClientConfig.RenderPreset.QUALITY);
             assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentLodPreset());
             assertEquals(ModClientConfig.RenderPreset.OFF, ModClientConfig.currentImpostorPreset());
+
+            for (ModClientConfig.RenderPreset preset : ModClientConfig.RenderPreset.values())
+            {
+                if (preset == ModClientConfig.RenderPreset.CUSTOM)
+                    continue;
+                ModClientConfig.applyLodPreset(preset);
+                ModClientConfig.applyImpostorPreset(preset);
+                assertEquals(preset, ModClientConfig.currentLodPreset());
+                assertEquals(preset, ModClientConfig.currentImpostorPreset());
+            }
+            assertEquals(new ModClientConfig.LodValues(6, 16, 4, 32, 16),
+                ModClientConfig.currentLodValues());
+            assertEquals(new ModClientConfig.ImpostorValues(160, 16, 32, 2, 64, 8),
+                ModClientConfig.currentImpostorValues());
         }
         finally
         {
