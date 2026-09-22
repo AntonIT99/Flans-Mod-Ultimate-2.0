@@ -42,7 +42,8 @@ public final class CraterReachMap
     {
         int face = cell / (resolution * resolution);
         int local = cell % (resolution * resolution);
-        double u = ((double) local / resolution + 0.5D) / resolution * 2D - 1D;
+        int uCell = local / resolution;
+        double u = (uCell + 0.5D) / resolution * 2D - 1D;
         double v = (local % resolution + 0.5D) / resolution * 2D - 1D;
         double major = (face & 1) == 0 ? 1D : -1D;
 
