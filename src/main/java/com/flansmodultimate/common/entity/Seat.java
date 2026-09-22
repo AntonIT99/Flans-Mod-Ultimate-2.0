@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -124,6 +125,8 @@ public class Seat extends Entity implements IControllable
     private static final EntityDataAccessor<Integer> DATA_GUN_MAGAZINE_SIZE = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
     /** Ticks of reload this seat's gun still owes, excluding the ordinary delay between shots. */
     private static final EntityDataAccessor<Integer> DATA_GUN_RELOAD_TICKS = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
+    /** Display name of what this seat's gun has loaded, empty when nothing is. */
+    private static final EntityDataAccessor<Component> DATA_GUN_AMMO_NAME = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.COMPONENT);
 
     private static final int MAX_ORPHAN_TICKS = 100;
     /**
@@ -353,6 +356,7 @@ public class Seat extends Entity implements IControllable
         entityData.define(DATA_GUN_ROUNDS, -1);
         entityData.define(DATA_GUN_MAGAZINE_SIZE, 0);
         entityData.define(DATA_GUN_RELOAD_TICKS, 0);
+        entityData.define(DATA_GUN_AMMO_NAME, Component.empty());
     }
 
     public int getGunRounds() { return entityData.get(DATA_GUN_ROUNDS); }
@@ -361,9 +365,13 @@ public class Seat extends Entity implements IControllable
 
     public int getGunReloadTicks() { return entityData.get(DATA_GUN_RELOAD_TICKS); }
 
+    public Component getGunAmmoName() { return entityData.get(DATA_GUN_AMMO_NAME); }
+
     /** Publishes what this seat's gunner needs on their HUD. Server side; only changes go out. */
-    public void setGunState(int rounds, int magazineSize, int reloadTicks)
+    public void setGunState(int rounds, int magazineSize, int reloadTicks, Component ammoName)
     {
+        if (!entityData.get(DATA_GUN_AMMO_NAME).equals(ammoName))
+            entityData.set(DATA_GUN_AMMO_NAME, ammoName);
         if (entityData.get(DATA_GUN_ROUNDS) != rounds)
             entityData.set(DATA_GUN_ROUNDS, rounds);
         if (entityData.get(DATA_GUN_MAGAZINE_SIZE) != magazineSize)

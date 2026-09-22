@@ -60,7 +60,11 @@ public class FlansOptionsScreen extends Screen
             ModClientConfig.AMMO_HUD_LAYOUT,
             ModClientConfig.SHOW_ARMOR_DAMAGE_ABSORPTION_BAR,
             ModClientConfig.SHOW_SHOOTABLE_DURABILITY_BARS,
-            ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED)),
+            ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED,
+            ModClientConfig.VEHICLE_HUD_LEFT_X,
+            ModClientConfig.VEHICLE_HUD_LEFT_Y,
+            ModClientConfig.VEHICLE_HUD_RIGHT_X,
+            ModClientConfig.VEHICLE_HUD_RIGHT_Y)),
         new QuickSection("crosshair", List.of(
             ModClientConfig.HIDE_CROSSHAIR_FOR_GUNS,
             ModClientConfig.HIT_MARKER_STYLE,

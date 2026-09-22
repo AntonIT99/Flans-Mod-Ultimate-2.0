@@ -121,6 +121,14 @@ public final class ModClientConfig
     public static final ForgeConfigSpec.BooleanValue SHOW_AMMO_HUD;
     public static final ForgeConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     public static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
+    public static final ForgeConfigSpec.IntValue VEHICLE_HUD_LEFT_X;
+    public static final ForgeConfigSpec.IntValue VEHICLE_HUD_LEFT_Y;
+    public static final ForgeConfigSpec.IntValue VEHICLE_HUD_RIGHT_X;
+    public static final ForgeConfigSpec.IntValue VEHICLE_HUD_RIGHT_Y;
+    private static final int DEFAULT_VEHICLE_HUD_LEFT_X = 2;
+    private static final int DEFAULT_VEHICLE_HUD_RIGHT_X = 12;
+    private static final int DEFAULT_VEHICLE_HUD_TOP = 2;
+    private static final int MAX_VEHICLE_HUD_OFFSET = 500;
     public static final ForgeConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
     private static final ForgeConfigSpec.BooleanValue HD_HIT_MARKER;
     public static final ForgeConfigSpec.BooleanValue FANCY_HIT_MARKER;
@@ -286,6 +294,21 @@ public final class ModClientConfig
         AMMO_HUD_LAYOUT = builder
             .comment("Ammo HUD layout. CURRENT preserves the existing Ultimate 2.0 layout; LEGACY_FANCY and LEGACY_DEFAULT reproduce the two Ultimate 1.7.10 placements.")
             .defineEnum("ammoHudLayout", EnumAmmoHudLayout.CURRENT);
+        builder.pop();
+
+        builder.push("Vehicle HUD Settings");
+        VEHICLE_HUD_LEFT_X = builder
+            .comment("Distance in GUI pixels from the left screen edge to the vehicle HUD's left block (name, health, fuel, speed). Also used by AA gun and deployed gun readouts.")
+            .defineInRange("vehicleHudLeftX", DEFAULT_VEHICLE_HUD_LEFT_X, 0, MAX_VEHICLE_HUD_OFFSET);
+        VEHICLE_HUD_LEFT_Y = builder
+            .comment("Distance in GUI pixels from the top screen edge to the vehicle HUD's left block.")
+            .defineInRange("vehicleHudLeftY", DEFAULT_VEHICLE_HUD_TOP, 0, MAX_VEHICLE_HUD_OFFSET);
+        VEHICLE_HUD_RIGHT_X = builder
+            .comment("Distance in GUI pixels from the right screen edge to the vehicle HUD's right block (aim, weapons, ammunition). Also used by AA gun and deployed gun readouts.")
+            .defineInRange("vehicleHudRightX", DEFAULT_VEHICLE_HUD_RIGHT_X, 0, MAX_VEHICLE_HUD_OFFSET);
+        VEHICLE_HUD_RIGHT_Y = builder
+            .comment("Distance in GUI pixels from the top screen edge to the vehicle HUD's right block.")
+            .defineInRange("vehicleHudRightY", DEFAULT_VEHICLE_HUD_TOP, 0, MAX_VEHICLE_HUD_OFFSET);
         builder.pop();
 
         builder.push("Entity Rendering Settings");
@@ -539,6 +562,15 @@ public final class ModClientConfig
     public static ModClientConfig get()
     {
         return instance.get();
+    }
+
+    /**
+     * Reads a vehicle HUD offset live rather than from the baked snapshot, so the HUD follows an options
+     * slider while it is still being dragged.
+     */
+    public static int vehicleHudOffset(ForgeConfigSpec.IntValue value)
+    {
+        return configSpec.isLoaded() ? value.get() : value.getDefault();
     }
 
     public static boolean isUncensoredContentEnabled()

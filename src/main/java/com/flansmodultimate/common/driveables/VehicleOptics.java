@@ -33,7 +33,18 @@ public final class VehicleOptics
         return hasScope || seatOverlay || opticsMode || autoScope;
     }
 
+    /** An explicit AutoScope keeps the seat looking through its sight; the gunner cannot leave it. */
     public boolean forced()
+    {
+        return autoScope;
+    }
+
+    /**
+     * Whether a gunner taking the seat starts out looking through its sight. A seat overlay does, as the
+     * Krishna gunner seats did, but unlike AutoScope the gunner may lower it with the zoom key just as a
+     * driver can.
+     */
+    public boolean startsActive()
     {
         return autoScope || seatOverlay;
     }

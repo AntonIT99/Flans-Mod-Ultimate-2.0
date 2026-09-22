@@ -75,8 +75,6 @@ public final class ClientHudOverlays
     private static final int LEGACY_HUD_LEFT = 2;
     private static final int LEGACY_HUD_TOP = 2;
     private static final int LEGACY_HUD_LINE_HEIGHT = 10;
-    /** Extra clearance from the right screen edge so longer translated strings don't get clipped. */
-    private static final int HUD_RIGHT_MARGIN = 12;
     private static final int HUD_WHITE = 0xFFFFFF;
     private static final int HUD_GREEN = 0x00FF00;
     private static final int HUD_AMMO_GREEN = 0x24FF62;
@@ -185,12 +183,14 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
-        g.drawString(font, ModUtils.getDisplayName(type), LEGACY_HUD_LEFT, LEGACY_HUD_TOP, HUD_WHITE, false);
+        int leftX = vehicleHudLeftX();
+        int leftY = vehicleHudLeftY();
+        g.drawString(font, ModUtils.getDisplayName(type), leftX, leftY, HUD_WHITE, false);
         int healthPercent = type.getHealth() <= 0
             ? 0
             : Mth.clamp(Math.round(aaGun.getHealth() * 100F / type.getHealth()), 0, 100);
         Component health = Component.translatable("hud.flansmodultimate.aa_gun.health", healthPercent, aaGun.getHealth(), type.getHealth());
-        g.drawString(font, health, LEGACY_HUD_LEFT, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, healthColor(healthPercent), false);
+        g.drawString(font, health, leftX, leftY + LEGACY_HUD_LINE_HEIGHT, healthColor(healthPercent), false);
 
         float yaw = Mth.rotLerp(partialTick, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
         float pitch = Mth.lerp(partialTick, aaGun.getPrevGunPitch(), aaGun.getGunPitch());
@@ -210,18 +210,44 @@ public final class ClientHudOverlays
         Component reloadText = readiness.get(0).text();
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
 
-        int rightX = Math.max(LEGACY_HUD_LEFT, sw - HUD_RIGHT_MARGIN - maxWidth(font, yawText, pitchText, reloadText, ammoHeading,
-            currentAmmoName));
+        int rightX = vehicleHudRightX(sw, maxWidth(font, yawText, pitchText, reloadText, ammoHeading, currentAmmoName));
+        int rightY = vehicleHudRightY();
 
-        g.drawString(font, yawText, rightX, LEGACY_HUD_TOP, HUD_WHITE, false);
-        g.drawString(font, pitchText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
-        g.drawString(font, reloadText, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 2, readiness.get(0).color(), false);
+        g.drawString(font, yawText, rightX, rightY, HUD_WHITE, false);
+        g.drawString(font, pitchText, rightX, rightY + LEGACY_HUD_LINE_HEIGHT, HUD_WHITE, false);
+        g.drawString(font, reloadText, rightX, rightY + LEGACY_HUD_LINE_HEIGHT * 2, readiness.get(0).color(), false);
 
         if (hasCurrentAmmo)
         {
-            g.drawString(font, ammoHeading, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 3, HUD_WHITE, false);
-            g.drawString(font, currentAmmoName, rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * 4, HUD_AMMO_GREEN, false);
+            g.drawString(font, ammoHeading, rightX, rightY + LEGACY_HUD_LINE_HEIGHT * 3, HUD_WHITE, false);
+            g.drawString(font, currentAmmoName, rightX, rightY + LEGACY_HUD_LINE_HEIGHT * 4, HUD_AMMO_GREEN, false);
         }
+    }
+
+    /** Left edge of the left block of the vehicle, AA gun and deployed gun readouts. */
+    private static int vehicleHudLeftX()
+    {
+        return ModClientConfig.vehicleHudOffset(ModClientConfig.VEHICLE_HUD_LEFT_X);
+    }
+
+    private static int vehicleHudLeftY()
+    {
+        return ModClientConfig.vehicleHudOffset(ModClientConfig.VEHICLE_HUD_LEFT_Y);
+    }
+
+    /**
+     * Left edge of the right block, which is anchored by its right edge so the
+     * configured margin holds however wide the longest line is. It never runs off
+     * the left of the screen.
+     */
+    private static int vehicleHudRightX(int sw, int blockWidth)
+    {
+        return Math.max(0, sw - ModClientConfig.vehicleHudOffset(ModClientConfig.VEHICLE_HUD_RIGHT_X) - blockWidth);
+    }
+
+    private static int vehicleHudRightY()
+    {
+        return ModClientConfig.vehicleHudOffset(ModClientConfig.VEHICLE_HUD_RIGHT_Y);
     }
 
     /**
@@ -240,14 +266,15 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
-        g.drawString(font, ModUtils.getDisplayName(type), LEGACY_HUD_LEFT, LEGACY_HUD_TOP, HUD_WHITE, false);
+        g.drawString(font, ModUtils.getDisplayName(type), vehicleHudLeftX(), vehicleHudLeftY(), HUD_WHITE, false);
 
         List<OrdnanceLine> lines = new ArrayList<>();
         addGunAmmoLines(lines, ModUtils.getDisplayName(type), gun.getRoundsLeft(), gun.getMagazineSize(), gun.getReloadTimer());
-        int rightX = Math.max(LEGACY_HUD_LEFT, sw - HUD_RIGHT_MARGIN - maxLineWidth(font, lines));
+        int rightX = vehicleHudRightX(sw, maxLineWidth(font, lines));
+        int rightY = vehicleHudRightY();
         int line = 0;
         for (OrdnanceLine ordnance : lines)
-            g.drawString(font, ordnance.text(), rightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * line++, ordnance.color(), false);
+            g.drawString(font, ordnance.text(), rightX, rightY + LEGACY_HUD_LINE_HEIGHT * line++, ordnance.color(), false);
     }
 
     /**
@@ -281,17 +308,32 @@ public final class ClientHudOverlays
      * The seat gun line for the seat a player is riding. The gun's name comes from
      * the driveable's own definition, which the client already has, so only the
      * numbers travel.
+     *
+     * @return whether the seat mounts a gun and so got a line
      */
-    private static void addSeatGunLine(List<OrdnanceLine> lines, Driveable driveable, Seat seat)
+    private static boolean addSeatGunLine(List<OrdnanceLine> lines, Driveable driveable, Seat seat)
     {
         if (seat.getGunRounds() < 0 || driveable.getConfigType() == null)
-            return;
+            return false;
         SeatInfo info = driveable.getConfigType().getSeat(seat.getSeatIndex());
         GunType gun = info == null ? null : info.getGunType();
         if (gun == null)
-            return;
+            return false;
         addGunAmmoLines(lines, ModUtils.getDisplayName(gun), seat.getGunRounds(),
             seat.getGunMagazineSize(), seat.getGunReloadTicks());
+        return true;
+    }
+
+    /** Adds a loaded ammunition name to the Current Ammo list, once, skipping weapons with nothing loaded. */
+    private static void addAmmoName(List<Component> names, Component name)
+    {
+        String text = name.getString();
+        if (text.isEmpty())
+            return;
+        for (Component listed : names)
+            if (listed.getString().equals(text))
+                return;
+        names.add(name);
     }
 
     private static int maxLineWidth(Font font, List<OrdnanceLine> lines)
@@ -987,8 +1029,9 @@ public final class ClientHudOverlays
             return;
 
         Font font = mc.font;
-        int y = LEGACY_HUD_TOP;
-        g.drawString(font, ModUtils.getDisplayName(driveable.getConfigType()), LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        int leftX = vehicleHudLeftX();
+        int y = vehicleHudLeftY();
+        g.drawString(font, ModUtils.getDisplayName(driveable.getConfigType()), leftX, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
 
         DriveableData data = driveable.getDriveableData();
@@ -1006,7 +1049,7 @@ public final class ClientHudOverlays
                 int healthPercent = Mth.clamp(Math.round(totalHealth * 100F / totalMaxHealth), 0, 100);
                 g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.health", healthPercent,
                     Math.round(totalHealth), Math.round(totalMaxHealth)),
-                    LEGACY_HUD_LEFT, y, healthColor(healthPercent), false);
+                    leftX, y, healthColor(healthPercent), false);
                 y += LEGACY_HUD_LINE_HEIGHT;
             }
 
@@ -1015,7 +1058,7 @@ public final class ClientHudOverlays
             {
                 int fuelPercent = Mth.clamp(Math.round(driveable.getFuel() * 100F / tankSize), 0, 100);
                 g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.fuel", fuelPercent),
-                    LEGACY_HUD_LEFT, y, healthColor(fuelPercent), false);
+                    leftX, y, healthColor(fuelPercent), false);
                 y += LEGACY_HUD_LINE_HEIGHT;
             }
         }
@@ -1026,18 +1069,18 @@ public final class ClientHudOverlays
             ? Component.translatable("hud.flansmodultimate.driveable.throttle", throttlePercent)
             : Component.translatable("hud.flansmodultimate.driveable.engine_off");
         g.drawString(font, throttleText,
-            LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+            leftX, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
         g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.speed",
             String.format(Locale.ROOT, "%.1f", speed), ModClientConfig.get().driveableSpeedUnit.getSymbol()),
-            LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+            leftX, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
         if (driveable instanceof Plane)
         {
             double verticalSpeed = ModClientConfig.get().driveableSpeedUnit.convert(driveable.getDeltaMovement().y * 20D);
             g.drawString(font, Component.translatable("hud.flansmodultimate.driveable.vertical_speed",
                 String.format(Locale.ROOT, "%+.1f", verticalSpeed), ModClientConfig.get().driveableSpeedUnit.getSymbol()),
-                LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+                leftX, y, HUD_WHITE, false);
             y += LEGACY_HUD_LINE_HEIGHT;
         }
 
@@ -1045,9 +1088,9 @@ public final class ClientHudOverlays
             ? "hud.flansmodultimate.driveable.gear.down" : "hud.flansmodultimate.driveable.gear.up");
         Component door = Component.translatable(driveable.isDoorOpen()
             ? "hud.flansmodultimate.driveable.door.open" : "hud.flansmodultimate.driveable.door.closed");
-        g.drawString(font, gear, LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        g.drawString(font, gear, leftX, y, HUD_WHITE, false);
         y += LEGACY_HUD_LINE_HEIGHT;
-        g.drawString(font, door, LEGACY_HUD_LEFT, y, HUD_WHITE, false);
+        g.drawString(font, door, leftX, y, HUD_WHITE, false);
         // Air brakes are a pilot-held state with no model animation to read, so
         // the HUD is the only place the setting is visible.
         if (driveable instanceof Plane plane && plane.getPlaneType() != null && plane.getPlaneType().isHasAirBrake())
@@ -1057,7 +1100,7 @@ public final class ClientHudOverlays
             g.drawString(font, Component.translatable(airBrakeOn
                     ? "hud.flansmodultimate.driveable.air_brake.on"
                     : "hud.flansmodultimate.driveable.air_brake.off"),
-                LEGACY_HUD_LEFT, y, airBrakeOn ? HUD_GOLD : HUD_WHITE, false);
+                leftX, y, airBrakeOn ? HUD_GOLD : HUD_WHITE, false);
         }
 
         boolean isVehicle = driveable instanceof Vehicle;
@@ -1073,19 +1116,28 @@ public final class ClientHudOverlays
         Component yawText = Component.translatable("hud.flansmodultimate.driveable.yaw", Math.round(yaw));
         Component pitchText = Component.translatable("hud.flansmodultimate.driveable.pitch", Math.round(pitch));
         VehicleType vehicleType = isVehicle ? ((Vehicle) driveable).getVehicleType() : null;
-        Component primaryAmmoName = driveable.getCurrentPrimaryAmmoName();
-        Component secondaryAmmoName = driveable.getCurrentSecondaryAmmoName();
+        // The driver works the vehicle's weapon banks. A passenger works only the
+        // gun on their own seat, so the driver's banks are none of their business.
+        // Anyone else resolving to the driveable (a remote pilot) is the driver.
+        Seat ridden = player.getVehicle() instanceof Seat seat ? seat : null;
+        boolean atDriverControls = ridden == null || ridden.isDriverSeat();
         List<OrdnanceLine> ordnanceLines = new ArrayList<>();
-        addBankLine(ordnanceLines, driveable, false, primaryAmmoName);
-        addBankLine(ordnanceLines, driveable, true, secondaryAmmoName);
-        // A gunner is working their own seat's gun rather than the driver's weapon
-        // banks, so they get that gun named, with its rounds and its readiness.
-        if (player.getVehicle() instanceof Seat ridden)
-            addSeatGunLine(ordnanceLines, driveable, ridden);
-        Component currentAmmoName = !primaryAmmoName.getString().isEmpty() ? primaryAmmoName : secondaryAmmoName;
-        boolean hasCurrentAmmo = !currentAmmoName.getString().isEmpty();
+        List<Component> ammoNames = new ArrayList<>();
+        if (atDriverControls)
+        {
+            Component primaryAmmoName = driveable.getCurrentPrimaryAmmoName();
+            Component secondaryAmmoName = driveable.getCurrentSecondaryAmmoName();
+            addBankLine(ordnanceLines, driveable, false, primaryAmmoName);
+            addBankLine(ordnanceLines, driveable, true, secondaryAmmoName);
+            addAmmoName(ammoNames, primaryAmmoName);
+            addAmmoName(ammoNames, secondaryAmmoName);
+        }
+        // A seat gun is named, with its rounds and its readiness, whoever sits
+        // behind it, including a driver whose own seat mounts one.
+        if (ridden != null && addSeatGunLine(ordnanceLines, driveable, ridden))
+            addAmmoName(ammoNames, ridden.getGunAmmoName());
         Component ammoHeading = Component.translatable("hud.flansmodultimate.aa_gun.current_ammo");
-        boolean hasSmoke = vehicleType != null && vehicleType.isHasFlare() && !vehicleType.getSmokers().isEmpty();
+        boolean hasSmoke = atDriverControls && vehicleType != null && vehicleType.isHasFlare() && !vehicleType.getSmokers().isEmpty();
         Component smokeText = Component.translatable(driveable.isVarFlare()
             ? "hud.flansmodultimate.driveable.smoke.deploying"
             : driveable.isCountermeasureReloading()
@@ -1097,29 +1149,33 @@ public final class ClientHudOverlays
         Component altitudeText = Component.translatable("hud.flansmodultimate.driveable.altitude",
             Math.round(driveable.getY() - driveable.level().getSeaLevel()));
         Component compassText = Component.translatable("hud.flansmodultimate.driveable.compass", compassDirection(driveable.getYaw()));
-        int rightWidth = maxWidth(font, yawText, pitchText, smokeText, ammoHeading, currentAmmoName,
+        int rightWidth = maxWidth(font, yawText, pitchText, smokeText, ammoHeading,
             rollText, altitudeText, compassText);
         for (OrdnanceLine line : ordnanceLines)
             rightWidth = Math.max(rightWidth, font.width(line.text()));
-        int hudRightX = Math.max(LEGACY_HUD_LEFT, sw - HUD_RIGHT_MARGIN - rightWidth);
+        for (Component ammoName : ammoNames)
+            rightWidth = Math.max(rightWidth, font.width(ammoName));
+        int hudRightX = vehicleHudRightX(sw, rightWidth);
+        int rightY = vehicleHudRightY();
         int rightLine = 0;
-        g.drawString(font, yawText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
-        g.drawString(font, pitchText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+        g.drawString(font, yawText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+        g.drawString(font, pitchText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
         if (isPlane)
         {
-            g.drawString(font, rollText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
-            g.drawString(font, altitudeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
-            g.drawString(font, compassText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.drawString(font, rollText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.drawString(font, altitudeText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            g.drawString(font, compassText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
         }
         for (OrdnanceLine line : ordnanceLines)
-            g.drawString(font, line.text(), hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, line.color(), false);
+            g.drawString(font, line.text(), hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, line.color(), false);
         if (hasSmoke)
-            g.drawString(font, smokeText, hudRightX, LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine++, smokeColor, false);
-        if (hasCurrentAmmo)
+            g.drawString(font, smokeText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, smokeColor, false);
+        if (!ammoNames.isEmpty())
         {
-            int ammoY = LEGACY_HUD_TOP + LEGACY_HUD_LINE_HEIGHT * rightLine;
-            g.drawString(font, ammoHeading, hudRightX, ammoY, HUD_WHITE, false);
-            g.drawString(font, currentAmmoName, hudRightX, ammoY + LEGACY_HUD_LINE_HEIGHT, HUD_AMMO_GREEN, false);
+            // Listed in the same order as the weapon lines above.
+            g.drawString(font, ammoHeading, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_WHITE, false);
+            for (Component ammoName : ammoNames)
+                g.drawString(font, ammoName, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, HUD_AMMO_GREEN, false);
         }
 
         if (!ModClient.isDebug())

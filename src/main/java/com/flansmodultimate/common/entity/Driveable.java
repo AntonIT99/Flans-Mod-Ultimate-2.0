@@ -343,6 +343,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected float[] passengerReloadTicks = new float[0];
     /** Rounds each seat gun's slot held when it was last restocked, for its HUD readout. */
     protected int[] passengerMagazineCapacity = new int[0];
+    /** What each seat gun's ammunition slot held at the end of the last tick, to tell a restock from firing. */
+    protected Item[] passengerAmmoItem = new Item[0];
+    protected int[] passengerAmmoRounds = new int[0];
+    /** Whether the snapshots above describe a tick already seen, so a freshly loaded vehicle does not reload. */
+    protected boolean passengerAmmoTracked;
     /**
      * The order the weapon slots were filled in, one entry per weapon slot, zero
      * for an empty slot. A bank loads the oldest round aboard, so a crew that
@@ -486,6 +491,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             passengerRoundsFired = Arrays.copyOf(passengerRoundsFired, seatCount);
             passengerReloadTicks = Arrays.copyOf(passengerReloadTicks, seatCount);
             passengerMagazineCapacity = Arrays.copyOf(passengerMagazineCapacity, seatCount);
+            passengerAmmoItem = Arrays.copyOf(passengerAmmoItem, seatCount);
+            passengerAmmoRounds = Arrays.copyOf(passengerAmmoRounds, seatCount);
+            passengerAmmoTracked = false;
             passengerBurstRemaining = Arrays.copyOf(passengerBurstRemaining, seatCount);
             passengerHeldTicks = Arrays.copyOf(passengerHeldTicks, seatCount);
         }
@@ -2713,56 +2721,99 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             Seat seat = seats[index];
             SeatInfo info = seat == null ? null : seat.getSeatInfo();
             GunType gun = info == null ? null : info.getGunType();
-            if (seat != null)
-                publishSeatGunState(seat, info, gun, index);
-            if (seat == null || info == null || gun == null || seat.getRiddenByEntity() == null
-                || !isPartIntact(info.getPart()) && !ModCommonConfig.gunsInDestroyedPartsWork())
-                continue;
+            if (passengerAmmoTracked)
+                notePassengerRestock(index, gun, passengerGunAmmo(info, gun));
+            if (seat != null && info != null && gun != null && seat.getRiddenByEntity() != null
+                && (isPartIntact(info.getPart()) || ModCommonConfig.gunsInDestroyedPartsWork()))
+                tickPassengerGunFire(seat, info, gun, index);
 
-            boolean held = seat.isInputDown(DriveableInput.PRIMARY_FIRE);
-            boolean rising = seat.isInputRising(DriveableInput.PRIMARY_FIRE);
-            passengerHeldTicks[index] = held ? passengerHeldTicks[index] + 1 : 0;
-            EnumFireMode mode = gun.getFireMode(null);
-            if (mode == EnumFireMode.BURST && rising)
-                passengerBurstRemaining[index] = Math.max(1, gun.getNumBurstRounds());
-            // A seat gun keeps the cadence its GunType declares, sub-tick rates
-            // included, so a mounted minigun fires as fast here as it does in
-            // a player's hands.
-            while (ShotCooldown.isReady(passengerShootDelay[index])
-                && shouldFire(mode, held, rising, passengerHeldTicks[index], passengerBurstRemaining[index]))
-            {
-                float before = passengerShootDelay[index];
-                if (!firePassengerGun(seat, info, gun, index))
-                    break;
-                passengerShootDelay[index] = Math.max(passengerShootDelay[index], ShotCooldown.charge(before, gun.getShootDelay(null)));
-                if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
-                    --passengerBurstRemaining[index];
-                if (mode == EnumFireMode.SEMIAUTO)
-                    break;
-            }
+            // Read back after firing, so the HUD and the next restock check both
+            // see what the gun really has left this tick.
+            ItemStack ammo = passengerGunAmmo(info, gun);
+            if (seat != null)
+                publishSeatGunState(seat, gun, ammo, index);
+            passengerAmmoItem[index] = ammo.isEmpty() ? null : ammo.getItem();
+            passengerAmmoRounds[index] = ShootableItem.getTotalRounds(ammo);
+        }
+        passengerAmmoTracked = true;
+    }
+
+    /** What sits in the ammunition slot feeding a seat's gun, or nothing when the seat mounts none. */
+    private ItemStack passengerGunAmmo(@Nullable SeatInfo info, @Nullable GunType gun)
+    {
+        int ammoSlot = info == null ? -1 : info.getGunnerID();
+        return gun == null || ammoSlot < 0 ? ItemStack.EMPTY : driveableData.getAmmo(ammoSlot);
+    }
+
+    /**
+     * Holds a seat gun up for a reload when its ammunition slot is restocked, as a
+     * driver's gun bank is: loading a belt into an empty gun, or topping it up, is
+     * what the reload stands for. Firing never counts, since the snapshot this is
+     * compared with is taken after each tick's shots.
+     */
+    private void notePassengerRestock(int index, @Nullable GunType gun, ItemStack ammo)
+    {
+        if (ammo.isEmpty())
+            return;
+        int rounds = ShootableItem.getTotalRounds(ammo);
+        if (ammo.getItem() == passengerAmmoItem[index] && rounds <= passengerAmmoRounds[index])
+            return;
+        // The capacity to count down from is what went into the slot at this
+        // restock, so a gunner reads 247/300 of the belt they actually have.
+        passengerMagazineCapacity[index] = rounds;
+        if (gun != null && validGunAmmo(ammo, gun))
+            beginPassengerReload(index, gun);
+    }
+
+    /** Fires a crewed seat gun for as long as its gunner's trigger and its cadence allow this tick. */
+    private void tickPassengerGunFire(Seat seat, SeatInfo info, GunType gun, int index)
+    {
+        boolean held = seat.isInputDown(DriveableInput.PRIMARY_FIRE);
+        boolean rising = seat.isInputRising(DriveableInput.PRIMARY_FIRE);
+        passengerHeldTicks[index] = held ? passengerHeldTicks[index] + 1 : 0;
+        EnumFireMode mode = gun.getFireMode(null);
+        if (mode == EnumFireMode.BURST && rising)
+            passengerBurstRemaining[index] = Math.max(1, gun.getNumBurstRounds());
+        // A seat gun keeps the cadence its GunType declares, sub-tick rates
+        // included, so a mounted minigun fires as fast here as it does in
+        // a player's hands.
+        while (ShotCooldown.isReady(passengerShootDelay[index])
+            && shouldFire(mode, held, rising, passengerHeldTicks[index], passengerBurstRemaining[index]))
+        {
+            float before = passengerShootDelay[index];
+            if (!firePassengerGun(seat, info, gun, index))
+                break;
+            passengerShootDelay[index] = Math.max(passengerShootDelay[index], ShotCooldown.charge(before, gun.getShootDelay(null)));
+            if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
+                --passengerBurstRemaining[index];
+            if (mode == EnumFireMode.SEMIAUTO)
+                break;
         }
     }
 
     /**
-     * Tells a seat what its gunner's HUD should say: how much the gun has left to
-     * fire and how long until it may fire again. A seat mounting no gun reports
-     * -1 rounds, which is how the HUD knows to say nothing at all.
+     * Tells a seat what its gunner's HUD should say: what is loaded, how much the
+     * gun has left to fire and how long until it may fire again. A seat mounting
+     * no gun reports -1 rounds, which is how the HUD knows to say nothing at all.
      */
-    private void publishSeatGunState(Seat seat, @Nullable SeatInfo info, @Nullable GunType gun, int index)
+    private void publishSeatGunState(Seat seat, @Nullable GunType gun, ItemStack ammo, int index)
     {
-        int ammoSlot = info == null ? -1 : info.getGunnerID();
-        if (gun == null || ammoSlot < 0)
+        if (gun == null || seat.getSeatInfo() == null || seat.getSeatInfo().getGunnerID() < 0)
         {
-            seat.setGunState(-1, 0, 0);
+            seat.setGunState(-1, 0, 0, Component.empty());
             return;
         }
-        // The capacity to count down from is what went into the slot at the last
-        // restock, so a gunner reads 247/300 of the belt they actually have.
-        int rounds = ShootableItem.getTotalRounds(driveableData.getAmmo(ammoSlot));
-        if (rounds > seat.getGunRounds())
+        int rounds = ShootableItem.getTotalRounds(ammo);
+        if (!passengerAmmoTracked)
             passengerMagazineCapacity[index] = rounds;
-        seat.setGunState(rounds, passengerMagazineCapacity[index],
-            ShotCooldown.displayTicks(passengerReloadTicks[index]));
+        // Creative firing never consumes the item, but it still counts rounds
+        // towards the next reload. Clamping by that count lets a creative gunner
+        // watch the belt run down as a survival one does, which is how the
+        // driver's gun banks already report.
+        int magazineLeft = Math.max(0, passengerMagazineCapacity[index] - passengerRoundsFired[index]);
+        seat.setGunState(Math.min(rounds, magazineLeft), passengerMagazineCapacity[index],
+            ShotCooldown.displayTicks(passengerReloadTicks[index]),
+            ammo.isEmpty() ? Component.empty() : ammo.getHoverName());
     }
 
     /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
@@ -2814,6 +2865,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return;
         if (!magazineSpent(++passengerRoundsFired[index], magazineSize(fired, 0), fired))
             return;
+        beginPassengerReload(index, gun);
+    }
+
+    /** Makes a seat gun's crew wait out the gun's reload, never less than its own cadence. */
+    private void beginPassengerReload(int index, GunType gun)
+    {
         passengerRoundsFired[index] = 0;
         float reload = Math.max(gun.getReloadTime(), gun.getShootDelay(null));
         passengerShootDelay[index] = Math.max(passengerShootDelay[index], reload);
