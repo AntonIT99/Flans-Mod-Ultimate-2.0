@@ -104,9 +104,7 @@ public final class GunItemRenderer
      * item rendering, this deliberately applies no player, GUI or dropped-item
      * transform, while retaining paintjobs, attachments and animated model parts.
      */
-    public static void renderEmbedded(ModelGun model, ItemStack stack, GunAnimations animations,
-                                      PoseStack poseStack, MultiBufferSource buffer,
-                                      int packedLight, int packedOverlay)
+    public static void renderEmbedded(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         if (model == null || stack.isEmpty() || !(stack.getItem() instanceof GunItem))
             return;
@@ -118,9 +116,7 @@ public final class GunItemRenderer
         poseStack.popPose();
     }
 
-    private static void renderGunContents(ModelGun model, ItemStack stack, GunAnimations animations,
-                                          @Nullable ItemDisplayContext ctx, PoseStack poseStack,
-                                          MultiBufferSource buffer, int packedLight, int packedOverlay)
+    private static void renderGunContents(ModelGun model, ItemStack stack, GunAnimations animations, @Nullable ItemDisplayContext ctx, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         int color = model.getType().getColour();
         float red = (color >> 16 & 255) / 255F;
@@ -161,12 +157,20 @@ public final class GunItemRenderer
         renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
         boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
-        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+        var renderPasses = ModelCache.getRenderPasses(model);
+        for (int passIndex = 0; passIndex < renderPasses.size(); passIndex++)
         {
-            GpuModelCache.render(buffer, renderPass, gunTexture, translucent, cull,
-                ctx != ItemDisplayContext.GUI && !stack.hasFoil(), consumer ->
-                    renderGunAndComponents(model, stack, animations, numRounds, poseStack, consumer,
-                        packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass));
+            EnumRenderPass renderPass = renderPasses.get(passIndex);
+            var consumer = GpuModelCache.begin(buffer, renderPass, gunTexture, translucent, cull,
+                ctx != ItemDisplayContext.GUI && !stack.hasFoil());
+            try
+            {
+                renderGunAndComponents(model, stack, animations, numRounds, poseStack, consumer, packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+            }
+            finally
+            {
+                GpuModelCache.end(consumer);
+            }
         }
         if (firstPersonRight)
             renderAnimArm(model, animations, poseStack, buffer, packedLight);

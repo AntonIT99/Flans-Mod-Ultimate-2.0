@@ -5,6 +5,7 @@ import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.driveables.ValkyrieAnimation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
@@ -77,9 +78,7 @@ class ModelPlaneValkyrieRenderingTest
         }
 
         @Override
-        public void render(PoseStack stack, VertexConsumer vertices, int light, int overlay,
-                           float red, float green, float blue, float alpha, float scale,
-                           EnumRenderPass renderPass, boolean oldRotateOrder)
+        public void render(@NotNull PoseStack stack, @NotNull VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass, boolean oldRotateOrder)
         {
             pose = new Matrix4f(stack.last().pose());
             oldOrder = oldRotateOrder;

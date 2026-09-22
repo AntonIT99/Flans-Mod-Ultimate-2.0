@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.LinkedHashMap;
 import java.util.function.Function;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -24,24 +25,38 @@ public class CustomRenderType
 {
     private record TexDepthCullKey(ResourceLocation texture, boolean depthWrite, boolean cull) {}
     private record TexCullKey(ResourceLocation texture, boolean cull) {}
-    private record GpuKey(ResourceLocation texture, boolean translucent, boolean cull) {}
-    private static final Function<GpuKey, RenderType> GPU_MODELS = Util.memoize(key -> {
-        RenderType.CompositeState state = RenderType.CompositeState.builder()
-            .setShaderState(new RenderStateShard.ShaderStateShard(GpuModelCache::shader))
-            .setTextureState(new RenderStateShard.TextureStateShard(key.texture(), false, false))
-            .setTransparencyState(key.translucent() ? CustomRenderType.EMISSIVE_ALPHA_TRANSPARENCY
-                : new RenderStateShard.TransparencyStateShard("gpu_opaque", RenderSystem::disableBlend, () -> {}))
-            .setCullState(new RenderStateShard.CullStateShard(key.cull()))
-            .setLightmapState(new RenderStateShard.LightmapStateShard(true))
-            .setOverlayState(new RenderStateShard.OverlayStateShard(true))
-            .createCompositeState(false);
-        return RenderType.create("rigid_model", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
-            256, false, false, state);
-    });
+    private static final LinkedHashMap<ResourceLocation, RenderType[]> GPU_MODELS = new LinkedHashMap<>(64, 0.75F, true);
 
     public static RenderType gpuModel(ResourceLocation texture, boolean translucent, boolean cull)
     {
-        return GPU_MODELS.apply(new GpuKey(texture, translucent, cull));
+        RenderType[] variants = GPU_MODELS.get(texture);
+        if (variants == null)
+        {
+            if (GPU_MODELS.size() >= 256)
+            {
+                var iterator = GPU_MODELS.keySet().iterator();
+                iterator.next();
+                iterator.remove();
+            }
+            variants = new RenderType[4];
+            GPU_MODELS.put(texture, variants);
+        }
+        int variant = (translucent ? 2 : 0) + (cull ? 1 : 0);
+        if (variants[variant] == null)
+        {
+            RenderType.CompositeState state = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(GpuModelCache::shader))
+                .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                .setTransparencyState(translucent ? EMISSIVE_ALPHA_TRANSPARENCY
+                    : new RenderStateShard.TransparencyStateShard("gpu_opaque", RenderSystem::disableBlend, () -> {}))
+                .setCullState(new RenderStateShard.CullStateShard(cull))
+                .setLightmapState(new RenderStateShard.LightmapStateShard(true))
+                .setOverlayState(new RenderStateShard.OverlayStateShard(true))
+                .createCompositeState(false);
+            variants[variant] = RenderType.create("rigid_model", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
+                256, false, false, state);
+        }
+        return variants[variant];
     }
 
     /** Standard alpha blending */

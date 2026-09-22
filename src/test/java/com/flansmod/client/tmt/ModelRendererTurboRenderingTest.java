@@ -17,6 +17,95 @@ import static org.junit.jupiter.api.Assertions.*;
 class ModelRendererTurboRenderingTest
 {
     @Test
+    void transformsMatchOriginalQuaternionStackMathIncludingChildrenAndExceptionalScales()
+    {
+        for (boolean children : new boolean[]{false, true})
+            for (boolean oldOrder : new boolean[]{false, true})
+                for (float scale : new float[]{1, 0.0625F, 2, -2, 0, Float.NaN, Float.POSITIVE_INFINITY})
+                {
+                    ModelRendererTurbo parent = box(), child = box();
+                    parent.offsetX = 0.2F; parent.offsetY = -0.4F;
+                    parent.rotationPointX = 3; parent.rotationPointZ = -7;
+                    parent.rotateAngleX = 0.31F; parent.rotateAngleY = -0.79F; parent.rotateAngleZ = 1.11F;
+                    child.rotationPointY = 12; child.rotateAngleY = -0.62F;
+                    if (children) parent.addChild(child);
+                    PoseStack stack = new PoseStack();
+                    stack.scale(-2, 0.75F, 3);
+                    RecordingVertexConsumer actual = new RecordingVertexConsumer();
+                    parent.render(stack, actual, 17, 23, 1, 1, 1, 1, scale, EnumRenderPass.DEFAULT, oldOrder);
+                    RecordingVertexConsumer expected = new RecordingVertexConsumer();
+                    originalTransform(stack, parent, scale, oldOrder);
+                    box().render(stack, expected, 17, 23, 1, 1, 1, 1, 1);
+                    if (children)
+                    {
+                        originalTransform(stack, child, scale, false);
+                        box().render(stack, expected, 17, 23, 1, 1, 1, 1, 1);
+                    }
+                    assertEquals(expected.vertices.size(), actual.vertices.size());
+                    for (int i = 0; i < expected.vertices.size(); i++)
+                        for (int component = 0; component < expected.vertices.get(i).length; component++)
+                        {
+                            float value = expected.vertices.get(i)[component];
+                            float result = actual.vertices.get(i)[component];
+                            if (!Float.isFinite(value)) assertEquals(value, result);
+                            else assertEquals(value, result, Math.max(2E-5F, Math.abs(value) * 2E-6F),
+                                "children=" + children + ", oldOrder=" + oldOrder + ", scale=" + scale);
+                        }
+                }
+    }
+
+    private static void originalTransform(PoseStack stack, ModelRendererTurbo part, float scale, boolean oldOrder)
+    {
+        stack.translate(part.offsetX, part.offsetY, part.offsetZ);
+        stack.translate(part.rotationPointX * 0.0625F * scale, part.rotationPointY * 0.0625F * scale, part.rotationPointZ * 0.0625F * scale);
+        if (!oldOrder && part.rotateAngleY != 0) stack.mulPose(Axis.YP.rotation(part.rotateAngleY));
+        if (part.rotateAngleZ != 0) stack.mulPose(Axis.ZP.rotation(oldOrder ? -part.rotateAngleZ : part.rotateAngleZ));
+        if (oldOrder && part.rotateAngleY != 0) stack.mulPose(Axis.YP.rotation(-part.rotateAngleY));
+        if (part.rotateAngleX != 0) stack.mulPose(Axis.XP.rotation(part.rotateAngleX));
+        if (scale != 1) stack.scale(scale, scale, scale);
+    }
+
+    @Test
+    void squaredCullingNeverRejectsMoreThanPreviousBoundIncludingShear()
+    {
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+        part.addBox(0, 0, 0, 16, 16, 16);
+        java.util.Random random = new java.util.Random(1234);
+        ModelRendererTurbo.beginScreenSpaceCulling(8, 150);
+        int culled = 0;
+        try
+        {
+            for (int i = 0; i < 2000; i++)
+            {
+                PoseStack pose = new PoseStack();
+                pose.translate(random.nextFloat() * 100, random.nextFloat() * 100, random.nextFloat() * 100);
+                pose.scale(0.1F + random.nextFloat() * 3, 0.1F + random.nextFloat() * 3, 0.1F + random.nextFloat() * 3);
+                pose.mulPose(Axis.YP.rotation(random.nextFloat() * 6));
+                pose.mulPose(Axis.XP.rotation(random.nextFloat() * 6));
+                RecordingVertexConsumer output = new RecordingVertexConsumer();
+                part.render(pose, output, 17, 23, 1, 1, 1, 1, 1);
+                if (!output.vertices.isEmpty()) continue;
+                culled++;
+                Matrix4f m = pose.last().pose();
+                float x = (m.m00() + m.m10() + m.m20()) * 0.5F + m.m30();
+                float y = (m.m01() + m.m11() + m.m21()) * 0.5F + m.m31();
+                float z = (m.m02() + m.m12() + m.m22()) * 0.5F + m.m32();
+                double sx = Math.sqrt(m.m00()*m.m00() + m.m01()*m.m01() + m.m02()*m.m02());
+                double sy = Math.sqrt(m.m10()*m.m10() + m.m11()*m.m11() + m.m12()*m.m12());
+                double sz = Math.sqrt(m.m20()*m.m20() + m.m21()*m.m21() + m.m22()*m.m22());
+                double radius = Math.sqrt(0.75) * Math.max(sx, Math.max(sy, sz));
+                double diameter = 2 * radius * 150 / Math.max(0.01, Math.sqrt(x*x + y*y + z*z) - radius);
+                assertTrue(diameter < 8);
+            }
+            assertTrue(culled > 0);
+            RecordingVertexConsumer near = new RecordingVertexConsumer();
+            part.render(new PoseStack(), near, 17, 23, 1, 1, 1, 1, 1);
+            assertEquals(24, near.vertices.size());
+        }
+        finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+    }
+
+    @Test
     void customArmourRegistersPartsThroughModelContract()
     {
         ModelCustomArmour model = new ModelCustomArmour();

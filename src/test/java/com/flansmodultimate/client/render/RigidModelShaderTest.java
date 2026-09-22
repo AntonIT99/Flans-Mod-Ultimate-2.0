@@ -3,8 +3,11 @@ package com.flansmodultimate.client.render;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.datafixers.util.Pair;
+import net.minecraftforge.client.event.RegisterShadersEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -19,7 +22,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.lwjgl.opengl.GL32C.*;
@@ -67,20 +72,37 @@ class RigidModelShaderTest
                 for (String uniform : new String[]{"PartPose", "PartNormal", "PartData"})
                 {
                     assertTrue(glGetUniformLocation(program, uniform) >= 0, uniform);
-                    int lastPart = glGetUniformLocation(program, uniform + "[15]");
+                    int lastPart = glGetUniformLocation(program, uniform + "[" + (GpuModelCache.PARTS_PER_BATCH - 1) + "]");
                     assertTrue(lastPart >= 0, uniform + " final part");
-                    float[] palette = new float[256];
+                    int stride = uniform.equals("PartNormal") ? 9 : 16;
+                    float[] palette = new float[GpuModelCache.PARTS_PER_BATCH * stride];
                     for (int i = 0; i < palette.length; i++) palette[i] = i;
                     assertNotNull(shader.getUniform(uniform));
                     shader.getUniform(uniform).set(palette);
                     shader.getUniform(uniform).upload();
-                    float[] uploaded = new float[16];
+                    float[] uploaded = new float[stride];
                     glGetUniformfv(program, lastPart, uploaded);
-                    for (int i = 0; i < 16; i++) assertEquals(240 + i, uploaded[i], uniform);
+                    for (int i = 0; i < stride; i++) assertEquals(palette.length - stride + i, uploaded[i], uniform);
                 }
                 assertEquals(GL_NO_ERROR, glGetError());
                 glUseProgram(0);
             }
+            // Exercise the real registration callback and reload/failure lifecycle too.
+            for (int reload = 0; reload < 2; reload++)
+            {
+                var registrations = new ArrayList<Pair<ShaderInstance, Consumer<ShaderInstance>>>();
+                GpuModelCache.registerShader(new RegisterShadersEvent(resources, registrations));
+                assertNull(GpuModelCache.shader());
+                assertEquals(1, registrations.size());
+                var registration = registrations.get(0);
+                registration.getSecond().accept(registration.getFirst());
+                assertSame(registration.getFirst(), GpuModelCache.shader());
+                GpuModelCache.clear();
+                assertSame(registration.getFirst(), GpuModelCache.shader()); // Clearing VBOs keeps the live shader.
+                registration.getFirst().close();
+            }
+            GpuModelCache.registerShader(new RegisterShadersEvent(location -> Optional.empty(), new ArrayList<>()));
+            assertNull(GpuModelCache.shader());
         }
         finally
         {

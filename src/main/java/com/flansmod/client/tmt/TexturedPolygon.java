@@ -1,5 +1,6 @@
 package com.flansmod.client.tmt;
 
+import com.flansmodultimate.client.render.gpu.GeometryRevision;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Matrix3f;
@@ -22,9 +23,14 @@ public class TexturedPolygon
     private boolean invertNormal;
     private float[] normals;
     private List<Vec3> iNormals;
-    private final boolean hasTransformVertices;
+    private boolean hasTransformVertices;
+    private boolean externalNormals;
+    private PositionTextureVertex[] observedVertices;
+    private Vec3[] observedPositions;
+    private float[] observedUvs;
+    private int observedCount;
     private long geometryRevision;
-    private final int[] renderVertexIndices;
+    private int[] renderVertexIndices;
     private int[] legacyRenderVertexIndices;
     private float[] compiledStaticVertices;
     private Vec3[] compiledTransformPositions;
@@ -62,12 +68,14 @@ public class TexturedPolygon
     {
         normals = new float[]{x, y, z};
         geometryRevision++;
+        GeometryRevision.changed();
     }
 
     public void setInvertNormal(boolean invertNormal)
     {
         this.invertNormal = invertNormal;
         geometryRevision++;
+        GeometryRevision.changed();
     }
 
     public void flipFace()
@@ -86,7 +94,9 @@ public class TexturedPolygon
     public void setNormals(List<Vec3> vec)
     {
         iNormals = vec;
+        externalNormals = true;
         geometryRevision++;
+        GeometryRevision.changed();
     }
 
     public void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
@@ -172,18 +182,60 @@ public class TexturedPolygon
         return data;
     }
 
-    void invalidateCompiledVertices()
+    public void invalidateCompiledVertices()
     {
         geometryRevision++;
+        GeometryRevision.changed();
+        hasTransformVertices = false;
+        for (PositionTextureVertex vertex : vertexPositions)
+            hasTransformVertices |= vertex instanceof PositionTransformVertex;
+        renderVertexIndices = createRenderVertexIndices(nVertices);
+        legacyRenderVertexIndices = null;
         compiledStaticVertices = null;
         compiledTransformPositions = null;
         cachedFaceNormalValid = false;
+    }
+
+    /**
+     * Compatibility path for geometry handed to external code. Public array elements,
+     * vertex fields and retained list references cannot emit mutation notifications.
+     * Internally owned model geometry never pays for this scan during normal rendering.
+     */
+    void observeExternalMutations()
+    {
+        boolean changed = observedVertices == null || observedVertices.length != vertexPositions.length || observedCount != nVertices;
+        if (observedVertices == null || observedVertices.length != vertexPositions.length)
+        {
+            observedVertices = new PositionTextureVertex[vertexPositions.length];
+            observedPositions = new Vec3[vertexPositions.length];
+            observedUvs = new float[vertexPositions.length * 2];
+        }
+        for (int i = 0; i < vertexPositions.length; i++)
+        {
+            PositionTextureVertex vertex = vertexPositions[i];
+            if (observedVertices[i] != vertex || !(vertex instanceof PositionTransformVertex) && observedPositions[i] != vertex.vector3D
+                || Float.floatToIntBits(observedUvs[i * 2]) != Float.floatToIntBits(vertex.texturePositionX)
+                || Float.floatToIntBits(observedUvs[i * 2 + 1]) != Float.floatToIntBits(vertex.texturePositionY))
+                changed = true;
+            observedVertices[i] = vertex;
+            observedPositions[i] = vertex.vector3D;
+            observedUvs[i * 2] = vertex.texturePositionX;
+            observedUvs[i * 2 + 1] = vertex.texturePositionY;
+        }
+        observedCount = nVertices;
+        if (changed) invalidateCompiledVertices();
     }
 
     /** Derived LOD geometry must not freeze legacy bone deformation. */
     public boolean isRigidLodGeometry()
     {
         return getClass() == TexturedPolygon.class && !hasTransformVertices && !invertNormal && iNormals.isEmpty();
+    }
+
+    /** A retained empty normals list may acquire normals without calling a setter. */
+    public boolean isRigidGpuGeometry()
+    {
+        return isRigidLodGeometry() && !externalNormals;
     }
 
     public long geometryRevision()

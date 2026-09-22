@@ -16,10 +16,10 @@ uniform mat3 IViewRotMat;
 uniform int FogShape;
 uniform vec3 Light0_Direction;
 uniform vec3 Light1_Direction;
-// Sixteen parts stay within OpenGL 3.2's minimum vertex-uniform limit.
-uniform mat4 PartPose[16];
-uniform mat4 PartNormal[16];
-uniform mat4 PartData[16];
+// Twenty parts with mat3 normals stay within OpenGL 3.2 vertex-uniform limits.
+uniform mat4 PartPose[20];
+uniform mat3 PartNormal[20];
+uniform mat4 PartData[20];
 
 out float vertexDistance;
 out vec4 vertexColor;
@@ -30,7 +30,7 @@ out vec2 texCoord0;
 void main() {
     int part = UV1.x;
     vec3 position = (PartPose[part] * vec4(Position, 1.0)).xyz;
-    vec3 normal = mat3(PartNormal[part]) * Normal;
+    vec3 normal = PartNormal[part] * Normal;
     ivec4 lighting = ivec4(PartData[part][1]);
     gl_Position = ProjMat * ModelViewMat * vec4(position, 1.0);
     vertexDistance = fog_distance(ModelViewMat, IViewRotMat * position, FogShape);

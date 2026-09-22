@@ -11,6 +11,7 @@
       "ServerGamePacketListenerDriveableMixin"
   ],
   "client": [
+      "BufferSourceAccessor",
       "CreateWorldScreenApocalypseMixin",
       "DriveableCameraMixin",
       "EntityNameTagRenderDistanceMixin",

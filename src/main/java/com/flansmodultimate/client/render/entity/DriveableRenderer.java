@@ -239,11 +239,18 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             ModelRendererTurbo.beginScreenSpaceCulling(minimumPartPixels, projectionPixels);
         try
         {
-            for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+            var renderPasses = ModelCache.getRenderPasses(model);
+            for (int passIndex = 0; passIndex < renderPasses.size(); passIndex++)
             {
-                GpuModelCache.render(buffer, renderPass, texture, translucent, cull,
-                    !preview, consumer -> model.render(driveable, state, poseStack, consumer,
-                        packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass));
+                EnumRenderPass renderPass = renderPasses.get(passIndex);
+                var consumer = GpuModelCache.begin(buffer, renderPass, texture, translucent, cull, !preview);
+                try
+                {
+                    model.render(driveable, state, poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
+                }
+                finally {
+                    GpuModelCache.end(consumer);
+                }
             }
             poseStack.popPose();
             if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
