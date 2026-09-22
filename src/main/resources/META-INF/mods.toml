@@ -4,7 +4,7 @@ license="CC BY-NC-SA 3.0"
 
 [[mods]]
 modId="flansmodultimate"
-version="2.0-beta-6"
+version="2.0"
 displayName="Flan's Mod Ultimate 2"
 logoFile="flansmodultimate2.png"
 credits="Based on Flan's Mod by Jamioflan and contributors, and the legacy Flan's Mod Ultimate Stability Edition project. See the bundled license and repository attribution for details."
