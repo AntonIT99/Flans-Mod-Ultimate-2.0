@@ -18,6 +18,63 @@ import static org.junit.jupiter.api.Assertions.*;
 class RigidBatchTest
 {
     @Test
+    void sharedPaletteMappingIsPartOfMeshIdentity()
+    {
+        RigidGeometry a = geometry(), b = geometry();
+        GeometryKey shared = new GeometryKey(2), separate = new GeometryKey(2);
+        shared.add(a, 0); shared.add(b, 0);
+        separate.add(a, 0); separate.add(b, 1);
+        assertNotEquals(shared, separate);
+        GeometryKey stored = shared.snapshot();
+        shared.clear(); shared.add(a, 0); shared.add(b, 1);
+        assertNotEquals(stored, shared);
+        shared.clear(); shared.add(a, 0); shared.add(b, 0);
+        assertEquals(stored, shared);
+    }
+
+    @Test
+    void sharedTransformsUseOneDrawAndSplitAtGeometryAndUploadLimits()
+    {
+        Backend backend = new Backend();
+        RigidBatch batch = new RigidBatch(2, 8, 24);
+        batch.begin(backend);
+        for (int i = 0; i < 8; i++) submit(batch, geometry(), new PoseStack());
+        batch.end();
+        assertEquals(List.of("barrier", "gpu:6", "gpu:2"), backend.events);
+        backend.events.clear();
+        batch = new RigidBatch(2, 8, 1000);
+        batch.begin(backend);
+        for (int i = 0; i < 9; i++) submit(batch, geometry(), new PoseStack());
+        batch.end();
+        assertEquals(List.of("barrier", "gpu:8", "gpu:1"), backend.events);
+    }
+
+    @Test
+    void sharedPaletteFallbackPreservesMutableParentPoseAndDifferentLighting()
+    {
+        Backend backend = new Backend();
+        backend.available = false;
+        RigidBatch batch = new RigidBatch(3, 12, 1000);
+        Recording expected = new Recording();
+        PoseStack pose = new PoseStack();
+        RigidGeometry geometry = geometry();
+        batch.begin(backend);
+        for (int i = 0; i < 10; i++)
+        {
+            if (i == 4) pose.translate(3, 4, 5);
+            if (i == 7) pose.last().normal().scale(2); // Normal changes alone must split palettes too.
+            int light = i < 6 ? 0xCAFE0123 : 0x1234BEEF;
+            geometry.draw(pose.last(), expected, light, 23, 1, 0.5F, 0.25F, 1);
+            batch.submit(geometry, pose.last(), light, 23, 1, 0.5F, 0.25F, 1);
+        }
+        pose.setIdentity();
+        batch.end();
+        assertEquals(expected.vertices.size(), backend.output.vertices.size());
+        for (int i = 0; i < expected.vertices.size(); i++)
+            assertArrayEquals(expected.vertices.get(i), backend.output.vertices.get(i), 1E-6F);
+    }
+
+    @Test
     void packedMetadataPreservesEveryPartAcrossFullAndPartialFallbackBatches()
     {
         Backend backend = new Backend();

@@ -18,6 +18,72 @@ import static org.junit.jupiter.api.Assertions.*;
 class GeometryInvalidationTest
 {
     @Test
+    void bakedLocalTransformsPreserveVerticesNormalsAndParentAnimation()
+    {
+        for (boolean oldOrder : new boolean[]{false, true})
+        {
+            ModelRendererTurbo part = box();
+            part.offsetX = 0.3F;
+            part.setRotationPoint(12, -4, 8);
+            part.rotateAngleX = 0.2F;
+            part.rotateAngleY = -0.4F;
+            part.rotateAngleZ = 0.7F;
+            PoseStack parent = new PoseStack();
+            parent.scale(-2, 0.5F, 3);
+            Capture actual = null;
+            for (int i = 0; i < 3; i++)
+            {
+                actual = new Capture();
+                part.render(parent, actual, 17, 23, 1, 0.5F, 0.25F, 1, 0.0625F, EnumRenderPass.DEFAULT, oldOrder);
+            }
+            assertArrayEquals(parent.last().pose().get(new float[16]), actual.submittedPose);
+            RigidGeometry baked = actual.geometry;
+            parent.translate(4, 5, 6);
+            Capture moved = new Capture();
+            part.render(parent, moved, 17, 23, 1, 0.5F, 0.25F, 1, 0.0625F, EnumRenderPass.DEFAULT, oldOrder);
+            assertSame(baked, moved.geometry);
+            RecordingVertexConsumer expected = new RecordingVertexConsumer();
+            part.render(parent, expected, 17, 23, 1, 0.5F, 0.25F, 1, 0.0625F, EnumRenderPass.DEFAULT, oldOrder);
+            assertEquals(expected.vertices.size(), moved.vertices.size());
+            for (int i = 0; i < expected.vertices.size(); i++)
+                assertArrayEquals(expected.vertices.get(i), moved.vertices.get(i), 1E-5F);
+        }
+    }
+
+    @Test
+    void bakedGeometryInvalidatesAndAnimatedPartsReturnToOriginalMeshes()
+    {
+        ModelRendererTurbo part = box();
+        part.rotateAngleY = 0.3F;
+        RigidGeometry original = draw(part).geometry;
+        draw(part);
+        RigidGeometry baked = draw(part).geometry;
+        assertNotSame(original, baked);
+        part.doMirror(true, false, false);
+        RigidGeometry mirrored = draw(part).geometry;
+        assertNotSame(baked, mirrored);
+        part.rotateAngleY = 0.6F;
+        RigidGeometry animated = draw(part).geometry;
+        assertNotSame(mirrored, animated);
+        part.rotateAngleY = 0.9F;
+        assertSame(animated, draw(part).geometry);
+        for (int i = 0; i < 5; i++) assertSame(animated, draw(part).geometry);
+    }
+
+    @Test
+    void returningToIdentityDisablesLocalBakingWithoutStaleTransforms()
+    {
+        ModelRendererTurbo part = box();
+        part.rotateAngleY = 0.3F;
+        RigidGeometry original = draw(part).geometry;
+        draw(part); draw(part);
+        part.rotateAngleY = 0;
+        assertSame(original, draw(part).geometry);
+        part.rotateAngleY = 0.3F;
+        for (int i = 0; i < 5; i++) assertSame(original, draw(part).geometry);
+    }
+
+    @Test
     void legacySubclassConstructionHooksStillRunAndStayOnCpu()
     {
         class CustomPart extends ModelRendererTurbo
@@ -208,9 +274,11 @@ class GeometryInvalidationTest
     private static class Capture extends RecordingVertexConsumer implements RigidGeometryConsumer
     {
         RigidGeometry geometry;
+        float[] submittedPose;
         @Override public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float r, float g, float b, float a)
         {
             this.geometry = geometry;
+            submittedPose = pose.pose().get(new float[16]);
             geometry.draw(pose, this, light, overlay, r, g, b, a);
         }
     }

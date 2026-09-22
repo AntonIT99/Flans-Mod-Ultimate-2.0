@@ -213,7 +213,7 @@ public final class GpuModelCache
             builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
             for (int i = 0; i < key.count; i++)
                 // UV1 is the palette index in the cached mesh; real overlay coordinates are uniforms.
-                key.geometries[i].draw(IDENTITY, builder, 0, i, 1F, 1F, 1F, 1F);
+                key.geometries[i].draw(IDENTITY, builder, 0, key.paletteIndices[i], 1F, 1F, 1F, 1F);
             buffer.bind();
             buffer.upload(builder.end());
             Mesh mesh = new Mesh(buffer, size);
@@ -273,7 +273,8 @@ public final class GpuModelCache
 
     private static final class Context implements RigidBatch.Backend, Supplier<ShaderInstance>
     {
-        private final RigidBatch batch = new RigidBatch(PARTS_PER_BATCH);
+        private final RigidBatch batch = new RigidBatch(PARTS_PER_BATCH, PARTS_PER_BATCH * 8,
+            (int)(UPLOAD_BYTES_PER_TICK / DefaultVertexFormat.NEW_ENTITY.getVertexSize()));
         private MultiBufferSource.BufferSource source;
         private RenderType vanilla;
         private RenderType gpu;

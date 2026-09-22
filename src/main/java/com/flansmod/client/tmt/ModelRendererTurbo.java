@@ -2325,9 +2325,26 @@ public class ModelRendererTurbo extends ModelRenderer
                 renderPoseCache = new RenderPoseCache();
             PoseStack.Pose pose = renderPoseCache.compose(poseStack.last(), scale, oldRotateOrder);
             if (!isBelowScreenSize(pose))
+            {
+                // Bake fixed local pivots/rotations at upload time. Adjacent rigid
+                // pieces can then share the vehicle/turret's parent palette entry.
+                if (vertexConsumer instanceof RigidGeometryConsumer gpu && !glow && !glowAdditive
+                    && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler
+                    && renderPoseCache.canBake())
+                {
+                    if (gpuGeometry == null) gpuGeometry = new RigidGeometry(visibleFaces);
+                    if (gpuGeometry.supported())
+                    {
+                        gpu.submit(renderPoseCache.baked(gpuGeometry), poseStack.last(), packedLight,
+                            packedOverlay, red, green, blue, alpha);
+                        return;
+                    }
+                }
                 compile(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+            }
             return;
         }
+        if (renderPoseCache != null) renderPoseCache.disableBake();
         if (hasTransform)
         {
             poseStack.pushPose();
@@ -2593,6 +2610,33 @@ public class ModelRendererTurbo extends ModelRenderer
         private float lastAngleZ;
         private float lastScale;
         private boolean lastOldRotateOrder;
+        private boolean initialized;
+        private boolean dynamic;
+        private int stableRenders;
+        private RigidGeometry bakedSource;
+        private RigidGeometry bakedGeometry;
+
+        private void disableBake()
+        {
+            dynamic = true;
+            bakedSource = bakedGeometry = null;
+        }
+
+        private boolean canBake()
+        {
+            return !dynamic && stableRenders >= 2
+                && local.last().pose().isFinite() && local.last().normal().isFinite();
+        }
+
+        private RigidGeometry baked(RigidGeometry source)
+        {
+            if (bakedSource != source)
+            {
+                bakedSource = source;
+                bakedGeometry = source.transformed(local.last());
+            }
+            return bakedGeometry;
+        }
 
         private PoseStack.Pose compose(PoseStack.Pose parent, float scale, boolean oldRotateOrder)
         {
@@ -2601,6 +2645,14 @@ public class ModelRendererTurbo extends ModelRenderer
                 || lastAngleX != rotateAngleX || lastAngleY != rotateAngleY || lastAngleZ != rotateAngleZ
                 || lastScale != scale || lastOldRotateOrder != oldRotateOrder)
             {
+                // Public transforms may be animated or changed by another entity
+                // using this shared model. Never rebuild baked VBOs every frame.
+                if (initialized)
+                {
+                    disableBake();
+                }
+                initialized = true;
+                stableRenders = 0;
                 local.setIdentity();
                 local.translate(offsetX, offsetY, offsetZ);
                 translateAndRotate(local, scale, oldRotateOrder);
@@ -2616,6 +2668,7 @@ public class ModelRendererTurbo extends ModelRenderer
                 lastScale = scale;
                 lastOldRotateOrder = oldRotateOrder;
             }
+            else if (stableRenders < 2) stableRenders++;
             composed.pose().set(parent.pose()).mul(local.last().pose());
             composed.normal().set(parent.normal()).mul(local.last().normal());
             return composed;

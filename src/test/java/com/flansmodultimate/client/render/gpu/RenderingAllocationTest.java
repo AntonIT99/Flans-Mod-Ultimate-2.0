@@ -17,6 +17,50 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RenderingAllocationTest
 {
     @Test
+    void staticHullWithAnimatedParentUsesOneDrawWithoutWarmAllocations()
+    {
+        var bean = (com.sun.management.ThreadMXBean)ManagementFactory.getThreadMXBean();
+        assertTrue(bean.isThreadAllocatedMemorySupported());
+        bean.setThreadAllocatedMemoryEnabled(true);
+        ModelRendererTurbo[] parts = new ModelRendererTurbo[120];
+        for (int i = 0; i < parts.length; i++)
+        {
+            parts[i] = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+            for (int box = 0; box < 8; box++) parts[i].addBox(box, 0, 0, 1, 1, 1);
+            parts[i].setRotationPoint(i, i % 7, -i);
+            parts[i].rotateAngleY = 0.1F + i * 0.01F;
+        }
+        PoseStack parent = new PoseStack();
+        Backend backend = new Backend();
+        RigidBatch batch = new RigidBatch(GpuModelCache.PARTS_PER_BATCH, 192, 2 * 1024 * 1024 / 36);
+        runStatic(parts, parent, batch, backend, 20_000);
+        long misses = backend.misses, draws = backend.misses + backend.hits;
+        long thread = Thread.currentThread().getId();
+        long allocated = bean.getThreadAllocatedBytes(thread);
+        long start = System.nanoTime();
+        runStatic(parts, parent, batch, backend, 20_000);
+        long nanos = System.nanoTime() - start;
+        allocated = bean.getThreadAllocatedBytes(thread) - allocated;
+        assertEquals(misses, backend.misses, "Moving the whole vehicle must not rebuild its meshes");
+        assertEquals(20_000, backend.misses + backend.hits - draws);
+        assertTrue(allocated < 16_384, "Hot path allocated " + allocated + " bytes");
+        System.out.printf("Cached static hull: 120 parts, 1 draw/frame (previously 5), %.2f ns/part, %d bytes / 2400000 parts%n",
+            nanos / 2_400_000D, allocated);
+    }
+
+    private static void runStatic(ModelRendererTurbo[] parts, PoseStack parent, RigidBatch batch, Backend backend, int frames)
+    {
+        for (int frame = 0; frame < frames; frame++)
+        {
+            parent.setIdentity();
+            parent.translate(frame * 0.001, 0, -10);
+            batch.begin(backend);
+            for (ModelRendererTurbo part : parts) part.render(parent, batch, 17, 23, 1, 1, 1, 1, 1);
+            batch.end();
+        }
+    }
+
+    @Test
     void warmModelSubmissionAndMeshLookupAllocateNoObjectsPerPart()
     {
         var bean = (com.sun.management.ThreadMXBean)ManagementFactory.getThreadMXBean();

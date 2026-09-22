@@ -21,6 +21,13 @@ final class RigidBatch implements RigidGeometryConsumer
     final float[] normals;
     final float[] data;
     private final PoseStack.Pose fallbackPose = new PoseStack().last();
+    private final PoseStack.Pose lastPose = new PoseStack().last();
+    private final int capacity;
+    private final int maxVertices;
+    private int paletteCount;
+    private long vertexCount;
+    private int lastLight, lastOverlay;
+    private float lastRed, lastGreen, lastBlue, lastAlpha;
     private Backend backend;
     private VertexConsumer fallback;
     private boolean needsBarrier;
@@ -28,7 +35,14 @@ final class RigidBatch implements RigidGeometryConsumer
 
     RigidBatch(int capacity)
     {
-        key = new GeometryKey(capacity);
+        this(capacity, capacity, Integer.MAX_VALUE);
+    }
+
+    RigidBatch(int capacity, int maxGeometries, int maxVertices)
+    {
+        this.capacity = capacity;
+        this.maxVertices = maxVertices;
+        key = new GeometryKey(maxGeometries);
         poses = new float[capacity * 16];
         normals = new float[capacity * 9];
         // Two parts share a mat4; round up so odd capacities still upload whole matrices.
@@ -46,10 +60,22 @@ final class RigidBatch implements RigidGeometryConsumer
     public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay,
                                  float red, float green, float blue, float alpha)
     {
-        int offset = key.count * 16;
+        // Split before exceeding the per-tick upload cap, so larger merged batches
+        // cannot become permanently uncacheable. A single oversized part still falls back.
+        if (key.count != 0 && vertexCount + geometry.vertexCount() > maxVertices) flush();
+        if (paletteCount != 0 && lastLight == light && lastOverlay == overlay
+            && lastRed == red && lastGreen == green && lastBlue == blue && lastAlpha == alpha
+            && lastPose.pose().equals(pose.pose()) && lastPose.normal().equals(pose.normal()))
+        {
+            key.add(geometry, paletteCount - 1);
+            vertexCount += geometry.vertexCount();
+            if (key.count == key.geometries.length) flush();
+            return;
+        }
+        int offset = paletteCount * 16;
         pose.pose().get(poses, offset);
-        pose.normal().get(normals, key.count * 9);
-        offset = key.count * 8;
+        pose.normal().get(normals, paletteCount * 9);
+        offset = paletteCount * 8;
         data[offset] = red;
         data[offset + 1] = green;
         data[offset + 2] = blue;
@@ -58,8 +84,17 @@ final class RigidBatch implements RigidGeometryConsumer
         data[offset + 5] = light >>> 16;
         data[offset + 6] = overlay & 0xFFFF;
         data[offset + 7] = overlay >>> 16;
-        key.add(geometry);
-        if (key.count == key.geometries.length) flush();
+        lastPose.pose().set(pose.pose());
+        lastPose.normal().set(pose.normal());
+        lastLight = light;
+        lastOverlay = overlay;
+        lastRed = red;
+        lastGreen = green;
+        lastBlue = blue;
+        lastAlpha = alpha;
+        key.add(geometry, paletteCount++);
+        vertexCount += geometry.vertexCount();
+        if (key.count == key.geometries.length || paletteCount == capacity) flush();
     }
 
     void flush()
@@ -86,10 +121,11 @@ final class RigidBatch implements RigidGeometryConsumer
                 needsBarrier = true;
                 for (int i = 0; i < key.count; i++)
                 {
-                    int offset = i * 16;
+                    int palette = key.paletteIndices[i];
+                    int offset = palette * 16;
                     fallbackPose.pose().set(poses, offset);
-                    offset = i * 8;
-                    int normalOffset = i * 9;
+                    offset = palette * 8;
+                    int normalOffset = palette * 9;
                     fallbackPose.normal().set(normals[normalOffset], normals[normalOffset + 1], normals[normalOffset + 2],
                         normals[normalOffset + 3], normals[normalOffset + 4], normals[normalOffset + 5],
                         normals[normalOffset + 6], normals[normalOffset + 7], normals[normalOffset + 8]);
@@ -100,7 +136,12 @@ final class RigidBatch implements RigidGeometryConsumer
                 }
             }
         }
-        finally { key.clear(); }
+        finally
+        {
+            key.clear();
+            paletteCount = 0;
+            vertexCount = 0;
+        }
     }
 
     /** A nested renderer can change any buffer/state. Complete our work before it runs. */
