@@ -1,8 +1,17 @@
+// Identity
 Name Clone 212th Attack Battalion Boots
 ShortName clone212Boots
+
+// Item and rendering
 Icon clone212boots
 Colour 255 255 255
-Type Boots
-Defence 0.05
 ArmourTexture clonetrooper212legs
 Model wolffstarwars.CloneBoots212
+
+// Protection
+Type Boots
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 0.67
+ArmorPoints 2
+Toughness 1

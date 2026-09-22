@@ -1,10 +1,21 @@
+// Identity
 Name Clonetrooper Helmet
 ShortName clone187IIHelmet
+
+// Item and rendering
 Icon clone187iihelmet
 Colour 255 255 255
-Type Helmet
-Defence 0.15
 ArmourTexture clonetrooperii187helmet
 Model wolffstarwars.CloneHelmetIIShock
-SmokeProtection True
 Overlay clonehelmet
+
+// Protection
+Type Helmet
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 1.90
+ArmorPoints 2
+Toughness 1
+
+// Effects
+SmokeProtection True

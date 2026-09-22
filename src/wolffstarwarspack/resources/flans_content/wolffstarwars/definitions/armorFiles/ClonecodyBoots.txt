@@ -1,8 +1,17 @@
+// Identity
 Name Cody's Clone Boots
 ShortName codycloneBoots
+
+// Item and rendering
 Icon codycloneboots
 Colour 255 255 255
-Type Boots
-Defence 0.05
 ArmourTexture clonetrooperlegs
 Model wolffstarwars.CloneBoots
+
+// Protection
+Type Boots
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 0.67
+ArmorPoints 2
+Toughness 1

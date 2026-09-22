@@ -1,8 +1,20 @@
+// Identity
 Name Clone 41st Elite Corps Armor
 ShortName clone41Armor
+
+// Item and rendering
 Icon clone41armor
 Colour 255 255 255
-Type Body
-Defence 0.25
 ArmourTexture clonetrooper41chestplate
 Model wolffstarwars.CloneChestplate
+
+// Protection
+Type Body
+Defence 0.16
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 6
+Toughness 1
+
+// Movement
+MoveSpeedModifier 0.98

@@ -1,11 +1,25 @@
+// Identity
 Name Battle Droid B1 Marine
 ShortName BattleDroidMarine2
+
+// Item and rendering
 Icon battledroidmarine2
 Colour 255 255 255
-Type Head
-Defence 0.4
 ArmourTexture battledroidmarine2
 Model wolffstarwars.BattleDroid
+
+// Protection
+Type Head
+Defence 0.26
+BulletDefence 0.24
+PenetrationResistance 1.90
+ArmorPoints 9
+Toughness 2
+
+// Movement
+MoveSpeedModifier 0.97
+
+// Effects
 SmokeProtection False
 NightVision True
 Invisible True

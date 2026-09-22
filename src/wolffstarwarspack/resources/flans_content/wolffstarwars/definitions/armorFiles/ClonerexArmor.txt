@@ -1,8 +1,20 @@
+// Identity
 Name Rex's Clone Armor
 ShortName rexcloneArmor
+
+// Item and rendering
 Icon rexclonearmor
 Colour 255 255 255
-Type Body
-Defence 0.25
 ArmourTexture rexchestplate
 Model wolffstarwars.CloneChestplateRex
+
+// Protection
+Type Body
+Defence 0.16
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 6
+Toughness 1
+
+// Movement
+MoveSpeedModifier 0.98

@@ -1,8 +1,20 @@
+// Identity
 Name Clone 212th Attack Battalion Pants
 ShortName clone212Pants
+
+// Item and rendering
 Icon clone212pants
 Colour 255 255 255
-Type Pants
-Defence 0.15
 ArmourTexture clonetrooper212legs
 Model wolffstarwars.ClonePants212
+
+// Protection
+Type Pants
+Defence 0.12
+BulletDefence 0.14
+PenetrationResistance 1.24
+ArmorPoints 4
+Toughness 1
+
+// Movement
+MoveSpeedModifier 0.98

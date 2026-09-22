@@ -1,8 +1,17 @@
+// Identity
 Name Clonetrooper Boots
 ShortName shadowtrooperBoots
+
+// Item and rendering
 Icon shadowtrooperboots
 Colour 255 255 255
-Type Boots
-Defence 0.05
 ArmourTexture shadowtrooperlegs
 Model wolffstarwars.StormtrooperBoots
+
+// Protection
+Type Boots
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 0.67
+ArmorPoints 2
+Toughness 1

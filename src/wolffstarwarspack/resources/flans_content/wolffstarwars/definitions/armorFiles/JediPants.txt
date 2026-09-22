@@ -1,7 +1,16 @@
+// Identity
 Name Jedi Boots
 ShortName JediPants
+
+// Item and rendering
 Icon jedileggings
 Colour 255 255 255
-Type Pants
-Defence 0.3
 ArmourTexture jedi_layer
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

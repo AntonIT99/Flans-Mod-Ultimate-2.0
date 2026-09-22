@@ -1,51 +1,51 @@
-////Name and icon
+// Identity
 Name Thermal Detonator Sticky
 ShortName ThermalDetonatorSticky
+
+// Item and rendering
 Icon itemthermaldetonator
-//Colour in Red, Green, Blue, each going up to 255
 Colour 255 255 255
 StackSize 4
-////Visuals
 Model wolffstarwars.ThermalDetonator
 Texture thermaldetonator
-TrailParticles false
-//TrailParticleType <particleType>
-ExplodeParticles 0
-//ExplodeParticleType <particleType>
-SmokeTime 0
-//ExplodeParticleType hugeexplosion
-//ExplodeParticleType flame
-//ExplodeParticleType smoke
-//SmokeParticleType <particleType>
+ModelScale 1.2
+
+// Throwing
 SpinWhenThrown true
-////Throwing
 ThrowDelay 8
-//ThrowSound <sound>
-ThrowSound detonator
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
-Bounciness 0.8
-HitEntityDamage 1
 ThrowSpeed 2.0
+
+// Physics
+Bounciness 0.8
 FallSpeed 1.0
 BreaksGlass true
 PenetratesBlocks false
 HitBoxSize 0.5
 Sticky true
-//BounceSound <sound>
-////Detonation conditions
+
+// Detonation
+DetonateOnImpact false
 VehicleProximityTrigger -1.0
 LivingProximityTrigger -1.0
 DetonateWhenShot true
 PrimeDelay 0
-////Detonation
 Fuse 80
+
+// Damage and explosion
+HitEntityDamage 1
 FireRadius 0.0
 ExplosionRadius 5.0
 ExplosionBreaksBlocks true
 explosionDamageVsLiving = 100F
 explosionDamageVsDriveable = 100F
-//Detonate Sound <sound>
+ExplosiveMassTNTKg 1
+FragType LOW_FRAG
+
+// Smoke and effects
+SmokeTime 0
+
+// Sounds and particles
+TrailParticles false
+ExplodeParticles 0
+ThrowSound detonator
 DetonateSound detonator_explosion
-ModelScale 1.2

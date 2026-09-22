@@ -1,10 +1,21 @@
+// Identity
 Name Clone Commander Helmet
 ShortName clonecommanderHelmet
+
+// Item and rendering
 Icon clonecommanderhelmet
 Colour 255 255 255
-Type Helmet
-Defence 0.15
 ArmourTexture clonetroopercommanderhelmet
 Model wolffstarwars.CloneHelmet
-SmokeProtection True
 Overlay clonehelmet
+
+// Protection
+Type Helmet
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 1.90
+ArmorPoints 2
+Toughness 1
+
+// Effects
+SmokeProtection True

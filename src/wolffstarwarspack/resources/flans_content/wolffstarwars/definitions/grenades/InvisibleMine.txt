@@ -1,47 +1,48 @@
-////Name and icon
+// Identity
 Name Invisible Mine
 ShortName invisiblemine
+
+// Item and rendering
 Icon invisiblemine
-//Colour in Red, Green, Blue, each going up to 255
 Colour 255 255 255
-////Item and recipe
 StackSize 5
-////Visuals
 Model wolffstarwars.SWMine
 Texture iteminvisiblemine
-TrailParticles false
-//TrailParticleType <particleType>
-ExplodeParticles 0
-//ExplodeParticleType <particleType>
-SmokeTime 0
-//SmokeParticleType <particleType>
+
+// Throwing
 SpinWhenThrown false
-////Throwing
 ThrowDelay 10
-//ThrowSound <sound>
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
-Bounciness 0.0
-HitEntityDamage 0
 ThrowSpeed 0.1
+Remote false
+
+// Physics
+Bounciness 0.0
 FallSpeed 1.0
 BreaksGlass false
 PenetratesBlocks false
 HitBoxSize 0.5
 Sticky true
-//BounceSound <sound>
-////Detonation conditions
+DespawnTime 32000
+
+// Detonation
+DetonateOnImpact false
 VehicleProximityTrigger 2.0
 LivingProximityTrigger 2.0
 Fuse 0
 DetonateWhenShot true
-Remote false
-DespawnTime 32000
 PrimeDelay 100
-////Detonation
+
+// Damage and explosion
+HitEntityDamage 0
 FireRadius 0.0
 ExplosionRadius 5.0
 ExplosionBreaksBlocks true
-//DropItemOnDetonate <itemID.damage>
-//Detonate Sound <sound>
+ExplosiveMassTNTg 900
+FragType LOW_FRAG
+
+// Smoke and effects
+SmokeTime 0
+
+// Sounds and particles
+TrailParticles false
+ExplodeParticles 0

@@ -1,18 +1,45 @@
-////Name and icon
+// Identity
 Name Gas Mine
 ShortName Gasmine
+
+// Item and rendering
 Icon hx2mine
-//Colour in Red, Green, Blue, each going up to 255
 Colour 255 255 255
-////Item and recipe
 StackSize 5
-////Visuals
 Model wolffstarwars.SWMine
 Texture itemhx2minegas
-TrailParticles false
-//TrailParticleType <particleType>
-ExplodeParticles 0
-//ExplodeParticleType <particleType>
+
+// Throwing
+SpinWhenThrown false
+ThrowDelay 10
+ThrowSpeed 0.1
+Remote false
+
+// Physics
+Bounciness 0.0
+FallSpeed 1.0
+BreaksGlass false
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky true
+DespawnTime 32000
+
+// Detonation
+DetonateOnImpact false
+VehicleProximityTrigger 0.0
+LivingProximityTrigger 4.0
+Fuse 0
+DetonateWhenShot true
+PrimeDelay 100
+
+// Damage and explosion
+HitEntityDamage 0
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+FragType DEFAULT
+
+// Smoke and effects
 SmokeTime 600
 SmokeEffect 15 100 0
 SmokeEffect 2 100 1
@@ -21,34 +48,7 @@ SmokeEffect 9 100 0
 SmokeEffect 18 100 1
 SmokeEffect 19 100 0
 SmokeRadius 8
-//SmokeParticleType <particleType>
-SpinWhenThrown false
-////Throwing
-ThrowDelay 10
-//ThrowSound <sound>
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
-Bounciness 0.0
-HitEntityDamage 0
-ThrowSpeed 0.1
-FallSpeed 1.0
-BreaksGlass false
-PenetratesBlocks false
-HitBoxSize 0.5
-Sticky true
-//BounceSound <sound>
-////Detonation conditions
-VehicleProximityTrigger 0.0
-LivingProximityTrigger 4.0
-Fuse 0
-DetonateWhenShot true
-Remote false
-DespawnTime 32000
-PrimeDelay 100
-////Detonation
-FireRadius 0.0
-ExplosionRadius 0.0
-ExplosionBreaksBlocks false
-//DropItemOnDetonate <itemID.damage>
-//Detonate Sound <sound>
+
+// Sounds and particles
+TrailParticles false
+ExplodeParticles 0
