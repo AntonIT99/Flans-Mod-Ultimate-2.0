@@ -106,12 +106,19 @@ public class ModelVehicle extends ModelDriveable
     public boolean selectTrackLinkLod(DriveableType type, float projectionPixels, double distance, float modelScale,
                                       float threshold, boolean previous)
     {
+        return selectTrackLinkGroup(type, projectionPixels, distance, modelScale, threshold, 0F, previous ? 1 : 0) > 0;
+    }
+
+    public int selectTrackLinkGroup(DriveableType type, float projectionPixels, double distance, float modelScale,
+                                    float threshold, float groupingThreshold, int previousGroup)
+    {
         if (distance < 32D || threshold <= 0F || fancyTrackModel == null || fancyTrackModel.length < 2)
-            return false;
+            return 0;
         if (trackLinkLod == null || !trackLinkLod.matches(fancyTrackModel, oldRotateOrder, type.getTrackLinkLength()))
             trackLinkLod = TrackLinkLod.create(fancyTrackModel, oldRotateOrder, type.getTrackLinkLength());
         ensureTrackPaths(type);
-        return trackLinkLod.select(projectionPixels, distance - trackPathRadius * Math.abs(modelScale), modelScale, threshold, previous);
+        return trackLinkLod.selectGroup(projectionPixels, distance - trackPathRadius * Math.abs(modelScale), modelScale,
+            threshold, groupingThreshold, previousGroup);
     }
 
     /**
@@ -637,21 +644,28 @@ public class ModelVehicle extends ModelDriveable
         if (fancyTrackModel == null || fancyTrackModel.length == 0 || path.isEmpty() || spacing <= 0F)
             return;
 
-        int linkCount = Mth.clamp(Math.round(path.length() / spacing), 1, 512);
-        ModelRendererTurbo[] linkParts = TrackLinkLod.active() && scale == 1F && trackLinkLod != null
-            && trackLinkLod.parts() != null ? trackLinkLod.parts() : fancyTrackModel;
+        int originalCount = Mth.clamp(Math.round(path.length() / spacing), 1, 512);
+        int group = scale == 1F && trackLinkLod != null ? TrackLinkLod.activeGroup() : 0;
+        // Very short loops do not have enough links for a stable long envelope.
+        if (group >= 4 && originalCount < 16) group = 2;
+        if (group >= 2 && originalCount < 8) group = 1;
+        ModelRendererTurbo[] selected = group > 0 ? trackLinkLod.parts(group) : null;
+        if (selected == null) group = 1;
+        ModelRendererTurbo[] linkParts = selected == null ? fancyTrackModel : selected;
+        int linkCount = (originalCount + group - 1) / group;
         float normalizedMovement = path.wrap(movement);
         for (int link = 0; link < linkCount; link++)
         {
-            float distance = path.wrap(normalizedMovement + 0.01F + spacing * link);
+            int originalLink = link * group;
+            float distance = path.wrap(normalizedMovement + 0.01F + spacing * originalLink);
             int segment = path.segmentAt(distance);
             int previous = path.previousOf(segment);
             float progress = path.progressAlongSegment(distance, segment);
             float x = Mth.lerp(progress, path.pointX(previous), path.pointX(segment));
             float y = Mth.lerp(progress, path.pointY(previous), path.pointY(segment));
             float z = Mth.lerp(progress, path.pointZ(previous), path.pointZ(segment));
-            float rotation = linkAngles != null && link < linkAngles.length
-                ? (float) Math.toDegrees(linkAngles[link])
+            float rotation = linkAngles != null && originalLink < linkAngles.length
+                ? (float) Math.toDegrees(linkAngles[originalLink])
                 : (float) Math.toDegrees(Math.atan2(path.pointY(previous) - y, path.pointX(previous) - x));
 
             poseStack.pushPose();

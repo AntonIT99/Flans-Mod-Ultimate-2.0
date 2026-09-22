@@ -17,6 +17,25 @@ import static org.junit.jupiter.api.Assertions.*;
 class TrackLinkLodTest
 {
     @Test
+    void distantTrackGroupsReduceLinksWhilePreservingTheNearTier()
+    {
+        TrackLinkLod lod = TrackLinkLod.create(link(), false, 4F);
+        assertNotNull(lod.parts(1));
+        assertNotNull(lod.parts(2));
+        assertNotNull(lod.parts(4));
+        assertEquals(4F / 16F, bounds(record(lod.parts(1), false))[3] - bounds(record(lod.parts(1), false))[0], 1E-6F);
+        assertEquals(8F / 16F, bounds(record(lod.parts(2), false))[3] - bounds(record(lod.parts(2), false))[0], 1E-6F);
+        assertEquals(16F / 16F, bounds(record(lod.parts(4), false))[3] - bounds(record(lod.parts(4), false))[0], 1E-6F);
+        assertEquals(0, lod.selectGroup(1000, 20, 1, 8, 8, 0));
+        assertEquals(1, lod.selectGroup(1000, 100, 1, 12, 8, 0));
+        assertEquals(2, lod.selectGroup(1000, 120, 1, 8, 8, 0));
+        assertEquals(4, lod.selectGroup(1000, 240, 1, 8, 8, 0));
+        assertEquals(0, lod.selectGroup(1000, 480, 1, 0, 8, 4));
+        assertEquals(0, lod.selectGroup(1000, 480, 1, 1, 8, 4));
+        assertEquals(1, lod.selectGroup(1000, 480, 1, 8, 0, 4));
+    }
+
+    @Test
     void longitudinalEnvelopeDoesNotOverlapTheNextStraightLink()
     {
         var parts = link();

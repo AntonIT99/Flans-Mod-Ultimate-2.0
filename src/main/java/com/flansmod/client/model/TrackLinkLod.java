@@ -15,13 +15,15 @@ import java.util.List;
 /** A textured, six-face envelope for a small rigid multipart track link. */
 public final class TrackLinkLod
 {
-    private static final ThreadLocal<Boolean> ACTIVE = ThreadLocal.withInitial(() -> false);
+    private static final ThreadLocal<Integer> ACTIVE_GROUP = ThreadLocal.withInitial(() -> 0);
     private final ModelRendererTurbo[] source;
     private final List<TexturedPolygon> polygons = new ArrayList<>();
     private final long[] revisions;
     private final boolean[] rigid;
     private final float[] transforms;
     private final ModelRendererTurbo[] simplified;
+    private final ModelRendererTurbo[] doubled;
+    private final ModelRendererTurbo[] quadrupled;
     private final float diameter;
     private final float originRadius;
     private final boolean oldRotateOrder;
@@ -64,8 +66,12 @@ public final class TrackLinkLod
         // Measure the original geometry for conservative LOD selection, before clipping.
         diameter = collector.diameter();
         originRadius = collector.originRadius();
-        ModelRendererTurbo mesh = supported ? collector.build(spacing) : null;
+        ModelRendererTurbo mesh = supported ? collector.build(spacing, 1) : null;
         simplified = mesh == null ? null : new ModelRendererTurbo[]{mesh};
+        ModelRendererTurbo doubleMesh = mesh == null || !Float.isFinite(spacing) ? null : collector.build(spacing, 2);
+        doubled = doubleMesh == null ? null : new ModelRendererTurbo[]{doubleMesh};
+        ModelRendererTurbo quadrupleMesh = doubleMesh == null ? null : collector.build(spacing, 4);
+        quadrupled = quadrupleMesh == null ? null : new ModelRendererTurbo[]{quadrupleMesh};
     }
 
     public static TrackLinkLod create(ModelRendererTurbo[] parts, boolean oldRotateOrder)
@@ -118,8 +124,22 @@ public final class TrackLinkLod
 
     public boolean select(float projectionPixels, double distance, float modelScale, float threshold, boolean previous)
     {
-        return simplified != null && selectDiameter(diameter * Math.abs(modelScale), projectionPixels,
-            distance - originRadius * Math.abs(modelScale), threshold, previous);
+        return selectGroup(projectionPixels, distance, modelScale, threshold, 0F, previous ? 1 : 0) > 0;
+    }
+
+    /** Merge adjacent links only when their source geometry is a few screen pixels wide. */
+    public int selectGroup(float projectionPixels, double distance, float modelScale, float threshold,
+                           float groupingThreshold, int previousGroup)
+    {
+        if (simplified == null) return 0;
+        float size = diameter * Math.abs(modelScale);
+        double nearest = distance - originRadius * Math.abs(modelScale);
+        if (!selectDiameter(size, projectionPixels, nearest, threshold, previousGroup > 0)) return 0;
+        if (groupingThreshold > 0F && quadrupled != null && selectDiameter(size, projectionPixels, nearest,
+            Math.min(threshold, groupingThreshold * 0.5F), previousGroup >= 4)) return 4;
+        if (groupingThreshold > 0F && doubled != null && selectDiameter(size, projectionPixels, nearest,
+            Math.min(threshold, groupingThreshold), previousGroup >= 2)) return 2;
+        return 1;
     }
 
     static boolean selectDiameter(float diameter, float projectionPixels, double distance, float threshold, boolean previous)
@@ -137,8 +157,16 @@ public final class TrackLinkLod
         return simplified;
     }
 
-    public static boolean active() { return ACTIVE.get(); }
-    public static void setActive(boolean active) { ACTIVE.set(active); }
+    @Nullable
+    public ModelRendererTurbo[] parts(int group)
+    {
+        return group >= 4 ? quadrupled : group >= 2 ? doubled : simplified;
+    }
+
+    public static boolean active() { return ACTIVE_GROUP.get() > 0; }
+    public static int activeGroup() { return ACTIVE_GROUP.get(); }
+    public static void setActive(boolean active) { ACTIVE_GROUP.set(active ? 1 : 0); }
+    public static void setGroup(int group) { ACTIVE_GROUP.set(group); }
 
     private static void storeTransform(ModelRendererTurbo p, float[] out, int i)
     {
@@ -232,7 +260,7 @@ public final class TrackLinkLod
             return (float)Math.sqrt(x * x + y * y + z * z);
         }
 
-        private ModelRendererTurbo build(float spacing)
+        private ModelRendererTurbo build(float spacing, int group)
         {
             if (count <= 24 || count > 4096 || count % 4 != 0 || !Float.isFinite(diameter()) || !(spacing > 0))
                 return null;
@@ -242,7 +270,8 @@ public final class TrackLinkLod
             // Adjacent link pins can overlap longitudinally, but full boxes would
             // introduce coplanar overlapping faces. Keep the envelope within a
             // single step, centered on the authored geometry. Other axes stay intact.
-            float halfLength = Math.min((max[0] - min[0]) * 0.5F, spacing / 32F);
+            float halfLength = group == 1 ? Math.min((max[0] - min[0]) * 0.5F, spacing / 32F)
+                : spacing * group / 32F;
             float center = (min[0] + max[0]) * 0.5F;
             min[0] = center - halfLength;
             max[0] = center + halfLength;

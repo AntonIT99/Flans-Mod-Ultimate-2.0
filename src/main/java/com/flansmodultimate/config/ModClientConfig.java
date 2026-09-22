@@ -59,6 +59,7 @@ public final class ModClientConfig
     public final double groundVehicleLodDistanceFactor;
     public final int driveableImpostorQualityMultiplier;
     public final double driveableTrackLinkLodPixelSize;
+    public final double driveableTrackLinkGroupingPixelSize;
     public final double driveableImpostorPixelSize;
     public final int driveableImpostorMinimumDistance;
     public final int driveableImpostorMaximumDistance;
@@ -137,6 +138,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.DoubleValue GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER;
     private static final ForgeConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE;
+    private static final ForgeConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE;
     private static final ForgeConfigSpec.DoubleValue DRIVEABLE_IMPOSTOR_PIXEL_SIZE;
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE;
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE;
@@ -324,8 +326,11 @@ public final class ModClientConfig
             .comment("Use a generated far-distance impostor when a vehicle or plane projects to at most this many physical screen pixels. Small land vehicles gradually increase this allowance toward the image-quality limit with distance. Set this and driveableImpostorMaximumDistance to 0 to disable impostors.")
             .defineInRange("driveableImpostorPixelSize", 32D, 0D, 256D);
         DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE = builder
-            .comment("Simplify supported multipart tank track links to textured envelopes when a link projects to at most this many physical screen pixels, beyond 32 blocks. Preserves link count and animation. Hysteresis retains the simplified mesh up to 25% above this size. Requires enableDriveableLod; 0 disables track geometry LOD. Previews and the locally controlled vehicle retain full detail.")
+            .comment("Simplify supported multipart tank track links to textured envelopes when a link projects to at most this many physical screen pixels, beyond 32 blocks. Requires enableDriveableLod; 0 disables track geometry LOD. Previews and the locally controlled vehicle retain full detail.")
             .defineInRange("driveableTrackLinkLodPixelSize", 8D, 0D, 32D);
+        DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE = builder
+            .comment("When simplified tank links project to at most this many physical screen pixels, represent pairs with longer envelopes; at half this size, represent groups of four. Per-link animation still advances. 0 disables grouping while keeping single-link geometry LOD. Requires enableDriveableLod and driveableTrackLinkLodPixelSize. The actual threshold never exceeds the single-link LOD threshold.")
+            .defineInRange("driveableTrackLinkGroupingPixelSize", 8D, 0D, 16D);
         DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE = builder
             .comment("Base minimum camera distance in blocks before a generated driveable impostor may be used. Small land vehicles also apply groundVehicleLodDistanceFactor; scaled up automatically for physically larger driveables (e.g. battleships) so they keep their exact model much longer.")
             .defineInRange("driveableImpostorMinimumDistance", 64, 8, 4096);
@@ -481,6 +486,7 @@ public final class ModClientConfig
         groundVehicleLodDistanceFactor = GROUND_VEHICLE_LOD_DISTANCE_FACTOR.get();
         driveableImpostorQualityMultiplier = DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER.get();
         driveableTrackLinkLodPixelSize = DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE.get();
+        driveableTrackLinkGroupingPixelSize = DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE.get();
         driveableImpostorPixelSize = DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get();
         driveableImpostorMinimumDistance = DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.get();
         driveableImpostorMaximumDistance = DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get();

@@ -227,13 +227,14 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 (float)ModClientConfig.get().maximumDriveableLodPartPixelSize,
                 (float)ModClientConfig.get().driveableLodDetailMultiplier, cameraDistance, distanceScale);
         }
-        boolean useTrackLinkLod = !preview && !locallyControlled && ModClientConfig.get().enableDriveableLod
+        int trackLinkGroup = !preview && !locallyControlled && ModClientConfig.get().enableDriveableLod
             && model instanceof ModelVehicle vehicleModel
-            && vehicleModel.selectTrackLinkLod(type, projectionPixels, modelOriginDistance(poseStack), modelScaleBound(poseStack),
-                (float)ModClientConfig.get().driveableTrackLinkLodPixelSize, history.usingTrackLinkLod);
-        history.usingTrackLinkLod = useTrackLinkLod;
-        boolean previousTrackLod = TrackLinkLod.active();
-        TrackLinkLod.setActive(useTrackLinkLod);
+            ? vehicleModel.selectTrackLinkGroup(type, projectionPixels, modelOriginDistance(poseStack), modelScaleBound(poseStack),
+                (float)ModClientConfig.get().driveableTrackLinkLodPixelSize,
+                (float)ModClientConfig.get().driveableTrackLinkGroupingPixelSize, history.trackLinkGroup) : 0;
+        history.trackLinkGroup = trackLinkGroup;
+        int previousTrackGroup = TrackLinkLod.activeGroup();
+        TrackLinkLod.setGroup(trackLinkGroup);
         boolean useScreenSpaceCulling = minimumPartPixels > 0F;
         if (useScreenSpaceCulling)
             ModelRendererTurbo.beginScreenSpaceCulling(minimumPartPixels, projectionPixels);
@@ -258,7 +259,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
         finally
         {
-            TrackLinkLod.setActive(previousTrackLod);
+            TrackLinkLod.setGroup(previousTrackGroup);
             if (useScreenSpaceCulling)
                 ModelRendererTurbo.endScreenSpaceCulling();
         }
@@ -525,7 +526,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         private DriveableType passengerPivotType;
         private ModelDriveable passengerPivotModel;
         private boolean usingImpostor;
-        private boolean usingTrackLinkLod;
+        private int trackLinkGroup;
 
         private void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
         {
