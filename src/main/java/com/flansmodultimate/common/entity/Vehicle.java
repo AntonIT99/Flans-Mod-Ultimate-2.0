@@ -20,6 +20,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.PacketSmokeShell;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -31,10 +32,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /** Wheel-, track- and water-capable server vehicle simulation. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -52,7 +49,6 @@ public class Vehicle extends Driveable
     private final ThrottleLeverRamp throttleRamp = new ThrottleLeverRamp();
     /** Real-world gearbox direction state. Transient and server-side. */
     private final DriveDirectionInterlock drivetrain = new DriveDirectionInterlock();
-    private final List<PendingSmoke> pendingSmoke = new ArrayList<>();
 
     public Vehicle(EntityType<?> entityType, Level level)
     {
@@ -122,7 +118,6 @@ public class Vehicle extends Driveable
         float previousRightPhase = rightTrackProgress;
         advanceAnimations(type);
         tickWalkerStompSounds(type, previousLeftPhase, previousRightPhase);
-        tickPendingSmoke();
         updateThrottleAndSteering(type);
 
         float traction = traction();
@@ -596,47 +591,11 @@ public class Vehicle extends Driveable
             if (detonation == 20)
                 PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_SMOKER, origin.x, origin.y, origin.z,
                     direction.x, direction.y, direction.z), origin, 150D, level().dimension());
-            else if (pendingSmoke.size() < 64)
-                pendingSmoke.add(new PendingSmoke(origin, direction, detonation));
+            else
+                PacketHandler.sendToAllAround(new PacketSmokeShell(origin, direction, detonation), origin, 150D, level().dimension());
         }
     }
 
-    private void tickPendingSmoke()
-    {
-        Iterator<PendingSmoke> iterator = pendingSmoke.iterator();
-        while (iterator.hasNext())
-        {
-            PendingSmoke smoke = iterator.next();
-            smoke.position = smoke.position.add(smoke.velocity);
-            smoke.velocity = smoke.velocity.add(0D, -0.04D, 0D).scale(0.99D);
-            if (--smoke.ticks > 0)
-            {
-                if (smoke.ticks % 3 == 0)
-                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_SMOKE, smoke.position.x, smoke.position.y,
-                        smoke.position.z, 0D, 0D, 0D), smoke.position, 96D, level().dimension());
-                continue;
-            }
-            PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_SMOKE_BURST, smoke.position.x, smoke.position.y,
-                smoke.position.z, 0D, 0D, 0D), smoke.position, 150D, level().dimension());
-            PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_BIG_SMOKE, smoke.position.x, smoke.position.y,
-                smoke.position.z, 0D, 0D, 0D), smoke.position, 150D, level().dimension());
-            iterator.remove();
-        }
-    }
-
-    private static final class PendingSmoke
-    {
-        private Vec3 position;
-        private Vec3 velocity;
-        private int ticks;
-
-        private PendingSmoke(Vec3 position, Vec3 velocity, int ticks)
-        {
-            this.position = position;
-            this.velocity = velocity;
-            this.ticks = ticks;
-        }
-    }
 
     @Override
     protected boolean canFireWeaponBank(boolean secondary)

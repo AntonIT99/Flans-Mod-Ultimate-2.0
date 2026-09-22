@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.ParticleNameCodec;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,7 +49,7 @@ public class PacketParticle implements IClientPacket
         data.writeFloat(my);
         data.writeFloat(mz);
         data.writeFloat(scale);
-        data.writeUtf(particleType);
+        ParticleNameCodec.write(data, particleType);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class PacketParticle implements IClientPacket
         my = data.readFloat();
         mz = data.readFloat();
         scale = data.readFloat();
-        particleType = data.readUtf();
+        particleType = ParticleNameCodec.read(data);
     }
 
     @Override

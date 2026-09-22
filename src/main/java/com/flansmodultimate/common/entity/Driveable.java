@@ -65,6 +65,7 @@ import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
@@ -2653,8 +2654,41 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 128D, sound, true);
         List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();
-        for (ShootPoint point : firedPoints)
+        if (particles.isEmpty() || firedPoints.isEmpty())
+            return;
+        // Clients look the particles up from this driveable's type and place them from their own
+        // view of it, so one packet per shot replaces one per particle per shoot point.
+        List<ShootPoint> points = configType.shootPoints(secondary);
+        int[] indices = new int[firedPoints.size()];
+        int count = 0;
+        for (ShootPoint fired : firedPoints)
         {
+            for (int index = 0; index < points.size(); index++)
+            {
+                if (points.get(index) == fired)
+                {
+                    indices[count++] = index;
+                    break;
+                }
+            }
+        }
+        if (count > 0)
+            PacketHandler.sendToAllAround(new PacketDriveableBankFired(getId(), secondary, Arrays.copyOf(indices, count)),
+                position(), 128D, level().dimension());
+    }
+
+    /** Draws the particles of a weapon bank that fired from the given shoot points, on this client. */
+    public void spawnBankParticles(boolean secondary, int[] pointIndices)
+    {
+        if (!level().isClientSide || configType == null)
+            return;
+        List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();
+        List<ShootPoint> points = configType.shootPoints(secondary);
+        for (int pointIndex : pointIndices)
+        {
+            if (pointIndex < 0 || pointIndex >= points.size())
+                continue;
+            ShootPoint point = points.get(pointIndex);
             Vec3 origin = getShootOrigin(point);
             EnumDriveablePart part = point.getRootPos().getPart();
             for (DriveableType.ShootParticle particle : particles)
@@ -2664,8 +2698,8 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
                 if (isTurretMountedPart(part))
                     localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
                 Vec3 direction = modelLocalDirectionToWorld(localDirection);
-                PacketHandler.sendToAllAround(new PacketParticle(particle.name(), origin.x, origin.y, origin.z,
-                    direction.x, direction.y, direction.z), origin, 128D, level().dimension());
+                ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z,
+                    direction.x, direction.y, direction.z, 1F);
             }
         }
     }

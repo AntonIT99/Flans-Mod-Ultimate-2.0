@@ -11,6 +11,7 @@ import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketCommonConfigValues;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketDebugShootPoint;
+import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.client.PacketDriveablePrediction;
@@ -35,6 +36,7 @@ import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketParticles;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.client.PacketPlayerClassSkins;
+import com.flansmodultimate.network.client.PacketSmokeShell;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
 import com.flansmodultimate.network.client.PacketTeamsState;
@@ -89,7 +91,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler {
 
-    public static final String PROTOCOL = "13";
+    public static final String PROTOCOL = "14";
     public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -138,6 +140,8 @@ public final class PacketHandler {
         registerS2C(PacketHitMarker.class);
         registerS2C(PacketParticle.class);
         registerS2C(PacketParticles.class);
+        registerS2C(PacketSmokeShell.class);
+        registerS2C(PacketDriveableBankFired.class);
         registerS2C(PacketPlayerClassSkins.class);
         registerS2C(PacketPlaySound.class);
         registerS2C(PacketCommonConfigValues.class);

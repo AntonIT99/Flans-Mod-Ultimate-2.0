@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.ParticleNameCodec;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +36,7 @@ public class PacketGunMuzzleFlash implements IClientPacket
     {
         data.writeUUID(playerUUID);
         data.writeEnum(hand);
-        data.writeUtf(particleType);
+        ParticleNameCodec.write(data, particleType);
         data.writeFloat(scale);
         data.writeBoolean(showToShooter);
     }
@@ -45,7 +46,7 @@ public class PacketGunMuzzleFlash implements IClientPacket
     {
         playerUUID = data.readUUID();
         hand = data.readEnum(InteractionHand.class);
-        particleType = data.readUtf();
+        particleType = ParticleNameCodec.read(data);
         scale = data.readFloat();
         showToShooter = data.readBoolean();
     }

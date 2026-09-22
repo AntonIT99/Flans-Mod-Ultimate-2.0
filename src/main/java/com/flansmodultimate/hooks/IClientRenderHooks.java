@@ -37,6 +37,9 @@ public interface IClientRenderHooks
      */
     void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale);
 
+    /** A vehicle smoke-launcher shell, flown and burst entirely on the client. */
+    void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks);
+
     void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale);
 
     void spawnMuzzleFlashParticle(UUID playerUUID, InteractionHand hand, String particleType, float scale, boolean showToShooter);

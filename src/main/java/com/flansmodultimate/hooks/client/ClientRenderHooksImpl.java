@@ -82,6 +82,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
+    public void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks)
+    {
+        ParticleHelper.launchSmokeShell(x, y, z, vx, vy, vz, fuseTicks);
+    }
+
+    @Override
     public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
     {
         ParticleHelper.spawnSustained(particleType, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);

@@ -102,6 +102,15 @@ public final class FlanParticles
         .filter(name -> name.startsWith(FLANSMOD_PREFIX))
         .collect(Collectors.toUnmodifiableMap(name -> name.substring(FLANSMOD_PREFIX.length()), name -> name));
 
+    /** Every canonical name in a fixed order, so both ends of a connection number them alike. */
+    private static final List<String> SORTED_NAMES = NAMES.stream().sorted().toList();
+
+    /** The canonical particle names in a fixed order, for compact network ids. */
+    public static List<String> sortedNames()
+    {
+        return SORTED_NAMES;
+    }
+
     @Nullable
     private static String readName(Field field)
     {
