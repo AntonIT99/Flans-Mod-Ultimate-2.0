@@ -40,12 +40,11 @@ Passenger 7 -60 16 -7 core -160 -60 -45 45
 ShootDelay 999
 ShellDelay 999
 //Sounds
-StartSound lkw_start
-StartSoundLength 34
-EngineSound lkw_lauf
-EngineSoundLength 105
+StartSound ural4320start
+StartSoundLength 53
+EngineSound kamazenginerun
+EngineSoundLength 64
 ShootSound bullet
-ShellSound TankShell
 //Recipe
 //Each section of the plane may have many parts
 //The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,

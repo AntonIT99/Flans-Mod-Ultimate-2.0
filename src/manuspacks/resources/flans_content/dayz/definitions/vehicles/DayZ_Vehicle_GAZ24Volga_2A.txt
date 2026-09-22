@@ -52,9 +52,9 @@ Passenger 2 -13 0 -9 core -80 80 -45 45
 Passenger 3 -13 0 9 core -80 80 -45 45
 
 //Sounds
-StartSound Engine
+StartSound engineidle_car_idle
 StartSoundLength 20
-EngineSound Engine
+EngineSound modernengine
 EngineSoundLength 20
 
 //Health and collision

@@ -53,9 +53,9 @@ Passenger 2 -21 11 0 core -50 50 -10 30 WW2_MG_BrowningM2_1A M2
 GunOrigin 2 -25 22 0
 
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
+StartSound willystart
+StartSoundLength 40
+EngineSound reom35loop
 EngineSoundLength 20
 
 //Health and collision

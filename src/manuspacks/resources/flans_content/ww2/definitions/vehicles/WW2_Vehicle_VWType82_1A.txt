@@ -54,9 +54,9 @@ GunOrigin 2 -9 18 0
 
 
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
+StartSound willystart
+StartSoundLength 40
+EngineSound reom35loop
 EngineSoundLength 20
 
 //Health and collision

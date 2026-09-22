@@ -63,7 +63,7 @@ StandBackDistance 1.3
 
 //Sound
 DistortSound False
-ShootSound AAfire
+ShootSound navyflak
 ReloadSound BrowningReload
 
 //------------------------------------------------

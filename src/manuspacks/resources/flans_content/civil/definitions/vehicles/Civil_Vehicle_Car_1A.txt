@@ -51,9 +51,9 @@ Passenger 2 -12 -4 -7 core -80 80 -45 45
 Passenger 3 -12 -4 7 core -80 80 -45 45
 
 //Sounds
-StartSound Engine
+StartSound engineidle_car_idle
 StartSoundLength 20
-EngineSound Engine
+EngineSound engine_car_tigr
 EngineSoundLength 20
 
 //Health and collision

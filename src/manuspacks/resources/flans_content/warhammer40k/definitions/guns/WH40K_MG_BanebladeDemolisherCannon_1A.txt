@@ -63,7 +63,7 @@ StandBackDistance 1.3
 
 //Sound
 DistortSound False
-ShootSound TankShell
+ShootSound shoot_tnk_120mm
 ReloadSound BrowningReload
 
 //------------------------------------------------

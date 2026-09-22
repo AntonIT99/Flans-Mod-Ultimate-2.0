@@ -63,6 +63,6 @@ ShootDelay 5
 
 //Sounds
 ReloadSound mp44Reload
-ShootSound AAfire
+ShootSound shoot_20mmaade
 
 //------------------------------------------------

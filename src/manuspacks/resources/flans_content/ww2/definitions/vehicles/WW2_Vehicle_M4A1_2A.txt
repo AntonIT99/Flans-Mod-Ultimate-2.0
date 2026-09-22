@@ -86,11 +86,11 @@ GunOrigin 1 49 18 10
 
 
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
-EngineSoundLength 20
-ShellSound TankShell
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_m4
+EngineSoundLength 39
+ShellSound shoot_75mmus
 
 
 //Health and collision
@@ -130,7 +130,7 @@ TurnRightSpeed 1
 
 
 //Sound
-ShellSound TankShell
+ShellSound shoot_75mmus
 ShootSound bullet
 
 

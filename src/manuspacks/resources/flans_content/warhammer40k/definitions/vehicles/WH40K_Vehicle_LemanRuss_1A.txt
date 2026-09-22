@@ -75,11 +75,11 @@ GunOrigin 1 43 34 -8
 
 
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary TankShell
+StartSound tankidle3
+StartSoundLength 41
+EngineSound engine_ht_pzvi
+EngineSoundLength 39
+ShootSoundPrimary shoot_tnk_105mm
 ShootSoundSecondary boltgun_fire
 
 

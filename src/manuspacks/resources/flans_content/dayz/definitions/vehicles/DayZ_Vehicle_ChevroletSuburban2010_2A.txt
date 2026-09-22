@@ -54,9 +54,9 @@ Passenger 4 -35 5 -8 core -80 80 -45 45
 Passenger 5 -35 5 8 core -80 80 -45 45
 
 //Sounds
-StartSound Engine
+StartSound tigrstart
 StartSoundLength 20
-EngineSound Engine
+EngineSound engine_jep_humvee
 EngineSoundLength 20
 
 //Health and collision

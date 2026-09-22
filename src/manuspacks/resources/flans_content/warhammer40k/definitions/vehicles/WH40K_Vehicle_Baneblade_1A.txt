@@ -101,11 +101,11 @@ CameraDistance 7.5
 
 
 //Sounds
-StartSound TankIdle
-StartSoundLength 20
-EngineSound TankMove
-EngineSoundLength 60
-ShootSoundPrimary TankShell
+StartSound pz8_idle
+StartSoundLength 41
+EngineSound pz8_engine
+EngineSoundLength 39
+ShootSoundPrimary pz8_masu_128mm_fire
 ShootSoundSecondary boltgun_fire
 
 //------------------------------------------------

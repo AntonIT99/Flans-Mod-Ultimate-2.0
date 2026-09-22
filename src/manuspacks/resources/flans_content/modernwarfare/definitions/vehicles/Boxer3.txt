@@ -45,12 +45,11 @@ Passenger 8 0 26 0 core -60 60 -15 40 BrowningM2HB M2HB
 ShootDelay 5
 ShellDelay 110
 //Sounds
-StartSound lkw_start
-StartSoundLength 34
-EngineSound lkw_lauf
-EngineSoundLength 105
+StartSound engineidle_ifv_stryker
+StartSoundLength 20
+EngineSound engine_ifv_stryker
+EngineSoundLength 20
 ShootSound bullet
-ShellSound TankShell
 //Recipe
 //Each section of the plane may have many parts
 //The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,

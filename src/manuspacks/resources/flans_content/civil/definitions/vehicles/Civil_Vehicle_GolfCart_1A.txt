@@ -51,9 +51,9 @@ Passenger 2 -20 5 -7 core 160 200 -45 45
 Passenger 3 -20 5 7 core 160 200 -45 45
 
 //Sounds
-StartSound Engine
+StartSound jeepidle
 StartSoundLength 20
-EngineSound Engine
+EngineSound jeepmove
 EngineSoundLength 20
 
 //Health and collision

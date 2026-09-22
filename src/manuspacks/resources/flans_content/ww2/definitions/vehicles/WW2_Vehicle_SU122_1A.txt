@@ -76,11 +76,11 @@ Passenger 1 7 22 -7 turret
 
 
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
-EngineSoundLength 20
-ShellSound TankShell
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_t34
+EngineSoundLength 39
+ShellSound shoot_122mmussr
 
 
 //Health and collision
@@ -110,7 +110,7 @@ TurnRightSpeed 1
 
 
 //Sound
-ShellSound TankShell
+ShellSound shoot_122mmussr
 ShootSound bullet
 
 

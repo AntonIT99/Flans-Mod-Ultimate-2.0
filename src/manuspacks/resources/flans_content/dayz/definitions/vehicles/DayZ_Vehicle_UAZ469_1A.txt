@@ -51,9 +51,9 @@ Passenger 2 -17 2 -6 core -80 80 -45 45
 Passenger 3 -17 2 6 core -80 80 -45 45
 
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
+StartSound willystart
+StartSoundLength 40
+EngineSound reom35loop
 EngineSoundLength 20
 
 //Health and collision

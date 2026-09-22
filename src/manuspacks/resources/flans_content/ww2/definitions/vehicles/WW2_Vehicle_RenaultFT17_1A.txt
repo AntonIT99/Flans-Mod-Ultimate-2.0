@@ -75,11 +75,11 @@ Passengers 0
 
 
 //Sounds
-StartSound Engine
-StartSoundLength 20
-EngineSound Engine
-EngineSoundLength 20
-ShellSound TankShell
+StartSound tankidle1
+StartSoundLength 41
+EngineSound engine_lt_m5
+EngineSoundLength 39
+ShellSound shoot_37mm
 
 
 //Health and collision
@@ -109,7 +109,7 @@ TurnRightSpeed 1
 
 
 //Sound
-ShellSound TankShell
+ShellSound shoot_37mm
 ShootSound MG42Shoot
 
 

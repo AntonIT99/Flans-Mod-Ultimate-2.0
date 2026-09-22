@@ -42,12 +42,12 @@ BarrelPosition 0 21 0
 ShootDelay 5
 ShellDelay 110
 //Sounds
-StartSound lkw_start
-StartSoundLength 34
-EngineSound lkw_lauf
-EngineSoundLength 105
+StartSound leodieselstart
+StartSoundLength 80
+EngineSound leodieselenginestronk
+EngineSoundLength 24
 ShootSound bullet
-ShellSound TankShell
+ShellSound shoot_tnk_120mm
 //Recipe
 //Each section of the plane may have many parts
 //The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,

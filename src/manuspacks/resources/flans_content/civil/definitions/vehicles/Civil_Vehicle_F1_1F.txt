@@ -48,9 +48,9 @@ Driver -6 -7 0 -80 80 -45 45
 Passengers 0
 
 //Sounds
-StartSound Engine
+StartSound enginestart
 StartSoundLength 20
-EngineSound Engine
+EngineSound modernengine
 EngineSoundLength 20
 
 //Health and collision

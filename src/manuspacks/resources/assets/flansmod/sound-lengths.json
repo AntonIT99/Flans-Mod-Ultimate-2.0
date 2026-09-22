@@ -6,10 +6,30 @@
       "size": 61106,
       "ticks": 452
     },
+    "30mmshoot.ogg": {
+      "key": "30mmshoot",
+      "size": 45729,
+      "ticks": 39
+    },
+    "35mmshoot.ogg": {
+      "key": "35mmshoot",
+      "size": 20111,
+      "ticks": 5
+    },
+    "37mmshoot.ogg": {
+      "key": "37mmshoot",
+      "size": 84173,
+      "ticks": 116
+    },
     "88mmshoot.ogg": {
       "key": "88mmshoot",
       "size": 45144,
       "ticks": 259
+    },
+    "8ingunauto.ogg": {
+      "key": "8ingunauto",
+      "size": 76330,
+      "ticks": 182
     },
     "aafire.ogg": {
       "key": "aafire",
@@ -25,6 +45,11 @@
       "key": "bazookareload",
       "size": 60508,
       "ticks": 117
+    },
+    "bf109_20mmshoot.ogg": {
+      "key": "bf109_20mmshoot",
+      "size": 24071,
+      "ticks": 29
     },
     "boltgun_fire.ogg": {
       "key": "boltgun_fire",
@@ -91,6 +116,61 @@
       "size": 14198,
       "ticks": 22
     },
+    "engine_car_tigr.ogg": {
+      "key": "engine_car_tigr",
+      "size": 55043,
+      "ticks": 42
+    },
+    "engine_ht_pzvi.ogg": {
+      "key": "engine_ht_pzvi",
+      "size": 30418,
+      "ticks": 40
+    },
+    "engine_ifv_stryker.ogg": {
+      "key": "engine_ifv_stryker",
+      "size": 23559,
+      "ticks": 39
+    },
+    "engine_jep_humvee.ogg": {
+      "key": "engine_jep_humvee",
+      "size": 25425,
+      "ticks": 40
+    },
+    "engine_lt_m5.ogg": {
+      "key": "engine_lt_m5",
+      "size": 22766,
+      "ticks": 40
+    },
+    "engine_mt_m4.ogg": {
+      "key": "engine_mt_m4",
+      "size": 24042,
+      "ticks": 40
+    },
+    "engine_mt_m4a3.ogg": {
+      "key": "engine_mt_m4a3",
+      "size": 22707,
+      "ticks": 40
+    },
+    "engine_mt_t34.ogg": {
+      "key": "engine_mt_t34",
+      "size": 22836,
+      "ticks": 40
+    },
+    "engineidle_car_idle.ogg": {
+      "key": "engineidle_car_idle",
+      "size": 55856,
+      "ticks": 40
+    },
+    "engineidle_ifv_stryker.ogg": {
+      "key": "engineidle_ifv_stryker",
+      "size": 23872,
+      "ticks": 40
+    },
+    "enginestart.ogg": {
+      "key": "enginestart",
+      "size": 27223,
+      "ticks": 24
+    },
     "flak.ogg": {
       "key": "flak",
       "size": 8916,
@@ -126,6 +206,21 @@
       "size": 9364,
       "ticks": 10
     },
+    "jeepidle.ogg": {
+      "key": "jeepidle",
+      "size": 6492,
+      "ticks": 7
+    },
+    "jeepmove.ogg": {
+      "key": "jeepmove",
+      "size": 22876,
+      "ticks": 60
+    },
+    "kamazenginerun.ogg": {
+      "key": "kamazenginerun",
+      "size": 52306,
+      "ticks": 101
+    },
     "lancasterprop.ogg": {
       "key": "lancasterprop",
       "size": 21143,
@@ -140,6 +235,16 @@
       "key": "laspistol_fire",
       "size": 17587,
       "ticks": 21
+    },
+    "leodieselenginestronk.ogg": {
+      "key": "leodieselenginestronk",
+      "size": 19772,
+      "ticks": 23
+    },
+    "leodieselstart.ogg": {
+      "key": "leodieselstart",
+      "size": 66759,
+      "ticks": 103
     },
     "lightsaber_idle.ogg": {
       "key": "lightsaber_idle",
@@ -181,10 +286,25 @@
       "size": 15654,
       "ticks": 10
     },
+    "modernengine.ogg": {
+      "key": "modernengine",
+      "size": 49448,
+      "ticks": 81
+    },
     "mp44reload.ogg": {
       "key": "mp44reload",
       "size": 16207,
       "ticks": 53
+    },
+    "navyflak.ogg": {
+      "key": "navyflak",
+      "size": 11333,
+      "ticks": 11
+    },
+    "nr23_fire.ogg": {
+      "key": "nr23_fire",
+      "size": 24411,
+      "ticks": 24
     },
     "planeshoot.ogg": {
       "key": "planeshoot",
@@ -201,10 +321,30 @@
       "size": 18167,
       "ticks": 28
     },
+    "pz8_engine.ogg": {
+      "key": "pz8_engine",
+      "size": 18423,
+      "ticks": 20
+    },
+    "pz8_idle.ogg": {
+      "key": "pz8_idle",
+      "size": 33556,
+      "ticks": 40
+    },
+    "pz8_masu_128mm_fire.ogg": {
+      "key": "pz8_masu_128mm_fire",
+      "size": 110671,
+      "ticks": 136
+    },
     "rebellaser_fire.ogg": {
       "key": "rebellaser_fire",
       "size": 7608,
       "ticks": 4
+    },
+    "reom35loop.ogg": {
+      "key": "reom35loop",
+      "size": 19935,
+      "ticks": 20
     },
     "rocketfire1.ogg": {
       "key": "rocketfire1",
@@ -220,6 +360,71 @@
       "key": "rpgshoot",
       "size": 19843,
       "ticks": 31
+    },
+    "shoot_100mmussr.ogg": {
+      "key": "shoot_100mmussr",
+      "size": 31259,
+      "ticks": 60
+    },
+    "shoot_105mm.ogg": {
+      "key": "shoot_105mm",
+      "size": 61398,
+      "ticks": 71
+    },
+    "shoot_122mmussr.ogg": {
+      "key": "shoot_122mmussr",
+      "size": 31112,
+      "ticks": 60
+    },
+    "shoot_20mmaade.ogg": {
+      "key": "shoot_20mmaade",
+      "size": 10396,
+      "ticks": 11
+    },
+    "shoot_37mm.ogg": {
+      "key": "shoot_37mm",
+      "size": 36691,
+      "ticks": 38
+    },
+    "shoot_75mmus.ogg": {
+      "key": "shoot_75mmus",
+      "size": 32583,
+      "ticks": 60
+    },
+    "shoot_76mmus.ogg": {
+      "key": "shoot_76mmus",
+      "size": 32227,
+      "ticks": 60
+    },
+    "shoot_76mmussr.ogg": {
+      "key": "shoot_76mmussr",
+      "size": 31535,
+      "ticks": 60
+    },
+    "shoot_85mmussr.ogg": {
+      "key": "shoot_85mmussr",
+      "size": 31683,
+      "ticks": 60
+    },
+    "shoot_88flakde.ogg": {
+      "key": "shoot_88flakde",
+      "size": 31848,
+      "ticks": 60
+    },
+    "shoot_tnk_105mm.ogg": {
+      "key": "shoot_tnk_105mm",
+      "size": 63879,
+      "ticks": 120
+    },
+    "shoot_tnk_120mm.ogg": {
+      "key": "shoot_tnk_120mm",
+      "size": 490093,
+      "ticks": 199
+    },
+    "spitfire_20mmshoot.ogg": {
+      "key": "spitfire_20mmshoot",
+      "size": 26819,
+      "ticks": 34
     },
     "tank1shoot.ogg": {
       "key": "tank1shoot",
@@ -246,6 +451,21 @@
       "size": 11266,
       "ticks": 20
     },
+    "tankidle1.ogg": {
+      "key": "tankidle1",
+      "size": 32730,
+      "ticks": 40
+    },
+    "tankidle2.ogg": {
+      "key": "tankidle2",
+      "size": 34100,
+      "ticks": 40
+    },
+    "tankidle3.ogg": {
+      "key": "tankidle3",
+      "size": 32129,
+      "ticks": 40
+    },
     "tankmove.ogg": {
       "key": "tankmove",
       "size": 27180,
@@ -255,6 +475,11 @@
       "key": "tankshell",
       "size": 9126,
       "ticks": 7
+    },
+    "tigrstart.ogg": {
+      "key": "tigrstart",
+      "size": 37998,
+      "ticks": 28
     },
     "turbolaser.ogg": {
       "key": "turbolaser",
@@ -266,10 +491,20 @@
       "size": 7007,
       "ticks": 8
     },
+    "ural4320start.ogg": {
+      "key": "ural4320start",
+      "size": 22118,
+      "ticks": 40
+    },
     "viper.ogg": {
       "key": "viper",
       "size": 40566,
       "ticks": 100
+    },
+    "willystart.ogg": {
+      "key": "willystart",
+      "size": 31303,
+      "ticks": 38
     }
   }
 }

@@ -20,7 +20,7 @@ Damage 1
 Accuracy 1
 //Time in ticks between rounds
 ShootDelay 10
-ShootSound AAfire
+ShootSound 35mmshoot
 ReloadSound mp44Reload
 //The position of the player relative to the pivot
 GunnerPos 6 30 -9

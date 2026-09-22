@@ -61,6 +61,6 @@ ShootDelay 10
 
 //Sounds
 ReloadSound mp44Reload
-ShootSound AAfire
+ShootSound shoot_88flakde
 
 //------------------------------------------------
