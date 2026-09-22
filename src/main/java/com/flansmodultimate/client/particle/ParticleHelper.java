@@ -35,6 +35,8 @@ public final class ParticleHelper
 {
     /** Simultaneous sustained emissions, so a barrage cannot stack unbounded emitters. */
     private static final int MAX_ACTIVE_EMITTERS = 16;
+    /** Smoke-launcher shells in flight at once, the cap the server used to keep per vehicle. */
+    private static final int MAX_SMOKE_SHELLS = 64;
     /** Reported when no particle was created, so a caller cannot mistake it for a lifetime. */
     private static final int NO_PARTICLE = -1;
     /**
@@ -47,6 +49,7 @@ public final class ParticleHelper
 
     private static final Map<String, Optional<ParticleOptions>> PARTICLE_OPTIONS_CACHE = new ConcurrentHashMap<>();
     private static final List<SustainedEmission> ACTIVE_EMISSIONS = new ArrayList<>();
+    private static final List<SmokeShell> SMOKE_SHELLS = new ArrayList<>();
     private static long particleBudgetTick = Long.MIN_VALUE;
     private static int particlesCreatedThisTick;
 
@@ -153,19 +156,31 @@ public final class ParticleHelper
             burstSize, durationTicks, waveInterval, lifetimeScale));
     }
 
-    /** Advances every sustained emission. Driven from the client tick. */
+    /**
+     * Fires a vehicle smoke-launcher shell. It trails smoke as it flies and bursts into a cloud
+     * once its fuse runs out, all simulated here from the single launch the server sends.
+     */
+    public static void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks)
+    {
+        if (SMOKE_SHELLS.size() < MAX_SMOKE_SHELLS)
+            SMOKE_SHELLS.add(new SmokeShell(x, y, z, vx, vy, vz, fuseTicks));
+    }
+
+    /** Advances every sustained emission and smoke shell. Driven from the client tick. */
     public static void tick()
     {
-        if (ACTIVE_EMISSIONS.isEmpty())
+        if (ACTIVE_EMISSIONS.isEmpty() && SMOKE_SHELLS.isEmpty())
             return;
 
         if (Minecraft.getInstance().level == null)
         {
             ACTIVE_EMISSIONS.clear();
+            SMOKE_SHELLS.clear();
             return;
         }
 
         ACTIVE_EMISSIONS.removeIf(SustainedEmission::tick);
+        SMOKE_SHELLS.removeIf(SmokeShell::tick);
     }
 
     /** @return the longest lifetime any particle of this wave got, or {@link #NO_PARTICLE} if none spawned */
@@ -193,6 +208,53 @@ public final class ParticleHelper
     }
 
     /** One in-flight sustained emission. */
+    /** The flight the server used to simulate for each shell: gravity, drag, a puff every third tick. */
+    private static final class SmokeShell
+    {
+        private static final double GRAVITY = 0.04D;
+        private static final double DRAG = 0.99D;
+        private static final int TRAIL_INTERVAL_TICKS = 3;
+
+        private double x;
+        private double y;
+        private double z;
+        private double vx;
+        private double vy;
+        private double vz;
+        private int ticks;
+
+        private SmokeShell(double x, double y, double z, double vx, double vy, double vz, int ticks)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.vx = vx;
+            this.vy = vy;
+            this.vz = vz;
+            this.ticks = ticks;
+        }
+
+        /** @return true once the shell has burst and should be dropped */
+        private boolean tick()
+        {
+            x += vx;
+            y += vy;
+            z += vz;
+            vx *= DRAG;
+            vy = (vy - GRAVITY) * DRAG;
+            vz *= DRAG;
+            if (--ticks > 0)
+            {
+                if (ticks % TRAIL_INTERVAL_TICKS == 0)
+                    spawnFromString(FlanParticles.FM_SMOKE, x, y, z, 0D, 0D, 0D, 1F);
+                return false;
+            }
+            spawnFromString(FlanParticles.FM_SMOKE_BURST, x, y, z, 0D, 0D, 0D, 1F);
+            spawnFromString(FlanParticles.FM_BIG_SMOKE, x, y, z, 0D, 0D, 0D, 1F);
+            return true;
+        }
+    }
+
     private static final class SustainedEmission
     {
         private final String particleType;
