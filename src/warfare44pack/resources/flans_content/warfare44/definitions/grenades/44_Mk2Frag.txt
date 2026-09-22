@@ -1,60 +1,50 @@
-////Name and icon
+// Identity
 Name Mk2Frag
 ShortName 44_Mk2Frag
+Description American Grenade
+
+// Rendering
 Icon 44_Mk2Frag
-//Colour in Red, Green, Blue, each going up to 255
-Colour 255 255 255
-////Item and recipe
-StackSize 4
-////Visuals
 Model W44.Mk2Frag
 Texture Skin44_Mk2Frag
-TrailParticles false
-//TrailParticleType <particleType>
-ExplodeParticles 3
-//ExplodeParticleType <particleType>
-SmokeTime 0
-//SmokeParticleType <particleType>
-SpinWhenThrown true
-////Throwing
-ThrowDelay 10
-//ThrowSound <sound>
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
-Bounciness 0.8
-HitEntityDamage 1
+Colour 255 255 255
+
+// Inventory
+StackSize 4
+
+// Throwing and physics
 ThrowSpeed 2.0
+ThrowDelay 10
 FallSpeed 1.0
-BreaksGlass true
-PenetratesBlocks false
+Bounciness 0.8
 HitBoxSize 0.5
+SpinWhenThrown true
 Sticky false
-//BounceSound <sound>
-////Detonation conditions
-VehicleProximityTrigger -1.0
-LivingProximityTrigger -1.0
-Fuse 80
-DetonateWhenShot true
-Remote false
-//DespawnTime 0
-PrimeDelay 0
-////Detonation
-FireRadius 0.0
-ExplosionRadius 3.0
-ExplosionBreaksBlocks true
-//DropItemOnDetonate <itemID.damage>
-//Detonate Sound <sound>
-////Misc
+PenetratesBlocks false
+BreaksGlass true
+
+// Damage and healing
+HitEntityDamage 1
 MeleeDamage 4
 
-
-////Detonation
-FireRadius 0.0
+// Detonation and explosion
+Fuse 80
+PrimeDelay 0
+DetonateOnImpact false
+DetonateWhenShot true
+Remote false
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+ExplosiveMassTNTg 85
+FragType STD_FRAG
+ExplosionRadius 3.0
 ExplosionDamageVsLiving 3.0
-ExplosionDamageVsPlane 1.0
 ExplosionDamageVsVehicle 1.5
+ExplosionDamageVsPlane 1.0
 ExplosionBreaksBlocks true
+FireRadius 0.0
 
-
-Description American Grenade
+// Effects
+TrailParticles false
+ExplodeParticles 3
+SmokeTime 0

@@ -1,9 +1,12 @@
+// Identity
 Name German Flag
 ShortName 44_GermanFlag
-Icon 44_GermanFlag
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
-StackSize 6
+
+// Rendering
+Icon 44_GermanFlag
+Colour 255 255 255
+
+// Recipe and inventory
 RecipeOutput 3
+StackSize 6

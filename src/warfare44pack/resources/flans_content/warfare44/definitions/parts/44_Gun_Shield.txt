@@ -1,8 +1,11 @@
+// Identity
 Name Gun_Shield
 ShortName 44_Gun_Shield
-Icon 44_Gun_Shield
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Rendering
+Icon 44_Gun_Shield
+Colour 255 255 255
+
+// Recipe and inventory
 StackSize 64

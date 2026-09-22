@@ -1,8 +1,11 @@
+// Identity
 Name Boat Body
 ShortName 44_Boat_Body
-Icon 44_Boat_Body
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Rendering
+Icon 44_Boat_Body
+Colour 255 255 255
+
+// Recipe and inventory
 StackSize 3

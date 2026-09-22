@@ -1,8 +1,11 @@
+// Identity
 Name Metal Rod
 ShortName 44_Metal_Rod
-Icon 44_Metal_Rod
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
-StackSize 64 
+
+// Rendering
+Icon 44_Metal_Rod
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

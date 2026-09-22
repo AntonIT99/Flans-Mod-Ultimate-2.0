@@ -1,39 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name American MP Officer Helmet
 ShortName 44_AmericanMPOfficerHelmet
-
-
-// Visuals
-ModelScale 1
-Icon 44_AmericanMPOfficerHelmet
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Helmet
 
-
-//Visuals
+// Rendering
+Icon 44_AmericanMPOfficerHelmet
 Model W44.AmericanMPOfficerHelmet
+ModelScale 1
 ArmorTexture Skin44_AmericanMPOfficer
 
-
-//Armor Settings
-Defence 0.15
-
-//Helmet Settings
+// Protection
+ArmorPoints 2
+Defence 0.04
+BulletDefence 0.02
+Toughness 0
+PenetrationResistance 1.25
 SmokeProtection false
-
-//------------------------------------------------

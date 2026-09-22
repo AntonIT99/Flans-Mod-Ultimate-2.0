@@ -1,9 +1,12 @@
+// Identity
 Name Light Tank Turret
 ShortName 44_Light_Tank_Turret
-Icon 44_Light_Tank_Turret
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Turret
-StackSize 4
+
+// Rendering
+Icon 44_Light_Tank_Turret
+Colour 255 255 255
+
+// Recipe and inventory
 RecipeOutput 1
+StackSize 4

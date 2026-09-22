@@ -1,29 +1,33 @@
+// Identity
 Name Ka-Bar Knife
 ShortName 44_AmericanKaBarKnife
-//The ammo this gun uses (shortName)
-Icon 44_AmericanKaBarKnife
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 0
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 0
-//Number of bullet entities to create, useful for shotguns, defaults to 1
-NumBullets 0
-//Damage in half hearts
-Damage 0
-//The higher this value, the more the bullets spread
-Accuracy 0
-//Time in ticks between rounds
-ShootDelay 0
-//ShootSound None
-//ReloadSound None
-Mode SemiAuto
-Scope None
-FOVZoomLevel 1.0
-Deployable False
-DeployedModel None
-MeleeDamage 5
 
+// Rendering
+Icon 44_AmericanKaBarKnife
 Model W44.AmericanKaBarKnife
 Texture Skin44_AmericanKaBarKnife
+Colour 255 255 255
+DeployedModel None
+
+// Ammunition
+NumBullets 0
+
+// Handling
+Mode SemiAuto
+Deployable False
+Scope None
+FOVZoomLevel 1.0
+
+// Fire rate and reload
+ShootDelay 0
+ReloadTime 0
+
+// Ballistics
+Accuracy 0
+
+// Damage
+Damage 0
+MeleeDamage 6
+
+// Recoil
+Recoil 0

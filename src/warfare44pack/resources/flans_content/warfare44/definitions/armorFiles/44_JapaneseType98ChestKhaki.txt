@@ -1,38 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Japanese Type 98 'Shiki-Gun-i' Jacket (Khaki)
 ShortName 44_JapaneseType98ChestKhaki
-
-
-// Visuals
-ModelScale 1
-Icon 44_JapaneseType98ChestKhaki
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Body
 
-
-//Visuals
+// Rendering
+Icon 44_JapaneseType98ChestKhaki
 Model W44.JapaneseType98ChestKhaki
+ModelScale 1
 ArmorTexture Skin44_JapaneseType98Khaki
 
-
-//Armor Settings
-Defence 0.15
-//Helmet Settings
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
 SmokeProtection false
-
-//------------------------------------------------

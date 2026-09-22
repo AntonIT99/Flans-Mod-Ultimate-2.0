@@ -1,12 +1,18 @@
+// Identity
 Name Repair Tool
 ShortName 44_RepairTool
+
+// Rendering
 Icon 44_RepairTool
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-Heal false
-Repair true
-HealAmount 500
+
+// Recipe and inventory
+StackSize 1
 ToolLife 100
 DestroyOnEmpty false
-StackSize 1
 RechargeRecipe 3 coal
+
+// Behaviour
+Repair true
+Heal false
+HealAmount 500

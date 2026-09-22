@@ -1,11 +1,17 @@
+// Identity
 Name Wrench
 ShortName 44_Wrench
+
+// Rendering
 Icon 44_Wrench
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-Heal false
-Repair true
-HealAmount 250
+
+// Recipe and inventory
+StackSize 1
 ToolLife 65
 DestroyOnEmpty false
-StackSize 1
+
+// Behaviour
+Repair true
+Heal false
+HealAmount 250

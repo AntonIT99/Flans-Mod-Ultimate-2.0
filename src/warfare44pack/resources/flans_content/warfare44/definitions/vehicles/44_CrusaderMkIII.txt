@@ -1,108 +1,90 @@
-//----------------------------Naming
+// Identity
 Name Crusader Mk. III [2Pdr]
 ShortName 44_CrusaderMkIII
+Description British Cruiser Tank__Uses : 57mm AP Tank Shell_Small Cal. HE Tank Shell __Year Introduced : 1942
 
-//----------------------------Visuals
-RotateWheels True
+// Rendering
 Icon 44_CrusaderMkIII
 Model W44.CrusaderMkIII
+ModelScale 1
 Texture Skin44_CrusaderMkIII
-
-//----------------------------Third Person Camera Distance
+RotateWheels True
 CameraDistance 7.5
 
-//----------------------------Throttle
+// Recipe and inventory
+AddRecipeParts turret 1 44_Light_Tank_Turret 1 44_Vehicle_Seat
+AddRecipeParts core 1 44_Light_Tank_Chassis 1 44_Vehicle_Seat
+AddRecipeParts leftTrack 1 44_Tank_Track
+AddRecipeParts rightTrack 1 44_Tank_Track
+CargoSlots 20
+ShellSlots 3
+FuelTankSize 2000
+
+// Paintjobs
+AddDye 3 green
+
+// Real-world specifications
+DriveType TRACKED
+RealMassKg 20000
+RealEnginePowerHp 340
+RealMaxSpeedKmh 43
+RealMaxReverseSpeedKmh 7
+
+// Movement
+Tank true
+FourWheelDrive true
 MaxThrottle 0.85
 MaxNegativeThrottle 0.45
 ClutchBrake 0.02805
-
-//----------------------------Steering modifiers
 TurnLeftSpeed 0.425
 TurnRightSpeed 0.425
+CanRoll true
 
-//For calculating whether wheels are on the ground or not for driving
+// Wheels and tracks
 WheelRadius 1.0
-
-//----------------------------Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
 WheelPosition 0 -32 -8 -18
 WheelPosition 1 -32 -8 18
 WheelPosition 2 32 -8 18
 WheelPosition 3 32 -8 -18
 WheelSpringStrength 0.5
+TrackLinkLength 3
+LeftLinkPoint [61.5,9,24.5]
+LeftLinkPoint [64.5,7,24.5]
+LeftLinkPoint [64.5,2,24.5]
+LeftLinkPoint [45,-9,24.5]
+LeftLinkPoint [-40,-9,24.5]
+LeftLinkPoint [-63.5,1,24.5]
+LeftLinkPoint [-63.5,6,24.5]
+LeftLinkPoint [-63,10,24.5]
+LeftLinkPoint [-55,13,24.5]
+LeftLinkPoint [51,11,24.5]
+LeftLinkPoint [58,11,24.5]
+RightLinkPoint [61.5,9,-24.5]
+RightLinkPoint [64.5,7,-24.5]
+RightLinkPoint [64.5,2,-24.5]
+RightLinkPoint [45,-9,-24.5]
+RightLinkPoint [-40,-9,-24.5]
+RightLinkPoint [-63.5,1,-24.5]
+RightLinkPoint [-63.5,6,-24.5]
+RightLinkPoint [-63,10,-24.5]
+RightLinkPoint [-55,13,-24.5]
+RightLinkPoint [51,11,-24.5]
+RightLinkPoint [58,11,-24.5]
 
-
-//If true, then all wheels will apply drive forces
-//----------------------------Tank mode activate
-Tank true
-FourWheelDrive true
-
-//----------------------------Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
-FuelTankSize 2000
-
-//----------------------------Inventory Slots
-CargoSlots 20
-ShellSlots 3
+// Weapons
+ReadWeaponsFromGunTypes true
+ShootDelayPrimarySeconds 4
+ShootDelay 4
+ReloadTimeSecondary 100
+PlaceTimePrimary 80
+BulletSpread 3
+BulletSpeed 10
+BulletDetection 5
 AllowAllAmmo false
-
-//----------------------------Driver and passenger positions
-Driver 0 30 0 -360 360 -8 15
-RotatedDriverOffset -6 0 -8
-Passengers 0
-//Passenger 1 0 34 0 turret -360 360 -15 60 bren Bren
-
-//----------------------------Ammo
 AddAmmo 44_57APShell
 AddAmmo 44_SmallHEShell
-AllowAllAmmo False
-//Secondary gun
 AddGun 25 29 6 turret 44_Bren
-ShootDelay 4
-ShellDelay 83
-
-VehicleGunReloadTick 40
-ShootReloadSound Breach
-//----------------------------Sounds
-PlaceTimePrimary 80
-StartSound TankIdle1
-StartSoundLength 41
-EngineSound Engine_LT_LVT
-EngineSoundLength 39
-BackSoundLength 39
-BackSound Engine_LT_LVT
-StartSoundRange 12
-EngineSoundRange 50
-BackSoundRange 25
-PlaceSoundPrimary TankPlace
-ReloadSoundSecondary BrenReload
-ReloadTimeSecondary 100
-
-ShootSoundPrimary Shoot_57mmUK
-ShootSoundSecondary BrenShoot
-
-//----------------------------Recipe
-//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
-//rightWing, nose, turret, coreWheel, core
-AddRecipeParts turret 1 44_Light_Tank_Turret 1 44_Vehicle_Seat
-AddRecipeParts core 1 44_Light_Tank_Chassis 1 44_Vehicle_Seat
-AddRecipeParts leftTrack 1 44_Tank_Track
-AddRecipeParts rightTrack 1 44_Tank_Track
-//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
-AddDye 3 green
-
-//Health and collision
-SetupPart core 2000 -65 -2 -20 127 42 40
-SetupPart rightTrack 300 -63 -10 20 127 23 9
-SetupPart leftTrack 300 -63 -10 -29 127 23 9
-
-BulletDetection 5
-
-//Size Multiplier; scales up the model
-ModelScale 1
-Description British Cruiser Tank__Uses : 57mm AP Tank Shell_Small Cal. HE Tank Shell __Year Introduced : 1942
-BulletDetection 5
-
-//----------------------------Barrel
-
+BarrelPosition 65 30 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -153,137 +135,91 @@ ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 0.26
 ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 -0.26
 ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
 ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
-
 ShootParticlesSecondary crit 0.5 0 0
-BarrelPosition 65 30 0
 
-CanRoll true
-
-//----------------------------Smoke effects
-
-//----------------------------Basic emission
-AddEmitter smoke 1 [-52,16,7] [1,1,1] [0,0.5,0] -1 1 0 1 core
-
-//----------------------------Damage
-AddEmitter smoke 2 [-34,26,-23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
-AddEmitter smoke 2 [-34,26,23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
-AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
-
-AddEmitter largesmoke 3 [-34,26,-23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
-AddEmitter largesmoke 3 [-34,26,23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
-AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
-
-AddEmitter largesmoke 1 [-34,26,-23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
-AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
-
-AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
-AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
-AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
-
-
-//----------------------------Turret rotation stuff
-DriverAimSpeed 0.75 0.65 0
-
-DriverYawBeforePitch false
-
-DriverTraverseSounds true
-
-YawSound TurretTraverse1
-YawSoundLength 21
-
-PitchSound TurretTraverse2
-PitchSoundLength 20
-
-
-//----------------------------Exhaust Effects
-//1st gear change
-
-AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
-
-AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
-
-//1st gear
-
-AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
-
-AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
-
-//2nd gear change
-
-AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
-
-AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
-
-//2nd gear
-
-AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
-
-AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
-
-
-//3rd gear change
-
-AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
-
-AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
-
-AddEmitter flame 1 [-58,9,7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
-
-AddEmitter flame 1 [-58,9,-7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
-
-//3rd gear
-AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
-
-AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
-
-AddEmitter largesmoke 3 [-58,9,7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
-
-AddEmitter largesmoke 3 [-58,9,-7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
-
-//4th gear change
-
-AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
-
-AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,5,0] 0.7 0.77 0 1 core
-
-AddEmitter flame 1 [-58,9,7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
-
-AddEmitter flame 1 [-58,9,-7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
-
-//----------------------------Tracks
-
-TrackLinkLength 3
-
-RightLinkPoint [61.5,9,-24.5]
-RightLinkPoint [64.5,7,-24.5]
-RightLinkPoint [64.5,2,-24.5]
-RightLinkPoint [45,-9,-24.5]
-RightLinkPoint [-40,-9,-24.5]
-RightLinkPoint [-63.5,1,-24.5]
-RightLinkPoint [-63.5,6,-24.5]
-RightLinkPoint [-63,10,-24.5]
-RightLinkPoint [-55,13,-24.5]
-RightLinkPoint [51,11,-24.5]
-RightLinkPoint [58,11,-24.5]
-
-LeftLinkPoint [61.5,9,24.5]
-LeftLinkPoint [64.5,7,24.5]
-LeftLinkPoint [64.5,2,24.5]
-LeftLinkPoint [45,-9,24.5]
-LeftLinkPoint [-40,-9,24.5]
-LeftLinkPoint [-63.5,1,24.5]
-LeftLinkPoint [-63.5,6,24.5]
-LeftLinkPoint [-63,10,24.5]
-LeftLinkPoint [-55,13,24.5]
-LeftLinkPoint [51,11,24.5]
-LeftLinkPoint [58,11,24.5]
-
-BulletSpeed 10
-BulletSpread 3
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 20
+ArmorSideMm 14
+ArmorRearMm 14
+ArmorTopMm 14
+ArmorBottomMm 14
+TurretArmorFrontMm 30
+TurretArmorSideMm 28
+TurretArmorRearMm 28
+TurretArmorTopMm 14
 IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 2000 -65 -2 -20 127 42 40
+SetupPart rightTrack 300 -63 -10 20 127 23 9
+SetupPart leftTrack 300 -63 -10 -29 127 23 9
+
+// Seats
+Driver 0 30 0 -360 360 -8 15
+Passengers 0
+RotatedDriverOffset -6 0 -8
+DriverAimSpeed 0.75 0.65 0
+DriverYawBeforePitch false
 
 // Optics
 hasScope true
 Gunsight warfare44_6pdr2
 gunsightZoom 3
 heliGUI warfare44_scope
+
+// Sounds
+StartSound TankIdle1
+StartSoundLength 41
+StartSoundRange 12
+EngineSound Engine_LT_LVT
+EngineSoundLength 39
+EngineSoundRange 50
+BackSound Engine_LT_LVT
+BackSoundLength 39
+BackSoundRange 25
+YawSound TurretTraverse1
+YawSoundLength 21
+PitchSound TurretTraverse2
+PitchSoundLength 20
+DriverTraverseSounds true
+ShootSoundPrimary Shoot_57mmUK
+ShootSoundSecondary BrenShoot
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary BrenReload
+ShootReloadSound Breach
+VehicleGunReloadTick 40
+
+// Effects
+AddEmitter smoke 1 [-52,16,7] [1,1,1] [0,0.5,0] -1 1 0 1 core
+AddEmitter smoke 2 [-34,26,-23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-34,26,23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+AddEmitter largesmoke 3 [-34,26,-23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-34,26,23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+AddEmitter largesmoke 1 [-34,26,-23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+AddEmitter flame 1 [-58,9,7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter flame 1 [-58,9,-7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [-58,9,7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter explode 1 [-58,9,-7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter largesmoke 3 [-58,9,7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+AddEmitter largesmoke 3 [-58,9,-7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+AddEmitter largesmoke 1 [-58,9,7] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+AddEmitter largesmoke 1 [-58,9,-7] [1,1,1] [0,5,0] 0.7 0.77 0 1 core
+AddEmitter flame 1 [-58,9,7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+AddEmitter flame 1 [-58,9,-7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core

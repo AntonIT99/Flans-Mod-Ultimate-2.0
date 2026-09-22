@@ -1,8 +1,11 @@
+// Identity
 Name Glass Lens
 ShortName 44_Glass_Lens
-Icon 44_Glass_Lens
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
-StackSize 8 
+
+// Rendering
+Icon 44_Glass_Lens
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 8

@@ -1,40 +1,51 @@
+// Identity
 Name 50mm Pzgr. 40/1 APCR (KwK 39 L/60)
 ShortName 44_50APCRHeavyShell
+Description Heavier tungsten-cored armour-piercing shot for the 5 cm KwK 39 L/60
+
+// Rendering
+Icon 44_50apshell
 Model W44.W44ShellSmall
 Texture Skin44_W44Shell_Orange
 Colour 255 255 255
-Icon 44_50apshell
-RoundsPerItem 1
+HasLight True
+
+// Recipe and inventory
 MaxStackSize 5
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 1130
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 121
+BreaksGlass True
+
+// Damage
+Mass 1100
 Damage 1
 DamageVsLiving 50
 DamageVsVehicles 520
+Fire 0
+
+// Explosion
 Explosion 1
 ExplodeOnImpact True
 Fuse 200
-FlakParticles 0
-Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-HitSound
-Penetrates False
+
+// Effects
 SmokeTrail True
-Bomb False
-Shell True
-WeaponType Shell
-
-Mass 1100
-MuzzleVelocity 1130
-FallSpeed 1
-PenetrationAt100m 121
-
-ExplodeParticles 6
 TrailParticleType flansmod.fmtracer
-HasLight True
-
-HasLight True
-
+FlakParticles 0
+ExplodeParticles 6
 FlareParticleCount 3
 DebrisParticleCount 2
 
-Description Heavier tungsten-cored armour-piercing shot for the 5 cm KwK 39 L/60
+// Sounds
+HitSound

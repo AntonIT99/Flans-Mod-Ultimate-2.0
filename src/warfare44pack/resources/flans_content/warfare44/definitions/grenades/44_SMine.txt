@@ -1,63 +1,48 @@
-////Name and icon
+// Identity
 Name S-Mine
 ShortName 44_SMine
-Icon 44_SMine
 
-//Colour in Red, Green, Blue, each going up to 255
+// Rendering
+Icon 44_SMine
+Model W44.SMine
+ModelScale 1
+Texture Skin44_SMine
 Colour 255 255 255
 
-////Item and recipe
+// Inventory
 StackSize 1
 
-////Visuals
-Model W44.SMine
-Texture Skin44_SMine
-ModelScale 1
-TrailParticles false
-
-//TrailParticleType <particleType>
-ExplodeParticles 2
-
-//ExplodeParticleType <particleType>
-SmokeTime 0
-
-//SmokeParticleType <particleType>
-SpinWhenThrown false
-
-////Throwing
-ThrowDelay 20
-
-//ThrowSound <sound>
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
-Bounciness 0
-HitEntityDamage 1
+// Throwing and physics
 ThrowSpeed 0.5
+ThrowDelay 20
 FallSpeed 1
-BreaksGlass true
-PenetratesBlocks false
+Bounciness 0
 HitBoxSize 1.5
+SpinWhenThrown false
 Sticky false
+PenetratesBlocks false
+BreaksGlass true
 
-//BounceSound <sound>
-////Detonation conditions
-VehicleProximityTrigger -0
-LivingProximityTrigger 1
+// Damage and healing
+HitEntityDamage 1
+
+// Detonation and explosion
+PrimeDelay 25
+DetonateOnImpact false
 DetonateWhenShot true
 Remote false
-
-//DespawnTime 0
-PrimeDelay 25
-
-////Detonation
-FireRadius 0.0
+LivingProximityTrigger 1
+VehicleProximityTrigger -0
+ExplosiveMassTNTg 182
+FragType AIRBURST_AP
 ExplosionRadius 3
 ExplosionDamageVsLiving 80
-ExplosionDamageVsPlane 0
 ExplosionDamageVsVehicle 5
+ExplosionDamageVsPlane 0
 ExplosionBreaksBlocks false
+FireRadius 0.0
 
-//DropItemOnDetonate <itemID.damage>
-//Detonate Sound <sound>
-////Misc
+// Effects
+TrailParticles false
+ExplodeParticles 2
+SmokeTime 0

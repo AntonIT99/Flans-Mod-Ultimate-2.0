@@ -1,8 +1,11 @@
+// Identity
 Name Tank_Gun Breach
 ShortName 44_Tank_Gun_Breach
-Icon 44_Tank_Gun_Breach
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Rendering
+Icon 44_Tank_Gun_Breach
+Colour 255 255 255
+
+// Recipe and inventory
 StackSize 64

@@ -1,39 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name British British 40 Pattern Pants
 ShortName 44_British40PatternPants
-
-
-// Visuals
-ModelScale 1
-Icon 44_British40PatternPants
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Pants
 
-
-//Visuals
+// Rendering
+Icon 44_British40PatternPants
 Model W44.British40PatternPants
+ModelScale 1
 ArmorTexture Skin44_British40Pattern
 
-
-//Armor Settings
-Defence 0.1
-
-//Helmet Settings
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
 SmokeProtection false
-
-//------------------------------------------------

@@ -1,43 +1,53 @@
+// Identity
 Name 76mm M62 APCBC-HE (M1)
 ShortName 44_76APCBCShell
+Description Armour-piercing capped ballistic-capped shell for the 76 mm gun M1
+
+// Rendering
+Icon 44_76apshelllong
 Model W44.W44ShellMedium
 Texture Skin44_W44Shell_Orange
 Colour 255 255 255
-Icon 44_76apshelllong
-RoundsPerItem 1
+HasLight True
+
+// Recipe and inventory
 MaxStackSize 2
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 792
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 125
+BreaksGlass True
+
+// Damage
+Mass 7000
 Damage 1
 DamageVsLiving 125
 DamageVsVehicles 1248
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 60
 Explosion 1
 ExplodeOnImpact True
 Fuse 200
-FlakParticles 0
-Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-HitSound
-Penetrates False
-SmokeTrail True
-Bomb False
-Shell True
-WeaponType Shell
-
-Mass 7000
-MuzzleVelocity 792
-FallSpeed 1
-ExplosiveMassTNTg 60
-PenetrationAt100m 125
 HasSubmunitions false
 
-ExplodeParticles 8
+// Effects
+SmokeTrail True
 TrailParticleType flansmod.fmtracer
-
-HasLight True
-
-HasLight True
-
+FlakParticles 0
+ExplodeParticles 8
 FlareParticleCount 4
 DebrisParticleCount 4
 
-Description Armour-piercing capped ballistic-capped shell for the 76 mm gun M1
+// Sounds
+HitSound

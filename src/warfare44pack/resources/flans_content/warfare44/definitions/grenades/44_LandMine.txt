@@ -1,63 +1,48 @@
-////Name and icon
+// Identity
 Name LandMine
 ShortName 44_LandMine
-Icon 44_LandMine
 
-//Colour in Red, Green, Blue, each going up to 255
+// Rendering
+Icon 44_LandMine
+Model W44.LandMine
+ModelScale 0.7
+Texture Skin44_LandMine
 Colour 255 255 255
 
-////Item and recipe
+// Inventory
 StackSize 1
 
-////Visuals
-Model W44.LandMine
-Texture Skin44_LandMine
-ModelScale 0.7
-TrailParticles false
-
-//TrailParticleType <particleType>
-ExplodeParticles 5
-
-//ExplodeParticleType <particleType>
-SmokeTime 0
-
-//SmokeParticleType <particleType>
-SpinWhenThrown false
-
-////Throwing
-ThrowDelay 20
-
-//ThrowSound <sound>
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
-Bounciness 0
-HitEntityDamage 1
+// Throwing and physics
 ThrowSpeed 0.5
+ThrowDelay 20
 FallSpeed 1
-BreaksGlass true
-PenetratesBlocks false
+Bounciness 0
 HitBoxSize 1.5
+SpinWhenThrown false
 Sticky false
+PenetratesBlocks false
+BreaksGlass true
 
-//BounceSound <sound>
-////Detonation conditions
-VehicleProximityTrigger 2.25
-LivingProximityTrigger 1
+// Damage and healing
+HitEntityDamage 1
+
+// Detonation and explosion
+PrimeDelay 25
+DetonateOnImpact false
 DetonateWhenShot true
 Remote false
-
-//DespawnTime 0
-PrimeDelay 25
-
-////Detonation
-FireRadius 0.0
+LivingProximityTrigger 1
+VehicleProximityTrigger 2.25
+ExplosiveMassTNTg 200
+FragType LOW_FRAG
 ExplosionRadius 5
 ExplosionDamageVsLiving 10.0
-ExplosionDamageVsPlane 0
 ExplosionDamageVsVehicle 5
+ExplosionDamageVsPlane 0
 ExplosionBreaksBlocks false
+FireRadius 0.0
 
-//DropItemOnDetonate <itemID.damage>
-//Detonate Sound <sound>
-////Misc
+// Effects
+TrailParticles false
+ExplodeParticles 5
+SmokeTime 0

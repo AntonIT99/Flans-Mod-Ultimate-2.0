@@ -1,72 +1,53 @@
-////Name and icon
+// Identity
 Name Bear Trap
 ShortName 44_BearTrap
-Icon 44_BearTrap
 
-//Colour in Red, Green, Blue, each going up to 255
+// Rendering
+Icon 44_BearTrap
+Model W44.BearTrap
+ModelScale 1
+Texture Skin44_BearTrap
 Colour 255 255 255
 
-////Item and recipe
+// Inventory
 StackSize 1
 
-////Visuals
-Model W44.BearTrap
-Texture Skin44_BearTrap
-ModelScale 1
-TrailParticles false
-
-//TrailParticleType <particleType>
-
-//ExplodeParticleType <particleType>
-SmokeTime 0
-
-//SmokeParticleType <particleType>
-SpinWhenThrown false
-
-////Throwing
-ThrowDelay 20
-
-//ThrowSound <sound>
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
-Bounciness 0.05
-HitEntityDamage 1
+// Throwing and physics
 ThrowSpeed 0.5
+ThrowDelay 20
 FallSpeed 2
-BreaksGlass true
-PenetratesBlocks false
+Bounciness 0.05
 HitBoxSize 1.5
+SpinWhenThrown false
 Sticky false
+PenetratesBlocks false
+BreaksGlass true
 
-//BounceSound <sound>
-////Detonation conditions
-VehicleProximityTrigger -0
-LivingProximityTrigger 1.5
-DetonateWhenShot false
-Remote false
-
-//DespawnTime 0
-PrimeDelay 25
-
+// Damage and healing
+HitEntityDamage 1
 DamageToTriggerer 18.0
 
-////Detonation
-FireRadius 0.0
+// Detonation and explosion
+PrimeDelay 25
+DetonateOnImpact false
+DetonateWhenShot false
+Remote false
+LivingProximityTrigger 1.5
+VehicleProximityTrigger -0
+FragType DEFAULT
 ExplosionRadius 0
 ExplosionDamageVsLiving 0
-ExplosionDamageVsPlane 0
 ExplosionDamageVsVehicle 0
+ExplosionDamageVsPlane 0
 ExplosionBreaksBlocks false
+FireRadius 0.0
 
-//DropItemOnDetonate <itemID.damage>
-DetonateSound BearTrap
-////Misc
-
-SmokeTime 1
-//SmokeParticleType <particleType>
-//Syntax is SmokeEffect <ID> <Duration> <Amplifier>
-//IDs are   1:MoveSpeed     2:MoveSlowdown      3:DigSpeed          4:DigSlowdown       5:DamageBoost   6:Heal          7:Harm      8:Jump          9:Confusion     10:Regeneration
-//          11:Resistance   12:FireResistance   13:WaterBreathing   14:Invisibility     15:Blindness    16:NightVision  17:Hunger   18:Weakness     19:Poison       20:Wither
+// Effects
+TrailParticles false
 SmokeEffect 2 100 5
+SmokeTime 0
+SmokeTime 1
 SmokeRadius 3
+
+// Sounds
+DetonateSound BearTrap

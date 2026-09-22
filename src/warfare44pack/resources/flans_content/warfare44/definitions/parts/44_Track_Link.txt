@@ -1,8 +1,11 @@
+// Identity
 Name Track Link
 ShortName 44_Track_Link
-Icon 44_Track_Link
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Rendering
+Icon 44_Track_Link
+Colour 255 255 255
+
+// Recipe and inventory
 StackSize 3

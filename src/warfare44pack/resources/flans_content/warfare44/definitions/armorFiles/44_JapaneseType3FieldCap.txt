@@ -1,38 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Japanese Type 3 'Sen-bou' Field Cap (Khaki)
 ShortName 44_JapaneseType3FieldCap
-
-
-// Visuals
-ModelScale 1
-Icon 44_JapaneseType3FieldCap
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Helmet
 
-
-//Visuals
+// Rendering
+Icon 44_JapaneseType3FieldCap
 Model W44.JapaneseType3FieldCap
+ModelScale 1
 ArmorTexture Skin44_JapaneseType98Khaki
 
-
-//Armor Settings
-Defence 0.1
-//Helmet Settings
+// Protection
+ArmorPoints 0
+Defence 0.01
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 1.00
 SmokeProtection false
-
-//------------------------------------------------

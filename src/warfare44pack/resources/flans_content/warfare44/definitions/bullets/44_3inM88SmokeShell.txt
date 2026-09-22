@@ -3,41 +3,47 @@ Name US 3-inch M88 HC Smoke (M7)
 ShortName 44_3inM88SmokeShell
 Description Base-emission smoke ammunition for the US 3-inch M7
 
-// Item and rendering
+// Rendering
+Icon 44_MediumHEShell
 Model W44.W44ShellMedium
 Texture Skin44_W44Shell_Orange
 Colour 255 255 255
-Icon 44_MediumHEShell
+HasLight False
+
+// Recipe and inventory
 MaxStackSize 3
 RoundsPerItem 1
 
-// Ballistics
+// Ammunition
+WeaponType Shell
 Bomb False
 Shell True
-WeaponType Shell
-Mass 3450
+
+// Ballistics
 MuzzleVelocity 274
 FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+BreaksGlass True
 
-// Damage and detonation
+// Damage
+Mass 3450
 Damage 10
 DamageVsLiving 10
 DamageVsVehicles 5
+Fire 0
+
+// Explosion
 Explosion 0
 ExplodeOnImpact True
 Fuse 500
-Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Smoke and presentation
-SmokeTime 250
-SmokeParticleType cloud
-SmokeRadius 5
-SmokeEffect 15 25 0
-SmokeEffect 2 25 2
+// Effects
 SmokeTrail True
 TrailParticleType flansmod.fmsmoke
-HasLight False
 FlakParticles 0
+SmokeEffect 15 25 0
+SmokeEffect 2 25 2
+SmokeTime 250
+SmokeRadius 5
+SmokeParticleType cloud

@@ -1,39 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name German Pz.Grenadier Leibermuster Jacket
 ShortName 44_GermanPzGrenadierLeibermusterChest
-
-
-// Visuals
-ModelScale 1
-Icon 44_GermanPzGrenadierLeibermusterChest
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Body
 
-
-//Visuals
+// Rendering
+Icon 44_GermanPzGrenadierLeibermusterChest
 Model W44.GermanPzGrenadierChest
+ModelScale 1
 ArmorTexture Skin44_PzGrenadierLeibermuster
 
-
-//Armor Settings
-Defence 0.15
-
-//Helmet Settings
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
 SmokeProtection false
-
-//------------------------------------------------

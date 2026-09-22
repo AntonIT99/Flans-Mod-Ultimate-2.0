@@ -1,39 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name German Sumpftarn-M43 Camo Smock
 ShortName 44_GermanSumpftarnM43CamoSmock
-
-
-// Visuals
-ModelScale 1
-Icon 44_GermanSumpftarnM43CamoSmock
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Body
 
-
-//Visuals
+// Rendering
+Icon 44_GermanSumpftarnM43CamoSmock
 Model W44.GermanCamoSmock
+ModelScale 1
 ArmorTexture Skin44_SumpftarnCamoSmock
 
-
-//Armor Settings
-Defence 0.15
-
-//Helmet Settings
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
 SmokeProtection false
-
-//------------------------------------------------

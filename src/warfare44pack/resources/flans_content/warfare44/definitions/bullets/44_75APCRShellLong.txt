@@ -1,42 +1,52 @@
+// Identity
 Name 75mm Pzgr. 40/42 APCR (KwK 42)
 ShortName 44_75APCRShellLong
+Description Tungsten-cored armour-piercing shot for the Panther 7.5 cm KwK 42
+
+// Rendering
+Icon 44_75apshelllong
 Model W44.W44ShellMedium
 Texture Skin44_W44Shell_Orange
 Colour 255 255 255
-Icon 44_75apshelllong
-RoundsPerItem 1
+HasLight True
+
+// Recipe and inventory
 MaxStackSize 2
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 1120
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 194
+BreaksGlass True
+
+// Damage
+Mass 4750
 Damage 1
 DamageVsLiving 125
 DamageVsVehicles 1398
+Fire 0
+
+// Explosion
 Explosion 1
 ExplodeOnImpact True
 Fuse 200
-FlakParticles 0
-Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-HitSound
-Penetrates False
-SmokeTrail True
-Bomb False
-Shell True
-WeaponType Shell
-
-Mass 4750
-MuzzleVelocity 1120
-FallSpeed 1
-PenetrationAt100m 194
 HasSubmunitions false
 
-ExplodeParticles 8
+// Effects
+SmokeTrail True
 TrailParticleType flansmod.fmtracer
-
-HasLight True
-
-HasLight True
-
+FlakParticles 0
+ExplodeParticles 8
 FlareParticleCount 4
 DebrisParticleCount 4
 
-Description Tungsten-cored armour-piercing shot for the Panther 7.5 cm KwK 42
+// Sounds
+HitSound

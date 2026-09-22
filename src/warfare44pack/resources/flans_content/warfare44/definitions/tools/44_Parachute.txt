@@ -1,15 +1,20 @@
+// Identity
 Name Parachute
 ShortName 44_Parachute
+
+// Rendering
 Icon 44_Parachute
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-Heal false
-Repair false
-HealAmount 0
-ToolLife 1
-DestroyOnEmpty true
-StackSize 1
-//Parachute bits
-Parachute true
 Model W44.Parachute
 Texture Skin44_Parachute
+
+// Recipe and inventory
+StackSize 1
+ToolLife 1
+DestroyOnEmpty true
+
+// Behaviour
+Parachute true
+Repair false
+Heal false
+HealAmount 0

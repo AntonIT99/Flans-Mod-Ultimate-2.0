@@ -1,38 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name German Sumpftarn-M45 Pants
 ShortName 44_GermanSumpftarnM45Pants
-
-
-// Visuals
-ModelScale 1
-Icon 44_GermanSumpftarnM45Pants
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Pants
 
-
-//Visuals
+// Rendering
+Icon 44_GermanSumpftarnM45Pants
 Model W44.GermanBlumentarn43Pants
+ModelScale 1
 ArmorTexture Skin44_GermanBlumentarn43
 
-
-//Armor Settings
-Defence 0.1
-//Helmet Settings
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
 SmokeProtection false
-
-//------------------------------------------------

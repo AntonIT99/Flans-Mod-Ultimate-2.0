@@ -1,56 +1,50 @@
-////Name and icon
+// Identity
 Name Medical Kit
 ShortName 44_MedicalKit
+
+// Rendering
 Icon 44_MedicalKit
-//Colour in Red, Green, Blue, each going up to 255
-Colour 255 255 255
-////Item and recipe
-StackSize 1
-////Visuals
 Model W44.MedicalKit
 ModelScale 1.0
 Texture Skin44_MedicalKit
-TrailParticles false
-//TrailParticleType <particleType>
-ExplodeParticles 0
-//ExplodeParticleType <particleType>
-SmokeTime 0
-//SmokeParticleType <particleType>
-SpinWhenThrown false
-////Throwing
-ThrowDelay 10
-//ThrowSound <sound>
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
-Bounciness 0.0
-HitEntityDamage 0
+Colour 255 255 255
+
+// Inventory
+StackSize 1
+NumUses 2
+DeployableBag True
+DespawnTime 12000
+
+// Throwing and physics
 ThrowSpeed 0.5
+ThrowDelay 10
 FallSpeed 1
-BreaksGlass false
-PenetratesBlocks false
+Bounciness 0.0
 HitBoxSize 0.5
+SpinWhenThrown false
 Sticky false
-//BounceSound <sound>
-////Detonation conditions
-VehicleProximityTrigger -1.0
-LivingProximityTrigger -1.0
+PenetratesBlocks false
+BreaksGlass false
+
+// Damage and healing
+HitEntityDamage 0
+MeleeDamage 2
+HealAmount 10
+
+// Detonation and explosion
 Fuse 0
+PrimeDelay 20
+DetonateOnImpact false
 DetonateWhenShot false
 Remote false
-DespawnTime 12000
-PrimeDelay 20
-////Detonation
-FireRadius 0.0
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+FragType DEFAULT
 ExplosionRadius 0.0
 ExplosionBreaksBlocks false
-//DropItemOnDetonate <itemID.damage>
-//Detonate Sound <sound>
-////Misc
-MeleeDamage 2
-//Deployable Stuff
-DeployableBag True
-NumUses 2
-HealAmount 10
-//PotionEffect ...
-//NumClips 0
+FireRadius 0.0
+
+// Effects
+TrailParticles false
+ExplodeParticles 0
+SmokeTime 0

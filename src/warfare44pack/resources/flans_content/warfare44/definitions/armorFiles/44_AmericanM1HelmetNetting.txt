@@ -1,39 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name American M1 Helmet (Netting)
 ShortName 44_AmericanM1HelmetNetting
-
-
-// Visuals
-ModelScale 1
-Icon 44_AmericanM1HelmetNetting
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Helmet
 
-
-//Visuals
+// Rendering
+Icon 44_AmericanM1HelmetNetting
 Model W44.AmericanM1HelmetNetting
+ModelScale 1
 ArmorTexture Skin44_AmericanM1941CombatFieldUniform
 
-
-//Armor Settings
-Defence 0.15
-
-//Helmet Settings
+// Protection
+ArmorPoints 2
+Defence 0.04
+BulletDefence 0.02
+Toughness 0
+PenetrationResistance 1.25
 SmokeProtection false
-
-//------------------------------------------------

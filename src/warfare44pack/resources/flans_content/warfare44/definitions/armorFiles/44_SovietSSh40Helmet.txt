@@ -1,38 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Soviet Summer Obr43 Helmet
 ShortName 44_SovietSummerObr43Helmet
-
-
-// Visuals
-ModelScale 1
-Icon 44_SovietSummerObr43Helmet
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Helmet
 
-
-//Visuals
+// Rendering
+Icon 44_SovietSummerObr43Helmet
 Model W44.SovietSummerObr43Helmet
+ModelScale 1
 ArmorTexture Skin44_SovietSummerObr43
 
-
-//Armor Settings
-Defence 0.15
-//Helmet Settings
+// Protection
+ArmorPoints 2
+Defence 0.04
+BulletDefence 0.02
+Toughness 0
+PenetrationResistance 1.25
 SmokeProtection false
-
-//------------------------------------------------

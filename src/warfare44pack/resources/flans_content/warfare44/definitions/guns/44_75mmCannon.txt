@@ -1,33 +1,39 @@
+// Identity
 Name 75mm Cannon
 ShortName 44_75mmCannon
-//The ammo this gun uses (shortName)
+Description Tank Cannon - Vehicle Part
+
+// Rendering
+Icon 44_75mmCannon
+Colour 255 255 255
+
+// Ammunition
 Ammo 44_75APShell
 Ammo 44_MediumHEShell
-Icon 44_75mmCannon
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 200
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 1
-//Damage in half hearts
-Damage 1
-//The higher this value, the more the bullets spread
-Accuracy 3
-//Time in ticks between rounds
-ShootDelay 168
-ShootSound 75mmShoot
-//The length of the sound. 0 for a single shot sound. Other values are for looping sounds
-SoundLength 0
-DistortSound True
-ReloadSound Mp40Reload
-Mode SemiAuto
-Scope None
-Deployable false
-BulletSpeed 12.0
-add these lines: usableByMechas false
-UsableByMechas false
-UsableByPlayers false
-usableByPlayers false
 
-Description Tank Cannon - Vehicle Part
+// Handling
+Mode SemiAuto
+Deployable false
+UsableByPlayers false
+UsableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 20.0
+ReloadTime 200
+
+// Ballistics
+MuzzleVelocity 618.0
+Dispersion 0.2
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound 75mmShoot
+DistortSound True
+SoundLength 0
+ReloadSound Mp40Reload

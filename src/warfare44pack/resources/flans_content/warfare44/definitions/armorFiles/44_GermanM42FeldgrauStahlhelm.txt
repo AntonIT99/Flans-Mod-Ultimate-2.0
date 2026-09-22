@@ -1,39 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name German M42 Feldgrau Stahlhelm
 ShortName 44_GermanM42FeldgrauStahlhelm
-
-
-// Visuals
-ModelScale 1
-Icon 44_GermanM42FeldgrauStahlhelm
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Helmet
 
-
-//Visuals
+// Rendering
+Icon 44_GermanM42FeldgrauStahlhelm
 Model W44.GermanM42Stahlhelm
+ModelScale 1
 ArmorTexture Skin44_PzGrenadierFeldgrau
 
-
-//Armor Settings
-Defence 0.15
-
-//Helmet Settings
+// Protection
+ArmorPoints 2
+Defence 0.04
+BulletDefence 0.02
+Toughness 0
+PenetrationResistance 1.25
 SmokeProtection false
-
-//------------------------------------------------

@@ -1,41 +1,52 @@
+// Identity
 Name 75mm M66 HEAT (M2/M3 Howitzer)
 ShortName 44_75HEATShellShort
+Description Shaped-charge shell for the 75 mm M2/M3 howitzer
+
+// Rendering
+Icon 44_mediumheshell
 Model W44.W44ShellMedium
 Texture Skin44_W44Shell_Orange
 Colour 255 255 255
-Icon 44_mediumheshell
-RoundsPerItem 1
+HasLight True
+
+// Recipe and inventory
 MaxStackSize 3
-Damage 1
-DamageVsLiving 75
-DamageVsVehicles 1300
-Explosion 4
-ExplodeOnImpact True
-Fuse 500
-FlakParticles 0
-Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-HitSound
-Penetrates False
-SmokeTrail True
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
 Bomb False
 Shell True
 
-WeaponType Shell
-
-Mass 6000
+// Ballistics
 MuzzleVelocity 304
 FallSpeed 1
-ExplosiveMassTNTg 548
+HitBoxSize 1.0
+Penetrates False
 PenetrationAt100m 89
+BreaksGlass True
 
-ExplodeParticles 10
+// Damage
+Mass 6000
+Damage 1
+DamageVsLiving 75
+DamageVsVehicles 1300
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 548
+Explosion 4
+ExplodeOnImpact True
+Fuse 500
+
+// Effects
+SmokeTrail True
 TrailParticleType flansmod.fmflame
-
-HasLight True
-
+FlakParticles 0
+ExplodeParticles 10
 FlareParticleCount 8
 DebrisParticleCount 4
 
-Description Shaped-charge shell for the 75 mm M2/M3 howitzer
+// Sounds
+HitSound

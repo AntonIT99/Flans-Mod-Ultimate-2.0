@@ -1,43 +1,45 @@
+// Identity
 Name PIAT
 ShortName 44_PIAT
-//The ammo this gun uses (shortName)
-Ammo 44_PIATAmmo
-Icon 44_PIAT
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 90
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-//Damage in half hearts
-Damage 1
-//The higher this value, the more the bullets spread
-Accuracy 4
-//Time in ticks between rounds
-ShootDelay 8
-ShootSound MortarShoot
-ReloadSound PanzerschreckReload
-Mode SemiAuto
-Scope None
-Deployable False
-DeployedModel None
-Model W44.PIAT
-Texture Skin44_PIAT
-//Modifiers
-MoveSpeedModifier 0.55
-KnockbackModifier 0
-ModelScale 0.4
-
-BulletSpeed 2
-
-//Recoil
-Recoil 7
-
 Description British AT Rocket Launcher
 
-ShowAccuracy true
-ShowReloadTime true
-DistortSound False
-ReloadSoundRange 5
-GunSoundRange 400
+// Rendering
+Icon 44_PIAT
+Model W44.PIAT
+ModelScale 0.4
+Texture Skin44_PIAT
+Colour 255 255 255
+DeployedModel None
 
-//Server Stuff
+// Ammunition
+Ammo 44_PIATAmmo
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.55
+KnockbackModifier 0
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 8.0
+ReloadTime 90
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 80.0
+Dispersion 2.4
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 7
+
+// Sounds
+ShootSound MortarShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound PanzerschreckReload
+ReloadSoundRange 5

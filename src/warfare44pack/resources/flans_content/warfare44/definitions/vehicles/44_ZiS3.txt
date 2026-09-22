@@ -1,74 +1,57 @@
-//Naming
+// Identity
 Name ZiS-3 [76mm]
 ShortName 44_ZiS3
-//Visuals
+Description Soviet Field Gun__Uses : 76mm AP Tank Shell_Medium Cal. HE Tank Shell __Year Introduced : 1941
+
+// Rendering
 Icon 44_ZiS3
 Model W44.ZiS3
+ModelScale 1
 Texture Skin44_ZiS23
-//Third Person Camera Distance
 CameraDistance 7.5
-//Throttle
+
+// Recipe and inventory
+AddRecipeParts core 1 44_Tank_Barrel 1 44_Gun_Shield 2 44_Car_Wheel
+CargoSlots 0
+ShellSlots 5
+FuelTankSize 2000
+
+// Paintjobs
+AddDye 3 gray
+
+// Real-world specifications
+RealMassKg 1116
+
+// Movement
+Tank true
+FourWheelDrive true
 MaxThrottle 0
 MaxNegativeThrottle 0
-//Steering modifiers
 TurnLeftSpeed 0
 TurnRightSpeed 0
-//For calculating whether wheels are on the ground or not for driving
+
+// Wheels and tracks
 WheelRadius 1.0
-//Wheel positions for collision handling. Tanks still have 4 wheels, they are just the corner ones.
 WheelPosition 0 -32 -10 -18
 WheelPosition 1 -32 -10 18
 WheelPosition 2 20 -10 18
 WheelPosition 3 20 -10 -18
 WheelSpringStrength 0.5
-//If true, then all wheels will apply drive forces
-FourWheelDrive true
-//Tank mode activate
-Tank true
-//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
-FuelTankSize 2000
-//Inventory Slots
-CargoSlots 0
-ShellSlots 5
+
+// Weapons
+ReadWeaponsFromGunTypes true
+ShootDelayPrimarySeconds 5
+ShootDelay 1
+DamageModifierPrimary 1
+BulletSpread 1
+BulletSpeed 8
+BulletDetection 7
 AllowAllAmmo false
-//Driver and passenger positions
-Driver 0 -8 0 -16 16 -4 22
-RotatedDriverOffset -19 0 -6
-Passengers 0
-//Delays are in ticks or 1/20ths of seconds
 AddAmmo 44_76APShell
 AddAmmo 44_MediumHEShell
 AddAmmo 44_76APCRShell
 AddAmmo 44_76HEATShell
-AllowAllAmmo false
-ShootDelay 1
-ShellDelay 100
-
-VehicleGunReloadTick 40
-ShootReloadSound Breach
-//Sounds
-StartSound
-StartSoundLength 0
-EngineSound
-EngineSoundLength 0
-ShootSoundPrimary Shoot_76mmUSSR
-DamageModifierPrimary 1
-//Recipe
-//Each section of the plane may have many parts
-//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
-//rightWing, nose, turret, coreWheel, core
-AddRecipeParts core 1 44_Tank_Barrel 1 44_Gun_Shield 2 44_Car_Wheel
-//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
-AddDye 3 gray
-//Health and collision
-SetupPart core 300 -40 -8 -18 60 24 36
-BulletDetection 7
-ModelScale 1
-Description Soviet Field Gun__Uses : 76mm AP Tank Shell_Medium Cal. HE Tank Shell __Year Introduced : 1941
-
-//Barrel
 BarrelPosition 62 6 0
-
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -120,28 +103,40 @@ ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 -0.26
 ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
 ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
 
-//Turret traverse speeds, yaw/pitch/z (z is unused, set to 0)
-DriverAimSpeed 0.4f 0.3f 0f
-
-//Set to true to adjust turret yaw before pitch
-DriverYawBeforePitch true
-
-//Turret traverse sounds
-
-//Enables traverse sounds for driver turret
-DriverTraverseSounds false
-
-PitchSound TurretTraverse1
-PitchSoundLength 61
-
-YawSound TurretTraverse2
-YawSoundLength 38
-
-BulletSpeed 8
-BulletSpread 1
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 5
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
 IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 300 -40 -8 -18 60 24 36
+
+// Seats
+Driver 0 -8 0 -16 16 -4 22
+Passengers 0
+RotatedDriverOffset -19 0 -6
+DriverAimSpeed 0.4f 0.3f 0f
+DriverYawBeforePitch true
 
 // Optics
 hasScope true
 Gunsight warfare44_t34
 gunsightZoom 3.5
+
+// Sounds
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+YawSound TurretTraverse2
+YawSoundLength 38
+PitchSound TurretTraverse1
+PitchSoundLength 61
+DriverTraverseSounds false
+ShootSoundPrimary Shoot_76mmUSSR
+ShootReloadSound Breach
+VehicleGunReloadTick 40

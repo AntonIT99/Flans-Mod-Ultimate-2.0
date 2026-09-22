@@ -1,39 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name German M43 Feldgrau Hat
 ShortName 44_GermanM43FeldgrauHat
-
-
-// Visuals
-ModelScale 1
-Icon 44_GermanM43FeldgrauHat
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Helmet
 
-
-//Visuals
+// Rendering
+Icon 44_GermanM43FeldgrauHat
 Model W44.GermanM43Hat
+ModelScale 1
 ArmorTexture Skin44_GermanM43FeldgrauHat
 
-
-//Armor Settings
-Defence 0.1
-
-//Helmet Settings
+// Protection
+ArmorPoints 0
+Defence 0.01
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 1.00
 SmokeProtection false
-
-//------------------------------------------------

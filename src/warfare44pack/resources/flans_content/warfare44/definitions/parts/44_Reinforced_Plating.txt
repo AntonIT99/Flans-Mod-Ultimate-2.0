@@ -1,8 +1,11 @@
+// Identity
 Name Reinforced Plating
 ShortName 44_Reinforced_Plating
-Icon 44_Reinforced_Plating
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Rendering
+Icon 44_Reinforced_Plating
+Colour 255 255 255
+
+// Recipe and inventory
 StackSize 12

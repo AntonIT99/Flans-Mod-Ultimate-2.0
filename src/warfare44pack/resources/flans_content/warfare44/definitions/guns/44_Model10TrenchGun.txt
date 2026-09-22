@@ -1,74 +1,67 @@
+// Identity
 Name Model10 TrenchGun
 ShortName 44_Model10TrenchGun
-//The ammo this gun uses (shortName)
-Ammo 44_Model10TrenchGunAmmo
+Description American Pump Shotgun
+
+// Rendering
 Icon 44_Model10TrenchGun
-//Colour in Red, Green, Blue, each going up to 255.
+Model W44.Model10TrenchGun
+ModelScale 0.25
+Texture Skin44_Model10TrenchGun
 Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 93
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-//Number of bullet entities to create, useful for shotguns, defaults to 1
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Model10TrenchGunAmmo
 NumBullets 5
-//Damage in half hearts
-Damage 1
-//The higher this value, the more the bullets spread
-Accuracy 8
-//Time in ticks between rounds
-ShootDelay 20
-ShootSound Model10TrenchGunShoot
-ReloadSound Model10TrenchGunReload
+
+// Handling
 Mode SemiAuto
 OneHanded False
-//Bullet speed, default 3.0
-BulletSpeed 12.0
-//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Deployable False
+MoveSpeedModifier 0.85
 Scope None
 ZoomLevel 1.0
 FOVZoomLevel 1.25
-//Deployable Settings
-Deployable False
-DeployedModel None
-//Model settings
-Model W44.Model10TrenchGun
-Texture Skin44_Model10TrenchGun
-ModelScale 0.25
-//Attachment Settings
-AllowAllAttachments false
-//List here all the attachments allowed on this gun by shortName and separated by spaces
-AllowAttachments 44_OpticalSight 44_PaddedStock 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
-AllowBarrelAttachments true
-AllowScopeAttachments true
-AllowStockAttachments true
-AllowGripAttachments false
-AllowGadgetAttachments true
 
-NumGenericAttachmentSlots 1
-EmptyClickSound emptyclick
+// Fire rate and reload
+RoundsPerMin 90.0
+ReloadTime 93
+ShowReloadTime true
 
-MoveSpeedModifier 0.85
+// Ballistics
+MuzzleVelocity 400.0
+Dispersion 1.2
+ShowAccuracy true
 
-//Recoil
+// Damage
+Damage 1
+
+// Recoil
 Recoil 6
 RandomRecoilRange 5
 RandomRecoilYawRange 0.75
 DecreaseRecoil 3.5
 DecreaseRecoilYaw 2.0
 
-Description American Pump Shotgun
+// Attachments
+AllowAllAttachments false
+AllowAttachments 44_OpticalSight 44_PaddedStock 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
 
-ShowAccuracy true
-ShowReloadTime true
+// Sounds
+ShootSound Model10TrenchGunShoot
 DistortSound False
-ReloadSoundRange 5
 GunSoundRange 400
-
-//Server Stuff
-
-//Bullet Casing
-CasingModel W44.W44BulletCasing
-CasingTexture Skin44_BulletCasing
-
-//Muzzle Flashes
-FlashModel W44.W44MuzzleFlash
-FlashTexture Skin44_MuzzleFlash1
+ReloadSound Model10TrenchGunReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

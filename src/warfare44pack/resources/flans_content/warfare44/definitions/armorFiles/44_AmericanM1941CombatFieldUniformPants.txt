@@ -1,39 +1,18 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name American M-1941 Combat Field Uniform Pants
 ShortName 44_AmericanM1941CombatFieldUniformPants
-
-
-// Visuals
-ModelScale 1
-Icon 44_AmericanM1941CombatFieldUniformPants
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
 Type Pants
 
-
-//Visuals
+// Rendering
+Icon 44_AmericanM1941CombatFieldUniformPants
 Model W44.AmericanM1941CombatFieldUniformPants
+ModelScale 1
 ArmorTexture Skin44_AmericanM1941CombatFieldUniform
 
-
-//Armor Settings
-Defence 0.1
-
-//Helmet Settings
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
 SmokeProtection false
-
-//------------------------------------------------

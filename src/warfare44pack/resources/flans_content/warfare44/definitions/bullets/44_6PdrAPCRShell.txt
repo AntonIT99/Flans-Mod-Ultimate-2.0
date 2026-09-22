@@ -1,40 +1,50 @@
+// Identity
 Name 6-pdr Shot Mk 1T APCR (L/50)
 ShortName 44_6PdrAPCRShell
+Description Tungsten-cored armour-piercing shot for the 6-pdr 7 cwt Mk V
+
+// Rendering
+Icon 44_57apshell
 Model Bullet
 Colour 255 255 255
-Icon 44_57apshell
-RoundsPerItem 1
+HasLight True
+
+// Recipe and inventory
 MaxStackSize 4
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 1120
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 110
+BreaksGlass True
+
+// Damage
+Mass 1930
 Damage 1
 DamageVsLiving 100
 DamageVsVehicles 550
+Fire 0
+
+// Explosion
 Explosion 1
 ExplodeOnImpact True
 Fuse 200
-FlakParticles 0
-Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-HitSound
-Penetrates False
+
+// Effects
 SmokeTrail True
-Bomb False
-Shell True
-WeaponType Shell
-
-Mass 1930
-MuzzleVelocity 1120
-FallSpeed 1
-PenetrationAt100m 110
-
-ExplodeParticles 7
 TrailParticleType flansmod.fmtracer
-
-HasLight True
-
-HasLight True
-
+FlakParticles 0
+ExplodeParticles 7
 FlareParticleCount 3
 DebrisParticleCount 2
 
-Description Tungsten-cored armour-piercing shot for the 6-pdr 7 cwt Mk V
+// Sounds
+HitSound

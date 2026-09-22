@@ -1,15 +1,19 @@
+// Identity
 Name W44 Uniform Box
 ShortName 44_UniformBox
+
+// Rendering
 TopTexture 44_WeaponBoxTop
 SideTexture 44_UniformBox
 BottomTexture 44_WeaponBoxBottom
+
+// Recipe
 Recipe I ingotIron L log C cloth
 LLL
 ICI
 LLL
 
-//AddArmour
-////American
+// Armour sets
 AddArmour American1941 American Uniform - 1941
 44_AmericanM1HelmetNoNetting ingotIron 5
 44_AmericanM1941CombatFieldUniformChest cloth.4 8 44_AmericanFlag 1
@@ -40,7 +44,6 @@ AddArmour AmericanMPOfficer American MP Officer
 44_AmericanM1943CombatFieldUniformPants cloth.13 7
 44_AmericanBoots leather 4
 
-////German
 AddArmour GermanFeldgrau1 German Uniform - Feldgrau (Helmet)
 44_GermanM42FeldgrauStahlhelm ingotIron 5
 44_GermanPzGrenadierFeldgrauChest cloth.7 8 44_GermanFlag 1
@@ -113,22 +116,18 @@ AddArmour GermanFallschirmjager3 German Uniform - Fallschirmjager (Splittermuste
 44_GermanFeldgrauPants cloth.7 7
 44_GermanBoots leather 4
 
-///Soviet
 AddArmour SovietObr43 Soviet Uniform - Obr.43
 44_SovietSummerObr43Helmet ingotIron 5
 44_SovietSummerObr43Chest cloth.4 8 44_SovietFlag 1
 44_SovietSummerObr43Pants cloth.4 7
 44_SovietSummerObr43Boots leather 4
 
-///British
 AddArmour British40Pattern British Uniform - 40 Pattern
 44_BritishBrodieHelmet ingotIron 5
 44_British40PatternChest cloth.12 8 44_BritishFlag 1
 44_British40PatternPants cloth.12 7
 44_BritishBoots leather 4
 
-
-///Japan
 AddArmour JapaneseType98Khaki Japanese Uniform - Type 98 Chest (Khaki)
 44_JapaneseType3FieldCap cloth.4 4
 44_JapaneseType98ChestKhaki cloth.4 8 44_JapaneseFlag 1

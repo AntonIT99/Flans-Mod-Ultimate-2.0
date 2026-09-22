@@ -1,8 +1,11 @@
+// Identity
 Name Metal Tube
 ShortName 44_Metal_Tube
-Icon 44_Metal_Tube
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Rendering
+Icon 44_Metal_Tube
+Colour 255 255 255
+
+// Recipe and inventory
 StackSize 64

@@ -1,41 +1,51 @@
+// Identity
 Name 90mm T44 HVAP (T15E1)
 ShortName 44_90HVAPShellLong
+Description Hyper-velocity armour-piercing shot for the Super Pershing 90 mm T15E1
+
+// Rendering
+Icon 44_90apshell
 Model W44.W44ShellLarge
 Texture Skin44_W44Shell_Orange
 Colour 255 255 255
-Icon 44_90apshell
-RoundsPerItem 1
+HasLight True
+
+// Recipe and inventory
 MaxStackSize 3
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 1143
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 330
+BreaksGlass True
+
+// Damage
+Mass 7600
 Damage 1
 DamageVsLiving 175
 DamageVsVehicles 1875
+Fire 0
+
+// Explosion
 Explosion 1
 ExplodeOnImpact True
 Fuse 200
-FlakParticles 0
-Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-HitSound
-Penetrates False
+
+// Effects
 SmokeTrail True
-Bomb False
-Shell True
-WeaponType Shell
-
-Mass 7600
-MuzzleVelocity 1143
-FallSpeed 1
-PenetrationAt100m 330
-
-ExplodeParticles 10
 TrailParticleType flansmod.fmtracer
-
-HasLight True
-
-HasLight True
-
+FlakParticles 0
+ExplodeParticles 10
 FlareParticleCount 7
 DebrisParticleCount 6
 
-Description Hyper-velocity armour-piercing shot for the Super Pershing 90 mm T15E1
+// Sounds
+HitSound
