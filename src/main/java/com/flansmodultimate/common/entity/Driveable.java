@@ -3571,7 +3571,11 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return;
         }
         if (!seat.isDriverSeat())
+        {
+            if (seat.isInputRising(DriveableInput.MENU))
+                openPassengerGunInventoryMenu(player, seat);
             return;
+        }
 
         int sanitized = DriveableInput.sanitize(mask);
         previousInputMask = getInputMask();
@@ -4479,7 +4483,27 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         NetworkHooks.openScreen(player,
             new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page),
                 ModUtils.getDisplayName(configType)),
-            buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()));
+            buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()).writeVarInt(-1));
+        return true;
+    }
+
+    /** Opens only the ammunition slot belonging to the passenger's current gunner seat. */
+    public boolean openPassengerGunInventoryMenu(@NotNull ServerPlayer player, @NotNull Seat seat)
+    {
+        if (!canPlayerAccessInventory(player) || driveableData == null || configType == null
+            || seat.getDriveable() != this || seat.getRiddenByEntity() != player || seat.isDriverSeat())
+            return false;
+        SeatInfo info = configType.getSeat(seat.getSeatIndex());
+        if (info == null || info.getGunType() == null || info.getGunnerID() < 0
+            || info.getGunnerID() >= driveableData.getNumAmmoSlots())
+            return false;
+
+        int seatIndex = seat.getSeatIndex();
+        NetworkHooks.openScreen(player,
+            new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId,
+                inventory, this, DriveableInventoryMenu.Page.GUNS, seatIndex), ModUtils.getDisplayName(configType)),
+            buffer -> buffer.writeVarInt(getId()).writeVarInt(DriveableInventoryMenu.Page.GUNS.ordinal())
+                .writeVarInt(seatIndex));
         return true;
     }
 
@@ -4764,7 +4788,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return LegacyDriveableCoordinates.modelLocalToWorldDirection(local, yaw, pitch, roll);
     }
 
-    private static Vec3 localDirectionToWorld(@NotNull Vec3 local, float yaw, float pitch, float roll)
+    protected static Vec3 localDirectionToWorld(@NotNull Vec3 local, float yaw, float pitch, float roll)
     {
         Vec3 forward = ModUtils.getDirectionFromPitchAndYaw(pitch, yaw).normalize();
         Vec3 horizontalRight = ModUtils.getDirectionFromPitchAndYaw(0F, yaw - 90F).normalize();
@@ -4820,6 +4844,13 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             : movementClamp(configType.getResolvedPhysics());
         velocity = new Vec3(Mth.clamp(velocity.x, -maximum, maximum), Mth.clamp(velocity.y, -maximum, maximum), Mth.clamp(velocity.z, -maximum, maximum));
         setDeltaMovement(velocity);
+        // Vanilla only steps a collision body that rests on the ground itself,
+        // which one held clear of the terrain by its suspension never does. The
+        // wheel probes alone lift the hull by the average of all wheels, so a
+        // ledge met by a single wheel at an angle stalled it. Wheels on the
+        // ground are what lets the body step; move() recomputes onGround.
+        if (!onGround() && getStepHeight() > 0F && hasWheelContact() && stepsOnWheelContact())
+            setOnGround(true);
         move(MoverType.SELF, velocity);
         sweepCollisionPointImpacts(velocity);
         handleCollisionConsequences(velocity);
@@ -5052,6 +5083,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected boolean hasWheelContact()
     {
         return groundedWheelCount > 0;
+    }
+
+    /** Whether wheel contact alone lets the collision body step up a ledge. */
+    protected boolean stepsOnWheelContact()
+    {
+        return false;
     }
 
     /** Forgets the last wheel contact sample, for a tick that does not take one. */
@@ -5292,7 +5329,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         return new Vec3(xo, yo, zo).add(localDirectionToWorld(local, prevYaw, prevPitch, prevRoll));
     }
 
-    private void breakCollisionBlock(@NotNull BlockPos pos, double collisionSpeed)
+    protected void breakCollisionBlock(@NotNull BlockPos pos, double collisionSpeed)
     {
         if (!ModCommonConfig.driveableCollisionsBreakBlocks() || !(level() instanceof ServerLevel serverLevel))
             return;

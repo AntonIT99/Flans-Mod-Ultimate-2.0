@@ -85,6 +85,12 @@ public class Vehicle extends Driveable
         return 1D;
     }
 
+    @Override
+    protected boolean stepsOnWheelContact()
+    {
+        return true;
+    }
+
     /** Clearance that places the origin at {@code max(YOffset, -lowest wheel anchor)}. */
     @Override
     protected double wheelGroundClearance()

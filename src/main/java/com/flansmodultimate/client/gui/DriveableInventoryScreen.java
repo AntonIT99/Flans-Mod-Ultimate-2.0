@@ -5,7 +5,6 @@ import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.PilotGun;
-import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
 import com.flansmodultimate.common.guns.EnumFireMode;
@@ -293,7 +292,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         var data = menu.getDriveable().getDriveableData();
         return switch (menu.getPage())
         {
-            case GUNS -> data.getNumAmmoSlots();
+            case GUNS -> menu.getVisibleGunCount();
             case BOMBS -> data.getNumBombSlots();
             case MISSILES -> data.getNumMissileSlots();
             case CARGO -> data.getNumCargoSlots();
@@ -308,20 +307,32 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             return List.of();
         DriveableType type = menu.getDriveable().getConfigType();
         List<GunRow> rows = new ArrayList<>();
-        for (int index = 0; index < type.getPilotGuns().size(); index++)
+        int first = menu.getVisibleGunStart();
+        int end = first + menu.getVisibleGunCount();
+        for (int ammoIndex = first; ammoIndex < end; ammoIndex++)
         {
-            PilotGun pilotGun = type.getPilotGuns().get(index);
-            GunType gun = pilotGun.getType();
-            if (gun != null)
-                rows.add(new GunRow("Driver's gun " + (index + 1), gun, pilotGun));
+            if (ammoIndex < type.getNumPassengerGunners())
+            {
+                int currentAmmoIndex = ammoIndex;
+                type.getSeats().stream()
+                    .filter(seat -> seat != null && seat.getGunnerID() == currentAmmoIndex && seat.getGunType() != null)
+                    .findFirst()
+                    .ifPresent(seat -> {
+                        String name = seat.getGunName().isBlank()
+                            ? "Passenger gun " + (seat.getId() + 1) : seat.getGunName();
+                        rows.add(new GunRow(name, seat.getGunType(), null));
+                    });
+                continue;
+            }
+            int pilotIndex = ammoIndex - type.getNumPassengerGunners();
+            if (pilotIndex >= 0 && pilotIndex < type.getPilotGuns().size())
+            {
+                PilotGun pilotGun = type.getPilotGuns().get(pilotIndex);
+                GunType gun = pilotGun.getType();
+                if (gun != null)
+                    rows.add(new GunRow("Driver's gun " + (pilotIndex + 1), gun, pilotGun));
+            }
         }
-        type.getSeats().stream()
-            .filter(seat -> seat != null && seat.getGunType() != null && seat.getGunnerID() >= 0)
-            .sorted(Comparator.comparingInt(SeatInfo::getGunnerID))
-            .forEach(seat -> {
-                String name = seat.getGunName().isBlank() ? "Passenger gun " + (seat.getId() + 1) : seat.getGunName();
-                rows.add(new GunRow(name, seat.getGunType(), null));
-            });
         return rows;
     }
 
@@ -784,7 +795,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int x = legacyLeft();
         int y = topPos;
         int backY = y + (menu.getPage() == Page.FUEL ? 24 : 5);
-        if (menu.getPage() != Page.MENU && menu.getPage() != Page.REPAIR
+        if (!menu.isPassengerGunMenu() && menu.getPage() != Page.MENU && menu.getPage() != Page.REPAIR
             && mouseX > x + 161 && mouseX < x + 171 && mouseY > backY && mouseY < backY + 10)
         {
             selectPage(Page.MENU);

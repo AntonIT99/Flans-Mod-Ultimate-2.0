@@ -3,7 +3,6 @@ General:
 - Implement TaP Flan's Mod Features
 
 Content Packs:
-- run flans-category-research to add missing fields to categories
 - Create a skill and add particles, sounds, visual affects to content packs just like Warfare 44:
 visuals for shootables, harmonize particles and sounds for vehicles / planes
 - run content-pack-definition-sync:
@@ -11,13 +10,17 @@ Check if it rewrites all packs with the new gun and vehicle systems using catego
 and reorganize parameters, remove one parameter comments, make groups
 - Fix shooting points on vehicles based on new debug commands
 Official WW2
+- Better engine and shoot sounds
 - Add muzzle flashes just like w44
 - Fix Scope Attachment Points -> to check
 - Fix Barrel Attachment and Muzzle Flash -> to check
 Manus:
+- Better engine and shoot sounds
 - Check deployable guns
 
+
 Feature Ideas:
+- Button in UI for creative mode to load ammo automatically into driveable
 - Continue improving rendering performance
 - Muzzle Flashes for deployed guns
 - Centralize all the gravity effects in a usable API for other mods. Also provide a command to test other gravities.

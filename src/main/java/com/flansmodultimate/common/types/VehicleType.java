@@ -158,6 +158,13 @@ public class VehicleType extends DriveableType
             false, useRealisticAcceleration);
     }
 
+    /** Anything that drives on land clears at least a one-block ledge; boats keep what they declare. */
+    @Override
+    public float getWheelStepHeight()
+    {
+        return placeableOnLand ? Math.max(1F, wheelStepHeight) : wheelStepHeight;
+    }
+
     private void readSmokePoints(String key, TypeFile file)
     {
         for (String[] values : readValuesInLines(key, file).orElse(List.of()))

@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableCrashExplosion;
 import com.flansmodultimate.common.driveables.DriveableExplosion;
@@ -24,8 +25,10 @@ import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
 import com.flansmodultimate.common.driveables.physics.HelicopterPhysics;
 import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.RotorStrikePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
@@ -36,15 +39,26 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** Server-authoritative flight runtime supporting fixed wing, helicopter, VTOL and six-DOF craft. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -73,6 +87,10 @@ public class Plane extends Driveable
     private static final int SHOOT_DOWN_TICK_CAP = 1500;
     /** How far the shoot-down fire and explosions are sent, as in 1.7.10. */
     private static final double SHOOT_DOWN_EFFECT_RANGE = 150D;
+    /** Most blocks a rotor strike examines in one tick; a disc buried that deep is already lost. */
+    private static final int MAX_ROTOR_STRIKE_BLOCKS = 64;
+    /** Rotor health lost in one tick above which a strike is loud rather than a rustle of chopped leaves. */
+    private static final float LOUD_ROTOR_STRIKE = 0.1F;
 
     @Getter protected float propellerAngle;
     @Getter protected float prevPropellerAngle;
@@ -417,6 +435,7 @@ public class Plane extends Driveable
                 VehiclePhysicsConstants.PARKED_GROUND_FRICTION_DECELERATION_MS2);
         moveWithCollisions(velocity);
         handleGroundImpact(type, impactVelocity);
+        checkRotorStrike(type);
         if (isEngineActive() && hasWorkingPropeller(type))
             consumeFuel(DriveableControlPhysics.aircraftFuelLoad(getThrottle(), configuredThrottlePower(type),
                 getEngineSpeed()));
@@ -1071,6 +1090,118 @@ public class Plane extends Driveable
         angularYaw *= 0.95F;
         angularPitch *= 0.95F;
         angularRoll *= 0.95F;
+    }
+
+    /**
+     * Strikes a turning main rotor against every block its disc reaches into.
+     *
+     * <p>The {@code blades} part box is the rotor's hitbox, taken as a disc
+     * spanning the box and as thick as the box is tall. Only the hull's compact
+     * entity box collides with terrain, so without this a rotor passes through
+     * hillsides and trees. Unlike the collision point sweep a strike does not
+     * need the airframe to be moving, because the blades are. The consequences
+     * land in the same tick: rotor speed, and with it lift and control
+     * authority, is lost, the airframe is thrown toward the struck side of the
+     * disc and the rotor's momentum spins the fuselage. A hard enough strike
+     * destroys the blades, which removes all lift.
+     */
+    private void checkRotorStrike(@NotNull PlaneType type)
+    {
+        if (!(level() instanceof ServerLevel serverLevel) || destroyed || driveableData == null
+            || getPlaneMode() != EnumPlaneMode.HELI && getPlaneMode() != EnumPlaneMode.VTOL
+            || rotorSpeed < RotorStrikePhysics.MIN_STRIKING_ROTOR_SPEED || rotorEfficiency(type) <= 0F)
+            return;
+        DriveablePart blades = driveableData.getPart(EnumDriveablePart.BLADES);
+        CollisionBox box = blades == null ? null : blades.getBox();
+        if (box == null || blades.isDestroyed() || blades.getMaxHealth() <= 0F)
+            return;
+        double radius = 0.5D * Math.max(box.getWidth(), box.getDepth());
+        if (radius <= 0D)
+            return;
+        double halfThickness = Math.max(RotorStrikePhysics.MIN_HALF_THICKNESS, box.getHeight() * 0.5D);
+        Vector3f centre = box.getCentre();
+        Vec3 hub = localToWorld(centre.x, centre.y, centre.z);
+        Vec3 axis = getUpVector();
+
+        float loss = 0F;
+        Vec3 weightedContact = Vec3.ZERO;
+        Set<BlockPos> struck = new HashSet<>();
+        strikes:
+        for (VoxelShape shape : serverLevel.getBlockCollisions(null,
+            RotorStrikePhysics.discBounds(hub, axis, radius, halfThickness)))
+        {
+            for (AABB solid : shape.toAabbs())
+            {
+                if (struck.size() >= MAX_ROTOR_STRIKE_BLOCKS)
+                    break strikes;
+                if (!RotorStrikePhysics.intersectsDisc(hub, axis, radius, halfThickness, solid))
+                    continue;
+                BlockPos pos = BlockPos.containing(solid.getCenter());
+                if (!struck.add(pos))
+                    continue;
+                BlockState state = serverLevel.getBlockState(pos);
+                float hardness = state.getDestroySpeed(serverLevel, pos);
+                float fraction = RotorStrikePhysics.bladeDamageFraction(hardness, rotorSpeed);
+                if (fraction <= 0F)
+                    continue;
+                loss += fraction;
+                Vec3 contact = solid.getCenter().subtract(hub);
+                weightedContact = weightedContact.add(contact.subtract(axis.scale(contact.dot(axis))).scale(fraction));
+                serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state),
+                    solid.getCenter().x, solid.getCenter().y, solid.getCenter().z, 12, 0.3D, 0.3D, 0.3D, 0.25D);
+                if (RotorStrikePhysics.chops(hardness))
+                    breakCollisionBlock(pos, rotorSpeed);
+            }
+        }
+        if (loss <= 0F)
+            return;
+
+        loss = Math.min(1F, loss);
+        rotorSpeed = RotorStrikePhysics.rotorSpeedAfterStrike(rotorSpeed, loss);
+        kickFromRotorStrike(weightedContact, loss);
+        // The contact drags the airframe as well as the blades.
+        setDeltaMovement(getDeltaMovement().scale(1D - 0.5D * loss));
+        if (loss >= LOUD_ROTOR_STRIKE)
+            serverLevel.playSound(null, hub.x, hub.y, hub.z, SoundEvents.ITEM_BREAK, SoundSource.NEUTRAL,
+                1F + loss * 2F, 0.5F);
+        damagePart(EnumDriveablePart.BLADES, blades.getMaxHealth() * loss, level().damageSources().flyIntoWall());
+    }
+
+    /**
+     * Throws the airframe toward the struck side of the rotor disc, the contact
+     * being the pivot a dynamic rollover turns about, and hands the momentum the
+     * rotor lost to the fuselage as yaw.
+     */
+    private void kickFromRotorStrike(@NotNull Vec3 weightedContact, float loss)
+    {
+        angularYaw = Mth.clamp(angularYaw + RotorStrikePhysics.yawKick(loss), -20F, 20F);
+        if (weightedContact.lengthSqr() < 1.0E-8D)
+            return;
+        Vec3 direction = weightedContact.normalize();
+        float kick = RotorStrikePhysics.attitudeKick(loss);
+        Vec3 forward = new Vec3(1D, 0D, 0D);
+        Vec3 right = new Vec3(0D, 0D, 1D);
+        float pitchShare = (float)direction.dot(localDirectionToWorld(forward));
+        float rollShare = (float)direction.dot(localDirectionToWorld(right));
+        angularPitch = Mth.clamp(angularPitch + loweringRate(forward, true) * pitchShare * kick, -20F, 20F);
+        angularRoll = Mth.clamp(angularRoll + loweringRate(right, false) * rollShare * kick, -20F, 20F);
+    }
+
+    /**
+     * The sign of a pitch or roll rate that lowers the given hull-local
+     * direction, found by trying a small rotation rather than assuming the
+     * handedness of the legacy axes.
+     */
+    private float loweringRate(@NotNull Vec3 local, boolean pitchAxis)
+    {
+        RotatedAxes trial = new RotatedAxes(getYaw(), getPitch(), getRoll());
+        // Mirrors how the flight step applies angularPitch and angularRoll.
+        if (pitchAxis)
+            trial.rotateLocalPitch(1F);
+        else
+            trial.rotateLocalRoll(-1F);
+        double lowered = localDirectionToWorld(local, trial.getYaw(), trial.getPitch(), trial.getRoll()).y;
+        return lowered < localDirectionToWorld(local).y ? 1F : -1F;
     }
 
     private Vec3 sixDofPhysics(PlaneType type)
