@@ -13,6 +13,8 @@ import com.flansmodultimate.apocalyse.common.entity.SkullBossEntity;
 import com.flansmodultimate.apocalyse.common.entity.SkullDroneEntity;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import com.flansmodultimate.apocalyse.common.entity.TeleporterEntity;
+import com.flansmodultimate.apocalyse.common.entity.WorldgenSpawnMarker;
+import com.flansmodultimate.apocalyse.common.world.ApocalypseChunkFeature;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -39,6 +41,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.MapColor;
@@ -78,6 +82,7 @@ public final class ApocalypseContent
     private static final DeferredRegister<FluidType> fluidTypeRegistry = DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, FlansMod.APOCALYPSE_ID);
     private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FlansMod.APOCALYPSE_ID);
     private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Feature<?>> featureRegistry = DeferredRegister.create(ForgeRegistries.FEATURES, FlansMod.APOCALYPSE_ID);
 
     // Fluid Types
     public static final RegistryObject<FluidType> sulphuricAcidFluidType = fluidTypeRegistry.register("sulphuric_acid", () ->
@@ -160,12 +165,24 @@ public final class ApocalypseContent
         BlockEntityType.Builder.of(PowerCubeBlockEntity::new, blockPowerCube.get()).build(null)
     );
 
+    // Worldgen features, placed by the apocalypse biomes and by an overworld biome modifier
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> wastelandFeature = featureRegistry.register("wasteland", () -> new ApocalypseChunkFeature(true));
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> abandonedPortalFeature = featureRegistry.register("abandoned_portal", () -> new ApocalypseChunkFeature(false));
+
     // Entities
     public static final RegistryObject<EntityType<TeleporterEntity>> teleporter = entityRegistry.register("teleporter", () -> EntityType.Builder.of(TeleporterEntity::new, MobCategory.MISC)
         .sized(4.0F, 3.0F)
         .clientTrackingRange(64)
         .updateInterval(10)
         .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "teleporter").toString())
+    );
+    public static final RegistryObject<EntityType<WorldgenSpawnMarker>> worldgenSpawnMarker = entityRegistry.register("worldgen_spawn_marker", () -> EntityType.Builder.<WorldgenSpawnMarker>of(WorldgenSpawnMarker::new, MobCategory.MISC)
+        .sized(0.0F, 0.0F)
+        .clientTrackingRange(0)
+        .updateInterval(20)
+        .noSummon()
+        .fireImmune()
+        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "worldgen_spawn_marker").toString())
     );
     public static final RegistryObject<EntityType<NukeDropEntity>> nukeDrop = entityRegistry.register("nukedrop", () -> EntityType.Builder.of(NukeDropEntity::new, MobCategory.MISC)
         .sized(1.0F, 1.0F)
@@ -223,6 +240,7 @@ public final class ApocalypseContent
         blockEntityRegistry.register(modEventBus);
         itemRegistry.register(modEventBus);
         entityRegistry.register(modEventBus);
+        featureRegistry.register(modEventBus);
     }
 
     private static ForgeFlowingFluid.Properties sulphuricAcidProperties()

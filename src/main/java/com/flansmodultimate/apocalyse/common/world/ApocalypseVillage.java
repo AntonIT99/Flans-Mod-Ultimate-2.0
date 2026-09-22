@@ -5,12 +5,11 @@ import lombok.NoArgsConstructor;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkAccess;
 
 /**
  * The villages that were here before the wasteland was.
@@ -30,6 +29,8 @@ public final class ApocalypseVillage
     private static final int EXTRA_BUILDINGS = 4;
     /** Half-width of the area a village may occupy, in blocks. */
     private static final int VILLAGE_RADIUS = 20;
+    /** Widest a plot can reach from its corner: a seven-block house or field plus a fence post. */
+    private static final int MAX_PLOT_EXTENT = 8;
 
     private static final BlockState WALL = Blocks.COBBLESTONE.defaultBlockState();
     private static final BlockState PATCH = Blocks.OAK_PLANKS.defaultBlockState();
@@ -38,9 +39,8 @@ public final class ApocalypseVillage
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
     /** Builds the village anchored at this chunk, if one is. */
-    public static void generate(ServerLevel level, ChunkAccess chunk)
+    public static void generate(WorldGenLevel level, ChunkPos chunkPos)
     {
-        ChunkPos chunkPos = chunk.getPos();
         if (!isAnchor(level.getSeed(), chunkPos))
             return;
 
@@ -83,12 +83,14 @@ public final class ApocalypseVillage
     }
 
     /** A flat-enough building plot within the village, or null if none was found. */
-    private static BlockPos plotFor(ServerLevel level, BlockPos centre, RandomSource random)
+    private static BlockPos plotFor(WorldGenLevel level, BlockPos centre, RandomSource random)
     {
         for (int attempt = 0; attempt < 12; attempt++)
         {
-            int x = centre.getX() + random.nextInt(VILLAGE_RADIUS * 2 + 1) - VILLAGE_RADIUS;
-            int z = centre.getZ() + random.nextInt(VILLAGE_RADIUS * 2 + 1) - VILLAGE_RADIUS;
+            // The whole plot, not just its corner, stays inside the village radius. That keeps
+            // every block within a chunk of the anchor, the most a worldgen feature may write.
+            int x = centre.getX() + random.nextInt(VILLAGE_RADIUS * 2 + 1 - MAX_PLOT_EXTENT) - VILLAGE_RADIUS;
+            int z = centre.getZ() + random.nextInt(VILLAGE_RADIUS * 2 + 1 - MAX_PLOT_EXTENT) - VILLAGE_RADIUS;
             BlockPos plot = ApocalypseWorldgen.surfacePos(level, x, z);
             // Reject slopes: a ruin half-buried in a cliff reads as a bug, not as a ruin.
             if (Math.abs(plot.getY() - centre.getY()) <= 2)
@@ -98,7 +100,7 @@ public final class ApocalypseVillage
     }
 
     /** A cobblestone well ringed by a gravel apron: the centre every village grew around. */
-    private static void well(ServerLevel level, BlockPos centre)
+    private static void well(WorldGenLevel level, BlockPos centre)
     {
         for (int dx = -2; dx <= 2; dx++)
         {
@@ -106,26 +108,26 @@ public final class ApocalypseVillage
             {
                 BlockPos ground = new BlockPos(centre.getX() + dx, centre.getY() - 1, centre.getZ() + dz);
                 boolean rim = Math.abs(dx) <= 1 && Math.abs(dz) <= 1;
-                level.setBlock(ground, rim ? WALL : PATH, 2);
+                ApocalypseWorldgen.setBlock(level, ground, rim ? WALL : PATH);
                 for (int dy = 0; dy <= 2; dy++)
-                    level.setBlock(ground.above(dy + 1), AIR, 2);
+                    ApocalypseWorldgen.setBlock(level, ground.above(dy + 1), AIR);
             }
         }
 
         // The shaft: two blocks of water below the rim, open to the sky.
-        level.setBlock(centre.below(), Blocks.WATER.defaultBlockState(), 2);
-        level.setBlock(centre.below(2), Blocks.WATER.defaultBlockState(), 2);
-        level.setBlock(centre.below(3), WALL, 2);
+        ApocalypseWorldgen.setBlock(level, centre.below(), Blocks.WATER.defaultBlockState());
+        ApocalypseWorldgen.setBlock(level, centre.below(2), Blocks.WATER.defaultBlockState());
+        ApocalypseWorldgen.setBlock(level, centre.below(3), WALL);
 
         for (int dx = -1; dx <= 1; dx += 2)
         {
             for (int dz = -1; dz <= 1; dz += 2)
-                level.setBlock(centre.offset(dx, 0, dz), Blocks.OAK_FENCE.defaultBlockState(), 2);
+                ApocalypseWorldgen.setBlock(level, centre.offset(dx, 0, dz), Blocks.OAK_FENCE.defaultBlockState());
         }
     }
 
     /** Two gravel lanes meeting at the well, which the plots grow up around. */
-    private static void crossroads(ServerLevel level, BlockPos centre)
+    private static void crossroads(WorldGenLevel level, BlockPos centre)
     {
         for (int offset = -VILLAGE_RADIUS; offset <= VILLAGE_RADIUS; offset++)
         {
@@ -134,17 +136,17 @@ public final class ApocalypseVillage
         }
     }
 
-    private static void layPath(ServerLevel level, int x, int z)
+    private static void layPath(WorldGenLevel level, int x, int z)
     {
         BlockPos surface = ApocalypseWorldgen.surfacePos(level, x, z);
         if (surface.getY() <= level.getMinBuildHeight() + 1)
             return;
-        level.setBlock(surface.below(), PATH, 2);
+        ApocalypseWorldgen.setBlock(level, surface.below(), PATH);
         if (!level.getBlockState(surface).isAir())
-            level.setBlock(surface, AIR, 2);
+            ApocalypseWorldgen.setBlock(level, surface, AIR);
     }
 
-    private static void ruinedHouse(ServerLevel level, RandomSource random, BlockPos origin)
+    private static void ruinedHouse(WorldGenLevel level, RandomSource random, BlockPos origin)
     {
         int width = 5 + random.nextInt(3);
         int depth = 5 + random.nextInt(3);
@@ -156,7 +158,7 @@ public final class ApocalypseVillage
             for (int dz = 0; dz < depth; dz++)
             {
                 BlockPos floor = origin.offset(dx, -1, dz);
-                level.setBlock(floor, random.nextInt(6) == 0 ? PATCH : WALL, 2);
+                ApocalypseWorldgen.setBlock(level, floor, random.nextInt(6) == 0 ? PATCH : WALL);
 
                 boolean edge = dx == 0 || dz == 0 || dx == width - 1 || dz == depth - 1;
                 boolean corner = (dx == 0 || dx == width - 1) && (dz == 0 || dz == depth - 1);
@@ -165,15 +167,15 @@ public final class ApocalypseVillage
                     BlockPos pos = origin.offset(dx, dy, dz);
                     if (!edge)
                     {
-                        level.setBlock(pos, AIR, 2);
+                        ApocalypseWorldgen.setBlock(level, pos, AIR);
                         continue;
                     }
                     // Higher courses have fallen away more than lower ones.
                     boolean standing = corner || random.nextFloat() > 0.15F + 0.2F * dy;
-                    level.setBlock(pos, standing ? (random.nextInt(5) == 0 ? PATCH : WALL) : AIR, 2);
+                    ApocalypseWorldgen.setBlock(level, pos, standing ? (random.nextInt(5) == 0 ? PATCH : WALL) : AIR);
                 }
                 if (corner)
-                    level.setBlock(origin.offset(dx, height - 1, dz), BEAM, 2);
+                    ApocalypseWorldgen.setBlock(level, origin.offset(dx, height - 1, dz), BEAM);
             }
         }
 
@@ -183,7 +185,7 @@ public final class ApocalypseVillage
         furnish(level, random, origin, width, depth);
     }
 
-    private static void cutDoorway(ServerLevel level, BlockPos origin, int width, int depth, Direction facing)
+    private static void cutDoorway(WorldGenLevel level, BlockPos origin, int width, int depth, Direction facing)
     {
         int x = switch (facing)
         {
@@ -197,11 +199,11 @@ public final class ApocalypseVillage
             case SOUTH -> depth - 1;
             default -> depth / 2;
         };
-        level.setBlock(origin.offset(x, 0, z), AIR, 2);
-        level.setBlock(origin.offset(x, 1, z), AIR, 2);
+        ApocalypseWorldgen.setBlock(level, origin.offset(x, 0, z), AIR);
+        ApocalypseWorldgen.setBlock(level, origin.offset(x, 1, z), AIR);
     }
 
-    private static void collapsedRoof(ServerLevel level, RandomSource random, BlockPos origin, int width, int depth, int height)
+    private static void collapsedRoof(WorldGenLevel level, RandomSource random, BlockPos origin, int width, int depth, int height)
     {
         for (int dx = 0; dx < width; dx++)
         {
@@ -209,12 +211,12 @@ public final class ApocalypseVillage
             {
                 if (random.nextFloat() < 0.45F)
                     continue;
-                level.setBlock(origin.offset(dx, height, dz), PATCH, 2);
+                ApocalypseWorldgen.setBlock(level, origin.offset(dx, height, dz), PATCH);
             }
         }
     }
 
-    private static void furnish(ServerLevel level, RandomSource random, BlockPos origin, int width, int depth)
+    private static void furnish(WorldGenLevel level, RandomSource random, BlockPos origin, int width, int depth)
     {
         BlockPos inside = origin.offset(1 + random.nextInt(Math.max(1, width - 2)), 0, 1 + random.nextInt(Math.max(1, depth - 2)));
         if (random.nextInt(3) != 0)
@@ -228,7 +230,7 @@ public final class ApocalypseVillage
     }
 
     /** A plot that was still being worked when everyone left. */
-    private static void field(ServerLevel level, RandomSource random, BlockPos origin)
+    private static void field(WorldGenLevel level, RandomSource random, BlockPos origin)
     {
         int size = 5 + random.nextInt(3);
         for (int dx = 0; dx < size; dx++)
@@ -237,15 +239,15 @@ public final class ApocalypseVillage
             {
                 BlockPos soil = origin.offset(dx, -1, dz);
                 boolean channel = dx == size / 2;
-                level.setBlock(soil, channel ? Blocks.WATER.defaultBlockState()
-                    : random.nextInt(4) == 0 ? Blocks.COARSE_DIRT.defaultBlockState() : Blocks.FARMLAND.defaultBlockState(), 2);
+                ApocalypseWorldgen.setBlock(level, soil, channel ? Blocks.WATER.defaultBlockState()
+                    : random.nextInt(4) == 0 ? Blocks.COARSE_DIRT.defaultBlockState() : Blocks.FARMLAND.defaultBlockState());
                 BlockPos above = origin.offset(dx, 0, dz);
                 if (channel || level.getBlockState(soil).is(Blocks.COARSE_DIRT))
                 {
-                    level.setBlock(above, AIR, 2);
+                    ApocalypseWorldgen.setBlock(level, above, AIR);
                     continue;
                 }
-                level.setBlock(above, random.nextBoolean() ? Blocks.WHEAT.defaultBlockState() : AIR, 2);
+                ApocalypseWorldgen.setBlock(level, above, random.nextBoolean() ? Blocks.WHEAT.defaultBlockState() : AIR);
             }
         }
         for (int dx = -1; dx <= size; dx++)
@@ -260,10 +262,10 @@ public final class ApocalypseVillage
         }
     }
 
-    private static void fencePost(ServerLevel level, BlockPos pos)
+    private static void fencePost(WorldGenLevel level, BlockPos pos)
     {
         if (!level.getBlockState(pos).isAir())
             return;
-        level.setBlock(pos, Blocks.OAK_FENCE.defaultBlockState(), 2);
+        ApocalypseWorldgen.setBlock(level, pos, Blocks.OAK_FENCE.defaultBlockState());
     }
 }

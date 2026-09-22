@@ -4,12 +4,11 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkAccess;
 
 /**
  * The motorway network left over the wasteland.
@@ -43,12 +42,11 @@ public final class ApocalypseRoads
     private static final BlockState KERB = Blocks.SMOOTH_STONE.defaultBlockState();
     private static final BlockState SUPPORT = Blocks.STONE.defaultBlockState();
 
-    public static void generate(ServerLevel level, ChunkAccess chunk)
+    public static void generate(WorldGenLevel level, ChunkPos chunkPos)
     {
         if (DECK_Y <= level.getMinBuildHeight() || DECK_Y >= level.getMaxBuildHeight() - 1)
             return;
 
-        ChunkPos chunkPos = chunk.getPos();
         for (int localX = 0; localX < 16; localX++)
         {
             for (int localZ = 0; localZ < 16; localZ++)
@@ -56,7 +54,7 @@ public final class ApocalypseRoads
         }
     }
 
-    private static void surface(ServerLevel level, int x, int z)
+    private static void surface(WorldGenLevel level, int x, int z)
     {
         Carriageway carriageway = carriagewayAt(x, z);
         if (carriageway == null)
@@ -65,14 +63,14 @@ public final class ApocalypseRoads
         BlockPos deck = new BlockPos(x, DECK_Y, z);
         if (!level.getWorldBorder().isWithinBounds(deck))
             return;
-        level.setBlock(deck, carriageway.surface(), 2);
+        ApocalypseWorldgen.setBlock(level, deck, carriageway.surface());
 
         // Carry the deck down onto the terrain, and cut a clear span above it.
         BlockPos support = deck.below();
         while (support.getY() > carriageway.archHeight() && support.getY() > level.getMinBuildHeight()
             && level.getBlockState(support).isAir())
         {
-            level.setBlock(support, SUPPORT, 2);
+            ApocalypseWorldgen.setBlock(level, support, SUPPORT);
             support = support.below();
         }
 
@@ -80,7 +78,7 @@ public final class ApocalypseRoads
         while (headroom.getY() < carriageway.tunnelHeight() && headroom.getY() < level.getMaxBuildHeight() - 1)
         {
             if (!level.getBlockState(headroom).isAir())
-                level.setBlock(headroom, Blocks.AIR.defaultBlockState(), 2);
+                ApocalypseWorldgen.setBlock(level, headroom, Blocks.AIR.defaultBlockState());
             headroom = headroom.above();
         }
     }

@@ -2,7 +2,7 @@ package com.flansmodultimate.apocalyse.common.world;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
-import com.flansmodultimate.apocalyse.common.util.ApocalypseDriveableHelper;
+import com.flansmodultimate.apocalyse.common.entity.WorldgenSpawnMarker;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.config.ModApocalypseConfig;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -48,6 +49,9 @@ import java.util.Optional;
  * Coordinates are chunk-aligned instead of carrying the old populator's +8 offset, and the fixed
  * 1.12.2 heights (Y=99 labs, Y=108 runways) are replaced by the noise surface at the structure's
  * centre because the modern terrain does not share the old height profile.</p>
+ *
+ * <p>Everything here runs from {@link ApocalypseChunkFeature} during worldgen, apart from the
+ * portal cache, which is placed once the portal itself exists on the server thread.</p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseStructures
@@ -80,7 +84,7 @@ public final class ApocalypseStructures
     // Research lab: a 3x3-chunk, eight-floor complex (1.12.2 WorldGenResearchLab)
     // ---------------------------------------------------------------------------------------------
 
-    public static void generateResearchLab(ServerLevel level, ChunkPos chunk)
+    public static void generateResearchLab(WorldGenLevel level, ChunkPos chunk)
     {
         int regionX = Math.floorDiv(chunk.x, LAB_REGION_CHUNKS);
         int regionZ = Math.floorDiv(chunk.z, LAB_REGION_CHUNKS);
@@ -111,7 +115,7 @@ public final class ApocalypseStructures
         buildResearchLabPiece(level, chunk, chunkRandom(level.getSeed(), chunk.x, chunk.z), top);
     }
 
-    private static void buildResearchLabPiece(ServerLevel level, ChunkPos chunk, RandomSource rand, int top)
+    private static void buildResearchLabPiece(WorldGenLevel level, ChunkPos chunk, RandomSource rand, int top)
     {
         int pieceX = Math.floorMod(chunk.x, LAB_REGION_CHUNKS);
         int pieceZ = Math.floorMod(chunk.z, LAB_REGION_CHUNKS);
@@ -212,7 +216,7 @@ public final class ApocalypseStructures
         }
     }
 
-    private static void buildLabTeleporterRoom(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildLabTeleporterRoom(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         BlockState lab = ApocalypseContent.blockLabStone.get().defaultBlockState();
         BlockState quartzSlab = Blocks.QUARTZ_SLAB.defaultBlockState();
@@ -231,7 +235,7 @@ public final class ApocalypseStructures
     }
 
     /** A fenced stairwell from floor {@code y} down to the floor below it. */
-    private static void buildLabStairs(ServerLevel level, int x, int y, int z)
+    private static void buildLabStairs(WorldGenLevel level, int x, int y, int z)
     {
         BlockState lab = ApocalypseContent.blockLabStone.get().defaultBlockState();
         BlockState air = Blocks.AIR.defaultBlockState();
@@ -252,7 +256,7 @@ public final class ApocalypseStructures
         fill(level, x + 9, y - 7, z + 9, x + 11, y - 6, z + 11, lab);
     }
 
-    private static void buildGunRange(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildGunRange(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         BlockState planks = Blocks.OAK_PLANKS.defaultBlockState();
         for (int j = 0; j < 2; j++)
@@ -269,7 +273,7 @@ public final class ApocalypseStructures
         buildGunRack(level, rand, x + 13, y + 1, z + 14);
     }
 
-    private static void buildForge(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildForge(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         for (int j = 0; j < 2; j++)
         {
@@ -291,7 +295,7 @@ public final class ApocalypseStructures
         }
     }
 
-    private static void buildPowerRoom(ServerLevel level, int x, int y, int z)
+    private static void buildPowerRoom(WorldGenLevel level, int x, int y, int z)
     {
         buildServerRack(level, x + 1, y + 1, z + 2, true);
         buildServerRack(level, x + 1, y + 1, z + 5, false);
@@ -304,13 +308,13 @@ public final class ApocalypseStructures
         buildServerPower(level, x + 6, y + 1, z + 6);
     }
 
-    private static void spawnLabMecha(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void spawnLabMecha(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         if (ModApocalypseConfig.apocalypseMobsEnabled())
-            ApocalypseDriveableHelper.spawnDungeonMecha(level, new BlockPos(x, y, z), rand);
+            ApocalypseWorldgen.mark(level, WorldgenSpawnMarker.Kind.LAB_MECHA, new BlockPos(x, y, z), rand);
     }
 
-    private static void buildServerPower(ServerLevel level, int x, int y, int z)
+    private static void buildServerPower(WorldGenLevel level, int x, int y, int z)
     {
         BlockState obsidian = Blocks.OBSIDIAN.defaultBlockState();
         BlockState trapdoor = Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.HALF, Half.TOP);
@@ -323,7 +327,7 @@ public final class ApocalypseStructures
         set(level, x + 2, y + 2, z + 2, trapdoor);
     }
 
-    private static void buildServerRack(ServerLevel level, int x, int y, int z, boolean big)
+    private static void buildServerRack(WorldGenLevel level, int x, int y, int z, boolean big)
     {
         BlockState obsidian = Blocks.OBSIDIAN.defaultBlockState();
         BlockState quartzPillar = Blocks.QUARTZ_PILLAR.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
@@ -336,7 +340,7 @@ public final class ApocalypseStructures
         }
     }
 
-    private static void buildWeapons(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildWeapons(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         fill(level, x + 1, y, z, x + 3, y + 1, z + 2, Blocks.OAK_PLANKS.defaultBlockState());
         for (int i = 0; i < 2; i++)
@@ -366,7 +370,7 @@ public final class ApocalypseStructures
         }
     }
 
-    private static void buildFurnace(ServerLevel level, int x, int y, int z)
+    private static void buildFurnace(WorldGenLevel level, int x, int y, int z)
     {
         BlockState lab = ApocalypseContent.blockLabStone.get().defaultBlockState();
         fill(level, x, y, z, x + 1, y + 2, z + 2, lab);
@@ -377,7 +381,7 @@ public final class ApocalypseStructures
         fill(level, x + 1, y, z, x + 3, y + 1, z + 2, Blocks.LAVA.defaultBlockState());
     }
 
-    private static void buildPlantPots(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildPlantPots(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         BlockState quartz = Blocks.QUARTZ_BLOCK.defaultBlockState();
         BlockState slab = Blocks.QUARTZ_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
@@ -390,7 +394,7 @@ public final class ApocalypseStructures
         }
     }
 
-    private static void buildFarm(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildFarm(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         fill(level, x, y, z, x + 7, y + 1, z + 7, ApocalypseContent.blockLabStone.get().defaultBlockState());
         fill(level, x + 1, y, z + 1, x + 6, y + 1, z + 6, Blocks.FARMLAND.defaultBlockState().setValue(FarmBlock.MOISTURE, 7));
@@ -405,7 +409,7 @@ public final class ApocalypseStructures
         set(level, x + 3, y, z + 3, Blocks.WATER.defaultBlockState());
     }
 
-    private static void buildGunRack(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildGunRack(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         fill(level, x, y, z, x + 2, y + 1, z + 1, Blocks.OAK_PLANKS.defaultBlockState());
         Optional<Block> gunRack = ApocalypseWorldgen.flanBlock("flangunrack");
@@ -418,7 +422,7 @@ public final class ApocalypseStructures
         }
     }
 
-    private static void buildTarget(ServerLevel level, int x, int y, int z)
+    private static void buildTarget(WorldGenLevel level, int x, int y, int z)
     {
         BlockState red = Blocks.RED_WOOL.defaultBlockState();
         BlockState white = Blocks.WHITE_WOOL.defaultBlockState();
@@ -433,7 +437,7 @@ public final class ApocalypseStructures
         set(level, x + 3, y + 2, z, white);
     }
 
-    private static void buildLiquidsLab(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildLiquidsLab(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         BlockState quartz = Blocks.QUARTZ_BLOCK.defaultBlockState();
         BlockState slab = Blocks.QUARTZ_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP);
@@ -461,7 +465,7 @@ public final class ApocalypseStructures
         fillContainer(level, standX, y + 1, z + 5, container -> ApocalypseLoot.fillBrewingStand(rand, container));
     }
 
-    private static void buildLiquidContainer(ServerLevel level, RandomSource rand, int x, int y, int z, BlockState liquid)
+    private static void buildLiquidContainer(WorldGenLevel level, RandomSource rand, int x, int y, int z, BlockState liquid)
     {
         BlockState air = Blocks.AIR.defaultBlockState();
         fill(level, x, y, z, x + 4, y + 5, z + 4, ApocalypseContent.blockLabStone.get().defaultBlockState());
@@ -488,7 +492,7 @@ public final class ApocalypseStructures
     // Airfield: a four-chunk runway with a hangar and a parked plane (1.12.2 WorldGenRunway)
     // ---------------------------------------------------------------------------------------------
 
-    public static void generateRunway(ServerLevel level, ChunkPos chunk)
+    public static void generateRunway(WorldGenLevel level, ChunkPos chunk)
     {
         int stripX = Math.floorDiv(chunk.x, RUNWAY_CHUNKS);
         if (regionRandom(level.getSeed(), stripX, chunk.z).nextInt(ModApocalypseConfig.apocalypseAirportRarity()) != 0)
@@ -505,7 +509,7 @@ public final class ApocalypseStructures
         buildRunwaySection(level, chunk, chunkRandom(level.getSeed(), chunk.x, chunk.z), y);
     }
 
-    private static void buildRunwaySection(ServerLevel level, ChunkPos chunk, RandomSource rand, int y)
+    private static void buildRunwaySection(WorldGenLevel level, ChunkPos chunk, RandomSource rand, int y)
     {
         int x = chunk.getMinBlockX();
         int z = chunk.getMinBlockZ();
@@ -521,10 +525,10 @@ public final class ApocalypseStructures
         if (section == 1)
             buildHangar(level, rand, x, y, z);
         else if (section == 0)
-            ApocalypseDriveableHelper.spawnParkedPlane(level, x + 8D, y + 3D, z + 8D, rand);
+            ApocalypseWorldgen.mark(level, WorldgenSpawnMarker.Kind.PARKED_PLANE, x + 8D, y + 3D, z + 8D, rand);
     }
 
-    private static void buildHangar(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildHangar(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         BlockState wool = Blocks.GREEN_WOOL.defaultBlockState();
         // The arched roof, sealed at the western end.
@@ -565,7 +569,7 @@ public final class ApocalypseStructures
     // Dye factory: a single-chunk workshop on flat Deep Canyon floor (1.12.2 WorldGenDyeFactory)
     // ---------------------------------------------------------------------------------------------
 
-    public static void generateDyeFactory(ServerLevel level, ChunkPos chunk, RandomSource rand)
+    public static void generateDyeFactory(WorldGenLevel level, ChunkPos chunk, RandomSource rand)
     {
         int x = chunk.getMinBlockX();
         int z = chunk.getMinBlockZ();
@@ -639,7 +643,8 @@ public final class ApocalypseStructures
         fill(level, x + 1, y, z + 12, x + 2, y + 1, z + 14, Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.TOP));
         for (int k = 0; k < 2; k++)
         {
-            ArmorStand stand = EntityType.ARMOR_STAND.create(level);
+            // A plain armour stand saves with the chunk, so worldgen can place it directly.
+            ArmorStand stand = EntityType.ARMOR_STAND.create(level.getLevel());
             if (stand == null)
                 continue;
             stand.moveTo(x + 4.5D, y, z + 11.5D + k * 2D, 90F, 0F);
@@ -652,7 +657,7 @@ public final class ApocalypseStructures
             buildVat(level, rand, x + 11, y, z + k);
     }
 
-    private static void buildVat(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void buildVat(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         boolean tall = rand.nextBoolean();
         BlockState air = Blocks.AIR.defaultBlockState();
@@ -677,7 +682,7 @@ public final class ApocalypseStructures
      * Their inner corners at (&plusmn;13, &plusmn;13) are where the power cubes that summon the
      * boss are placed.
      */
-    public static void generateBossPillars(ServerLevel level, ChunkPos chunk, RandomSource rand)
+    public static void generateBossPillars(WorldGenLevel level, ChunkPos chunk, RandomSource rand)
     {
         double nearestX = Math.max(0, Math.max(chunk.getMinBlockX(), -chunk.getMaxBlockX()));
         double nearestZ = Math.max(0, Math.max(chunk.getMinBlockZ(), -chunk.getMaxBlockZ()));
@@ -721,7 +726,7 @@ public final class ApocalypseStructures
      * Builds the stepped lab-stone foundation and the weapon cache of a 1.12.2 abandoned portal
      * around a portal whose lower-left power cube sits at {@code corner}.
      */
-    public static void buildPortalRuin(ServerLevel level, BlockPos corner)
+    public static void buildPortalRuin(WorldGenLevel level, BlockPos corner)
     {
         int x = corner.getX() - 4;
         int y = corner.getY() - 2;
@@ -734,7 +739,7 @@ public final class ApocalypseStructures
     }
 
     /** The 1.12.2 portal cache: weapon loot plus the obsidian and a power cube for a new portal. */
-    public static void placePortalCache(ServerLevel level, RandomSource rand, BlockPos corner)
+    public static void placePortalCache(WorldGenLevel level, RandomSource rand, BlockPos corner)
     {
         int x = corner.getX() - 4 + 3 + rand.nextInt(2) * 5;
         int y = corner.getY() - 1;
@@ -767,29 +772,29 @@ public final class ApocalypseStructures
     }
 
     /** Surface height straight from the noise, readable for chunks that are not loaded. */
-    private static int noiseSurface(ServerLevel level, int x, int z)
+    private static int noiseSurface(WorldGenLevel level, int x, int z)
     {
-        return level.getChunkSource().getGenerator().getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG,
-            level, level.getChunkSource().randomState());
+        ServerChunkCache chunkSource = level.getLevel().getChunkSource();
+        return chunkSource.getGenerator().getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, level, chunkSource.randomState());
     }
 
-    private static boolean isBiomeAtChunkCentre(ServerLevel level, int chunkX, int chunkZ, ResourceKey<Biome> biome)
+    private static boolean isBiomeAtChunkCentre(WorldGenLevel level, int chunkX, int chunkZ, ResourceKey<Biome> biome)
     {
         // Every Apocalypse biome has the same depth parameter, so the height sampled is irrelevant.
         return level.getBiome(new BlockPos(chunkX * 16 + 8, 64, chunkZ * 16 + 8)).is(biome);
     }
 
-    private static void placeWeaponBox(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void placeWeaponBox(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         ApocalypseLoot.randomWeaponBox(rand).ifPresent(block -> set(level, x, y, z, block.defaultBlockState()));
     }
 
-    private static void placeChest(ServerLevel level, int x, int y, int z, Direction facing)
+    private static void placeChest(WorldGenLevel level, int x, int y, int z, Direction facing)
     {
         set(level, x, y, z, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, facing));
     }
 
-    private static void placeItemHolder(ServerLevel level, Block block, int x, int y, int z, Direction facing)
+    private static void placeItemHolder(WorldGenLevel level, Block block, int x, int y, int z, Direction facing)
     {
         BlockState state = block.defaultBlockState();
         if (state.hasProperty(HorizontalDirectionalBlock.FACING))
@@ -797,7 +802,7 @@ public final class ApocalypseStructures
         set(level, x, y, z, state);
     }
 
-    private static void fillItemHolder(ServerLevel level, RandomSource rand, int x, int y, int z)
+    private static void fillItemHolder(WorldGenLevel level, RandomSource rand, int x, int y, int z)
     {
         if (level.getBlockEntity(new BlockPos(x, y, z)) instanceof ItemHolderBlockEntity holder)
         {
@@ -807,32 +812,19 @@ public final class ApocalypseStructures
         }
     }
 
-    private static void fillContainer(ServerLevel level, int x, int y, int z, java.util.function.Consumer<Container> filler)
+    private static void fillContainer(WorldGenLevel level, int x, int y, int z, java.util.function.Consumer<Container> filler)
     {
         if (level.getBlockEntity(new BlockPos(x, y, z)) instanceof Container container)
             filler.accept(container);
     }
 
-    /**
-     * Places a block without ever reaching into a chunk that is not loaded: asking for one from
-     * the post-load worldgen pass makes the server thread wait on its own chunk pipeline. Blocks on
-     * a chunk's edge therefore skip neighbour shape updates, which would read the next chunk over.
-     */
-    private static void set(ServerLevel level, int x, int y, int z, BlockState state)
+    private static void set(WorldGenLevel level, int x, int y, int z, BlockState state)
     {
-        if (y < level.getMinBuildHeight() || y >= level.getMaxBuildHeight())
-            return;
-        BlockPos pos = new BlockPos(x, y, z);
-        if (!level.hasChunkAt(pos))
-            return;
-        int localX = x & 15;
-        int localZ = z & 15;
-        boolean chunkEdge = localX == 0 || localX == 15 || localZ == 0 || localZ == 15;
-        level.setBlock(pos, state, chunkEdge ? Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE : Block.UPDATE_CLIENTS);
+        ApocalypseWorldgen.setBlock(level, new BlockPos(x, y, z), state);
     }
 
     /** 1.12.2 {@code WorldGenFlan.fillArea}: exclusive upper bounds, {@code shell} on every face. */
-    private static void fill(ServerLevel level, int x1, int y1, int z1, int x2, int y2, int z2, BlockState shell, BlockState inner)
+    private static void fill(WorldGenLevel level, int x1, int y1, int z1, int x2, int y2, int z2, BlockState shell, BlockState inner)
     {
         for (int i = x1; i < x2; i++)
         {
@@ -847,12 +839,12 @@ public final class ApocalypseStructures
         }
     }
 
-    private static void fill(ServerLevel level, int x1, int y1, int z1, int x2, int y2, int z2, BlockState state)
+    private static void fill(WorldGenLevel level, int x1, int y1, int z1, int x2, int y2, int z2, BlockState state)
     {
         fill(level, x1, y1, z1, x2, y2, z2, state, state);
     }
 
-    private static void replaceEmpty(ServerLevel level, int x1, int y1, int z1, int x2, int y2, int z2, BlockState state)
+    private static void replaceEmpty(WorldGenLevel level, int x1, int y1, int z1, int x2, int y2, int z2, BlockState state)
     {
         for (int i = x1; i < x2; i++)
         {
@@ -861,7 +853,7 @@ public final class ApocalypseStructures
                 for (int k = z1; k < z2; k++)
                 {
                     BlockPos pos = new BlockPos(i, j, k);
-                    if (j >= level.getMinBuildHeight() && j < level.getMaxBuildHeight() && level.hasChunkAt(pos) && level.getBlockState(pos).isAir())
+                    if (ApocalypseWorldgen.canWrite(level, pos) && level.getBlockState(pos).isAir())
                         set(level, i, j, k, state);
                 }
             }

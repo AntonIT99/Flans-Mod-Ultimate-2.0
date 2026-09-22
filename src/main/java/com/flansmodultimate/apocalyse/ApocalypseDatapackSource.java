@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
@@ -25,11 +26,20 @@ import java.util.function.Consumer;
  * those entries are stored as plain registry keys. If the referenced definitions disappeared when
  * this pack was disabled, decoding level.dat would fail and the world would refuse to load.
  * Keeping them always present means disabling this pack only affects newly created worlds.
+ *
+ * <p>The pack is optional and never enabled automatically, because the dimension it adds stays in
+ * a world's {@code level.dat} for good and the world then needs the mod to load. Players choose it
+ * per world when creating or first opening one, see {@code ApocalypseWorldChoice}; a dedicated
+ * server enables it with {@code initial-enabled-packs} for a new world, or with
+ * {@code /datapack enable} and a restart for an existing one.</p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseDatapackSource
 {
     public static final String PACK_ID = FlansMod.MOD_ID + ":apocalypse";
+    /** Built in, but never switched on for a world by itself: each world opts in explicitly. */
+    private static final PackSource OPT_IN = PackSource.create(name ->
+        Component.translatable("pack.nameAndSource", name, Component.translatable("pack.source.builtin")).withStyle(ChatFormatting.GRAY), false);
 
     public static RepositorySource create()
     {
@@ -50,11 +60,11 @@ public final class ApocalypseDatapackSource
         Pack pack = Pack.readMetaAndCreate(
             PACK_ID,
             Component.literal("Flan's Mod Apocalypse"),
-            true,
+            false,
             resources,
             PackType.SERVER_DATA,
             Pack.Position.TOP,
-            PackSource.BUILT_IN
+            OPT_IN
         );
 
         if (pack == null)
