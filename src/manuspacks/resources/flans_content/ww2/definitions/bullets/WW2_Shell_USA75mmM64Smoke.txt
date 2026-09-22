@@ -3,9 +3,11 @@ Name US 75 mm M64 WP Smoke (M3)
 ShortName WW2_Shell_USA75mmM64Smoke
 Description White-phosphorus screening ammunition for the US 75 mm M3
 
-// Item and rendering
+// Model and Rendering
 Model Bullet
 Icon Icon_WW2_Shell_USA75mmAP
+
+// Recipe and Inventory
 MaxStackSize 16
 RoundsPerItem 1
 RecipeOutput 3
@@ -14,28 +16,31 @@ F
 G
 SD
 
-// Ballistics
+// Behaviour
 Bomb False
 Shell True
-Mass 6620
-MuzzleVelocity 594
-FallSpeed 1
-ExplosiveMassTNTg 36
-FragType LOW_FRAG
-
-// Damage and detonation
-Damage 10
-DamageVsLiving 10
-DamageVsVehicles 5
-Explosion 1
+FallSpeed 1.0
 ExplodeOnImpact True
 Fuse 200
-Fire 0
 BreaksGlass True
 HitBoxSize 1.0
 Penetrates False
 
-// Smoke and presentation
+// Ballistics and Damage
+Mass 6620
+MuzzleVelocity 594
+ExplosiveMassTNTg 36
+FragType LOW_FRAG
+Damage 10
+DamageVsLiving 10
+DamageVsVehicles 5
+Explosion 1
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
 SmokeTime 250
 SmokeParticleType cloud
 SmokeRadius 5
@@ -45,4 +50,3 @@ SmokeTrail True
 TrailParticleType flansmod.fmsmoke
 HasLight False
 FlakParticles 0
-HitSound bomb

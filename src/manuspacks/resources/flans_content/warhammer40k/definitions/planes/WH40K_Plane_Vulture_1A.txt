@@ -1,54 +1,51 @@
-﻿//---Standard Plane Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+﻿// Identity
 Name Vulture Gunship - Weapons Set 1
 ShortName WH40K_Plane_Vulture_1A
 
-
-// Visuals
-Model Manus_WH40K.Plane.WH40K_Plane_Vulture_1
+// Model and Rendering
 ModelScale 1
 Icon Icon_WH40K_Plane_Vulture_1A
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Driveables-----------------------------------
-//Visuals
 Model Manus_WH40K.Plane.WH40K_Plane_Vulture_1
 Texture Skin_WH40K_Plane_Vulture_1A
 
+// Recipe and Inventory
+AllowAllAmmo False
+AddAmmo WH40K_Ammo_GuidedMissile
+CargoSlots 0
+BombSlots 0
+MissileSlots 2
+FuelTankSize 6000
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 15 SMP_Part_Mat_Armor_PlaSteel 10 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 25 SMP_Part_Mat_Armor_PlaSteel 10 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 15 SMP_Part_Mat_Armor_PlaSteel 5 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 15 SMP_Part_Mat_Armor_PlaSteel 5 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts rightWingWheel 5 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts leftWingWheel 5 SMP_Part_Mat_Block_PlaSteel
+AddDye 10 green
+AddDye 5 gray
 
-//Movement
+// Movement and Physics
 MaxThrottle 8.0
 MaxNegativeThrottle 0.0
 Drag 1.0
-
-
-//Wheels
-WheelPosition 0 -38 -8 -113
-WheelPosition 1 -38 -8 113
-WheelPosition 2 66 -8 0
 WheelSpringStrength 0.125
+Mode VTOL
+HasGear True
+TurnLeftSpeed 4
+TurnRightSpeed 4
+LookUpSpeed 4
+LookDownSpeed 4
+RollLeftSpeed 4
+RollRightSpeed 4
+RestingPitch 5.0
+RealMassKg 22000
+RealEngineThrustKn 130
+RealMaxSpeedKmh 650
+RealWingSpanM 15
+RealWingAreaM2 42
+RealClimbRateMs 30
 
-
-//Floating
-
-
-//Ammo
-AllowAllAmmo False
-AddAmmo WH40K_Ammo_GuidedMissile
-
-
-//Weapons
+// Weapons
 Primary GUN
 Secondary MISSILE
 ShootPointPrimary 40 29 46 rightWing WH40K_MG_MultiLaser_1A
@@ -61,35 +58,19 @@ AlternatePrimary False
 AlternateSecondary False
 ModePrimary FULLAUTO
 ModeSecondary FULLAUTO
-ShootSoundPrimary LasGun_fire
-ShootSoundSecondary RocketFire1
+GunOrigin 1 -90 -1 0
+ReadWeaponsFromGunTypes true
 
+// Protection
+UseRealisticVehicleHealth true
 
-//Driver and Passengers
+// Parts and Seats
+WheelPosition 0 -38 -8 -113
+WheelPosition 1 -38 -8 113
+WheelPosition 2 66 -8 0
 Pilot 14 48 0
 Passengers 1
 Passenger 1 53 32 0 core 0 0 0 0 WH40K_MG_HeavyBolter_1A PassengerGun1
-GunOrigin 1 -90 -1 0
-
-//Inventory Slots
-CargoSlots 0
-BombSlots 0
-MissileSlots 2
-FuelTankSize 6000
-
-
-//Recipe
-AddRecipeParts core 1 SMP_Part_Cockpit_Jet 15 SMP_Part_Mat_Armor_PlaSteel 10 SMP_Part_Mat_Block_PlaSteel
-AddRecipeParts tail 1 SMP_Part_Tail_Jet 25 SMP_Part_Mat_Armor_PlaSteel 10 SMP_Part_Mat_Block_PlaSteel
-AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 15 SMP_Part_Mat_Armor_PlaSteel 5 SMP_Part_Mat_Block_PlaSteel
-AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 15 SMP_Part_Mat_Armor_PlaSteel 5 SMP_Part_Mat_Block_PlaSteel
-AddRecipeParts rightWingWheel 5 SMP_Part_Mat_Block_PlaSteel
-AddRecipeParts leftWingWheel 5 SMP_Part_Mat_Block_PlaSteel
-AddDye 10 green
-AddDye 5 gray
-
-
-//Health and Collision
 SetupPart core 350 -99 8 -16 196 62 39
 SetupPart tail 150 -270 69 -52 26 37 104
 SetupPart rightWing 200 -99 32 28 95 23 78
@@ -124,54 +105,18 @@ CollisionPoint -26 41 -84 leftWing
 CollisionPoint -26 25 -100 leftWing
 CollisionPoint -26 11 -116 leftWing
 BulletDetection 10
-
-
-//Misc
 CameraDistance 15.0
-
-
-//Sounds
-StartSound propStart
-StartSoundLength 60
-ShootSoundPrimary M60Shoot
-ShootSoundSecondary RocketFire2
-
-//------------------------------------------------
-
-//---Plane----------------------------------------
-//Flying Mode
-Mode VTOL
-
-
-//Visuals
-HasGear True
-
-
-//Movement
-TurnLeftSpeed 4
-TurnRightSpeed 4
-LookUpSpeed 4
-LookDownSpeed 4
-RollLeftSpeed 4
-RollRightSpeed 4
-
-
-//Weapon
-
-
-//Misc
-RestingPitch 5.0
-
-
-//Propeller
 Propeller 0 1 -51 0 core SMP_Part_Propeller_TurbineSpace
 Propeller 1 146 -51 0 core SMP_Part_Propeller_TurbineSpace
 HeliPropeller 0 1 -51 0 core SMP_Part_Propeller_TurbineSpace
 HeliPropeller 1 146 -51 0 core SMP_Part_Propeller_TurbineSpace
 
-
-//Sound
+// Sounds
+ShootSoundPrimary LasGun_fire
+ShootSoundSecondary RocketFire1
+StartSound propStart
+StartSoundLength 60
+ShootSoundPrimary M60Shoot
+ShootSoundSecondary RocketFire2
 PropSoundLength 47
 PropSound JetEngine2
-
-//------------------------------------------------

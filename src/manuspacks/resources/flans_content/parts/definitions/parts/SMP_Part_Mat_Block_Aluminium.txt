@@ -1,26 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Aluminium Ingot
 ShortName SMP_Part_Mat_Block_Aluminium
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Mat_Block_Aluminium
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Block_Steel S sand
 SMS
    
    
 RecipeOutput 3
-
-//Misc
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Misc
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

@@ -1,47 +1,47 @@
+// Identity
 Name Light Saber - Green
 ShortName LightSaber_C
-//The ammo this gun uses (shortName)
+
+// Model and Rendering
 Icon IconGunLightSaber_C
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 0
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 0
-//Damage in half hearts
-Damage 0
-//The higher this value, the more the bullets spread
-Accuracy 0
-//Time in ticks between rounds
-ShootDelay 15
-ShootSound lightsaber_swing
-ReloadSound boltgun_reload
-MeleeSound lightsaber_swing
-IdleSound lightsaber_idle
-IdleSoundLength 15
-Mode SemiAuto
-//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
-Scope None
-FOVZoomLevel 1.0
-//Deployable Settings
-Deployable False
 DeployedModel None
-//Model settings
 Model manus_sifi.LightSaber_A
 Texture SkinGunLightSaber_C
-//Attachment Settings
-AllowAllAttachments false
+ModelScale 0.11
 
+// Recipe and Inventory
+AllowAllAttachments false
 AllowAttachments M36LasgunGrip
 AllowBarrelAttachments false
 AllowScopeAttachments false
 AllowStockAttachments false
 AllowGripAttachments false
 NumGenericAttachmentSlots 1
-ModelScale 0.11
-MeleeDamage 20
-OneHanded true
+
+// Weapons
+ReloadTime 0
+Recoil 0
+Accuracy 0
+ShootDelay 15
+Mode SemiAuto
+Scope None
+FOVZoomLevel 1.0
+Deployable False
 OneHanded True
+
+// Ballistics and Damage
+Damage 0
+MeleeDamage 20
+
+// Sounds
+ShootSound lightsaber_swing
+ReloadSound boltgun_reload
+MeleeSound lightsaber_swing
+IdleSound lightsaber_idle
+IdleSoundLength 15
+
+// Tooltip
 ShowDamage False
 ShowRecoil False
 ShowAccuracy False

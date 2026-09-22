@@ -1,31 +1,53 @@
-//Naming
+// Identity
 Name M998 HMMWV with M134
 ShortName HMMWV4
-//Visuals
+
+// Model and Rendering
 Icon IconVehicleHMMWV4
 Model manus_modern_warfare.HMMWV4
 Texture SkinVehicleHMMWV
 RotateWheels True
-//Third Person Camera Distance
-CameraDistance 5.0
-//Throttle
-MaxThrottle 1.0
-MaxNegativeThrottle 0.5
-//Steering modifiers
-TurnLeftSpeed 1
-TurnRightSpeed 1
-//Drag
-Drag 1.0
-//For calculating whether wheels are on the ground or not for driving
-WheelRadius 1.0
-//If true, then all wheels will apply drive forces
-FourWheelDrive true
-//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+
+// Recipe and Inventory
 FuelTankSize 1500
-//Inventory Slots
 CargoSlots 18
 ShellSlots 0
-//Driver and passenger positions
+AddRecipeParts core 1 Part_Chassis_Van 10 Mat_Plate_Steel 4 Mat_Armor_Steel
+AddRecipeParts frontLeftWheel 1 Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 Part_Wheel_Car
+AddRecipeParts backRightWheel 1 Part_Wheel_Car
+AddDye 5 green
+
+// Movement and Physics
+MaxThrottle 1.0
+MaxNegativeThrottle 0.5
+TurnLeftSpeed 1
+TurnRightSpeed 1
+Drag 1.0
+WheelRadius 1.0
+FourWheelDrive true
+RealMassKg 3494
+RealEnginePowerHp 150
+RealMaxSpeedKmh 88
+DriveType AWD
+RealMaxReverseSpeedKmh 20
+
+// Weapons
+ShootDelay 999
+ShellDelay 999
+ReadWeaponsFromGunTypes true
+
+// Protection
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 5.0
 Driver 2 1 -9 -80 80 -45 45
 RotatedDriverOffset 0 0 0
 Passengers 4
@@ -33,27 +55,6 @@ Passenger 1 2 1 9 core -80 80 -45 45
 Passenger 2 -12 1 -9 core -80 80 -45 45
 Passenger 3 -12 1 9 core -80 80 -45 45
 Passenger 4 0 15 0 core -50 50 -10 30 M134 M134
-//Delays are in ticks or 1/20ths of seconds
-ShootDelay 999
-ShellDelay 999
-//Sounds
-StartSound engine_jep_humvee
-StartSoundLength 20
-EngineSound engine_jep_humvee
-EngineSoundLength 20
-ShootSound bullet
-//Recipe
-//Each section of the plane may have many parts
-//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
-//rightWing, nose, turret, coreWheel, core
-AddRecipeParts core 1 Part_Chassis_Van 10 Mat_Plate_Steel 4 Mat_Armor_Steel
-AddRecipeParts frontLeftWheel 1 Part_Wheel_Car
-AddRecipeParts frontRightWheel 1 Part_Wheel_Car
-AddRecipeParts backLeftWheel 1 Part_Wheel_Car
-AddRecipeParts backRightWheel 1 Part_Wheel_Car
-//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
-AddDye 5 green
-//Health and collision
 SetupPart frontLeftWheel 100 19 -10 14 14 14 5
 SetupPart backLeftWheel 100 -36 -10 14 14 14 5
 SetupPart frontRightWheel 100 19 -10 -19 14 14 5
@@ -64,3 +65,10 @@ WheelPosition 0 -29 -8 -18
 WheelPosition 1 -29 -8 18
 WheelPosition 2 26 -8 18
 WheelPosition 3 26 -8 -18
+
+// Sounds
+StartSound engine_jep_humvee
+StartSoundLength 20
+EngineSound engine_jep_humvee
+EngineSoundLength 20
+ShootSound bullet

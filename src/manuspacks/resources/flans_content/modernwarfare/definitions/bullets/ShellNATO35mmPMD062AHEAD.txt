@@ -1,35 +1,48 @@
+// Identity
 Name 35x228 mm PMD062 AHEAD Ammunition
 ShortName ShellNATO35mmPMD062AHEAD
+Description Programmable airburst ammunition for Skyranger 35 and Skyshield
+
+// Model and Rendering
 Model Bullet
 Colour 255 255 255
 Icon IconAmmoNATO35mm
-Mass 750
-MuzzleVelocity 1050
-FallSpeed 1
-ExplosiveMassTNTg 1
-FragType AIRBURST_AP
+
+// Recipe and Inventory
 RoundsPerItem 100
 MaxStackSize 1
-Damage 120
-DamageVsVehicles 120
-Explosion 1
-ExplodeOnImpact True
-Fuse 164
-FlakParticles 12
-FlakParticleType hugeexplosion
-Fire 0
-BreaksGlass True
-HitBoxSize 2.0
-HitSound bomb
-Penetrates False
-SmokeTrail True
-TrailParticleType flansmod.fmsmoke
-HasLight True
-Bomb False
-Shell True
 RecipeOutput 32
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Aluminium
 BF
 G
 SS
-Description Programmable airburst ammunition for Skyranger 35 and Skyshield
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 164
+BreaksGlass True
+HitBoxSize 2.0
+Penetrates False
+Bomb False
+Shell True
+
+// Ballistics and Damage
+Mass 750
+MuzzleVelocity 1050
+ExplosiveMassTNTg 1
+FragType AIRBURST_AP
+Damage 120
+DamageVsVehicles 120
+Explosion 1
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 12
+FlakParticleType hugeexplosion
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+HasLight True

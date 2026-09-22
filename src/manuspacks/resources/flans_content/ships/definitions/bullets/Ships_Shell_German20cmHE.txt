@@ -1,74 +1,44 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name German 20cmmm HE Shell
 ShortName Ships_Shell_German20cmHE
+description Amunition for 10cm Guns
 
-
-//Visuals
-model Bullet
+// Model and Rendering
 Icon Icon_Ships_Shell_German20cmHE
+Model Bullet
 
-
-//Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse P SMP_Part_Mat_Plate_Steel
  F 
 GGG
 SPS
 RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 10
 
-
-//Misc
-description Amunition for 10cm Guns
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Bullet
-
-
-// Bullet Type
+// Behaviour
 Bomb False
 Shell True
-
-
-//Damage
-Damage 600
-DamageVsVehicles 600
-
-
-//Bullet Behavior
 ExplodeOnImpact True
-Explosion 7
-Fire 0
-FallSpeed 1
+FallSpeed 1.0
 Fuse 200
 Penetrates False
 BreaksGlass True
 HitBoxSize 2.0
 
+// Ballistics and Damage
+Damage 600
+DamageVsVehicles 600
+Explosion 7
+Fire 0
+Mass 122000.0
+MuzzleVelocity 925.0
+ExplosiveMassTNTKg 8.9
+PenetrationAt100m 61
 
-//Drop
-
-
-//Lock On
-
-
-//Parctical
-FlakParticles 5
-SmokeTrail True
-
-
-//Sound
+// Sounds
 HitSound bomb
 
-
-/Inventory
-MaxStackSize 16
-RoundsPerItem 10
-
-//------------------------------------------------
+// Effects
+FlakParticles 5
+SmokeTrail True

@@ -1,27 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Plane Propeller
 ShortName SMP_Part_Propeller_RotorPlane
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Propeller_RotorPlane
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Aluminium
  P 
  M 
 P P
 RecipeOutput 1
-
-//Misc
-
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Propeller
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

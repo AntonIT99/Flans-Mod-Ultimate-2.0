@@ -1,53 +1,51 @@
-﻿//---Standard Plane Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.1.2.7
-
-
-//---Standard-------------------------------------
-// Naming
+﻿// Identity
 Name Vought F4U-4 Corsair - VMF-214 "Black Sheep"
 ShortName WW2_Plane_F4U_1A
 
-
-// Visuals
+// Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_F4U_1
 ModelScale 1
 Icon Icon_WW2_Plane_F4U_1A
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Driveables-----------------------------------
-//Visuals
 Texture Skin_WW2_Plane_F4U_1A
 
+// Recipe and Inventory
+AllowAllAmmo False
+AddAmmo WW2_Missle_USAHVAR
+CargoSlots 0
+BombSlots 0
+MissileSlots 2
+FuelTankSize 5000
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 6 blue
 
-//Movement
+// Movement and Physics
 MaxThrottle 2.5
 MaxNegativeThrottle 0.0
 Drag 1.0
-
-
-//Wheels
-WheelPosition 0 30 -8 -36
-WheelPosition 1 30 -8 36
-WheelPosition 2 -94 13 0
 WheelSpringStrength 0.125
+Mode Plane
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+RestingPitch 5.0
+RealMassKg 6654
+RealEnginePowerHp 2380
+RealMaxSpeedKmh 717
+RealWingSpanM 12.497
+RealWingAreaM2 29.17
+RealClimbRateMs 22.1
 
-
-//Floating
-
-
-//Ammo
-AllowAllAmmo False
-AddAmmo WW2_Missle_USAHVAR
-
-
-//Weapons
+// Weapons
 Primary Gun
 Secondary Missile
 ShootDelayPrimary 5
@@ -64,33 +62,17 @@ ShootPointPrimary 32 21 54 rightWing WW2_MG_MG532_1A
 ShootPointPrimary 32 21 -54 leftWing WW2_MG_MG532_1A
 ShootPointSecondary 32 13 -54 leftWing
 ShootPointSecondary 32 13 54 rightWing
+ReadWeaponsFromGunTypes true
 
+// Protection
+UseRealisticVehicleHealth true
 
-//Driver and Passengers
+// Parts and Seats
+WheelPosition 0 30 -8 -36
+WheelPosition 1 30 -8 36
+WheelPosition 2 -94 13 0
 Pilot -22 34 0
 Passengers 0
-
-
-//Inventory Slots
-CargoSlots 0
-BombSlots 0
-MissileSlots 2
-FuelTankSize 5000
-
-
-//Recipe
-AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
-AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
-AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
-AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
-AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
-AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
-AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
-AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
-AddDye 6 blue
-
-
-//Health and Collision
 SetupPart core 200 -78 20 -13 136 31 26
 SetupPart tail 150 -115 20 -6 36 49 10
 SetupPart nose 100 58 20 -13 7 26 26
@@ -118,51 +100,13 @@ CollisionPoint 10 26 -80 leftWing
 CollisionPoint 10 29 -96 leftWing
 CollisionPoint 10 31 -112 leftWing
 BulletDetection 10
-
-
-//Misc
 CameraDistance 10.0
-
-
-//Sounds
-StartSound propStart
-StartSoundLength 20
-
-
-//------------------------------------------------
-
-//---Plane----------------------------------------
-//Flying Mode
-Mode Plane
-
-
-//Visuals
-
-
-//Movement
-TurnLeftSpeed 2
-TurnRightSpeed 2
-LookUpSpeed 2
-LookDownSpeed 2
-RollLeftSpeed 2
-RollRightSpeed 2
-
-
-//Weapon
-
-
-//Misc
-RestingPitch 5.0
-
-
-//Propeller
 Propeller 0 0 0 0 nose SMP_Part_Propeller_RotorPlane
 
-
-//Sound
+// Sounds
+StartSound propStart
+StartSoundLength 20
 PropSoundLength 30
 PropSound propSound
 ShootSoundPrimary PlaneShoot
 ShootSoundSecondary RocketFire2
-
-//------------------------------------------------

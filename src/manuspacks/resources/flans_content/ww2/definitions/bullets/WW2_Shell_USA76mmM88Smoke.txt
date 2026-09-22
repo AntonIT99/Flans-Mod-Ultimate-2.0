@@ -3,9 +3,11 @@ Name US 76 mm M88 HC Smoke (M1)
 ShortName WW2_Shell_USA76mmM88Smoke
 Description Base-emission smoke ammunition for the US 76 mm M1
 
-// Item and rendering
+// Model and Rendering
 Model Bullet
 Icon Icon_WW2_Shell_USA76mmAP
+
+// Recipe and Inventory
 MaxStackSize 16
 RoundsPerItem 1
 RecipeOutput 3
@@ -14,26 +16,29 @@ F
 G
 SD
 
-// Ballistics
+// Behaviour
 Bomb False
 Shell True
-Mass 3450
-MuzzleVelocity 274
-FallSpeed 1
-
-// Damage and detonation
-Damage 10
-DamageVsLiving 10
-DamageVsVehicles 5
-Explosion 0
+FallSpeed 1.0
 ExplodeOnImpact True
 Fuse 200
-Fire 0
 BreaksGlass True
 HitBoxSize 1.0
 Penetrates False
 
-// Smoke and presentation
+// Ballistics and Damage
+Mass 3450
+MuzzleVelocity 274
+Damage 10
+DamageVsLiving 10
+DamageVsVehicles 5
+Explosion 0
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
 SmokeTime 250
 SmokeParticleType cloud
 SmokeRadius 5
@@ -43,4 +48,3 @@ SmokeTrail True
 TrailParticleType flansmod.fmsmoke
 HasLight False
 FlakParticles 0
-HitSound bomb

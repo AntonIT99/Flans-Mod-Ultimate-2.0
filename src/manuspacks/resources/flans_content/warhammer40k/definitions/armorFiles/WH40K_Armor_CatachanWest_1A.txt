@@ -1,37 +1,19 @@
-﻿//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.1.1.1
-
-
-//---Standard-------------------------------------
-// Naming
+﻿// Identity
 Name Catachan West
 ShortName WH40K_Armor_CatachanWest_1A
 
-
-// Visuals
+// Model and Rendering
 Model Manus_WH40K.Armor.WH40K_Armor_CatachanWest_1
 ModelScale 0.25
 Icon Icon_WH40K_Armor_CatachanWest_1A
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
-Type Chest
-
-//Visuals
 ArmourTexture Skin_WH40K_Armor_Catachan_1A
 
+// Recipe and Inventory
+Type Chest
 
-//Armor Settings
-Defence 0.2
-
-//Helmet Settings
-
-//------------------------------------------------
+// Protection
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

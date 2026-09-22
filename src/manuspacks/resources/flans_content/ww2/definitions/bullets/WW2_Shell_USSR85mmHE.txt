@@ -1,42 +1,32 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name Soviet 85 mm O-365K HE-Frag
 ShortName WW2_Shell_USSR85mmHE
+description High-explosive fragmentation ammunition for the D-5S and ZiS-S-53
 
-
-//Visuals
-model Bullet
+// Model and Rendering
 Icon Icon_WW2_Shell_USSR85mmAP
+Model Bullet
 
-
-//Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
  F
 GGG
 SSS
 RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
 
-
-//Misc
-description High-explosive fragmentation ammunition for the D-5S and ZiS-S-53
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Bullet
-
-
-// Bullet Type
+// Behaviour
 Bomb False
 Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
 
-
-//Damage
+// Ballistics and Damage
 Damage 50
 DamageVsLiving 2000
 DamageVsVehicles 2000
@@ -45,20 +35,13 @@ MuzzleVelocity 785
 ExplosiveMassTNTg 780
 PenetrationAt100m 18
 FragType HE_SHELL
-
-
-//Bullet Behavior
-ExplodeOnImpact True
 Explosion 5
 Fire 0
-FallSpeed 1
-Fuse 200
-Penetrates False
-BreaksGlass True
-HitBoxSize 1.0
 
+// Sounds
+HitSound bomb
 
-//Parctical
+// Effects
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 12
@@ -66,13 +49,3 @@ TrailParticleType flansmod.fmflame
 HasLight True
 FlareParticleCount 12
 DebrisParticleCount 5
-
-//Sound
-HitSound bomb
-
-
-/Inventory
-MaxStackSize 16
-RoundsPerItem 1
-
-//------------------------------------------------

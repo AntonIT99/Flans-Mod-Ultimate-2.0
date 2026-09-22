@@ -1,42 +1,15 @@
-﻿//---Standard Gun Config for Flans Mod------------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+﻿// Identity
 Name Lathe Pattern Thunder Hammer
 ShortName WH40K_Gun_ThunderHammer_1A
 
-
-// Visuals
+// Model and Rendering
 ModelScale 0.11
 Icon Icon_WH40K_Gun_ThunderHammer_1A
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Gun------------------------------------------
-//Gun Type
-Deployable False
-
-
-//Visual
 Model Manus_WH40K.Gun.WH40K_Gun_ThunderHammer_1
+ModelScale 0.10
+Texture Skin_WH40K_Gun_ThunderHammer_1A
 
-
-//Damage
-Damage 0
-
-
-//Ammo
-
-
-//Attachments
+// Recipe and Inventory
 AllowAllAttachments False
 AllowAttachments M36LasgunGrip
 AllowBarrelAttachments False
@@ -45,38 +18,17 @@ AllowStockAttachments False
 AllowGripAttachments False
 NumGenericAttachmentSlots 1
 
-
-//Weapon Settings
-Accuracy 0
+// Weapons
+Deployable False
 Mode SemiAuto
 Recoil 0
 ReloadTime 0
-ShootDelay 15
 OneHanded True
-
-
-//Shield
-
-
-//Zoom
 Scope None
 FOVZoomLevel 1.0
+RoundsPerMin 80.0
+Dispersion 0.5
 
-
-//Melee
+// Ballistics and Damage
+Damage 0
 MeleeDamage 20
-
-
-//Deployable
-ModelScale 0.10
-Texture Skin_WH40K_Gun_ThunderHammer_1A
-
-
-//Sound
-//MeleeSound chainsword_swing
-//IdleSound chainsword_idle
-//IdleSoundLength 60
-//ShootSound lightsaber_swing
-//ReloadSound boltgun_reload
-
-//------------------------------------------------

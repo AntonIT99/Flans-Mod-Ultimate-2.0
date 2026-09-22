@@ -1,26 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Oil Barrel
 ShortName SMP_Part_Mat_Barrel_Oil
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Mat_Barrel_Oil
 
-// Recipe
+// Recipe and Inventory
 Recipe C coal S slimeball B bucketWater
 CSC
  B 
    
 RecipeOutput 4
-
-//Misc
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Misc
 PartBoxRecipe
 StackSize 4
-//------------------------------------------------

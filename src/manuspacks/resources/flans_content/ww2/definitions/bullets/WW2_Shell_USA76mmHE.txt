@@ -1,42 +1,32 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name US 76 mm M42A1 HE (M1)
 ShortName WW2_Shell_USA76mmHE
+description High-explosive ammunition for the US 76 mm M1
 
-
-//Visuals
-model Bullet
+// Model and Rendering
 Icon Icon_WW2_Shell_USA76mmAP
+Model Bullet
 
-
-//Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Steel
  F
 GBG
  S
 RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
 
-
-//Misc
-description High-explosive ammunition for the US 76 mm M1
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Bullet
-
-
-// Bullet Type
+// Behaviour
 Bomb False
 Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
 
-
-//Damage
+// Ballistics and Damage
 Damage 50
 DamageVsLiving 1000
 DamageVsVehicles 1000
@@ -45,20 +35,13 @@ MuzzleVelocity 823
 ExplosiveMassTNTg 390
 PenetrationAt100m 12
 FragType HE_SHELL
-
-
-//Bullet Behavior
-ExplodeOnImpact True
 Explosion 4
 Fire 0
-FallSpeed 1
-Fuse 200
-Penetrates False
-BreaksGlass True
-HitBoxSize 1.0
 
+// Sounds
+HitSound bomb
 
-//Parctical
+// Effects
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 10
@@ -66,13 +49,3 @@ TrailParticleType flansmod.fmflame
 HasLight True
 FlareParticleCount 8
 DebrisParticleCount 4
-
-//Sound
-HitSound bomb
-
-
-/Inventory
-MaxStackSize 16
-RoundsPerItem 1
-
-//------------------------------------------------

@@ -1,27 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Jet Tail Frame
 ShortName SMP_Part_Tail_Jet
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Tail_Jet
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
   P
 MMM
    
 RecipeOutput 1
-
-//Misc
-
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Tail
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

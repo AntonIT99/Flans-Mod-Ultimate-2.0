@@ -1,67 +1,37 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name .75cal Boltpistol Ammo
 ShortName WH40K_Ammo_BoltPistolCal75
-
-
-//Visuals
-Model Manus_WH40K.Misc.WH40K_Misc_BoltBullet_1
-Icon Icon_WH40K_Ammo_BoltPistolCal75
-
-
-//Recipe
-
-
-//Misc
 description Amunition for Boltpistol
 
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
+// Model and Rendering
+Model Manus_WH40K.Misc.WH40K_Misc_BoltBullet_1
+Icon Icon_WH40K_Ammo_BoltPistolCal75
 Texture Skin_WH40K_Bullet_BoltBullet_1A
 
+// Recipe and Inventory
+MaxStackSize 4
+RoundsPerItem 10
 
-// Bullet Type
-
-
-//Damage
-Damage 15
-DamageVsVehicles 10
-
-
-//Bullet Behavior
+// Behaviour
 ExplodeOnImpact True
-Explosion 1
-Fire 0
 FallSpeed 0.25
 Fuse 200
 Penetrates False
 BreaksGlass True
 HitBoxSize 0.1
 
+// Ballistics and Damage
+Damage 15
+DamageVsVehicles 10
+Explosion 1
+Fire 0
+Mass 120.0
+ExplosiveMassTNTg 11
+PenetrationAt100m 24
 
-//Drop
-
-
-//Lock On
-
-
-//Parctical
-FlakParticles 0
-SmokeTrail False
-
-
-//Sound
+// Sounds
 HitSound bullet
 
-
-/Inventory
-MaxStackSize 4
-RoundsPerItem 10
-
-//------------------------------------------------
+// Effects
+FlakParticles 0
+SmokeTrail False

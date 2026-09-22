@@ -1,29 +1,20 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name V8 Engine
 ShortName SMP_Part_Engine_V8
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Engine_V8
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Engine_V4
 MM 
    
    
 RecipeOutput 1
-
-//Misc
-
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Engine
-EngineSpeed 1.4
-FuelConsumption 1.4
 PartBoxRecipe
 StackSize 4
-//------------------------------------------------
+
+// Movement and Physics
+EngineSpeed 1.4
+FuelConsumption 1.4

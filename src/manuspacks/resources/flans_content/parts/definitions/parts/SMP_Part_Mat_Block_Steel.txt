@@ -1,23 +1,13 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Steel Ingot
 ShortName SMP_Part_Mat_Block_Steel
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Mat_Block_Steel
 
-// Recipe
+// Recipe and Inventory
 RecipeOutput 1
 SmeltableFrom ingotIron
-
-//Misc
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Misc
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

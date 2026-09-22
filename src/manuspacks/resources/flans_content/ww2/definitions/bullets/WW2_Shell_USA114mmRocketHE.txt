@@ -1,68 +1,45 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name US 114 mm M8A1 HE Rocket
 ShortName WW2_Shell_USA114mmRocketHE
+description Amunition for M1A1 Tank with Calliope
 
-
-//Visuals
-model Bullet
+// Model and Rendering
 Icon Icon_WW2_Shell_USA114mmRocketHE
+Model Bullet
 
-
-//Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse P SMP_Part_Mat_Plate_Steel
  F 
 PGP
  S 
 RecipeOutput 3
+MaxStackSize 60
+RoundsPerItem 1
 
-
-//Misc
-description Amunition for M1A1 Tank with Calliope
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Bullet
-
-
-// Bullet Type
+// Behaviour
 Bomb False
 Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
 
-
-//Damage
+// Ballistics and Damage
 Damage 1000
 DamageVsVehicles 1000
 Mass 17600
 MuzzleVelocity 259
 ExplosiveMassTNTKg 1.9
 FragType HE_SHELL
-
-
-//Bullet Behavior
-ExplodeOnImpact True
 Explosion 4
 Fire 0
-FallSpeed 1
-Fuse 200
-Penetrates False
-BreaksGlass True
-HitBoxSize 1.0
 
+// Sounds
+HitSound bomb
 
-//Drop
-
-
-//Lock On
-
-
-//Parctical
+// Effects
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 12
@@ -70,14 +47,3 @@ TrailParticleType flansmod.fmflame
 HasLight True
 FlareParticleCount 12
 DebrisParticleCount 5
-
-
-//Sound
-HitSound bomb
-
-
-/Inventory
-MaxStackSize 60
-RoundsPerItem 1
-
-//------------------------------------------------

@@ -1,27 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Civil Cockpit Frame
 ShortName SMP_Part_Cockpit_Civil
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Cockpit_Civil
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Plate_Steel S SMP_Part_Misc_Seat_Plane G glass C SMP_Part_Misc_Computer
  GG
 CSS
 MMM
 RecipeOutput 1
-
-//Misc
-
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Cockpit
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

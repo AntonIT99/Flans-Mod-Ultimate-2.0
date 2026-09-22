@@ -1,82 +1,87 @@
-﻿//---Standard Vehicle Config for Flans Mod--------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+﻿// Identity
 Name Panzerhaubitze Hummel
 ShortName WW2_Vehicle_PanzerhaubitzeHummel_1A
 
-
-// Visuals
+// Model and Rendering
 Model Manus_WW2.Vehicle.WW2_Vehicle_PanzerhaubitzeHummel_1
 Icon Icon_WW2_Vehicle_PanzerhaubitzeHummel_1A
-
-
-// Recipe
-
-
-//Misc
-SquashMobs True
-IsExplosionWhenDestroyed true
-
-//------------------------------------------------
-
-//---Driveables-----------------------------------
-//Visuals
 Texture Skin_WW2_Vehicle_PanzerhaubitzeHummel_1A
+RotateWheels True
 
-
-//Movement
-MaxThrottle 0.6
-MaxNegativeThrottle 0.3
-Drag 1.0
-
-
-//Wheels
-WheelPosition 0 -35 -8 -28
-WheelPosition 1 -35 -8 28
-WheelPosition 2 46 -8 28
-WheelPosition 3 46 -8 -28
-WheelRadius 1.0
-WheelSpringStrength 0.5
-
-
-//Inventory Slots
+// Recipe and Inventory
 FuelTankSize 2000
 CargoSlots 0
 ShellSlots 5
-
-
-//Recipe
 AddRecipeParts turret 1 SMP_Part_Turret_Artillery 6 SMP_Part_Mat_Armor_Steel
 AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
 AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
 AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
 AddDye 10 gray
-
-
-//Floating
-
-
-//Weapons
 AllowAllAmmo False
 AddAmmo WW2_Shell_German150mmHE
+
+// Movement and Physics
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+Tank true
+RealMassKg 23000
+RealEnginePowerPS 265
+RealMaxSpeedKmh 40
+DriveType TRACKED
+RealMaxReverseSpeedKmh 7
+
+// Weapons
 BarrelPosition 0 36 0
 ShellDelay 210
 ShootDelay 5
+GunOrigin 1 4 45 21
+PlaceTimePrimary 80
+ReloadTimeSecondary 100
+ShootDelayPrimarySeconds 15
+ReadWeaponsFromGunTypes true
 
+// Protection
+IsExplosionWhenDestroyed true
+ArmorFrontMm 30
+ArmorSideMm 20
+ArmorRearMm 20
+ArmorTopMm 10
+ArmorBottomMm 10
+TurretArmorFrontMm 10
+TurretArmorSideMm 10
+TurretArmorRearMm 10
+TurretArmorTopMm 0
+UseRealisticVehicleHealth true
 
-//Driver and Passengers
+// Parts and Seats
+WheelPosition 0 -35 -8 -28
+WheelPosition 1 -35 -8 28
+WheelPosition 2 46 -8 28
+WheelPosition 3 46 -8 -28
 Driver 25 12 -3 0 0 0 45
 RotatedDriverOffset 12 0 -8
 Passengers 1
 Passenger 1 -5 33 13 turret -45 90 -10 30 WW2_MG_MG42ZB_1A MG42
-GunOrigin 1 4 45 21
+SetupPart turret 1200 -48 15 -31 76 28 62
+SetupPart core 3000 -48 -2 -22 110 17 44
+SetupPart rightTrack 300 -55 -10 -30 110 22 8
+SetupPart leftTrack 300 -55 -10 22 110 22 8
+BulletDetection 7
+CameraDistance 7.5
 
+// Optics
+hasScope true
+Gunsight manus_artysight
+gunsightZoom 0.5
 
-//Sounds
-PlaceTimePrimary 80
+// Sounds
 StartSound TankIdle2
 StartSoundLength 41
 EngineSound TankRun2
@@ -88,48 +93,5 @@ EngineSoundRange 22
 BackSoundRange 10
 PlaceSoundPrimary TankPlace
 ReloadSoundSecondary Mg34Reload
-ReloadTimeSecondary 100
-
-
-//Health and collision
-SetupPart turret 1200 -48 15 -31 76 28 62
-SetupPart core 3000 -48 -2 -22 110 17 44
-SetupPart rightTrack 300 -55 -10 -30 110 22 8
-SetupPart leftTrack 300 -55 -10 22 110 22 8
-BulletDetection 7
-
-
-//Misc
-SquashMobs True
-IsExplosionWhenDestroyed true
-CameraDistance 7.5
-
-//------------------------------------------------
-
-//---Vehicle--------------------------------------
-//Visuals
-RotateWheels True
-
-
-//Movement
-FourWheelDrive true
-TurnLeftSpeed 1
-TurnRightSpeed 1
-
-
-//Sound
 ShootSoundPrimary 152mmShoot
 ShootSoundSecondary Mg34Shoot
-
-
-//Misc
-SquashMobs True
-IsExplosionWhenDestroyed true
-Tank true
-
-//------------------------------------------------
-
-// Optics
-hasScope true
-Gunsight manus_artysight
-gunsightZoom 0.5

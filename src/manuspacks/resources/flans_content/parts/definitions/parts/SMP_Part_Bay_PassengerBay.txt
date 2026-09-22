@@ -1,27 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Passenger Bay Frame
 ShortName SMP_Part_Bay_PassengerBay
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Bay_PassengerBay
 
-// Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Seat_Passenger P SMP_Part_Mat_Plate_Steel
 PPP
 SSS
 PPP
 RecipeOutput 1
-
-//Misc
-
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Bay
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

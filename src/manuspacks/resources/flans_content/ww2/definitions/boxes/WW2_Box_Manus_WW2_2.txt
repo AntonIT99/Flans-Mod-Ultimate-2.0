@@ -1,13 +1,19 @@
+// Identity
 Name Manus WW2 Plane Weapon Box
 ShortName WW2_Box_Manus_WW2_2
+
+// Model and Rendering
 TopTexture boxTop
 SideTexture Skin_WW2_Box2
 BottomTexture boxBottom
+
+// Recipe and Inventory
 Recipe I SMP_Part_Mat_Block_Steel B dyePowder.4 R dyePowder.1
 III
 RRR
 III
 
+// Contents
 AddGun WW2_MG_MG532_1A 6 SMP_Part_Mat_Block_Steel 8 SMP_Part_Mat_Plate_Steel
 AddAmmo WW2_Ammo_MG532 2 SMP_Part_Mat_Plate_Steel 1 gunpowder
 AddAltAmmo WW2_Bomb_USA50kg 10 gunpowder 1 SMP_Part_Misc_Ammo_BombBody

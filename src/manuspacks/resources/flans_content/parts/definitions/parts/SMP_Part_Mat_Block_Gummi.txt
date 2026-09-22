@@ -1,26 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Gummi Block
 ShortName SMP_Part_Mat_Block_Gummi
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Mat_Block_Gummi
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Barrel_Oil S slimeball
 MS 
    
    
 RecipeOutput 4
-
-//Misc
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Misc
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

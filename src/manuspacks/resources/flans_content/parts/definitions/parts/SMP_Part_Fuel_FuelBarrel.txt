@@ -1,27 +1,19 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Fuel Barrel
 ShortName SMP_Part_Fuel_FuelBarrel
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Fuel_FuelBarrel
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Barrel_Oil
 MM 
    
    
 RecipeOutput 1
-
-//Misc
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Fuel
-Fuel 8000
 PartBoxRecipe
 StackSize 8
-//------------------------------------------------
+
+// Movement and Physics
+Fuel 8000

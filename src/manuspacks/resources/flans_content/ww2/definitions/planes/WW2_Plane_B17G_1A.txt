@@ -1,51 +1,17 @@
-﻿//---Standard Plane Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+﻿// Identity
 Name Boeing B-17G - Sally B
 ShortName WW2_WW2_Plane_B17G_1A
 
-
-//Visuals
+// Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_B17G_1
 Icon Icon_WW2_Plane_B17G_1A
-
-
-//Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Driveables-----------------------------------
-//Visuals
 Texture Skin_WW2_Plane_B17G_1A
 
-
-//Movement
-MaxThrottle 2.0
-MaxNegativeThrottle 0.0
-Drag 1.0
-
-
-//Wheels
-WheelPosition 0 30 -8 -62
-WheelPosition 1 30 -8 62
-WheelPosition 2 -201 26 0
-WheelSpringStrength 0.125
-
-
-//Inventory Slots
+// Recipe and Inventory
 FuelTankSize 32000
 BombSlots 16
 CargoSlots 0
 MissileSlots 0
-
-
-//Recipe
 AddRecipeParts core 1 SMP_Part_Cockpit_Large 16 SMP_Part_Mat_Plate_Steel
 AddRecipeParts nose 1 SMP_Part_Nose_Plane 12 SMP_Part_Mat_Plate_Steel
 AddRecipeParts tail 1 SMP_Part_Tail_Large 24 SMP_Part_Mat_Plate_Steel
@@ -55,15 +21,31 @@ AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
 AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
 AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
 AddDye 20 green
-
-
-//Floating
-
-
-//Weapons
 AllowAllAmmo False
 AddAmmo WW2_Bomb_USA100lbs
 AddAmmo WW2_Bomb_USA500lbs
+
+// Movement and Physics
+MaxThrottle 2.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+WheelSpringStrength 0.125
+Mode Plane
+LookDownSpeed 1
+LookUpSpeed 1
+RollLeftSpeed 1
+RollRightSpeed 1
+TurnLeftSpeed 1
+TurnRightSpeed 1
+RestingPitch 10.0
+RealMassKg 24500
+RealEnginePowerKw 3580
+RealMaxSpeedKmh 472
+RealWingSpanM 31.62
+RealWingAreaM2 131.92
+RealClimbRateMs 4.6
+
+// Weapons
 Primary None
 ModePrimary FullAuto
 AlternatePrimary False
@@ -73,32 +55,30 @@ ModeSecondary FullAuto
 AlternateSecondary False
 ShootPointSecondary 0 -10 0
 ShootDelaySecondary 5
+GunOrigin 2 -125 28 0
+GunOrigin 3 -45 84 0
+GunOrigin 4 78 25 0
+GunOrigin 5 132 53 -19
+GunOrigin 6 132 53 19
+GunOrigin 7 294 57 0
+ReadWeaponsFromGunTypes true
 
+// Protection
+UseRealisticVehicleHealth true
 
-//Driver and Passengers
+// Parts and Seats
+WheelPosition 0 30 -8 -62
+WheelPosition 1 30 -8 62
+WheelPosition 2 -201 26 0
 Pilot 70 55 -7
 Passengers 7
 Passenger 1 70 55 7 core
 Passenger 2 127 38 0 nose -45 45 -45 25 WW2_MG_BrowningM2_1A PassengerGun2
-GunOrigin 2 -125 28 0
 Passenger 3 45 68 0 core -360 360 0 70 WW2_MG_BrowningM2_1A PassengerGun3
-GunOrigin 3 -45 84 0
 Passenger 4 -78 15 0 core -360 360 -70 0 WW2_MG_BrowningM2_1A PassengerGun4
-GunOrigin 4 78 25 0
 Passenger 5 -132 41 -5 tail 235 305 -35 35 WW2_MG_BrowningM2_1A PassengerGun5
-GunOrigin 5 132 53 -19
 Passenger 6 -132 41 5 tail 55 125 -35 35 WW2_MG_BrowningM2_1A PassengerGun6
-GunOrigin 6 132 53 19
 Passenger 7 -275 52 0 tail 135 225 -45 45 WW2_MG_BrowningM2_1A PassengerGun7
-GunOrigin 7 294 57 0
-
-//Sounds
-StartSound propStart
-StartSoundLength 20
-ShootSoundSecondary bomb
-
-
-//Health and collision
 SetupPart core 500 -121 28 -21 238 48 42
 SetupPart nose 200 117 29 -20 22 38 32
 SetupPart leftWing 300 -45 36 -310 80 23 289
@@ -178,50 +158,19 @@ CollisionPoint 2 54 -270 leftWing
 CollisionPoint 2 55 -286 leftWing
 CollisionPoint 2 56 -302 leftWing
 BulletDetection 25
-
-
-//Misc
 CameraDistance 20.0
-
-//------------------------------------------------
-
-//---Plane----------------------------------------
-//Flying Mode
-Mode Plane
-
-
-//Visuals
-
-
-//Movement
-LookDownSpeed 1
-LookUpSpeed 1
-RollLeftSpeed 1
-RollRightSpeed 1
-TurnLeftSpeed 1
-TurnRightSpeed 1
-
-
-//Sound
-PropSound LancasterProp
-PropSoundLength 49
-
-
-//Weapon
-
-
-//Misc
-RestingPitch 10.0
-
-
-//Propeller
 Propeller 0 0 0 0 rightWing SMP_Part_Propeller_RotorPlane
 Propeller 1 0 0 0 leftWing SMP_Part_Propeller_RotorPlane
 Propeller 2 0 0 0 rightWing SMP_Part_Propeller_RotorPlane
 Propeller 3 0 0 0 leftWing SMP_Part_Propeller_RotorPlane
 
-//------------------------------------------------
-
 // Optics
 heliGuiSeat 1 true
 heliGUI manus_bombsightgui
+
+// Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundSecondary bomb
+PropSound LancasterProp
+PropSoundLength 49

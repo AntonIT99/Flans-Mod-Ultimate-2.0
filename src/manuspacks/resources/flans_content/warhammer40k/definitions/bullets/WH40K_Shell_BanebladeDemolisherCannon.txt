@@ -1,74 +1,44 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name Baneblade Demolisher Cannon Shell
 ShortName WH40K_Shell_BanebladeDemolisherCannon
+description Amunition for Baneblade Demolisher Cannon
 
-
-//Visuals
-model Bullet
+// Model and Rendering
 Icon Icon_WH40K_Shell_BanebladeDemolisherCannon
+Model Bullet
 
-
-//Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
 GGG
 GFG
 SSS
 RecipeOutput 3
+MaxStackSize 1
+RoundsPerItem 16
 
-
-//Misc
-description Amunition for Baneblade Demolisher Cannon
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Bullet
-
-
-// Bullet Type
+// Behaviour
 Bomb False
 Shell True
-
-
-//Damage
-Damage 75
-DamageVsVehicles 75
-
-
-//Bullet Behavior
 ExplodeOnImpact True
-Explosion 7
-Fire 0
-FallSpeed 3
+FallSpeed 1.0
 Fuse 200
 Penetrates False
 BreaksGlass True
 HitBoxSize 1.0
 
+// Ballistics and Damage
+Damage 75
+DamageVsVehicles 75
+Explosion 7
+Fire 0
+Mass 43500.0
+MuzzleVelocity 520
+ExplosiveMassTNTKg 5.1
+PenetrationAt100m 41
 
-//Drop
-
-
-//Lock On
-
-
-//Parctical
-FlakParticles 0
-SmokeTrail False
-
-
-//Sound
+// Sounds
 HitSound bomb
 
-
-/Inventory
-MaxStackSize 1
-RoundsPerItem 16
-
-//------------------------------------------------
+// Effects
+FlakParticles 0
+SmokeTrail False

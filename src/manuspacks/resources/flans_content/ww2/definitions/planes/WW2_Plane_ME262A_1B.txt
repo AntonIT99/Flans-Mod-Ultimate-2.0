@@ -1,51 +1,17 @@
-﻿//---Standard Plane Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.1.2.3
-
-
-//---Standard-------------------------------------
-//Naming
+﻿// Identity
 Name Messerschmidt Me 262A Schwalbe, EJG 2
 ShortName WW2_Plane_ME262A_1B
 
-
-//Visuals
+// Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_ME262A_1
 Icon Icon_WW2_Plane_ME262A_1B
-
-
-//Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Driveables-----------------------------------
-//Visuals
 Texture Skin_WW2_Plane_ME262A_1B
 
-
-//Movement
-MaxThrottle 6.0
-MaxNegativeThrottle 0.0
-Drag 1.0
-
-
-//Wheels
-WheelPosition 0 -36 -8 -24
-WheelPosition 1 -36 -8 24
-WheelPosition 2 42 -8 0
-WheelSpringStrength 0.125
-
-
-//Inventory Slots
+// Recipe and Inventory
 FuelTankSize 6000
 BombSlots 3
 CargoSlots 0
 MissileSlots 0
-
-
-//Recipe
 AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
 AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
 AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
@@ -55,14 +21,30 @@ AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
 AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
 AddRecipeParts coreWheel 1 SMP_Part_Wheel_Plane
 AddDye 5 green
-
-
-//Floating
-
-
-//Weapons
 AllowAllAmmo False
 AddAmmo WW2_Bomb_German50kg
+
+// Movement and Physics
+MaxThrottle 6.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+WheelSpringStrength 0.125
+Mode Plane
+LookDownSpeed 2
+LookUpSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+TurnLeftSpeed 2
+TurnRightSpeed 2
+RestingPitch 0.0
+RealMassKg 6473
+RealEngineThrustKn 17.62
+RealMaxSpeedKmh 900
+RealWingSpanM 12.6
+RealWingAreaM2 21.7
+RealClimbRateMs 20
+
+// Weapons
 Primary Gun
 ModePrimary FullAuto
 AlternatePrimary False
@@ -76,21 +58,17 @@ Secondary Bomb
 ModeSecondary FullAuto
 AlternateSecondary False
 ShootDelaySecondary 100
+ReadWeaponsFromGunTypes true
 
+// Protection
+UseRealisticVehicleHealth true
 
-//Driver and Passengers
+// Parts and Seats
+WheelPosition 0 -36 -8 -24
+WheelPosition 1 -36 -8 24
+WheelPosition 2 42 -8 0
 Pilot -38 25 0
 Passengers 0
-
-
-//Sounds
-StartSound propStart
-StartSoundLength 20
-ShootSoundPrimary PlaneShoot
-ShootSoundSecondary bomb
-
-
-//Health and collision
 SetupPart core 200 -75 17 -16 105 23 32
 SetupPart nose 100 30 17 -10 20 18 20
 SetupPart tail 200 -149 22 -10 73 17 20
@@ -122,46 +100,16 @@ CollisionPoint -40 26 -90 leftWing
 CollisionPoint -45 26 -106 leftWing
 CollisionPoint -48 28 -122 leftWing
 BulletDetection 10
-
-
-//Misc
 CameraDistance 10.0
-
-//------------------------------------------------
-
-//---Plane----------------------------------------
-//Flying Mode
-Mode Plane
-
-
-//Visuals
-
-
-//Movement
-LookDownSpeed 2
-LookUpSpeed 2
-RollLeftSpeed 2
-RollRightSpeed 2
-TurnLeftSpeed 2
-TurnRightSpeed 2
-
-
-//Sound
-PropSound propSound
-PropSoundLength 30
-
-
-//Weapon
-
-
-//Misc
-RestingPitch 0.0
-
-
-//Propeller
 Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineJet
 Propeller 1 0 0 0 leftWing SMP_Part_Propeller_TurbineJet
 Propeller 2 0 0 0 rightWing SMP_Part_Propeller_TurbineJet
 Propeller 3 0 0 0 rightWing SMP_Part_Propeller_TurbineJet
 
-//------------------------------------------------
+// Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+PropSound propSound
+PropSoundLength 30

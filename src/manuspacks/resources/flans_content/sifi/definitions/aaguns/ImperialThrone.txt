@@ -1,33 +1,38 @@
+// Identity
 Name Imperial Throne
 ShortName ImperialThrone
-//The ammo this gun uses (shortName)
 
+// Model and Rendering
 Icon IconAAGunImperialThrone
 Model manus_sifi.ImperialThrone
-//Place the texture .png in the skins folder
 Texture SkinAAGunImperialThrone
-NumBarrels 0
-FireAlternately True
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 60
-Health 300
-//The amount of gun recoil
-Recoil 0
-//Damage in half hearts
-Damage 0
-//The higher this value, the more the bullets spread
-Accuracy 0
-//Time in ticks between rounds
-ShootDelay 10
-ShootSound TurboLaser
-ReloadSound mp44Reload
-//The position of the player relative to the pivot
-GunnerPos 0 29 0
-//Degrees above and below level that the gun can work within. 90 degrees is vertical
-TopViewLimit 80
-BottomViewLimit 0
+
+// Recipe and Inventory
 RecipeOutput 1
 Recipe L leather M SMP_Part_Mat_Plate_PlaSteel
  L 
 MLM 
 MMM
+
+// Movement and Physics
+RealMassKg 400
+
+// Weapons
+NumBarrels 0
+FireAlternately True
+ReloadTime 60
+Recoil 0
+Damage 0
+GunnerPos 0 29 0
+TopViewLimit 80
+BottomViewLimit 0
+RoundsPerMin 120.0
+Dispersion 0.1
+
+// Protection
+Health 300
+UseRealisticVehicleHealth true
+
+// Sounds
+ShootSound TurboLaser
+ReloadSound mp44Reload

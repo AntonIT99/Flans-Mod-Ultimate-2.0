@@ -1,34 +1,57 @@
-//Naming
+// Identity
 Name GTK Boxer with 20 mm Cannon
 ShortName Boxer4
-AddAmmo ShellNATO20x139mmDM63Belt
-//Visuals
+
+// Model and Rendering
 Icon IconVehicleBoxer4
 Model manus_modern_warfare.Boxer4
 Texture SkinVehicleBoxer
 RotateWheels True
-//Third Person Camera Distance
-CameraDistance 10
-//Throttle
-MaxThrottle 0.8
-MaxNegativeThrottle 0.5
-//Steering modifiers
-TurnLeftSpeed 1
-TurnRightSpeed 1
-//Drag
-Drag 1.0
-//For calculating whether wheels are on the ground or not for driving
-WheelRadius 1.0
-//If true, then all wheels will apply drive forces
-FourWheelDrive true
-//Tank mode activate
-Tank false
-//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+
+// Recipe and Inventory
+AddAmmo ShellNATO20x139mmDM63Belt
 FuelTankSize 2000
-//Inventory Slots
 CargoSlots 18
 ShellSlots 5
-//Driver and passenger positions
+AddRecipeParts turret 1 Part_Turret_APC 8 Mat_Armor_Steel
+AddRecipeParts core 1 Part_Chassis_APC 10 Mat_Plate_Steel 15 Mat_Armor_Steel
+AddRecipeParts frontLeftWheel 2 Part_Wheel_APC
+AddRecipeParts frontRightWheel 2 Part_Wheel_APC
+AddRecipeParts backLeftWheel 2 Part_Wheel_APC
+AddRecipeParts backRightWheel 2 Part_Wheel_APC
+AddDye 10 green
+
+// Movement and Physics
+MaxThrottle 0.8
+MaxNegativeThrottle 0.5
+TurnLeftSpeed 1
+TurnRightSpeed 1
+Drag 1.0
+WheelRadius 1.0
+FourWheelDrive true
+Tank false
+RealMassKg 36500
+RealEnginePowerHp 711
+RealMaxSpeedKmh 103
+DriveType AWD
+RealMaxReverseSpeedKmh 15
+
+// Weapons
+BarrelPosition 0 44 0
+ShootDelay 5
+ShellDelay 110
+ReadWeaponsFromGunTypes true
+
+// Protection
+ArmorFrontMm 60
+ArmorSideMm 40
+ArmorRearMm 30
+ArmorTopMm 20
+ArmorBottomMm 25
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 10
 Driver 42 9 9 -360 360 -10 20
 RotatedDriverOffset 0 0 0
 Passengers 7
@@ -39,31 +62,6 @@ Passenger 4 -44 7 -8 core 60 160 -45 45
 Passenger 5 -14 7 8 core -160 -60 -45 45
 Passenger 6 -29 7 8 core -160 -60 -45 45
 Passenger 7 -44 7 8 core -160 -60 -45 45
-BarrelPosition 0 44 0
-//Secondary gun
-
-//Delays are in ticks or 1/20ths of seconds
-ShootDelay 5
-ShellDelay 110
-//Sounds
-StartSound engineidle_ifv_stryker
-StartSoundLength 20
-EngineSound engine_ifv_stryker
-EngineSoundLength 20
-ShootSoundPrimary shoot_20mmaade
-//Recipe
-//Each section of the plane may have many parts
-//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
-//rightWing, nose, turret, coreWheel, core
-AddRecipeParts turret 1 Part_Turret_APC 8 Mat_Armor_Steel
-AddRecipeParts core 1 Part_Chassis_APC 10 Mat_Plate_Steel 15 Mat_Armor_Steel
-AddRecipeParts frontLeftWheel 2 Part_Wheel_APC
-AddRecipeParts frontRightWheel 2 Part_Wheel_APC
-AddRecipeParts backLeftWheel 2 Part_Wheel_APC
-AddRecipeParts backRightWheel 2 Part_Wheel_APC
-//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
-AddDye 10 green
-//Health and collision
 SetupPart turret 250 -17 32 -13 33 14 26
 SetupPart core 400 -55 0 -22 127 31 44
 SetupPart frontRightWheel 200 10 -10 -24 50 22 7
@@ -81,3 +79,10 @@ hasScope true
 Gunsight manus_crows
 gunsightZoom 3
 thermalSight true
+
+// Sounds
+StartSound engineidle_ifv_stryker
+StartSoundLength 20
+EngineSound engine_ifv_stryker
+EngineSoundLength 20
+ShootSoundPrimary shoot_20mmaade

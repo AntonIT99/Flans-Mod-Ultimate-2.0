@@ -1,42 +1,33 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name Soviet 85 mm BR-365 APHEBC (D-5S/ZiS-S-53)
 ShortName WW2_Shell_USSR85mmAP
+description Amunition for T-34/85 Tank and SU-85 Tank
 
-
-//Visuals
-model Bullet
+// Model and Rendering
 Icon Icon_WW2_Shell_USSR85mmAP
+Model Bullet
 
-
-//Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Steel
  F 
  G 
  S 
 RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
 
-
-//Misc
-description Amunition for T-34/85 Tank and SU-85 Tank
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Bullet
-
-
-// Bullet Type
+// Behaviour
 Bomb False
 Shell True
+HasSubmunitions false
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
 
-
-//Damage
+// Ballistics and Damage
 Damage 1
 DamageVsLiving 25
 DamageVsVehicles 0
@@ -44,27 +35,13 @@ Mass 9200
 MuzzleVelocity 792
 ExplosiveMassTNTg 164
 PenetrationAt100m 111
-HasSubmunitions False
-
-
-//Bullet Behavior
-ExplodeOnImpact True
 Explosion 1
 Fire 0
-FallSpeed 1
-Fuse 200
-Penetrates False
-BreaksGlass True
-HitBoxSize 1.0
 
+// Sounds
+HitSound bomb
 
-//Drop
-
-
-//Lock On
-
-
-//Parctical
+// Effects
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 9
@@ -72,13 +49,3 @@ TrailParticleType flansmod.fmtracer
 HasLight True
 FlareParticleCount 5
 DebrisParticleCount 5
-
-//Sound
-HitSound bomb
-
-
-/Inventory
-MaxStackSize 16
-RoundsPerItem 1
-
-//------------------------------------------------

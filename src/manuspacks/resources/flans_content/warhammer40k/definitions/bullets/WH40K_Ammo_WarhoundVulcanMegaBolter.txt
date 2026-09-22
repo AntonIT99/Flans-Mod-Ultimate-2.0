@@ -1,83 +1,39 @@
-﻿//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+﻿// Identity
 Name Warhound Titan Vulcan Mega Bolter Ammo
 ShortName WH40K_Ammo_WarhoundVulcanMegaBolter
-
-
-// Visuals
-model Manus_WH40K.Misc.WH40K_Misc_TitanBolt_1
-Icon Icon_WH40K_Ammo_WarhoundVulcanMegaBolter
-
-
-// Recipe
-
-
-//Misc
 description Ammo for Warhound Vulcan Mega Bolter
 
-//------------------------------------------------
+// Model and Rendering
+Icon Icon_WH40K_Ammo_WarhoundVulcanMegaBolter
+Model Manus_WH40K.Misc.WH40K_Misc_TitanBolt_1
+Texture Skin_WH40K_Bullet_TitanBolt_1A
 
-//--Shootable-------------------------------------
-//Visuals
-
-//Damage
-HitBoxSize 0.1
-DamageVsLiving 50
-DamageVsPlayer 50
-
-
-//Ammo Settings
+// Recipe and Inventory
 RoundsPerItem 5000
+MaxStackSize 1
+
+// Behaviour
+HitBoxSize 0.1
 FallSpeed 0
-DamageVsVehicles 50
 BreaksGlass True
 Fuse 0
 ExplodeOnImpact True
-Fire 0
-Explosion 1
-
-
-//Drop Item
-MaxStackSize 1
-
-
-//Inventory
-
-
-//Sound
-
-
-//Particle
-SmokeTrail False
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Manus_WH40K.Misc.WH40K_Misc_TitanBolt_1
-Texture Skin_WH40K_Bullet_TitanBolt_1A
-HasLight True
-
-
-// Bullet Type
-
-
-//Bullet Behavior
 Penetrates False
 
+// Ballistics and Damage
+DamageVsLiving 50
+DamageVsPlayer 50
+DamageVsVehicles 50
+Fire 0
+Explosion 1
+Mass 1000.0
+ExplosiveMassTNTg 150
+PenetrationAt100m 60
 
-//Lock On
-
-
-//Parctical
-FlakParticles 0
-
-
-//Sound
+// Sounds
 HitSound bullet
 
-//------------------------------------------------
+// Effects
+SmokeTrail False
+HasLight True
+FlakParticles 0

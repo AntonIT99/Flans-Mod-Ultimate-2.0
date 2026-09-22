@@ -1,13 +1,19 @@
+// Identity
 Name Manus WH40K Box
 ShortName WH40K_Box_Manus_WH40K_1
+
+// Model and Rendering
 TopTexture boxTop
 SideTexture Skin_WH40K_Box_1
 BottomTexture boxBottom
+
+// Recipe and Inventory
 Recipe I SMP_Part_Mat_Block_Steel B dyePowder.5 R dyePowder.1
 III
 IRI
 III
 
+// Contents
 AddGun WH40K_Gun_M38Laspistol_1A 4 SMP_Part_Mat_Block_DuraSteel
 AddAmmo WH40K_Ammo_PowerpackLasgun 2 SMP_Part_Mat_Block_DuraSteel
 AddGun WH40K_Gun_M36Lasgun_1A 4 SMP_Part_Mat_Block_DuraSteel

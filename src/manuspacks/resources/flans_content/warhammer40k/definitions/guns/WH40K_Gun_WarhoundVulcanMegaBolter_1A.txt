@@ -1,81 +1,42 @@
-﻿//---Standard Gun Config for Flans Mod------------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+﻿// Identity
 Name Warhound Titan Vulcan Mega Bolter
 ShortName WH40K_Gun_WarhoundVulcanMegaBolter_1A
 
-
-// Visuals
+// Model and Rendering
 ModelScale 1
 Icon Icon_WH40K_Gun_WarhoundVulcanMegaBolter_1A
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Gun------------------------------------------
-//Gun Type
-Deployable False
-UsableByPlayers False
-
-//Visual
 Model Manus_WH40K.Gun.WH40K_Gun_WarhoundVulcanMegaBolter_1
+DeployedModel None
+Texture Skin_WH40K_Gun_WarhoundVulcanMegaBolter_1A
+
+// Recipe and Inventory
+UsableByPlayers False
 AllowGripAttachments False
-
-
-//Damage
-Damage 1
-
-
-//Ammo
 Ammo WH40K_Ammo_WarhoundVulcanMegaBolter
-
-
-//Attachments
 AllowAllAttachments False
 AllowAttachments MKVbBoltgunSilencer MKVbBoltgunScope MKVbBoltgunStock
 AllowBarrelAttachments False
 AllowScopeAttachments False
 AllowStockAttachments False
+NumGenericAttachmentSlots 0
 
-
-//Weapon Settings
-Accuracy 0.1
+// Weapons
+Deployable False
 Mode FullAuto
 Recoil 0
 ReloadTime 40
-ShootDelay 1
 OneHanded True
-
-
-//Shield
-NumGenericAttachmentSlots 0
-
-
-//Zoom
 Scope None
 ZoomLevel 1.0
 FOVZoomLevel 1.25
+RoundsPerMin 1200.0
+Dispersion 0.4
 
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 800.0
 
-//Melee
-
-
-//Deployable
-DeployedModel None
-Texture Skin_WH40K_Gun_WarhoundVulcanMegaBolter_1A
-
-
-//Sound
+// Sounds
 DistortSound False
 ShootSound boltgun_fire
 ReloadSound boltgun_reload
-
-//------------------------------------------------

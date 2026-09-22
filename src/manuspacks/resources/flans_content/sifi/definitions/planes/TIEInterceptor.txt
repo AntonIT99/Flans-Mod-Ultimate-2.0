@@ -1,67 +1,69 @@
-//Naming
+// Identity
 Name TIE-Interceptor
 ShortName TIEInterceptor
-//Visuals
+
+// Model and Rendering
 Icon IconPlaneTIEInterceptor
 Model manus_sifi.TIEInterceptor
 Texture SkinPlaneTIEInterceptor
-//Third Person Camera Distance
-CameraDistance 10.0
-//Throttle
+
+// Recipe and Inventory
+FuelTankSize 5000
+CargoSlots 0
+BombSlots 0
+AddRecipeParts core 1 Part_Cockpit_Jet 5 Mat_Plate_Steel
+AddRecipeParts leftWing 1 Part_Wing_Jet 4 Mat_Plate_Steel
+AddRecipeParts rightWing 1 Part_Wing_Jet 4 Mat_Plate_Steel
+AddDye 5 gray
+
+// Movement and Physics
 MaxThrottle 7.0
 MaxNegativeThrottle 0.0
-//Yaw modifiers
 TurnLeftSpeed 2
 TurnRightSpeed 2
-//Pitch modifiers
 LookUpSpeed 2
 LookDownSpeed 2
-//Roll modifiers
 RollLeftSpeed 2
 RollRightSpeed 2
-//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
 Drag 0.98
-//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
 Lift 3.2
-//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
 RestingPitch 0.0
-//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
-FuelTankSize 5000
+HasGear True
+RealMassKg 7500
+RealEngineThrustKn 140
+RealMaxSpeedKmh 2400
+RealWingSpanM 7.0
+RealWingAreaM2 28
+RealClimbRateMs 250
+
+// Weapons
 AddGun 140 79 50 leftWing ImperialLaserCannon
 AddGun 140 46 50 leftWing ImperialLaserCannon
 AddGun 140 79 -50 rightWing ImperialLaserCannon
 AddGun 140 46 -50 rightWing ImperialLaserCannon
 ShootDelay 5
-//Bombs (Bomb delay is in 1/20ths of seconds)
 BombDelay 1
 BombPosition 7 -10 0
-//Inventory Slots
-CargoSlots 0
-BombSlots 0
-//Propeller Positions
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 10.0
 Propeller 0 0 0 0 leftWing Part_Propeller_TurbineSpace
 Propeller 1 0 0 0 rightWing Part_Propeller_TurbineSpace
-//Passengers
 Pilot 4 45 0
 Passengers 0
-//Sounds
+SetupPart core 400 -17 41 -54 34 38 108
+SetupPart leftWing 250 -61 0 24 191 116 30
+SetupPart rightWing 250 -61 0 -54 191 116 30
+BulletDetection 25
+
+// Sounds
 StartSound propStart
 StartSoundLength 20
 PropSound LancasterProp
 PropSoundLength 49
 ShootSound PlaneShoot
 BombSound bomb
-//Recipe
-//Each section of the plane may have many parts
-//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
-//rightWing, nose, turret, coreWheel, core
-AddRecipeParts core 1 Part_Cockpit_Jet 5 Mat_Plate_Steel
-AddRecipeParts leftWing 1 Part_Wing_Jet 4 Mat_Plate_Steel
-AddRecipeParts rightWing 1 Part_Wing_Jet 4 Mat_Plate_Steel
-//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
-AddDye 5 gray
-SetupPart core 400 -17 41 -54 34 38 108
-SetupPart leftWing 250 -61 0 24 191 116 30
-SetupPart rightWing 250 -61 0 -54 191 116 30
-BulletDetection 25
-HasGear True

@@ -1,27 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Bike Wheel
 ShortName SMP_Part_Wheel_Bike
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Wheel_Bike
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Block_Steel G SMP_Part_Mat_Block_Gummi
    
 GG 
 GG 
 RecipeOutput 1
-
-//Misc
-
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Wheel
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

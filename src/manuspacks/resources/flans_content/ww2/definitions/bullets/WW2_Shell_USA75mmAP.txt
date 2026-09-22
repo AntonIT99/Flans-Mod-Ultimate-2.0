@@ -1,42 +1,33 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name US 75 mm M61 APCBC-HE (M3)
 ShortName WW2_Shell_USA75mmAP
+description Amunition for M4A1 Tank
 
-
-//Visuals
-model Bullet
+// Model and Rendering
 Icon Icon_WW2_Shell_USA75mmAP
+Model Bullet
 
-
-//Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Steel
  F 
 GBG
  S 
 RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
 
-
-//Misc
-description Amunition for M4A1 Tank
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Bullet
-
-
-// Bullet Type
+// Behaviour
 Bomb False
 Shell True
+HasSubmunitions false
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
 
-
-//Damage
+// Ballistics and Damage
 Damage 1
 DamageVsLiving 25
 DamageVsVehicles 0
@@ -44,27 +35,13 @@ Mass 6790.0
 MuzzleVelocity 618
 ExplosiveMassTNTg 65
 PenetrationAt100m 102
-HasSubmunitions False
-
-
-//Bullet Behavior
-ExplodeOnImpact True
 Explosion 1
 Fire 0
-FallSpeed 1
-Fuse 200
-Penetrates False
-BreaksGlass True
-HitBoxSize 1.0
 
+// Sounds
+HitSound bomb
 
-//Drop
-
-
-//Lock On
-
-
-//Parctical
+// Effects
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 8
@@ -72,13 +49,3 @@ TrailParticleType flansmod.fmtracer
 HasLight True
 FlareParticleCount 4
 DebrisParticleCount 3
-
-//Sound
-HitSound bomb
-
-
-/Inventory
-MaxStackSize 16
-RoundsPerItem 1
-
-//------------------------------------------------

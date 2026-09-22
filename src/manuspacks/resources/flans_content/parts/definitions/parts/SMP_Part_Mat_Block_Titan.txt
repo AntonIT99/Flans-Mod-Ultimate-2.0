@@ -1,26 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Titan Ingot
 ShortName SMP_Part_Mat_Block_Titan
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Mat_Block_Titan
 
-// Recipe
+// Recipe and Inventory
 Recipe A SMP_Part_Mat_Block_Aluminium M SMP_Part_Mat_Block_Steel
 MAM
    
    
 RecipeOutput 2
-
-//Misc
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Misc
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

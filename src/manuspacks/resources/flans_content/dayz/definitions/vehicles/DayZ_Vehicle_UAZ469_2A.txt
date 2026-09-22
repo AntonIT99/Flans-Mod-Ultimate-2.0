@@ -1,41 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name UAZ-469 open Roof
 ShortName DayZ_Vehicle_UAZ469_2A
 
-// Visuals
+// Model and Rendering
 Model Manus_DayZ.Vehicle.DayZ_Vehicle_UAZ469_2
 Icon Icon_DayZ_Vehicle_UAZ469_2A
-
-//Misc
-
-//------------------------------------------------
-
-//---Driveables-----------------------------------
-//Visuals
 Texture Skin_DayZ_Vehicle_UAZ469_2A
+RotateWheels True
 
-//Movement
-MaxThrottle 1.5
-MaxNegativeThrottle 0.5
-Drag 1
-
-//Wheels
-WheelPosition 0 -21 -8 -14
-WheelPosition 1 -21 -8 14
-WheelPosition 2 21 -8 14
-WheelPosition 3 21 -8 -14
-WheelRadius 1
-SpringStrength 0.5
-
-//Inventory Slots
+// Recipe and Inventory
 FuelTankSize 1000
 CargoSlots 18
-
-//Recipe
 AddRecipeParts core 1 SMP_Part_Chassis_Car 10 SMP_Part_Mat_Plate_Steel
 AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
 AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
@@ -43,40 +18,53 @@ AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
 AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
 AddDye 8 green
 
-//Driver and Passengers
+// Movement and Physics
+MaxThrottle 1.5
+MaxNegativeThrottle 0.5
+Drag 1
+WheelRadius 1
+SpringStrength 0.5
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+RealMassKg 2400
+RealEnginePowerHp 75
+RealMaxSpeedKmh 100
+DriveType AWD
+RealMaxReverseSpeedKmh 25
+
+// Weapons
+ReadWeaponsFromGunTypes true
+
+// Protection
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -21 -8 -14
+WheelPosition 1 -21 -8 14
+WheelPosition 2 21 -8 14
+WheelPosition 3 21 -8 -14
 Driver -2 2 -6 -80 80 -45 45
 Passengers 3
 Passenger 1 -2 2 6 core -80 80 -45 45
 Passenger 2 -17 2 -6 core -80 80 -45 45
 Passenger 3 -17 2 6 core -80 80 -45 45
-
-//Sounds
-StartSound willystart
-StartSoundLength 40
-EngineSound reom35loop
-EngineSoundLength 20
-
-//Health and collision
 SetupPart backRightWheel 100 -27 -10 -15 13 13 4
 SetupPart backLeftWheel 100 -27 -10 11 13 13 4
 SetupPart frontLeftWheel 100 14 -10 11 13 13 4
 SetupPart core 200 -34 -1 -14 64 26 28
 SetupPart frontRightWheel 100 14 -10 -15 13 13 4
 BulletDetection 5
-
-//Misc
 CameraDistance 5
-//------------------------------------------------
 
-//---Vehicle--------------------------------------
-//Visuals
-RotateWheels True
-
-//Movement
-FourWheelDrive True
-TurnLeftSpeed 1
-TurnRightSpeed 1
-
-//Misc
-SquashMobs True
-//------------------------------------------------
+// Sounds
+StartSound willystart
+StartSoundLength 40
+EngineSound reom35loop
+EngineSoundLength 20

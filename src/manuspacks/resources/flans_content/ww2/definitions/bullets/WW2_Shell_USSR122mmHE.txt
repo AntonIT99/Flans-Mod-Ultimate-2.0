@@ -1,42 +1,32 @@
-//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+// Identity
 Name Soviet 122 mm OF-462 HE-Frag (M-30S)
 ShortName WW2_Shell_USSR122mmHE
+description Amunition for SU-122 Tank
 
-
-//Visuals
-model Bullet
+// Model and Rendering
 Icon Icon_WW2_Shell_USSR122mmHE
+Model Bullet
 
-
-//Recipe
+// Recipe and Inventory
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
 GFG
 GGG
 SSS
 RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
 
-
-//Misc
-description Amunition for SU-122 Tank
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-Model Bullet
-
-
-// Bullet Type
+// Behaviour
 Bomb False
 Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
 
-
-//Damage
+// Ballistics and Damage
 Damage 50
 DamageVsLiving 2000
 DamageVsVehicles 2000
@@ -45,26 +35,13 @@ MuzzleVelocity 515
 ExplosiveMassTNTKg 3.67
 PenetrationAt100m 12
 FragType HE_SHELL
-
-
-//Bullet Behavior
-ExplodeOnImpact True
 Explosion 7
 Fire 0
-FallSpeed 1
-Fuse 200
-Penetrates False
-BreaksGlass True
-HitBoxSize 1.0
 
+// Sounds
+HitSound bomb
 
-//Drop
-
-
-//Lock On
-
-
-//Parctical
+// Effects
 FlakParticles 0
 SmokeTrail True
 ExplodeParticles 12
@@ -72,13 +49,3 @@ TrailParticleType flansmod.fmflame
 HasLight True
 FlareParticleCount 12
 DebrisParticleCount 5
-
-//Sound
-HitSound bomb
-
-
-/Inventory
-MaxStackSize 16
-RoundsPerItem 1
-
-//------------------------------------------------

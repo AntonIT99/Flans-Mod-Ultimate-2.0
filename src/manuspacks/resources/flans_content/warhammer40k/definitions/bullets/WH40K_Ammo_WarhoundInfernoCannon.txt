@@ -1,85 +1,40 @@
-﻿//---Standard Bullet Config for Flans Mod---------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+﻿// Identity
 Name Warhound Titan Inferno Cannon Ammo
 ShortName WH40K_Ammo_WarhoundInfernoCannon
-
-
-// Visuals
-Model Null
-Icon Icon_WH40K_Ammo_WarhoundInfernoCannon
-
-
-// Recipe
-
-
-//Misc
 description Ammo for Warhound Vulcan Mega Bolter
 
-//------------------------------------------------
+// Model and Rendering
+Model Null
+Icon Icon_WH40K_Ammo_WarhoundInfernoCannon
+Texture Skin_WH40K_Bullet_TitanBolt_1A
 
-//--Shootable-------------------------------------
-//Visuals
-
-//Damage
-HitBoxSize 0.25
-DamageVsLiving 10
-DamageVsPlayer 10
-
-
-//Ammo Settings
+// Recipe and Inventory
 RoundsPerItem 5000
-FallSpeed 0
-DamageVsVehicles 10
+MaxStackSize 1
+
+// Behaviour
+HitBoxSize 0.25
+FallSpeed 0.3
 BreaksGlass False
 Fuse 100
 ExplodeOnImpact True
-Fire 2
-Explosion 0
-
-
-//Drop Item
-MaxStackSize 1
-
-
-//Inventory
-
-
-//Sound
-
-
-//Particle
-SmokeTrail True
-TrailParticleType flame
-
-//------------------------------------------------
-
-//---Bullet---------------------------------------
-//Visuals
-
-Texture Skin_WH40K_Bullet_TitanBolt_1A
-HasLight True
-
-
-// Bullet Type
-
-
-//Bullet Behavior
 Penetrates False
 HitBoxSize 2.0
 
-//Lock On
+// Ballistics and Damage
+DamageVsLiving 10
+DamageVsPlayer 10
+DamageVsVehicles 10
+Fire 2
+Explosion 0
+Damage 4
 
-
-//Parctical
-FlakParticles 10
-FlakParticleType flame
-
-
-//Sound
+// Sounds
 HitSound bullet
 
-//------------------------------------------------
+// Effects
+SmokeTrail True
+TrailParticleType flame
+HasLight True
+FlakParticles 10
+FlakParticleType flame

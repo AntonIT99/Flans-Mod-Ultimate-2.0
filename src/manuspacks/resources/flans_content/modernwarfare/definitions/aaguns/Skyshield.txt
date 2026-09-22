@@ -1,34 +1,40 @@
+// Identity
 Name Oerlikon 35mm Skyshield
 ShortName Skyshield
-//The ammo this gun uses (shortName)
-Ammo ShellNATO35mm
+
+// Model and Rendering
 Icon IconAAGunSkyshield
 Model manus_modern_warfare.Skyshield
-//Place the texture .png in the skins folder
 Texture SkinAAGunSkyshield
-NumBarrels 1
-Barrel 0 100 0 0
-FireAlternately True
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 60
-Health 300
-//The amount of gun recoil
-Recoil 4
-//Damage in half hearts
-Damage 1
-//The higher this value, the more the bullets spread
-Accuracy 1
-//Time in ticks between rounds
-ShootDelay 10
-ShootSound 35mmshoot
-ReloadSound mp44Reload
-//The position of the player relative to the pivot
-GunnerPos 6 30 -9
-//Degrees above and below level that the gun can work within. 90 degrees is vertical
-TopViewLimit 80
-BottomViewLimit 0
+
+// Recipe and Inventory
+Ammo ShellNATO35mm
 RecipeOutput 1
 Recipe B SMP_Part_Misc_Barrel_AAGun M SMP_Part_Mat_Block_Aluminium L SMP_Part_Misc_Seat_Car
   B
 LM 
 MMM
+
+// Movement and Physics
+RealMassKg 3200.0
+
+// Weapons
+NumBarrels 1
+Barrel 0 100 0 0
+FireAlternately True
+ReloadTime 60
+Recoil 4
+Damage 1
+GunnerPos 6 30 -9
+TopViewLimit 80
+BottomViewLimit 0
+RoundsPerMin 1000.0
+Dispersion 0.1
+
+// Protection
+Health 300
+UseRealisticVehicleHealth true
+
+// Sounds
+ShootSound 35mmshoot
+ReloadSound mp44Reload

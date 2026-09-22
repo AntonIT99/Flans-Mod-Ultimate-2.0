@@ -1,27 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Steel Armorplate
 ShortName SMP_Part_Mat_Armor_Steel
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Mat_Armor_Steel
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
    
 PPP
 MMM
 RecipeOutput 3
-
-//Misc
-
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Misc
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

@@ -1,59 +1,16 @@
-//Naming
+// Identity
 Name Colonial Viper Mk. 2
 ShortName ViperMk1
-//Visuals
+
+// Model and Rendering
 Icon IconPlaneViperMk2
 Model manus_sifi.ViperMk2
 Texture SkinPlaneViperMk2
-//Third Person Camera Distance
-CameraDistance 15.0
-//Throttle
-MaxThrottle 7.0
-MaxNegativeThrottle 0.0
-//Yaw modifiers
-TurnLeftSpeed 2
-TurnRightSpeed 2
-//Pitch modifiers
-LookUpSpeed 2
-LookDownSpeed 2
-//Roll modifiers
-RollLeftSpeed 2
-RollRightSpeed 2
-//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
-Drag 0.98
-//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
-Lift 3.2
-//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
-RestingPitch 0.0
-//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+
+// Recipe and Inventory
 FuelTankSize 5000
-AddGun 22 5 19 core ColonialBlasterCannon
-AddGun 22 5 -19 core ColonialBlasterCannon
-ShootDelay 7
-//Bombs (Bomb delay is in 1/20ths of seconds)
-BombDelay 1
-BombPosition 7 -10 0
-//Inventory Slots
 CargoSlots 0
 BombSlots 0
-//Propeller Positions
-Propeller 0 0 0 0 core Part_Propeller_TurbineSpace
-Propeller 1 0 0 0 core Part_Propeller_TurbineSpace
-//Passengers
-Pilot 6 8 0 -80 80 -45 45
-Passengers 0
-//Passenger <ID> <x> <y> <z> <part> [minYaw] [maxYaw] [minPitch] [maxPitch] [gunType] [gunModelName]
-//Sounds
-StartSound viper
-StartSoundLength 20
-PropSound viper
-PropSoundLength 30
-ShootSound cylonblaster_fire
-BombSound bomb
-//Recipe
-//Each section of the plane may have many parts
-//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
-//rightWing, nose, turret, coreWheel, core
 AddRecipeParts tail 1 Part_Tail_Jet 15 Mat_Plate_DuraSteel
 AddRecipeParts core 1 Part_Cockpit_Jet 10 Mat_Plate_DuraSteel
 AddRecipeParts leftWing 1 27030_Part_Wing_Jet 10 Mat_Plate_DuraSteel
@@ -61,8 +18,45 @@ AddRecipeParts rightWing 1 27030_Part_Wing_Jet 10 Mat_Plate_DuraSteel
 AddRecipeParts coreWheel 8 Mat_Plate_DuraSteel
 AddRecipeParts leftWingWheel 8 Mat_Plate_DuraSteel
 AddRecipeParts rightWingWheel 8 Mat_Plate_DuraSteel
-//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
 AddDye 10 white
+
+// Movement and Physics
+MaxThrottle 7.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+Drag 0.98
+Lift 3.2
+RestingPitch 0.0
+HasGear True
+RealMassKg 9000
+RealEngineThrustKn 150
+RealMaxSpeedKmh 2400
+RealWingSpanM 8.0
+RealWingAreaM2 32
+RealClimbRateMs 260
+
+// Weapons
+AddGun 22 5 19 core ColonialBlasterCannon
+AddGun 22 5 -19 core ColonialBlasterCannon
+ShootDelay 7
+BombDelay 1
+BombPosition 7 -10 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 15.0
+Propeller 0 0 0 0 core Part_Propeller_TurbineSpace
+Propeller 1 0 0 0 core Part_Propeller_TurbineSpace
+Pilot 6 8 0 -80 80 -45 45
+Passengers 0
 SetupPart tail 250 -48 3 -19 50 27 38
 SetupPart core 200 2 3 -8 81 14 16
 SetupPart leftWing 150 -42 -7 -45 42 16 26
@@ -71,4 +65,11 @@ SetupPart leftWingWheel 100 -32 -10 -19 14 13 6
 SetupPart rightWingWheel 100 -32 -10 13 14 13 6
 SetupPart rightWing 150 -42 -7 19 42 16 26
 BulletDetection 25
-HasGear True
+
+// Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound cylonblaster_fire
+BombSound bomb

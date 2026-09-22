@@ -1,26 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name DuraSteel Ingot
 ShortName SMP_Part_Mat_Block_DuraSteel
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Mat_Block_DuraSteel
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Block_Steel
  MM
    
    
 RecipeOutput 1
-
-//Misc
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Misc
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------

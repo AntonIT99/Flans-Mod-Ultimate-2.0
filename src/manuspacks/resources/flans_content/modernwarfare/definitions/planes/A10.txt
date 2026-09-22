@@ -1,57 +1,16 @@
-//Naming
+// Identity
 Name A-10 Thunderbolt
 ShortName A10
-//Visuals
+
+// Model and Rendering
 Icon IconPlaneA10
 Model manus_modern_warfare.A10
 Texture SkinPlaneA10
-//Third Person Camera Distance
-CameraDistance 10.0
-//Throttle
-MaxThrottle 5.0
-MaxNegativeThrottle 0.0
-//Yaw modifiers
-TurnLeftSpeed 2
-TurnRightSpeed 2
-//Pitch modifiers
-LookUpSpeed 2
-LookDownSpeed 2
-//Roll modifiers
-RollLeftSpeed 2
-RollRightSpeed 2
-//Drag (A (maxThrottle * numPropellers) : drag ratio of 1 : 1 with mass should keep the plane going at some reasonable speed at full throttle
-Drag 0.98
-//Lift (A lift : mass ratio of 1 : 1 should keep the plane perfectly level at full throttle
-Lift 3.2
-//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
-RestingPitch 0.0
-//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
+
+// Recipe and Inventory
 FuelTankSize 6000
-AddGun 106 12 -2 nose GAU8
-ShootDelay 5
-//Bombs (Bomb delay is in 1/20ths of seconds)
-BombDelay 1
-BombPosition 7 -10 0
-//Inventory Slots
 CargoSlots 0
 BombSlots 7
-//Propeller Positions
-Propeller 0 0 0 0 tail Part_Propeller_TurbineJet
-Propeller 1 0 0 0 tail Part_Propeller_TurbineJet
-//Passengers
-Pilot 62 18 0
-Passengers 0
-//Sounds
-StartSound viper
-StartSoundLength 20
-PropSound viper
-PropSoundLength 30
-ShootSound gatling
-BombSound bomb
-//Recipe
-//Each section of the plane may have many parts
-//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
-//rightWing, nose, turret, coreWheel, core
 AddRecipeParts core 1 Part_Cockpit_Jet 6 Mat_Plate_Steel
 AddRecipeParts nose 1 Part_Nose_Plane 3 Mat_Plate_Steel
 AddRecipeParts tail 1 Part_Tail_Jet 5 Mat_Plate_Steel
@@ -60,8 +19,44 @@ AddRecipeParts rightWing 1 Part_Wing_Jet 6 Mat_Plate_Steel
 AddRecipeParts leftWingWheel 1 Part_Wheel_Plane
 AddRecipeParts rightWingWheel 1 Part_Wheel_Plane
 AddRecipeParts coreWheel 1 Part_Wheel_Plane
-//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
 AddDye 10 green
+
+// Movement and Physics
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+Drag 0.98
+Lift 3.2
+RestingPitch 0.0
+HasGear True
+RealMassKg 13782
+RealEngineThrustKn 80.64
+RealMaxSpeedKmh 706
+RealWingSpanM 17.53
+RealWingAreaM2 47
+RealClimbRateMs 30
+
+// Weapons
+AddGun 106 12 -2 nose GAU8
+ShootDelay 5
+BombDelay 1
+BombPosition 7 -10 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 10.0
+Propeller 0 0 0 0 tail Part_Propeller_TurbineJet
+Propeller 1 0 0 0 tail Part_Propeller_TurbineJet
+Pilot 62 18 0
+Passengers 0
 SetupPart nose 150 92 10 -9 10 16 18
 SetupPart core 500 8 10 -9 84 20 18
 SetupPart tail 300 -88 10 -32 96 27 64
@@ -71,4 +66,11 @@ SetupPart rightWingWheel 50 -16 -10 -30 12 19 3
 SetupPart rightWing 250 -16 11 -104 32 11 95
 SetupPart leftWingWheel 50 -16 -10 27 12 19 3
 BulletDetection 25
-HasGear True
+
+// Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb

@@ -1,51 +1,17 @@
-﻿//---Standard Plane Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.0.0.0
-
-
-//---Standard-------------------------------------
-//Naming
+﻿// Identity
 Name Boeing 707 - Lufthansa
 ShortName Civil_Plane_Boeing707_1A
 
-
-//Visuals
+// Model and Rendering
 Model Manus_Civil.Plane.Civil_Plane_Boeing707_1
 Icon Icon_Civil_Plane_Boeing707_1A
-
-
-//Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Driveables-----------------------------------
-//Visuals
 Texture Skin_Civil_Plane_Boeing707_1A
 
-
-//Movement
-MaxThrottle 4.0
-MaxNegativeThrottle 0.0
-Drag 1.0
-
-
-//Wheels
-WheelPosition 0 -111 -8 -72
-WheelPosition 1 -111 -8 72
-WheelPosition 2 235 -8 0
-WheelSpringStrength 0.125
-
-
-//Inventory Slots
+// Recipe and Inventory
 FuelTankSize 32000
 BombSlots 0
 CargoSlots 64
 MissileSlots 0
-
-
-//Recipe
 AddRecipeParts core 1 SMP_Part_Cockpit_Civil 50 SMP_Part_Mat_Plate_Aluminium
 AddRecipeParts nose 1 SMP_Part_Nose_Plane 10 SMP_Part_Mat_Plate_Aluminium
 AddRecipeParts tail 1 SMP_Part_Tail_Civil 30 SMP_Part_Mat_Plate_Aluminium
@@ -56,13 +22,29 @@ AddRecipeParts rightWingWheel 4 SMP_Part_Wheel_Plane 8 SMP_Part_Mat_Plate_Steel
 AddRecipeParts coreWheel 2 SMP_Part_Wheel_Plane 5 SMP_Part_Mat_Plate_Steel
 AddDye 20 white
 AddDye 10 blue
-
-
-//Floating
-
-
-//Weapons
 AllowAllAmmo False
+
+// Movement and Physics
+MaxThrottle 4.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+WheelSpringStrength 0.125
+Mode Plane
+LookDownSpeed 0.4
+LookUpSpeed 0.4
+RollLeftSpeed 0.4
+RollRightSpeed 0.4
+TurnLeftSpeed 0.4
+TurnRightSpeed 0.4
+RestingPitch 5.0
+RealMassKg 151315
+RealEngineThrustKn 320.4
+RealMaxSpeedKmh 1009
+RealWingSpanM 44.42
+RealWingAreaM2 283.4
+RealClimbRateMs 20.3
+
+// Weapons
 Primary None
 ModePrimary FullAuto
 AlternatePrimary False
@@ -72,9 +54,15 @@ ModeSecondary FullAuto
 AlternateSecondary False
 ShootPointSecondary 0 -10 0
 ShootDelaySecondary 20
+ReadWeaponsFromGunTypes true
 
+// Protection
+UseRealisticVehicleHealth true
 
-//Driver and Passengers
+// Parts and Seats
+WheelPosition 0 -111 -8 -72
+WheelPosition 1 -111 -8 72
+WheelPosition 2 235 -8 0
 Pilot 292 71 -12 -80 80 -45 45
 Passengers 13
 Passenger 1 292 71 -12 core -80 80 -45 45
@@ -90,15 +78,6 @@ Passenger 10 123 64 32 core -80 80 -45 45
 Passenger 11 99 64 32 core -80 80 -45 45
 Passenger 12 75 64 32 core -80 80 -45 45
 Passenger 13 51 64 32 core -80 80 -45 45
-
-
-//Sounds
-StartSound viper
-StartSoundLength 20
-ShootSoundSecondary bomb
-
-
-//Health and collision
 SetupPart core 400 -312 20 -42 633 96 84
 SetupPart nose 100 320 36 -21 36 45 42
 SetupPart tail 300 -570 20 -42 258 96 84
@@ -149,46 +128,15 @@ CollisionPoint -255 69 -390 leftWing
 CollisionPoint -275 71 -410 leftWing
 CollisionPoint -295 73 -440 leftWing
 BulletDetection 25
-
-
-//Misc
 CameraDistance 60.0
-
-//------------------------------------------------
-
-//---Plane----------------------------------------
-//Flying Mode
-Mode Plane
-
-
-//Visuals
-
-
-//Movement
-LookDownSpeed 0.4
-LookUpSpeed 0.4
-RollLeftSpeed 0.4
-RollRightSpeed 0.4
-TurnLeftSpeed 0.4
-TurnRightSpeed 0.4
-
-
-//Sound
-PropSound viper
-PropSoundLength 49
-
-
-//Weapon
-
-
-//Misc
-RestingPitch 5.0
-
-
-//Propeller
 Propeller 0 0 0 0 leftWing SMP_Part_Propeller_TurbineCivil
 Propeller 1 0 0 0 leftWing SMP_Part_Propeller_TurbineCivil
 Propeller 2 0 0 0 rightWing SMP_Part_Propeller_TurbineCivil
 Propeller 3 0 0 0 rightWing SMP_Part_Propeller_TurbineCivil
 
-//------------------------------------------------
+// Sounds
+StartSound viper
+StartSoundLength 20
+ShootSoundSecondary bomb
+PropSound viper
+PropSoundLength 49

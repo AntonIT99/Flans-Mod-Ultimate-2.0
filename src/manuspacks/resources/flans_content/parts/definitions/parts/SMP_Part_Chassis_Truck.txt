@@ -1,27 +1,16 @@
-//---Standard Config for Flans Mod----------------
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name Truck Chassis Frame
 ShortName SMP_Part_Chassis_Truck
 
-// Visuals
+// Model and Rendering
 Icon Icon_SMP_Part_Chassis_Truck
 
-// Recipe
+// Recipe and Inventory
 Recipe M SMP_Part_Mat_Plate_Steel S SMP_Part_Misc_Seat_Car G glass
 MM 
 GSM
  M 
 RecipeOutput 1
-
-//Misc
-
-//------------------------------------------------
-
-//---Part-----------------------------------------
 Category Chassis
 PartBoxRecipe
 StackSize 64
-//------------------------------------------------
