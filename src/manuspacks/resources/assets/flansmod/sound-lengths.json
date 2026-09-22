@@ -6,6 +6,11 @@
       "size": 61106,
       "ticks": 452
     },
+    "30calshoot.ogg": {
+      "key": "30calshoot",
+      "size": 22216,
+      "ticks": 40
+    },
     "30mmshoot.ogg": {
       "key": "30mmshoot",
       "size": 45729,
@@ -110,6 +115,11 @@
       "key": "cylonblaster_fire",
       "size": 7001,
       "ticks": 8
+    },
+    "dp28shoot.ogg": {
+      "key": "dp28shoot",
+      "size": 18799,
+      "ticks": 35
     },
     "engine.ogg": {
       "key": "engine",

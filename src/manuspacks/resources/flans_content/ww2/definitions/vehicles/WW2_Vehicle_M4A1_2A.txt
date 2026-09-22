@@ -130,6 +130,7 @@ TurnRightSpeed 1
 
 //Sound
 ShootSoundPrimary shoot_75mmus
+ShootSoundSecondary 30calshoot
 
 
 //Misc

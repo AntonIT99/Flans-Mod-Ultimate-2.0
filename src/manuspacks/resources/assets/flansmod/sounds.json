@@ -1,4 +1,10 @@
 {
+  "30calshoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:30calshoot"
+    ]
+  },
   "88mmshoot": {
     "category": "player",
     "sounds": [
@@ -81,6 +87,12 @@
     "category": "player",
     "sounds": [
       "flansmod:cylonblaster_fire"
+    ]
+  },
+  "dp28shoot": {
+    "category": "player",
+    "sounds": [
+      "flansmod:dp28shoot"
     ]
   },
   "engine": {

@@ -112,6 +112,7 @@ TurnRightSpeed 1
 
 //Sound
 ShootSoundPrimary shoot_76mmussr
+ShootSoundSecondary dp28shoot
 
 
 //Misc
