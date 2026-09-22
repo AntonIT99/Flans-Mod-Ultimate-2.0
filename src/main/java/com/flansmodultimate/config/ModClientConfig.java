@@ -291,7 +291,7 @@ public final class ModClientConfig
         builder.push("Entity Rendering Settings");
         ENABLE_GPU_MODEL_CACHE = builder
             .comment("Experimental GPU cache for rigid full-detail vehicle and gun model parts. Uses up to 64 MiB of vertex buffers and keeps animated transforms, tint and lighting live. Unsupported geometry, sorted transparency, Fabulous graphics and known shader integrations use the standard renderer. Disable if rendering artifacts or slower frame times occur. No restart required.")
-            .define("enableGpuModelCache", false);
+            .define("enableGpuModelCache", true);
         BULLET_RENDER_DISTANCE = builder
             .comment("Client-side render distance in blocks for bullets.")
             .defineInRange("bulletRenderDistance", 128, 1, 4096);
@@ -669,6 +669,137 @@ public final class ModClientConfig
         value.set(newValue);
         pendingChanges.set(true);
         return true;
+    }
+
+    /** The last position is a read-only indication that individual config values differ from every preset. */
+    public enum RenderPreset
+    {
+        OFF, QUALITY, BALANCED, PERFORMANCE, MAXIMUM_FPS, CUSTOM;
+
+        public static RenderPreset at(int index)
+        {
+            return values()[index];
+        }
+    }
+
+    private record LodValues(double nearPixels, double farPixels, double detailMultiplier,
+                             double trackPixels, double groupedTrackPixels)
+    {
+    }
+
+    private record ImpostorValues(double pixels, int minimumDistance, int maximumDistance)
+    {
+    }
+
+    private static LodValues lodValues(RenderPreset preset)
+    {
+        return switch (preset)
+        {
+            case OFF -> new LodValues(0, 0, 1, 0, 0);
+            case QUALITY -> new LodValues(0.5, 1, 1, 4, 0);
+            case BALANCED -> new LodValues(0.75, 2, 2, 8, 8);
+            case PERFORMANCE -> new LodValues(1.5, 4, 2, 12, 12);
+            case MAXIMUM_FPS -> new LodValues(3, 8, 3, 16, 16);
+            case CUSTOM -> throw new IllegalArgumentException("Custom is not a preset");
+        };
+    }
+
+    private static ImpostorValues impostorValues(RenderPreset preset)
+    {
+        return switch (preset)
+        {
+            case OFF -> new ImpostorValues(0, 64, 0);
+            case QUALITY -> new ImpostorValues(16, 96, 192);
+            case BALANCED -> new ImpostorValues(32, 64, 128);
+            case PERFORMANCE -> new ImpostorValues(64, 48, 96);
+            case MAXIMUM_FPS -> new ImpostorValues(96, 32, 64);
+            case CUSTOM -> throw new IllegalArgumentException("Custom is not a preset");
+        };
+    }
+
+    public static RenderPreset currentLodPreset()
+    {
+        if (!ENABLE_DRIVEABLE_LOD.get())
+            return RenderPreset.CUSTOM;
+
+        LodValues current = new LodValues(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get(),
+            MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get(), DRIVEABLE_LOD_DETAIL_MULTIPLIER.get(),
+            DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE.get(),
+            DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE.get());
+        for (RenderPreset preset : RenderPreset.values())
+            if (preset != RenderPreset.CUSTOM && lodValues(preset).equals(current))
+                return preset;
+        return RenderPreset.CUSTOM;
+    }
+
+    public static RenderPreset currentImpostorPreset()
+    {
+        if (!ENABLE_DRIVEABLE_LOD.get())
+            return RenderPreset.CUSTOM;
+
+        if (DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get() == 0 && DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get() == 0)
+            return RenderPreset.OFF;
+
+        ImpostorValues current = new ImpostorValues(DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get(),
+            DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE.get(), DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get());
+        for (RenderPreset preset : RenderPreset.values())
+            if (preset != RenderPreset.OFF && preset != RenderPreset.CUSTOM
+                && impostorValues(preset).equals(current)
+                && DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER.get() == 2
+                && DRIVEABLE_IMPOSTOR_RESOLUTION.get() == 64
+                && DRIVEABLE_IMPOSTOR_YAW_ANGLES.get() == 8)
+                return preset;
+        return RenderPreset.CUSTOM;
+    }
+
+    /** Changes only model/track LOD controls. Zero thresholds keep impostors available independently. */
+    public static void applyLodPreset(RenderPreset preset)
+    {
+        if (preset == RenderPreset.CUSTOM)
+            return;
+
+        LodValues values = lodValues(preset);
+        if (!ENABLE_DRIVEABLE_LOD.get())
+        {
+            // The disabled master switch also suppresses impostors. Preserve that effective state.
+            set(DRIVEABLE_IMPOSTOR_PIXEL_SIZE, 0D);
+            set(DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE, 0);
+        }
+        set(ENABLE_DRIVEABLE_LOD, true);
+        set(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE, values.nearPixels());
+        set(MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE, values.farPixels());
+        set(DRIVEABLE_LOD_DETAIL_MULTIPLIER, values.detailMultiplier());
+        set(DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE, values.trackPixels());
+        set(DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE, values.groupedTrackPixels());
+    }
+
+    /** Changes only impostor controls; the shared master switch is enabled for this preset to take effect. */
+    public static void applyImpostorPreset(RenderPreset preset)
+    {
+        if (preset == RenderPreset.CUSTOM)
+            return;
+
+        ImpostorValues values = impostorValues(preset);
+        if (!ENABLE_DRIVEABLE_LOD.get())
+        {
+            // Preserve disabled model/track LOD when enabling the shared switch for impostors.
+            LodValues off = lodValues(RenderPreset.OFF);
+            set(MINIMUM_DRIVEABLE_PART_PIXEL_SIZE, off.nearPixels());
+            set(MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE, off.farPixels());
+            set(DRIVEABLE_LOD_DETAIL_MULTIPLIER, off.detailMultiplier());
+            set(DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE, off.trackPixels());
+            set(DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE, off.groupedTrackPixels());
+        }
+        set(ENABLE_DRIVEABLE_LOD, true);
+        set(DRIVEABLE_IMPOSTOR_PIXEL_SIZE, values.pixels());
+        set(DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE, values.maximumDistance());
+        if (preset != RenderPreset.OFF)
+        {
+            set(DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE, values.minimumDistance());
+            set(DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER, 2);
+            set(DRIVEABLE_IMPOSTOR_RESOLUTION, 64);
+            set(DRIVEABLE_IMPOSTOR_YAW_ANGLES, 8);
+        }
     }
 
     /** Writes any deferred option changes to the config file and applies them. */
