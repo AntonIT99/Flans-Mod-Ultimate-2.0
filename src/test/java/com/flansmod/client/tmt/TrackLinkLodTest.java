@@ -1,6 +1,8 @@
 package com.flansmod.client.tmt;
 
+import com.flansmod.client.model.ModelVehicle;
 import com.flansmod.client.model.TrackLinkLod;
+import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -31,15 +33,15 @@ class TrackLinkLodTest
     @Test
     void longOffsetTrackPathsDelaySimplification()
     {
-        var model = new com.flansmod.client.model.ModelVehicle();
+        var model = new ModelVehicle();
         model.fancyTrackModel = link();
         var compact = new TrackType();
-        compact.getLeftTrackPoints().add(new com.flansmod.common.vector.Vector3f(0, 0, 0));
-        compact.getLeftTrackPoints().add(new com.flansmod.common.vector.Vector3f(16, 0, 0));
+        compact.getLeftTrackPoints().add(new Vector3f(0, 0, 0));
+        compact.getLeftTrackPoints().add(new Vector3f(16, 0, 0));
         assertTrue(model.selectTrackLinkLod(compact, 500, 150, 1, 8, false));
         var extended = new TrackType();
-        extended.getLeftTrackPoints().add(new com.flansmod.common.vector.Vector3f(0, 0, 0));
-        extended.getLeftTrackPoints().add(new com.flansmod.common.vector.Vector3f(2048, 0, 0));
+        extended.getLeftTrackPoints().add(new Vector3f(0, 0, 0));
+        extended.getLeftTrackPoints().add(new Vector3f(2048, 0, 0));
         assertFalse(model.selectTrackLinkLod(extended, 500, 150, 1, 8, false));
     }
 
