@@ -348,6 +348,10 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     protected int[] passengerAmmoRounds = new int[0];
     /** Whether the snapshots above describe a tick already seen, so a freshly loaded vehicle does not reload. */
     protected boolean passengerAmmoTracked;
+    /** The same snapshot for each gun bank, indexed by bank. */
+    protected final Item[] gunBankAmmoItem = new Item[2];
+    protected final int[] gunBankAmmoRounds = new int[2];
+    protected boolean gunBankAmmoTracked;
     /**
      * The order the weapon slots were filled in, one entry per weapon slot, zero
      * for an empty slot. A bank loads the oldest round aboard, so a crew that
@@ -1366,7 +1370,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     private void tickTimedWeaponSounds(int previousPrimaryShootDelay)
     {
         int ticksLeft = ShotCooldown.displayTicks(primaryShootDelay);
-        if (configType == null || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET
+        // ShootReloadSound is the main gun's shell being worked into the breech. A
+        // primary bank of mounted guns reloads with the gun's own sound instead.
+        if (configType == null || isGunBank(false) || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET
             || previousPrimaryShootDelay <= ticksLeft
             || ticksLeft != configType.getReloadSoundTick()
             || StringUtils.isBlank(configType.getShootReloadSound()))
@@ -1504,6 +1510,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
 
         tickPassengerGuns();
+        recordGunBankAmmo();
     }
 
     protected float getConfiguredShootDelay(boolean secondary)
@@ -1749,24 +1756,71 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         // reload, the slowest round now aboard setting how long. A bank firing the
         // vehicle's own ordnance is left alone here: chambering a round is what
         // costs it a reload, and loadOrdnance charges and announces that itself.
-        float reloadFactor = loadedReloadTimeMultiplier();
-        boolean restockedGunBank = false;
-        if (isGunBank(false))
+        // Only a bank whose own ammunition changed reloads, so loading shells or a
+        // passenger's belt does not stop the coaxial gun.
+        if (gunBankAmmoTracked)
         {
-            beginBankReload(false, configType.reloadTime(false) * reloadFactor);
-            restockedGunBank = true;
+            noteGunBankRestock(false);
+            noteGunBankRestock(true);
         }
-        if (isGunBank(true))
-        {
-            beginBankReload(true, configType.reloadTime(true) * reloadFactor);
-            restockedGunBank = true;
-        }
-        if (!restockedGunBank)
+    }
+
+    private void noteGunBankRestock(boolean secondary)
+    {
+        if (!isGunBank(secondary))
             return;
-        String sound = StringUtils.firstNonBlank(configType.getShootReloadSound(),
-            configType.getReloadSoundPrimary(), configType.getReloadSoundSecondary());
+        int index = secondary ? 1 : 0;
+        AmmoSelection selection = gunBankSelection(secondary);
+        if (selection == null)
+            return;
+        ItemStack ammo = selection.stack();
+        if (ammo.getItem() == gunBankAmmoItem[index]
+            && ShootableItem.getTotalRounds(ammo) <= gunBankAmmoRounds[index])
+            return;
+        beginBankReload(secondary, configType.reloadTime(secondary) * loadedReloadTimeMultiplier());
+        GunType gunType = selection.gunType();
+        String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, 96D, sound, false);
+            PacketPlaySound.sendSoundPacket(this,
+                gunType == null ? ModCommonConfig.get().soundRange() : gunType.getReloadSoundRange(), sound, false);
+    }
+
+    /**
+     * A bank of mounted guns reloads with the gun's own sound. Failing that it
+     * takes only a sound named for that bank: the shared {@code ReloadSound} and
+     * {@code ShootReloadSound} belong to the vehicle's main gun, and a coaxial
+     * machine gun should never sound like a shell being loaded.
+     */
+    @Nullable
+    private String gunBankReloadSound(boolean secondary, @Nullable GunType gunType)
+    {
+        return StringUtils.firstNonBlank(gunType == null ? null : gunType.getReloadSound(null),
+            secondary ? configType.getReloadSoundSecondary() : configType.getReloadSoundPrimary());
+    }
+
+    /** The ammunition a gun bank is currently feeding from, or null when it has none. */
+    @Nullable
+    private AmmoSelection gunBankSelection(boolean secondary)
+    {
+        for (ShootPoint point : configType.shootPoints(secondary))
+        {
+            AmmoSelection selection = selectAmmo(point, EnumWeaponType.GUN, secondary);
+            if (selection != null && !selection.stack().isEmpty())
+                return selection;
+        }
+        return null;
+    }
+
+    /** Snapshots each gun bank's ammunition after the tick's shots, so a restock can be told from firing. */
+    private void recordGunBankAmmo()
+    {
+        for (int index = 0; index < 2; index++)
+        {
+            AmmoSelection selection = isGunBank(index == 1) ? gunBankSelection(index == 1) : null;
+            gunBankAmmoItem[index] = selection == null ? null : selection.stack().getItem();
+            gunBankAmmoRounds[index] = selection == null ? 0 : ShootableItem.getTotalRounds(selection.stack());
+        }
+        gunBankAmmoTracked = true;
     }
 
     /**
@@ -2308,7 +2362,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         bankRoundsFired[index] = 0;
         beginBankReload(secondary, configType.reloadTime(secondary));
 
-        String sound = StringUtils.firstNonBlank(gunType.getReloadSound(null), configType.reloadSound(secondary));
+        String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gunType.getReloadSoundRange(), sound, false);
     }

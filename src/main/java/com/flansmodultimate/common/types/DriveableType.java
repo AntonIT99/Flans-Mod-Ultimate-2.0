@@ -601,10 +601,19 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
             }
             float resistance = values.length > start + 8 ? parseLegacyFloat(values[start + 8]) : 5F;
             float crew = values.length > start + 9 ? parseLegacyFloat(values[start + 9]) : defaultCrewMultiplier;
-            health.put(part, new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]),
+            CollisionBox box = new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]),
                 parseLegacyFloat(values[start + 3]), parseLegacyFloat(values[start + 4]), parseLegacyFloat(values[start + 5]),
-                parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance, crew));
+                parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance, crew);
+            health.put(part, this instanceof PlaneType ? applyPlaneModelFacing(box) : box);
         });
+    }
+
+    /** Plane models face the opposite way to the simulation frame, as seats and wheels already account for. */
+    private static CollisionBox applyPlaneModelFacing(CollisionBox box)
+    {
+        return CollisionBox.inWorldUnits(box.getHealth(), -(box.getX() + box.getWidth()), box.getY(),
+            -(box.getZ() + box.getDepth()), box.getWidth(), box.getHeight(), box.getDepth(),
+            box.getPenetrationResistance(), box.getCrewDamageMultiplier());
     }
 
     private void readWeapons(TypeFile file)
