@@ -72,10 +72,11 @@ class RigidModelShaderTest
                 for (String uniform : new String[]{"PartPose", "PartNormal", "PartData"})
                 {
                     assertTrue(glGetUniformLocation(program, uniform) >= 0, uniform);
-                    int lastPart = glGetUniformLocation(program, uniform + "[" + (GpuModelCache.PARTS_PER_BATCH - 1) + "]");
+                    int matrices = uniform.equals("PartData") ? (GpuModelCache.PARTS_PER_BATCH + 1) / 2 : GpuModelCache.PARTS_PER_BATCH;
+                    int lastPart = glGetUniformLocation(program, uniform + "[" + (matrices - 1) + "]");
                     assertTrue(lastPart >= 0, uniform + " final part");
                     int stride = uniform.equals("PartNormal") ? 9 : 16;
-                    float[] palette = new float[GpuModelCache.PARTS_PER_BATCH * stride];
+                    float[] palette = new float[matrices * stride];
                     for (int i = 0; i < palette.length; i++) palette[i] = i;
                     assertNotNull(shader.getUniform(uniform));
                     shader.getUniform(uniform).set(palette);

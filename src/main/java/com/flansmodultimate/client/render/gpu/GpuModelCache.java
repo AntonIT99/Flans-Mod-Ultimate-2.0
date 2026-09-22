@@ -36,10 +36,10 @@ import java.util.function.Supplier;
 public final class GpuModelCache
 {
     private static final Logger LOG = LogUtils.getLogger();
-    // mat4 pose + mat3 normal + mat4 metadata: at most 220 vec4 slots for 20
+    // mat4 pose + mat3 normal + two metadata columns: at most 216 vec4 slots for 24
     // parts (including mat3 padding), plus <16 slots for vanilla uniforms. GL 3.2
     // guarantees 256 vertex-uniform vec4 slots. Leave room for driver padding.
-    public static final int PARTS_PER_BATCH = 20;
+    public static final int PARTS_PER_BATCH = 24;
     private static final long MAX_BYTES = 64L * 1024 * 1024;
     private static final long UPLOAD_BYTES_PER_TICK = 2L * 1024 * 1024;
     private static final int MAX_BATCHES = 2048;

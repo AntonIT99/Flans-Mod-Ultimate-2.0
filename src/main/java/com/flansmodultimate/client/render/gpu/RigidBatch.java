@@ -31,7 +31,8 @@ final class RigidBatch implements RigidGeometryConsumer
         key = new GeometryKey(capacity);
         poses = new float[capacity * 16];
         normals = new float[capacity * 9];
-        data = new float[capacity * 16];
+        // Two parts share a mat4; round up so odd capacities still upload whole matrices.
+        data = new float[((capacity + 1) / 2) * 16];
     }
 
     void begin(Backend backend)
@@ -48,6 +49,7 @@ final class RigidBatch implements RigidGeometryConsumer
         int offset = key.count * 16;
         pose.pose().get(poses, offset);
         pose.normal().get(normals, key.count * 9);
+        offset = key.count * 8;
         data[offset] = red;
         data[offset + 1] = green;
         data[offset + 2] = blue;
@@ -86,6 +88,7 @@ final class RigidBatch implements RigidGeometryConsumer
                 {
                     int offset = i * 16;
                     fallbackPose.pose().set(poses, offset);
+                    offset = i * 8;
                     int normalOffset = i * 9;
                     fallbackPose.normal().set(normals[normalOffset], normals[normalOffset + 1], normals[normalOffset + 2],
                         normals[normalOffset + 3], normals[normalOffset + 4], normals[normalOffset + 5],

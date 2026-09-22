@@ -18,6 +18,30 @@ import static org.junit.jupiter.api.Assertions.*;
 class RigidBatchTest
 {
     @Test
+    void packedMetadataPreservesEveryPartAcrossFullAndPartialFallbackBatches()
+    {
+        Backend backend = new Backend();
+        backend.available = false;
+        RigidBatch batch = new RigidBatch(GpuModelCache.PARTS_PER_BATCH);
+        Recording expected = new Recording();
+        RigidGeometry geometry = geometry();
+        PoseStack pose = new PoseStack();
+        batch.begin(backend);
+        for (int i = 0; i < GpuModelCache.PARTS_PER_BATCH + 3; i++)
+        {
+            pose.translate(0.25, -0.5, 1);
+            int light = 0xCAFE0123 + i, overlay = 0xBEEF4321 - i;
+            float tint = i / 32F;
+            geometry.draw(pose.last(), expected, light, overlay, tint, 1 - tint, 0.5F, 0.75F);
+            batch.submit(geometry, pose.last(), light, overlay, tint, 1 - tint, 0.5F, 0.75F);
+        }
+        batch.end();
+        assertEquals(expected.vertices.size(), backend.output.vertices.size());
+        for (int i = 0; i < expected.vertices.size(); i++)
+            assertArrayEquals(expected.vertices.get(i), backend.output.vertices.get(i), 1E-6F);
+    }
+
+    @Test
     void interruptedUploadCanStartAgainAfterReload()
     {
         BufferBuilder upload = new BufferBuilder(256);
