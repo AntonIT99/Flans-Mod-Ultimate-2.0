@@ -1,18 +1,18 @@
+// Identity
 Name Soviet
 ShortName russianTeam
-//TextColour can be one of Black, Blue, Green, Aqua, Red, Purple, Orange, LGrey, Grey, LBlue, LGreen, LAqua, Red, Pink, Yellow, White
-//This is used for player names and such
+
+// Appearance
 TextColour Red
-//TeamColour is a more specific colour for banners, flags and spawn points. It is specified by Red, Green and Blue, each ranging from 0 to 255
 TeamColour 255 0 0
-//Specify the armour this team should spawn with
 Hat russianHelmet
 Chest russianCoat
 Legs russianPants
 Shoes russianBoots
+
+// Classes
 AddClass OfficialWW2_RussianScout
 AddClass OfficialWW2_RussianAssault
 AddClass OfficialWW2_RussianSupport
 AddClass OfficialWW2_RussianEngineer
 AddClass OfficialWW2_RussianMedic
-

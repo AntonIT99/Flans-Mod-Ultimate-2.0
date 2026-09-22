@@ -1,5 +1,8 @@
+// Identity
 Name Heavy Sniper
 ShortName sasSniper1
+
+// Items
 AddItem l96
 AddItem sigP226
 AddItem m67 2

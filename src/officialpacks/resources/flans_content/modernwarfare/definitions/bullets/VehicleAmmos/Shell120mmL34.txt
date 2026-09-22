@@ -2,24 +2,30 @@
 Name British 120 mm L34 WP Smoke (L30A1)
 ShortName Shell120mmL34
 Description White-phosphorus bursting smoke ammunition for the Challenger 2 L30A1
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon heshell120mm
+HasLight False
+
+// Ammunition
 MaxStackSize 4
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 17300
 MuzzleVelocity 670
 FallSpeed 1
-ExplosiveMassTNTg 138
-FragType LOW_FRAG
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTg 138
+FragType LOW_FRAG
 Damage 10
 DamageVsLiving 10
 DamageVsVehicles 5
@@ -27,17 +33,15 @@ Explosion 1
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Smoke and presentation
+// Smoke and effects
 SmokeTime 600
-SmokeParticleType flansmod.smoker1
 SmokeRadius 5
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
+
+// Sounds and particles
+SmokeParticleType flansmod.smoker1
 SmokeTrail True
 TrailParticleType flansmod.fmsmoke
-HasLight False
 FlakParticles 0

@@ -1,5 +1,8 @@
+// Identity
 Name Scout
 ShortName OfficialWW2_BritishScout
+
+// Items
 AddItem leeEnfieldSniper
 AddItem webley
 AddItem millsBomb 2

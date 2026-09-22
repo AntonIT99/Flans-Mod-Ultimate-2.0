@@ -2,24 +2,30 @@
 Name Soviet 122 mm BR-471 APHE (D-25T)
 ShortName Russian122APShell
 Description Armour-piercing ammunition for the 122 mm D-25T tank gun
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon TankShell85rAP
+HasLight True
+
+// Ammunition
 MaxStackSize 8
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 25000
 MuzzleVelocity 781
 FallSpeed 1
-ExplosiveMassTNTg 156
 PenetrationAt100m 165
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTg 156
 Damage 50
 DamageVsLiving 25
 DamageVsVehicles 100
@@ -27,13 +33,9 @@ Explosion 1
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 HasSubmunitions false
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmtracer
-HasLight True
 FlakParticles 0

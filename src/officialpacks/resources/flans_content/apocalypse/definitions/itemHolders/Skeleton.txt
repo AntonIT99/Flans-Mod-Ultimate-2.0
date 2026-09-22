@@ -1,5 +1,8 @@
+// Identity
 Name Skeleton
 ShortName flanSkeleton
+
+// Item and rendering
 Icon Skeleton
 Texture GroundSkeleton
 Model apocalypse.GroundSkeleton

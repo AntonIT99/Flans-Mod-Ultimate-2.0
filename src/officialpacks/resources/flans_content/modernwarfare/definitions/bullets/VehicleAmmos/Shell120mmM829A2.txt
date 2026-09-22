@@ -2,21 +2,27 @@
 Name American 120 mm M829A2 APFSDS-T (M256)
 ShortName Shell120mmM829A2
 Description Kinetic-energy ammunition for the M1A2 Abrams M256
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon hvshell120mm
+HasLight True
+
+// Ammunition
 MaxStackSize 4
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 4900
 MuzzleVelocity 1680
 FallSpeed 1
 PenetrationAt100m 628
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
 Damage 50
@@ -26,12 +32,8 @@ Explosion 1
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmtracer
-HasLight True
 FlakParticles 0

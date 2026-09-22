@@ -1,17 +1,19 @@
+// Identity
 Name Russian Weapon Box
 ShortName russian
+
+// Item and rendering
 TopTexture boxTop
 SideTexture russianbox
 BottomTexture boxBottom
+
+// Recipe
 Recipe I ingotIron Y dyePowder.11 R dyePowder.1
 III
 YRR
 III
-//AddGun shortName amountOf item
-//AddAmmo must come immediately after AddGun for them to be in the same slot
-//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
-//And with parts from this mod, they are the shortName of the item
-//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+
+// Contents
 SetPage Page 1
 AddGun nagant 10 ingotIron 15 log
 AddAmmo nagantAmmo 5 ingotIron 2 gunpowder

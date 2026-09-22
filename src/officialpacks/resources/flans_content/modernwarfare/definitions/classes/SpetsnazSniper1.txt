@@ -1,5 +1,8 @@
+// Identity
 Name Heavy Sniper
 ShortName spetsnazSniper1
+
+// Items
 AddItem dragunov
 AddItem desertEagle
 AddItem m67 1

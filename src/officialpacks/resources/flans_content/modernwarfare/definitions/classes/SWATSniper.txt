@@ -1,5 +1,8 @@
+// Identity
 Name Sniper
 ShortName SWATSniper
+
+// Items
 AddItem m14+flanMW4xScope
 AddItem m9+flanMWSilencer
 AddItem m67 2

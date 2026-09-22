@@ -1,14 +1,25 @@
+// Identity
 Name Bulldozer Leg Armour
 ShortName bulldozerLegs
+
+// Item and rendering
 Icon BulldozerLegs
 Colour 255 255 255
-Type Legs
 Model mw.SuperHeavyLegs
-Defence 0.2
 ArmourTexture Bulldozer
-MoveSpeedModifier 0.75
-KnockbackModifier 0.25
+
+// Recipe
 Enchantability 0
-Toughness 3
 Durability 0
-DamageReductionAmount 9
+
+// Protection
+Type Legs
+Defence 0.16
+KnockbackModifier 0.25
+Toughness 2
+BulletDefence 0.14
+PenetrationResistance 1.24
+ArmorPoints 5
+
+// Movement
+MoveSpeedModifier 0.97

@@ -1,5 +1,8 @@
+// Identity
 Name Heavy Sniper
 ShortName marineSniper1
+
+// Items
 AddItem barrett
 AddItem m9
 AddItem m67 1

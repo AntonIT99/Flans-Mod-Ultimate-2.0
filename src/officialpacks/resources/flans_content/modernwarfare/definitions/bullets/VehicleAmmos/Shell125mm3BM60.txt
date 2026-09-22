@@ -2,21 +2,27 @@
 Name Russian 125 mm 3BM60 Svinets-2 APFSDS (2A46M-5)
 ShortName Shell125mm3BM60
 Description Kinetic-energy ammunition for the T-90MS 2A46M-5
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon hvshell120mm
+HasLight True
+
+// Ammunition
 MaxStackSize 4
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 5100
 MuzzleVelocity 1660
 FallSpeed 1
 PenetrationAt100m 578
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
 Damage 50
@@ -26,12 +32,8 @@ Explosion 1
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmtracer
-HasLight True
 FlakParticles 0

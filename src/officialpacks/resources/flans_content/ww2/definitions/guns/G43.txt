@@ -1,27 +1,10 @@
+// Identity
 Name Gewehr 43
 ShortName G43
-//The ammo this gun uses (shortName)
-Ammo G43Ammo
+
+// Item and rendering
 Icon g43
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 65
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 7
-//Damage in half hearts
-Damage 9
-//The higher this value, the more the bullets spread
-Accuracy 2
-//Time in ticks between rounds
-ShootDelay 3
-ShootSound gewehr43Shoot
-ReloadSound m1carbineReload
-Mode SemiAuto
-//Bullet speed, default 3.0
-BulletSpeed 10.0
-Scope None
-Deployable False
 DeployedModel None
 Model ww2.G43
 Texture g43
@@ -32,10 +15,35 @@ Paintjob g43_green g43_green green 2
 Paintjob g43_oak g43_oak brown 2
 Paintjob g43_pepper g43_pepper gray 2
 ModelScale 0.6
+
+// Ammunition
+Ammo G43Ammo
+ReloadTime 65
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 240.0
+
+// Ballistics
+Recoil 7
+MuzzleVelocity 745.0
+Dispersion 0.2
+
+// Damage and protection
+Damage 9
+
+// Optics
+Scope None
+
+// Attachments
 AllowAllAttachments true
-//List here all the attachments allowed on this gun by shortName and separated by spaces
 AllowAttachments ZF4Scope
 AllowBarrelAttachments false
 AllowScopeAttachments true
 AllowStockAttachments false
 AllowGripAttachments false
+
+// Sounds
+ShootSound gewehr43Shoot
+ReloadSound m1carbineReload

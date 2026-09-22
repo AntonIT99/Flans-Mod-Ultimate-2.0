@@ -1,5 +1,11 @@
+// Identity
 Name Doctor
 ShortName doctor
+
+// Appearance
+Chest labCoat
+
+// Items
 AddItem olympia
 AddItem flareGun
 AddItem zomMedicPack
@@ -7,4 +13,3 @@ AddItem surgicalAxe
 AddItem 12gaugeShell 24
 AddItem flareGunAmmo 5
 AddItem apple 1
-Chest labCoat

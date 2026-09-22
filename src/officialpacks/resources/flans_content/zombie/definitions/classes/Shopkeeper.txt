@@ -1,9 +1,14 @@
+// Identity
 Name Shopkeeper
 ShortName shopkeeper
+
+// Appearance
+Chest shopkeepersApron
+
+// Items
 AddItem doubleBarrelledShotgun
 AddItem doubleBarrelledShotgun
 AddItem baseballBat
 AddItem 12gaugeShell 32
 AddItem beefCooked 2
 AddItem chickenCooked 2
-Chest shopkeepersApron

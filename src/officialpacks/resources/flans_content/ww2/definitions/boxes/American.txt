@@ -1,17 +1,19 @@
+// Identity
 Name American Weapon Box
 ShortName american
+
+// Item and rendering
 TopTexture boxTop
 SideTexture americanbox
 BottomTexture boxBottom
+
+// Recipe
 Recipe I ingotIron B dyePowder.4 R dyePowder.1
 III
 BRR
 III
-//AddGun shortName amountOf item
-//AddAmmo must come immediately after AddGun for them to be in the same slot
-//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
-//And with parts from this mod, they are the shortName of the item
-//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+
+// Contents
 SetPage Page 1
 AddGun m1Carbine 8 ingotIron 12 log
 AddAmmo m1CarbineAmmo 3 ingotIron 1 gunpowder

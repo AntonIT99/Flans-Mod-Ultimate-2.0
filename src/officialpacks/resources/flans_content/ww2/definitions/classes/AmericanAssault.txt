@@ -1,5 +1,8 @@
+// Identity
 Name Assault
 ShortName OfficialWW2_AmericanAssault
+
+// Items
 AddItem BAR
 AddItem colt
 AddItem mk2Frag 2

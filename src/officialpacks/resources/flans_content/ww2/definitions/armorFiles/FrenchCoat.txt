@@ -1,7 +1,16 @@
+// Identity
 Name French WW2 Coat
 ShortName frenchCoat
+
+// Item and rendering
 Icon FrenchCoat
 Colour 255 255 255
-Type Body
-Defence 0.1
 ArmourTexture French
+
+// Protection
+Type Body
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

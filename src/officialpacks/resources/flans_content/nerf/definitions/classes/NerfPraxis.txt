@@ -1,5 +1,8 @@
+// Identity
 Name Scout
 ShortName nerfPraxisClass
+
+// Items
 AddItem nerfPraxis
 AddItem nerfMaverick
 AddItem 10DiscClip 3

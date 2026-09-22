@@ -2,24 +2,30 @@
 Name Allied 75 mm M64 WP Smoke (M3/M6/OQF)
 ShortName Allied75SmokeShell
 Description White-phosphorus screening ammunition for US and British 75 mm tank guns
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon TankShell75abHE
+HasLight False
+
+// Ammunition
 MaxStackSize 8
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 6620
 MuzzleVelocity 594
 FallSpeed 1
-ExplosiveMassTNTg 36
-FragType LOW_FRAG
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTg 36
+FragType LOW_FRAG
 Damage 10
 DamageVsLiving 10
 DamageVsVehicles 5
@@ -27,17 +33,15 @@ Explosion 1
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Smoke and presentation
+// Smoke and effects
 SmokeTime 250
-SmokeParticleType cloud
 SmokeRadius 5
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
+
+// Sounds and particles
+SmokeParticleType cloud
 SmokeTrail True
 TrailParticleType flansmod.fmsmoke
-HasLight False
 FlakParticles 0

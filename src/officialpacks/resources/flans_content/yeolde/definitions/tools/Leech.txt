@@ -1,13 +1,19 @@
+// Identity
 Name Leech
 ShortName leech
+
+// Item and rendering
 Icon Leech
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
+StackSize 1
+
+// Recipe
+RecipeOutput 1
+ShapelessRecipe dirt hellsand mushroom
+
+// Tool
 Heal true
 Repair false
 HealAmount 4
 ToolLife 1
 DestroyOnEmpty true
-StackSize 1
-RecipeOutput 1
-ShapelessRecipe dirt hellsand mushroom

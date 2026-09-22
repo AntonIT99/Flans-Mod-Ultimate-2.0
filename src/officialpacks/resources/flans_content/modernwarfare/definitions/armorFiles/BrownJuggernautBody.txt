@@ -1,13 +1,24 @@
+// Identity
 Name Juggernaut Heavy Bodyarmour (Brown)
 ShortName juggernautBodyBrown
+
+// Item and rendering
 Icon JuggernautBodyBrown
 Colour 255 255 255
-Type Chest
-Defence 0.4
 ArmourTexture BrownJuggernaut
-MoveSpeedModifier 0.65
-KnockbackModifier 0.25
+
+// Recipe
 Enchantability 0
-Toughness 2
 Durability 0
-DamageReductionAmount 8
+
+// Protection
+Type Chest
+Defence 0.21
+KnockbackModifier 0.25
+Toughness 2
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 7
+
+// Movement
+MoveSpeedModifier 0.97

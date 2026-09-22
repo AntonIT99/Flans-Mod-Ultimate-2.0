@@ -1,5 +1,8 @@
+// Identity
 Name Engineer
 ShortName gignEngineer1
+
+// Items
 AddItem m1014
 AddItem stinger
 AddItem m1911

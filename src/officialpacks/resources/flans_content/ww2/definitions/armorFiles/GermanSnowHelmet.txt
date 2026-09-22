@@ -1,7 +1,16 @@
+// Identity
 Name German WW2 Snow Helmet
 ShortName germanSnowHelmet
+
+// Item and rendering
 Icon germansnowhelmet
 Colour 255 255 255
-Type Helmet
-Defence 0.1
 ArmourTexture germansnow
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

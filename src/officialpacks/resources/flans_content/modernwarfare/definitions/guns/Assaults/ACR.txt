@@ -1,6 +1,22 @@
+// Identity
 Name ACR
 ShortName acr
-//The ammo this gun uses (shortName)
+Description Ammo Type : Assault Rifle
+
+// Item and rendering
+Icon ACR
+Colour 255 255 255
+DeployedModel None
+Model mw.ACR
+Texture ACR
+ModelScale 0.18
+Paintjob acr_stoic_blue acr_stoic_blue blue 3
+Paintjob acr_stoic_green acr_stoic_green green 3
+Paintjob acr_stoic_red acr_stoic_red red 3
+Paintjob acr_stoic_orange acr_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
 Ammo acrAmmo
 Ammo m16a4Ammo
 Ammo famasAmmo
@@ -18,51 +34,42 @@ Ammo fnscarAmmo
 Ammo betacmag
 Ammo apcrrifleAmmo
 Ammo l86Ammo
-Icon ACR
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
 ReloadTime 40
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 2
-//Damage in half hearts
-Damage 8
-//The higher this value, the more the bullets spread
-Accuracy 3.8
-//Time in ticks between rounds
-ShootDelay 1.6
-ShootSound FNSCARShoot
-ReloadSound MWMP44Reload
+
+// Operation
 Mode FullAuto
-//Bullet speed, default 3.0
-BulletSpeed 10.0
-//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 700.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 880.0
+Dispersion 0.2
+
+// Damage and protection
+Damage 8
+
+// Optics
 Scope None
 ZoomLevel 1.0
 FOVZoomLevel 1.25
-//Deployable Settings
-Deployable False
-DeployedModel None
-//Model settings
-Model mw.ACR
-Texture ACR
-ModelScale 0.18
-//Attachment Settings
+
+// Attachments
 AllowAllAttachments true
 AllowBarrelAttachments true
 AllowScopeAttachments true
 AllowStockAttachments false
 AllowGripAttachments true
 NumGenericAttachmentSlots 1
-Description Ammo Type : Assault Rifle
+
+// Sounds
+ShootSound FNSCARShoot
+ReloadSound MWMP44Reload
+DistortSound True
+
+// Tooltip
 ShowAccuracy true
 ShowReloadTime true
 ShowDamage true
 ShowRecoil true
-DistortSound True
-CanShootUnderwater False
-Paintjob acr_stoic_blue acr_stoic_blue blue 3
-Paintjob acr_stoic_green acr_stoic_green green 3
-Paintjob acr_stoic_red acr_stoic_red red 3
-Paintjob acr_stoic_orange acr_stoic_orange orange 3
-MuzzleFlashModel DefaultMuzzleFlash

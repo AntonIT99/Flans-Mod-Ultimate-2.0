@@ -1,5 +1,8 @@
+// Identity
 Name Stealth Sniper
 ShortName spetsnazSniper2
+
+// Items
 AddItem r700+flanMWSilencer
 AddItem makarov+flanMWSilencer
 AddItem mwKnife

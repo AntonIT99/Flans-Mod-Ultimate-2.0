@@ -1,16 +1,19 @@
-//Description for hover text. Underscores represent new lines.
+// Identity
 Description Automatically refines_iron ore_Requires Item Vacuum
 Name Iron Refiner
 ShortName mechaIronRefiner
+Type upgrade
+
+// Item and rendering
 Icon IronRefiner
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
+
+// Recipe
 RecipeOutput 1
 Recipe H hopper I ingotIron B blockIron F furnace
 IBI
 IHI
 IFI
-//The item type. This decides the slot it goes in. Options are upgrade, tool, armUpgrade, legUpgrade, headUpgrade, shoulderUpgrade, hipsUpgrade.
-Type upgrade
-//The modifiers this item enacts on the mecha
+
+// Mecha item
 IronRefine true

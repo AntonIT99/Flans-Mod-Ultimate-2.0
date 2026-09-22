@@ -2,20 +2,26 @@
 Name American 3-inch M88 HC Smoke (M7)
 ShortName American3inSmokeShell
 Description Base-emission smoke ammunition for the 3-inch M7
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon TankShell76aHE
+HasLight False
+
+// Ammunition
 MaxStackSize 8
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 3450
 MuzzleVelocity 274
 FallSpeed 1
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
 Damage 10
@@ -25,17 +31,15 @@ Explosion 0
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Smoke and presentation
+// Smoke and effects
 SmokeTime 250
-SmokeParticleType cloud
 SmokeRadius 5
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
+
+// Sounds and particles
+SmokeParticleType cloud
 SmokeTrail True
 TrailParticleType flansmod.fmsmoke
-HasLight False
 FlakParticles 0

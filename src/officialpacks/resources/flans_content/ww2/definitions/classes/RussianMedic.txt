@@ -1,5 +1,8 @@
+// Identity
 Name Medic
 ShortName OfficialWW2_RussianMedic
+
+// Items
 AddItem nagant
 AddItem tt33
 AddItem rgd33 2

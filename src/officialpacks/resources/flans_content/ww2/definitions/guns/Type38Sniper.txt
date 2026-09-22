@@ -1,29 +1,36 @@
+// Identity
 Name Type 38 Sniper
 ShortName type38Sniper
-//The ammo this gun uses (shortName)
-Ammo type38Ammo
+
+// Item and rendering
 Icon Type38Sniper
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 60
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 12
-//Damage in half hearts
-Damage 13
-//The higher this value, the more the bullets spread
-Accuracy 4
-//Time in ticks between rounds
-ShootDelay 20
-ShootSound Type38Shoot
-ReloadSound kar98kReload
-Mode SemiAuto
-//Bullet speed, default 3.0
-BulletSpeed 10.0
-Scope wwiitype38sniper
-Deployable False
 DeployedModel None
-ZoomLevel 2.5
-FOVZoomLevel 1.0
 Model ww2.Type38sniper
 Texture Type38
+
+// Ammunition
+Ammo type38Ammo
+ReloadTime 60
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 45.0
+
+// Ballistics
+Recoil 12
+MuzzleVelocity 760.0
+Dispersion 0.14
+
+// Damage and protection
+Damage 13
+
+// Optics
+Scope wwiitype38sniper
+ZoomLevel 2.5
+FOVZoomLevel 1.0
+
+// Sounds
+ShootSound Type38Shoot
+ReloadSound kar98kReload

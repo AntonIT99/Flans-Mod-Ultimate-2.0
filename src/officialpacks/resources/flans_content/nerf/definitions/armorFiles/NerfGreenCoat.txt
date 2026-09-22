@@ -1,9 +1,19 @@
+// Identity
 Name Green Nerf Vest
 ShortName nerfGreenVest
+
+// Item and rendering
 Icon NerfGreenVest
 Colour 255 255 255
-Type Body
-Defence 0.1
 ArmourTexture NerfGreen
-//Make Nerf guns not appear in dungeon chests
+
+// Recipe
 DungeonLootChance 0
+
+// Protection
+Type Body
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

@@ -1,13 +1,24 @@
+// Identity
 Name Juggernaut Heavy Trousers (Green)
 ShortName juggernautPants
+
+// Item and rendering
 Icon JuggernautPants
 Colour 255 255 255
-Type Legs
-Defence 0.2
 ArmourTexture Juggernaut
-MoveSpeedModifier 0.75
-KnockbackModifier 0.25
+
+// Recipe
 Enchantability 0
-Toughness 2
 Durability 0
-DamageReductionAmount 6
+
+// Protection
+Type Legs
+Defence 0.16
+KnockbackModifier 0.25
+Toughness 2
+BulletDefence 0.14
+PenetrationResistance 1.24
+ArmorPoints 5
+
+// Movement
+MoveSpeedModifier 0.97

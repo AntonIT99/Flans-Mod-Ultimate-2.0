@@ -2,21 +2,27 @@
 Name British 6-pdr APC Shot Mk 8T (L/43)
 ShortName British6pdrAPShell
 Description Armour-piercing capped shot for the 6-pdr 7 cwt Mk III
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon TankShell6pdrAP
+HasLight True
+
+// Ammunition
 MaxStackSize 16
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 2860
 MuzzleVelocity 846
 FallSpeed 1
 PenetrationAt100m 106
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
 Damage 50
@@ -26,12 +32,8 @@ Explosion 1
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmtracer
-HasLight True
 FlakParticles 0

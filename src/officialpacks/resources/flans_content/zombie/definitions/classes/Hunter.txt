@@ -1,5 +1,8 @@
+// Identity
 Name Hunter
 ShortName hunter
+
+// Items
 AddItem winchesterModel70
 AddItem flareGun+FlareGun_Red
 AddItem bearTrap 3

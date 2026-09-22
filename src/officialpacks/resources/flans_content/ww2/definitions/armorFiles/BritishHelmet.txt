@@ -1,7 +1,16 @@
+// Identity
 Name British WW2 Helmet
 ShortName britishHelmet
+
+// Item and rendering
 Icon britishhelmet
 Colour 255 255 255
-Type Helmet
-Defence 0.1
 ArmourTexture british
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

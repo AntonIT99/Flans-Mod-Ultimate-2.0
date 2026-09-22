@@ -1,5 +1,8 @@
+// Identity
 Name Light Assault
 ShortName spetsnazAssault1
+
+// Items
 AddItem ak47+flanMWACOG
 AddItem desertEagle
 AddItem m67 2

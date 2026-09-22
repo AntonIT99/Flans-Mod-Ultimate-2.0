@@ -1,5 +1,8 @@
+// Identity
 Name Fumigator
 ShortName SWATFumigator
+
+// Items
 AddItem mp5
 AddItem gl6
 AddItem m9

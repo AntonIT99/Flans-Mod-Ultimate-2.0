@@ -1,15 +1,18 @@
-//Description for hover text. Underscores represent new lines.
+// Identity
 Description Pulls iron out of_the rock to increase yield_(1.5x Iron Ingot Yield)_Requires Item Vacuum & Iron_Refiner
 ShortName mechaRotaryMagnet
+Type armUpgrade
+
+// Item and rendering
 Icon RotaryMagnet
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
+
+// Recipe
 RecipeOutput 1
 Recipe I blockIron R redstone
 IR 
 IIR
  II
-//The item type. This decides the slot it goes in. Options are upgrade, tool, armUpgrade, legUpgrade, headUpgrade, shoulderUpgrade, hipsUpgrade.
-Type armUpgrade
-//The modifiers this item enacts on the mecha
+
+// Mecha item
 IronMultiplier 1.5

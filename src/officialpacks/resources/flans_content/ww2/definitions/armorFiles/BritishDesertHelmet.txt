@@ -1,7 +1,16 @@
+// Identity
 Name British WW2 Desert Helmet
 ShortName britishDesertHelmet
+
+// Item and rendering
 Icon britishdeserthelmet
 Colour 255 255 255
-Type Helmet
-Defence 0.1
 ArmourTexture britishdesert
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

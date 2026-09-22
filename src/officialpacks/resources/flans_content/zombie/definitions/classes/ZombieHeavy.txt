@@ -1,6 +1,11 @@
+// Identity
 Name Tank
 ShortName zombieHeavy
+
+// Appearance
 SkinOverride Zombie
+Chest DustbinlidChestplate
+
+// Items
 AddItem sledgehammer
 AddItem fleshLump 2
-Chest DustbinlidChestplate

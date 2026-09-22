@@ -1,5 +1,8 @@
+// Identity
 Name Gunslinger
 ShortName marineDualWield1
+
+// Items
 AddItem m9
 AddItem m9
 AddItem m67 2

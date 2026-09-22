@@ -1,8 +1,13 @@
+// Identity
 Name Nerd
 ShortName nerd
+
+// Appearance
+Helmet panHelmet
+Chest dustbinLidChestplate
+
+// Items
 AddItem samuraiSword
 AddItem coltPython+ColtPython_Black
 AddItem 357Magnum 24
 AddItem cookie 5
-Helmet panHelmet
-Chest dustbinLidChestplate

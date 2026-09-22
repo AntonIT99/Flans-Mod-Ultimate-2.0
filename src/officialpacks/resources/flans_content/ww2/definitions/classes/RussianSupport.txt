@@ -1,5 +1,8 @@
+// Identity
 Name Support
 ShortName OfficialWW2_RussianSupport
+
+// Items
 AddItem dp28
 AddItem bazooka
 AddItem tt33

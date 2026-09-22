@@ -1,5 +1,8 @@
+// Identity
 Name Gun Rack
 ShortName flanGunRack
+
+// Item and rendering
 Icon GunRack
 Texture GunRack
 Model apocalypse.GunRack

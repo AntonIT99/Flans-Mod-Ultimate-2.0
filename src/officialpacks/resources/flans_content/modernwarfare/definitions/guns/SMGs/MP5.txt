@@ -1,6 +1,23 @@
+// Identity
 Name MP5
 ShortName mp5
-//The ammo this gun uses (shortName)
+Description Ammo Type : SMG_Dual Wieldable
+
+// Item and rendering
+Icon MP5
+Colour 255 255 255
+DeployedModel None
+Model mw.MP5
+Texture MP5
+ModelScale 0.18
+Paintjob mp5_stoic_blue mp5_stoic_blue blue 3
+Paintjob mp5_stoic_green mp5_stoic_green green 3
+Paintjob mp5_stoic_red mp5_stoic_red red 3
+Paintjob mp5_stoic_orange mp5_stoic_orange orange 3
+Paintjob mp5_lionheart mp5_lionheart yellow 5 red 5 rainbow 1
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
 Ammo mp5Ammo
 Ammo mp5kAmmo
 Ammo skorpionAmmo
@@ -8,53 +25,43 @@ Ammo uziAmmo
 Ammo mp7Ammo
 Ammo honeybadgerAmmo
 Ammo smg100ammo
-Icon MP5
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
 ReloadTime 50
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 2
-//Damage in half hearts
-Damage 8
-//The higher this value, the more the bullets spread
-Accuracy 3
-//Time in ticks between rounds
-ShootDelay 0.8
-ShootSound MP5Shoot
-ReloadSound MWStenReload
+
+// Operation
 Mode FullAuto
 OneHanded true
-//Bullet speed, default 3.0
-BulletSpeed 10.0
-//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 800.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 400.0
+Dispersion 0.34
+
+// Damage and protection
+Damage 8
+
+// Optics
 Scope None
 ZoomLevel 1.0
 FOVZoomLevel 1.25
-//Deployable Settings
-Deployable False
-DeployedModel None
-//Model settings
-Model mw.MP5
-Texture MP5
-ModelScale 0.18
-//Attachment Settings
+
+// Attachments
 AllowAllAttachments true
 AllowBarrelAttachments true
 AllowScopeAttachments true
 AllowStockAttachments false
 AllowGripAttachments true
 NumGenericAttachmentSlots 1
-Description Ammo Type : SMG_Dual Wieldable
+
+// Sounds
+ShootSound MP5Shoot
+ReloadSound MWStenReload
+DistortSound True
+
+// Tooltip
 ShowAccuracy true
 ShowReloadTime true
 ShowDamage true
 ShowRecoil true
-DistortSound True
-CanShootUnderwater False
-Paintjob mp5_stoic_blue mp5_stoic_blue blue 3
-Paintjob mp5_stoic_green mp5_stoic_green green 3
-Paintjob mp5_stoic_red mp5_stoic_red red 3
-Paintjob mp5_stoic_orange mp5_stoic_orange orange 3
-Paintjob mp5_lionheart mp5_lionheart yellow 5 red 5 rainbow 1
-MuzzleFlashModel DefaultMuzzleFlash

@@ -2,24 +2,30 @@
 Name German 75 mm Pzgr. 39 APCBC-HE (KwK 40)
 ShortName German75APShell
 Description Armour-piercing ammunition for the 7.5 cm KwK 40, StuK 40 and PaK 40
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon TankShell75gAP
+HasLight True
+
+// Ammunition
 MaxStackSize 8
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 6800
 MuzzleVelocity 770
 FallSpeed 1
-ExplosiveMassTNTg 29
 PenetrationAt100m 143
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTg 29
 Damage 50
 DamageVsLiving 25
 DamageVsVehicles 100
@@ -27,13 +33,9 @@ Explosion 1
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 HasSubmunitions false
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmtracer
-HasLight True
 FlakParticles 0

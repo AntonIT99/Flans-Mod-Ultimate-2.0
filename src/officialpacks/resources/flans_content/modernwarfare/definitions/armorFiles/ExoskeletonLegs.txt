@@ -1,15 +1,26 @@
+// Identity
 Name Exoskeleton Legs
 ShortName exoskeletonLegs
+
+// Item and rendering
 Icon ExoskeletonLegs
 Colour 255 255 255
-Type Legs
 Model mw.ExoskeletonLegs
-Defence 0.2
 ArmourTexture Exoskeleton
-MoveSpeedModifier 2.0
-KnockbackModifier 0.1
 ModelScale 0.25
+
+// Recipe
 Enchantability 0
-Toughness 2
 Durability 0
-DamageReductionAmount 6
+
+// Protection
+Type Legs
+Defence 0.2
+KnockbackModifier 0.1
+Toughness 3
+BulletDefence 0.19
+PenetrationResistance 1.56
+ArmorPoints 7
+
+// Movement
+MoveSpeedModifier 0.95

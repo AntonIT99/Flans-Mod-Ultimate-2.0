@@ -2,25 +2,31 @@
 Name Soviet 76 mm OF-350 HE-Frag (L-11/F-32)
 ShortName Russian76HEShell
 Description High-explosive fragmentation ammunition for the 76 mm L-11 and F-32 tank guns
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon TankShell76rHE
+HasLight True
+
+// Ammunition
 MaxStackSize 8
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 6210
 MuzzleVelocity 612
 FallSpeed 1
-ExplosiveMassTNTg 710
 PenetrationAt100m 10
-FragType HE_SHELL
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTg 710
+FragType HE_SHELL
 Damage 50
 DamageVsLiving 100
 DamageVsVehicles 25
@@ -28,12 +34,8 @@ Explosion 3
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmflame
-HasLight True
 FlakParticles 6

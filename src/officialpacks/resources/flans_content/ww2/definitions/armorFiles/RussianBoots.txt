@@ -1,7 +1,16 @@
+// Identity
 Name Russian WW2 Boots
 ShortName russianBoots
+
+// Item and rendering
 Icon russianboots
 Colour 255 255 255
-Type Boots
-Defence 0.1
 ArmourTexture russian
+
+// Protection
+Type Boots
+Defence 0.02
+BulletDefence 0.00
+PenetrationResistance 0.35
+ArmorPoints 1
+Toughness 0

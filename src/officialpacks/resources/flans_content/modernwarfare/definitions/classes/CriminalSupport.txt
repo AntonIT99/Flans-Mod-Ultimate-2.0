@@ -1,9 +1,14 @@
+// Identity
 Name Support
 ShortName CriminalSupport
+
+// Appearance
+Chest bodyArmour
+
+// Items
 AddItem rpk
 AddItem desertEagle
 AddItem mwAmmoBag
 AddItem mwKnife
 AddItem rpkAmmo 3
 AddItem desertEagleAmmo 4
-Chest bodyArmour

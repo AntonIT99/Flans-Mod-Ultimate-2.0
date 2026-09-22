@@ -1,6 +1,22 @@
+// Identity
 Name Glock
 ShortName glock
-//The ammo this gun uses (shortName)
+Description Ammo Type : Pistol_Dual Wieldable
+
+// Item and rendering
+Icon Glock
+Colour 255 255 255
+DeployedModel None
+Model mw.Glock
+Texture Glock
+ModelScale 0.18
+Paintjob glock_stoic_blue glock_stoic_blue blue 2
+Paintjob glock_stoic_green glock_stoic_green green 2
+Paintjob glock_stoic_red glock_stoic_red red 2
+Paintjob glock_stoic_orange glock_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
 Ammo m1911Ammo
 Ammo kcasmartpistolAmmo
 Ammo desertEagleAmmo
@@ -10,52 +26,43 @@ Ammo makarovAmmo
 Ammo sigP226Ammo
 Ammo uspAmmo
 Ammo uspPoisonAmmo
-Icon Glock
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
 ReloadTime 40
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 2
-//Damage in half hearts
-Damage 5
-//The higher this value, the more the bullets spread
-Accuracy 10
-//Time in ticks between rounds
-ShootDelay 1.6
-ShootSound GlockShoot
-ReloadSound MWColtReload
+
+// Operation
 Mode FullAuto
 OneHanded true
-//Bullet speed, default 3.0
-BulletSpeed 9.0
-//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 400.0
+
+// Ballistics
+Recoil 2
+MuzzleVelocity 375.0
+Dispersion 0.7
+
+// Damage and protection
+Damage 5
+
+// Optics
 Scope None
 ZoomLevel 1.0
 FOVZoomLevel 1.25
-//Deployable Settings
-Deployable False
-DeployedModel None
-//Model settings
-Model mw.Glock
-Texture Glock
-ModelScale 0.18
-//Attachment Settings
+
+// Attachments
 AllowAllAttachments true
 AllowBarrelAttachments true
 AllowScopeAttachments false
 AllowStockAttachments false
 AllowGripAttachments true
 NumGenericAttachmentSlots 1
-Description Ammo Type : Pistol_Dual Wieldable
+
+// Sounds
+ShootSound GlockShoot
+ReloadSound MWColtReload
+DistortSound True
+
+// Tooltip
 ShowAccuracy true
 ShowReloadTime true
 ShowDamage true
 ShowRecoil true
-DistortSound True
-CanShootUnderwater False
-Paintjob glock_stoic_blue glock_stoic_blue blue 2
-Paintjob glock_stoic_green glock_stoic_green green 2
-Paintjob glock_stoic_red glock_stoic_red red 2
-Paintjob glock_stoic_orange glock_stoic_orange orange 2
-MuzzleFlashModel DefaultMuzzleFlash

@@ -1,7 +1,16 @@
+// Identity
 Name British WW2 Desert Trousers
 ShortName britishDesertPants
+
+// Item and rendering
 Icon britishdesertpants
 Colour 255 255 255
-Type Pants
-Defence 0.1
 ArmourTexture britishdesert
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

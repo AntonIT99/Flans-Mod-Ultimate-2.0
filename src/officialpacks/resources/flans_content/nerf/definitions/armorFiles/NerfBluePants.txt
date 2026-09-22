@@ -1,9 +1,19 @@
+// Identity
 Name Blue Nerf Kneepads
 ShortName nerfBlueKnees
+
+// Item and rendering
 Icon NerfBlueKnees
 Colour 255 255 255
-Type Pants
-Defence 0.1
 ArmourTexture NerfBlue
-//Make Nerf guns not appear in dungeon chests
+
+// Recipe
 DungeonLootChance 0
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

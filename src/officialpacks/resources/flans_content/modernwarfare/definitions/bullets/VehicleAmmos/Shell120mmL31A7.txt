@@ -2,25 +2,31 @@
 Name British 120 mm L31A7 HESH-T (L30A1)
 ShortName Shell120mmL31A7
 Description High-explosive squash-head ammunition for the Challenger 2 L30A1
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon heshell120mm
+HasLight True
+
+// Ammunition
 MaxStackSize 4
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 17300
 MuzzleVelocity 670
 FallSpeed 1
-ExplosiveMassTNTKg 6.5
 PenetrationAt100m 152
-FragType HE_SHELL
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTKg 6.5
+FragType HE_SHELL
 Damage 50
 DamageVsLiving 100
 DamageVsVehicles 25
@@ -28,12 +34,8 @@ Explosion 4
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmflame
-HasLight True
 FlakParticles 10

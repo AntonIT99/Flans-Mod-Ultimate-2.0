@@ -2,24 +2,30 @@
 Name American 37 mm M63 HE (M6)
 ShortName American37HEShell
 Description High-explosive ammunition for the 37 mm gun M5/M6
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon TankShell37HE
+HasLight True
+
+// Ammunition
 MaxStackSize 16
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 730
 MuzzleVelocity 792
 FallSpeed 1
-ExplosiveMassTNTg 39
-FragType HE_SHELL
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTg 39
+FragType HE_SHELL
 Damage 50
 DamageVsLiving 100
 DamageVsVehicles 25
@@ -27,12 +33,8 @@ Explosion 3
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmflame
-HasLight True
 FlakParticles 6

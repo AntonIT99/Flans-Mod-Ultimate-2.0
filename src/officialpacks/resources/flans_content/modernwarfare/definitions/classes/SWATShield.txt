@@ -1,5 +1,8 @@
+// Identity
 Name Shield
 ShortName SWATShield
+
+// Items
 AddItem uzi
 AddItem mwRiotShield
 AddItem m67 2

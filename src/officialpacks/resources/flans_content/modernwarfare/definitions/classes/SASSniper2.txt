@@ -1,5 +1,8 @@
+// Identity
 Name Stealth Sniper
 ShortName sasSniper2
+
+// Items
 AddItem m21+flanMWSilencer
 AddItem m9+flanMWSilencer
 AddItem mwKnife

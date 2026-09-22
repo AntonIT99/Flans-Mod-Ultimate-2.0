@@ -1,5 +1,8 @@
+// Identity
 Name Medic
 ShortName CriminalMedic
+
+// Items
 AddItem ak74+flanMWRedDot
 AddItem desertEagle
 AddItem m67 2

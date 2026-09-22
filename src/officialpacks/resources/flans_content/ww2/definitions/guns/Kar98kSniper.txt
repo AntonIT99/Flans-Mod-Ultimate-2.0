@@ -1,27 +1,10 @@
+// Identity
 Name Kar98k Sniper
 ShortName kar98kSniper
-//The ammo this gun uses (shortName)
-Ammo kar98kAmmo
+
+// Item and rendering
 Icon kar98ksniper
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 60
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 20
-//Damage in half hearts
-Damage 15
-//The higher this value, the more the bullets spread
-Accuracy 2
-//Time in ticks between rounds
-ShootDelay 30
-ShootSound kar98kSniperShoot
-ReloadSound kar98kSniperReload
-Mode SemiAuto
-//Bullet speed, default 3.0
-BulletSpeed 10.0
-Scope wwiikar98ksniper
-Deployable False
 DeployedModel None
 Model ww2.Kar98kSniper
 Texture kar98k
@@ -32,5 +15,29 @@ Paintjob kar98ksniper_green kar98k_green green 2
 Paintjob kar98ksniper_oak kar98k_oak brown 2
 Paintjob kar98ksniper_pepper kar98k_pepper gray 2
 ModelScale 0.7
+
+// Ammunition
+Ammo kar98kAmmo
+ReloadTime 60
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 45.0
+
+// Ballistics
+Recoil 20
+MuzzleVelocity 760.0
+Dispersion 0.15
+
+// Damage and protection
+Damage 15
+
+// Optics
+Scope wwiikar98ksniper
 ZoomLevel 4.0
 FOVZoomLevel 1.0
+
+// Sounds
+ShootSound kar98kSniperShoot
+ReloadSound kar98kSniperReload

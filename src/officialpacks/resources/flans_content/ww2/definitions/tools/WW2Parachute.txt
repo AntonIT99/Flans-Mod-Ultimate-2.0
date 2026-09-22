@@ -1,20 +1,25 @@
+// Identity
 Name Parachute
 ShortName ww2Parachute
+
+// Item and rendering
 Icon WW2Parachute
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-Heal false
-Repair false
-HealAmount 0
-ToolLife 1
-DestroyOnEmpty true
 StackSize 1
+Model ww2.WW2Parachute
+Texture WW2Parachute
+
+// Recipe
 RecipeOutput 1
 Recipe W cloth S string
 WWW
 W W
 SSS
-//Parachute bits
+
+// Tool
+Heal false
+Repair false
+HealAmount 0
+ToolLife 1
+DestroyOnEmpty true
 Parachute true
-Model ww2.WW2Parachute
-Texture WW2Parachute

@@ -1,9 +1,19 @@
+// Identity
 Name Blue Nerf Vest
 ShortName nerfBlueVest
+
+// Item and rendering
 Icon NerfBlueVest
 Colour 255 255 255
-Type Body
-Defence 0.1
 ArmourTexture NerfBlue
-//Make Nerf guns not appear in dungeon chests
+
+// Recipe
 DungeonLootChance 0
+
+// Protection
+Type Body
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

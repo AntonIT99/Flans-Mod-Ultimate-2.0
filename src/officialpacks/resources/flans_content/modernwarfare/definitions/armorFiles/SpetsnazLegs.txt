@@ -1,11 +1,20 @@
+// Identity
 Name Russian Spetsnaz Trousers
 ShortName spetsnazPants
+
+// Item and rendering
 Icon SpetsnazPants
 Colour 255 255 255
-Type Legs
-Defence 0.1
 ArmourTexture Spetsnaz
+
+// Recipe
 Enchantability 0
-Toughness 0
 Durability 0
-DamageReductionAmount 6
+
+// Protection
+Type Legs
+Defence 0.05
+Toughness 0
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 2

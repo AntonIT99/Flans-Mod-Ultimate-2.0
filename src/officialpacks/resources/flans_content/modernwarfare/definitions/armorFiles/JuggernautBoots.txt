@@ -1,13 +1,24 @@
+// Identity
 Name Juggernaut Heavy Boots (Green)
 ShortName juggernautBoots
+
+// Item and rendering
 Icon JuggernautBoots
 Colour 255 255 255
-Type Boots
-Defence 0.1
 ArmourTexture Juggernaut
-MoveSpeedModifier 0.9
-KnockbackModifier 0.25
+
+// Recipe
 Enchantability 0
-Toughness 2
 Durability 0
-DamageReductionAmount 3
+
+// Protection
+Type Boots
+Defence 0.08
+KnockbackModifier 0.25
+Toughness 2
+BulletDefence 0.07
+PenetrationResistance 0.67
+ArmorPoints 3
+
+// Movement
+MoveSpeedModifier 0.9

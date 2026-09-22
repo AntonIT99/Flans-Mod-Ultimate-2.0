@@ -1,5 +1,10 @@
+// Identity
 Name Zombie
 ShortName zombieNormal
+
+// Appearance
 SkinOverride Zombie
+
+// Items
 AddItem baseballBat
 AddItem fleshLump 4

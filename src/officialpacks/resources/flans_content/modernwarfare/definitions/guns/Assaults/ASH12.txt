@@ -1,6 +1,22 @@
+// Identity
 Name ASH12
 ShortName ash12
-//The ammo this gun uses (shortName)
+Description Ammo Type : Assault Rifle
+
+// Item and rendering
+Icon ASH12
+Colour 255 255 255
+DeployedModel None
+Model mw.ASH12
+Texture ASH12
+ModelScale 0.18
+Paintjob ash12_stoic_blue ash12_stoic_blue blue 3
+Paintjob ash12_stoic_green ash12_stoic_green green 3
+Paintjob ash12_stoic_red ash12_stoic_red red 3
+Paintjob ash12_stoic_orange ash12_stoic_orange orange 3
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
 Ammo ash12Ammo
 Ammo m16a4Ammo
 Ammo famasAmmo
@@ -18,51 +34,42 @@ Ammo fnscarAmmo
 Ammo betacmag
 Ammo apcrrifleAmmo
 Ammo l86Ammo
-Icon ASH12
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
 ReloadTime 50
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 6
-//Damage in half hearts
-Damage 15
-//The higher this value, the more the bullets spread
-Accuracy 1
-//Time in ticks between rounds
-ShootDelay 4.0
-ShootSound ASH12Shoot
-ReloadSound ASH12Reload
+
+// Operation
 Mode FullAuto
-//Bullet speed, default 3.0
-BulletSpeed 10.0
-//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 650.0
+
+// Ballistics
+Recoil 6
+MuzzleVelocity 300.0
+Dispersion 0.26
+
+// Damage and protection
+Damage 15
+
+// Optics
 Scope None
 ZoomLevel 1.0
 FOVZoomLevel 1.25
-//Deployable Settings
-Deployable False
-DeployedModel None
-//Model settings
-Model mw.ASH12
-Texture ASH12
-ModelScale 0.18
-//Attachment Settings
+
+// Attachments
 AllowAllAttachments true
 AllowBarrelAttachments true
 AllowScopeAttachments true
 AllowStockAttachments false
 AllowGripAttachments true
 NumGenericAttachmentSlots 1
-Description Ammo Type : Assault Rifle
+
+// Sounds
+ShootSound ASH12Shoot
+ReloadSound ASH12Reload
+DistortSound True
+
+// Tooltip
 ShowAccuracy true
 ShowReloadTime true
 ShowDamage true
 ShowRecoil true
-DistortSound True
-CanShootUnderwater False
-Paintjob ash12_stoic_blue ash12_stoic_blue blue 3
-Paintjob ash12_stoic_green ash12_stoic_green green 3
-Paintjob ash12_stoic_red ash12_stoic_red red 3
-Paintjob ash12_stoic_orange ash12_stoic_orange orange 3
-MuzzleFlashModel DefaultMuzzleFlash

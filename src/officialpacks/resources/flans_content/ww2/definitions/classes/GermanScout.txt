@@ -1,5 +1,8 @@
+// Identity
 Name Scout
 ShortName OfficialWW2_GermanScout
+
+// Items
 AddItem kar98kSniper
 AddItem luger
 AddItem stielhandgranate 2

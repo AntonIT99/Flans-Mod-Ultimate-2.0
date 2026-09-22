@@ -1,5 +1,8 @@
+// Identity
 Name Support
 ShortName OfficialWW2_GermanSupport
+
+// Items
 AddItem mg42
 AddItem panzerschreck
 AddItem luger

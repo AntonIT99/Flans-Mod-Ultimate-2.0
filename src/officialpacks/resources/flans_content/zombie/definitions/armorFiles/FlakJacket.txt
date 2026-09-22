@@ -1,9 +1,20 @@
+// Identity
 Name Flak Jacket
 ShortName flakJacket
+
+// Item and rendering
 Icon FlakJacket
 Colour 255 255 255
-Type Chest
-Defence 0.4
 ArmourTexture FlakJacket
-MoveSpeedModifier 0.9
+
+// Protection
+Type Chest
+Defence 0.11
 KnockbackModifier 0.5
+BulletDefence 0.05
+PenetrationResistance 1.25
+ArmorPoints 4
+Toughness 0
+
+// Movement
+MoveSpeedModifier 0.99

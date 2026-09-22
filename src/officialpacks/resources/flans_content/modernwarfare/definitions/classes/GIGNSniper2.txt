@@ -1,5 +1,8 @@
+// Identity
 Name Stealth Sniper
 ShortName gignSniper2
+
+// Items
 AddItem g3+flanMWSilencer+flanMW4xScope
 AddItem mp5k+flanMWSilencer
 AddItem mwKnife

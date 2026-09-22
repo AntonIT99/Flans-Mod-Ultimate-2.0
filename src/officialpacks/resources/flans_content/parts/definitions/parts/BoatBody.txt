@@ -1,11 +1,14 @@
+// Identity
 Name Boat Body
 ShortName boatBody
-Icon BoatBody
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Chassis
+
+// Item and rendering
+Icon BoatBody
+Colour 255 255 255
 StackSize 4
+
+// Recipe
 RecipeOutput 1
 Recipe I ingotIron P blockIron
 I P

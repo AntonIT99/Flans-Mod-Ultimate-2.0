@@ -2,20 +2,26 @@
 Name 120 mm NATO Smoothbore Smoke Shell (Generic)
 ShortName SmokeShell120mm
 Description Generic obscurant ammunition for NATO 120 mm smoothbore tank guns
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon heshell120mm
+HasLight False
+
+// Ammunition
 MaxStackSize 4
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 12900
 MuzzleVelocity 1000
 FallSpeed 1
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
 Damage 10
@@ -25,17 +31,15 @@ Explosion 0
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Smoke and presentation
+// Smoke and effects
 SmokeTime 250
-SmokeParticleType flansmod.smoker1
 SmokeRadius 5
 SmokeEffect 15 25 0
 SmokeEffect 2 25 2
+
+// Sounds and particles
+SmokeParticleType flansmod.smoker1
 SmokeTrail True
 TrailParticleType flansmod.fmsmoke
-HasLight False
 FlakParticles 0

@@ -2,25 +2,31 @@
 Name Allied 75 mm M48 HE (M3/M6/OQF)
 ShortName Allied75HEShell
 Description High-explosive ammunition for the US 75 mm M3/M6 and British OQF 75 mm
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon TankShell75abHE
+HasLight True
+
+// Ammunition
 MaxStackSize 8
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 6760
 MuzzleVelocity 594
 FallSpeed 1
-ExplosiveMassTNTg 680
 PenetrationAt100m 10
-FragType HE_SHELL
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTg 680
+FragType HE_SHELL
 Damage 50
 DamageVsLiving 100
 DamageVsVehicles 25
@@ -28,12 +34,8 @@ Explosion 3
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmflame
-HasLight True
 FlakParticles 6

@@ -1,5 +1,8 @@
+// Identity
 Name Medic
 ShortName sasMedic1
+
+// Items
 AddItem mp5+flanMWRedDot
 AddItem m9
 AddItem m67 1

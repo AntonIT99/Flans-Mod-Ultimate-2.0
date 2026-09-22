@@ -1,7 +1,16 @@
+// Identity
 Name Russian WW2 Trousers
 ShortName russianPants
+
+// Item and rendering
 Icon russianpants
 Colour 255 255 255
-Type Pants
-Defence 0.1
 ArmourTexture russian
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

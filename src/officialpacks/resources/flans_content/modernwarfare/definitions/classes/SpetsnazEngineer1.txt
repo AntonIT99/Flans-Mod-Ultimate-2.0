@@ -1,5 +1,8 @@
+// Identity
 Name Engineer
 ShortName spetsnazEngineer1
+
+// Items
 AddItem w1200
 AddItem rpg
 AddItem makarov

@@ -1,11 +1,16 @@
+// Identity
 Name Heavy Assault
 ShortName marineAssault2
+
+// Appearance
+Hat juggernautHelmetBrown
+Chest juggernautBodyBrown
+Legs juggernautPantsBrown
+Shoes juggernautBootsBrown
+
+// Items
 AddItem m249
 AddItem m1911
 AddItem mwKnife
 AddItem m249Ammo 2
 AddItem m1911Ammo 4
-Hat juggernautHelmetBrown
-Chest juggernautBodyBrown
-Legs juggernautPantsBrown
-Shoes juggernautBootsBrown

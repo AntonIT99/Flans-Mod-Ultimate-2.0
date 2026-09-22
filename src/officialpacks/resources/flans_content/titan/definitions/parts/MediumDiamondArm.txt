@@ -1,11 +1,14 @@
+// Identity
 Name Medium Diamond Arm
 ShortName mediumDiamondArm
-Icon MediumDiamondArm
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Item and rendering
+Icon MediumDiamondArm
+Colour 255 255 255
 StackSize 16
+
+// Recipe
 RecipeOutput 1
 Recipe I ingotIron D diamond R redstone H advHydraulics
 DRI

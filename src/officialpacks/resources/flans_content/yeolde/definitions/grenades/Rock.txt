@@ -1,48 +1,50 @@
-////Name and icon
+// Identity
 Name Rock
 ShortName rock
+
+// Item and rendering
 Icon Rock
-//Colour in Red, Green, Blue, each going up to 255
 Colour 255 255 255
-////Item and recipe
-RecipeOutput 8
-ShapelessRecipe stonebrick
-StackSize 64
-////Visuals
 Model yeolde.Rock
 Texture Rock
-TrailParticles false
-//TrailParticleType <particleType>
-ExplodeParticles 0
-//ExplodeParticleType <particleType>
-SmokeTime 0
-//SmokeParticleType <particleType>
 SpinWhenThrown true
-////Throwing
+
+// Recipe
+RecipeOutput 8
+ShapelessRecipe stonebrick
+
+// Ammunition
+StackSize 64
+DropItemOnDetonate rock
+
+// Throwing
 ThrowDelay 10
-//ThrowSound <sound>
-//DropItemOnThrow <itemID.damage>
-////Physics
-DetonateOnImpact false
 Bounciness 1.0
-HitEntityDamage 4
 ThrowSpeed 1.0
+Sticky false
+
+// Ballistics
 FallSpeed 1.0
 BreaksGlass true
 PenetratesBlocks false
 HitBoxSize 0.5
-Sticky false
-//BounceSound <sound>
-////Detonation conditions
+
+// Damage and detonation
+DetonateOnImpact false
+HitEntityDamage 4
 VehicleProximityTrigger -1.0
 LivingProximityTrigger 0.5
 Fuse 1200
 DetonateWhenShot false
-////Detonation
 FireRadius 0.0
 ExplosionRadius 0.0
 ExplosionBreaksBlocks false
-DropItemOnDetonate rock
-//Detonate Sound <sound>
-////Misc
 MeleeDamage 3
+FragType DEFAULT
+
+// Smoke and effects
+SmokeTime 0
+
+// Sounds and particles
+TrailParticles false
+ExplodeParticles 0

@@ -2,25 +2,31 @@
 Name American 120 mm M830A1 MPAT-T (M256)
 ShortName Shell120mmM830A1
 Description Multipurpose anti-tank ammunition for the M1A2 Abrams M256
+Bomb False
+Shell True
 
 // Item and rendering
 Model Bullet
 Colour 255 255 255
 Icon gpshell120mm
+HasLight True
+
+// Ammunition
 MaxStackSize 4
 RoundsPerItem 1
 
 // Ballistics
-Bomb False
-Shell True
 Mass 11400
 MuzzleVelocity 1410
 FallSpeed 1
-ExplosiveMassTNTKg 1.4
 PenetrationAt100m 350
-FragType HE_SHELL
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
 
 // Damage and detonation
+ExplosiveMassTNTKg 1.4
+FragType HE_SHELL
 Damage 50
 DamageVsLiving 100
 DamageVsVehicles 25
@@ -28,12 +34,8 @@ Explosion 4
 ExplodeOnImpact True
 Fuse 200
 Fire 0
-BreaksGlass True
-HitBoxSize 1.0
-Penetrates False
 
-// Effects
+// Sounds and particles
 SmokeTrail True
 TrailParticleType flansmod.fmflame
-HasLight True
 FlakParticles 10

@@ -1,11 +1,20 @@
+// Identity
 Name SWAT Helmet
 ShortName SWATHelmet
+
+// Item and rendering
 Icon SWATHelmet
 Colour 255 255 255
-Type Hat
-Defence 0.2
 ArmourTexture SWAT
+
+// Recipe
 Enchantability 0
-Toughness 1
 Durability 0
-DamageReductionAmount 5
+
+// Protection
+Type Hat
+Defence 0.06
+Toughness 1
+BulletDefence 0.05
+PenetrationResistance 1.50
+ArmorPoints 2
