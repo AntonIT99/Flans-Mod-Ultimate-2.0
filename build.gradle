@@ -394,7 +394,7 @@ tasks.named('processResources', ProcessResources).configure {
         expand replaceProperties + [project: project]
     }
 
-    exclude 'config/AGENTS.md'
+    exclude '**/AGENTS.md'
 }
 
 // Main mod jar.
