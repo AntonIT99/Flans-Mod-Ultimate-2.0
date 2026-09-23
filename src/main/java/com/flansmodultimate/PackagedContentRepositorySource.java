@@ -6,10 +6,13 @@ import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.repository.RepositorySource;
+import net.minecraft.world.flag.FeatureFlagSet;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -31,7 +34,7 @@ public final class PackagedContentRepositorySource
         {
             if (packType == PackType.CLIENT_RESOURCES)
             {
-                addPack(acceptor, packType, module.modId() + ":assets",
+                addPack(acceptor, module.modId() + ":assets",
                     "Official Flan content assets", module.resourceRoot());
                 addEncryptedResourcePack(acceptor, module);
                 continue;
@@ -42,7 +45,7 @@ public final class PackagedContentRepositorySource
                 Path logicalPackRoot = module.contentRoot().resolve(provider.getPackId());
                 if (java.nio.file.Files.isDirectory(logicalPackRoot.resolve("data")))
                 {
-                    addPack(acceptor, packType, module.modId() + ":" + provider.getPackId(),
+                    addPack(acceptor, module.modId() + ":" + provider.getPackId(),
                         provider.getName(), logicalPackRoot);
                 }
             }
@@ -87,14 +90,17 @@ public final class PackagedContentRepositorySource
         return modId + ":_encrypted_assets";
     }
 
-    private static void addPack(Consumer<Pack> acceptor, PackType packType, String id,
+    private static void addPack(Consumer<Pack> acceptor, String id,
                                 String displayName, Path root)
     {
         Pack.ResourcesSupplier resources = new PathPackResources.PathResourcesSupplier(root);
         PackLocationInfo location = new PackLocationInfo(id, Component.literal(displayName), PackSource.BUILT_IN, Optional.empty());
         PackSelectionConfig selection = new PackSelectionConfig(true, Pack.Position.TOP, false);
-        Pack pack = Pack.readMetaAndCreate(location, resources, packType, selection);
-        if (pack != null)
-            acceptor.accept(pack);
+        // Logical pack directories contain data but no pack.mcmeta. Supply the
+        // metadata here, as the 1.20.1 Pack.Info constructor did, so NeoForge
+        // does not silently discard their recipes during repository discovery.
+        Pack.Metadata metadata = new Pack.Metadata(Component.literal(displayName),
+            PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of());
+        acceptor.accept(new Pack(location, resources, metadata, selection));
     }
 }

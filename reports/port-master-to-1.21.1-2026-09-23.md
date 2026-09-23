@@ -83,6 +83,24 @@
   so in-world camera, rider rendering, deck sneaking, and apocalypse choice
   still need interactive gameplay checks before release.
 
+## Final 1.21.1 loader audit
+
+- The server log revealed `Missing metadata in pack` for packaged logical
+  content roots. The 1.20.1 repository constructs pack metadata directly;
+  the 1.21.1 port had switched to `Pack.readMetaAndCreate`, which rejected
+  roots without `pack.mcmeta` and skipped their recipes. Restored synthetic
+  compatible metadata using the 1.21.1 `Pack.Metadata` constructor. The
+  server now loads 1,626 recipes rather than 1,296 and reaches `Done` without
+  those warnings.
+- Both branches packaged `assets/AGENTS.md`, which the client scanned as an
+  invalid resource namespace. Excluded development guidance from resources
+  in `master` first, then carried that exclusion to `1.21.1`. Both builds
+  passed, and the file is absent from processed resources.
+- Removed the unproduced Forge-style refmap name from the 1.21.1 mixin JSON.
+  NeoForge runs with official names. Server and client still applied mixins;
+  the Flan refmap warning disappeared. The client reached texture atlas
+  creation and was stopped manually.
+
 ## Remaining release checks
 
 - Exercise joining a world, firing and reloading, driving and using vehicle
