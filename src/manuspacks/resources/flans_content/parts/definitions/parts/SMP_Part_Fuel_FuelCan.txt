@@ -10,10 +10,10 @@ Recipe F SMP_Part_Fuel_FuelBarrel
 FF 
    
    
-RecipeOutput 8
+RecipeOutput 1
 Category Fuel
 PartBoxRecipe
-StackSize 8
+StackSize 1
 
 // Movement and Physics
 Fuel 2000

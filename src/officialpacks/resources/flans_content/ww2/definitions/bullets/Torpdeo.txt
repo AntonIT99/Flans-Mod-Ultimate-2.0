@@ -18,7 +18,7 @@ Recipe I ingotIron G gunpowder
 
 // Ammunition
 RoundsPerItem 1
-MaxStackSize 1
+MaxStackSize 3
 
 // Ballistics
 FallSpeed 0

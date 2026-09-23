@@ -10,7 +10,7 @@ Icon IconAmmoNATO35mm
 
 // Recipe and Inventory
 RoundsPerItem 100
-MaxStackSize 1
+MaxStackSize 32
 RecipeOutput 32
 Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Aluminium
 B  
