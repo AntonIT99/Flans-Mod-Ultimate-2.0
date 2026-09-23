@@ -345,6 +345,9 @@ public class Seat extends Entity implements IControllable
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
+        builder.define(DATA_SCOPED, false);
+        builder.define(DATA_SIGHT, 0);
+        builder.define(DATA_THERMAL, false);
         builder.define(DATA_PARENT_ID, -1);
         builder.define(DATA_SEAT_INDEX, -1);
         builder.define(DATA_AIM_YAW, 0F);

@@ -842,6 +842,10 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         builder.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
         builder.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
         builder.define(DATA_SECONDARY_RELOAD_TICKS, 0);
+        builder.define(DATA_PRIMARY_MAGAZINE_LEFT, 0);
+        builder.define(DATA_PRIMARY_MAGAZINE_SIZE, 0);
+        builder.define(DATA_SECONDARY_MAGAZINE_LEFT, 0);
+        builder.define(DATA_SECONDARY_MAGAZINE_SIZE, 0);
     }
 
     @Override

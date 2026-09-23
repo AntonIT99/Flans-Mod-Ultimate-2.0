@@ -415,6 +415,8 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         builder.define(DATA_CURRENT_BARREL, 0);
         builder.define(DATA_HEALTH, 0);
         builder.define(DATA_CURRENT_AMMO_NAME, Component.empty());
+        builder.define(DATA_MAGAZINE_LEFT, 0);
+        builder.define(DATA_MAGAZINE_SIZE, 0);
     }
 
     @Override
