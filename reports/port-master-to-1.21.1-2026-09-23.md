@@ -38,8 +38,8 @@
 - Client startup exposed an old `fog_distance` call in the rigid model shader.
   Updated it to the 1.21.1 signature and removed the unused uniform.
 - Updated the authoritative `master` porting skill in three commits:
-  `b82b856f`, `0f153f865`, and `3e605aa1`. The final skill update must be
-  merged after the current destination merge is committed.
+  `b82b856f`, `0f153f865`, and `3e605aa1`. The destination merge is
+  `09b604ea`; the final skill sync is `cfef8d5da`.
 
 ## Validation
 
@@ -70,5 +70,7 @@
   No plaintext input is present in this worktree, so the task is registered
   conditionally and its output was not exercised here.
 - The source release has existing trailing whitespace in several staged docs
-  and Java files. Leave content-pack definitions byte-stable; do not bulk
-  reformat them merely to silence `git diff --cached --check`.
+  and Java files, plus many content definitions. Before committing, the
+  destination's changes relative to `master` passed `git diff --check` with
+  no whitespace errors; the full inherited source diff retained its existing
+  whitespace. Leave content-pack definitions byte-stable.
