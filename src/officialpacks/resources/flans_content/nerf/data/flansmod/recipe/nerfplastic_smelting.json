@@ -3,7 +3,9 @@
   "ingredient": {
     "item": "minecraft:slime_ball"
   },
-  "result": "flansmod:nerfplastic",
+  "result": {
+    "id": "flansmod:nerfplastic"
+  },
   "experience": 0.0,
   "cookingtime": 200
 }

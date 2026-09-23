@@ -3,7 +3,9 @@
   "ingredient": {
     "item": "flansmod:clayandsand"
   },
-  "result": "flansmod:fiberglass",
+  "result": {
+    "id": "flansmod:fiberglass"
+  },
   "experience": 0.0,
   "cookingtime": 200
 }

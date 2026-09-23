@@ -105,6 +105,14 @@ the Git merge as a way to collect changes, not as the completed port:
   `neoforge:conditions` data. In 1.21.1, recipes live under `data/<namespace>/recipe/`,
   loot tables under `loot_table/`, and block tags under `tags/block/`. Crafting
   recipe outputs use `result.id` while ingredients still use `item` or `tag`.
+  Smelting outputs changed from a result string to an object with `id`. Keep
+  legacy `.txt` definitions shared across branches; the generator must write
+  version-specific JSON into `recipes/` on 1.20.1 and `recipe/` on 1.21.1.
+  A 1.20.1-preprocessed pack can already contain old JSON, so detect and
+  regenerate or migrate it when loading on 1.21.1, including the directory
+  rename and output schema. Check output `count` against the registered item's
+  maximum stack size: for shootables the parser raises `MaxStackSize` to at
+  least `RecipeOutput`; durability-based fuel parts remain single items.
   Biome modifiers live under `data/<namespace>/neoforge/biome_modifier/` and
   use `neoforge:add_features`. Audit both the main mod and packaged content
   packs; a successful Java compile does not validate these paths or schemas.

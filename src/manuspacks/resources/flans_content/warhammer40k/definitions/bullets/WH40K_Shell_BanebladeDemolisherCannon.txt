@@ -13,7 +13,7 @@ GGG
 GFG
 SSS
 RecipeOutput 3
-MaxStackSize 1
+MaxStackSize 3
 RoundsPerItem 16
 
 // Behaviour

@@ -327,6 +327,7 @@ public abstract class ShootableType extends InfoType
         //Item Stuff
         maxStackSize = readValue("StackSize", maxStackSize, file);
         maxStackSize = readValue("MaxStackSize", maxStackSize, file);
+        maxStackSize = Math.max(maxStackSize, recipeOutput);
         dropItemOnShoot = readValue("DropItemOnShoot", dropItemOnShoot, file);
         dropItemOnReload = readValue("DropItemOnReload", dropItemOnReload, file);
         dropItemOnHit = readValue("DropItemOnHit", dropItemOnHit, file);

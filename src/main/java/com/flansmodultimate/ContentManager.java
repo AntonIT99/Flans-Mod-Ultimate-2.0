@@ -98,7 +98,7 @@ public class ContentManager
     public static final String FOLDER_TEXTURES_ITEMS = "items";
     public static final String FOLDER_SOUND = "sound";
     public static final String FOLDER_SOUNDS = "sounds";
-    public static final String FOLDER_RECIPES = "recipes";
+    public static final String FOLDER_RECIPES = "recipe";
 
     private static final String TRANSLATION_KEY_PREFIX_ITEM = "item.";
     private static final String TRANSLATION_KEY_PREFIX_BLOCK = "block.";
@@ -1104,7 +1104,8 @@ public class ContentManager
             return true;
 
         FileSystem fs = FileUtils.createFileSystem(provider);
-        boolean missingData = isMissingGeneratedRecipeFiles(provider, fs);
+        boolean missingData = isMissingGeneratedRecipeFiles(provider, fs)
+            || RecipeJsonGenerator.hasUnmigratedLegacyRecipes(provider.getDataPath(fs));
         FileUtils.closeFileSystem(fs, provider);
         return missingData;
     }
@@ -1176,6 +1177,7 @@ public class ContentManager
 
     private static void createRecipeJsonFiles(IContentProvider provider)
     {
+        RecipeJsonGenerator.migrateLegacyRecipes(provider.getDataPath());
         Path recipeFolderPath = provider.getDataPath().resolve(FOLDER_RECIPES);
         for (InfoType config : listItems(provider))
         {

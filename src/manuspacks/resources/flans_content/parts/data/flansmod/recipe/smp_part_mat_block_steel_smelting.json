@@ -3,7 +3,9 @@
   "ingredient": {
     "item": "minecraft:iron_ingot"
   },
-  "result": "flansmod:smp_part_mat_block_steel",
+  "result": {
+    "id": "flansmod:smp_part_mat_block_steel"
+  },
   "experience": 0.0,
   "cookingtime": 200
 }
