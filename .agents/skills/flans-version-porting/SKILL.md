@@ -49,6 +49,40 @@ when the other branch must be built or edited. Do not switch a dirty checkout.
 5. Validate on the destination branch, then compare the result against the
    observable contract rather than source-code similarity.
 
+## Large cross-version release merges
+
+When bringing a release from `master` into a maintained NeoForge branch, treat
+the Git merge as a way to collect changes, not as the completed port:
+
+1. Check both worktrees for local changes, record both heads and their merge
+   base, and run a destination baseline compile. Preserve unrelated files.
+2. Inventory source-only commits and changed paths by subsystem before merging.
+   Count source and destination commits separately; previous merge commits can
+   hide a large new release delta. Record a short port plan/report when the
+   change set spans multiple systems.
+3. Merge with `--no-commit` in the destination worktree. Group conflicts by
+   build/metadata, common gameplay, networking, client/rendering, resources,
+   and separately packaged packs. Resolve a subsystem and compile it before
+   treating conflict resolution as finished.
+4. For behavior, prefer the new `master` semantics. For integration, retain the
+   destination's loader-specific implementation: Java/toolchain, Gradle plugin,
+   source sets, metadata templates, events, registries, payload registration,
+   Minecraft APIs, and rendering. Inspect the surrounding call chain whenever
+   both branches edited the same file.
+5. Audit cleanly auto-merged files too. A source-only Java file may merge without
+   a conflict while still importing Forge or calling a removed Minecraft API.
+   Search for source-loader imports and compile errors across the full result.
+6. Keep built-in packs, official packs, and any branch-specific packaged packs
+   separate. Moves of content definitions and large binary assets can defeat
+   rename detection; validate final source-set membership and jar contents,
+   rather than judging the raw diff size or copying generated artifacts.
+7. Update the report with resolved seams, validation, and remaining runtime
+   risks. Commit the merge only after the destination builds and the scoped diff
+   has been checked, or explicitly record why a gate is unavailable.
+
+This section supplements the smaller end-to-end workflow below; it does not
+make the destination's branch-specific APIs subordinate to `master` files.
+
 ## Invariants and branch seams
 
 - Keep gameplay state and validation server-authoritative. A client packet is a
