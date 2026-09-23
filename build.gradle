@@ -84,17 +84,21 @@ ext.registerFmuModule = { Map module ->
             outputs.file(encryptedBundle)
 
             doLast {
-                project.delete(encryptedGeneratedResources)
                 if (!encryptedInputDirectory.isDirectory()) {
+                    java.nio.file.Files.deleteIfExists(encryptedBundle.toPath())
                     logger.lifecycle("No encrypted-content input directory for ${name}: ${encryptedInputDirectory}")
                     return
                 }
 
-                List<File> sourceFiles = fileTree(encryptedInputDirectory)
-                        .files
-                        .findAll { it.isFile() }
-                        .sort { left, right -> left.absolutePath <=> right.absolutePath }
+                List<File> sourceFiles
+                try (def paths = java.nio.file.Files.walk(encryptedInputDirectory.toPath())) {
+                    sourceFiles = paths.filter { java.nio.file.Files.isRegularFile(it) }
+                            .map { it.toFile() }
+                            .sorted { left, right -> left.absolutePath <=> right.absolutePath }
+                            .toList()
+                }
                 if (sourceFiles.isEmpty()) {
+                    java.nio.file.Files.deleteIfExists(encryptedBundle.toPath())
                     logger.lifecycle("No uncensored resources found for ${name}.")
                     return
                 }
