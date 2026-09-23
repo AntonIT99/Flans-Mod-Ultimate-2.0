@@ -102,11 +102,27 @@ the Git merge as a way to collect changes, not as the completed port:
   coordinates and partial tick, and scroll callbacks take both axes.
 - World data migration must use `Path`-based NBT IO with an `NbtAccounter` and
   `Path`-based replacement. Recipe conditions use NeoForge condition codecs and
-  `neoforge:conditions` data; validate recipe JSON and directory names together.
+  `neoforge:conditions` data. In 1.21.1, recipes live under `data/<namespace>/recipe/`,
+  loot tables under `loot_table/`, and block tags under `tags/block/`. Crafting
+  recipe outputs use `result.id` while ingredients still use `item` or `tag`.
+  Biome modifiers live under `data/<namespace>/neoforge/biome_modifier/` and
+  use `neoforge:add_features`. Audit both the main mod and packaged content
+  packs; a successful Java compile does not validate these paths or schemas.
 - Rendering is a separate porting phase. `VertexConsumer`, `BufferBuilder`,
   shaders, GUI layers, and post-processing changed enough that mechanical
   renames can compile partially while still producing the wrong frame. Verify
   the destination renderer API and test client startup and representative scenes.
+  In 1.21.1 `fog_distance` takes `(vec3 position, int shape)`, so source shaders
+  using the old model-view argument can compile as resources but fail during
+  client reload. An optional OpenGL shader test can catch this before launch.
+- Keep optional modules discoverable through their `src/<module>/fmu-module.gradle`
+  descriptors when porting the root build. Under ModDevGradle, register each
+  module source set, NeoForge mod binding, compile dependency on main, and jar
+  task; convert Forge `mods.toml` and pack metadata in newly added modules.
+  Inspect produced jars and check that all expected mod IDs load in a dev run.
+- NeoForge's `IConfigSpec.ILoadedConfig` is sealed. Tests that attached an
+  anonymous Forge loaded config need a NeoForge test fixture or loader context;
+  updating the import alone is insufficient.
 
 This section supplements the smaller end-to-end workflow below; it does not
 make the destination's branch-specific APIs subordinate to `master` files.
