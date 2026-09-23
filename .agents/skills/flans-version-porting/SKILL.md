@@ -120,6 +120,12 @@ the Git merge as a way to collect changes, not as the completed port:
   module source set, NeoForge mod binding, compile dependency on main, and jar
   task; convert Forge `mods.toml` and pack metadata in newly added modules.
   Inspect produced jars and check that all expected mod IDs load in a dev run.
+- The packaged content module's logical recipe roots have no `pack.mcmeta`.
+  Forge 1.20.1 supplies their pack metadata when constructing `Pack.Info`;
+  NeoForge 1.21.1 must likewise construct `Pack.Metadata` for them rather than
+  calling `Pack.readMetaAndCreate`. Otherwise the repository silently skips
+  those packs. Check server logs for `Missing metadata in pack` and compare
+  loaded recipe counts before and after a packaging port.
 - NeoForge's `IConfigSpec.ILoadedConfig` is sealed. Tests that attached an
   anonymous Forge loaded config need a NeoForge test fixture or loader context;
   updating the import alone is insufficient.
