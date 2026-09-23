@@ -1,0 +1,19 @@
+// Identity
+Name Fuel Canister
+ShortName SMP_Part_Fuel_FuelCan
+
+// Model and Rendering
+Icon Icon_SMP_Part_Fuel_FuelCan
+
+// Recipe and Inventory
+Recipe F SMP_Part_Fuel_FuelBarrel
+FF 
+   
+   
+RecipeOutput 8
+Category Fuel
+PartBoxRecipe
+StackSize 8
+
+// Movement and Physics
+Fuel 2000

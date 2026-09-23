@@ -1,0 +1,49 @@
+// Identity
+Name HX2 Mine
+ShortName hx2mine
+
+// Item and rendering
+Icon hx2mine
+Colour 255 255 255
+StackSize 5
+Model wolffstarwars.SWMine
+Texture itemhx2mine
+
+// Throwing
+SpinWhenThrown false
+ThrowDelay 10
+ThrowSpeed 0.1
+Remote false
+
+// Physics
+Bounciness 0.0
+FallSpeed 1.0
+BreaksGlass false
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky true
+DespawnTime 32000
+
+// Detonation
+DetonateOnImpact false
+VehicleProximityTrigger 3.0
+LivingProximityTrigger 3.0
+Fuse 0
+DetonateWhenShot true
+PrimeDelay 100
+
+// Damage and explosion
+HitEntityDamage 0
+FireRadius 0.0
+ExplosionRadius 5.0
+ExplosionBreaksBlocks true
+ExplosiveMassTNTg 900
+FragType LOW_FRAG
+
+// Smoke and effects
+SmokeTime 0
+
+// Sounds and particles
+TrailParticles false
+ExplodeParticles 0
+DetonateSound detonator_explosion

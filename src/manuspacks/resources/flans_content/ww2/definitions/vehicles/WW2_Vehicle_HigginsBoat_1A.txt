@@ -1,0 +1,89 @@
+// Identity
+Name LCVP 2 - Higgins Boat
+ShortName WW2_Vehicle_HigginsBoat_1A
+
+// Model and Rendering
+Model Manus_WW2.Vehicle.WW2_Vehicle_HigginsBoat_1
+Icon Icon_WW2_Vehicle_HigginsBoat_1A
+Texture Skin_WW2_Vehicle_HigginsBoat_1A
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 2500
+CargoSlots 0
+AddRecipeParts core 80 SMP_Part_Mat_Plate_Steel
+AddDye 12 gray
+
+// Movement and Physics
+Boat True
+PlaceableOnLand False
+PlaceableOnWater True
+FloatOnWater true
+Buoyancy 0.05
+MaxThrottle 1
+MaxNegativeThrottle 0.2
+Drag 1
+WheelRadius 1
+SpringStrength 0.0
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+RealDisplacementT 12
+RealEnginePowerHp 225
+RealMaxSpeedKn 12
+DriveType MARINE
+RealMaxReverseSpeedKn 5
+RealDraftM 0.9
+
+// Weapons
+GunOrigin 1 -87 32 -23
+GunOrigin 2 -87 32 23
+ReadWeaponsFromGunTypes true
+
+// Protection
+IsExplosionWhenDestroyed true
+ArmorFrontMm 6.35
+ArmorSideMm 6.35
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -143 -8 -40
+WheelPosition 1 -143 -8 40
+WheelPosition 2 105 -8 40
+WheelPosition 3 105 -8 -40
+Driver -63 14 -19
+RotatedDriverOffset 0 0 0
+Passengers 20
+Passenger 1 -111 18 -22 core -50 50 0 45 WW2_MG_BrowningM1919_1A Gun0
+Passenger 2 -111 18 22 core -50 50 0 45 WW2_MG_BrowningM1919_1A Gun1
+Passenger 3 -28 0 16 core
+Passenger 4 -12 0 16 core
+Passenger 5 4 0 16 core
+Passenger 6 20 0 16 core
+Passenger 7 36 0 16 core
+Passenger 8 52 0 16 core
+Passenger 9 68 0 16 core
+Passenger 10 84 0 16 core
+Passenger 11 100 0 16 core
+Passenger 12 -28 0 -16 core
+Passenger 13 -12 0 -16 core
+Passenger 14 4 0 -16 core
+Passenger 15 20 0 -16 core
+Passenger 16 36 0 -16 core
+Passenger 17 52 0 -16 core
+Passenger 18 68 0 -16 core
+Passenger 19 84 0 -16 core
+Passenger 20 100 0 -16 core
+SetupPart core 2500 -152 -23 -43 270 47 86
+BulletDetection 5
+CameraDistance 5
+
+// Sounds
+StartSound lkw_start
+StartSoundLength 34
+EngineSound lkw_lauf
+EngineSoundLength 105

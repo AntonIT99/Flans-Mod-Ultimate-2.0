@@ -1,0 +1,41 @@
+// Identity
+Name Japanese 75 mm Type 94 HE (Type 3)
+ShortName Japanese75HEShell
+Description High-explosive ammunition for the 75 mm Type 3 tank gun
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell75jHE
+HasLight True
+
+// Ammunition
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Mass 6000
+MuzzleVelocity 522
+FallSpeed 1
+PenetrationAt100m 12
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+ExplosiveMassTNTg 810
+FragType HE_SHELL
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+
+// Sounds and particles
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 6

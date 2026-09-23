@@ -1,8 +1,10 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.common.raytracing.RotatedAxes;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -22,6 +24,116 @@ public final class LegacyDriveableCoordinates
     public static Vec3 toLocal(@NotNull Vector3f legacy)
     {
         return new Vec3(legacy.z, legacy.y, -legacy.x);
+    }
+
+    /** Legacy type-file X is the front/back coordinate after basis conversion. */
+    public static double legacyForwardCoordinate(@NotNull Vec3 local)
+    {
+        return -local.z;
+    }
+
+    /** Legacy type-file Z is the left/right coordinate after basis conversion. */
+    public static double legacyRightCoordinate(@NotNull Vec3 local)
+    {
+        return local.x;
+    }
+
+    /**
+     * Plane type files use the legacy flight-facing basis, while their model
+     * geometry faces the opposite X direction. Apply the horizontal half-turn
+     * already used by plane movement before passing an anchor to the shared
+     * driveable model transform.
+     */
+    public static Vec3 applyPlaneModelFacing(@NotNull Vec3 local)
+    {
+        return new Vec3(-local.x, local.y, -local.z);
+    }
+
+    /** Minecraft view yaw that points along the rendered plane's nose. */
+    public static float planeForwardYaw(float driveableYaw)
+    {
+        return renderedForwardYaw(driveableYaw, true);
+    }
+
+    /** Converts the simulation yaw to the vanilla entity yaw of the rendered nose/front. */
+    public static float renderedForwardYaw(float driveableYaw, boolean planeModelFacing)
+    {
+        return Mth.wrapDegrees(driveableYaw + (planeModelFacing ? -90F : 90F));
+    }
+
+    /** Inverse used when vanilla movement packets carry the aligned entity yaw. */
+    public static float driveableYawFromRenderedForward(float entityYaw, boolean planeModelFacing)
+    {
+        return Mth.wrapDegrees(entityYaw + (planeModelFacing ? 90F : -90F));
+    }
+
+    /** Vanilla look pitch matching the rendered model's longitudinal axis. */
+    public static float renderedForwardPitch(float driveablePitch, boolean planeModelFacing)
+    {
+        return planeModelFacing ? driveablePitch : -driveablePitch;
+    }
+
+    /** Pitch conversion is its own inverse. */
+    public static float driveablePitchFromRenderedForward(float entityPitch, boolean planeModelFacing)
+    {
+        return renderedForwardPitch(entityPitch, planeModelFacing);
+    }
+
+    /**
+     * Screen roll that keeps a rider's horizon locked to the rendered driveable.
+     *
+     * <p>The renderer applies model roll around model X, which is the same axis
+     * the camera looks along. A camera rolling with the driveable therefore has
+     * to rotate the image the opposite way. Non-plane models face the mirrored
+     * model X direction, which flips the sense of both their pitch and their
+     * roll relative to the view, exactly like {@link #renderedForwardPitch}.</p>
+     */
+    public static float renderedViewRoll(float driveableRoll, boolean planeModelFacing)
+    {
+        return planeModelFacing ? -driveableRoll : driveableRoll;
+    }
+
+    /**
+     * Composes a rider's local look rotation with the driveable orientation and
+     * returns the resulting vanilla camera angles. Adding the two sets of Euler
+     * angles instead only matches while the driveable is level; composing the
+     * rotations is what keeps first and third person aligned once it banks.
+     */
+    public static ViewAngles mountedViewAngles(float driveableYaw, float driveablePitch, float driveableRoll,
+                                                float aimYaw, float aimPitch, boolean planeModelFacing)
+    {
+        // Seat aim is authored in vanilla view space, so it needs the same basis
+        // conversion as the composed result before the two are multiplied.
+        RotatedAxes look = new RotatedAxes(aimYaw, renderedForwardPitch(aimPitch, planeModelFacing), 0F);
+        RotatedAxes global = new RotatedAxes(driveableYaw, driveablePitch, driveableRoll)
+            .findLocalAxesGlobally(look);
+        return new ViewAngles(renderedForwardYaw(global.getYaw(), planeModelFacing),
+            Mth.clamp(renderedForwardPitch(global.getPitch(), planeModelFacing), -89.9F, 89.9F),
+            Mth.wrapDegrees(renderedViewRoll(global.getRoll(), planeModelFacing)));
+    }
+
+    /** Vanilla camera angles: yaw and pitch aim the view, roll tilts the screen. */
+    public record ViewAngles(float yaw, float pitch, float roll) {}
+
+    /**
+     * Converts a point measured off a loaded model into the type-file coordinates
+     * that resolve back to it, so a value read from geometry can be compared with
+     * an authored one or written into a type file unchanged.
+     *
+     * <p>Model pixels map to the driveable-local basis the same way a type-file
+     * vector does, which is what lets the barrel pitch pivot be read straight off
+     * a model part. Attachment points additionally take the lateral mirror, and
+     * aircraft the model-facing half-turn, so undoing those is the whole of the
+     * conversion: inverting {@code (-z, y, -x)} for a driveable and
+     * {@code (-z, y, x)} for a plane.</p>
+     *
+     * @param modelPixels  the measured point, in model pixels as the renderer draws it
+     * @param planeModelFacing whether the owning type is authored in the plane flight basis
+     */
+    public static Vector3f modelPixelsToTypeFile(@NotNull Vec3 modelPixels, boolean planeModelFacing)
+    {
+        return new Vector3f((float) (planeModelFacing ? -modelPixels.x : modelPixels.x),
+            (float) modelPixels.y, (float) -modelPixels.z);
     }
 
     /** Legacy model Z pitch becomes rotation around local X after basis conversion. */

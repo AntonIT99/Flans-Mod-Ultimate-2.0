@@ -1,0 +1,21 @@
+// Identity
+Name Twin Ion Engine
+ShortName SMP_Part_Engine_TIEEngine
+
+// Model and Rendering
+Icon Icon_SMP_Part_Engine_TIEEngine
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_PlaSteel T SMP_Part_Propeller_TurbineSpace I SMP_Part_Misc_EngineIgnition
+MIM
+TTT
+MIM
+RecipeOutput 1
+Category Engine
+PartBoxRecipe
+StackSize 4
+WorksWith Plane Mecha
+
+// Movement and Physics
+EngineSpeed 3.0
+FuelConsumption 3.0

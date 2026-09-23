@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -286,7 +285,7 @@ public final class JavaModelCompiler
             Path outputFile = packRoot.resolve(relativePath);
             Files.createDirectories(outputFile.getParent());
             byte[] classData = Files.readAllBytes(classFile);
-            Files.write(outputFile, ClassLoaderUtils.getModifiedClassData(classData, null));
+            Files.write(outputFile, ClassLoaderUtils.transformClass(classData).classData());
         }
 
         return classFiles.size();
@@ -439,23 +438,7 @@ public final class JavaModelCompiler
 
     private static String readSource(Path file) throws IOException
     {
-        CharacterCodingException firstDecodeFailure = null;
-        for (Charset charset : SOURCE_CHARSETS)
-        {
-            try
-            {
-                return Files.readString(file, charset);
-            }
-            catch (CharacterCodingException e)
-            {
-                if (firstDecodeFailure == null)
-                    firstDecodeFailure = e;
-                else
-                    firstDecodeFailure.addSuppressed(e);
-            }
-        }
-
-        throw firstDecodeFailure != null ? firstDecodeFailure : new IOException("No charset configured for " + file);
+        return TextDecoding.readString(file);
     }
 
     private static String sha256(Path file) throws IOException

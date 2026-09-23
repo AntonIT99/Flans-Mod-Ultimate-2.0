@@ -1,0 +1,41 @@
+﻿// Identity
+Name MK III Godwyn Pattern Bolt Pistol
+ShortName WH40K_Gun_MKIIIBoltpistol_1A
+
+// Model and Rendering
+ModelScale 0.11
+Icon Icon_WH40K_Gun_MKIIIBoltpistol_1A
+Model Manus_WH40K.Gun.WH40K_Gun_MKIIIBoltpistol_1
+DeployedModel None
+Texture Skin_WH40K_Gun_MKIIIBoltpistol_1A
+
+// Recipe and Inventory
+AllowGripAttachments False
+Ammo WH40K_Ammo_BoltPistolCal75
+AllowAllAttachments False
+AllowAttachments MKVbBoltgunSilencer MKVbBoltgunScope MKVbBoltgunStock
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+NumGenericAttachmentSlots 1
+
+// Weapons
+Deployable False
+Mode FullAuto
+Recoil 2
+ReloadTime 40
+OneHanded True
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+RoundsPerMin 300.0
+Dispersion 0.68
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 250.0
+
+// Sounds
+DistortSound False
+ShootSound boltgun_fire
+ReloadSound boltgun_reload

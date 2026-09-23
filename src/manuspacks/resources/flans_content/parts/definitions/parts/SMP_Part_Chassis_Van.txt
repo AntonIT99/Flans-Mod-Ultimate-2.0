@@ -1,0 +1,16 @@
+// Identity
+Name Van Chassis Frame
+ShortName SMP_Part_Chassis_Van
+
+// Model and Rendering
+Icon Icon_SMP_Part_Chassis_Van
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Steel S SMP_Part_Misc_Seat_Car G glass
+MMM
+GSM
+ M 
+RecipeOutput 1
+Category Chassis
+PartBoxRecipe
+StackSize 64

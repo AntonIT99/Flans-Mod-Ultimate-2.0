@@ -1,0 +1,42 @@
+// Identity
+Name PPSh41 Drum Magazine
+ShortName 44_PPSh41Ammo
+
+// Rendering
+Icon 44_PPSh41Ammo
+Model Bullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 71
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates True
+BreaksGlass True
+
+// Damage
+Mass 5.5
+Damage 1
+DamageVsLiving 6
+DamageVsVehicles 1
+DamageVsPlanes 5
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 0
+
+// Effects
+SmokeTrail False
+FlakParticles 0
+
+// Sounds
+HitSound bullet
+HitSound SmallImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true

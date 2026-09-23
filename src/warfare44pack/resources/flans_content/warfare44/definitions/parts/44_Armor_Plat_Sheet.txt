@@ -1,0 +1,11 @@
+// Identity
+Name Armor Plate Sheet
+ShortName 44_Armor_Plate_Sheet
+Category Misc
+
+// Rendering
+Icon 44_Armor_Plate_Sheet
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 6

@@ -14,12 +14,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.flansmodultimate.util.TypeReaderUtils.logError;
 import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 
 @NoArgsConstructor
 public class ArmorType extends InfoType
 {
     public static final float ARMOR_POINT_FACTOR = 25.0F;
+    /** Penetration resistance of a bare head. Also the default for a helmet that declares no value. */
+    public static final float UNARMORED_HELMET_PENETRATION_RESISTANCE = 1.0F;
+    /** Penetration resistance of a bare chest. Also the default for a chestplate that declares no value. */
+    public static final float UNARMORED_CHESTPLATE_PENETRATION_RESISTANCE = 1.0F;
+    /** Penetration resistance of bare legs. Also the default for leggings that declare no value. */
+    public static final float UNARMORED_LEGGINGS_PENETRATION_RESISTANCE = 0.65F;
+    /** Penetration resistance of bare feet. Also the default for boots that declare no value. */
+    public static final float UNARMORED_BOOTS_PENETRATION_RESISTANCE = 0.35F;
 
     protected String rawArmorItemType = StringUtils.EMPTY;
     @Getter
@@ -39,9 +48,13 @@ public class ArmorType extends InfoType
     /** Vanilla Minecraft armour points. */
     protected double armorPoints;
     protected boolean readArmorPoints;
-    /** How good the armour is at stopping bullets. Same units as bullet penetration. Default 0 to emulate previous behaviour */
+    /**
+     * How good the armour is at stopping bullets. Same units as bullet penetration.
+     * Defaults to the unarmoured resistance of the slot this piece occupies, so that wearing an
+     * armour piece that does not declare the property is never worse than wearing nothing.
+     */
     @Getter
-    protected float penetrationResistance;
+    protected float penetrationResistance = UNARMORED_HELMET_PENETRATION_RESISTANCE;
     @Getter
     protected int durability;
     @Getter
@@ -155,6 +168,32 @@ public class ArmorType extends InfoType
                 FlansMod.log.error("Armor Type '{}' not recognized! Defaulting to Helmet", rawArmorItemType);
                 armorItemType = ArmorItem.Type.HELMET;
                 break;
+        }
+
+        // Read after the slot is known so that an undeclared value falls back to the unarmoured slot resistance
+        penetrationResistance = readValue("PenetrationResistance", getUnarmoredPenetrationResistance(armorItemType), file);
+        if (!Float.isFinite(penetrationResistance) || penetrationResistance < 0F)
+        {
+            logError("PenetrationResistance must be a finite non-negative value; using the unarmoured value of the slot", file);
+            penetrationResistance = getUnarmoredPenetrationResistance(armorItemType);
+        }
+    }
+
+    /**
+     * @return the penetration resistance an entity has on the given slot while wearing nothing there
+     */
+    public static float getUnarmoredPenetrationResistance(ArmorItem.Type slot)
+    {
+        switch (slot)
+        {
+            case LEGGINGS:
+                return UNARMORED_LEGGINGS_PENETRATION_RESISTANCE;
+            case BOOTS:
+                return UNARMORED_BOOTS_PENETRATION_RESISTANCE;
+            case CHESTPLATE:
+                return UNARMORED_CHESTPLATE_PENETRATION_RESISTANCE;
+            default:
+                return UNARMORED_HELMET_PENETRATION_RESISTANCE;
         }
     }
 

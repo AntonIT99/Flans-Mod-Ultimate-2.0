@@ -1,0 +1,20 @@
+// Identity
+Name Clone Captain Armor
+ShortName clonecaptainARCArmor
+
+// Item and rendering
+Icon clonecaptainarmor
+Colour 255 255 255
+ArmourTexture clonetroopercaptainarcchestplate
+Model wolffstarwars.CloneChestplateARC
+
+// Protection
+Type Body
+Defence 0.16
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 6
+Toughness 1
+
+// Movement
+MoveSpeedModifier 0.98

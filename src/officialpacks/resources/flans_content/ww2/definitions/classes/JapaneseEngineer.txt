@@ -1,5 +1,8 @@
+// Identity
 Name Engineer
-ShortName japaneseEngineer
+ShortName OfficialWW2_JapaneseEngineer
+
+// Items
 AddItem type100
 AddItem type14
 AddItem type97 2

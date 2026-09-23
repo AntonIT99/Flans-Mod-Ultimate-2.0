@@ -33,10 +33,26 @@ public final class DriveableInput
     public static final int BRAKE = 1 << 17;
     /** Client camera/controller scheme toggle. Synced for compatibility only. */
     public static final int CONTROL_MODE = 1 << 18;
+    /** Persistent ground-vehicle throttle lever, independent of the forward pedal. */
+    public static final int THROTTLE_INCREASE = 1 << 19;
+    /** Persistent ground-vehicle throttle lever, independent of the reverse pedal. */
+    public static final int THROTTLE_DECREASE = 1 << 20;
+    /** Cycle to the next free, intact seat. The server selects the destination. */
+    public static final int CHANGE_SEAT = 1 << 21;
+    /** Toggle a vehicle or aircraft engine. The server owns the resulting engine state. */
+    public static final int TOGGLE_ENGINE = 1 << 22;
+    /** Toggle the air brakes of an aircraft. The server owns the resulting state. */
+    public static final int TOGGLE_AIR_BRAKE = 1 << 23;
+    /** Chamber the next shell, bomb or missile in slot order. The server owns the selection. */
+    public static final int SWITCH_AMMO = 1 << 24;
 
-    public static final int VALID_MASK = (1 << 19) - 1;
+    public static final int TOGGLE_SCOPE = 1 << 25;
+    public static final int CYCLE_SIGHT = 1 << 26;
+
+    public static final int VALID_MASK = (1 << 27) - 1;
     public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND
-        | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE;
+        | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE
+        | THROTTLE_INCREASE | THROTTLE_DECREASE;
     public static final int EDGE_TRIGGERED_MASK = VALID_MASK & ~CONTINUOUS_MASK;
 
     public static int sanitize(int mask)

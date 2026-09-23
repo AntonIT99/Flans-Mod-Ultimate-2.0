@@ -1,0 +1,16 @@
+// Identity
+Name Tank Chassis Frame
+ShortName SMP_Part_Chassis_Tank
+
+// Model and Rendering
+Icon Icon_SMP_Part_Chassis_Tank
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Steel S SMP_Part_Misc_Seat_Car A SMP_Part_Mat_Armor_Steel
+AAA
+ASA
+ M 
+RecipeOutput 1
+Category Chassis
+PartBoxRecipe
+StackSize 64

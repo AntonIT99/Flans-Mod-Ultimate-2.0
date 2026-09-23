@@ -1,0 +1,20 @@
+// Identity
+Name ClonetrooperArmor
+ShortName cloneriotArmor
+
+// Item and rendering
+Icon cloneriotarmor
+Colour 255 255 255
+ArmourTexture clonetrooperriotchestplate
+Model wolffstarwars.CloneChestplateRiot
+
+// Protection
+Type Body
+Defence 0.16
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 6
+Toughness 1
+
+// Movement
+MoveSpeedModifier 0.98

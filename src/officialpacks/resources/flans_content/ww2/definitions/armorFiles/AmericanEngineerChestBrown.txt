@@ -1,41 +1,20 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name AmericanEngineerChestBrown
 ShortName AmericanEngineerChestBrown
-ItemID Your ID
 
-
-// Visuals
+// Item and rendering
 ModelScale 1
 Icon americanecoat
-
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
-Type Body
-Defence 0.1
-
-
-//Visuals
 Model ww2.AmericanEngineerChest
 ArmorTexture aengineerbrown
 
+// Protection
+Type Body
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0
 
-//Armor Settings
-
-
-//Helmet Settings
+// Effects
 SmokeProtection false
-
-//------------------------------------------------

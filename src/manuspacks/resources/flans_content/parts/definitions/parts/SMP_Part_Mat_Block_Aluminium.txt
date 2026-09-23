@@ -1,0 +1,16 @@
+// Identity
+Name Aluminium Ingot
+ShortName SMP_Part_Mat_Block_Aluminium
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Block_Aluminium
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel S sand
+SMS
+   
+   
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

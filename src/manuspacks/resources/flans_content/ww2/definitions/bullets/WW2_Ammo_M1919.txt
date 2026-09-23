@@ -1,0 +1,39 @@
+// Identity
+Name Uk .303 Ammo for Browning Mk II - 400 Bullet Box
+ShortName WW2_Ammo_M1919
+description Amunition for Browning Mk II
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_M1919
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 400
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 11
+DamageVsVehicles 1
+DamageVsPlanes 9
+Explosion 0
+Fire 0
+Mass 11.3
+
+// Sounds
+HitSound MediumImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true
+
+// Effects
+FlakParticles 0
+SmokeTrail False

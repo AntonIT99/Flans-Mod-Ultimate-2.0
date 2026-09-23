@@ -1,0 +1,62 @@
+// Identity
+Name Luger
+ShortName 44_Luger
+Description German Pistol
+
+// Rendering
+Icon 44_Luger
+Model W44.Luger
+ModelScale 0.15
+Texture Skin44_Luger
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_LugerAmmo
+
+// Handling
+Mode SemiAuto
+OneHanded True
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 300.0
+ReloadTime 50
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 370.0
+Dispersion 0.65
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 5.0
+RandomRecoilRange 4
+RandomRecoilYawRange 0.75
+DecreaseRecoil 2.5
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_ZF4Scope 44_ZF41Scope 44_OpticalSight 44_PistolStock 44_PistolBarrel 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound LugerShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound LugerReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

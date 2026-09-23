@@ -1,0 +1,316 @@
+# Ground Vehicles and Aircraft
+
+Read this reference when editing `vehicle_categories.json` or
+`plane_categories.json`.
+
+Marine craft are driveables too and every mandatory rule below still applies to
+them, but displacement, knots, shaft power, belt and deck armour, and the
+vehicle-versus-plane routing trap are covered separately in
+[ships.md](ships.md). Read that as well for anything that floats.
+
+Mandatory driveable fields follow completeness-over-omission. Work down the source
+ladder from exact primary evidence through specialist and broad references to a
+configuration-compatible game source. If every source tier fails, use a
+gameplay-coherent estimate rather than omit a mandatory driveable key, and disclose
+it explicitly. Never use that exception for ordinary optional fields.
+
+For every ground-vehicle and aircraft category, set quoted
+`ReadWeaponsFromGunTypes` and `UseRealisticVehicleHealth` to `"true"`. Confirm a
+positive `RealMassKg` and inspect authored hitbox-health weights. Missing weights
+cause a warning and fallback to authored health, which should be understood rather
+than accidental. `ReadWeaponsFromGunTypes` keeps mounted delay, velocity, spread,
+and damage derived from the researched gun definition instead of duplicating them
+in each driveable, but only for a weapon bank that actually has a gun to read from.
+Which cadence key a category needs follows from that, and is set out below.
+
+## Mounted weapon cadence
+
+This section applies to ground vehicles and aircraft alike; the keys live on
+`DriveableType`.
+
+A driveable has two weapon banks, primary and secondary. Each has **two** timings
+to research, not one: the cadence between rounds inside a magazine, and the reload
+that separates magazines. A category that authors only the first describes a
+weapon that never stops to reload.
+
+### Cadence
+
+```text
+this bank has a PilotGun/AddGun mount, and either ReadWeaponsFromGunTypes is
+true or the bank states no cadence key of its own
+    -> the mounted GunType's own RoundsPerMin
+otherwise
+    -> ShootDelayPrimarySeconds
+     > RoundsPerMinPrimary
+     > ShootDelayPrimary > ShellDelay > BombDelay      (legacy ticks)
+     > 60 rounds per minute
+```
+
+with `ShootDelaySecondarySeconds`, `RoundsPerMinSecondary`,
+`ShootDelaySecondary`, and `ShootDelay` as the secondary bank's equivalents.
+
+The consequence that decides everything: **a bank only defers to a gun when its
+shoot points include a real gun mount.** A bank made of bare `ShootPointPrimary`
+lines firing shells or bombs straight out of the ammo bank has no `GunType` at
+all, so it uses the driveable's own keys, and if none is authored it silently sits
+at the default 60 rounds per minute — one shot per second, for a Tiger's 8.8 cm as
+much as for a Sherman's 75 mm.
+
+### Reload
+
+For a bank firing the vehicle's own ordnance the reload actually used is the
+**longest** of every timing figure the definition states for that bank:
+
+```text
+max( ReloadTime, ReloadTimePrimary,
+     ShootDelayPrimarySeconds, RoundsPerMinPrimary,
+     ShootDelayPrimary, ShellDelay, BombDelay, ShootDelay,
+     the resolved cadence )
+```
+
+Taking the maximum is what keeps single-key legacy definitions working: a
+definition expressing a tank's whole loading cycle as `ShellDelay 60` reloads in
+three seconds without stating a reload time at all. It also means a fast cadence
+can never make a bank reload faster than its cadence.
+
+For a bank firing mounted guns the gun's own `ReloadTime` applies instead, unless
+the vehicle states `ReloadTimePrimary` / `ReloadTimeSecondary`. `ReadWeaponsFromGunTypes`
+makes the gun authoritative for both cadence and reload unconditionally.
+
+### How many rounds before the reload
+
+`ReloadRoundsPrimary` / `ReloadRoundsSecondary` (with `ReloadRounds` as a shared
+fallback) state how many rounds the bank fires between reloads. Without them the
+loaded ammunition's own `RoundsPerItem` decides, which for an ordinary shell is
+one round — so a tank gun reloads after every shot whether or not anyone authors
+anything.
+
+### Deciding per bank
+
+Inspect the definition's shoot points, then author from this table. **An
+autocannon needs all three rows of research**, because its historical signature is
+a burst at a cyclic rate followed by a magazine change, and a category that gives
+it only an RPM turns it into an unrealistic belt-fed weapon that never pauses:
+
+| The bank is | Author | Because |
+| --- | --- | --- |
+| A main gun firing shells, one round at a time | `ShootDelayPrimarySeconds` | Sources give tank and naval guns a *loading cycle in seconds*. Author the sustained rate a trained crew held, not a burst-of-three record. With one round per item the cadence and the reload are the same wait, so this single key is enough. |
+| **An autocannon or automatic cannon** | `RoundsPerMinPrimary` **and** `ReloadTimePrimary` **and** `ReloadRoundsPrimary` | The cyclic rate, the magazine or clip change, and the rounds it holds. A 2 cm KwK 30 is `RoundsPerMinPrimary 280`, `ReloadRoundsPrimary 10` for its ten-round magazine, and a `ReloadTimePrimary` covering the change — **in ticks, so multiply the documented seconds by 20**, unlike the cadence keys which take seconds or RPM. Research all three from the same source configuration; a rate without a magazine size is not a usable answer. |
+| A machine gun or rocket pod on a bare shoot point | `RoundsPerMinPrimary`, plus `ReloadRoundsPrimary` and `ReloadTimePrimary` when the source documents a belt or pod capacity and a reload | Sources give automatic weapons a cyclic rate. A belt-fed hull machine gun with a long belt reasonably has no authored reload; a pod that empties and is not reloadable in the field does. |
+| Backed by a `PilotGun` / `AddGun` mount | nothing | The cadence and reload come from that gun's own researched category. A driveable-level key here is a future contradiction: it overrides the gun today and silently diverges from it the day someone corrects the gun. Set `ReadWeaponsFromGunTypes: "true"` to make that impossible. |
+| A bomb or torpedo release | `ShootDelaySecondarySeconds` | Release interval in seconds, matching how bomb-bay intervals are documented. Bombs and missiles are selected on their racks, not loaded, so they need no reload research. |
+
+Author exactly one **cadence** key per bank. Two are not an error, but the loser
+is invisible for cadence while still counting towards the reload maximum, so a
+category carrying both says something it did not mean.
+
+Fractional delays are preserved, so `RoundsPerMinPrimary` is no longer capped at
+1200 and `ShootDelayPrimarySeconds` can express anything down to 0.0025 s. Use the
+real cyclic rate; do not clamp a 1500 RPM aircraft cannon to 1200. An entry
+sitting at exactly `1200` is a clamping suspect from when that was the ceiling —
+a 2 cm Flakvierling 38's four barrels are not 1200 rounds per minute between them.
+Re-check the source when a task touches one, and say in the report whether the
+value was corrected or confirmed.
+
+Passenger and turret mounts are outside all of this. A passenger gun always uses
+its own `GunType` cadence **and its own `ReloadTime`**, regardless of
+`ReadWeaponsFromGunTypes` and of every key above, so a hull with twenty passenger
+mounts needs no driveable timing key for them — only correct `gun_categories.json`
+entries, reload times included.
+
+## Ground vehicles
+
+Use the exact mark and operating configuration. Prefer loaded/combat mass so mass,
+engine, speed, armour, and armament describe one operational vehicle.
+
+Every ground vehicle requires:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `RealMassKg` | kg, finite and > 0 | Loaded/combat mass; this is not legacy vehicle `Mass`. |
+| exactly one of `RealEnginePowerKw`, `RealEnginePowerHp`, `RealEnginePowerPS`, or `RealEngineThrustKn` | source unit, finite and > 0 | Preserve the source's convention. `1 hp = 0.745699872 kW`; `1 PS = 0.73549875 kW`. Do not define aliases together. |
+| `DriveType` | enum | `RWD`, `FWD`, `AWD`, `TRACKED`, or `MARINE`. Mandatory. A true ground vehicle takes one of the first four; a hull that floats takes `MARINE`, which is never inferred and must be authored. |
+| `RealMaxSpeedKmh` | km/h, finite and > 0 | Governed road maximum for the represented setup, not an exceptional downhill value. |
+| `RealMaxReverseSpeedKmh` | km/h, finite and > 0 | Gearbox-limited reverse speed; use a game fallback rather than omit it. |
+
+The realistic propulsion profile activates only when mass, maximum speed, and one
+engine-power value are valid. Never leave an accidental half-profile.
+
+### Emplacements and other driveables that do not drive
+
+A large share of `definitions/vehicles` is not vehicles at all. Packs author towed
+anti-tank guns, tripod machine guns, standalone naval turret and missile-launcher
+mounts, and pillboxes as `VehicleType` because that is what gives them a turret, a
+crew seat and an ammunition bank. Identify them from the definition, not the name:
+`MaxThrottle 0` or a token value like `0.1`, no engine, and often no real wheels.
+
+These do not receive a propulsion profile, and the mandatory ground-vehicle rows
+above do not apply to them:
+
+- Author `RealMassKg`, quoted `UseRealisticVehicleHealth`, quoted
+  `ReadWeaponsFromGunTypes`, the armour faces the mounting genuinely has, the
+  bank cadence keys, and the ammunition group. These are the keys that do work.
+- **Omit** `DriveType`, the engine key, `RealMaxSpeedKmh`, and
+  `RealMaxReverseSpeedKmh`. The completeness-over-omission rule never licenses
+  inventing horsepower for a PaK 40 or a road speed for a pillbox: no source tier
+  failed, the represented object simply has no engine. Authoring them would also
+  leave exactly the accidental half-profile the section above forbids.
+- Report them as a class in the completion report, so the omission reads as a
+  decision rather than an oversight.
+
+A towed gun is still towed, but the tractor is not part of the represented object
+and its `DriveType` is not inheritable. An airship or balloon filed under
+`definitions/vehicles` takes the same treatment for the same reason; see the
+rotorcraft and airship notes under [Aircraft](#aircraft) for the `planes/` side.
+Sailing craft are the marine equivalent and are covered in
+[ships.md](ships.md) under *Craft That Are Not Warships*.
+
+Additional properties:
+
+- `DriverAimSpeed`: for an armed ground vehicle whose driver controls the turret or
+  gun, research the traverse rate and, where applicable, elevation rate. The vector
+  is `<yaw pitch roll>` in degrees per tick, so divide a sourced degrees-per-second
+  rate by `20`. Prefer exact powered/manual rates for the represented configuration
+  and disclose estimates. An explicit `DriverAimSpeed` overrides the legacy
+  `TurretRotationSpeed`; do not convert that older mouse-input coefficient as though
+  it were an angular-rate unit.
+- Cadence and reload keys for a bank with no gun mount, as set out in
+  [Mounted weapon cadence](#mounted-weapon-cadence): `ShootDelayPrimarySeconds` for a
+  shell-firing main gun; `RoundsPerMinPrimary` with `ReloadRoundsPrimary` and
+  `ReloadTimePrimary` for an autocannon, so its burst-then-reload signature is
+  represented rather than a continuous stream.
+- `UseAmmoGroup`: exact group already created by shell categories. It is repeatable,
+  so use an array for several cannon families. Validate both producers and
+  consumers as described in the weapons reference.
+- `AmmoMass`/`AmmoMassKg`, `AmmoMuzzleVelocity`,
+  `AmmoExplosiveMassTNTg`/`AmmoExplosiveMassTNTKg`, `AmmoPenetrationAt100m`, and
+  `AddRoundForAmmo`: per-ammunition overrides that restate what a shared generic round
+  does out of this vehicle's own gun. Use them to give each vehicle the exact shell its
+  real gun fired instead of collapsing a shared item to one value set. They are
+  repeatable, so use arrays. See the per-ammo section of the weapons reference and
+  [generic-and-fictional.md](generic-and-fictional.md) R3.
+- `RealDraftM`: metres, finite and > 0, for boats/floating vehicles whose
+  definitions actually float. See [ships.md](ships.md), which also covers the naval
+  unit aliases `RealDisplacementT`, `RealDisplacementLongTons`, `RealMaxSpeedKn`,
+  and `RealMaxReverseSpeedKn`, and the naval armour keys.
+
+### Armour
+
+Use nominal rolled-homogeneous-equivalent thickness in millimetres, optionally
+followed by slope in degrees:
+
+```json
+"ArmorFrontMm": "100 9"
+```
+
+The format is `<thicknessMm> [slopeDeg]`. Thickness is non-negative and slope is
+0–89 degrees. Verify whether the historical source measures angle from vertical or
+horizontal before converting. Preserve nominal plate thickness and authored slope
+separately; do not replace thickness with calculated line-of-sight thickness.
+
+Available hull keys are `ArmorFrontMm`, `ArmorRearMm`, `ArmorSideMm`, `ArmorTopMm`,
+and `ArmorBottomMm`. Turret keys use the `Turret` prefix and also include an optional
+`TurretArmorBottomMm` when the represented layout and definition need it.
+
+Every clearly armoured vehicle requires hull `ArmorFrontMm`, `ArmorSideMm`,
+`ArmorRearMm`, and `ArmorBottomMm`; an enclosed one also requires `ArmorTopMm`.
+For an open-topped vehicle, omit the roof when that accurately represents the
+definition, or use an explicit known zero when the schema needs the face. When
+exact data remains unavailable after the source ladder, rear may reuse side and
+top/bottom may reuse side or rear, but report copied faces.
+
+Every armoured definition with a turret hitbox additionally requires
+`TurretArmorFrontMm`, `TurretArmorSideMm`, `TurretArmorRearMm`, and
+`TurretArmorTopMm`. Rear may reuse turret side and top may reuse turret side or rear
+only as disclosed final fallbacks. A missing slope is acceptable when thickness is
+known; a mandatory face is not.
+
+Research faces separately; never fill an unknown face from frontal armour. Explicit
+zero means known unarmoured, while omission means unspecified. `ArmorSideMm` applies
+to both sides; split variants when asymmetric layouts cannot share one honest value.
+For composite, spaced, or reactive protection, use published face-specific RHAe and
+report that it is an equivalent rather than plate thickness.
+
+`PartArmorMm` is repeatable and formatted `"<part> <thicknessMm>"`; it overrides
+semantic armour for the named part and has no slope. Every tracked vehicle whose
+definition declares `leftTrack` and `rightTrack` receives both entries using
+running-gear/track thickness or a reasonable disclosed approximation. Verify exact
+part names before adding them.
+
+## Aircraft
+
+Use the exact mark, engine, boost setting, propeller, installed equipment, and
+loading condition. Prefer normal loaded/operational mass unless the category label
+and evidence explicitly describe another condition.
+
+Every aircraft category requires:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `RealMassKg` | kg, finite and > 0 | Loaded/operational mass consistent with performance figures. |
+| `RealMaxSpeedKmh` | km/h, finite and > 0 | Representative rated maximum for the exact variant; not dive or structural limit speed. |
+| `RealWingSpanM` | m, finite and > 0 | Physical span of the represented wing configuration. |
+| `RealWingAreaM2` | m², finite and > 0 | Planform/reference area, not span squared or legacy `WingArea`. |
+| exactly one of `RealEnginePowerKw`, `RealEnginePowerHp`, `RealEnginePowerPS`, or `RealEngineThrustKn` | source unit, finite and > 0 | Use shaft power for piston/turboprop craft and kN thrust for jets. Do not confuse kN, N, and kgf. |
+| `RealClimbRateMs` | m/s, finite and > 0 | Sustained climb corresponding as closely as practical to selected mass and engine setting; not zoom climb. |
+
+Aircraft categories do not use the ground-vehicle armour keys.
+
+Optional, and researched only where a source actually states it:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `RealAirBrakeAreaM2` | m², finite and > 0 | Total frontal area the speed brake panels present when fully deployed. Omit it and the air brake is sized at a fixed small fraction of wing area; author `HasAirBrake False` for a type that carries no such surfaces at all. |
+
+Aircraft timings follow [Mounted weapon cadence](#mounted-weapon-cadence) unchanged.
+Most fighters mount their guns as `PilotGun` entries and therefore need no timing
+key at all: the rate and reload come from the researched gun category, and
+`ReadWeaponsFromGunTypes: "true"` makes that permanent. Author `RoundsPerMinPrimary`
+only for a bare-shoot-point gun bank — with `ReloadRoundsPrimary` and
+`ReloadTimePrimary` when it is an autocannon fed from drums or belts of a
+documented size, which is the usual case for interwar and early-war fighter
+cannon — and `ShootDelaySecondarySeconds` for a bomb or torpedo release interval.
+
+### Rotorcraft
+
+A helicopter has no wing, so `RealWingSpanM` and `RealWingAreaM2` describe nothing
+and the profile would never activate. Author rotor geometry instead:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `RealRotorDiameterM` | m, finite and > 0 | Main rotor diameter. Supplies the span, and the swept disc supplies the area. |
+| `RealRotorCount` | whole rotors, at least 1 | Only for a tandem or coaxial layout. Defaults to one. |
+
+The area becomes `count * pi * (diameter / 2)^2`, the swept disc, which is exactly
+the quantity a helicopter's published disc loading is calculated from. Both figures
+are published for every real rotorcraft, so this is ordinary research rather than a
+modelled estimate — never author them from the visible model when the real aircraft
+is identifiable.
+
+The span deliberately stays one rotor wide on a tandem layout: two rotors sweep two
+discs but the craft is not twice as wide, and span feeds roll inertia, not lift.
+
+An authored wing span or area wins over the derivation, which is what a compound
+helicopter with real wings needs. Every other aircraft key stays mandatory: mass,
+one engine key, maximum speed, and climb rate.
+
+An airship or balloon still has no lifting surface of either kind and normally
+should not receive an ordinary aircraft category. Defining both shaft power and
+thrust is technically allowed but normally signals mixed or unclear research;
+aircraft use thrust when both are present.
+
+The realistic profile activates only with valid mass, maximum speed, span, area,
+and engine power or thrust. `RealClimbRateMs` is also mandatory for category
+completeness even though profile activation does not require it.
+
+Maximum speed is state-dependent: record a rated service maximum for the same
+engine/boost/loading configuration and account for altitude and TAS versus IAS.
+Do not use dive speed, structural limit speed, or an unqualified maximum from
+another engine or boost setting. Use a sustained climb result, not an instantaneous
+or zoom figure.
+
+If a named sub-variant lacks separately documented performance, build it from the
+nearest documented mark, adjust known differences, label the authored basis
+honestly, and report substitutions. When War Thunder is the necessary fallback,
+use its realistic rather than arcade column and disclose whether the figure is
+stock/upgraded or otherwise game-mode dependent.

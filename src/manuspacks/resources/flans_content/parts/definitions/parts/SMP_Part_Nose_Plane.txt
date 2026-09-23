@@ -1,0 +1,16 @@
+// Identity
+Name Plane Nose Frame
+ShortName SMP_Part_Nose_Plane
+
+// Model and Rendering
+Icon Icon_SMP_Part_Nose_Plane
+
+// Recipe and Inventory
+Recipe P SMP_Part_Mat_Plate_Steel
+ PP
+P  
+ PP
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 64

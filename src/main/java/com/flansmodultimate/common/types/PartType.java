@@ -1,14 +1,18 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
+import com.flansmodultimate.config.ModCommonConfig;
 import lombok.Getter;
 
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +38,9 @@ public class PartType extends InfoType
     }
 
     /** The default engine (normally the first one read by the type loader) for driveables with corrupt nbt or those spawned in creative */
-    protected static final Map<EnumType, PartType> defaultEngines = new EnumMap<>(EnumType.class);
+    protected static final List<PartType> defaultEngineCandidates = new ArrayList<>();
+    /** Prefer an engine shipped alongside the driveable before using the legacy global fallback. */
+    protected static final Map<IContentProvider, Map<EnumType, PartType>> packDefaultEngines = new HashMap<>();
 
     /** Category */
     @Getter
@@ -57,6 +63,8 @@ public class PartType extends InfoType
     protected TypeFile partBoxRecipeSourceFile;
     /** If true, then this engine will draw from RedstoneFlux power source items such as power cubes. Otherwise it will draw from Flan's Mod fuel items */
     protected boolean useRFPower = false;
+    /** Whether this engine may be auto-selected for newly spawned creative driveables. */
+    protected boolean canBeDefaultEngine = true;
     /** The power draw rate for RF (per tick) */
     protected int rfDrawRate = 1;
     /** Legacy apocalypse AI chip marker. Used by apocalypse integration and content compatibility. */
@@ -79,6 +87,7 @@ public class PartType extends InfoType
         //RedstoneFlux, for engines
         useRFPower = readValue("UseRF", useRFPower, file);
         useRFPower = readValue("UseRFPower", useRFPower, file);
+        canBeDefaultEngine = readValue("CanBeDefaultEngine", canBeDefaultEngine, file);
         rfDrawRate = Math.max(1, readValue("RFDrawRate", rfDrawRate, file));
         aiChip = readValue("IsAIChip", aiChip, file);
 
@@ -103,16 +112,16 @@ public class PartType extends InfoType
             partBoxRecipeRefs.addAll(RecipeParser.parseAmountThenItemReferences(readValues("PartBoxRecipe", file), 2, contentPack, file, "PartBoxRecipe"));
         }
 
-        if (category == Category.ENGINE && !useRFPower)
-        {
-            for (EnumType type : worksWith)
-            {
-                // If there is already a default engine for this type, compare and see if this one is better
-                if (defaultEngines.containsKey(type) && isInferiorEngine(defaultEngines.get(type)))
-                    defaultEngines.put(type, this);
+        registerAsDefaultEngine();
+    }
 
-                defaultEngines.putIfAbsent(type, this);
-            }
+    void registerAsDefaultEngine()
+    {
+        if (category == Category.ENGINE && !useRFPower && canBeDefaultEngine && contentPack != null)
+        {
+            defaultEngineCandidates.add(this);
+            for (EnumType type : worksWith)
+                selectDefault(packDefaultEngines.computeIfAbsent(contentPack, ignored -> new EnumMap<>(EnumType.class)), type);
         }
     }
 
@@ -128,7 +137,79 @@ public class PartType extends InfoType
 
     public static PartType getDefaultEngine(EnumType type)
     {
-        return defaultEngines.get(type);
+        PartType configured = findConfiguredDefault(type, ModCommonConfig.defaultEngine(type));
+        return configured != null ? configured : findGlobalFallback(type);
+    }
+
+    public static PartType getDefaultEngine(EnumType type, IContentProvider contentPack)
+    {
+        return getDefaultEngine(type, contentPack, "");
+    }
+
+    /** Resolves a driveable-level Engine value before the global configuration and automatic rules. */
+    public static PartType getDefaultEngine(EnumType type, IContentProvider contentPack, String driveableEngine)
+    {
+        PartType configured = findConfiguredDefault(type, driveableEngine);
+        if (configured != null)
+            return configured;
+        configured = findConfiguredDefault(type, ModCommonConfig.defaultEngine(type));
+        if (configured != null)
+            return configured;
+        Map<EnumType, PartType> packDefaults = packDefaultEngines.get(contentPack);
+        PartType packDefault = packDefaults == null ? null : packDefaults.get(type);
+        return packDefault != null ? packDefault : findGlobalFallback(type);
+    }
+
+    public static void clearDefaultEngines()
+    {
+        defaultEngineCandidates.clear();
+        packDefaultEngines.clear();
+    }
+
+    static PartType findConfiguredDefault(EnumType type, String requested)
+    {
+        if (type == null || requested == null || requested.isBlank())
+            return null;
+        String normalized = requested.trim();
+        int separator = normalized.indexOf(':');
+        String path = separator >= 0 ? normalized.substring(separator + 1) : normalized;
+        return defaultEngineCandidates.stream()
+            .filter(engine -> engine.worksWith(type))
+            .filter(engine -> path.equalsIgnoreCase(engine.getOriginalShortName())
+                || path.equalsIgnoreCase(engine.selectionShortName()))
+            .findFirst().orElse(null);
+    }
+
+    private static PartType findGlobalFallback(EnumType type)
+    {
+        List<PartType> compatible = defaultEngineCandidates.stream()
+            .filter(engine -> engine.worksWith(type)).toList();
+        boolean hasOfficial = compatible.stream().anyMatch(engine -> engine.contentPack.isOfficial());
+        Comparator<PartType> closestToStandard = Comparator
+            .comparingDouble((PartType engine) -> Math.abs(engine.engineSpeed - 1F))
+            .thenComparing(PartType::selectionShortName, String.CASE_INSENSITIVE_ORDER);
+        return compatible.stream()
+            .filter(engine -> !hasOfficial || engine.contentPack.isOfficial())
+            .min(closestToStandard).orElse(null);
+    }
+
+    private String selectionShortName()
+    {
+        try
+        {
+            return getShortName();
+        }
+        catch (RuntimeException ignored)
+        {
+            return originalShortName == null ? "" : originalShortName;
+        }
+    }
+
+    private void selectDefault(Map<EnumType, PartType> defaults, EnumType type)
+    {
+        PartType current = defaults.get(type);
+        if (current == null || isInferiorEngine(current))
+            defaults.put(type, this);
     }
 
     public void validateRecipeIngredients()

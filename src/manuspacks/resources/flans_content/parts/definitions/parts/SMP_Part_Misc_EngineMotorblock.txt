@@ -1,0 +1,16 @@
+// Identity
+Name Motorblock
+ShortName SMP_Part_Misc_EngineMotorblock
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_EngineMotorblock
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Misc_Part_Mechanical
+PPP
+MPM
+MMM
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 64

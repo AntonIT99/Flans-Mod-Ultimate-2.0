@@ -1,0 +1,18 @@
+// Identity
+Name Waffen M42 Camo Stahlhelm
+ShortName 44_WaffenM42CamoStahlhelm
+Type Helmet
+
+// Rendering
+Icon 44_WaffenM42CamoStahlhelm
+Model W44.WaffenM42CamoStahlhelm
+ModelScale 1
+ArmorTexture Skin44_WaffenM42Camo
+
+// Protection
+ArmorPoints 2
+Defence 0.04
+BulletDefence 0.02
+Toughness 0
+PenetrationResistance 1.25
+SmokeProtection false

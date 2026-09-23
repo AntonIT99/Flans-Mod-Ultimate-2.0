@@ -1,12 +1,22 @@
+// Identity
 Name Pilot WW2 Helmet
 ShortName pilotHelmet
-ItemID 23580
+
+// Item and rendering
 Icon PilotHelmet
 Colour 255 255 255
-Type Helmet
-Defence 0.1
 ArmourTexture Pilot
+
+// Recipe
 Recipe L leather G glass
 LLL
 G G
    
+
+// Protection
+Type Helmet
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 1.10
+ArmorPoints 1
+Toughness 0

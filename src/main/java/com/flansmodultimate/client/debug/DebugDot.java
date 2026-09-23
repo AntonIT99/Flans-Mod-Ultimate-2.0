@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.debug;
 
 import com.flansmodultimate.client.ModClient;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.flansmodultimate.client.render.CustomRenderType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -28,20 +27,16 @@ public class DebugDot extends DebugColor
         if (!ModClient.isDebug() || position == null)
             return;
 
-        RenderSystem.disableDepthTest();
-
         // translate to camera-relative so drawing at origin == world pos
         Vec3 camPos = cam.getPosition();
         pose.pushPose();
         pose.translate(position.x - camPos.x, position.y - camPos.y, position.z - camPos.z);
 
         float h = (float) (SIZE * 0.5);
-        VertexConsumer vc = buffers.getBuffer(RenderType.debugFilledBox());
+        VertexConsumer vc = buffers.getBuffer(CustomRenderType.debugFilledBoxSeeThrough());
         LevelRenderer.addChainedFilledBoxVertices(pose, vc, -h, -h, -h, h, h, h, colorRed, colorGreen, colorBlue, colorAlpha);
 
         pose.popPose();
-
-        RenderSystem.enableDepthTest();
     }
 
     @Override

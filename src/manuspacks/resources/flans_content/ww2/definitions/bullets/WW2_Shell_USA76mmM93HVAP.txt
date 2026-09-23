@@ -1,0 +1,50 @@
+// Identity
+Name US 76 mm M93 HVAP-T (M1)
+ShortName WW2_Shell_USA76mmM93HVAP
+description High-velocity armor-piercing ammunition for the M4A3 76 mm gun
+
+// Model and Rendering
+Icon Icon_WW2_Shell_USA76mmAP
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder B SMP_Part_Mat_Block_Steel
+B
+GGG
+SSS
+RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
+
+// Behaviour
+Bomb False
+Shell True
+HasSubmunitions false
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 25
+DamageVsVehicles 0
+Mass 4260
+MuzzleVelocity 1036
+PenetrationAt100m 190
+Explosion 0
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 2
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlareParticleCount 2
+DebrisParticleCount 1

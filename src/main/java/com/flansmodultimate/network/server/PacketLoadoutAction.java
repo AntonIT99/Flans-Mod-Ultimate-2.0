@@ -142,7 +142,7 @@ public final class PacketLoadoutAction implements IServerPacket
             || !pool.validate(stats.getLoadouts(pool).get(index), stats.getRank(), stats::ownsReward)) return;
         stats.setSelectedLoadout(index);
         Team selected = PlayerData.getInstance(player).getNewTeam();
-        if (selected != null && selected != Team.SPECTATORS) manager.respawnPlayer(player, true);
+        if (selected != null && selected != Team.SPECTATORS) manager.confirmSelection(player);
         manager.markPlayerDataDirty();
         manager.syncLoadouts(player, PacketLoadoutState.OpenScreen.CLOSE, index, "");
     }

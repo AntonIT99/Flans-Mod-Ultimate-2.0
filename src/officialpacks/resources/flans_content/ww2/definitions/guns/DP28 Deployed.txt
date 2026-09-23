@@ -1,0 +1,39 @@
+// Identity
+Name DP28
+ShortName dp28
+
+// Item and rendering
+Icon DP28
+Colour 255 255 255
+DeployedModel ww2.DP28
+DeployedTexture DP28
+
+// Ammunition
+Ammo dp28Ammo
+ReloadTime 80
+
+// Operation
+Mode FullAuto
+Deployable True
+StandBackDistance 1.0
+TopViewLimit 20
+BottomViewLimit 30
+SideViewLimit 45
+PivotHeight 0.375
+RoundsPerMin 550.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 840.0
+Dispersion 0.34
+
+// Damage and protection
+Damage 4
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound DP28Shoot
+DistortSound False
+ReloadSound DP28Reload

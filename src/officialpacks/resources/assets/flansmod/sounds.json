@@ -1355,6 +1355,12 @@
       "flansmod:rocketrumble"
     ]
   },
+  "shell": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shell"
+    ]
+  },
   "shotgunreload": {
     "category": "player",
     "sounds": [
@@ -1551,6 +1557,288 @@
     "category": "player",
     "sounds": [
       "flansmod:winchestermodel70shoot"
+    ]
+  },
+  "40uk": {
+    "category": "player",
+    "sounds": [
+      "flansmod:40uk"
+    ]
+  },
+  "aagun_40mm_boforsfire": {
+    "category": "player",
+    "sounds": [
+      "flansmod:aagun_40mm_boforsfire"
+    ]
+  },
+  "bullet": {
+    "category": "player",
+    "sounds": [
+      "flansmod:bullet"
+    ]
+  },
+  "engine_ht_is": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_ht_is"
+    ]
+  },
+  "engine_ht_pzvi": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_ht_pzvi"
+    ]
+  },
+  "engine_ht_pzvikt": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_ht_pzvikt"
+    ]
+  },
+  "engine_jep_humvee": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_jep_humvee"
+    ]
+  },
+  "engine_lt_armoredcar": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_lt_armoredcar"
+    ]
+  },
+  "engine_lt_bt": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_lt_bt"
+    ]
+  },
+  "engine_lt_lvt": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_lt_lvt"
+    ]
+  },
+  "engine_lt_pzii": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_lt_pzii"
+    ]
+  },
+  "engine_lt_truck": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_lt_truck"
+    ]
+  },
+  "engine_mt_chinu": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_mt_chinu"
+    ]
+  },
+  "engine_mt_comet": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_mt_comet"
+    ]
+  },
+  "engine_mt_m26": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_mt_m26"
+    ]
+  },
+  "engine_mt_m4": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_mt_m4"
+    ]
+  },
+  "engine_mt_m4a3": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_mt_m4a3"
+    ]
+  },
+  "engine_mt_pziii": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_mt_pziii"
+    ]
+  },
+  "engine_mt_pziv": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_mt_pziv"
+    ]
+  },
+  "engine_mt_t34": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_mt_t34"
+    ]
+  },
+  "engine_td_m18": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_td_m18"
+    ]
+  },
+  "engine_tr_halftrack": {
+    "category": "player",
+    "sounds": [
+      "flansmod:engine_tr_halftrack"
+    ]
+  },
+  "enginestart": {
+    "category": "player",
+    "sounds": [
+      "flansmod:enginestart"
+    ]
+  },
+  "kamazenginerun": {
+    "category": "player",
+    "sounds": [
+      "flansmod:kamazenginerun"
+    ]
+  },
+  "reom35loop": {
+    "category": "player",
+    "sounds": [
+      "flansmod:reom35loop"
+    ]
+  },
+  "shoot_122mmussr": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_122mmussr"
+    ]
+  },
+  "shoot_152mm": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_152mm"
+    ]
+  },
+  "shoot_20mmaade": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_20mmaade"
+    ]
+  },
+  "shoot_20mmpzii": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_20mmpzii"
+    ]
+  },
+  "shoot_37mus": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_37mus"
+    ]
+  },
+  "shoot_47mm": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_47mm"
+    ]
+  },
+  "shoot_57mm": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_57mm"
+    ]
+  },
+  "shoot_57mmuk": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_57mmuk"
+    ]
+  },
+  "shoot_75mmde": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_75mmde"
+    ]
+  },
+  "shoot_75mmjp": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_75mmjp"
+    ]
+  },
+  "shoot_75mmus": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_75mmus"
+    ]
+  },
+  "shoot_76mmus": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_76mmus"
+    ]
+  },
+  "shoot_76mmussr": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_76mmussr"
+    ]
+  },
+  "shoot_85mmussr": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_85mmussr"
+    ]
+  },
+  "shoot_88flakde": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_88flakde"
+    ]
+  },
+  "shoot_88mmde": {
+    "category": "player",
+    "sounds": [
+      "flansmod:shoot_88mmde"
+    ]
+  },
+  "steamengine": {
+    "category": "player",
+    "sounds": [
+      "flansmod:steamengine"
+    ]
+  },
+  "tankidle1": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tankidle1"
+    ]
+  },
+  "tankidle2": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tankidle2"
+    ]
+  },
+  "tankidle3": {
+    "category": "player",
+    "sounds": [
+      "flansmod:tankidle3"
+    ]
+  },
+  "ural4320start": {
+    "category": "player",
+    "sounds": [
+      "flansmod:ural4320start"
+    ]
+  },
+  "willystart": {
+    "category": "player",
+    "sounds": [
+      "flansmod:willystart"
     ]
   }
 }

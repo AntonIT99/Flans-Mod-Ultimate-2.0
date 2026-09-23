@@ -34,9 +34,12 @@ public final class PacketTeamsState implements IClientPacket
     public record PlayerScore(String name, int score, int kills, int deaths, int zombieScore, String playerClass) {}
     public record TeamScore(String id, String name, int colour, int score, List<PlayerScore> players) {}
     public record VoteOption(String mapName, String gameType, String teams, int votes) {}
+    /** Viewer-independent data, built once for each broadcast rather than once per player. */
+    public record SharedScoreboard(List<TeamScore> teamScores, List<VoteOption> voteOptions) {}
 
     private OpenScreen openScreen = OpenScreen.NONE;
     private boolean enabled;
+    private boolean vehiclesCanZoom;
     private boolean roundRunning;
     private boolean sortedByTeam;
     private boolean showZombieScore;
@@ -56,9 +59,16 @@ public final class PacketTeamsState implements IClientPacket
 
     public static PacketTeamsState create(TeamsManager manager, ServerPlayer viewer, OpenScreen openScreen)
     {
+        return create(manager, viewer, openScreen, createSharedScoreboard(manager));
+    }
+
+    public static PacketTeamsState create(TeamsManager manager, ServerPlayer viewer, OpenScreen openScreen,
+                                         SharedScoreboard shared)
+    {
         PacketTeamsState packet = new PacketTeamsState();
         packet.openScreen = openScreen;
         packet.enabled = manager.isEnabled();
+        packet.vehiclesCanZoom = manager.isVehiclesCanZoom();
         packet.roundRunning = manager.isRoundRunning();
         packet.timeLeftTicks = manager.getRoundTimeLeftTicks();
         packet.intermissionTicks = manager.getIntermissionTicks();
@@ -68,8 +78,8 @@ public final class PacketTeamsState implements IClientPacket
         packet.playerVote = viewerData.getVote();
         Team selectedTeam = viewerData.getNewTeam();
         PlayerClass selectedClass = viewerData.getNewPlayerClass();
-        packet.selectedTeam = selectedTeam == null ? "" : selectedTeam.getOriginalShortName();
-        packet.selectedClass = selectedClass == null ? "" : selectedClass.getOriginalShortName();
+        packet.selectedTeam = selectedTeam == null ? "" : selectedTeam.getShortName();
+        packet.selectedClass = selectedClass == null ? "" : selectedClass.getShortName();
 
         TeamsRound round = manager.getCurrentRound().orElse(null);
         if (round == null)
@@ -88,7 +98,7 @@ public final class PacketTeamsState implements IClientPacket
             for (String id : round.getTeamIds())
             {
                 Team team = Team.getTeam(id);
-                if (team != null)
+                if (team != null && manager.canChooseTeam(viewer, team))
                     teamChoices.add(new TeamChoice(id, team.getName(), team.getTeamColour()));
             }
             teamChoices.add(new TeamChoice(Team.SPECTATORS_ID, Team.SPECTATORS.getName(), Team.SPECTATORS.getTeamColour()));
@@ -100,9 +110,20 @@ public final class PacketTeamsState implements IClientPacket
         if (openScreen == OpenScreen.CLASS_SELECT && selectedTeam != null && selectedTeam != Team.SPECTATORS)
         {
             packet.classChoices = selectedTeam.getClasses().stream().map(playerClass ->
-                new ClassChoice(playerClass.getOriginalShortName(), playerClass.getName(), playerClass.getUnlockLevel(),
+                new ClassChoice(playerClass.getShortName(), playerClass.getName(), playerClass.getUnlockLevel(),
                     playerClass.createStartingItemPreviews())).toList();
         }
+
+        packet.teamScores = shared.teamScores();
+        packet.voteOptions = shared.voteOptions();
+        return packet;
+    }
+
+    public static SharedScoreboard createSharedScoreboard(TeamsManager manager)
+    {
+        TeamsRound round = manager.getCurrentRound().orElse(null);
+        if (round == null)
+            return new SharedScoreboard(List.of(), List.of());
 
         List<TeamScore> scores = new ArrayList<>();
         for (String id : round.getTeamIds())
@@ -116,7 +137,6 @@ public final class PacketTeamsState implements IClientPacket
                 .toList();
             scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), players));
         }
-        packet.teamScores = List.copyOf(scores);
 
         int[] votes = new int[manager.getVoteOptions().size()];
         for (ServerPlayer player : manager.getServer().getPlayerList().getPlayers())
@@ -135,8 +155,7 @@ public final class PacketTeamsState implements IClientPacket
                 .map(Team::getName).reduce((left, right) -> left + " vs " + right).orElse("");
             options.add(new VoteOption(map, type == null ? option.getGameTypeId() : type.getName(), teams, votes[i]));
         }
-        packet.voteOptions = List.copyOf(options);
-        return packet;
+        return new SharedScoreboard(List.copyOf(scores), List.copyOf(options));
     }
 
     private static PlayerScore playerScore(ServerPlayer player)
@@ -151,6 +170,7 @@ public final class PacketTeamsState implements IClientPacket
     {
         data.writeByte(openScreen.ordinal());
         data.writeBoolean(enabled);
+        data.writeBoolean(vehiclesCanZoom);
         data.writeBoolean(roundRunning);
         data.writeBoolean(sortedByTeam);
         data.writeBoolean(showZombieScore);
@@ -194,6 +214,7 @@ public final class PacketTeamsState implements IClientPacket
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
         enabled = data.readBoolean();
+        vehiclesCanZoom = data.readBoolean();
         roundRunning = data.readBoolean();
         sortedByTeam = data.readBoolean();
         showZombieScore = data.readBoolean();
@@ -228,6 +249,7 @@ public final class PacketTeamsState implements IClientPacket
 
     public OpenScreen getOpenScreen() { return openScreen; }
     public boolean isEnabled() { return enabled; }
+    public boolean isVehiclesCanZoom() { return vehiclesCanZoom; }
     public boolean isRoundRunning() { return roundRunning; }
     public boolean isSortedByTeam() { return sortedByTeam; }
     public boolean isShowZombieScore() { return showZombieScore; }

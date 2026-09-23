@@ -1,0 +1,67 @@
+// Identity
+Name Imperial Warhound Titan
+ShortName WH40K_Mecha_Warhound_1A
+
+// Model and Rendering
+Icon Icon_WH40K_Mecha_Warhound_1A
+Model Manus_WH40K.Mecha.WH40K_Mecha_Warhound_1
+Texture Skin_WH40K_Mecha_Warhound_1A
+ModelScale 1
+
+// Recipe and Inventory
+FuelTankSize 20000
+CargoSlots 48
+AddRecipeParts core 1 SMP_Part_Mecha_MediumBodyFrame 3 SMP_Part_Misc_Seat_Jet 32 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts leftArm 1 SMP_Part_Mecha_MediumArmFrame 16 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts rightArm 1 SMP_Part_Mecha_MediumArmFrame 16 SMP_Part_Mat_Block_PlaSteel
+AddRecipeParts hips 2 SMP_Part_Mecha_MediumLegFrame 32 SMP_Part_Mat_Block_PlaSteel
+AddDye 5 black
+AddDye 1 red
+AddDye 1 yellow
+
+// Movement and Physics
+MoveSpeed 1
+YOffset 0
+RotateSpeed 10
+SquashMobs false
+StepHeight 2
+JumpHeight 0
+FallDamageMultiplier 1.0
+TakeFallDamage true
+BlockDamageFromFalling 1.0
+DamageBlocksFromFalling false
+RealMaxSpeedKmh 12
+FallDamageFactor 1.0
+RealMassKg 410000
+
+// Weapons
+ReadWeaponsFromGunTypes true
+
+// Ballistics and Damage
+Reach 5
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 30.0
+Driver 0 216 0
+Passengers 0
+RotatedDriverOffset 112 0 0
+LeftArmOrigin 25.5 222 -77
+RightArmOrigin 25.5 222 77
+ArmLength 0.1
+LegLength 161
+HeldItemScale 1
+SetupPart core 1000 -67 189 -55 201 83 110
+SetupPart hips 1000 -36 44 -70 66 143 140
+SetupPart rightArm 500 -36 197 -96 142 28 40
+SetupPart leftArm 500 -36 197 56 142 28 40
+BulletDetection 8
+Height 96
+Width 56
+ChassisHeight 123
+LegSwingLimit 5
+UpperArmLimit 20
+LowerArmLimit 60
+LimitHeadTurn True 70

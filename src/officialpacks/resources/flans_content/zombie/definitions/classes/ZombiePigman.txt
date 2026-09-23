@@ -1,5 +1,10 @@
+// Identity
 Name Pigman
 ShortName zombiePigman
+
+// Appearance
 SkinOverride ZombiePigman
+
+// Items
 AddItem swordGold
 AddItem fleshLump 2

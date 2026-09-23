@@ -120,22 +120,55 @@ public class Wheel extends Entity
         Vec3 position = driveable.getWheelWorldPosition(getWheelIndex());
         setPos(position.x, position.y, position.z);
         setDeltaMovement(driveable.getDeltaMovement());
-        setYRot(driveable.getYaw());
+        setYRot(driveable.getEntityFacingYaw());
+        setXRot(driveable.getEntityFacingPitch());
+    }
+
+    /**
+     * Once bound, the wheel follows the already-interpolated parent locally; its own
+     * sparse movement packets would only snap it back to a stale position.
+     */
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps)
+    {
+        if (level().isClientSide && driveable != null)
+            return;
+        super.lerpTo(x, y, z, yaw, pitch, steps);
     }
 
     @Override
+    public void lerpMotion(double x, double y, double z)
+    {
+        if (level().isClientSide && driveable != null)
+            return;
+        super.lerpMotion(x, y, z);
+    }
+
+    /** A blown-off wheel leaves no hitbox behind until it is repaired. */
+    @Override
     public boolean isPickable()
     {
-        return isAlive();
+        return isAlive() && (driveable == null || driveable.isPartIntact(getPart()));
+    }
+
+    private EnumDriveablePart getPart()
+    {
+        DriveablePosition definition = driveable == null || driveable.getConfigType() == null ? null
+            : driveable.getConfigType().getWheelPosition(getWheelIndex());
+        return definition == null ? EnumDriveablePart.CORE : definition.getPart();
     }
 
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
-        if (driveable == null || level().isClientSide)
-            return driveable != null;
-        DriveablePosition definition = driveable.getConfigType() == null ? null : driveable.getConfigType().getWheelPosition(getWheelIndex());
-        EnumDriveablePart part = definition == null ? EnumDriveablePart.CORE : definition.getPart();
-        return driveable.damagePart(part, amount, source);
+        if (driveable == null)
+            return false;
+        // A click on the undercarriage is a click on the aircraft: offer the
+        // same pickup the hull would, before treating it as damage.
+        if (driveable.tryPickupOnAttack(source))
+            return true;
+        if (level().isClientSide)
+            return true;
+        return driveable.damagePart(getPart(), amount, source);
     }
 }

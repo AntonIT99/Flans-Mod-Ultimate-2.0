@@ -1,0 +1,51 @@
+// Identity
+Name German 75 mm Sprgr. 42 HE (KwK 42)
+ShortName WW2_Shell_German75mmHELong
+description High-explosive ammunition for the 75 mm KwK 42
+
+// Model and Rendering
+Icon Icon_WW2_Shell_German75mmAPLong
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+F
+G
+SS
+RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
+
+// Behaviour
+Bomb False
+Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+// Ballistics and Damage
+Damage 50
+DamageVsLiving 1000
+DamageVsVehicles 1000
+Mass 5740
+MuzzleVelocity 700
+ExplosiveMassTNTg 690
+PenetrationAt100m 10
+FragType HE_SHELL
+Explosion 4
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 10
+TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 8
+DebrisParticleCount 4

@@ -1,0 +1,61 @@
+// Identity
+Name Type 100
+ShortName 44_Type100
+Description Japanese Sub Machine Gun
+
+// Rendering
+Icon 44_Type100
+Model W44.Type100
+ModelScale 0.12
+Texture Skin44_Type100
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Type100Ammo
+
+// Handling
+Mode FullAuto
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 450
+ReloadTime 60
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 335.0
+Dispersion 0.45
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 2.0
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound Type100Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound StenReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

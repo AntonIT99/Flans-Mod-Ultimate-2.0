@@ -1,0 +1,67 @@
+// Identity
+Name Green Formula 1 Racer
+ShortName Civil_Vehicle_F1_1C
+
+// Model and Rendering
+Model Manus_Civil.Vehicle.Civil_Vehicle_F1_1
+Icon Icon_Civil_Vehicle_F1_1C
+Texture Skin_Civil_Vehicle_F1_1C
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 1000
+CargoSlots 0
+AddRecipeParts core 1 SMP_Part_Chassis_Car 8 SMP_Part_Mat_Plate_Titan
+AddRecipeParts frontLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 SMP_Part_Wheel_Car
+AddRecipeParts backRightWheel 1 SMP_Part_Wheel_Car
+AddDye 5 lime
+
+// Movement and Physics
+MaxThrottle 2.5
+MaxNegativeThrottle 0.5
+Drag 1
+WheelRadius 1
+SpringStrength 0.5
+FourWheelDrive True
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+RealMassKg 743
+RealEnginePowerHp 950
+RealMaxSpeedKmh 340
+DriveType RWD
+RealMaxReverseSpeedKmh 20
+
+// Weapons
+ReadWeaponsFromGunTypes true
+
+// Protection
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -32 -8 -17
+WheelPosition 1 -32 -8 17
+WheelPosition 2 31 -8 17
+WheelPosition 3 31 -8 -17
+Driver -6 -7 0 -80 80 -45 45
+Passengers 0
+SetupPart frontRightWheel 100 26 -10 -17 10 10 8
+SetupPart core 150 -46 -11 -16 90 12 32
+SetupPart frontLeftWheel 100 27 -10 9 10 10 8
+SetupPart backLeftWheel 100 -37 -10 9 10 10 8
+SetupPart backRightWheel 100 -37 -10 -17 10 10 8
+BulletDetection 5
+CameraDistance 5
+
+// Sounds
+StartSound enginestart
+StartSoundLength 20
+EngineSound modernengine
+EngineSoundLength 20

@@ -1,0 +1,48 @@
+// Identity
+Name LandMine
+ShortName 44_LandMine
+
+// Rendering
+Icon 44_LandMine
+Model W44.LandMine
+ModelScale 0.7
+Texture Skin44_LandMine
+Colour 255 255 255
+
+// Inventory
+StackSize 1
+
+// Throwing and physics
+ThrowSpeed 0.5
+ThrowDelay 20
+FallSpeed 1
+Bounciness 0
+HitBoxSize 1.5
+SpinWhenThrown false
+Sticky false
+PenetratesBlocks false
+BreaksGlass true
+
+// Damage and healing
+HitEntityDamage 1
+
+// Detonation and explosion
+PrimeDelay 25
+DetonateOnImpact false
+DetonateWhenShot true
+Remote false
+LivingProximityTrigger 1
+VehicleProximityTrigger 2.25
+ExplosiveMassTNTg 200
+FragType LOW_FRAG
+ExplosionRadius 5
+ExplosionDamageVsLiving 10.0
+ExplosionDamageVsVehicle 5
+ExplosionDamageVsPlane 0
+ExplosionBreaksBlocks false
+FireRadius 0.0
+
+// Effects
+TrailParticles false
+ExplodeParticles 5
+SmokeTime 0

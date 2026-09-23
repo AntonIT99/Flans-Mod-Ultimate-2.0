@@ -1,0 +1,11 @@
+// Identity
+Name Tank Barrel
+ShortName 44_Tank_Barrel
+Category Misc
+
+// Rendering
+Icon 44_Tank_Barrel
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

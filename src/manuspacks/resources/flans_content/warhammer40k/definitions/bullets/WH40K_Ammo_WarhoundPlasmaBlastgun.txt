@@ -1,0 +1,39 @@
+﻿// Identity
+Name Warhound Titan Plasma Blastgun Ammo
+ShortName WH40K_Ammo_WarhoundPlasmaBlastgun
+description Ammo for Warhound Titan Plasma Blastgun
+
+// Model and Rendering
+Icon Icon_WH40K_Ammo_WarhoundPlasmaBlastgun
+Model Manus_WH40K.Misc.WH40K_Misc_TitanPlasmaBall_1
+Texture Skin_WH40K_Bullet_TitanPlasmaBall_1A
+
+// Recipe and Inventory
+RoundsPerItem 5000
+MaxStackSize 1
+
+// Behaviour
+HitBoxSize 0.1
+FallSpeed 0.0
+BreaksGlass True
+Fuse 0
+ExplodeOnImpact True
+Penetrates False
+
+// Ballistics and Damage
+DamageVsLiving 250
+DamageVsPlayer 250
+DamageVsVehicles 250
+Fire 3
+Explosion 27
+Damage 780
+MuzzleVelocity 900.0
+PenetrationAt100m 700
+
+// Sounds
+HitSound bullet
+
+// Effects
+SmokeTrail False
+HasLight True
+FlakParticles 0

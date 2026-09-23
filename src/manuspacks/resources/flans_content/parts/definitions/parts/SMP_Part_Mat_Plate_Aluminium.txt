@@ -1,0 +1,16 @@
+// Identity
+Name Aluminium Plate
+ShortName SMP_Part_Mat_Plate_Aluminium
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Plate_Aluminium
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Aluminium
+   
+   
+MMM
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

@@ -1,0 +1,50 @@
+// Identity
+Name 57mm AP Tank Shell
+ShortName 44_57APShell
+
+// Rendering
+Icon 44_57APShell
+Model Bullet
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 4
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 892
+FallSpeed 1.0
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 88
+BreaksGlass True
+
+// Damage
+Mass 2850
+Damage 1
+DamageVsLiving 100
+DamageVsVehicles 550
+Fire 0
+
+// Explosion
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+HasSubmunitions false
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 0
+ExplodeParticles 7
+FlareParticleCount 3
+DebrisParticleCount 2
+
+// Sounds
+HitSound

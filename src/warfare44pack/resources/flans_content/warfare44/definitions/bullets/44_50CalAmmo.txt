@@ -1,0 +1,48 @@
+// Identity
+Name Browning .50 Cal Belt
+ShortName 44_50CalAmmo
+
+// Rendering
+Icon 44_50CalAmmo
+Model W44.W44Bullet
+Texture Skin44_W44Bullet_Tracer_Red
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 50
+
+// Ammunition
+WeaponType Shell
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates True
+PenetrationAt100m 20
+BreaksGlass True
+
+// Damage
+Mass 42.0
+Damage 1
+DamageVsLiving 16
+DamageVsVehicles 1
+DamageVsPlanes 40
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 0
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracerred
+FlakParticles 2
+
+// Sounds
+HitSound bullet
+HitSound LargeImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true

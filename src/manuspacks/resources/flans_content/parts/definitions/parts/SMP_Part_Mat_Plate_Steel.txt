@@ -1,0 +1,16 @@
+// Identity
+Name Steel Plate
+ShortName SMP_Part_Mat_Plate_Steel
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Plate_Steel
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel
+   
+   
+MMM
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

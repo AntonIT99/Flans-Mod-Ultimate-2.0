@@ -70,11 +70,11 @@ public final class Debris1Particle extends TextureSheetParticle
 
             if (age < 10)
             {
-                level.addParticle(ParticleTypes.FLAME, px, py, pz, 0.0D, 0.0D, 0.0D);
+                ParticleHelper.spawnSubParticle(ParticleTypes.FLAME, px, py, pz);
             }
             
             double pySmoke = yo + dy * i * 2.0D;
-            level.addParticle(ParticleTypes.LARGE_SMOKE, px, pySmoke, pz, 0.0D, 0.0D, 0.0D);
+            ParticleHelper.spawnSubParticle(ParticleTypes.LARGE_SMOKE, px, pySmoke, pz);
         }
 
         if (onGround)

@@ -1,0 +1,35 @@
+// Identity
+Name Browning M2HB
+ShortName BrowningM2HB
+
+// Model and Rendering
+Icon IconGunBrowningM2HB
+Colour 255 255 255
+DeployedModel manus_modern_warfare.BrowningM2HB
+DeployedTexture SkinGunBrowningM2HB
+
+// Recipe and Inventory
+Ammo AmmoNATOCal50
+
+// Weapons
+ReloadTime 100
+Recoil 1
+Mode FullAuto
+Scope None
+Deployable True
+StandBackDistance 1.0
+TopViewLimit 20
+BottomViewLimit 20
+SideViewLimit 45
+PivotHeight 0.75
+RoundsPerMin 500.0
+Dispersion 0.35
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 890.0
+
+// Sounds
+DistortSound False
+ShootSound BrowningShoot
+ReloadSound BrowningReload

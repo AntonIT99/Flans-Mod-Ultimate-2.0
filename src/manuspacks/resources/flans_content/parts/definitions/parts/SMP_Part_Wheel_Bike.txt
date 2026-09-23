@@ -1,0 +1,16 @@
+// Identity
+Name Bike Wheel
+ShortName SMP_Part_Wheel_Bike
+
+// Model and Rendering
+Icon Icon_SMP_Part_Wheel_Bike
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel G SMP_Part_Mat_Block_Gummi
+   
+GG 
+GG 
+RecipeOutput 1
+Category Wheel
+PartBoxRecipe
+StackSize 64

@@ -1,0 +1,67 @@
+// Identity
+Name TIE-Fighter
+ShortName TIEFighter
+
+// Model and Rendering
+Icon IconPlaneTIEFighter
+Model manus_sifi.TIEFighter
+Texture SkinPlaneTIEFighter
+
+// Recipe and Inventory
+FuelTankSize 5000
+CargoSlots 0
+BombSlots 0
+AddRecipeParts core 1 Part_Cockpit_Jet 5 Mat_Plate_Steel
+AddRecipeParts leftWing 1 Part_Wing_Jet 4 Mat_Plate_Steel
+AddRecipeParts rightWing 1 Part_Wing_Jet 4 Mat_Plate_Steel
+AddDye 5 gray
+
+// Movement and Physics
+MaxThrottle 7.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+Drag 0.98
+Lift 3.2
+RestingPitch 0.0
+HasGear True
+RealMassKg 8000
+RealEngineThrustKn 120
+RealMaxSpeedKmh 2200
+RealWingSpanM 6.5
+RealWingAreaM2 30
+RealClimbRateMs 200
+
+// Weapons
+AddGun 30 50 5 core ImperialLaserCannon
+AddGun 30 50 -5 core ImperialLaserCannon
+ShootDelay 5
+BombDelay 1
+BombPosition 7 -10 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 10.0
+Propeller 0 0 0 0 leftWing Part_Propeller_TurbineSpace
+Propeller 1 0 0 0 rightWing Part_Propeller_TurbineSpace
+Pilot 4 47 0
+Passengers 0
+SetupPart rightWing 200 -64 -10 -52 128 144 3
+SetupPart core 400 -17 43 -54 34 38 108
+SetupPart leftWing 200 -64 -10 49 128 144 3
+BulletDetection 25
+
+// Sounds
+StartSound propStart
+StartSoundLength 20
+PropSound LancasterProp
+PropSoundLength 49
+ShootSound PlaneShoot
+BombSound bomb

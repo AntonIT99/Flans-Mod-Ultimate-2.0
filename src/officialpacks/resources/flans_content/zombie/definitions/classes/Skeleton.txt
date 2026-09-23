@@ -1,5 +1,10 @@
+// Identity
 Name Skeleton
 ShortName skeleton
+
+// Appearance
 SkinOverride Skeleton
+
+// Items
 AddItem bow
 AddItem arrow 20

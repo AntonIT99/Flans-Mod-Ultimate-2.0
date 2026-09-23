@@ -1,5 +1,8 @@
+// Identity
 Name Medic
 ShortName spetsnazMedic1
+
+// Items
 AddItem ak74+flanMWRedDot
 AddItem makarov
 AddItem m67 1

@@ -1,0 +1,50 @@
+// Identity
+Name German 88 mm Pzgr. 40 APCR (KwK 36)
+ShortName WW2_Shell_German88mmKwK36APCR
+description Scarce high-velocity tungsten-core ammunition for the Tiger I
+
+// Model and Rendering
+Icon Icon_WW2_Shell_German88mmAP
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder B SMP_Part_Mat_Block_Steel
+B
+GGG
+SSS
+RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
+
+// Behaviour
+Bomb False
+Shell True
+HasSubmunitions false
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 25
+DamageVsVehicles 0
+Mass 7300
+MuzzleVelocity 930
+PenetrationAt100m 198
+Explosion 0
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 2
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlareParticleCount 2
+DebrisParticleCount 1

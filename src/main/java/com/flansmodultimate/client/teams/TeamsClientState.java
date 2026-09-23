@@ -22,6 +22,11 @@ public final class TeamsClientState
         return snapshot;
     }
 
+    public static boolean vehiclesCanZoom()
+    {
+        return snapshot != null && snapshot.isVehiclesCanZoom();
+    }
+
     /** Matches legacy Teams visibility: active players cannot see spectator models. */
     public static boolean shouldHidePlayer(Player renderedPlayer)
     {

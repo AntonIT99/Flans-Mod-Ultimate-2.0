@@ -1,0 +1,20 @@
+﻿// Identity
+Name Blood Angles Space Marine Body Armor
+ShortName WH40K_Armor_SpaceMarineBody_1H
+
+// Model and Rendering
+Model Manus_WH40K.Armor.WH40K_Armor_SpaceMarineBody_1
+ModelScale 0.25
+Icon Icon_WH40K_Armor_SpaceMarineBody_1H
+ArmourTexture Skin_WH40K_Armor_SpaceMarine_1H
+
+// Recipe and Inventory
+Type Chest
+
+// Protection
+Defence 0.26
+BulletDefence 0.26
+PenetrationResistance 2.40
+ArmorPoints 9
+Toughness 3
+MoveSpeedModifier 0.95

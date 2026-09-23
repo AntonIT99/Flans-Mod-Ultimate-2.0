@@ -1,0 +1,40 @@
+// Identity
+Name Oerlikon 35mm Skyshield
+ShortName Skyshield
+
+// Model and Rendering
+Icon IconAAGunSkyshield
+Model manus_modern_warfare.Skyshield
+Texture SkinAAGunSkyshield
+
+// Recipe and Inventory
+Ammo ShellNATO35mm
+RecipeOutput 1
+Recipe B SMP_Part_Misc_Barrel_AAGun M SMP_Part_Mat_Block_Aluminium L SMP_Part_Misc_Seat_Car
+  B
+LM 
+MMM
+
+// Movement and Physics
+RealMassKg 3200.0
+
+// Weapons
+NumBarrels 1
+Barrel 0 100 0 0
+FireAlternately True
+ReloadTime 60
+Recoil 4
+Damage 1
+GunnerPos 6 30 -9
+TopViewLimit 80
+BottomViewLimit 0
+RoundsPerMin 1000.0
+Dispersion 0.1
+
+// Protection
+Health 300
+UseRealisticVehicleHealth true
+
+// Sounds
+ShootSound 35mmshoot
+ReloadSound mp44Reload

@@ -1,0 +1,11 @@
+// Identity
+Name Reinforced Plating
+ShortName 44_Reinforced_Plating
+Category Misc
+
+// Rendering
+Icon 44_Reinforced_Plating
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 12

@@ -1,0 +1,18 @@
+// Identity
+Name Repair Tool
+ShortName 44_RepairTool
+
+// Rendering
+Icon 44_RepairTool
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 1
+ToolLife 100
+DestroyOnEmpty false
+RechargeRecipe 3 coal
+
+// Behaviour
+Repair true
+Heal false
+HealAmount 500

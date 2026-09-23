@@ -1,7 +1,16 @@
+// Identity
 Name British WW2 Desert Coat
 ShortName britishDesertCoat
+
+// Item and rendering
 Icon britishdesertcoat
 Colour 255 255 255
-Type Body
-Defence 0.1
 ArmourTexture britishdesert
+
+// Protection
+Type Body
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

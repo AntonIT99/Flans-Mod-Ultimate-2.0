@@ -1,0 +1,142 @@
+// Identity
+Name ZiS-3 [76mm]
+ShortName 44_ZiS3
+Description Soviet Field Gun__Uses : 76mm AP Tank Shell_Medium Cal. HE Tank Shell __Year Introduced : 1941
+
+// Rendering
+Icon 44_ZiS3
+Model W44.ZiS3
+ModelScale 1
+Texture Skin44_ZiS23
+CameraDistance 7.5
+
+// Recipe and inventory
+AddRecipeParts core 1 44_Tank_Barrel 1 44_Gun_Shield 2 44_Car_Wheel
+CargoSlots 0
+ShellSlots 5
+FuelTankSize 2000
+
+// Paintjobs
+AddDye 3 gray
+
+// Real-world specifications
+RealMassKg 1116
+
+// Movement
+Tank true
+FourWheelDrive true
+MaxThrottle 0
+MaxNegativeThrottle 0
+TurnLeftSpeed 0
+TurnRightSpeed 0
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -32 -10 -18
+WheelPosition 1 -32 -10 18
+WheelPosition 2 20 -10 18
+WheelPosition 3 20 -10 -18
+WheelSpringStrength 0.5
+
+// Weapons
+ReadWeaponsFromGunTypes true
+ShootDelayPrimarySeconds 5
+ShootDelay 1
+DamageModifierPrimary 1
+BulletSpread 1
+BulletSpeed 8
+BulletDetection 7
+AllowAllAmmo false
+AddAmmo 44_76APShell
+AddAmmo 44_MediumHEShell
+AddAmmo 44_76APCRShell
+AddAmmo 44_76HEATShell
+BarrelPosition 62 6 0
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 1 0 0
+ShootParticlesPrimary flansmod.fmflame 1.75 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.75 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.25 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0 -0.1
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.5 -0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.1 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0 0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0 -0.2
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.05 -0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0 0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0 -0.4
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame 0.1 -0.4 0
+ShootParticlesPrimary flansmod.fmflame 0.1 0.4 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 5
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 300 -40 -8 -18 60 24 36
+
+// Seats
+Driver 0 -8 0 -16 16 -4 22
+Passengers 0
+RotatedDriverOffset -19 0 -6
+DriverAimSpeed 0.4f 0.3f 0f
+DriverYawBeforePitch true
+
+// Optics
+hasScope true
+Gunsight warfare44_t34
+gunsightZoom 3.5
+
+// Sounds
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+YawSound TurretTraverse2
+YawSoundLength 38
+PitchSound TurretTraverse1
+PitchSoundLength 61
+DriverTraverseSounds false
+ShootSoundPrimary Shoot_76mmUSSR
+ShootReloadSound Breach
+VehicleGunReloadTick 40

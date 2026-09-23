@@ -28,6 +28,12 @@ public class MechaType extends DriveableType
     protected Vector3f rightArmOrigin = new Vector3f();
     protected float armLength = 1F;
     protected float legLength = 1F;
+    /** 1.12.2 leg-group geometry. As in 1.12.2, the rear and front groups do not inherit LegLength. */
+    protected float legTrans;
+    protected float rearLegLength = 1F;
+    protected float frontLegLength = 1F;
+    protected float rearLegTrans;
+    protected float frontLegTrans;
     protected float heldItemScale = 1F;
     protected float height = 3F;
     protected float width = 2F;
@@ -68,12 +74,18 @@ public class MechaType extends DriveableType
         rotateSpeed = readValue("RotateSpeed", rotateSpeed, file);
         stompSound = readSound("StompSound", stompSound, file);
         stompSoundLength = Math.max(0, readSoundLength("StompSoundLength", stompSoundLength, file));
+        registerSoundTimer("StompSoundLength", () -> stompSound, () -> stompSoundLength, length -> stompSoundLength = length);
         stompRangeLower = readValue("StompRangeLower", stompRangeLower, file);
         stompRangeUpper = readValue("StompRangeUpper", stompRangeUpper, file);
         leftArmOrigin = modelVector("LeftArmOrigin", leftArmOrigin, file);
         rightArmOrigin = modelVector("RightArmOrigin", rightArmOrigin, file);
         armLength = Math.max(0F, readValue("ArmLength", armLength * 16F, file) / 16F);
         legLength = Math.max(0F, readValue("LegLength", legLength * 16F, file) / 16F);
+        legTrans = readValue("LegTrans", legTrans * 16F, file) / 16F;
+        rearLegLength = Math.max(0F, readValue("RearLegLength", rearLegLength * 16F, file) / 16F);
+        frontLegLength = Math.max(0F, readValue("FrontLegLength", frontLegLength * 16F, file) / 16F);
+        rearLegTrans = readValue("RearLegTrans", rearLegTrans * 16F, file) / 16F;
+        frontLegTrans = readValue("FrontLegTrans", frontLegTrans * 16F, file) / 16F;
         heldItemScale = Math.max(0F, readValue("HeldItemScale", heldItemScale, file));
         height = Math.max(0.1F, readValue("Height", height * 16F, file) / 16F);
         width = Math.max(0.1F, readValue("Width", width * 16F, file) / 16F);
@@ -117,14 +129,41 @@ public class MechaType extends DriveableType
         legAnimSpeed = readValue("LegAnimSpeed", legAnimSpeed, file);
         restrictInventoryInput = readValue("RestrictInventoryInput", restrictInventoryInput, file);
         allowMechaToolsInRestrictedInv = readValue("AllowMechaToolsInRestrictedInv", allowMechaToolsInRestrictedInv, file);
+
+        // Mechas have no real-world profile of their own, but resolution still runs
+        // so the resolved state reflects the finished definition.
+        finishDerivedValues();
     }
 
-    public float getLeftHandModifierX() { return leftHandModifier.x; }
-    public float getLeftHandModifierY() { return leftHandModifier.y; }
-    public float getLeftHandModifierZ() { return leftHandModifier.z; }
-    public float getRightHandModifierX() { return rightHandModifier.x; }
-    public float getRightHandModifierY() { return rightHandModifier.y; }
-    public float getRightHandModifierZ() { return rightHandModifier.z; }
+    public float getLeftHandModifierX()
+    {
+        return leftHandModifier.x;
+    }
+
+    public float getLeftHandModifierY()
+    {
+        return leftHandModifier.y;
+    }
+
+    public float getLeftHandModifierZ()
+    {
+        return leftHandModifier.z;
+    }
+
+    public float getRightHandModifierX()
+    {
+        return rightHandModifier.x;
+    }
+
+    public float getRightHandModifierY()
+    {
+        return rightHandModifier.y;
+    }
+
+    public float getRightHandModifierZ()
+    {
+        return rightHandModifier.z;
+    }
 
     private static Vector3f modelVector(String key, Vector3f fallback, TypeFile file)
     {

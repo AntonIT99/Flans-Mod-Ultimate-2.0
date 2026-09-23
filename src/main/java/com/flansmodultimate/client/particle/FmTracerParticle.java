@@ -66,7 +66,7 @@ public class FmTracerParticle extends ParticleBase
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
             if (type == FlansMod.fmTracerParticle.get())
-                level.addParticle(FlansMod.fmSmokeParticle.get(), x, y, z, 0.0D, 0.0D, 0.0D);
+                ParticleHelper.spawnSubParticle(FlansMod.fmSmokeParticle.get(), x, y, z);
             return new FmTracerParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }

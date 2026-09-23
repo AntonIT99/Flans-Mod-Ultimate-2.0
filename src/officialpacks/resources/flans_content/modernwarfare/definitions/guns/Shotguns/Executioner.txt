@@ -1,6 +1,22 @@
+// Identity
 Name Executioner Shotgun
 ShortName executioner
-//The ammo this gun uses (shortName)
+Description Ammo Type : Shotgun_Dual Wieldable
+
+// Item and rendering
+Icon Executioner
+Colour 255 255 255
+DeployedModel None
+Model mw.Executioner
+Texture Executioner
+ModelScale 0.18
+Paintjob executioner_stoic_blue executioner_stoic_blue blue 2
+Paintjob executioner_stoic_green executioner_stoic_green green 2
+Paintjob executioner_stoic_red executioner_stoic_red red 2
+Paintjob executioner_stoic_orange executioner_stoic_orange orange 2
+MuzzleFlashModel DefaultMuzzleFlash
+
+// Ammunition
 Ammo 12gslugAmmo
 Ammo 12gbirdshotAmmo
 Ammo 12gbuckshotAmmo
@@ -10,55 +26,45 @@ Ammo 12gincendiaryAmmo
 Ammo 12gpoisonedflechetteAmmo
 Ammo 12gaugeShell
 Ammo 12gaugeShellIncendiary
-Icon Executioner
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
 ReloadTime 40
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 24
-//Damage in half hearts
-Damage 2.8
-//The higher this value, the more the bullets spread
-Accuracy 28
-//Number of bullet entities to create, useful for shotguns, defaults to 1
 NumBullets 1
-//For guns in which the magazine is integrated
 LoadIntoGun 2
-//Time in ticks between rounds
-ShootDelay 6.0
-ShootSound ExecutionerShoot
-ReloadSound ExecutionerReload
+
+// Operation
 Mode SemiAuto
 OneHanded True
-//Bullet speed, default 3.0
-BulletSpeed 10.0
-//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
+Deployable False
+CanShootUnderwater False
+RoundsPerMin 90.0
+
+// Ballistics
+Recoil 24
+MuzzleVelocity 400.0
+Dispersion 2.1
+
+// Damage and protection
+Damage 2.8
+
+// Optics
 Scope None
 ZoomLevel 1.0
 FOVZoomLevel 1.25
-//Deployable Settings
-Deployable False
-DeployedModel None
-//Model settings
-Model mw.Executioner
-Texture Executioner
-ModelScale 0.18
-//Attachment Settings
+
+// Attachments
 AllowAllAttachments true
 AllowBarrelAttachments false
 AllowScopeAttachments false
 AllowStockAttachments false
 AllowGripAttachments false
 NumGenericAttachmentSlots 0
-Description Ammo Type : Shotgun_Dual Wieldable
+
+// Sounds
+ShootSound ExecutionerShoot
+ReloadSound ExecutionerReload
+DistortSound True
+
+// Tooltip
 ShowAccuracy true
 ShowReloadTime true
 ShowDamage true
 ShowRecoil true
-DistortSound True
-CanShootUnderwater False
-Paintjob executioner_stoic_blue executioner_stoic_blue blue 2
-Paintjob executioner_stoic_green executioner_stoic_green green 2
-Paintjob executioner_stoic_red executioner_stoic_red red 2
-Paintjob executioner_stoic_orange executioner_stoic_orange orange 2

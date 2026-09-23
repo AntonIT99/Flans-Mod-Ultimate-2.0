@@ -1,5 +1,8 @@
+// Identity
 Name Medic
-ShortName americanMedic
+ShortName OfficialWW2_AmericanMedic
+
+// Items
 AddItem m1Garand
 AddItem colt
 AddItem mk2Frag 2

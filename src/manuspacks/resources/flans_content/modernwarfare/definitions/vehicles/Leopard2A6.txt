@@ -1,0 +1,86 @@
+// Identity
+Name Leopard 2 - Version A6
+ShortName Leopard2A6
+
+// Model and Rendering
+Icon IconVehicleLeopard2A6
+Model manus_modern_warfare.Leopard2A6
+Texture SkinVehicleLeopard2A6
+RotateWheels True
+
+// Recipe and Inventory
+AddAmmo ShellNATO120mmDM11HE
+AddAmmo ShellNATO120mmDM12A1HEAT
+AddAmmo ShellNATO120mmDM43KE
+AddAmmo ShellNATO120mmDM53LKE
+FuelTankSize 3000
+CargoSlots 0
+ShellSlots 6
+AddRecipeParts turret 1 Part_Turret_Tank 14 Mat_Armor_Steel
+AddRecipeParts core 1 Part_Chassis_Tank 18 Mat_Armor_Steel
+AddRecipeParts leftTrack 1 Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 Part_Wheel_Tanktrack
+AddDye 10 green
+
+// Movement and Physics
+MaxThrottle 0.7
+MaxNegativeThrottle 0.3
+TurnLeftSpeed 1
+TurnRightSpeed 1
+Drag 1.0
+WheelRadius 1.0
+FourWheelDrive true
+Tank true
+RealMassKg 62300
+RealEnginePowerHp 1500
+RealMaxSpeedKmh 72
+DriveType TRACKED
+RealMaxReverseSpeedKmh 31
+
+// Weapons
+BarrelPosition 0 21 0
+ShootDelay 5
+ShellDelay 110
+ShootDelayPrimarySeconds 6
+ReadWeaponsFromGunTypes true
+
+// Protection
+ArmorFrontMm 620
+ArmorSideMm 60
+ArmorRearMm 40
+ArmorTopMm 50
+ArmorBottomMm 35
+TurretArmorFrontMm 850
+TurretArmorSideMm 300
+TurretArmorRearMm 60
+TurretArmorTopMm 70
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 7.5
+Driver 0 21 0 -360 360 -10 20
+RotatedDriverOffset 0 0 0
+Passengers 0
+SetupPart turret 400 -48 19 -24 80 13 48
+SetupPart leftTrack 350 -50 -10 17 100 20 10
+SetupPart rightTrack 350 -50 -10 -27 100 20 10
+SetupPart core 700 -64 -2 -26 114 20 52
+BulletDetection 7
+WheelPosition 0 -46 -8 -26
+WheelPosition 1 -46 -8 26
+WheelPosition 2 37 -8 26
+WheelPosition 3 37 -8 -26
+
+// Optics
+hasScope true
+Gunsight manus_leo2a6 manus_leo2a6 manus_leo2a6 manus_leo2a6
+gunsightZoom 3 12 3 12
+thermalSight true
+ThermalGuis 3 4
+
+// Sounds
+StartSound leodieselstart
+StartSoundLength 80
+EngineSound leodieselenginestronk
+EngineSoundLength 24
+ShootSoundPrimary shoot_tnk_120mm

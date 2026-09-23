@@ -1,12 +1,17 @@
+// Identity
 Name Heavy Assault
 ShortName kskAssault2
+
+// Appearance
+Hat juggernautHelmet
+Chest juggernautBody
+Legs juggernautPants
+Shoes juggernautBoots
+
+// Items
 AddItem m60
 AddItem usp
 AddItem m67 1
 AddItem mwKnife
 AddItem m60Ammo 2
 AddItem uspAmmo 3
-Hat juggernautHelmet
-Chest juggernautBody
-Legs juggernautPants
-Shoes juggernautBoots

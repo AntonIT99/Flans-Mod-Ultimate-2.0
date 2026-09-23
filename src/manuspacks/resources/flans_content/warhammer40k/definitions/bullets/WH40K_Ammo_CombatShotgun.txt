@@ -1,0 +1,36 @@
+// Identity
+Name Mk22c Combat Shotgun Ammo
+ShortName WH40K_Ammo_CombatShotgun
+description Amunition for Mk22c Combat Shotgun
+
+// Model and Rendering
+Model Bullet
+Icon Icon_WH40K_Ammo_CombatShotgun
+
+// Recipe and Inventory
+MaxStackSize 5
+RoundsPerItem 8
+
+// Behaviour
+ExplodeOnImpact False
+FallSpeed 1.0
+Fuse 5
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 8
+DamageVsVehicles 1
+Explosion 0
+Fire 0
+SetEntitiesOnFire False
+Mass 3.8
+
+// Sounds
+HitSound bullet
+
+// Effects
+HasLight False
+FlakParticles 0
+SmokeTrail False

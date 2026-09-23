@@ -1,0 +1,51 @@
+// Identity
+Name Nebelhandgranate39
+ShortName 44_Smokestielhandgranate
+Description German Smoke Grenade
+
+// Rendering
+Icon 44_SmokeStielhandgranate
+Model W44.Stielhandgranate
+Texture Skin44_SmokeStielhandgranate
+Colour 255 255 255
+
+// Inventory
+StackSize 4
+
+// Throwing and physics
+ThrowSpeed 1.5
+ThrowDelay 10
+FallSpeed 1.0
+Bounciness 0.7
+HitBoxSize 0.5
+SpinWhenThrown true
+Sticky false
+PenetratesBlocks false
+BreaksGlass true
+
+// Damage and healing
+HitEntityDamage 1
+MeleeDamage 4
+
+// Detonation and explosion
+Fuse 100
+PrimeDelay 0
+DetonateOnImpact false
+DetonateWhenShot true
+Remote false
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+FragType DEFAULT
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+FireRadius 0.0
+
+// Effects
+TrailParticles false
+ExplodeParticles 5
+ExplodeParticleType flansmod.Smoker1
+SmokeEffect 15 25 0
+SmokeEffect 2 25 2
+SmokeTime 250
+SmokeRadius 5
+SmokeParticleType flansmod.Smoker1

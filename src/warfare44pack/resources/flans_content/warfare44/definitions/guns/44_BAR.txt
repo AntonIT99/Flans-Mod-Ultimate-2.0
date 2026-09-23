@@ -1,0 +1,62 @@
+// Identity
+Name BAR
+ShortName 44_BAR
+Description American Automatic Rifle
+
+// Rendering
+Icon 44_BAR
+Model W44.BAR
+ModelScale 0.25
+Texture Skin44_BAR
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_BARAmmo
+
+// Handling
+Mode FullAuto
+Deployable False
+MoveSpeedModifier 0.7
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 400.0
+ReloadTime 79
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 860.0
+Dispersion 0.26
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 2.0
+RandomRecoilRange 1
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_LensSight 44_AASight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound BARShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound BARReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

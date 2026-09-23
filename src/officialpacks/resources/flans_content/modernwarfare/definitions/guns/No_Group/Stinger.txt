@@ -1,40 +1,43 @@
+// Identity
 Name FIM-92 Stinger
 ShortName stinger
-//The ammo this gun uses (shortName)
-Ammo stingerAmmo
+Description Rocket Launcher : anti-aircraft target finding rocket launcher.
+
+// Item and rendering
 Icon Stinger
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 80
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 25
-//Damage in half hearts
-Damage 2
-//The higher this value, the more the bullets spread
-Accuracy 2
-//Time in ticks between rounds
-ShootDelay 1.0
-ShootSound AT4Shoot
-ReloadSound MWbazookaReload
-Mode SemiAuto
-//Bullet speed, default 3.0
-BulletSpeed 3.0
-//Default scope settings. Usually for aiming down sights. In which case, use FOVZoomLevel, not ZoomLevel
-Scope mwstinger
-ZoomLevel 8.0
-FOVZoomLevel 1.0
-//Deployable Settings
-Deployable False
 DeployedModel None
-//Model settings
 Model mw.Stinger
 Texture Stinger
 ModelScale 0.18
-//Modifiers
-MoveSpeedModifier 0.8
-Description Rocket Launcher : anti-aircraft target finding rocket launcher.
 Paintjob stinger_stoic_blue stinger_stoic_blue blue 4
 Paintjob stinger_stoic_green stinger_stoic_green green 4
 Paintjob stinger_stoic_red stinger_stoic_red red 4
 Paintjob stinger_stoic_orange stinger_stoic_orange orange 4
+
+// Ammunition
+Ammo stingerAmmo
+ReloadTime 80
+
+// Operation
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.8
+RoundsPerMin 3.0
+
+// Ballistics
+Recoil 25
+BulletSpeed 3.0
+Dispersion 0.5
+
+// Damage and protection
+Damage 2
+
+// Optics
+Scope mwstinger
+ZoomLevel 8.0
+FOVZoomLevel 1.0
+
+// Sounds
+ShootSound AT4Shoot
+ReloadSound MWbazookaReload

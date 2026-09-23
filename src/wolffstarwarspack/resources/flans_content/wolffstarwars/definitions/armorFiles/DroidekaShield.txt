@@ -1,0 +1,27 @@
+// Identity
+Name Droideka Shield
+ShortName droidekashield
+Description Blue droideka deflector shield
+
+// Item and rendering
+Icon droidekashield
+Colour 255 255 255
+ArmourTexture droidekashield
+Model wolffstarwars.DroidekaShield
+Overlay shieldblue
+
+// Protection
+Type Body
+Defence 0.26
+BulletDefence 0.26
+PenetrationResistance 2.40
+ArmorPoints 9
+Toughness 3
+
+// Movement
+KnockbackModifier 0.8
+MoveSpeedModifier 0.95
+
+// Effects
+SmokeProtection True
+NightVision False

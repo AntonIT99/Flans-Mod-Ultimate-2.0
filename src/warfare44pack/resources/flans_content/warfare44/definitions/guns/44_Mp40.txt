@@ -1,0 +1,61 @@
+// Identity
+Name MP-40
+ShortName 44_Mp40
+Description German Sub Machine Gun
+
+// Rendering
+Icon 44_Mp40
+Model W44.Mp40
+ModelScale 0.2
+Texture Skin44_Mp40
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Mp40Ammo
+
+// Handling
+Mode FullAuto
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 550.0
+ReloadTime 53
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 400.0
+Dispersion 0.38
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 4.0
+RandomRecoilRange 3
+RandomRecoilYawRange 0.75
+DecreaseRecoil 2.5
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_ZF41Scope 44_OpticalSight 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound Mp40Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Mp40Reload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

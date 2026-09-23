@@ -1,0 +1,16 @@
+// Identity
+Name Passenger Bay Frame
+ShortName SMP_Part_Bay_PassengerBay
+
+// Model and Rendering
+Icon Icon_SMP_Part_Bay_PassengerBay
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Seat_Passenger P SMP_Part_Mat_Plate_Steel
+PPP
+SSS
+PPP
+RecipeOutput 1
+Category Bay
+PartBoxRecipe
+StackSize 64

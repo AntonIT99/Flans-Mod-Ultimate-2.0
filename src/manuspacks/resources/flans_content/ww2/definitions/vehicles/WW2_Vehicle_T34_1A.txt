@@ -1,0 +1,90 @@
+// Identity
+Name T-34/76
+ShortName WW2_Vehicle_T34_1A
+
+// Model and Rendering
+Model Manus_WW2.Vehicle.WW2_Vehicle_T34_1
+Icon Icon_WW2_Vehicle_T34_1A
+Texture Skin_WW2_Vehicle_T34_1A
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 5
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 8 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 green
+AllowAllAmmo False
+AddAmmo WW2_Shell_USSR76mmAP
+AddAmmo WW2_Shell_USSR76mmHE
+
+// Movement and Physics
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+Tank true
+RealMassKg 30900
+RealEnginePowerPS 500
+RealMaxSpeedKmh 55
+DriveType TRACKED
+RealMaxReverseSpeedKmh 7
+
+// Weapons
+AddGun 30 33 -5 turret WW2_MG_DP28_1A
+BarrelPosition 0 33 0
+ShellDelay 110
+ShootDelay 5
+GunOrigin 1 37 15 11
+ShootDelayPrimarySeconds 5
+ReadWeaponsFromGunTypes true
+
+// Protection
+IsExplosionWhenDestroyed true
+ArmorFrontMm 45 60
+ArmorSideMm 45 40
+ArmorRearMm 40
+ArmorTopMm 20
+ArmorBottomMm 20
+TurretArmorFrontMm 53
+TurretArmorSideMm 53
+TurretArmorRearMm 53
+TurretArmorTopMm 16
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -50 -8 -29
+WheelPosition 1 -50 -8 29
+WheelPosition 2 28 -8 29
+WheelPosition 3 28 -8 -29
+Driver 0 25 0 -360 360 -10 20
+RotatedDriverOffset -3 0 6
+Passengers 1
+Passenger 1 24 3 -6 core -30 30 -10 10 WW2_MG_DP28_1A FrontMG
+SetupPart turret 450 -25 24 -19 42 13 38
+SetupPart core 600 -70 -3 -25 114 26 50
+SetupPart rightTrack 250 -50 -10 -30 100 20 11
+SetupPart leftTrack 250 -50 -10 19 100 20 11
+BulletDetection 7
+CameraDistance 7.5
+
+// Optics
+hasScope true
+Gunsight manus_t3476sight
+gunsightZoom 3.5
+
+// Sounds
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_t34
+EngineSoundLength 39
+ShootSoundPrimary shoot_76mmussr
+ShootSoundSecondary dp28shoot

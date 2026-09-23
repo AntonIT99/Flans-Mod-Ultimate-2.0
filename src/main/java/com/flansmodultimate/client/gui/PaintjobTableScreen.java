@@ -82,8 +82,8 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
         int x0 = leftPos;
         int y0 = topPos;
 
-        gg.blit(FlansMod.paintjobTableGuiTexture, x0, y0, 0, 0, imageWidth, TOP_H, TEX_W, TEX_H);
-        gg.blit(FlansMod.paintjobTableGuiTexture, x0, y0 + TOP_H, 0, TOP_H, imageWidth, BOTTOM_H, TEX_W, TEX_H);
+        gg.blit(FlansMod.TEXTURE_GUI_PAINTJOBTABLE, x0, y0, 0, 0, imageWidth, TOP_H, TEX_W, TEX_H);
+        gg.blit(FlansMod.TEXTURE_GUI_PAINTJOBTABLE, x0, y0 + TOP_H, 0, TOP_H, imageWidth, BOTTOM_H, TEX_W, TEX_H);
 
         // Render paintjob icons
         ItemStack paintable = menu.slots.get(0).getItem();
@@ -195,22 +195,22 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
         if (dyesNeeded.size() == 1)
         {
             int u = have[0] ? UV_SINGLE_U_HAVE : UV_SINGLE_U_MISSING;
-            gg.blit(FlansMod.paintjobTableGuiTexture, originX, originY, u, UV_SINGLE_V, UV_SINGLE_W, STRIP_H, TEX_W, TEX_H);
+            gg.blit(FlansMod.TEXTURE_GUI_PAINTJOBTABLE, originX, originY, u, UV_SINGLE_V, UV_SINGLE_W, STRIP_H, TEX_W, TEX_H);
         }
         else
         {
             // First
-            gg.blit(FlansMod.paintjobTableGuiTexture, originX, originY, UV_FIRST_U, have[0] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_FIRST_W, STRIP_H, TEX_W, TEX_H);
+            gg.blit(FlansMod.TEXTURE_GUI_PAINTJOBTABLE, originX, originY, UV_FIRST_U, have[0] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_FIRST_W, STRIP_H, TEX_W, TEX_H);
 
             // Middles
             for (int s = 1; s < dyesNeeded.size() - 1; s++)
             {
-                gg.blit(FlansMod.paintjobTableGuiTexture, originX + 2 + 18 * s, originY, UV_MID_U, have[s] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_MID_W, STRIP_H, TEX_W, TEX_H);
+                gg.blit(FlansMod.TEXTURE_GUI_PAINTJOBTABLE, originX + 2 + 18 * s, originY, UV_MID_U, have[s] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_MID_W, STRIP_H, TEX_W, TEX_H);
             }
 
             // Last
             int last = dyesNeeded.size() - 1;
-            gg.blit(FlansMod.paintjobTableGuiTexture, originX + 2 + 18 * last, originY, UV_LAST_U, have[last] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_LAST_W, STRIP_H, TEX_W, TEX_H);
+            gg.blit(FlansMod.TEXTURE_GUI_PAINTJOBTABLE, originX + 2 + 18 * last, originY, UV_LAST_U, have[last] ? UV_FIRST_V_HAVE : UV_FIRST_V_MISSING, UV_LAST_W, STRIP_H, TEX_W, TEX_H);
         }
 
         // Draw dye items + overlays (counts)

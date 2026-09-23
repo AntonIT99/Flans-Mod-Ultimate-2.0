@@ -1,0 +1,16 @@
+// Identity
+Name DuraSteel Ingot
+ShortName SMP_Part_Mat_Block_DuraSteel
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Block_DuraSteel
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel
+ MM
+   
+   
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 64

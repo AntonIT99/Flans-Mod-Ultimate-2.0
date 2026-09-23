@@ -1,0 +1,16 @@
+// Identity
+Name PlaSteel Block
+ShortName SMP_Part_Mat_Block_PlaSteel
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Block_PlaSteel
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_DuraSteel B bucketLava
+MBM
+   
+   
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

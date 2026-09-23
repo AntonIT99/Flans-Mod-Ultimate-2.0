@@ -1,0 +1,70 @@
+// Identity
+Name Type 92 - Tripod
+ShortName 44_Type92Tripod
+Description Japanese Mounted Machine Gun
+
+// Rendering
+Icon 44_Type92Tripod
+Model W44.Type92Tripod
+ModelScale 0.15
+Texture Skin44_Type92
+RotateWheels False
+CameraDistance 2.5
+
+// Recipe and inventory
+AddRecipeParts core 1 44_Gun_Barrel 1 44_Receiver 6 ingotIron
+CargoSlots 0
+ShellSlots 0
+FuelTankSize 2000
+
+// Real-world specifications
+RealMassKg 83
+
+// Movement
+Tank true
+FourWheelDrive true
+MaxThrottle 0.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 0.0
+TurnRightSpeed 0.0
+CanRoll true
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -4 -8 -4
+WheelPosition 1 -4 -8 4
+WheelPosition 2 4 -8 4
+WheelPosition 3 4 -8 -4
+WheelSpringStrength 0.5
+
+// Weapons
+ReadWeaponsFromGunTypes true
+ShootDelay 3
+BulletSpread 3
+BulletSpeed 10
+BulletDetection 5
+AllowAllAmmo False
+AddGun 30 3 0 turret 44_Type92
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+
+// Parts and collision
+SetupPart core 25 -20 -8 -18 36 24 36
+
+// Seats
+Driver 0 -8 0 -30 30 -18 20
+Passengers 0
+RotatedDriverOffset -15 0 0
+
+// Sounds
+StartSound None
+StartSoundLength None
+EngineSound None
+EngineSoundLength None
+ShootSoundSecondary Type99Shoot

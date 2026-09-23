@@ -1,0 +1,40 @@
+// Identity
+Name German 120 mm DM53 APFSDS-T (Rh-120 L/55)
+ShortName hvshell120mm
+Description Kinetic-energy ammunition for the Leopard 2A6 Rh-120 L/55
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon hvshell120mm
+HasLight True
+
+// Ammunition
+MaxStackSize 4
+RoundsPerItem 1
+
+// Ballistics
+Mass 5000
+MuzzleVelocity 1750
+FallSpeed 1
+PenetrationAt100m 750
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+Damage 50
+DamageVsLiving 25
+DamageVsVehicles 100
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+HasSubmunitions false
+
+// Sounds and particles
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 0

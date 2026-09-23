@@ -1,0 +1,51 @@
+// Identity
+Name 152mm G-530 Concrete-Piercing (M-10T)
+ShortName 44_152CPShell
+Description Concrete-piercing shell for the KV-2 152 mm M-10T
+
+// Rendering
+Icon 44_verylargeheshell
+Model Bullet
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 436
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 72
+BreaksGlass True
+
+// Damage
+Mass 40000
+Damage 1
+DamageVsLiving 100
+DamageVsVehicles 2500
+Fire 0
+
+// Explosion
+ExplosiveMassTNTKg 5.1
+Explosion 8
+ExplodeOnImpact True
+Fuse 500
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 0
+ExplodeParticles 15
+FlareParticleCount 15
+DebrisParticleCount 6
+
+// Sounds
+HitSound

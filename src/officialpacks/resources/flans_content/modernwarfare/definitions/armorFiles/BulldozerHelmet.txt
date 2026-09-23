@@ -1,15 +1,28 @@
+// Identity
 Name Bulldozer Helmet
 ShortName bulldozerHelmet
+
+// Item and rendering
 Icon BulldozerHelmet
 Colour 255 255 255
-Type Helmet
 Model mw.SuperHeavyHelmet
-Defence 0.15
 ArmourTexture Bulldozer
-MoveSpeedModifier 0.85
-KnockbackModifier 0.25
-SmokeProtection True
+
+// Recipe
 Enchantability 0
-Toughness 3
 Durability 0
-DamageReductionAmount 5
+
+// Protection
+Type Helmet
+Defence 0.08
+KnockbackModifier 0.25
+Toughness 2
+BulletDefence 0.07
+PenetrationResistance 1.90
+ArmorPoints 3
+
+// Movement
+MoveSpeedModifier 0.85
+
+// Effects
+SmokeProtection True

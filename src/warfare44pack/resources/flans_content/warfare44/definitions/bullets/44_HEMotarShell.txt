@@ -1,0 +1,50 @@
+// Identity
+Name HE Mortar Shell
+ShortName 44_HEMortarShell
+
+// Rendering
+Icon 44_HEMortarShell
+Model W44.W44ShellLarge
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 1.0
+Penetrates False
+BreaksGlass True
+
+// Damage
+Mass 3180
+Damage 50
+DamageVsLiving 125
+DamageVsVehicles 1000
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 900
+FragType HE_SHELL
+Explosion 6
+ExplodeOnImpact True
+Fuse 500
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 0
+ExplodeParticles 12
+FlareParticleCount 17
+DebrisParticleCount 7
+
+// Sounds
+HitSound

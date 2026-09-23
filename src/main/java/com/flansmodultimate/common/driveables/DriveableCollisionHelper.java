@@ -3,59 +3,72 @@ package com.flansmodultimate.common.driveables;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
 /**
- * Per-entity runtime state for shaped driveable collision and moving decks.
- * Geometry storage is reused each tick; candidate discovery is a bounded
- * spatial query and never scans the world's loaded-entity list.
+ * Per-entity runtime state for a driveable's shaped collision hull.
+ *
+ * <p>Entities treat the hull as solid during their own movement (see
+ * {@link DriveableCollisionWorld}), so standing on and walking into a hull
+ * behave like terrain. What movement cannot know is that the hull itself moves:
+ * each tick this helper poses the hull, carries entities that were standing on
+ * it along with it, and pushes out entities it moved into. Candidate discovery
+ * is a bounded spatial query and never scans the world's loaded-entity list.</p>
+ *
+ * <p>An entity the push cannot free, because terrain blocks every way out, is
+ * let out instead: see {@link DriveableHullEscape}.</p>
  */
 public final class DriveableCollisionHelper
 {
     private static final int MAX_CANDIDATES = 128;
     private static final double MAX_QUERY_RADIUS = 96D;
-    private static final double QUERY_MARGIN = 1.5D;
-    private static final double MIN_DECK_NORMAL_Y = 0.35D;
-    private static final double SUPPORT_ABOVE = 0.45D;
-    private static final double SUPPORT_BELOW = 0.22D;
-    private static final double LANDING_BELOW = 0.3D;
+    private static final double QUERY_MARGIN = 1D;
     private static final double MAX_PLATFORM_DELTA = 3D;
     private static final double MAX_SEPARATION_PER_TICK = 0.75D;
-    private static final double GEOMETRY_EPSILON = 1.0E-7D;
+    private static final double SEPARATION_THRESHOLD = 1.0E-3D;
+    private static final double SEPARATION_SKIN = 1.0E-4D;
+    /** How fast an entity trapped inside a hull is eased out of it, in blocks per tick. */
+    private static final double ESCAPE_SPEED = 0.25D;
+    /** Directions tried, in order, when the shortest way out of a hull leads into terrain. */
+    private static final double[] ESCAPE_FALLBACKS = {
+        0D, 1D, 0D,
+        1D, 0D, 0D,
+        -1D, 0D, 0D,
+        0D, 0D, 1D,
+        0D, 0D, -1D,
+        0D, -1D, 0D
+    };
 
     private final DriveableCollisionProfile profile;
-    private final double[][] currentVertices;
-    private final double[][] previousVertices;
-    private final double[][] currentPlanes;
-    private final double[][] currentBounds;
-    private final boolean[] active;
-    private final boolean[] planesValid;
-    private final Pose currentPose = new Pose();
-    private final Pose previousPose = new Pose();
-    private final double[] planeScratch = new double[4];
-    private final double[] barycentricScratch = new double[3];
-    private final SupportResult supportScratch = new SupportResult();
+    private final DriveableHullGeometry geometry;
+    private final DriveableHullEscape escape = new DriveableHullEscape();
+    private final double[] boundsScratch = new double[6];
+    private final double[] vectorScratch = new double[4];
+    private final double[] escapeScratch = new double[4];
+    @Nullable
+    private Driveable owner;
+    @Nullable
+    private DriveableCollisionWorld.LevelHulls registry;
+    private int lastTick = Integer.MIN_VALUE;
+    private double lastX;
+    private double lastY;
+    private double lastZ;
 
     public DriveableCollisionHelper(DriveableCollisionProfile profile)
     {
         this.profile = profile == null ? DriveableCollisionProfile.compile(null) : profile;
-        int shapeCount = this.profile.getShapes().size();
-        currentVertices = new double[shapeCount][24];
-        previousVertices = new double[shapeCount][24];
-        currentPlanes = new double[shapeCount][DriveableCollisionProfile.FACE_QUADS.length * 4];
-        currentBounds = new double[shapeCount][6];
-        active = new boolean[shapeCount];
-        planesValid = new boolean[shapeCount];
+        geometry = new DriveableHullGeometry(this.profile);
     }
 
     public boolean matches(DriveableCollisionProfile candidate)
@@ -63,198 +76,235 @@ public final class DriveableCollisionHelper
         return profile == candidate;
     }
 
+    public boolean hasGeometry()
+    {
+        return !profile.isEmpty();
+    }
+
+    DriveableHullGeometry geometry()
+    {
+        return geometry;
+    }
+
+    DriveableHullEscape escape()
+    {
+        return escape;
+    }
+
+    @Nullable
+    Driveable owner()
+    {
+        return owner;
+    }
+
     public void tick(Driveable driveable)
     {
-        if (driveable == null || driveable.level().isClientSide || driveable.isRemoved() || profile.isEmpty())
+        if (driveable == null || driveable.isRemoved() || profile.isEmpty())
             return;
-
         DriveableType type = driveable.getConfigType();
         if (type == null)
             return;
-        currentPose.set(driveable.getX(), driveable.getY(), driveable.getZ(), driveable.getYaw(),
-            driveable.getPitch(), driveable.getRoll());
-        previousPose.set(driveable.xo, driveable.yo, driveable.zo, driveable.getPrevYaw(),
-            driveable.getPrevPitch(), driveable.getPrevRoll());
 
-        boolean discontinuity = driveable.tickCount <= 1
-            || squaredDistance(currentPose.x, currentPose.y, currentPose.z,
-                previousPose.x, previousPose.y, previousPose.z) > MAX_PLATFORM_DELTA * MAX_PLATFORM_DELTA;
-        if (discontinuity)
-            previousPose.copyFrom(currentPose);
-
-        Vec3 pivot = type.getTurretOrigin() == null ? Vec3.ZERO
-            : LegacyDriveableCoordinates.toLocal(type.getTurretOrigin());
-        Vec3 offset = type.getTurretOriginOffset() == null ? Vec3.ZERO
-            : LegacyDriveableCoordinates.toLocal(type.getTurretOriginOffset());
-        double pivotX = pivot.x;
-        double pivotY = pivot.y;
-        double pivotZ = pivot.z;
-        double offsetX = offset.x;
-        double offsetY = offset.y;
-        double offsetZ = offset.z;
-
-        double queryMinX = Double.POSITIVE_INFINITY;
-        double queryMinY = Double.POSITIVE_INFINITY;
-        double queryMinZ = Double.POSITIVE_INFINITY;
-        double queryMaxX = Double.NEGATIVE_INFINITY;
-        double queryMaxY = Double.NEGATIVE_INFINITY;
-        double queryMaxZ = Double.NEGATIVE_INFINITY;
-        List<DriveableCollisionProfile.Shape> shapes = profile.getShapes();
-        for (int index = 0; index < shapes.size(); index++)
-        {
-            DriveableCollisionProfile.Shape shape = shapes.get(index);
-            active[index] = driveable.isPartIntact(shape.getPart());
-            if (!active[index])
-                continue;
-
-            float currentTurretPitch = shape.isBarrel() ? driveable.getTurretPitch() : 0F;
-            float previousTurretPitch = shape.isBarrel() ? driveable.getPrevTurretPitch() : 0F;
-            transform(shape, currentVertices[index], currentPose, driveable.getTurretYaw(), currentTurretPitch,
-                pivotX, pivotY, pivotZ, offsetX, offsetY, offsetZ);
-            transform(shape, previousVertices[index], previousPose,
-                discontinuity ? driveable.getTurretYaw() : driveable.getPrevTurretYaw(),
-                discontinuity ? currentTurretPitch : previousTurretPitch,
-                pivotX, pivotY, pivotZ, offsetX, offsetY, offsetZ);
-            updateBounds(currentVertices[index], currentBounds[index]);
-            updatePlanes(index);
-
-            for (int vertex = 0; vertex < 8; vertex++)
-            {
-                int point = vertex * 3;
-                queryMinX = Math.min(queryMinX, Math.min(currentVertices[index][point], previousVertices[index][point]));
-                queryMinY = Math.min(queryMinY, Math.min(currentVertices[index][point + 1], previousVertices[index][point + 1]));
-                queryMinZ = Math.min(queryMinZ, Math.min(currentVertices[index][point + 2], previousVertices[index][point + 2]));
-                queryMaxX = Math.max(queryMaxX, Math.max(currentVertices[index][point], previousVertices[index][point]));
-                queryMaxY = Math.max(queryMaxY, Math.max(currentVertices[index][point + 1], previousVertices[index][point + 1]));
-                queryMaxZ = Math.max(queryMaxZ, Math.max(currentVertices[index][point + 2], previousVertices[index][point + 2]));
-            }
-        }
-        if (!Double.isFinite(queryMinX) || !Double.isFinite(queryMaxX))
+        owner = driveable;
+        boolean continuous = lastTick == driveable.tickCount - 1
+            && squaredDistance(lastX, lastY, lastZ, driveable.getX(), driveable.getY(), driveable.getZ())
+                <= MAX_PLATFORM_DELTA * MAX_PLATFORM_DELTA;
+        lastTick = driveable.tickCount;
+        lastX = driveable.getX();
+        lastY = driveable.getY();
+        lastZ = driveable.getZ();
+        geometry.update(driveable.getX(), driveable.getY(), driveable.getZ(), driveable.getYaw(),
+            driveable.getPitch(), driveable.getRoll(), driveable.getTurretYaw(), driveable.getTurretPitch(),
+            driveable.getCollisionTurretPivot(), driveable.getCollisionTurretOffset(), driveable::isPartIntact,
+            continuous);
+        register(driveable.level());
+        if (!geometry.queryBounds(boundsScratch))
             return;
 
-        queryMinX = Math.max(queryMinX, driveable.getX() - MAX_QUERY_RADIUS);
-        queryMinY = Math.max(queryMinY, driveable.getY() - MAX_QUERY_RADIUS);
-        queryMinZ = Math.max(queryMinZ, driveable.getZ() - MAX_QUERY_RADIUS);
-        queryMaxX = Math.min(queryMaxX, driveable.getX() + MAX_QUERY_RADIUS);
-        queryMaxY = Math.min(queryMaxY, driveable.getY() + MAX_QUERY_RADIUS);
-        queryMaxZ = Math.min(queryMaxZ, driveable.getZ() + MAX_QUERY_RADIUS);
-        if (queryMinX > queryMaxX || queryMinY > queryMaxY || queryMinZ > queryMaxZ)
+        double minX = Math.max(boundsScratch[0], driveable.getX() - MAX_QUERY_RADIUS);
+        double minY = Math.max(boundsScratch[1], driveable.getY() - MAX_QUERY_RADIUS);
+        double minZ = Math.max(boundsScratch[2], driveable.getZ() - MAX_QUERY_RADIUS);
+        double maxX = Math.min(boundsScratch[3], driveable.getX() + MAX_QUERY_RADIUS);
+        double maxY = Math.min(boundsScratch[4], driveable.getY() + MAX_QUERY_RADIUS);
+        double maxZ = Math.min(boundsScratch[5], driveable.getZ() + MAX_QUERY_RADIUS);
+        if (minX > maxX || minY > maxY || minZ > maxZ)
             return;
 
-        AABB query = new AABB(queryMinX, queryMinY, queryMinZ, queryMaxX, queryMaxY, queryMaxZ)
-            .inflate(QUERY_MARGIN);
-        List<LivingEntity> candidates = driveable.level().getEntitiesOfClass(LivingEntity.class, query,
-            candidate -> candidate.isAlive() && !candidate.isSpectator() && !candidate.noPhysics
-                && !candidate.isPassenger() && !driveable.isPartOfThis(candidate));
+        Level level = driveable.level();
+        boolean clientSide = level.isClientSide;
+        AABB query = new AABB(minX, minY, minZ, maxX, maxY, maxZ).inflate(QUERY_MARGIN);
+        List<Entity> candidates = level.getEntities(driveable, query,
+            candidate -> DriveableCollisionWorld.collidesWithHulls(candidate) && !driveable.isPartOfThis(candidate)
+                && (!clientSide || DriveableCollisionWorld.isSimulatedHere(candidate)));
         int count = Math.min(MAX_CANDIDATES, candidates.size());
         for (int index = 0; index < count; index++)
             handleCandidate(driveable, type, candidates.get(index));
     }
 
-    private void updatePlanes(int shapeIndex)
+    /** Stops entities colliding with this hull, for a driveable leaving its level. */
+    public void unregister()
     {
-        // Legacy shape boxes may have slightly non-planar quads. Average each
-        // quad's two triangle normals into a conservative separating hull;
-        // only truly degenerate faces disable side separation.
-        planesValid[shapeIndex] = true;
-        double[] points = currentVertices[shapeIndex];
-        double centreX = 0D;
-        double centreY = 0D;
-        double centreZ = 0D;
-        for (int vertex = 0; vertex < 8; vertex++)
+        if (registry != null)
+            registry.remove(this);
+        registry = null;
+    }
+
+    void forgetRegistry()
+    {
+        registry = null;
+    }
+
+    private void register(Level level)
+    {
+        DriveableCollisionWorld.LevelHulls hulls = DriveableCollisionWorld.hulls(level);
+        if (hulls == registry)
+            return;
+        unregister();
+        if (hulls != null)
         {
-            centreX += points[vertex * 3];
-            centreY += points[vertex * 3 + 1];
-            centreZ += points[vertex * 3 + 2];
-        }
-        centreX /= 8D;
-        centreY /= 8D;
-        centreZ /= 8D;
-        for (int face = 0; face < DriveableCollisionProfile.FACE_QUADS.length; face++)
-        {
-            if (!DriveableCollisionProfile.facePlane(points, DriveableCollisionProfile.FACE_QUADS[face],
-                centreX, centreY, centreZ, planeScratch))
-            {
-                planesValid[shapeIndex] = false;
-                return;
-            }
-            System.arraycopy(planeScratch, 0, currentPlanes[shapeIndex], face * 4, 4);
+            hulls.add(this);
+            registry = hulls;
         }
     }
 
-    private void handleCandidate(Driveable driveable, DriveableType type, LivingEntity candidate)
+    private void handleCandidate(Driveable driveable, DriveableType type, Entity entity)
     {
-        supportScratch.reset();
-        findSupport(candidate, supportScratch);
-        if (supportScratch.found)
+        // Players are simulated by their own client, against the hull pose it sees.
+        boolean simulated = DriveableCollisionWorld.isSimulatedHere(entity);
+        AABB box = entity.getBoundingBox();
+        if (simulated)
         {
-            candidate.move(MoverType.SHULKER,
-                new Vec3(supportScratch.deltaX, supportScratch.deltaY, supportScratch.deltaZ));
-            candidate.setOnGround(true);
-            candidate.fallDistance = 0F;
-            Vec3 motion = candidate.getDeltaMovement();
-            if (motion.y < 0D)
-                candidate.setDeltaMovement(motion.x, 0D, motion.z);
-            return;
+            int support = geometry.findSupport(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+            if (support >= 0)
+            {
+                // Standing on the hull is never being trapped, so an escape ends here and carrying resumes with it.
+                if (!escape.isSuspended(entity))
+                    carry(entity, support);
+                box = entity.getBoundingBox();
+                boolean overlaps = geometry.findPenetration(box.minX, box.minY, box.minZ, box.maxX, box.maxY,
+                    box.maxZ, true, vectorScratch) && vectorScratch[3] > SEPARATION_THRESHOLD;
+                escape.report(entity, overlaps ? vectorScratch[3] : 0D, true);
+                if (overlaps)
+                    separate(entity, vectorScratch);
+                return;
+            }
         }
 
-        AABB box = candidate.getBoundingBox();
-        double centreX = (box.minX + box.maxX) * 0.5D;
-        double centreY = (box.minY + box.maxY) * 0.5D;
-        double centreZ = (box.minZ + box.maxZ) * 0.5D;
-        double halfX = (box.maxX - box.minX) * 0.5D;
-        double halfY = (box.maxY - box.minY) * 0.5D;
-        double halfZ = (box.maxZ - box.minZ) * 0.5D;
-        double bestDepth = Double.POSITIVE_INFINITY;
-        double pushX = 0D;
-        double pushY = 0D;
-        double pushZ = 0D;
-        for (int shape = 0; shape < active.length; shape++)
+        if (!geometry.findPenetration(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, false,
+            vectorScratch) || vectorScratch[3] <= SEPARATION_THRESHOLD)
+            return;
+        boolean trapped = escape.report(entity, vectorScratch[3], false);
+        if (simulated)
         {
-            if (!active[shape] || !planesValid[shape] || !intersects(box, currentBounds[shape]))
-                continue;
-            double shapeDepth = Double.POSITIVE_INFINITY;
-            double shapeNormalX = 0D;
-            double shapeNormalY = 0D;
-            double shapeNormalZ = 0D;
-            boolean overlap = true;
-            for (int face = 0; face < DriveableCollisionProfile.FACE_QUADS.length; face++)
+            if (trapped)
+                easeOut(entity, vectorScratch);
+            else
+                separate(entity, vectorScratch);
+        }
+        // An entity sealed inside the hull would otherwise be run over once every tick until it dies.
+        if (!trapped && !driveable.level().isClientSide && entity instanceof LivingEntity living
+            && Math.abs(vectorScratch[1]) < 0.6D)
+            applyConfiguredImpactDamage(driveable, type, living);
+    }
+
+    /**
+     * Eases an entity trapped inside the hull towards the nearest way out,
+     * without the shove {@link #separate} gives. While an entity is trapped the
+     * hull is suspended for it, so this only has to keep it drifting free while
+     * it walks out itself rather than clear the whole overlap at once.
+     *
+     * <p>The shortest way out often leads into terrain, which is what trapped
+     * the entity in the first place. Every direction is therefore tried against
+     * the blocks around the entity, and the one actually leaving it least deep
+     * in the hull wins; if none does, it stays put and the suspended hull is
+     * what lets it walk out.</p>
+     */
+    private void easeOut(Entity entity, double[] push)
+    {
+        AABB box = entity.getBoundingBox();
+        double bestDepth = push[3];
+        Vec3 best = Vec3.ZERO;
+        Vec3 step = escapeStep(entity, box, push[0], push[1], push[2],
+            Math.min(ESCAPE_SPEED, push[3] + SEPARATION_SKIN));
+        double depth = depthAfter(box, step);
+        if (depth < bestDepth)
+        {
+            bestDepth = depth;
+            best = step;
+        }
+        for (int index = 0; index < ESCAPE_FALLBACKS.length; index += 3)
+        {
+            step = escapeStep(entity, box, ESCAPE_FALLBACKS[index], ESCAPE_FALLBACKS[index + 1],
+                ESCAPE_FALLBACKS[index + 2], ESCAPE_SPEED);
+            depth = depthAfter(box, step);
+            if (depth < bestDepth)
             {
-                int plane = face * 4;
-                double normalX = currentPlanes[shape][plane];
-                double normalY = currentPlanes[shape][plane + 1];
-                double normalZ = currentPlanes[shape][plane + 2];
-                double signed = normalX * centreX + normalY * centreY + normalZ * centreZ
-                    + currentPlanes[shape][plane + 3];
-                double radius = Math.abs(normalX) * halfX + Math.abs(normalY) * halfY + Math.abs(normalZ) * halfZ;
-                if (signed - radius > GEOMETRY_EPSILON)
-                {
-                    overlap = false;
-                    break;
-                }
-                double depth = radius - signed;
-                if (depth < shapeDepth)
-                {
-                    shapeDepth = depth;
-                    shapeNormalX = normalX;
-                    shapeNormalY = normalY;
-                    shapeNormalZ = normalZ;
-                }
-            }
-            if (overlap && shapeDepth < bestDepth)
-            {
-                bestDepth = shapeDepth;
-                pushX = shapeNormalX;
-                pushY = shapeNormalY;
-                pushZ = shapeNormalZ;
+                bestDepth = depth;
+                best = step;
             }
         }
-        if (Double.isFinite(bestDepth))
+        if (best.lengthSqr() > 0D)
+            entity.setPos(entity.getX() + best.x, entity.getY() + best.y, entity.getZ() + best.z);
+        entity.resetFallDistance();
+    }
+
+    /** The part of one escape step that the blocks around the entity leave free. */
+    private static Vec3 escapeStep(Entity entity, AABB box, double x, double y, double z, double distance)
+    {
+        return Entity.collideBoundingBox(entity, new Vec3(x * distance, y * distance, z * distance), box,
+            entity.level(), List.of());
+    }
+
+    /** How deep in the hull the entity would still be after moving its box by {@code step}. */
+    private double depthAfter(AABB box, Vec3 step)
+    {
+        if (step.lengthSqr() < SEPARATION_SKIN * SEPARATION_SKIN)
+            return Double.POSITIVE_INFINITY;
+        AABB moved = box.move(step);
+        return geometry.findPenetration(moved.minX, moved.minY, moved.minZ, moved.maxX, moved.maxY, moved.maxZ,
+            false, escapeScratch) ? escapeScratch[3] : 0D;
+    }
+
+    /** Moves an entity with the surface it stood on, turning it with the hull as well. */
+    private void carry(Entity entity, int shape)
+    {
+        AABB box = entity.getBoundingBox();
+        double footX = (box.minX + box.maxX) * 0.5D;
+        double footY = box.minY;
+        double footZ = (box.minZ + box.maxZ) * 0.5D;
+        if (!geometry.carryPoint(shape, footX, footY, footZ, vectorScratch))
+            return;
+        double deltaX = vectorScratch[0] - footX;
+        double deltaY = vectorScratch[1] - footY;
+        double deltaZ = vectorScratch[2] - footZ;
+        double lengthSquared = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+        if (!(lengthSquared <= MAX_PLATFORM_DELTA * MAX_PLATFORM_DELTA))
+            return;
+        if (lengthSquared > 1.0E-12D)
+            DriveableCollisionWorld.moveIgnoringHulls(entity, deltaX, deltaY, deltaZ);
+        float yaw = geometry.carryYaw(shape);
+        if (Math.abs(yaw) > 1.0E-3F)
         {
-            double distance = Math.min(MAX_SEPARATION_PER_TICK, Math.max(0D, bestDepth + 1.0E-4D));
-            candidate.move(MoverType.SHULKER, new Vec3(pushX * distance, pushY * distance, pushZ * distance));
-            if (Math.abs(pushY) < 0.6D)
-                applyConfiguredImpactDamage(driveable, type, candidate);
+            entity.setYRot(entity.getYRot() + yaw);
+            entity.setYHeadRot(entity.getYHeadRot() + yaw);
+            if (entity instanceof LivingEntity living)
+                living.yBodyRot += yaw;
+        }
+        entity.resetFallDistance();
+    }
+
+    private static void separate(Entity entity, double[] push)
+    {
+        double distance = Math.min(MAX_SEPARATION_PER_TICK, push[3] + SEPARATION_SKIN);
+        DriveableCollisionWorld.moveIgnoringHulls(entity, push[0] * distance, push[1] * distance, push[2] * distance);
+        Vec3 motion = entity.getDeltaMovement();
+        double into = motion.x * push[0] + motion.y * push[1] + motion.z * push[2];
+        if (into < 0D)
+            entity.setDeltaMovement(motion.x - push[0] * into, motion.y - push[1] * into, motion.z - push[2] * into);
+        if (push[1] >= DriveableHullGeometry.MIN_SUPPORT_NORMAL_Y)
+        {
+            entity.setOnGround(true);
+            entity.resetFallDistance();
         }
     }
 
@@ -297,269 +347,11 @@ public final class DriveableCollisionHelper
         return !candidate.isAlliedTo(controller) && !controller.isAlliedTo(candidate);
     }
 
-    private void findSupport(LivingEntity candidate, SupportResult result)
-    {
-        AABB box = candidate.getBoundingBox();
-        double x = (box.minX + box.maxX) * 0.5D;
-        double z = (box.minZ + box.maxZ) * 0.5D;
-        double foot = box.minY;
-        double verticalMotion = candidate.getDeltaMovement().y;
-        for (int shape = 0; shape < active.length; shape++)
-        {
-            if (!active[shape])
-                continue;
-            for (int[] triangle : DriveableCollisionProfile.TOP_TRIANGLES)
-            {
-                if (normalY(currentVertices[shape], triangle) < MIN_DECK_NORMAL_Y)
-                    continue;
-
-                if (barycentricXZ(previousVertices[shape], triangle, x, z, barycentricScratch))
-                {
-                    double previousY = interpolate(previousVertices[shape], triangle, 1, barycentricScratch);
-                    double gap = foot - previousY;
-                    if (gap >= -SUPPORT_BELOW && gap <= SUPPORT_ABOVE
-                        && verticalMotion <= 0.5D && (candidate.onGround() || gap <= 0.14D || verticalMotion <= 0D))
-                    {
-                        double previousX = interpolate(previousVertices[shape], triangle, 0, barycentricScratch);
-                        double previousZ = interpolate(previousVertices[shape], triangle, 2, barycentricScratch);
-                        double currentX = interpolate(currentVertices[shape], triangle, 0, barycentricScratch);
-                        double currentY = interpolate(currentVertices[shape], triangle, 1, barycentricScratch);
-                        double currentZ = interpolate(currentVertices[shape], triangle, 2, barycentricScratch);
-                        double deltaX = currentX - previousX;
-                        double deltaY = currentY - previousY;
-                        double deltaZ = currentZ - previousZ;
-                        double deltaLength = squaredDistance(0D, 0D, 0D, deltaX, deltaY, deltaZ);
-                        double score = Math.abs(gap);
-                        if (deltaLength <= MAX_PLATFORM_DELTA * MAX_PLATFORM_DELTA && score < result.score)
-                            result.set(deltaX, deltaY, deltaZ, score);
-                    }
-                }
-
-                // Catch an entity landing on a deck that was not supporting it
-                // during the previous transform. This correction is vertical;
-                // subsequent ticks carry the entity with the material point.
-                if (!result.found && verticalMotion <= 0.1D
-                    && barycentricXZ(currentVertices[shape], triangle, x, z, barycentricScratch))
-                {
-                    double surfaceY = interpolate(currentVertices[shape], triangle, 1, barycentricScratch);
-                    double gap = foot - surfaceY;
-                    if (gap >= -LANDING_BELOW && gap <= SUPPORT_ABOVE)
-                        result.set(0D, -gap + 1.0E-4D, 0D, Math.abs(gap) + 0.5D);
-                }
-            }
-        }
-    }
-
-    static boolean barycentricXZ(double[] points, int[] triangle, double x, double z, double[] output)
-    {
-        int a = triangle[0] * 3;
-        int b = triangle[1] * 3;
-        int c = triangle[2] * 3;
-        double ax = points[a];
-        double az = points[a + 2];
-        double bx = points[b];
-        double bz = points[b + 2];
-        double cx = points[c];
-        double cz = points[c + 2];
-        double denominator = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz);
-        if (!Double.isFinite(denominator) || Math.abs(denominator) < GEOMETRY_EPSILON)
-            return false;
-        double aWeight = ((bz - cz) * (x - cx) + (cx - bx) * (z - cz)) / denominator;
-        double bWeight = ((cz - az) * (x - cx) + (ax - cx) * (z - cz)) / denominator;
-        double cWeight = 1D - aWeight - bWeight;
-        if (aWeight < -GEOMETRY_EPSILON || bWeight < -GEOMETRY_EPSILON || cWeight < -GEOMETRY_EPSILON
-            || aWeight > 1D + GEOMETRY_EPSILON || bWeight > 1D + GEOMETRY_EPSILON
-            || cWeight > 1D + GEOMETRY_EPSILON)
-            return false;
-        output[0] = aWeight;
-        output[1] = bWeight;
-        output[2] = cWeight;
-        return true;
-    }
-
-    private static double interpolate(double[] points, int[] triangle, int axis, double[] weights)
-    {
-        return points[triangle[0] * 3 + axis] * weights[0]
-            + points[triangle[1] * 3 + axis] * weights[1]
-            + points[triangle[2] * 3 + axis] * weights[2];
-    }
-
-    private static double normalY(double[] points, int[] triangle)
-    {
-        int a = triangle[0] * 3;
-        int b = triangle[1] * 3;
-        int c = triangle[2] * 3;
-        double abX = points[b] - points[a];
-        double abY = points[b + 1] - points[a + 1];
-        double abZ = points[b + 2] - points[a + 2];
-        double acX = points[c] - points[a];
-        double acY = points[c + 1] - points[a + 1];
-        double acZ = points[c + 2] - points[a + 2];
-        double normalX = abY * acZ - abZ * acY;
-        double normalY = abZ * acX - abX * acZ;
-        double normalZ = abX * acY - abY * acX;
-        double length = Math.sqrt(normalX * normalX + normalY * normalY + normalZ * normalZ);
-        return length < GEOMETRY_EPSILON ? 0D : normalY / length;
-    }
-
-    private static void transform(DriveableCollisionProfile.Shape shape, double[] output, Pose pose,
-                                  float turretYawDegrees, float turretPitchDegrees,
-                                  double pivotX, double pivotY, double pivotZ,
-                                  double offsetX, double offsetY, double offsetZ)
-    {
-        double yaw = turretYawDegrees * Math.PI / 180D;
-        double pitch = turretPitchDegrees * Math.PI / 180D;
-        double yawCos = Math.cos(yaw);
-        double yawSin = Math.sin(yaw);
-        double pitchCos = Math.cos(pitch);
-        double pitchSin = Math.sin(pitch);
-        double rotatedOffsetX = offsetX * yawCos + offsetZ * yawSin;
-        double rotatedOffsetZ = -offsetX * yawSin + offsetZ * yawCos;
-        double[] source = shape.coordinates();
-        for (int vertex = 0; vertex < 8; vertex++)
-        {
-            int point = vertex * 3;
-            double localX = source[point];
-            double localY = source[point + 1];
-            double localZ = source[point + 2];
-            if (shape.isTurret())
-            {
-                double relativeX = localX - pivotX;
-                double relativeY = localY - pivotY;
-                double relativeZ = localZ - pivotZ;
-                double pitchedX = relativeX * pitchCos + relativeY * pitchSin;
-                double pitchedY = -relativeX * pitchSin + relativeY * pitchCos;
-                localX = pitchedX * yawCos + relativeZ * yawSin + pivotX + rotatedOffsetX;
-                localY = pitchedY + pivotY + offsetY;
-                localZ = -pitchedX * yawSin + relativeZ * yawCos + pivotZ + rotatedOffsetZ;
-            }
-            pose.toWorld(localX, localY, localZ, output, point);
-        }
-    }
-
-    private static void updateBounds(double[] points, double[] bounds)
-    {
-        bounds[0] = bounds[1] = bounds[2] = Double.POSITIVE_INFINITY;
-        bounds[3] = bounds[4] = bounds[5] = Double.NEGATIVE_INFINITY;
-        for (int vertex = 0; vertex < 8; vertex++)
-        {
-            int point = vertex * 3;
-            bounds[0] = Math.min(bounds[0], points[point]);
-            bounds[1] = Math.min(bounds[1], points[point + 1]);
-            bounds[2] = Math.min(bounds[2], points[point + 2]);
-            bounds[3] = Math.max(bounds[3], points[point]);
-            bounds[4] = Math.max(bounds[4], points[point + 1]);
-            bounds[5] = Math.max(bounds[5], points[point + 2]);
-        }
-    }
-
-    private static boolean intersects(AABB box, double[] bounds)
-    {
-        return box.maxX >= bounds[0] && box.minX <= bounds[3]
-            && box.maxY >= bounds[1] && box.minY <= bounds[4]
-            && box.maxZ >= bounds[2] && box.minZ <= bounds[5];
-    }
-
     private static double squaredDistance(double ax, double ay, double az, double bx, double by, double bz)
     {
         double x = ax - bx;
         double y = ay - by;
         double z = az - bz;
         return x * x + y * y + z * z;
-    }
-
-    private static final class SupportResult
-    {
-        private boolean found;
-        private double deltaX;
-        private double deltaY;
-        private double deltaZ;
-        private double score;
-
-        private void reset()
-        {
-            found = false;
-            deltaX = deltaY = deltaZ = 0D;
-            score = Double.POSITIVE_INFINITY;
-        }
-
-        private void set(double x, double y, double z, double score)
-        {
-            found = true;
-            deltaX = x;
-            deltaY = y;
-            deltaZ = z;
-            this.score = score;
-        }
-    }
-
-    private static final class Pose
-    {
-        private double x;
-        private double y;
-        private double z;
-        private double forwardX;
-        private double forwardY;
-        private double forwardZ;
-        private double upX;
-        private double upY;
-        private double upZ;
-        private double rightX;
-        private double rightY;
-        private double rightZ;
-
-        private void set(double x, double y, double z, float yawDegrees, float pitchDegrees, float rollDegrees)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            double yaw = yawDegrees * Math.PI / 180D;
-            double pitch = pitchDegrees * Math.PI / 180D;
-            double roll = rollDegrees * Math.PI / 180D;
-            double sinYaw = Math.sin(yaw);
-            double cosYaw = Math.cos(yaw);
-            double sinPitch = Math.sin(pitch);
-            double cosPitch = Math.cos(pitch);
-            double sinRoll = Math.sin(roll);
-            double cosRoll = Math.cos(roll);
-
-            forwardX = -sinYaw * cosPitch;
-            forwardY = -sinPitch;
-            forwardZ = cosYaw * cosPitch;
-            double horizontalRightX = cosYaw;
-            double horizontalRightZ = sinYaw;
-            double unrolledUpX = -sinPitch * sinYaw;
-            double unrolledUpY = cosPitch;
-            double unrolledUpZ = sinPitch * cosYaw;
-            rightX = horizontalRightX * cosRoll + unrolledUpX * sinRoll;
-            rightY = unrolledUpY * sinRoll;
-            rightZ = horizontalRightZ * cosRoll + unrolledUpZ * sinRoll;
-            upX = unrolledUpX * cosRoll - horizontalRightX * sinRoll;
-            upY = unrolledUpY * cosRoll;
-            upZ = unrolledUpZ * cosRoll - horizontalRightZ * sinRoll;
-        }
-
-        private void copyFrom(Pose source)
-        {
-            x = source.x;
-            y = source.y;
-            z = source.z;
-            forwardX = source.forwardX;
-            forwardY = source.forwardY;
-            forwardZ = source.forwardZ;
-            upX = source.upX;
-            upY = source.upY;
-            upZ = source.upZ;
-            rightX = source.rightX;
-            rightY = source.rightY;
-            rightZ = source.rightZ;
-        }
-
-        private void toWorld(double localX, double localY, double localZ, double[] output, int offset)
-        {
-            output[offset] = x + forwardX * localX + upX * localY + rightX * localZ;
-            output[offset + 1] = y + forwardY * localX + upY * localY + rightY * localZ;
-            output[offset + 2] = z + forwardZ * localX + upZ * localY + rightZ * localZ;
-        }
     }
 }

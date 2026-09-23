@@ -1,0 +1,16 @@
+// Identity
+Name Quad Chassis Frame
+ShortName SMP_Part_Chassis_Quad
+
+// Model and Rendering
+Icon Icon_SMP_Part_Chassis_Quad
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Steel S stick
+S  
+MMM
+ M 
+RecipeOutput 1
+Category Chassis
+PartBoxRecipe
+StackSize 64

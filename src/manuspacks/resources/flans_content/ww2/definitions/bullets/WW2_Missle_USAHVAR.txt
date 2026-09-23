@@ -1,0 +1,48 @@
+// Identity
+Name High Velocity Aircraft Rocket
+ShortName WW2_Missle_USAHVAR
+
+// Model and Rendering
+Model Manus_WW2.Misc.WW2_Misc_HVAR_1
+Texture Skin_WW2_Misc_HVAR
+Colour 255 255 255
+Icon Icon_WW2_Misc_HVAR
+
+// Recipe and Inventory
+MaxStackSize 4
+RoundsPerItem 1
+RecipeOutput 2
+Recipe M SMP_Part_Misc_Ammo_MissileBody G gunpowder
+ M 
+ G 
+ M 
+
+// Behaviour
+FallSpeed 0
+ExplodeOnImpact True
+Fuse 0
+BreaksGlass True
+HitBoxSize 0.1
+WeaponType Missile
+Penetrates False
+LockOnToDriveables False
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 20.0
+
+// Ballistics and Damage
+DamageVsLiving 3000
+DamageVsVehicles 3000
+Explosion 4
+Fire 0
+Mass 62600
+MuzzleVelocity 396
+ExplosiveMassTNTKg 4.5
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType smoke

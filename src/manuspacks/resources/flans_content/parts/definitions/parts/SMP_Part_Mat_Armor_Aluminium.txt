@@ -1,0 +1,16 @@
+// Identity
+Name Aluminium Armorplate
+ShortName SMP_Part_Mat_Armor_Aluminium
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Armor_Aluminium
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Aluminium P SMP_Part_Mat_Plate_Aluminium
+   
+PPP
+MMM
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

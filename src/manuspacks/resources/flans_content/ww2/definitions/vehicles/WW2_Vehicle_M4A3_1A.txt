@@ -1,0 +1,91 @@
+// Identity
+Name M4A3 Sherman
+ShortName WW2_Vehicle_M4A3_1A
+
+// Model and Rendering
+Model Manus_WW2.Vehicle.WW2_Vehicle_M4A3_1
+Icon Icon_WW2_Vehicle_M4A3_1A
+Texture Skin_WW2_Vehicle_M4A3_1A
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 5
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 10 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 16 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 green
+AllowAllAmmo False
+AddAmmo WW2_Shell_USA76mmAP
+AddAmmo WW2_Shell_USA76mmHE
+AddAmmo WW2_Shell_USA76mmM93HVAP
+
+// Movement and Physics
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+Tank true
+RealMassKg 30300
+RealEnginePowerHp 450
+RealMaxSpeedKmh 42
+DriveType TRACKED
+RealMaxReverseSpeedKmh 5
+
+// Weapons
+AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A
+BarrelPosition 0 35 0
+ShellDelay 110
+ShootDelay 5
+GunOrigin 1 49 18 10
+ShootDelayPrimarySeconds 6
+ReadWeaponsFromGunTypes true
+
+// Protection
+IsExplosionWhenDestroyed true
+ArmorFrontMm 51
+ArmorSideMm 38
+ArmorRearMm 38
+ArmorTopMm 19
+ArmorBottomMm 13
+TurretArmorFrontMm 76
+TurretArmorSideMm 51
+TurretArmorRearMm 51
+TurretArmorTopMm 25
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -35 -8 -25
+WheelPosition 1 -35 -8 25
+WheelPosition 2 42 -8 25
+WheelPosition 3 42 -8 -25
+Driver 0 35 0 -360 360 -10 20
+RotatedDriverOffset -8 0 8
+Passengers 1
+Passenger 1 26 15 14 core -30 30 -10 10 WW2_MG_BrowningM1919_1A FrontMG
+SetupPart turret 450 -28 29 -20 47 15 40
+SetupPart core 550 -53 -4 -16 104 32 32
+SetupPart leftTrack 250 -53 -10 17 106 23 9
+SetupPart rightTrack 250 -53 -10 -26 106 23 9
+BulletDetection 7
+CameraDistance 7.5
+
+// Optics
+hasScope true
+Gunsight manus_m4a3
+gunsightZoom 4
+
+// Sounds
+StartSound tankidle2
+StartSoundLength 41
+EngineSound engine_mt_m4a3
+EngineSoundLength 39
+ShootSoundPrimary shoot_76mmus
+ShootSoundSecondary 30calshoot

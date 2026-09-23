@@ -1,5 +1,8 @@
+// Identity
 Name Sniper
 ShortName CriminalSniper
+
+// Items
 AddItem r700+flanMWSilencer
 AddItem usp+flanMWSilencer
 AddItem claymore 3

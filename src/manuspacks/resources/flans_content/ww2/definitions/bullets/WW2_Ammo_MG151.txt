@@ -1,0 +1,39 @@
+// Identity
+Name German 20mm Ammo for Mg 151 - 250 Bullet Box
+ShortName WW2_Ammo_MG151
+description Amunition for MG 151/20
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_MG151
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 250
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 80
+DamageVsVehicles 80
+DamageVsPlanes 10
+Explosion 0
+Fire 0
+Mass 120.0
+ExplosiveMassTNTg 10.8
+PenetrationAt100m 24
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType smoke

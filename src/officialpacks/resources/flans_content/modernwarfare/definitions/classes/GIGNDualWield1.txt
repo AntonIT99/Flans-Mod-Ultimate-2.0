@@ -1,5 +1,8 @@
+// Identity
 Name Gunslinger
 ShortName gignDualWield1
+
+// Items
 AddItem mp5k
 AddItem mp5k
 AddItem m67 2

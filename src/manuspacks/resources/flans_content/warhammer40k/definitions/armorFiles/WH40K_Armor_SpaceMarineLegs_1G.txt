@@ -1,0 +1,20 @@
+﻿// Identity
+Name Dark Angles Space Marine Legs
+ShortName WH40K_Armor_SpaceMarineLegs_1G
+
+// Model and Rendering
+Model Manus_WH40K.Armor.WH40K_Armor_SpaceMarineLegs_1
+ModelScale 0.25
+Icon Icon_WH40K_Armor_SpaceMarineLegs_1G
+ArmourTexture Skin_WH40K_Armor_SpaceMarine_1G
+
+// Recipe and Inventory
+Type Legs
+
+// Protection
+Defence 0.20
+BulletDefence 0.19
+PenetrationResistance 1.56
+ArmorPoints 7
+Toughness 3
+MoveSpeedModifier 0.95

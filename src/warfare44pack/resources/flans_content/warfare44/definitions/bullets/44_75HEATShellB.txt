@@ -1,0 +1,52 @@
+// Identity
+Name 75mm Gr. 38 Hl/B HEAT (KwK 40)
+ShortName 44_75HEATShellB
+Description Shaped-charge shell for the 7.5 cm KwK 40, StuK 40 and PaK 40
+
+// Rendering
+Icon 44_mediumheshell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 3
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 450
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 80
+BreaksGlass True
+
+// Damage
+Mass 4400
+Damage 1
+DamageVsLiving 75
+DamageVsVehicles 1300
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 872
+Explosion 4
+ExplodeOnImpact True
+Fuse 500
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 0
+ExplodeParticles 10
+FlareParticleCount 8
+DebrisParticleCount 4
+
+// Sounds
+HitSound

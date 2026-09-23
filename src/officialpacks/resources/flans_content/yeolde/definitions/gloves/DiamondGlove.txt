@@ -1,8 +1,12 @@
+// Identity
 Name Diamond Glove
 ShortName diamond_glove
+
+// Item and rendering
 Icon diamond_glove
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
+
+// Recipe
 Enchantability 8
 Durability 1024
 RecipeOutput 1

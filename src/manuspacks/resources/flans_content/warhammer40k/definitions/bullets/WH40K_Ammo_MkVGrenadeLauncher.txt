@@ -1,0 +1,38 @@
+﻿// Identity
+Name Mk V Grenade Launcher Ammo
+ShortName WH40K_Ammo_MkVGrenadeLauncher
+description Ammo for Mk V Grenade Launcher
+
+// Model and Rendering
+Model Manus_WH40K.Misc.WH40K_Misc_GunGrenade_1
+Icon Icon_WH40K_Grenade_MkVGrenadeLauncher
+Texture Skin_WH40K_Bullet_GunGrenade_1A
+
+// Recipe and Inventory
+RoundsPerItem 6
+MaxStackSize 3
+
+// Behaviour
+HitBoxSize 0.1
+FallSpeed 1.0
+BreaksGlass True
+Fuse 0
+ExplodeOnImpact True
+Penetrates False
+
+// Ballistics and Damage
+DamageVsLiving 20
+DamageVsPlayer 20
+DamageVsVehicles 10
+Fire 0
+Explosion 1
+Mass 230.0
+ExplosiveMassTNTg 32
+
+// Sounds
+HitSound bullet
+
+// Effects
+SmokeTrail False
+HasLight False
+FlakParticles 0

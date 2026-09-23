@@ -88,14 +88,6 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
         return findBestEngine(playerInventory, type, playerInventory.player.getAbilities().instabuild);
     }
 
-    public List<ItemStack> getDisplayRecipe(@NotNull DriveableType type)
-    {
-        PartType engine = getBestEngine(type);
-        if (engine == null)
-            engine = PartType.getDefaultEngine(type.getType());
-        return engine == null ? type.getDriveableRecipe() : getCompleteRecipe(type, engine);
-    }
-
     private static void craft(Player player, DriveableType type)
     {
         boolean creative = player.getAbilities().instabuild;
@@ -168,7 +160,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
         if (best != null)
             return best;
 
-        PartType fallback = PartType.getDefaultEngine(type.getType());
+        PartType fallback = PartType.getDefaultEngine(type.getType(), type.getContentPack(), type.getEngine());
         return creative && fallback != null && fallback.worksWith(type.getType()) ? fallback : null;
     }
 
@@ -183,7 +175,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
     @Override
     public boolean stillValid(@NotNull Player player)
     {
-        return access.evaluate((level, pos) -> level.getBlockState(pos).is(FlansMod.gunWorkbench.get())
+        return access.evaluate((level, pos) -> (level.getBlockState(pos).is(FlansMod.vehicleCraftingTable.get()) || level.getBlockState(pos).is(FlansMod.gunWorkbench.get()))
             && player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= MAX_DISTANCE_SQUARED, false);
     }
 

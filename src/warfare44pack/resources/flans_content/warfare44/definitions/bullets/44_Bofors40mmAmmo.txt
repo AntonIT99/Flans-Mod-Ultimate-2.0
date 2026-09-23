@@ -1,0 +1,56 @@
+// Identity
+Name Bofors 40mm Mag
+ShortName 44_Bofors40mmAmmo
+
+// Rendering
+Icon 44_Bofors40mmAmmo
+Model Bullet
+Texture defaultBullet
+Colour 255 255 255
+
+// Recipe and inventory
+Recipe I ingotIron G gunpowder M 44_Magazine T tnt
+ M 
+ T 
+ G 
+RecipeOutput 2
+MaxStackSize 2
+RoundsPerItem 35
+
+// Ammunition
+WeaponType Shell
+
+// Ballistics
+MuzzleVelocity 881
+FallSpeed 1.0
+HitBoxSize 10
+Penetrates False
+PenetrationAt100m 50
+BreaksGlass True
+
+// Damage
+Mass 900
+DamageVsLiving 30
+DamageVsVehicles 100
+DamageVsPlanes 165
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 62
+Explosion 0
+ExplodeOnImpact True
+Fuse 50
+
+// Guidance
+LockOnToDriveables False
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 20.0
+
+// Effects
+SmokeTrail True
+TrailParticleType smoke
+FlakParticles 5
+
+// Sounds
+HitSound bullet

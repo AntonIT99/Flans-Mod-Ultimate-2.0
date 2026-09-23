@@ -1,7 +1,13 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
+import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
+import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
+import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
+import com.flansmodultimate.common.guns.RemovedAmmo;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
@@ -25,23 +31,38 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @Getter
 @NoArgsConstructor
-public class AAGunType extends InfoType
+public class AAGunType extends InfoType implements IAmmoGroupUser, IAmmoOverrideUser
 {
     public static final int MAX_BARRELS = 16;
 
     /** The ammo types used by this gun */
     protected Set<String> ammo = new LinkedHashSet<>();
+    /**
+     * Ammo groups pulled in with "UseAmmoGroup". Every ammo item declaring "AddToAmmoGroup" with one of these
+     * names is usable in this gun, exactly as if it had been listed individually.
+     */
+    protected Set<String> ammoGroups = new LinkedHashSet<>();
+    /** Per-ammunition statistic overrides declared by this AA gun. */
+    @Getter
+    protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
+    /** Ammunition this weapon explicitly refuses; applied after every other ammunition source. */
+    @Getter
+    protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
     protected int reloadTime;
     protected float recoil = 5F;
     protected float bulletSpread;
     protected boolean readDispersion;
     protected float damage;
-    protected int shootDelay;
+    protected float shootDelay;
+    protected float roundsPerMin;
     protected int shootSoundLength;
     protected int numBullets = 1;
     protected int numBarrels = 1;
     protected boolean fireAlternately;
     protected int health;
+    protected Float realMassKg;
+    protected boolean useRealisticVehicleHealth;
+    protected boolean realisticVehicleHealthEnabled;
     protected int gunnerX;
     protected int gunnerY;
     protected int gunnerZ;
@@ -88,6 +109,7 @@ public class AAGunType extends InfoType
             readDispersion = true;
         }
         shootDelay = readValue("ShootDelay", shootDelay, file);
+        roundsPerMin = readValue("RoundsPerMin", roundsPerMin, file);
         shootSoundLength = readValue("SoundLength", shootSoundLength, file);
         shootSoundLength = readValue("ShootSoundLength", shootSoundLength, file);
         fireAlternately = readValue("FireAlternately", fireAlternately, file);
@@ -122,13 +144,42 @@ public class AAGunType extends InfoType
         gunSoundRange = readValue("GunSoundRange", gunSoundRange, file);
         reloadSoundRange = readValue("ReloadSoundRange", reloadSoundRange, file);
 
+        registerSoundTimer("ShootSoundLength", () -> shootSound, () -> shootSoundLength, length -> shootSoundLength = length);
+
         numBarrels = Math.max(1, Math.min(MAX_BARRELS, readValue("NumBarrels", numBarrels, file)));
         barrelX = new int[numBarrels];
         barrelY = new int[numBarrels];
         barrelZ = new int[numBarrels];
         readBarrels(file);
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
+        ShootableType.readAmmoGroups(file, ammoGroups);
+        ammoOverrides = readAmmoOverrides(file);
+        removedAmmo = RemovedAmmo.read(file);
         readGunnerPosition(file);
+        resolveRealisticHealth(file);
+    }
+
+    private void resolveRealisticHealth(TypeFile file)
+    {
+        RealWorldSpecReader.Result specResult = RealWorldSpecReader.read(file);
+        realMassKg = specResult.spec().massKg();
+        for (String warning : specResult.warnings())
+            logError(warning, file);
+
+        useRealisticVehicleHealth = readValue("UseRealisticVehicleHealth", false, file);
+        VehicleHealthScaler.SingleResult result = VehicleHealthScaler.resolveSingle(
+            useRealisticVehicleHealth, realMassKg, health, ModCommonConfig.realisticVehicleHealthScale());
+        for (String warning : result.warnings())
+            logError(warning, file);
+        realisticVehicleHealthEnabled = result.enabled();
+        if (result.enabled())
+            health = Math.max(1, Math.round(result.health()));
+    }
+
+    /** Mass outside pushes and collisions are weighed against: RealMassKg, else the configured AA gun fallback. */
+    public VehicleImpulsePhysics.ImpulseMass getImpulseMass()
+    {
+        return VehicleImpulsePhysics.resolveMass(realMassKg, null, ModCommonConfig.fallbackAAGunMassKg());
     }
 
     private void readBarrels(TypeFile file)
@@ -162,6 +213,19 @@ public class AAGunType extends InfoType
         return shareAmmo ? 1 : numBarrels;
     }
 
+    /**
+     * {@code RoundsPerMin} overrides the legacy tick delay, matching {@link GunType}.
+     *
+     * <p>A gun declaring neither key falls back to one tick, which is the cadence
+     * such a gun has always had: its delay of zero left it ready on every tick.
+     * Naming it keeps the firing loop, which charges this value back onto the
+     * cooldown, from being handed a delay of nothing.
+     */
+    public float getShootDelay()
+    {
+        return ShotCooldown.baseDelay(roundsPerMin, shootDelay, 1F);
+    }
+
     public float getGunSoundRange()
     {
         return gunSoundRange > 0 ? gunSoundRange : ModCommonConfig.get().gunFireSoundRange();
@@ -191,9 +255,14 @@ public class AAGunType extends InfoType
     {
         List<ShootableType> ammoInGunType = ShootableType.findAmmoTypes(ammo, contentPack);
         List<ShootableType> ammoFromAdditionalMapping = ShootableType.getAdditionalAmmoMapping().getOrDefault(originalShortName, List.of());
-        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size());
+        List<ShootableType> ammoFromGroups = ShootableType.findAmmoTypesInGroups(ammoGroups);
+        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size() + ammoFromGroups.size());
         ammoTypes.addAll(ammoInGunType);
         ammoTypes.addAll(ammoFromAdditionalMapping);
+        ammoFromGroups.stream().filter(ammoType -> !ammoTypes.contains(ammoType)).forEach(ammoTypes::add);
+        // RemoveAmmo is applied last so it overrides Ammo, AddAmmo and every ammo group.
+        if (!removedAmmo.isEmpty())
+            ammoTypes.removeIf(ammoType -> removedAmmo.removes(ammoType.getOriginalShortName()));
         return ammoTypes;
     }
 
@@ -201,7 +270,7 @@ public class AAGunType extends InfoType
     {
         if (!ammo.isEmpty())
             return ShootableType.findAmmoType(ammo.iterator().next(), contentPack);
-        return Optional.empty();
+        return getAmmoTypes().stream().findFirst();
     }
 
     public float getDamageForDisplay(ShootableType type)
@@ -214,7 +283,7 @@ public class AAGunType extends InfoType
         if (type.useKineticDamageSystem())
         {
             float bulletSpeed = (type instanceof BulletType bulletType) ? bulletType.getBulletSpeed(true) : 1F;
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(type.getMass()) * bulletSpeed * 20.0);
+            return ShootingHelper.getKineticDamage(type.getMass(), bulletSpeed);
         }
         else
             return type.getDamage().getDamageAgainstEntityClass(entityClass) * getDamage();

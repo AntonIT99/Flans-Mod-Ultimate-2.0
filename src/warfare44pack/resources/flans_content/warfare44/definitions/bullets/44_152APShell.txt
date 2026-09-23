@@ -1,0 +1,52 @@
+// Identity
+Name 152mm PB-35 APCBC-HE (M-10T)
+ShortName 44_152APShell
+Description Armour-piercing capped shell for the KV-2 152 mm M-10T
+
+// Rendering
+Icon 44_122apshell
+Model W44.W44ShellLarge
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 436
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 85
+BreaksGlass True
+
+// Damage
+Mass 51100
+Damage 1
+DamageVsLiving 175
+DamageVsVehicles 2250
+Fire 0
+
+// Explosion
+ExplosiveMassTNTKg 4.9
+Explosion 2
+ExplodeOnImpact True
+Fuse 200
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 0
+ExplodeParticles 9
+FlareParticleCount 12
+DebrisParticleCount 4
+
+// Sounds
+HitSound

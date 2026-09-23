@@ -32,6 +32,6 @@ public class ItemHolderItem extends BlockItem implements IFlanItem<ItemHolderTyp
     public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
-        tooltipComponents.add(Component.literal("Place items on display").withStyle(ChatFormatting.DARK_AQUA));
+        tooltipComponents.add(Component.translatable(TooltipKeys.ITEM_HOLDER).withStyle(ChatFormatting.DARK_AQUA));
     }
 }

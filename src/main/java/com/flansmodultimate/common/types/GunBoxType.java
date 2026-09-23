@@ -86,7 +86,7 @@ public class GunBoxType extends BlockType
             }
         }
 
-        if (key.equalsIgnoreCase("AddGun"))
+        if (key.equalsIgnoreCase("AddGun") || key.equalsIgnoreCase("AddType"))
         {
             try
             {
@@ -113,7 +113,7 @@ public class GunBoxType extends BlockType
             }
         }
 
-        if (key.equalsIgnoreCase("AddAmmo") || key.equalsIgnoreCase("AddAltAmmo") || key.equalsIgnoreCase("AddAlternateAmmo"))
+        if (key.equalsIgnoreCase("AddAmmo") || key.equalsIgnoreCase("AddAltType") || key.equalsIgnoreCase("AddAltAmmo") || key.equalsIgnoreCase("AddAlternateAmmo"))
         {
             try
             {
@@ -197,7 +197,7 @@ public class GunBoxType extends BlockType
 
     public ResourceLocation getGuiTexture()
     {
-        return loadGuiTextureLocation(guiTexturePath, FlansMod.gunBoxGuiTexture);
+        return loadGuiTextureLocation(guiTexturePath, FlansMod.TEXTURE_GUI_WEAPONBOX);
     }
 
     public static class GunBoxPage

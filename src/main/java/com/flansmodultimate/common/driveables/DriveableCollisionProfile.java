@@ -18,8 +18,6 @@ import java.util.Map;
  */
 public final class DriveableCollisionProfile
 {
-    /** Two triangles per face, in the legacy shaped-box corner order. */
-    static final int[][] TOP_TRIANGLES = {{2, 1, 0}, {3, 2, 0}};
     static final int[][] FACE_QUADS = {
         {0, 1, 2, 3}, // top
         {4, 7, 6, 5}, // bottom
@@ -102,7 +100,14 @@ public final class DriveableCollisionProfile
         return allFinite(points) ? new Shape(mesh.part(), points) : null;
     }
 
-    private static Shape compilePartBox(EnumDriveablePart part, CollisionBox box)
+    /** Package-visible for focused geometry tests. */
+    static DriveableCollisionProfile of(List<Shape> shapes)
+    {
+        return new DriveableCollisionProfile(shapes, false);
+    }
+
+    /** Package-visible for focused geometry tests. */
+    static Shape compilePartBox(EnumDriveablePart part, CollisionBox box)
     {
         if (box == null || box.getWidth() <= 0F || box.getHeight() <= 0F || box.getDepth() <= 0F)
             return null;
@@ -175,8 +180,8 @@ public final class DriveableCollisionProfile
         private Shape(EnumDriveablePart part, double[] vertices)
         {
             this.part = part == null ? EnumDriveablePart.CORE : part;
-            this.turret = isTurretPart(this.part);
-            this.barrel = this.part == EnumDriveablePart.BARREL;
+            this.turret = isTurretMountedPart(this.part);
+            this.barrel = isBarrelPart(this.part);
             this.vertices = vertices.clone();
 
             double localMinX = Double.POSITIVE_INFINITY;
@@ -233,12 +238,6 @@ public final class DriveableCollisionProfile
             return true;
         }
 
-        private static boolean isTurretPart(EnumDriveablePart part)
-        {
-            return part == EnumDriveablePart.TURRET || part == EnumDriveablePart.BARREL
-                || part.name().startsWith("TURRET_");
-        }
-
         double[] coordinates()
         {
             return vertices;
@@ -259,6 +258,18 @@ public final class DriveableCollisionProfile
         public double getMaxX() { return maxX; }
         public double getMaxY() { return maxY; }
         public double getMaxZ() { return maxZ; }
+    }
+
+    /** Shared turret classification for collision, projectile hits and armour precedence. */
+    public static boolean isTurretMountedPart(EnumDriveablePart part)
+    {
+        return EnumDriveablePart.isTurretMounted(part);
+    }
+
+    /** Damageable gun/barrel boxes follow both turret yaw and barrel pitch. */
+    public static boolean isBarrelPart(EnumDriveablePart part)
+    {
+        return part == EnumDriveablePart.BARREL;
     }
 
     /**

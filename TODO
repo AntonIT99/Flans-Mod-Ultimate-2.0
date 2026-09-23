@@ -1,21 +1,27 @@
 General:
-- Check translations in other languages
-- Fix gloves
+- Implement TaP Flan's Mod Features
 
-TODO Content Packs:
-- Fix G36C Model/Texture
-- Fix AK47 Paintjobs
-- Fix Scope Attachment Points in WW2 Improved Pack
-- Fix Barrel Attachment and Muzzle Flash
-- Remove Minigun Mode in WW2 Improved Pack
-- Add Idle Sound to Lightsabers
-- Set Penetration?
+Content Packs:
+- Create a skill and add particles, sounds, visual affects to content packs just like Warfare 44:
+visuals for shootables, harmonize particles and sounds for vehicles / planes
+- Fix shooting points on vehicles based on new debug commands
+Official WW2
+- Add muzzle flashes just like w44
+- Fix Scope Attachment Points -> to check
+- Fix Barrel Attachment and Muzzle Flash -> to check
+Manus:
+- Check deployable guns
 
 Feature Ideas:
+- Button in UI for creative mode to load ammo automatically into driveable
+- Continue improving rendering performance
+- Muzzle Flashes for deployed guns
+- Centralize all the gravity effects in a usable API for other mods. Also provide a command to test other gravities.
+- Banners
 - Block with GUI to convert bullets to magazines and vice versa + Mapping for bullets and magazines
-- Render Attachment Item in 3D?
-- Assets/Sounds Priority list?
+- Render Attachment Items in 3D
+- Assets/Sounds Priority list
 - Switching Fire Mode Sound
 - Sword blocking (GunItem)
 - Blade Activation/Deactivation with right click (GunItem)
-- Dynamic activation of Aiming Pose
+- Dynamic activation of Aiming Pose or in game configurable option

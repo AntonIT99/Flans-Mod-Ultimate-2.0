@@ -1,0 +1,13 @@
+// Identity
+Name Steel Ingot
+ShortName SMP_Part_Mat_Block_Steel
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Block_Steel
+
+// Recipe and Inventory
+RecipeOutput 1
+SmeltableFrom ingotIron
+Category Misc
+PartBoxRecipe
+StackSize 64

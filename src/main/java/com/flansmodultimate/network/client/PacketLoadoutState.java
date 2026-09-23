@@ -43,9 +43,12 @@ public final class PacketLoadoutState implements IClientPacket
 
     public record Entry(LoadoutSlot slot, String typeId, String name, int unlockRank, ItemStack preview) {}
     public record BoxView(UUID id, String boxId, String name, boolean opened, String rewardKey, ItemStack preview) {}
+    /** One kind of reward box the pool offers, listed even when the player holds none of it. */
+    public record BoxTypeView(String boxId, String name, ItemStack preview, int unopened) {}
     public record RewardView(String key, String typeId, String name, int rarity) {}
 
     private OpenScreen openScreen = OpenScreen.NONE;
+    private String motd = "";
     private String poolId = "";
     private String poolName = "";
     private int rank;
@@ -58,6 +61,7 @@ public final class PacketLoadoutState implements IClientPacket
     private List<Integer> loadoutUnlockRanks = List.of();
     private List<Entry> entries = List.of();
     private List<BoxView> boxes = List.of();
+    private List<BoxTypeView> boxTypes = List.of();
     private List<RewardView> rewards = List.of();
 
     public static PacketLoadoutState create(TeamsManager manager, ServerPlayer player, OpenScreen screen, int editLoadout, String revealedReward)
@@ -66,10 +70,11 @@ public final class PacketLoadoutState implements IClientPacket
         packet.openScreen = screen;
         packet.editLoadout = Math.max(0, Math.min(LoadoutPool.LOADOUT_COUNT - 1, editLoadout));
         packet.revealedReward = revealedReward == null ? "" : revealedReward;
+        packet.motd = manager.getMotd();
         LoadoutPool pool = manager.getCurrentLoadoutPool().orElse(null);
         if (pool == null) return packet;
         PlayerStats stats = manager.getStats(player);
-        packet.poolId = pool.getOriginalShortName();
+        packet.poolId = pool.getShortName();
         packet.poolName = pool.getName();
         packet.rank = stats.getRank();
         packet.experience = stats.getExperience();
@@ -94,6 +99,21 @@ public final class PacketLoadoutState implements IClientPacket
             return new BoxView(instance.id(), instance.boxId(), box == null ? instance.boxId() : box.getName(), instance.isOpened(), instance.rewardKey(),
                 box == null ? ItemStack.EMPTY : ModUtils.getItemStack(box).orElse(ItemStack.EMPTY));
         }).toList();
+        // Every box type the pool advertises is listed, in the order AddRewardBox
+        // declared them, so a player can see what is on offer before owning any.
+        // Boxes held from another pool or from a command are appended after them.
+        List<String> boxTypeIds = new ArrayList<>(pool.getRewardBoxIds());
+        for (RewardBoxInstance instance : stats.getRewardBoxes())
+            if (!instance.isOpened() && !boxTypeIds.contains(instance.boxId()))
+                boxTypeIds.add(instance.boxId());
+        packet.boxTypes = boxTypeIds.stream().map(boxId -> {
+            RewardBox box = RewardBox.get(boxId);
+            long unopened = stats.getRewardBoxes().stream()
+                .filter(instance -> !instance.isOpened() && boxId.equals(instance.boxId())).count();
+            return new BoxTypeView(boxId, box == null ? boxId : box.getName(),
+                box == null ? ItemStack.EMPTY : ModUtils.getItemStack(box).orElse(ItemStack.EMPTY), (int)unopened);
+        }).toList();
+
         packet.rewards = stats.getRewardBoxes().stream().filter(RewardBoxInstance::isOpened).map(instance -> RewardBox.findReward(instance.rewardKey()))
             .filter(java.util.Objects::nonNull).distinct().map(reward ->
                 new RewardView(reward.key(), reward.typeId(), reward.paintName(), reward.rarity().ordinal())).toList();
@@ -104,6 +124,7 @@ public final class PacketLoadoutState implements IClientPacket
     public void encodeInto(RegistryFriendlyByteBuf data)
     {
         data.writeByte(openScreen.ordinal());
+        data.writeUtf(motd, 256);
         data.writeUtf(poolId); data.writeUtf(poolName);
         data.writeVarInt(rank); data.writeVarInt(experience); data.writeVarInt(experienceForNextRank);
         data.writeVarInt(selectedLoadout); data.writeVarInt(editLoadout); data.writeUtf(revealedReward);
@@ -133,6 +154,7 @@ public final class PacketLoadoutState implements IClientPacket
     {
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
+        motd = data.readUtf(256);
         poolId = data.readUtf(); poolName = data.readUtf();
         rank = data.readVarInt(); experience = data.readVarInt(); experienceForNextRank = data.readVarInt();
         selectedLoadout = data.readVarInt(); editLoadout = data.readVarInt(); revealedReward = data.readUtf();

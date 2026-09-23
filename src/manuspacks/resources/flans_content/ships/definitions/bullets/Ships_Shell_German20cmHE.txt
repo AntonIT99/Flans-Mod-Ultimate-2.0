@@ -1,0 +1,44 @@
+// Identity
+Name German 20cmmm HE Shell
+ShortName Ships_Shell_German20cmHE
+description Amunition for 10cm Guns
+
+// Model and Rendering
+Icon Icon_Ships_Shell_German20cmHE
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse P SMP_Part_Mat_Plate_Steel
+ F 
+GGG
+SPS
+RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 10
+
+// Behaviour
+Bomb False
+Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 2.0
+
+// Ballistics and Damage
+Damage 600
+DamageVsVehicles 600
+Explosion 7
+Fire 0
+Mass 122000.0
+MuzzleVelocity 925.0
+ExplosiveMassTNTKg 8.9
+PenetrationAt100m 61
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 5
+SmokeTrail True

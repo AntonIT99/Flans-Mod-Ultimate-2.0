@@ -1,0 +1,40 @@
+// Identity
+Name US Cal.50 Ammo for Browning MG53-2 - 400 Bullet Box
+ShortName WW2_Ammo_MG532
+description Amunition for Browning M53-2
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_MG532
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 400
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 14
+DamageVsVehicles 1
+DamageVsPlanes 5
+Explosion 0
+Fire 0
+Mass 42.0
+PenetrationAt100m 20
+
+// Sounds
+HitSound LargeImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true
+
+// Effects
+FlakParticles 0
+SmokeTrail False

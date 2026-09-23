@@ -1,0 +1,43 @@
+﻿// Identity
+Name Flakvierling-38 20mm AA Gun
+ShortName WW2_AAGun_Flak20mmVierling_1A
+
+// Model and Rendering
+Model Manus_WW2.AAGun.WW2_AAGun_Flak20mmVierling_1
+Icon Icon_WW2_AAGun_Flak20mmVierling_1A
+Texture Skin_WW2_AAGun_Flak20mmVierling_1A
+
+// Recipe and Inventory
+Recipe B SMP_Part_Misc_Barrel_AAGun M SMP_Part_Mat_Block_Steel L SMP_Part_Misc_Seat_Car P SMP_Part_Misc_Part_Mechanical A SMP_Part_Mat_Armor_Steel
+  B
+LPA
+MMM
+RecipeOutput 1
+Ammo WW2_Shell_German20mmAA
+
+// Movement and Physics
+RealMassKg 1518.0
+
+// Weapons
+GunnerPos 21 30 0
+BottomViewLimit 0
+TopViewLimit 75
+NumBarrels 4
+Barrel 0 45 18 6
+Barrel 1 45 22 6
+Barrel 2 45 22 -6
+Barrel 3 45 18 -6
+Damage 10
+FireAlternately True
+Recoil 5
+ReloadTime 100
+RoundsPerMin 800.0
+Dispersion 0.35
+
+// Protection
+Health 100
+UseRealisticVehicleHealth true
+
+// Sounds
+ReloadSound mp44Reload
+ShootSound shoot_20mmaade

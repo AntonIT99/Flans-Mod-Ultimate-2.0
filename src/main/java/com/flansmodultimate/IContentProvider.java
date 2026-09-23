@@ -46,6 +46,12 @@ public interface IContentProvider
         return false;
     }
 
+    /** True for content bundled by the official-packs companion mod. */
+    default boolean isOfficial()
+    {
+        return false;
+    }
+
     /**
      * A packaged module may share one merged asset tree across several logical content providers.
      */
@@ -108,6 +114,16 @@ public interface IContentProvider
             return (fs != null) ? fs.getPath("/data").resolve(FlansMod.FLANSMOD_ID) : getExtractedPath().resolve("data").resolve(FlansMod.FLANSMOD_ID);
         }
         return getPath().resolve("data").resolve(FlansMod.FLANSMOD_ID);
+    }
+
+    /**
+     * Identifies the class file tree this provider loads its model classes from. Providers sharing one tree,
+     * such as several logical packs packaged in the same mod, also share their loaded model classes. Providers
+     * with different trees stay isolated from each other and may use the same model class names.
+     */
+    default String getModelSourceId()
+    {
+        return getPath().toString();
     }
 
     default Path getModelPath(String modelFullClassName, @Nullable FileSystem fs)

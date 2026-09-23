@@ -33,7 +33,7 @@ public class FmFlameParticle extends ParticleBase
         
         setSpriteFromAge(sprites);
 
-        level.addParticle(FlansMod.fmSmokeParticle.get(), x, y, z,0.0D, 0.0D, 0.0D);
+        ParticleHelper.spawnSubParticle(FlansMod.fmSmokeParticle.get(), x, y, z);
     }
 
     @Override

@@ -1,0 +1,21 @@
+// Identity
+Name Rex's Clone Helmet
+ShortName rexcloneHelmet
+
+// Item and rendering
+Icon rexclonehelmet
+Colour 255 255 255
+ArmourTexture rexhelmet
+Model wolffstarwars.CloneHelmetRex
+Overlay clonehelmet
+
+// Protection
+Type Helmet
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 1.90
+ArmorPoints 2
+Toughness 1
+
+// Effects
+SmokeProtection True

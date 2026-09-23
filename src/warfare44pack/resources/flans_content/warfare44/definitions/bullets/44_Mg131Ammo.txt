@@ -1,0 +1,43 @@
+// Identity
+Name MG-131 Magazine
+ShortName 44_Mg131Ammo
+
+// Rendering
+Icon 44_Mg131Ammo
+Model W44.W44Bullet
+Texture Skin44_W44Bullet_Tracer_White
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 4
+RoundsPerItem 100
+
+// Ammunition
+AddRound Pzgr.L'Spur 1 38 0 750 30
+AddRound Sprgr. 1 34 3 710 0
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates True
+BreaksGlass True
+
+// Damage
+Damage 1
+DamageVsLiving 22
+DamageVsVehicles 1
+DamageVsPlanes 40
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 0
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+FlakParticles 0
+
+// Sounds
+HitSound bullet

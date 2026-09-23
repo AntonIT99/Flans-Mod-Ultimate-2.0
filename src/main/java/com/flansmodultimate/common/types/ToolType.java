@@ -58,6 +58,7 @@ public class ToolType extends InfoType
         healAmount = readValue("RepairAmount", healAmount, file);
         toolLife = readValue("ToolLife", toolLife, file);
         toolLife = readValue("ToolUes", toolLife, file);
+        toolLife = readValue("ToolUses", toolLife, file);
         destroyOnEmpty = readValue("DestroyOnEmpty", destroyOnEmpty, file);
         foodness = readValue("Food", foodness, file);
         foodness = readValue("Foodness", foodness, file);

@@ -1,0 +1,36 @@
+// Identity
+Name Powerpack for Lasgun and Laspistol
+ShortName WH40K_Ammo_PowerpackLasgun
+description Amunition for LasGun and LasPistol
+
+// Model and Rendering
+Icon Icon_WH40K_Ammo_PowerpackLasgun
+Model Manus_WH40K.Misc.WH40K_Misc_LaserSmall_1
+Texture Skin_WH40K_Bullet_Laser_1C
+
+// Recipe and Inventory
+MaxStackSize 3
+RoundsPerItem 100
+
+// Behaviour
+ExplodeOnImpact False
+FallSpeed 0.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 10
+DamageVsVehicles 3
+Explosion 0
+Fire 0
+SetEntitiesOnFire False
+
+// Sounds
+HitSound bullet
+
+// Effects
+HasLight True
+FlakParticles 0
+SmokeTrail False

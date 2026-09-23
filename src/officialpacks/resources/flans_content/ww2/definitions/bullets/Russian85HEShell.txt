@@ -1,0 +1,41 @@
+// Identity
+Name Soviet 85 mm O-365K HE-Frag (ZiS-S-53)
+ShortName Russian85HEShell
+Description High-explosive fragmentation ammunition for the 85 mm D-5 and ZiS-S-53 tank guns
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell85rHE
+HasLight True
+
+// Ammunition
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Mass 9620
+MuzzleVelocity 785
+FallSpeed 1
+PenetrationAt100m 18
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+ExplosiveMassTNTg 780
+FragType HE_SHELL
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+
+// Sounds and particles
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 6

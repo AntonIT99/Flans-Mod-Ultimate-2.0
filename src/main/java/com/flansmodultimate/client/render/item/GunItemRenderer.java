@@ -13,6 +13,7 @@ import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -103,9 +104,7 @@ public final class GunItemRenderer
      * item rendering, this deliberately applies no player, GUI or dropped-item
      * transform, while retaining paintjobs, attachments and animated model parts.
      */
-    public static void renderEmbedded(ModelGun model, ItemStack stack, GunAnimations animations,
-                                      PoseStack poseStack, MultiBufferSource buffer,
-                                      int packedLight, int packedOverlay)
+    public static void renderEmbedded(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         if (model == null || stack.isEmpty() || !(stack.getItem() instanceof GunItem))
             return;
@@ -117,9 +116,7 @@ public final class GunItemRenderer
         poseStack.popPose();
     }
 
-    private static void renderGunContents(ModelGun model, ItemStack stack, GunAnimations animations,
-                                          @Nullable ItemDisplayContext ctx, PoseStack poseStack,
-                                          MultiBufferSource buffer, int packedLight, int packedOverlay)
+    private static void renderGunContents(ModelGun model, ItemStack stack, GunAnimations animations, @Nullable ItemDisplayContext ctx, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
         int color = model.getType().getColour();
         float red = (color >> 16 & 255) / 255F;
@@ -160,11 +157,20 @@ public final class GunItemRenderer
         renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
         boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
-        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+        var renderPasses = ModelCache.getRenderPasses(model);
+        for (int passIndex = 0; passIndex < renderPasses.size(); passIndex++)
         {
-            renderGunAndComponents(model, stack, animations, numRounds, poseStack,
-                buffer.getBuffer(renderPass.getRenderType(gunTexture, translucent, cull)),
-                packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+            EnumRenderPass renderPass = renderPasses.get(passIndex);
+            var consumer = GpuModelCache.begin(buffer, renderPass, gunTexture, translucent, cull,
+                ctx != ItemDisplayContext.GUI && !stack.hasFoil());
+            try
+            {
+                renderGunAndComponents(model, stack, animations, numRounds, poseStack, consumer, packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+            }
+            finally
+            {
+                GpuModelCache.end(consumer);
+            }
         }
         if (firstPersonRight)
             renderAnimArm(model, animations, poseStack, buffer, packedLight);
@@ -1065,6 +1071,9 @@ public final class GunItemRenderer
 
     private static void renderCasingEjection(ModelGun model, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
+        if (!ModClientConfig.get().showCasingEjections)
+            return;
+
         ModelCasing casing = ModelCache.getOrLoadCasingModel(model.getType());
         if (casing != null)
         {
@@ -1092,7 +1101,7 @@ public final class GunItemRenderer
         AttachmentType barrelAttachment = model.getType().getBarrel(stack);
         boolean isMuzzleFlashEnabled = StringUtils.isBlank(model.getType().getFlashModelClassName())
                 && (barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash())
-                && (StringUtils.isNotBlank(model.getType().getMuzzleFlashModelClassName()) || model.getClass().getName().contains("com.flansmod.modernweapons.client.model"));
+                && (StringUtils.isNotBlank(model.getType().getMuzzleFlashModelClassName()));
 
         if (isMuzzleFlashEnabled && animations.getMuzzleFlashTime() > 0 && !model.getType().getSecondaryFire(stack))
         {

@@ -37,7 +37,18 @@ public final class RewardBox extends InfoType
     {
         for (Paintjob.EnumPaintjobRarity rarity : Paintjob.EnumPaintjobRarity.values()) rarityWeights.put(rarity, 1F);
         super.load(file);
-        if (StringUtils.isNotBlank(originalShortName)) BOXES.put(normalize(originalShortName), this);
+    }
+
+    /**
+     * Reward boxes have an item, so the item registry has already made their shortname unique across
+     * content packs. Keying on that name rather than on the shortname the pack wrote keeps two packs
+     * that picked the same name from replacing each other's box.
+     */
+    @Override
+    public void onItemRegistration(String registeredItemId)
+    {
+        super.onItemRegistration(registeredItemId);
+        BOXES.put(normalize(registeredItemId), this);
     }
 
     @Override

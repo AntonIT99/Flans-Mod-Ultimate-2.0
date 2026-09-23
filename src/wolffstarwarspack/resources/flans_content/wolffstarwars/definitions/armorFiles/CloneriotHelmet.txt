@@ -1,0 +1,21 @@
+// Identity
+Name Clonetrooper Helmet
+ShortName cloneriotHelmet
+
+// Item and rendering
+Icon cloneriothelmet
+Colour 255 255 255
+ArmourTexture clonetrooperriothelmet
+Model wolffstarwars.CloneHelmetRiot
+Overlay clonehelmet
+
+// Protection
+Type Helmet
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 1.90
+ArmorPoints 2
+Toughness 1
+
+// Effects
+SmokeProtection True

@@ -1,25 +1,38 @@
 package com.flansmodultimate.event.handler;
+import org.jetbrains.annotations.Nullable;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.CommonConfigMirror;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.ReloadPreferencesSync;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.client.debug.DriveableHitboxRenderer;
+import com.flansmodultimate.client.debug.PlayerHitboxRenderer;
+import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
+import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.EnumMouseButton;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.client.render.ClientHudOverlays;
+import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.client.render.KillMessageFeed;
+import com.flansmodultimate.client.render.MountedCameraView;
+import com.flansmodultimate.client.render.OpStickConnectionRenderer;
+import com.flansmodultimate.client.render.PlayerSkinOverrides;
+import com.flansmodultimate.client.render.VehicleOpticsClient;
+import com.flansmodultimate.client.render.VehicleThermalRenderer;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.teams.TeamsClientState;
-import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.raytracing.EnumHitboxType;
-import com.flansmodultimate.common.raytracing.PlayerHitbox;
-import com.flansmodultimate.common.raytracing.PlayerSnapshot;
+import com.flansmodultimate.config.EnumGunBlockInteraction;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
@@ -50,15 +63,29 @@ import org.joml.Vector3f;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.options.OptionsScreen;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
+import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
@@ -85,40 +112,57 @@ public final class ClientEventHandler
         ModClient.updateCameraZoom(event);
     }
 
+    /** Adds the mod's options button to the vanilla options screen and pause menu, as configured. */
+    @SubscribeEvent
+    public static void onScreenInit(ScreenEvent.Init.Post event)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null)
+            return;
+
+        Screen screen = event.getScreen();
+        boolean wanted = screen instanceof OptionsScreen && config.optionsButtonPlacement.inOptionsScreen()
+            || screen instanceof PauseScreen && config.optionsButtonPlacement.inPauseMenu();
+        if (!wanted)
+            return;
+
+        List<MenuButtonPlacement.Rect> buttons = event.getListenersList().stream()
+            .filter(Button.class::isInstance)
+            .map(Button.class::cast)
+            .map(button -> new MenuButtonPlacement.Rect(button.getX(), button.getY(), button.getWidth(), button.getHeight()))
+            .toList();
+
+        // The pause screen shown while the game is still loading has no menu to hang the button on
+        MenuButtonPlacement.Placement placement = MenuButtonPlacement.compute(buttons, screen.width, screen.height);
+        if (placement == null)
+            return;
+
+        // The row the button takes over, and everything below it, moves down to make room
+        for (GuiEventListener listener : event.getListenersList())
+        {
+            if (listener instanceof AbstractWidget widget && widget.getY() >= placement.shiftFromY())
+                widget.setY(widget.getY() + placement.shiftBy());
+        }
+
+        event.addListener(Button.builder(Component.translatable("gui.flansmodultimate.options.menu_button"), button -> FlansOptionsScreen.open())
+            .bounds(placement.x(), placement.y(), placement.width(), placement.height())
+            .build());
+    }
+
     @SubscribeEvent
     public static void onComputeCameraAngles(ViewportEvent.ComputeCameraAngles event)
     {
-        Player player = Minecraft.getInstance().player;
-        if (player == null)
+        Entity cameraEntity = event.getCamera().getEntity();
+        var view = MountedCameraView.resolve(cameraEntity, (float) event.getPartialTick());
+        if (view == null)
             return;
 
-        var controllable = KeyInputHandler.resolveControllable(player);
-        if (controllable == null)
-            return;
-
-        float partialTick = (float) event.getPartialTick();
-        var driveable = KeyInputHandler.resolveDriveable(player);
-        if (driveable != null && player.getVehicle() instanceof Seat seat)
-        {
-            boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && ModClient.isMouseControlEnabled();
-            if (fixedPlaneView)
-            {
-                float cameraYaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()) - 90F;
-                float cameraPitch = Mth.rotLerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
-                if (Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT)
-                {
-                    cameraYaw += 180F;
-                    cameraPitch = -cameraPitch;
-                }
-                event.setYaw(Mth.wrapDegrees(cameraYaw));
-                event.setPitch(Mth.clamp(cameraPitch, -89.9F, 89.9F));
-            }
-        }
-
-        float roll = Mth.rotLerp(partialTick, controllable.getPrevPlayerRoll(), controllable.getPlayerRoll());
-        if (Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT)
-            roll = -roll;
-        event.setRoll(event.getRoll() + roll);
+        // The reversed third person view turns the camera around, which swaps
+        // which way the driveable's roll leans on screen.
+        boolean frontView = Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT;
+        event.setYaw(Mth.wrapDegrees(frontView ? view.yaw() + 180F : view.yaw()));
+        event.setPitch(Mth.clamp(frontView ? -view.pitch() : view.pitch(), -89.9F, 89.9F));
+        event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
     }
 
     @SubscribeEvent
@@ -126,6 +170,7 @@ public final class ClientEventHandler
     {
         GunInputState.tick();
         ModClient.tick();
+        ParticleHelper.tick();
     }
 
     @SubscribeEvent
@@ -161,17 +206,23 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event)
     {
+        VehicleThermalRenderer.render(event);
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick().getGameTimeDeltaPartialTick(true), event.getCamera());
 
         if (ModClient.isDebug())
         {
+            MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
             for (DebugColor debugEntity : DebugHelper.getActiveDebugEntities())
             {
                 if (event.getFrustum().isVisible(debugEntity.getAABB()))
-                    debugEntity.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(), event.getCamera());
+                    debugEntity.render(event.getPoseStack(), bufferSource, event.getCamera());
             }
+            // Flush now, while everything drawn so far (entities included) is already on screen to draw over
+            bufferSource.endBatch(CustomRenderType.debugFilledBoxSeeThrough());
+            DriveableHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), event.getPartialTick().getGameTimeDeltaPartialTick(true));
+            PlayerHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), event.getPartialTick().getGameTimeDeltaPartialTick(true));
         }
     }
 
@@ -215,18 +266,19 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event)
     {
+        // Vanilla invisibility only hides the body and still draws armor and held
+        // items. Canceling here skips every layer; Post is not fired, so do it
+        // before the render context is set.
+        if (Driveable.isRiderHiddenByDriveable(event.getEntity()))
+        {
+            event.setCanceled(true);
+            return;
+        }
+
         ModClient.entityRenderContext.set(event.getEntity());
 
         if (!(event.getEntity() instanceof Player player))
             return;
-
-        // Render debug boxes for player snapshots
-        if (ModClient.isDebug())
-        {
-            PlayerData data = PlayerData.getInstance(player , LogicalSide.CLIENT);
-            if (data.getSnapshots()[0] != null)
-                renderSnapshot(data.getSnapshots()[0]);
-        }
 
         var model = event.getRenderer().getModel();
         if (!(model instanceof HumanoidModel<?> humanoid))
@@ -255,31 +307,6 @@ public final class ClientEventHandler
                 humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
             else
                 humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
-        }
-    }
-
-    private static void renderSnapshot(PlayerSnapshot snapshot)
-    {
-        for (PlayerHitbox hitbox : snapshot.hitboxes)
-            renderHitbox(hitbox, snapshot.pos);
-    }
-
-    private static void renderHitbox(PlayerHitbox hitbox, Vector3f pos)
-    {
-        if (!ModClient.isDebug() || hitbox.type != EnumHitboxType.RIGHTARM)
-            return;
-
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                for(int k = 0; k < 3; k++)
-                {
-                    Vector3f point = new Vector3f(hitbox.o.x + hitbox.d.x * i / 2, hitbox.o.y + hitbox.d.y * j / 2, hitbox.o.z + hitbox.d.z * k / 2);
-                    point = hitbox.axes.findLocalVectorGlobally(point);
-                    DebugHelper.spawnDebugDot(new Vec3(pos.x + hitbox.rP.x + point.x, pos.y + hitbox.rP.y + point.y, pos.z + hitbox.rP.z + point.z), 1, 0F, 1F, 0F);
-                }
-            }
         }
     }
 
@@ -338,6 +365,15 @@ public final class ClientEventHandler
 
         if (player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
         {
+            // Aiming is a right-click, so a player lining up a shot at a chest opens it instead.
+            // This suppresses the block, not the aim, which is read from the key itself.
+            if (event.isUseItem() && isBlockUseSuppressed(player, mc.hitResult))
+            {
+                event.setCanceled(true);
+                event.setSwingHand(false);
+                return;
+            }
+
             EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfig.get().shootButtonOffhand : ModClientConfig.get().shootButton;
             EnumMouseButton secondaryButton = ModClientConfig.get().aimButton;
 
@@ -362,24 +398,52 @@ public final class ClientEventHandler
         }
     }
 
-    @SubscribeEvent
-    public static void onScreenOpening(ScreenEvent.Opening event)
+    /**
+     * Whether the player's own preference says to leave the block they are looking at alone while
+     * they are armed.
+     *
+     * <p>Sneaking is the way through {@link EnumGunBlockInteraction#NO_CONTAINERS}, so a chest can
+     * still be opened without putting the gun away; that is what {@code GunItem.doesSneakBypassUse}
+     * already allows for. {@link EnumGunBlockInteraction#NONE} has no way through on purpose: a
+     * player who asked for nothing to be used while armed means it.
+     */
+    private static boolean isBlockUseSuppressed(Player player, @Nullable HitResult hitResult)
     {
-        Player player = Minecraft.getInstance().player;
-        if (player != null && event.getNewScreen() instanceof InventoryScreen
-            && KeyInputHandler.resolveDriveable(player) != null)
-        {
-            KeyInputHandler.queueDriveableInventoryAction();
-            event.setCanceled(true);
-        }
+        EnumGunBlockInteraction policy = ModClientConfig.get().gunBlockInteraction;
+        if (policy == EnumGunBlockInteraction.ALLOW || !(hitResult instanceof BlockHitResult blockHit))
+            return false;
+
+        if (policy == EnumGunBlockInteraction.NONE)
+            return true;
+
+        if (player.isShiftKeyDown())
+            return false;
+
+        Level level = player.level();
+        BlockPos pos = blockHit.getBlockPos();
+        return level.getBlockState(pos).getMenuProvider(level, pos) != null;
+    }
+
+    @SubscribeEvent
+    public static void onLogin(ClientPlayerNetworkEvent.LoggingIn event)
+    {
+        ReloadPreferencesSync.sendToServer();
+        // Fetched up front so the options screen can show the server settings without a visible delay
+        CommonConfigMirror.request();
     }
 
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
+        VehicleOpticsClient.reset();
+        VehicleThermalRenderer.reset();
         ModClient.clearTransientLighting();
+        GpuModelCache.clear();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change
         TeamsClientState.clear();
+        PlayerSkinOverrides.clear();
+        KillMessageFeed.clear();
+        CommonConfigMirror.clear();
     }
 
     @SubscribeEvent
@@ -394,12 +458,10 @@ public final class ClientEventHandler
         Player player = event.getEntity();
         if (!(player.getVehicle() instanceof Seat seat) || seat.getDriveable() == null)
             return;
+
         float partialTick = event.getPartialTick();
-        Vec3 renderedFeet = new Vec3(Mth.lerp((double) partialTick, player.xo, player.getX()),
-            Mth.lerp((double) partialTick, player.yo, player.getY()),
-            Mth.lerp((double) partialTick, player.zo, player.getZ()));
-        Vec3 seatFeet = seat.getDriveable().getInterpolatedSeatWorldPosition(seat.getSeatIndex(), partialTick)
-            .add(0D, seat.getPassengerRidingOffset(player), 0D);
+        Vec3 renderedFeet = new Vec3(Mth.lerp(partialTick, player.xo, player.getX()), Mth.lerp(partialTick, player.yo, player.getY()), Mth.lerp(partialTick, player.zo, player.getZ()));
+        Vec3 seatFeet = seat.getDriveable().getInterpolatedRiderWorldPosition(seat.getSeatIndex(), seat.getPassengerRidingOffset(player), partialTick);
         Vec3 correction = seatFeet.subtract(renderedFeet);
         event.getPoseStack().translate(correction.x, correction.y, correction.z);
     }
@@ -407,8 +469,19 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onRenderNameTag(RenderNameTagEvent event)
     {
+        if (VehicleThermalRenderer.isRenderingMask())
+        {
+            event.setCanRender(net.neoforged.neoforge.common.util.TriState.FALSE);
+            return;
+        }
         if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
             event.setCanRender(net.neoforged.neoforge.common.util.TriState.FALSE);
     }
 
+    @SubscribeEvent
+    public static void onRenderScopedHand(RenderHandEvent event)
+    {
+        if (VehicleOpticsClient.activeSeat() != null)
+            event.setCanceled(true);
+    }
 }

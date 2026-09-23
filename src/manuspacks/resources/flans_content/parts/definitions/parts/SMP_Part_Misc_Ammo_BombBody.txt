@@ -1,0 +1,16 @@
+// Identity
+Name Bomb Body
+ShortName SMP_Part_Misc_Ammo_BombBody
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_Ammo_BombBody
+
+// Recipe and Inventory
+Recipe P SMP_Part_Mat_Plate_Steel M SMP_Part_Mat_Block_Steel
+M M
+ M 
+PPP
+RecipeOutput 32
+Category Misc
+PartBoxRecipe
+StackSize 64

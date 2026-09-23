@@ -1,0 +1,33 @@
+﻿// Identity
+Name Ingelldina Pattern Power Sword
+ShortName WH40K_Gun_PowerSword_1A
+
+// Model and Rendering
+ModelScale 0.08
+Icon Icon_WH40K_Gun_PowerSword_1A
+Model Manus_WH40K.Gun.WH40K_Gun_PowerSword_1
+Texture Skin_WH40K_Gun_PowerSword_1A
+
+// Recipe and Inventory
+AllowAllAttachments False
+AllowAttachments M36LasgunGrip
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 1
+
+// Weapons
+Deployable False
+Mode SemiAuto
+Recoil 0
+ReloadTime 0
+OneHanded True
+Scope None
+FOVZoomLevel 1.0
+RoundsPerMin 80.0
+Dispersion 0.5
+
+// Ballistics and Damage
+Damage 0
+MeleeDamage 20

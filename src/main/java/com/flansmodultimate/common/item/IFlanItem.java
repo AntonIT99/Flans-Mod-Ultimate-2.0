@@ -51,42 +51,69 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     /**
      * Adds explosion damage stats avoiding redundant lines.
      */
-    static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseName)
+    static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseKey)
+    {
+        appendDamageStats(tooltip, damageStats, labelBaseKey, 1F);
+    }
+
+    /**
+     * @param multiplier factor applied to every displayed value, such as the firing weapon's damage
+     */
+    static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseKey, float multiplier)
     {
         final float EPS = 0.0001f;
 
         // Always show base explosion damage if it's meaningful
-        tooltip.add(IFlanItem.statLine(labelBaseName, formatFloat(damageStats.getDamage(), 1)));
+        tooltip.add(IFlanItem.statLine(Component.translatable(labelBaseKey), formatFloat(damageStats.getDamage() * multiplier, 1)));
 
         // vs Living: only show if explicitly configured AND different from base
         if (damageStats.isReadDamageVsLiving() && Math.abs(damageStats.getDamageVsLiving() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Living", formatFloat(damageStats.getDamageVsLiving(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.VS_LIVING), formatFloat(damageStats.getDamageVsLiving() * multiplier, 1)));
 
         // vs Player: inherits from vsLiving
         if (damageStats.isReadDamageVsPlayer() && Math.abs(damageStats.getDamageVsPlayer() - damageStats.getDamageVsLiving()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Players", formatFloat(damageStats.getDamageVsPlayer(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.VS_PLAYERS), formatFloat(damageStats.getDamageVsPlayer() * multiplier, 1)));
 
         // vs Vehicle: inherits from base
         if (damageStats.isReadDamageVsVehicles() && Math.abs(damageStats.getDamageVsVehicles() - damageStats.getDamage()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Vehicles", formatFloat(damageStats.getDamageVsVehicles(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.VS_VEHICLES), formatFloat(damageStats.getDamageVsVehicles() * multiplier, 1)));
 
         // vs Plane: inherits from vsVehicle
         if (damageStats.isReadDamageVsPlanes() && Math.abs(damageStats.getDamageVsPlanes() - damageStats.getDamageVsVehicles()) > EPS)
-            tooltip.add(IFlanItem.indentedStatLine("vs Planes", formatFloat(damageStats.getDamageVsPlanes(), 1)));
+            tooltip.add(IFlanItem.indentedStatLine(Component.translatable(TooltipKeys.VS_PLANES), formatFloat(damageStats.getDamageVsPlanes() * multiplier, 1)));
     }
 
     /**
-     * Helper to render "BlueLabel: gray value"
+     * Helper to render "BlueLabel: gray value", label localized via a translation key.
      */
-    static MutableComponent statLine(String label, String value)
+    static MutableComponent statLine(Component label, String value)
     {
-        return Component.literal(label + ": ")
-            .withStyle(ChatFormatting.BLUE)
+        return Component.empty()
+            .append(label.copy().withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+    }
+
+    static MutableComponent statLine(Component label, Component value)
+    {
+        return Component.empty()
+            .append(label.copy().withStyle(ChatFormatting.BLUE))
+            .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
+            .append(value.copy().withStyle(ChatFormatting.GRAY));
+    }
+
+    /** Indented stat line whose label is localized via a translation key. */
+    static MutableComponent indentedStatLine(Component label, String value)
+    {
+        return Component.literal("  ").withStyle(ChatFormatting.DARK_AQUA)
+            .append(label.copy().withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(": ").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
     /**
-     * Slightly indented stat line for sub-values (vs Living / vs Player / etc.)
+     * Indented stat line for sub-values whose label is already resolved text
+     * (e.g. an item's localized display name), not a translation key.
      */
     static MutableComponent indentedStatLine(String label, String value)
     {
@@ -95,12 +122,14 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
             .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
-    static MutableComponent modifierLine(String label, float value, boolean invertColor)
+    /** Modifier line whose label is localized via a translation key. */
+    static MutableComponent modifierLine(Component label, float value, boolean invertColor)
     {
         float deltaPercent = (value - 1F) * 100F;
         ChatFormatting color = ((deltaPercent >= 0F && !invertColor) || (deltaPercent < 0F && invertColor)) ? ChatFormatting.GREEN : ChatFormatting.RED;
         String sign = deltaPercent > 0F ? "+" : "";
-        return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% " + label).withStyle(color);
+        return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% ").withStyle(color)
+            .append(label.copy().withStyle(color));
     }
 
     ThreadLocal<Map<Integer, DecimalFormat>> UP_TO_CACHE = ThreadLocal.withInitial(HashMap::new);
@@ -140,6 +169,19 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     }
 
     /**
+     * Renders a mass held in kilograms at whatever scale reads best: anything under a kilogram is
+     * shown in grams, so a hand grenade's charge does not appear as "0.06 kg".
+     *
+     * @param massKg the mass in kilograms
+     */
+    static String formatMassKg(float massKg)
+    {
+        return massKg < 1F
+            ? formatFloat(massKg * 1000F, 1) + " g"
+            : formatFloat(massKg, 3) + " kg";
+    }
+
+    /**
      * Format doubles nicely (no trailing .0 if not needed)
      */
     static String formatDouble(double d, int decimals)
@@ -156,6 +198,31 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     static String formatDouble(double d)
     {
         return formatDouble(d, 2);
+    }
+
+    /**
+     * Color a health value by its ratio to max health: green above 66%, yellow above 33%, red below.
+     */
+    static ChatFormatting healthColor(float health, float maxHealth)
+    {
+        if (maxHealth <= 0F)
+            return ChatFormatting.GREEN;
+
+        float ratio = health / maxHealth;
+        if (ratio > 2F / 3F)
+            return ChatFormatting.GREEN;
+        if (ratio > 1F / 3F)
+            return ChatFormatting.YELLOW;
+        return ChatFormatting.RED;
+    }
+
+    /**
+     * "[Health] current/max" style tooltip line, colored by the current/max ratio.
+     */
+    static MutableComponent healthLine(String translationKey, float health, float maxHealth)
+    {
+        return Component.translatable(translationKey, formatFloat(health, 1), formatFloat(maxHealth, 1))
+            .withStyle(healthColor(health, maxHealth));
     }
 
     static UUID getOrCreateStackUUID(ItemStack stack, String key)

@@ -1,0 +1,11 @@
+// Identity
+Name Metal Propeller
+ShortName 44_Metal_Propeller
+Category Misc
+
+// Rendering
+Icon 44_Metal_Propeller
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

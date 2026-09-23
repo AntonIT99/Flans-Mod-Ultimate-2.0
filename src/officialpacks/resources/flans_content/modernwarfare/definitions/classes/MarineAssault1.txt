@@ -1,5 +1,8 @@
+// Identity
 Name Light Assault
 ShortName marineAssault1
+
+// Items
 AddItem m16a4+flanMWACOG
 AddItem m9+flanMWSilencer
 AddItem m67 2

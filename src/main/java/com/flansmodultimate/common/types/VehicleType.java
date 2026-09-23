@@ -2,6 +2,10 @@ package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
+import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
+import com.flansmodultimate.config.ModCommonConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +19,12 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class VehicleType extends DriveableType
 {
+    /**
+     * Legacy turret speed is a mouse-turn coefficient. The smooth aiming replacement used
+     * {@code DriverAimSpeed 2} for vehicles that previously used {@code TurretRotationSpeed 0.06}.
+     */
+    private static final float LEGACY_TURRET_ROTATION_TO_AIM_SPEED = 100F / 3F;
+
     public record SmokePoint(Vector3f position, Vector3f direction, int detonationTime, EnumDriveablePart part) {}
 
     protected float turnLeftModifier = 1F;
@@ -56,6 +66,7 @@ public class VehicleType extends DriveableType
     protected void read(TypeFile file)
     {
         super.read(file);
+        applyLegacyTurretRotationSpeed(file);
         turnLeftModifier = readOptionalValue("TurnLeftSpeed", turnLeftModifier, file);
         turnRightModifier = readValue("TurnRightSpeed", turnRightModifier, file);
         squashMobs = readValue("SquashMobs", squashMobs, file);
@@ -75,8 +86,6 @@ public class VehicleType extends DriveableType
         trackLinkFix = readValue("TrackLinkFix", trackLinkFix, file);
         vehicleShootDelay = Math.max(0, Math.round(readValue("ShootDelay", (float) vehicleShootDelay, file)));
         vehicleShellDelay = Math.max(0, Math.round(readValue("ShellDelay", (float) vehicleShellDelay, file)));
-        shootSoundPrimary = readSound("ShootSound", shootSoundPrimary, file);
-        shootSoundSecondary = readSound("ShellSound", shootSoundSecondary, file);
 
         doorPos1 = readVector("DoorPosition1", doorPos1, file);
         doorPos2 = readVector("DoorPosition2", doorPos2, file);
@@ -97,6 +106,61 @@ public class VehicleType extends DriveableType
         stompSoundFrontLeft = readSound("StompSoundFrontLeft", stompSoundFrontLeft, file);
         stompSoundBackRight = readSound("StompSoundBackRight", stompSoundBackRight, file);
         stompSoundBackLeft = readSound("StompSoundBackLeft", stompSoundBackLeft, file);
+
+        // Re-run finalization now that Tank, FourWheelDrive and the rest are read,
+        // so physics resolution sees the complete definition.
+        finishDerivedValues();
+    }
+
+    private void applyLegacyTurretRotationSpeed(TypeFile file)
+    {
+        if (file.hasConfigLine("DriverAimSpeed") || !file.hasConfigLine("TurretRotationSpeed"))
+            return;
+
+        SeatInfo driver = getSeat(0);
+        if (driver == null)
+            return;
+
+        float legacySpeed = readOptionalValue("TurretRotationSpeed", Float.NaN, file);
+        if (!Float.isFinite(legacySpeed))
+            return;
+
+        Vector3f aimingSpeed = driver.getAimingSpeed();
+        driver.setAimingSpeed(new Vector3f(
+            legacySpeed * LEGACY_TURRET_ROTATION_TO_AIM_SPEED,
+            aimingSpeed.y,
+            aimingSpeed.z));
+    }
+
+    /**
+     * Boats are vehicles in this repository, so they share the ground category
+     * and reach the marine draft override through {@code FloatOnWater}.
+     */
+    @Override
+    protected EnumVehicleCategory physicsCategory()
+    {
+        return EnumVehicleCategory.GROUND;
+    }
+
+    /** Vehicle packs authored the legacy Mass in tonnes, as their template comment says. */
+    @Override
+    protected float legacyMassKilogramsPerUnit()
+    {
+        return (float) ModCommonConfig.KILOGRAMS_PER_TON;
+    }
+
+    @Override
+    protected LegacyPhysicsHints legacyPhysicsHints()
+    {
+        return new LegacyPhysicsHints(tank, fourWheelDrive, maxNegativeThrottle, floatOnWater,
+            false, useRealisticAcceleration);
+    }
+
+    /** Anything that drives on land clears at least a one-block ledge; boats keep what they declare. */
+    @Override
+    public float getWheelStepHeight()
+    {
+        return placeableOnLand ? Math.max(1F, wheelStepHeight) : wheelStepHeight;
     }
 
     private void readSmokePoints(String key, TypeFile file)

@@ -1,11 +1,20 @@
+// Identity
 Name Black Sweater
 ShortName blackSweater
+
+// Item and rendering
 Icon BlackSweater
 Colour 255 255 255
-Type Chest
-Defence 0.1
 ArmourTexture Criminal
+
+// Recipe
 Enchantability 0
-Toughness 0
 Durability 0
-DamageReductionAmount 4
+
+// Protection
+Type Chest
+Defence 0.03
+Toughness 0
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0

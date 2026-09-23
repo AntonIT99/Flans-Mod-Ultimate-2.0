@@ -1,0 +1,18 @@
+// Identity
+Name Japanese Type 98 'Shiki-Gun-i' Jacket (Khaki)
+ShortName 44_JapaneseType98ChestKhaki
+Type Body
+
+// Rendering
+Icon 44_JapaneseType98ChestKhaki
+Model W44.JapaneseType98ChestKhaki
+ModelScale 1
+ArmorTexture Skin44_JapaneseType98Khaki
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

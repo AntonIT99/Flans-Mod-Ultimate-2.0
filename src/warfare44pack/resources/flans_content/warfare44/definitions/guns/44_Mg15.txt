@@ -1,0 +1,62 @@
+// Identity
+Name MG-15
+ShortName 44_Mg15
+Description German Light Machine Gun
+
+// Rendering
+Icon 44_Mg15
+Model W44.Mg15
+ModelScale 0.15
+Texture Skin44_Mg15
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Mg15Ammo
+
+// Handling
+Mode FullAuto
+Deployable False
+MoveSpeedModifier 0.35
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 1000.0
+ReloadTime 100
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 755.0
+Dispersion 0.26
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 8.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.5
+DecreaseRecoil 7.25
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_ZF41Scope 44_AASight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound SKSShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Mg34Reload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

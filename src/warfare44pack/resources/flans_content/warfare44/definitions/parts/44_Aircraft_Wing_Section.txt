@@ -1,0 +1,11 @@
+// Identity
+Name Aircraft Wing Section
+ShortName 44_Aircraft_Wing_Section
+Category Misc
+
+// Rendering
+Icon 44_Aircraft_Wing_Section
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 3

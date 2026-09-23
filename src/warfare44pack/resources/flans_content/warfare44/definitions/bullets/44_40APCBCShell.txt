@@ -1,0 +1,51 @@
+// Identity
+Name 40mm 2-pdr Shot Mk IXB APCBC
+ShortName 44_40APCBCShell
+Description Armour-piercing capped ballistic-capped shot for the QF 2-pounder
+
+// Rendering
+Icon 44_37apshell
+Model W44.W44ShellSmall
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 6
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 792
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 86
+BreaksGlass True
+
+// Damage
+Mass 1200
+Damage 1
+DamageVsLiving 50
+DamageVsVehicles 400
+Fire 0
+
+// Explosion
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 15
+ExplodeParticles 5
+FlareParticleCount 3
+DebrisParticleCount 1
+
+// Sounds
+HitSound

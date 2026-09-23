@@ -1,7 +1,16 @@
+// Identity
 Name British WW2 Desert Boots
 ShortName britishDesertBoots
+
+// Item and rendering
 Icon britishdesertboots
 Colour 255 255 255
-Type Boots
-Defence 0.1
 ArmourTexture britishdesert
+
+// Protection
+Type Boots
+Defence 0.02
+BulletDefence 0.00
+PenetrationResistance 0.35
+ArmorPoints 1
+Toughness 0

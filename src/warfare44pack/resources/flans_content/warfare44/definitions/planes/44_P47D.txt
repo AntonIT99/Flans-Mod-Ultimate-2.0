@@ -1,0 +1,119 @@
+// Identity
+Name P47-D Thunderbolt
+ShortName 44_P47D
+Description American Attack Aircraft__M2 Browning .50 Cal Ammo / 250kg/500lb Bomb__Year Introduced : 1944
+
+// Rendering
+Icon 44_P47D
+Model W44.P47D
+Texture Skin44_P47D
+CameraDistance 10.0
+
+// Recipe and inventory
+AddRecipeParts core 1 44_AttackerAircraftBody
+AddRecipeParts leftWing 4 44_50Cal
+AddRecipeParts rightWing 4 44_50Cal
+CargoSlots 30
+BombSlots 1
+MissileSlots 0
+FuelTankSize 6000
+
+// Paintjobs
+AddDye 5 white
+AddDye 8 green
+
+// Real-world specifications
+RealMassKg 7938
+RealEnginePowerHp 2430
+RealMaxSpeedKmh 697
+RealWingSpanM 12.42
+RealWingAreaM2 27.87
+RealClimbRateMs 7.3
+
+// Movement
+Mode Plane
+MaxThrottle 3.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.0
+TurnRightSpeed 1.0
+LookUpSpeed 1.0
+LookDownSpeed 1.0
+RollLeftSpeed 1.5
+RollRightSpeed 1.5
+RestingPitch 15.0
+Drag 1.0
+
+// Wheels and tracks
+WheelPosition 0 26 -10 -54
+WheelPosition 1 26 -10 54
+WheelPosition 2 -113 22 0
+WheelSpringStrength 0.125
+Propeller 0 82 34 0 nose 44_Metal_Propeller
+
+// Weapons
+Primary Gun
+Secondary Bomb
+ReadWeaponsFromGunTypes true
+ShootDelayPrimary 3
+ShootDelaySecondary 50
+ModePrimary FullAuto
+ModeSecondary SemiAuto
+AlternatePrimary False
+BulletSpread 4
+BulletSpeed 12
+BulletDetection 10
+AllowAllAmmo False
+AddAmmo 44_250kg500lbBomb
+ShootPointPrimary 31 28 71 core 44_50Cal
+ShootPointPrimary 34 28 68 core 44_50Cal
+ShootPointPrimary 37 28 64 core 44_50Cal
+ShootPointPrimary 39 29 61 core 44_50Cal
+ShootPointPrimary 31 28 -71 core 44_50Cal
+ShootPointPrimary 34 28 -68 core 44_50Cal
+ShootPointPrimary 37 28 -64 core 44_50Cal
+ShootPointPrimary 39 29 -61 core 44_50Cal
+ShootPointSecondary 25 -5 0 core
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 20
+
+// Parts and collision
+SetupPart core 550 -150 9 -17 220 48 34
+SetupPart rightWing 300 -45 17 17 58 22 105
+SetupPart leftWing 300 -45 17 -123 58 22 105
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+
+// Seats
+Pilot -12 36 0
+Passengers 0
+
+// Sounds
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary Plane50CalShoot
+ShootSoundSecondary BombDrop
+
+// Effects
+AddEmitter largesmoke 1 [48,35,15] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [48,35,15] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter largesmoke 1 [48,35,-15] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [48,35,-15] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [48,35,15] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [48,35,15] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [48,35,-15] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [48,35,-15] [0,0,0] [0,2,0] 0.5 0.51 0 1 core

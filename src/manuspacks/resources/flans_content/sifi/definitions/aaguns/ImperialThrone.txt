@@ -1,0 +1,38 @@
+// Identity
+Name Imperial Throne
+ShortName ImperialThrone
+
+// Model and Rendering
+Icon IconAAGunImperialThrone
+Model manus_sifi.ImperialThrone
+Texture SkinAAGunImperialThrone
+
+// Recipe and Inventory
+RecipeOutput 1
+Recipe L leather M SMP_Part_Mat_Plate_PlaSteel
+ L 
+MLM 
+MMM
+
+// Movement and Physics
+RealMassKg 400
+
+// Weapons
+NumBarrels 0
+FireAlternately True
+ReloadTime 60
+Recoil 0
+Damage 0
+GunnerPos 0 29 0
+TopViewLimit 80
+BottomViewLimit 0
+RoundsPerMin 120.0
+Dispersion 0.1
+
+// Protection
+Health 300
+UseRealisticVehicleHealth true
+
+// Sounds
+ShootSound TurboLaser
+ReloadSound mp44Reload

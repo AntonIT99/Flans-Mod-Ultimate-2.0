@@ -2,10 +2,12 @@ package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
+import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.EqualsAndHashCode;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -15,17 +17,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
@@ -34,33 +36,52 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+/**
+ * The Skull Boss, as the 1.12.2 {@code EntitySkullBoss}.
+ *
+ * <p>It does not chase anyone. It swings around its arena on a spring pulled towards its home,
+ * the origin above the boss pillars for a boss summoned there, and bobs between that height
+ * and 80 blocks below it on a slow sine. It fights whoever summoned it and switches to
+ * whoever last hurt it. Its laughs, drones and TNT carry on whether or not it has a target.</p>
+ */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SkullBossEntity extends Monster
 {
     private static final String NBT_ACTION = "apocalypse_action";
     private static final String NBT_ACTION_TICKS = "apocalypse_action_ticks";
+    private static final String NBT_HOME = "apocalypse_home";
     private static final int IDLE_TICKS = 20;
     private static final int ACTION_TICKS = 80;
+    private static final float LAUGH_EXPLOSION_POWER = 10.0F;
+    /** The 1.12.2 lerp speed of 0.1 spread over twenty ticks. */
+    private static final double HOME_PULL = 0.1D / 20D;
+    /** The boss hovers this far below its spawn point on average: 180 for a spawn at y=220. */
+    private static final double HOVER_DROP = 40.0D;
+    private static final double HOVER_SWING = 40.0D;
+    /** Not in 1.12.2: a boss whose target is gone looks for the nearest player in this range. */
+    private static final double REACQUIRE_RANGE = 128.0D;
+    private static final float MAX_DAMAGE = 99.0F;
 
     private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.PROGRESS);
     private Action currentAction = Action.IDLE;
     private int actionTicks;
+    @Nullable
+    private Vec3 home;
 
     public SkullBossEntity(EntityType<? extends SkullBossEntity> type, Level level)
     {
         super(type, level);
         setNoGravity(true);
-        xpReward = 250;
+        setPersistenceRequired();
+        xpReward = 5000;
     }
 
     public static AttributeSupplier.Builder createAttributes()
     {
         return Monster.createMonsterAttributes()
-            .add(Attributes.MAX_HEALTH, 1000.0D)
-            .add(Attributes.MOVEMENT_SPEED, 0.25D)
+            .add(Attributes.MAX_HEALTH, 1024.0D)
             .add(Attributes.FLYING_SPEED, 0.35D)
-            .add(Attributes.FOLLOW_RANGE, 128.0D)
-            .add(Attributes.ARMOR, 12.0D)
+            .add(Attributes.FOLLOW_RANGE, REACQUIRE_RANGE)
             .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
             .add(Attributes.ATTACK_DAMAGE, 12.0D);
     }
@@ -68,10 +89,13 @@ public class SkullBossEntity extends Monster
     @Override
     protected void registerGoals()
     {
-        goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 64.0F));
-        goalSelector.addGoal(7, new RandomLookAroundGoal(this));
-        targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        // Deliberately none: movement, targeting and attacks are the legacy state machine in tick().
+    }
+
+    /** The point the boss circles and hovers below. */
+    public void setHome(Vec3 home)
+    {
+        this.home = home;
     }
 
     @Override
@@ -79,42 +103,83 @@ public class SkullBossEntity extends Monster
     {
         setNoGravity(true);
         super.tick();
+        fallDistance = 0F;
         bossEvent.setProgress(getHealth() / getMaxHealth());
         Level level = level();
 
         if (level.isClientSide || !ModApocalypseConfig.apocalypseMobsEnabled())
             return;
 
+        if (home == null)
+            home = position();
+        Vec3 motion = getDeltaMovement();
+        double hoverY = home.y - HOVER_DROP + Math.sin(tickCount / 200.0D) * HOVER_SWING;
+        motion = new Vec3(motion.x - (getX() - home.x) * HOME_PULL, (hoverY - getY()) * HOME_PULL, motion.z - (getZ() - home.z) * HOME_PULL);
+        setDeltaMovement(motion);
+        move(MoverType.SELF, motion);
+
+        LivingEntity target = validTarget();
+        if (target != null)
+            turnTowards(target);
+
         actionTicks++;
+        switch (currentAction)
+        {
+            case IDLE -> {
+                if (actionTicks >= IDLE_TICKS)
+                    switchAction(chooseAction());
+            }
+            case LAUGH -> tickLaugh(level);
+            case SPAWN_DRONES -> {
+                if (actionTicks == 2)
+                    spawnDrone(level, target);
+            }
+            case SHOOT_TNT -> {
+                if (actionTicks % 20 == 0 && target != null)
+                    shootTnt(level, target);
+            }
+            case DROP_NUKE -> {
+                if (actionTicks == 2 && target != null)
+                    callNukeDrop(level, target);
+            }
+        }
+        if (currentAction != Action.IDLE && actionTicks >= ACTION_TICKS)
+            switchAction(Action.IDLE);
+    }
+
+    /**
+     * The summoner or last attacker. Unlike 1.12.2, once they are gone the boss takes on the
+     * nearest player instead of floating on without anyone to aim its TNT at.
+     */
+    @Nullable
+    private LivingEntity validTarget()
+    {
         LivingEntity target = getTarget();
-        if (target != null && target.isAlive())
+        if (target != null && (!target.isAlive() || target.isRemoved() || target.level() != level()))
         {
-            Vec3 hover = target.position().add(0.0D, 18.0D, 0.0D).subtract(position());
-            if (hover.lengthSqr() > 4.0D)
-                setDeltaMovement(getDeltaMovement().scale(0.80D).add(hover.normalize().scale(0.08D)));
-            getLookControl().setLookAt(target, 30.0F, 30.0F);
+            setTarget(null);
+            target = null;
         }
-        else
+        if (target == null && tickCount % 20 == 0)
         {
-            setDeltaMovement(getDeltaMovement().scale(0.85D));
+            target = level().getNearestPlayer(TargetingConditions.forCombat().range(REACQUIRE_RANGE)
+                .selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(), this);
+            setTarget(target);
         }
+        return target;
+    }
 
-        if (currentAction == Action.IDLE)
-        {
-            if (target != null && actionTicks >= IDLE_TICKS)
-                switchAction(chooseAction());
-            return;
-        }
-
-        if (target == null || !target.isAlive())
-        {
-            switchAction(Action.IDLE);
-            return;
-        }
-
-        tickAction(level, target);
-        if (actionTicks >= ACTION_TICKS)
-            switchAction(Action.IDLE);
+    private void turnTowards(LivingEntity target)
+    {
+        double dX = target.getX() - getX();
+        double dY = target.getY() - getY();
+        double dZ = target.getZ() - getZ();
+        float targetYaw = (float) (Mth.atan2(dZ, dX) * Mth.RAD_TO_DEG) - 90F;
+        float targetPitch = (float) (-Mth.atan2(dY, Math.sqrt(dX * dX + dZ * dZ)) * Mth.RAD_TO_DEG);
+        setYRot(getYRot() + Mth.wrapDegrees(targetYaw - getYRot()) / 20F);
+        setXRot(getXRot() + (targetPitch - getXRot()) / 20F);
+        setYHeadRot(getYRot());
+        yBodyRot = getYRot();
     }
 
     private Action chooseAction()
@@ -135,29 +200,6 @@ public class SkullBossEntity extends Monster
         actionTicks = 0;
     }
 
-    private void tickAction(Level level, LivingEntity target)
-    {
-        switch (currentAction)
-        {
-            case LAUGH -> tickLaugh(level);
-            case SPAWN_DRONES -> {
-                if (actionTicks == 2)
-                    spawnDrones(level);
-            }
-            case SHOOT_TNT -> {
-                if (actionTicks % 20 == 0)
-                    shootTnt(level, target);
-            }
-            case DROP_NUKE -> {
-                if (actionTicks == 2)
-                    callNukeDrop(level, target);
-            }
-            case IDLE -> {
-                // no-op
-            }
-        }
-    }
-
     private void tickLaugh(Level level)
     {
         if (actionTicks == 2)
@@ -165,11 +207,13 @@ public class SkullBossEntity extends Monster
 
         if (actionTicks % 5 == 0 && level instanceof ServerLevel serverLevel)
         {
-            serverLevel.explode(this, getX() + random.nextGaussian() * 10.0D, getY() + random.nextGaussian() * 10.0D, getZ() + random.nextGaussian() * 10.0D, 2.0F, false, Level.ExplosionInteraction.NONE);
+            serverLevel.explode(this, getX() + random.nextGaussian() * 10.0D, getY() + random.nextGaussian() * 10.0D,
+                getZ() + random.nextGaussian() * 10.0D, LAUGH_EXPLOSION_POWER, false, Level.ExplosionInteraction.NONE);
         }
     }
 
-    private void spawnDrones(Level level)
+    /** One armed drone five blocks below the boss, sent after the boss's target. */
+    private void spawnDrone(Level level, @Nullable LivingEntity target)
     {
         if (!(level instanceof ServerLevel serverLevel))
             return;
@@ -192,12 +236,12 @@ public class SkullBossEntity extends Monster
         if (!(level instanceof ServerLevel serverLevel))
             return;
 
-        Vec3 direction = target.getEyePosition().subtract(getEyePosition());
+        Vec3 direction = target.position().subtract(position());
         if (direction.lengthSqr() < 0.0001D)
             return;
 
-        Vec3 normalized = direction.normalize();
-        PrimedTnt tnt = new PrimedTnt(serverLevel, getX() + normalized.x * 2.0D, getY() + getBbHeight() * 0.5D + normalized.y * 2.0D, getZ() + normalized.z * 2.0D, this);
+        Vec3 offset = direction.normalize().scale(2.0D);
+        PrimedTnt tnt = new PrimedTnt(serverLevel, getX() + offset.x, getY() + offset.y, getZ() + offset.z, this);
         tnt.setNoGravity(true);
         tnt.setDeltaMovement(direction.scale(1.0D / 40.0D));
         serverLevel.addFreshEntity(tnt);
@@ -219,13 +263,48 @@ public class SkullBossEntity extends Monster
         return FlansMod.getSoundEvent(name).map(DeferredHolder::get).orElse(fallback);
     }
 
+    /**
+     * Immune to explosions and fire, to its drones, and to Flan's weapons with no player behind
+     * them, so survivors and AI mechas cannot wear it down. Damage is capped at 99 and then
+     * halved on Normal and quartered on Hard, as in 1.12.2. Whoever hurts it becomes its target.
+     */
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
         if (source.is(DamageTypeTags.IS_EXPLOSION) || source.is(DamageTypeTags.IS_FIRE))
             return false;
+        if (source.getEntity() instanceof SkullDroneEntity || (isFlanDamage(source) && !(source.getEntity() instanceof Player)))
+            return false;
 
-        return super.hurt(source, Math.min(amount, 99.0F));
+        float scaled = Math.min(amount, MAX_DAMAGE) * switch (level().getDifficulty())
+        {
+            case HARD -> 0.25F;
+            case NORMAL -> 0.5F;
+            default -> 1.0F;
+        };
+        boolean hurt = super.hurt(source, scaled);
+        if (!level().isClientSide && source.getEntity() instanceof LivingEntity attacker && attacker != this)
+            setTarget(attacker);
+        return hurt;
+    }
+
+    private static boolean isFlanDamage(DamageSource source)
+    {
+        return source.is(FlanDamageSources.SHOOTABLE) || source.is(FlanDamageSources.HEADSHOT)
+            || source.is(FlanDamageSources.MELEE) || source.is(FlanDamageSources.EXPLOSION);
+    }
+
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer)
+    {
+        return false;
+    }
+
+    /** Persistent whether or not the saved PersistenceRequired flag survived a summon with NBT. */
+    @Override
+    public boolean requiresCustomPersistence()
+    {
+        return true;
     }
 
     @Override
@@ -264,6 +343,11 @@ public class SkullBossEntity extends Monster
         super.readAdditionalSaveData(tag);
         currentAction = Action.byId(tag.getInt(NBT_ACTION));
         actionTicks = tag.getInt(NBT_ACTION_TICKS);
+        if (tag.contains(NBT_HOME, CompoundTag.TAG_COMPOUND))
+        {
+            CompoundTag homeTag = tag.getCompound(NBT_HOME);
+            home = new Vec3(homeTag.getDouble("x"), homeTag.getDouble("y"), homeTag.getDouble("z"));
+        }
     }
 
     @Override
@@ -272,6 +356,14 @@ public class SkullBossEntity extends Monster
         super.addAdditionalSaveData(tag);
         tag.putInt(NBT_ACTION, currentAction.ordinal());
         tag.putInt(NBT_ACTION_TICKS, actionTicks);
+        if (home != null)
+        {
+            CompoundTag homeTag = new CompoundTag();
+            homeTag.putDouble("x", home.x);
+            homeTag.putDouble("y", home.y);
+            homeTag.putDouble("z", home.z);
+            tag.put(NBT_HOME, homeTag);
+        }
     }
 
     private enum Action

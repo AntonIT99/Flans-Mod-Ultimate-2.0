@@ -1,0 +1,25 @@
+// Identity
+Name No.32 Mk.II Scope
+ShortName 44_No32MkIIScope
+Description Scope Attachment : British Medium-Powered Scope [X3]
+AttachmentType sights
+
+// Rendering
+Icon 44_No32MkIIScope
+Model W44.No32MkIIScope
+ModelScale 0.8
+Texture Skin44_No32MkIIScope
+
+// Optics
+ZoomLevel 6
+FOVZoomLevel 1.0
+ZoomOverlay BritishScope
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.6
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

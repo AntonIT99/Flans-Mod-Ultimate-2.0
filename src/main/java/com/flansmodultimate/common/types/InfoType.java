@@ -3,11 +3,14 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.api.IInfoType;
+import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
+import com.flansmodultimate.util.SoundLengthIndex;
 import com.flansmodultimate.util.TypeReaderUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,6 +29,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
@@ -47,13 +51,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class InfoType
+public abstract class InfoType implements IInfoType
 {
     private static final String LOOT_POOL_NAME = "FlansMod";
+
+    /** A timer telling the mod when to play a sound again, paired with the sound it plays. */
+    private record SoundTimer(String parameterName, Supplier<String> sound, IntSupplier length, IntConsumer applyLength) {}
+
+    /** Populated while reading a type and cleared once the measured sound lengths have been applied. */
+    private final List<SoundTimer> soundTimers = new ArrayList<>();
 
     @Getter
     private static final Map<String, InfoType> infoTypes = new HashMap<>();
@@ -72,6 +86,13 @@ public abstract class InfoType
     protected String name = StringUtils.EMPTY;
     @Getter
     protected String originalShortName;
+    /**
+     * Unique name of an item-less type, assigned by its {@link ItemlessTypeRegistry} and differing
+     * from {@link #originalShortName} only when two content packs picked the same shortname.
+     * Types that have an item take their unique name from the item registry instead.
+     */
+    @Nullable
+    protected String uniqueShortName;
     @Getter
     protected String icon;
     @Getter
@@ -98,12 +119,14 @@ public abstract class InfoType
     @Getter
     protected String smeltableFrom;
     /** If this is set to false, then this item cannot be dropped */
+    @Getter
     protected boolean canDrop = true;
     /**
      * The probability that this item will appear in a dungeon chest.
      * Scaled so that each chest is likely to have a fixed number of Flan's Mod items.
      * Must be greater than or equal to 0, and should probably not exceed 100
      */
+    @Getter
     protected int dungeonChance = 1;
 
     @Getter
@@ -115,12 +138,39 @@ public abstract class InfoType
 
     public record RenderOptions(boolean translucentRendering, boolean additiveBlending, boolean disableCulling) {}
 
+    /**
+     * Reads the optional per-ammunition override keys and reports any malformed line
+     * as an ordinary content warning. Shared by every weapon type that can fire.
+     */
+    protected AmmoOverrides readAmmoOverrides(TypeFile file)
+    {
+        AmmoOverrides.Result result = AmmoOverrides.read(file);
+        for (String warning : result.warnings())
+            TypeReaderUtils.logError(warning, file);
+        return result.overrides();
+    }
+
+    /**
+     * The name this type is uniquely reachable under across every loaded content pack. It equals
+     * {@link #getOriginalShortName()} unless another pack claimed that shortname first, in which
+     * case this carries the {@code _2} alias. Always prefer it over the original shortname when
+     * storing an identifier in a save, a packet or a command.
+     */
     public String getShortName()
     {
-        if (type.isHasItem())
+        if (type != null && type.isHasItem())
             return Objects.requireNonNull(ContentManager.getShortnameReferences().get(contentPack).get(originalShortName)).get();
-        else
-            return originalShortName;
+        return uniqueShortName != null ? uniqueShortName : originalShortName;
+    }
+
+    @Override
+    @Nullable
+    public Item getItem()
+    {
+        if (type == null || !type.isHasItem())
+            return null;
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, getShortName()));
+        return item == null || item == Items.AIR ? null : item;
     }
 
     public Optional<ResourceLocation> getOverlay()
@@ -212,13 +262,14 @@ public abstract class InfoType
 
                 for (int row = 0; row < 3; row++)
                 {
-                    String recipeRow = Objects.requireNonNullElse((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY, StringUtils.EMPTY);
+                    String recipeRow = getRecipeRow((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY);
                     if (hasRecipeContentAfterGrid(recipeRow))
                         TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
 
                     recipePattern.add(padRecipeRow(recipeRow));
                 }
                 addToRecipeGrid(recipePattern);
+                i += 3;
             }
             else if (split[0].equalsIgnoreCase("ShapelessRecipe"))
             {
@@ -248,9 +299,24 @@ public abstract class InfoType
 
     private static String padRecipeRow(String recipeRow)
     {
+        recipeRow = recipeRow.replace('.', ' ');
         if (recipeRow.length() >= 3)
             return recipeRow.substring(0, 3);
         return StringUtils.rightPad(recipeRow, 3);
+    }
+
+    /**
+     * Legacy content packs use both bare recipe rows and rows prefixed with
+     * {@code Recipe}. The latter must not be interpreted as a new declaration.
+     */
+    private static String getRecipeRow(String recipeRow)
+    {
+        String row = Objects.requireNonNullElse(recipeRow, StringUtils.EMPTY);
+        if (row.regionMatches(true, 0, "Recipe", 0, "Recipe".length())
+            && row.length() > "Recipe".length()
+            && Character.isWhitespace(row.charAt("Recipe".length())))
+            return row.substring("Recipe".length() + 1);
+        return row;
     }
 
     private static boolean hasRecipeContentAfterGrid(String recipeRow)
@@ -355,6 +421,54 @@ public abstract class InfoType
         }
     }
 
+    /**
+     * Declares that a sound timer plays the given sound, so it can be replaced with the measured
+     * length of that sound file once every content pack has been read.
+     *
+     * @param parameterName the config parameter the timer is read from, for logging
+     * @param sound         the sound the timer plays, read at resolution time
+     * @param length        reads the configured timer value
+     * @param applyLength   replaces the timer value
+     */
+    protected void registerSoundTimer(String parameterName, Supplier<String> sound, IntSupplier length, IntConsumer applyLength)
+    {
+        soundTimers.add(new SoundTimer(parameterName, sound, length, applyLength));
+    }
+
+    /**
+     * Replaces every registered sound timer with the real length of the sound it plays.
+     * <p>
+     * Only timers that a content pack actually configured are touched. A timer left at zero means the
+     * sound is not repeated at all, either because the pack disabled it with {@code None} or because
+     * the parameter defaults to zero, and filling one in would start repeating a sound that is meant
+     * to play once.
+     *
+     * @return how many timers were replaced
+     */
+    public int resolveSoundLengths()
+    {
+        int resolved = 0;
+        for (SoundTimer timer : soundTimers)
+        {
+            String sound = timer.sound().get();
+            int configuredLength = timer.length().getAsInt();
+            if (StringUtils.isBlank(sound) || configuredLength <= 0)
+                continue;
+
+            OptionalInt measuredLength = SoundLengthIndex.getSoundLength(sound);
+            if (measuredLength.isEmpty() || measuredLength.getAsInt() == configuredLength)
+                continue;
+
+            timer.applyLength().accept(measuredLength.getAsInt());
+            resolved++;
+            FlansMod.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)",
+                originalShortName, timer.parameterName(), sound, configuredLength, measuredLength.getAsInt());
+        }
+
+        soundTimers.clear();
+        return resolved;
+    }
+
     protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible)
     {
         addEffects(key, effects, file, ambient, visible, 250, 0);
@@ -406,6 +520,10 @@ public abstract class InfoType
         return "textures/" + type.getTextureFolderName() + "/" + textureName + FileUtils.PNG_EXTENSION;
     }
 
+    /**
+     * Resolves the model class name a {@code Model} entry refers to inside its own content pack. Content
+     * packs are free to ship equally named model classes, every pack loads its own class files.
+     */
     @OnlyIn(Dist.CLIENT)
     protected static String findModelClass(String modelName, IContentProvider contentPack)
     {
@@ -413,7 +531,6 @@ public abstract class InfoType
         if (StringUtils.isNotBlank(modelName) && !modelName.equalsIgnoreCase("null") && !modelName.equalsIgnoreCase("none"))
         {
             String[] modelNameSplit = modelName.split("\\.");
-            Path classFile;
             Optional<FileSystem> fs = Optional.ofNullable(FileUtils.createFileSystem(contentPack));
 
             if (modelNameSplit.length > 1)
@@ -421,10 +538,9 @@ public abstract class InfoType
                 String modelPackageName = String.join(".", Arrays.copyOf(modelNameSplit, modelNameSplit.length - 1));
                 String modelSimpleName = modelNameSplit[modelNameSplit.length - 1];
                 modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + ".Model" + modelSimpleName;
-                classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
 
                 // Try 1.12.2 package format
-                if (!Files.exists(classFile))
+                if (!Files.exists(contentPack.getModelPath(modelClassName, fs.orElse(null))))
                 {
                     if (modelNameSplit[0].equals("jamespostmodernweapons"))
                         modelNameSplit[0] = "modernweapons";
@@ -452,69 +568,19 @@ public abstract class InfoType
                         }
                     }
 
-                    classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
-
                     // Fallback to default
-                    if (!Files.exists(classFile))
+                    if (!Files.exists(contentPack.getModelPath(modelClassName, fs.orElse(null))))
                         modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model." + modelPackageName + ".Model" + modelSimpleName;
                 }
             }
             else
             {
                 modelClassName = "com." + FlansMod.FLANSMOD_ID + ".client.model.Model" + modelName;
-                classFile = contentPack.getModelPath(modelClassName, fs.orElse(null));
-            }
-
-            if (!modelClassAlreadyRegisteredForContentPack(modelClassName, contentPack))
-            {
-                String actualClassName = modelClassName;
-                if (hasModelConflictWithOtherContentPack(actualClassName, contentPack))
-                {
-                    IContentProvider otherContentPack = ContentManager.getRegisteredModels().get(modelClassName);
-                    FileSystem otherFs = FileUtils.createFileSystem(otherContentPack);
-                    Path otherClassFile = otherContentPack.getModelPath(modelClassName, otherFs);
-
-                    if (FileUtils.isDifferentFileContent(classFile, otherClassFile, false))
-                    {
-                        actualClassName = findNewValidClassName(modelClassName);
-                        FlansMod.log.info("Duplicate model class name {} renamed at runtime to {} in [{}] to avoid a conflict with [{}].", modelClassName, actualClassName, contentPack.getName(), otherContentPack.getName());
-                    }
-
-                    FileUtils.closeFileSystem(otherFs, otherContentPack);
-                }
-
-                ContentManager.getRegisteredModels().putIfAbsent(actualClassName, contentPack);
-                DynamicReference.storeOrUpdate(modelClassName, actualClassName, ContentManager.getModelReferences().get(contentPack));
             }
 
             FileUtils.closeFileSystem(fs.orElse(null), contentPack);
         }
         return modelClassName;
-    }
-
-    protected static boolean modelClassAlreadyRegisteredForContentPack(String modelClassName, IContentProvider contentPack) {
-        if (ContentManager.getModelReferences().get(contentPack).containsKey(modelClassName))
-        {
-            String actualClassName = ContentManager.getModelReferences().get(contentPack).get(modelClassName).get();
-            return ContentManager.getRegisteredModels().containsKey(actualClassName)
-                    && ContentManager.getRegisteredModels().get(actualClassName).equals(contentPack);
-        }
-        return false;
-    }
-
-    protected static boolean hasModelConflictWithOtherContentPack(String modelClassName, IContentProvider contentPack)
-    {
-        return ContentManager.getRegisteredModels().containsKey(modelClassName) && !contentPack.equals(ContentManager.getRegisteredModels().get(modelClassName));
-    }
-
-    protected static String findNewValidClassName(String className)
-    {
-        String newClassName = className;
-        for (int i = 2; ContentManager.getRegisteredModels().containsKey(newClassName); i++)
-        {
-            newClassName = className + "_" + i;
-        }
-        return newClassName;
     }
 
     @OnlyIn(Dist.CLIENT)

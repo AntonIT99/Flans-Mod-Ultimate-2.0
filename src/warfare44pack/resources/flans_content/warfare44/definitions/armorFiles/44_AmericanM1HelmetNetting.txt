@@ -1,0 +1,18 @@
+// Identity
+Name American M1 Helmet (Netting)
+ShortName 44_AmericanM1HelmetNetting
+Type Helmet
+
+// Rendering
+Icon 44_AmericanM1HelmetNetting
+Model W44.AmericanM1HelmetNetting
+ModelScale 1
+ArmorTexture Skin44_AmericanM1941CombatFieldUniform
+
+// Protection
+ArmorPoints 2
+Defence 0.04
+BulletDefence 0.02
+Toughness 0
+PenetrationResistance 1.25
+SmokeProtection false

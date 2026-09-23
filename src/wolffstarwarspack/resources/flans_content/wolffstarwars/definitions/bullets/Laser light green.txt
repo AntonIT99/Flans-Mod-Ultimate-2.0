@@ -1,0 +1,28 @@
+// Identity
+Name Light Green Laser
+ShortName LightGreenLaser
+
+// Item and rendering
+Icon lasergreenlight
+Model wolffstarwars.LaserBeam
+Colour 255 255 255
+Texture wolffstarwars_laser_light_green
+RoundsPerItem 100
+
+// Ballistics
+FallSpeed 0
+
+// Damage and detonation
+Damage 10
+Explosion 0
+ExplodeOnImpact false
+Fuse 0
+Fire 0
+BreaksGlass True
+HitBoxSize 0.1
+Penetrates False
+
+// Sounds and particles
+FlakParticles 0
+HitSound bullet
+SmokeTrail False

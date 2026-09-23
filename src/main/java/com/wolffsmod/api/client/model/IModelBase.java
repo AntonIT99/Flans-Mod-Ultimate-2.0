@@ -8,9 +8,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public interface IModelBase
@@ -22,11 +21,19 @@ public interface IModelBase
 
     void setTexture(ResourceLocation texture);
 
-    List<ModelRenderer> getBoxList();
+    void addModelBox(IModelRenderer modelRenderer);
 
-    Map<String, TextureOffset> getModelTextureMap();
+    void forEachModelBox(Consumer<IModelRenderer> action);
 
-    void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha);
+    default float getScale()
+    {
+        return 1F;
+    }
+
+    default void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    {
+        forEachModelBox(modelRenderer -> modelRenderer.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, getScale()));
+    }
 
     default int getTextureWidth()
     {
@@ -38,15 +45,9 @@ public interface IModelBase
         return TEXTURE_HEIGHT;
     }
 
-    default TextureOffset getTextureOffset(String partName)
-    {
-        return getModelTextureMap().get(partName);
-    }
+    TextureOffset getTextureOffset(String partName);
 
-    default void setTextureOffset(String partName, int x, int y)
-    {
-        getModelTextureMap().put(partName, new TextureOffset(x, y));
-    }
+    void setTextureOffset(String partName, int x, int y);
 
     default void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale) {}
 
@@ -54,18 +55,15 @@ public interface IModelBase
 
     default void setLivingAnimations(LivingEntity entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTickTime) {}
 
-    default ModelRenderer getRandomModelBox(Random rand)
-    {
-        return getBoxList().get(rand.nextInt(getBoxList().size()));
-    }
+    IModelRenderer getRandomModelBox(Random rand);
 
-    static void copyModelAngles(ModelRenderer source, ModelRenderer dest)
+    static void copyModelAngles(IModelRenderer source, IModelRenderer dest)
     {
-        dest.rotateAngleX = source.rotateAngleX;
-        dest.rotateAngleY = source.rotateAngleY;
-        dest.rotateAngleZ = source.rotateAngleZ;
-        dest.rotationPointX = source.rotationPointX;
-        dest.rotationPointY = source.rotationPointY;
-        dest.rotationPointZ = source.rotationPointZ;
+        dest.setRotateAngleX(source.getRotateAngleX());
+        dest.setRotateAngleY(source.getRotateAngleY());
+        dest.setRotateAngleZ(source.getRotateAngleZ());
+        dest.setRotationPointX(source.getRotationPointX());
+        dest.setRotationPointY(source.getRotationPointY());
+        dest.setRotationPointZ(source.getRotationPointZ());
     }
 }

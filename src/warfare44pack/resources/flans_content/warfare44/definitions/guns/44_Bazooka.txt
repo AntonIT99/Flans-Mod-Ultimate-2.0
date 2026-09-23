@@ -1,0 +1,47 @@
+// Identity
+Name Bazooka
+ShortName 44_Bazooka
+Description American AT Rocket Launcher
+
+// Rendering
+Icon 44_Bazooka
+Model W44.Bazooka
+ModelScale 0.3
+Texture Skin44_Bazooka
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+
+// Ammunition
+Ammo 44_BazookaAmmo
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.6
+KnockbackModifier 0
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 10.0
+ReloadTime 90
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 80.0
+Dispersion 2.1
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 9
+
+// Sounds
+ShootSound PanzerschreckShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound PanzerschreckReload
+ReloadSoundRange 5

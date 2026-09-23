@@ -1,0 +1,38 @@
+// Identity
+Name 37mm Cannon
+ShortName 44_37mmCannon
+Description 37mm Auto Cannon - Vehicle Part
+
+// Rendering
+Icon 44_37mmCannon
+Colour 255 255 255
+
+// Ammunition
+Ammo 44_37APShell
+
+// Handling
+Mode FullAuto
+Deployable false
+UsableByPlayers false
+UsableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 160.0
+ReloadTime 370
+
+// Ballistics
+MuzzleVelocity 800.0
+Dispersion 0.3
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound 37mmShoot
+DistortSound True
+SoundLength 0
+ReloadSound Mp40Reload

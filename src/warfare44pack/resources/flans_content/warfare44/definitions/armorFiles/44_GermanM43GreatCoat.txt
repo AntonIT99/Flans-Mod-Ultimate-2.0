@@ -1,0 +1,18 @@
+// Identity
+Name German M43 Great Coat
+ShortName 44_GermanM43GreatCoat
+Type Body
+
+// Rendering
+Icon 44_GermanM43GreatCoat
+Model W44.GermanM43GreatCoat
+ModelScale 1
+ArmorTexture Skin44_GermanM43GreatCoat
+
+// Protection
+ArmorPoints 4
+Defence 0.11
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

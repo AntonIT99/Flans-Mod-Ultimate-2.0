@@ -1,0 +1,34 @@
+﻿// Identity
+Name Lathe Pattern Thunder Hammer
+ShortName WH40K_Gun_ThunderHammer_1A
+
+// Model and Rendering
+ModelScale 0.11
+Icon Icon_WH40K_Gun_ThunderHammer_1A
+Model Manus_WH40K.Gun.WH40K_Gun_ThunderHammer_1
+ModelScale 0.10
+Texture Skin_WH40K_Gun_ThunderHammer_1A
+
+// Recipe and Inventory
+AllowAllAttachments False
+AllowAttachments M36LasgunGrip
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+AllowGripAttachments False
+NumGenericAttachmentSlots 1
+
+// Weapons
+Deployable False
+Mode SemiAuto
+Recoil 0
+ReloadTime 0
+OneHanded True
+Scope None
+FOVZoomLevel 1.0
+RoundsPerMin 80.0
+Dispersion 0.5
+
+// Ballistics and Damage
+Damage 0
+MeleeDamage 20

@@ -1,11 +1,14 @@
+// Identity
 Name Caterpillar Track Piece
 ShortName catTrackPiece
-Icon TrackPiece
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Item and rendering
+Icon TrackPiece
+Colour 255 255 255
 StackSize 64
+
+// Recipe
 RecipeOutput 4
 Recipe I ingotIron
  I 

@@ -1,0 +1,50 @@
+// Identity
+Name 6-pdr Shot Mk 1T APDS (L/50)
+ShortName 44_6PdrAPDSShell
+Description Discarding-sabot shot for the 6-pdr 7 cwt Mk V
+
+// Rendering
+Icon 44_57apshell
+Model Bullet
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 4
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 1326
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 160
+BreaksGlass True
+
+// Damage
+Mass 1470
+Damage 1
+DamageVsLiving 100
+DamageVsVehicles 550
+Fire 0
+
+// Explosion
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 0
+ExplodeParticles 7
+FlareParticleCount 3
+DebrisParticleCount 2
+
+// Sounds
+HitSound

@@ -1,0 +1,38 @@
+// Identity
+Name 20mm Cannon
+ShortName 44_20mmCannon
+Description 20mm Auto Cannon - Vehicle Part
+
+// Rendering
+Icon 44_20mmCannon
+Colour 255 255 255
+
+// Ammunition
+Ammo 44_20mmAmmo
+
+// Handling
+Mode FullAuto
+Deployable false
+UsableByPlayers false
+UsableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 600.0
+ReloadTime 200
+
+// Ballistics
+MuzzleVelocity 850.0
+Dispersion 0.3
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound 20mmCannonShoot
+DistortSound True
+SoundLength 0
+ReloadSound Mp40Reload

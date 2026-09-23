@@ -1,0 +1,114 @@
+// Identity
+Name Mitsubishi A6M5 Zero
+ShortName 44_A6M5Zero
+Description Japanese Fighter Aircraft__Uses Type 99 Ammo / 20mm Aircraft Ammo__Year Introduced : 1940
+
+// Rendering
+Icon 44_A6M5Zero
+Model W44.A6M5Zero
+ModelScale 1.05
+Texture Skin44_A6M5Zero
+CameraDistance 10.0
+
+// Recipe and inventory
+AddRecipeParts core 1 44_FighterAircraftBody 2 44_20mmCannon 2 44_Type99
+CargoSlots 30
+BombSlots 0
+MissileSlots 2
+FuelTankSize 6000
+
+// Paintjobs
+advpaintjob Green 44_A6M5Zero_Green 44_A6M5Zero_Green AddDye 4 green
+AddDye 8 silver
+
+// Real-world specifications
+RealMassKg 2300
+RealEnginePowerPS 1130
+RealMaxSpeedKmh 528
+RealWingSpanM 11
+RealWingAreaM2 21.3
+RealClimbRateMs 12.4
+
+// Movement
+Mode Plane
+MaxThrottle 2.125
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.75
+TurnRightSpeed 1.75
+LookUpSpeed 2.75
+LookDownSpeed 2.75
+RollLeftSpeed 2.8
+RollRightSpeed 2.8
+RestingPitch 10.0
+Drag 1.0
+
+// Wheels and tracks
+WheelPosition 0 4 -11 -40
+WheelPosition 1 4 -11 40
+WheelPosition 2 -138 18 0
+WheelSpringStrength 0.125
+Propeller 0 -31 -27 0 core 44_Metal_Propeller
+
+// Weapons
+Primary Gun
+Secondary Missile
+ReadWeaponsFromGunTypes true
+ShootDelayPrimary 3
+ShootDelaySecondary 3
+ModePrimary FullAuto
+ModeSecondary FullAuto
+AlternatePrimary False
+AlternateSecondary False
+BulletSpread 4
+BulletSpeed 12
+BulletDetection 10
+AllowAllAmmo False
+AddAmmo 44_20mmAircraftAmmo
+ShootPointPrimary 31 39 -5 core 44_Type99
+ShootPointPrimary 31 39 5 core 44_Type99
+ShootPointSecondary 20 23 44 core
+ShootPointSecondary 20 23 -44 core
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 20
+
+// Parts and collision
+SetupPart core 400 -150 9 -17 180 48 34
+SetupPart rightWing 225 -45 17 17 58 22 105
+SetupPart leftWing 225 -45 17 -123 58 22 105
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+
+// Seats
+Pilot -25 27 0
+Passengers 0
+
+// Sounds
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary Plane30CalShoot
+ShootSoundSecondary Spitfire_20mmShoot
+
+// Effects
+AddEmitter largesmoke 1 [40,37,14] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [40,37,14] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter largesmoke 1 [40,37,-14] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [40,37,-14] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [40,37,14] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [40,37,14] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [40,37,-14] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [40,37,-14] [0,0,0] [0,2,0] 0.5 0.51 0 1 core

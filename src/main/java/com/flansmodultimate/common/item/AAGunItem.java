@@ -105,25 +105,25 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
+            tooltipComponents.add(IFlanItem.healthLine(TooltipKeys.HEALTH, configType.getHealth(), configType.getHealth()));
+
             Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
-            tooltipComponents.add(Component.literal("Hold ").append(keyName).append(" for details").withStyle(ChatFormatting.GRAY));
+            tooltipComponents.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));
             return;
         }
-
-        tooltipComponents.add(IFlanItem.statLine("Health", IFlanItem.formatFloat(configType.getHealth())));
 
         List<ShootableType> ammoTypes = configType.getAmmoTypes();
 
         if (!ammoTypes.isEmpty())
         {
-            tooltipComponents.add(Component.literal("Damage: ").withStyle(ChatFormatting.BLUE));
+            tooltipComponents.add(Component.translatable(TooltipKeys.DAMAGE).append(": ").withStyle(ChatFormatting.BLUE));
 
             if (!ammoTypes.stream().allMatch(ShootableType::useKineticDamageSystem))
             {
-                tooltipComponents.add(Component.literal("  vsLiving").withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal(" vsPlayer").withStyle(ChatFormatting.RED))
-                    .append(Component.literal(" vsVehicle").withStyle(ChatFormatting.AQUA))
-                    .append(Component.literal(" vsPlane").withStyle(ChatFormatting.LIGHT_PURPLE)));
+                tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.VS_LIVING).withStyle(ChatFormatting.GREEN))
+                    .append(" ").append(Component.translatable(TooltipKeys.VS_PLAYER).withStyle(ChatFormatting.RED))
+                    .append(" ").append(Component.translatable(TooltipKeys.VS_VEHICLE).withStyle(ChatFormatting.AQUA))
+                    .append(" ").append(Component.translatable(TooltipKeys.VS_PLANE).withStyle(ChatFormatting.LIGHT_PURPLE)));
             }
 
             for (ShootableType shootableType : ammoTypes)
@@ -164,24 +164,24 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
             }
         }
 
-        tooltipComponents.add(IFlanItem.statLine("Dispersion", IFlanItem.formatFloat(configType.getDispersionForDisplay()) + "°"));
-        tooltipComponents.add(IFlanItem.statLine("Reload Time", IFlanItem.formatFloat(configType.getReloadTime() / 20F) + "s"));
-        tooltipComponents.add(IFlanItem.statLine("Fire Rate", IFlanItem.formatFloat(1200F / configType.getShootDelay()) + "rpm"));
-        tooltipComponents.add(IFlanItem.statLine("Barrels", String.valueOf(configType.getNumBarrels())));
+        tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DISPERSION), IFlanItem.formatFloat(configType.getDispersionForDisplay()) + "°"));
+        tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.RELOAD_TIME), IFlanItem.formatFloat(configType.getReloadTime() / 20F) + "s"));
+        tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RATE), IFlanItem.formatFloat(1200F / configType.getShootDelay()) + "rpm"));
+        tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BARRELS), String.valueOf(configType.getNumBarrels())));
         if (configType.isSentry())
         {
             String targets = Stream.of(
-                    configType.isTargetMobs() ? "Mobs" : null,
-                    configType.isTargetPlayers() ? "Players" : null,
-                    configType.isTargetVehicles() ? "Vehicles" : null,
-                    configType.isTargetPlanes() ? "Planes" : null,
-                    configType.isTargetMechas() ? "Mechas" : null
+                    configType.isTargetMobs() ? Component.translatable(TooltipKeys.TARGET_MOBS).getString() : null,
+                    configType.isTargetPlayers() ? Component.translatable(TooltipKeys.TARGET_PLAYERS).getString() : null,
+                    configType.isTargetVehicles() ? Component.translatable(TooltipKeys.TARGET_VEHICLES).getString() : null,
+                    configType.isTargetPlanes() ? Component.translatable(TooltipKeys.TARGET_PLANES).getString() : null,
+                    configType.isTargetMechas() ? Component.translatable(TooltipKeys.TARGET_MECHAS).getString() : null
                 )
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(", "));
 
-            tooltipComponents.add(IFlanItem.statLine("Target Range", IFlanItem.formatFloat(configType.getTargetRange())));
-            tooltipComponents.add(IFlanItem.statLine("Targets", targets));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.TARGET_RANGE), IFlanItem.formatFloat(configType.getTargetRange())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.TARGETS), targets));
         }
     }
 }

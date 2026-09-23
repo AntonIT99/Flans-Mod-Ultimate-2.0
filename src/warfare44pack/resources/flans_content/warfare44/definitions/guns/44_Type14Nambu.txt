@@ -1,0 +1,62 @@
+// Identity
+Name Type 14 Nambu
+ShortName 44_Type14Nambu
+Description Japanese Pistol
+
+// Rendering
+Icon 44_Type14Nambu
+Model W44.Type14Nambu
+ModelScale 0.08
+Texture Skin44_Type14Nambu
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Type14NambuAmmo
+
+// Handling
+Mode SemiAuto
+OneHanded True
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 300.0
+ReloadTime 50
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 290.0
+Dispersion 0.8
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1.75
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound LugerShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound LugerReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

@@ -1,0 +1,49 @@
+// Identity
+Name Type 98 20mm Magazine
+ShortName 44_Type98AAAmmo
+
+// Rendering
+Icon 44_Type98AAAmmo
+Model Bullet
+Texture defaultBullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 20
+
+// Ammunition
+WeaponType Shell
+AddRound AP 1 162 0 800 45
+AddRound HE 2 135 16 835 0
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 10
+Penetrates False
+BreaksGlass True
+
+// Damage
+DamageVsLiving 25
+DamageVsVehicles 65
+DamageVsPlanes 85
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact True
+Fuse 50
+
+// Guidance
+LockOnToDriveables False
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 20.0
+
+// Effects
+SmokeTrail True
+TrailParticleType smoke
+FlakParticles 5
+
+// Sounds
+HitSound bullet

@@ -1,27 +1,26 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
-import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class PaintjobTableMenu extends AbstractContainerMenu
 {
     private static final double MAX_DISTANCE = 64.0;
 
     private final ContainerLevelAccess access;
+    /** Per-menu workspace: each player paints in their own two slots. */
+    private final SimpleContainer workspace = new SimpleContainer(TE_SLOTS);
 
     // indices
     private static final int TE_SLOTS = 2;
@@ -31,13 +30,13 @@ public class PaintjobTableMenu extends AbstractContainerMenu
     private static final int HOTBAR_END = HOTBAR_START + 9;
     private static final int GUI_TOP_H = 92;
 
-    public PaintjobTableMenu(int id, Inventory playerInv, BlockPos blockPos, PaintjobTableBlockEntity table)
+    public PaintjobTableMenu(int id, Inventory playerInv, BlockPos blockPos)
     {
         super(FlansMod.paintjobTableMenu.get(), id);
         this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
 
-        addSlot(new SlotItemHandler(table.getItemHandler(), 0, 187, GUI_TOP_H + 17));
-        addSlot(new SlotItemHandler(table.getItemHandler(), 1, 187, GUI_TOP_H + 71));
+        addSlot(new Slot(workspace, 0, 187, GUI_TOP_H + 17));
+        addSlot(new Slot(workspace, 1, 187, GUI_TOP_H + 71));
 
         // Player inventory
         for (int row = 0; row < 3; row++)
@@ -56,12 +55,7 @@ public class PaintjobTableMenu extends AbstractContainerMenu
 
     public static PaintjobTableMenu createFromNetwork(int id, Inventory playerInv, RegistryFriendlyByteBuf buf)
     {
-        Level level = playerInv.player.level();
-        BlockPos pos = buf.readBlockPos();
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof PaintjobTableBlockEntity table))
-            throw new IllegalStateException("BlockEntity at " + pos + " is not an instance of " + PaintjobTableBlockEntity.class.getSimpleName());
-        return new PaintjobTableMenu(id, playerInv, pos, table);
+        return new PaintjobTableMenu(id, playerInv, buf.readBlockPos());
     }
 
     @Override
@@ -71,6 +65,18 @@ public class PaintjobTableMenu extends AbstractContainerMenu
             Block block = level.getBlockState(pos).getBlock();
             return block == FlansMod.paintjobTable.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
         }, true);
+    }
+
+    /**
+     * The table is a workspace, not a chest: like the gun workbench, whatever is left
+     * in it goes back to the player who closes it rather than staying there for the
+     * next person to pick up.
+     */
+    @Override
+    public void removed(@NotNull Player player)
+    {
+        super.removed(player);
+        clearContainer(player, workspace);
     }
 
     @Override

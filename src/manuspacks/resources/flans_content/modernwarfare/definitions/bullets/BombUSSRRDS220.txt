@@ -1,0 +1,43 @@
+// Identity
+Name RDS-220 Nuclear Bomb
+ShortName BombUSSRRDS200
+Description Bomb for Tu-22M
+
+// Model and Rendering
+Model manus_modern_warfare.LargeBomb
+Colour 255 255 255
+Icon IconBombUSSRRDS220
+
+// Recipe and Inventory
+RoundsPerItem 1
+MaxStackSize 1
+RecipeOutput 1
+Recipe B SMP_Part_Misc_Ammo_BombBody T tnt F SMP_Part_Misc_Ammo_Fuse
+TFT
+TTT
+TBT
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 0.75
+Penetrates False
+Bomb True
+
+// Ballistics and Damage
+Mass 27000000.0
+ExplosiveMassTNTKg 50000000000
+FragType THICK_CASE
+Damage 500
+DamageVsVehicles 1000
+Explosion 10
+Fire 5
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail False

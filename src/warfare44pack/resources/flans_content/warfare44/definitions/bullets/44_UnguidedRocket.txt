@@ -1,0 +1,44 @@
+// Identity
+Name Unguided Rocket
+ShortName 44_UnguidedRocket
+Description HE Rocket for Vehicles
+
+// Rendering
+Icon 44_UnguidedRocket
+Model Bullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 1
+RoundsPerItem 8
+
+// Ammunition
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 259
+FallSpeed 2.5
+HitBoxSize 0.5
+Penetrates False
+BreaksGlass False
+
+// Damage
+Mass 17600
+DamageVsLiving 150
+DamageVsVehicles 650
+Fire 0
+
+// Explosion
+ExplosiveMassTNTKg 1.9
+Explosion 4
+ExplodeOnImpact True
+Fuse 600
+
+// Effects
+SmokeTrail True
+TrailParticles true
+TrailParticleType smoke
+TrailParticleType flansmod.fmflame
+FlakParticles 35
+ExplodeParticles 8

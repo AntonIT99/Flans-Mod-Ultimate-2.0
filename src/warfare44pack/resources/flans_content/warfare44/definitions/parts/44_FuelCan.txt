@@ -1,0 +1,14 @@
+// Identity
+Name Fuel Can
+ShortName 44_FuelCan
+Category Fuel
+
+// Rendering
+Icon 44_FuelCan
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 8
+
+// Engine
+Fuel 1000

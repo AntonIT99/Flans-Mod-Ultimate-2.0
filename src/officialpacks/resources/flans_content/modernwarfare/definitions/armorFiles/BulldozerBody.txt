@@ -1,14 +1,25 @@
+// Identity
 Name Bulldozer Bodyarmour
 ShortName bulldozerBody
+
+// Item and rendering
 Icon BulldozerBody
 Colour 255 255 255
-Type Chest
 Model mw.SuperHeavyChest
-Defence 0.4
 ArmourTexture Bulldozer
-MoveSpeedModifier 0.65
-KnockbackModifier 0.25
+
+// Recipe
 Enchantability 0
-Toughness 3
 Durability 0
-DamageReductionAmount 11
+
+// Protection
+Type Chest
+Defence 0.21
+KnockbackModifier 0.25
+Toughness 2
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 7
+
+// Movement
+MoveSpeedModifier 0.97

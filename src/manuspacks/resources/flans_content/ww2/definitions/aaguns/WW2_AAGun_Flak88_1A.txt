@@ -1,0 +1,41 @@
+// Identity
+Name Flak 88mm
+ShortName WW2_AAGun_Flak88_1A
+
+// Model and Rendering
+Model Manus_WW2.AAGun.WW2_AAGun_Flak88_1
+Icon Icon_WW2_AAGun_Flak88_1A
+Texture Skin_WW2_AAGun_Flak88_1A
+
+// Recipe and Inventory
+Recipe B SMP_Part_Misc_Barrel_AAGun M SMP_Part_Mat_Block_Steel L SMP_Part_Misc_Seat_Car
+  B
+LM 
+M M
+RecipeOutput 1
+Ammo WW2_Shell_German88mmKwK36AP
+Ammo WW2_Shell_German88mmKwK36HE
+
+// Movement and Physics
+RealMassKg 4980.0
+
+// Weapons
+GunnerPos 3 30 -16
+BottomViewLimit 0
+TopViewLimit 75
+NumBarrels 1
+Barrel 0 88 40 0
+Damage 1
+FireAlternately True
+Recoil 5
+ReloadTime 100
+RoundsPerMin 20.0
+Dispersion 0.03
+
+// Protection
+Health 100
+UseRealisticVehicleHealth true
+
+// Sounds
+ReloadSound mp44Reload
+ShootSound shoot_88flakde

@@ -1,16 +1,27 @@
+// Identity
 Name Exoskeleton Chest Piece
 ShortName exoskeletonBody
+
+// Item and rendering
 Icon ExoskeletonChest
 Colour 255 255 255
-Type Chest
 Model mw.ExoskeletonBody
-Defence 0.2
 ArmourTexture Exoskeleton
-MoveSpeedModifier 1.0
-KnockbackModifier 0.1
-JumpModifier 2.5
 ModelScale 0.25
+
+// Recipe
 Enchantability 0
-Toughness 2
 Durability 0
-DamageReductionAmount 9
+
+// Protection
+Type Chest
+Defence 0.26
+KnockbackModifier 0.1
+Toughness 3
+BulletDefence 0.26
+PenetrationResistance 2.40
+ArmorPoints 9
+
+// Movement
+MoveSpeedModifier 0.95
+JumpModifier 2.5

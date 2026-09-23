@@ -1,10 +1,12 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.explosions.ExplosionScaling;
+import com.flansmodultimate.common.explosions.FlanExplosion;
+import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
@@ -28,6 +30,7 @@ public class BulletType extends ShootableType
     public static final float DEFAULT_BULLET_SPEED = 3F;
     public static final float DEFAULT_PENETRATING_POWER = 0.7F;
 
+    /** {@code mass} in grams, {@code explosiveMass} in kg TNT equivalent, {@code bulletSpeed} in blocks per tick. */
     public record RoundStats(float mass, float explosiveMass, float bulletSpeed, float penetrationAt100m) {}
 
     public record RoundEntry(String name, int count, RoundStats stats) {}
@@ -39,7 +42,7 @@ public class BulletType extends ShootableType
     protected float bulletSpeed;
     /** Penetration @ 0° Angle of Attack (mm) at 100m */
     @Getter
-    protected float penetrationAt100m; //TODO: implement a usage
+    protected float penetrationAt100m;
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -66,8 +69,9 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean entityHitSoundEnable;
 
-    protected boolean penetrates = true;
     @Getter
+    protected boolean penetrates = true;
+    /** Authored penetrating power, superseded by the kinetic derivation when the round declares a mass */
     protected float penetratingPower = 1F;
     /** In % of penetration to remove per tick. */
     @Getter
@@ -174,6 +178,10 @@ public class BulletType extends ShootableType
     @Getter
     protected boolean destroyOnDeploySubmunition;
 
+    /** Whether the ammo tooltip offers the detailed statistics, as the 1.7.10 FancyDescription did. */
+    @Getter
+    protected boolean fancyDescription = true;
+
     /** 0 = disable, otherwise sets velocity scale on block hit particle fx */
     @Getter
     protected float blockHitFXScale;
@@ -190,6 +198,11 @@ public class BulletType extends ShootableType
             bulletSpeed = muzzleVelocity / 20F;
         speedMultiplier = readValue("BulletSpeedMultiplier", speedMultiplier, file);
         penetrationAt100m = readValue("PenetrationAt100m", penetrationAt100m, file);
+        if (!Float.isFinite(penetrationAt100m) || penetrationAt100m < 0F)
+        {
+            logError("PenetrationAt100m must be a finite non-negative value in millimetres; ignoring it", file);
+            penetrationAt100m = 0F;
+        }
 
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);
@@ -278,11 +291,9 @@ public class BulletType extends ShootableType
         laserGuidance = readValue("LaserGuidance", laserGuidance, file);
         maxRange = readValue("MaxRange", maxRange, file);
 
+        fancyDescription = readValue("FancyDescription", fancyDescription, file);
         blockHitFXScale = readValue("BlockHitFXScale", blockHitFXScale, file);
         readBlockHitFXScale = file.hasConfigLine("BlockHitFXScale");
-
-        if (!penetrates)
-            penetratingPower = DEFAULT_PENETRATING_POWER;
 
         // Clamp to [0, 1]
         dragInAir = Math.max(0, Math.min(1, dragInAir));
@@ -300,17 +311,18 @@ public class BulletType extends ShootableType
         {
             // AddRound [name] [count] [mass in g] [explosive mass in kg TNT equivalent] [muzzle velocity in m/s]
             readValuesInLines("AddRound", file, 3).ifPresent(rounds -> rounds.forEach(round -> {
-                if (round.length > 5)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), Float.parseFloat(round[4]) / 20F, Float.parseFloat(round[5]))));
-                else if (round.length > 4)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), Float.parseFloat(round[4]) / 20F, 0F)));
-                else if (round.length > 3)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), Float.parseFloat(round[3]), 0F, 0F)));
-                else if (round.length > 2)
-                    period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), new RoundStats(Float.parseFloat(round[2]), 0F, 0F, 0F)));
+                period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), readRoundStats(round, file)));
             }));
             periodLength = period.stream().mapToInt(RoundEntry::count).sum();
         }
+
+        // Mass-based ammunition always uses the kinetic penetration system. Legacy packs commonly mark shells as
+        // non-penetrating to disable entity pass-through, but retaining that flag would also bypass their kinetic
+        // penetrating-power calculation entirely.
+        if (useKineticDamageSystem())
+            penetrates = true;
+        else if (!penetrates)
+            penetratingPower = DEFAULT_PENETRATING_POWER;
     }
 
     @Override
@@ -325,14 +337,78 @@ public class BulletType extends ShootableType
         return explosiveMass > 0F || hasDifferentRounds();
     }
 
+    /**
+     * Penetrating power of the first round, without any weapon-supplied velocity.
+     *
+     * @see #getPenetratingPower(int, float)
+     */
+    public float getPenetratingPower()
+    {
+        return getPenetratingPower(0, 0F);
+    }
+
+    /**
+     * Penetrating power of the round fired at the given position of the magazine.
+     *
+     * <p>Ammunition that uses the kinetic damage system, meaning it declares a projectile {@code Mass}, derives its
+     * penetrating power from muzzle kinetic energy instead of from {@code Penetration} / {@code PenetratingPower},
+     * so that mass and muzzle velocity alone determine both damage and penetration. Kinetic ammunition is always
+     * penetrating, even when a legacy definition declares {@code Penetrates false}. Ammunition without a mass keeps
+     * its authored value.
+     *
+     * @param shotsFired                    position in the magazine, which selects the round of an {@code AddRound} belt
+     * @param weaponBulletSpeedBlocksPerTick velocity the firing weapon gives the projectile, used only when neither the
+     *                                       round nor the ammunition declares one; pass 0 when no weapon is known
+     */
+    public float getPenetratingPower(int shotsFired, float weaponBulletSpeedBlocksPerTick)
+    {
+        if (!penetrates || !useKineticDamageSystem())
+            return penetratingPower;
+
+        float mass = getMass(shotsFired);
+        if (mass <= 0F)
+            return penetratingPower;
+
+        return ShootingHelper.getKineticPenetratingPower(mass, getBulletSpeed(shotsFired, weaponBulletSpeedBlocksPerTick));
+    }
+
+    /**
+     * @return the velocity of the round fired at the given position of the magazine, falling back to the velocity
+     * supplied by the weapon and then to the default bullet speed
+     */
+    public float getBulletSpeed(int shotsFired, float weaponBulletSpeedBlocksPerTick)
+    {
+        return getBulletSpeed(shotsFired, weaponBulletSpeedBlocksPerTick, true);
+    }
+
+    /**
+     * Canonical velocity resolution: the round declared for this position of the magazine first, then the
+     * ammunition's own {@code MuzzleVelocity}, then the velocity the firing weapon supplies.
+     *
+     * @param shotsFired                     position in the magazine, which selects the round of an {@code AddRound} belt
+     * @param weaponBulletSpeedBlocksPerTick velocity the firing weapon gives the projectile, used only when the
+     *                                       ammunition declares none; pass 0 when no weapon is known
+     * @param useDefaultFallback             when false, zero is returned if neither the ammunition nor the weapon
+     *                                       declares a velocity, which marks the shot as an instant raytrace
+     */
+    public float getBulletSpeed(int shotsFired, float weaponBulletSpeedBlocksPerTick, boolean useDefaultFallback)
+    {
+        float speed = hasDifferentRounds() ? statsForShot(shotsFired).bulletSpeed : bulletSpeed;
+
+        if (speed > 0F)
+            return applySpeedMultiplier(speed);
+        if (weaponBulletSpeedBlocksPerTick > 0F)
+            return applySpeedMultiplier(weaponBulletSpeedBlocksPerTick);
+
+        return useDefaultFallback ? applySpeedMultiplier(DEFAULT_BULLET_SPEED) : 0F;
+    }
+
     public float getBulletSpeed(boolean enforceDefaultFallback)
     {
-        float speed = hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed;
-        boolean useMultiplier = speedMultiplier > 0F && speedMultiplier != 1F;
-        speed = useMultiplier ? speed * speedMultiplier : speed;
+        float speed = applySpeedMultiplier(hasDifferentRounds() ? statsForShot(0).bulletSpeed : bulletSpeed);
 
         if (enforceDefaultFallback && speed <= 0F)
-            return useMultiplier ? DEFAULT_BULLET_SPEED * speedMultiplier : DEFAULT_BULLET_SPEED;
+            return applySpeedMultiplier(DEFAULT_BULLET_SPEED);
 
         return speed;
     }
@@ -340,6 +416,12 @@ public class BulletType extends ShootableType
     public float getBulletSpeed()
     {
         return getBulletSpeed(false);
+    }
+
+    /** Applies this ammunition's {@code BulletSpeedMultiplier} to an already resolved velocity. */
+    public float applySpeedMultiplier(float speedBlocksPerTick)
+    {
+        return speedMultiplier > 0F && speedMultiplier != 1F ? speedBlocksPerTick * speedMultiplier : speedBlocksPerTick;
     }
 
     @Override
@@ -357,6 +439,42 @@ public class BulletType extends ShootableType
         return super.getMass();
     }
 
+    private RoundStats readRoundStats(String[] round, TypeFile file)
+    {
+        float roundMass = nonNegativeRoundValue(round, 2, "mass in grams", file);
+        // Authored in grams TNT equivalent, matching the round's own mass column; stored in kg.
+        float roundExplosiveMass = nonNegativeRoundValue(round, 3, "explosive mass in g TNT equivalent", file)
+            / GRAMS_PER_KILOGRAM;
+        float roundSpeed = nonNegativeRoundValue(round, 4, "muzzle velocity in m/s", file) / 20F;
+        float roundPenetration = nonNegativeRoundValue(round, 5, "penetration at 100 m in millimetres", file);
+        return new RoundStats(roundMass, roundExplosiveMass, roundSpeed, roundPenetration);
+    }
+
+    private float nonNegativeRoundValue(String[] round, int index, String description, TypeFile file)
+    {
+        if (index >= round.length)
+            return 0F;
+        float value;
+        try
+        {
+            value = Float.parseFloat(round[index]);
+        }
+        catch (NumberFormatException ex)
+        {
+            logError("AddRound " + description + " must be numeric; using zero", file);
+            return 0F;
+        }
+        if (Float.isFinite(value) && value >= 0F)
+            return value;
+        logError("AddRound " + description + " must be finite and non-negative; using zero", file);
+        return 0F;
+    }
+
+    public float getPenetrationAt100m(int shotsFired)
+    {
+        return hasDifferentRounds() ? statsForShot(shotsFired).penetrationAt100m() : penetrationAt100m;
+    }
+
     @Override
     public float getExplosiveMass()
     {
@@ -370,18 +488,50 @@ public class BulletType extends ShootableType
     @Override
     public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
-        if (explosiveEntity instanceof Bullet bullet && bullet.getConfigType().hasDifferentRounds())
+        if (explosiveEntity instanceof Bullet bullet)
         {
-            RoundStats roundStats = statsForShot(bullet.getFiredShot().getShot());
-            float explosionRadius = (float) (ModCommonConfig.get().newDamageSystemExplosiveRadiusReference() * Math.cbrt(roundStats.explosiveMass));
-            float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(roundStats.explosiveMass));
-            float explosionBlastRadius = ModCommonConfig.get().newDamageSystemBlastToExplosionRadiusRatio() * explosionRadius;
-            DamageStats explosionBlastDamage = new DamageStats();
-            explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(roundStats.explosiveMass)));
-            explosionBlastDamage.calculate();
-            return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius, explosionBlastDamage, fragRadius, fragIntensity, explosionFragDamage);
+            FiredShot shot = bullet.getFiredShot();
+            // A per-weapon AmmoExplosiveMassTNTg/Kg or AddRoundForAmmo override replaces the
+            // charge for this shot; otherwise a belt round's own charge is used.
+            boolean overridden = shot != null && !shot.getAmmoOverride().isEmpty();
+            if (overridden || bullet.getConfigType().hasDifferentRounds())
+            {
+                float explosiveCharge = shot != null ? shot.getExplosiveMass()
+                    : statsForShot(0).explosiveMass();
+                return explosionStatsForCharge(explosiveCharge);
+            }
         }
         return super.getExplosionStats(explosiveEntity);
+    }
+
+    /**
+     * Explosion profile of a shot resolved through the weapon firing it, so a per-weapon charge override
+     * or a belt round's own charge is reflected without a projectile entity.
+     */
+    public FlanExplosion.Stats getExplosionStatsForShot(FiredShot shot)
+    {
+        if (!shot.getAmmoOverride().isEmpty() || hasDifferentRounds())
+            return explosionStatsForCharge(shot.getExplosiveMass());
+        return super.getExplosionStats(null);
+    }
+
+    /** Derives the whole explosion profile from one bursting charge in kg TNT equivalent. */
+    private FlanExplosion.Stats explosionStatsForCharge(float explosiveCharge)
+    {
+        float explosionRadius = ExplosionScaling.craterRadius(ModCommonConfig.get().newDamageSystemExplosiveRadiusReference(), explosiveCharge);
+        float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveCharge));
+        float explosionBlastRadius = ExplosionScaling.blastRadius(ModCommonConfig.get().newDamageSystemBlastRadiusReference(), explosiveCharge);
+        DamageStats explosionBlastDamage = new DamageStats();
+        explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(explosiveCharge)));
+        explosionBlastDamage.calculate();
+        // The frag envelope has to come from this round's own charge too, not the type's parsed
+        // fragRadius, which was derived from the type-level explosive mass and is wrong for a belt
+        // whose rounds carry different charges.
+        float roundFragRadius = fragType != EnumFragType.DEFAULT
+            ? ExplosionScaling.fragRadius(fragType.kFragRadius, explosiveCharge) : fragRadius;
+        return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius,
+            explosionBlastDamage, roundFragRadius, fragIntensity, explosionFragDamage,
+            Float.isFinite(explosiveCharge) && explosiveCharge > 0F ? explosiveCharge : 0F);
     }
 
     public boolean hasDifferentRounds()

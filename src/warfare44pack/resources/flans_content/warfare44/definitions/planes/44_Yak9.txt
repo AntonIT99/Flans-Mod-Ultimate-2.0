@@ -1,0 +1,122 @@
+// Identity
+Name Yak-9T
+ShortName 44_Yak9
+Description Soviet Fighter Aircraft__Uses Berezin-UB Mg Ammo / 37mm Aircraft Ammo__Year Introduced : 1943
+
+// Rendering
+Icon 44_Yak9
+Model W44.Yak9
+ModelScale 1
+Texture Skin44_Yak9
+CameraDistance 10.0
+
+// Recipe and inventory
+AddRecipeParts core 1 44_FighterAircraftBody
+AddRecipeParts nose 1 44_20mmCannon
+AddRecipeParts leftWing 1 44_BerezinUBMG
+AddRecipeParts rightWing 1 44_BerezinUBMG
+CargoSlots 30
+BombSlots 0
+MissileSlots 2
+FuelTankSize 6000
+
+// Paintjobs
+AddDye 3 lightBlue
+AddDye 5 gray
+
+// Real-world specifications
+RealMassKg 2760
+RealEnginePowerPS 1180
+RealMaxSpeedKmh 558
+RealWingSpanM 9.74
+RealWingAreaM2 17.15
+RealClimbRateMs 13.6
+
+// Movement
+Mode Plane
+MaxThrottle 2.75
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.25
+TurnRightSpeed 1.25
+LookUpSpeed 2.25
+LookDownSpeed 2.25
+RollLeftSpeed 1.5
+RollRightSpeed 1.5
+RestingPitch 15.0
+Drag 1.0
+
+// Wheels and tracks
+WheelPosition 0 31 -12 -41
+WheelPosition 1 31 -12 41
+WheelPosition 2 -103 18 0
+WheelSpringStrength 0.125
+Propeller 0 85 29 0 nose 44_Metal_Propeller
+
+// Weapons
+Primary Gun
+Secondary Missile
+ReadWeaponsFromGunTypes true
+ShootDelayPrimary 3
+ShootDelaySecondary 3
+ModePrimary FullAuto
+ModeSecondary FullAuto
+AlternatePrimary False
+AlternateSecondary False
+BulletSpread 4
+BulletSpeed 12
+BulletDetection 10
+AllowAllAmmo False
+AddAmmo 44_37mmAircraftAmmo
+ShootPointPrimary 65 37 6 core 44_BerezinUBMG
+ShootPointPrimary 65 37 -6 core 44_BerezinUBMG
+ShootPointSecondary 97 29 0 nose
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+ShootParticlesSecondary crit 0.4 0 0
+ShootParticlesSecondary crit 0.4 -0.1 0
+ShootParticlesSecondary crit 0.4 0.1 0
+ShootParticlesSecondary crit 0.4 0 -0.1
+ShootParticlesSecondary crit 0.4 0 0.1
+ShootParticlesSecondary flansmod.fmflame 0 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 20
+
+// Parts and collision
+SetupPart core 450 -150 9 -17 220 48 34
+SetupPart rightWing 275 -45 17 17 58 22 105
+SetupPart leftWing 275 -45 17 -123 58 22 105
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+
+// Seats
+Pilot -13 24 0
+Passengers 0
+
+// Sounds
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary BerezinUBMGShoot
+ShootSoundSecondary Yak_37mmShoot
+
+// Effects
+AddEmitter largesmoke 1 [50,24,12] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [50,24,12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter largesmoke 1 [50,24,-12] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [50,24,-12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [50,24,12] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [50,24,12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [50,24,-12] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [50,24,-12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core

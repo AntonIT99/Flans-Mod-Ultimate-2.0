@@ -1,0 +1,47 @@
+// Identity
+Name German 37 mm FlaK 36/37 HE Belt
+ShortName WW2_Shell_German37mmAA
+description Amunition for Bordkanone BK37
+
+// Model and Rendering
+Icon Icon_WW2_Shell_German37mmAA
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+ F 
+GGG
+SSS
+RecipeOutput 12
+MaxStackSize 12
+RoundsPerItem 12
+
+// Behaviour
+Bomb False
+Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 2.0
+
+// Ballistics and Damage
+DamageVsLiving 400
+DamageVsVehicles 400
+DamageVsPlanes 20
+Mass 640
+MuzzleVelocity 820
+ExplosiveMassTNTg 21
+PenetrationAt100m 35
+Explosion 2
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+HasLight True

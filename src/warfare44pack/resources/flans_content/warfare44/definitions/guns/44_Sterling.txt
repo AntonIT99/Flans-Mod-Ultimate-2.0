@@ -1,0 +1,61 @@
+// Identity
+Name Sterling L2A3 Mk.4
+ShortName 44_Sterling
+Description British Sub Machine Gun
+
+// Rendering
+Icon 44_Sterling
+Model W44.Sterling
+ModelScale 0.22
+Texture Skin44_Sterling
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_SterlingAmmo
+
+// Handling
+Mode FullAuto
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 550
+ReloadTime 60
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 390.0
+Dispersion 0.42
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 2.0
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_Suppressor 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound SterlingShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound StenReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

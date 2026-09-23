@@ -1,0 +1,18 @@
+// Identity
+Name Japanese Type 98 Pants (Khaki)
+ShortName 44_JapaneseType98PantsKhaki
+Type Pants
+
+// Rendering
+Icon 44_JapaneseType98PantsKhaki
+Model W44.JapaneseType98PantsKhaki
+ModelScale 1
+ArmorTexture Skin44_JapaneseType98Khaki
+
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
+SmokeProtection false

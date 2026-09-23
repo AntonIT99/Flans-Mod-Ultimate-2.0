@@ -1,0 +1,114 @@
+// Identity
+Name P51-D Mustang
+ShortName 44_P51DMustang
+Description American Fighter Aircraft__Uses M2 Browning .50 Cal Ammo__Year Introduced : 1943
+
+// Rendering
+Icon 44_P51DMustang
+Model W44.P51DMustang
+Texture Skin44_P51DMustang
+CameraDistance 10.0
+
+// Recipe and inventory
+AddRecipeParts core 1 44_FighterAircraftBody
+AddRecipeParts leftWing 3 44_50Cal
+AddRecipeParts rightWing 3 44_50Cal
+CargoSlots 30
+BombSlots 0
+MissileSlots 0
+FuelTankSize 6000
+
+// Paintjobs
+AddDye 3 blue
+AddDye 5 silver
+
+// Real-world specifications
+RealMassKg 4175
+RealEnginePowerHp 1490
+RealMaxSpeedKmh 703
+RealWingSpanM 11.28
+RealWingAreaM2 21.83
+RealClimbRateMs 16.3
+
+// Movement
+Mode Plane
+MaxThrottle 2.5
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.25
+TurnRightSpeed 1.25
+LookUpSpeed 2.5
+LookDownSpeed 2.5
+RollLeftSpeed 2.25
+RollRightSpeed 2.25
+RestingPitch 15.0
+Drag 1.0
+
+// Wheels and tracks
+WheelPosition 0 0 -8 -38
+WheelPosition 1 0 -8 38
+WheelPosition 2 -104 18 0
+WheelSpringStrength 0.125
+Propeller 0 61 35 0 nose 44_Metal_Propeller
+
+// Weapons
+Primary Gun
+Secondary None
+ReadWeaponsFromGunTypes true
+ShootDelayPrimary 3
+ModePrimary FullAuto
+ModeSecondary FullAuto
+AlternatePrimary False
+BulletSpread 4
+BulletSpeed 12
+BulletDetection 10
+AllowAllAmmo False
+ShootPointPrimary 6 25 42 nose 44_50Cal
+ShootPointPrimary 6 25 -42 nose 44_50Cal
+ShootPointPrimary 6 25 47 nose 44_50Cal
+ShootPointPrimary 6 25 -47 nose 44_50Cal
+ShootPointPrimary 6 26 51 nose 44_50Cal
+ShootPointPrimary 6 26 -51 nose 44_50Cal
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 45
+
+// Parts and collision
+SetupPart core 450 -150 9 -17 220 48 34
+SetupPart rightWing 275 -45 17 17 58 22 105
+SetupPart leftWing 275 -45 17 -123 58 22 105
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+
+// Seats
+Pilot -22 31 0
+Passengers 0
+
+// Sounds
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary Plane50CalShoot
+ShootSoundSecondary None
+
+// Effects
+AddEmitter largesmoke 1 [48,35,12] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [48,35,12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter largesmoke 1 [48,35,-12] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [48,35,-12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [48,35,12] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [48,35,12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [48,35,-12] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [48,35,-12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core

@@ -1,0 +1,39 @@
+// Identity
+Name Bazooka Rocket
+ShortName 44_BazookaAmmo
+
+// Rendering
+Icon 44_BazookaAmmo
+Model Bullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 1
+
+// Ballistics
+MuzzleVelocity 82
+FallSpeed 0.25
+HitBoxSize 0.1
+Penetrates False
+PenetrationAt100m 100
+BreaksGlass True
+
+// Damage
+Mass 1590
+DamageVsLiving 50
+DamageVsVehicles 800
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 420
+Explosion 2
+ExplodeOnImpact True
+Fuse 0
+
+// Effects
+SmokeTrail True
+FlakParticles 0
+
+// Sounds
+HitSound bullet

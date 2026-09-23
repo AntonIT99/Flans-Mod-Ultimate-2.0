@@ -1,0 +1,51 @@
+// Identity
+Name 76mm AP Tank Shell
+ShortName 44_76APShell
+
+// Rendering
+Icon 44_76APShell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 3
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 655
+FallSpeed 1.0
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 78
+BreaksGlass True
+
+// Damage
+Mass 6300
+Damage 1
+DamageVsLiving 100
+DamageVsVehicles 832
+Fire 0
+
+// Explosion
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+HasSubmunitions false
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 0
+ExplodeParticles 8
+FlareParticleCount 3
+DebrisParticleCount 3
+
+// Sounds
+HitSound

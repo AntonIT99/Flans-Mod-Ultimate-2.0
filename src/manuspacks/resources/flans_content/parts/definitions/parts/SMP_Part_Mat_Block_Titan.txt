@@ -1,0 +1,16 @@
+// Identity
+Name Titan Ingot
+ShortName SMP_Part_Mat_Block_Titan
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Block_Titan
+
+// Recipe and Inventory
+Recipe A SMP_Part_Mat_Block_Aluminium M SMP_Part_Mat_Block_Steel
+MAM
+   
+   
+RecipeOutput 2
+Category Misc
+PartBoxRecipe
+StackSize 64

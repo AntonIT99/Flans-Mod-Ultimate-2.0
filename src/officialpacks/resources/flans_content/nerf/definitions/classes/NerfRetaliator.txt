@@ -1,5 +1,8 @@
+// Identity
 Name Scout
 ShortName nerfRetaliatorClass
+
+// Items
 AddItem nerfRetaliator
 AddItem nerfStrongarm
 AddItem 18DartEliteClip

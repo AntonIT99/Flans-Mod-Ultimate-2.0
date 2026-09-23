@@ -1,0 +1,16 @@
+// Identity
+Name Titan Armorplate
+ShortName SMP_Part_Mat_Armor_Titan
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Armor_Titan
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Titan P SMP_Part_Mat_Plate_Titan
+   
+PPP
+MMM
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

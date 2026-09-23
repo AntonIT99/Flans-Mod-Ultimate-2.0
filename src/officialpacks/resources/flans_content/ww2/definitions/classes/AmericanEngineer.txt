@@ -1,5 +1,8 @@
+// Identity
 Name Engineer
-ShortName americanEngineer
+ShortName OfficialWW2_AmericanEngineer
+
+// Items
 AddItem thompson
 AddItem colt
 AddItem mk2Frag 1

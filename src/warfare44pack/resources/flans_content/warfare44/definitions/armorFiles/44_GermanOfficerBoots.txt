@@ -1,0 +1,18 @@
+// Identity
+Name German Officer Boots
+ShortName 44_GermanOfficerBoots
+Type Boots
+
+// Rendering
+Icon 44_GermanOfficerBoots
+Model W44.GermanOfficerBoots
+ModelScale 1
+ArmorTexture Skin44_GermanOfficer
+
+// Protection
+ArmorPoints 1
+Defence 0.02
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 0.35
+SmokeProtection false

@@ -1,0 +1,87 @@
+﻿// Identity
+Name Renault FT-17
+ShortName WW2_Vehicle_Renault17_1A
+
+// Model and Rendering
+Model Manus_WW2.Vehicle.WW2_Vehicle_RenaultFT17_1
+Icon Icon_WW2_Vehicle_RenaultFT17_1A
+Texture Skin_WW2_Vehicle_RenaultFT17_1A
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 1000
+CargoSlots 0
+ShellSlots 2
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 10 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 5 gray
+AllowAllAmmo False
+AddAmmo shell
+
+// Movement and Physics
+MaxThrottle 0.4
+MaxNegativeThrottle 0.3
+Drag 1.0
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+Tank true
+RealMassKg 6500
+RealEnginePowerPS 39
+RealMaxSpeedKmh 7
+DriveType TRACKED
+RealMaxReverseSpeedKmh 2
+
+// Weapons
+AddGun 10 24 -2 turret WW2_MG_BrowningM1919_1A
+BarrelPosition 0 34 0
+ShellDelay 110
+ShootDelay 1
+ShootDelayPrimarySeconds 4
+ReadWeaponsFromGunTypes true
+
+// Protection
+IsExplosionWhenDestroyed true
+ArmorFrontMm 16
+ArmorSideMm 16
+ArmorRearMm 16
+ArmorTopMm 8
+ArmorBottomMm 8
+TurretArmorFrontMm 22
+TurretArmorSideMm 22
+TurretArmorRearMm 22
+TurretArmorTopMm 22
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 -24 -8 -17
+WheelPosition 1 -24 -8 17
+WheelPosition 2 18 -8 17
+WheelPosition 3 18 -8 -17
+Driver 0 18 0 -360 360 -10 25
+RotatedDriverOffset -2 0 -1
+Passengers 0
+SetupPart turret 100 -11 19 -12 22 9 24
+SetupPart leftTrack 100 -35 -10 11 70 22 7
+SetupPart core 200 -48 -3 -11 80 21 22
+SetupPart rightTrack 100 -35 -10 -18 70 22 7
+BulletDetection 5
+CameraDistance 5
+
+// Optics
+hasScope true
+Gunsight manus_italian1
+gunsightZoom 2
+
+// Sounds
+StartSound tankidle1
+StartSoundLength 41
+EngineSound engine_lt_m5
+EngineSoundLength 39
+ShootSoundPrimary shoot_37mm
+ShootSoundSecondary 30calshoot

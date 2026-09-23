@@ -1,0 +1,48 @@
+// Identity
+Name S-Mine
+ShortName 44_SMine
+
+// Rendering
+Icon 44_SMine
+Model W44.SMine
+ModelScale 1
+Texture Skin44_SMine
+Colour 255 255 255
+
+// Inventory
+StackSize 1
+
+// Throwing and physics
+ThrowSpeed 0.5
+ThrowDelay 20
+FallSpeed 1
+Bounciness 0
+HitBoxSize 1.5
+SpinWhenThrown false
+Sticky false
+PenetratesBlocks false
+BreaksGlass true
+
+// Damage and healing
+HitEntityDamage 1
+
+// Detonation and explosion
+PrimeDelay 25
+DetonateOnImpact false
+DetonateWhenShot true
+Remote false
+LivingProximityTrigger 1
+VehicleProximityTrigger -0
+ExplosiveMassTNTg 182
+FragType AIRBURST_AP
+ExplosionRadius 3
+ExplosionDamageVsLiving 80
+ExplosionDamageVsVehicle 5
+ExplosionDamageVsPlane 0
+ExplosionBreaksBlocks false
+FireRadius 0.0
+
+// Effects
+TrailParticles false
+ExplodeParticles 2
+SmokeTime 0

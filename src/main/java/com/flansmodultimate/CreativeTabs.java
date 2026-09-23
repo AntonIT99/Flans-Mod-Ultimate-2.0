@@ -1,7 +1,9 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.item.BulletItem;
+import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
@@ -94,16 +96,25 @@ public final class CreativeTabs
                     || onlyVehicleAmmo && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType())))
                         continue;
 
-                output.accept(item);
+                output.accept(createCreativeStack(new ItemStack(item), parameters.holders()));
 
                 if (ModCommonConfig.get().addAllPaintjobsToCreative() && item instanceof IPaintableItem<?> paintableItem)
                 {
                     for (Paintjob pj : paintableItem.getPaintableType().getPaintjobs().values())
                         if (!pj.isDefault())
-                            output.accept(paintableItem.makePaintjobStack(pj));
+                            output.accept(createCreativeStack(paintableItem.makePaintjobStack(pj), parameters.holders()));
                 }
             }
         };
+    }
+
+    private static ItemStack createCreativeStack(ItemStack stack, net.minecraft.core.HolderLookup.Provider registries)
+    {
+        if (!(stack.getItem() instanceof DriveableItem<?, ?> driveableItem))
+            return stack;
+        DriveableData data = DriveableData.fromStack(driveableItem.getConfigType(), stack, registries);
+        data.setFuelInTank(driveableItem.getConfigType().getFuelTankSize());
+        return data.copyToStack(stack);
     }
 
     private static List<DeferredHolder<Item, ? extends Item>> sortForCreativeTab(List<DeferredHolder<Item, ? extends Item>> itemsForTab)

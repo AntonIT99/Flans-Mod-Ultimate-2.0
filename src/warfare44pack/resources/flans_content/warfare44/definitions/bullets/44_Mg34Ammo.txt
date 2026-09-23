@@ -1,0 +1,44 @@
+// Identity
+Name MG-34 Belt
+ShortName 44_Mg34Ammo
+
+// Rendering
+Icon 44_Mg34Ammo
+Model W44.W44Bullet
+Texture Skin44_W44Bullet_Tracer_Green
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 3
+RoundsPerItem 50
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates True
+BreaksGlass True
+
+// Damage
+Mass 12.8
+Damage 1
+DamageVsLiving 12
+DamageVsVehicles 1
+DamageVsPlanes 8
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 0
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracergreen
+FlakParticles 0
+
+// Sounds
+HitSound bullet
+HitSound LargeImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true

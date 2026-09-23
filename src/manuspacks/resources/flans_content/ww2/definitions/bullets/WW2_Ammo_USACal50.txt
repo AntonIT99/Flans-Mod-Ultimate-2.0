@@ -1,0 +1,37 @@
+// Identity
+Name US Cal.50 Ammo - 150 Bullet Box
+ShortName WW2_Ammo_USACal50
+description Amunition for Browning M2
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_USACal50
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 150
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 14
+DamageVsVehicles 1
+DamageVsPlanes 5
+Explosion 0
+Fire 0
+Mass 42.0
+PenetrationAt100m 20
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail False

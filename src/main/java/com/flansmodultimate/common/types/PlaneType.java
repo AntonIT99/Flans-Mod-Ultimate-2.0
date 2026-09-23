@@ -5,10 +5,14 @@ import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
 import com.flansmodultimate.common.driveables.Propeller;
+import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
+import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.world.item.ItemStack;
 
@@ -21,6 +25,30 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class PlaneType extends DriveableType
 {
+    @Override
+    public String getEngineStartupSound()
+    {
+        return StringUtils.firstNonBlank(startEngineSound, startSound);
+    }
+
+    @Override
+    public int getEngineStartupSoundLength()
+    {
+        return StringUtils.isNotBlank(startEngineSound) ? startEngineSoundLength : startSoundLength;
+    }
+
+    @Override
+    public String getEngineIdleLoopSound()
+    {
+        return StringUtils.firstNonBlank(idleSound, engineSound);
+    }
+
+    @Override
+    public float getEngineIdleLoopPitchRange()
+    {
+        return StringUtils.isBlank(idleSound) ? engineSoundPitchRange : 0F;
+    }
+
     protected EnumPlaneMode mode = EnumPlaneMode.PLANE;
     protected float lookDownModifier = 1F;
     protected float lookUpModifier = 1F;
@@ -77,8 +105,29 @@ public class PlaneType extends DriveableType
     protected final List<Propeller> propellers = new ArrayList<>();
     protected final List<Propeller> heliPropellers = new ArrayList<>();
     protected final List<Propeller> heliTailPropellers = new ArrayList<>();
-    protected boolean hasGear;
-    protected boolean hasDoor;
+    /**
+     * Legacy HasGear only chose whether the mount hint advertised the gear key;
+     * the gear itself was always retractable, so the great majority of type
+     * files never declare it. Defaulting to true keeps those planes working,
+     * while a pack that opts out with {@code HasGear False} (helicopter skids,
+     * fixed undercarriages) still keeps its gear planted.
+     */
+    protected boolean hasGear = true;
+    /**
+     * HasDoor is the same kind of legacy hint as {@link #hasGear}: it only chose
+     * whether the toggle printed a message, while the automatic door handling
+     * ran on every plane. No shipped type file declares it, so gating behaviour
+     * on it switches the doors off everywhere.
+     */
+    protected boolean hasDoor = true;
+    /**
+     * Air brakes are standard equipment on this model: every fixed-wing type has
+     * them unless a pack opts out with {@code HasAirBrake False}. A helicopter has
+     * no airframe surface to stand into the airflow, so {@code Mode Heli} defaults
+     * the other way. The deployed brake area itself comes from
+     * {@code RealAirBrakeAreaM2}, or from wing area when that is not researched.
+     */
+    protected boolean hasAirBrake = true;
     protected boolean hasWing;
     protected boolean foldWingForLand;
     protected boolean flyWithOpenDoor;
@@ -117,12 +166,13 @@ public class PlaneType extends DriveableType
         readPropellers("HeliTailPropeller", heliTailPropellers, file);
         engineSoundLength = readSoundLength("PropSoundLength", engineSoundLength, file);
         engineSound = readSound("PropSound", engineSound, file);
-        shootSoundPrimary = readSound("ShootSound", shootSoundPrimary, file);
-        shootSoundSecondary = readSound("BombSound", shootSoundSecondary, file);
+        registerSoundTimer("PropSoundLength", () -> engineSound, () -> engineSoundLength, length -> engineSoundLength = length);
 
         hasGear = readValue("HasGear", hasGear, file);
         hasGear = readValue("HasLandingGear", hasGear, file);
         hasDoor = readValue("HasDoor", hasDoor, file);
+        hasAirBrake = readValue("HasAirBrake", mode != EnumPlaneMode.HELI, file);
+        hasAirBrake = readValue("AirBrake", hasAirBrake, file);
         hasWing = readValue("HasWing", hasWing, file);
         foldWingForLand = readValue("FoldWingForLand", foldWingForLand, file);
         flyWithOpenDoor = readValue("FlyWithOpenDoor", flyWithOpenDoor, file);
@@ -164,6 +214,23 @@ public class PlaneType extends DriveableType
         doorRot2 = readVector("DoorRotation2", doorRot2, file);
         doorRate = readVector("DoorRate", doorRate, file);
         doorRotRate = readVector("DoorRotRate", doorRotRate, file);
+
+        // Re-run finalization now that Mode, propellers and NewFlightControl are
+        // read, so physics resolution sees the complete definition.
+        finishDerivedValues();
+    }
+
+    @Override
+    protected EnumVehicleCategory physicsCategory()
+    {
+        return EnumVehicleCategory.AIRCRAFT;
+    }
+
+    @Override
+    protected LegacyPhysicsHints legacyPhysicsHints()
+    {
+        return new LegacyPhysicsHints(false, false, maxNegativeThrottle, floatOnWater,
+            newFlightControl, false);
     }
 
     private void readPropellers(String key, List<Propeller> destination, TypeFile file)
@@ -188,14 +255,6 @@ public class PlaneType extends DriveableType
                 logError("Could not parse " + key, file, ex);
             }
         }
-    }
-
-    private static float parseLegacyFloat(String raw)
-    {
-        String value = raw.trim();
-        if (value.indexOf(',') == value.lastIndexOf(',') && value.indexOf(',') > 0 && value.indexOf('.') < 0)
-            value = value.replace(',', '.');
-        return Float.parseFloat(value);
     }
 
     @Override

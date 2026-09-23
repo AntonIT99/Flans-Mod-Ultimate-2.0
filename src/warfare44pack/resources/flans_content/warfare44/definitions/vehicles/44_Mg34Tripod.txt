@@ -1,0 +1,70 @@
+// Identity
+Name MG-34 - Tripod
+ShortName 44_Mg34Tripod
+Description German Mounted Machine Gun
+
+// Rendering
+Icon 44_Mg34Tripod
+Model W44.Mg34Tripod
+ModelScale 1.25
+Texture Skin44_Mg34Tripod
+RotateWheels True
+CameraDistance 2.5
+
+// Recipe and inventory
+AddRecipeParts core 1 44_Gun_Barrel 1 44_Receiver 4 ingotIron
+CargoSlots 0
+ShellSlots 0
+FuelTankSize 2000
+
+// Real-world specifications
+RealMassKg 36
+
+// Movement
+Tank true
+FourWheelDrive true
+MaxThrottle 0.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 0.0
+TurnRightSpeed 0.0
+CanRoll true
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -4 -8 -4
+WheelPosition 1 -4 -8 4
+WheelPosition 2 4 -8 4
+WheelPosition 3 4 -8 -4
+WheelSpringStrength 0.5
+
+// Weapons
+ReadWeaponsFromGunTypes true
+ShootDelay 2
+BulletSpread 2
+BulletSpeed 12
+BulletDetection 5
+AllowAllAmmo False
+AddGun 10 13 0 turret 44_Mg34
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+
+// Parts and collision
+SetupPart core 25 -20 -8 -18 36 24 36
+
+// Seats
+Driver 0 0 0 -17 17 -18 30
+Passengers 0
+RotatedDriverOffset -15 0 0
+
+// Sounds
+StartSound None
+StartSoundLength None
+EngineSound None
+EngineSoundLength None
+ShootSoundSecondary Mg34Shoot

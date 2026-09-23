@@ -1,24 +1,30 @@
 package com.flansmod.client.tmt;
 
+import com.flansmodultimate.client.model.ModelBase;
+import com.flansmodultimate.client.model.ModelRenderer;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.gpu.GeometryRevision;
+import com.flansmodultimate.client.render.gpu.RigidGeometry;
+import com.flansmodultimate.client.render.gpu.RigidGeometryConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import com.wolffsmod.api.client.model.IModelBase;
-import com.wolffsmod.api.client.model.ModelBase;
-import com.wolffsmod.api.client.model.ModelRenderer;
 import com.wolffsmod.api.client.model.TexturedQuad;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An extension to the ModelRenderer class. It basically is a copy to ModelRenderer,
@@ -57,7 +63,16 @@ public class ModelRendererTurbo extends ModelRenderer
     private int textureOffsetY;
     private PositionTextureVertex[] vertices;
     private TexturedPolygon[] faces;
+    private int vertexCount;
+    private int faceCount;
     private TexturedPolygon[] renderFaces;
+    private RenderPoseCache renderPoseCache;
+    private Quaternionf rotationScratch;
+    private RigidGeometry gpuGeometry;
+    private long observedGeometryEpoch = -1;
+    private long[] renderFaceRevisions = new long[0];
+    private boolean renderFacesDirty = true;
+    private boolean externallyMutableGeometry;
     private boolean boundsDirty = true;
     private boolean hasStaticBounds;
     private float boundsCenterX;
@@ -81,6 +96,7 @@ public class ModelRendererTurbo extends ModelRenderer
         isHidden = false;
         vertices = new PositionTextureVertex[0];
         faces = new TexturedPolygon[0];
+        vertexCount = faceCount = 0;
         renderFaces = new TexturedPolygon[0];
         forcedRecompile = false;
         transformGroup = new HashMap<>();
@@ -150,7 +166,8 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addPolygon(PositionTextureVertex[] verts)
     {
-        copyTo(verts, new TexturedPolygon[]{new TexturedPolygon(verts)});
+        externallyMutableGeometry = true;
+        appendGeometry(verts, new TexturedPolygon[]{new TexturedPolygon(verts)});
     }
 
     /**
@@ -181,7 +198,8 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addPolygon(PositionTextureVertex[] verts, int u1, int v1, int u2, int v2)
     {
-        copyTo(verts, new TexturedPolygon[]{addPolygonReturn(verts, u1, v1, u2, v2)});
+        externallyMutableGeometry = true;
+        appendGeometry(verts, new TexturedPolygon[]{addPolygonReturn(verts, u1, v1, u2, v2)});
     }
 
     private TexturedPolygon addPolygonReturn(PositionTextureVertex[] verts, int u1, int v1, int u2, int v2, float q1, float q2, float q3, float q4)
@@ -372,7 +390,7 @@ public class ModelRendererTurbo extends ModelRenderer
 
         }
 
-        copyTo(verts, poly);
+        appendGeometry(verts, poly);
     }
 
     /**
@@ -1093,7 +1111,7 @@ public class ModelRendererTurbo extends ModelRenderer
             }
         }
 
-        copyTo(shape3D.vertices, shape3D.faces);
+        appendGeometry(shape3D.vertices, shape3D.faces);
     }
 
     /**
@@ -1181,7 +1199,7 @@ public class ModelRendererTurbo extends ModelRenderer
                 positionTexturevertex4, positionTexturevertex5, positionTexturevertex6, positionTexturevertex7
         }, w, h, w + 1, h + 1);
 
-        copyTo(verts, poly);
+        appendGeometry(verts, poly);
     }
 
     /**
@@ -1506,7 +1524,7 @@ public class ModelRendererTurbo extends ModelRenderer
             currentFace++;
         }
 
-        copyTo(tempVerts, poly);
+        appendGeometry(tempVerts, poly);
     }
 
     /**
@@ -1809,7 +1827,7 @@ public class ModelRendererTurbo extends ModelRenderer
             if (mirror ^ flip)
                 poly[endCapPolyIndex].flipFace();
         }
-        copyTo(tempVerts, poly);
+        appendGeometry(tempVerts, poly);
     }
 
     /**
@@ -1832,6 +1850,7 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void addModel(String file, Class<?> modelFormat)
     {
+        externallyMutableGeometry = true;
         ModelPoolEntry entry = ModelPool.addFile(file, modelFormat, transformGroup, textureGroup);
         if (entry == null)
             return;
@@ -1839,8 +1858,9 @@ public class ModelRendererTurbo extends ModelRenderer
         TexturedPolygon[] poly = Arrays.copyOf(entry.faces, entry.faces.length);
         if (flip)
         {
-            for (TexturedPolygon face : faces)
+            for (int i = 0; i < faceCount; i++)
             {
+                TexturedPolygon face = faces[i];
                 face.flipFace();
             }
         }
@@ -1879,12 +1899,13 @@ public class ModelRendererTurbo extends ModelRenderer
 
     public boolean appendVertexBounds(double[] bounds)
     {
-        if (vertices == null || vertices.length == 0)
+        if (vertexCount == 0)
             return false;
 
         boolean found = false;
-        for (PositionTextureVertex vertex : vertices)
+        for (int i = 0; i < vertexCount; i++)
         {
+            PositionTextureVertex vertex = vertices[i];
             if (vertex == null)
                 continue;
 
@@ -1901,6 +1922,48 @@ public class ModelRendererTurbo extends ModelRenderer
     }
 
     /**
+     * Bounds of the geometry this part actually draws, accumulated into
+     * {@code bounds} as min x, y, z then max x, y, z.
+     *
+     * <p>Differs from {@link #appendVertexBounds} after a mirror.
+     * {@link #addRectShape} gives each polygon its own textured copies of the
+     * corner vertices, and {@link #doMirror} walks the polygons, so the vertex
+     * array a shape was built from keeps its original positions on every axis
+     * the mirror touched. Legacy driveable models mirror themselves in Y and Z
+     * at the end of their constructor, which makes this the only reading that
+     * matches the rendered result.</p>
+     *
+     * @return false when this part draws nothing
+     */
+    public boolean appendFaceBounds(double[] bounds)
+    {
+        if (faceCount == 0)
+            return false;
+
+        boolean found = false;
+        for (int i = 0; i < faceCount; i++)
+        {
+            TexturedPolygon face = faces[i];
+            if (face == null || face.vertexPositions == null)
+                continue;
+            for (PositionTextureVertex vertex : face.vertexPositions)
+            {
+                if (vertex == null)
+                    continue;
+                Vec3 vector = vertex.vector3D;
+                bounds[0] = Math.min(bounds[0], vector.x);
+                bounds[1] = Math.min(bounds[1], vector.y);
+                bounds[2] = Math.min(bounds[2], vector.z);
+                bounds[3] = Math.max(bounds[3], vector.x);
+                bounds[4] = Math.max(bounds[4], vector.y);
+                bounds[5] = Math.max(bounds[5], vector.z);
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    /**
      * Mirrors the model in any direction.
      *
      * @param x whether the model should be mirrored in the x-direction
@@ -1909,8 +1972,9 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void doMirror(boolean x, boolean y, boolean z)
     {
-        for (TexturedPolygon face : faces)
+        for (int i = 0; i < faceCount; i++)
         {
+            TexturedPolygon face = faces[i];
             PositionTextureVertex[] verts = face.vertexPositions;
             for (PositionTextureVertex vert : verts)
             {
@@ -1957,8 +2021,15 @@ public class ModelRendererTurbo extends ModelRenderer
     {
         vertices = new PositionTextureVertex[0];
         faces = new TexturedPolygon[0];
-        renderFaces = new TexturedPolygon[0];
+        vertexCount = faceCount = 0;
+        renderFacesDirty = true;
+        gpuGeometry = null;
         boundsDirty = true;
+        textureGroup.clear();
+        currentTextureGroup = new TextureGroup();
+        textureGroup.put("0", currentTextureGroup);
+        renderFaces = new TexturedPolygon[0];
+        renderFaceRevisions = new long[0];
         transformGroup.clear();
         transformGroup.put("0", new TransformGroupBone(new Bone(0, 0, 0, 0), 1D));
         currentGroup = transformGroup.get("0");
@@ -1979,13 +2050,32 @@ public class ModelRendererTurbo extends ModelRenderer
 
     public void copyTo(PositionTextureVertex[] verts, TexturedPolygon[] poly, boolean copyGroup)
     {
-        int vertexOffset = vertices.length;
-        int faceOffset = faces.length;
-        vertices = Arrays.copyOf(vertices, vertexOffset + verts.length);
-        faces = Arrays.copyOf(faces, faceOffset + poly.length);
-        System.arraycopy(verts, 0, vertices, vertexOffset, verts.length);
-        System.arraycopy(poly, 0, faces, faceOffset, poly.length);
-        renderFaces = new TexturedPolygon[0];
+        externallyMutableGeometry = true;
+        appendGeometry(verts, poly, copyGroup);
+    }
+
+    private void appendGeometry(PositionTextureVertex[] verts, TexturedPolygon[] poly)
+    {
+        // Preserve virtual copyTo hooks in legacy subclasses. Only exact TMT parts
+        // can guarantee that these internally constructed arrays have not escaped.
+        if (getClass() == ModelRendererTurbo.class) appendGeometry(verts, poly, true);
+        else copyTo(verts, poly);
+    }
+
+    private void appendGeometry(PositionTextureVertex[] verts, TexturedPolygon[] poly, boolean copyGroup)
+    {
+        int requiredVertices = vertexCount + verts.length;
+        int requiredFaces = faceCount + poly.length;
+        if (vertices.length < requiredVertices)
+            vertices = Arrays.copyOf(vertices, Math.max(requiredVertices, vertices.length + Math.max(16, vertices.length / 2)));
+        if (faces.length < requiredFaces)
+            faces = Arrays.copyOf(faces, Math.max(requiredFaces, faces.length + Math.max(6, faces.length / 2)));
+        System.arraycopy(verts, 0, vertices, vertexCount, verts.length);
+        System.arraycopy(poly, 0, faces, faceCount, poly.length);
+        vertexCount = requiredVertices;
+        faceCount = requiredFaces;
+        renderFacesDirty = true;
+        gpuGeometry = null;
         boundsDirty = true;
 
         if (copyGroup)
@@ -2081,6 +2171,7 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public void setTextureGroup(String groupName)
     {
+        if (!textureGroup.containsKey(groupName)) renderFacesDirty = true;
         currentTextureGroup = textureGroup.computeIfAbsent(groupName, k -> new TextureGroup());
     }
 
@@ -2091,7 +2182,17 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public TextureGroup getTextureGroup()
     {
+        externallyMutableGeometry = true;
+        getRenderFaces();
         return currentTextureGroup;
+    }
+
+    /** Existing geometry groups for derived render representations; callers must not modify them. */
+    public Iterable<TextureGroup> getTextureGroups()
+    {
+        externallyMutableGeometry = true;
+        getRenderFaces();
+        return textureGroup.values();
     }
 
     /**
@@ -2102,6 +2203,8 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     public TextureGroup getTextureGroup(String groupName)
     {
+        externallyMutableGeometry = true;
+        getRenderFaces();
         if (!textureGroup.containsKey(groupName))
             return null;
         return textureGroup.get(groupName);
@@ -2119,6 +2222,78 @@ public class ModelRendererTurbo extends ModelRenderer
 
 
     /**
+     * Re-normalises the baked UV coordinates of this part against the real size of the
+     * texture it is rendered with.
+     * <p>
+     * Model classes declare the texture size themselves and UVs are baked as
+     * {@code pixel / declaredSize} while the boxes are created. When the declared size does not
+     * match the actual image (a common mistake in converted packs, e.g. a model declaring
+     * 1024x1024 for a 1024x64 texture), every UV on that axis is off by a constant factor and
+     * the whole part samples the wrong place. As the error is a pure scale, the baked UVs can
+     * be corrected afterwards by multiplying them with {@code declaredSize / actualSize},
+     * instead of requiring the model class itself to be fixed.
+     * <p>
+     * The correction is only applied when exactly one of the two declared dimensions is wrong.
+     * When neither matches the image, the declared size is not a typo but a texture the model was
+     * simply never made for, and guessing what the pixel coordinates were meant to address would
+     * do more harm than good, so the declared size is kept as-is.
+     *
+     * @param actualWidth  real width of the texture in pixels
+     * @param actualHeight real height of the texture in pixels
+     * @return {@code true} when the UVs were rescaled
+     */
+    public boolean applyActualTextureSize(float actualWidth, float actualHeight)
+    {
+        if (actualWidth <= 0F || actualHeight <= 0F || textureWidth <= 0F || textureHeight <= 0F)
+            return false;
+
+        boolean widthMatches = textureWidth == actualWidth;
+        boolean heightMatches = textureHeight == actualHeight;
+
+        if (widthMatches && heightMatches)
+            return false;
+
+        // Neither dimension is right: this is not a single mistyped dimension, leave the model alone.
+        if (!widthMatches && !heightMatches)
+            return false;
+
+        float scaleU = textureWidth / actualWidth;
+        float scaleV = textureHeight / actualHeight;
+
+        textureWidth = actualWidth;
+        textureHeight = actualHeight;
+
+        // Faces share vertex instances, so every vertex may only be scaled once.
+        Set<PositionTextureVertex> scaledVertices = Collections.newSetFromMap(new IdentityHashMap<>());
+        TexturedPolygon[] drawnFaces = getRenderFaces(); // Also compacts the private construction buffers.
+        scaleTextureCoordinates(faces, scaleU, scaleV, scaledVertices);
+        scaleTextureCoordinates(drawnFaces, scaleU, scaleV, scaledVertices);
+        return true;
+    }
+
+    private static void scaleTextureCoordinates(TexturedPolygon[] polygons, float scaleU, float scaleV, Set<PositionTextureVertex> scaledVertices)
+    {
+        if (polygons == null)
+            return;
+
+        for (TexturedPolygon polygon : polygons)
+        {
+            if (polygon == null)
+                continue;
+
+            for (PositionTextureVertex vertex : polygon.vertexPositions)
+            {
+                if (vertex != null && scaledVertices.add(vertex))
+                {
+                    vertex.texturePositionX *= scaleU;
+                    vertex.texturePositionY *= scaleV;
+                }
+            }
+            polygon.invalidateCompiledVertices();
+        }
+    }
+
+    /**
      * Renders the shape
      *
      * @param scale The scale of the shape. Default is 1.
@@ -2132,13 +2307,44 @@ public class ModelRendererTurbo extends ModelRenderer
     private void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                         float red, float green, float blue, float alpha, float scale, boolean oldRotateOrder)
     {
-        if (!isVisible() || (faces.length == 0 && childModels.isEmpty()))
-            return;
+        if (!isVisible()) return;
+        TexturedPolygon[] visibleFaces = getRenderFaces();
+        if (visibleFaces.length == 0 && childModels.isEmpty()) return;
 
         boolean hasTransform = offsetX != 0F || offsetY != 0F || offsetZ != 0F
             || rotationPointX != 0F || rotationPointY != 0F || rotationPointZ != 0F
             || rotateAngleX != 0F || rotateAngleY != 0F || rotateAngleZ != 0F
             || scale != 1F;
+        // Most legacy parts are leaves. Reuse their local transform and composed
+        // pose instead of allocating a Pose plus two matrices on every submission.
+        // Parents retain the stack path so children inherit exactly the same pose.
+        // Nonpositive scales retain vanilla's special normal-matrix handling.
+        if (hasTransform && getClass() == ModelRendererTurbo.class && childModels.isEmpty() && scale > 0F && Float.isFinite(scale))
+        {
+            if (renderPoseCache == null)
+                renderPoseCache = new RenderPoseCache();
+            PoseStack.Pose pose = renderPoseCache.compose(poseStack.last(), scale, oldRotateOrder);
+            if (!isBelowScreenSize(pose))
+            {
+                // Bake fixed local pivots/rotations at upload time. Adjacent rigid
+                // pieces can then share the vehicle/turret's parent palette entry.
+                if (vertexConsumer instanceof RigidGeometryConsumer gpu && !glow && !glowAdditive
+                    && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler
+                    && renderPoseCache.canBake())
+                {
+                    if (gpuGeometry == null) gpuGeometry = new RigidGeometry(visibleFaces);
+                    if (gpuGeometry.supported())
+                    {
+                        gpu.submit(renderPoseCache.baked(gpuGeometry), poseStack.last(), packedLight,
+                            packedOverlay, red, green, blue, alpha);
+                        return;
+                    }
+                }
+                compile(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+            }
+            return;
+        }
+        if (renderPoseCache != null) renderPoseCache.disableBake();
         if (hasTransform)
         {
             poseStack.pushPose();
@@ -2146,11 +2352,12 @@ public class ModelRendererTurbo extends ModelRenderer
             translateAndRotate(poseStack, scale, oldRotateOrder);
         }
 
-        if (faces.length != 0 && !isBelowScreenSize(poseStack.last()))
+        if (visibleFaces.length != 0 && !isBelowScreenSize(poseStack.last()))
             compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 
-        for (ModelRenderer childModel : childModels)
+        for (int childIndex = 0; childIndex < childModels.size(); childIndex++)
         {
+            ModelRenderer childModel = childModels.get(childIndex);
             childModel.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }
 
@@ -2167,9 +2374,7 @@ public class ModelRendererTurbo extends ModelRenderer
      * Pass-aware renderer retaining the alternate rotation convention used by a
      * subset of legacy driveable models.
      */
-    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-                       float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass,
-                       boolean oldRotateOrder)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass, boolean oldRotateOrder)
     {
         if ((renderPass == EnumRenderPass.DEFAULT && !glow && !glowAdditive && !glowNoDepthWrite)
             || (renderPass == EnumRenderPass.GLOW_ALPHA && glow)
@@ -2178,17 +2383,6 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, oldRotateOrder);
         }
-    }
-    
-    @Override
-    public void render(float worldScale)
-    {
-        render(worldScale, false);
-    }
-    
-    public void render(float worldScale, boolean oldRotateOrder)
-    {
-        // do nothing, only keep this method overload for compatibility when loading legacy classes
     }
 
     /**
@@ -2201,18 +2395,24 @@ public class ModelRendererTurbo extends ModelRenderer
         translateAndRotate(poseStack, scale, false);
     }
 
+    private Quaternionf rotationScratch()
+    {
+        if (rotationScratch == null) rotationScratch = new Quaternionf();
+        return rotationScratch;
+    }
+
     private void translateAndRotate(PoseStack poseStack, float scale, boolean oldRotateOrder)
     {
         poseStack.translate(rotationPointX * 0.0625F * scale, rotationPointY * 0.0625F * scale, rotationPointZ * 0.0625F * scale);
 
         if (!oldRotateOrder && rotateAngleY != 0F)
-            poseStack.mulPose(Axis.YP.rotation(rotateAngleY));
+            poseStack.mulPose(rotationScratch().rotationY(rotateAngleY));
         if (rotateAngleZ != 0F)
-            poseStack.mulPose(Axis.ZP.rotation(oldRotateOrder ? -rotateAngleZ : rotateAngleZ));
+            poseStack.mulPose(rotationScratch().rotationZ(oldRotateOrder ? -rotateAngleZ : rotateAngleZ));
         if (oldRotateOrder && rotateAngleY != 0F)
-            poseStack.mulPose(Axis.YP.rotation(-rotateAngleY));
+            poseStack.mulPose(rotationScratch().rotationY(-rotateAngleY));
         if (rotateAngleX != 0F)
-            poseStack.mulPose(Axis.XP.rotation(rotateAngleX));
+            poseStack.mulPose(rotationScratch().rotationX(rotateAngleX));
 
         if (scale != 1F)
             poseStack.scale(scale, scale, scale);
@@ -2222,6 +2422,17 @@ public class ModelRendererTurbo extends ModelRenderer
     protected void compile(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         TexturedPolygon[] polygons = getRenderFaces();
+        if (vertexConsumer instanceof RigidGeometryConsumer gpu && getClass() == ModelRendererTurbo.class
+            && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler)
+        {
+            if (gpuGeometry == null)
+                gpuGeometry = new RigidGeometry(polygons);
+            if (gpuGeometry.supported())
+            {
+                gpu.submit(gpuGeometry, pose, packedLight, packedOverlay, red, green, blue, alpha);
+                return;
+            }
+        }
         long currentTransformationSequence = ++transformationSequence;
         boolean glowing = glow || glowAdditive || glowNoDepthWrite;
         for (TexturedPolygon poly : polygons)
@@ -2237,22 +2448,50 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     private TexturedPolygon[] getRenderFaces()
     {
-        int groupedFaceCount = 0;
-        for (TextureGroup group : textureGroup.values())
-            groupedFaceCount += group.poly.size();
-
-        if (renderFaces.length == groupedFaceCount)
+        long epoch = GeometryRevision.current();
+        if (!renderFacesDirty && !externallyMutableGeometry && observedGeometryEpoch == epoch)
             return renderFaces;
 
-        TexturedPolygon[] flattened = new TexturedPolygon[groupedFaceCount];
-        int index = 0;
+        if (renderFacesDirty)
+        {
+            if (vertices.length != vertexCount) vertices = Arrays.copyOf(vertices, vertexCount);
+            if (faces.length != faceCount) faces = Arrays.copyOf(faces, faceCount);
+        }
+        int count = 0;
+        boolean changed = renderFacesDirty;
         for (TextureGroup group : textureGroup.values())
         {
             for (TexturedPolygon polygon : group.poly)
-                flattened[index++] = polygon;
+            {
+                if (externallyMutableGeometry) polygon.observeExternalMutations();
+                if (count >= renderFaces.length || renderFaces[count] != polygon) changed = true;
+                count++;
+            }
         }
-        renderFaces = flattened;
-        return flattened;
+        changed |= count != renderFaces.length;
+        if (changed)
+        {
+            renderFaces = new TexturedPolygon[count];
+            renderFaceRevisions = new long[count];
+            int i = 0;
+            for (TextureGroup group : textureGroup.values())
+                for (TexturedPolygon polygon : group.poly) renderFaces[i++] = polygon;
+            gpuGeometry = null;
+            boundsDirty = true;
+        }
+        for (int i = 0; i < renderFaces.length; i++)
+        {
+            long revision = renderFaces[i].geometryRevision();
+            if (changed || renderFaceRevisions[i] != revision)
+            {
+                renderFaceRevisions[i] = revision;
+                gpuGeometry = null;
+                boundsDirty = true;
+            }
+        }
+        renderFacesDirty = false;
+        observedGeometryEpoch = GeometryRevision.current();
+        return renderFaces;
     }
 
     /** Enable conservative projected-size culling for the current world-model render. */
@@ -2261,6 +2500,8 @@ public class ModelRendererTurbo extends ModelRenderer
         ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
         state.minimumPixelDiameter = minimumPixelDiameter;
         state.projectionPixels = projectionPixels;
+        double factor = 1D + 2D * projectionPixels / minimumPixelDiameter;
+        state.thresholdFactorSquared = factor * factor * 1.00001D;
     }
 
     public static void endScreenSpaceCulling()
@@ -2285,14 +2526,21 @@ public class ModelRendererTurbo extends ModelRenderer
         float centerY = matrix.m01() * boundsCenterX + matrix.m11() * boundsCenterY + matrix.m21() * boundsCenterZ + matrix.m31();
         float centerZ = matrix.m02() * boundsCenterX + matrix.m12() * boundsCenterY + matrix.m22() * boundsCenterZ + matrix.m32();
 
-        float scaleX = Mth.sqrt(matrix.m00() * matrix.m00() + matrix.m01() * matrix.m01() + matrix.m02() * matrix.m02());
-        float scaleY = Mth.sqrt(matrix.m10() * matrix.m10() + matrix.m11() * matrix.m11() + matrix.m12() * matrix.m12());
-        float scaleZ = Mth.sqrt(matrix.m20() * matrix.m20() + matrix.m21() * matrix.m21() + matrix.m22() * matrix.m22());
-        float worldRadius = boundsRadius * Math.max(scaleX, Math.max(scaleY, scaleZ));
-        float centerDistance = Mth.sqrt(centerX * centerX + centerY * centerY + centerZ * centerZ);
-        float nearestDistance = Math.max(0.01F, centerDistance - worldRadius);
-        float projectedDiameter = 2F * worldRadius * state.projectionPixels / nearestDistance;
-        return projectedDiameter < state.minimumPixelDiameter;
+        float scaleX = matrix.m00() * matrix.m00() + matrix.m01() * matrix.m01() + matrix.m02() * matrix.m02();
+        float scaleY = matrix.m10() * matrix.m10() + matrix.m11() * matrix.m11() + matrix.m12() * matrix.m12();
+        float scaleZ = matrix.m20() * matrix.m20() + matrix.m21() * matrix.m21() + matrix.m22() * matrix.m22();
+        // Gershgorin bound of A^T A remains conservative under parent nonuniform
+        // scale followed by child rotation (max column length alone misses shear).
+        float xy = Math.abs(matrix.m00() * matrix.m10() + matrix.m01() * matrix.m11() + matrix.m02() * matrix.m12());
+        float xz = Math.abs(matrix.m00() * matrix.m20() + matrix.m01() * matrix.m21() + matrix.m02() * matrix.m22());
+        float yz = Math.abs(matrix.m10() * matrix.m20() + matrix.m11() * matrix.m21() + matrix.m12() * matrix.m22());
+        double scaleSquared = Math.max(scaleX + xy + xz, Math.max(scaleY + xy + yz, scaleZ + xz + yz));
+        double radiusSquared = (double)boundsRadius * boundsRadius * scaleSquared;
+        double distanceSquared = (double)centerX * centerX + (double)centerY * centerY + (double)centerZ * centerZ;
+        // 2*r*projection/(distance-r) < threshold iff distance > r*(1+2*projection/threshold).
+        // Keep near-camera parts instead of using the old 0.01 distance floor.
+        return radiusSquared > 0 && Double.isFinite(distanceSquared) && Double.isFinite(radiusSquared)
+            && distanceSquared > radiusSquared * state.thresholdFactorSquared;
     }
 
     private void updateBounds()
@@ -2301,7 +2549,7 @@ public class ModelRendererTurbo extends ModelRenderer
             return;
         boundsDirty = false;
         hasStaticBounds = false;
-        if (vertices.length == 0)
+        if (renderFaces.length == 0)
             return;
 
         float minX = Float.POSITIVE_INFINITY;
@@ -2310,19 +2558,23 @@ public class ModelRendererTurbo extends ModelRenderer
         float maxX = Float.NEGATIVE_INFINITY;
         float maxY = Float.NEGATIVE_INFINITY;
         float maxZ = Float.NEGATIVE_INFINITY;
-        for (PositionTextureVertex vertex : vertices)
+        for (TexturedPolygon face : renderFaces)
         {
-            if (vertex == null || vertex instanceof PositionTransformVertex)
-                return;
-            float x = (float)vertex.vector3D.x() * 0.0625F;
-            float y = (float)vertex.vector3D.y() * 0.0625F;
-            float z = (float)vertex.vector3D.z() * 0.0625F;
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            minZ = Math.min(minZ, z);
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
-            maxZ = Math.max(maxZ, z);
+            if (!face.isRigidLodGeometry()) return;
+            for (PositionTextureVertex vertex : face.vertexPositions)
+            {
+                if (vertex == null || vertex instanceof PositionTransformVertex)
+                    return;
+                float x = (float)vertex.vector3D.x() * 0.0625F;
+                float y = (float)vertex.vector3D.y() * 0.0625F;
+                float z = (float)vertex.vector3D.z() * 0.0625F;
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                minZ = Math.min(minZ, z);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+                maxZ = Math.max(maxZ, z);
+            }
         }
 
         boundsCenterX = (minX + maxX) * 0.5F;
@@ -2339,5 +2591,87 @@ public class ModelRendererTurbo extends ModelRenderer
     {
         private float minimumPixelDiameter;
         private float projectionPixels;
+        private double thresholdFactorSquared;
+    }
+
+    /** Render-thread cache; public legacy angle/pivot mutations are checked every draw. */
+    private final class RenderPoseCache
+    {
+        private final PoseStack local = new PoseStack();
+        private final PoseStack.Pose composed = new PoseStack().last();
+        private float lastOffsetX = Float.NaN;
+        private float lastOffsetY;
+        private float lastOffsetZ;
+        private float lastPivotX;
+        private float lastPivotY;
+        private float lastPivotZ;
+        private float lastAngleX;
+        private float lastAngleY;
+        private float lastAngleZ;
+        private float lastScale;
+        private boolean lastOldRotateOrder;
+        private boolean initialized;
+        private boolean dynamic;
+        private int stableRenders;
+        private RigidGeometry bakedSource;
+        private RigidGeometry bakedGeometry;
+
+        private void disableBake()
+        {
+            dynamic = true;
+            bakedSource = bakedGeometry = null;
+        }
+
+        private boolean canBake()
+        {
+            return !dynamic && stableRenders >= 2
+                && local.last().pose().isFinite() && local.last().normal().isFinite();
+        }
+
+        private RigidGeometry baked(RigidGeometry source)
+        {
+            if (bakedSource != source)
+            {
+                bakedSource = source;
+                bakedGeometry = source.transformed(local.last());
+            }
+            return bakedGeometry;
+        }
+
+        private PoseStack.Pose compose(PoseStack.Pose parent, float scale, boolean oldRotateOrder)
+        {
+            if (lastOffsetX != offsetX || lastOffsetY != offsetY || lastOffsetZ != offsetZ
+                || lastPivotX != rotationPointX || lastPivotY != rotationPointY || lastPivotZ != rotationPointZ
+                || lastAngleX != rotateAngleX || lastAngleY != rotateAngleY || lastAngleZ != rotateAngleZ
+                || lastScale != scale || lastOldRotateOrder != oldRotateOrder)
+            {
+                // Public transforms may be animated or changed by another entity
+                // using this shared model. Never rebuild baked VBOs every frame.
+                if (initialized)
+                {
+                    disableBake();
+                }
+                initialized = true;
+                stableRenders = 0;
+                local.setIdentity();
+                local.translate(offsetX, offsetY, offsetZ);
+                translateAndRotate(local, scale, oldRotateOrder);
+                lastOffsetX = offsetX;
+                lastOffsetY = offsetY;
+                lastOffsetZ = offsetZ;
+                lastPivotX = rotationPointX;
+                lastPivotY = rotationPointY;
+                lastPivotZ = rotationPointZ;
+                lastAngleX = rotateAngleX;
+                lastAngleY = rotateAngleY;
+                lastAngleZ = rotateAngleZ;
+                lastScale = scale;
+                lastOldRotateOrder = oldRotateOrder;
+            }
+            else if (stableRenders < 2) stableRenders++;
+            composed.pose().set(parent.pose()).mul(local.last().pose());
+            composed.normal().set(parent.normal()).mul(local.last().normal());
+            return composed;
+        }
     }
 }

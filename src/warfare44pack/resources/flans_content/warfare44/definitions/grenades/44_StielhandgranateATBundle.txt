@@ -1,0 +1,51 @@
+// Identity
+Name M24 Stielhandgranate AT-Bundle
+ShortName 44_stielhandgranateATBundle
+Description German AT-Grenade
+
+// Rendering
+Icon 44_StielhandgranateATBundle
+Model W44.StielhandgranateATBundle
+Texture Skin44_StielhandgranateATBundle
+Colour 255 255 255
+
+// Inventory
+StackSize 4
+
+// Throwing and physics
+ThrowSpeed 1.85
+ThrowDelay 10
+FallSpeed 1.25
+Bounciness 0.6
+HitBoxSize 0.5
+SpinWhenThrown true
+Sticky false
+PenetratesBlocks false
+BreaksGlass true
+
+// Damage and healing
+HitEntityDamage 1
+MeleeDamage 4
+
+// Detonation and explosion
+Fuse 80
+PrimeDelay 0
+DetonateOnImpact false
+DetonateWhenShot true
+Remote false
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+ExplosiveMassTNTKg 1.2
+FragType LOW_FRAG
+ExplosionRadius 4
+ExplosionDamageVsLiving 10.0
+ExplosionDamageVsVehicle 5
+ExplosionDamageVsPlane 100
+ExplosionBreaksBlocks true
+FireRadius 0.0
+
+// Effects
+TrailParticles true
+TrailParticleType smoke
+ExplodeParticles 3
+SmokeTime 0

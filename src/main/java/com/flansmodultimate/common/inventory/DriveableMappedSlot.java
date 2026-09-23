@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
+import com.flansmodultimate.common.driveables.DriveableData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.world.Container;
@@ -71,6 +72,14 @@ final class DriveableMappedSlot extends Slot
     public boolean mayPlace(@NotNull ItemStack stack)
     {
         return isActive() && placementFilter.test(stack) && data.canPlaceItem(mappedIndex, stack);
+    }
+
+    /** Weapon slots load one ammunition item at a time; spares belong in cargo, from where empty slots are refilled. */
+    @Override
+    public int getMaxStackSize()
+    {
+        return isActive() && data instanceof DriveableData driveableData && driveableData.isWeaponSlot(mappedIndex)
+            ? 1 : super.getMaxStackSize();
     }
 
     @Override

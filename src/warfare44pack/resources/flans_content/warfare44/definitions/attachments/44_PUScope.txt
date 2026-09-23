@@ -1,0 +1,25 @@
+// Identity
+Name PU Scope
+ShortName 44_PUScope
+Description Scope Attachment : Soviet Medium-Powered Scope [X3.5]
+AttachmentType sights
+
+// Rendering
+Icon 44_PUScope
+Model W44.PUScope
+ModelScale 0.8
+Texture Skin44_PUScope
+
+// Optics
+ZoomLevel 7
+FOVZoomLevel 1.0
+ZoomOverlay GermanScope
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.55
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

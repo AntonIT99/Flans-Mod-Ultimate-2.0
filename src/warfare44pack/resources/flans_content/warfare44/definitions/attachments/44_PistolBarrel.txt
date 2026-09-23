@@ -1,0 +1,20 @@
+// Identity
+Name Pistol Barrel
+ShortName 44_PistolBarrel
+Description Barrel Attachment : _Luger _Mauser M712
+AttachmentType barrel
+
+// Rendering
+Icon 44_PistolBarrel
+Model W44.PistolBarrel
+ModelScale 0.15
+Texture Skin44_PistolBarrel
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.2
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.5
+RecoilMultiplier 1.1
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

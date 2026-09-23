@@ -1,0 +1,119 @@
+// Identity
+Name B-17 G
+ShortName 44_B17G
+Description American Bomber__250kg/500lb Bomb__Year Introduced : 1945
+
+// Rendering
+Icon 44_B17G
+Model W44.B17G
+Texture Skin44_B17G
+CameraDistance 30.0
+
+// Recipe and inventory
+AddRecipeParts core 1 44_BomberAircraftBody
+CargoSlots 30
+BombSlots 10
+MissileSlots 0
+FuelTankSize 6000
+
+// Paintjobs
+AddDye 5 silver
+AddDye 8 green
+
+// Real-world specifications
+RealMassKg 24500
+RealEnginePowerKw 3580
+RealMaxSpeedKmh 472
+RealWingSpanM 31.62
+RealWingAreaM2 131.92
+RealClimbRateMs 4.6
+
+// Movement
+Mode Plane
+MaxThrottle 3.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 0.85
+TurnRightSpeed 0.85
+LookUpSpeed 0.8
+LookDownSpeed 0.65
+RollLeftSpeed 0.75
+RollRightSpeed 0.75
+RestingPitch 10.0
+Drag 1.0
+
+// Wheels and tracks
+WheelPosition 0 5 -9 -65
+WheelPosition 1 5 -9 65
+WheelPosition 2 -264 19 0
+WheelSpringStrength 0.125
+Propeller 0 -61 -41 -63 core 44_Metal_Propeller
+Propeller 1 -61 -41 63 core 44_Metal_Propeller
+Propeller 2 -50 -45 -139 core 44_Metal_Propeller
+Propeller 3 -50 -45 139 core 44_Metal_Propeller
+
+// Weapons
+Primary None
+Secondary Bomb
+ReadWeaponsFromGunTypes true
+ShootDelaySecondary 8
+ModePrimary FullAuto
+ModeSecondary FullAuto
+AlternatePrimary False
+BulletSpread 4
+BulletSpeed 12
+BulletDetection 10
+AllowAllAmmo False
+AddAmmo 44_250kg500lbBomb
+ShootPointSecondary 25 -5 0 core
+GunOrigin 2 6 68 0
+GunOrigin 3 -136 1 0
+GunOrigin 4 -190 32 18
+GunOrigin 5 -190 32 -18
+GunOrigin 6 -360 35 0
+GunOrigin 8 87 8 0
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 20
+
+// Parts and collision
+SetupPart core 600 -362 22 -30 480 75 60
+SetupPart rightWing 400 -98 32 24 123 30 308
+SetupPart leftWing 400 -98 32 -332 123 30 308
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+
+// Seats
+Pilot 32 59 -9
+Passengers 8
+Passenger 1 32 59 9 core
+Passenger 2 7 72 0 core -360 360 -3 38 44_50Cal PassengerGun2
+Passenger 3 -135 11 0 core -360 360 -55 3 44_50Cal PassengerGun3
+Passenger 4 -189 40 5 core 65 115 -18 18 44_50Cal PassengerGun4
+Passenger 5 -189 40 -5 core -115 -65 -18 18 44_50Cal PassengerGun5
+Passenger 6 -338 51 0 core 150 210 -25 25 44_50Cal PassengerGun6
+Passenger 7 -87 47 -13 core
+Passenger 8 86 39 0 core -45 45 -25 18 44_50Cal PassengerGun8
+
+// Optics
+heliGuiSeat 1 true
+heliGUI warfare44_bombsightgui
+
+// Sounds
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary PlaneMGShoot
+ShootSoundSecondary BombDrop

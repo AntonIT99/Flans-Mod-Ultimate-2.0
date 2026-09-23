@@ -2,11 +2,12 @@ package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.model.IFlanTypeModel;
+import com.flansmodultimate.client.model.ModelRenderer;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.types.ArmorType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsmod.api.client.model.ModelRenderer;
+import com.wolffsmod.api.client.model.IModelRenderer;
 import com.wolffsmod.api.client.model.TextureOffset;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.function.Consumer;
 
 public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IFlanTypeModel<ArmorType>
 {
@@ -36,9 +39,7 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     protected ModelRendererTurbo[] skirtFrontModel = new ModelRendererTurbo[0]; //Acts like a leg piece, but its pitch is set to the maximum of the two legs
     protected ModelRendererTurbo[] skirtRearModel = new ModelRendererTurbo[0]; //Acts like a leg piece, but its pitch is set to the minimum of the two legs
 
-    @Getter
     private final List<ModelRenderer> boxList = new ArrayList<>();
-    @Getter
     private final Map<String, TextureOffset> modelTextureMap = new HashMap<>();
     @Getter @Setter
     private ResourceLocation texture;
@@ -75,16 +76,43 @@ public class ModelCustomArmour extends HumanoidModel<LivingEntity> implements IF
     }
 
     @Override
+    public void addModelBox(IModelRenderer modelRenderer)
+    {
+        if (!(modelRenderer instanceof ModelRenderer renderer))
+            throw new IllegalArgumentException("Unsupported model renderer implementation: " + modelRenderer);
+        boxList.add(renderer);
+    }
+
+    @Override
+    public void forEachModelBox(Consumer<IModelRenderer> action)
+    {
+        boxList.forEach(action);
+    }
+
+    @Override
+    public TextureOffset getTextureOffset(String partName)
+    {
+        return modelTextureMap.get(partName);
+    }
+
+    @Override
+    public void setTextureOffset(String partName, int x, int y)
+    {
+        modelTextureMap.put(partName, new TextureOffset(x, y));
+    }
+
+    @Override
+    public ModelRenderer getRandomModelBox(Random rand)
+    {
+        return boxList.get(rand.nextInt(boxList.size()));
+    }
+
+    @Override
     public Class<ArmorType> typeClass()
     {
         return ArmorType.class;
     }
 
-    @Override
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
-    {
-        renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, EnumRenderPass.DEFAULT);
-    }
 
     public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)
     {

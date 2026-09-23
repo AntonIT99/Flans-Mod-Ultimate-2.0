@@ -1,0 +1,36 @@
+// Identity
+Name German 7.92mm Ammo for MG 17 - 1000 Bullet Box
+ShortName WW2_Ammo_MG17
+description Amunition for MG17
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_MG17
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 1000
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 9
+DamageVsVehicles 1
+DamageVsPlanes 10
+Explosion 0
+Fire 0
+Mass 12.8
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail False

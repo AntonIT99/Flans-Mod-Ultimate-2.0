@@ -1,0 +1,47 @@
+// Identity
+Name PanzerFaust
+ShortName 44_PanzerFaust
+Description German AT Recoilless Launcher
+
+// Rendering
+Icon 44_PanzerFaust
+Model W44.PanzerFaust
+ModelScale 0.32
+Texture Skin44_PanzerFaust
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+
+// Ammunition
+Ammo 44_PanzerFaustAmmo
+ConsumeGunOnUse True
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.75
+KnockbackModifier 0
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 10.0
+ReloadTime 38
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 45.0
+Dispersion 2.3
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 9
+
+// Sounds
+ShootSound PanzerschreckShoot
+DistortSound False
+GunSoundRange 400
+ReloadSoundRange 5

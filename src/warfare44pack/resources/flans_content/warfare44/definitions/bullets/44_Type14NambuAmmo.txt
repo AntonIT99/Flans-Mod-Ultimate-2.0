@@ -1,0 +1,42 @@
+// Identity
+Name Type 14 Nambu Magazine
+ShortName 44_Type14NambuAmmo
+
+// Rendering
+Icon 44_Type14NambuAmmo
+Model Bullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 4
+RoundsPerItem 8
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates True
+BreaksGlass True
+
+// Damage
+Mass 6.6
+Damage 1
+DamageVsLiving 8
+DamageVsVehicles 1
+DamageVsPlanes 5
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 0
+
+// Effects
+SmokeTrail False
+FlakParticles 0
+
+// Sounds
+HitSound bullet
+HitSound SmallImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true

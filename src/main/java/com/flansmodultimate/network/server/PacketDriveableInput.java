@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 public final class PacketDriveableInput implements IServerPacket
 {
     private static final float MAX_ABSOLUTE_AIM = 360_000F;
+    private static final float MAX_FLIGHT_CONTROL = 20F;
 
     private int driveableId;
     private int inputMask;
@@ -34,6 +35,8 @@ public final class PacketDriveableInput implements IServerPacket
     @Nullable
     private Vec3 barrelPitchPivot;
     private int sequence;
+    /** The client predicts the driveable and wants the server's movement reports. */
+    private boolean predicting;
 
     public PacketDriveableInput()
     {
@@ -82,11 +85,18 @@ public final class PacketDriveableInput implements IServerPacket
         this.inputMask = DriveableInput.sanitize(inputMask);
         this.aimYaw = aimYaw;
         this.aimPitch = aimPitch;
-        this.flightPitch = Mth.clamp(flightPitch, -1F, 1F);
-        this.flightRoll = Mth.clamp(flightRoll, -1F, 1F);
+        this.flightPitch = Mth.clamp(flightPitch, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL);
+        this.flightRoll = Mth.clamp(flightRoll, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL);
         this.mouseControl = mouseControl;
         this.barrelPitchPivot = barrelPitchPivot;
         this.sequence = sequence;
+    }
+
+    /** Marks this input as coming from a client that predicts the driveable's movement. */
+    public PacketDriveableInput withPrediction(boolean predicting)
+    {
+        this.predicting = predicting;
+        return this;
     }
 
     @Override
@@ -96,8 +106,8 @@ public final class PacketDriveableInput implements IServerPacket
         data.writeVarInt(DriveableInput.sanitize(inputMask));
         data.writeFloat(aimYaw);
         data.writeFloat(aimPitch);
-        data.writeFloat(Mth.clamp(flightPitch, -1F, 1F));
-        data.writeFloat(Mth.clamp(flightRoll, -1F, 1F));
+        data.writeFloat(Mth.clamp(flightPitch, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL));
+        data.writeFloat(Mth.clamp(flightRoll, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL));
         data.writeBoolean(mouseControl);
         data.writeBoolean(barrelPitchPivot != null);
         if (barrelPitchPivot != null)
@@ -107,6 +117,7 @@ public final class PacketDriveableInput implements IServerPacket
             data.writeDouble(barrelPitchPivot.z);
         }
         data.writeVarInt(sequence);
+        data.writeBoolean(predicting);
     }
 
     @Override
@@ -122,6 +133,7 @@ public final class PacketDriveableInput implements IServerPacket
         barrelPitchPivot = data.readBoolean()
             ? new Vec3(data.readDouble(), data.readDouble(), data.readDouble()) : null;
         sequence = data.readVarInt();
+        predicting = data.readBoolean();
     }
 
     @Override
@@ -136,12 +148,15 @@ public final class PacketDriveableInput implements IServerPacket
         if (entity instanceof Driveable driveable)
         {
             Seat seat = driveable.getSeat(player);
+            if (seat != null)
+                seat.setInputPredicted(predicting && seat.isDriverSeat());
             if (seat != null && seat.isDriverSeat())
                 driveable.setModelBarrelPitchPivot(barrelPitchPivot);
             else if (seat != null)
                 driveable.setModelPassengerGunAimPivot(seat.getSeatIndex(), barrelPitchPivot);
-            driveable.acceptInput(player, inputMask, aimYaw, aimPitch, Mth.clamp(flightPitch, -1F, 1F),
-                Mth.clamp(flightRoll, -1F, 1F), mouseControl, sequence);
+            driveable.acceptInput(player, inputMask, aimYaw, aimPitch,
+                Mth.clamp(flightPitch, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL),
+                Mth.clamp(flightRoll, -MAX_FLIGHT_CONTROL, MAX_FLIGHT_CONTROL), mouseControl, sequence);
         }
     }
 }

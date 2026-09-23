@@ -1,0 +1,19 @@
+// Identity
+Name Stainless Steel Barrel
+ShortName 44_StainlessSteelBarrel
+Description Barrel Attachment : _Increases Accuracy by 10% _Decreases Damage by 5%
+AttachmentType barrel
+
+// Rendering
+Icon 44_StainlessSteelBarrel
+Model W44.Barrel
+Texture None
+
+// Modifiers
+Silencer false
+DamageMultiplier 0.95
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.9
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

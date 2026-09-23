@@ -1,0 +1,17 @@
+// Identity
+Name Padded Stock
+ShortName 44_PaddedStock
+Description Stock Attachment : _Decreases Recoil by 5%
+AttachmentType stock
+
+// Rendering
+Icon 44_PaddedStock
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 1.0
+RecoilMultiplier 0.95
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

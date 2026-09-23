@@ -115,7 +115,7 @@ public final class TeamsLoadoutEditScreen extends Screen
         PacketLoadoutState state = LoadoutClientState.get();
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansMod.teamsLoadoutEditorGuiTexture, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSLOADOUTEDITOR, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
         graphics.drawString(font, title, left + 8, top + 8, 0xFFFFFF, true);
         graphics.drawString(font, "Rank " + (state == null ? 0 : state.getRank()) + " · " + selectedSlot.getDisplayName(), left + 110, top + 9, 0xFFFFFF, false);
         if (state != null && loadoutIndex < state.getLoadouts().size())

@@ -3,9 +3,82 @@
   "generator": {
     "type": "minecraft:noise",
     "biome_source": {
-      "type": "minecraft:fixed",
-      "biome": "flansmodapocalypse:apocalypse"
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        {
+          "biome": "flansmodapocalypse:deep_canyon",
+          "parameters": {
+            "temperature": [-1, 1],
+            "humidity": [-1, 1],
+            "continentalness": [-1.2, -0.19],
+            "erosion": [-1, 1],
+            "weirdness": [-1, 1],
+            "depth": 0,
+            "offset": 0
+          }
+        },
+        {
+          "biome": "flansmodapocalypse:canyon",
+          "parameters": {
+            "temperature": [-1, 1],
+            "humidity": [-1, 1],
+            "continentalness": [-0.19, 0.03],
+            "erosion": [-1, 1],
+            "weirdness": [-1, 1],
+            "depth": 0,
+            "offset": 0
+          }
+        },
+        {
+          "biome": "flansmodapocalypse:apocalypse",
+          "parameters": {
+            "temperature": [-1, 1],
+            "humidity": [-1, 1],
+            "continentalness": [0.03, 1],
+            "erosion": [0.05, 1],
+            "weirdness": [-1, 1],
+            "depth": 0,
+            "offset": 0
+          }
+        },
+        {
+          "biome": "flansmodapocalypse:plateau",
+          "parameters": {
+            "temperature": [-1, 1],
+            "humidity": [-1, 1],
+            "continentalness": [0.03, 1],
+            "erosion": [-0.375, 0.05],
+            "weirdness": [-1, 1],
+            "depth": 0,
+            "offset": 0
+          }
+        },
+        {
+          "biome": "flansmodapocalypse:high_plateau",
+          "parameters": {
+            "temperature": [-1, 1],
+            "humidity": [-1, 1],
+            "continentalness": [0.3, 1],
+            "erosion": [-1, -0.375],
+            "weirdness": [-1, 1],
+            "depth": 0,
+            "offset": 0
+          }
+        },
+        {
+          "biome": "flansmodapocalypse:sulphur_pits",
+          "parameters": {
+            "temperature": [-1, 1],
+            "humidity": [-1, 1],
+            "continentalness": [-0.6, 0.1],
+            "erosion": [0.3, 1],
+            "weirdness": [-0.08, 0.08],
+            "depth": 0,
+            "offset": 0
+          }
+        }
+      ]
     },
-    "settings": "minecraft:overworld"
+    "settings": "flansmodapocalypse:apocalypse"
   }
 }

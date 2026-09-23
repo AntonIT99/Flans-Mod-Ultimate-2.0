@@ -1,0 +1,43 @@
+// Identity
+Name 20x102 mm M61 Vulcan Ammunition
+ShortName ShellNATO20mm
+Description Ammunition for the M61A1 Vulcan (GAU-4/A)
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon IconAmmoNATO20mm
+
+// Recipe and Inventory
+RoundsPerItem 300
+MaxStackSize 1
+RecipeOutput 32
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 0
+BreaksGlass True
+HitBoxSize 2.0
+Penetrates False
+Bomb False
+Shell True
+
+// Ballistics and Damage
+Mass 102
+MuzzleVelocity 1030
+ExplosiveMassTNTg 14
+PenetrationAt100m 16
+FragType HE_SHELL
+Damage 80
+DamageVsVehicles 80
+Explosion 0
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke

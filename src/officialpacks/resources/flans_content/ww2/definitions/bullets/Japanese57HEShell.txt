@@ -1,0 +1,40 @@
+// Identity
+Name Japanese 57 mm HE (Type 97)
+ShortName Japanese57HEShell
+Description High-explosive ammunition for the 57 mm Type 97 tank gun
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell57jHE
+HasLight True
+
+// Ammunition
+MaxStackSize 16
+RoundsPerItem 1
+
+// Ballistics
+Mass 2360
+MuzzleVelocity 355
+FallSpeed 1
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+ExplosiveMassTNTg 250
+FragType HE_SHELL
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+
+// Sounds and particles
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 6

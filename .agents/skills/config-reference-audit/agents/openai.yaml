@@ -1,0 +1,4 @@
+interface:
+  display_name: "Config Reference Audit"
+  short_description: "Audit and update wiki parser documentation"
+  default_prompt: "Use $config-reference-audit to audit and update the wiki ConfigReference against the current content-pack parser code."

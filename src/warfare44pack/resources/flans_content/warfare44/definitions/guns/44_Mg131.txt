@@ -1,0 +1,38 @@
+// Identity
+Name MG-131
+ShortName 44_Mg131
+Description German Mounted MG - plane Part
+
+// Rendering
+Icon 44_Mg131
+Colour 255 255 255
+
+// Ammunition
+Ammo 44_Mg131Ammo
+
+// Handling
+Mode FullAuto
+Deployable false
+UsableByPlayers false
+UsableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 900.0
+ReloadTime 200
+
+// Ballistics
+MuzzleVelocity 750.0
+Dispersion 0.23
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound Mg34Shoot
+DistortSound True
+SoundLength 0
+ReloadSound Mp40Reload

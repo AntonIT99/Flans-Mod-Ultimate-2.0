@@ -1,0 +1,18 @@
+// Identity
+Name Fallschirmjager Camo Jacket
+ShortName 44_FallschirmjagerCamoChest
+Type Body
+
+// Rendering
+Icon 44_FallschirmjagerCamoChest
+Model W44.FallschirmjagerCamoChest
+ModelScale 1
+ArmorTexture Skin44_FallschirmjagerCamo
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

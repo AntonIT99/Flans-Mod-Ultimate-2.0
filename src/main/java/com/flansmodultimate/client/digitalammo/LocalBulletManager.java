@@ -5,7 +5,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Arrays;
 
-@OnlyIn(Dist.CLIENT)
 public final class LocalBulletManager
 {
     private static final int DEFAULT_NUM_TYPES = 7;

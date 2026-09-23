@@ -1,6 +1,6 @@
 package com.flansmod.client.tmt;
 
-import com.wolffsmod.api.client.model.ModelRenderer;
+import com.flansmodultimate.client.model.ModelRenderer;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;

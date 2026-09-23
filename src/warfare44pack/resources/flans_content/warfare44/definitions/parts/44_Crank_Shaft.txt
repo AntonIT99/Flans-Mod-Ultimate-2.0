@@ -1,0 +1,11 @@
+// Identity
+Name Crank Shaft
+ShortName 44_Crank_Shaft
+Category Misc
+
+// Rendering
+Icon 44_Crank_Shaft
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

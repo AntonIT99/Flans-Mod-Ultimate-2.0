@@ -1,17 +1,29 @@
+// Identity
 Name Cloaker Goggles
 ShortName cloakerGoggles
+
+// Item and rendering
 Icon CloakerGoggles
 Colour 255 255 255
-Type Helmet
 Model mw.CloakerGoggles
-Defence 0.1
 ArmourTexture CloakerGoggles
-MoveSpeedModifier 1.8
-KnockbackModifier 0.25
-NightVision True
 Overlay CloakerGoggles
-SmokeProtection True
+
+// Recipe
 Enchantability 25
-Toughness 0
 Durability 0
-DamageReductionAmount 3
+
+// Protection
+Type Helmet
+Defence 0.01
+KnockbackModifier 0.25
+Toughness 0
+BulletDefence 0.00
+ArmorPoints 0
+
+// Movement
+MoveSpeedModifier 1.8
+
+// Effects
+NightVision True
+SmokeProtection True

@@ -1,0 +1,11 @@
+// Identity
+Name Bomber Body
+ShortName 44_BomberAircraftBody
+Category Misc
+
+// Rendering
+Icon 44_Bomber_Aircraft_Body
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

@@ -1,8 +1,12 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmod.client.model.EnumAnimationType;
+import com.flansmod.client.model.EnumMeleeAnimation;
 import com.flansmod.common.vector.Vector3f;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.Optional;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -144,6 +148,9 @@ public class GunAnimationConfig
     private Vector3f stagedtranslateClip = null;
     private Boolean stagedReload = null;
 
+    private EnumAnimationType animationType = null;
+    private EnumMeleeAnimation meleeAnimation = null;
+
     private Vector3f thirdPersonOffset = null;
     private Vector3f itemFrameOffset = null;
     private Boolean stillRenderGunWhenScopedOverlay = null;
@@ -279,17 +286,37 @@ public class GunAnimationConfig
         translateGun = readVector("animTranslateGun", file);
         rotateClipVertical = readFloat("animRotateClipVertical", file);
         stagedrotateClipVertical = readFloat("animStagedRotateClipVertical", file);
-        rotateClipVertical = readFloat("animRotateClipHorizontal", file);
-        stagedrotateClipVertical = readFloat("animStagedRotateClipHorizontal", file);
+        // As in 1.7.10, the Horizontal keys are aliases that also land on the
+        // vertical clip rotation, and only when they are actually authored.
+        // Reading them unconditionally would wipe out the Vertical keys above.
+        rotateClipVertical = Optional.ofNullable(readFloat("animRotateClipHorizontal", file))
+            .orElse(rotateClipVertical);
+        stagedrotateClipVertical = Optional.ofNullable(readFloat("animStagedRotateClipHorizontal", file))
+            .orElse(stagedrotateClipVertical);
         tiltClip = readFloat("animTiltClip", file);
         stagedtiltClip = readFloat("animStagedTiltClip", file);
         translateClip = readVector("animTranslateClip", file);
         stagedtranslateClip = readVector("animStagedTranslateClip", file);
         stagedReload = readBoolean("animStagedReload", file);
 
+        animationType = readAnimationType(file);
+        meleeAnimation = readValue("animMeleeAnimation", null, EnumMeleeAnimation.class, file);
+
         thirdPersonOffset = readVector("animThirdPersonOffset", file);
         itemFrameOffset = readVector("animItemFrameOffset", file);
         stillRenderGunWhenScopedOverlay = readBoolean("animStillRenderGunWhenScopedOverlay", file);
         adsEffectMultiplier = readFloat("animAdsEffectMultiplier", file);
+    }
+
+    private static EnumAnimationType readAnimationType(TypeFile file)
+    {
+        // 1.7.10 resolved the REVOLVER2 names to the REVOLVER animation, so packs were
+        // tuned against that result (animRevolverFlip*, not animRevolver2Flip*).
+        String value = readValue("animAnimationType", null, file);
+        if ("REVOLVER2".equalsIgnoreCase(value))
+            return EnumAnimationType.REVOLVER;
+        if ("CUSTOMREVOLVER2".equalsIgnoreCase(value))
+            return EnumAnimationType.CUSTOMREVOLVER;
+        return readValue("animAnimationType", null, EnumAnimationType.class, file);
     }
 }

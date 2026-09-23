@@ -1,5 +1,8 @@
+// Identity
 Name Gunslinger
 ShortName kskDualWield1
+
+// Items
 AddItem glock
 AddItem glock
 AddItem m67 2

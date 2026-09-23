@@ -1,0 +1,36 @@
+// Identity
+Name US Cal.30 Ammo - 200 Bullet Box
+ShortName WW2_Ammo_USACal30
+description Amunition for Browning M1919
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_USACal30
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 200
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 9
+DamageVsVehicles 1
+DamageVsPlanes 3
+Explosion 0
+Fire 0
+Mass 9.7
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail False

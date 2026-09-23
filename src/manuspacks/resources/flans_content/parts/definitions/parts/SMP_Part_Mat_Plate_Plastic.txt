@@ -1,0 +1,16 @@
+// Identity
+Name Plastic Plate
+ShortName SMP_Part_Mat_Plate_Plastic
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Plate_Plastic
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Plastic
+   
+   
+MMM
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

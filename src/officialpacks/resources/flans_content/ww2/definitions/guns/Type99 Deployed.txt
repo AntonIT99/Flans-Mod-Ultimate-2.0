@@ -1,0 +1,39 @@
+// Identity
+Name Type 99
+ShortName type99
+
+// Item and rendering
+Icon Type99
+Colour 255 255 255
+DeployedModel ww2.Type99
+DeployedTexture Type99
+
+// Ammunition
+Ammo type99Ammo
+ReloadTime 40
+
+// Operation
+Mode FullAuto
+Deployable True
+StandBackDistance 1.0
+TopViewLimit 20
+BottomViewLimit 30
+SideViewLimit 45
+PivotHeight 0.375
+RoundsPerMin 550.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 715.0
+Dispersion 0.3
+
+// Damage and protection
+Damage 4
+
+// Optics
+Scope None
+
+// Sounds
+DistortSound False
+ShootSound BrenShoot
+ReloadSound BrenReload

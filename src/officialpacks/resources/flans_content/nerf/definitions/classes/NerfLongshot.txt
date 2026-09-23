@@ -1,5 +1,8 @@
+// Identity
 Name Sniper
 ShortName nerfLongshotClass
+
+// Items
 AddItem nerfLongshot
 AddItem nerfMaverick
 AddItem 6DartClip 2

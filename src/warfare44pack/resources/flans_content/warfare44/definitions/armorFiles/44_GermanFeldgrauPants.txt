@@ -1,0 +1,18 @@
+// Identity
+Name German Feldgrau Pants
+ShortName 44_GermanFeldgrauPants
+Type Pants
+
+// Rendering
+Icon 44_GermanFeldgrauPants
+Model W44.GermanFeldgrauPants
+ModelScale 1
+ArmorTexture Skin44_PzGrenadierFeldgrau
+
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
+SmokeProtection false

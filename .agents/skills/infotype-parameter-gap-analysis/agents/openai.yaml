@@ -1,0 +1,4 @@
+interface:
+  display_name: "InfoType Parameter Gap Analysis"
+  short_description: "Audit InfoType parameters and find ghost keys"
+  default_prompt: "Use $infotype-parameter-gap-analysis to audit target InfoType parsing for ghost parameters and optionally compare reference-only keys."

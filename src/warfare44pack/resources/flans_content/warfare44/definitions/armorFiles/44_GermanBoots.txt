@@ -1,0 +1,18 @@
+// Identity
+Name German Boots
+ShortName 44_GermanBoots
+Type Boots
+
+// Rendering
+Icon 44_GermanBoots
+Model W44.GermanBoots
+ModelScale 1
+ArmorTexture Skin44_PzGrenadierFeldgrau
+
+// Protection
+ArmorPoints 1
+Defence 0.02
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 0.35
+SmokeProtection false

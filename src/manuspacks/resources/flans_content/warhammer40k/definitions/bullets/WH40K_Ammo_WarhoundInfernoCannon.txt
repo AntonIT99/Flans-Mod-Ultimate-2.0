@@ -1,0 +1,40 @@
+﻿// Identity
+Name Warhound Titan Inferno Cannon Ammo
+ShortName WH40K_Ammo_WarhoundInfernoCannon
+description Ammo for Warhound Vulcan Mega Bolter
+
+// Model and Rendering
+Model Null
+Icon Icon_WH40K_Ammo_WarhoundInfernoCannon
+Texture Skin_WH40K_Bullet_TitanBolt_1A
+
+// Recipe and Inventory
+RoundsPerItem 5000
+MaxStackSize 1
+
+// Behaviour
+HitBoxSize 0.25
+FallSpeed 0.3
+BreaksGlass False
+Fuse 100
+ExplodeOnImpact True
+Penetrates False
+HitBoxSize 2.0
+
+// Ballistics and Damage
+DamageVsLiving 10
+DamageVsPlayer 10
+DamageVsVehicles 10
+Fire 2
+Explosion 0
+Damage 4
+
+// Sounds
+HitSound bullet
+
+// Effects
+SmokeTrail True
+TrailParticleType flame
+HasLight True
+FlakParticles 10
+FlakParticleType flame

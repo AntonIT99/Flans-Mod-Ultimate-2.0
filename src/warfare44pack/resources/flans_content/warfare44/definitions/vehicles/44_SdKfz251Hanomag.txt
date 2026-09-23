@@ -1,0 +1,136 @@
+// Identity
+Name SdKfz.251 Hanomag
+ShortName 44_SdKfz251Hanomag
+Description German Halftrack__Year Introduced : 1939
+
+// Rendering
+Icon 44_SdKfz251Hanomag
+Model W44.SdKfz251Hanomag
+ModelScale 1
+Texture Skin44_SdKfz251Hanomag
+RotateWheels true
+CameraDistance 7.5
+
+// Recipe and inventory
+AddRecipeParts core 1 44_Car_Chassis 4 44_Vehicle_Seat
+AddRecipeParts frontLeftWheel 1 44_Car_Wheel
+AddRecipeParts frontRightWheel 1 44_Car_Wheel
+AddRecipeParts leftTrack 1 44_Tank_Track
+AddRecipeParts rightTrack 1 44_Tank_Track
+CargoSlots 36
+ShellSlots 0
+FuelTankSize 1000
+
+// Paintjobs
+advpaintjob Beige 44_SdKfz251Hanomag_Beige 44_SdKfz251Hanomag_Beige yellow 4
+AddDye 4 gray
+
+// Real-world specifications
+DriveType TRACKED
+RealMassKg 7000
+RealEnginePowerPS 100
+RealMaxSpeedKmh 52.5
+RealMaxReverseSpeedKmh 9
+
+// Movement
+FourWheelDrive false
+MaxThrottle 0.75
+MaxNegativeThrottle 0.45
+TurnLeftSpeed 0.45
+TurnRightSpeed 0.45
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -28 -8 -14
+WheelPosition 1 -28 -8 14
+WheelPosition 2 24 -8 14
+WheelPosition 3 24 -8 -14
+WheelSpringStrength 0.5
+TrackLinkLength 3
+LeftLinkPoint [18,8,19]
+LeftLinkPoint [21.3,6,19]
+LeftLinkPoint [21.3,-2,19]
+LeftLinkPoint [9,-9,19]
+LeftLinkPoint [-50,-9,19]
+LeftLinkPoint [-54.5,-3,19]
+LeftLinkPoint [-54.5,5,19]
+LeftLinkPoint [-51,6,19]
+LeftLinkPoint [7,6,19]
+LeftLinkPoint [12,8,19]
+LeftLinkPoint [17,8,19]
+RightLinkPoint [18,8,-19]
+RightLinkPoint [21.3,6,-19]
+RightLinkPoint [21.3,-2,-19]
+RightLinkPoint [9,-9,-19]
+RightLinkPoint [-50,-9,-19]
+RightLinkPoint [-54.5,-3,-19]
+RightLinkPoint [-54.5,5,-19]
+RightLinkPoint [-51,6,-19]
+RightLinkPoint [7,6,-19]
+RightLinkPoint [12,8,-19]
+RightLinkPoint [17,8,-19]
+
+// Weapons
+ReadWeaponsFromGunTypes true
+ShellDelay 999
+ShootDelay 999
+ReloadTimeSecondary 100
+PlaceTimePrimary 80
+BulletDetection 5
+GunOrigin 2 -4 14 0
+GunOrigin 5 -67 14 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 14.5
+ArmorSideMm 8
+ArmorRearMm 8
+ArmorTopMm 0
+ArmorBottomMm 5.5
+TurretArmorFrontMm 14.5
+TurretArmorSideMm 8
+TurretArmorRearMm 8
+TurretArmorTopMm 0
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 750 -70 1 -18 125 30 36
+SetupPart frontLeftWheel 75 37 -10 14 17 17 6
+SetupPart frontRightWheel 75 37 -10 -20 17 17 6
+SetupPart rightTrack 300 -55 -10 14 76 17 8
+SetupPart leftTrack 300 -55 -10 -22 76 17 8
+
+// Seats
+Driver -7 9 -8
+Passengers 5
+Passenger 1 -7 9 8 core
+Passenger 2 -17 21 0 core -40 40 -10 25 44_Mg34 PassengerGun2
+Passenger 3 -45 10 -8 core
+Passenger 4 -28 10 8 core
+Passenger 5 -53 21 0 core 130 230 -30 5 44_Mg34 PassengerGun5
+RotatedDriverOffset 0 0 0
+DriverAimSpeed 3.0f 3.0f 0f
+DriverYawBeforePitch false
+
+// Sounds
+StartSound TankIdle1
+StartSoundLength 41
+StartSoundRange 12
+EngineSound Engine_TR_Halftrack
+EngineSoundLength 39
+EngineSoundRange 50
+BackSound Engine_TR_Halftrack
+BackSoundLength 39
+BackSoundRange 25
+ShootSoundPrimary None
+ShootSoundSecondary None
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+
+// Effects
+AddEmitter smoke 1 [28,8,-23] [1,1,1] [0,0.5,0] -1 1 0 1 core
+AddEmitter explode 1 [28,8,-23] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter explode 1 [28,8,-23] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+AddEmitter explode 1 [28,8,-23] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter largesmoke 3 [28,8,-23] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+AddEmitter largesmoke 1 [28,8,-23] [1,1,1] [0,5,0] 0.7 0.75 0 1 core

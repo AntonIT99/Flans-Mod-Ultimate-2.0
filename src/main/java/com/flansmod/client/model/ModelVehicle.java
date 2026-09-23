@@ -3,6 +3,7 @@ package com.flansmod.client.model;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.entity.Driveable;
@@ -86,11 +87,39 @@ public class ModelVehicle extends ModelDriveable
     public boolean legSpeedChange = true;
 
     private transient DriveableType trackPathType;
+    @Nullable
+    private transient DriveableType trackSideType;
+    private transient boolean trackMeshSidesSwapped;
+    private transient boolean trackPathSidesSwapped;
     private transient TrackPath leftTrackPath = TrackPath.EMPTY;
     private transient TrackPath rightTrackPath = TrackPath.EMPTY;
+    private transient TrackLinkLod trackLinkLod;
+    private transient float trackPathRadius;
     private transient boolean barrelPitchPivotResolved;
     @Nullable
     private transient Vec3 primaryBarrelPitchPivot;
+    private transient boolean barrelMuzzleResolved;
+    @Nullable
+    private transient Vec3 primaryBarrelMuzzle;
+
+    /** Called before world part culling begins, so the derived mesh contains the complete link. */
+    public boolean selectTrackLinkLod(DriveableType type, float projectionPixels, double distance, float modelScale,
+                                      float threshold, boolean previous)
+    {
+        return selectTrackLinkGroup(type, projectionPixels, distance, modelScale, threshold, 0F, previous ? 1 : 0) > 0;
+    }
+
+    public int selectTrackLinkGroup(DriveableType type, float projectionPixels, double distance, float modelScale,
+                                    float threshold, float groupingThreshold, int previousGroup)
+    {
+        if (distance < 32D || threshold <= 0F || fancyTrackModel == null || fancyTrackModel.length < 2)
+            return 0;
+        if (trackLinkLod == null || !trackLinkLod.matches(fancyTrackModel, oldRotateOrder, type.getTrackLinkLength()))
+            trackLinkLod = TrackLinkLod.create(fancyTrackModel, oldRotateOrder, type.getTrackLinkLength());
+        ensureTrackPaths(type);
+        return trackLinkLod.selectGroup(projectionPixels, distance - trackPathRadius * Math.abs(modelScale), modelScale,
+            threshold, groupingThreshold, previousGroup);
+    }
 
     /**
      * Finds the pitch pivot of the barrel section that reaches furthest along
@@ -135,6 +164,34 @@ public class ModelVehicle extends ModelDriveable
         return primaryBarrelPitchPivot;
     }
 
+    /**
+     * Muzzle of this vehicle's main armament, in model pixels, measured from the
+     * barrel geometry the renderer draws.
+     *
+     * <p>Prefers {@code barrelModel}, which is where all but a few packs build the
+     * gun. The animated and special barrel groups are drawn translated to
+     * {@code barrelAttach}, so their measurement carries that offset, applied the
+     * same way {@link #translateToModelPoint} applies it.</p>
+     *
+     * @return the muzzle in model pixels, or {@code null} when this model has no barrel
+     */
+    @Nullable
+    public Vec3 getPrimaryBarrelMuzzle()
+    {
+        if (barrelMuzzleResolved)
+            return primaryBarrelMuzzle;
+        barrelMuzzleResolved = true;
+
+        primaryBarrelMuzzle = measureMuzzle(1F, barrelModel);
+        if (primaryBarrelMuzzle != null)
+            return primaryBarrelMuzzle;
+
+        Vec3 attached = measureMuzzle(1F, barrelSpecModel, animBarrelModel);
+        if (attached != null)
+            primaryBarrelMuzzle = attached.add(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
+        return primaryBarrelMuzzle;
+    }
+
     @Override
     public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer,
                        int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
@@ -153,13 +210,13 @@ public class ModelVehicle extends ModelDriveable
         renderWheelIfIntact(driveable, EnumDriveablePart.FRONT_WHEEL, frontWheelModel, wheelSpin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderWheelIfIntact(driveable, EnumDriveablePart.BACK_WHEEL, backWheelModel, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        if (driveable.isPartIntact(EnumDriveablePart.LEFT_TRACK))
+        if (driveable.isPartIntact(trackPartForDrawnSide(driveable.getConfigType(), true, true)))
         {
             renderPart(leftTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             renderWheel(leftTrackWheelModels, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay,
                 red, green, blue, alpha, scale, renderPass);
         }
-        if (driveable.isPartIntact(EnumDriveablePart.RIGHT_TRACK))
+        if (driveable.isPartIntact(trackPartForDrawnSide(driveable.getConfigType(), false, true)))
         {
             renderPart(rightTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             renderWheel(rightTrackWheelModels, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay,
@@ -241,16 +298,39 @@ public class ModelVehicle extends ModelDriveable
             red, green, blue, alpha, scale, renderPass);
         renderPartAt(door2AnimModel, door2Attach, poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
-        renderPartMatrix(leftAnimTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderPartMatrix(rightAnimTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderTrackPreview(driveableType, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
         if (driveableType instanceof VehicleType vehicleType)
         {
             ensureTrackPaths(vehicleType);
-            renderFancyTrackPath(vehicleType, leftTrackPath, 0F, poseStack, vertexConsumer,
+            renderFancyTrackPath(vehicleType, leftTrackPath, 0F, null, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderFancyTrackPath(vehicleType, rightTrackPath, 0F, poseStack, vertexConsumer,
+            renderFancyTrackPath(vehicleType, rightTrackPath, 0F, null, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
+    }
+
+    /** Draw the same stationary track frame that a newly placed vehicle uses. */
+    private void renderTrackPreview(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer,
+                                    int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+                                    float scale, EnumRenderPass renderPass)
+    {
+        int configuredFrames = driveableType == null ? Integer.MAX_VALUE : driveableType.getAnimFrames() + 1;
+        int leftFrame = frameIndex(leftAnimTrackModel.length, configuredFrames, 0F);
+        int rightFrame = frameIndex(rightAnimTrackModel.length, configuredFrames, 0F);
+        if (leftFrame >= 0)
+            renderPart(leftAnimTrackModel[leftFrame], poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass);
+        if (rightFrame >= 0)
+            renderPart(rightAnimTrackModel[rightFrame], poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass);
+
+        // Older content models expose the three animation frames as separate
+        // fields instead of the frame matrices above.
+        renderPart(selectFrame(0, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3),
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(selectFrame(0, rightAnimTrackModel1, rightAnimTrackModel2, rightAnimTrackModel3),
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     public void renderTurret(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer,
@@ -390,6 +470,108 @@ public class ModelVehicle extends ModelDriveable
             poseStack.translate(point.x, point.y, point.z);
     }
 
+    /**
+     * Resolves which track part gates the track drawn on a given side.
+     *
+     * <p>Type files and models disagree about which sign of the legacy lateral
+     * axis is the left side, and they disagree per vehicle rather than per pack:
+     * some author {@code leftTrack} at the coordinate the model uses for
+     * {@code leftTrackModel}, others at the mirrored one. Comparing the two
+     * authored sides against each other settles it per model instead of trusting
+     * either name, so destroying a track always hides the track that was hit.</p>
+     *
+     * <p>Meshes carry the lateral mirror {@code flipAll()} applies and link
+     * points are translated unmirrored, so in both cases a drawn track and the
+     * part box covering it hold lateral coordinates of opposite sign.</p>
+     */
+    private EnumDriveablePart trackPartForDrawnSide(@Nullable DriveableType type, boolean leftSide, boolean meshes)
+    {
+        if (trackSideType != type)
+        {
+            trackSideType = type;
+            Float boxes = boxLateralDelta(type);
+            trackMeshSidesSwapped = sidesSwapped(meshLateralDelta(), boxes);
+            trackPathSidesSwapped = sidesSwapped(pathLateralDelta(type), boxes);
+        }
+        return trackPart(leftSide, meshes ? trackMeshSidesSwapped : trackPathSidesSwapped);
+    }
+
+    /** Drawn geometry and its part box mirror each other, so matching signs mean the names are swapped. */
+    static boolean sidesSwapped(@Nullable Float drawn, @Nullable Float boxes)
+    {
+        return drawn != null && boxes != null && drawn * boxes > 0F;
+    }
+
+    static EnumDriveablePart trackPart(boolean leftSide, boolean swapped)
+    {
+        return leftSide != swapped ? EnumDriveablePart.LEFT_TRACK : EnumDriveablePart.RIGHT_TRACK;
+    }
+
+    /** Lateral offset of the left track meshes from the right ones, or null when either side is empty. */
+    @Nullable
+    private Float meshLateralDelta()
+    {
+        Float left = meshLateral(leftTrackModel, leftTrackWheelModels, leftAnimTrackModel1, leftAnimTrackModel2,
+            leftAnimTrackModel3);
+        Float right = meshLateral(rightTrackModel, rightTrackWheelModels, rightAnimTrackModel1, rightAnimTrackModel2,
+            rightAnimTrackModel3);
+        return left == null || right == null ? null : left - right;
+    }
+
+    @Nullable
+    private static Float meshLateral(ModelRendererTurbo[]... groups)
+    {
+        float total = 0F;
+        int count = 0;
+        for (ModelRendererTurbo[] group : groups)
+        {
+            if (group == null)
+                continue;
+            for (ModelRendererTurbo part : group)
+            {
+                if (part == null)
+                    continue;
+                total += part.rotationPointZ;
+                count++;
+            }
+        }
+        return count == 0 ? null : total / count;
+    }
+
+    @Nullable
+    private static Float boxLateralDelta(@Nullable DriveableType type)
+    {
+        CollisionBox left = type == null ? null : type.getHealth().get(EnumDriveablePart.LEFT_TRACK);
+        CollisionBox right = type == null ? null : type.getHealth().get(EnumDriveablePart.RIGHT_TRACK);
+        return left == null || right == null ? null
+            : left.getX() + left.getWidth() * 0.5F - (right.getX() + right.getWidth() * 0.5F);
+    }
+
+    @Nullable
+    private static Float pathLateralDelta(@Nullable DriveableType type)
+    {
+        Float left = pathLateral(type == null ? null : type.getLeftTrackPoints());
+        Float right = pathLateral(type == null ? null : type.getRightTrackPoints());
+        return left == null || right == null ? null : left - right;
+    }
+
+    @Nullable
+    private static Float pathLateral(@Nullable List<Vector3f> points)
+    {
+        if (points == null || points.isEmpty())
+            return null;
+        float total = 0F;
+        int count = 0;
+        for (Vector3f point : points)
+        {
+            if (point == null)
+                continue;
+            total += point.z;
+            count++;
+        }
+        return count == 0 ? null : total / count;
+    }
+
     private void renderTrackFrame(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer,
                                   int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
                                   float scale, EnumRenderPass renderPass)
@@ -400,17 +582,18 @@ public class ModelVehicle extends ModelDriveable
         int rightFrame = frameIndex(rightAnimTrackModel.length, configuredFrames, state.rightTrackProgress());
         animFrameLeft = leftFrame;
         animFrameRight = rightFrame;
-        if (leftFrame >= 0 && driveable.isPartIntact(EnumDriveablePart.LEFT_TRACK))
+        DriveableType type = driveable.getConfigType();
+        if (leftFrame >= 0 && driveable.isPartIntact(trackPartForDrawnSide(type, true, true)))
             renderPart(leftAnimTrackModel[leftFrame], poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (rightFrame >= 0 && driveable.isPartIntact(EnumDriveablePart.RIGHT_TRACK))
+        if (rightFrame >= 0 && driveable.isPartIntact(trackPartForDrawnSide(type, false, true)))
             renderPart(rightAnimTrackModel[rightFrame], poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         int legacyFrameLeft = Mth.clamp((int) Math.floor(state.leftTrackProgress() * 3F), 0, 2);
         int legacyFrameRight = Mth.clamp((int) Math.floor(state.rightTrackProgress() * 3F), 0, 2);
-        if (driveable.isPartIntact(EnumDriveablePart.LEFT_TRACK))
+        if (driveable.isPartIntact(trackPartForDrawnSide(type, true, true)))
             renderPart(selectFrame(legacyFrameLeft, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3),
                 poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.RIGHT_TRACK))
+        if (driveable.isPartIntact(trackPartForDrawnSide(type, false, true)))
             renderPart(selectFrame(legacyFrameRight, rightAnimTrackModel1, rightAnimTrackModel2, rightAnimTrackModel3),
                 poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
@@ -420,11 +603,16 @@ public class ModelVehicle extends ModelDriveable
                                    float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         ensureTrackPaths(type);
-        if (driveable.isPartIntact(EnumDriveablePart.LEFT_TRACK))
-            renderFancyTrackPath(type, leftTrackPath, state.leftTrackProgress() * leftTrackPath.length, poseStack, vertexConsumer,
+        // A live vehicle carries eased per-link angles that FixTrackLink steers;
+        // without them the links fall back to the static pose.
+        TrackLinkAnimation links = state.trackLinks() != null && state.trackLinks().isActive() ? state.trackLinks() : null;
+        if (driveable.isPartIntact(trackPartForDrawnSide(type, true, false)))
+            renderFancyTrackPath(type, leftTrackPath, state.leftTrackProgress() * leftTrackPath.length(),
+                links == null ? null : links.angles(true), poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.RIGHT_TRACK))
-            renderFancyTrackPath(type, rightTrackPath, state.rightTrackProgress() * rightTrackPath.length, poseStack, vertexConsumer,
+        if (driveable.isPartIntact(trackPartForDrawnSide(type, false, false)))
+            renderFancyTrackPath(type, rightTrackPath, state.rightTrackProgress() * rightTrackPath.length(),
+                links == null ? null : links.angles(false), poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
@@ -435,102 +623,57 @@ public class ModelVehicle extends ModelDriveable
             trackPathType = type;
             leftTrackPath = TrackPath.create(type.getLeftTrackPoints());
             rightTrackPath = TrackPath.create(type.getRightTrackPoints());
+            trackPathRadius = Math.max(pathRadius(leftTrackPath), pathRadius(rightTrackPath));
         }
     }
 
-    private void renderFancyTrackPath(DriveableType type, TrackPath path, float movement,
+    private static float pathRadius(TrackPath path)
+    {
+        float squared = 0F;
+        for (int i = 0; i < path.size(); i++)
+            squared = Math.max(squared, path.pointX(i) * path.pointX(i)
+                + path.pointY(i) * path.pointY(i) + path.pointZ(i) * path.pointZ(i));
+        return Mth.sqrt(squared) * MODEL_SCALE;
+    }
+
+    private void renderFancyTrackPath(DriveableType type, TrackPath path, float movement, @Nullable float[] linkAngles,
                                       PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                                       float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         float spacing = type.getTrackLinkLength();
-        if (fancyTrackModel == null || fancyTrackModel.length == 0 || path.length <= 0F || spacing <= 0F)
+        if (fancyTrackModel == null || fancyTrackModel.length == 0 || path.isEmpty() || spacing <= 0F)
             return;
 
-        int linkCount = Mth.clamp(Math.round(path.length / spacing), 1, 512);
-        float normalizedMovement = movement - Mth.floor(movement / path.length) * path.length;
+        int originalCount = Mth.clamp(Math.round(path.length() / spacing), 1, 512);
+        int group = scale == 1F && trackLinkLod != null ? TrackLinkLod.activeGroup() : 0;
+        // Very short loops do not have enough links for a stable long envelope.
+        if (group >= 4 && originalCount < 16) group = 2;
+        if (group >= 2 && originalCount < 8) group = 1;
+        ModelRendererTurbo[] selected = group > 0 ? trackLinkLod.parts(group) : null;
+        if (selected == null) group = 1;
+        ModelRendererTurbo[] linkParts = selected == null ? fancyTrackModel : selected;
+        int linkCount = (originalCount + group - 1) / group;
+        float normalizedMovement = path.wrap(movement);
         for (int link = 0; link < linkCount; link++)
         {
-            float distance = normalizedMovement + 0.01F + spacing * link;
-            distance -= Mth.floor(distance / path.length) * path.length;
+            int originalLink = link * group;
+            float distance = path.wrap(normalizedMovement + 0.01F + spacing * originalLink);
             int segment = path.segmentAt(distance);
-            int previous = segment == 0 ? path.x.length - 1 : segment - 1;
-            float segmentStart = segment == 0 ? 0F : path.cumulative[segment - 1];
-            float segmentLength = path.cumulative[segment] - segmentStart;
-            float progress = segmentLength <= 0F ? 0F : (distance - segmentStart) / segmentLength;
-            float x = Mth.lerp(progress, path.x[previous], path.x[segment]);
-            float y = Mth.lerp(progress, path.y[previous], path.y[segment]);
-            float z = Mth.lerp(progress, path.z[previous], path.z[segment]);
-            float rotation = (float) Math.toDegrees(Math.atan2(path.y[previous] - y, path.x[previous] - x));
+            int previous = path.previousOf(segment);
+            float progress = path.progressAlongSegment(distance, segment);
+            float x = Mth.lerp(progress, path.pointX(previous), path.pointX(segment));
+            float y = Mth.lerp(progress, path.pointY(previous), path.pointY(segment));
+            float z = Mth.lerp(progress, path.pointZ(previous), path.pointZ(segment));
+            float rotation = linkAngles != null && originalLink < linkAngles.length
+                ? (float) Math.toDegrees(linkAngles[originalLink])
+                : (float) Math.toDegrees(Math.atan2(path.pointY(previous) - y, path.pointX(previous) - x));
 
             poseStack.pushPose();
             poseStack.translate(x * MODEL_SCALE, y * MODEL_SCALE, z * MODEL_SCALE);
             poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
-            renderPart(fancyTrackModel, poseStack, vertexConsumer, packedLight, packedOverlay,
+            renderPart(linkParts, poseStack, vertexConsumer, packedLight, packedOverlay,
                 red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
-        }
-    }
-
-    private static final class TrackPath
-    {
-        private static final TrackPath EMPTY = new TrackPath(new float[0], new float[0], new float[0], new float[0], 0F);
-
-        private final float[] x;
-        private final float[] y;
-        private final float[] z;
-        private final float[] cumulative;
-        private final float length;
-
-        private TrackPath(float[] x, float[] y, float[] z, float[] cumulative, float length)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.cumulative = cumulative;
-            this.length = length;
-        }
-
-        private static TrackPath create(List<Vector3f> points)
-        {
-            if (points == null || points.size() < 2)
-                return EMPTY;
-            int count = points.size();
-            float[] x = new float[count];
-            float[] y = new float[count];
-            float[] z = new float[count];
-            float[] cumulative = new float[count];
-            float length = 0F;
-            for (int i = 0; i < count; i++)
-            {
-                Vector3f point = points.get(i);
-                x[i] = point == null ? 0F : point.x;
-                y[i] = point == null ? 0F : point.y;
-                z[i] = point == null ? 0F : point.z;
-            }
-            for (int i = 0; i < count; i++)
-            {
-                int previous = i == 0 ? count - 1 : i - 1;
-                float dx = x[i] - x[previous];
-                float dy = y[i] - y[previous];
-                length += Mth.sqrt(dx * dx + dy * dy);
-                cumulative[i] = length;
-            }
-            return length > 0F ? new TrackPath(x, y, z, cumulative, length) : EMPTY;
-        }
-
-        private int segmentAt(float distance)
-        {
-            int low = 0;
-            int high = cumulative.length - 1;
-            while (low < high)
-            {
-                int middle = (low + high) >>> 1;
-                if (cumulative[middle] < distance)
-                    low = middle + 1;
-                else
-                    high = middle;
-            }
-            return low;
         }
     }
 

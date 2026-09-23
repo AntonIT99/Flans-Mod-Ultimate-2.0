@@ -2,7 +2,7 @@ package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
-import com.wolffsmod.api.client.model.ModelBase;
+import com.flansmodultimate.client.model.ModelBase;
 
 public class ModelItemHolder extends ModelBase
 {

@@ -1,0 +1,40 @@
+// Identity
+Name MG42
+ShortName mg42
+
+// Item and rendering
+Icon MG42
+Colour 255 255 255
+DeployedModel ww2.MG42
+DeployedTexture mg42
+
+// Ammunition
+Ammo mg42Ammo50
+Ammo mg42Ammo250
+ReloadTime 100
+
+// Operation
+Mode FullAuto
+Deployable True
+StandBackDistance 1.4
+TopViewLimit 20
+BottomViewLimit 30
+SideViewLimit 45
+PivotHeight 0.375
+RoundsPerMin 1200.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 740.0
+Dispersion 0.38
+
+// Damage and protection
+Damage 5
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound MG42Shoot
+DistortSound False
+ReloadSound MG42Reload

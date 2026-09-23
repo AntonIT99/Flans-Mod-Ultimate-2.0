@@ -1,0 +1,12 @@
+// Identity
+Name Japanese Flag
+ShortName 44_JapaneseFlag
+Category Misc
+
+// Rendering
+Icon 44_JapaneseFlag
+Colour 255 255 255
+
+// Recipe and inventory
+RecipeOutput 3
+StackSize 6

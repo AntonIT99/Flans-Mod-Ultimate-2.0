@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.teams.TeamsManager;
@@ -52,6 +53,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFlanEntity<GunType>
 {
+    private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 1F;
     /** Player#getMyRidingOffset() in 1.20.1, removed from the 1.21.1 API. */
@@ -68,6 +70,10 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
     protected static final EntityDataAccessor<Boolean> DATA_HAS_AMMO = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.BOOLEAN);
     protected static final EntityDataAccessor<Integer> DATA_RELOAD_TIMER = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_GUN_DIRECTION = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
+    /** Rounds the loaded ammunition still has to fire, for the gunner's HUD. */
+    protected static final EntityDataAccessor<Integer> DATA_ROUNDS_LEFT = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
+    /** What a full magazine of the loaded ammunition holds. */
+    protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_SIZE = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
 
     protected GunType configType;
     protected String shortname = StringUtils.EMPTY;
@@ -194,6 +200,8 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
         builder.define(DATA_HAS_AMMO, false);
         builder.define(DATA_RELOAD_TIMER, 0);
         builder.define(DATA_GUN_DIRECTION, 0);
+        builder.define(DATA_ROUNDS_LEFT, 0);
+        builder.define(DATA_MAGAZINE_SIZE, 0);
     }
 
     @Override
@@ -282,7 +290,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
             Level level = level();
 
             // Only do "death drops" on the server, and not when the entity is merely being unloaded
-            if (!level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK)
+            if (!suppressRemovalDrops && !level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK)
             {
                 if (FlansMod.teamsManager.getWeaponDrops() == TeamsManager.EnumWeaponDrop.SMART_DROPS)
                 {
@@ -302,6 +310,13 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
         }
 
         super.remove(reason);
+    }
+
+    /** Removes this gun for an administrative cleanup without creating item drops. */
+    public void discardWithoutDrops()
+    {
+        suppressRemovalDrops = true;
+        discard();
     }
 
     @Override
@@ -516,8 +531,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
             discard();
 
         // Timers
-        if (shootTimer > 0)
-            shootTimer--;
+        shootTimer = ShotCooldown.tick(shootTimer);
         if (soundTimer > 0)
             soundTimer--;
         if (reloadTimer > 0)
@@ -525,10 +539,8 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
         // Ammo broken/empty
         if (!ammo.isEmpty() && ammo.isDamageableItem() && ammo.getDamageValue() >= ammo.getMaxDamage())
-        {
             ammo = ItemStack.EMPTY;
-            setHasAmmo(false);
-        }
+        updateAmmoState();
 
         if (getFirstPassenger() instanceof LivingEntity living)
         {
@@ -537,6 +549,38 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
                 reloadGun(level, player);
             fireGun(level, living);
         }
+    }
+
+    /** Keeps the synced ammunition state in step with the stack the gun is firing. */
+    protected void updateAmmoState()
+    {
+        int rounds = ShootableItem.getTotalRounds(ammo);
+        if (rounds > entityData.get(DATA_ROUNDS_LEFT))
+            entityData.set(DATA_MAGAZINE_SIZE, rounds);
+        if (entityData.get(DATA_ROUNDS_LEFT) != rounds)
+            entityData.set(DATA_ROUNDS_LEFT, rounds);
+        setHasAmmo(rounds > 0);
+    }
+
+    public int getMagazineSize()
+    {
+        return entityData.get(DATA_MAGAZINE_SIZE);
+    }
+
+    public int getRoundsLeft()
+    {
+        return entityData.get(DATA_ROUNDS_LEFT);
+    }
+
+    public ItemStack getAmmo()
+    {
+        return ammo;
+    }
+
+    public void setAmmo(ItemStack stack)
+    {
+        ammo = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack;
+        updateAmmoState();
     }
 
     protected int findAmmo(Player player)
@@ -597,15 +641,15 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
     public void fireGun(Level level, LivingEntity gunner)
     {
-        if (level.isClientSide || !gunner.isAlive() || ammo.isEmpty() || reloadTimer > 0 || shootTimer > 0 || !(ammo.getItem() instanceof ShootableItem shootableItem))
+        if (level.isClientSide || !gunner.isAlive() || !ShootableItem.hasRoundsLeft(ammo) || reloadTimer > 0 || !ShotCooldown.isReady(shootTimer) || !(ammo.getItem() instanceof ShootableItem shootableItem))
             return;
 
         boolean automaticFire = configType.getFireMode(null).isAutomaticFire();
         if ((automaticFire && shootKeyPressed) || (!automaticFire && shootKeyPressed && !prevShootKeyPressed))
         {
-            float shootDelay = configType.getShootDelay(null);
+            float shootDelay = ShotCooldown.clampDelay(configType.getShootDelay(null));
 
-            while (shootTimer <= 0)
+            while (ShotCooldown.isReady(shootTimer))
             {
                 ShootingHelper.fireGun(level, gunner, this, shootableItem.getConfigType(), ammo, new DeployableGunShootingHandler(ammo));
 
@@ -631,7 +675,9 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
     public void reloadGun(Level level, Player gunner)
     {
-        if (level.isClientSide || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+        // The gun reloads once the loaded item has no rounds left in it, which is
+        // not the same as the slot being empty: a spent belt is still an item.
+        if (level.isClientSide || !gunner.isAlive() || ShootableItem.hasRoundsLeft(ammo) || reloadTimer > 0)
             return;
 
         int slot = findAmmo(gunner); // you port this to modern inventory below
@@ -651,12 +697,16 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
 
     public void reloadGun(Level level, LivingEntity gunner, ItemStack newAmmo)
     {
-        if (level.isClientSide || !gunner.isAlive() || !ammo.isEmpty() || reloadTimer > 0)
+        if (level.isClientSide || !gunner.isAlive() || ShootableItem.hasRoundsLeft(ammo) || reloadTimer > 0)
             return;
 
         ammo = newAmmo.copy();
         setHasAmmo(true);
-        setReloadTimer(configType.getReloadTime());
+        float reloadFactor = ammo.getItem() instanceof ShootableItem shootableItem
+            ? shootableItem.getConfigType().getReloadTimeMultiplier() : 1F;
+        // Reloading never lets the gun outrun its own rate of fire, so the wait
+        // after the round that emptied it is the longer of the two.
+        setReloadTimer(Mth.ceil(Math.max(configType.getReloadTime() * reloadFactor, configType.getShootDelay(null))));
         String reloadSound = configType.getReloadSound(null);
 
         // Play reload sound

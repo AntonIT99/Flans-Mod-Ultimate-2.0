@@ -1,0 +1,18 @@
+// Identity
+Name Dynamite Detonator
+ShortName 44_DynamiteDetonator
+
+// Rendering
+Icon 44_DynamiteDetonator
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 1
+ToolLife 0
+DestroyOnEmpty true
+
+// Behaviour
+ExplosiveRemote true
+Repair false
+Heal false
+HealAmount 0

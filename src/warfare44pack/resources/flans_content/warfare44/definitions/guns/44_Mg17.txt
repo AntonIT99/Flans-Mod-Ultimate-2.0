@@ -1,0 +1,38 @@
+// Identity
+Name MG-17
+ShortName 44_Mg17
+Description German Aircraft MG - Plane Part
+
+// Rendering
+Icon 44_Mg17
+Colour 255 255 255
+
+// Ammunition
+Ammo 44_Mg17Ammo
+
+// Handling
+Mode FullAuto
+Deployable false
+UsableByPlayers false
+UsableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 1200.0
+ReloadTime 200
+
+// Ballistics
+MuzzleVelocity 895.0
+Dispersion 0.22
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound Mp40Shoot
+DistortSound True
+SoundLength 0
+ReloadSound Mp40Reload

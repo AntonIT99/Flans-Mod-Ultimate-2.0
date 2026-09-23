@@ -1,0 +1,50 @@
+// Identity
+Name Ammo Bag
+ShortName 44_AmmoBag
+
+// Rendering
+Icon 44_AmmoBag
+Model W44.AmmoBag
+Texture Skin44_AmmoBag
+Colour 255 255 255
+
+// Inventory
+StackSize 1
+NumUses 5
+NumClips 3
+DeployableBag True
+DespawnTime 12000
+
+// Throwing and physics
+ThrowSpeed 0.5
+ThrowDelay 10
+FallSpeed 1
+Bounciness 0.0
+HitBoxSize 0.5
+SpinWhenThrown false
+Sticky false
+PenetratesBlocks false
+BreaksGlass false
+
+// Damage and healing
+HitEntityDamage 0
+MeleeDamage 2
+HealAmount 0
+
+// Detonation and explosion
+Fuse 0
+PrimeDelay 20
+DetonateOnImpact false
+DetonateWhenShot false
+Remote false
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+FragType DEFAULT
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+FireRadius 0.0
+
+// Effects
+TrailParticles false
+ExplodeParticles 0
+SmokeTime 0

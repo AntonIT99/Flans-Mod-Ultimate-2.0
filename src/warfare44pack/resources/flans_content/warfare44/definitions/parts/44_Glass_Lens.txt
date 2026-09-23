@@ -1,0 +1,11 @@
+// Identity
+Name Glass Lens
+ShortName 44_Glass_Lens
+Category Misc
+
+// Rendering
+Icon 44_Glass_Lens
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 8

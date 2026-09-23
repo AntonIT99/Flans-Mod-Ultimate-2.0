@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mod Feature Gap Analysis"
+  short_description: "Find reference features missing from a target mod"
+  default_prompt: "Use $mod-feature-gap-analysis to compare a reference Minecraft mod against the default target and write a concise evidence-backed gap report."

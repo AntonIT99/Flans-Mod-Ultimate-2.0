@@ -1,8 +1,6 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
-import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,25 +13,28 @@ import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.SimpleRemapper;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClassLoaderUtils
 {
-    @Getter
-    private static final Map<String, List<TransformOp>> transforms = new HashMap<>();
+    /** A transformed legacy class file together with the OpenGL transforms found inside it. */
+    public record ModifiedClass(byte[] classData, List<TransformOp> transforms) {}
 
-    private static final CustomClassLoader classLoader = new CustomClassLoader();
+    /**
+     * One loader per class file tree, keyed by {@link IContentProvider#getModelSourceId()}, so equally named
+     * model classes of different content packs stay separate from each other and from the mod's own classes.
+     */
+    private static final Map<String, ContentPackClassLoader> classLoaders = new ConcurrentHashMap<>();
+
+    /** OpenGL transforms of the legacy model classes, keyed by the loaded class itself. */
+    private static final Map<Class<?>, List<TransformOp>> transforms = new ConcurrentHashMap<>();
 
     @Getter
     private static final Map<String, String> minecraftMethodMappings = Map.ofEntries(
@@ -87,13 +88,13 @@ public final class ClassLoaderUtils
     );
 
     private static final Map<String, String> classMappings = Map.ofEntries(
-        Map.entry("net/minecraft/client/model/ModelRenderer", "com/wolffsmod/api/client/model/ModelRenderer"),
+        Map.entry("net/minecraft/client/model/ModelRenderer", "com/flansmodultimate/client/model/ModelRenderer"),
         Map.entry("net/minecraft/entity/Entity", "net/minecraft/world/entity/Entity"),
         Map.entry("net/minecraft/entity/EntityLivingBase", "net/minecraft/world/entity/LivingEntity")
     );
 
     private static final String LEGACY_MODELBASE = "net/minecraft/client/model/ModelBase";
-    private static final String NEW_MODELBASE = "com/wolffsmod/api/client/model/ModelBase";
+    private static final String NEW_MODELBASE = "com/flansmodultimate/client/model/ModelBase";
     private static final String INTERFACE_MODELBASE = "com/wolffsmod/api/client/model/IModelBase";
 
     public static Map<String, String> getSourceClassMappings()
@@ -104,83 +105,27 @@ public final class ClassLoaderUtils
         return Map.copyOf(map);
     }
 
-    /**
-     * Loads a compiled Java class (.class file) from a given file path.
-     * <p>
-     * Examples:
-     * <p>
-     * - In File System "C:/parent/com/example/MyClass.class": <p>
-     * ClassLoaderUtil.loadClass(Path.of("C://parent"), "com.example.MyClass");
-     * <p>
-     * - In JAR Archive "C:/archive.jar/com/example/MyClass.class": <p>
-     * ClassLoaderUtil.loadClass(Path.of("C://archive.jar"), "com.example.MyClass");
-     * <p>
-     * - In ZIP Archive "C:/archive.zip/com/example/MyClass.class": <p>
-     * ClassLoaderUtil.loadClass(Path.of("C://archive.zip"), "com.example.MyClass");
-     *
-     * @param parentPath    The parent path to the package root of the .class file.
-     * @param className     The fully qualified name of the class (e.g., "com.example.MyClass").
-     * @return The loaded {@link Class} object.
-     * @throws IOException            If an I/O error occurs while accessing the file.
-     * @throws ClassNotFoundException If the class cannot be found or loaded.
-     */
-    public static Class<?> loadClass(Path parentPath, String className) throws IOException, ClassNotFoundException
+    /** Loader of the class files shipped inside one content pack. */
+    public static ContentPackClassLoader getClassLoader(IContentProvider contentProvider)
     {
-        try (URLClassLoader classLoader = new URLClassLoader(new URL[] { parentPath.toUri().toURL() }))
-        {
-            return classLoader.loadClass(className);
-        }
+        return classLoaders.computeIfAbsent(contentProvider.getModelSourceId(), modelSourceId -> new ContentPackClassLoader(contentProvider));
     }
 
-    public static Class<?> loadAndModifyClass(IContentProvider contentProvider, String fileClassName, String actualClassName) throws IOException, NoClassDefFoundError, ClassFormatError
+    /**
+     * Loads the model class {@code className} for one content pack.
+     *
+     * @param preferContentPackClass load the class file the content pack ships instead of the class of that
+     *                               name compiled into the mod. Pass {@code false} to let the mod's own class
+     *                               win, which falls back to the content pack for classes the mod lacks.
+     * @throws IOException if the class has to be read from the content pack but its class file cannot be read
+     */
+    public static Class<?> loadModelClass(IContentProvider contentProvider, String className, boolean preferContentPackClass) throws IOException
     {
-        try
-        {
-            return Class.forName(actualClassName, true, Thread.currentThread().getContextClassLoader());
-        }
-        catch (ClassNotFoundException | LinkageError ignored)
-        {
-            Class<?> loadedClass = classLoader.findClass(actualClassName);
-            if (loadedClass != null)
-                return loadedClass;
+        if (preferContentPackClass)
+            return getClassLoader(contentProvider).loadContentPackClass(className);
 
-            byte[] classData;
-            FileSystem fs = FileUtils.createFileSystem(contentProvider);
-            try
-            {
-                if (!contentProvider.isDirectory() && !contentProvider.isArchive())
-                    throw new IllegalArgumentException(contentProvider.getPath() + " is not an existing directory or JAR/ZIP file.");
-                classData = Files.readAllBytes(contentProvider.getModelPath(fileClassName, fs));
-            }
-            finally
-            {
-                FileUtils.closeFileSystem(fs, contentProvider);
-            }
-
-            byte[] newClassData = getModifiedClassData(classData, fileClassName.equals(actualClassName) ? null : actualClassName);
-
-            //In case there is a dependency to a super class which has not been loaded yet
-            ClassReader cr = new ClassReader(newClassData);
-            String superClassName = cr.getSuperName().replace('/', '.');
-            try
-            {
-                Class.forName(superClassName);
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    loadAndModifyClass(contentProvider, superClassName, superClassName);
-                }
-                catch (Exception | NoClassDefFoundError | ClassFormatError e)
-                {
-                    FlansMod.log.error("Could not load super class {} for {}", superClassName, fileClassName);
-                    LogUtils.logErrorWithoutStacktrace(e);
-                }
-            }
-
-            return classLoader.defineClass(actualClassName, newClassData);
-        }
+        Class<?> modClass = findModClass(className);
+        return modClass != null ? modClass : getClassLoader(contentProvider).loadContentPackClass(className);
     }
 
     public static boolean hasClassFile(IContentProvider contentProvider, String className)
@@ -197,32 +142,71 @@ public final class ClassLoaderUtils
         }
     }
 
-    public static byte[] getModifiedClassData(byte[] classData, @Nullable String newClassName)
+    /** The OpenGL transforms a legacy model class applies to itself, or {@code null} if it has none. */
+    @Nullable
+    public static List<TransformOp> getTransforms(Class<?> modelClass)
+    {
+        return transforms.get(modelClass);
+    }
+
+    static void registerTransforms(Class<?> modelClass, List<TransformOp> modelTransforms)
+    {
+        if (!modelTransforms.isEmpty())
+            transforms.put(modelClass, modelTransforms);
+    }
+
+    /** Rewrites a legacy model class that is only stored as a class file instead of being loaded. */
+    public static ModifiedClass transformClass(byte[] classData)
+    {
+        return transformClass(classData, null);
+    }
+
+    /**
+     * Rewrites a legacy 1.7.10 / 1.12.2 model class so it can run against the current model framework.
+     *
+     * @param classLoader the loader the class is defined with, used to resolve the types the rewritten
+     *                    class refers to. Pass {@code null} to resolve them with the context loader.
+     */
+    public static ModifiedClass transformClass(byte[] classData, @Nullable ClassLoader classLoader)
     {
         ClassReader cr = new ClassReader(classData);
 
-        Map<String,String> map = new HashMap<>();
-        if (newClassName != null)
-            map.put(cr.getClassName(), newClassName.replace('.', '/'));
+        Map<String, String> map = new HashMap<>(classMappings);
         map.put(LEGACY_MODELBASE, INTERFACE_MODELBASE);
-        map.putAll(classMappings);
 
-        ClassWriter cw = new SafeClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        List<TransformOp> modelTransforms = new ArrayList<>();
+        ClassWriter cw = new SafeClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classLoader);
         ClassVisitor deobfClassVisitor = new DeobfClassVisitor(cw, minecraftMethodMappings, minecraftFieldMappings);
         ClassVisitor remapper = new ClassRemapper(deobfClassVisitor, new SimpleRemapper(Opcodes.ASM9, map));
         ClassVisitor superAndOwnerFixVisitor = new SuperAndOwnerFixVisitor(Opcodes.ASM9, remapper, LEGACY_MODELBASE, NEW_MODELBASE);
-        ClassVisitor transformVisitor = new TransformClassVisitor(Opcodes.ASM9, superAndOwnerFixVisitor);
+        ClassVisitor transformVisitor = new TransformClassVisitor(Opcodes.ASM9, superAndOwnerFixVisitor, modelTransforms);
 
         cr.accept(transformVisitor, 0);
-        return cw.toByteArray();
+        return new ModifiedClass(cw.toByteArray(), List.copyOf(modelTransforms));
     }
 
-    /** ClassWriter that resolves common super classes using the current loader (helps COMPUTE_FRAMES). */
+    @Nullable
+    private static Class<?> findModClass(String className)
+    {
+        try
+        {
+            return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+        }
+        catch (Exception | LinkageError ignored)
+        {
+            return null;
+        }
+    }
+
+    /** ClassWriter that resolves common super classes using the given loader (helps COMPUTE_FRAMES). */
     private static final class SafeClassWriter extends ClassWriter
     {
-        SafeClassWriter(ClassReader cr, int flags)
+        private final ClassLoader classLoader;
+
+        SafeClassWriter(ClassReader cr, int flags, @Nullable ClassLoader classLoader)
         {
             super(cr, flags);
+            this.classLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         }
 
         @Override
@@ -231,9 +215,8 @@ public final class ClassLoaderUtils
             final String objectClassName = "java/lang/Object";
             try
             {
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                Class<?> c1 = Class.forName(t1.replace('/', '.'), false, cl);
-                Class<?> c2 = Class.forName(t2.replace('/', '.'), false, cl);
+                Class<?> c1 = Class.forName(t1.replace('/', '.'), false, classLoader);
+                Class<?> c2 = Class.forName(t2.replace('/', '.'), false, classLoader);
 
                 if (c1.isAssignableFrom(c2))
                     return t1;
@@ -254,44 +237,6 @@ public final class ClassLoaderUtils
             {
                 return objectClassName;
             }
-        }
-    }
-
-    // Custom ClassLoader to define classes
-    private static final class CustomClassLoader extends ClassLoader
-    {
-        public CustomClassLoader()
-        {
-            super(IModelBase.class.getClassLoader());
-        }
-
-        public Class<?> defineClass(String name, byte[] b) throws ClassFormatError, NoClassDefFoundError
-        {
-            return super.defineClass(name, b, 0, b.length);
-        }
-
-        @Override
-        public Class<?> findClass(String name)
-        {
-            return super.findLoadedClass(name);
-        }
-    }
-
-    private static byte[] readFileBytesFromArchive(Path archivePath, String filePath) throws IOException
-    {
-        try (FileSystem fs = FileSystems.newFileSystem(archivePath))
-        {
-            Path fileInArchive = fs.getPath(filePath);
-
-            try (InputStream inputStream = Files.newInputStream(fileInArchive, StandardOpenOption.READ))
-            {
-                return inputStream.readAllBytes();
-            }
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.error("Could not read {} in {}", filePath, archivePath);
-            throw new IOException(e);
         }
     }
 }

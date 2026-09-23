@@ -1,0 +1,45 @@
+// Identity
+Name Medical Syringe
+ShortName 44_Syringe
+Description Uses : Tube of Morphine
+
+// Rendering
+Icon 44_Syringe
+Model W44.Syringe
+ModelScale 0.15
+Texture Skin44_Syringe
+Colour 255 255 255
+DeployedModel None
+
+// Ammunition
+Ammo 44_Morphine
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 1.0
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Fire rate and reload
+RoundsPerMin 40.0
+ReloadTime 30
+
+// Ballistics
+BulletSpeed 10.0
+Dispersion 0.5
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Attachments
+AllowAllAttachments false
+AllowAttachments
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false

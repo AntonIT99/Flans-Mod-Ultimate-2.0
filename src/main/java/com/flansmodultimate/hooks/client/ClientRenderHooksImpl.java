@@ -1,7 +1,9 @@
 package com.flansmodultimate.hooks.client;
 
 import com.flansmod.client.model.ModelAttachment;
+import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.ModelVehicle;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
@@ -10,11 +12,20 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.InstantShotTrail;
+import com.flansmodultimate.client.render.KillMessageData;
+import com.flansmodultimate.client.render.KillMessageFeed;
+import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.item.CustomBewlr;
+import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.AttachmentType;
+import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.util.FileUtils;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
@@ -30,6 +41,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 public final class ClientRenderHooksImpl implements IClientRenderHooks
 {
@@ -57,6 +71,24 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     public void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         ParticleHelper.spawnFromString(s, x, y, z, vx, vy, vz, scale);
+    }
+
+    @Override
+    public void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale)
+    {
+        ParticleHelper.spawnFromString(s, x, y, z, vx, vy, vz, scale, lifetimeScale);
+    }
+
+    @Override
+    public void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks)
+    {
+        ParticleHelper.launchSmokeShell(x, y, z, vx, vy, vz, fuseTicks);
+    }
+
+    @Override
+    public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
+    {
+        ParticleHelper.spawnSustained(particleType, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
     }
 
     @Override
@@ -183,6 +215,47 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
+    public List<DerivedMuzzle> deriveMuzzles(DriveableType type)
+    {
+        if (type == null)
+            return List.of();
+        // In singleplayer this also runs on the server thread, for the debug
+        // command. Loading a model there would read the texture atlas off the
+        // render thread, so away from it take only what rendering has cached.
+        Object loaded = Minecraft.getInstance().isSameThread()
+            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        if (!(loaded instanceof ModelDriveable model))
+            return List.of();
+
+        boolean planeFacing = type instanceof PlaneType;
+        List<DerivedMuzzle> derived = new ArrayList<>();
+        if (model instanceof ModelVehicle vehicleModel)
+        {
+            Vec3 barrel = vehicleModel.getPrimaryBarrelMuzzle();
+            if (barrel != null)
+                derived.add(new DerivedMuzzle(-1, "barrel",
+                    LegacyDriveableCoordinates.modelPixelsToTypeFile(barrel, planeFacing)));
+        }
+
+        for (int seat = 1; seat <= type.getNumPassengers(); seat++)
+        {
+            SeatInfo info = type.getSeat(seat);
+            if (info == null || info.getGunType() == null)
+                continue;
+            Vec3 muzzle = model.getRegisteredGunMuzzle(info.getGunName());
+            if (muzzle == null)
+                continue;
+            // GunOrigin is not the muzzle: the firing path lifts it by the legacy
+            // mounted-gunner offset before spawning the round. Subtracting that here
+            // makes the suggested value land the shot on the measured barrel tip.
+            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(muzzle, planeFacing);
+            position.y -= (float) (Driveable.PASSENGER_GUN_MOUNTED_OFFSET * 16D);
+            derived.add(new DerivedMuzzle(seat, "seat " + seat + " (" + info.getGunName() + ")", position));
+        }
+        return List.copyOf(derived);
+    }
+
+    @Override
     public boolean isDebugMode()
     {
         return ModClient.isDebug();
@@ -223,7 +296,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     @Override
     public void spawnTrail(String trailTexture, Vec3 origin, Vec3 hitPos, float width, float length, float bulletSpeed)
     {
-        ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/skins/" + trailTexture + FileUtils.PNG_EXTENSION);
+        ResourceLocation resLoc = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/" + trailTexture + FileUtils.PNG_EXTENSION);
         InstantBulletRenderer.addTrail(new InstantShotTrail(origin, hitPos, width, length, bulletSpeed, resLoc));
     }
 
@@ -239,7 +312,19 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     @Override
     public void updateFlash(boolean value, int time)
     {
-        ModClient.setInFlash(true);
-        ModClient.setFlashTime(time);
+        if (value)
+            ModClient.startFlash(time);
+    }
+
+    @Override
+    public void updatePlayerClassSkins(Map<UUID, String> playerClasses)
+    {
+        PlayerSkinOverrides.setPlayerClasses(playerClasses);
+    }
+
+    @Override
+    public void addKillMessage(KillMessageData message)
+    {
+        KillMessageFeed.add(message);
     }
 }

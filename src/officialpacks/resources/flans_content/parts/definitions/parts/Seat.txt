@@ -1,11 +1,14 @@
+// Identity
 Name Seat
 ShortName vehicleSeat
-Icon VehicleSeat
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Misc
+
+// Item and rendering
+Icon VehicleSeat
+Colour 255 255 255
 StackSize 8
+
+// Recipe
 RecipeOutput 2
 Recipe I ingotIron L leather
  LI

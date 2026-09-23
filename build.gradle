@@ -28,19 +28,9 @@ sourceSets.main.resources {
 }
 
 sourceSets {
-    packs {
+    packsmanager {
         compileClasspath += sourceSets.main.compileClasspath
         runtimeClasspath += sourceSets.main.runtimeClasspath
-    }
-    officialpacks {
-        compileClasspath += sourceSets.main.compileClasspath
-        runtimeClasspath += sourceSets.main.runtimeClasspath
-        resources.exclude 'flans_models/**/common/*PackMod.class'
-    }
-    wolffstarwarspack {
-        compileClasspath += sourceSets.main.compileClasspath
-        runtimeClasspath += sourceSets.main.runtimeClasspath
-        resources.exclude 'flans_models/**/common/*PackMod.class'
     }
     test {
         // ModDevGradle attaches the remapped Minecraft/NeoForge artifacts to
@@ -50,6 +40,156 @@ sourceSets {
         runtimeClasspath += sourceSets.main.runtimeClasspath
     }
 }
+
+// Keep optional pack discovery driven by the module descriptors shared with master.
+def fmuModules = []
+ext.registerFmuModule = { Map module ->
+    def required = ['sourceSet', 'modId', 'jarTask', 'archiveBaseName', 'archiveVersion']
+    def missing = required.findAll { !module[it]?.toString()?.trim() }
+    if (missing) throw new GradleException("FMU module is missing: ${missing.join(', ')}")
+    String name = module.sourceSet.toString()
+    File directory = file("src/${module.directory ?: name}")
+    if (!directory.isDirectory() || sourceSets.findByName(name))
+        throw new GradleException("Invalid or duplicate FMU module: ${name}")
+    def source = sourceSets.create(name) {
+        java.srcDirs = [new File(directory, 'java')]
+        resources.srcDirs = [new File(directory, 'resources')]
+        resources.exclude 'encrypted/**'
+    }
+    source.compileClasspath += sourceSets.main.compileClasspath
+    source.runtimeClasspath += sourceSets.main.runtimeClasspath
+    configurations.named(source.implementationConfigurationName) { extendsFrom configurations.implementation }
+    configurations.named(source.compileOnlyConfigurationName) { extendsFrom configurations.compileOnly }
+    configurations.named(source.annotationProcessorConfigurationName) { extendsFrom configurations.annotationProcessor }
+    dependencies.add(source.implementationConfigurationName, sourceSets.main.output)
+
+    // Optional plaintext assets live with their pack under resources/encrypted
+    // and are gitignored. Only the authenticated encrypted bundle produced here
+    // is added to the module JAR.
+    File encryptedInputDirectory = new File(directory, 'resources/encrypted')
+    boolean hasEncryptedInput = encryptedInputDirectory.isDirectory()
+            && fileTree(encryptedInputDirectory).files.any { it.isFile() }
+    if (hasEncryptedInput) {
+        File encryptedGeneratedResources = file("${buildDir}/generated/encrypted/${name}")
+        File encryptedBundle = new File(encryptedGeneratedResources, 'flans_content/content.fmu')
+        String encryptionTaskName = "encrypt${name.capitalize()}UncensoredContent"
+        def encryptionTask = tasks.register(encryptionTaskName) {
+            group = 'flans mod ultimate'
+            description = "Encrypt optional uncensored translations and textures for ${name}."
+            if (encryptedInputDirectory.isDirectory())
+                inputs.dir(encryptedInputDirectory).withPathSensitivity(PathSensitivity.RELATIVE)
+            else
+                inputs.property('uncensoredInputPresent', false)
+            outputs.file(encryptedBundle)
+
+            doLast {
+                project.delete(encryptedGeneratedResources)
+                if (!encryptedInputDirectory.isDirectory()) {
+                    logger.lifecycle("No encrypted-content input directory for ${name}: ${encryptedInputDirectory}")
+                    return
+                }
+
+                List<File> sourceFiles = fileTree(encryptedInputDirectory)
+                        .files
+                        .findAll { it.isFile() }
+                        .sort { left, right -> left.absolutePath <=> right.absolutePath }
+                if (sourceFiles.isEmpty()) {
+                    logger.lifecycle("No uncensored resources found for ${name}.")
+                    return
+                }
+
+                Map<File, String> resourcePaths = new LinkedHashMap<>()
+                sourceFiles.each { sourceFile ->
+                    String relativePath = encryptedInputDirectory.toPath().relativize(sourceFile.toPath())
+                            .toString().replace(File.separator, '/')
+                    String[] segments = relativePath.split('/')
+                    if (segments.length < 4 || segments[0] != 'assets' || segments[1].isBlank())
+                        throw new GradleException("Uncensored resources must use assets/<namespace>/... paths: ${relativePath}")
+
+                    String assetPath = segments.drop(2).join('/')
+                    if (!(assetPath.startsWith('lang/') || assetPath.startsWith('textures/')))
+                        throw new GradleException("Only lang and textures assets may be encrypted: ${relativePath}")
+                    resourcePaths.put(sourceFile, relativePath)
+                }
+
+                def archiveBytes = new ByteArrayOutputStream()
+                def archive = new DataOutputStream(archiveBytes)
+                archive.writeInt(0x464D5552) // FMUR
+                archive.writeInt(1)
+                archive.writeInt(resourcePaths.size())
+                resourcePaths.each { sourceFile, relativePath ->
+                    byte[] data = java.nio.file.Files.readAllBytes(sourceFile.toPath())
+                    archive.writeUTF(relativePath)
+                    archive.writeInt(data.length)
+                    archive.write(data)
+                }
+                archive.close()
+                byte[] plaintext = archiveBytes.toByteArray()
+
+                String keySalt = 'Flans Mod Ultimate uncensored resources v1'
+                def keyDigest = java.security.MessageDigest.getInstance('SHA-256')
+                keyDigest.update(keySalt.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                keyDigest.update((byte) 0)
+                byte[] key = keyDigest.digest(module.modId.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8))
+
+                def ivDigest = java.security.MessageDigest.getInstance('SHA-256')
+                ivDigest.update(plaintext)
+                ivDigest.update((byte) 0)
+                byte[] iv = java.util.Arrays.copyOf(
+                        ivDigest.digest(module.modId.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8)), 12)
+
+                byte[] magic = 'FMUENC01'.getBytes(java.nio.charset.StandardCharsets.US_ASCII)
+                def cipher = javax.crypto.Cipher.getInstance('AES/GCM/NoPadding')
+                cipher.init(javax.crypto.Cipher.ENCRYPT_MODE,
+                        new javax.crypto.spec.SecretKeySpec(key, 'AES'),
+                        new javax.crypto.spec.GCMParameterSpec(128, iv))
+                def aad = new ByteArrayOutputStream()
+                aad.write(magic)
+                aad.write(module.modId.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                cipher.updateAAD(aad.toByteArray())
+                byte[] encrypted = cipher.doFinal(plaintext)
+
+                java.nio.file.Files.createDirectories(encryptedBundle.parentFile.toPath())
+                def output = new DataOutputStream(new FileOutputStream(encryptedBundle))
+                output.write(magic)
+                output.writeInt(1)
+                output.writeByte(iv.length)
+                output.write(iv)
+                output.writeInt(encrypted.length)
+                output.write(encrypted)
+                output.close()
+                logger.lifecycle("Encrypted ${resourcePaths.size()} optional resource(s) into ${encryptedBundle}.")
+            }
+        }
+        source.resources.srcDir(encryptedGeneratedResources)
+        tasks.named(source.processResourcesTaskName).configure {
+            dependsOn encryptionTask
+        }
+    }
+
+    def jarTask = tasks.register(module.jarTask.toString(), Jar) {
+        archiveBaseName.set(module.archiveBaseName.toString())
+        archiveVersion.set(module.archiveVersion.toString())
+        from source.output
+        manifest {
+            attributes('Implementation-Title': (module.implementationTitle ?: name).toString(),
+                       'Implementation-Version': module.archiveVersion.toString())
+        }
+    }
+    if (module.javaCompileJvmArgs) {
+        tasks.named(source.compileJavaTaskName, JavaCompile).configure {
+            options.fork = true
+            options.forkOptions.jvmArgs.addAll(module.javaCompileJvmArgs.collect { it.toString() })
+        }
+    }
+    fmuModules.add([source: source, modId: module.modId.toString(), jarTask: jarTask])
+    return source
+}
+
+file('src').listFiles().findAll { it.isDirectory() &&
+    !(['main', 'packsmanager', 'test'] as Set).contains(it.name) &&
+    new File(it, 'fmu-module.gradle').isFile()
+}.sort { a, b -> a.name <=> b.name }.each { apply from: new File(it, 'fmu-module.gradle') }
 
 repositories {
     // Add here additional repositories if required by some of the dependencies below.
@@ -128,11 +268,9 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
-        "flansmodultimate_officialpacks" {
-            sourceSet(sourceSets.officialpacks)
-        }
-        "flansmodultimate_wolffstarwars" {
-            sourceSet(sourceSets.wolffstarwarspack)
+        "flansmodultimate_packs_manager" { sourceSet(sourceSets.packsmanager) }
+        fmuModules.each { module ->
+            "${module.modId}" { sourceSet(module.source) }
         }
     }
 }
@@ -143,20 +281,13 @@ neoForge {
 // "optional", meaning it will not be pulled by dependents of this mod.
 configurations {
     runtimeClasspath.extendsFrom localRuntime
-    packsImplementation.extendsFrom implementation
-    packsCompileOnly.extendsFrom compileOnly
-    packsAnnotationProcessor.extendsFrom annotationProcessor
-    officialpacksImplementation.extendsFrom implementation
-    officialpacksCompileOnly.extendsFrom compileOnly
-    officialpacksAnnotationProcessor.extendsFrom annotationProcessor
-    wolffstarwarspackImplementation.extendsFrom implementation
-    wolffstarwarspackCompileOnly.extendsFrom compileOnly
-    wolffstarwarspackAnnotationProcessor.extendsFrom annotationProcessor
+    packsmanagerImplementation.extendsFrom implementation
+    packsmanagerCompileOnly.extendsFrom compileOnly
+    packsmanagerAnnotationProcessor.extendsFrom annotationProcessor
 }
 
 dependencies {
-    officialpacksImplementation sourceSets.main.output
-    wolffstarwarspackImplementation sourceSets.main.output
+    packsmanagerImplementation sourceSets.main.output
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
     compileOnly 'org.jetbrains:annotations:26.0.2'
@@ -212,7 +343,6 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_version            : mod_version,
             mod_authors            : mod_authors,
             mod_description        : mod_description,
-            mod_id_packs           : mod_id_packs,
     ]
     inputs.properties replaceProperties
     expand replaceProperties
@@ -224,27 +354,6 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
 sourceSets.main.resources.srcDir generateModMetadata
 // To avoid having to run "generateModMetadata" manually, make it run on every project reload
 neoForge.ideSyncTask generateModMetadata
-
-var generatePacksModMetadata = tasks.register("generatePacksModMetadata", ProcessResources) {
-    var replaceProperties = [
-            minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            loader_version_range   : loader_version_range,
-            mod_id                 : mod_id,
-            mod_id_packs           : mod_id_packs,
-            mod_name_packs         : mod_name_packs,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-            packs_version          : packs_version,
-            mod_authors            : mod_authors,
-    ]
-    inputs.properties replaceProperties
-    expand replaceProperties
-    from "src/packs/templates"
-    into "build/generated/sources/packsModMetadata"
-}
-sourceSets.packs.resources.srcDir generatePacksModMetadata
-neoForge.ideSyncTask generatePacksModMetadata
 
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {
@@ -279,45 +388,20 @@ tasks.named('jar', Jar).configure {
     }
 }
 
-// Build the optional bundled content-packs mod without modifying source resources.
-def packsJar = tasks.register('packsJar', Jar) {
-    archiveBaseName.set("[$minecraft_version] $mod_name_packs")
-    archiveVersion.set(packs_version)
-    from sourceSets.packs.output
+def packsManagerJar = tasks.register('packsManagerJar', Jar) {
+    archiveBaseName.set("[$minecraft_version] $mod_name_packs_manager")
+    archiveVersion.set(packs_manager_version)
+    from sourceSets.packsmanager.output
+    from('run/flan') { into 'flan' }
     manifest {
-        attributes(
-                'Implementation-Title': 'packs',
-                'Implementation-Version': packs_version
-        )
-    }
-}
-
-def officialPacksJar = tasks.register('officialPacksJar', Jar) {
-    archiveBaseName.set("[$minecraft_version] Flan's Mod Ultimate Official Packs")
-    archiveVersion.set('1.0')
-    from sourceSets.officialpacks.output
-    manifest {
-        attributes(
-                'Implementation-Title': 'officialpacks',
-                'Implementation-Version': '1.0'
-        )
-    }
-}
-
-def wolffStarWarsPackJar = tasks.register('wolffStarWarsPackJar', Jar) {
-    archiveBaseName.set("[$minecraft_version] Wolff's Star Wars Pack")
-    archiveVersion.set('3.0')
-    from sourceSets.wolffstarwarspack.output
-    manifest {
-        attributes(
-                'Implementation-Title': 'wolffstarwarspack',
-                'Implementation-Version': '3.0'
-        )
+        attributes('Implementation-Title': 'packsManager',
+                   'Implementation-Version': packs_manager_version)
     }
 }
 
 tasks.named('assemble').configure {
-    dependsOn packsJar, officialPacksJar, wolffStarWarsPackJar
+    dependsOn packsManagerJar
+    dependsOn fmuModules.collect { it.jarTask }
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.

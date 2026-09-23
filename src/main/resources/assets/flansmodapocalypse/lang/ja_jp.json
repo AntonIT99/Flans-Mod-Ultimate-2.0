@@ -1,0 +1,16 @@
+{
+  "block.flansmodapocalypse.blocklabstone": "研究所の石",
+  "block.flansmodapocalypse.blockpowercube": "パワーキューブ",
+  "block.flansmodapocalypse.blocksulphur": "硫黄ブロック",
+  "block.flansmodapocalypse.blocksulphuricacid": "硫酸",
+  "death.attack.sulphuric_acid": "%1$s は硫酸に溶けた",
+  "death.attack.sulphuric_acid.player": "%1$s は %2$s と戦っている間に硫酸に溶けた",
+  "entity.flansmodapocalypse.autodrone": "スカルドローン",
+  "entity.flansmodapocalypse.nukedrop": "核爆弾投下",
+  "entity.flansmodapocalypse.skullboss": "スカルボス",
+  "entity.flansmodapocalypse.survivor": "生存者",
+  "entity.flansmodapocalypse.teleporter": "アポカリプステレポーター",
+  "fluid.flansmodapocalypse.sulphuric_acid": "硫酸",
+  "item.flansmodapocalypse.flansulphur": "硫黄",
+  "item.flansmodapocalypse.sulphuric_acid_bucket": "硫酸入りバケツ"
+}

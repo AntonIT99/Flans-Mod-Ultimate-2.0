@@ -1,0 +1,16 @@
+// Identity
+Name Bomb Bay Frame
+ShortName SMP_Part_Bay_BombBay
+
+// Model and Rendering
+Icon Icon_SMP_Part_Bay_BombBay
+
+// Recipe and Inventory
+Recipe D SMP_Part_Misc_DropMechanism P SMP_Part_Mat_Plate_Steel
+PPP
+ D 
+PPP
+RecipeOutput 1
+Category Bay
+PartBoxRecipe
+StackSize 64

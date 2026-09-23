@@ -1,0 +1,8 @@
+registerFmuModule(
+    sourceSet: 'manuspacks',
+    modId: 'flansmodultimate_manuspacks',
+    jarTask: 'manusPacksJar',
+    archiveBaseName: "[$minecraft_version] Flan's Mod Ultimate Manus Packs",
+    archiveVersion: '1.0',
+    implementationTitle: 'manuspacks'
+)

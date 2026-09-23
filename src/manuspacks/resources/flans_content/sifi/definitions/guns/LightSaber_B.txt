@@ -1,0 +1,51 @@
+// Identity
+Name Light Saber - Blue
+ShortName LightSaber_B
+
+// Model and Rendering
+Icon IconGunLightSaber_B
+Colour 255 255 255
+DeployedModel None
+Model manus_sifi.LightSaber_A
+Texture SkinGunLightSaber_B
+ModelScale 0.11
+
+// Recipe and Inventory
+AllowAllAttachments false
+AllowAttachments M36LasgunGrip
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Weapons
+ReloadTime 0
+Recoil 0
+Accuracy 0
+ShootDelay 15
+Mode SemiAuto
+Scope None
+FOVZoomLevel 1.0
+Deployable False
+OneHanded True
+
+// Ballistics and Damage
+Damage 0
+MeleeDamage 20
+
+// Sounds
+ShootSound lightsaber_swing
+ReloadSound boltgun_reload
+MeleeSound lightsaber_swing
+IdleSound lightsaber_idle
+IdleSoundLength 15
+
+// Tooltip
+ShowDamage False
+ShowRecoil False
+ShowAccuracy False
+ShowReloadTime False
+ShowShootDelay False
+ShowBulletSpeed False
+ShowMode False

@@ -1,0 +1,40 @@
+// Identity
+Name MG-17 Magazine
+ShortName 44_Mg17Ammo
+
+// Rendering
+Icon 44_Mg17Ammo
+Model W44.W44Bullet
+Texture Skin44_W44Bullet_Tracer_Green
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 4
+RoundsPerItem 100
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates True
+BreaksGlass True
+
+// Damage
+Mass 12.8
+Damage 1
+DamageVsLiving 13
+DamageVsVehicles 1
+DamageVsPlanes 30
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 0
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracergreen
+FlakParticles 0
+
+// Sounds
+HitSound bullet

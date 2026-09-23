@@ -1,0 +1,18 @@
+// Identity
+Name German Pz.Grenadier Leibermuster Jacket
+ShortName 44_GermanPzGrenadierLeibermusterChest
+Type Body
+
+// Rendering
+Icon 44_GermanPzGrenadierLeibermusterChest
+Model W44.GermanPzGrenadierChest
+ModelScale 1
+ArmorTexture Skin44_PzGrenadierLeibermuster
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

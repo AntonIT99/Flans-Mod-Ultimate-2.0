@@ -1,0 +1,45 @@
+// Identity
+Name PIAT
+ShortName 44_PIAT
+Description British AT Rocket Launcher
+
+// Rendering
+Icon 44_PIAT
+Model W44.PIAT
+ModelScale 0.4
+Texture Skin44_PIAT
+Colour 255 255 255
+DeployedModel None
+
+// Ammunition
+Ammo 44_PIATAmmo
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.55
+KnockbackModifier 0
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 8.0
+ReloadTime 90
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 80.0
+Dispersion 2.4
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 7
+
+// Sounds
+ShootSound MortarShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound PanzerschreckReload
+ReloadSoundRange 5

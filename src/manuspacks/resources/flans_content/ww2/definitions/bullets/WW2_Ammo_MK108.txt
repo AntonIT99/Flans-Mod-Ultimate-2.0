@@ -1,0 +1,40 @@
+// Identity
+Name German 30mm Ammo for MK108 - 100 Bullet Box
+ShortName WW2_Ammo_MK108
+description Amunition for MK108
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_MK108
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 100
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 110
+DamageVsVehicles 110
+DamageVsPlanes 20
+Explosion 0
+Fire 0
+Mass 330
+MuzzleVelocity 505
+ExplosiveMassTNTg 110
+PenetrationAt100m 10
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType smoke

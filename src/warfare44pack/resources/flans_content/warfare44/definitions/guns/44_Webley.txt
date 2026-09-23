@@ -1,0 +1,60 @@
+// Identity
+Name Webley
+ShortName 44_Webley
+Description British Pistol
+
+// Rendering
+Icon 44_Webley
+Model W44.Webley
+ModelScale 0.25
+Texture Skin44_Webley
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+
+// Ammunition
+Ammo 44_WebleyAmmo
+
+// Handling
+Mode SemiAuto
+OneHanded True
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 120.0
+ReloadTime 50
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 190.0
+Dispersion 0.85
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 7.0
+RandomRecoilRange 6
+RandomRecoilYawRange 0.75
+DecreaseRecoil 4.0
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound C96Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound LugerReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

@@ -1,0 +1,45 @@
+// Identity
+Name German 20mm L/65 Flak Shell
+ShortName Ships_Shell_German20mmAA
+description Amunition for 2 cm Flak
+
+// Model and Rendering
+Icon Icon_Ships_Shell_German20mmAA
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+   
+GGG
+SSS
+RecipeOutput 32
+MaxStackSize 64
+RoundsPerItem 20
+
+// Behaviour
+Bomb False
+Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 2.0
+
+// Ballistics and Damage
+Damage 20
+DamageVsVehicles 20
+Explosion 1
+Fire 0
+Mass 115
+MuzzleVelocity 900
+ExplosiveMassTNTg 6
+PenetrationAt100m 25
+
+// Sounds
+HitSound bomb
+
+// Effects
+HasLight True
+FlakParticles 0
+SmokeTrail False

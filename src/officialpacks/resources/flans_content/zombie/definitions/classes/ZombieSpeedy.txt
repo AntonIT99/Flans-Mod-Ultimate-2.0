@@ -1,6 +1,11 @@
+// Identity
 Name Speedy
 ShortName zombieSpeedy
+
+// Appearance
 SkinOverride Zombie
+
+// Items
 AddItem screwdriver
 AddItem screwdriver+Screwdriver_Green
 AddItem screwdriver+Screwdriver_Red

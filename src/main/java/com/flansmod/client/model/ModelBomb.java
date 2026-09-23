@@ -1,10 +1,7 @@
 package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsmod.api.client.model.ModelBase;
-import org.jetbrains.annotations.NotNull;
+import com.flansmodultimate.client.model.ModelBase;
 
 public class ModelBomb extends ModelBase
 {
@@ -28,12 +25,4 @@ public class ModelBomb extends ModelBase
         bombModel[3].addBox(-2F, 8F, -2F, 4, 2, 4, 0.0F);
     }
 
-    @Override
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
-    {
-        for (ModelRendererTurbo mod : bombModel)
-        {
-            mod.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, getScale());
-        }
-    }
 }

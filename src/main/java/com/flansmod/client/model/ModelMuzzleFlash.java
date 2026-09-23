@@ -1,6 +1,6 @@
 package com.flansmod.client.model;
 
-import com.wolffsmod.api.client.model.ModelBase;
+import com.flansmodultimate.client.model.ModelBase;
 
 import net.minecraft.resources.ResourceLocation;
 

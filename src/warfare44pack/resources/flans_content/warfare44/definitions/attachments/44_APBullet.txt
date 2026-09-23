@@ -1,0 +1,17 @@
+// Identity
+Name Armor Piercing Bullet
+ShortName 44_APBullet
+Description Generic Attachment : _Decreases Damage by 10% _Increases Accuracy by 10% _Increases Bullet Speed by 10%
+AttachmentType generic
+
+// Rendering
+Icon 44_APBullet
+
+// Modifiers
+Silencer false
+DamageMultiplier 0.9
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.9
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.1
+ReloadTimeMultiplier 1.0

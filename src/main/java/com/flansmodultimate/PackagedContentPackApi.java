@@ -15,7 +15,14 @@ import net.neoforged.neoforgespi.language.IModFileInfo;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -64,7 +71,6 @@ public final class PackagedContentPackApi
 
     /**
      * Registers packaged content with optional display-name overrides keyed by logical pack ID.
-     * Pack IDs without an override retain the generated {@code "Name (Official)"} label.
      */
     public static synchronized void register(ModContainer context, String modId,
                                              String contentRoot, String modelsRoot,
@@ -142,7 +148,7 @@ public final class PackagedContentPackApi
                 displayNames.getOrDefault(packId, displayName(packId)), moduleDisplayName, packId, modulePath,
                 definitionsRoot, moduleAssetsRoot, moduleModelsRoot,
                 archiveDefinitionsRoot, joinArchivePath("assets", FlansMod.FLANSMOD_ID), modelsRoot,
-                archiveBacked, indexSharedAssets
+                archiveBacked, indexSharedAssets, "flansmodultimate_officialpacks".equals(modId)
             ));
             indexSharedAssets = false;
         }
@@ -283,7 +289,7 @@ public final class PackagedContentPackApi
     {
         if (packId.isBlank())
             return packId;
-        return Character.toUpperCase(packId.charAt(0)) + packId.substring(1) + " (Official)";
+        return Character.toUpperCase(packId.charAt(0)) + packId.substring(1);
     }
 
     private static String[] splitPath(String path)

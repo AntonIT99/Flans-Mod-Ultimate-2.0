@@ -1,5 +1,9 @@
 package com.flansmodultimate.client.render.entity;
 
+import com.flansmod.client.model.TrackLinkAnimation;
+import com.flansmod.client.model.TrackLinkLod;
+import com.flansmod.client.model.ModelVehicle;
+
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelGun;
@@ -7,16 +11,22 @@ import com.flansmod.client.model.ModelMecha;
 import com.flansmod.client.model.ModelMechaTool;
 import com.flansmodultimate.FlansMod;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.client.render.VehicleThermalRenderer;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
+import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
+import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Plane;
@@ -31,6 +41,7 @@ import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -53,10 +64,47 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 {
     private static final float TRANSITION_PER_TICK = 0.16F;
 
+    /** Marker colours for the authored shoot points of each weapon bank, as red, green, blue. */
+    private static final float[] PRIMARY_MARKER = { 0F, 1F, 1F };
+    private static final float[] SECONDARY_MARKER = { 1F, 0.5F, 0F };
+    private static final float[] GUN_ORIGIN_MARKER = { 0F, 1F, 0.25F };
+    /** A point the shoot-point debug command has moved, so it reads apart from an authored one. */
+    private static final float[] OVERRIDDEN_MARKER = { 1F, 1F, 0F };
+    /** A muzzle measured off the model rather than read from the type file. */
+    private static final float[] MEASURED_MARKER = { 1F, 1F, 1F };
+
     /** Weak keys avoid retaining entities after a world unload. Render-thread only. */
     private final Map<Driveable, AnimationHistory> animationStates = new WeakHashMap<>();
     /** Limits diagnostic markers to once per game tick, rather than once per frame. */
     private final Map<Driveable, Integer> diagnosticMarkerTicks = new WeakHashMap<>();
+
+    /** Nesting depth of {@link #renderPreview(Runnable)}. Render thread only. */
+    private static int previewDepth;
+
+    /**
+     * Draws a driveable through the entity dispatcher for a menu preview.
+     *
+     * <p>Both level of detail stages measure the entity in world space against
+     * the game camera. A GUI supplies neither, so they are switched off for the
+     * duration of the call instead of silently culling the whole model.</p>
+     */
+    public static void renderPreview(Runnable render)
+    {
+        ++previewDepth;
+        try
+        {
+            render.run();
+        }
+        finally
+        {
+            --previewDepth;
+        }
+    }
+
+    public static boolean isRenderingPreview()
+    {
+        return previewDepth > 0;
+    }
 
     public DriveableRenderer(EntityRendererProvider.Context context)
     {
@@ -74,13 +122,62 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         float yaw = Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw());
         float pitch = Mth.rotLerp(partialTick, driveable.getPrevPitch(), driveable.getPitch());
         float roll = Mth.rotLerp(partialTick, driveable.getPrevRoll(), driveable.getRoll());
-        float turretYaw = Mth.rotLerp(partialTick, driveable.getPrevTurretYaw(), driveable.getTurretYaw());
-        float turretPitch = Mth.rotLerp(partialTick, driveable.getPrevTurretPitch(), driveable.getTurretPitch());
 
         AnimationHistory history = animationStates.computeIfAbsent(driveable, ignored -> new AnimationHistory());
         history.advance(driveable, type);
         history.updatePassengerGunPivots(driveable, type, model);
-        renderDiagnosticMarkers(driveable, type);
+        boolean thermalMask = VehicleThermalRenderer.isRenderingMask();
+        if (!thermalMask)
+            renderDiagnosticMarkers(driveable, type);
+        ResourceLocation texture = getTextureLocation(driveable);
+        boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
+        boolean cull = ModClientConfig.get().useCullingRendering(type);
+        float red = getRed(type);
+        float green = getGreen(type);
+        float blue = getBlue(type);
+        float scale = type.getModelScale();
+        float projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11()) * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
+        Vec3 cameraOffset = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition()
+            .subtract(driveable.getPosition(partialTick));
+        double cameraDistance = cameraOffset.length();
+
+        float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle || driveable instanceof Mecha
+            ? 180F - yaw : -yaw;
+        boolean locallyControlled = Minecraft.getInstance().player != null
+            && Minecraft.getInstance().player.getVehicle() == driveable;
+        boolean intact = true;
+        for (EnumDriveablePart part : type.getHealth().keySet())
+        {
+            if (!driveable.isPartIntact(part))
+            {
+                intact = false;
+                break;
+            }
+        }
+        // Distance based level of detail measures the entity against the world
+        // camera through a perspective projection. A menu draws the same entity
+        // under the GUI's orthographic matrix at a pose only tens of pixels from
+        // the origin, which those measurements read as vanishingly small.
+        // A heat silhouette must use geometry: an impostor's transparent texels
+        // cannot be recovered after the mask substitutes its white texture.
+        boolean preview = isRenderingPreview() || thermalMask;
+        DriveableImpostorCache.Result lodResult = DriveableImpostorCache.Result.notRendered();
+        if (!preview && !locallyControlled)
+        {
+            lodResult = DriveableImpostorCache.renderOrPrepare(
+                model, type, texture, translucent, cull, red, green, blue,
+                poseStack, buffer, packedLight, projectionPixels, cameraDistance,
+                cameraOffset, entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(),
+                !(driveable instanceof Mecha) && !locallyControlled && intact, history.usingImpostor);
+            history.usingImpostor = lodResult.usingImpostor();
+            if (lodResult.rendered())
+                return;
+        }
+
+        // Only exact geometry needs the interpolated wheel/track/turret state.
+        // Tick history above still advances while an impostor is displayed.
+        float turretYaw = Mth.rotLerp(partialTick, driveable.getPrevTurretYaw(), driveable.getTurretYaw());
+        float turretPitch = Mth.rotLerp(partialTick, driveable.getPrevTurretPitch(), driveable.getTurretPitch());
         float throttle = Mth.lerp(partialTick, history.previousThrottle, history.throttle);
         float steering = Mth.lerp(partialTick, history.previousSteering, history.steering);
         float gearProgress = Mth.lerp(partialTick, history.previousGear, history.gear);
@@ -99,46 +196,18 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
         float legSwing = driveable instanceof Mecha
             ? wrappedLerp(partialTick, history.previousLegSwing, history.legSwing) : 0F;
+        float legYaw = driveable instanceof Mecha mecha
+            ? Mth.rotLerp(partialTick, mecha.getPrevLegYaw(), mecha.getLegYaw()) : yaw;
 
         ModelDriveable.RenderState state = new ModelDriveable.RenderState(
             partialTick, yaw, pitch, roll, throttle, turretYaw, turretPitch,
             wheelAngle, steering, animationTime, gearProgress, doorProgress, modeProgress,
-            leftTrackProgress, rightTrackProgress, legSwing,
+            leftTrackProgress, rightTrackProgress, legSwing, legYaw,
             history.wingTransform, history.wingWheelTransform, history.bodyWheelTransform,
             history.tailWheelTransform, history.doorTransform, history.door2Transform,
-            history.legAnimation, driveable.getInputMask(), driveable.getDriveableMode(), driveable.isVarFlare()
+            history.legAnimation, driveable.getInputMask(), driveable.getDriveableMode(), driveable.isVarFlare(),
+            history.trackLinks
         );
-
-        ResourceLocation texture = getTextureLocation(driveable);
-        boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
-        boolean cull = ModClientConfig.get().useCullingRendering(type);
-        float red = getRed(type);
-        float green = getGreen(type);
-        float blue = getBlue(type);
-        float scale = type.getModelScale();
-        float projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11()) * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
-        double cameraDistance = Math.sqrt(entityRenderDispatcher.distanceToSqr(driveable));
-
-        float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle ? 180F - yaw : -yaw;
-        boolean locallyControlled = Minecraft.getInstance().player != null
-            && Minecraft.getInstance().player.getVehicle() == driveable;
-        boolean intact = true;
-        for (EnumDriveablePart part : type.getHealth().keySet())
-        {
-            if (!driveable.isPartIntact(part))
-            {
-                intact = false;
-                break;
-            }
-        }
-        DriveableImpostorCache.Result lodResult = DriveableImpostorCache.renderOrPrepare(
-            model, type, texture, translucent, cull, red, green, blue,
-            poseStack, buffer, packedLight, projectionPixels, cameraDistance,
-            entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(),
-            !(driveable instanceof Mecha) && !locallyControlled && intact, history.usingImpostor);
-        history.usingImpostor = lodResult.usingImpostor();
-        if (lodResult.rendered())
-            return;
 
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(entityYawRotation));
@@ -146,33 +215,45 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         poseStack.mulPose(Axis.XP.rotationDegrees(roll));
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
 
-        // Keep this in model space so the correction follows terrain pitch and roll,
-        // and is scaled along with legacy models that use ModelScale.
-        if (driveable instanceof Vehicle)
-            poseStack.translate(0F, Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET, 0F);
-
         // Legacy driveable renderers applied ModelScale to the complete model
         // hierarchy. Keep pivots, attachment points and procedural track paths
         // under the same transform instead of scaling every mesh independently.
         poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
-        float minimumPartPixels = (float)ModClientConfig.get().minimumDriveablePartPixelSize;
-        if (ModClientConfig.get().enableDriveableLod)
+        float minimumPartPixels = preview ? 0F : (float)ModClientConfig.get().minimumDriveablePartPixelSize;
+        if (!preview && !locallyControlled && ModClientConfig.get().enableDriveableLod)
         {
-            minimumPartPixels = DriveableImpostorCache.adaptivePartThreshold(minimumPartPixels,
+            float distanceScale = DriveableLodPolicy.distanceScale(lodResult.modelRadius(),
+                type instanceof VehicleType && !type.isFloatOnWater(), (float)ModClientConfig.get().groundVehicleLodDistanceFactor);
+            minimumPartPixels = DriveableLodPolicy.partThreshold(minimumPartPixels,
                 (float)ModClientConfig.get().maximumDriveableLodPartPixelSize,
-                lodResult.projectedPixelDiameter(), (float)ModClientConfig.get().driveableImpostorPixelSize);
+                (float)ModClientConfig.get().driveableLodDetailMultiplier, cameraDistance, distanceScale);
         }
+        int trackLinkGroup = !preview && !locallyControlled && ModClientConfig.get().enableDriveableLod
+            && model instanceof ModelVehicle vehicleModel
+            ? vehicleModel.selectTrackLinkGroup(type, projectionPixels, modelOriginDistance(poseStack), modelScaleBound(poseStack),
+                (float)ModClientConfig.get().driveableTrackLinkLodPixelSize,
+                (float)ModClientConfig.get().driveableTrackLinkGroupingPixelSize, history.trackLinkGroup) : 0;
+        history.trackLinkGroup = trackLinkGroup;
+        int previousTrackGroup = TrackLinkLod.activeGroup();
+        TrackLinkLod.setGroup(trackLinkGroup);
         boolean useScreenSpaceCulling = minimumPartPixels > 0F;
         if (useScreenSpaceCulling)
             ModelRendererTurbo.beginScreenSpaceCulling(minimumPartPixels, projectionPixels);
         try
         {
-            for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+            var renderPasses = ModelCache.getRenderPasses(model);
+            for (int passIndex = 0; passIndex < renderPasses.size(); passIndex++)
             {
-                model.render(driveable, state, poseStack,
-                    buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                    packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
+                EnumRenderPass renderPass = renderPasses.get(passIndex);
+                var consumer = GpuModelCache.begin(buffer, renderPass, texture, translucent, cull, !preview);
+                try
+                {
+                    model.render(driveable, state, poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
+                }
+                finally {
+                    GpuModelCache.end(consumer);
+                }
             }
             poseStack.popPose();
             if (driveable instanceof Mecha && model instanceof ModelMecha mechaModel && type instanceof MechaType mechaType)
@@ -180,10 +261,30 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
         finally
         {
+            TrackLinkLod.setGroup(previousTrackGroup);
             if (useScreenSpaceCulling)
                 ModelRendererTurbo.endScreenSpaceCulling();
         }
         poseStack.popPose();
+    }
+
+    private static double modelOriginDistance(PoseStack pose)
+    {
+        var m = pose.last().pose();
+        return Math.sqrt(m.m30() * m.m30() + m.m31() * m.m31() + m.m32() * m.m32());
+    }
+
+    /** Includes constructor-time legacy scaling. Gershgorin bounds the largest singular value even with shear. */
+    static float modelScaleBound(PoseStack pose)
+    {
+        var m = pose.last().pose();
+        float xx = m.m00()*m.m00() + m.m01()*m.m01() + m.m02()*m.m02();
+        float yy = m.m10()*m.m10() + m.m11()*m.m11() + m.m12()*m.m12();
+        float zz = m.m20()*m.m20() + m.m21()*m.m21() + m.m22()*m.m22();
+        float xy = Math.abs(m.m00()*m.m10() + m.m01()*m.m11() + m.m02()*m.m12());
+        float xz = Math.abs(m.m00()*m.m20() + m.m01()*m.m21() + m.m02()*m.m22());
+        float yz = Math.abs(m.m10()*m.m20() + m.m11()*m.m21() + m.m12()*m.m22());
+        return Mth.sqrt(Math.max(xx + xy + xz, Math.max(yy + xy + yz, zz + xz + yz)));
     }
 
     @Override
@@ -198,6 +299,48 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
     }
 
+    private static void renderShootPointMarkers(Driveable driveable, DriveableType type, boolean secondary,
+                                                float[] authoredColour)
+    {
+        for (var point : type.shootPoints(secondary))
+        {
+            float[] colour = point.isDebugOverride() ? OVERRIDDEN_MARKER : authoredColour;
+            Vec3 muzzle = driveable.getDebugShootOrigin(point);
+            DebugHelper.spawnDebugDot(muzzle, 2, colour[0], colour[1], colour[2]);
+            DebugHelper.spawnDebugVector(muzzle, driveable.getDebugShootDirection(point, secondary).scale(2D),
+                2, colour[0], colour[1], colour[2]);
+        }
+    }
+
+    /**
+     * Draws where the loaded model puts each muzzle, next to where the type file
+     * does. The gap between the two markers is the correction a definition needs,
+     * and seeing it on the vehicle is quicker to judge than reading the delta out
+     * of {@code /flandebug shootpoint list}.
+     */
+    private static void renderMeasuredMuzzles(Driveable driveable, DriveableType type)
+    {
+        for (DerivedMuzzle muzzle : ClientHooks.RENDER.deriveMuzzles(type))
+        {
+            Vector3f blocks = new Vector3f(muzzle.position().x / 16F, muzzle.position().y / 16F,
+                muzzle.position().z / 16F);
+            Vec3 position;
+            if (muzzle.isBarrel())
+            {
+                // Follow whichever part the authored point is mounted on, so the
+                // measured marker tracks the turret exactly as the real one does.
+                var authored = type.shootPoints(false);
+                EnumDriveablePart part = authored.isEmpty() ? EnumDriveablePart.TURRET
+                    : authored.get(0).getRootPos().getPart();
+                position = driveable.getDebugShootOrigin(
+                    new ShootPoint(new DriveablePosition(blocks, part), new Vector3f()));
+            }
+            else
+                position = driveable.getGunOriginWorldPosition(blocks);
+            DebugHelper.spawnDebugDot(position, 2, MEASURED_MARKER[0], MEASURED_MARKER[1], MEASURED_MARKER[2]);
+        }
+    }
+
     private void renderDiagnosticMarkers(Driveable driveable, DriveableType type)
     {
         if (!ModClient.isDebug())
@@ -208,13 +351,9 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             return;
         diagnosticMarkerTicks.put(driveable, driveable.tickCount);
 
-        if (driveable instanceof Vehicle)
-        {
-            for (var point : type.shootPoints(false))
-                DebugHelper.spawnDebugDot(driveable.getDebugShootOrigin(point), 2, 0F, 1F, 1F);
-            for (var point : type.shootPoints(true))
-                DebugHelper.spawnDebugDot(driveable.getDebugShootOrigin(point), 2, 1F, 0.5F, 0F);
-        }
+        renderShootPointMarkers(driveable, type, false, PRIMARY_MARKER);
+        renderShootPointMarkers(driveable, type, true, SECONDARY_MARKER);
+        renderMeasuredMuzzles(driveable, type);
 
         for (int seat = 0; seat <= type.getNumPassengers(); seat++)
         {
@@ -235,8 +374,13 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             if (seat > 0 && seatInfo.getGunType() != null)
             {
                 Vec3 muzzle = driveable.getPassengerShootOrigin(seat);
-                if (muzzle != null)
-                    DebugHelper.spawnDebugDot(muzzle, 2, 0F, 1F, 0.25F);
+                Vec3 direction = driveable.getPassengerShootDirection(seat);
+                if (muzzle != null && direction != null)
+                {
+                    float[] colour = type.isGunOriginOverridden(seat) ? OVERRIDDEN_MARKER : GUN_ORIGIN_MARKER;
+                    DebugHelper.spawnDebugDot(muzzle, 2, colour[0], colour[1], colour[2]);
+                    DebugHelper.spawnDebugVector(muzzle, direction.scale(2D), 2, colour[0], colour[1], colour[2]);
+                }
             }
         }
     }
@@ -374,6 +518,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         private final ModelDriveable.AnimatedTransform doorTransform = new ModelDriveable.AnimatedTransform();
         private final ModelDriveable.AnimatedTransform door2Transform = new ModelDriveable.AnimatedTransform();
         private final ModelDriveable.LegAnimation legAnimation = new ModelDriveable.LegAnimation();
+        private final TrackLinkAnimation trackLinks = new TrackLinkAnimation();
         private final GunAnimations leftGunAnimations = new GunAnimations();
         private final GunAnimations rightGunAnimations = new GunAnimations();
         private GunItem leftGunItem;
@@ -383,6 +528,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         private DriveableType passengerPivotType;
         private ModelDriveable passengerPivotModel;
         private boolean usingImpostor;
+        private int trackLinkGroup;
 
         private void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
         {
@@ -418,6 +564,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 {
                     leftTrack = previousLeftTrack = vehicle.getLeftTrackProgress();
                     rightTrack = previousRightTrack = vehicle.getRightTrackProgress();
+                    if (type instanceof VehicleType vehicleType)
+                        trackLinks.advance(vehicle, vehicleType, 1);
                 }
                 if (driveable instanceof Mecha mecha)
                 {
@@ -453,6 +601,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             {
                 leftTrack = vehicle.getLeftTrackProgress();
                 rightTrack = vehicle.getRightTrackProgress();
+                if (type instanceof VehicleType vehicleType)
+                    trackLinks.advance(vehicle, vehicleType, elapsed);
             }
             if (driveable instanceof Mecha mecha)
             {

@@ -1,0 +1,36 @@
+// Identity
+Name Russian 7.62mm Ammo for ShKAS - 1000 Bullet Box
+ShortName WW2_Ammo_ShKAS
+description Amunition for ShKAS
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_ShKAS
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 1000
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 10
+DamageVsVehicles 1
+DamageVsPlanes 8
+Explosion 0
+Fire 0
+Mass 9.6
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail False

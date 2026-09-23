@@ -21,15 +21,27 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class ItemOpStick extends Item
 {
+    /** Vanilla operator level 2, the same gate the teams commands use. */
+    public static final int PERMISSION_LEVEL = 2;
     private static final String NBT_MODE = "teams_mode";
     private static final String NBT_CONNECTION = "teams_connection";
     private static final String NBT_CONNECTION_BASE = "teams_connection_is_base";
+    /**
+     * Where the selected endpoint stands.
+     *
+     * <p>Recorded alongside its id so the client can draw the pending link without having to
+     * hunt the world for an object it only knows by id.</p>
+     */
+    private static final String NBT_CONNECTION_POS = "teams_connection_pos";
 
     public enum Mode
     {
@@ -58,6 +70,12 @@ public final class ItemOpStick extends Item
         ItemStack stack = player.getItemInHand(hand);
         if (!player.isShiftKeyDown())
             return InteractionResultHolder.pass(stack);
+        if (!canUse(player))
+        {
+            if (!level.isClientSide)
+                player.displayClientMessage(Component.translatable("item.flansmodultimate.operator_stick.no_permission").withStyle(ChatFormatting.RED), true);
+            return InteractionResultHolder.fail(stack);
+        }
         if (!level.isClientSide)
         {
             Mode next = Mode.values()[(getMode(stack).ordinal() + 1) % Mode.values().length];
@@ -68,10 +86,19 @@ public final class ItemOpStick extends Item
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
 
+    /** Every operator stick action is reserved for server operators. */
+    public static boolean canUse(Player player)
+    {
+        return player.hasPermissions(PERMISSION_LEVEL);
+    }
+
     public void useOnTeamObject(ServerPlayer player, ITeamObject object, ItemStack stack)
     {
-        if (!player.hasPermissions(2))
+        if (!canUse(player))
+        {
+            player.displayClientMessage(Component.translatable("item.flansmodultimate.operator_stick.no_permission").withStyle(ChatFormatting.RED), true);
             return;
+        }
         switch (getMode(stack))
         {
             case OWNERSHIP -> changeOwnership(player, object);
@@ -175,11 +202,30 @@ public final class ItemOpStick extends Item
         });
     }
 
+    /**
+     * Where the endpoint waiting to be connected stands, if this stick is holding one.
+     *
+     * <p>Empty unless the stick is in connecting mode with a first endpoint chosen, so callers
+     * can use the result directly to decide whether there is a link to show.</p>
+     */
+    public static Optional<Vec3> getPendingConnection(ItemStack stack)
+    {
+        CompoundTag tag = ItemStackData.copy(stack);
+        if (tag == null || getMode(stack) != Mode.CONNECTING || !tag.hasUUID(NBT_CONNECTION))
+            return Optional.empty();
+        long[] packed = tag.getLongArray(NBT_CONNECTION_POS);
+        if (packed.length != 3)
+            return Optional.empty();
+        return Optional.of(new Vec3(Double.longBitsToDouble(packed[0]),
+            Double.longBitsToDouble(packed[1]), Double.longBitsToDouble(packed[2])));
+    }
+
     @Override
     public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag)
     {
-        tooltip.add(Component.literal("Mode: " + getMode(stack).displayName).withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Sneak + use to change mode").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable(TooltipKeys.OPERATOR_STICK_MODE,
+            Component.translatable("tooltip.flansmodultimate.operator_stick.mode." + getMode(stack).name().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.translatable(TooltipKeys.OPERATOR_STICK_CHANGE_MODE).withStyle(ChatFormatting.GRAY));
     }
 }

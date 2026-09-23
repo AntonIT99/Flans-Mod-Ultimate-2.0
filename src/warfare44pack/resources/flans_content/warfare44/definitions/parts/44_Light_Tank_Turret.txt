@@ -1,0 +1,12 @@
+// Identity
+Name Light Tank Turret
+ShortName 44_Light_Tank_Turret
+Category Turret
+
+// Rendering
+Icon 44_Light_Tank_Turret
+Colour 255 255 255
+
+// Recipe and inventory
+RecipeOutput 1
+StackSize 4

@@ -1,5 +1,8 @@
+// Identity
 Name Assault
-ShortName japaneseAssault
+ShortName OfficialWW2_JapaneseAssault
+
+// Items
 AddItem type100
 AddItem type14
 AddItem type97 2

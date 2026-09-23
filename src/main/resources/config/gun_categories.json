@@ -1,4 +1,1928 @@
 {
+
+    "1.1-inch/75 Mark 1 AA Gun": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 150,
+            "Dispersion": 0.4,
+            "UseAmmoGroup": "1.1-inch/75 AA"
+        },
+        "items": [
+            "28mmgun"
+        ]
+    },
+
+    "2 cm FlaK 38": {
+        "properties": {
+            "MuzzleVelocity": 899.0,
+            "RoundsPerMin": 450.0,
+            "Dispersion": 0.35,
+            "UseAmmoGroup": "20mm Flak 38"
+        },
+        "items": [
+            "flak38",
+            "ships_mg_2cmgun_1a"
+        ]
+    },
+
+    "2-pdr QF": {
+        "properties": {
+            "MuzzleVelocity": 792.0,
+            "RoundsPerMin": 22.0,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "2pdr"
+        ]
+    },
+
+    "2-pdr QF Mk VIII": {
+        "properties": {
+            "MuzzleVelocity": 585.0,
+            "RoundsPerMin": 115.0,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "2pdrpomfpomf"
+        ]
+    },
+
+    "3-inch/50 Mark 10 AA Gun": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 20,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "3in50mk10gun"
+        ]
+    },
+
+    "3-inch/50 Rapid-Fire Gun Mark 22": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 50,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "3in50rfmk22"
+        ]
+    },
+
+    "3-inch/62 Mark 75 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 925,
+            "RoundsPerMin": 85,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "3in62mk75gun"
+        ]
+    },
+
+    "3.7 cm FlaK M42": {
+        "properties": {
+            "MuzzleVelocity": 865.0,
+            "RoundsPerMin": 250,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "flak42"
+        ]
+    },
+
+    "3.7 cm SK C/30": {
+        "properties": {
+            "MuzzleVelocity": 1000,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "37mmskc30"
+        ]
+    },
+
+    "4-inch/50 Mark 9 Single Mount": {
+        "properties": {
+            "MuzzleVelocity": 884,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "4in50mk9singlegun"
+        ]
+    },
+
+    "4.5-inch Mark 8 Mod 0 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 870,
+            "RoundsPerMin": 25,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "4.5inmark8mod0"
+        ]
+    },
+
+    "4.7-inch QF Mark XII Twin Mount": {
+        "properties": {
+            "MuzzleVelocity": 808,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "4.7inqfmkxiitwin"
+        ]
+    },
+
+    "5-inch/25 Mark 17": {
+        "properties": {
+            "MuzzleVelocity": 657.0,
+            "RoundsPerMin": 20,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "5in25gun"
+        ]
+    },
+
+    "5-inch/38 Mark 12": {
+        "properties": {
+            "MuzzleVelocity": 792.0,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "5in38mk30gun"
+        ]
+    },
+
+    "5-inch/51 Mark 15": {
+        "properties": {
+            "MuzzleVelocity": 960.0,
+            "RoundsPerMin": 9,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "5in51gun"
+        ]
+    },
+
+    "5-inch/54 Mark 16": {
+        "properties": {
+            "MuzzleVelocity": 808.0,
+            "RoundsPerMin": 18,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "5in54gun"
+        ]
+    },
+
+    "6-inch Mark XII Single Mount": {
+        "properties": {
+            "MuzzleVelocity": 855,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "6inchmkviigun"
+        ]
+    },
+
+    "6-inch/47 Mark 16 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 812,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "6in47mk16gun"
+        ]
+    },
+
+    "6-inch/53 Mark 12 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 853,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "6in53mk12gun",
+            "6in53mk12singlegun"
+        ]
+    },
+
+    "7.5mm Reibel MAC Mle 1931": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 750,
+            "Dispersion": 0.18
+        },
+        "items": [
+            "ayanamigun"
+        ]
+    },
+
+    "7.62mm AN/M2 Aircraft Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 853,
+            "RoundsPerMin": 1200,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "anm27mm"
+        ]
+    },
+
+    "7.62mm M134 Minigun": {
+        "properties": {
+            "MuzzleVelocity": 838,
+            "RoundsPerMin": 1200,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "7m134"
+        ]
+    },
+
+    "7.62mm M1941 Johnson": {
+        "properties": {
+            "MuzzleVelocity": 853,
+            "RoundsPerMin": 500,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "m1941johnson"
+        ]
+    },
+
+    "7.62mm ShKAS Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 825,
+            "RoundsPerMin": 1200,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "shkas"
+        ]
+    },
+
+    "7.7mm Breda-SAFAT": {
+        "properties": {
+            "MuzzleVelocity": 730,
+            "RoundsPerMin": 900,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "safat7"
+        ]
+    },
+
+    "7.7mm Browning Mark II": {
+        "properties": {
+            "MuzzleVelocity": 811,
+            "RoundsPerMin": 1150,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "browning303"
+        ]
+    },
+
+    "7.7mm Type 89 Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 820,
+            "RoundsPerMin": 900,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "type89"
+        ]
+    },
+
+    "7.7mm Type 97 Fixed Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 750,
+            "RoundsPerMin": 1000,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "type97mgzero"
+        ]
+    },
+
+    "7.7mm Vickers Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 744,
+            "RoundsPerMin": 500,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "vickerspart"
+        ]
+    },
+
+    "7.92mm Besa Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 825,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "besamg"
+        ]
+    },
+
+    "7.92mm Browning wz.1928": {
+        "properties": {
+            "MuzzleVelocity": 853,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "wz1928"
+        ]
+    },
+
+    "7.92mm Wz.35 Anti-Tank Rifle": {
+        "properties": {
+            "MuzzleVelocity": 1275,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "wz35at"
+        ]
+    },
+
+    "8-inch/45 Mark 6 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "8in45mk6gun"
+        ]
+    },
+
+    "8-inch/55 Mark 9 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 853,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "8in55mk9gun"
+        ]
+    },
+
+    "8-inch/55 Mark 12 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 853,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "8in55mk12gun"
+        ]
+    },
+
+    "8-inch/55 Mark 15 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "8in55mk15gun"
+        ]
+    },
+
+    "8-inch/55 Rapid-Fire Mark 16 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 762,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "8in55mk16gun"
+        ]
+    },
+
+    "8mm Hotchkiss Mle 1914": {
+        "properties": {
+            "MuzzleVelocity": 725,
+            "RoundsPerMin": 450,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "mle1914gun"
+        ]
+    },
+
+    "8mm Solothurn 31.M": {
+        "properties": {
+            "MuzzleVelocity": 780,
+            "RoundsPerMin": 500,
+            "Dispersion": 0.13
+        },
+        "items": [
+            "31msolothurn"
+        ]
+    },
+
+    "10.5 cm SK C/32": {
+        "properties": {
+            "MuzzleVelocity": 785.0,
+            "RoundsPerMin": 15.0,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "105mmskc32",
+            "105german"
+        ]
+    },
+
+    "10.5 cm SK C/33": {
+        "properties": {
+            "MuzzleVelocity": 900.0,
+            "RoundsPerMin": 15.0,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "ships_mg_10cmgun_1a"
+        ]
+    },
+
+    "12-inch/45 Mark 5": {
+        "properties": {
+            "MuzzleVelocity": 823.0,
+            "UseAmmoGroup": "305mm/45 Mark 5",
+            "RoundsPerMin": 2,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "12in45mk5gun"
+        ]
+    },
+
+    "12-inch/45 Mark 5 Mod 10": {
+        "properties": {
+            "MuzzleVelocity": 823.0,
+            "RoundsPerMin": 2.0,
+            "UseAmmoGroup": "305mm/45 Mark 5",
+            "Dispersion": 0.07
+        },
+        "items": [
+            "12in45mk6gun"
+        ]
+    },
+
+    "12.7 cm/50 3rd Year Type (Type C Twin Mount)": {
+        "properties": {
+            "MuzzleVelocity": 915.0,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "127mmtypectwingun"
+        ]
+    },
+
+    "12.7mm Breda-SAFAT": {
+        "properties": {
+            "MuzzleVelocity": 760,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.18
+        },
+        "items": [
+            "safat12"
+        ]
+    },
+
+    "12.7mm Ho-103 Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 796,
+            "RoundsPerMin": 900,
+            "Dispersion": 0.18
+        },
+        "items": [
+            "ho103"
+        ]
+    },
+
+    "12.7mm Vickers Mark III": {
+        "properties": {
+            "MuzzleVelocity": 770,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "vickers50gun"
+        ]
+    },
+
+    "12.75-inch Mark 32 Surface Vessel Torpedo Tubes": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "12.75inmk32svtt"
+        ]
+    },
+
+    "13.2mm FN Browning Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.18
+        },
+        "items": [
+            "browning13"
+        ]
+    },
+
+    "13.5-inch/45 Mark VI": {
+        "properties": {
+            "MuzzleVelocity": 745.0,
+            "UseAmmoGroup": "343mm/45 Mark VI",
+            "RoundsPerMin": 2,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "13.5inchgunmkvi"
+        ]
+    },
+
+    "14-inch/45 Mark 8 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 792,
+            "RoundsPerMin": 1.75,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "14in45mk8gun"
+        ]
+    },
+
+    "14-inch/45 Mark 9 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 792,
+            "RoundsPerMin": 1.75,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "14in45mk9gun"
+        ]
+    },
+
+    "14-inch/45 Mark 10": {
+        "properties": {
+            "UseAmmoGroup": "356mm/45 Mark 10",
+            "MuzzleVelocity": 792,
+            "RoundsPerMin": 1.75,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "14in45mk10gun"
+        ]
+    },
+
+    "14-inch/50 Mark 11 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 1.75,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "14in50mk11gun"
+        ]
+    },
+
+    "15 cm SK C/28": {
+        "properties": {
+            "MuzzleVelocity": 875.0,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "15cmskc28gun",
+            "15cmskc28singlegun"
+        ]
+    },
+
+    "15 cm TBts KC/36": {
+        "properties": {
+            "MuzzleVelocity": 835,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "15cmskc36gun",
+            "15cmskc36twingun"
+        ]
+    },
+
+    "15.2 cm Bofors kanon m/30": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "bofors152mmgun",
+            "bofors152mmsinglegun"
+        ]
+    },
+
+    "15.5 cm/60 3rd Year Type": {
+        "properties": {
+            "RoundsPerMin": 5.0,
+            "UseAmmoGroup": "155mm/60 3rd Year Type",
+            "MuzzleVelocity": 920,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "155mmtriplegun"
+        ]
+    },
+
+    "16-inch/45 Mark 5 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 792,
+            "RoundsPerMin": 1.5,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "16in45mk5gun"
+        ]
+    },
+
+    "16-inch/45 Mark 6 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 701,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "16in45mk6gun"
+        ]
+    },
+
+    "16-inch/45 Mark 8 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 762,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "16in45mk8gun"
+        ]
+    },
+
+    "16-inch/50 Mark 2 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 1.5,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "16in50mk2gun",
+            "16in50mk2sixgun"
+        ]
+    },
+
+    "16-inch/50 Mark 7 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 762,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "16in50mk7gfcs"
+        ]
+    },
+
+    "18-inch BL Mark I Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 738,
+            "RoundsPerMin": 1,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "18inchgunmki"
+        ]
+    },
+
+    "20mm Oerlikon Autocannon": {
+        "properties": {
+            "MuzzleVelocity": 835,
+            "RoundsPerMin": 450,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "olerikon20mm"
+        ]
+    },
+
+    "20mm Autocannon Mount (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "44_20mmcannon"
+        ]
+    },
+
+    "20mm Automatic Cannon (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 835,
+            "RoundsPerMin": 450,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "twentymm"
+        ]
+    },
+
+    "20mm Hispano Mark II": {
+        "properties": {
+            "MuzzleVelocity": 840,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "hispano20"
+        ]
+    },
+
+    "20mm Hispano Mark V": {
+        "properties": {
+            "MuzzleVelocity": 840,
+            "RoundsPerMin": 750,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "hispano20mk5"
+        ]
+    },
+
+    "20mm Ho-5 Cannon": {
+        "properties": {
+            "MuzzleVelocity": 750,
+            "RoundsPerMin": 850,
+            "Dispersion": 0.28
+        },
+        "items": [
+            "ho5"
+        ]
+    },
+
+    "20mm MG FF Cannon": {
+        "properties": {
+            "MuzzleVelocity": 600,
+            "RoundsPerMin": 540,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "mgff"
+        ]
+    },
+
+    "20mm Nkm wz.38 FK": {
+        "properties": {
+            "MuzzleVelocity": 870,
+            "RoundsPerMin": 320,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "wz3820mm"
+        ]
+    },
+
+    "20mm ShVAK Cannon": {
+        "properties": {
+            "MuzzleVelocity": 815,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "shvak",
+            "shvakdual"
+        ]
+    },
+
+    "20mm Solothurn S-18/100": {
+        "properties": {
+            "MuzzleVelocity": 735,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "s18100"
+        ]
+    },
+
+    "20mm Type 97 Anti-Tank Rifle": {
+        "properties": {
+            "MuzzleVelocity": 790,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "type97atr"
+        ]
+    },
+
+    "20mm Type 99 Mark 1 Cannon": {
+        "properties": {
+            "MuzzleVelocity": 600,
+            "RoundsPerMin": 520,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "99mk1"
+        ]
+    },
+
+    "20mm Type 99 Mark 2 Cannon": {
+        "properties": {
+            "MuzzleVelocity": 750,
+            "RoundsPerMin": 490,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "99mk2"
+        ]
+    },
+
+    "20.3 cm 3rd Year Type No.2 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 835,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "203mmtwingunno2"
+        ]
+    },
+
+    "20.3 cm SK C/34": {
+        "properties": {
+            "MuzzleVelocity": 925.0,
+            "RoundsPerMin": 4.0,
+            "Dispersion": 0.12,
+            "Ammo": "ships_shell_german20cmhe",
+            "RemoveAmmo": "ships_shell_german20mmaa",
+            "AmmoMass": "ships_shell_german20cmhe 122000",
+            "AmmoMuzzleVelocity": "ships_shell_german20cmhe 925",
+            "AmmoExplosiveMassTNTKg": "ships_shell_german20cmhe 8.9",
+            "AmmoPenetrationAt100m": "ships_shell_german20cmhe 61"
+        },
+        "items": [
+            "20.3cmskc34gun",
+            "ships_mg_20cmgun_1a"
+        ]
+    },
+
+    "21-inch Submarine Torpedo Tube": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "21intorpsub"
+        ]
+    },
+
+    "21-inch Torpedo Launcher": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "21intorpship"
+        ]
+    },
+
+    "21-inch Torpedo Tubes (US)": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "21intorpshipusa"
+        ]
+    },
+
+    "23mm Chinese Automatic Cannon": {
+        "properties": {
+            "MuzzleVelocity": 970,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "china23mm"
+        ]
+    },
+
+    "23mm Nudelman Automatic Cannon": {
+        "properties": {
+            "MuzzleVelocity": 690,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "nudel23"
+        ]
+    },
+
+    "23mm VYa-23 Cannon": {
+        "properties": {
+            "MuzzleVelocity": 905,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "vya23"
+        ]
+    },
+
+    "25mm Type 96 Automatic Cannon": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 220,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "25mm"
+        ]
+    },
+
+    "28 cm SK C/34": {
+        "properties": {
+            "MuzzleVelocity": 890.0,
+            "RoundsPerMin": 3.5,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "28cmskc34gun"
+        ]
+    },
+
+    "30mm Type 5 Autocannon": {
+        "properties": {
+            "MuzzleVelocity": 710,
+            "RoundsPerMin": 400,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "30mmtype5"
+        ]
+    },
+
+    "30mm Automatic Cannon (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "thirtymm"
+        ]
+    },
+
+    "30mm Ho-155 Cannon": {
+        "properties": {
+            "MuzzleVelocity": 700,
+            "RoundsPerMin": 450,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "ho155"
+        ]
+    },
+
+    "30mm MK 103 Cannon": {
+        "properties": {
+            "MuzzleVelocity": 860,
+            "RoundsPerMin": 420,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "mk103"
+        ]
+    },
+
+    "30mm MK 108 Cannon": {
+        "properties": {
+            "MuzzleVelocity": 505,
+            "RoundsPerMin": 660,
+            "Dispersion": 0.35
+        },
+        "items": [
+            "mk108"
+        ]
+    },
+
+    "37mm Autocannon Mount (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 800.0,
+            "RoundsPerMin": 160.0,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "44_37mmcannon"
+        ]
+    },
+
+    "37mm Automatic Cannon (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 880,
+            "RoundsPerMin": 160,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "37mmpewpew"
+        ]
+    },
+
+    "37mm Breda Vickers AA Gun": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 120,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "vickeritaly37"
+        ]
+    },
+
+    "37mm Flak 36/37 AA Gun": {
+        "properties": {
+            "MuzzleVelocity": 820,
+            "RoundsPerMin": 160,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "flak37mmgun"
+        ]
+    },
+
+    "37mm M4 Aircraft Cannon": {
+        "properties": {
+            "MuzzleVelocity": 610,
+            "RoundsPerMin": 150,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "37mmm4"
+        ]
+    },
+
+    "37mm NS-37": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 250,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "37mmns37"
+        ]
+    },
+
+    "37mm Type 1 Anti-Tank Gun": {
+        "properties": {
+            "MuzzleVelocity": 780,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "37mmtype1"
+        ]
+    },
+
+    "38 cm RW 61 L/5.4 Rocket Launcher": {
+        "properties": {
+            "MuzzleVelocity": 250,
+            "RoundsPerMin": 1,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "38cmrw61"
+        ]
+    },
+
+    "38 cm SK C/34": {
+        "properties": {
+            "MuzzleVelocity": 820.0,
+            "RoundsPerMin": 2.3,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "38cmskc34gun",
+            "380mmgun"
+        ]
+    },
+
+    "45mm 20-K Tank Gun": {
+        "properties": {
+            "MuzzleVelocity": 760,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "45mmt35"
+        ]
+    },
+
+    "47mm Type 1 Anti-Tank Gun": {
+        "properties": {
+            "MuzzleVelocity": 830,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.12,
+            "UseAmmoGroup": "47mm Type 1"
+        },
+        "items": [
+            "47mmtype1"
+        ]
+    },
+
+    "51 cm Type 98 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 780,
+            "RoundsPerMin": 1,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "51cmgun"
+        ]
+    },
+
+    "53 cm Submarine Torpedo Tube": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "53cmtorpsub"
+        ]
+    },
+
+    "53 cm Torpedo Launcher": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "53cmtorpship"
+        ]
+    },
+
+    "57mm Bofors Mark 110 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 1035,
+            "RoundsPerMin": 220,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "bofors57mmgun"
+        ]
+    },
+
+    "61 cm Triple Torpedo Launcher": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "61cmtorpship"
+        ]
+    },
+
+    "75mm Gun M3": {
+        "properties": {
+            "MuzzleVelocity": 618.0,
+            "RoundsPerMin": 20.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "44_75mmcannon"
+        ]
+    },
+
+    "75mm Tsar Tank Howitzer": {
+        "properties": {
+            "MuzzleVelocity": 381,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "75mmtsarhowitzer"
+        ]
+    },
+
+    "75mm Bofors m/28 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 25,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "bofors75mmgun"
+        ]
+    },
+
+    "75mm KwK 37 L/24": {
+        "properties": {
+            "MuzzleVelocity": 385,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.15,
+            "UseAmmoGroup": "75mm KwK 37"
+        },
+        "items": [
+            "75mmpz4"
+        ]
+    },
+
+    "75mm M3 Tank Gun": {
+        "properties": {
+            "MuzzleVelocity": 619,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.1,
+            "UseAmmoGroup": "75mm M3"
+        },
+        "items": [
+            "75mmlee"
+        ]
+    },
+
+    "75mm SA 35 L/17": {
+        "properties": {
+            "MuzzleVelocity": 220,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "75mmb1"
+        ]
+    },
+
+    "75mm Type 5 Tank Gun": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "type5"
+        ]
+    },
+
+    "75mm/50 Modele 1924 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "model1924"
+        ]
+    },
+
+    "76mm Gun M1": {
+        "properties": {
+            "MuzzleVelocity": 792,
+            "RoundsPerMin": 20,
+            "Dispersion": 0.08,
+            "UseAmmoGroup": "76mm M1"
+        },
+        "items": [
+            "76mmgunm1"
+        ]
+    },
+
+    "76mm/50 Naval Gun (OHIO)": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 20,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "3in50gun"
+        ]
+    },
+
+    "76mm/50 Rapid-Fire Naval Gun (OHIO)": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 50,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "3in50gunrf"
+        ]
+    },
+
+    "76.2mm 34-K AA Gun": {
+        "properties": {
+            "MuzzleVelocity": 815,
+            "RoundsPerMin": 20,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "34k"
+        ]
+    },
+
+    "88mm SK C/35 Submarine Gun": {
+        "properties": {
+            "MuzzleVelocity": 700,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "88mmsubgun"
+        ]
+    },
+
+    "100mm Skoda Submarine Deck Gun": {
+        "properties": {
+            "MuzzleVelocity": 880,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "100skoda"
+        ]
+    },
+
+    "100mm Type 98 High-Angle Gun": {
+        "properties": {
+            "MuzzleVelocity": 1010,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "10cmaa"
+        ]
+    },
+
+    "100mm/45 Modele 1931": {
+        "properties": {
+            "MuzzleVelocity": 780,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "10cmaafrench"
+        ]
+    },
+
+    "100mm/70 CM-5": {
+        "properties": {
+            "MuzzleVelocity": 1000,
+            "RoundsPerMin": 50,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "cm5"
+        ]
+    },
+
+    "102mm BL Mark IX Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 728,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "4inchmkixgun"
+        ]
+    },
+
+    "102mm/50 Mark 9 Naval Gun (OHIO)": {
+        "properties": {
+            "MuzzleVelocity": 884,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "4in50gun"
+        ]
+    },
+
+    "120mm Naval Gun (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 825,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "12cmcringe",
+            "12cmshitty"
+        ]
+    },
+
+    "120mm QF Naval Gun (Twin)": {
+        "properties": {
+            "MuzzleVelocity": 808,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "4.7indual"
+        ]
+    },
+
+    "127mm SK C/34 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 830,
+            "RoundsPerMin": 18,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "127mm"
+        ]
+    },
+
+    "127mm/40 Type 89 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 720,
+            "RoundsPerMin": 14,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "12.7cmaa"
+        ]
+    },
+
+    "128mm Pak 44": {
+        "properties": {
+            "MuzzleVelocity": 920,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "128mmgun"
+        ]
+    },
+
+    "130mm/50 B-13 Pattern 1936": {
+        "properties": {
+            "MuzzleVelocity": 870,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "13cm"
+        ]
+    },
+
+    "140mm Mark I Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 792,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "5p5inchgunmki"
+        ]
+    },
+
+    "140mm/40 11th Year Type Deck Gun": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "140mmdeckgun"
+        ]
+    },
+
+    "140mm/50 Type 3 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "14cmtype3navalgun"
+        ]
+    },
+
+    "150mm SK L/45 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 835,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "150krupp"
+        ]
+    },
+
+    "152mm Mark XXIII Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 841,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "6inchmkxxiiigun"
+        ]
+    },
+
+    "152mm Modele 1930 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 870,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "152french1930"
+        ]
+    },
+
+    "152mm/45 Pattern 1892 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 792,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "152mmrus"
+        ]
+    },
+
+    "152mm/55 Italian Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 910,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "152mmital"
+        ]
+    },
+
+    "152mm/57 B-38 Pattern 1938": {
+        "properties": {
+            "MuzzleVelocity": 950,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "b38"
+        ]
+    },
+
+    "155mm Type 3 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 920,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "155x3"
+        ]
+    },
+
+    "155mm/62 Mark 51 Advanced Gun System": {
+        "properties": {
+            "MuzzleVelocity": 825.0,
+            "RoundsPerMin": 10.0,
+            "UseAmmoGroup": "155mm/62 Mark 51 AGS",
+            "Dispersion": 0.1
+        },
+        "items": [
+            "155mm62ags"
+        ]
+    },
+
+    "190mm/52 O.T. Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 870,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "190mmargiegun"
+        ]
+    },
+
+    "203mm Mark VIII Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 855,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "8inchmkviiigun"
+        ]
+    },
+
+    "203mm No.2 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 835,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "203x2no2"
+        ]
+    },
+
+    "203mm/50 Modele 1929 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "203frenchy"
+        ]
+    },
+
+    "203mm/50 Modele 1931 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 5,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "203frenchyalgerie"
+        ]
+    },
+
+    "203mm/53 Ansaldo Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "zaragun"
+        ]
+    },
+
+    "203mm/55 Rapid-Fire Mark 16 Naval Gun (OHIO)": {
+        "properties": {
+            "MuzzleVelocity": 762,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "8inmk16"
+        ]
+    },
+
+    "280mm SK L/50 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 880,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "280l50ww1"
+        ]
+    },
+
+    "283mm SK C/28 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 910,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "28cmskc28gun"
+        ]
+    },
+
+    "305mm/45 Modele 1906 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 780,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "courbet305"
+        ]
+    },
+
+    "305mm/45 Skoda K10": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "skoda305"
+        ]
+    },
+
+    "305mm/46 Model 1909 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 840,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "305mmital"
+        ]
+    },
+
+    "305mm/52 Pattern 1907 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 762,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "305russia"
+        ]
+    },
+
+    "320mm Model 1934 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 830,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "320mmital"
+        ]
+    },
+
+    "340mm/45 Modele 1912 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 794,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "340l45",
+            "340mmfrenchy"
+        ]
+    },
+
+    "356mm BL Mark VII Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 757,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "14inquad"
+        ]
+    },
+
+    "356mm Photon Cannon (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 1000,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "356l45photon"
+        ]
+    },
+
+    "356mm Type 41 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 775,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "356l45"
+        ]
+    },
+
+    "380mm Obice da 380": {
+        "properties": {
+            "MuzzleVelocity": 700,
+            "RoundsPerMin": 1,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "280obice"
+        ]
+    },
+
+    "380mm/45 Modele 1935 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 830,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "380french1935"
+        ]
+    },
+
+    "381mm/50 Ansaldo M1934 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 870,
+            "RoundsPerMin": 1.3,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "381mmgun"
+        ]
+    },
+
+    "406mm/45 BL Mark I Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 788,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "16inchgunmki"
+        ]
+    },
+
+    "406mm/50 Mark 7 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 762,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "16in50mk7",
+            "16in50mk7gun"
+        ]
+    },
+
+    "410mm Type 3 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 790,
+            "RoundsPerMin": 1.5,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "410l45"
+        ]
+    },
+
+    "460mm Type 94 Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 780,
+            "RoundsPerMin": 1.5,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "460mmfleet"
+        ]
+    },
+
+    "510mm Type 98 Naval Gun (OHIO)": {
+        "properties": {
+            "MuzzleVelocity": 780,
+            "RoundsPerMin": 1,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "51cmnavalgun"
+        ]
+    },
+
+    "800mm Schwerer Gustav Railway Gun": {
+        "properties": {
+            "MuzzleVelocity": 720,
+            "RoundsPerMin": 1,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "gustavgun"
+        ]
+    },
+
+    ".700 WTF Rifle": {
+        "properties": {
+            "MuzzleVelocity": 610,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "wtfrifle"
+        ]
+    },
+
     "AA-12": {
         "properties": {
             "MuzzleVelocity": 350.0,
@@ -21,6 +1945,28 @@
         ]
     },
 
+    "AAI Advanced Combat Rifle": {
+        "properties": {
+            "MuzzleVelocity": 1402,
+            "RoundsPerMin": 625,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "aaiacr"
+        ]
+    },
+
+    "AAI Close Assault Weapon System": {
+        "properties": {
+            "MuzzleVelocity": 518,
+            "RoundsPerMin": 240,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "aaicaws"
+        ]
+    },
+
     "ACR": {
         "properties": {
             "MuzzleVelocity": 880.0,
@@ -28,7 +1974,8 @@
             "Dispersion": 0.20
         },
         "items": [
-            "acr"
+            "acr",
+            "cowwestacr"
         ]
     },
 
@@ -43,6 +1990,17 @@
         ]
     },
 
+    "AK-12": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "cowwestak12"
+        ]
+    },
+
     "AK-47": {
         "properties": {
             "MuzzleVelocity": 715.0,
@@ -50,7 +2008,8 @@
             "Dispersion": 0.24
         },
         "items": [
-            "ak47"
+            "ak47",
+            "kalashkinov"
         ]
     },
 
@@ -65,6 +2024,29 @@
         ]
     },
 
+    "AK-Pattern Light Support Weapon (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 745,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "ak48",
+            "rpk12"
+        ]
+    },
+
+    "AKS-74U": {
+        "properties": {
+            "MuzzleVelocity": 735.0,
+            "RoundsPerMin": 700.0,
+            "Dispersion": 0.16
+        },
+        "items": [
+            "aks74"
+        ]
+    },
+
     "AN-94": {
         "properties": {
             "MuzzleVelocity": 900.0,
@@ -73,6 +2055,148 @@
         },
         "items": [
             "an94"
+        ]
+    },
+
+    "AO-63 Dual-Barrel Rifle": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 850,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "ao63dbr"
+        ]
+    },
+
+    "Arisaka Type 30 and Type 35": {
+        "properties": {
+            "MuzzleVelocity": 630.0,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "type30",
+            "type35"
+        ]
+    },
+
+    "Armaguerra Modello 39": {
+        "properties": {
+            "MuzzleVelocity": 750,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "armaguerramod39"
+        ]
+    },
+
+    "Assault Rifle, Entry-Level (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "starterar"
+        ]
+    },
+
+    "AT4": {
+        "properties": {
+            "MuzzleVelocity": 285.0,
+            "RoundsPerMin": 6.0,
+            "Dispersion": 2.0
+        },
+        "items": [
+            "at4"
+        ]
+    },
+
+    "AVT-40": {
+        "properties": {
+            "MuzzleVelocity": 840.0,
+            "RoundsPerMin": 750.0,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "avt40"
+        ]
+    },
+
+    "AWC Amphibian S": {
+        "properties": {
+            "MuzzleVelocity": 320,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "awcamphibian"
+        ]
+    },
+
+    "B4 Compound Crossbow (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 120,
+            "RoundsPerMin": 60,
+            "Dispersion": 0.4
+        },
+        "items": [
+            "b4crossbow"
+        ]
+    },
+
+    "Backpack Flamethrower (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 40,
+            "RoundsPerMin": 600,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "flamethrower",
+            "flamethrowerww2"
+        ]
+    },
+
+    "Baneblade Demolisher Cannon (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 12.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "wh40k_mg_banebladedemolishercannon_1a"
+        ]
+    },
+
+    "Barrett M82": {
+        "properties": {
+            "MuzzleVelocity": 853.0,
+            "RoundsPerMin": 50.0,
+            "Dispersion": 0.13
+        },
+        "items": [
+            "barrett"
+        ]
+    },
+
+    "Barrett XM109": {
+        "properties": {
+            "MuzzleVelocity": 425,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "xm109"
+        ]
+    },
+
+    "Baseball Bat": {
+        "properties": {
+            "MeleeDamage": 7
+        },
+        "items": [
+            "baseballbat"
         ]
     },
 
@@ -87,6 +2211,28 @@
         ]
     },
 
+    "Berdan II": {
+        "properties": {
+            "MuzzleVelocity": 437,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "berdan2"
+        ]
+    },
+
+    "Beretta 92F Samurai Edge": {
+        "properties": {
+            "MuzzleVelocity": 381,
+            "RoundsPerMin": 60,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "m92fsamuraiedge"
+        ]
+    },
+
     "Beretta M9": {
         "properties": {
             "MuzzleVelocity": 380.0,
@@ -98,6 +2244,28 @@
         ]
     },
 
+    "Beretta M1938A": {
+        "properties": {
+            "RoundsPerMin": 600.0,
+            "MuzzleVelocity": 420,
+            "Dispersion": 0.28
+        },
+        "items": [
+            "berettam38"
+        ]
+    },
+
+    "Beretta Modello 1934": {
+        "properties": {
+            "MuzzleVelocity": 290.0,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.45
+        },
+        "items": [
+            "berettam1934"
+        ]
+    },
+
     "Berezin UB": {
         "properties": {
             "MuzzleVelocity": 815.0,
@@ -105,7 +2273,115 @@
             "Dispersion": 0.25
         },
         "items": [
-            "44_berezinubmg"
+            "44_berezinubmg",
+            "berezinub"
+        ]
+    },
+
+    "Bergmann MG 15 n.A.": {
+        "properties": {
+            "RoundsPerMin": 550.0,
+            "MuzzleVelocity": 892,
+            "Dispersion": 0.13
+        },
+        "items": [
+            "mg15"
+        ]
+    },
+
+    "Berthier Mle 1907/15": {
+        "properties": {
+            "MuzzleVelocity": 725,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "berthier",
+            "berthier16"
+        ]
+    },
+
+    "Binoculars": {
+        "properties": {
+        },
+        "items": [
+            "44_binoculars",
+            "mwbinoculars",
+            "ww2binoculars",
+            "binoculars",
+            "binoculars10x",
+            "dixiebugle",
+            "binos"
+        ]
+    },
+
+    "BL 15-inch Mark I Naval Gun": {
+        "properties": {
+            "MuzzleVelocity": 749,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "15inchgunmki",
+            "bl15inchgunland",
+            "bl15inchgun",
+            "bl15inchlandgun"
+        ]
+    },
+
+    "Bofors 40mm L/60": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 120.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "bofors40mmgun",
+            "boforsair"
+        ]
+    },
+
+    "Bordkanone BK 3,7": {
+        "properties": {
+            "MuzzleVelocity": 810.0,
+            "RoundsPerMin": 160.0,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "ww2_mg_bordkanonebk37_1a"
+        ]
+    },
+
+    "Boys Anti-Tank Rifle Mk I": {
+        "properties": {
+            "MuzzleVelocity": 884.0,
+            "RoundsPerMin": 10.0,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "boysrifle"
+        ]
+    },
+
+    "Breda Modello 30": {
+        "properties": {
+            "RoundsPerMin": 500.0,
+            "MuzzleVelocity": 630,
+            "Dispersion": 0.14
+        },
+        "items": [
+            "breda30"
+        ]
+    },
+
+    "Breda Modello 1938": {
+        "properties": {
+            "MuzzleVelocity": 770.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.13
+        },
+        "items": [
+            "breda38"
         ]
     },
 
@@ -117,7 +2393,223 @@
         },
         "items": [
             "bren",
-            "44_bren"
+            "44_bren",
+            "brenmk1"
+        ]
+    },
+
+    "Bren Mark V": {
+        "properties": {
+            "MuzzleVelocity": 743,
+            "RoundsPerMin": 500,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "brenm5"
+        ]
+    },
+
+    "Browning .303 Mk II": {
+        "properties": {
+            "MuzzleVelocity": 750.0,
+            "RoundsPerMin": 1150.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "ww2_mg_m1919_1a"
+        ]
+    },
+
+    "Browning AN/M2 .50Cal Aircraft": {
+        "properties": {
+            "MuzzleVelocity": 866.0,
+            "RoundsPerMin": 800.0,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "anm2",
+            "ww2_mg_mg532_1a"
+        ]
+    },
+
+    "Browning Hi-Power": {
+        "properties": {
+            "MuzzleVelocity": 350,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.4
+        },
+        "items": [
+            "hipower"
+        ]
+    },
+
+    "Camel-Mounted Cannon (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "camelcannon"
+        ]
+    },
+
+    "Camel-Mounted Gatling Gun (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 600,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "mechagatling"
+        ]
+    },
+
+    "Carcano Fucile Modello 1891 (6.5x52mm M91 Ball)": {
+        "properties": {
+            "MuzzleVelocity": 700.0,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "m91carcano"
+        ]
+    },
+
+    "Carcano Modello 1938": {
+        "properties": {
+            "MuzzleVelocity": 630,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "m9138carcano"
+        ]
+    },
+
+    "Carnyx": {
+        "properties": {
+        },
+        "items": [
+            "carnyx"
+        ]
+    },
+
+    "Cavalry Sabre (Generic)": {
+        "properties": {
+            "MeleeDamage": 8
+        },
+        "items": [
+            "cavsaber",
+            "germansaber",
+            "russiansaber",
+            "m1840",
+            "m1860",
+            "prussiansword",
+            "artillerysword",
+            "paramerion"
+        ]
+    },
+
+    "Chauchat CSRG M1915": {
+        "properties": {
+            "RoundsPerMin": 240.0,
+            "MuzzleVelocity": 700,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "chauchat",
+            "chauchaut",
+            "shitmg"
+        ]
+    },
+
+    "Chiappa Triple Threat": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 60,
+            "Dispersion": 1.8
+        },
+        "items": [
+            "chiappa"
+        ]
+    },
+
+    "Cold War E2 Launcher (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 60,
+            "RoundsPerMin": 150,
+            "Dispersion": 1.2
+        },
+        "items": [
+            "coldware2"
+        ]
+    },
+
+    "Colt 1851 Navy Revolver": {
+        "properties": {
+            "MuzzleVelocity": 230,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "1851"
+        ]
+    },
+
+    "Colt CM901": {
+        "properties": {
+            "MuzzleVelocity": 780,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "cowwestcm901"
+        ]
+    },
+
+    "Colt Dragoon Second Model": {
+        "properties": {
+            "MuzzleVelocity": 275,
+            "RoundsPerMin": 25,
+            "Dispersion": 0.6
+        },
+        "items": [
+            "coltdragoon"
+        ]
+    },
+
+    "Colt M4A1 (.50 Beowulf)": {
+        "properties": {
+            "MuzzleVelocity": 550,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "coltm4beowulf"
+        ]
+    },
+
+    "Colt M16A2": {
+        "properties": {
+            "MuzzleVelocity": 948,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "16",
+            "debug16"
+        ]
+    },
+
+    "Colt Monitor R80": {
+        "properties": {
+            "MuzzleVelocity": 808,
+            "RoundsPerMin": 500,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "barm2"
         ]
     },
 
@@ -132,6 +2624,149 @@
         ]
     },
 
+    "Combat Knife": {
+        "properties": {
+            "MeleeDamage": 6
+        },
+        "items": [
+            "44_americankabarknife",
+            "44_german1915trenchknife",
+            "mwknife",
+            "ww2knife",
+            "combatknife",
+            "arkansasdagger",
+            "m1891knife",
+            "m1895knife"
+        ]
+    },
+
+    "Composite Bow (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 55,
+            "RoundsPerMin": 10,
+            "Dispersion": 1
+        },
+        "items": [
+            "compositebow"
+        ]
+    },
+
+    "Crossbow (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 55,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "crossbow"
+        ]
+    },
+
+    "Danuvia 39M": {
+        "properties": {
+            "MuzzleVelocity": 450,
+            "RoundsPerMin": 750,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "39mdanuvia"
+        ]
+    },
+
+    "Danuvia 43M": {
+        "properties": {
+            "MuzzleVelocity": 450,
+            "RoundsPerMin": 750,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "43msmg"
+        ]
+    },
+
+    "DC-15A Blaster Rifle (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 300.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "blasterdc-15a"
+        ]
+    },
+
+    "DC-15S Blaster Carbine (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 260.0,
+            "RoundsPerMin": 700.0,
+            "Dispersion": 0.24
+        },
+        "items": [
+            "blasterdc-15s"
+        ]
+    },
+
+    "DC-15X Blaster Sniper Rifle (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 420.0,
+            "RoundsPerMin": 50.0,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "blasterdc-15x"
+        ]
+    },
+
+    "DC-17 Blaster Pistol (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 250.0,
+            "RoundsPerMin": 350.0,
+            "Dispersion": 0.65
+        },
+        "items": [
+            "blasterdc-17"
+        ]
+    },
+
+    "DC-19 Stealth Blaster Carbine (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 260.0,
+            "RoundsPerMin": 700.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "blasterdc-19"
+        ]
+    },
+
+    "Debug And Test Utility Weapon (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 80.0,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "bullettestgun",
+            "healthshooter"
+        ]
+    },
+
+    "Dematerializing Rifle (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 60,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "dematerializerrifle"
+        ]
+    },
+
     "Denel NTW-20": {
         "properties": {
             "MuzzleVelocity": 720.0,
@@ -143,6 +2778,18 @@
         ]
     },
 
+    "Depth Charge Projector (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 40,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "depthdumper",
+            "depthdumperprojector"
+        ]
+    },
+
     "Desert Eagle": {
         "properties": {
             "MuzzleVelocity": 470.0,
@@ -150,7 +2797,31 @@
             "Dispersion": 0.72
         },
         "items": [
-            "desertEagle"
+            "deserteagle"
+        ]
+    },
+
+    "Devotion X55 Energy LMG (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 700,
+            "RoundsPerMin": 900,
+            "Dispersion": 0.3,
+            "Damage": 1
+        },
+        "items": [
+            "devotionx55"
+        ]
+    },
+
+    "Double-Barrelled Shotgun": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 60,
+            "Dispersion": 2
+        },
+        "items": [
+            "doublebarrelledshotgun",
+            "olympia"
         ]
     },
 
@@ -162,7 +2833,8 @@
         },
         "items": [
             "dp28",
-            "44_dp28"
+            "44_dp28",
+            "ww2_mg_dp28_1a"
         ]
     },
 
@@ -173,7 +2845,31 @@
             "Dispersion": 0.16
         },
         "items": [
-            "dragunov"
+            "dragunov",
+            "guerrillarifle"
+        ]
+    },
+
+    "Droideka Twin Blaster (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 280.0,
+            "RoundsPerMin": 900.0,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "droidekablaster"
+        ]
+    },
+
+    "DShK M1938": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.18
+        },
+        "items": [
+            "dshkgun"
         ]
     },
 
@@ -184,7 +2880,76 @@
             "Dispersion": 0.33
         },
         "items": [
-            "44_dt28"
+            "44_dt28",
+            "dt28"
+        ]
+    },
+
+    "E-5 Blaster Rifle (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 280.0,
+            "RoundsPerMin": 550.0,
+            "Dispersion": 0.26
+        },
+        "items": [
+            "blastere-5"
+        ]
+    },
+
+    "E-5S Blaster Sniper Rifle (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 420.0,
+            "RoundsPerMin": 50.0,
+            "Dispersion": 0.13
+        },
+        "items": [
+            "blastere-5s"
+        ]
+    },
+
+    "E-11 Blaster Rifle (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 300.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.22
+        },
+        "items": [
+            "blastere-11"
+        ]
+    },
+
+    "El Diablo Marksman Rifle (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 60,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "eldiablo"
+        ]
+    },
+
+    "Enfield No.2 Mark I": {
+        "properties": {
+            "MuzzleVelocity": 190,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "enfieldno2"
+        ]
+    },
+
+    "Entrenching Tool And Improvised Light Weapon (Generic)": {
+        "properties": {
+            "MeleeDamage": 4
+        },
+        "items": [
+            "etoolww1",
+            "germanshovel",
+            "screwdriver"
         ]
     },
 
@@ -199,6 +2964,17 @@
         ]
     },
 
+    "Exocet Launcher": {
+        "properties": {
+            "MuzzleVelocity": 315,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "exocetlauncher"
+        ]
+    },
+
     "FAMAS": {
         "properties": {
             "MuzzleVelocity": 960.0,
@@ -206,7 +2982,41 @@
             "Dispersion": 0.20
         },
         "items": [
-            "famas"
+            "famas",
+            "1337r1fl3"
+        ]
+    },
+
+    "Fedorov Avtomat (6.5mm Arisaka)": {
+        "properties": {
+            "RoundsPerMin": 600.0,
+            "MuzzleVelocity": 660,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "fedorov"
+        ]
+    },
+
+    "FEG 35M": {
+        "properties": {
+            "MuzzleVelocity": 730,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "feg35m"
+        ]
+    },
+
+    "Fegel-Gun 4200 (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 1200,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "fegel42"
         ]
     },
 
@@ -222,6 +3032,100 @@
         ]
     },
 
+    "FGM-148 Javelin": {
+        "properties": {
+            "RoundsPerMin": 2,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "m148javelin",
+            "m148javelindep",
+            "fgm148javelin"
+        ]
+    },
+
+    "Fighter Laser Cannon (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 700.0,
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.28
+        },
+        "items": [
+            "cylonblastercannon",
+            "imperiallasercannon",
+            "rebellasercannon",
+            "colonialblastercannon"
+        ]
+    },
+
+    "FIM-92 Stinger": {
+        "properties": {
+            "RoundsPerMin": 3.0,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "stinger",
+            "fim92estinger",
+            "debugstinger"
+        ]
+    },
+
+    "Flammenwerfer 35": {
+        "properties": {
+            "MuzzleVelocity": 35,
+            "RoundsPerMin": 600,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "flammenwerfer35"
+        ]
+    },
+
+    "Flare Pistol": {
+        "properties": {
+            "MuzzleVelocity": 75,
+            "RoundsPerMin": 3,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "flaregun"
+        ]
+    },
+
+    "Fliegerfaust B": {
+        "properties": {
+            "MuzzleVelocity": 380,
+            "RoundsPerMin": 600,
+            "Dispersion": 1
+        },
+        "items": [
+            "fliegerhammer"
+        ]
+    },
+
+    "Fliegerselbstladekarabiner Modell 1915": {
+        "properties": {
+            "MuzzleVelocity": 760.0,
+            "RoundsPerMin": 240.0,
+            "Dispersion": 0.22
+        },
+        "items": [
+            "44_modell1915"
+        ]
+    },
+
+    "FM MAC 1924/29": {
+        "properties": {
+            "RoundsPerMin": 450.0,
+            "MuzzleVelocity": 830,
+            "Dispersion": 0.13
+        },
+        "items": [
+            "fm2429"
+        ]
+    },
+
     "FMG-9": {
         "properties": {
             "MuzzleVelocity": 400.0,
@@ -230,6 +3134,29 @@
         },
         "items": [
             "fmg"
+        ]
+    },
+
+    "FN F2000": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 850,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "f2000"
+        ]
+    },
+
+    "FN M240": {
+        "properties": {
+            "MuzzleVelocity": 853,
+            "RoundsPerMin": 750,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "fnm240",
+            "fnm240l"
         ]
     },
 
@@ -251,7 +3178,41 @@
             "Dispersion": 0.18
         },
         "items": [
-            "fnscar"
+            "fnscar",
+            "fnherstalscarl"
+        ]
+    },
+
+    "Frommer Stop (7.65mm Frommer Long)": {
+        "properties": {
+            "MuzzleVelocity": 342.0,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.45
+        },
+        "items": [
+            "frommerstop"
+        ]
+    },
+
+    "Frommer Stop M.17 (Automatic)": {
+        "properties": {
+            "MuzzleVelocity": 280,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.4
+        },
+        "items": [
+            "frommerstopauto"
+        ]
+    },
+
+    "Fusil Lebel Mle 1886": {
+        "properties": {
+            "MuzzleVelocity": 725,
+            "RoundsPerMin": 10,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "lebel"
         ]
     },
 
@@ -262,7 +3223,20 @@
             "Dispersion": 0.20
         },
         "items": [
-            "galil"
+            "galil",
+            "galileo"
+        ]
+    },
+
+    "GAU-8/A Avenger": {
+        "properties": {
+            "MuzzleVelocity": 1067.0,
+            "RoundsPerMin": 1200.0,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "gau8",
+            "avenger"
         ]
     },
 
@@ -274,6 +3248,17 @@
         },
         "items": [
             "gau19"
+        ]
+    },
+
+    "Gevar m/96": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "g96"
         ]
     },
 
@@ -300,6 +3285,39 @@
         ]
     },
 
+    "Gewehr 98": {
+        "properties": {
+            "MuzzleVelocity": 870.2,
+            "RoundsPerMin": 15.0,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "g98"
+        ]
+    },
+
+    "GL1 Grenade Launcher": {
+        "properties": {
+            "MuzzleVelocity": 76.0,
+            "RoundsPerMin": 60.0,
+            "Dispersion": 1.2
+        },
+        "items": [
+            "gl1"
+        ]
+    },
+
+    "GL6 Revolver Grenade Launcher": {
+        "properties": {
+            "MuzzleVelocity": 76,
+            "RoundsPerMin": 60,
+            "Dispersion": 1.2
+        },
+        "items": [
+            "gl6"
+        ]
+    },
+
     "Glock 17": {
         "properties": {
             "MuzzleVelocity": 375.0,
@@ -312,6 +3330,39 @@
         ]
     },
 
+    "Gryazev-Shipunov GSh-30-1": {
+        "properties": {
+            "MuzzleVelocity": 860,
+            "RoundsPerMin": 1200,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "gsh301"
+        ]
+    },
+
+    "Hand Axe (Generic)": {
+        "properties": {
+            "MeleeDamage": 7
+        },
+        "items": [
+            "handaxe",
+            "iranaxe",
+            "surgicalaxe"
+        ]
+    },
+
+    "Hanyang 88": {
+        "properties": {
+            "MuzzleVelocity": 620,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "hanyang88"
+        ]
+    },
+
     "HCAR": {
         "properties": {
             "MuzzleVelocity": 850.0,
@@ -320,6 +3371,85 @@
         },
         "items": [
             "hcar"
+        ]
+    },
+
+    "Heavy Bolter (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 320.0,
+            "RoundsPerMin": 500.0,
+            "Dispersion": 0.32
+        },
+        "items": [
+            "wh40k_mg_heavybolter_1a"
+        ]
+    },
+
+    "Heavy Mech Laser Cannon (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 1000,
+            "RoundsPerMin": 60,
+            "Dispersion": 0.2,
+            "Damage": 1
+        },
+        "items": [
+            "largemechlasercannon"
+        ]
+    },
+
+    "Hellriegel M1915": {
+        "properties": {
+            "MuzzleVelocity": 340,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "helriegel"
+        ]
+    },
+
+    "Hellsing .50 Calibre Mauser (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 500,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.4
+        },
+        "items": [
+            "hellsingmauser",
+            "supermauser"
+        ]
+    },
+
+    "Henry Rifle Model 1860": {
+        "properties": {
+            "MuzzleVelocity": 343.0,
+            "RoundsPerMin": 28,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "henry1860"
+        ]
+    },
+
+    "Hispano Mk II": {
+        "properties": {
+            "MuzzleVelocity": 880.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "ww2_mg_mkii_1a"
+        ]
+    },
+
+    "HK417": {
+        "properties": {
+            "MuzzleVelocity": 750,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.03
+        },
+        "items": [
+            "hk417"
         ]
     },
 
@@ -341,7 +3471,8 @@
             "Dispersion": 0.22
         },
         "items": [
-            "g3"
+            "g3",
+            "g3a3"
         ]
     },
 
@@ -357,6 +3488,28 @@
         ]
     },
 
+    "HK G36K": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 750,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "g36kurz"
+        ]
+    },
+
+    "HK GMG": {
+        "properties": {
+            "MuzzleVelocity": 240.0,
+            "RoundsPerMin": 340.0,
+            "Dispersion": 1
+        },
+        "items": [
+            "hkgmg"
+        ]
+    },
+
     "HK MP5": {
         "properties": {
             "MuzzleVelocity": 400.0,
@@ -364,7 +3517,8 @@
             "Dispersion": 0.34
         },
         "items": [
-            "mp5"
+            "mp5",
+            "bestfriend"
         ]
     },
 
@@ -390,6 +3544,17 @@
         ]
     },
 
+    "HK UMP40": {
+        "properties": {
+            "MuzzleVelocity": 290,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "hkump40"
+        ]
+    },
+
     "HK USP .45": {
         "properties": {
             "MuzzleVelocity": 260.0,
@@ -398,6 +3563,61 @@
         },
         "items": [
             "usp"
+        ]
+    },
+
+    "Hunnic Composite Bow": {
+        "properties": {
+            "MuzzleVelocity": 60,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.8
+        },
+        "items": [
+            "hunnicbow"
+        ]
+    },
+
+    "Hydra 70 Rocket Pod": {
+        "properties": {
+            "MuzzleVelocity": 700,
+            "RoundsPerMin": 240,
+            "Dispersion": 1
+        },
+        "items": [
+            "hydra70"
+        ]
+    },
+
+    "Ithaca 37 Riot": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 60,
+            "Dispersion": 1.7
+        },
+        "items": [
+            "ithaca37riot"
+        ]
+    },
+
+    "Joke And Debug Melee Item (Generic)": {
+        "properties": {
+            "MeleeDamage": 2
+        },
+        "items": [
+            "coinminervirustrojan",
+            "dummygun",
+            "debugreppumaru"
+        ]
+    },
+
+    "Jury Autorevolver (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 350,
+            "RoundsPerMin": 300,
+            "Dispersion": 0.6
+        },
+        "items": [
+            "jury"
         ]
     },
 
@@ -412,6 +3632,82 @@
             "kar98ksniper",
             "44_kar98k",
             "karabiner98kurz"
+        ]
+    },
+
+    "Karabin wz.98a": {
+        "properties": {
+            "MuzzleVelocity": 870,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "wz98"
+        ]
+    },
+
+    "Karabinek wz.29": {
+        "properties": {
+            "MuzzleVelocity": 820,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "wz29"
+        ]
+    },
+
+    "Karabiner 88": {
+        "properties": {
+            "MuzzleVelocity": 575,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "kar88"
+        ]
+    },
+
+    "Katana (Generic)": {
+        "properties": {
+            "MeleeDamage": 8
+        },
+        "items": [
+            "geaw_ija_katana",
+            "samuraisword",
+            "reppumaru"
+        ]
+    },
+
+    "Katyusha 16-M-8 Launcher": {
+        "properties": {
+            "MuzzleVelocity": 315,
+            "RoundsPerMin": 60,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "katyushalauncher"
+        ]
+    },
+
+    "Kbsp wz.38M": {
+        "properties": {
+            "MuzzleVelocity": 845,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "wz38m"
+        ]
+    },
+
+    "KCA Smart .50 (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 30,
+            "Dispersion": 0.13
+        },
+        "items": [
+            "kcasmart50"
         ]
     },
 
@@ -434,6 +3730,50 @@
         },
         "items": [
             "kcasmartpistol"
+        ]
+    },
+
+    "Kentucky Long Rifle": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "pennsyltuckyrifle"
+        ]
+    },
+
+    "Knight's Armament SR-25": {
+        "properties": {
+            "MuzzleVelocity": 783,
+            "RoundsPerMin": 60,
+            "Dispersion": 0.017
+        },
+        "items": [
+            "cowwestsr25"
+        ]
+    },
+
+    "Krag-Jorgensen M1894": {
+        "properties": {
+            "MuzzleVelocity": 730,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "krab"
+        ]
+    },
+
+    "Krag-Jorgensen M1895 Carbine": {
+        "properties": {
+            "MuzzleVelocity": 700,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "krabcarbine"
         ]
     },
 
@@ -470,14 +3810,87 @@
         ]
     },
 
-    "LeeEnfield No.1 Mk.III": {
+    "Lahti L-35": {
         "properties": {
-            "MuzzleVelocity": 745.0,
-            "RoundsPerMin": 60.0,
-            "Dispersion": 0.14
+            "MuzzleVelocity": 350.0,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.4
         },
         "items": [
-            "44_leeenfield3"
+            "l35",
+            "lahtil35"
+        ]
+    },
+
+    "LAR Grizzly Mark I": {
+        "properties": {
+            "MuzzleVelocity": 500,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "superp220"
+        ]
+    },
+
+    "Lascannon, Imperial Guard (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 1000.0,
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "wh40k_mg_lascannon_1a"
+        ]
+    },
+
+    "Lascannon, Vulture (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 1000.0,
+            "RoundsPerMin": 120.0,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "wh40k_mg_lascannon_2a"
+        ]
+    },
+
+    "Lasgun (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 500.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.22
+        },
+        "items": [
+            "wh40k_gun_m36lasgun_1a",
+            "wh40k_gun_m98lasgun_1a"
+        ]
+    },
+
+    "Laspistol (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 400.0,
+            "RoundsPerMin": 350.0,
+            "Dispersion": 0.65,
+            "AmmoMuzzleVelocity": "wh40k_ammo_powerpacklasgun 400"
+        },
+        "items": [
+            "wh40k_gun_m38laspistol_1a"
+        ]
+    },
+
+    "Late Roman Skirmish Shield With Plumbatae": {
+        "properties": {
+            "MuzzleVelocity": 20,
+            "RoundsPerMin": 6,
+            "Dispersion": 2.5
+        },
+        "items": [
+            "skirmishshield"
         ]
     },
 
@@ -494,6 +3907,76 @@
         ]
     },
 
+    "LeeEnfield No.1 Mk.III": {
+        "properties": {
+            "MuzzleVelocity": 745.0,
+            "RoundsPerMin": 60.0,
+            "Dispersion": 0.14
+        },
+        "items": [
+            "44_leeenfield3",
+            "leeenfield3"
+        ]
+    },
+
+    "LeMat Revolver": {
+        "properties": {
+            "MuzzleVelocity": 210,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.6
+        },
+        "items": [
+            "lemat"
+        ]
+    },
+
+    "Lewis Gun": {
+        "properties": {
+            "MuzzleVelocity": 745,
+            "RoundsPerMin": 550,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "lewisgunm191x",
+            "lewisair"
+        ]
+    },
+
+    "Light Naval AA Gun (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 450,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "lightflak",
+            "lightflak10"
+        ]
+    },
+
+    "Lightsaber (Fictional)": {
+        "properties": {
+            "MeleeDamage": 20
+        },
+        "items": [
+            "lightsaberblack",
+            "lightsaberblue",
+            "lightsaberbluelight",
+            "lightsabergreen",
+            "lightsabergreenlight",
+            "lightsabergrey",
+            "lightsabermagenta",
+            "lightsaberorange",
+            "lightsaberpurple",
+            "lightsaberred",
+            "lightsaberwhite",
+            "lightsaberyellow",
+            "lightsaber_a",
+            "lightsaber_b",
+            "lightsaber_c"
+        ]
+    },
+
     "Luger P08": {
         "properties": {
             "MuzzleVelocity": 370.0,
@@ -502,7 +3985,456 @@
         },
         "items": [
             "luger",
-            "44_luger"
+            "44_luger",
+            "p8"
+        ]
+    },
+
+    "Lunge Mine": {
+        "properties": {
+            "MuzzleVelocity": 5,
+            "RoundsPerMin": 6,
+            "Dispersion": 1
+        },
+        "items": [
+            "geaw_ija_at_lungemine"
+        ]
+    },
+
+    "Lupara Sawn-Off Shotgun": {
+        "properties": {
+            "MuzzleVelocity": 380,
+            "RoundsPerMin": 90,
+            "Dispersion": 3
+        },
+        "items": [
+            "doubletrouble"
+        ]
+    },
+
+    "M1 Bazooka": {
+        "properties": {
+            "MuzzleVelocity": 80.0,
+            "RoundsPerMin": 10.0,
+            "Dispersion": 2.10
+        },
+        "items": [
+            "bazooka",
+            "44_bazooka"
+        ]
+    },
+
+    "M1 Garand": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 240.0,
+            "Dispersion": 0.18
+        },
+        "items": [
+            "m1garand",
+            "44_m1garand",
+            "ermeysgarand"
+        ]
+    },
+
+    "M1A1 Carbine": {
+        "properties": {
+            "MuzzleVelocity": 605.0,
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.22
+        },
+        "items": [
+            "m1carbine",
+            "44_m1carbine"
+        ]
+    },
+
+    "M1A1 Thompson ": {
+        "properties": {
+            "MuzzleVelocity": 285.0,
+            "RoundsPerMin": 700.0,
+            "Dispersion": 0.40
+        },
+        "items": [
+            "thompson",
+            "44_thompsonm1a1",
+            "thompsonearly"
+        ]
+    },
+
+    "M2 Browning .50Cal": {
+        "properties": {
+            "MuzzleVelocity": 890.0,
+            "RoundsPerMin": 500.0,
+            "Dispersion": 0.35
+        },
+        "items": [
+            "50cal",
+            "44_50cal",
+            "browningm2",
+            "browningm2hbhipfired",
+            "browningm2hb",
+            "ww2_mg_browningm2_1a",
+            "twelvemm"
+        ]
+    },
+
+    "M2 Carbine": {
+        "properties": {
+            "RoundsPerMin": 750.0,
+            "MuzzleVelocity": 600,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "m2carbine"
+        ]
+    },
+
+    "M2 Flamethrower": {
+        "properties": {
+            "MuzzleVelocity": 40,
+            "RoundsPerMin": 600,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "m2flamethrower"
+        ]
+    },
+
+    "M3A1 Grease Gun": {
+        "properties": {
+            "MuzzleVelocity": 275.0,
+            "RoundsPerMin": 450.0,
+            "Dispersion": 0.52
+        },
+        "items": [
+            "m3a1",
+            "44_greasegun"
+        ]
+    },
+
+    "M4 Carbine (M855 Ball)": {
+        "properties": {
+            "MuzzleVelocity": 905.0,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "m4carbine"
+        ]
+    },
+
+    "M9A1 Bazooka": {
+        "properties": {
+            "MuzzleVelocity": 82,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.8
+        },
+        "items": [
+            "m9a1bazooka"
+        ]
+    },
+
+    "M9A1-7 Flamethrower": {
+        "properties": {
+            "MuzzleVelocity": 40,
+            "RoundsPerMin": 600,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "flamer"
+        ]
+    },
+
+    "M14": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 700.0,
+            "Dispersion": 0.20
+        },
+        "items": [
+            "m14"
+        ]
+    },
+
+    "M16A4": {
+        "properties": {
+            "MuzzleVelocity": 945.0,
+            "RoundsPerMin": 800.0,
+            "Dispersion": 0.16
+        },
+        "items": [
+            "m16a4"
+        ]
+    },
+
+    "M21": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.14
+        },
+        "items": [
+            "m21"
+        ]
+    },
+
+    "M40A3": {
+        "properties": {
+            "MuzzleVelocity": 790.0,
+            "RoundsPerMin": 45.0,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "m40a3"
+        ]
+    },
+
+    "M40A5": {
+        "properties": {
+            "MuzzleVelocity": 777,
+            "RoundsPerMin": 20,
+            "Dispersion": 0.017
+        },
+        "items": [
+            "usmcm40a5"
+        ]
+    },
+
+    "M45 Quadmount .50 Cal": {
+        "properties": {
+            "MuzzleVelocity": 887,
+            "RoundsPerMin": 1200,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "quad50vehicle"
+        ]
+    },
+
+    "M60E4": {
+        "properties": {
+            "MuzzleVelocity": 855.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.36
+        },
+        "items": [
+            "m60"
+        ]
+    },
+
+    "M61A1 Vulcan (GAU-4/A)": {
+        "properties": {
+            "MuzzleVelocity": 1036.0,
+            "RoundsPerMin": 1200.0,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "gau4",
+            "m61vulcan",
+            "twentymmciws"
+        ]
+    },
+
+    "M72A2/A3 LAW": {
+        "properties": {
+            "MuzzleVelocity": 144.8,
+            "RoundsPerMin": 4,
+            "Dispersion": 0.8
+        },
+        "items": [
+            "m72law"
+        ]
+    },
+
+    "M134 Minigun": {
+        "properties": {
+            "MuzzleVelocity": 853.0,
+            "RoundsPerMin": 4000.0,
+            "Dispersion": 0.45
+        },
+        "items": [
+            "minigun",
+            "chicagotypewriter",
+            "m134"
+        ]
+    },
+
+    "M202 FLASH": {
+        "properties": {
+            "MuzzleVelocity": 114,
+            "RoundsPerMin": 20,
+            "Dispersion": 1
+        },
+        "items": [
+            "armageddon"
+        ]
+    },
+
+    "M249 SAW": {
+        "properties": {
+            "MuzzleVelocity": 915.0,
+            "RoundsPerMin": 850.0,
+            "Dispersion": 0.34
+        },
+        "items": [
+            "m249"
+        ]
+    },
+
+    "M1903 Springfield": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 45.0,
+            "Dispersion": 0.13
+        },
+        "items": [
+            "springfield",
+            "springfieldsniper",
+            "44_m1903springfield",
+            "springfielda3"
+        ]
+    },
+
+    "M1911 Colt": {
+        "properties": {
+            "MuzzleVelocity": 250.0,
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.72
+        },
+        "items": [
+            "colt",
+            "m1911",
+            "44_colt",
+            "shirleysm1911"
+        ]
+    },
+
+    "M1917 Revolver": {
+        "properties": {
+            "MuzzleVelocity": 250,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "m917revolv"
+        ]
+    },
+
+    "M1918A2 BAR": {
+        "properties": {
+            "MuzzleVelocity": 860.0,
+            "RoundsPerMin": 400.0,
+            "Dispersion": 0.26
+        },
+        "items": [
+            "bar",
+            "44_bar"
+        ]
+    },
+
+    "M1919A4 Browning .30Cal": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 550.0,
+            "Dispersion": 0.33
+        },
+        "items": [
+            "browning",
+            "browninghand",
+            "44_30cal",
+            "browningm1918a4",
+            "m1919",
+            "ww2_mg_browningm1919_1a"
+        ]
+    },
+
+    "M1919A6 Browning .30 Cal": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 550.0,
+            "Dispersion": 0.32
+        },
+        "items": [
+            "44_m1919a630cal",
+            "browningm1919a6",
+            "browningtyrant"
+        ]
+    },
+
+    "Machete": {
+        "properties": {
+            "MeleeDamage": 8
+        },
+        "items": [
+            "zombiemachete"
+        ]
+    },
+
+    "Madsen Machine Gun": {
+        "properties": {
+            "MuzzleVelocity": 700,
+            "RoundsPerMin": 450,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "madsen"
+        ]
+    },
+
+    "Makarov": {
+        "properties": {
+            "MuzzleVelocity": 315.0,
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.68
+        },
+        "items": [
+            "makarov",
+            "makarovpm"
+        ]
+    },
+
+    "MAS 38": {
+        "properties": {
+            "RoundsPerMin": 600.0,
+            "MuzzleVelocity": 350,
+            "Dispersion": 0.28
+        },
+        "items": [
+            "mas38"
+        ]
+    },
+
+    "MAS-36": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "mas36"
+        ]
+    },
+
+    "MAS-40": {
+        "properties": {
+            "MuzzleVelocity": 823,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "mas40"
+        ]
+    },
+
+    "Mastiff 1218 Shotgun (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 66,
+            "Dispersion": 2.2
+        },
+        "items": [
+            "mastiff1218"
         ]
     },
 
@@ -529,242 +4461,25 @@
         ]
     },
 
-    "M1 Bazooka": {
+    "Medical Syringe": {
         "properties": {
-            "MuzzleVelocity": 80.0,
-            "RoundsPerMin": 10.0,
-            "Dispersion": 2.10
+            "Damage": 1,
+            "RoundsPerMin": 40.0,
+            "Dispersion": 0.5
         },
         "items": [
-            "bazooka",
-            "44_bazooka"
+            "44_syringe"
         ]
     },
 
-    "M1 Garand": {
+    "MG 3": {
         "properties": {
-            "MuzzleVelocity": 850.0,
-            "RoundsPerMin": 240.0,
-            "Dispersion": 0.18
-        },
-        "items": [
-            "m1garand",
-            "44_m1garand"
-        ]
-    },
-
-    "M1A1 Carbine": {
-        "properties": {
-            "MuzzleVelocity": 605.0,
-            "RoundsPerMin": 300.0,
-            "Dispersion": 0.22
-        },
-        "items": [
-            "m1carbine",
-            "44_m1carbine"
-        ]
-    },
-
-    "M1A1 Thompson ": {
-        "properties": {
-            "MuzzleVelocity": 285.0,
-            "RoundsPerMin": 700.0,
-            "Dispersion": 0.40
-        },
-        "items": [
-            "thompson",
-            "44_Thompsonm1a1"
-        ]
-    },
-
-    "M134 Minigun": {
-        "properties": {
-            "MuzzleVelocity": 853.0,
-            "RoundsPerMin": 4000.0,
-            "Dispersion": 0.45
-        },
-        "items": [
-            "minigun",
-            "chicagotypewriter"
-        ]
-    },
-
-    "M14": {
-        "properties": {
-            "MuzzleVelocity": 850.0,
-            "RoundsPerMin": 700.0,
-            "Dispersion": 0.20
-        },
-        "items": [
-            "m14"
-        ]
-    },
-
-    "M16A4": {
-        "properties": {
-            "MuzzleVelocity": 945.0,
-            "RoundsPerMin": 800.0,
-            "Dispersion": 0.16
-        },
-        "items": [
-            "m16a4"
-        ]
-    },
-
-    "M1903 Springfield": {
-        "properties": {
-            "MuzzleVelocity": 850.0,
-            "RoundsPerMin": 45.0,
-            "Dispersion": 0.13
-        },
-        "items": [
-            "springfield",
-            "springfieldsniper",
-            "44_m1903springfield"
-        ]
-    },
-
-    "M1911 Colt": {
-        "properties": {
-            "MuzzleVelocity": 250.0,
-            "RoundsPerMin": 300.0,
-            "Dispersion": 0.72
-        },
-        "items": [
-            "colt",
-            "m1911",
-            "44_colt"
-        ]
-    },
-
-    "M1918A2 BAR": {
-        "properties": {
-            "MuzzleVelocity": 860.0,
-            "RoundsPerMin": 400.0,
-            "Dispersion": 0.26
-        },
-        "items": [
-            "bar",
-            "44_bar"
-        ]
-    },
-
-    "M1919A4 Browning .30Cal": {
-        "properties": {
-            "MuzzleVelocity": 850.0,
-            "RoundsPerMin": 550.0,
-            "Dispersion": 0.33
-        },
-        "items": [
-            "browning",
-            "browninghand",
-            "44_30cal",
-            "browningm1918a4"
-        ]
-    },
-
-    "M1919A6 Browning .30 Cal": {
-        "properties": {
-            "MuzzleVelocity": 850.0,
-            "RoundsPerMin": 550.0,
-            "Dispersion": 0.32
-        },
-        "items": [
-            "44_m1919a630cal",
-            "browningm1919a6",
-            "browningtyrant"
-        ]
-    },
-
-    "M2 Browning .50Cal": {
-        "properties": {
-            "MuzzleVelocity": 890.0,
-            "RoundsPerMin": 500.0,
-            "Dispersion": 0.35
-        },
-        "items": [
-            "50cal",
-            "44_50cal",
-            "browningm2"
-        ]
-    },
-
-    "M21": {
-        "properties": {
-            "MuzzleVelocity": 850.0,
-            "RoundsPerMin": 300.0,
-            "Dispersion": 0.14
-        },
-        "items": [
-            "m21"
-        ]
-    },
-
-    "M249 SAW": {
-        "properties": {
-            "MuzzleVelocity": 915.0,
-            "RoundsPerMin": 850.0,
-            "Dispersion": 0.34
-        },
-        "items": [
-            "m249"
-        ]
-    },
-
-    "M3A1 Grease Gun": {
-        "properties": {
-            "MuzzleVelocity": 275.0,
-            "RoundsPerMin": 450.0,
-            "Dispersion": 0.52
-        },
-        "items": [
-            "m3a1",
-            "44_greasegun"
-        ]
-    },
-
-    "M40A3": {
-        "properties": {
-            "MuzzleVelocity": 790.0,
-            "RoundsPerMin": 45.0,
+            "MuzzleVelocity": 820.0,
+            "RoundsPerMin": 1200.0,
             "Dispersion": 0.12
         },
         "items": [
-            "m40a3"
-        ]
-    },
-
-    "M60E4": {
-        "properties": {
-            "MuzzleVelocity": 855.0,
-            "RoundsPerMin": 600.0,
-            "Dispersion": 0.36
-        },
-        "items": [
-            "m60"
-        ]
-    },
-
-    "Makarov": {
-        "properties": {
-            "MuzzleVelocity": 315.0,
-            "RoundsPerMin": 300.0,
-            "Dispersion": 0.68
-        },
-        "items": [
-            "makarov"
-        ]
-    },
-
-    "MG 131": {
-        "properties": {
-            "MuzzleVelocity": 750.0,
-            "RoundsPerMin": 900.0,
-            "Dispersion": 0.23
-        },
-        "items": [
-            "44_mg131",
-            "mg131"
+            "mg3zb"
         ]
     },
 
@@ -779,17 +4494,6 @@
         ]
     },
 
-    "MG 151/15": {
-        "properties": {
-            "MuzzleVelocity": 850.0,
-            "RoundsPerMin": 740.0,
-            "Dispersion": 0.30
-        },
-        "items": [
-            "mg151"
-        ]
-    },
-
     "MG 17": {
         "properties": {
             "MuzzleVelocity": 895.0,
@@ -797,7 +4501,9 @@
             "Dispersion": 0.22
         },
         "items": [
-            "44_mg17"
+            "44_mg17",
+            "mg17",
+            "ww2_mg_mg17_1a"
         ]
     },
 
@@ -837,7 +4543,76 @@
             "mg42hand",
             "maschinengewehr42",
             "machinengewehr42",
-            "44_mg42"
+            "44_mg42",
+            "ww2_mg_mg42lafette_1a",
+            "ww2_mg_mg42zb_1a"
+        ]
+    },
+
+    "MG 81": {
+        "properties": {
+            "MuzzleVelocity": 745.0,
+            "RoundsPerMin": 1200.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "ww2_mg_mg81zb_1a"
+        ]
+    },
+
+    "MG 131": {
+        "properties": {
+            "MuzzleVelocity": 750.0,
+            "RoundsPerMin": 900.0,
+            "Dispersion": 0.23
+        },
+        "items": [
+            "44_mg131",
+            "mg131"
+        ]
+    },
+
+    "MG 151/15": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 740.0,
+            "Dispersion": 0.30
+        },
+        "items": [
+            "mg151"
+        ]
+    },
+
+    "MG 151/20": {
+        "properties": {
+            "MuzzleVelocity": 725.0,
+            "RoundsPerMin": 750.0,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "ww2_mg_mg151_1a"
+        ]
+    },
+
+    "MG FF/M": {
+        "properties": {
+            "MuzzleVelocity": 640.0,
+            "RoundsPerMin": 530.0,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "ww2_mg_mgff_1a"
+        ]
+    },
+
+    "MG-2042 (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 900,
+            "Dispersion": 0.12
+        },
+        "items": [
+            "mg2015"
         ]
     },
 
@@ -852,6 +4627,72 @@
         ]
     },
 
+    "Mk22c Combat Shotgun (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 400.0,
+            "RoundsPerMin": 200.0,
+            "Dispersion": 1.8
+        },
+        "items": [
+            "wh40k_gun_mk22ccombatshotgun_1a"
+        ]
+    },
+
+    "MK 108": {
+        "properties": {
+            "MuzzleVelocity": 505.0,
+            "RoundsPerMin": 650.0,
+            "Dispersion": 0.35
+        },
+        "items": [
+            "ww2_mg_mk108_1a"
+        ]
+    },
+
+    "MK III Bolt Pistol (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 250.0,
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.68
+        },
+        "items": [
+            "wh40k_gun_mkiiiboltpistol_1a"
+        ]
+    },
+
+    "Mk V Pattern Grenade Launcher (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 76.0,
+            "RoundsPerMin": 60.0,
+            "Dispersion": 1.2
+        },
+        "items": [
+            "wh40k_gun_mkvgrenadelauncher_1a"
+        ]
+    },
+
+    "MK Vb Boltgun (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 300.0,
+            "RoundsPerMin": 550.0,
+            "Dispersion": 0.26
+        },
+        "items": [
+            "wh40k_gun_mkvbboltgun_1a"
+        ]
+    },
+
+    "MLRS6 Rocket Launcher (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 200,
+            "RoundsPerMin": 300,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "mlrs6"
+        ]
+    },
+
     "Mosin-Nagant": {
         "properties": {
             "MuzzleVelocity": 865.0,
@@ -861,7 +4702,52 @@
         "items": [
             "nagant",
             "nagantsniper",
-            "44_mosinnagant"
+            "44_mosinnagant",
+            "mosin"
+        ]
+    },
+
+    "Mosin-Nagant M27": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "nagant27"
+        ]
+    },
+
+    "Mosin-Nagant M38 Carbine": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "nagant30carbine"
+        ]
+    },
+
+    "Mosin-Nagant M91/30": {
+        "properties": {
+            "MuzzleVelocity": 865,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "nagant30"
+        ]
+    },
+
+    "Mossberg 930 SPX": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 90,
+            "Dispersion": 1.6
+        },
+        "items": [
+            "mossberg930"
         ]
     },
 
@@ -889,6 +4775,29 @@
         ]
     },
 
+    "MP 41": {
+        "properties": {
+            "RoundsPerMin": 500.0,
+            "MuzzleVelocity": 400,
+            "Dispersion": 0.28
+        },
+        "items": [
+            "mp41"
+        ]
+    },
+
+    "MP.18,I Schmeisser": {
+        "properties": {
+            "RoundsPerMin": 450.0,
+            "MuzzleVelocity": 380,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "mp18drum",
+            "mp18stick"
+        ]
+    },
+
     "MTAR-21": {
         "properties": {
             "MuzzleVelocity": 910.0,
@@ -900,6 +4809,317 @@
         ]
     },
 
+    "Multi-Laser (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 700.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 0.28
+        },
+        "items": [
+            "wh40k_mg_multilaser_1a"
+        ]
+    },
+
+    "Multiple Heavy Machine Guns (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 1200,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "quad13mm"
+        ]
+    },
+
+    "Multiple Light Machine Guns (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 1200,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "sevenmmmultiple"
+        ]
+    },
+
+    "Multiple Torpedo Tubes (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "torpedotubeevil"
+        ]
+    },
+
+    "Nagant M1895 Revolver": {
+        "properties": {
+            "MuzzleVelocity": 270.0,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "m1895"
+        ]
+    },
+
+    "Nahverteidigungswaffe": {
+        "properties": {
+            "MuzzleVelocity": 60,
+            "RoundsPerMin": 12,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "kampfpistole"
+        ]
+    },
+
+    "Nambu Type 94": {
+        "properties": {
+            "MuzzleVelocity": 305,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "geaw_ija_pistol_type94"
+        ]
+    },
+
+    "Nambu Type 100/44": {
+        "properties": {
+            "MuzzleVelocity": 335,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "geaw_ija_smg_type100_44"
+        ]
+    },
+
+    "Neopup PAW-20": {
+        "properties": {
+            "MuzzleVelocity": 310.0,
+            "RoundsPerMin": 20.0,
+            "Dispersion": 0.6
+        },
+        "items": [
+            "paw20"
+        ]
+    },
+
+    "Nerf Elite Jolt EX-1": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 21,
+            "RoundsPerMin": 30,
+            "Dispersion": 1.8
+        },
+        "items": [
+            "nerfjolt"
+        ]
+    },
+
+    "Nerf Elite Rampage": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 21,
+            "RoundsPerMin": 180,
+            "Dispersion": 1.8
+        },
+        "items": [
+            "nerframpage"
+        ]
+    },
+
+    "Nerf Elite Retaliator": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 21,
+            "RoundsPerMin": 60,
+            "Dispersion": 1.4
+        },
+        "items": [
+            "nerfretaliator"
+        ]
+    },
+
+    "Nerf Elite Strongarm": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 21,
+            "RoundsPerMin": 60,
+            "Dispersion": 1.8
+        },
+        "items": [
+            "nerfstrongarm"
+        ]
+    },
+
+    "Nerf Elite Stryfe": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 21,
+            "RoundsPerMin": 180,
+            "Dispersion": 1.8
+        },
+        "items": [
+            "nerfstryfe"
+        ]
+    },
+
+    "Nerf Longshot CS-6": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 12,
+            "RoundsPerMin": 30,
+            "Dispersion": 1.2
+        },
+        "items": [
+            "nerflongshot"
+        ]
+    },
+
+    "Nerf Maverick REV-6": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 12,
+            "RoundsPerMin": 60,
+            "Dispersion": 2.4
+        },
+        "items": [
+            "nerfmaverick"
+        ]
+    },
+
+    "Nerf Raider CS-35": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 12,
+            "RoundsPerMin": 180,
+            "Dispersion": 2.2
+        },
+        "items": [
+            "nerfraider"
+        ]
+    },
+
+    "Nerf Recon CS-6": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 12,
+            "RoundsPerMin": 40,
+            "Dispersion": 1.6
+        },
+        "items": [
+            "nerfrecon"
+        ]
+    },
+
+    "Nerf Stampede ECS": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 12,
+            "RoundsPerMin": 180,
+            "Dispersion": 2.2
+        },
+        "items": [
+            "nerfstampede"
+        ]
+    },
+
+    "Nerf Vortex Nitron": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 18,
+            "RoundsPerMin": 120,
+            "Dispersion": 2.6
+        },
+        "items": [
+            "nerfnitron"
+        ]
+    },
+
+    "Nerf Vortex Praxis": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 18,
+            "RoundsPerMin": 60,
+            "Dispersion": 2
+        },
+        "items": [
+            "nerfpraxis"
+        ]
+    },
+
+    "Nerf Vortex Pyragon": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 18,
+            "RoundsPerMin": 180,
+            "Dispersion": 2
+        },
+        "items": [
+            "nerfpyragon"
+        ]
+    },
+
+    "Nerf Vulcan EBF-25": {
+        "properties": {
+            "Damage": 0,
+            "MuzzleVelocity": 12,
+            "RoundsPerMin": 180,
+            "Dispersion": 2.6
+        },
+        "items": [
+            "nerfvulcan"
+        ]
+    },
+
+    "Neuroi Laser Gun (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 300,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "neuroilasergun"
+        ]
+    },
+
+    "Non-Firing Utility Device (Generic)": {
+        "properties": {
+        },
+        "items": [
+            "bodypillow",
+            "dixie"
+        ]
+    },
+
+    "Obrez": {
+        "properties": {
+            "MuzzleVelocity": 600,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "obrez"
+        ]
+    },
+
+    "Panjegan": {
+        "properties": {
+            "MuzzleVelocity": 40,
+            "RoundsPerMin": 6,
+            "Dispersion": 3
+        },
+        "items": [
+            "panjegan"
+        ]
+    },
+
     "Panzerbüchse 39": {
         "properties": {
             "MuzzleVelocity": 1210.0,
@@ -907,7 +5127,19 @@
             "Dispersion": 0.16
         },
         "items": [
+            "germanpanzerbuechse39",
             "panzerbuechse39"
+        ]
+    },
+
+    "Panzerfaust 3": {
+        "properties": {
+            "MuzzleVelocity": 165.0,
+            "RoundsPerMin": 5.0,
+            "Dispersion": 2.0
+        },
+        "items": [
+            "panzerfaust3"
         ]
     },
 
@@ -923,13 +5155,47 @@
         ]
     },
 
-    "Neopup PAW-20": {
+    "Pattern 1853 Enfield": {
         "properties": {
-            "MuzzleVelocity": 310.0,
-            "RoundsPerMin": 20.0
+            "MuzzleVelocity": 274,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.1
         },
         "items": [
-            "paw20"
+            "enfield1853"
+        ]
+    },
+
+    "Peacekeeper Shotgun (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 30,
+            "Dispersion": 2.4
+        },
+        "items": [
+            "peacekeeper"
+        ]
+    },
+
+    "PHASR Dazzler": {
+        "properties": {
+            "Damage": 1,
+            "RoundsPerMin": 60,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "dazzler"
+        ]
+    },
+
+    "Photon Light AA Gun (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 1000,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "photonaagun"
         ]
     },
 
@@ -945,6 +5211,58 @@
         ]
     },
 
+    "Plane-Launching Longbow (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 300,
+            "RoundsPerMin": 20,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "carrierlongbow"
+        ]
+    },
+
+    "PM M1910 Maxim": {
+        "properties": {
+            "MuzzleVelocity": 865,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "pm1910mg",
+            "russianmaximvehicle"
+        ]
+    },
+
+    "Polearm (Generic)": {
+        "properties": {
+            "MeleeDamage": 9,
+            "MuzzleVelocity": 20.0,
+            "RoundsPerMin": 15.0,
+            "Dispersion": 3.0
+        },
+        "items": [
+            "spear",
+            "pilum",
+            "javelin",
+            "kontos",
+            "sarissa"
+        ]
+    },
+
+    "Power Melee Weapon (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 80.0,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "wh40k_gun_chainsword_1a",
+            "wh40k_gun_powersword_1a",
+            "wh40k_gun_powersword_2a",
+            "wh40k_gun_thunderhammer_1a"
+        ]
+    },
+
     "PP-19 Bizon": {
         "properties": {
             "MuzzleVelocity": 315.0,
@@ -956,6 +5274,28 @@
         ]
     },
 
+    "PP-2000": {
+        "properties": {
+            "MuzzleVelocity": 450,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "pp2000"
+        ]
+    },
+
+    "PPD-38": {
+        "properties": {
+            "MuzzleVelocity": 488,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "ppd40"
+        ]
+    },
+
     "PPS-43": {
         "properties": {
             "MuzzleVelocity": 500.0,
@@ -963,7 +5303,8 @@
             "Dispersion": 0.45
         },
         "items": [
-            "44_pps43"
+            "44_pps43",
+            "pps43"
         ]
     },
 
@@ -976,6 +5317,83 @@
         "items": [
             "ppsh",
             "44_ppsh41"
+        ]
+    },
+
+    "PR3 Support Weapon (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 800,
+            "Dispersion": 0.32
+        },
+        "items": [
+            "pr3"
+        ]
+    },
+
+    "Precision Sniper Railgun (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 1200,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.02
+        },
+        "items": [
+            "psr1"
+        ]
+    },
+
+    "PTRD-41 (14.5x114mm B-32)": {
+        "properties": {
+            "MuzzleVelocity": 1012.0,
+            "RoundsPerMin": 8,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "ptrd"
+        ]
+    },
+
+    "Quadruple Torpedo Tube (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 15,
+            "RoundsPerMin": 6,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "torpedotube4"
+        ]
+    },
+
+    "Radom wz.35 Vis": {
+        "properties": {
+            "MuzzleVelocity": 350,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.4
+        },
+        "items": [
+            "wz35"
+        ]
+    },
+
+    "Ratte Main Gun (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 2,
+            "Dispersion": 0.07
+        },
+        "items": [
+            "crackrattegun"
+        ]
+    },
+
+    "Regimental Colours (Generic)": {
+        "properties": {
+            "RoundsPerMin": 2.0,
+            "Dispersion": 3.0
+        },
+        "items": [
+            "csaflag",
+            "usaflag"
         ]
     },
 
@@ -1012,6 +5430,58 @@
         ]
     },
 
+    "Remington Model 1900": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 60,
+            "Dispersion": 2
+        },
+        "items": [
+            "remingtondouble"
+        ]
+    },
+
+    "Revolver d'ordonnance Modèle 1892": {
+        "properties": {
+            "MuzzleVelocity": 225.0,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "mdle1892",
+            "m1892revolver"
+        ]
+    },
+
+    "Rifle Bayonet": {
+        "properties": {
+            "MeleeDamage": 6
+        },
+        "items": [
+            "ermeysgarand"
+        ]
+    },
+
+    "Riot Shield (Fictional)": {
+        "properties": {
+            "MeleeDamage": 3
+        },
+        "items": [
+            "cloneriotshield"
+        ]
+    },
+
+    "ROKS-2 Flamethrower": {
+        "properties": {
+            "MuzzleVelocity": 45,
+            "RoundsPerMin": 600,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "roks2"
+        ]
+    },
+
     "RPD": {
         "properties": {
             "MuzzleVelocity": 735.0,
@@ -1020,6 +5490,17 @@
         },
         "items": [
             "rpd"
+        ]
+    },
+
+    "RPG-7": {
+        "properties": {
+            "MuzzleVelocity": 115.0,
+            "RoundsPerMin": 4.0,
+            "Dispersion": 2.0
+        },
+        "items": [
+            "rpg"
         ]
     },
 
@@ -1046,6 +5527,72 @@
         ]
     },
 
+    "Ruby Pistol": {
+        "properties": {
+            "MuzzleVelocity": 280,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "ruby"
+        ]
+    },
+
+    "S&T Daewoo K2": {
+        "properties": {
+            "MuzzleVelocity": 920,
+            "RoundsPerMin": 750,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "k2ar"
+        ]
+    },
+
+    "S&T Daewoo K7": {
+        "properties": {
+            "MuzzleVelocity": 315,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "k7"
+        ]
+    },
+
+    "S&T Daewoo K11": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.09
+        },
+        "items": [
+            "k11"
+        ]
+    },
+
+    "S&T Daewoo XK8": {
+        "properties": {
+            "MuzzleVelocity": 920,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "dar21"
+        ]
+    },
+
+    "Self Bow (Generic)": {
+        "properties": {
+            "MuzzleVelocity": 45,
+            "RoundsPerMin": 8,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "shitbow"
+        ]
+    },
+
     "ShAK-12": {
         "properties": {
             "MuzzleVelocity": 300.0,
@@ -1054,6 +5601,109 @@
         },
         "items": [
             "ash12"
+        ]
+    },
+
+    "Sharps Model 1852": {
+        "properties": {
+            "MuzzleVelocity": 370,
+            "RoundsPerMin": 9,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "sharprifle"
+        ]
+    },
+
+    "Shield Bash (Generic)": {
+        "properties": {
+            "MeleeDamage": 3
+        },
+        "items": [
+            "parma",
+            "scutum",
+            "aspis",
+            "aspiscarthago",
+            "boetianshield",
+            "roundshieldslav",
+            "sparabara",
+            "romanlegionnaireshield",
+            "romanlegionnaireshield_2",
+            "romanauxiliashield",
+            "policeshield",
+            "mwriotshield",
+            "zomriotshield"
+        ]
+    },
+
+    "ShKAS": {
+        "properties": {
+            "MuzzleVelocity": 825.0,
+            "RoundsPerMin": 1200.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "ww2_mg_shkas_1a"
+        ]
+    },
+
+    "Short Sword (Generic)": {
+        "properties": {
+            "MeleeDamage": 7
+        },
+        "items": [
+            "gladius",
+            "romangladius",
+            "spatha",
+            "aegeansword",
+            "hunnicsword",
+            "persiansword",
+            "shamshir",
+            "wakazashi"
+        ]
+    },
+
+    "Shouted Order (Generic)": {
+        "properties": {
+        },
+        "items": [
+            "germanshout",
+            "kukshout",
+            "romanianshout",
+            "russianshout"
+        ]
+    },
+
+    "ShVAK 20mm Cannon": {
+        "properties": {
+            "MuzzleVelocity": 815.0,
+            "RoundsPerMin": 800.0,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "shvakcannon"
+        ]
+    },
+
+    "SideWinder 7 Rocket Support Weapon (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 200,
+            "RoundsPerMin": 300,
+            "Dispersion": 1
+        },
+        "items": [
+            "sidewinder7"
+        ]
+    },
+
+    "SIG MKMS": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 900,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "sigmkms"
         ]
     },
 
@@ -1079,6 +5729,17 @@
         ]
     },
 
+    "SIG Sauer P220": {
+        "properties": {
+            "MuzzleVelocity": 350,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "debugp220"
+        ]
+    },
+
     "SIG SG 550": {
         "properties": {
             "MuzzleVelocity": 910.0,
@@ -1097,7 +5758,51 @@
             "Dispersion": 0.20
         },
         "items": [
-            "44_sks"
+            "44_sks",
+            "sks"
+        ]
+    },
+
+    "Sledgehammer": {
+        "properties": {
+            "MeleeDamage": 9
+        },
+        "items": [
+            "sledgehammer"
+        ]
+    },
+
+    "Sling": {
+        "properties": {
+            "MuzzleVelocity": 35,
+            "RoundsPerMin": 8,
+            "Dispersion": 2
+        },
+        "items": [
+            "sling"
+        ]
+    },
+
+    "Smith & Wesson Model 500": {
+        "properties": {
+            "MuzzleVelocity": 671,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "debug500"
+        ]
+    },
+
+    "SPAS-10 (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 400,
+            "RoundsPerMin": 300,
+            "Dispersion": 1.7
+        },
+        "items": [
+            "megadestroyer",
+            "debugmegadestroyer"
         ]
     },
 
@@ -1112,13 +5817,114 @@
         ]
     },
 
+    "Spencer Repeating Rifle": {
+        "properties": {
+            "MuzzleVelocity": 285,
+            "RoundsPerMin": 20,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "spencerrr"
+        ]
+    },
+
     "Springfield Armory EMP4": {
         "properties": {
             "MuzzleVelocity": 380.0,
-            "RoundsPerMin": 300.0
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.35
         },
         "items": [
             "emp4"
+        ]
+    },
+
+    "Springfield Model 1842": {
+        "properties": {
+            "MuzzleVelocity": 305,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.6
+        },
+        "items": [
+            "m1842"
+        ]
+    },
+
+    "Springfield Model 1855 Rifle-Musket (.58 Caliber Service Ball)": {
+        "properties": {
+            "MuzzleVelocity": 292.6,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "m1855"
+        ]
+    },
+
+    "Springfield Model 1861": {
+        "properties": {
+            "MuzzleVelocity": 290,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "m1861",
+            "springfieldm1861rifle"
+        ]
+    },
+
+    "Standard And Morale Item (Generic)": {
+        "properties": {
+            "MeleeDamage": 2
+        },
+        "items": [
+            "romanaquila",
+            "flaggermanww2",
+            "flagspecial",
+            "flaghistoryunit",
+            "flagguard",
+            "flagalsace",
+            "flagaustralia",
+            "flagaustria",
+            "flagaustriahungary",
+            "flagaustrianempire",
+            "flagbelgium",
+            "flagberlin",
+            "flagcanada",
+            "flagcanadacommonwealth",
+            "flagczechrepublic",
+            "flagdenmark",
+            "flagfinland",
+            "flagfrance",
+            "flaggermanddr",
+            "flaggermanempire",
+            "flaggermanempiremarine",
+            "flaggermanempirewar",
+            "flaggermany",
+            "flaggermanybundesdienst",
+            "flaggermanycoatofarms",
+            "flaggermanyww2",
+            "flaghungary",
+            "flagiceland",
+            "flagireland",
+            "flagitaly",
+            "flagjapan",
+            "flagmedic",
+            "flagnetherland",
+            "flagnorthkorea",
+            "flagnorway",
+            "flagpoland",
+            "flagprussia",
+            "flagprussiawar",
+            "flagrussia",
+            "flagslovakia",
+            "flagsweden",
+            "flagswitzerland",
+            "flaguk",
+            "flagusa",
+            "flagussr",
+            "flagwhite",
+            "historybook"
         ]
     },
 
@@ -1130,7 +5936,8 @@
         },
         "items": [
             "sten",
-            "44_sten"
+            "44_sten",
+            "stenmkv"
         ]
     },
 
@@ -1156,6 +5963,50 @@
         ]
     },
 
+    "Steyr AUG A2 HBAR": {
+        "properties": {
+            "MuzzleVelocity": 1000,
+            "RoundsPerMin": 680,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "cowwestaughbar"
+        ]
+    },
+
+    "Steyr Mannlicher M95 (8x50R M90)": {
+        "properties": {
+            "MuzzleVelocity": 620.0,
+            "RoundsPerMin": 30.0,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "m95"
+        ]
+    },
+
+    "Steyr-Hahn M1912 (9x23mm Steyr)": {
+        "properties": {
+            "MuzzleVelocity": 370.0,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.4
+        },
+        "items": [
+            "m1912"
+        ]
+    },
+
+    "Steyr-Solothurn MG 30": {
+        "properties": {
+            "MuzzleVelocity": 800,
+            "RoundsPerMin": 600,
+            "Dispersion": 0.11
+        },
+        "items": [
+            "mg30"
+        ]
+    },
+
     "StG 44": {
         "properties": {
             "MuzzleVelocity": 685.0,
@@ -1169,6 +6020,28 @@
         ]
     },
 
+    "STK Ultimax 100 Mark 3": {
+        "properties": {
+            "MuzzleVelocity": 970,
+            "RoundsPerMin": 500,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "lmg"
+        ]
+    },
+
+    "Suomi KP/-31": {
+        "properties": {
+            "MuzzleVelocity": 400.0,
+            "RoundsPerMin": 900.0,
+            "Dispersion": 0.28
+        },
+        "items": [
+            "kp31"
+        ]
+    },
+
     "SVT40": {
         "properties": {
             "MuzzleVelocity": 830.0,
@@ -1176,7 +6049,84 @@
             "Dispersion": 0.22
         },
         "items": [
-            "44_svt40"
+            "44_svt40",
+            "svt"
+        ]
+    },
+
+    "Taurus Judge": {
+        "properties": {
+            "MuzzleVelocity": 250,
+            "RoundsPerMin": 60,
+            "Dispersion": 2.2
+        },
+        "items": [
+            "judge"
+        ]
+    },
+
+    "Titan Inferno Cannon (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 120.0,
+            "RoundsPerMin": 600.0,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "wh40k_gun_warhoundinfernocannon_1a"
+        ]
+    },
+
+    "Titan Plasma Blastgun (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 900.0,
+            "RoundsPerMin": 120.0,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "wh40k_gun_warhoundplasmablastgun_1a"
+        ]
+    },
+
+    "Titan Turbo-Laser Destructor (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 1200.0,
+            "RoundsPerMin": 60.0,
+            "Dispersion": 0.1
+        },
+        "items": [
+            "wh40k_gun_warhoundturbolaserdestructor_1a"
+        ]
+    },
+
+    "Titan Vulcan Mega Bolter (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 800.0,
+            "RoundsPerMin": 1200.0,
+            "Dispersion": 0.4
+        },
+        "items": [
+            "wh40k_gun_warhoundvulcanmegabolter_1a"
+        ]
+    },
+
+    "Trench Whistle": {
+        "properties": {
+        },
+        "items": [
+            "trenchwhistle"
+        ]
+    },
+
+    "Triple Take Marksman Rifle (Fictional)": {
+        "properties": {
+            "RoundsPerMin": 40,
+            "Dispersion": 0.5
+        },
+        "items": [
+            "tripletake"
         ]
     },
 
@@ -1188,19 +6138,19 @@
         },
         "items": [
             "tt33",
-            "44_tt33"
+            "44_tt33",
+            "zastavam57"
         ]
     },
 
-    "Type 14 Nambu": {
+    "Type 1 47mm Tank Gun": {
         "properties": {
-            "MuzzleVelocity": 290.0,
-            "RoundsPerMin": 300.0,
-            "Dispersion": 0.80
+            "MuzzleVelocity": 808.0,
+            "RoundsPerMin": 20.0,
+            "Dispersion": 0.2
         },
         "items": [
-            "type14",
-            "44_type14nambu"
+            "44_47mmcannon"
         ]
     },
 
@@ -1212,6 +6162,19 @@
         },
         "items": [
             "44_type2smg"
+        ]
+    },
+
+    "Type 14 Nambu": {
+        "properties": {
+            "MuzzleVelocity": 290.0,
+            "RoundsPerMin": 300.0,
+            "Dispersion": 0.80
+        },
+        "items": [
+            "type14",
+            "44_type14nambu",
+            "nambu"
         ]
     },
 
@@ -1229,6 +6192,17 @@
         ]
     },
 
+    "Type 89 Grenade Discharger": {
+        "properties": {
+            "MuzzleVelocity": 60,
+            "RoundsPerMin": 20,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "geaw_ija_gd_type89"
+        ]
+    },
+
     "Type 92": {
         "properties": {
             "MuzzleVelocity": 780.0,
@@ -1237,6 +6211,51 @@
         },
         "items": [
             "44_type92"
+        ]
+    },
+
+    "Type 93 Flamethrower": {
+        "properties": {
+            "MuzzleVelocity": 35,
+            "RoundsPerMin": 600,
+            "Dispersion": 1.5
+        },
+        "items": [
+            "type93"
+        ]
+    },
+
+    "Type 96 25mm Automatic Cannon": {
+        "properties": {
+            "MuzzleVelocity": 900.0,
+            "RoundsPerMin": 220.0,
+            "Dispersion": 0.3,
+            "UseAmmoGroup": "25mm Type 96"
+        },
+        "items": [
+            "type96gun"
+        ]
+    },
+
+    "Type 96 Light Machine Gun": {
+        "properties": {
+            "RoundsPerMin": 550.0,
+            "MuzzleVelocity": 735,
+            "Dispersion": 0.14
+        },
+        "items": [
+            "type96mg"
+        ]
+    },
+
+    "Type 97 fixed aircraft machine gun": {
+        "properties": {
+            "MuzzleVelocity": 750.0,
+            "RoundsPerMin": 900.0,
+            "Dispersion": 0.2
+        },
+        "items": [
+            "ww2_mg_type97_1a"
         ]
     },
 
@@ -1264,6 +6283,28 @@
         ]
     },
 
+    "Type 99-1 cannon": {
+        "properties": {
+            "MuzzleVelocity": 525.0,
+            "RoundsPerMin": 520.0,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "ww2_mg_type99_1a"
+        ]
+    },
+
+    "Type 99-2 Mod S Autocannon": {
+        "properties": {
+            "MuzzleVelocity": 750,
+            "RoundsPerMin": 490,
+            "Dispersion": 0.3
+        },
+        "items": [
+            "type99mods"
+        ]
+    },
+
     "Type 100": {
         "properties": {
             "MuzzleVelocity": 335.0,
@@ -1272,7 +6313,41 @@
         },
         "items": [
             "type100",
-            "44_type100"
+            "44_type100",
+            "geaw_ija_smg_type100_40"
+        ]
+    },
+
+    "Type Chiang Kai-shek Rifle": {
+        "properties": {
+            "MuzzleVelocity": 810,
+            "RoundsPerMin": 12,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "type24"
+        ]
+    },
+
+    "Unrotated Projectile Launcher": {
+        "properties": {
+            "MuzzleVelocity": 300,
+            "RoundsPerMin": 20,
+            "Dispersion": 1
+        },
+        "items": [
+            "uplauncher"
+        ]
+    },
+
+    "Vetterli M1869": {
+        "properties": {
+            "MuzzleVelocity": 435,
+            "RoundsPerMin": 15,
+            "Dispersion": 0.08
+        },
+        "items": [
+            "vetterli"
         ]
     },
 
@@ -1288,6 +6363,40 @@
         ]
     },
 
+    "Volcanic Repeating Pistol": {
+        "properties": {
+            "MuzzleVelocity": 150,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.9
+        },
+        "items": [
+            "volcanicpistol"
+        ]
+    },
+
+    "Volt V3 Energy SMG (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 600,
+            "RoundsPerMin": 720,
+            "Dispersion": 0.38,
+            "Damage": 1
+        },
+        "items": [
+            "voltv3"
+        ]
+    },
+
+    "VYa-23": {
+        "properties": {
+            "MuzzleVelocity": 880.0,
+            "RoundsPerMin": 550.0,
+            "Dispersion": 0.25
+        },
+        "items": [
+            "ww2_mg_wja23_1a"
+        ]
+    },
+
     "vz.61 Skorpion": {
         "properties": {
             "MuzzleVelocity": 320.0,
@@ -1296,6 +6405,18 @@
         },
         "items": [
             "skorpion"
+        ]
+    },
+
+    "Walther P38": {
+        "properties": {
+            "MuzzleVelocity": 356.0,
+            "RoundsPerMin": 40,
+            "Dispersion": 0.4
+        },
+        "items": [
+            "waltherp38",
+            "waltersabuelo"
         ]
     },
 
@@ -1322,6 +6443,42 @@
         ]
     },
 
+    "White Phosphorus Rifle XM1 (Fictional)": {
+        "properties": {
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.15
+        },
+        "items": [
+            "awprxm1",
+            "zcswipeout"
+        ]
+    },
+
+    "Whitworth Rifle": {
+        "properties": {
+            "MuzzleVelocity": 411,
+            "RoundsPerMin": 3,
+            "Dispersion": 0.02
+        },
+        "items": [
+            "whitworthsniper",
+            "whitworthsnipervehicle"
+        ]
+    },
+
+    "Winchester Model 70": {
+        "properties": {
+            "MuzzleVelocity": 850.0,
+            "RoundsPerMin": 45.0,
+            "Dispersion": 0.10
+        },
+        "items": [
+            "winchestermodel70",
+            "44_winchestermodel70"
+        ]
+    },
+
     "Winchester Model 1200": {
         "properties": {
             "MuzzleVelocity": 400.0,
@@ -1344,6 +6501,17 @@
         ]
     },
 
+    "Winchester Model 1895 (Russian Contract)": {
+        "properties": {
+            "MuzzleVelocity": 850,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.06
+        },
+        "items": [
+            "win1895"
+        ]
+    },
+
     "Winchester Model 1897 Trench Gun": {
         "properties": {
             "MuzzleVelocity": 400.0,
@@ -1355,15 +6523,37 @@
         ]
     },
 
-    "Winchester Model 70": {
+    "XM29 OICW": {
         "properties": {
-            "MuzzleVelocity": 850.0,
-            "RoundsPerMin": 45.0,
-            "Dispersion": 0.10
+            "MuzzleVelocity": 900,
+            "RoundsPerMin": 700,
+            "Dispersion": 0.09
         },
         "items": [
-            "winchestermodel70",
-            "44_winchestermodel70"
+            "xm29"
+        ]
+    },
+
+    "Z-6 Rotary Blaster Cannon (Fictional)": {
+        "properties": {
+            "Damage": 1,
+            "MuzzleVelocity": 280.0,
+            "RoundsPerMin": 2000.0,
+            "Dispersion": 0.45
+        },
+        "items": [
+            "z6rotaryblaster"
+        ]
+    },
+    "Zastava M76": {
+        "properties": {
+            "MuzzleVelocity": 720,
+            "RoundsPerMin": 30,
+            "Dispersion": 0.05
+        },
+        "items": [
+            "zastavam76"
         ]
     }
+
 }

@@ -1,5 +1,6 @@
 package com.wolffsmod.api.client.model;
 
+@SuppressWarnings("unused")
 public class TexturedQuad
 {
     public PositionTextureVertex[] vertexPositions;

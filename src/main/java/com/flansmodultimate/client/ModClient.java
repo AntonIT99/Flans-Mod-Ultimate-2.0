@@ -9,6 +9,9 @@ import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
+import com.flansmodultimate.client.render.KillMessageFeed;
+import com.flansmodultimate.client.render.MountedCameraView;
+import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Driveable;
@@ -19,15 +22,11 @@ import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
-import com.flansmodultimate.network.server.PacketGunSpread;
-import com.flansmodultimate.util.ModUtils;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
@@ -61,7 +60,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
@@ -69,13 +67,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@OnlyIn(Dist.CLIENT)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
 {
@@ -148,7 +143,7 @@ public class ModClient
     private static CameraType originalCameraType = CameraType.FIRST_PERSON;
     private static boolean changedCameraEntity;
 
-    //TODO: FMU Hitmarker logic
+    /** Hit marker state, set from the server via PacketHitMarker */
     @Getter @Setter
     private static int hitMarkerTime;
     @Getter @Setter
@@ -156,19 +151,39 @@ public class ModClient
     @Getter @Setter
     private static float hitMarkerPenAmount = 1F;
     @Getter @Setter
-    private static boolean hitMarkerExplosion; //TODO: Fix Hit marker for explosion
+    private static boolean hitMarkerExplosion;
 
-    //TODO: implement
-    @Getter @Setter
+    /** Remaining ticks of the wounded blood flash overlay */
+    @Getter
+    private static int woundedTime;
+    /** Ticks the blood flash overlay lasts after the player stops being hurt */
+    public static final int WOUNDED_FLASH_TICKS = 40;
+
+    /** Flashbang state, set from the server via PacketFlashBang */
+    @Getter
     private static boolean isInFlash;
-    @Getter @Setter
-    private static int flashTime = 10;
+    /** Remaining ticks of the flashbang overlay */
+    @Getter
+    private static int flashTime;
+    /** Length of the flash currently running, used to fade it back out */
+    @Getter
+    private static int flashDuration;
+
+    /** Blinds the player for the given number of ticks, restarting a flash that is already running. */
+    public static void startFlash(int ticks)
+    {
+        if (ticks <= 0)
+            return;
+        isInFlash = true;
+        flashTime = ticks;
+        flashDuration = ticks;
+    }
 
     /** Lighting */
-    private static final List<BlockPos> blockLightOverrides = new ArrayList<>();
+    private static final DynamicLightUpdates dynamicLights = new DynamicLightUpdates();
+    private static ClientLevel lightingLevel;
     /** Immutable-after-publication lookup read by the render/light threads. */
     private static volatile Long2ByteMap forceDarkSkyLight = Long2ByteMaps.EMPTY_MAP;
-    private static int lightOverrideRefreshRate = 5;
 
     // Gun animations
     /** Gun animation variables for each entity holding a gun. Currently only applicable to the player */
@@ -217,7 +232,6 @@ public class ModClient
     }
 
     @NotNull
-    @OnlyIn(Dist.CLIENT)
     public static GunAnimations getGunAnimations(LivingEntity living, InteractionHand hand)
     {
         Map<LivingEntity, GunAnimations> map = (hand == InteractionHand.OFF_HAND) ? gunAnimationsLeft : gunAnimationsRight;
@@ -225,7 +239,6 @@ public class ModClient
     }
 
     @NotNull
-    @OnlyIn(Dist.CLIENT)
     public static GunAnimations getGunAnimations(ItemDisplayContext context)
     {
         LivingEntity living;
@@ -263,7 +276,6 @@ public class ModClient
         return Objects.requireNonNullElse(animations, new GunAnimations());
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void updateScope(@Nullable IScope desiredScope, ItemStack gunStack, GunItem gunItem)
     {
         Minecraft mc = Minecraft.getInstance();
@@ -280,7 +292,8 @@ public class ModClient
         {
             // entering scope
             currentScope = desiredScope;
-            lastZoomLevel = desiredScope.getZoomFactor();
+            lastZoomLevel = gunItem.hasVariableZoom(gunStack)
+                ? gunItem.getCurrentVariableZoom(gunStack) : desiredScope.getZoomFactor();
             lastFOVZoomLevel = desiredScope.getFovFactor();
 
             // save originals
@@ -288,15 +301,13 @@ public class ModClient
             originalCameraType = opts.getCameraType();
 
             // adjust sensitivity by sqrt(zoom)
-            double newSensitivity = originalMouseSensitivity / Math.sqrt(desiredScope.getZoomFactor());
+            double newSensitivity = originalMouseSensitivity / Math.sqrt(Math.max(0.01F, lastZoomLevel));
             opts.sensitivity().set(newSensitivity);
 
             // force first-person while scoped
             opts.setCameraType(CameraType.FIRST_PERSON);
 
-            //Send ads spread packet to server
-            sendADSSpreadToServer(gunStack, gunItem, ModUtils.getEnumMovement(player), !player.onGround());
-
+            // The server applies the gun's ADS spread itself, per shot, from this state
             PacketHandler.sendToServer(new PacketGunScopedState(true));
         }
         else
@@ -308,27 +319,11 @@ public class ModClient
             opts.sensitivity().set(originalMouseSensitivity);
             opts.setCameraType(originalCameraType);
 
-            //Send default spread packet to server
-            PacketHandler.sendToServer(new PacketGunSpread(gunStack, gunItem.getConfigType().getDefaultSpread(gunStack)));
-
             PacketHandler.sendToServer(new PacketGunScopedState(false));
         }
         scopeTime = 10;
     }
 
-    private static void sendADSSpreadToServer(ItemStack gunStack, GunItem gunItem, EnumMovement enumMovement, boolean airborne)
-    {
-        float spread = gunItem.getConfigType().getSpread(gunStack, enumMovement, airborne);
-
-        if (gunItem.getConfigType().getNumBullets() == 1)
-            spread *= gunItem.getConfigType().getAdsSpreadModifier() == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplier() : gunItem.getConfigType().getAdsSpreadModifier();
-        else
-            spread *= gunItem.getConfigType().getAdsSpreadModifierShotgun() == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplierShotgun() : gunItem.getConfigType().getAdsSpreadModifierShotgun();
-
-        PacketHandler.sendToServer(new PacketGunSpread(gunStack, spread));
-    }
-
-    @OnlyIn(Dist.CLIENT)
     public static void tick()
     {
         Minecraft mc = Minecraft.getInstance();
@@ -336,13 +331,20 @@ public class ModClient
         ClientLevel level = mc.level;
 
         if (player == null || level  == null)
+        {
+            VehicleOpticsClient.reset();
             return;
+        }
+
+        VehicleOpticsClient.tick();
 
         PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
 
-        updateFlashlights(mc, level);
+        updateFlashlights(level);
         InstantBulletRenderer.updateAllTrails();
+        KillMessageFeed.tick();
         updateTimers();
+        updateWoundedFlash(player);
 
         isShooting = data.isShooting(InteractionHand.MAIN_HAND) || data.isShooting(InteractionHand.OFF_HAND);
 
@@ -369,6 +371,7 @@ public class ModClient
             MouseInputHandler.handleMouseMove(dx, dy);
         KeyInputHandler.checkKeys();
         updateMountedPlayerView(player);
+        MouseInputHandler.endTick(player);
 
         DebugHelper.getActiveDebugEntities().forEach(DebugColor::tick);
     }
@@ -379,41 +382,75 @@ public class ModClient
         if (driveable == null || !(player.getVehicle() instanceof Seat seat))
             return;
 
-        boolean fixedPlaneView = driveable instanceof Plane && seat.isDriverSeat() && controlModeMouse;
-        float wrappedYaw = fixedPlaneView ? Mth.wrapDegrees(driveable.getYaw() - 90F) : seat.getMountedViewYaw();
+        boolean fixedPlaneView = MountedCameraView.isViewLockedToDriveable(driveable, seat);
+        float wrappedYaw = fixedPlaneView ? seat.getMountedForwardYaw() : seat.getMountedViewYaw();
         // Keep the equivalent angle nearest to the player's current rotation.
         // Assigning the wrapped value directly creates a 358-degree interpolation
         // jump whenever the mounted camera crosses from +180 to -180 degrees.
         float yaw = player.getYRot() + Mth.wrapDegrees(wrappedYaw - player.getYRot());
-        float pitch = fixedPlaneView ? Mth.clamp(driveable.getPitch(), -89.9F, 89.9F) : seat.getMountedViewPitch();
+        float pitch = fixedPlaneView
+            ? Mth.clamp(driveable.getEntityFacingPitch(), -89.9F, 89.9F)
+            : seat.getMountedViewPitch();
         player.setYRot(yaw);
         player.setXRot(pitch);
-        player.yHeadRot = yaw;
-        player.yBodyRot = yaw;
+        player.yHeadRot += Mth.wrapDegrees(yaw - player.yHeadRot);
+        if (driveable instanceof Plane)
+        {
+            // Keep the torso planted in the cockpit while allowing natural
+            // free-look. Past this angle the torso follows enough to prevent
+            // the head from twisting unrealistically through the body. The
+            // twist is measured on the seat's own aim, because the world yaw
+            // the composed view lands on says nothing about how far the pilot
+            // turned inside a banked cockpit.
+            float aimYaw = fixedPlaneView ? 0F : Mth.wrapDegrees(seat.getViewAimYaw());
+            float torsoAimYaw = aimYaw - Mth.clamp(aimYaw, -75F, 75F);
+            float bodyTarget = driveable.getMountedViewAngles(torsoAimYaw, 0F).yaw();
+            player.yBodyRot += Mth.wrapDegrees(bodyTarget - player.yBodyRot);
+        }
+        else
+        {
+            player.yBodyRot += Mth.wrapDegrees(yaw - player.yBodyRot);
+        }
     }
 
     /** Handle flashlight block light override */
-    private static void updateFlashlights(Minecraft mc, ClientLevel level)
+    private static void updateFlashlights(ClientLevel level)
     {
-        if (!shouldRunFlashlightUpdate(mc))
+        if (lightingLevel != level)
+        {
+            clearTransientLighting();
+            lightingLevel = level;
+        }
+        if (!dynamicLights.tick(hasFancyGraphics() ? 10 : 20))
             return;
 
-        updateRefreshRate();
-        clearOldLightBlocks(level);
-        handlePlayerFlashlights(level);
+        Long2ByteOpenHashMap requested = new Long2ByteOpenHashMap();
+        handlePlayerFlashlights(level, requested);
         Long2ByteOpenHashMap darkSkyLight = new Long2ByteOpenHashMap();
-        handleDynamicEntityLights(level, darkSkyLight);
+        handleDynamicEntityLights(level, requested, darkSkyLight);
+        dynamicLights.apply(requested, new DynamicLightUpdates.Access()
+        {
+            @Override
+            public int lightAt(long position)
+            {
+                BlockPos pos = BlockPos.of(position);
+                if (!level.hasChunkAt(pos))
+                    return -1;
+                BlockState state = level.getBlockState(pos);
+                if (state.isAir())
+                    return 0;
+                return state.is(Blocks.LIGHT) && state.getValue(LightBlock.LEVEL) > 0
+                    ? state.getValue(LightBlock.LEVEL) : -1;
+            }
+
+            @Override
+            public void setLight(long position, int light)
+            {
+                level.setBlock(BlockPos.of(position), light == 0 ? Blocks.AIR.defaultBlockState()
+                    : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light), Block.UPDATE_CLIENTS);
+            }
+        });
         forceDarkSkyLight = darkSkyLight.isEmpty() ? Long2ByteMaps.EMPTY_MAP : Long2ByteMaps.unmodifiable(darkSkyLight);
-    }
-
-    private static boolean shouldRunFlashlightUpdate(Minecraft mc)
-    {
-        return mc.level != null && CommonEventHandler.getTicker() % lightOverrideRefreshRate == 0;
-    }
-
-    private static void updateRefreshRate()
-    {
-        lightOverrideRefreshRate = hasFancyGraphics() ? 10 : 20;
     }
 
     public static boolean hasFancyGraphics()
@@ -422,29 +459,19 @@ public class ModClient
         return graphics != GraphicsStatus.FAST;
     }
 
-    private static void clearOldLightBlocks(ClientLevel level)
-    {
-        for (BlockPos pos : blockLightOverrides)
-        {
-            if (level.getBlockState(pos).is(Blocks.LIGHT))
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-        }
-        blockLightOverrides.clear();
-    }
-
     /** Handle lights from player-held flashlights. */
-    private static void handlePlayerFlashlights(ClientLevel level)
+    private static void handlePlayerFlashlights(ClientLevel level, Long2ByteMap requested)
     {
         for (Player player : level.players())
         {
             AttachmentType grip = getFlashlightGrip(player);
             if (grip != null)
-                placeFlashlightLightsForPlayer(level, player, grip);
+                placeFlashlightLightsForPlayer(player, grip, requested);
         }
     }
 
     /** Handle lights from bullets and mechas. */
-    private static void handleDynamicEntityLights(ClientLevel level, Long2ByteOpenHashMap darkSkyLight)
+    private static void handleDynamicEntityLights(ClientLevel level, Long2ByteMap requested, Long2ByteOpenHashMap darkSkyLight)
     {
         LocalPlayer localPlayer = Minecraft.getInstance().player;
         if (localPlayer == null)
@@ -457,9 +484,9 @@ public class ModClient
                 continue;
 
             if (entity instanceof Shootable shootable)
-                handleShootableLight(level, shootable);
+                handleShootableLight(shootable, requested);
             else if (entity instanceof Mecha mecha)
-                handleMechaLight(level, mecha, darkSkyLight);
+                handleMechaLight(mecha, requested, darkSkyLight);
         }
     }
 
@@ -478,7 +505,7 @@ public class ModClient
         return null;
     }
 
-    private static void placeFlashlightLightsForPlayer(ClientLevel level, Player player, AttachmentType grip)
+    private static void placeFlashlightLightsForPlayer(Player player, AttachmentType grip, Long2ByteMap requested)
     {
         for (int i = 0; i < 2; i++)
         {
@@ -489,46 +516,33 @@ public class ModClient
             if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK)
             {
                 BlockPos targetPos = blockHit.getBlockPos().relative(blockHit.getDirection());
-                placeLightIfAir(level, targetPos, 12);
+                DynamicLightUpdates.request(requested, targetPos.asLong(), 12);
             }
         }
     }
 
-    private static void handleShootableLight(ClientLevel level, Shootable shootable)
+    private static void handleShootableLight(Shootable shootable, Long2ByteMap requested)
     {
         if (shootable.isRemoved() || !shootable.getConfigType().isHasDynamicLight())
             return;
 
         BlockPos pos = shootable.blockPosition();
-        placeLightIfAir(level, pos, 15);
+        DynamicLightUpdates.request(requested, pos.asLong(), 15);
     }
 
-    private static void handleMechaLight(ClientLevel level, Mecha mecha, Long2ByteOpenHashMap darkSkyLight)
+    private static void handleMechaLight(Mecha mecha, Long2ByteMap requested, Long2ByteOpenHashMap darkSkyLight)
     {
         BlockPos mechaPos = mecha.blockPosition();
 
         // Mecha light
         int mechaLight = mecha.lightLevel();
         if (mechaLight > 0)
-        {
-            int existing = level.getBrightness(LightLayer.BLOCK, mechaPos);
-            int lightLevel = Math.max(existing, mechaLight);
-            placeLightIfAir(level, mechaPos, lightLevel);
-        }
+            // The light engine combines ambient sources; sampling our previous light here
+            // would keep a formerly brighter source alive after it moves away.
+            DynamicLightUpdates.request(requested, mechaPos.asLong(), mechaLight);
 
         if (mecha.forceDark())
             addForceDarkOverrides(mechaPos, darkSkyLight);
-    }
-
-    private static void placeLightIfAir(ClientLevel level, BlockPos pos, int lightLevel)
-    {
-        if (!level.getBlockState(pos).isAir())
-            return;
-
-        int clamped = Mth.clamp(lightLevel, 0, 15);
-        BlockState lightState = Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, clamped);
-        level.setBlock(pos, lightState, Block.UPDATE_CLIENTS);
-        blockLightOverrides.add(pos.immutable());
     }
 
     private static void addForceDarkOverrides(BlockPos center, Long2ByteOpenHashMap overrides)
@@ -560,17 +574,32 @@ public class ModClient
     public static void clearTransientLighting()
     {
         forceDarkSkyLight = Long2ByteMaps.EMPTY_MAP;
-        blockLightOverrides.clear();
+        dynamicLights.reset();
+        lightingLevel = null;
+    }
+
+    /** Refreshes the blood flash timer while the player is taking damage, then lets it fade out. */
+    private static void updateWoundedFlash(LocalPlayer player)
+    {
+        if (player.hurtTime > 0)
+            woundedTime = WOUNDED_FLASH_TICKS;
+        else if (woundedTime > 0)
+            woundedTime--;
     }
 
     private static void updateTimers()
     {
         if (switchTime > 0)
-            switchTime--;
+            switchTime -= 1F;
         if (scopeTime > 0)
             scopeTime--;
         if (hitMarkerTime > 0)
             hitMarkerTime--;
+        if (flashTime > 0 && --flashTime <= 0)
+        {
+            isInFlash = false;
+            flashDuration = 0;
+        }
         if (controlModeSwitchTimer > 0)
             controlModeSwitchTimer--;
     }
@@ -701,12 +730,7 @@ public class ModClient
         {
             if (!canUseScope(player))
             {
-                currentScope = null;
-
-                mc.options.sensitivity().set(originalMouseSensitivity);
-                mc.options.setCameraType(originalCameraType);
-
-                PacketHandler.sendToServer(new PacketGunScopedState(false));
+                exitScope(mc);
                 return;
             }
 
@@ -721,17 +745,43 @@ public class ModClient
 
             if (guiOpen || notAGun || differentScope)
             {
-                currentScope = null;
-                mc.options.sensitivity().set(originalMouseSensitivity);
-                mc.options.setCameraType(originalCameraType);
+                exitScope(mc);
+            }
+            else if (itemInHand instanceof GunItem gunItem)
+            {
+                float desiredZoom = gunItem.hasVariableZoom(stackInHand)
+                    ? gunItem.getCurrentVariableZoom(stackInHand) : currentScope.getZoomFactor();
+                if (Math.abs(desiredZoom - lastZoomLevel) > 0.0001F)
+                {
+                    lastZoomLevel = desiredZoom;
+                    mc.options.sensitivity().set(originalMouseSensitivity
+                        / Math.sqrt(Math.max(0.01F, lastZoomLevel)));
+                    zoomProgress = Math.min(zoomProgress, 0.9F);
+                }
             }
         }
+    }
+
+    /**
+     * Leaves the scope and restores the options it borrowed.
+     *
+     * <p>The server has to hear about every one of these: aim state it is told about but never
+     * told the end of would leave the player aiming forever as far as the aimed spread and the
+     * scope's night vision are concerned.
+     */
+    private static void exitScope(Minecraft mc)
+    {
+        currentScope = null;
+        mc.options.sensitivity().set(originalMouseSensitivity);
+        mc.options.setCameraType(originalCameraType);
+
+        PacketHandler.sendToServer(new PacketGunScopedState(false));
     }
 
     private static boolean canUseScope(Player player)
     {
         ItemStack stack = player.getMainHandItem();
-        if (player.isSprinting() || !(stack.getItem() instanceof GunItem))
+        if (player.getVehicle() instanceof Seat || player.isSprinting() || !(stack.getItem() instanceof GunItem))
             return false;
 
         GunAnimations mainAnims = getGunAnimations(player, InteractionHand.MAIN_HAND);
@@ -800,7 +850,6 @@ public class ModClient
 
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void updateCameraZoom(ViewportEvent.ComputeFov event)
     {
         // If the zoom has changed sufficiently, update it
@@ -819,9 +868,12 @@ public class ModClient
         {
             event.setFOV(event.getFOV() / Math.max(lastZoomLevel, lastFOVZoomLevel));
         }
+
+        float vehicleZoom = VehicleOpticsClient.zoom();
+        if (vehicleZoom > 1F)
+            event.setFOV(Math.toDegrees(2D * Math.atan(Math.tan(Math.toRadians(event.getFOV()) / 2D) / vehicleZoom)));
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void renderTick()
     {
         Minecraft mc = Minecraft.getInstance();

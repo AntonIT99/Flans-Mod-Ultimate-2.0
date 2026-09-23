@@ -1,0 +1,16 @@
+// Identity
+Name Helicopter Skids
+ShortName SMP_Part_Wheel_Heli
+
+// Model and Rendering
+Icon Icon_SMP_Part_Wheel_Heli
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
+M M
+PPP
+   
+RecipeOutput 1
+Category Wheel
+PartBoxRecipe
+StackSize 64

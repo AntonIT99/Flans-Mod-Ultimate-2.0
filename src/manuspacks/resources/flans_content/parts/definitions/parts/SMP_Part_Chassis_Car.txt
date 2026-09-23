@@ -1,0 +1,16 @@
+// Identity
+Name Car Chassis Frame
+ShortName SMP_Part_Chassis_Car
+
+// Model and Rendering
+Icon Icon_SMP_Part_Chassis_Car
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Steel S SMP_Part_Misc_Seat_Car G glass
+ G 
+MSM
+ M 
+RecipeOutput 1
+Category Chassis
+PartBoxRecipe
+StackSize 64

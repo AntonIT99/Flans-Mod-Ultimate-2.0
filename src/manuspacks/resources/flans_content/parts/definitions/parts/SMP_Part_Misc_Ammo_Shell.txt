@@ -1,0 +1,16 @@
+// Identity
+Name Empty Shell
+ShortName SMP_Part_Misc_Ammo_Shell
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_Ammo_Shell
+
+// Recipe and Inventory
+Recipe P SMP_Part_Mat_Plate_Steel M SMP_Part_Mat_Block_Steel
+P P
+P P
+MMM
+RecipeOutput 32
+Category Misc
+PartBoxRecipe
+StackSize 64

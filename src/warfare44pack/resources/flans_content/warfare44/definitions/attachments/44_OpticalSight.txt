@@ -1,0 +1,24 @@
+// Identity
+Name Optical Sight
+ShortName 44_OpticalSight
+Description Scope Attachment : Universal Sight
+AttachmentType sights
+
+// Rendering
+Icon 44_OpticalSight
+Model W44.OpticalSight
+ModelScale 0.07
+Texture Skin44_OpticalSight
+
+// Optics
+ZoomLevel 1.0
+FOVZoomLevel 3.25
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.8
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

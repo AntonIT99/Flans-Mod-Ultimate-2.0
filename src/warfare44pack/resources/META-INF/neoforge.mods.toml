@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="flansmodultimate_warfare44"
+version="4.0"
+displayName="Flan's Mod Ultimate 2: Warfare 44 Pack"
+logoFile="warfare44.png"
+credits="War_Monger / ww2destroyer"
+authors="Wolff"
+description=''''''
+
+[[dependencies.flansmodultimate_warfare44]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_warfare44]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21.1,1.21.2)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_warfare44]]
+    modId="flansmodultimate"
+    type="required"
+    versionRange="*"
+    ordering="BEFORE"
+    side="BOTH"

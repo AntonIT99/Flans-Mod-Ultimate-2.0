@@ -1,0 +1,35 @@
+// Identity
+Name German 2 cm Ship AA Gun
+ShortName Ships_MG_2cmGun_1A
+
+// Model and Rendering
+Icon Icon_Ships_MG_2cmGun_1A
+Colour 255 255 255
+DeployedModel Manus_Ships.MG.Ships_MG_2cmGun_1
+DeployedTexture Skin_Ships_MG_2cmGun_1A
+
+// Recipe and Inventory
+Ammo Ships_Shell_German20mmAA
+
+// Weapons
+Deployable True
+Scope None
+Mode FullAuto
+Recoil 1
+ReloadTime 100
+TopViewLimit 0
+BottomViewLimit 0
+SideViewLimit 0
+PivotHeight 0.5
+StandBackDistance 1.3
+RoundsPerMin 450.0
+Dispersion 0.35
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 899.0
+
+// Sounds
+DistortSound False
+ShootSound navyflak
+ReloadSound BrowningReload

@@ -35,6 +35,7 @@ public final class ModApocalypseConfig
     private static final ModConfigSpec.IntValue APOCALYPSE_COUNTDOWN_LENGTH;
     private static final ModConfigSpec.IntValue APOCALYPSE_SURVIVOR_RARITY;
     private static final ModConfigSpec.IntValue APOCALYPSE_WANDERING_SURVIVOR_RARITY;
+    private static final ModConfigSpec.IntValue APOCALYPSE_FLY_BY_RARITY;
     private static final ModConfigSpec.IntValue APOCALYPSE_SKELETON_RARITY;
     private static final ModConfigSpec.IntValue APOCALYPSE_DEAD_TREE_RARITY;
     private static final ModConfigSpec.IntValue APOCALYPSE_VEHICLE_RARITY;
@@ -61,7 +62,9 @@ public final class ModApocalypseConfig
         APOCALYPSE_DIMENSION_ENABLED = builder
             .comment("Register and auto-enable the built-in Apocalypse dimension datapack during world loading.",
                 "Requires a full game/server restart after changing because datapack repositories are built before worlds load.",
-                "Existing worlds can also remember enabled datapacks in level.dat; disable this before loading the world if you want the dimension datapack unavailable.")
+                "Only affects newly created worlds. Minecraft stores a world's dimension list in level.dat and merges it",
+                "back in on load, so a world that already contains the Apocalypse dimension keeps it even when this is off;",
+                "the gameplay features gated by this option are still disabled for that world.")
             .define("apocalypseDimensionEnabled", true);
         APOCALYPSE_PORTALS_ENABLED = builder
             .comment("Enable power-cube portal activation and portal entity teleporting.")
@@ -79,7 +82,7 @@ public final class ModApocalypseConfig
             .comment("Enable nuke drop entities during apocalypse events.")
             .define("apocalypseNukeDropsEnabled", true);
         APOCALYPSE_COUNTDOWN_LENGTH = builder
-            .comment("Time in ticks between an AI-chip apocalypse trigger and the event starting. Kept for compatibility with the old config.")
+            .comment("Time in ticks between placing a mecha with an AI-chip engine and the apocalypse starting.")
             .defineInRange("apocalypseCountdownLength", 469, 19, Integer.MAX_VALUE);
         APOCALYPSE_SURVIVOR_RARITY = builder
             .comment("Chunk generation rarity for survivors. 1 means every eligible attempt; larger values are rarer.")
@@ -87,6 +90,9 @@ public final class ModApocalypseConfig
         APOCALYPSE_WANDERING_SURVIVOR_RARITY = builder
             .comment("Per-player server tick rarity for wandering survivors in the apocalypse dimension.")
             .defineInRange("apocalypseWanderingSurvivorRarity", 500, 1, Integer.MAX_VALUE);
+        APOCALYPSE_FLY_BY_RARITY = builder
+            .comment("Per-player server tick rarity for aircraft flying over the apocalypse dimension.")
+            .defineInRange("apocalypseFlyByRarity", 5000, 1, Integer.MAX_VALUE);
         APOCALYPSE_SKELETON_RARITY = builder
             .comment("Chunk generation rarity for buried skeleton displays.")
             .defineInRange("apocalypseSkeletonRarity", 50, 1, Integer.MAX_VALUE);
@@ -97,13 +103,13 @@ public final class ModApocalypseConfig
             .comment("Chunk generation rarity for damaged, empty-fuel vehicles supplied by installed content packs.")
             .defineInRange("apocalypseVehicleRarity", 2000, 1, Integer.MAX_VALUE);
         APOCALYPSE_AIRPORT_RARITY = builder
-            .comment("Chunk generation rarity for simple runway/airport structures.")
+            .comment("Rarity of four-chunk airfields, rolled once per four-chunk strip on the High Plateau.")
             .defineInRange("apocalypseAirportRarity", 125, 1, Integer.MAX_VALUE);
         APOCALYPSE_DYE_FACTORY_RARITY = builder
-            .comment("Chunk generation rarity for simple dye factory structures.")
+            .comment("Chunk generation rarity for dye factories on flat Deep Canyon floor.")
             .defineInRange("apocalypseDyeFactoryRarity", 400, 1, Integer.MAX_VALUE);
         APOCALYPSE_LAB_RARITY = builder
-            .comment("Chunk generation rarity for simple research lab structures.")
+            .comment("Rarity of 3x3-chunk research labs, rolled once per 3x3-chunk region on the High Plateau.")
             .defineInRange("apocalypseLabRarity", 100, 1, Integer.MAX_VALUE);
         APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY = builder
             .comment("Chunk generation rarity for abandoned portals in the apocalypse dimension.")
@@ -206,6 +212,7 @@ public final class ModApocalypseConfig
             APOCALYPSE_COUNTDOWN_LENGTH.get(),
             APOCALYPSE_SURVIVOR_RARITY.get(),
             APOCALYPSE_WANDERING_SURVIVOR_RARITY.get(),
+            APOCALYPSE_FLY_BY_RARITY.get(),
             APOCALYPSE_SKELETON_RARITY.get(),
             APOCALYPSE_DEAD_TREE_RARITY.get(),
             APOCALYPSE_VEHICLE_RARITY.get(),
@@ -309,6 +316,12 @@ public final class ModApocalypseConfig
     {
         ApocalypseConfigSnapshot config = get();
         return config == null ? APOCALYPSE_WANDERING_SURVIVOR_RARITY.get() : config.apocalypseWanderingSurvivorRarity();
+    }
+
+    public static int apocalypseFlyByRarity()
+    {
+        ApocalypseConfigSnapshot config = get();
+        return config == null ? APOCALYPSE_FLY_BY_RARITY.get() : config.apocalypseFlyByRarity();
     }
 
     public static int apocalypseSkeletonRarity()

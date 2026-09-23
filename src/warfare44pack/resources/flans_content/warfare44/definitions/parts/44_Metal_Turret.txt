@@ -1,0 +1,11 @@
+// Identity
+Name Metal Turret
+ShortName 44_Metal_Turret
+Category Misc
+
+// Rendering
+Icon 44_Metal_Turret
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

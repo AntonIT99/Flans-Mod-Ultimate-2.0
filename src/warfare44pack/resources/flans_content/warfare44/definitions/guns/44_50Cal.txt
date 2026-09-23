@@ -1,0 +1,38 @@
+// Identity
+Name M2 Browning .50 Cal
+ShortName 44_50Cal
+Description American HMG - Gun Recipe Part
+
+// Rendering
+Icon 44_50Cal
+Colour 255 255 255
+
+// Ammunition
+Ammo 44_50CalAmmo
+
+// Handling
+Mode FullAuto
+Deployable false
+UsableByPlayers false
+usableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 500.0
+ReloadTime 100
+
+// Ballistics
+MuzzleVelocity 890.0
+Dispersion 0.35
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound Shoot_MG_M2HB
+DistortSound True
+SoundLength 0
+ReloadSound Mg34Reload

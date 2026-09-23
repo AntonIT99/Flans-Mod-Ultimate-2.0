@@ -1,0 +1,41 @@
+// Identity
+Name Russian 125 mm 3OF26 HE-Frag (2A46M-5)
+ShortName Shell125mm3OF26
+Description High-explosive fragmentation ammunition for the T-90MS 2A46M-5
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon heshell120mm
+HasLight True
+
+// Ammunition
+MaxStackSize 4
+RoundsPerItem 1
+
+// Ballistics
+Mass 23000
+MuzzleVelocity 850
+FallSpeed 1
+PenetrationAt100m 42
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+ExplosiveMassTNTKg 5.2
+FragType HE_SHELL
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 4
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+
+// Sounds and particles
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 10

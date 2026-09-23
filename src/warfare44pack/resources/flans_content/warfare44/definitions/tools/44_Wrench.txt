@@ -1,0 +1,17 @@
+// Identity
+Name Wrench
+ShortName 44_Wrench
+
+// Rendering
+Icon 44_Wrench
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 1
+ToolLife 65
+DestroyOnEmpty false
+
+// Behaviour
+Repair true
+Heal false
+HealAmount 250

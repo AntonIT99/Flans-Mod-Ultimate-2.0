@@ -1,0 +1,35 @@
+// Identity
+Name HK Grenade Machine Gun
+ShortName HKGMG
+
+// Model and Rendering
+Icon IconGunHKGMG
+Colour 255 255 255
+DeployedModel manus_modern_warfare.HKGMG
+DeployedTexture SkinGunHKGMG
+
+// Recipe and Inventory
+Ammo AmmoNATO40mm
+
+// Weapons
+ReloadTime 100
+Recoil 1
+Mode FullAuto
+Scope None
+Deployable True
+StandBackDistance 0.8
+TopViewLimit 10
+BottomViewLimit 10
+SideViewLimit 45
+PivotHeight 0.75
+RoundsPerMin 340.0
+Dispersion 1
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 240.0
+
+// Sounds
+ShootSound MG42Shoot
+DistortSound False
+ReloadSound MG42Reload

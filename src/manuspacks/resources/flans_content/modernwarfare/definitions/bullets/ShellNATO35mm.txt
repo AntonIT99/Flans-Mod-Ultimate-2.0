@@ -1,0 +1,48 @@
+// Identity
+Name 35x228 mm Oerlikon HEI Ammunition
+ShortName ShellNATO35mm
+Description Conventional ammunition for Skyranger 35 and Skyshield air defence systems
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon IconAmmoNATO35mm
+
+// Recipe and Inventory
+RoundsPerItem 100
+MaxStackSize 1
+RecipeOutput 32
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Aluminium
+B  
+G  
+SS 
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 1000
+BreaksGlass True
+HitBoxSize 2.0
+Penetrates False
+Bomb False
+Shell True
+
+// Ballistics and Damage
+Mass 550
+MuzzleVelocity 1175
+ExplosiveMassTNTg 110
+PenetrationAt100m 40
+FragType HE_SHELL
+Damage 120
+DamageVsVehicles 120
+Explosion 1
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 5
+FlakParticleType hugeexplosion
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke

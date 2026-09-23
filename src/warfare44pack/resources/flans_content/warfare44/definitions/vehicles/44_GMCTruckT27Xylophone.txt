@@ -1,0 +1,147 @@
+// Identity
+Name GMC Truck T27 Xylophone
+ShortName 44_GMCTruckT27Xylophone
+Description American Truck - mounted rocket launcher__Uses : Unguided Rocket__Year Introduced : 1944
+
+// Rendering
+Icon 44_GMCTruckT27Xylophone
+Model W44.GMCTruckT27Xylophone
+ModelScale 1
+Texture Skin44_GMCTruckT27Xylophone
+RotateWheels True
+CameraDistance 7.5
+
+// Recipe and inventory
+AddRecipeParts core 1 44_Car_Chassis 4 44_Vehicle_Seat 16 44_Metal_Tube
+AddRecipeParts frontLeftWheel 1 44_Car_Wheel
+AddRecipeParts frontRightWheel 1 44_Car_Wheel
+AddRecipeParts backLeftWheel 2 44_Car_Wheel
+AddRecipeParts backRightWheel 2 44_Car_Wheel
+CargoSlots 20
+ShellSlots 8
+FuelTankSize 2000
+
+// Paintjobs
+AddDye 5 green
+
+// Real-world specifications
+DriveType AWD
+RealMassKg 9300
+RealEnginePowerHp 91.5
+RealMaxSpeedKmh 72
+RealMaxReverseSpeedKmh 12
+
+// Movement
+Tank false
+FourWheelDrive true
+MaxThrottle 0.8
+MaxNegativeThrottle 0.5
+TurnLeftSpeed 0.5
+TurnRightSpeed 0.5
+CanRoll true
+CanRoll false
+SquashMobs True
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -32 -8 -18
+WheelPosition 1 -32 -8 18
+WheelPosition 2 32 -8 18
+WheelPosition 3 32 -8 -18
+WheelSpringStrength 0.5
+
+// Weapons
+Primary Shell
+ReadWeaponsFromGunTypes true
+ShootDelayPrimarySeconds 0.5
+ShootDelay 3
+ModePrimary FullAuto
+ModeSecondary FullAuto
+AlternatePrimary True
+AlternateSecondary False
+FixedPrimary True
+PrimaryAngle 0 0.25 -0.90
+BulletSpread 4
+BulletSpeed 5
+BulletDetection 5
+AllowAllAmmo false
+AddAmmo 44_UnguidedRocket
+ShootPointPrimary 3 36 26 core
+ShootPointPrimary -3 36 26 core
+ShootPointPrimary -9 36 26 core
+ShootPointPrimary -15 36 26 core
+ShootPointPrimary -35 36 26 core
+ShootPointPrimary -41 36 26 core
+ShootPointPrimary -47 36 26 core
+ShootPointPrimary -53 36 26 core
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 0 0 0
+ShootParticlesPrimary cloud 0 0 0
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+ShootParticlesSecondary crit 0.5 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 300 -66 4 -18 132 32 36
+SetupPart frontRightWheel 75 43 -10 -19 19 19 6
+SetupPart frontLeftWheel 75 43 -10 13 19 19 6
+SetupPart backRightWheel 75 -55 -10 -20 42 19 11
+SetupPart backLeftWheel 75 -55 -10 9 42 19 11
+
+// Seats
+Driver 23 13 -7 -360 360 -89 89
+Passengers 0
+RotatedDriverOffset 0 0 0
+DriverAimSpeed 0.6 0.5 0
+DriverYawBeforePitch false
+
+// Optics
+hasScope true
+Gunsight warfare44_artysight
+gunsightZoom 0.5
+
+// Sounds
+StartSound JeepIdle
+StartSoundLength 7
+StartSoundRange 12
+EngineSound Engine_LT_Truck
+EngineSoundLength 39
+EngineSoundRange 30
+BackSound Engine_LT_Truck
+BackSoundLength 39
+BackSoundRange 25
+YawSound TurretTraverse1
+YawSoundLength 21
+PitchSound TurretTraverse2
+PitchSoundLength 20
+DriverTraverseSounds false
+ShootSoundPrimary RocketShoot
+ShootSoundSecondary None
+PlaceSoundPrimary TankPlace
+SoundsPlaceTimePrimary 60
+
+// Effects
+AddEmitter smoke 2 [-34,26,-23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-34,26,23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+AddEmitter largesmoke 3 [-34,26,-23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-34,26,23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+AddEmitter largesmoke 1 [-34,26,-23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter largesmoke 3 [-35,-2,8] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+AddEmitter largesmoke 1 [-35,-2,8] [1,1,1] [0,5,0] 0.7 0.75 0 1 core

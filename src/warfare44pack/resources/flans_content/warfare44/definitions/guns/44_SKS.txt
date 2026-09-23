@@ -1,0 +1,62 @@
+// Identity
+Name SKS
+ShortName 44_SKS
+Description Soviet Semi/Auto Rifle
+
+// Rendering
+Icon 44_SKS
+Model W44.SKS
+ModelScale 0.25
+Texture Skin44_SKS
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_SKSAmmo
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.85
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 240.0
+ReloadTime 60
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 735.0
+Dispersion 0.2
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 6.0
+RandomRecoilRange 5
+RandomRecoilYawRange 0.75
+DecreaseRecoil 3.5
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_PUScope 44_LensSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound SKSShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Kar98kReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

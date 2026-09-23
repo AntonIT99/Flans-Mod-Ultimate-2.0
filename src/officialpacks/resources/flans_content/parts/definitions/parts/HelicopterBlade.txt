@@ -1,11 +1,14 @@
+// Identity
 Name Helicopter Blade
 ShortName helicopterBlade
-Icon HelicopterBlade
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Propeller
+
+// Item and rendering
+Icon HelicopterBlade
+Colour 255 255 255
 StackSize 8
+
+// Recipe
 RecipeOutput 1
 Recipe I ingotIron G ingotGold
 GII

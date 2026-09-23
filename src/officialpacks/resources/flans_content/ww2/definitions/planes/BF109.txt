@@ -1,84 +1,15 @@
-// ------------------------------------------------------ Naming ------------------------------------------------------
+// Identity
 Name BF109
 ShortName BF109
-// ------------------------------------------------------ Visuals ------------------------------------------------------
+
+// Item and rendering
 Icon BF109
 Model ww2.BF109
 Texture bf109
-//Third Person Camera Distance
-CameraDistance 10.0
-//Resting Pitch. Set this so the plane spawns level. It will fall onto its collision boxes automatically, but this lets you start it flat
-RestingPitch 15.0
-// ------------------------------------------------------ Movement ------------------------------------------------------
-//Mode : One of Plane, Heli or VTOL. The VTOL has a toggle button that switches some model aesthetics and the flight mode
-Mode Plane
-//Throttle
-MaxThrottle 4.5
-MaxNegativeThrottle 0.0
-//Yaw modifiers
-TurnLeftSpeed 1.6
-TurnRightSpeed 1.6
-//Pitch modifiers
-LookUpSpeed 1.5
-LookDownSpeed 1.0
-//Roll modifiers
-RollLeftSpeed 1.15
-RollRightSpeed 1.15
-//Drag 1.0 is standard. Modify to make the plane / heli more or less sluggish
-Drag 1.0
-//Wheels
-NumWheels 3
-WheelPosition 0 42 -5 -15
-WheelPosition 1 42 -5 16
-WheelPosition 2 -94 18 0
-WheelSpringStrength 0.125
-//Propeller Positions
-//Propeller <ID> <x> <y> <z> <planePart> <recipeItem>
-Propeller 0 54 2 0 nose metalPropeller
-// ------------------------------------------------------ Weaponry ------------------------------------------------------
-//Weapon types. Options are Missile, Bomb, Gun, Shell, None
-Primary Gun
-Secondary Bomb
-//Time between shots in 1/20ths of seconds
-ShootDelayPrimary 2
-ShootDelaySecondary 100
-//Whether to alternate or fire all together
-AlternatePrimary False
-AlternateSecondary False
-//Firing modes. One of SemiAuto, FullAuto or Minigun
-ModePrimary FullAuto
-ModeSecondary FullAuto
-//Add shoot origins. These are the points on your vehicle from which bullets / missiles / shells / bombs appear
-ShootPointPrimary 69 39 6 nose mg42
-ShootPointPrimary 69 39 -6 nose mg42
-ShootPointPrimary 94 30 0 nose MG151
-AlternatePrimary True
-AlternateSecondary False
-DamageModifierPrimary 50
-// ------------------------------------------------------ Inventory ------------------------------------------------------
-CargoSlots 10
-BombSlots 0
-MissileSlots 0
-AllowAllAmmo False
-AddAmmo largeBomb
-AddAmmo smallBomb
-AddAmmo napalm
-//Fuel Tank Size (1 point of fuel will keep one propeller going with throttle at 1 for 1 tick)
-FuelTankSize 6000
-// ------------------------------------------------------ Passengers ------------------------------------------------------
-Pilot 9 25 0
-Passengers 0
-// ------------------------------------------------------ Sounds ------------------------------------------------------
-StartSound propStart
-StartSoundLength 20
-PropSound propSound
-PropSoundLength 30
-ShootSoundPrimary MG42Shoot
-ShootSoundSecondary bomb
-// ------------------------------------------------------ Recipe ------------------------------------------------------
-//Each section of the plane may have many parts
-//The sections are tailWheel, tail, bay, topWing, leftWingWheel, leftWing, rightWingWheel,
-//rightWing, nose, turret, coreWheel, core
+AddDye 5 silver
+AddDye 3 green
+
+// Recipe
 AddRecipeParts core 1 metalCockpit
 AddRecipeParts coreWheel 2 wheel
 AddRecipeParts nose 1 metalNose
@@ -87,17 +18,73 @@ AddRecipeParts leftWing 1 metalWingSmall
 AddRecipeParts bay 1 bombBay
 AddRecipeParts tail 1 metalTail
 AddRecipeParts tailWheel 1 wheel
-//Dye colours are "black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow", "lightBlue", "magenta", "orange", "white"
-AddDye 5 silver
-AddDye 3 green
-// ------------------------------------------------------ Health and hitboxes ------------------------------------------------------
+
+// Inventory
+CargoSlots 10
+BombSlots 0
+MissileSlots 0
+AllowAllAmmo False
+AddAmmo largeBomb
+AddAmmo smallBomb
+AddAmmo napalm
+FuelTankSize 6000
+
+// Real-world physics
+RealMassKg 3100
+RealEnginePowerPS 1475
+RealMaxSpeedKmh 630
+RealWingSpanM 9.925
+RealWingAreaM2 16.05
+RealClimbRateMs 14.1
+
+// Movement
+RestingPitch 15.0
+MaxThrottle 4.5
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.6
+TurnRightSpeed 1.6
+LookUpSpeed 1.5
+LookDownSpeed 1.0
+RollLeftSpeed 1.15
+RollRightSpeed 1.15
+Drag 1.0
+WheelSpringStrength 0.125
+
+// Weaponry
+Mode Plane
+Primary Gun
+Secondary Bomb
+ShootDelayPrimary 2
+ShootDelaySecondary 100
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 69 39 6 nose mg42
+ShootPointPrimary 69 39 -6 nose mg42
+ShootPointPrimary 94 30 0 nose MG151
+AlternatePrimary True
+AlternateSecondary False
+DamageModifierPrimary 50
+ReadWeaponsFromGunTypes true
+
+// Health and armour
 SetupPart core 1000 -69 16 -10 139 30 20
 SetupPart nose 500 70 18 -12 25 21 20
 SetupPart tail 500 -122 23 -38 52 43 76
 SetupPart rightWing 500 0 22 11 52 9 120
 SetupPart leftWing 500 0 22 -130 52 9 120
 BulletDetection 10
-//Collision points for breaking wings etc. upon crashing
+UseRealisticVehicleHealth true
+
+// Seats and geometry
+CameraDistance 10.0
+WheelPosition 0 42 -5 -15
+WheelPosition 1 42 -5 16
+WheelPosition 2 -94 18 0
+Propeller 0 54 2 0 nose metalPropeller
+Pilot 9 25 0
+Passengers 0
 CollisionPoint 49 40 10 core
 CollisionPoint 49 40 -10 core
 CollisionPoint 49 16 -10 core
@@ -168,3 +155,11 @@ CollisionPoint 95 31 1 nose
 CollisionPoint 95 31 -1 nose
 CollisionPoint 95 29 -1 nose
 CollisionPoint 95 29 1 nose
+
+// Sounds and particles
+StartSound propStart
+StartSoundLength 20
+PropSound propSound
+PropSoundLength 30
+ShootSoundPrimary MG42Shoot
+ShootSoundSecondary bomb

@@ -1,0 +1,16 @@
+// Identity
+Name Plane Seat
+ShortName SMP_Part_Misc_Seat_Plane
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_Seat_Plane
+
+// Recipe and Inventory
+Recipe L leather M SMP_Part_Mat_Block_Gummi
+ L 
+ L 
+MM 
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 64

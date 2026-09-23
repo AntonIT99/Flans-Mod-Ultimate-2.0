@@ -1,0 +1,40 @@
+// Identity
+Name Japanese 57 mm Type 92 APHE (Type 97)
+ShortName Japanese57APShell
+Description Armour-piercing ammunition for the 57 mm Type 97 tank gun
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell57jAP
+HasLight True
+
+// Ammunition
+MaxStackSize 16
+RoundsPerItem 1
+
+// Ballistics
+Mass 2580
+MuzzleVelocity 350
+FallSpeed 1
+PenetrationAt100m 25
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+ExplosiveMassTNTg 100
+Damage 50
+DamageVsLiving 25
+DamageVsVehicles 100
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+
+// Sounds and particles
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 0

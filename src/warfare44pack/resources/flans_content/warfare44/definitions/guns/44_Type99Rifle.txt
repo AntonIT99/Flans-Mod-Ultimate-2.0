@@ -1,0 +1,62 @@
+// Identity
+Name Type 99 Arisaka
+ShortName 44_Type99Rifle
+Description Japanese Bolt-Action Rifle
+
+// Rendering
+Icon 44_Type99Rifle
+Model W44.Type99Rifle
+ModelScale 1
+Texture Skin44_Type99Rifle
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Type3899Ammo
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.85
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 45.0
+ReloadTime 60
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 755.0
+Dispersion 0.15
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 7.0
+RandomRecoilRange 6
+RandomRecoilYawRange 0.75
+DecreaseRecoil 4.0
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_Type97Scope 44_LensSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound LeeEnfieldShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Kar98kReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

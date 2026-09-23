@@ -1,0 +1,51 @@
+// Identity
+Name Soviet 85 mm O-365K HE-Frag
+ShortName WW2_Shell_USSR85mmHE
+description High-explosive fragmentation ammunition for the D-5S and ZiS-S-53
+
+// Model and Rendering
+Icon Icon_WW2_Shell_USSR85mmAP
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+ F
+GGG
+SSS
+RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
+
+// Behaviour
+Bomb False
+Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+// Ballistics and Damage
+Damage 50
+DamageVsLiving 2000
+DamageVsVehicles 2000
+Mass 9620
+MuzzleVelocity 785
+ExplosiveMassTNTg 780
+PenetrationAt100m 18
+FragType HE_SHELL
+Explosion 5
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 12
+TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 12
+DebrisParticleCount 5

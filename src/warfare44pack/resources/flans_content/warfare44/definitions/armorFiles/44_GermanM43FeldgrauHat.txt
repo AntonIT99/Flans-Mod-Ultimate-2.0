@@ -1,0 +1,18 @@
+// Identity
+Name German M43 Feldgrau Hat
+ShortName 44_GermanM43FeldgrauHat
+Type Helmet
+
+// Rendering
+Icon 44_GermanM43FeldgrauHat
+Model W44.GermanM43Hat
+ModelScale 1
+ArmorTexture Skin44_GermanM43FeldgrauHat
+
+// Protection
+ArmorPoints 0
+Defence 0.01
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

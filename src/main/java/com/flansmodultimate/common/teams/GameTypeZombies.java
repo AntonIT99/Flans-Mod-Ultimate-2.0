@@ -22,7 +22,7 @@ public final class GameTypeZombies extends GameType
 
     GameTypeZombies()
     {
-        super("zom", "Zombies", 2);
+        super("zom", "Zombies", 2, false);
     }
 
     @Override
@@ -68,6 +68,14 @@ public final class GameTypeZombies extends GameType
                 .map(round -> round.getTeam(1))
                 .ifPresent(zombies -> manager.selectTeam(victim, zombies, true));
         }
+    }
+
+    /** As in 1.12.2, newcomers join the humans until the plague breaks out and the zombies after. */
+    @Override
+    public List<Team> getTeamsCanSpawnAs(TeamsManager manager, TeamsRound round, ServerPlayer player)
+    {
+        Team team = round.getTeam(infectionStarted ? 1 : 0);
+        return team == null ? super.getTeamsCanSpawnAs(manager, round, player) : List.of(team);
     }
 
     @Override

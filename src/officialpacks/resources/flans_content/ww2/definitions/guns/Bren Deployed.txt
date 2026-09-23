@@ -1,0 +1,40 @@
+// Identity
+Name Bren
+ShortName bren
+
+// Item and rendering
+Icon Bren
+Colour 255 255 255
+DeployedModel ww2.Bren
+DeployedTexture bren
+
+// Ammunition
+Ammo brenAmmo30
+Ammo brenAmmo100
+ReloadTime 40
+
+// Operation
+Mode FullAuto
+Deployable True
+StandBackDistance 1.5
+TopViewLimit 20
+BottomViewLimit 30
+SideViewLimit 45
+PivotHeight 0.375
+RoundsPerMin 500.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 745.0
+Dispersion 0.3
+
+// Damage and protection
+Damage 9
+
+// Optics
+Scope None
+
+// Sounds
+DistortSound False
+ShootSound BrenShoot
+ReloadSound BrenReload

@@ -1,34 +1,127 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.driveables.CollisionBox;
+import com.flansmodultimate.common.driveables.DriveableControlPhysics;
+import com.flansmodultimate.common.driveables.DriveableCrashExplosion;
+import com.flansmodultimate.common.driveables.DriveableExplosion;
 import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePart;
+import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.LegacyPlanePhysics;
+import com.flansmodultimate.common.driveables.PlaneCrashDamage;
 import com.flansmodultimate.common.driveables.Propeller;
+import com.flansmodultimate.common.driveables.SuspensionPhysics;
+import com.flansmodultimate.common.driveables.ThrottleLeverRamp;
+import com.flansmodultimate.common.driveables.ValkyrieAnimation;
+import com.flansmodultimate.common.driveables.physics.AircraftPerformancePhysics;
+import com.flansmodultimate.common.driveables.physics.EnumDriveType;
+import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
+import com.flansmodultimate.common.driveables.physics.HelicopterPhysics;
+import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
+import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.RotorStrikePhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
+import com.flansmodultimate.network.client.PacketParticle;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** Server-authoritative flight runtime supporting fixed wing, helicopter, VTOL and six-DOF craft. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Plane extends Driveable
 {
+    private static final Vec3 MODEL_FLIGHT_FORWARD = LegacyDriveableCoordinates.applyPlaneModelFacing(
+        LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
+    private static final Vec3 MODEL_FLIGHT_UP = LegacyDriveableCoordinates.toLocal(new Vec3(0D, 1D, 0D));
+    /** How far away the crash fireball is worth rendering, in blocks. */
+    private static final double CRASH_FIREBALL_VIEW_RANGE = 256D;
+    /** Legacy gear toggle required clear air three blocks below the plane. */
+    private static final int GEAR_TOGGLE_CLEARANCE = 3;
+    /** Legacy landing automation scanned ten blocks below the plane. */
+    private static final int LANDING_APPROACH_CLEARANCE = 10;
+    /** Legacy automatic doors scanned three blocks below the plane. */
+    private static final int DOOR_CLEARANCE = 3;
+    /** Throttle at or below which the legacy plane counted as parked. */
+    private static final float PARKED_THROTTLE = 0.05F;
+    /** Visual engine idle speed; it does not contribute thrust or consume throttle-based fuel. */
+    private static final float IDLE_ENGINE_ANIMATION_THROTTLE = 0.08F;
+    /** Slowest the visible rotor disc turns while the governor holds it at speed. */
+    private static final float GOVERNED_ROTOR_ANIMATION_IDLE = 0.6F;
+    /** Rudder deflection forced on a SpinWithoutTail plane once its tail is gone. */
+    private static final float SPIN_WITHOUT_TAIL_FLAP_YAW = 15F;
+    /** 1.7.10 stopped counting a lost tail or wing here and doubled the core wear instead. */
+    private static final int SHOOT_DOWN_TICK_CAP = 1500;
+    /** How far the shoot-down fire and explosions are sent, as in 1.7.10. */
+    private static final double SHOOT_DOWN_EFFECT_RANGE = 150D;
+    /** Most blocks a rotor strike examines in one tick; a disc buried that deep is already lost. */
+    private static final int MAX_ROTOR_STRIKE_BLOCKS = 64;
+    /** Rotor health lost in one tick above which a strike is loud rather than a rustle of chopped leaves. */
+    private static final float LOUD_ROTOR_STRIKE = 0.1F;
+
     @Getter protected float propellerAngle;
     @Getter protected float prevPropellerAngle;
+    @Getter protected float rotorAngle;
+    @Getter protected float prevRotorAngle;
+    private double rotorPhase;
+    private double previousRotorPhase;
+    private float rotorSpeed;
+    private float rotorAnimationSpeed;
     @Getter protected float flapYaw;
     @Getter protected float flapPitchLeft;
     @Getter protected float flapPitchRight;
+    @Getter protected float prevFlapYaw;
+    @Getter protected float prevFlapPitchLeft;
+    @Getter protected float prevFlapPitchRight;
+    private float angularYaw;
+    private float angularPitch;
+    private float angularRoll;
+    /** Latches the one automatic door opening per landing, as in 1.7.10. */
+    private boolean doorsAutoOpened;
+    /** Prevents automatic closing from overriding a later manual reopen. */
+    private boolean doorsAutoCloseApplied;
+    private int crashImpactCooldown;
+    /** Progressive throttle lever state. Transient, and tracked per side. */
+    private final ThrottleLeverRamp throttleRamp = new ThrottleLeverRamp();
+    /** Articulated skeleton of a legacy Valkyrie type. Client-side visual state. */
+    @Getter @Nullable private ValkyrieAnimation valkyrieAnimation;
+    /** Progress of the NewFlightControl shoot-down sequence. Transient, as in 1.7.10. */
+    private int shootDownTicks;
+    /** A tail or wing has been lost during the current shoot-down sequence. */
+    private boolean lostFlightSurface;
 
     public Plane(EntityType<?> entityType, Level level)
     {
@@ -38,15 +131,77 @@ public class Plane extends Driveable
     public Plane(Level level, PlaneType type, double x, double y, double z, float yaw,
                  @Nullable Player placer, ItemStack sourceStack)
     {
-        super(FlansMod.planeEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
+        this(FlansMod.planeEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
+    }
+
+    /** Placement constructor for subclasses registered under their own entity type. */
+    protected Plane(EntityType<?> entityType, Level level, PlaneType type, double x, double y, double z, float yaw,
+                    @Nullable Player placer, ItemStack sourceStack)
+    {
+        super(entityType, level, type, x, y, z, yaw, placer, sourceStack);
+        setOrientation(yaw, getInitialPlacementPitch(), 0F);
         setDriveableMode(type.getMode() == EnumPlaneMode.VTOL ? 0 : type.getMode().ordinal());
-        setGearDeployed(type.isHasGear());
+        // HasGear means retractable gear. Fixed landing gear is still always down.
+        setGearDeployed(true);
     }
 
     @Nullable
     public PlaneType getPlaneType()
     {
         return getConfigType() instanceof PlaneType type ? type : null;
+    }
+
+    @Override
+    public float getInitialPlacementPitch()
+    {
+        PlaneType type = getPlaneType();
+        if (type == null)
+            return 0F;
+        // Spawn in the pose the suspension settles into on flat ground, so the
+        // tail gear is not buried on placement. RestingPitch is authored per
+        // pack and often disagrees with the wheel geometry, so it only serves
+        // as a fallback for types without both front and rear gear. Plane model
+        // facing reverses the simulation pitch sign, as in 1.7.10's one-time
+        // rotatePitch(restingPitch).
+        Float geometryPitch = getLevelGroundPitch(type);
+        return geometryPitch != null ? geometryPitch : -type.getRestingPitch();
+    }
+
+    /**
+     * The pitch at which every configured wheel touches flat ground, derived
+     * from the authored wheel anchors exactly as the per-tick terrain
+     * alignment in {@link Driveable#applyWheelContactPhysics} derives it.
+     */
+    @Nullable
+    private static Float getLevelGroundPitch(@NotNull PlaneType type)
+    {
+        double frontX = 0D, backX = 0D, frontY = 0D, backY = 0D;
+        int frontCount = 0, backCount = 0;
+        for (DriveablePosition definition : type.getWheelPositions())
+        {
+            if (definition == null)
+                continue;
+            Vector3f position = definition.getPosition();
+            double forward = LegacyDriveableCoordinates.legacyForwardCoordinate(
+                LegacyDriveableCoordinates.toLocal(position));
+            if (forward > 1.0E-4D)
+            {
+                frontX += forward;
+                frontY += position.y;
+                ++frontCount;
+            }
+            else if (forward < -1.0E-4D)
+            {
+                backX += forward;
+                backY += position.y;
+                ++backCount;
+            }
+        }
+        if (frontCount == 0 || backCount == 0)
+            return null;
+        double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
+        double mountDifference = frontY / frontCount - backY / backCount;
+        return SuspensionPhysics.supportAngle(0D, length, mountDifference, true);
     }
 
     public EnumPlaneMode getPlaneMode()
@@ -59,16 +214,168 @@ public class Plane extends Driveable
         return type.getMode();
     }
 
+    /**
+     * The legacy controller refused to cycle the gear unless the block three
+     * below the plane was air, so it can be neither retracted while parked nor
+     * raised during the flare.
+     */
     @Override
-    protected void toggleDriveableMode()
+    protected void toggleGear(@NotNull Player player)
+    {
+        PlaneType type = getPlaneType();
+        if (type == null || !type.isHasGear())
+            return;
+        if (isNearGround(GEAR_TOGGLE_CLEARANCE))
+        {
+            player.displayClientMessage(
+                Component.translatable("message.flansmodultimate.driveable.gear.blocked"), true);
+            return;
+        }
+        setGearDeployed(!isGearDeployed());
+        player.displayClientMessage(Component.translatable(isGearDeployed()
+            ? "message.flansmodultimate.driveable.gear.down"
+            : "message.flansmodultimate.driveable.gear.up"), true);
+    }
+
+    /** Automatic deployment on a low, slow approach, announced as in 1.7.10. */
+    private void deployGearForLanding()
+    {
+        if (isGearDeployed())
+            return;
+        setGearDeployed(true);
+        if (getControllingEntity() instanceof Player pilot)
+            pilot.displayClientMessage(
+                Component.translatable("message.flansmodultimate.driveable.gear.auto_deploy"), true);
+    }
+
+    /** Retracted gear is stowed inside the airframe, so it cannot be shot. */
+    /**
+     * Air brake toggle. A plane that declares {@code HasAirBrake False} has no
+     * such surfaces and silently ignores the bind, exactly as a fixed-gear type
+     * ignores the gear bind.
+     */
+    @Override
+    protected void toggleAirBrake(@NotNull Player player)
+    {
+        PlaneType type = getPlaneType();
+        if (type == null || !type.isHasAirBrake())
+            return;
+        setAirBrakeDeployed(!isAirBrakeDeployed());
+        player.displayClientMessage(Component.translatable(isAirBrakeDeployed()
+            ? "message.flansmodultimate.driveable.air_brake.on"
+            : "message.flansmodultimate.driveable.air_brake.off"), true);
+    }
+
+    /**
+     * Reference area of this plane's deployed air brake in square metres, or zero
+     * while it is stowed or absent. {@code RealAirBrakeAreaM2} is authoritative;
+     * without it the brake is sized from the aircraft's own wing area.
+     */
+    private double deployedAirBrakeAreaM2(PlaneType type)
+    {
+        if (!isAirBrakeDeployed() || !type.isHasAirBrake())
+            return 0D;
+        RealWorldVehicleSpec.Aircraft aircraft = type.getResolvedPhysics().source().aircraft();
+        Float authored = aircraft.airBrakeAreaM2();
+        Float wingArea = aircraft.effectiveWingAreaM2();
+        return AircraftPerformancePhysics.airBrakeAreaM2(authored == null ? 0D : authored,
+            wingArea == null ? 0D : wingArea);
+    }
+
+    /**
+     * Per-tick velocity multiplier for deployed air brakes on the legacy flight
+     * model. Both areas come from the real-world keys, since the legacy
+     * {@code WingArea} is a gameplay coefficient and not a dimension in metres.
+     */
+    private float legacyAirBrakeDragFactor(PlaneType type)
+    {
+        RealWorldVehicleSpec.Aircraft aircraft = type.getResolvedPhysics().source().aircraft();
+        Float authored = aircraft.airBrakeAreaM2();
+        Float wingArea = aircraft.effectiveWingAreaM2();
+        return AircraftPerformancePhysics.legacyAirBrakeDragFactor(authored == null ? 0D : authored,
+            wingArea == null ? 0D : wingArea);
+    }
+
+    @Override
+    public boolean canHitPart(@Nullable EnumDriveablePart part)
+    {
+        return isGearDeployed() || !EnumDriveablePart.isWheel(part);
+    }
+
+    @Override
+    protected void toggleDoor(@NotNull Player player)
+    {
+        super.toggleDoor(player);
+        PlaneType type = getPlaneType();
+        if (type != null && type.isHasDoor())
+            player.displayClientMessage(Component.translatable(isDoorOpen()
+                ? "message.flansmodultimate.driveable.door.open"
+                : "message.flansmodultimate.driveable.door.closed"), true);
+    }
+
+    @Override
+    protected void toggleDriveableMode(@NotNull Player player)
     {
         PlaneType type = getPlaneType();
         if (type == null)
             return;
         if (type.isHasWing() || type.isValkyrie())
+        {
             setWingFolded(!isWingFolded());
+            player.displayClientMessage(
+                Component.translatable("message.flansmodultimate.driveable.wings.switched"), true);
+        }
         if (type.getMode() == EnumPlaneMode.VTOL)
+        {
             setDriveableMode(Math.floorMod(getDriveableMode() + 1, 2));
+            player.displayClientMessage(Component.translatable(getPlaneMode() == EnumPlaneMode.HELI
+                ? "message.flansmodultimate.driveable.mode.hover"
+                : "message.flansmodultimate.driveable.mode.plane"), true);
+        }
+    }
+
+    /** Wings are unfolded automatically for a low, slow approach, as in 1.7.10. */
+    private void extendWingsForLanding()
+    {
+        if (!isWingFolded())
+            return;
+        setWingFolded(false);
+        if (getControllingEntity() instanceof Player pilot)
+            pilot.displayClientMessage(
+                Component.translatable("message.flansmodultimate.driveable.wings.extending"), true);
+    }
+
+    /**
+     * Doors open themselves once the plane is parked, and are pulled shut again
+     * as soon as it is under power. The latch is what makes the manual toggle
+     * usable while parked, which is the only time the legacy toggle had any
+     * lasting effect on a plane that cannot fly with its doors open.
+     */
+    private void updateAutomaticDoors(PlaneType type)
+    {
+        if (!type.isHasDoor())
+            return;
+        boolean parkedNearGround = Math.abs(getThrottle()) <= PARKED_THROTTLE
+            && isNearGround(DOOR_CLEARANCE);
+        if (type.isAutoOpenDoorsNearGround() && parkedNearGround)
+        {
+            if (!doorsAutoOpened)
+                setDoorOpen(true);
+            doorsAutoOpened = true;
+        }
+        else
+            doorsAutoOpened = false;
+
+        if (!parkedNearGround && !type.isFlyWithOpenDoor())
+        {
+            // Close only once when leaving the parked condition. Reapplying
+            // this every tick used to undo a pilot's manual reopen immediately.
+            if (!doorsAutoCloseApplied)
+                setDoorOpen(false);
+            doorsAutoCloseApplied = true;
+        }
+        else
+            doorsAutoCloseApplied = false;
     }
 
     @Override
@@ -77,20 +384,15 @@ public class Plane extends Driveable
         PlaneType type = getPlaneType();
         if (type == null)
             return;
+        Vec3 startVelocity = getDeltaMovement();
+        if (crashImpactCooldown > 0)
+            --crashImpactCooldown;
         advanceAnimations();
         updateThrottle(type);
 
-        if (type.isHasGear() && type.isAutoDeployLandingGearNearGround() && getThrottle() <= 0.4F && isNearGround(10))
-            setGearDeployed(true);
-        if (type.isHasWing() && type.isFoldWingForLand() && isNearGround(10) && getThrottle() <= 0.4F)
-            setWingFolded(false);
-        if (type.isHasDoor())
-        {
-            if (type.isAutoOpenDoorsNearGround() && isNearGround(3) && Math.abs(getThrottle()) <= 0.05F)
-                setDoorOpen(true);
-            else if (!type.isFlyWithOpenDoor() && Math.abs(getThrottle()) > 0.05F)
-                setDoorOpen(false);
-        }
+        // Gear, wings and doors are synced state the server decides; a predicting client reads them.
+        if (!level().isClientSide)
+            updateLandingAutomation(type);
 
         Vec3 velocity = switch (getPlaneMode())
         {
@@ -98,137 +400,808 @@ public class Plane extends Driveable
             case SIXDOF -> sixDofPhysics(type);
             case PLANE -> fixedWingPhysics(type);
         };
-        double descent = velocity.y;
-        if (isGearDeployed())
-            velocity = applyWheelContactPhysics(velocity, true);
-        moveWithCollisions(velocity);
-        if (verticalCollision && descent < -0.55D)
+        Vec3 impactVelocity = velocity;
+        ResolvedVehiclePhysics resolvedPhysics = type.getResolvedPhysics();
+        boolean derivedAircraft = !ModCommonConfig.forceLegacyPlanePhysics() && resolvedPhysics.hasAircraftProfile();
+        double requiredTakeoffSpeed = derivedAircraft
+            ? VehiclePhysicsUnits.metresPerSecondToBlocksPerTick(
+                resolvedPhysics.referenceSpeedMs(ModCommonConfig.realisticSpeedScale(resolvedPhysics.category()),
+                    ModCommonConfig.realisticAircraftReferenceSpeedScale()), 1D)
+            : type.getTakeoffSpeed();
+        double measuredTakeoffSpeed = derivedAircraft
+            ? velocity.length() : velocity.horizontalDistance();
+        boolean liftingOff = LegacyPlanePhysics.isLiftingOff(getPlaneMode(), measuredTakeoffSpeed,
+            requiredTakeoffSpeed, flightForwardVector().y, velocity.y);
+        if (getPlaneMode() == EnumPlaneMode.HELI || getPlaneMode() == EnumPlaneMode.VTOL)
+            liftingOff = velocity.y > 0.01D;
+        if (!ModCommonConfig.forceLegacyPlanePhysics())
+            velocity = enforceSpeedCap(velocity, ModCommonConfig.maxPlaneSpeedKmh());
+        if (isGearDeployed() && !liftingOff)
         {
-            float landingDamage = (float) ((-descent - 0.45D) * 18D * Math.max(0F, type.getFallDamageFactor()));
-            if (!isGearDeployed())
-                landingDamage *= 2F;
-            damagePart(isGearDeployed() ? EnumDriveablePart.CORE_WHEEL : EnumDriveablePart.CORE,
-                landingDamage, level().damageSources().fall());
+            velocity = applyWheelContactPhysics(velocity, true);
+            if (hasWheelContact() && getPlaneMode() == EnumPlaneMode.PLANE && getThrottle() <= 0.4F)
+                recoverLandingAttitude();
         }
-        if (isEngineActive())
-            consumeFuel(Math.abs(getThrottle()) * Math.max(1, type.numEngines()));
+        else
+            // Wheel contact is only sampled while the gear is down and the
+            // aircraft is not lifting off. Clearing it on the other branch keeps
+            // the next tick from reading a stale contact from the takeoff roll
+            // and treating an airborne aircraft as still rolling.
+            clearWheelContact();
+        // An aircraft on the ground with nobody flying it, or its engine off, is
+        // chocked and braked rather than free to roll away from a push.
+        if (getControllingEntity() == null || !isEngineActive())
+            velocity = applyMinimumGroundDeceleration(startVelocity, velocity,
+                VehiclePhysicsConstants.PARKED_GROUND_FRICTION_DECELERATION_MS2);
+        moveWithCollisions(velocity);
+        handleGroundImpact(type, impactVelocity);
+        checkRotorStrike(type);
+        if (isEngineActive() && hasWorkingPropeller(type))
+            consumeFuel(DriveableControlPhysics.aircraftFuelLoad(getThrottle(), configuredThrottlePower(type),
+                getEngineSpeed()));
+    }
+
+    private void updateLandingAutomation(PlaneType type)
+    {
+        if (!type.isHasGear())
+            setGearDeployed(true);
+        if (type.isHasGear() && type.isAutoDeployLandingGearNearGround() && getThrottle() <= 0.4F
+            && isNearGround(LANDING_APPROACH_CLEARANCE))
+            deployGearForLanding();
+        if (type.isHasWing() && type.isFoldWingForLand() && getThrottle() <= 0.4F
+            && isNearGround(LANDING_APPROACH_CLEARANCE))
+            extendWingsForLanding();
+        updateAutomaticDoors(type);
     }
 
     @Override
     protected void tickClientDriveable()
     {
         advanceAnimations();
+        tickValkyrieAnimation();
+    }
+
+    @Override
+    public boolean supportsClientPrediction()
+    {
+        return true;
+    }
+
+    @Override
+    protected void tickPredictedClientDriveable()
+    {
+        // The predicted step has already advanced the flaps, propellers and rotors.
+        tickValkyrieAnimation();
+    }
+
+    /** 1.7.10 EntityPlane: step the Valkyrie skeleton and, under throttle, fire the foot exhausts. */
+    private void tickValkyrieAnimation()
+    {
+        PlaneType type = getPlaneType();
+        if (type == null || !type.isValkyrie())
+        {
+            valkyrieAnimation = null;
+            return;
+        }
+        if (valkyrieAnimation == null)
+            valkyrieAnimation = new ValkyrieAnimation();
+        valkyrieAnimation.tick(isWingFolded());
+        if (getThrottle() > 0.2F)
+        {
+            emitFootExhaust(valkyrieAnimation.leftFootExhaust());
+            emitFootExhaust(valkyrieAnimation.rightFootExhaust());
+        }
+    }
+
+    private void emitFootExhaust(@Nullable org.joml.Vector3f local)
+    {
+        if (local == null)
+            return;
+        Vec3 position = legacyPointToWorld(new Vec3(local.x, local.y, local.z));
+        for (int i = 0; i < 4; i++)
+            level().addParticle(FlansMod.afterburnParticle.get(), position.x, position.y, position.z, 0D, 0D, 0D);
+    }
+
+    /** 1.7.10 raised a Valkyrie's wheels by 90/16 blocks in fighter mode, where its legs are stowed. */
+    @Override
+    protected double wheelAnchorLift()
+    {
+        PlaneType type = getPlaneType();
+        return type != null && type.isValkyrie() && isWingFolded() ? 90D / 16D : 0D;
     }
 
     private void advanceAnimations()
     {
         prevPropellerAngle = propellerAngle;
-        propellerAngle = Mth.wrapDegrees(propellerAngle + 4F + Math.abs(getThrottle()) * 46F);
+        prevRotorAngle = rotorAngle;
+        float animationThrottle = LegacyPlanePhysics.engineAnimationThrottle(isEngineActive(), getThrottle(),
+            IDLE_ENGINE_ANIMATION_THROTTLE);
+        propellerAngle = Mth.wrapDegrees(propellerAngle + LegacyPlanePhysics.propellerStep(animationThrottle));
+        PlaneType type = getPlaneType();
+        // A running rotor is governed to constant RPM: the lever sets blade
+        // pitch, not shaft speed, so hover lift and control authority must not
+        // fall away with the throttle. Only the engine and rotor damage change
+        // the RPM the physics sees.
+        boolean rotorTurning = isEngineActive() && type != null && rotorEfficiency(type) > 0F;
+        rotorSpeed = HelicopterPhysics.spool(rotorSpeed, rotorTurning ? 1F : 0F);
+        // The visible disc still quickens with the lever, between a governed
+        // idle and full speed, so the animation keeps its throttle feedback.
+        rotorAnimationSpeed = HelicopterPhysics.spool(rotorAnimationSpeed, rotorTurning
+            ? Mth.lerp(Mth.clamp(getThrottle(), 0F, 1F), GOVERNED_ROTOR_ANIMATION_IDLE, 1F) : 0F);
+        previousRotorPhase = rotorPhase;
+        rotorPhase += LegacyPlanePhysics.rotorStep(rotorAnimationSpeed);
+        rotorAngle = HelicopterPhysics.rotorAngle(rotorPhase, rotorPhase, 1F, 1F);
+        prevFlapYaw = flapYaw;
+        prevFlapPitchLeft = flapPitchLeft;
+        prevFlapPitchRight = flapPitchRight;
         int input = getInputMask();
-        float yawTarget = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT) * 20F;
-        float pitch = pitchInput(input) * 20F;
-        float roll = rollInput(input);
-        flapYaw = approach(flapYaw, yawTarget, 2.5F);
-        flapPitchLeft = approach(flapPitchLeft, pitch + roll * 15F, 2.5F);
-        flapPitchRight = approach(flapPitchRight, pitch - roll * 15F, 2.5F);
+        float yaw = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
+        float pitch = axis(input, DriveableInput.ASCEND, DriveableInput.DESCEND);
+        // Banking an aircraft that is resting on its gear or its skids would
+        // drive a wingtip or a rotor disc through the ground, so the roll axis
+        // is locked out until it is airborne. The ailerons ease back to neutral
+        // through the same flap response, so nothing snaps on touchdown.
+        boolean rollLocked = isSupportedByGround();
+        float roll = rollLocked ? 0F : axis(input, DriveableInput.ROLL_RIGHT, DriveableInput.ROLL_LEFT);
+        flapYaw = LegacyPlanePhysics.flap(flapYaw, yaw);
+        if (isMouseControlEnabled())
+        {
+            // Mouse packets use flap-angle units while keys use a normalised
+            // axis. Combine them as equal stick inputs, then run both through
+            // the same legacy flap response so mouse roll cannot be more than
+            // twice as fast and WASD remains fully effective in mouse mode.
+            float combinedPitch = LegacyPlanePhysics.combinedControlInput(getFlightPitchControl(), pitch);
+            float combinedRoll = rollLocked ? 0F
+                : LegacyPlanePhysics.combinedControlInput(getFlightRollControl(), roll);
+            flapPitchLeft = LegacyPlanePhysics.flap(flapPitchLeft, combinedPitch - combinedRoll);
+            flapPitchRight = LegacyPlanePhysics.flap(flapPitchRight, combinedPitch + combinedRoll);
+        }
+        else
+        {
+            flapPitchLeft = LegacyPlanePhysics.flap(flapPitchLeft, pitch - roll);
+            flapPitchRight = LegacyPlanePhysics.flap(flapPitchRight, pitch + roll);
+        }
+
+        // A plane that loses its tail pins the rudder hard over and spins.
+        if (spinsWithoutTail())
+            flapYaw = SPIN_WITHOUT_TAIL_FLAP_YAW;
+    }
+
+    /** True while a {@code SpinWithoutTail} plane is flying with a destroyed tail. */
+    private boolean spinsWithoutTail()
+    {
+        PlaneType type = getPlaneType();
+        return type != null && type.isSpinWithoutTail() && !isPartIntact(EnumDriveablePart.TAIL);
     }
 
     private void updateThrottle(PlaneType type)
     {
-        boolean occupied = getControllingEntity() != null;
-        boolean powered = occupied && hasFuelForEngine() && hasWorkingPropeller(type);
+        boolean occupied = isUnderCommand();
+        boolean powered = occupied && isEngineActive() && hasWorkingPropeller(type);
         float throttle = getThrottle();
-        if (powered && DriveableInput.isDown(getInputMask(), DriveableInput.FORWARD))
-            throttle += 0.012F * getEngineSpeed();
-        if (powered && DriveableInput.isDown(getInputMask(), DriveableInput.BACKWARD))
-            throttle -= 0.018F * getEngineSpeed();
+        // Holding the lever moves it progressively faster; a tap is still the
+        // authored fine step. Released or reversed, the ramp starts over.
+        int direction = powered
+            ? ThrottleLeverRamp.direction(getInputMask(), DriveableInput.FORWARD, DriveableInput.BACKWARD) : 0;
+        float step = throttleRamp.advance(direction, ThrottleLeverRamp.PLANE_MAX_STEP_MULTIPLIER);
+        if (direction > 0)
+            throttle += 0.002F * step;
+        else if (direction < 0)
+            throttle -= 0.005F * step;
 
         if (!powered)
             throttle = approach(throttle, 0F, 0.008F);
-        else if (getPlaneMode() == EnumPlaneMode.HELI && type.isHeliThrottlePull()
-            && !DriveableInput.isDown(getInputMask(), DriveableInput.FORWARD | DriveableInput.BACKWARD))
-            throttle = Mth.lerp(0.01F, throttle, 0.5F);
         if (isUnderWater() && !type.isWorksUnderWater())
             throttle = 0F;
-        else if (isInWater())
-            throttle = Math.min(throttle, Math.max(0F, type.getMaxThrottleInWater()));
         setThrottle(throttle);
     }
 
     private Vec3 fixedWingPhysics(PlaneType type)
     {
-        int input = getInputMask();
-        double speed = getDeltaMovement().horizontalDistance();
-        float control = Mth.clamp((float) (speed / Math.max(0.05F, type.getTakeoffSpeed())), 0.15F, 1.25F);
-        float tail = isPartIntact(EnumDriveablePart.TAIL) ? 1F : type.isSpinWithoutTail() ? 0.2F : 0.45F;
-        float yawInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        float pitchInput = pitchInput(input);
-        float rollInput = rollInput(input);
-        float yawRate = yawInput * (yawInput > 0F ? type.getTurnRightModifier() : type.getTurnLeftModifier()) * control * tail;
-        float pitchRate = pitchInput * (pitchInput > 0F ? type.getLookDownModifier() : type.getLookUpModifier()) * control;
-        float desiredRoll = Mth.clamp(rollInput * 45F + yawInput * 22F, -70F, 70F);
-        float rollRate = (desiredRoll - getRoll()) * 0.08F
-            * (rollInput > 0F ? type.getRollRightModifier() : type.getRollLeftModifier());
-        setOrientation(getYaw() + yawRate, getPitch() + pitchRate, getRoll() + rollRate);
-
-        float wingEfficiency = wingEfficiency();
-        double thrustToMass = Math.sqrt(Mth.clamp(type.getMaxThrust() / 50F, 0.05F, 20F)
-            * Mth.clamp(1000F / Math.max(1F, type.getMass()), 0.05F, 20F));
-        double poweredThrottle = isEngineActive() ? getThrottle() : 0D;
-        double targetSpeed = type.getMaxSpeed() * getEngineSpeed() * poweredThrottle * 0.42D * wingEfficiency * thrustToMass;
-        if (isWingFolded())
-            targetSpeed *= 0.25D;
-        Vec3 desired = flightForwardVector().scale(targetSpeed);
         Vec3 current = getDeltaMovement();
-        double steeringBlend = type.isNewFlightControl() ? 0.12D : 0.075D;
-        Vec3 velocity = current.add(desired.subtract(current).scale(steeringBlend));
-        double liftRatio = Mth.clamp(velocity.horizontalDistance() / Math.max(0.05D, type.getTakeoffSpeed()), 0D, 1.5D);
-        double wingLoading = Mth.clamp(type.getWingArea() * 1000F / Math.max(1F, type.getMass()), 0.1F, 4F);
-        double lift = 0.055D * type.getLift() * wingEfficiency * liftRatio * wingLoading;
-        velocity = velocity.add(0D, lift - 0.045D, 0D);
-        if (onGround() && Math.abs(getThrottle()) < 0.1F)
-            setPitch(Mth.lerp(0.12F, getPitch(), type.getRestingPitch()));
+        // Precedence: a hull afloat is a ship before it is anything else, then a
+        // complete real-world profile, then the legacy NewFlightControl experiment,
+        // then the legacy flight model. Helicopter, VTOL and six-DOF craft are
+        // untouched by the new paths.
+        if (!ModCommonConfig.forceLegacyPlanePhysics() && type.getResolvedPhysics().hasMarineProfile()
+            && isInWater())
+            return marinePhysics(type, type.getResolvedPhysics(), current);
+        if (!ModCommonConfig.forceLegacyPlanePhysics() && type.getResolvedPhysics().hasAircraftProfile())
+            return derivedFixedWingPhysics(type, type.getResolvedPhysics(), current);
+        applyLegacyControls(type, current);
+        if (type.getPropellers().isEmpty())
+            return current.add(0D, -LegacyPlanePhysics.GRAVITY, 0D);
+
+        float throttle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
+        float thrust = LegacyPlanePhysics.thrust(throttle, type.getMaxThrottle(), type.getMaxNegativeThrottle(),
+            type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater());
+        float drag = Math.max(0F, LegacyPlanePhysics.drag(type.getDrag())
+            - (float)Math.sqrt(angularYaw * angularYaw + angularPitch * angularPitch + angularRoll * angularRoll) / 100F);
+        // The legacy model carries drag as a per-tick multiplier rather than a
+        // force, so the air brake folds into that same multiplier.
+        if (isAirBrakeDeployed() && type.isHasAirBrake())
+            drag *= legacyAirBrakeDragFactor(type);
+        double speed = Math.min(current.length(), type.isNewFlightControl() ? type.getMaxSpeed() : 2D);
+        Vec3 forward = flightForwardVector();
+        double wingAirspeed = LegacyPlanePhysics.forwardAirspeed(current.x, current.y, current.z,
+            forward.x, forward.y, forward.z);
+        double newSpeed = type.isNewFlightControl()
+            ? speed + throttle * type.getMaxThrust() / Math.max(1F, type.getMass())
+                * type.getPropellers().stream().filter(propeller -> isPartIntact(propeller.getPlanePart())).count()
+            : speed + thrust * 2F;
+        double correction = Mth.clamp(2D * Math.abs(throttle), 0D, 1.5D);
+        Vec3 velocity = current.scale(1D - correction).add(forward.scale(correction * newSpeed));
+
+        int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0)
+            + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
+        double lift = type.isNewFlightControl()
+            ? type.getLift() * wingAirspeed * wingAirspeed * 0.5D * type.getWingArea() * intactWings * 0.5D
+            : wingAirspeed * wingAirspeed * intactWings * 0.5D;
+        lift *= Math.abs(flightUpVector().y);
+        lift = Math.min(lift, LegacyPlanePhysics.GRAVITY);
+        velocity = velocity.add(0D, lift - LegacyPlanePhysics.GRAVITY, 0D);
+        if (onGround() && velocity.y <= 0D)
+            velocity = new Vec3(velocity.x, -0.01D, velocity.z);
+        velocity = new Vec3(velocity.x * drag,
+            velocity.y * (velocity.y < 0D && drag < 1F ? 0.999D : drag), velocity.z * drag);
+        if (isWingFolded())
+            velocity = velocity.multiply(0.98D, 1D, 0.98D);
         if (getControllingEntity() == null)
             velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
-        return applyAerodynamicDrag(velocity, type);
+        if (type.isNewFlightControl())
+            velocity = applyShootDownSequence(type, velocity);
+        applyLegacyTurbulence(type.isNewFlightControl() ? speed : velocity.length(), type.isNewFlightControl());
+        return velocity;
+    }
+
+    /**
+     * 1.7.10 FlightController shook the airframe with a small random attitude kick
+     * every tick: legacy-model planes above 2 blocks per tick, NewFlightControl planes
+     * only in a band just below it, their "sound barrier". On the wheels the ground
+     * contact owns the attitude, so the runway run is left alone.
+     */
+    private void applyLegacyTurbulence(double speed, boolean newFlightControl)
+    {
+        boolean buffeting = newFlightControl
+            ? speed > LegacyPlanePhysics.SOUND_BARRIER_BUFFET_MIN && speed < LegacyPlanePhysics.SOUND_BARRIER_BUFFET_MAX
+            : speed > LegacyPlanePhysics.HIGH_SPEED_TURBULENCE;
+        // Random kicks cannot be predicted; a predicting driver receives the server's.
+        if (!buffeting || isSupportedByGround() || level().isClientSide)
+            return;
+        axes.rotateLocalPitch(LegacyPlanePhysics.turbulenceKick(random.nextFloat()));
+        axes.rotateLocalYaw(LegacyPlanePhysics.turbulenceKick(random.nextFloat()));
+        axes.rotateLocalRoll(LegacyPlanePhysics.turbulenceKick(random.nextFloat()));
+        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+    }
+
+    /**
+     * 1.7.10 NewFlightControl's shoot-down sequence ("doomsday", by LabJac). A lost
+     * airframe noses the plane into a dive with the throttle cut; a lost tail or wing
+     * sends it pitching or rolling away. Each lost surface drags the plane down and
+     * wears the core away every tick, and the wreck burns and explodes as the count
+     * rises, so a crippled plane is lost even if it never touches the ground.
+     * <p>
+     * Deliberate differences from 1.7.10: a lost right wing sinks the plane like the
+     * other surfaces, where 1.7.10 added lift instead, and the sequence ends once
+     * every surface is repaired rather than burning on forever.
+     */
+    private Vec3 applyShootDownSequence(PlaneType type, Vec3 velocity)
+    {
+        return applyShootDownSequence(type, velocity, false);
+    }
+
+    /**
+     * {@code derivedModel} adapts the sequence to the real-world flight model, which
+     * already takes the lift and control of a lost wing or tail away physically:
+     * there the lost surfaces only add the core wear, fire and explosions, without
+     * the legacy extra sink and attitude kicks. A lost airframe still cuts the
+     * throttle and noses the plane into a dive. The sequence pauses while the plane
+     * rests on the ground, so a damaged aircraft that lands is not burnt away.
+     */
+    private Vec3 applyShootDownSequence(PlaneType type, Vec3 velocity, boolean derivedModel)
+    {
+        boolean airframeLost = isPartDestroyed(EnumDriveablePart.AIRFRAME);
+        boolean tailLost = isPartDestroyed(EnumDriveablePart.TAIL);
+        boolean leftWingLost = isPartDestroyed(EnumDriveablePart.LEFT_WING);
+        boolean rightWingLost = isPartDestroyed(EnumDriveablePart.RIGHT_WING);
+        if (!airframeLost && !tailLost && !leftWingLost && !rightWingLost)
+        {
+            shootDownTicks = 0;
+            lostFlightSurface = false;
+            return velocity;
+        }
+        if (derivedModel && isSupportedByGround())
+            return velocity;
+
+        axes.setAngles(getYaw(), getPitch(), getRoll());
+        int lostSurfaces = 0;
+        if (airframeLost)
+        {
+            ++lostSurfaces;
+            setThrottle(0F);
+            if (axes.getRoll() > 0.1F)
+                axes.rotateLocalRoll(-5F);
+            if (axes.getRoll() < -0.1F)
+                axes.rotateLocalRoll(5F);
+            ++shootDownTicks;
+            if (axes.getPitch() < 35F)
+                axes.rotateLocalPitch(-0.05F * shootDownTicks);
+            wearCore(1F);
+        }
+        if (tailLost)
+        {
+            ++lostSurfaces;
+            advanceShootDown();
+            if (!derivedModel)
+                axes.rotateLocalPitch(type.getLookUpModifier() / 2F);
+        }
+        if (leftWingLost)
+        {
+            ++lostSurfaces;
+            advanceShootDown();
+            if (!derivedModel)
+                axes.rotateLocalRoll(type.getRollRightModifier());
+        }
+        if (rightWingLost)
+        {
+            ++lostSurfaces;
+            advanceShootDown();
+            if (!derivedModel)
+                axes.rotateLocalRoll(-type.getRollLeftModifier() / 15F);
+        }
+        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+        spawnShootDownEffects();
+        if (derivedModel)
+            return velocity;
+        return velocity.add(0D, -LegacyPlanePhysics.GRAVITY * lostSurfaces, 0D);
+    }
+
+    /** A lost tail or wing: count towards the end, capped as in 1.7.10, and wear the core. */
+    private void advanceShootDown()
+    {
+        lostFlightSurface = true;
+        if (shootDownTicks < SHOOT_DOWN_TICK_CAP)
+            ++shootDownTicks;
+        if (shootDownTicks >= SHOOT_DOWN_TICK_CAP)
+            wearCore(1F);
+        wearCore(1F);
+    }
+
+    private void wearCore(float amount)
+    {
+        damagePart(EnumDriveablePart.CORE, amount, level().damageSources().generic());
+    }
+
+    private boolean isPartDestroyed(EnumDriveablePart part)
+    {
+        DriveablePart state = driveableData == null ? null : driveableData.getPart(part);
+        return state != null && state.isDestroyed();
+    }
+
+    /** The fire, smoke and explosion schedule of the 1.7.10 sequence, around the plane origin. */
+    private void spawnShootDownEffects()
+    {
+        if (level().isClientSide)
+            return;
+        int ticks = shootDownTicks;
+        if (ticks >= 100)
+        {
+            shootDownParticle(FlanParticles.LARGE_EXPLODE, 0D, 1D, 0D);
+            shootDownParticle(FlanParticles.LARGE_SMOKE, 0D, 0D, 0D);
+        }
+        if (ticks >= 20)
+        {
+            shootDownParticle(FlanParticles.FM_FLAME, 0D, 0D, 1D);
+            shootDownParticle(FlanParticles.FM_FLAME, 0D, 3D, -0.7D);
+            shootDownParticle(FlanParticles.FM_FLAME, 0D, 1D, 1.3D);
+        }
+        if (ticks >= 100)
+        {
+            shootDownParticle(FlanParticles.LARGE_SMOKE, 0D, 1.5D, 0.5D);
+            shootDownParticle(FlanParticles.LAVA, 0D, 1D, -0.5D);
+            shootDownParticle(FlanParticles.LAVA, 0D, 0D, 0.5D);
+            shootDownParticle(FlanParticles.LAVA, 0D, -0.5D, -2D);
+            shootDownParticle(FlanParticles.FM_FLAME, 0D, 1D, 0D);
+        }
+        if (ticks == 5 || ticks == 100)
+            shootDownParticle(FlanParticles.HUGE_EXPLOSION, 0D, 1D, 0D);
+        if (ticks == 18 || ticks == 30)
+            shootDownParticle(FlanParticles.LARGE_EXPLODE, 0D, 1D, 0D);
+        if (lostFlightSurface && (ticks == 700 || ticks == 720 || ticks == 725 || ticks == 740 || ticks == 748))
+            shootDownParticle(FlanParticles.HUGE_EXPLOSION, 0D, 1D, 0D);
+    }
+
+    private void shootDownParticle(String particle, double x, double y, double z)
+    {
+        PacketHandler.sendToAllAround(new PacketParticle(particle, getX() + x, getY() + y, getZ() + z, 0D, 0D, 0D),
+            getX(), getY(), getZ(), SHOOT_DOWN_EFFECT_RANGE, level().dimension());
+    }
+
+    /**
+     * Fixed-wing flight derived from real-world data.
+     *
+     * <p>Thrust comes from the authored kilonewtons, or from shaft power through
+     * a propeller efficiency. Drag is calibrated so that full thrust exactly
+     * balances at the authored top speed, which makes {@code RealMaxSpeedKmh}
+     * authoritative without needing a separate clamp. Lift is derived from wing
+     * loading: the wing carries the aircraft at and above its reference airspeed
+     * and falls off with the square of speed below it, so a heavy wing sinks
+     * without a hard stall threshold. {@code RealClimbRateMs} enters only as a
+     * cap on how much excess lift may be converted into a sustained climb.
+     */
+    private Vec3 derivedFixedWingPhysics(PlaneType type, ResolvedVehiclePhysics physics, Vec3 current)
+    {
+        double speedScale = ModCommonConfig.realisticSpeedScale(physics.category());
+        double terminalBlocksPerTick = physics.maxSpeedBlocksPerTick(speedScale);
+        applyDerivedControls(type, physics, current, terminalBlocksPerTick);
+
+        if (type.getPropellers().isEmpty())
+            return current.add(0D, -VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2, 0D);
+
+        float throttle = isEngineActive() && hasWorkingPropeller(type) ? Math.max(0F, getThrottle()) : 0F;
+        // On the wheels the aircraft rolls along its nose and neither gravity
+        // nor the wing may steer it. Measuring airspeed in three dimensions is
+        // right in flight, but on the ground the constant downward term would be
+        // fed back into forward motion by the alignment below, which is what
+        // made a parked aircraft creep away on its own.
+        boolean rolling = isSupportedByGround();
+        double airspeedBlocksPerTick = rolling ? current.horizontalDistance() : current.length();
+        double airspeedMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(airspeedBlocksPerTick);
+        double terminalMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(terminalBlocksPerTick);
+        Vec3 forward = flightForwardVector();
+        double wingAirspeedBlocksPerTick = LegacyPlanePhysics.forwardAirspeed(current.x, current.y, current.z,
+            forward.x, forward.y, forward.z);
+        double wingAirspeedMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(wingAirspeedBlocksPerTick);
+
+        float engineModifier = getEngineSpeed();
+        double powerKw = physics.effectivePowerWatts(engineModifier) / VehiclePhysicsUnits.WATTS_PER_KILOWATT;
+        double thrustKn = physics.effectiveThrustKn(engineModifier);
+        double propellerFraction = intactPropellerFraction(type.getPropellers());
+        double referenceThrust = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, terminalMs, terminalMs);
+        // The lever meters power at the default exponent of one; the config can
+        // bend it toward a speed-linear response instead.
+        double throttleDemand = AircraftPerformancePhysics.throttleThrustFactor(throttle,
+            ModCommonConfig.realisticAircraftThrottleResponse());
+        double thrustNewtons = AircraftPerformancePhysics.thrustNewtons(thrustKn, powerKw, airspeedMs, terminalMs)
+            * throttleDemand * propellerFraction;
+
+        // The angle between the nose and the flight path is the angle of attack
+        // the model otherwise lacks, so it is what decides how hard the wing is
+        // being worked: hands off it asks for one g, a pull asks for more.
+        Float climbRate = physics.source().aircraft().climbRateMs();
+        double excessAllowance = AircraftPerformancePhysics.maxExcessLiftFraction(
+            climbRate == null ? 0D : climbRate, terminalMs);
+        // On the wheels the path is the runway, whatever the suspension is
+        // doing vertically, so rotating the nose is what unsticks the aircraft.
+        double flightPathY = rolling ? 0D
+            : airspeedBlocksPerTick > 1.0E-6D ? current.y / airspeedBlocksPerTick : forward.y;
+        double loadFactor = AircraftPerformancePhysics.commandedLoadFactor(forward.y, flightPathY,
+            excessAllowance);
+
+        Float wingSpan = physics.source().aircraft().effectiveWingSpanM();
+        double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(),
+            airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
+            throttleDemand * propellerFraction, loadFactor);
+        accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+            accelerationMs2 - AircraftPerformancePhysics.maneuverDecelerationMs2(airspeedMs,
+                angularYaw, angularPitch, angularRoll));
+        if (rolling)
+            accelerationMs2 -= AircraftPerformancePhysics.groundDecelerationMs2(throttleDemand);
+        // Deployed air brakes are a real extra drag force, so they bite hardest
+        // at speed and do nothing at a standstill.
+        accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
+            accelerationMs2 - AircraftPerformancePhysics.airBrakeDecelerationMs2(airspeedMs,
+                deployedAirBrakeAreaM2(type), physics.massKg()));
+        double newSpeed = Math.max(0D, airspeedBlocksPerTick
+            + VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(accelerationMs2));
+        newSpeed = Math.min(newSpeed, terminalBlocksPerTick * (type.isSupersonic() ? 1.2D : 1D));
+        // A closed throttle below walking pace on the ground is parked. Without
+        // this floor the deceleration tail leaves a permanent crawl.
+        if (rolling && throttleDemand <= 0D && VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(newSpeed)
+            < VehiclePhysicsConstants.GROUND_PARKING_SPEED_MS)
+            newSpeed = 0D;
+
+        int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0)
+            + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
+        // A broken airframe carries no load, whatever is left of the wings.
+        if (isPartDestroyed(EnumDriveablePart.AIRFRAME))
+            intactWings = 0;
+        double referenceSpeedMs = physics.referenceSpeedMs(speedScale,
+            ModCommonConfig.realisticAircraftReferenceSpeedScale());
+        // What the wing can make at this speed, which is what decides whether it
+        // is flying at all. It is deliberately not clamped to the commanded load
+        // factor: the alignment blend below reads it as how hard the wing bites.
+        double liftFraction = AircraftPerformancePhysics.liftFraction(wingAirspeedMs, referenceSpeedMs)
+            * intactWings * 0.5D;
+
+        Vec3 velocity;
+        if (rolling)
+        {
+            // Rolling on the wheels: the aircraft tracks its nose in the
+            // horizontal plane only, and the vertical axis is left entirely to
+            // gravity, lift and the suspension.
+            Vec3 heading = new Vec3(forward.x, 0D, forward.z);
+            heading = heading.lengthSqr() > 1.0E-8D ? heading.normalize()
+                : new Vec3(current.x, 0D, current.z);
+            heading = heading.lengthSqr() > 1.0E-8D ? heading.normalize() : Vec3.ZERO;
+            velocity = heading.scale(newSpeed).add(0D, current.y, 0D);
+        }
+        else
+        {
+            // Velocity swings toward the nose in proportion to how much the wing
+            // is actually biting, so a stalled aircraft keeps its old momentum
+            // and mushes rather than pointing wherever the pilot aims.
+            double alignment = Mth.clamp(0.12D + 0.6D * liftFraction, 0.05D, 0.85D);
+            velocity = current.scale(1D - alignment).add(forward.scale(alignment * newSpeed));
+        }
+
+        // The wing supplies what it is asked for, up to what it can actually
+        // make, and only the vertical share survives a bank or a steep attitude.
+        double gravity = VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2;
+        double lift = Math.min(loadFactor, liftFraction) * gravity * Math.abs(flightUpVector().y);
+        velocity = velocity.add(0D, lift - gravity, 0D);
+        // Applying lift on the world vertical leaks a component along the flight
+        // path. A real wing has none: lift is perpendicular to the relative wind
+        // and does no work. Removing the leak leaves gravity as the only force
+        // here that may change speed, so a climb costs exactly the height it
+        // buys and a dive pays it back.
+        double pathSpeed = velocity.length();
+        if (pathSpeed > 1.0E-6D)
+        {
+            double leak = AircraftPerformancePhysics.liftWorkAlongPath(lift, velocity.y, pathSpeed);
+            velocity = velocity.subtract(velocity.scale(leak / pathSpeed));
+        }
+        if (onGround() && velocity.y <= 0D)
+            velocity = new Vec3(velocity.x, -0.01D, velocity.z);
+        // Retained legacy trims: folded wings and an unoccupied airframe still
+        // add drag, because neither is expressible in the real-world data.
+        if (isWingFolded())
+            velocity = velocity.multiply(0.98D, 1D, 0.98D);
+        if (getControllingEntity() == null)
+            velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
+        velocity = applyShootDownSequence(type, velocity, true);
+        return velocity;
+    }
+
+    /**
+     * Eases a landed fixed-wing aircraft back into its authored resting pose.
+     * Terrain alignment has already run for this tick, so this is deliberately
+     * slower than the suspension response and cannot produce a visible snap.
+     */
+    private void recoverLandingAttitude()
+    {
+        float pitch = LegacyPlanePhysics.landingAttitudeAngle(getPitch(), getInitialPlacementPitch());
+        float roll = LegacyPlanePhysics.landingAttitudeAngle(getRoll(), 0F);
+        setOrientation(getYaw(), pitch, roll);
+        angularPitch *= 0.8F;
+        angularRoll *= 0.8F;
+    }
+
+    /**
+     * Attitude integration for the derived model. Control authority is
+     * normalised against the aircraft's own terminal speed rather than the
+     * legacy fixed breakpoints, and the slew rate is scaled by a roll inertia
+     * factor derived from wing span and mass. The authored pitch, yaw and roll
+     * modifiers are retained unchanged as handling trims.
+     */
+    private void applyDerivedControls(PlaneType type, ResolvedVehiclePhysics physics, Vec3 velocity,
+                                      double terminalBlocksPerTick)
+    {
+        float pitchControl = (flapPitchLeft + flapPitchRight) * 0.5F;
+        float rollControl = (flapPitchRight - flapPitchLeft) * 0.5F;
+        float authority = AircraftPerformancePhysics.normalizedControlAuthority(velocity.length(),
+            terminalBlocksPerTick);
+        Vec3 forward = flightForwardVector();
+        float levelingAuthority = AircraftPerformancePhysics.normalizedControlAuthority(
+            LegacyPlanePhysics.forwardAirspeed(velocity.x, velocity.y, velocity.z,
+                forward.x, forward.y, forward.z), terminalBlocksPerTick);
+        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.derivedControlRates(authority, flapYaw,
+            pitchControl, rollControl, type.getTurnLeftModifier(), type.getTurnRightModifier(),
+            type.getLookUpModifier(), type.getLookDownModifier(), type.getRollLeftModifier(),
+            type.getRollRightModifier());
+        float yawRate = rates.yaw();
+        float pitchRate = rates.pitch();
+        float rollRate = rates.roll() + passiveRollLevelingRate(type, levelingAuthority);
+        if (!isPartIntact(EnumDriveablePart.TAIL) && !spinsWithoutTail())
+        {
+            yawRate = 0F;
+            pitchRate = 0F;
+        }
+        if (!isPartIntact(EnumDriveablePart.LEFT_WING))
+            rollRate -= 2F * velocity.horizontalDistance();
+        if (!isPartIntact(EnumDriveablePart.RIGHT_WING))
+            rollRate += 2F * velocity.horizontalDistance();
+
+        float response = physics.rollInertiaFactor();
+        angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yawRate, response);
+        angularPitch = LegacyPlanePhysics.approachMomentum(angularPitch, pitchRate, response);
+        angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, rollRate, response);
+        axes.rotateLocalYaw(angularYaw);
+        axes.rotateLocalPitch(angularPitch);
+        axes.rotateLocalRoll(-angularRoll);
+        // A wing that has run out of speed stops holding the nose up. Simulation
+        // pitch is negative nose-up, so the correction is added, and it is only
+        // ever a bias back toward level: the pilot keeps full authority.
+        Vec3 adjustedForward = flightForwardVector();
+        float pitch = axes.getPitch() + AircraftPerformancePhysics.stallRecoveryPitchDegrees(
+            VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(LegacyPlanePhysics.forwardAirspeed(
+                velocity.x, velocity.y, velocity.z, adjustedForward.x, adjustedForward.y, adjustedForward.z)),
+            physics.referenceSpeedMs(ModCommonConfig.realisticSpeedScale(physics.category()),
+                ModCommonConfig.realisticAircraftReferenceSpeedScale()),
+            axes.getPitch());
+        setOrientation(axes.getYaw(), pitch, axes.getRoll());
+        angularYaw *= 0.99F;
+        angularPitch *= 0.99F;
+        angularRoll *= 0.99F;
+    }
+
+    public float getRotorRenderAngle(float partialTick, float speedRatio)
+    {
+        return HelicopterPhysics.rotorAngle(previousRotorPhase, rotorPhase, partialTick, speedRatio);
     }
 
     private Vec3 helicopterPhysics(PlaneType type)
     {
-        int input = getInputMask();
-        float yawInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        yawInput *= intactPropellerFraction(type.getHeliTailPropellers());
-        if (!isPartIntact(EnumDriveablePart.TAIL))
-            yawInput *= 0.2F;
-        float pitchInput = pitchInput(input);
-        float rollInput = rollInput(input);
-        float desiredPitch = pitchInput * 22F;
-        float desiredRoll = rollInput * 28F;
-        setOrientation(getYaw() + yawInput * type.getTurnRightModifier(),
-            getPitch() + (desiredPitch - getPitch()) * 0.08F,
-            getRoll() + (desiredRoll - getRoll()) * 0.08F);
-
-        float rotorEfficiency = rotorEfficiency(type);
         Vec3 current = getDeltaMovement();
-        double thrustToMass = Math.sqrt(Mth.clamp(type.getMaxThrust() / 50F, 0.05F, 20F)
-            * Mth.clamp(1000F / Math.max(1F, type.getMass()), 0.05F, 20F));
-        boolean powered = isEngineActive();
-        double verticalTarget = powered ? (getThrottle() - 0.48F) * 0.32D * getEngineSpeed() * rotorEfficiency * thrustToMass : -0.12D;
-        Vec3 forward = flightForwardVector();
-        Vec3 right = flightRightVector();
-        Vec3 horizontalForward = new Vec3(forward.x, 0D, forward.z).normalize();
-        Vec3 horizontalRight = new Vec3(right.x, 0D, right.z).normalize();
-        double tiltForward = -getPitch() / 45D;
-        double tiltRight = getRoll() / 45D;
-        Vec3 desiredHorizontal = powered
-            ? horizontalForward.scale(tiltForward * type.getMaxSpeed() * 0.16D)
-                .add(horizontalRight.scale(tiltRight * type.getMaxSpeed() * 0.12D))
-            : Vec3.ZERO;
-        Vec3 velocity = new Vec3(Mth.lerp(0.08D, current.x, desiredHorizontal.x), Mth.lerp(0.12D, current.y, verticalTarget),
-            Mth.lerp(0.08D, current.z, desiredHorizontal.z));
-        if (rotorEfficiency <= 0.05F)
-            velocity = velocity.add(0D, -0.06D, 0D);
-        return applyAerodynamicDrag(velocity, type);
+        float rotorFraction = rotorEfficiency(type);
+        float throttle = isEngineActive() ? getThrottle() : 0F;
+        float thrust = LegacyPlanePhysics.thrust(1F, type.getMaxThrottle(), type.getMaxNegativeThrottle(),
+            type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater()) * 2F;
+        ResolvedVehiclePhysics resolved = type.getResolvedPhysics();
+        RealWorldVehicleSpec spec = ModCommonConfig.forceLegacyPlanePhysics()
+            ? RealWorldVehicleSpec.EMPTY : resolved.source();
+        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(spec, getEngineSpeed(),
+            thrust, type.getDrag(), ModCommonConfig.realisticSpeedScale(resolved.category()));
+        applyHelicopterControls(type, rotorFraction, performance);
+        return HelicopterPhysics.step(current, flightUpVector(), performance, throttle, rotorSpeed, rotorFraction);
+    }
+
+    private void applyHelicopterControls(PlaneType type, float rotorFraction,
+                                         HelicopterPhysics.Performance performance)
+    {
+        // Rotor control authority exists at hover, independent of airspeed. The
+        // legacy directional modifiers still describe the pilot's control rates.
+        float authority = rotorSpeed * rotorSpeed * rotorFraction
+            * (float)Math.min(1D, performance.maximumLift() / HelicopterPhysics.GRAVITY);
+        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.controlRates(EnumPlaneMode.HELI,
+            0F, 0F, 0.5F, flapYaw, (flapPitchLeft + flapPitchRight) * 0.5F,
+            (flapPitchRight - flapPitchLeft) * 0.5F,
+            type.getTurnLeftModifier(), type.getTurnRightModifier(), type.getLookUpModifier(),
+            type.getLookDownModifier(), type.getRollLeftModifier(), type.getRollRightModifier());
+        float tailEfficiency = isPartIntact(EnumDriveablePart.TAIL)
+            ? intactPropellerFraction(type.getHeliTailPropellers()) : 0F;
+        // Explicit multi-rotor craft without a tail rotor cancel their own torque.
+        boolean needsTail = !type.getHeliTailPropellers().isEmpty()
+            || type.getHeliPropellers().size() == 1
+                && type.getResolvedPhysics().source().aircraft().effectiveRotorCount() == 1;
+        float yaw = rates.yaw();
+        if (needsTail)
+            yaw = yaw * tailEfficiency + 10F * Math.max(0F, getThrottle()) * (1F - tailEfficiency);
+        float response = type.getResolvedPhysics().hasAircraftProfile() && !ModCommonConfig.forceLegacyPlanePhysics()
+            ? 1F / type.getResolvedPhysics().rollInertiaFactor() : 1F;
+        float roll = rates.roll() * authority + passiveRollLevelingRate(type, authority);
+        angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yaw * authority, response);
+        angularPitch = LegacyPlanePhysics.approachMomentum(angularPitch, rates.pitch() * authority, response);
+        angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, roll, response);
+        axes.rotateLocalYaw(angularYaw);
+        axes.rotateLocalPitch(angularPitch);
+        axes.rotateLocalRoll(-angularRoll);
+        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+        angularYaw *= 0.95F;
+        angularPitch *= 0.95F;
+        angularRoll *= 0.95F;
+    }
+
+    /**
+     * Strikes a turning main rotor against every block its disc reaches into.
+     *
+     * <p>The {@code blades} part box is the rotor's hitbox, taken as a disc
+     * spanning the box and as thick as the box is tall. Only the hull's compact
+     * entity box collides with terrain, so without this a rotor passes through
+     * hillsides and trees. Unlike the collision point sweep a strike does not
+     * need the airframe to be moving, because the blades are. The consequences
+     * land in the same tick: rotor speed, and with it lift and control
+     * authority, is lost, the airframe is thrown toward the struck side of the
+     * disc and the rotor's momentum spins the fuselage. A hard enough strike
+     * destroys the blades, which removes all lift.
+     */
+    private void checkRotorStrike(@NotNull PlaneType type)
+    {
+        if (!(level() instanceof ServerLevel serverLevel) || destroyed || driveableData == null
+            || getPlaneMode() != EnumPlaneMode.HELI && getPlaneMode() != EnumPlaneMode.VTOL
+            || rotorSpeed < RotorStrikePhysics.MIN_STRIKING_ROTOR_SPEED || rotorEfficiency(type) <= 0F)
+            return;
+        DriveablePart blades = driveableData.getPart(EnumDriveablePart.BLADES);
+        CollisionBox box = blades == null ? null : blades.getBox();
+        if (box == null || blades.isDestroyed() || blades.getMaxHealth() <= 0F)
+            return;
+        double radius = 0.5D * Math.max(box.getWidth(), box.getDepth());
+        if (radius <= 0D)
+            return;
+        double halfThickness = Math.max(RotorStrikePhysics.MIN_HALF_THICKNESS, box.getHeight() * 0.5D);
+        Vector3f centre = box.getCentre();
+        Vec3 hub = localToWorld(centre.x, centre.y, centre.z);
+        Vec3 axis = getUpVector();
+
+        float loss = 0F;
+        Vec3 weightedContact = Vec3.ZERO;
+        Set<BlockPos> struck = new HashSet<>();
+        strikes:
+        for (VoxelShape shape : serverLevel.getBlockCollisions(null,
+            RotorStrikePhysics.discBounds(hub, axis, radius, halfThickness)))
+        {
+            for (AABB solid : shape.toAabbs())
+            {
+                if (struck.size() >= MAX_ROTOR_STRIKE_BLOCKS)
+                    break strikes;
+                if (!RotorStrikePhysics.intersectsDisc(hub, axis, radius, halfThickness, solid))
+                    continue;
+                BlockPos pos = BlockPos.containing(solid.getCenter());
+                if (!struck.add(pos))
+                    continue;
+                BlockState state = serverLevel.getBlockState(pos);
+                float hardness = state.getDestroySpeed(serverLevel, pos);
+                float fraction = RotorStrikePhysics.bladeDamageFraction(hardness, rotorSpeed);
+                if (fraction <= 0F)
+                    continue;
+                loss += fraction;
+                Vec3 contact = solid.getCenter().subtract(hub);
+                weightedContact = weightedContact.add(contact.subtract(axis.scale(contact.dot(axis))).scale(fraction));
+                serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state),
+                    solid.getCenter().x, solid.getCenter().y, solid.getCenter().z, 12, 0.3D, 0.3D, 0.3D, 0.25D);
+                if (RotorStrikePhysics.chops(hardness))
+                    breakCollisionBlock(pos, rotorSpeed);
+            }
+        }
+        if (loss <= 0F)
+            return;
+
+        loss = Math.min(1F, loss);
+        rotorSpeed = RotorStrikePhysics.rotorSpeedAfterStrike(rotorSpeed, loss);
+        kickFromRotorStrike(weightedContact, loss);
+        // The contact drags the airframe as well as the blades.
+        setDeltaMovement(getDeltaMovement().scale(1D - 0.5D * loss));
+        if (loss >= LOUD_ROTOR_STRIKE)
+            serverLevel.playSound(null, hub.x, hub.y, hub.z, SoundEvents.ITEM_BREAK, SoundSource.NEUTRAL,
+                1F + loss * 2F, 0.5F);
+        damagePart(EnumDriveablePart.BLADES, blades.getMaxHealth() * loss, level().damageSources().flyIntoWall());
+    }
+
+    /**
+     * Throws the airframe toward the struck side of the rotor disc, the contact
+     * being the pivot a dynamic rollover turns about, and hands the momentum the
+     * rotor lost to the fuselage as yaw.
+     */
+    private void kickFromRotorStrike(@NotNull Vec3 weightedContact, float loss)
+    {
+        angularYaw = Mth.clamp(angularYaw + RotorStrikePhysics.yawKick(loss), -20F, 20F);
+        if (weightedContact.lengthSqr() < 1.0E-8D)
+            return;
+        Vec3 direction = weightedContact.normalize();
+        float kick = RotorStrikePhysics.attitudeKick(loss);
+        Vec3 forward = new Vec3(1D, 0D, 0D);
+        Vec3 right = new Vec3(0D, 0D, 1D);
+        float pitchShare = (float)direction.dot(localDirectionToWorld(forward));
+        float rollShare = (float)direction.dot(localDirectionToWorld(right));
+        angularPitch = Mth.clamp(angularPitch + loweringRate(forward, true) * pitchShare * kick, -20F, 20F);
+        angularRoll = Mth.clamp(angularRoll + loweringRate(right, false) * rollShare * kick, -20F, 20F);
+    }
+
+    /**
+     * The sign of a pitch or roll rate that lowers the given hull-local
+     * direction, found by trying a small rotation rather than assuming the
+     * handedness of the legacy axes.
+     */
+    private float loweringRate(@NotNull Vec3 local, boolean pitchAxis)
+    {
+        RotatedAxes trial = new RotatedAxes(getYaw(), getPitch(), getRoll());
+        // Mirrors how the flight step applies angularPitch and angularRoll.
+        if (pitchAxis)
+            trial.rotateLocalPitch(1F);
+        else
+            trial.rotateLocalRoll(-1F);
+        double lowered = localDirectionToWorld(local, trial.getYaw(), trial.getPitch(), trial.getRoll()).y;
+        return lowered < localDirectionToWorld(local).y ? 1F : -1F;
     }
 
     private Vec3 sixDofPhysics(PlaneType type)
@@ -239,10 +1212,105 @@ public class Plane extends Driveable
         float pitchInput = pitchInput(input);
         setOrientation(getYaw() + yawInput * type.getTurnRightModifier(), getPitch() + pitchInput * type.getLookDownModifier(),
             getRoll() + rollInput * type.getRollRightModifier());
-        double thrust = type.getMaxSpeed() * (isEngineActive() ? getThrottle() : 0F) * getEngineSpeed() * 0.35D;
+        float poweredThrottle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
+        double propulsion = DriveableControlPhysics.directionalPropulsion(poweredThrottle, type.getMaxThrottle(),
+            type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater())
+            + poweredThrottle * getEngineSpeed();
+        double thrust = type.getMaxSpeed() * propulsion * intactPropellerFraction(type.getPropellers()) * 0.35D;
         Vec3 desired = flightForwardVector().scale(thrust);
         Vec3 velocity = getDeltaMovement().add(desired.subtract(getDeltaMovement()).scale(0.1D));
         return applyAerodynamicDrag(velocity, type);
+    }
+
+    private void applyLegacyControls(PlaneType type, Vec3 velocity)
+    {
+        float pitchControl = (flapPitchLeft + flapPitchRight) * 0.5F;
+        float rollControl = (flapPitchRight - flapPitchLeft) * 0.5F;
+        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.controlRates(getPlaneMode(),
+            (float)velocity.length(), (float)velocity.horizontalDistance(), getThrottle(), flapYaw,
+            pitchControl, rollControl, type.getTurnLeftModifier(), type.getTurnRightModifier(),
+            type.getLookUpModifier(), type.getLookDownModifier(), type.getRollLeftModifier(),
+            type.getRollRightModifier());
+        float yawRate = rates.yaw();
+        float pitchRate = rates.pitch();
+        Vec3 forward = flightForwardVector();
+        float levelingAuthority = Mth.clamp((float)(LegacyPlanePhysics.forwardAirspeed(
+            velocity.x, velocity.y, velocity.z, forward.x, forward.y, forward.z)
+            / LegacyPlanePhysics.FULL_CONTROL_AUTHORITY_SPEED), 0F, 1F);
+        float rollRate = rates.roll() + passiveRollLevelingRate(type, levelingAuthority);
+        if (getPlaneMode() == EnumPlaneMode.PLANE)
+        {
+            if (!isPartIntact(EnumDriveablePart.TAIL) && !spinsWithoutTail())
+            {
+                yawRate = 0F;
+                pitchRate = 0F;
+            }
+            if (!isPartIntact(EnumDriveablePart.LEFT_WING))
+                rollRate -= 2F * velocity.horizontalDistance();
+            if (!isPartIntact(EnumDriveablePart.RIGHT_WING))
+                rollRate += 2F * velocity.horizontalDistance();
+        }
+        else if (getPlaneMode() == EnumPlaneMode.HELI && !isPartIntact(EnumDriveablePart.TAIL))
+        {
+            yawRate = 10F * getThrottle();
+        }
+
+        angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yawRate);
+        angularPitch = LegacyPlanePhysics.approachMomentum(angularPitch, pitchRate);
+        angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, rollRate);
+        axes.rotateLocalYaw(angularYaw);
+        axes.rotateLocalPitch(angularPitch);
+        axes.rotateLocalRoll(-angularRoll);
+        setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
+        angularYaw *= 0.99F;
+        angularPitch *= 0.99F;
+        angularRoll *= 0.99F;
+    }
+
+    /**
+     * Surface propulsion for a hull that a content pack filed as a plane because its
+     * model extends {@code ModelPlane}.
+     *
+     * <p>It is deliberately the same constant-power, speed-squared-resistance model a
+     * {@code VehicleType} ship gets, driven by the same authored displacement, shaft
+     * power and top speed, so the two ways of authoring a warship behave identically.
+     * Only the horizontal plane is handled here; the vertical axis stays with the
+     * draft-based flotation in {@code applyGravityAndBuoyancy}, which already works
+     * for any floating driveable.
+     */
+    private Vec3 marinePhysics(PlaneType type, ResolvedVehiclePhysics physics, Vec3 current)
+    {
+        double speedScale = ModCommonConfig.realisticSpeedScale(physics.category());
+        double terminal = physics.maxSpeedBlocksPerTick(speedScale);
+        float throttle = isEngineActive() ? getThrottle() : 0F;
+
+        // A ship answers her helm, not her elevator: yaw only, and only under way.
+        Vec3 heading = new Vec3(flightForwardVector().x, 0D, flightForwardVector().z);
+        heading = heading.lengthSqr() > 1.0E-8D ? heading.normalize()
+            : new Vec3(current.x, 0D, current.z);
+        setOrientation(getYaw(), approach(getPitch(), 0F, 1F), approach(getRoll(), 0F, 1F));
+
+        double speed = current.horizontalDistance();
+        boolean astern = throttle < 0F;
+        double target = terminal * Math.abs(throttle);
+        if (astern)
+        {
+            Float reverse = physics.maxReverseSpeedKmh();
+            double asternCap = reverse == null ? terminal * 0.4D
+                : VehiclePhysicsUnits.kmhToBlocksPerTick(reverse) * speedScale;
+            target = Math.min(target, asternCap);
+        }
+
+        double powerWatts = physics.effectivePowerWatts(getEngineSpeed());
+        double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(
+            speed, powerWatts, physics.massKg(), terminal, EnumDriveType.MARINE.tractionFactor());
+        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(
+            speed, powerWatts, physics.massKg(), terminal,
+            DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE));
+        double newSpeed = GroundPropulsionPhysics.approach(speed, target, acceleration, deceleration);
+
+        Vec3 travel = heading.scale(astern ? -newSpeed : newSpeed);
+        return new Vec3(travel.x, current.y, travel.z);
     }
 
     private Vec3 applyAerodynamicDrag(Vec3 velocity, PlaneType type)
@@ -250,7 +1318,7 @@ public class Plane extends Driveable
         if (type.isFloatOnWater() && isInWater())
             return applyGravityAndBuoyancy(velocity, 0D);
         double factor = Mth.clamp(0.995D - Math.max(0F, type.getDrag() - 1F) * 0.01D, 0.82D, 0.998D);
-        double maximum = Math.max(0.2D, type.getMaxSpeed() * getEngineSpeed() * (type.isSupersonic() ? 1.5D : 1D));
+        double maximum = Math.max(0.2D, type.getMaxSpeed() * (type.isSupersonic() ? 1.5D : 1D));
         if (velocity.length() > maximum)
             velocity = velocity.normalize().scale(maximum);
         return velocity.scale(factor);
@@ -265,16 +1333,24 @@ public class Plane extends Driveable
 
     private float rotorEfficiency(PlaneType type)
     {
-        float efficiency = intactPropellerFraction(type.getHeliPropellers());
-        if (!isPartIntact(EnumDriveablePart.BLADES))
-            efficiency *= 0.1F;
-        return efficiency;
+        if (type.getHeliPropellers().isEmpty() || !isPartIntact(EnumDriveablePart.BLADES))
+            return 0F;
+        return intactPropellerFraction(type.getHeliPropellers());
     }
 
     private boolean hasWorkingPropeller(PlaneType type)
     {
-        List<Propeller> relevant = getPlaneMode() == EnumPlaneMode.HELI ? type.getHeliPropellers() : type.getPropellers();
+        if (getPlaneMode() == EnumPlaneMode.HELI || getPlaneMode() == EnumPlaneMode.VTOL)
+            return rotorEfficiency(type) > 0F;
+        List<Propeller> relevant = type.getPropellers();
         return relevant.isEmpty() || relevant.stream().anyMatch(propeller -> isPartIntact(propeller.getPlanePart()));
+    }
+
+    private float configuredThrottlePower(PlaneType type)
+    {
+        if (getThrottle() < 0F)
+            return Math.max(0F, type.getMaxNegativeThrottle());
+        return isInWater() ? Math.max(0F, type.getMaxThrottleInWater()) : Math.max(0F, type.getMaxThrottle());
     }
 
     private float intactPropellerFraction(List<Propeller> propellers)
@@ -290,19 +1366,20 @@ public class Plane extends Driveable
         return Mth.clamp(1F - 0.05F * Math.max(0F, type.getEmptyDrag() - 1F), 0.7F, 1F);
     }
 
-    /**
-     * Plane models face the opposite legacy X direction from the extra-facing
-     * correction used by land vehicles. Reusing the vehicle axis here makes
-     * positive throttle propel the rendered plane tail-first.
-     */
+    /** Uses the rendered legacy-plane basis so pitch and roll tilt propulsion with the visible aircraft. */
     private Vec3 flightForwardVector()
     {
-        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(-1D, 0D, 0D))).normalize();
+        return modelLocalDirectionToWorld(MODEL_FLIGHT_FORWARD).normalize();
     }
 
     private Vec3 flightRightVector()
     {
         return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(0D, 0D, 1D))).normalize();
+    }
+
+    private Vec3 flightUpVector()
+    {
+        return modelLocalDirectionToWorld(MODEL_FLIGHT_UP).normalize();
     }
 
     private static float axis(int mask, int positive, int negative)
@@ -313,13 +1390,132 @@ public class Plane extends Driveable
     private float pitchInput(int mask)
     {
         float keyboard = axis(mask, DriveableInput.DESCEND, DriveableInput.ASCEND);
-        return Mth.clamp(keyboard + (isMouseControlEnabled() ? getFlightPitchControl() : 0F), -1F, 1F);
+        return isMouseControlEnabled()
+            ? LegacyPlanePhysics.combinedControlInput(getFlightPitchControl(), keyboard) : keyboard;
+    }
+
+    /**
+     * Applies the legacy crash response to a touchdown or a ground strike.
+     *
+     * <p>Legacy Flan's ran this out of {@code fall()}, attacking the core with
+     * {@code -fallDistance * 50} every tick the aircraft was driven into the
+     * ground until it broke apart. The energy reaching the airframe is
+     * reproduced here as a share of each part's own health, so the outcome no
+     * longer depends on whether a pack authors parts at a few hundred hitpoints
+     * or a few thousand, and a bad enough impact writes the aircraft off outright
+     * instead of merely tearing the nose off a still flyable hull.
+     */
+    private void handleGroundImpact(@NotNull PlaneType type, @NotNull Vec3 impactVelocity)
+    {
+        if (level().isClientSide || crashImpactCooldown > 0 || impactVelocity.y >= -0.01D
+            || !verticalCollision && !horizontalCollision && !isSupportedByGround())
+            return;
+
+        PlaneCrashDamage.Impact impact = PlaneCrashDamage.evaluate(impactVelocity.length(), -impactVelocity.y,
+            Mth.clamp(getUpVector().y, -1D, 1D), type.getFallDamageFactor());
+        if (!impact.damaging())
+            return;
+
+        crashImpactCooldown = 12;
+        // Landing gear is the only structure meant to meet the ground; putting
+        // the same energy through a belly or a wingtip costs more.
+        float loss = impact.healthFraction() * (isGearDeployed() ? 1F : 1.35F);
+        if (isGearDeployed())
+        {
+            damageCrashPart(EnumDriveablePart.CORE_WHEEL, loss * 0.7F);
+            damageCrashPart(EnumDriveablePart.LEFT_WING_WHEEL, loss * 0.5F);
+            damageCrashPart(EnumDriveablePart.RIGHT_WING_WHEEL, loss * 0.5F);
+            damageCrashPart(EnumDriveablePart.TAIL_WHEEL, loss * 0.4F);
+        }
+
+        damageCrashPart(struckPart(), loss);
+        damageCrashPart(EnumDriveablePart.CORE, loss * 0.5F);
+        if (impact.catastrophic())
+        {
+            explodeOnCrash(type, impact.severity());
+            writeOffAirframe();
+        }
+    }
+
+    /**
+     * Spawns the fireball a written off airframe leaves behind, sized by what
+     * was left in the tank.
+     *
+     * <p>No official pack sets {@code IsExplosionWhenDestroyed}, so without this
+     * a plane driven into the ground at speed simply vanishes. A type that does
+     * configure its own death explosion is left alone: {@link #destroyDriveable}
+     * fires that one a moment later and its author's numbers should win.
+     */
+    private void explodeOnCrash(@NotNull PlaneType type, float severity)
+    {
+        if (type.isExplosionWhenDestroyed() && type.getDeathExplosionRadius() > 0F)
+            return;
+        DriveableCrashExplosion.Blast blast = DriveableCrashExplosion.evaluate(
+            type.getDeathExplosionRadius(), severity, fuelFraction(type));
+        if (!blast.happens())
+            return;
+        createExplosion(new DriveableExplosion(Math.max(type.getDeathFireRadius(), blast.fireRadius()),
+            blast.radius(), type.isDeathExplosionBreaksBlocks()), position());
+        // Sent on top of the blast's own visuals, which are sized by the radius
+        // that does harm and so always look far too small for an aircraft.
+        PacketHandler.sendToAllAround(new PacketDriveableCrashFireball(position(), blast.visualRadius()),
+            position(), CRASH_FIREBALL_VIEW_RANGE, level().dimension());
+    }
+
+    /** How full the tank was, where a type that carries no tank always has something to burn. */
+    private float fuelFraction(@NotNull PlaneType type)
+    {
+        float capacity = type.getFuelTankSize();
+        return capacity <= 0F ? 1F : Mth.clamp(getFuel() / capacity, 0F, 1F);
+    }
+
+    /** The part that met the ground first, from the attitude at impact. */
+    private EnumDriveablePart struckPart()
+    {
+        if (Math.abs(getRoll()) >= Math.abs(getPitch()))
+            return getRoll() >= 0D ? EnumDriveablePart.RIGHT_WING : EnumDriveablePart.LEFT_WING;
+        return flightForwardVector().y < 0D ? EnumDriveablePart.NOSE : EnumDriveablePart.TAIL;
+    }
+
+    private void damageCrashPart(@NotNull EnumDriveablePart partType, float healthFraction)
+    {
+        DriveablePart part = driveableData == null ? null : driveableData.getPart(partType);
+        if (part == null || part.isDestroyed() || healthFraction <= 0F || part.getMaxHealth() <= 0F)
+            return;
+        damagePart(partType, part.getMaxHealth() * healthFraction, level().damageSources().flyIntoWall());
+    }
+
+    /** Destroys the core, which takes the whole aircraft with it. */
+    private void writeOffAirframe()
+    {
+        DriveablePart core = driveableData == null ? null : driveableData.getPart(EnumDriveablePart.CORE);
+        if (core == null || core.isDestroyed())
+            return;
+        damagePart(EnumDriveablePart.CORE, core.getHealth() + 1F, level().damageSources().flyIntoWall());
     }
 
     private float rollInput(int mask)
     {
+        // A landed aircraft has no roll authority; see advanceAnimations.
+        if (isSupportedByGround())
+            return 0F;
         float keyboard = axis(mask, DriveableInput.ROLL_RIGHT, DriveableInput.ROLL_LEFT);
-        return Mth.clamp(keyboard + (isMouseControlEnabled() ? getFlightRollControl() : 0F), -1F, 1F);
+        return isMouseControlEnabled()
+            ? LegacyPlanePhysics.combinedControlInput(getFlightRollControl(), keyboard) : keyboard;
+    }
+
+    /** Passive stability is airborne-only and yields immediately to deliberate roll input. */
+    private float passiveRollLevelingRate(PlaneType type, float authority)
+    {
+        if (!ModCommonConfig.aircraftRollSelfLevelingEnabled() || isSupportedByGround()
+            || Math.abs(rollInput(getInputMask())) > 1.0E-4F)
+            return 0F;
+        if (getPlaneMode() == EnumPlaneMode.PLANE
+            && (!isPartIntact(EnumDriveablePart.LEFT_WING) || !isPartIntact(EnumDriveablePart.RIGHT_WING)))
+            return 0F;
+        ResolvedVehiclePhysics physics = type.getResolvedPhysics();
+        float response = physics.hasAircraftProfile() ? physics.rollInertiaFactor() : 1F;
+        return LegacyPlanePhysics.passiveRollLevelingRate(getRoll(), false, authority, response);
     }
 
     private static float approach(float value, float target, float amount)

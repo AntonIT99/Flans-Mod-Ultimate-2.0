@@ -1,0 +1,16 @@
+// Identity
+Name Helicopter Rotor
+ShortName SMP_Part_Propeller_RotorHeli
+
+// Model and Rendering
+Icon Icon_SMP_Part_Propeller_RotorHeli
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Titan P SMP_Part_Mat_Plate_Carbon
+ P 
+PMP
+ P 
+RecipeOutput 1
+Category Propeller
+PartBoxRecipe
+StackSize 64

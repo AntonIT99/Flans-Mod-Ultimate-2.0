@@ -1,0 +1,47 @@
+// Identity
+Name Panzerschreck
+ShortName 44_Panzerschreck
+Description German AT Rocket Launcher
+
+// Rendering
+Icon 44_Panzerschreck
+Model W44.Panzerschreck
+ModelScale 0.32
+Texture Skin44_Panzerschreck
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+
+// Ammunition
+Ammo 44_PanzerschreckAmmo
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.6
+KnockbackModifier 0
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 10.0
+ReloadTime 90
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 110.0
+Dispersion 2.0
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 9
+
+// Sounds
+ShootSound PanzerschreckShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound PanzerschreckReload
+ReloadSoundRange 5

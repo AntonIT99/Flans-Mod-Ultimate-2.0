@@ -1,13 +1,19 @@
+// Identity
 Name Modern Warfare Armour Box
 ShortName mwArmour
+
+// Item and rendering
 TopTexture ModernArmourBoxTop
 SideTexture ModernArmourBoxSide
 BottomTexture ModernArmourBoxTop
+
+// Recipe
 Recipe W wood F fiberglass
 WWW
 FFF
 WWW
-//AddArmour
+
+// Contents
 AddArmour marines Marines
 marineHelmet cloth.8 5
 marineBody cloth.8 8

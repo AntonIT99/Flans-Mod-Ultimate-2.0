@@ -1,0 +1,48 @@
+// Identity
+Name RS-82 rocket-powered projectile
+ShortName WW2_Missle_USSRRS82
+
+// Model and Rendering
+Model Manus_WW2.Misc.WW2_Misc_HVAR_1
+Texture Skin_WW2_Misc_HVAR
+Colour 255 255 255
+Icon Icon_WW2_Misc_RS82
+
+// Recipe and Inventory
+MaxStackSize 8
+RoundsPerItem 1
+RecipeOutput 8
+Recipe M SMP_Part_Misc_Ammo_MissileBody G gunpowder
+ M 
+GGG
+ M 
+
+// Behaviour
+FallSpeed 0
+ExplodeOnImpact True
+Fuse 0
+BreaksGlass True
+HitBoxSize 0.1
+WeaponType Missile
+Penetrates False
+LockOnToDriveables False
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 20.0
+
+// Ballistics and Damage
+DamageVsLiving 3000
+DamageVsVehicles 3000
+Explosion 4
+Fire 0
+Mass 6800
+MuzzleVelocity 340
+ExplosiveMassTNTg 360
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType smoke

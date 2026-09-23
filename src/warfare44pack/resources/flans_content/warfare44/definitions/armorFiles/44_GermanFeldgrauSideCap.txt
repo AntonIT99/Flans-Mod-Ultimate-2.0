@@ -1,0 +1,18 @@
+// Identity
+Name German Feldgrau Side Cap
+ShortName 44_GermanFeldgrauSideCap
+Type Helmet
+
+// Rendering
+Icon 44_GermanFeldgrauSideCap
+Model W44.GermanSideCap
+ModelScale 1
+ArmorTexture Skin44_GermanFeldgrauSideCap
+
+// Protection
+ArmorPoints 0
+Defence 0.01
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

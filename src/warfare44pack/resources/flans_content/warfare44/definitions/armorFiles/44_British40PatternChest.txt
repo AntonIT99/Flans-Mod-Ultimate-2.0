@@ -1,0 +1,18 @@
+// Identity
+Name British British 40 Pattern Jacket
+ShortName 44_British40PatternChest
+Type Body
+
+// Rendering
+Icon 44_British40PatternChest
+Model W44.British40PatternChest
+ModelScale 1
+ArmorTexture Skin44_British40Pattern
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

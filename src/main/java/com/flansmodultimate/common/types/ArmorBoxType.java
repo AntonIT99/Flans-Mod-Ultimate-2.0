@@ -97,7 +97,7 @@ public class ArmorBoxType extends BlockType
 
     public ResourceLocation getGuiTexture()
     {
-        return loadGuiTextureLocation(guiTexturePath, FlansMod.armorBoxGuiTexture);
+        return loadGuiTextureLocation(guiTexturePath, FlansMod.TEXTURE_GUI_ARMORBOX);
     }
 
     /** Each instance of this class refers to one page full of recipes, that is, one full set of armour */

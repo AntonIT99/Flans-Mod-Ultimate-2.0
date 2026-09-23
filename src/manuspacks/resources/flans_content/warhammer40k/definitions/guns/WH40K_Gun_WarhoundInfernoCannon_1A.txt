@@ -1,0 +1,47 @@
+﻿// Identity
+Name Warhound Titan Inferno Cannon
+ShortName WH40K_Gun_WarhoundInfernoCannon_1A
+
+// Model and Rendering
+ModelScale 1
+Icon Icon_WH40K_Gun_WarhoundInfernoCannon_1A
+Model Manus_WH40K.Gun.WH40K_Gun_WarhoundInfernoCannon_1
+DeployedModel None
+Texture Skin_WH40K_Gun_WarhoundInfernoCannon_1A
+
+// Recipe and Inventory
+UsableByPlayers False
+AllowGripAttachments False
+Ammo WH40K_Ammo_WarhoundInfernoCannon
+AllowAllAttachments False
+AllowAttachments MKVbBoltgunSilencer MKVbBoltgunScope MKVbBoltgunStock
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+NumGenericAttachmentSlots 1
+
+// Weapons
+Deployable False
+Mode Minigun
+MinigunStartSpeed 5
+Recoil 1
+ReloadTime 40
+OneHanded True
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+RoundsPerMin 600.0
+Dispersion 1.5
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 120.0
+
+// Sounds
+DistortSound False
+ReloadSound boltgun_reload
+WarmupSound FlamethrowerWarmup
+SpinSound FlamethrowerLoop
+CooldownSound FlamethrowerCooldown
+WarmupSoundLength 10
+SpinSoundLength 35

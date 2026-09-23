@@ -1,0 +1,16 @@
+// Identity
+Name Tent
+ShortName SMP_Part_Misc_Tent
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_Tent
+
+// Recipe and Inventory
+Recipe L leaves S stick
+LLL
+S S
+S S
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 64

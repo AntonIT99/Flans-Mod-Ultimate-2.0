@@ -1,0 +1,40 @@
+// Identity
+Name Japan 20mm Ammo for Type 99 - 100 Bullet Box
+ShortName WW2_Ammo_Type99
+description Amunition for Type 99
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_Type99
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 100
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 80
+DamageVsVehicles 80
+DamageVsPlanes 10
+Explosion 0
+Fire 0
+Mass 128
+MuzzleVelocity 600
+ExplosiveMassTNTg 11
+PenetrationAt100m 10
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType smoke

@@ -1,0 +1,52 @@
+// Identity
+Name 20mm Ammo
+ShortName 44_20mmAmmo
+Description Ammo used for Land Vehicles_ - Panzer II C_ - SdKfz.140/1
+
+// Rendering
+Icon 44_20mmAmmo
+Model W44.W44ShellLarge
+Texture Skin44_W44Shell_Red
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 4
+RoundsPerItem 50
+
+// Ammunition
+WeaponType Shell
+
+// Ballistics
+MuzzleVelocity 780
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates False
+PenetrationAt100m 23
+BreaksGlass True
+
+// Damage
+Mass 148
+DamageVsLiving 50
+DamageVsVehicles 80
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 4
+Explosion 0
+ExplodeOnImpact True
+Fuse 0
+
+// Guidance
+LockOnToDriveables False
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 20.0
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracerred
+FlakParticles 1
+
+// Sounds
+HitSound bullet

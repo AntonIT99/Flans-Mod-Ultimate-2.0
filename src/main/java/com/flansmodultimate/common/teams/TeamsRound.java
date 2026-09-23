@@ -90,7 +90,7 @@ public final class TeamsRound implements Comparable<TeamsRound>
             return 0;
         if (Team.SPECTATORS.equals(team))
             return 1;
-        int index = teamIds.indexOf(team.getOriginalShortName());
+        int index = teamIds.indexOf(team.getShortName());
         return index < 0 ? 0 : index + 2;
     }
 

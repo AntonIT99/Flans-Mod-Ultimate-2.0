@@ -1,0 +1,39 @@
+// Identity
+Name Browning .30Cal
+ShortName browning
+
+// Item and rendering
+Icon Browning
+Colour 255 255 255
+DeployedModel ww2.Browning
+DeployedTexture skinbrowning
+
+// Ammunition
+Ammo browningAmmo
+ReloadTime 100
+
+// Operation
+Mode FullAuto
+Deployable True
+StandBackDistance 1.0
+TopViewLimit 20
+BottomViewLimit 30
+SideViewLimit 45
+PivotHeight 0.375
+RoundsPerMin 550.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 850.0
+Dispersion 0.33
+
+// Damage and protection
+Damage 10
+
+// Optics
+Scope None
+
+// Sounds
+DistortSound False
+ShootSound BrowningShoot
+ReloadSound BrowningReload

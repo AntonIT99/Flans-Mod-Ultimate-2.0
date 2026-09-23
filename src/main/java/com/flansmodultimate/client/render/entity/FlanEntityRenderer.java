@@ -66,12 +66,7 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
             return;
         }
 
-        renderFlanModel(model, type, texture, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
-    }
-
-    protected void renderFlanModel(@NotNull IModelBase model, @NotNull InfoType type, @NotNull ResourceLocation texture, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
-    {
-        LegacyTransformApplier.renderModel(model, type, texture, poseStack, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+        LegacyTransformApplier.renderModel(model, type, texture, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
     }
 
     protected float getRed(@NotNull InfoType type)

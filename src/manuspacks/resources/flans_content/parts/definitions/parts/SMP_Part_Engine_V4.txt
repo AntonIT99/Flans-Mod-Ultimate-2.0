@@ -1,0 +1,20 @@
+// Identity
+Name V4 Engine
+ShortName SMP_Part_Engine_V4
+
+// Model and Rendering
+Icon Icon_SMP_Part_Engine_V4
+
+// Recipe and Inventory
+Recipe P SMP_Part_Misc_EnginePiston I SMP_Part_Misc_EngineIgnition M SMP_Part_Misc_EngineMotorblock
+PP 
+PP 
+MI 
+RecipeOutput 1
+Category Engine
+PartBoxRecipe
+StackSize 4
+
+// Movement and Physics
+EngineSpeed 1.0
+FuelConsumption 1.0

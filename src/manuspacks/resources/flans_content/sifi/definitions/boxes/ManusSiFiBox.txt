@@ -1,0 +1,29 @@
+// Identity
+Name Manus SiFi Box
+ShortName ManusSiFiBox
+
+// Model and Rendering
+TopTexture boxTop
+SideTexture SkinManusSiFiBox
+BottomTexture boxBottom
+
+// Recipe and Inventory
+Recipe I ingotIron B dyePowder.4 R dyePowder.1
+IRI
+RRR
+IRI
+
+// Contents
+AddGun ImperialLaserCannon 8 SMP_Part_Mat_Armor_DuraSteel 2 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackImperialLaserCannon 3 SMP_Part_Mat_Armor_DuraSteel 1 SMP_Part_Misc_Part_Electronic
+AddGun RebelLaserCannon 8 SMP_Part_Mat_Armor_DuraSteel 2 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackRebelLaserCannon 3 SMP_Part_Mat_Armor_DuraSteel 1 SMP_Part_Misc_Part_Electronic
+AddGun ColonialBlasterCannon 8 SMP_Part_Mat_Armor_DuraSteel 2 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackColonialBlasterCannon 3 SMP_Part_Mat_Armor_DuraSteel 1 SMP_Part_Misc_Part_Electronic
+AddGun CylonBlasterCannon 8 SMP_Part_Mat_Armor_DuraSteel 2 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackCylonBlasterCannon 3 SMP_Part_Mat_Armor_DuraSteel 1 SMP_Part_Misc_Part_Electronic
+AddGun LargeMechLaserCannon 25 SMP_Part_Mat_Armor_DuraSteel 5 SMP_Part_Misc_Part_Electronic
+AddAmmo AmmoPowerpackLargeMechLaserCannon 8 SMP_Part_Mat_Armor_DuraSteel 3 SMP_Part_Misc_Part_Electronic
+AddGun LightSaber_A 3 SMP_Part_Mat_Armor_DuraSteel 5 SMP_Part_Misc_Part_Electronic
+AddGun LightSaber_B 3 SMP_Part_Mat_Armor_DuraSteel 5 SMP_Part_Misc_Part_Electronic
+AddGun LightSaber_C 3 SMP_Part_Mat_Armor_DuraSteel 5 SMP_Part_Misc_Part_Electronic

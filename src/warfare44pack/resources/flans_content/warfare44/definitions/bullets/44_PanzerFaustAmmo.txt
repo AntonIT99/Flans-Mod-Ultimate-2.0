@@ -1,0 +1,39 @@
+// Identity
+Name PanzerFaust
+ShortName 44_PanzerFaustAmmo
+
+// Rendering
+Icon 44_PanzerFaustAmmo
+Model Bullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 4
+RoundsPerItem 1
+
+// Ballistics
+MuzzleVelocity 45
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates False
+PenetrationAt100m 200
+BreaksGlass True
+
+// Damage
+Mass 2900
+DamageVsLiving 100
+DamageVsVehicles 600
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 950
+Explosion 1
+ExplodeOnImpact True
+Fuse 0
+
+// Effects
+SmokeTrail True
+FlakParticles 0
+
+// Sounds
+HitSound bullet

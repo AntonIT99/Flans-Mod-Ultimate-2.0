@@ -1,0 +1,56 @@
+// Identity
+Name Torpedo
+ShortName 44_Torpedo
+
+// Rendering
+Icon 44_Torpedo
+Model W44.Torpedo
+Texture Skin44_Torpedo
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 1
+RoundsPerItem 1
+
+// Ammunition
+Bomb False
+Missile True
+Torpedo True
+
+// Ballistics
+BulletSpeed 1
+FallSpeed 8
+HitBoxSize 5
+Penetrates False
+BreaksGlass True
+
+// Damage
+Mass 800000
+DamageVsLiving 100
+DamageVsVehicles 2000
+Fire 0
+
+// Explosion
+ExplosiveMassTNTKg 250
+FragType THICK_CASE
+Explosion 10
+ExplosionBreaksBlocks false
+ExplodeOnImpact True
+Fuse 500
+
+// Guidance
+LockOnToDriveables False
+LockOnToVehicles False
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 10.0
+TurningForce 0.05
+
+// Effects
+SmokeTrail True
+TrailParticleType explode
+FlakParticles 150
+FlakParticleType hugeexplosion
+
+// Sounds
+HitSound bomb

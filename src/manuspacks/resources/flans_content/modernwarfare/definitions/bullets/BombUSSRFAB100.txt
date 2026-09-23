@@ -1,0 +1,43 @@
+// Identity
+Name FAB-100 Bomb
+ShortName BombUSSRFAB100
+Description Bomb for Tu-22M and MiG-15
+
+// Model and Rendering
+Model manus_modern_warfare.LargeBomb
+Colour 255 255 255
+Icon IconBombUSSRFAB100
+
+// Recipe and Inventory
+RoundsPerItem 1
+MaxStackSize 16
+RecipeOutput 4
+Recipe B SMP_Part_Misc_Ammo_BombBody T tnt F SMP_Part_Misc_Ammo_Fuse
+ F 
+ T 
+ B 
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 0.75
+Penetrates False
+Bomb True
+
+// Ballistics and Damage
+Mass 100000.0
+ExplosiveMassTNTKg 45
+FragType GP_BOMB
+Damage 50
+DamageVsVehicles 50
+Explosion 3
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail False

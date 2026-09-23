@@ -1,0 +1,96 @@
+
+package com.flansmod.client.model.Manus_Civil.Vehicle;
+
+import com.flansmod.client.model.ModelVehicle;
+import com.flansmod.client.tmt.ModelRendererTurbo;
+
+public class ModelCivil_Vehicle_GolfCart_1 extends ModelVehicle {
+   int textureX = 512;
+   int textureY = 512;
+
+   public ModelCivil_Vehicle_GolfCart_1() {
+      bodyModel = new ModelRendererTurbo[19];
+      bodyModel[0] = new ModelRendererTurbo(this, 0, 460, textureX, textureY);
+      bodyModel[1] = new ModelRendererTurbo(this, 100, 460, textureX, textureY);
+      bodyModel[2] = new ModelRendererTurbo(this, 190, 460, textureX, textureY);
+      bodyModel[3] = new ModelRendererTurbo(this, 270, 460, textureX, textureY);
+      bodyModel[4] = new ModelRendererTurbo(this, 0, 420, textureX, textureY);
+      bodyModel[5] = new ModelRendererTurbo(this, 110, 420, textureX, textureY);
+      bodyModel[6] = new ModelRendererTurbo(this, 0, 380, textureX, textureY);
+      bodyModel[7] = new ModelRendererTurbo(this, 80, 380, textureX, textureY);
+      bodyModel[8] = new ModelRendererTurbo(this, 170, 380, textureX, textureY);
+      bodyModel[9] = new ModelRendererTurbo(this, 240, 380, textureX, textureY);
+      bodyModel[10] = new ModelRendererTurbo(this, 240, 390, textureX, textureY);
+      bodyModel[11] = new ModelRendererTurbo(this, 270, 380, textureX, textureY);
+      bodyModel[12] = new ModelRendererTurbo(this, 360, 380, textureX, textureY);
+      bodyModel[13] = new ModelRendererTurbo(this, 0, 340, textureX, textureY);
+      bodyModel[14] = new ModelRendererTurbo(this, 90, 340, textureX, textureY);
+      bodyModel[15] = new ModelRendererTurbo(this, 90, 350, textureX, textureY);
+      bodyModel[16] = new ModelRendererTurbo(this, 120, 340, textureX, textureY);
+      bodyModel[17] = new ModelRendererTurbo(this, 0, 300, textureX, textureY);
+      bodyModel[18] = new ModelRendererTurbo(this, 50, 300, textureX, textureY);
+      bodyModel[0].addBox(0.0F, 0.0F, 0.0F, 14, 5, 28, 0.0F);
+      bodyModel[0].setRotationPoint(-3.0F, -5.0F, -14.0F);
+      bodyModel[1].addBox(0.0F, 0.0F, 0.0F, 10, 2, 28, 0.0F);
+      bodyModel[1].setRotationPoint(1.0F, -7.0F, -14.0F);
+      bodyModel[1].rotateAngleZ = -0.1919862F;
+      bodyModel[2].addBox(0.0F, 0.0F, 0.0F, 4, 4, 28, 0.0F);
+      bodyModel[2].setRotationPoint(-3.0F, 0.0F, -14.0F);
+      bodyModel[3].addBox(0.0F, 0.0F, 0.0F, 10, 7, 16, 0.0F);
+      bodyModel[3].setRotationPoint(1.0F, -2.0F, -8.0F);
+      bodyModel[4].addBox(0.0F, 0.0F, 0.0F, 26, 2, 28, 0.0F);
+      bodyModel[4].setRotationPoint(-26.0F, 4.0F, -14.0F);
+      bodyModel[5].addBox(0.0F, 0.0F, 0.0F, 10, 2, 2, 0.0F);
+      bodyModel[5].setRotationPoint(-8.0F, -10.0F, 6.0F);
+      bodyModel[5].rotateAngleZ = -0.8028514F;
+      bodyModel[6].addBox(0.0F, 0.0F, 0.0F, 10, 7, 28, 0.0F);
+      bodyModel[6].setRotationPoint(-26.0F, -3.0F, -14.0F);
+      bodyModel[7].addBox(0.0F, 0.0F, 0.0F, 15, 3, 28, 0.0F);
+      bodyModel[7].setRotationPoint(-30.0F, -6.0F, -14.0F);
+      bodyModel[8].addBox(0.0F, 0.0F, 0.0F, 3, 6, 28, 0.0F);
+      bodyModel[8].setRotationPoint(-30.0F, -12.0F, -14.0F);
+      bodyModel[9].addBox(0.0F, 0.0F, 0.0F, 11, 4, 1, 0.0F);
+      bodyModel[9].setRotationPoint(-27.0F, -10.0F, -14.0F);
+      bodyModel[10].addBox(0.0F, 0.0F, 0.0F, 11, 4, 1, 0.0F);
+      bodyModel[10].setRotationPoint(-27.0F, -10.0F, 13.0F);
+      bodyModel[11].addBox(0.0F, 0.0F, 0.0F, 12, 4, 28, 0.0F);
+      bodyModel[11].setRotationPoint(-38.0F, -3.0F, -14.0F);
+      bodyModel[12].addBox(0.0F, 0.0F, 0.0F, 3, 9, 28, 0.0F);
+      bodyModel[12].setRotationPoint(-41.0F, -3.0F, -14.0F);
+      bodyModel[13].addBox(0.0F, 0.0F, 0.0F, 11, 2, 28, 0.0F);
+      bodyModel[13].setRotationPoint(-41.0F, -5.0F, -14.0F);
+      bodyModel[14].addBox(0.0F, 0.0F, 0.0F, 10, 4, 1, 0.0F);
+      bodyModel[14].setRotationPoint(-40.0F, -9.0F, -14.0F);
+      bodyModel[15].addBox(0.0F, 0.0F, 0.0F, 10, 4, 1, 0.0F);
+      bodyModel[15].setRotationPoint(-40.0F, -9.0F, 13.0F);
+      bodyModel[16].addBox(0.0F, 0.0F, 0.0F, 12, 5, 16, 0.0F);
+      bodyModel[16].setRotationPoint(-38.0F, 1.0F, -8.0F);
+      bodyModel[17].addBox(0.0F, 0.0F, 0.0F, 2, 2, 16, 0.0F);
+      bodyModel[17].setRotationPoint(5.0F, 5.0F, -8.0F);
+      bodyModel[18].addBox(0.0F, 0.0F, 0.0F, 2, 2, 16, 0.0F);
+      bodyModel[18].setRotationPoint(-33.0F, 5.0F, -8.0F);
+      leftBackWheelModel = new ModelRendererTurbo[1];
+      leftBackWheelModel[0] = new ModelRendererTurbo(this, 0, 498, textureX, textureY);
+      leftBackWheelModel[0].addBox(-4.0F, -4.0F, -3.0F, 8, 8, 6, 0.0F);
+      leftBackWheelModel[0].setRotationPoint(-32.0F, 6.0F, -11.0F);
+      rightBackWheelModel = new ModelRendererTurbo[1];
+      rightBackWheelModel[0] = new ModelRendererTurbo(this, 0, 498, textureX, textureY);
+      rightBackWheelModel[0].addBox(-4.0F, -4.0F, -3.0F, 8, 8, 6, 0.0F);
+      rightBackWheelModel[0].setRotationPoint(-32.0F, 6.0F, 11.0F);
+      leftFrontWheelModel = new ModelRendererTurbo[1];
+      leftFrontWheelModel[0] = new ModelRendererTurbo(this, 0, 498, textureX, textureY);
+      leftFrontWheelModel[0].addBox(-4.0F, -4.0F, -3.0F, 8, 8, 6, 0.0F);
+      leftFrontWheelModel[0].setRotationPoint(6.0F, 6.0F, -11.0F);
+      rightFrontWheelModel = new ModelRendererTurbo[1];
+      rightFrontWheelModel[0] = new ModelRendererTurbo(this, 0, 498, textureX, textureY);
+      rightFrontWheelModel[0].addBox(-4.0F, -4.0F, -3.0F, 8, 8, 6, 0.0F);
+      rightFrontWheelModel[0].setRotationPoint(6.0F, 6.0F, 11.0F);
+      steeringWheelModel = new ModelRendererTurbo[1];
+      steeringWheelModel[0] = new ModelRendererTurbo(this, 140, 420, textureX, textureY);
+      steeringWheelModel[0].addBox(0.0F, -4.0F, -4.0F, 1, 8, 8, 0.0F);
+      steeringWheelModel[0].setRotationPoint(-9.0F, -9.5F, 7.0F);
+      steeringWheelModel[0].rotateAngleZ = -0.1919862F;
+      flipAll();
+      translateAll(13, 0, 0);
+   }
+}

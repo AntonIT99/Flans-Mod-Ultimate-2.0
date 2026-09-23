@@ -1,0 +1,73 @@
+// Identity
+Name M998 HMMWV with open load area
+ShortName HMMWV2
+
+// Model and Rendering
+Icon IconVehicleHMMWV2
+Model manus_modern_warfare.HMMWV2
+Texture SkinVehicleHMMWV
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 1500
+CargoSlots 18
+ShellSlots 0
+AddRecipeParts core 1 Part_Chassis_Van 10 Mat_Plate_Steel 4 Mat_Armor_Steel
+AddRecipeParts frontLeftWheel 1 Part_Wheel_Car
+AddRecipeParts frontRightWheel 1 Part_Wheel_Car
+AddRecipeParts backLeftWheel 1 Part_Wheel_Car
+AddRecipeParts backRightWheel 1 Part_Wheel_Car
+AddDye 5 green
+
+// Movement and Physics
+MaxThrottle 1.0
+MaxNegativeThrottle 0.5
+TurnLeftSpeed 1
+TurnRightSpeed 1
+Drag 1.0
+WheelRadius 1.0
+FourWheelDrive true
+RealMassKg 3494
+RealEnginePowerHp 150
+RealMaxSpeedKmh 88
+DriveType AWD
+RealMaxReverseSpeedKmh 20
+
+// Weapons
+ShootDelay 999
+ShellDelay 999
+ReadWeaponsFromGunTypes true
+
+// Protection
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 5.0
+Driver 2 1 -9 -80 80 -45 45
+RotatedDriverOffset 0 0 0
+Passengers 3
+Passenger 1 2 1 9 core -80 80 -45 45
+Passenger 2 -12 1 -9 core -80 80 -45 45
+Passenger 3 -12 1 9 core -80 80 -45 45
+SetupPart frontLeftWheel 100 19 -10 14 14 14 5
+SetupPart backLeftWheel 100 -36 -10 14 14 14 5
+SetupPart frontRightWheel 100 19 -10 -19 14 14 5
+SetupPart backRightWheel 100 -36 -10 -19 14 14 5
+SetupPart core 300 -43 -2 -18 80 24 36
+BulletDetection 5
+WheelPosition 0 -29 -8 -18
+WheelPosition 1 -29 -8 18
+WheelPosition 2 26 -8 18
+WheelPosition 3 26 -8 -18
+
+// Sounds
+StartSound engine_jep_humvee
+StartSoundLength 20
+EngineSound engine_jep_humvee
+EngineSoundLength 20
+ShootSound bullet

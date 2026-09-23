@@ -1,0 +1,17 @@
+// Identity
+Name Match Trigger
+ShortName 44_MatchTrigger
+Description Gadget Attachment : _Decreases Accuracy by 10% _Decreases Recoil by 5%
+AttachmentType gadget
+
+// Rendering
+Icon 44_MatchTrigger
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 1.1
+RecoilMultiplier 0.95
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

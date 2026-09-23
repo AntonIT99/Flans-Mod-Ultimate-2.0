@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.debug;
 
 import com.flansmodultimate.client.ModClient;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.flansmodultimate.client.render.CustomRenderType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.Getter;
@@ -12,7 +12,6 @@ import org.joml.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -62,8 +61,6 @@ public class DebugVector extends DebugColor
         // half-thickness
         float h = THICKNESS * 0.5F;
 
-        RenderSystem.disableDepthTest();
-
         pose.pushPose();
 
         // 1) translate to start (camera-relative)
@@ -76,11 +73,9 @@ public class DebugVector extends DebugColor
         pose.mulPose(new Quaternionf().rotationTo(from, to));
 
         // 3) draw a rectangular prism from x=[0..len], y,z=[-h..h]
-        VertexConsumer solid = buffers.getBuffer(RenderType.debugFilledBox());
+        VertexConsumer solid = buffers.getBuffer(CustomRenderType.debugFilledBoxSeeThrough());
         LevelRenderer.addChainedFilledBoxVertices(pose, solid, 0f, -h, -h, (float) len, h, h, colorRed, colorGreen, colorBlue, colorAlpha);
 
         pose.popPose();
-
-        RenderSystem.enableDepthTest();
     }
 }

@@ -1,51 +1,61 @@
 # AGENTS.md
 
-Repository-wide guidance. A nested `AGENTS.md` or `AGENTS.override.md` takes precedence for its directory.
+Nested `AGENTS.md` files add rules for their directories.
 
-## Targets
+## Task-specific workflows
 
-| Branch | Minecraft | Loader | Java | Build plugin |
-| --- | --- | --- | --- | --- |
-| `master` | 1.20.1 | Forge 47.4.x | 17 | ForgeGradle |
-| `1.21.1` | 1.21.1 | NeoForge 21.1.x | 21 | ModDevGradle |
-| `26.1.2` | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
-| `26.2` | 26.2 | NeoForge 26.2.x | 25 | ModDevGradle |
+- For version-dependent changes or work ported between maintained branches, read
+  `.agents/skills/flans-version-porting/SKILL.md` before editing.
+- For built-in `*_categories.json` research or maintenance, read
+  `src/main/resources/config/AGENTS.md`, then
+  `.agents/skills/flans-category-research/SKILL.md` and the references it routes to.
+- For reorganizing or synchronizing source content-pack `.txt` definitions from
+  built-in category values, read
+  `.agents/skills/content-pack-definition-sync/SKILL.md` before editing.
+- For auditing, repairing, or historically expanding ammunition in a selected
+  source content pack, read
+  `.agents/skills/content-pack-ammunition-expansion/SKILL.md` before editing.
+- For auditing and updating the wiki `ConfigReference.md` so it exhaustively and
+  accurately documents the current legacy content-pack parsers, read
+  `.agents/skills/config-reference-audit/SKILL.md` before auditing.
 
-Check the current branch and `gradle.properties` first. When porting, preserve behavior but adapt loader imports, events, registration, networking, metadata, and Minecraft APIs; do not apply cross-branch code mechanically.
+## Repository Rules
 
-## Layout
+- Keep gameplay state server-authoritative. Do not initialize client-only classes
+  from common or server code.
+- Preserve deterministic legacy-content loading and compatibility. Do not bulk-change
+  definition whitespace, casing, filenames, encodings, or layouts.
+- Do not edit generated output, runtime files, or generated metadata; change the
+  generator or its input instead.
+- Keep the main mod, bundled packs, and official packs as separate artifacts. Run
+  `packsManagerJar` and/or `officialPacksJar` when their inputs or packaging change.
+- For every feature or significant change, check whether the locally available wiki
+  repository should be updated too.
+- In a mixed worktree, preserve unrelated changes and stage explicit paths only.
 
-- `src/main/java/com/flansmodultimate`: main code; `client` is client-only, while `common` contains shared gameplay.
-- `network`, `config`, `event`, and `mixin`: packets, configuration, loader events, and Mixins.
-- `platform`: loader adapters on NeoForge branches; `src/main/templates`: generated NeoForge metadata inputs.
-- `src/main/resources` and `src/generated/resources`: resources and generated data; do not hand-edit generator-owned output.
-- `src/packs` and `src/officialpacks`: separately packaged content mods.
-- `src/test/java`: unit tests. `run`, `run-data`, and `build` are generated/local directories.
+## External Reference Paths
 
-## Commands
+These sibling directories live outside this repository, next to it in the parent
+directory. Read them directly when behaviour, formats, or prior implementations need
+checking. They are read-only references: never edit them unless explicitly asked.
 
-Use the Gradle wrapper (`./gradlew` on Linux/macOS):
+- `../Flans-Mod-Ultimate-2.0.wiki` - this project's wiki repository. Consult it for
+  documented behaviour, and update it for every feature or significant change.
+- `../Flans-Mod-Ultimate-1.7.10` - the original 1.7.10 project. **Primary** reference for
+  legacy behaviour, content-pack formats, and expected gameplay semantics.
+- `../FlansMod` - the original 1.12.2 project. **Secondary** reference; use when 1.7.10 is
+  ambiguous or the question concerns newer-loader concerns. If the two disagree, 1.7.10
+  wins unless the user says otherwise.
+- `../Flan's Mod Aryan Indian Edition Krishna Mk6C` - a heavily modified 1.7.10 fork, used
+  occasionally as an extra reference for alternative implementations. Treat it as
+  inspiration, not authority.
 
-```powershell
-.\gradlew.bat test
-.\gradlew.bat build --stacktrace
-.\gradlew.bat runClient
-.\gradlew.bat runServer
-.\gradlew.bat runData
-.\gradlew.bat packsJar officialPacksJar
-```
+## Build and Validation
 
-Run focused tests first. Run a full build after changes to loader setup, registries, networking, entities, resources, source sets, or packaging. CI uses Java 17 for `master`, Java 21 for `1.21.1`, and Java 25 for `26.1.2` and `26.2`; keep `gradlew` executable.
+Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
+`officialPacksJar`; use `--stacktrace` only to diagnose a failed build. Run focused
+tests first. Run a full build after loader setup, registries, networking, entities,
+resources, source sets, or packaging changes. Keep `gradlew` executable.
 
-## Project Rules
-
-- `master` uses `net.minecraftforge.*` and `src/main/resources/META-INF/mods.toml`; `1.21.1`, `26.1.2`, and `26.2` use `net.neoforged.*` and generated `neoforge.mods.toml` metadata. The 26.x branches use modern render-state extraction and Mojang's deobfuscated names; 26.2 uses the feature-rendering pipeline.
-- Keep gameplay state authoritative on the server and client-only classes out of common/server initialization. Validate entity, menu, and inventory access in packet handlers.
-- Preserve deterministic legacy-content loading and compatibility. Do not bulk-change definition whitespace, casing, filenames, encodings, or layouts.
-- Treat `src/officialpacks/resources/flans_models` as imported binary assets. Preserve exclusions for legacy `*PackMod.class` bootstrap classes.
-- Keep the main mod, bundled packs, and official packs as separate artifacts. Run `packsJar` or `officialPacksJar` when their inputs or packaging change.
-- Reuse existing coordinate, collision, suspension, and interpolation helpers for driveables. Add tests for deterministic parsers and pure logic where practical.
-- Keep Mixin JSON, targets, and signatures synchronized. Avoid early static registry access.
-- Do not edit or commit generated output, runtime files, or unrelated working-tree changes. Stage explicit paths in a mixed worktree.
-
-Before completion, review the scoped diff, run relevant checks plus `git diff --check`, and report any validation that was not possible.
+Before completion, review the scoped diff, run relevant checks and `git diff --check`,
+and report validation that could not be performed.

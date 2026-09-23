@@ -4,15 +4,19 @@ import com.flansmodultimate.common.block.BlockFactory;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
+import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.common.types.GloveType;
 import com.flansmodultimate.common.types.GunBoxType;
+import com.flansmodultimate.common.types.IAmmoGroupUser;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.CategoryManager;
@@ -24,6 +28,8 @@ import com.flansmodultimate.util.JavaModelCompiler;
 import com.flansmodultimate.util.LogUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.SoundJsonProcessor;
+import com.flansmodultimate.util.SoundLengthIndex;
+import com.flansmodultimate.util.TextDecoding;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -48,9 +54,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
@@ -118,14 +121,13 @@ public class ContentManager
     private static final Map<IContentProvider, Map<String, DynamicReference>> guiTextureReferences = new HashMap<>();
     @Getter
     private static final Map<IContentProvider, Map<String, DynamicReference>> skinsTextureReferences = new HashMap<>();
-    @Getter
-    private static final Map<IContentProvider, Map<String, DynamicReference>> modelReferences = new HashMap<>();
 
     private static final String ID_ALIAS_FILE = "id_alias.json";
     private static final String ARMOR_TEXTURES_ALIAS_FILE = "armor_textures_alias.json";
     private static final String GUI_TEXTURES_ALIAS_FILE = "gui_textures_alias.json";
     private static final String GENERATED_ASSETS_VERSION_FILE = ".flans_generated_assets_version";
-    private static final String GENERATED_ASSETS_VERSION = "1";
+    // 3: regenerate lang JSON baked with names mis-decoded as GB18030.
+    private static final String GENERATED_ASSETS_VERSION = "3";
     private static final String SKINS_TEXTURES_ALIAS_FILE = "skins_textures_alias.json";
     private static final String GENERATED_TEXTURES_MANIFEST_FILE = ".flansmod_generated_textures.json";
     private static final String CONTENT_STARTUP_LOCK_FILE = ".flansmod-content.lock";
@@ -140,24 +142,15 @@ public class ContentManager
     private static final Map<IContentProvider, ArrayList<InfoType>> configs = new HashMap<>();
     private static Set<Path> excludedFlanArchives = Set.of();
 
-    // Keep track of registered items and loaded textures and models
+    // Keep track of registered items and loaded textures
     /** &lt; shortname, config file string representation &gt; */
     private static final Map<String, String> registeredItems = new HashMap<>();
     private static final ConcurrentMap<EnumType, Constructor<? extends InfoType>> typeConstructors = new ConcurrentHashMap<>();
     /** &lt; folder name, &lt;lowercase name, texture file &gt;&gt; */
     private static final Map<String, Map<String, TextureFile>> textures = new HashMap<>();
-    /** &lt; model class name, &lt; contentPack &gt;&gt; */
-    @Getter
-    private static final Map<String, IContentProvider> registeredModels = new HashMap<>();
     private static final Map<ResourceLocation, Set<TextureOrigin>> modelTextureOrigins = new HashMap<>();
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    // Latin-1 must stay last because it can decode every byte sequence.
-    private static final List<Charset> TYPE_FILE_CHARSETS = List.of(
-        StandardCharsets.UTF_8,
-        Charset.forName("GB18030"),
-        StandardCharsets.ISO_8859_1
-    );
 
     private record TextureFile(String name, IContentProvider contentPack) {}
     private record FileContentSignature(long size, String sha256) {}
@@ -241,7 +234,7 @@ public class ContentManager
 
     /**
      * Adds immutable packaged providers ahead of user folder packs. First registration keeps the
-     * original item/model/texture name, so this ordering makes later user conflicts receive aliases.
+     * original item/texture name, so this ordering makes later user conflicts receive aliases.
      */
     public static void addPackagedContentPacks(List<? extends IContentProvider> providers)
     {
@@ -252,6 +245,12 @@ public class ContentManager
             if (!contentPacks.contains(provider))
                 contentPacks.add(provider);
         }
+    }
+
+    /** Packaged providers first, then the user folder packs in alphabetical order. */
+    public static List<IContentProvider> getContentPacks()
+    {
+        return Collections.unmodifiableList(contentPacks);
     }
 
     public static void readContentPacks()
@@ -281,6 +280,7 @@ public class ContentManager
     {
         Path tempRoot = flanFolder.getParent().resolve(".flantemp");
         FileUtils.cleanupFlanTempOnStartup(tempRoot);
+        PartType.clearDefaultEngines();
 
         for (IContentProvider provider : contentPacks)
         {
@@ -293,7 +293,6 @@ public class ContentManager
             armorTextureReferences.putIfAbsent(provider, new HashMap<>());
             guiTextureReferences.putIfAbsent(provider, new HashMap<>());
             skinsTextureReferences.putIfAbsent(provider, new HashMap<>());
-            modelReferences.putIfAbsent(provider, new HashMap<>());
 
             if (!provider.isArchive())
                 compileJavaModelsIfNeeded(provider);
@@ -403,6 +402,7 @@ public class ContentManager
             FlansMod.log.info("Loaded content pack {} in {} ms.", provider.getName(), endTime - startTime);
         }
 
+        applyMeasuredSoundLengths();
         resolveDeferredContentReferences();
 
         FileUtils.deleteDirectoryIfEmpty(tempRoot);
@@ -429,6 +429,49 @@ public class ContentManager
     private static String formatMilliseconds(long nanoseconds)
     {
         return String.format(Locale.ROOT, "%.3f", nanoseconds / 1_000_000.0);
+    }
+
+    /**
+     * Replaces the sound timers configured in the content packs with the real length of the sound
+     * files they play. This runs once every pack has been read, because a type may well play a sound
+     * that another pack provides.
+     */
+    private static void applyMeasuredSoundLengths()
+    {
+        long startTime = System.currentTimeMillis();
+        boolean overrideConfiguredLengths = ContentLoadingConfig.isOverrideConfiguredSoundLengths();
+
+        // With no measured length loaded, resolving leaves every timer as the content pack configured it.
+        SoundLengthIndex.clear();
+        if (overrideConfiguredLengths)
+        {
+            for (IContentProvider provider : contentPacks)
+                loadSoundLengthIndex(provider);
+        }
+
+        int resolved = 0;
+        for (ArrayList<InfoType> providerConfigs : configs.values())
+        {
+            for (InfoType config : providerConfigs)
+                resolved += config.resolveSoundLengths();
+        }
+
+        if (!overrideConfiguredLengths)
+        {
+            FlansMod.log.info("Keeping the sound lengths configured in the content packs because overrideConfiguredSoundLengths is disabled.");
+            return;
+        }
+
+        FlansMod.log.info("Replaced {} configured sound length(s) with the measured length of the sound file in {} ms. "
+            + "Enable debug logging to see them, or set overrideConfiguredSoundLengths to false to keep the configured values.",
+            resolved, System.currentTimeMillis() - startTime);
+    }
+
+    private static void loadSoundLengthIndex(IContentProvider provider)
+    {
+        FileSystem fs = FileUtils.createFileSystem(provider);
+        SoundLengthIndex.load(provider.getAssetsPath(fs).resolve(SoundLengthIndex.FILE_NAME));
+        FileUtils.closeFileSystem(fs, provider);
     }
 
     private static void resolveDeferredContentReferences()
@@ -458,6 +501,9 @@ public class ContentManager
         {
             for (InfoType config : providerConfigs)
             {
+                if (config instanceof IAmmoGroupUser ammoGroupUser)
+                    ShootableType.validateAmmoGroups(config, ammoGroupUser.getAmmoGroups());
+
                 if (config instanceof GunBoxType gunBoxType)
                 {
                     gunBoxType.validateRecipeIngredients();
@@ -623,24 +669,7 @@ public class ContentManager
 
     private static List<String> readTypeFileLines(Path file) throws IOException
     {
-        CharacterCodingException firstDecodeFailure = null;
-
-        for (Charset charset : TYPE_FILE_CHARSETS)
-        {
-            try
-            {
-                return Files.readAllLines(file, charset);
-            }
-            catch (CharacterCodingException e)
-            {
-                if (firstDecodeFailure == null)
-                    firstDecodeFailure = e;
-                else
-                    firstDecodeFailure.addSuppressed(e);
-            }
-        }
-
-        throw firstDecodeFailure != null ? firstDecodeFailure : new IOException("No charset configured for " + file);
+        return TextDecoding.readLines(file);
     }
 
     private static void stripBomIfPresent(List<String> lines)
@@ -661,6 +690,9 @@ public class ContentManager
         {
             try
             {
+                // Before the categories are applied: what is fingerprinted is the pack's own text,
+                // and the categories are the mod's, identical on both sides.
+                ContentFingerprint.record(typeFile);
                 CategoryManager.applyCategoriesToFile(typeFile);
                 EnumType type = typeFile.getType();
                 Constructor<? extends InfoType> constructor = typeConstructors.get(type);
@@ -915,7 +947,14 @@ public class ContentManager
         if (!name.equals(newName))
         {
             name = newName;
-            FlansMod.log.warn("Duplicate texture detected: '{}/{}' in [{}] and [{}]. Creating texture alias '{}' in [{}]", folderName, originalName, thisContentPack.getConflictDisplayName(), otherContentPack.getConflictDisplayName(), name, thisContentPack.getConflictDisplayName());
+            if (thisContentPack.isPreprocessed())
+            {
+                FlansMod.log.error("Conflicting texture '{}/{}' in read-only bundled content [{}] and [{}]. Rename one of the bundled textures to resolve the conflict", folderName, originalName, thisContentPack.getConflictDisplayName(), otherContentPack.getConflictDisplayName());
+            }
+            else
+            {
+                FlansMod.log.warn("Duplicate texture detected: '{}/{}' in [{}] and [{}]. Creating texture alias '{}' in [{}]", folderName, originalName, thisContentPack.getConflictDisplayName(), otherContentPack.getConflictDisplayName(), name, thisContentPack.getConflictDisplayName());
+            }
         }
 
         return name;
@@ -966,6 +1005,7 @@ public class ContentManager
             || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_MODELS).resolve(FOLDER_MODELS_ITEM))
             || !Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_MODELS).resolve(FOLDER_MODELS_BLOCK))
             || shouldUpdateGeneratedTextureFiles(provider, fs)
+            || isSoundLengthIndexOutdated(provider, fs)
             || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEM)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ITEMS)))
             || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCK)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_BLOCKS)))
             || (!Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES).resolve(FOLDER_TEXTURES_ARMOR)) && Files.exists(provider.getAssetsPath(fs).resolve(FOLDER_TEXTURES_ARMOR)))
@@ -994,6 +1034,25 @@ public class ContentManager
         {
             return true;
         }
+    }
+
+    /**
+     * The sound length index is generated while reprocessing a pack, so a pack whose sounds changed
+     * since the index was written has to be reprocessed again.
+     */
+    private static boolean isSoundLengthIndexOutdated(IContentProvider provider, @Nullable FileSystem fs)
+    {
+        if (provider.isArchive() && fs == null)
+            return true;
+
+        Path assetsPath = provider.getAssetsPath(fs);
+        Path soundsDir = assetsPath.resolve(FOLDER_SOUNDS);
+
+        // A pack still using the legacy sound folder has nothing to index until it has been normalized.
+        if (!Files.exists(soundsDir) && Files.exists(assetsPath.resolve(FOLDER_SOUND)))
+            return true;
+
+        return SoundLengthIndex.isOutdated(soundsDir, assetsPath.resolve(SoundLengthIndex.FILE_NAME));
     }
 
     private static void writeGeneratedAssetsVersion(IContentProvider provider)
@@ -1205,7 +1264,7 @@ public class ContentManager
         }
 
         Path outputFile = outputFolder.resolve(shortName + FileUtils.JSON_EXTENSION);
-        writeGeneratedItemModelJson(outputFile, model);
+        writeGeneratedItemModelJson(outputFile, model, config);
 
         if (config instanceof PaintableType paintableType)
         {
@@ -1216,7 +1275,7 @@ public class ContentManager
                     outputFile = outputFolder.resolve(p.getIcon() + FileUtils.JSON_EXTENSION);
                     String icon = hasItemIcon(config.getContentPack(), p.getIcon()) ? p.getIcon() : config.getIcon();
                     model = ResourceUtils.ModelJson.createItemModel(config, p, icon);
-                    writeGeneratedItemModelJson(outputFile, model);
+                    writeGeneratedItemModelJson(outputFile, model, config);
                 }
             }
         }
@@ -1230,15 +1289,15 @@ public class ContentManager
             || Files.isRegularFile(textures.resolve(FOLDER_TEXTURES_ITEM).resolve(fileName));
     }
 
-    private static void writeGeneratedItemModelJson(Path outputFile, ResourceUtils.ModelJson model)
+    private static void writeGeneratedItemModelJson(Path outputFile, ResourceUtils.ModelJson model, InfoType config)
     {
-        if (shouldPreserveExistingItemModel(outputFile))
+        if (shouldPreserveExistingItemModel(outputFile, config))
             return;
 
         FileUtils.writeString(outputFile, gson.toJson(model));
     }
 
-    private static boolean shouldPreserveExistingItemModel(Path modelFile)
+    private static boolean shouldPreserveExistingItemModel(Path modelFile, InfoType config)
     {
         if (!Files.isRegularFile(modelFile))
             return false;
@@ -1246,7 +1305,7 @@ public class ContentManager
         try
         {
             JsonObject model = JsonParser.parseString(Files.readString(modelFile, StandardCharsets.UTF_8)).getAsJsonObject();
-            return !isGeneratedSimpleItemModel(model);
+            return !isGeneratedSimpleItemModel(model) && !isOutdatedGeneratedGloveModel(model, config);
         }
         catch (IOException | IllegalStateException | JsonSyntaxException e)
         {
@@ -1265,6 +1324,26 @@ public class ContentManager
         return parent.equals("minecraft:item/generated")
             || parent.equals("minecraft:item/handheld")
             || parent.startsWith(FlansMod.FLANSMOD_ID + ":block/");
+    }
+
+    /**
+     * Earlier versions replaced the model shipped by the content pack with a hardcoded glove shape whose UVs were
+     * mapped onto the flat item icon, which rendered as garbage. Such a model is recognizable by its two texture
+     * slots both pointing at the item icon, and is regenerated instead of preserved.
+     */
+    private static boolean isOutdatedGeneratedGloveModel(JsonObject model, InfoType config)
+    {
+        if (!(config instanceof GloveType) || model.has("parent") || !model.has("elements"))
+            return false;
+        if (!model.has("textures") || !model.get("textures").isJsonObject())
+            return false;
+
+        JsonObject textures = model.getAsJsonObject("textures");
+        if (textures.size() != 2 || !textures.has("0") || !textures.has("particle"))
+            return false;
+
+        String icon = FlansMod.FLANSMOD_ID + ":" + FOLDER_TEXTURES_ITEM + "/" + ResourceUtils.sanitize(config.getIcon());
+        return icon.equals(textures.get("0").getAsString()) && icon.equals(textures.get("particle").getAsString());
     }
 
     private static void generateBlockModelJson(InfoType config, Path outputFolder)
@@ -1410,18 +1489,8 @@ public class ContentManager
     }
 
     private static List<String> readLinesUtf8OrUtf16(Path file) throws IOException {
-        List<String> lines;
-        try
-        {
-            lines = Files.readAllLines(file, StandardCharsets.UTF_8);
-            stripBomIfPresent(lines);
-        }
-        catch (MalformedInputException ex)
-        {
-            // UTF-8 failed: try UTF-16
-            lines = Files.readAllLines(file, StandardCharsets.UTF_16);
-            stripBomIfPresent(lines);
-        }
+        List<String> lines = TextDecoding.readLines(file);
+        stripBomIfPresent(lines);
         return lines;
     }
 
@@ -1806,6 +1875,8 @@ public class ContentManager
         Path soundsJsonFile = provider.getAssetsPath().resolve("sounds.json");
         if (Files.isRegularFile(soundsJsonFile))
             SoundJsonProcessor.process(soundsJsonFile, FlansMod.FLANSMOD_ID, soundsDir);
+
+        SoundLengthIndex.generate(soundsDir, assetsDir.resolve(SoundLengthIndex.FILE_NAME));
     }
 
     private static void copyLegacySoundFolder(Path soundDir, Path soundsDir)

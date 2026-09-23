@@ -52,6 +52,39 @@ public enum EnumDriveablePart
     ERA(new EnumDriveablePart[] { }, "ERA", "Armour (ERA)"),
     APS(new EnumDriveablePart[] { }, "APS", "Armour (APS)"),
     ADS(new EnumDriveablePart[] { }, "ADS", "Armour (ADS)"),
+    COMPOSITE(new EnumDriveablePart[] { }, "composite", "Armor (Composite)"),
+    COMPOSITE_2(new EnumDriveablePart[] { }, "composite2", "Armor (More Composite)"),
+    SPACED(new EnumDriveablePart[] { }, "spaced", "Armor (Spaced)"),
+    COMPOSITE_LEFT(new EnumDriveablePart[] { }, "compositeL", "Armor (Left Composite)"),
+    COMPOSITE_RIGHT(new EnumDriveablePart[] { }, "compositeR", "Armor (Right Composite)"),
+    GENERIC_0(new EnumDriveablePart[] { }, "generic0", "Armor (Extra)"),
+    GENERIC_1(new EnumDriveablePart[] { }, "generic1", "Armor (Extra 1)"),
+    GENERIC_2(new EnumDriveablePart[] { }, "generic2", "Armor (Extra 2)"),
+    GENERIC_3(new EnumDriveablePart[] { }, "generic3", "Armor (Extra 3)"),
+    GENERIC_4(new EnumDriveablePart[] { }, "generic4", "Armor (Extra 4)"),
+    GENERIC_5(new EnumDriveablePart[] { }, "generic5", "Armor (Extra 5)"),
+    GENERIC_6(new EnumDriveablePart[] { }, "generic6", "Armor (Extra 6)"),
+    GENERIC_7(new EnumDriveablePart[] { }, "generic7", "Armor (Extra 7)"),
+    GENERIC_8(new EnumDriveablePart[] { }, "generic8", "Armor (Extra 8)"),
+    GENERIC_9(new EnumDriveablePart[] { }, "generic9", "Armor (Extra 9)"),
+    BIAS(new EnumDriveablePart[] { }, "russianBias", "Stalinium"),
+    ERA_2(new EnumDriveablePart[] { }, "ERA2", "More ERA"),
+    ERA_3(new EnumDriveablePart[] { }, "ERA3", "Even More ERA"),
+    INFANTRY(new EnumDriveablePart[] { }, "infantry", "Meat Shield"),
+    RIGHT_SKIRT(new EnumDriveablePart[] { }, "rightSkirt", "Skirt (Right)"),
+    LEFT_SKIRT(new EnumDriveablePart[] { }, "leftSkirt", "Skirt (Left)"),
+    SHIELD(new EnumDriveablePart[] { }, "shield", "Energy Shield"),
+
+    // Additional turret-mounted armor and weak spots from the Krishna Mk6C fork.
+    TURRET_ARMOR(new EnumDriveablePart[] { }, "turretarmor", "Armor (Turret)"),
+    MORE_TURRET_ARMOR(new EnumDriveablePart[] { }, "moreturretarmor", "Armor (Turret Composite)"),
+    TURRET_SIDE(new EnumDriveablePart[] { }, "turretside", "Armor (Turret Side)"),
+    TURRET_SKIRT(new EnumDriveablePart[] { }, "turretSkirt", "Skirt (Turret)"),
+    TURRET_WEAK(new EnumDriveablePart[] { }, "weakTrt", "Turret Weak Spot"),
+    TURRET_WEAK_2(new EnumDriveablePart[] { }, "weakTrt2", "Turret Weak Spot 2"),
+    WEAK_SPOT(new EnumDriveablePart[] { }, "weakSpot", "Weak Spot"),
+    WEAK_SPOT_2(new EnumDriveablePart[] { }, "weakSpot2", "Weak Spot 2"),
+    WEAK_SPOT_3(new EnumDriveablePart[] { }, "weakSpot3", "Weak Spot 3"),
 
     BOW(new EnumDriveablePart[] { }, "bow", "Bow"),
     STERN(new EnumDriveablePart[] { }, "stern", "Stern"),
@@ -103,6 +136,9 @@ public enum EnumDriveablePart
     TORPEDO_BULGE_2(new EnumDriveablePart[] { }, "torpedoBulge2", "Torpedo Bulge 2"),
     TORPEDO_BULGE_3(new EnumDriveablePart[] { }, "torpedoBulge3", "Torpedo Bulge 3"),
     TORPEDO_BULGE_4(new EnumDriveablePart[] { }, "torpedoBulge4", "Torpedo Bulge 4"),
+    BULGE(new EnumDriveablePart[] { }, "bulge", "Torpedo Bulge"),
+    BULGE_LEFT(new EnumDriveablePart[] { }, "bulgel", "Torpedo Bulge (Left)"),
+    BULGE_RIGHT(new EnumDriveablePart[] { }, "bulger", "Torpedo Bulge (Right)"),
     TURRET_1(new EnumDriveablePart[] { }, "turret1", "Turret 1"),
     TURRET_2(new EnumDriveablePart[] { }, "turret2", "Turret 2"),
     TURRET_3(new EnumDriveablePart[] { }, "turret3", "Turret 3"),
@@ -123,6 +159,19 @@ public enum EnumDriveablePart
     BULKHEAD_2(new EnumDriveablePart[] { }, "bulkhead2", "Bulkhead 2"),
     PORT(new EnumDriveablePart[] { }, "port", "Portside (Left)"),
     STARBOARD(new EnumDriveablePart[] { }, "starboard", "Starboard (Right)"),
+    MIDSECTION(new EnumDriveablePart[] { }, "midsection", "Midsection"),
+    LEFT(new EnumDriveablePart[] { }, "left", "Center Port"),
+    RIGHT(new EnumDriveablePart[] { }, "right", "Center Starboard"),
+    BELT_LEFT(new EnumDriveablePart[] { }, "beltl", "Armor Belt (Left)"),
+    BELT_RIGHT(new EnumDriveablePart[] { }, "beltr", "Armor Belt (Right)"),
+    GASBAG(new EnumDriveablePart[] { }, "gasbag", "Gas Bag"),
+    BUOYANCY(new EnumDriveablePart[] { }, "buoyancy", "Buoyancy"),
+    ENGINE(new EnumDriveablePart[] { }, "engine", "Engine"),
+    ENGINE_2(new EnumDriveablePart[] { }, "engine2", "Engine 2"),
+    ENGINE_3(new EnumDriveablePart[] { }, "engine3", "Engine 3"),
+    ENGINE_4(new EnumDriveablePart[] { }, "engine4", "Engine 4"),
+    ENGINE_5(new EnumDriveablePart[] { }, "engine5", "Engine 5"),
+    ENGINE_6(new EnumDriveablePart[] { }, "engine6", "Engine 6"),
 
     //Mecha parts
     LEFT_ARM(new EnumDriveablePart[] { }, "leftArm", "Arm (Left)"),
@@ -157,6 +206,16 @@ public enum EnumDriveablePart
                 TRAILER,
                 HARVESTER,
                 AIRFRAME,
+                FRONTAL_ARMOR, LEFTSIDE_ARMOR, RIGHTSIDE_ARMOR, ADDITIONAL_ARMOR,
+                ERA, APS, ADS,
+                COMPOSITE, COMPOSITE_2, SPACED, COMPOSITE_LEFT, COMPOSITE_RIGHT,
+                GENERIC_0, GENERIC_1, GENERIC_2, GENERIC_3, GENERIC_4,
+                GENERIC_5, GENERIC_6, GENERIC_7, GENERIC_8, GENERIC_9,
+                BIAS, ERA_2, ERA_3, INFANTRY,
+                RIGHT_SKIRT, LEFT_SKIRT, SHIELD,
+                TURRET_ARMOR, MORE_TURRET_ARMOR, TURRET_SIDE, TURRET_SKIRT,
+                TURRET_WEAK, TURRET_WEAK_2,
+                WEAK_SPOT, WEAK_SPOT_2, WEAK_SPOT_3,
 
                 BOW,
                 STERN,
@@ -179,7 +238,11 @@ public enum EnumDriveablePart
                 TURRET_1, TURRET_2, TURRET_3, TURRET_4, TURRET_5, TURRET_6, TURRET_7, TURRET_8, TURRET_9, TURRET_10, TURRET_11, TURRET_12, TURRET_13, TURRET_14, TURRET_15, TURRET_16,
                 BULKHEAD, BULKHEAD_2,
                 PORT,
-                STARBOARD
+                STARBOARD,
+                BULGE, BULGE_LEFT, BULGE_RIGHT,
+                MIDSECTION, LEFT, RIGHT, BELT_LEFT, BELT_RIGHT,
+                GASBAG, BUOYANCY,
+                ENGINE, ENGINE_2, ENGINE_3, ENGINE_4, ENGINE_5, ENGINE_6
         }, "core", "Core");
 
     private final String shortName;
@@ -187,7 +250,10 @@ public enum EnumDriveablePart
     private final EnumDriveablePart[] children;
 
     private static final Map<String, EnumDriveablePart> BY_NAME;
-    private static final List<EnumDriveablePart> ENGINE_ROOMS = List.of(ENGINE_ROOM_1, ENGINE_ROOM_2, ENGINE_ROOM_3, ENGINE_ROOM_4, ENGINE_ROOM_5, ENGINE_ROOM_6, ENGINE_ROOM_7, ENGINE_ROOM_8);
+    private static final List<EnumDriveablePart> ENGINE_ROOMS = List.of(
+        ENGINE_ROOM_1, ENGINE_ROOM_2, ENGINE_ROOM_3, ENGINE_ROOM_4,
+        ENGINE_ROOM_5, ENGINE_ROOM_6, ENGINE_ROOM_7, ENGINE_ROOM_8,
+        ENGINE, ENGINE_2, ENGINE_3, ENGINE_4, ENGINE_5, ENGINE_6);
     private static final List<EnumDriveablePart> BOILER_ROOMS = List.of(BOILER_ROOM_1, BOILER_ROOM_2, BOILER_ROOM_3, BOILER_ROOM_4, BOILER_ROOM_5, BOILER_ROOM_6, BOILER_ROOM_7, BOILER_ROOM_8);
 
     static
@@ -201,31 +267,9 @@ public enum EnumDriveablePart
         // Common community-pack names and historical misspellings.
         parts.put("deck1", DECK);
         parts.put("superstucture", SUPERSTRUCTURE);
-        parts.put("engine", ENGINE_ROOM_1);
-        parts.put("engine1", ENGINE_ROOM_1);
-        parts.put("engine2", ENGINE_ROOM_2);
-        parts.put("engine3", ENGINE_ROOM_3);
-        parts.put("engine4", ENGINE_ROOM_4);
-        parts.put("engine5", ENGINE_ROOM_5);
-        parts.put("engine6", ENGINE_ROOM_6);
+        parts.put("engine1", ENGINE);
         parts.put("engine7", ENGINE_ROOM_7);
         parts.put("engine8", ENGINE_ROOM_8);
-        parts.put("bulgel", TORPEDO_BULGE);
-        parts.put("bulger", TORPEDO_BULGE_2);
-        parts.put("left", PORT);
-        parts.put("right", STARBOARD);
-        parts.put("gasbag", FLOATS);
-        parts.put("buoyancy", FLOATS);
-        parts.put("midsection", CORE);
-        parts.put("shield", ADDITIONAL_ARMOR);
-        parts.put("spaced", ADDITIONAL_ARMOR);
-        parts.put("turretarmor", ADDITIONAL_ARMOR);
-        parts.put("weakspot", ADDITIONAL_ARMOR);
-        parts.put("weakspot2", ERA);
-        parts.put("weaktrt", APS);
-        parts.put("generic0", CORE);
-        parts.put("generic1", CORE);
-        parts.put("generic2", CORE);
         BY_NAME = Collections.unmodifiableMap(parts);
     }
 
@@ -265,6 +309,13 @@ public enum EnumDriveablePart
     public static List<EnumDriveablePart> getBoilerRooms()
     {
         return BOILER_ROOMS;
+    }
+
+    /** Parts whose authored boxes rotate with the main turret and use turret armour defaults. */
+    public static boolean isTurretMounted(EnumDriveablePart part)
+    {
+        return part == TURRET || part == BARREL || part == MORE_TURRET_ARMOR
+            || part != null && part.name().startsWith("TURRET_");
     }
 
     public static boolean isWheel(EnumDriveablePart part)

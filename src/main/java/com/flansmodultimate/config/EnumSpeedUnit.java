@@ -1,5 +1,7 @@
 package com.flansmodultimate.config;
 
+import lombok.Getter;
+
 /** Units available for the client-side driveable speed readout. */
 public enum EnumSpeedUnit
 {
@@ -8,6 +10,7 @@ public enum EnumSpeedUnit
     MPH(2.2369362920544D, "mph");
 
     private final double blocksPerSecondMultiplier;
+    @Getter
     private final String symbol;
 
     EnumSpeedUnit(double blocksPerSecondMultiplier, String symbol)
@@ -19,10 +22,5 @@ public enum EnumSpeedUnit
     public double convert(double blocksPerSecond)
     {
         return blocksPerSecond * blocksPerSecondMultiplier;
-    }
-
-    public String getSymbol()
-    {
-        return symbol;
     }
 }

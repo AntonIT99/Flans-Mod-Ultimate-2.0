@@ -4,7 +4,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
@@ -13,20 +12,16 @@ import static org.objectweb.asm.Opcodes.*;
 public class TransformClassVisitor extends ClassVisitor
 {
 
-    private List<TransformOp> opsForThisClass;
+    private final List<TransformOp> opsForThisClass;
 
-    public TransformClassVisitor(int api, ClassVisitor cv)
+    /**
+     * @param transforms collects the OpenGL transforms found in the visited class, in the order they are
+     *                   applied. The caller stores them for the class it defines from the visited data.
+     */
+    public TransformClassVisitor(int api, ClassVisitor cv, List<TransformOp> transforms)
     {
         super(api, cv);
-    }
-
-    @Override
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces)
-    {
-        String className = name.replace('/', '.');
-        this.opsForThisClass = new ArrayList<>();
-        ClassLoaderUtils.getTransforms().put(className, this.opsForThisClass);
-        super.visit(version, access, name, signature, superName, interfaces);
+        opsForThisClass = transforms;
     }
 
     @Override

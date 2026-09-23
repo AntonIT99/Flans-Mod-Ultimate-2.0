@@ -1,10 +1,10 @@
 package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsmod.api.client.model.ModelBase;
 
 public class ModelCasing extends ModelBase
 {

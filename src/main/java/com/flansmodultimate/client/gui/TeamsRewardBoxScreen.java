@@ -16,6 +16,7 @@ public final class TeamsRewardBoxScreen extends Screen
 {
     private static final int WIDTH = 196;
     private static final int HEIGHT = 200;
+    private static final int ROWS = 5;
 
     public TeamsRewardBoxScreen()
     {
@@ -33,17 +34,32 @@ public final class TeamsRewardBoxScreen extends Screen
         int top = height / 2 - HEIGHT / 2;
         int row = 0;
 
-        for (PacketLoadoutState.BoxView box : state.getBoxes())
+        // One row per box type the pool offers, whether or not the player holds
+        // any, so the kinds still to be earned stay visible. A type with nothing
+        // unopened shows a disabled button rather than disappearing.
+        for (PacketLoadoutState.BoxTypeView type : state.getBoxTypes())
         {
-            if (box.opened() || row >= 5)
-                continue;
-            addRenderableWidget(Button.builder(Component.literal("Open " + box.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openBox(box.id())))
-                .bounds(left + 28, top + 30 + row * 25, 140, 20).build());
+            if (row >= ROWS)
+                break;
+            Button button = Button.builder(Component.literal("Open " + type.name() + " x" + type.unopened()),
+                    ignored -> openFirstUnopened(state, type.boxId()))
+                .bounds(left + 28, top + 30 + row * 25, 140, 20).build();
+            button.active = type.unopened() > 0;
+            addRenderableWidget(button);
             row++;
         }
 
         addRenderableWidget(Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub()))
             .bounds(left + 68, top + 171, 60, 20).build());
+    }
+
+    /** Opens the oldest box the player still holds of this kind. */
+    private static void openFirstUnopened(PacketLoadoutState state, String boxId)
+    {
+        state.getBoxes().stream()
+            .filter(box -> !box.opened() && boxId.equals(box.boxId()))
+            .findFirst()
+            .ifPresent(box -> PacketHandler.sendToServer(PacketLoadoutAction.openBox(box.id())));
     }
 
     @Override
@@ -54,8 +70,21 @@ public final class TeamsRewardBoxScreen extends Screen
 
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansMod.teamsOpenCreatesGuiTexture, left, top, 0, 0, WIDTH, HEIGHT, 256, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSOPENCREATES, left, top, 0, 0, WIDTH, HEIGHT, 256, 256);
         graphics.drawCenteredString(font, title, width / 2, top + 10, 0xFFFFFF);
+
+        if (state != null)
+        {
+            int row = 0;
+            for (PacketLoadoutState.BoxTypeView type : state.getBoxTypes())
+            {
+                if (row >= ROWS)
+                    break;
+                if (!type.preview().isEmpty())
+                    graphics.renderItem(type.preview(), left + 6, top + 30 + row * 25 + 2);
+                row++;
+            }
+        }
 
         if (state != null && !state.getRevealedReward().isBlank())
         {

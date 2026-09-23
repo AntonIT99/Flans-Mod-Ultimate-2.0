@@ -1,0 +1,11 @@
+// Identity
+Name Boat Body
+ShortName 44_Boat_Body
+Category Misc
+
+// Rendering
+Icon 44_Boat_Body
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 3

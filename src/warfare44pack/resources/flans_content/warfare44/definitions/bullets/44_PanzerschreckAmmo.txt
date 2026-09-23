@@ -1,0 +1,39 @@
+// Identity
+Name Panzerschreck Rocket
+ShortName 44_PanzerschreckAmmo
+
+// Rendering
+Icon 44_PanzerschreckAmmo
+Model Bullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 1
+
+// Ballistics
+MuzzleVelocity 110
+FallSpeed 0.25
+HitBoxSize 0.1
+Penetrates False
+PenetrationAt100m 210
+BreaksGlass True
+
+// Damage
+Mass 3300
+DamageVsLiving 100
+DamageVsVehicles 825
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 860
+Explosion 2
+ExplodeOnImpact True
+Fuse 0
+
+// Effects
+SmokeTrail True
+FlakParticles 0
+
+// Sounds
+HitSound bullet

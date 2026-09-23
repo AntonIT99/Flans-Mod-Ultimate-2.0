@@ -1,0 +1,11 @@
+// Identity
+Name American Flag
+ShortName 44_AmericanFlag
+Category Misc
+
+// Rendering
+Icon 44_AmericanFlag
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 6

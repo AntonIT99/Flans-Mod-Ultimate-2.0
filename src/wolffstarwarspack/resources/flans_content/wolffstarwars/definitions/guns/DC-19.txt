@@ -1,0 +1,56 @@
+// Identity
+Name Blaster DC-19
+ShortName blasterDC-19
+
+// Item and rendering
+Icon blasterdc-15s
+Colour 255 255 255
+Model wolffstarwars.DC15S
+Texture skindc15s
+FlashModel wolffstarwars.MuzzleFlash
+FlashTexture sw_stealthflash
+
+// Ammunition
+Ammo Dc15Ammo
+Ammo blasterStunAmmo
+Ammo Dc19invisibleAmmo
+ReloadTime 40
+
+// Operation
+RoundsPerMin 700.0
+Mode FullAuto
+Deployable False
+OneHanded True
+
+// Ballistics
+Recoil 3
+Dispersion 0.2
+MuzzleVelocity 260.0
+
+// Damage and protection
+Damage 1
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+NumGenericAttachmentSlots 2
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+
+// Sounds
+ShootSound Dc19shoot
+SoundLength 0
+DistortSound False
+ReloadSound MG42Reload
+
+// Tooltip
+ShowDamage True
+ShowRecoil True
+ShowAccuracy True
+ShowReloadTime True

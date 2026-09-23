@@ -1,5 +1,8 @@
+// Identity
 Name Stealth Sniper
 ShortName marineSniper2
+
+// Items
 AddItem r700+flanMWSilencer
 AddItem m9+flanMWSilencer
 AddItem mwKnife

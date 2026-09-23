@@ -1,0 +1,21 @@
+// Identity
+Name Military Engine Mk. 1
+ShortName SMP_Part_Engine_MilEngineMk1
+
+// Model and Rendering
+Icon Icon_SMP_Part_Engine_MilEngineMk1
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Steel T SMP_Part_Propeller_TurbineJet I SMP_Part_Misc_EngineIgnition
+MMM
+ TI
+MMM
+RecipeOutput 1
+Category Engine
+PartBoxRecipe
+StackSize 4
+WorksWith Plane Mecha
+
+// Movement and Physics
+EngineSpeed 2.0
+FuelConsumption 2.0

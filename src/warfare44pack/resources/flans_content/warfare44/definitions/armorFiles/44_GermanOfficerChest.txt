@@ -1,0 +1,18 @@
+// Identity
+Name German Officer Jacket
+ShortName 44_GermanOfficerChest
+Type Body
+
+// Rendering
+Icon 44_GermanOfficerChest
+Model W44.GermanOfficerChest
+ModelScale 1
+ArmorTexture Skin44_GermanOfficer
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

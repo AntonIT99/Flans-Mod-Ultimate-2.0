@@ -1,8 +1,16 @@
+// Identity
 Name French WW2 Pants
 ShortName frenchPants
-ItemID 23587
+
+// Item and rendering
 Icon FrenchPants
 Colour 255 255 255
-Type Pants
-Defence 0.1
 ArmourTexture French
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

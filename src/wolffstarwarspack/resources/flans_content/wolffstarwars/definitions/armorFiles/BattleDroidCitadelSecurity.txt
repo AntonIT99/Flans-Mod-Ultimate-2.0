@@ -1,0 +1,25 @@
+// Identity
+Name Battle Droid B1 Citadel Security
+ShortName BattleDroidCitadelSecurity
+
+// Item and rendering
+Icon battledroidcitadelsecurity
+Colour 255 255 255
+ArmourTexture battledroidcitadelsecurity
+Model wolffstarwars.BattleDroid
+
+// Protection
+Type Head
+Defence 0.26
+BulletDefence 0.24
+PenetrationResistance 1.90
+ArmorPoints 9
+Toughness 2
+
+// Movement
+MoveSpeedModifier 0.97
+
+// Effects
+SmokeProtection False
+NightVision True
+Invisible True

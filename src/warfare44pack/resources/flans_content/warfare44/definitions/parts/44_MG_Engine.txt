@@ -1,0 +1,16 @@
+// Identity
+Name MG Tripod
+ShortName 44_MG_Engine
+Category Engine
+
+// Rendering
+Icon 44_MG_Engine
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 4
+
+// Engine
+EngineSpeed 0
+FuelConsumption 0
+WorksWith vehicles planes

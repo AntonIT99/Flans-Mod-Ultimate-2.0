@@ -65,21 +65,6 @@ class DriveableCollisionProfileTest
     }
 
     @Test
-    void projectedBarycentricCoordinatesAcceptDeckInteriorAndRejectOutside()
-    {
-        DriveableCollisionProfile.Shape shape = DriveableCollisionProfile.compileMesh(
-            mesh(new Vector3f(), new Vector3f(4F, 1F, 4F), zeroModifiers()));
-        assertNotNull(shape);
-        double[] weights = new double[3];
-        int[] triangle = DriveableCollisionProfile.TOP_TRIANGLES[0];
-
-        assertTrue(DriveableCollisionHelper.barycentricXZ(shape.coordinates(), triangle, 1D, -3D, weights));
-        assertEquals(1D, weights[0] + weights[1] + weights[2], EPSILON);
-        assertFalse(DriveableCollisionHelper.barycentricXZ(shape.coordinates(), triangle, 1D, 1D, weights));
-
-    }
-
-    @Test
     void rotatesLegacyPartBoxesIntoTheModernDriveableBasis()
     {
         CollisionBox box = new CollisionBox(100F, 16F, 32F, 48F, 64F, 80F, 96F);
@@ -100,6 +85,18 @@ class DriveableCollisionProfileTest
         assertEquals(5D, converted.x, EPSILON);
         assertEquals(3D, converted.y, EPSILON);
         assertEquals(-2D, converted.z, EPSILON);
+    }
+
+    @Test
+    void krishnaTurretArmorAndWeakSpotBoxesFollowTheTurret()
+    {
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_ARMOR));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.MORE_TURRET_ARMOR));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_SIDE));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_SKIRT));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_WEAK));
+        assertTrue(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.TURRET_WEAK_2));
+        assertFalse(DriveableCollisionProfile.isTurretMountedPart(EnumDriveablePart.COMPOSITE));
     }
 
     private static CollisionMesh mesh(Vector3f position, Vector3f size, List<Vector3f> modifiers)

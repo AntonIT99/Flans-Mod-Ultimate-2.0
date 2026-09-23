@@ -1,0 +1,39 @@
+// Identity
+Name Vickers K
+ShortName vickersk
+
+// Item and rendering
+Icon vickersk
+Colour 255 255 255
+DeployedModel ww2.vickersk
+DeployedTexture vickersk
+
+// Ammunition
+Ammo vickerskAmmo100
+ReloadTime 40
+
+// Operation
+Mode FullAuto
+Deployable True
+StandBackDistance 1.5
+TopViewLimit 20
+BottomViewLimit 30
+SideViewLimit 45
+PivotHeight 0.375
+RoundsPerMin 1100.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 760.0
+Dispersion 0.36
+
+// Damage and protection
+Damage 5
+
+// Optics
+Scope None
+
+// Sounds
+DistortSound False
+ShootSound BrenShoot
+ReloadSound BrenReload

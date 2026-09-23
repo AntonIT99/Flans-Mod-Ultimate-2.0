@@ -23,7 +23,6 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-@OnlyIn(Dist.CLIENT)
 public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>> extends RenderLayer<T, M>
 {
     public CustomArmorLayer(RenderLayerParent<T, M> parent)

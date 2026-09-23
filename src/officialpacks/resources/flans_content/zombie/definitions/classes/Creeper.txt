@@ -1,4 +1,9 @@
+// Identity
 Name Creeper
 ShortName creeper
+
+// Appearance
 SkinOverride Creeper
+
+// Items
 AddItem creeperExplode

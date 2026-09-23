@@ -1,0 +1,17 @@
+package com.flansmod.client.model.apocalypse;
+
+import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.client.model.ModelBase;
+
+public class ModelTeleporter extends ModelBase
+{
+	private ModelRendererTurbo model;
+	
+	public ModelTeleporter()
+	{
+		int textureX = 64, textureY = 64;
+		
+		model = new ModelRendererTurbo(this, 0, 0, textureX, textureY);
+		model.addSphere(0, 0, 0, 16, 16, 16, 64, 64);
+	}
+}

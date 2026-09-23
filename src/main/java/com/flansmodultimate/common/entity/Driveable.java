@@ -2,28 +2,48 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
-import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
+import com.flansmodultimate.common.driveables.DriveableCollisionWorld;
+import com.flansmodultimate.common.driveables.DriveableControlPhysics;
+import com.flansmodultimate.common.driveables.DriveableDamageDebug;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableExplosion;
+import com.flansmodultimate.common.driveables.DriveableImpactDamage;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
+import com.flansmodultimate.common.driveables.DriveablePrediction;
+import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
+import com.flansmodultimate.common.driveables.DriveableVisualCache;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.FluidFuel;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.PilotGun;
+import com.flansmodultimate.common.driveables.SeatCycle;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.driveables.SuspensionPhysics;
+import com.flansmodultimate.common.driveables.armor.ResolvedArmorHit;
+import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
+import com.flansmodultimate.common.driveables.armor.VehicleProjectileDamageResolver;
+import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
+import com.flansmodultimate.common.driveables.physics.MarineDraftPhysics;
+import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
+import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.item.ToolItem;
@@ -38,27 +58,37 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
+import com.flansmodultimate.event.PlayerEnterSeatEvent;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
+import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.util.InventoryHelper;
 import lombok.Getter;
 import lombok.Setter;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -71,6 +101,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -84,12 +115,16 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.DismountHelper;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -104,7 +139,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 /**
@@ -114,7 +151,7 @@ import java.util.UUID;
  * transforms, fuel, inventory, weapon delays and damage are owned by the
  * server and replicated through normal entity data/position tracking.</p>
  */
-public abstract class Driveable extends Entity implements IEntityWithComplexSpawn, IFlanEntity<DriveableType>, IControllable
+public abstract class Driveable extends Entity implements IEntityWithComplexSpawn, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
 {
     public static final String NBT_TYPE = "driveable_type";
     public static final String NBT_YAW = "driveable_yaw";
@@ -127,9 +164,14 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     public static final String NBT_MODE = "driveable_mode";
     public static final String NBT_OWNER = "driveable_owner";
     public static final String NBT_LOCKED = "driveable_locked";
+    public static final String NBT_ENGINE_REQUESTED = "engine_requested";
     public static final String NBT_ENGINE_START_TICKS = "engine_start_ticks";
     public static final String NBT_PRIMARY_SHOOT_DELAY = "primary_shoot_delay";
     public static final String NBT_SECONDARY_SHOOT_DELAY = "secondary_shoot_delay";
+    public static final String NBT_LOADED_ORDNANCE_SLOT = "loaded_ordnance_slot";
+    public static final String NBT_ORDNANCE_ROUNDS_FIRED = "ordnance_rounds_fired";
+    public static final String NBT_WEAPON_SLOT_LOAD_ORDER = "weapon_slot_load_order";
+    public static final String NBT_WEAPON_SLOT_LOAD_SEQUENCE = "weapon_slot_load_sequence";
     public static final String NBT_RECOIL_TICKS = "recoil_ticks";
     public static final String NBT_RECOIL_DURATION = "recoil_duration";
     public static final String NBT_IT1_STAGE = "it1_stage";
@@ -147,10 +189,16 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected static final int FLAG_WING = 1 << 2;
     protected static final int FLAG_FLARE = 1 << 3;
     protected static final int FLAG_ENGINE = 1 << 4;
+
+    /** Looping sound channels this vehicle drives on the client. */
+    protected static final String SOUND_CHANNEL_ENGINE = "engine";
+    protected static final String SOUND_CHANNEL_REVERSE = "reverse";
     protected static final int FLAG_IT1_CAN_FIRE = 1 << 5;
     protected static final int FLAG_IT1_RELOADING = 1 << 6;
     /** Countermeasures have finished deploying but are not ready to fire again. */
     protected static final int FLAG_COUNTERMEASURE_RELOADING = 1 << 7;
+    /** Aircraft air brakes are extended. Toggled by the pilot, never automatic. */
+    protected static final int FLAG_AIR_BRAKE = 1 << 8;
 
     protected static final EntityDataAccessor<String> DATA_DRIVEABLE_TYPE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.STRING);
     protected static final EntityDataAccessor<Float> DATA_YAW = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.FLOAT);
@@ -179,11 +227,21 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected static final EntityDataAccessor<Component> DATA_PRIMARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Component> DATA_SECONDARY_AMMO_NAME = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.COMPONENT);
     protected static final EntityDataAccessor<Integer> DATA_SECONDARY_RELOAD_TICKS = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    /** Rounds each bank has left before its next reload, and what a full magazine holds. */
+    protected static final EntityDataAccessor<Integer> DATA_PRIMARY_MAGAZINE_LEFT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_PRIMARY_MAGAZINE_SIZE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_SECONDARY_MAGAZINE_LEFT = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_SECONDARY_MAGAZINE_SIZE = SynchedEntityData.defineId(Driveable.class, EntityDataSerializers.INT);
 
     private static final int INPUT_TIMEOUT_TICKS = 12;
     private static final int CHILD_REPAIR_INTERVAL = 20;
+    /** Matches the radius the server used when it still broadcast emitter particles. */
+    private static final double EMITTER_PARTICLE_RANGE = 128D;
     private static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     private static final double MAX_SPAWN_COORDINATE = 29_999_984D;
+    private static final double MAX_DISMOUNT_DISTANCE = 12D;
+    private static final double DISMOUNT_DISTANCE_STEP = 0.5D;
+    private static final int[] DISMOUNT_HEIGHT_OFFSETS = { 0, 1, -1, 2, -2, 3 };
 
     @Nullable
     protected DriveableType configType;
@@ -196,8 +254,26 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     @Getter
     protected Seat[] seats = new Seat[0];
     @Getter
+    /**
+     * Height of a passenger gun's muzzle above its authored GunOrigin, in blocks.
+     *
+     * <p>Taken from the 1.7.10 firing path, which added
+     * {@code player.getMountedYOffset()} to the origin. That resolves to
+     * {@code height * 0.75} for a standing player, so 1.35. Checked against the
+     * Hellcat, whose {@code GunOrigin 1 6 18 -11} plus this lands 0.6 px from the
+     * centre of the barrel its model draws at rotation point Y -38.</p>
+     *
+     * <p>Held as a constant rather than read from the current occupant, which is
+     * what the legacy path did: a muzzle belongs to the vehicle, and should not
+     * move because a mob rather than a player took the seat, or because the
+     * gunner crouched.</p>
+     */
+    public static final double PASSENGER_GUN_MOUNTED_OFFSET = 1.35D;
+
     protected Wheel[] wheels = new Wheel[0];
     protected int groundedWheelCount;
+    /** Tells this driveable's own motion apart from outside pushes, which are weighed against its mass. Server only. */
+    private final ExternalImpulseTracker externalImpulses = new ExternalImpulseTracker();
     @Getter
     protected final RotatedAxes axes = new RotatedAxes();
 
@@ -222,6 +298,11 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     private float clientVisualTurretPitch;
     private float clientTargetTurretYaw;
     private float clientTargetTurretPitch;
+    /** Prediction of the local driver's own movement. Client only, and null while not predicting. */
+    @Nullable
+    private DriveablePrediction prediction;
+    /** The throttle a prediction simulates with; the synced one is a round trip old. */
+    private float predictedThrottle;
     /** Pitch pivot read from the loaded vehicle model and converted to the driveable-local basis. */
     @Nullable
     private Vec3 modelBarrelPitchPivot;
@@ -231,29 +312,71 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected int localInputMask;
     protected int previousInputMask;
     protected int inputTimeout;
-    protected int primaryShootDelay;
-    protected int secondaryShootDelay;
+    protected float primaryShootDelay;
+    protected float secondaryShootDelay;
     protected int primaryShootPointIndex;
     protected int secondaryShootPointIndex;
     protected int primaryBurstRemaining;
     protected int secondaryBurstRemaining;
     protected int primaryHeldTicks;
     protected int secondaryHeldTicks;
-    protected int[] passengerShootDelay = new int[0];
+    /**
+     * Which ammunition slot each weapon bank has chambered, indexed by bank
+     * (0 primary, 1 secondary); -1 while a bank has nothing loaded. Only banks
+     * firing the vehicle's own ordnance use this - a bank firing mounted guns
+     * feeds from its gun's own slot and has nothing to choose between.
+     */
+    protected final int[] loadedOrdnanceSlot = { -1, -1 };
+    /** Rounds each bank has put out since its last full reload, counted whether or not the item was consumed. */
+    protected final int[] bankRoundsFired = { 0, 0 };
+    /** The same count for each seat gun, so a gunner reloads on schedule in creative too. */
+    protected int[] passengerRoundsFired = new int[0];
+    /**
+     * The part of each bank's cooldown that is a reload rather than the ordinary
+     * wait between shots, indexed by bank. The two are tracked apart only so the
+     * HUD can tell a crew which one they are waiting on; firing is gated on the
+     * cooldown as before.
+     */
+    protected final float[] bankReloadTicks = { 0F, 0F };
+    /** Rounds a gun bank's ammunition slot held when it was last restocked, for its HUD readout. */
+    protected final int[] bankMagazineCapacity = { 0, 0 };
+    /** The same, per seat gun. */
+    protected float[] passengerReloadTicks = new float[0];
+    /** Rounds each seat gun's slot held when it was last restocked, for its HUD readout. */
+    protected int[] passengerMagazineCapacity = new int[0];
+    /** What each seat gun's ammunition slot held at the end of the last tick, to tell a restock from firing. */
+    protected Item[] passengerAmmoItem = new Item[0];
+    protected int[] passengerAmmoRounds = new int[0];
+    /** Whether the snapshots above describe a tick already seen, so a freshly loaded vehicle does not reload. */
+    protected boolean passengerAmmoTracked;
+    /** The same snapshot for each gun bank, indexed by bank. */
+    protected final Item[] gunBankAmmoItem = new Item[2];
+    protected final int[] gunBankAmmoRounds = new int[2];
+    protected boolean gunBankAmmoTracked;
+    /**
+     * The order the weapon slots were filled in, one entry per weapon slot, zero
+     * for an empty slot. A bank loads the oldest round aboard, so a crew that
+     * stows armour-piercing first has armour-piercing chambered; slots filled in
+     * the same tick are ranked by slot number.
+     */
+    protected int[] weaponSlotLoadOrder = new int[0];
+    protected int weaponSlotLoadSequence;
+    protected float[] passengerShootDelay = new float[0];
     protected int[] passengerBurstRemaining = new int[0];
     protected int[] passengerHeldTicks = new int[0];
     protected int weaponInventoryFingerprint;
     protected boolean weaponInventoryFingerprintInitialized;
     protected int renderInventoryFingerprint;
     protected boolean renderInventoryFingerprintInitialized;
+    private final DriveableVisualCache ammoNameCache = new DriveableVisualCache();
+    private final DriveableVisualCache renderInventoryCache = new DriveableVisualCache();
     protected int flareDelay;
     @Getter protected int ticksFlareUsing;
     protected int ticksSinceUsed;
     protected int markerTicks;
     protected int proxyCheckTicker;
-    protected int engineSoundTimer;
-    protected int idleSoundTimer;
-    protected int reverseSoundTimer;
+    /** Counts down while the start sound plays, holding the engine loop back until it has finished. */
+    protected int startSoundTicks;
     protected int engineStartTicks;
     protected int recoilTicksRemaining;
     protected int recoilDuration;
@@ -262,9 +385,11 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected int lockOnSoundDelay;
     protected int underWaterCheckTick = Integer.MIN_VALUE;
     protected boolean underWaterCached;
-    protected boolean wasEngineActive;
     protected boolean engineRequested;
-    protected boolean wasEngineRequested;
+    protected boolean engineStarting;
+    protected boolean driverWasPresent;
+    protected boolean wasRidden;
+    protected boolean wasEngineActive;
     protected boolean placementEffectsPending;
     protected boolean destroyed;
     protected boolean suppressDrops;
@@ -310,9 +435,15 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected final void initialize(@NotNull DriveableType type, @NotNull ItemStack stack)
     {
         configType = type;
+        if (collisionHelper != null)
+            collisionHelper.unregister();
         collisionHelper = new DriveableCollisionHelper(type.getCollisionProfile());
         getPersistentData().putBoolean("CanMountEntity", type.isCanMountEntity());
-        engineStartTicks = Math.max(0, type.getEngineStartTime());
+        engineStartTicks = 0;
+        engineRequested = false;
+        engineStarting = false;
+        driverWasPresent = false;
+        wasRidden = false;
         placementEffectsPending = !level().isClientSide;
         recoilTicksRemaining = 0;
         recoilDuration = 0;
@@ -320,7 +451,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         it1Stage = 8;
         it1ReloadDelay = 0;
         setIT1Angles(0F, 0F, 0F, true);
-        setFlag(FLAG_IT1_CAN_FIRE, type.isIT1());
+        setFlag(FLAG_IT1_CAN_FIRE, type.isIt1());
         setFlag(FLAG_IT1_RELOADING, false);
         setShortName(type.getShortName());
         sourceStack = stack.copy();
@@ -362,6 +493,12 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (passengerShootDelay.length != seatCount)
         {
             passengerShootDelay = Arrays.copyOf(passengerShootDelay, seatCount);
+            passengerRoundsFired = Arrays.copyOf(passengerRoundsFired, seatCount);
+            passengerReloadTicks = Arrays.copyOf(passengerReloadTicks, seatCount);
+            passengerMagazineCapacity = Arrays.copyOf(passengerMagazineCapacity, seatCount);
+            passengerAmmoItem = Arrays.copyOf(passengerAmmoItem, seatCount);
+            passengerAmmoRounds = Arrays.copyOf(passengerAmmoRounds, seatCount);
+            passengerAmmoTracked = false;
             passengerBurstRemaining = Arrays.copyOf(passengerBurstRemaining, seatCount);
             passengerHeldTicks = Arrays.copyOf(passengerHeldTicks, seatCount);
         }
@@ -396,12 +533,67 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     public float getYaw() { return useClientVisualTransform() ? clientVisualYaw : getSyncedYaw(); }
     public float getPitch() { return useClientVisualTransform() ? clientVisualPitch : getSyncedPitch(); }
     public float getRoll() { return useClientVisualTransform() ? clientVisualRoll : getSyncedRoll(); }
-    public float getThrottle() { return entityData.get(DATA_THROTTLE); }
+    /** Vanilla entity rotations describe look direction; driveable angles retain the legacy model basis. */
+    public float getEntityFacingYaw() { return getEntityFacingYaw(getYaw()); }
+    public float getEntityFacingYaw(float driveableYaw)
+    {
+        return LegacyDriveableCoordinates.renderedForwardYaw(driveableYaw, this instanceof Plane);
+    }
+    public float getEntityFacingPitch() { return getEntityFacingPitch(getPitch()); }
+    public float getEntityFacingPitch(float driveablePitch)
+    {
+        return LegacyDriveableCoordinates.renderedForwardPitch(driveablePitch, this instanceof Plane);
+    }
+
+    /**
+     * Vanilla camera angles of a rider looking with the given seat local aim.
+     *
+     * <p>Seat aim describes a rotation inside the driveable's own frame, so it
+     * has to be composed with the driveable orientation. Adding it to the
+     * facing angles instead only agrees while the driveable is level.</p>
+     */
+    public LegacyDriveableCoordinates.ViewAngles getMountedViewAngles(float aimYaw, float aimPitch)
+    {
+        return LegacyDriveableCoordinates.mountedViewAngles(getYaw(), getPitch(), getRoll(),
+            aimYaw, aimPitch, this instanceof Plane);
+    }
+
+    /** Initial model pitch used when this driveable is placed in the world. */
+    public float getInitialPlacementPitch() { return 0F; }
+    public float getThrottle() { return prediction != null ? predictedThrottle : entityData.get(DATA_THROTTLE); }
+
+    /** Reverse-to-forward top-speed ratio used to scale the engine sound's reverse pitch sweep. */
+    public float getEngineSoundReverseSpeedRatio()
+    {
+        if (configType == null)
+            return 0F;
+        ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
+        if (physics != null && physics.hasReverseSpeedOverride() && physics.maxSpeedKmh() > 0F)
+            return Math.max(0F, physics.maxReverseSpeedKmh() / physics.maxSpeedKmh());
+        float forwardPower = configType.getMaxThrottle();
+        return Float.isFinite(forwardPower) && forwardPower > 0F
+            ? Math.max(0F, configType.getMaxNegativeThrottle()) / forwardPower : 0F;
+    }
     public float getTurretYaw() { return useClientVisualTransform() ? clientVisualTurretYaw : getSyncedTurretYaw(); }
     public float getTurretPitch() { return useClientVisualTransform() ? clientVisualTurretPitch : getSyncedTurretPitch(); }
-    public float getFlightPitchControl() { return entityData.get(DATA_FLIGHT_PITCH); }
-    public float getFlightRollControl() { return entityData.get(DATA_FLIGHT_ROLL); }
-    public boolean isMouseControlEnabled() { return entityData.get(DATA_MOUSE_CONTROL); }
+    // While the local driver predicts, the controls are its own, not the synced ones a round trip old.
+    public float getFlightPitchControl()
+    {
+        DriveablePrediction.Frame frame = predictedFrame();
+        return frame != null ? clampFlightControl(frame.flightPitch()) : entityData.get(DATA_FLIGHT_PITCH);
+    }
+
+    public float getFlightRollControl()
+    {
+        DriveablePrediction.Frame frame = predictedFrame();
+        return frame != null ? clampFlightControl(frame.flightRoll()) : entityData.get(DATA_FLIGHT_ROLL);
+    }
+
+    public boolean isMouseControlEnabled()
+    {
+        DriveablePrediction.Frame frame = predictedFrame();
+        return frame != null ? frame.mouseControl() && this instanceof Plane : entityData.get(DATA_MOUSE_CONTROL);
+    }
     public float getRecoilProgress() { return entityData.get(DATA_RECOIL_PROGRESS); }
     public float getIT1DoorAngle() { return entityData.get(DATA_IT1_DOOR_ANGLE); }
     public float getPrevIT1DoorAngle() { return entityData.get(DATA_PREV_IT1_DOOR_ANGLE); }
@@ -411,17 +603,38 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     public float getPrevIT1RailAngle() { return entityData.get(DATA_PREV_IT1_RAIL_ANGLE); }
     public boolean isCanFireIT1() { return getFlag(FLAG_IT1_CAN_FIRE); }
     public boolean isReloadingDrakon() { return getFlag(FLAG_IT1_RELOADING); }
-    public int getInputMask() { return entityData.get(DATA_INPUT_MASK); }
+    public int getInputMask()
+    {
+        DriveablePrediction.Frame frame = predictedFrame();
+        return frame != null ? DriveableInput.sanitize(frame.inputMask()) : entityData.get(DATA_INPUT_MASK);
+    }
     public int getDriveableMode() { return entityData.get(DATA_MODE); }
     public float getFuel() { return entityData.get(DATA_FUEL); }
+    /**
+     * Ticks of <em>reload</em> a bank still owes, which is not the whole wait
+     * before it may fire: the ordinary delay between shots is excluded, so a crew
+     * is told it is reloading only when it actually is.
+     */
     public int getSecondaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : secondaryShootDelay;
+        return level().isClientSide ? entityData.get(DATA_SECONDARY_RELOAD_TICKS) : ShotCooldown.displayTicks(bankReloadTicks[1]);
     }
 
     public int getPrimaryReloadTicks()
     {
-        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : primaryShootDelay;
+        return level().isClientSide ? entityData.get(DATA_PRIMARY_RELOAD_TICKS) : ShotCooldown.displayTicks(bankReloadTicks[0]);
+    }
+
+    /** Rounds a bank has left before its next reload; zero when it has nothing loaded. */
+    public int getMagazineLeft(boolean secondary)
+    {
+        return entityData.get(secondary ? DATA_SECONDARY_MAGAZINE_LEFT : DATA_PRIMARY_MAGAZINE_LEFT);
+    }
+
+    /** What a full magazine of a bank holds. One means the bank reloads after every shot. */
+    public int getMagazineSize(boolean secondary)
+    {
+        return entityData.get(secondary ? DATA_SECONDARY_MAGAZINE_SIZE : DATA_PRIMARY_MAGAZINE_SIZE);
     }
 
     public Component getCurrentPrimaryAmmoName()
@@ -436,7 +649,9 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     private void updateCurrentAmmoNames()
     {
-        if (level().isClientSide)
+        if (level().isClientSide || driveableData == null
+            || !ammoNameCache.needsRefresh(driveableData, driveableData.getInventoryRevision(),
+                loadedOrdnanceSlot[0], loadedOrdnanceSlot[1], tickCount))
             return;
         entityData.set(DATA_PRIMARY_AMMO_NAME, findCurrentAmmoName(false));
         entityData.set(DATA_SECONDARY_AMMO_NAME, findCurrentAmmoName(true));
@@ -449,7 +664,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         EnumWeaponType weapon = configType.weaponType(secondary);
         for (ShootPoint point : configType.shootPoints(secondary))
         {
-            AmmoSelection selection = selectAmmo(point, weapon);
+            AmmoSelection selection = selectAmmo(point, weapon, secondary);
             if (selection != null && !selection.stack().isEmpty())
                 return selection.stack().getHoverName();
         }
@@ -473,7 +688,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return;
         yaw = Mth.wrapDegrees(yaw);
         entityData.set(DATA_YAW, yaw);
-        setYRot(yaw);
+        setYRot(getEntityFacingYaw(yaw));
         axes.setAngles(yaw, getPitch(), getRoll());
     }
 
@@ -483,7 +698,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return;
         pitch = Mth.clamp(pitch, -89.9F, 89.9F);
         entityData.set(DATA_PITCH, pitch);
-        setXRot(pitch);
+        setXRot(getEntityFacingPitch(pitch));
         axes.setAngles(getYaw(), pitch, getRoll());
     }
 
@@ -500,19 +715,32 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     {
         if (!Float.isFinite(yaw) || !Float.isFinite(pitch) || !Float.isFinite(roll))
             return;
-        entityData.set(DATA_YAW, Mth.wrapDegrees(yaw));
-        entityData.set(DATA_PITCH, Mth.clamp(pitch, -89.9F, 89.9F));
-        entityData.set(DATA_ROLL, Mth.wrapDegrees(roll));
-        setYRot(getYaw());
-        setXRot(getPitch());
+        if (prediction != null)
+        {
+            // Predicted attitude lives in the client transform that getYaw() and the renderer read.
+            clientVisualYaw = Mth.wrapDegrees(yaw);
+            clientVisualPitch = Mth.clamp(pitch, -89.9F, 89.9F);
+            clientVisualRoll = Mth.wrapDegrees(roll);
+        }
+        else
+        {
+            entityData.set(DATA_YAW, Mth.wrapDegrees(yaw));
+            entityData.set(DATA_PITCH, Mth.clamp(pitch, -89.9F, 89.9F));
+            entityData.set(DATA_ROLL, Mth.wrapDegrees(roll));
+        }
+        setYRot(getEntityFacingYaw(getYaw()));
+        setXRot(getEntityFacingPitch(getPitch()));
         axes.setAngles(getYaw(), getPitch(), getRoll());
     }
 
     protected void setThrottle(float throttle)
     {
-        float maximum = configType == null ? 1F : Math.max(0F, configType.getMaxThrottle());
-        float reverse = configType == null ? 1F : Math.max(0F, configType.getMaxNegativeThrottle());
-        entityData.set(DATA_THROTTLE, Mth.clamp(Float.isFinite(throttle) ? throttle : 0F, -reverse, maximum));
+        float reversePower = configType == null ? 1F : configType.getMaxNegativeThrottle();
+        float normalized = DriveableControlPhysics.normalizedThrottle(throttle, reversePower);
+        if (prediction != null)
+            predictedThrottle = normalized;
+        else
+            entityData.set(DATA_THROTTLE, normalized);
     }
 
     protected void setTurretAim(float yaw, float pitch)
@@ -525,9 +753,15 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected void setFlightControls(float pitch, float roll, boolean mouseControl)
     {
-        entityData.set(DATA_FLIGHT_PITCH, Mth.clamp(Float.isFinite(pitch) ? pitch : 0F, -1F, 1F));
-        entityData.set(DATA_FLIGHT_ROLL, Mth.clamp(Float.isFinite(roll) ? roll : 0F, -1F, 1F));
+        entityData.set(DATA_FLIGHT_PITCH, clampFlightControl(pitch));
+        entityData.set(DATA_FLIGHT_ROLL, clampFlightControl(roll));
         entityData.set(DATA_MOUSE_CONTROL, mouseControl && this instanceof Plane);
+    }
+
+    private float clampFlightControl(float value)
+    {
+        float limit = this instanceof Plane ? 20F : 1F;
+        return Mth.clamp(Float.isFinite(value) ? value : 0F, -limit, limit);
     }
 
     protected void setInputMask(int mask)
@@ -566,9 +800,11 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     public boolean isVarFlare() { return getFlag(FLAG_FLARE); }
     public boolean isCountermeasureReloading() { return getFlag(FLAG_COUNTERMEASURE_RELOADING); }
     public boolean isEngineActive() { return getFlag(FLAG_ENGINE); }
+    public boolean isAirBrakeDeployed() { return getFlag(FLAG_AIR_BRAKE); }
     public void setGearDeployed(boolean value) { setFlag(FLAG_GEAR, value); }
     public void setDoorOpen(boolean value) { setFlag(FLAG_DOOR, value); }
     public void setWingFolded(boolean value) { setFlag(FLAG_WING, value); }
+    public void setAirBrakeDeployed(boolean value) { setFlag(FLAG_AIR_BRAKE, value); }
 
     public void setEntityMarker(int ticks)
     {
@@ -665,16 +901,23 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         setThrottle(tag.getFloat(NBT_THROTTLE));
         setTurretAim(tag.getFloat(NBT_TURRET_YAW), tag.getFloat(NBT_TURRET_PITCH));
         entityData.set(DATA_FLAGS, tag.contains(NBT_FLAGS) ? tag.getInt(NBT_FLAGS) : FLAG_GEAR);
+        // Spawn data can describe an engine which was already running before this client began
+        // tracking it. Seed the edge detector so joining the area does not replay its startup.
+        wasEngineActive = isEngineActive();
+        engineRequested = tag.contains(NBT_ENGINE_REQUESTED, Tag.TAG_BYTE)
+            ? tag.getBoolean(NBT_ENGINE_REQUESTED) : isEngineActive();
         setDriveableMode(tag.getInt(NBT_MODE));
         if (tag.hasUUID(NBT_OWNER))
             ownerId = tag.getUUID(NBT_OWNER);
         locked = tag.getBoolean(NBT_LOCKED);
         if (tag.contains(NBT_ENGINE_START_TICKS, Tag.TAG_INT))
             engineStartTicks = Math.max(0, tag.getInt(NBT_ENGINE_START_TICKS));
+        engineStarting = engineRequested && !isEngineActive() && engineStartTicks > 0;
         setPrimaryShootDelay(tag.contains(NBT_PRIMARY_SHOOT_DELAY, Tag.TAG_INT)
             ? Math.max(0, tag.getInt(NBT_PRIMARY_SHOOT_DELAY)) : 0);
         setSecondaryShootDelay(tag.contains(NBT_SECONDARY_SHOOT_DELAY, Tag.TAG_INT)
             ? Math.max(0, tag.getInt(NBT_SECONDARY_SHOOT_DELAY)) : 0);
+        readOrdnanceLoadingState(tag);
         recoilTicksRemaining = tag.contains(NBT_RECOIL_TICKS, Tag.TAG_INT)
             ? Math.max(0, tag.getInt(NBT_RECOIL_TICKS)) : 0;
         recoilDuration = tag.contains(NBT_RECOIL_DURATION, Tag.TAG_INT)
@@ -687,8 +930,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             ? Math.max(0, tag.getInt(NBT_IT1_RELOAD_DELAY)) : 0;
         setIT1Angles(tag.getFloat(NBT_IT1_DOOR_ANGLE), tag.getFloat(NBT_IT1_ARM_ANGLE),
             tag.getFloat(NBT_IT1_RAIL_ANGLE), true);
-        setFlag(FLAG_IT1_CAN_FIRE, type.isIT1() && (!tag.contains(NBT_IT1_CAN_FIRE) || tag.getBoolean(NBT_IT1_CAN_FIRE)));
-        setFlag(FLAG_IT1_RELOADING, type.isIT1() && tag.getBoolean(NBT_IT1_RELOADING));
+        setFlag(FLAG_IT1_CAN_FIRE, type.isIt1() && (!tag.contains(NBT_IT1_CAN_FIRE) || tag.getBoolean(NBT_IT1_CAN_FIRE)));
+        setFlag(FLAG_IT1_RELOADING, type.isIt1() && tag.getBoolean(NBT_IT1_RELOADING));
         // Loading an existing entity (including client spawn data) must not replay placement effects.
         placementEffectsPending = false;
         resizeProxyArrays();
@@ -725,9 +968,14 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (ownerId != null)
             tag.putUUID(NBT_OWNER, ownerId);
         tag.putBoolean(NBT_LOCKED, locked);
+        tag.putBoolean(NBT_ENGINE_REQUESTED, engineRequested);
         tag.putInt(NBT_ENGINE_START_TICKS, Math.max(0, engineStartTicks));
-        tag.putInt(NBT_PRIMARY_SHOOT_DELAY, Math.max(0, primaryShootDelay));
-        tag.putInt(NBT_SECONDARY_SHOOT_DELAY, Math.max(0, secondaryShootDelay));
+        tag.putInt(NBT_PRIMARY_SHOOT_DELAY, ShotCooldown.displayTicks(primaryShootDelay));
+        tag.putInt(NBT_SECONDARY_SHOOT_DELAY, ShotCooldown.displayTicks(secondaryShootDelay));
+        tag.putIntArray(NBT_LOADED_ORDNANCE_SLOT, loadedOrdnanceSlot.clone());
+        tag.putIntArray(NBT_ORDNANCE_ROUNDS_FIRED, bankRoundsFired.clone());
+        tag.putIntArray(NBT_WEAPON_SLOT_LOAD_ORDER, weaponSlotLoadOrder.clone());
+        tag.putInt(NBT_WEAPON_SLOT_LOAD_SEQUENCE, weaponSlotLoadSequence);
         tag.putInt(NBT_RECOIL_TICKS, Math.max(0, recoilTicksRemaining));
         tag.putInt(NBT_RECOIL_DURATION, Math.max(0, recoilDuration));
         tag.putInt(NBT_IT1_STAGE, Mth.clamp(it1Stage, 1, 8));
@@ -787,8 +1035,16 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         clientTargetX = x;
         clientTargetY = y;
         clientTargetZ = z;
-        clientTargetYaw = Mth.wrapDegrees(yaw);
-        clientTargetPitch = Mth.clamp(pitch, -89.9F, 89.9F);
+        // Movement packets carry the aligned vanilla entity rotation. Keep the
+        // separately synced simulation angles in the legacy driveable basis.
+        clientTargetYaw = LegacyDriveableCoordinates.driveableYawFromRenderedForward(
+            yaw, this instanceof Plane);
+        clientTargetPitch = Mth.clamp(LegacyDriveableCoordinates.driveablePitchFromRenderedForward(
+            pitch, this instanceof Plane), -89.9F, 89.9F);
+        // A predicted driveable already moves ahead of these packets. The target is
+        // kept for when prediction ends; its reports correct the prediction instead.
+        if (prediction != null)
+            return;
 
         double distanceSquared = distanceToSqr(x, y, z);
         if (!Double.isFinite(distanceSquared) || distanceSquared > 4096D)
@@ -798,8 +1054,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             clientVisualPitch = clientTargetPitch;
             clientVisualRoll = clientTargetRoll;
             clientTransformLerpSteps = 0;
-            setYRot(clientVisualYaw);
-            setXRot(clientVisualPitch);
+            setYRot(getEntityFacingYaw(clientVisualYaw));
+            setXRot(getEntityFacingPitch(clientVisualPitch));
             axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
             return;
         }
@@ -807,6 +1063,13 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         // Two to three ticks remove packet stepping without making steering
         // feel detached from the locally controlled vehicle.
         clientTransformLerpSteps = Mth.clamp(steps, 2, 3);
+    }
+
+    @Override
+    public void lerpMotion(double x, double y, double z)
+    {
+        if (prediction == null)
+            super.lerpMotion(x, y, z);
     }
 
     @Override
@@ -821,7 +1084,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             prevRoll = clientVisualRoll;
             prevTurretYaw = clientVisualTurretYaw;
             prevTurretPitch = clientVisualTurretPitch;
-            tickClientTransformInterpolation();
+            if (prediction == null)
+                tickClientTransformInterpolation();
             tickClientTurretInterpolation();
         }
         else
@@ -850,7 +1114,15 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
         if (level().isClientSide)
         {
-            tickClientDriveable();
+            tickEngineSounds();
+            if (prediction != null && tickPredictedMovement())
+                tickPredictedClientDriveable();
+            else
+                tickClientDriveable();
+            if (collisionHelper != null)
+                collisionHelper.tick(this);
+            emitPartParticles();
+            emitConfiguredParticles();
             return;
         }
 
@@ -872,11 +1144,12 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             setFlightControls(0F, 0F, isMouseControlEnabled());
         }
 
-        int previousPrimaryShootDelay = primaryShootDelay;
-        if (primaryShootDelay > 0)
-            setPrimaryShootDelay(primaryShootDelay - 1);
-        if (secondaryShootDelay > 0)
-            setSecondaryShootDelay(secondaryShootDelay - 1);
+        int previousPrimaryShootDelay = ShotCooldown.displayTicks(primaryShootDelay);
+        setPrimaryShootDelay(ShotCooldown.tick(primaryShootDelay));
+        setSecondaryShootDelay(ShotCooldown.tick(secondaryShootDelay));
+        bankReloadTicks[0] = Math.max(0F, bankReloadTicks[0] - 1F);
+        bankReloadTicks[1] = Math.max(0F, bankReloadTicks[1] - 1F);
+        publishBankState();
         tickTimedWeaponSounds(previousPrimaryShootDelay);
         applyPlacementEffects();
         if (flareDelay > 0)
@@ -886,31 +1159,161 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         updateRiderVisibility();
         updateEngineState();
         updateLockOnTargeting();
+        absorbExternalImpulses();
         tickDriveable();
         if (collisionHelper != null)
             collisionHelper.tick(this);
+        externalImpulses.settle(getDeltaMovement());
         tickWeapons();
         updateCurrentAmmoNames();
         tickWeaponAnimations();
-        tickSounds();
         previousInputMask = getInputMask();
         for (Seat seat : seats)
         {
             if (seat != null)
                 seat.finishInputTick();
         }
-        emitConfiguredParticles();
         updateProxyPositions();
         syncChangedPartState();
         syncRenderInventoryState();
         updateLifetime();
+        sendPredictionReport();
     }
 
-    /** Subclass server physics tick. */
+    /**
+     * Subclass physics tick. It also runs on the driver's client to predict the
+     * driveable's movement, so anything beyond moving it, such as damage, fuel, sounds,
+     * messages or effects on other entities, must be limited to the server.
+     */
     protected abstract void tickDriveable();
 
     /** Lightweight visual state update; world simulation remains server-owned. */
     protected void tickClientDriveable() {}
+
+    /**
+     * Visual update that replaces {@link #tickClientDriveable()} while the local driver
+     * predicts, after {@link #tickDriveable()} has already advanced the controls.
+     */
+    protected void tickPredictedClientDriveable() {}
+
+    /** Whether the driver's client may predict this driveable's movement. */
+    public boolean supportsClientPrediction()
+    {
+        return false;
+    }
+
+    /**
+     * Hands the local driver's input for the next tick to the movement prediction,
+     * starting one if needed. Client only.
+     */
+    public void submitPredictedInput(@NotNull DriveablePrediction.Frame frame)
+    {
+        if (!level().isClientSide || !supportsClientPrediction())
+            return;
+        if (prediction == null)
+            startPrediction();
+        prediction.submit(frame);
+    }
+
+    /** Corrects the local driver's prediction with a server report. Client only. */
+    public void acceptPredictionReport(int serverStep, int acknowledgedStep, @NotNull DriveablePrediction.State server)
+    {
+        if (prediction == null)
+            return;
+        DriveablePrediction.Reconciliation result = prediction.reconcile(serverStep, acknowledgedStep, server);
+        switch (result.outcome())
+        {
+            case CORRECTED ->
+            {
+                setDeltaMovement(getDeltaMovement().add(result.vx(), result.vy(), result.vz()));
+                setThrottle(getThrottle() + result.throttle());
+            }
+            case RESYNC ->
+            {
+                DriveablePrediction.State state = Objects.requireNonNull(result.resyncTo());
+                setPos(state.x(), state.y(), state.z());
+                setDeltaMovement(state.vx(), state.vy(), state.vz());
+                setOrientation(state.yaw(), state.pitch(), state.roll());
+                setThrottle(state.throttle());
+            }
+            default -> { }
+        }
+    }
+
+    private void startPrediction()
+    {
+        initializeClientTransform();
+        prediction = new DriveablePrediction();
+        predictedThrottle = entityData.get(DATA_THROTTLE);
+        // Start from the latest server transform, not from an interpolation still catching up with it.
+        setPos(clientTargetX, clientTargetY, clientTargetZ);
+        clientTransformLerpSteps = 0;
+        setOrientation(clientTargetYaw, clientTargetPitch, clientTargetRoll);
+    }
+
+    private void endPrediction()
+    {
+        prediction = null;
+        // Interpolate back onto the server's state, which lerpTo kept as the target.
+        clientTargetYaw = getSyncedYaw();
+        clientTargetPitch = getSyncedPitch();
+        clientTargetRoll = getSyncedRoll();
+        clientTransformLerpSteps = 3;
+    }
+
+    /**
+     * Simulates the local driver's next input step with the same movement code the
+     * server runs. False once the driver has stopped sending input.
+     */
+    private boolean tickPredictedMovement()
+    {
+        DriveablePrediction.Frame frame = prediction.nextFrame();
+        if (frame == null)
+        {
+            endPrediction();
+            return false;
+        }
+        DriveablePrediction.Blend blend = prediction.drainBlend();
+        if (blend != DriveablePrediction.Blend.NONE)
+        {
+            setPos(getX() + blend.x(), getY() + blend.y(), getZ() + blend.z());
+            setOrientation(getYaw() + blend.yaw(), getPitch() + blend.pitch(), getRoll() + blend.roll());
+        }
+        // The one rising control that moves the driveable at once on the server.
+        if (DriveableInput.isDown(prediction.risingInputs(), DriveableInput.TRIM))
+            setOrientation(getYaw(), 0F, 0F);
+        tickDriveable();
+        prediction.record(frame.sequence(), predictionState());
+        return true;
+    }
+
+    private DriveablePrediction.State predictionState()
+    {
+        Vec3 velocity = getDeltaMovement();
+        return new DriveablePrediction.State(getX(), getY(), getZ(), velocity.x, velocity.y, velocity.z,
+            getYaw(), getPitch(), getRoll(), getThrottle());
+    }
+
+    @Nullable
+    private DriveablePrediction.Frame predictedFrame()
+    {
+        return prediction == null ? null : prediction.currentFrame();
+    }
+
+    /** Tells a predicting driver where the server has the driveable after this tick. */
+    private void sendPredictionReport()
+    {
+        if (isRemoved() || !supportsClientPrediction())
+            return;
+        Seat driver = getDriverSeat();
+        if (driver == null || !driver.isInputPredicted()
+            || !(driver.getRiddenByEntity() instanceof ServerPlayer player))
+            return;
+        OptionalInt acknowledged = driver.getAcknowledgedInputSequence();
+        if (acknowledged.isPresent())
+            PacketHandler.sendTo(new PacketDriveablePrediction(this, tickCount, acknowledged.getAsInt(),
+                predictionState()), player);
+    }
 
     private void initializeClientTransform()
     {
@@ -925,8 +1328,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         clientVisualRoll = clientTargetRoll = getSyncedRoll();
         clientVisualTurretYaw = clientTargetTurretYaw = getSyncedTurretYaw();
         clientVisualTurretPitch = clientTargetTurretPitch = getSyncedTurretPitch();
-        setYRot(clientVisualYaw);
-        setXRot(clientVisualPitch);
+        setYRot(getEntityFacingYaw(clientVisualYaw));
+        setXRot(getEntityFacingPitch(clientVisualPitch));
     }
 
     private void tickClientTransformInterpolation()
@@ -945,8 +1348,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             + Mth.wrapDegrees(clientTargetRoll - clientVisualRoll) / (float) divisor);
         --clientTransformLerpSteps;
 
-        setYRot(clientVisualYaw);
-        setXRot(clientVisualPitch);
+        setYRot(getEntityFacingYaw(clientVisualYaw));
+        setXRot(getEntityFacingPitch(clientVisualPitch));
         axes.setAngles(clientVisualYaw, clientVisualPitch, clientVisualRoll);
     }
 
@@ -963,9 +1366,12 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     private void tickTimedWeaponSounds(int previousPrimaryShootDelay)
     {
-        if (configType == null || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET
-            || previousPrimaryShootDelay <= primaryShootDelay
-            || primaryShootDelay != configType.getReloadSoundTick()
+        int ticksLeft = ShotCooldown.displayTicks(primaryShootDelay);
+        // ShootReloadSound is the main gun's shell being worked into the breech. A
+        // primary bank of mounted guns reloads with the gun's own sound instead.
+        if (configType == null || isGunBank(false) || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET
+            || previousPrimaryShootDelay <= ticksLeft
+            || ticksLeft != configType.getReloadSoundTick()
             || StringUtils.isBlank(configType.getShootReloadSound()))
             return;
         PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), configType.getShootReloadSound(), false);
@@ -976,8 +1382,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (!placementEffectsPending || configType == null)
             return;
         placementEffectsPending = false;
-        setPrimaryShootDelay(Math.max(primaryShootDelay, Math.max(0, configType.getPlaceTimePrimary())));
-        setSecondaryShootDelay(Math.max(secondaryShootDelay, Math.max(0, configType.getPlaceTimeSecondary())));
+        beginBankReload(false, Math.max(0, configType.getPlaceTimePrimary()));
+        beginBankReload(true, Math.max(0, configType.getPlaceTimeSecondary()));
 
         String primarySound = configType.getPlaceSoundPrimary();
         String secondarySound = configType.getPlaceSoundSecondary();
@@ -987,19 +1393,62 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), secondarySound, false);
     }
 
+    /**
+     * Whether something is currently commanding this driveable, so its engine may run and
+     * its controls may be acted on. Normally that means an occupied driver seat; autonomous
+     * driveables override this to command themselves.
+     */
+    protected boolean isUnderCommand()
+    {
+        return getControllingEntity() != null;
+    }
+
     protected void updateEngineState()
     {
         if (configType == null)
             return;
+        boolean occupied = isUnderCommand();
+        // A driver moving to a passenger seat keeps the engine running; it is only cut
+        // once the driveable is left entirely.
+        boolean ridden = occupied || hasRider();
+        if (occupied && !driverWasPresent)
+            engineRequested = true;
+        else if (!ridden && wasRidden)
+        {
+            engineRequested = false;
+            engineStarting = false;
+            engineStartTicks = 0;
+            setThrottle(0F);
+        }
+        driverWasPresent = occupied;
+        wasRidden = ridden;
+
         boolean flooded = isUnderWater() && !configType.isWorksUnderWater();
         if (flooded)
             setThrottle(0F);
+        boolean canStart = ridden && !flooded && hasFuelForEngine();
+        if (!engineRequested || !canStart)
+        {
+            setFlag(FLAG_ENGINE, false);
+            engineStarting = false;
+            engineStartTicks = 0;
+            return;
+        }
+
+        if (isEngineActive())
+            return;
+        if (!engineStarting)
+        {
+            engineStarting = true;
+            engineStartTicks = Math.max(0, configType.getEngineStartTime());
+        }
         if (engineStartTicks > 0)
             --engineStartTicks;
-        boolean occupied = getControllingEntity() != null;
-        boolean ready = occupied && !flooded && hasFuelForEngine() && engineStartTicks <= 0;
-        engineRequested = ready && Math.abs(getThrottle()) > 0.001F;
-        setFlag(FLAG_ENGINE, ready);
+        if (engineStartTicks <= 0)
+        {
+            engineStarting = false;
+            setFlag(FLAG_ENGINE, true);
+        }
     }
 
     protected void tickWeapons()
@@ -1008,6 +1457,9 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return;
 
         handleInventoryReloadState();
+        trackWeaponSlotLoadOrder();
+        tickOrdnanceLoading(false);
+        tickOrdnanceLoading(true);
         boolean primaryDown = DriveableInput.isDown(getInputMask(), DriveableInput.PRIMARY_FIRE);
         boolean secondaryDown = DriveableInput.isDown(getInputMask(), DriveableInput.SECONDARY_FIRE);
         primaryHeldTicks = primaryDown ? primaryHeldTicks + 1 : 0;
@@ -1022,26 +1474,40 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (secondaryMode == EnumFireMode.BURST && secondaryRising)
             secondaryBurstRemaining = 3;
 
-        if (primaryShootDelay <= 0 && shouldFire(primaryMode, primaryDown, primaryRising, primaryHeldTicks, primaryBurstRemaining))
+        // Each bank keeps firing for as long as its cooldown is spent, so a bank
+        // whose delay is shorter than a tick gets all of its shots away in this
+        // one. A semi-automatic bank stops after a single shot regardless: its
+        // trigger only rises once, however much cooldown is left over.
+        while (ShotCooldown.isReady(primaryShootDelay)
+            && shouldFire(primaryMode, primaryDown, primaryRising, primaryHeldTicks, primaryBurstRemaining))
         {
-            if (fireWeaponBank(false))
-            {
-                setPrimaryShootDelay(Math.max(1, Mth.ceil(getConfiguredShootDelay(false))));
-                if (primaryMode == EnumFireMode.BURST && primaryBurstRemaining > 0)
-                    --primaryBurstRemaining;
-            }
+            // Charge the shot delay against the cooldown as it stood before the shot:
+            // a round that emptied the magazine has already raised the cooldown to
+            // the reload, and adding the delay on top of that would double the wait.
+            float primaryBefore = primaryShootDelay;
+            if (!fireWeaponBank(false))
+                break;
+            setPrimaryShootDelay(Math.max(primaryShootDelay, ShotCooldown.charge(primaryBefore, getConfiguredShootDelay(false))));
+            if (primaryMode == EnumFireMode.BURST && primaryBurstRemaining > 0)
+                --primaryBurstRemaining;
+            if (primaryMode == EnumFireMode.SEMIAUTO)
+                break;
         }
-        if (secondaryShootDelay <= 0 && shouldFire(secondaryMode, secondaryDown, secondaryRising, secondaryHeldTicks, secondaryBurstRemaining))
+        while (ShotCooldown.isReady(secondaryShootDelay)
+            && shouldFire(secondaryMode, secondaryDown, secondaryRising, secondaryHeldTicks, secondaryBurstRemaining))
         {
-            if (fireWeaponBank(true))
-            {
-                setSecondaryShootDelay(Math.max(1, Mth.ceil(getConfiguredShootDelay(true))));
-                if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
-                    --secondaryBurstRemaining;
-            }
+            float secondaryBefore = secondaryShootDelay;
+            if (!fireWeaponBank(true))
+                break;
+            setSecondaryShootDelay(Math.max(secondaryShootDelay, ShotCooldown.charge(secondaryBefore, getConfiguredShootDelay(true))));
+            if (secondaryMode == EnumFireMode.BURST && secondaryBurstRemaining > 0)
+                --secondaryBurstRemaining;
+            if (secondaryMode == EnumFireMode.SEMIAUTO)
+                break;
         }
 
         tickPassengerGuns();
+        recordGunBankAmmo();
     }
 
     protected float getConfiguredShootDelay(boolean secondary)
@@ -1071,13 +1537,13 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     {
         if (configType == null || !configType.isWorksUnderWater() && isUnderWater())
             return false;
-        return !configType.isIT1() || configType.weaponType(secondary) != EnumWeaponType.MISSILE || isCanFireIT1();
+        return !configType.isIt1() || configType.weaponType(secondary) != EnumWeaponType.MISSILE || isCanFireIT1();
     }
 
     protected void tickWeaponAnimations()
     {
         tickRecoilAnimation();
-        if (configType != null && configType.isIT1())
+        if (configType != null && configType.isIt1())
             tickIT1Reload();
     }
 
@@ -1283,25 +1749,433 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         driveableData.setInventoryChanged(false);
         if (!ammunitionChanged)
             return;
-        setPrimaryShootDelay(Math.max(primaryShootDelay, Math.max(0, configType.getReloadTimePrimary())));
-        setSecondaryShootDelay(Math.max(secondaryShootDelay, Math.max(0, configType.getReloadTimeSecondary())));
-        String sound = StringUtils.firstNonBlank(configType.getShootReloadSound(), configType.getReloadSoundPrimary(), configType.getReloadSoundSecondary());
+        // Restocking a bank that feeds mounted guns holds the crew up for a
+        // reload, the slowest round now aboard setting how long. A bank firing the
+        // vehicle's own ordnance is left alone here: chambering a round is what
+        // costs it a reload, and loadOrdnance charges and announces that itself.
+        // Only a bank whose own ammunition changed reloads, so loading shells or a
+        // passenger's belt does not stop the coaxial gun.
+        if (gunBankAmmoTracked)
+        {
+            noteGunBankRestock(false);
+            noteGunBankRestock(true);
+        }
+    }
+
+    private void noteGunBankRestock(boolean secondary)
+    {
+        if (!isGunBank(secondary))
+            return;
+        int index = secondary ? 1 : 0;
+        AmmoSelection selection = gunBankSelection(secondary);
+        if (selection == null)
+            return;
+        ItemStack ammo = selection.stack();
+        if (ammo.getItem() == gunBankAmmoItem[index]
+            && ShootableItem.getTotalRounds(ammo) <= gunBankAmmoRounds[index])
+            return;
+        beginBankReload(secondary, configType.reloadTime(secondary) * loadedReloadTimeMultiplier());
+        GunType gunType = selection.gunType();
+        String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, 96D, sound, false);
+            PacketPlaySound.sendSoundPacket(this,
+                gunType == null ? ModCommonConfig.get().soundRange() : gunType.getReloadSoundRange(), sound, false);
     }
 
-    private void setPrimaryShootDelay(int delay)
+    /**
+     * A bank of mounted guns reloads with the gun's own sound. Failing that it
+     * takes only a sound named for that bank: the shared {@code ReloadSound} and
+     * {@code ShootReloadSound} belong to the vehicle's main gun, and a coaxial
+     * machine gun should never sound like a shell being loaded.
+     */
+    @Nullable
+    private String gunBankReloadSound(boolean secondary, @Nullable GunType gunType)
     {
-        primaryShootDelay = Math.max(0, delay);
-        if (!level().isClientSide)
-            entityData.set(DATA_PRIMARY_RELOAD_TICKS, primaryShootDelay);
+        return StringUtils.firstNonBlank(gunType == null ? null : gunType.getReloadSound(null),
+            secondary ? configType.getReloadSoundSecondary() : configType.getReloadSoundPrimary());
     }
 
-    private void setSecondaryShootDelay(int delay)
+    /** The ammunition a gun bank is currently feeding from, or null when it has none. */
+    @Nullable
+    private AmmoSelection gunBankSelection(boolean secondary)
     {
-        secondaryShootDelay = Math.max(0, delay);
-        if (!level().isClientSide)
-            entityData.set(DATA_SECONDARY_RELOAD_TICKS, secondaryShootDelay);
+        for (ShootPoint point : configType.shootPoints(secondary))
+        {
+            AmmoSelection selection = selectAmmo(point, EnumWeaponType.GUN, secondary);
+            if (selection != null && !selection.stack().isEmpty())
+                return selection;
+        }
+        return null;
+    }
+
+    /** Snapshots each gun bank's ammunition after the tick's shots, so a restock can be told from firing. */
+    private void recordGunBankAmmo()
+    {
+        for (int index = 0; index < 2; index++)
+        {
+            AmmoSelection selection = isGunBank(index == 1) ? gunBankSelection(index == 1) : null;
+            gunBankAmmoItem[index] = selection == null ? null : selection.stack().getItem();
+            gunBankAmmoRounds[index] = selection == null ? 0 : ShootableItem.getTotalRounds(selection.stack());
+        }
+        gunBankAmmoTracked = true;
+    }
+
+    /**
+     * Weapon-bank cooldowns are kept as ticks-and-a-fraction so a bank may fire
+     * faster than once per tick, but they are published to the client as whole
+     * ticks remaining, which is all the HUD counts down.
+     */
+    private void setPrimaryShootDelay(float delay)
+    {
+        primaryShootDelay = delay;
+    }
+
+    private void setSecondaryShootDelay(float delay)
+    {
+        secondaryShootDelay = delay;
+    }
+
+    /**
+     * Holds a bank up for a reload: the cooldown that gates firing, and alongside
+     * it the reload portion of that cooldown, which is what the crew is shown.
+     */
+    private void beginBankReload(boolean secondary, float reloadTicks)
+    {
+        int index = secondary ? 1 : 0;
+        bankReloadTicks[index] = Math.max(bankReloadTicks[index], reloadTicks);
+        if (secondary)
+            setSecondaryShootDelay(Math.max(secondaryShootDelay, reloadTicks));
+        else
+            setPrimaryShootDelay(Math.max(primaryShootDelay, reloadTicks));
+    }
+
+    /** Publishes what the driver's HUD reports about each bank. Server side; only changes go out. */
+    private void publishBankState()
+    {
+        setIfChanged(DATA_PRIMARY_RELOAD_TICKS, ShotCooldown.displayTicks(bankReloadTicks[0]));
+        setIfChanged(DATA_SECONDARY_RELOAD_TICKS, ShotCooldown.displayTicks(bankReloadTicks[1]));
+        publishMagazine(false, DATA_PRIMARY_MAGAZINE_LEFT, DATA_PRIMARY_MAGAZINE_SIZE);
+        publishMagazine(true, DATA_SECONDARY_MAGAZINE_LEFT, DATA_SECONDARY_MAGAZINE_SIZE);
+    }
+
+    /**
+     * What a bank reports to the HUD, which is a different question for each kind
+     * of bank.
+     *
+     * <p>Ordnance counts down to its next reload, because that is what a crew
+     * firing a magazine wants to know. A mounted gun reports everything left in
+     * its ammunition slot against what went in at the last restock, matching the
+     * seat guns and deployed guns it is the same weapon as.
+     */
+    private void publishMagazine(boolean secondary, EntityDataAccessor<Integer> left, EntityDataAccessor<Integer> size)
+    {
+        int index = secondary ? 1 : 0;
+        if (isGunBank(secondary))
+        {
+            int rounds = gunBankRounds(secondary);
+            if (rounds > entityData.get(left))
+                bankMagazineCapacity[index] = rounds;
+            setIfChanged(size, bankMagazineCapacity[index]);
+            // Creative firing deliberately does not damage the ammunition item,
+            // but it still advances the bank's magazine and triggers reloads.
+            // Clamp the physical item count by that logical magazine count so
+            // both creative and survival HUDs show the same shots remaining.
+            int magazineLeft = Math.max(0, bankMagazineCapacity[index] - bankRoundsFired[index]);
+            setIfChanged(left, Math.min(rounds, magazineLeft));
+            return;
+        }
+        int magazine = bankMagazineSize(secondary);
+        setIfChanged(size, magazine);
+        setIfChanged(left, magazine <= 0 ? 0 : Math.max(0, magazine - bankRoundsFired[index]));
+    }
+
+    /** Everything the ammunition slot feeding a bank's mounted guns still holds. */
+    private int gunBankRounds(boolean secondary)
+    {
+        for (ShootPoint point : configType.shootPoints(secondary))
+        {
+            AmmoSelection selection = selectAmmo(point, EnumWeaponType.GUN, secondary);
+            if (selection != null && !selection.stack().isEmpty())
+                return ShootableItem.getTotalRounds(selection.stack());
+        }
+        return 0;
+    }
+
+    private void setIfChanged(EntityDataAccessor<Integer> accessor, int value)
+    {
+        if (entityData.get(accessor) != value)
+            entityData.set(accessor, value);
+    }
+
+    /**
+     * What a full magazine of a bank holds, or zero when the bank has nothing to
+     * fire and so has no magazine to report.
+     */
+    private int bankMagazineSize(boolean secondary)
+    {
+        if (configType == null || driveableData == null)
+            return 0;
+        if (isOrdnanceBank(secondary))
+        {
+            int index = secondary ? 1 : 0;
+            if (loadedOrdnanceSlot[index] < 0)
+                return 0;
+            AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+            return magazineSize(getWeaponSlot(bank, loadedOrdnanceSlot[index]), configType.reloadRounds(secondary));
+        }
+        if (!isGunBank(secondary))
+            return 0;
+        for (ShootPoint point : configType.shootPoints(secondary))
+        {
+            AmmoSelection selection = selectAmmo(point, EnumWeaponType.GUN, secondary);
+            if (selection != null && !selection.stack().isEmpty())
+                return magazineSize(selection.stack(), configType.reloadRounds(secondary));
+        }
+        return 0;
+    }
+
+    /**
+     * Restores what each bank had chambered. A vehicle saved mid-reload comes back
+     * with its cooldown intact, so the wait is not something a crew can skip by
+     * leaving and returning.
+     */
+    private void readOrdnanceLoadingState(CompoundTag tag)
+    {
+        int[] slots = tag.getIntArray(NBT_LOADED_ORDNANCE_SLOT);
+        for (int index = 0; index < loadedOrdnanceSlot.length; index++)
+            loadedOrdnanceSlot[index] = index < slots.length ? slots[index] : -1;
+        int[] fired = tag.getIntArray(NBT_ORDNANCE_ROUNDS_FIRED);
+        for (int index = 0; index < bankRoundsFired.length; index++)
+            bankRoundsFired[index] = index < fired.length ? Math.max(0, fired[index]) : 0;
+        weaponSlotLoadOrder = tag.getIntArray(NBT_WEAPON_SLOT_LOAD_ORDER).clone();
+        weaponSlotLoadSequence = Math.max(0, tag.getInt(NBT_WEAPON_SLOT_LOAD_SEQUENCE));
+    }
+
+    /**
+     * Whether this bank fires the vehicle's own ordnance, which is what the
+     * loading rules below govern. A bank firing mounted guns feeds from the gun's
+     * own ammunition slot and has nothing to chamber.
+     */
+    protected boolean isOrdnanceBank(boolean secondary)
+    {
+        if (configType == null)
+            return false;
+        EnumWeaponType weapon = configType.weaponType(secondary);
+        return weapon != EnumWeaponType.NONE && weapon != EnumWeaponType.GUN;
+    }
+
+    /** Whether this bank fires mounted guns, which keep their own timings. */
+    protected boolean isGunBank(boolean secondary)
+    {
+        return configType != null && configType.weaponType(secondary) == EnumWeaponType.GUN;
+    }
+
+    private static AmmoBank ordnanceBankFor(EnumWeaponType weapon)
+    {
+        return weapon == EnumWeaponType.BOMB || weapon == EnumWeaponType.MINE ? AmmoBank.BOMB : AmmoBank.MISSILE;
+    }
+
+    private int ordnanceSlotCount(AmmoBank bank)
+    {
+        return bank == AmmoBank.BOMB ? driveableData.getNumBombSlots() : driveableData.getNumMissileSlots();
+    }
+
+    /** Whether the given slot of a bank's magazine holds something that bank could chamber. */
+    private boolean canChamber(boolean secondary, int slot)
+    {
+        EnumWeaponType weapon = configType.weaponType(secondary);
+        AmmoBank bank = ordnanceBankFor(weapon);
+        return slot >= 0 && slot < ordnanceSlotCount(bank) && validAmmo(getWeaponSlot(bank, slot), weapon);
+    }
+
+    /**
+     * Records the order the weapon slots were filled in, so a bank with nothing
+     * chambered can load the round that went aboard first. Slots that fill in the
+     * same tick are ranked by slot number, because this walks them in that order.
+     */
+    private void trackWeaponSlotLoadOrder()
+    {
+        int slots = driveableData.getCargoInventoryStart();
+        if (weaponSlotLoadOrder.length != slots)
+            weaponSlotLoadOrder = Arrays.copyOf(weaponSlotLoadOrder, slots);
+        for (int slot = 0; slot < slots; slot++)
+        {
+            if (driveableData.getItem(slot).isEmpty())
+                weaponSlotLoadOrder[slot] = 0;
+            else if (weaponSlotLoadOrder[slot] == 0)
+                weaponSlotLoadOrder[slot] = ++weaponSlotLoadSequence;
+        }
+    }
+
+    private int loadOrderOf(AmmoBank bank, int slot)
+    {
+        int absolute = (bank == AmmoBank.BOMB ? driveableData.getBombInventoryStart() : driveableData.getMissileInventoryStart()) + slot;
+        return absolute >= 0 && absolute < weaponSlotLoadOrder.length ? weaponSlotLoadOrder[absolute] : 0;
+    }
+
+    /** The round this bank should chamber next: the one that went aboard first. */
+    private int oldestChamberableSlot(boolean secondary)
+    {
+        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        int best = -1;
+        int bestOrder = Integer.MAX_VALUE;
+        for (int slot = 0; slot < ordnanceSlotCount(bank); slot++)
+        {
+            if (!canChamber(secondary, slot))
+                continue;
+            int order = loadOrderOf(bank, slot);
+            if (order > 0 && order < bestOrder)
+            {
+                best = slot;
+                bestOrder = order;
+            }
+            else if (best < 0)
+                best = slot;
+        }
+        return best;
+    }
+
+    /** The next round the crew can swap to, walking the magazine in slot order. */
+    private int nextChamberableSlot(boolean secondary, int from)
+    {
+        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        int count = ordnanceSlotCount(bank);
+        for (int step = 1; step <= count; step++)
+        {
+            int slot = Math.floorMod(from + step, count);
+            if (canChamber(secondary, slot))
+                return slot;
+        }
+        return from;
+    }
+
+    /** Puts a round in the breech without charging anything for it. */
+    private void chamberOrdnance(boolean secondary, int slot)
+    {
+        int index = secondary ? 1 : 0;
+        loadedOrdnanceSlot[index] = slot;
+        bankRoundsFired[index] = 0;
+    }
+
+    /**
+     * Chambers a bank's next round and makes the crew wait out the reload.
+     *
+     * <p>Loading is what costs the reload time, so this is the single place that
+     * charges it: the first round aboard, the round after a magazine runs out and
+     * a round the crew swaps to all pay the same price.
+     */
+    private void loadOrdnance(boolean secondary, int slot)
+    {
+        chamberOrdnance(secondary, slot);
+        if (slot < 0)
+            return;
+
+        beginBankReload(secondary, configType.reloadTime(secondary));
+
+        String sound = configType.reloadSound(secondary);
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), sound, false);
+    }
+
+    /** Keeps a bank's chambered round honest: reloads when what it held is gone. */
+    private void tickOrdnanceLoading(boolean secondary)
+    {
+        if (!isOrdnanceBank(secondary))
+            return;
+        int index = secondary ? 1 : 0;
+        if (canChamber(secondary, loadedOrdnanceSlot[index]))
+            return;
+        int next = oldestChamberableSlot(secondary);
+        if (next < 0)
+        {
+            loadedOrdnanceSlot[index] = -1;
+            bankRoundsFired[index] = 0;
+            return;
+        }
+        loadOrdnance(secondary, next);
+    }
+
+    /**
+     * How many rounds a weapon puts out between reloads: whichever is smaller of
+     * the magazine the vehicle states and what the loaded item itself holds.
+     */
+    private static int magazineSize(ItemStack loaded, int declaredReloadRounds)
+    {
+        int perItem = Math.max(1, ShootableItem.getMaxRounds(loaded));
+        return declaredReloadRounds > 0 ? Math.min(declaredReloadRounds, perItem) : perItem;
+    }
+
+    /**
+     * Whether a weapon that has just fired now owes a reload.
+     *
+     * <p>Two things can call for one: the magazine has put out every round it
+     * holds, or the item being fired ran out early, which a partly spent belt
+     * does. Counting rounds rather than watching the item is what keeps this
+     * honest in creative, where the item is never consumed at all - a creative
+     * gunner reloads on exactly the schedule everyone else does.
+     */
+    private static boolean magazineSpent(int roundsFired, int magazineSize, ItemStack fired)
+    {
+        return roundsFired >= magazineSize || !ShootableItem.hasRoundsLeft(fired);
+    }
+
+    /**
+     * Counts a round out of a bank firing the vehicle's own ordnance and reloads
+     * once its magazine is spent.
+     */
+    private void countOrdnanceRound(boolean secondary)
+    {
+        if (!isOrdnanceBank(secondary))
+            return;
+        int index = secondary ? 1 : 0;
+        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        ItemStack chambered = loadedOrdnanceSlot[index] < 0 ? ItemStack.EMPTY : getWeaponSlot(bank, loadedOrdnanceSlot[index]);
+        int size = magazineSize(chambered, configType.reloadRounds(secondary));
+        if (!magazineSpent(++bankRoundsFired[index], size, chambered))
+            return;
+        loadOrdnance(secondary, oldestChamberableSlot(secondary));
+    }
+
+    /**
+     * Swaps the bank's chambered round for the next one in slot order.
+     *
+     * <p>Swapping a shell means working one out of the breech and another in, so
+     * it costs a fresh reload; swapping again interrupts that reload and starts
+     * another, and a crew may keep changing its mind for as long as it is willing
+     * to keep waiting. Bombs and missiles are selected rather than loaded - they
+     * are already on their racks - so choosing a different one costs nothing.
+     */
+    public void switchLoadedOrdnance()
+    {
+        if (configType == null || driveableData == null || level().isClientSide)
+            return;
+        boolean secondary = !isOrdnanceBank(false) && isOrdnanceBank(true);
+        if (!isOrdnanceBank(secondary))
+            return;
+        int index = secondary ? 1 : 0;
+        int next = nextChamberableSlot(secondary, loadedOrdnanceSlot[index]);
+        if (next < 0 || next == loadedOrdnanceSlot[index])
+            return;
+        if (configType.weaponType(secondary) == EnumWeaponType.SHELL)
+            loadOrdnance(secondary, next);
+        else
+            chamberOrdnance(secondary, next);
+    }
+
+    /** The heaviest {@code ReloadTimeMultiplier} among the rounds currently in the weapon inventory. */
+    private float loadedReloadTimeMultiplier()
+    {
+        if (driveableData == null)
+            return 1F;
+        float factor = 1F;
+        int end = Math.min(driveableData.getCargoInventoryStart(), driveableData.getContainerSize());
+        for (int slot = 0; slot < end; slot++)
+        {
+            ItemStack stack = driveableData.getItem(slot);
+            if (stack.getItem() instanceof ShootableItem shootableItem)
+                factor = Math.max(factor, shootableItem.getConfigType().getReloadTimeMultiplier());
+        }
+        return factor;
     }
 
     protected int weaponInventoryFingerprint()
@@ -1345,7 +2219,10 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     private void syncRenderInventoryState()
     {
-        int paintjobId = driveableData == null ? 0 : driveableData.getPaintjobID();
+        if (driveableData == null || !renderInventoryCache.needsRefresh(driveableData,
+            driveableData.getInventoryRevision(), 0, 0, tickCount))
+            return;
+        int paintjobId = driveableData.getPaintjobID();
         if (entityData.get(DATA_PAINTJOB_ID) != paintjobId)
             entityData.set(DATA_PAINTJOB_ID, paintjobId);
 
@@ -1421,7 +2298,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             playBankEffects(secondary, firedPoints);
             if (weapon == EnumWeaponType.SHELL)
                 beginRecoil();
-            if (configType.isIT1() && weapon == EnumWeaponType.MISSILE)
+            if (configType.isIt1() && weapon == EnumWeaponType.MISSILE)
                 beginIT1Reload();
         }
         return fired;
@@ -1440,50 +2317,136 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected boolean fireFromPoint(ShootPoint point, EnumWeaponType weapon, boolean secondary, @Nullable LivingEntity attacker)
     {
-        AmmoSelection selection = selectAmmo(point, weapon);
+        AmmoSelection selection = selectAmmo(point, weapon, secondary);
         if (selection == null || !ShootableItem.hasRoundsLeft(selection.stack()))
             return false;
-        if (!(selection.stack().getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bulletType))
+        if (!(selection.stack().getItem() instanceof ShootableItem item))
             return false;
 
-        FireableGun fireable;
-        int bulletCount;
-        if (selection.gunType() != null)
-        {
-            fireable = new FireableGun(selection.gunType(), selection.stack());
-            if (configType.isRangingGun() && configType.getBulletSpeed() > 0F)
-                fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(),
-                    configType.getBulletSpeed(), fireable.getSpreadPattern());
-            bulletCount = Math.max(1, selection.gunType().getNumBullets(null, bulletType));
-        }
-        else
-        {
-            float multiplier = secondary ? configType.getDamageMultiplierSecondary() : configType.getDamageMultiplierPrimary();
-            float speed = configType.getBulletSpeed() > 0F ? configType.getBulletSpeed() : bulletType.getBulletSpeed(true);
-            fireable = new FireableGun(configType, Math.max(0F, multiplier), Math.max(0F, configType.getBulletSpread()),
-                Math.max(0.01F, speed), EnumSpreadPattern.CIRCLE);
-            bulletCount = Math.max(1, bulletType.getNumBullets());
-        }
-        if (selection.gunType() != null)
-            fireable.multiplyDamage(secondary ? configType.getDamageMultiplierSecondary() : configType.getDamageMultiplierPrimary());
+        ShootableType shootableType = item.getConfigType();
+        FireableGun fireable = resolveFireableGun(selection, secondary);
+        int numShots = selection.gunType() != null
+            ? selection.gunType().getNumBullets(null, shootableType)
+            : shootableType.getNumBullets();
 
         Vec3 origin = getShootOrigin(point);
         Vec3 direction = getShootDirection(point, secondary);
-        FiredShot shot = new FiredShot(fireable, bulletType, this, attacker, ShootableItem.getRoundsRemaining(selection.stack()));
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
-        ShootingHelper.fireGun(level(), shot, bulletCount, origin, direction, () -> {
-            if (!creative)
-                consumeAmmo(selection);
-        });
+        ShootingHelper.fireWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
+            ShootableItem.getRoundsFired(selection.stack()), () -> {
+                if (!creative)
+                    consumeAmmo(selection);
+            });
+        if (selection.gunType() != null)
+            chargeGunBankReload(secondary, selection.gunType(), selection.stack());
+        else
+            countOrdnanceRound(secondary);
         return true;
     }
 
+    /**
+     * Counts a round out of a bank firing mounted guns and makes it wait out a
+     * reload once its magazine is spent. The item that was fired is what decides
+     * this, not the slot, which may already hold a fresh magazine pulled from
+     * cargo. The gun's own reload sound plays whoever owns the timings.
+     */
+    private void chargeGunBankReload(boolean secondary, GunType gunType, ItemStack fired)
+    {
+        int index = secondary ? 1 : 0;
+        int size = magazineSize(fired, configType.reloadRounds(secondary));
+        if (!magazineSpent(++bankRoundsFired[index], size, fired))
+            return;
+        bankRoundsFired[index] = 0;
+        beginBankReload(secondary, configType.reloadTime(secondary));
+
+        String sound = gunBankReloadSound(secondary, gunType);
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(this, gunType.getReloadSoundRange(), sound, false);
+    }
+
+    /**
+     * The weapon side of a shot fired from a weapon bank.
+     *
+     * <p>The velocity handed over here is only what the vehicle itself supplies: ammunition that
+     * declares a {@code MuzzleVelocity} of its own overrides it, and the vehicle takes that velocity
+     * back only by declaring an {@code AmmoMuzzleVelocity} for that round. See
+     * {@link FiredShot#getMuzzleVelocity()} for the full precedence.
+     */
+    protected FireableGun resolveFireableGun(AmmoSelection selection, boolean secondary)
+    {
+        return resolveFireableGun(selection.gunType(), secondary);
+    }
+
+    /**
+     * Display context for ammunition fired from a weapon bank, built exactly as {@link #fireFromPoint} builds the shot.
+     *
+     * @param gunType the pilot gun mounted on the bank, or null for the vehicle's own ordnance
+     */
+    public AmmoStatContext getBankAmmoStatContext(@Nullable GunType gunType, boolean secondary, ShootableType ammo)
+    {
+        int numBullets = gunType != null ? gunType.getNumBullets(null, ammo) : ammo.getNumBullets();
+        return new AmmoStatContext(() -> resolveFireableGun(gunType, secondary), this, numBullets);
+    }
+
+    /** Display context for ammunition fired from a passenger seat's gun, as {@link #tickPassengerGuns} fires it. */
+    public AmmoStatContext getPassengerAmmoStatContext(GunType gunType, ShootableType ammo)
+    {
+        return new AmmoStatContext(() -> new FireableGun(gunType), this, gunType.getNumBullets(null, ammo));
+    }
+
+    /** The weapon side of a shot from a weapon bank, for display; see {@link #resolveFireableGun(GunType, boolean)}. */
+    public FireableGun getWeaponBankFireableGun(@Nullable GunType gunType, boolean secondary)
+    {
+        return resolveFireableGun(gunType, secondary);
+    }
+
+    /** Ticks between shots of a weapon bank, as the bank is actually fired. */
+    public float getWeaponBankShootDelay(boolean secondary)
+    {
+        return getConfiguredShootDelay(secondary);
+    }
+
+    public EnumFireMode getWeaponBankFireMode(boolean secondary)
+    {
+        return secondary ? configType.getModeSecondary() : configType.getModePrimary();
+    }
+
+    protected FireableGun resolveFireableGun(@Nullable GunType gunType, boolean secondary)
+    {
+        float damageMultiplier = secondary ? configType.getDamageMultiplierSecondary() : configType.getDamageMultiplierPrimary();
+        boolean pureGunType = configType.isReadWeaponsFromGunTypes();
+
+        if (gunType == null)
+        {
+            // Shells and other bank-fired ordnance: the vehicle is the weapon. Its BulletSpeed is a
+            // fallback only, and the default keeps such rounds flying as projectiles rather than hitscan.
+            float speed = configType.getBulletSpeed() > 0F ? configType.getBulletSpeed() : BulletType.DEFAULT_BULLET_SPEED;
+            return new FireableGun(configType, Math.max(0F, damageMultiplier),
+                Math.max(0F, configType.getBulletSpread()), speed, EnumSpreadPattern.CIRCLE);
+        }
+
+        FireableGun fireable = new FireableGun(gunType);
+
+        // A ranging gun spots for the main armament, so it borrows the vehicle's ballistics instead of
+        // the mounted gun's - still only as the fallback the ammunition may override.
+        if (!pureGunType && configType.isRangingGun() && configType.getBulletSpeed() > 0F)
+            fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(),
+                configType.getBulletSpeed(), fireable.getBulletSpeedMultiplier(), fireable.getSpreadPattern());
+        if (!pureGunType)
+            fireable.multiplyDamage(damageMultiplier);
+
+        return fireable;
+    }
+
     @Nullable
-    protected AmmoSelection selectAmmo(ShootPoint point, EnumWeaponType weapon)
+    protected AmmoSelection selectAmmo(ShootPoint point, EnumWeaponType weapon, boolean secondary)
     {
         if (point.getRootPos() instanceof PilotGun pilotGun)
         {
-            int slot = configType.getPilotGuns().indexOf(pilotGun);
+            int pilotIndex = configType.getPilotGuns().indexOf(pilotGun);
+            if (pilotIndex < 0)
+                return null;
+            int slot = configType.getNumPassengerGunners() + pilotIndex;
             if (slot < 0 || slot >= driveableData.getNumAmmoSlots())
                 return null;
             ItemStack stack = driveableData.getAmmo(slot);
@@ -1495,7 +2458,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
         if (weapon == EnumWeaponType.GUN)
         {
-            for (int slot = 0; slot < configType.getPilotGuns().size(); slot++)
+            int firstPilotSlot = configType.getNumPassengerGunners();
+            for (int slot = firstPilotSlot; slot < firstPilotSlot + configType.getPilotGuns().size(); slot++)
             {
                 ItemStack stack = driveableData.getAmmo(slot);
                 GunType gunType = configType.getGunTypeForAmmoSlot(slot);
@@ -1505,17 +2469,20 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return null;
         }
 
-        boolean bombBank = weapon == EnumWeaponType.BOMB || weapon == EnumWeaponType.MINE;
-        int size = bombBank ? driveableData.getNumBombSlots() : driveableData.getNumMissileSlots();
-        for (int slot = 0; slot < size; slot++)
-        {
-            ItemStack stack = bombBank ? driveableData.getBomb(slot) : driveableData.getMissile(slot);
-            if (validAmmo(stack, weapon))
-                return new AmmoSelection(bombBank ? AmmoBank.BOMB : AmmoBank.MISSILE, slot, stack, null);
-        }
-        return null;
+        // The vehicle's own ordnance fires what the crew has chambered, not simply
+        // whatever sits in the lowest slot.
+        AmmoBank bank = ordnanceBankFor(weapon);
+        int slot = loadedOrdnanceSlot[secondary ? 1 : 0];
+        if (!canChamber(secondary, slot))
+            return null;
+        return new AmmoSelection(bank, slot, getWeaponSlot(bank, slot), null);
     }
 
+    /**
+     * Ammunition for one of the vehicle's own weapon banks. This stays restricted to {@link BulletType}
+     * because {@code WeaponType}, which decides the bank a round belongs to, is declared on the
+     * ammunition itself and grenade rounds do not carry one.
+     */
     protected boolean validAmmo(ItemStack stack, EnumWeaponType requested)
     {
         if (stack.isEmpty() || !(stack.getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bulletType))
@@ -1524,43 +2491,100 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             && (bulletType.getWeaponType() == requested || requested == EnumWeaponType.GUN && bulletType.getWeaponType() == EnumWeaponType.NONE);
     }
 
+    /**
+     * A gun mounted on this driveable accepts exactly what the same gun accepts in a player's hands,
+     * so grenade rounds load into a mounted launcher just as they do into a held one. The vehicle's own
+     * weapon banks are narrower - see {@link #validAmmo(ItemStack, EnumWeaponType)}.
+     */
     protected boolean validGunAmmo(ItemStack stack, @Nullable GunType gunType)
     {
-        if (stack.isEmpty() || gunType == null || !(stack.getItem() instanceof ShootableItem item)
-            || !(item.getConfigType() instanceof BulletType bulletType))
+        if (stack.isEmpty() || gunType == null || !(stack.getItem() instanceof ShootableItem item))
             return false;
-        return ShootableItem.hasRoundsLeft(stack) && gunType.getAmmoTypes().contains(bulletType);
+        return ShootableItem.hasRoundsLeft(stack) && gunType.getAmmoTypes().contains(item.getConfigType());
     }
 
     protected void consumeAmmo(AmmoSelection selection)
     {
         ItemStack stack = selection.stack();
+        // Read before consuming: a fully spent single-round stack reports air.
+        Item ammoItem = stack.getItem();
         if (!ShootableItem.consumeRound(stack))
             return;
-        if (!ShootableItem.hasRoundsLeft(stack))
+        boolean depleted = !ShootableItem.hasRoundsLeft(stack);
+        if (depleted)
             stack = ItemStack.EMPTY;
-        switch (selection.bank())
-        {
-            case AMMO -> driveableData.setAmmo(selection.slot(), stack);
-            case BOMB -> driveableData.setBomb(selection.slot(), stack);
-            case MISSILE -> driveableData.setMissile(selection.slot(), stack);
-        }
+        setWeaponSlot(selection.bank(), selection.slot(), stack);
+        if (depleted)
+            refillWeaponSlot(selection.bank(), selection.slot(), ammoItem);
         acknowledgeInternalWeaponInventoryChange();
+    }
+
+    /**
+     * Loads one more item of the ammunition a weapon slot just used up: from the driveable's cargo first,
+     * then from the driver's inventory. Server-side only, and only into a slot that is actually empty.
+     */
+    protected void refillWeaponSlot(AmmoBank bank, int slot, Item ammoItem)
+    {
+        if (level().isClientSide || driveableData == null || ammoItem == Items.AIR
+            || !ModCommonConfig.autoRefillVehicleAmmo() || !getWeaponSlot(bank, slot).isEmpty())
+            return;
+
+        int cargoStart = driveableData.getCargoInventoryStart();
+        ItemStack refill = takeOneAmmoItem(driveableData, cargoStart, cargoStart + driveableData.getNumCargoSlots(), ammoItem);
+        if (refill.isEmpty() && getControllingEntity() instanceof Player driver)
+            refill = takeOneAmmoItem(driver.getInventory(), 0, driver.getInventory().items.size(), ammoItem);
+        if (!refill.isEmpty())
+            setWeaponSlot(bank, slot, refill);
+    }
+
+    private ItemStack getWeaponSlot(AmmoBank bank, int slot)
+    {
+        return switch (bank)
+        {
+            case AMMO -> driveableData.getAmmo(slot);
+            case BOMB -> driveableData.getBomb(slot);
+            case MISSILE -> driveableData.getMissile(slot);
+        };
+    }
+
+    private void setWeaponSlot(AmmoBank bank, int slot, ItemStack stack)
+    {
+        switch (bank)
+        {
+            case AMMO -> driveableData.setAmmo(slot, stack);
+            case BOMB -> driveableData.setBomb(slot, stack);
+            case MISSILE -> driveableData.setMissile(slot, stack);
+        }
+    }
+
+    /** Splits a single loaded item of this ammunition off the first matching stack in the given slot range. */
+    private static ItemStack takeOneAmmoItem(Container container, int start, int end, Item ammoItem)
+    {
+        for (int index = start; index < end; index++)
+        {
+            ItemStack stack = container.getItem(index);
+            if (!stack.is(ammoItem) || !ShootableItem.hasRoundsLeft(stack))
+                continue;
+            ItemStack one = stack.split(1);
+            container.setItem(index, stack.isEmpty() ? ItemStack.EMPTY : stack);
+            return one;
+        }
+        return ItemStack.EMPTY;
     }
 
     protected Vec3 getShootOrigin(ShootPoint point)
     {
-        Vec3 root = LegacyDriveableCoordinates.toLocal(point.getRootPos().getPosition());
-        Vec3 offset = LegacyDriveableCoordinates.toLocal(point.getOffPos());
+        Vec3 root = attachmentModelLocal(point.getRootPos().getPosition());
+        Vec3 offset = attachmentModelLocal(point.getOffPos());
         EnumDriveablePart part = point.getRootPos().getPart();
         if (!isTurretMountedPart(part))
-            return applyVehicleModelVerticalOffset(modelLocalToWorld(root.add(offset)));
+            return modelLocalToWorld(root.add(offset));
 
         // Root and offset together describe the actual muzzle point. Rotating
         // only the offset leaves the root yaw-only and makes the projectile
         // origin detach from the barrel as its pitch changes.
         Vec3 muzzle = root.add(offset);
-        return applyVehicleModelVerticalOffset(turretPointToWorld(muzzle, getTurretYaw(), getTurretPitch()));
+        return turretPointToWorld(muzzle, getTurretYaw(), getTurretPitch());
     }
 
     /** Returns the model-aligned muzzle position for client-side diagnostics. */
@@ -1569,13 +2593,10 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return getShootOrigin(point);
     }
 
-    /** Aligns model-anchored positions with the visual offset used by vehicles. */
-    protected Vec3 applyVehicleModelVerticalOffset(@NotNull Vec3 position)
+    /** Returns the direction paired with a diagnostic muzzle position. */
+    public Vec3 getDebugShootDirection(@NotNull ShootPoint point, boolean secondary)
     {
-        if (!(this instanceof Vehicle) || configType == null)
-            return position;
-        return position.add(modelLocalDirectionToWorld(new Vec3(0D,
-            Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D)));
+        return getShootDirection(point, secondary);
     }
 
     protected Vec3 getShootDirection(ShootPoint point, boolean secondary)
@@ -1585,9 +2606,9 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         EnumDriveablePart part = point.getRootPos().getPart();
         if (fixed)
         {
-            Vec3 localDirection = LegacyDriveableCoordinates.toLocal(fixedAngle);
+            Vec3 localDirection = attachmentModelLocal(fixedAngle);
             if (localDirection.lengthSqr() < 1.0E-8D)
-                localDirection = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+                localDirection = attachmentModelLocal(new Vec3(1D, 0D, 0D));
             if (isTurretMountedPart(part))
             {
                 localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
@@ -1596,13 +2617,12 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         }
         if (isTurretMountedPart(part))
             return aimedDirection(getTurretYaw(), getTurretPitch());
-        return modelLocalDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D))).normalize();
+        return modelLocalDirectionToWorld(configuredModelLocal(new Vec3(1D, 0D, 0D))).normalize();
     }
 
     protected static boolean isTurretMountedPart(@Nullable EnumDriveablePart part)
     {
-        return part == EnumDriveablePart.TURRET || part == EnumDriveablePart.BARREL
-            || part != null && part.name().startsWith("TURRET_");
+        return EnumDriveablePart.isTurretMounted(part);
     }
 
     /**
@@ -1634,14 +2654,14 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     {
         if (configType == null)
             return point;
-        Vec3 turretPivot = LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
+        Vec3 turretPivot = configuredModelLocal(configType.getTurretOrigin());
         Vec3 pitchPivot = modelBarrelPitchPivot == null ? turretPivot : modelBarrelPitchPivot;
 
         // The renderer pitches each barrel around its own model pivot first,
         // then yaws the complete turret around TurretOrigin.
         Vec3 pitched = rotateBarrelPitchLocal(point.subtract(pitchPivot), pitch).add(pitchPivot);
         Vec3 rotated = rotateTurretYawLocal(pitched.subtract(turretPivot), yaw).add(turretPivot);
-        Vec3 configuredOffset = LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
+        Vec3 configuredOffset = configuredModelLocal(configType.getTurretOriginOffset());
         Vec3 originOffset = rotateTurretYawLocal(configuredOffset, yaw);
         return rotated.add(originOffset);
     }
@@ -1683,29 +2703,62 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
     protected Vec3 aimedDirection(float yaw, float pitch)
     {
-        Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+        Vec3 legacyForward = configuredModelLocal(new Vec3(1D, 0D, 0D));
         return modelLocalDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, pitch)).normalize();
     }
 
     protected void playBankEffects(boolean secondary, List<ShootPoint> firedPoints)
     {
-        String sound = secondary ? configType.getShootSoundSecondary() : configType.getShootSoundPrimary();
+        String sound = configType.shootSound(secondary);
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 128D, sound, true);
         List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();
-        for (ShootPoint point : firedPoints)
+        if (particles.isEmpty() || firedPoints.isEmpty())
+            return;
+        // Clients look the particles up from this driveable's type and place them from their own
+        // view of it, so one packet per shot replaces one per particle per shoot point.
+        List<ShootPoint> points = configType.shootPoints(secondary);
+        int[] indices = new int[firedPoints.size()];
+        int count = 0;
+        for (ShootPoint fired : firedPoints)
         {
+            for (int index = 0; index < points.size(); index++)
+            {
+                if (points.get(index) == fired)
+                {
+                    indices[count++] = index;
+                    break;
+                }
+            }
+        }
+        if (count > 0)
+            PacketHandler.sendToAllAround(new PacketDriveableBankFired(getId(), secondary, Arrays.copyOf(indices, count)),
+                position(), 128D, level().dimension());
+    }
+
+    /** Draws the particles of a weapon bank that fired from the given shoot points, on this client. */
+    public void spawnBankParticles(boolean secondary, int[] pointIndices)
+    {
+        if (!level().isClientSide || configType == null)
+            return;
+        List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();
+        List<ShootPoint> points = configType.shootPoints(secondary);
+        for (int pointIndex : pointIndices)
+        {
+            if (pointIndex < 0 || pointIndex >= points.size())
+                continue;
+            ShootPoint point = points.get(pointIndex);
             Vec3 origin = getShootOrigin(point);
             EnumDriveablePart part = point.getRootPos().getPart();
             for (DriveableType.ShootParticle particle : particles)
             {
-                Vec3 localDirection = LegacyDriveableCoordinates.toLocal(
+                Vec3 localDirection = configuredModelLocal(
                     new Vec3(particle.x(), particle.y(), particle.z()));
                 if (isTurretMountedPart(part))
                     localDirection = rotateTurretLocalDirection(localDirection, getTurretYaw(), getTurretPitch());
                 Vec3 direction = modelLocalDirectionToWorld(localDirection);
-                PacketHandler.sendToAllAround(new PacketParticle(particle.name(), origin.x, origin.y, origin.z,
-                    direction.x, direction.y, direction.z), origin, 128D, level().dimension());
+                ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z,
+                    direction.x, direction.y, direction.z, 1F);
             }
         }
     }
@@ -1714,52 +2767,168 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     {
         for (int index = 0; index < seats.length; index++)
         {
-            if (passengerShootDelay[index] > 0)
-                --passengerShootDelay[index];
+            passengerShootDelay[index] = ShotCooldown.tick(passengerShootDelay[index]);
+            passengerReloadTicks[index] = Math.max(0F, passengerReloadTicks[index] - 1F);
             Seat seat = seats[index];
             SeatInfo info = seat == null ? null : seat.getSeatInfo();
             GunType gun = info == null ? null : info.getGunType();
-            if (seat == null || info == null || gun == null || seat.getRiddenByEntity() == null || !isPartIntact(info.getPart()))
-                continue;
+            if (passengerAmmoTracked)
+                notePassengerRestock(index, gun, passengerGunAmmo(info, gun));
+            if (seat != null && info != null && gun != null && seat.getRiddenByEntity() != null
+                && (isPartIntact(info.getPart()) || ModCommonConfig.gunsInDestroyedPartsWork()))
+                tickPassengerGunFire(seat, info, gun, index);
 
-            boolean held = seat.isInputDown(DriveableInput.PRIMARY_FIRE);
-            boolean rising = seat.isInputRising(DriveableInput.PRIMARY_FIRE);
-            passengerHeldTicks[index] = held ? passengerHeldTicks[index] + 1 : 0;
-            EnumFireMode mode = gun.getFireMode(null);
-            if (mode == EnumFireMode.BURST && rising)
-                passengerBurstRemaining[index] = Math.max(1, gun.getNumBurstRounds());
-            if (passengerShootDelay[index] > 0 || !shouldFire(mode, held, rising, passengerHeldTicks[index], passengerBurstRemaining[index]))
-                continue;
+            // Read back after firing, so the HUD and the next restock check both
+            // see what the gun really has left this tick.
+            ItemStack ammo = passengerGunAmmo(info, gun);
+            if (seat != null)
+                publishSeatGunState(seat, gun, ammo, index);
+            passengerAmmoItem[index] = ammo.isEmpty() ? null : ammo.getItem();
+            passengerAmmoRounds[index] = ShootableItem.getTotalRounds(ammo);
+        }
+        passengerAmmoTracked = true;
+    }
 
-            int ammoSlot = configType.getPilotGuns().size() + Math.max(0, info.getGunnerID());
-            ItemStack ammo = driveableData.getAmmo(ammoSlot);
-            if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable)
-                || !(shootable.getConfigType() instanceof BulletType bulletType))
-                continue;
-            if (NeoForge.EVENT_BUS.post(new GunFiredEvent(this)).isCanceled())
-                continue;
+    /** What sits in the ammunition slot feeding a seat's gun, or nothing when the seat mounts none. */
+    private ItemStack passengerGunAmmo(@Nullable SeatInfo info, @Nullable GunType gun)
+    {
+        int ammoSlot = info == null ? -1 : info.getGunnerID();
+        return gun == null || ammoSlot < 0 ? ItemStack.EMPTY : driveableData.getAmmo(ammoSlot);
+    }
 
-            FireableGun fireable = new FireableGun(gun, ammo);
-            LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-            Vec3 origin = getPassengerShootOrigin(seat, info);
-            Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
-            FiredShot shot = new FiredShot(fireable, bulletType, this, attacker, ShootableItem.getRoundsRemaining(ammo));
-            boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
-            ShootingHelper.fireGun(level(), shot, Math.max(1, gun.getNumBullets(null, bulletType)), origin, direction, () -> {
+    /**
+     * Holds a seat gun up for a reload when its ammunition slot is restocked, as a
+     * driver's gun bank is: loading a belt into an empty gun, or topping it up, is
+     * what the reload stands for. Firing never counts, since the snapshot this is
+     * compared with is taken after each tick's shots.
+     */
+    private void notePassengerRestock(int index, @Nullable GunType gun, ItemStack ammo)
+    {
+        if (ammo.isEmpty())
+            return;
+        int rounds = ShootableItem.getTotalRounds(ammo);
+        if (ammo.getItem() == passengerAmmoItem[index] && rounds <= passengerAmmoRounds[index])
+            return;
+        // The capacity to count down from is what went into the slot at this
+        // restock, so a gunner reads 247/300 of the belt they actually have.
+        passengerMagazineCapacity[index] = rounds;
+        if (gun != null && validGunAmmo(ammo, gun))
+            beginPassengerReload(index, gun);
+    }
+
+    /** Fires a crewed seat gun for as long as its gunner's trigger and its cadence allow this tick. */
+    private void tickPassengerGunFire(Seat seat, SeatInfo info, GunType gun, int index)
+    {
+        boolean held = seat.isInputDown(DriveableInput.PRIMARY_FIRE);
+        boolean rising = seat.isInputRising(DriveableInput.PRIMARY_FIRE);
+        passengerHeldTicks[index] = held ? passengerHeldTicks[index] + 1 : 0;
+        EnumFireMode mode = gun.getFireMode(null);
+        if (mode == EnumFireMode.BURST && rising)
+            passengerBurstRemaining[index] = Math.max(1, gun.getNumBurstRounds());
+        // A seat gun keeps the cadence its GunType declares, sub-tick rates
+        // included, so a mounted minigun fires as fast here as it does in
+        // a player's hands.
+        while (ShotCooldown.isReady(passengerShootDelay[index])
+            && shouldFire(mode, held, rising, passengerHeldTicks[index], passengerBurstRemaining[index]))
+        {
+            float before = passengerShootDelay[index];
+            if (!firePassengerGun(seat, info, gun, index))
+                break;
+            passengerShootDelay[index] = Math.max(passengerShootDelay[index], ShotCooldown.charge(before, gun.getShootDelay(null)));
+            if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
+                --passengerBurstRemaining[index];
+            if (mode == EnumFireMode.SEMIAUTO)
+                break;
+        }
+    }
+
+    /**
+     * Tells a seat what its gunner's HUD should say: what is loaded, how much the
+     * gun has left to fire and how long until it may fire again. A seat mounting
+     * no gun reports -1 rounds, which is how the HUD knows to say nothing at all.
+     */
+    private void publishSeatGunState(Seat seat, @Nullable GunType gun, ItemStack ammo, int index)
+    {
+        if (gun == null || seat.getSeatInfo() == null || seat.getSeatInfo().getGunnerID() < 0)
+        {
+            seat.setGunState(-1, 0, 0, Component.empty());
+            return;
+        }
+        int rounds = ShootableItem.getTotalRounds(ammo);
+        if (!passengerAmmoTracked)
+            passengerMagazineCapacity[index] = rounds;
+        // Creative firing never consumes the item, but it still counts rounds
+        // towards the next reload. Clamping by that count lets a creative gunner
+        // watch the belt run down as a survival one does, which is how the
+        // driver's gun banks already report.
+        int magazineLeft = Math.max(0, passengerMagazineCapacity[index] - passengerRoundsFired[index]);
+        seat.setGunState(Math.min(rounds, magazineLeft), passengerMagazineCapacity[index],
+            ShotCooldown.displayTicks(passengerReloadTicks[index]),
+            ammo.isEmpty() ? Component.empty() : ammo.getHoverName());
+    }
+
+    /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
+    private boolean firePassengerGun(Seat seat, SeatInfo info, GunType gun, int index)
+    {
+        int ammoSlot = info.getGunnerID();
+        if (ammoSlot < 0)
+            return false;
+        ItemStack ammo = driveableData.getAmmo(ammoSlot);
+        if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable))
+            return false;
+        if (NeoForge.EVENT_BUS.post(new GunFiredEvent(this)).isCanceled())
+            return false;
+
+        ShootableType shootableType = shootable.getConfigType();
+        FireableGun fireable = new FireableGun(gun);
+        LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
+        Vec3 origin = getPassengerShootOrigin(info);
+        Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
+        boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
+        ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType),
+            origin, direction, this, attacker, ShootableItem.getRoundsFired(ammo), () -> {
                 if (!creative)
                 {
+                    Item ammoItem = ammo.getItem();
                     ShootableItem.consumeRound(ammo);
-                    driveableData.setAmmo(ammoSlot, ShootableItem.hasRoundsLeft(ammo) ? ammo : ItemStack.EMPTY);
+                    boolean depleted = !ShootableItem.hasRoundsLeft(ammo);
+                    driveableData.setAmmo(ammoSlot, depleted ? ItemStack.EMPTY : ammo);
+                    if (depleted)
+                        refillWeaponSlot(AmmoBank.AMMO, ammoSlot, ammoItem);
                     acknowledgeInternalWeaponInventoryChange();
                 }
             });
-            passengerShootDelay[index] = Math.max(1, Mth.ceil(gun.getShootDelay(null)));
-            if (mode == EnumFireMode.BURST && passengerBurstRemaining[index] > 0)
-                --passengerBurstRemaining[index];
-            String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
-            if (StringUtils.isNotBlank(sound))
-                PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
-        }
+        String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
+        reloadPassengerGun(index, gun, ammo);
+        return true;
+    }
+
+    /**
+     * Counts a round out of a seat gun and makes its gunner wait out the gun's
+     * reload once the magazine is spent, exactly as the same gun would in their
+     * hands and never less than the gun's own cadence.
+     */
+    private void reloadPassengerGun(int index, GunType gun, ItemStack fired)
+    {
+        if (index < 0 || index >= passengerShootDelay.length || index >= passengerRoundsFired.length)
+            return;
+        if (!magazineSpent(++passengerRoundsFired[index], magazineSize(fired, 0), fired))
+            return;
+        beginPassengerReload(index, gun);
+    }
+
+    /** Makes a seat gun's crew wait out the gun's reload, never less than its own cadence. */
+    private void beginPassengerReload(int index, GunType gun)
+    {
+        passengerRoundsFired[index] = 0;
+        float reload = Math.max(gun.getReloadTime(), gun.getShootDelay(null));
+        passengerShootDelay[index] = Math.max(passengerShootDelay[index], reload);
+        passengerReloadTicks[index] = Math.max(passengerReloadTicks[index], reload);
+        String reloadSound = gun.getReloadSound(null);
+        if (StringUtils.isNotBlank(reloadSound))
+            PacketPlaySound.sendSoundPacket(this, gun.getReloadSoundRange(), reloadSound, false);
     }
 
     /** Current passenger muzzle position, shared by firing and debug rendering. */
@@ -1769,36 +2938,40 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         Seat seat = getSeat(seatIndex);
         SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
         return seat == null || info == null || info.getGunType() == null
-            ? null : getPassengerShootOrigin(seat, info);
+            ? null : getPassengerShootOrigin(info);
     }
 
-    private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info)
+    /** Current passenger firing direction for client-side diagnostics. */
+    @Nullable
+    public Vec3 getPassengerShootDirection(int seatIndex)
     {
-        Vec3 muzzle = LegacyDriveableCoordinates.toLocal(info.getGunOrigin());
-        int seatIndex = seat.getSeatIndex();
-        Vec3 pivot = seatIndex > 0 && seatIndex < modelPassengerGunAimPivots.length
-            ? modelPassengerGunAimPivots[seatIndex] : null;
-        if (pivot == null)
-            pivot = muzzle;
+        Seat seat = getSeat(seatIndex);
+        SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
+        return seat == null || info == null || info.getGunType() == null
+            ? null : aimedDirection(seat.getAimYaw(), seat.getAimPitch());
+    }
 
-        float pitch = seat.getAimPitch();
-        Vec3 aimedMuzzle;
-        Vec3 origin;
-        if (isTurretMountedPart(info.getPart()))
-        {
-            // Registered turret guns are rendered inside the driver's turret
-            // yaw, then apply their own relative yaw and pitch at their pivot.
-            float relativeYaw = Mth.wrapDegrees(seat.getAimYaw() - getTurretYaw());
-            aimedMuzzle = pivot.add(rotateTurretLocalDirection(muzzle.subtract(pivot), relativeYaw, pitch));
-            origin = turretPointToWorld(aimedMuzzle, getTurretYaw(), 0F);
-        }
-        else
-        {
-            aimedMuzzle = pivot.add(rotateTurretLocalDirection(
-                muzzle.subtract(pivot), seat.getAimYaw(), pitch));
-            origin = modelLocalToWorld(aimedMuzzle);
-        }
-        return applyVehicleModelVerticalOffset(origin);
+    /**
+     * Muzzle position of a passenger's gun.
+     *
+     * <p>GunOrigin is authored in the same legacy frame as the seat it belongs
+     * to, so it takes the same basis conversion. Skipping the lateral mirror
+     * put every passenger gun on the wrong side of the hull, which is the
+     * long-standing "GunOrigin is not positioned correctly" fault.</p>
+     */
+    private Vec3 getPassengerShootOrigin(@NotNull SeatInfo info)
+    {
+        return getGunOriginWorldPosition(info.getGunOrigin());
+    }
+
+    /**
+     * World position an authored {@code GunOrigin} resolves to. Exposed so
+     * diagnostics can place a marker on a candidate value that no seat holds yet.
+     */
+    public Vec3 getGunOriginWorldPosition(@NotNull com.flansmod.common.vector.Vector3f gunOrigin)
+    {
+        Vec3 local = attachmentModelLocal(gunOrigin).add(0D, PASSENGER_GUN_MOUNTED_OFFSET, 0D);
+        return position().add(modelLocalDirectionToWorld(local));
     }
 
     protected enum AmmoBank { AMMO, BOMB, MISSILE }
@@ -1842,14 +3015,58 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             part.tick();
             if (!wasDestroyed && part.isDestroyed() || part.isDestroyed() && !destroyedParts.contains(part.getType()))
                 onPartDestroyed(part.getType());
-            if (part.isOnFire() && tickCount % 4 == 0)
+            updatePartEnvironment(part);
+        }
+    }
+
+    private void updatePartEnvironment(DriveablePart part)
+    {
+        CollisionBox box = part.getBox();
+        if (box == null)
+            return;
+        Vec3 centre = localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+        BlockPos position = BlockPos.containing(centre);
+        if (part.isOnFire())
+        {
+            if (level().getFluidState(position).is(FluidTags.WATER)
+                || level().isRaining() && random.nextInt(40) == 0)
+                part.extinguish();
+        }
+        else if (level().getFluidState(position).is(FluidTags.LAVA))
+            part.damage(0F, true);
+    }
+
+    private void emitPartParticles()
+    {
+        if (driveableData == null)
+            return;
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            CollisionBox box = part.getBox();
+            if (box == null)
+                continue;
+            if (part.isOnFire())
             {
-                CollisionBox box = part.getBox();
-                Vec3 position = box == null ? position() : localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
-                PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_FLAME, position.x, position.y, position.z, 0D, 0.02D, 0D),
-                    position, 96D, level().dimension());
+                Vec3 position = randomPointInPart(box);
+                level().addParticle(ParticleTypes.FLAME, position.x, position.y, position.z, 0D, 0D, 0D);
+            }
+            if (part.getMaxHealth() > 0F && part.getHealth() > 0F
+                && part.getHealth() < part.getMaxHealth() * 0.5F)
+            {
+                Vec3 position = randomPointInPart(box);
+                level().addParticle(part.getHealth() < part.getMaxHealth() * 0.25F
+                        ? ParticleTypes.LARGE_SMOKE : ParticleTypes.SMOKE,
+                    position.x, position.y, position.z, 0D, 0D, 0D);
             }
         }
+    }
+
+    private Vec3 randomPointInPart(CollisionBox box)
+    {
+        return localToWorld(
+            box.getX() + random.nextFloat() * box.getWidth(),
+            box.getY() + random.nextFloat() * box.getHeight(),
+            box.getZ() + random.nextFloat() * box.getDepth());
     }
 
     protected void syncChangedPartState()
@@ -1872,7 +3089,9 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         }
         partSyncInitialized = true;
         if (!changed.isEmpty())
-            PacketHandler.sendToAllAround(new PacketDriveableDamage(getId(), changed), position(), 192D, level().dimension());
+            // Everyone who can see the driveable, not just those within 192 blocks: a client that
+            // missed a change would keep stale part health and draw the wrong fire and smoke.
+            PacketHandler.sendToTracking(new PacketDriveableDamage(getId(), changed), this);
     }
 
     /** Applies a validated server snapshot without running destructive gameplay effects on the client. */
@@ -1898,42 +3117,52 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         }
     }
 
-    protected void tickSounds()
+    /**
+     * Runs the engine sounds on the client, where they can be looped by the sound engine and follow
+     * the vehicle.
+     * <p>
+     * Sending a fresh sound from the server once per repetition, as this used to do, left the sound
+     * behind at the position the vehicle had when the packet was sent, and started each repetition a
+     * network round trip late, so a moving vehicle could outrun its own engine sound. Everything this
+     * needs is already synchronised: {@link #isEngineActive()} carries {@code FLAG_ENGINE} and
+     * {@link #getThrottle()} its own data value, so the client reaches the same state on its own.
+     */
+    protected void tickEngineSounds()
     {
         if (configType == null)
             return;
-        boolean occupied = getControllingEntity() != null;
-        boolean ready = isEngineActive() && occupied;
-        boolean active = ready && engineRequested;
-        if (engineSoundTimer > 0)
-            --engineSoundTimer;
-        if (idleSoundTimer > 0)
-            --idleSoundTimer;
-        if (reverseSoundTimer > 0)
-            --reverseSoundTimer;
 
-        if (engineRequested && !wasEngineRequested && StringUtils.isNotBlank(configType.getStartSound()))
+        boolean engineActive = isEngineActive();
+        boolean active = engineActive && getControllingEntity() != null;
+        boolean throttled = active && Math.abs(getThrottle()) > 0.001F;
+
+        if (startSoundTicks > 0)
+            --startSoundTicks;
+
+        if (engineActive && !wasEngineActive && StringUtils.isNotBlank(configType.getEngineStartupSound()))
         {
-            PacketPlaySound.sendSoundPacket(this, Math.max(1, configType.getStartSoundRange()), configType.getStartSound(), false);
-            engineSoundTimer = Math.max(engineSoundTimer, Math.max(1, configType.getStartSoundLength()));
+            ClientHooks.SOUND.playEntitySound(this, configType.getEngineStartupSound(), Math.max(1, configType.getStartSoundRange()));
+            startSoundTicks = Math.max(1, configType.getEngineStartupSoundLength());
         }
-        if (active && engineSoundTimer <= 0 && StringUtils.isNotBlank(configType.getEngineSound()))
-        {
-            PacketPlaySound.sendSoundPacket(this, Math.max(1, configType.getEngineSoundRange()), configType.getEngineSound(), true);
-            engineSoundTimer = Math.max(1, configType.getEngineSoundLength());
-        }
-        if (ready && !engineRequested && engineSoundTimer <= 0 && idleSoundTimer <= 0 && StringUtils.isNotBlank(configType.getIdleSound()))
-        {
-            PacketPlaySound.sendSoundPacket(this, Math.max(1, configType.getEngineSoundRange()), configType.getIdleSound(), false);
-            idleSoundTimer = Math.max(1, configType.getIdleSoundLength());
-        }
-        if (ready && getThrottle() < -0.05F && reverseSoundTimer <= 0 && StringUtils.isNotBlank(configType.getBackSound()))
-        {
-            PacketPlaySound.sendSoundPacket(this, Math.max(1, configType.getBackSoundRange()), configType.getBackSound(), false);
-            reverseSoundTimer = Math.max(1, configType.getBackSoundLength());
-        }
-        wasEngineActive = active;
-        wasEngineRequested = engineRequested;
+        if (!engineActive)
+            startSoundTicks = 0;
+        wasEngineActive = engineActive;
+
+        // The engine and idle loops share a channel because they never play together, so switching
+        // between them replaces the running loop instead of layering a second one on top.
+        String engineLoop = null;
+        if (startSoundTicks <= 0)
+            engineLoop = throttled ? configType.getEngineSound()
+                : (active ? configType.getEngineIdleLoopSound() : null);
+
+        float pitchRange = throttled ? configType.getEngineSoundPitchRange()
+            : (active ? configType.getEngineIdleLoopPitchRange() : 0F);
+        ClientHooks.SOUND.setLoopingEntitySound(this, SOUND_CHANNEL_ENGINE, engineLoop,
+            Math.max(1, configType.getEngineSoundRange()), pitchRange);
+
+        String reverseLoop = active && getThrottle() < -0.05F ? configType.getBackSound() : null;
+        ClientHooks.SOUND.setLoopingEntitySound(this, SOUND_CHANNEL_REVERSE, reverseLoop,
+            Math.max(1, configType.getBackSoundRange()), 0F);
     }
 
     protected void updateRiderVisibility()
@@ -1965,6 +3194,19 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
                 rider.setInvisible(false);
             return true;
         });
+    }
+
+    /** Whether the rider sits in a driveable that hides its occupants, including their armor and held items. */
+    public static boolean isRiderHiddenByDriveable(Entity rider)
+    {
+        Entity vehicle = rider.getVehicle();
+        Driveable driveable = vehicle instanceof Seat seat ? seat.getDriveable() : null;
+        if (driveable == null && vehicle instanceof Driveable direct)
+            driveable = direct;
+        if (driveable == null)
+            return false;
+        DriveableType type = driveable.getConfigType();
+        return type != null && type.isSetPlayerInvisible();
     }
 
     protected void restoreRiderVisibility()
@@ -2235,6 +3477,13 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return modelLocalToWorld(localPosition);
     }
 
+    /** Complete rider anchor, including the vanilla/legacy feet offset in model space. */
+    public Vec3 getRiderWorldPosition(int index, double ridingOffset)
+    {
+        return getSeatWorldPosition(index).add(
+            modelLocalDirectionToWorld(new Vec3(0D, ridingOffset, 0D)));
+    }
+
     /** Render-time seat anchor using the exact same transform as the model. */
     public Vec3 getInterpolatedSeatWorldPosition(int index, float partialTick)
     {
@@ -2254,24 +3503,71 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return root.add(modelLocalDirectionToWorld(localPosition, yaw, pitch, roll));
     }
 
+    /** Render-time rider anchor whose feet remain fixed relative to a banking aircraft. */
+    public Vec3 getInterpolatedRiderWorldPosition(int index, double ridingOffset, float partialTick)
+    {
+        float partial = Mth.clamp(partialTick, 0F, 1F);
+        float yaw = Mth.rotLerp(partial, prevYaw, getYaw());
+        float pitch = Mth.rotLerp(partial, prevPitch, getPitch());
+        float roll = Mth.rotLerp(partial, prevRoll, getRoll());
+        return getInterpolatedSeatWorldPosition(index, partial).add(
+            modelLocalDirectionToWorld(new Vec3(0D, ridingOffset, 0D), yaw, pitch, roll));
+    }
+
+    /** Optics anchors use the same authored attachment basis and interpolation as seats and guns. */
+    public Vec3 getInterpolatedOpticsPosition(Seat seat, float partialTick)
+    {
+        var optics = seat.getOptics();
+        if (optics == null || !optics.isHasCamera())
+            return getInterpolatedRiderWorldPosition(seat.getSeatIndex(), 1.12D, partialTick);
+        float partial = Mth.clamp(partialTick, 0F, 1F);
+        Vec3 root = new Vec3(Mth.lerp((double) partial, xo, getX()),
+            Mth.lerp((double) partial, yo, getY()), Mth.lerp((double) partial, zo, getZ()));
+        Vec3 local = attachmentModelLocal(optics.getCamera());
+        if (optics.isDriverDefinition())
+            local = turretPointToLocal(local, Mth.rotLerp(partial, prevTurretYaw, getTurretYaw()), 0F);
+        else if (seat.getSeatInfo() != null && isTurretMountedPart(seat.getSeatInfo().getPart()))
+            local = turretPointToLocal(local, Mth.rotLerp(partial, prevTurretYaw, getTurretYaw()),
+                seat.getSeatInfo().getPart() == EnumDriveablePart.BARREL ? Mth.rotLerp(partial, prevTurretPitch, getTurretPitch()) : 0F);
+        return root.add(modelLocalDirectionToWorld(local,
+            Mth.rotLerp(partial, prevYaw, getYaw()), Mth.rotLerp(partial, prevPitch, getPitch()),
+            Mth.rotLerp(partial, prevRoll, getRoll())));
+    }
+
+    /**
+     * Basis conversion for a point authored as an attachment on the driveable:
+     * seat positions and their rotated offsets, passenger gun origins and the
+     * driveable's own shoot points. Aircraft take the model-facing half-turn,
+     * everything else the lateral mirror.
+     *
+     * <p>The mirror is the part that is easy to lose, because most content is
+     * symmetric about the centreline and so cannot show it. Where content is
+     * asymmetric it is unambiguous: the Hellcat authors its turret machine gun
+     * at {@code GunOrigin 1 6 18 -11} and the model draws that gun at model Z
+     * {@code +11}. Anything skipping the mirror lands on the wrong side of the
+     * hull by twice its lateral offset.</p>
+     */
+    private Vec3 attachmentModelLocal(@NotNull Vec3 legacy)
+    {
+        Vec3 local = rotateLegacyModelVector(legacy);
+        return this instanceof Plane
+            ? LegacyDriveableCoordinates.applyPlaneModelFacing(local)
+            : mirrorAroundLocalZAxis(local);
+    }
+
+    private Vec3 attachmentModelLocal(@NotNull com.flansmod.common.vector.Vector3f legacy)
+    {
+        return attachmentModelLocal(new Vec3(legacy.x, legacy.y, legacy.z));
+    }
+
     private Vec3 getSeatLocalPosition(@NotNull SeatInfo info, float turretYaw, float turretPitch)
     {
-        Vec3 localPosition = rotateLegacyModelVector(
-            new Vec3(info.getPosition().x, info.getPosition().y, info.getPosition().z));
-        localPosition = mirrorAroundLocalZAxis(localPosition);
+        Vec3 localPosition = attachmentModelLocal(info.getPosition());
         if (isTurretMountedPart(info.getPart()))
             localPosition = turretPointToLocal(localPosition, turretYaw,
                 info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F);
 
-        // The renderer lowers the complete vehicle model, so every seat anchor
-        // needs the same model-space correction, not only the driver.
-        if (this instanceof Vehicle)
-            localPosition = localPosition.add(0D,
-                Vehicle.VEHICLE_MODEL_VERTICAL_OFFSET * configType.getModelScale(), 0D);
-
-        Vec3 rotatedOffset = rotateLegacyModelVector(
-            new Vec3(info.getRotatedOffset().x, info.getRotatedOffset().y, info.getRotatedOffset().z));
-        rotatedOffset = mirrorAroundLocalZAxis(rotatedOffset);
+        Vec3 rotatedOffset = attachmentModelLocal(info.getRotatedOffset());
         if (rotatedOffset.lengthSqr() > 1.0E-8D)
         {
             float pitch = info.getPart() == EnumDriveablePart.BARREL ? turretPitch : 0F;
@@ -2286,21 +3582,88 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         DriveablePosition wheel = configType == null ? null : configType.getWheelPosition(index);
         if (wheel == null)
             return position();
-        Vec3 local = LegacyDriveableCoordinates.toLocal(wheel.getPosition());
-        return localToWorld(local.x, local.y, local.z);
+        // WheelPosition uses the same legacy model coordinates as seats and
+        // collision points. In particular, planes need their model-facing
+        // half-turn; using the generic physics basis put their rear gear at
+        // the nose and also rotated wheel anchors incorrectly with pitch.
+        Vec3 local = configuredModelLocal(wheel.getPosition());
+        double scale = modelScale();
+        return modelLocalToWorld(new Vec3(local.x * scale, (local.y + wheelAnchorLift()) * wheelAnchorHeightScale(),
+            local.z * scale));
     }
 
+    /** Blocks added to every authored wheel anchor height, before scaling. */
+    protected double wheelAnchorLift()
+    {
+        return 0D;
+    }
+
+    /** A point in legacy type-file coordinates (blocks), scaled with the model, in world space. */
+    public Vec3 legacyPointToWorld(@NotNull Vec3 legacy)
+    {
+        return modelLocalToWorld(configuredModelLocal(legacy).scale(modelScale()));
+    }
+
+    /** Factor applied to authored wheel anchor heights and ground clearance. */
+    protected double wheelAnchorHeightScale()
+    {
+        return modelScale();
+    }
+
+    /** ModelScale as the renderer applies it, guarded against degenerate values. */
+    protected double modelScale()
+    {
+        return configType == null ? 1D : Math.max(1.0E-4D, configType.getModelScale());
+    }
+
+    /**
+     * Exit spot beside the driveable, preferring the side of the seat being left.
+     *
+     * <p>Candidates are tested against the shaped hulls as well as blocks:
+     * a fixed offset probed only against blocks put riders of anything wider
+     * than a few blocks inside their own hull, where they stayed stuck.</p>
+     */
     public Vec3 getSafeDismountPosition(@NotNull LivingEntity passenger, int seatIndex)
     {
-        Vec3 right = getRightVector();
-        for (double side : new double[] { 1.5D, -1.5D, 2.5D, -2.5D })
+        Vec3 origin = position();
+        Vec3 right = getRightVector().multiply(1D, 0D, 1D);
+        right = right.lengthSqr() < 1.0E-6D ? new Vec3(1D, 0D, 0D) : right.normalize();
+        Vec3 forward = new Vec3(-right.z, 0D, right.x);
+        Vec3 nearSide = getSeatWorldPosition(seatIndex).subtract(origin).dot(right) < 0D ? right.reverse() : right;
+
+        double minDistance = Math.max(1.5D, (getBbWidth() + passenger.getBbWidth()) * 0.5D + 0.1D);
+        for (Vec3 direction : new Vec3[] { nearSide, nearSide.reverse(), forward, forward.reverse() })
         {
-            Vec3 candidate = position().add(right.scale(side)).add(0D, 0.25D, 0D);
-            AABB moved = passenger.getBoundingBox().move(candidate.subtract(passenger.position()));
-            if (level().noCollision(passenger, moved))
-                return candidate;
+            for (double distance = minDistance; distance <= MAX_DISMOUNT_DISTANCE; distance += DISMOUNT_DISTANCE_STEP)
+            {
+                Vec3 spot = findDismountSpot(passenger, origin.add(direction.scale(distance)));
+                if (spot != null)
+                    return spot;
+            }
         }
-        return position().add(0D, getBbHeight() + 0.5D, 0D);
+        return origin.add(0D, getBbHeight() + 0.5D, 0D);
+    }
+
+    @Nullable
+    private Vec3 findDismountSpot(@NotNull LivingEntity passenger, @NotNull Vec3 column)
+    {
+        int baseY = Mth.floor(getY());
+        for (int dy : DISMOUNT_HEIGHT_OFFSETS)
+        {
+            Vec3 spot = DismountHelper.findSafeDismountLocation(passenger.getType(), level(),
+                BlockPos.containing(column.x, baseY + dy, column.z), true);
+            if (spot != null && isClearOfHulls(passenger, spot))
+                return spot;
+        }
+        // No floor in reach (water, or an aircraft over a drop): stay level with the driveable.
+        Vec3 spot = new Vec3(column.x, getY(), column.z);
+        return level().noCollision(passenger, passenger.getDimensions(Pose.STANDING).makeBoundingBox(spot))
+            && isClearOfHulls(passenger, spot) ? spot : null;
+    }
+
+    private boolean isClearOfHulls(@NotNull LivingEntity passenger, @NotNull Vec3 feet)
+    {
+        return !DriveableCollisionWorld.intersectsAnyHull(level(), passenger.getDimensions(Pose.STANDING).makeBoundingBox(feet));
     }
 
     @Nullable
@@ -2346,8 +3709,17 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
 
         inputTimeout = 0;
         markUsed();
-        if (!seat.isDriverSeat())
+        if (seat.isInputRising(DriveableInput.CHANGE_SEAT))
+        {
+            cycleSeat(player, seat);
             return;
+        }
+        if (!seat.isDriverSeat())
+        {
+            if (seat.isInputRising(DriveableInput.MENU))
+                openPassengerGunInventoryMenu(player, seat);
+            return;
+        }
 
         int sanitized = DriveableInput.sanitize(mask);
         previousInputMask = getInputMask();
@@ -2369,20 +3741,71 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (DriveableInput.isDown(rising, DriveableInput.MENU) && player instanceof ServerPlayer serverPlayer)
             openDriveableMenu(serverPlayer);
         if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_GEAR))
-            setGearDeployed(!isGearDeployed());
+            toggleGear(player);
         if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_DOOR))
-            setDoorOpen(!isDoorOpen());
+            toggleDoor(player);
         if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_MODE))
-            toggleDriveableMode();
+            toggleDriveableMode(player);
+        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_ENGINE))
+            toggleEngine();
+        if (DriveableInput.isDown(rising, DriveableInput.TOGGLE_AIR_BRAKE))
+            toggleAirBrake(player);
         if (DriveableInput.isDown(rising, DriveableInput.TRIM))
             setOrientation(getYaw(), 0F, 0F);
         if (DriveableInput.isDown(rising, DriveableInput.FLARE))
             deployFlare();
+        if (DriveableInput.isDown(rising, DriveableInput.SWITCH_AMMO))
+            switchLoadedOrdnance();
     }
 
-    protected void toggleDriveableMode()
+    /** Landing gear toggle. Driveables without retractable gear ignore it. */
+    protected void toggleGear(@NotNull Player player)
+    {
+        setGearDeployed(!isGearDeployed());
+    }
+
+    /**
+     * Parts stowed inside the hull, such as retracted landing gear, are not
+     * exposed to bullets or repairs.
+     */
+    public boolean canHitPart(@Nullable EnumDriveablePart part)
+    {
+        return true;
+    }
+
+    /** Door toggle. Driveables without doors simply carry the flag. */
+    protected void toggleDoor(@NotNull Player player)
+    {
+        setDoorOpen(!isDoorOpen());
+    }
+
+    /**
+     * Air brake toggle. Only aircraft carry the surfaces, so the base driveable
+     * ignores the bind entirely rather than tracking a flag nothing reads.
+     */
+    protected void toggleAirBrake(@NotNull Player player) {}
+
+    protected void toggleDriveableMode(@NotNull Player player)
     {
         setDriveableMode(Math.floorMod(getDriveableMode() + 1, 2));
+    }
+
+    /** Applies a driver's engine intent; fuel and environment checks remain server-authoritative. */
+    protected void toggleEngine()
+    {
+        if (!(this instanceof Vehicle || this instanceof Plane))
+            return;
+        boolean occupied = getControllingEntity() != null;
+        boolean currentlyRequested = engineRequested || occupied && !driverWasPresent;
+        engineRequested = !currentlyRequested;
+        driverWasPresent = occupied;
+        engineStarting = false;
+        engineStartTicks = 0;
+        if (!engineRequested)
+        {
+            setFlag(FLAG_ENGINE, false);
+            setThrottle(0F);
+        }
     }
 
     protected void deployFlare()
@@ -2465,6 +3888,17 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             driver.onMouseMoved(deltaX, deltaY);
     }
 
+    /** Whether any seat still carries a rider, driver seat included. */
+    protected boolean hasRider()
+    {
+        for (Seat seat : seats)
+        {
+            if (seat != null && seat.getFirstPassenger() != null)
+                return true;
+        }
+        return false;
+    }
+
     @Nullable
     public Seat getDriverSeat()
     {
@@ -2474,6 +3908,24 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
                 return seat;
         }
         return seats.length == 0 ? null : seats[0];
+    }
+
+    /** Moves a rider to the next free, intact seat in definition order. */
+    public boolean cycleSeat(@NotNull ServerPlayer player, @NotNull Seat current)
+    {
+        if (current.getDriveable() != this || current.getRiddenByEntity() != player || seats.length < 2)
+            return false;
+        int targetIndex = SeatCycle.nextAvailable(current.getSeatIndex(), seats.length, index -> {
+            Seat candidate = seats[index];
+            return isUsableSeat(candidate) && candidate.getFirstPassenger() == null;
+        });
+        if (targetIndex < 0)
+            return false;
+        if (NeoForge.EVENT_BUS.post(new PlayerEnterSeatEvent(seats[targetIndex], player)).isCanceled())
+            return false;
+        setInputMask(0);
+        setFlightControls(0F, 0F, isMouseControlEnabled());
+        return player.startRiding(seats[targetIndex], true);
     }
 
     @Override
@@ -2493,13 +3945,13 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     @Override
     public float getPlayerRoll()
     {
-        return getRoll();
+        return LegacyDriveableCoordinates.renderedViewRoll(getRoll(), this instanceof Plane);
     }
 
     @Override
     public float getPrevPlayerRoll()
     {
-        return prevRoll;
+        return LegacyDriveableCoordinates.renderedViewRoll(prevRoll, this instanceof Plane);
     }
 
     @Override
@@ -2545,10 +3997,60 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return state != null && !state.isDestroyed();
     }
 
-    /** Called by the shooting pipeline after a precise part ray hit. */
-    public ShootingHelper.HitData bulletHit(BulletType bulletType, DriveableHit hit, ShootingHelper.HitData hitData)
+    /**
+     * Reports whether a part still occupies space in the world.
+     *
+     * <p>A destroyed part has been shot off, so it no longer stops projectiles,
+     * explosions or anything else until it is repaired. Parts without health
+     * defined are structural only and always count as present.</p>
+     */
+    public boolean isPartHitboxActive(@Nullable DriveablePart part)
     {
-        if (bulletType == null || hit == null || driveableData == null)
+        return part != null && (part.getMaxHealth() <= 0F || !part.isDestroyed());
+    }
+
+    /** Damage penalty used by legacy vehicle acceleration and maximum throttle. */
+    protected float getThrottleDamageNerf()
+    {
+        if (driveableData == null)
+            return 0F;
+        float engineNerf = destroyedPartFraction(EnumDriveablePart.getEngineRooms());
+        float boilerNerf = destroyedPartFraction(EnumDriveablePart.getBoilerRooms());
+        float nerf = Math.max(engineNerf, boilerNerf) * 0.8F;
+        if (isDefinedAndDestroyed(EnumDriveablePart.STERN))
+            nerf += 0.1F;
+        if (isDefinedAndDestroyed(EnumDriveablePart.BOW))
+            nerf += 0.1F;
+        return Mth.clamp(nerf, 0F, 1F);
+    }
+
+    private float destroyedPartFraction(@NotNull List<EnumDriveablePart> parts)
+    {
+        int defined = 0;
+        int destroyed = 0;
+        for (EnumDriveablePart part : parts)
+        {
+            DriveablePart state = driveableData.getPart(part);
+            if (state == null || state.getMaxHealth() <= 0F)
+                continue;
+            ++defined;
+            if (state.isDestroyed())
+                ++destroyed;
+        }
+        return defined == 0 ? 0F : (float) destroyed / defined;
+    }
+
+    private boolean isDefinedAndDestroyed(@NotNull EnumDriveablePart part)
+    {
+        DriveablePart state = driveableData.getPart(part);
+        return state != null && state.getMaxHealth() > 0F && state.isDestroyed();
+    }
+
+    /** Called by the shooting pipeline after a precise part ray hit. */
+    public ShootingHelper.HitData bulletHit(@Nullable FiredShot shot, BulletType bulletType, DriveableHit hit,
+                                            ShootingHelper.HitData hitData)
+    {
+        if (bulletType == null || hit == null || driveableData == null || configType == null)
             return hitData;
         DriveablePart part = driveableData.getPart(hit.getPart());
         if (part == null)
@@ -2558,37 +4060,81 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         float resistance = part.getPenetrationResistance();
         float remainingPower = Math.max(0F, previousPower - resistance);
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
-        float damage = bulletType.getDamage().getDamageAgainstEntity(this) * Mth.clamp(previousPower, 0.1F, 1F);
+        int shotIndex = shot == null ? 0 : shot.getShot();
+        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(),
+            hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg());
+        float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
+        boolean normalizedHealth = configType.getResolvedHealth().enabled();
+        float selectedFixedDamage = normalizedHealth ? authoredFixedDamage
+            : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
+        // Resolved through the shot where one exists, so a per-weapon override of the
+        // shared round's mass, velocity or penetration reaches the armour gate too.
+        float p100 = shot != null ? shot.getPenetrationAt100m() : bulletType.getPenetrationAt100m(shotIndex);
+        float muzzleVelocity = shot != null ? shot.getMuzzleVelocity()
+            : ShootingHelper.getMuzzleVelocity(bulletType, shotIndex, null);
+        float projectileMass = shot != null ? shot.getProjectileMass() : bulletType.getMass(shotIndex);
+        VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(
+            normalizedHealth, projectileMass, selectedFixedDamage,
+            muzzleVelocity, armorHit,
+            p100 > 0F && Float.isFinite(p100) ? p100 : null);
+        boolean armourBlocked = resolvedDamage.penetration().armourGateRequired()
+            && !resolvedDamage.penetration().penetrated();
         if (!level().isClientSide)
         {
-            part.damage(Math.max(0F, damage), bulletType.isSetEntitiesOnFire());
+            float previousHealth = part.getHealth();
+            part.damage(resolvedDamage.damage(), bulletType.isSetEntitiesOnFire() && !armourBlocked);
+            float appliedDamage = Math.max(0F, previousHealth - part.getHealth());
+            var debugPlayer = shot == null ? null : shot.getPlayerAttacker().orElse(null);
+            if (armourBlocked)
+                DriveableDamageDebug.reportArmorBlock(debugPlayer, this, hit.getPart(),
+                    resolvedDamage.penetration().penetrationMm(),
+                    resolvedDamage.penetration().effectiveArmorMm());
+            else
+                DriveableDamageDebug.reportDamage(debugPlayer, this, hit.getPart(), appliedDamage);
             if (part.isDestroyed())
                 onPartDestroyed(part.getType());
         }
-        return new ShootingHelper.HitData(remainingPower, penetrationRatio, false);
+        return new ShootingHelper.HitData(remainingPower, armourBlocked ? 0F : penetrationRatio, false);
     }
 
     /** Precise ray trace against every configured local part box. */
     public List<BulletHit> attackFromBullet(Vec3 origin, Vec3 motion)
     {
+        return attackFromBullet(origin, motion, false);
+    }
+
+    /**
+     * Precise ray trace against every configured local part box.
+     *
+     * <p>A part whose health has reached zero is blown off the driveable, so its
+     * hitbox stops existing until the part is repaired: projectiles pass straight
+     * through the hole. Repair tools pass {@code includeDestroyedParts} so a
+     * player can still aim at the wreckage of the part they want back.</p>
+     */
+    public List<BulletHit> attackFromBullet(Vec3 origin, Vec3 motion, boolean includeDestroyedParts)
+    {
         if (driveableData == null || motion.lengthSqr() < 1.0E-12D)
             return Collections.emptyList();
         Vec3 localOrigin = worldToLocal(origin);
         Vec3 localMotion = worldDirectionToLocal(motion);
-        Vec3 localEnd = localOrigin.add(localMotion);
-        double lengthSquared = localMotion.lengthSqr();
+        Vec3 turretPivot = getCollisionTurretPivot();
+        Vec3 turretOffset = getCollisionTurretOffset();
         List<BulletHit> hits = new ArrayList<>();
         for (DriveablePart part : driveableData.getParts().values())
         {
             CollisionBox box = part.getBox();
-            if (box == null)
+            if (box == null || !canHitPart(part.getType())
+                || !includeDestroyedParts && !isPartHitboxActive(part))
                 continue;
-            AABB aabb = box.asAabb();
-            Optional<Vec3> intersection = aabb.contains(localOrigin) ? Optional.of(localOrigin) : aabb.clip(localOrigin, localEnd);
-            if (intersection.isEmpty())
+            DriveableProjectileCollision.LocalHit intersection = DriveableProjectileCollision.trace(
+                box.asAabb(), localOrigin, localMotion, part.getType(), getTurretYaw(), getTurretPitch(),
+                turretPivot, turretOffset);
+            if (intersection == null)
                 continue;
-            float fraction = (float) Mth.clamp(intersection.get().subtract(localOrigin).dot(localMotion) / lengthSquared, 0D, 1D);
-            hits.add(new DriveableHit(this, part.getType(), fraction));
+            Vec3 worldHit = origin.add(motion.scale(intersection.fraction()));
+            hits.add(new DriveableHit(this, part.getType(), intersection.fraction(), worldHit,
+                intersection.position(), intersection.projectileDirection(), intersection.outwardNormal(),
+                intersection.facing()));
         }
         hits.sort(Comparator.naturalOrder());
         return hits;
@@ -2605,7 +4151,10 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (source != null)
             lastAtkEntity = source.getEntity();
         boolean fire = source != null && source.is(DamageTypeTags.IS_FIRE);
+        float previousHealth = part.getHealth();
         boolean newlyDestroyed = !part.isDestroyed() && part.damage(amount, fire);
+        DriveableDamageDebug.reportDamage(DriveableDamageDebug.playerFrom(source), this, target,
+            Math.max(0F, previousHealth - part.getHealth()));
         if (newlyDestroyed)
             onPartDestroyed(target);
         return true;
@@ -2616,16 +4165,33 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     {
         if (isInvulnerableTo(source) || destroyed)
             return false;
-        Entity attacker = source.getEntity();
-        if (attacker instanceof Player player && getControllingEntity() == null && onGround()
-            && canPlayerAccess(player)
-            && (player.getAbilities().instabuild || FlansMod.teamsManager.isSurvivalCanBreakVehicles()))
-        {
-            if (!level().isClientSide)
-                pickupAsItem(player);
+        if (tryPickupOnAttack(source))
             return true;
-        }
         return damagePart(EnumDriveablePart.CORE, amount, source);
+    }
+
+    /**
+     * Picks the driveable up as an item when an eligible player strikes a parked
+     * one, and reports whether it did.
+     *
+     * <p>Seats and wheels are separate collision entities that forward damage
+     * straight to a part, so a click that lands on one of them used to skip this
+     * entirely. On a ground vehicle the hull is usually what gets hit; on an
+     * aircraft the seat and undercarriage proxies cover most of what a player
+     * can reach, which is why planes could not be picked up at all. Both proxies
+     * now offer the pickup first, exactly as the hull does.
+     */
+    protected boolean tryPickupOnAttack(@Nullable DamageSource source)
+    {
+        if (source == null || destroyed || getControllingEntity() != null || !isSupportedByGround())
+            return false;
+        if (!(source.getEntity() instanceof Player player) || !canPlayerAccess(player))
+            return false;
+        if (!player.getAbilities().instabuild && !FlansMod.teamsManager.isSurvivalCanBreakVehicles())
+            return false;
+        if (!level().isClientSide)
+            pickupAsItem(player);
+        return true;
     }
 
     public Optional<EnumDriveablePart> findNearestPart(@NotNull Vec3 worldPoint)
@@ -2639,13 +4205,36 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             .map(DriveablePart::getType);
     }
 
+    /** Selects one nearest damageable collision surface so proxy entities cannot multiply explosion damage. */
+    public Optional<VehicleExplosionTarget> resolveExplosionTarget(@NotNull Vec3 worldPoint)
+    {
+        if (driveableData == null || configType == null)
+            return Optional.empty();
+        Vec3 hullLocalPoint = worldToLocal(worldPoint);
+        Vec3 turretPivot = getCollisionTurretPivot();
+        Vec3 turretOffset = getCollisionTurretOffset();
+        VehicleExplosionTarget best = null;
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            if (part == null || part.getBox() == null || part.getMaxHealth() <= 0F || part.isDestroyed()
+                || !canHitPart(part.getType()))
+                continue;
+            DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(
+                part.getBox().asAabb(), hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
+                turretPivot, turretOffset);
+            if (best == null || surface.distance() < best.distanceMeters())
+                best = new VehicleExplosionTarget(part.getType(), surface.facing(), surface.distance());
+        }
+        return Optional.ofNullable(best);
+    }
+
     public boolean repairFromTool(@NotNull Player player, int amount)
     {
         if (level().isClientSide || amount <= 0 || driveableData == null || !canPlayerAccess(player))
             return false;
         Vec3 origin = player.getEyePosition();
         Vec3 motion = player.getLookAngle().scale(6D);
-        EnumDriveablePart selected = attackFromBullet(origin, motion).stream()
+        EnumDriveablePart selected = attackFromBullet(origin, motion, true).stream()
             .filter(DriveableHit.class::isInstance)
             .map(DriveableHit.class::cast)
             .map(DriveableHit::getPart)
@@ -2749,25 +4338,105 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             refuelFromEnergyItems(engine);
             return;
         }
-        ItemStack stack = driveableData.getFuelStack();
-        if (!(stack.getItem() instanceof PartItem partItem) || partItem.getConfigType().getCategory() != PartType.Category.FUEL)
+        if (refuelFromSlot(driveableData.getFuelSlot()))
             return;
+
+        int cargoStart = driveableData.getCargoInventoryStart();
+        int cargoEnd = cargoStart + driveableData.getNumCargoSlots();
+        for (int slot = cargoStart; slot < cargoEnd; slot++)
+        {
+            if (refuelFromSlot(slot))
+                return;
+        }
+    }
+
+    /** Burns whatever is in this slot: a fuel part, or a container of liquid fuel. */
+    private boolean refuelFromSlot(int slot)
+    {
+        return refuelFromFuelSlot(slot) || refuelFromFluidContainer(slot);
+    }
+
+    /**
+     * Empties one bucket's worth of liquid fuel out of a container in this slot.
+     *
+     * <p>Fuel is taken a bucket at a time and only when the tank has room for all of it, so a
+     * part-filled tank never swallows a bucket for less than it is worth. The emptied
+     * container is left behind, exactly where the full one was.</p>
+     */
+    private boolean refuelFromFluidContainer(int slot)
+    {
+        ItemStack stack = driveableData.getItem(slot);
+        IFluidHandlerItem handler = FluidFuel.handlerFor(stack);
+        if (handler == null)
+            return false;
+
+        FluidStack held = FluidFuel.firstBurnableTank(handler);
+        if (held.isEmpty())
+            return false;
+        int fuelPerBucket = FluidFuel.fuelPerBucket(held.getFluid());
+
+        int drawn = Math.min(held.getAmount(), FluidFuel.BUCKET);
+        float gain = drawn * fuelPerBucket / (float) FluidFuel.BUCKET;
+        if (getFuel() + gain > configType.getFuelTankSize())
+            return false;
+
+        // Named explicitly so a multi-tank container cannot hand back a different liquid.
+        FluidStack drained = handler.drain(held.copyWithAmount(drawn), IFluidHandler.FluidAction.EXECUTE);
+        if (drained.isEmpty())
+            return false;
+
+        setFuel(getFuel() + drained.getAmount() * fuelPerBucket / (float) FluidFuel.BUCKET);
+        returnEmptiedContainer(slot, stack, handler.getContainer());
+        driveableData.setChanged();
+        return true;
+    }
+
+    /**
+     * Puts the emptied container back where the full one came from.
+     *
+     * <p>Buckets do not stack, so the usual case is a straight swap. A stackable container is
+     * consumed one at a time and its empty stowed anywhere it fits, or dropped if the
+     * driveable is full, rather than being destroyed.</p>
+     */
+    private void returnEmptiedContainer(int slot, ItemStack original, ItemStack emptied)
+    {
+        if (original.getCount() <= 1)
+        {
+            driveableData.setItem(slot, emptied);
+            return;
+        }
+
+        original.shrink(1);
+        driveableData.setItem(slot, original);
+        if (emptied.isEmpty())
+            return;
+        if (!InventoryHelper.addItemStackToContainer(driveableData, emptied, false, true, false, driveableData.getContainerSize()))
+            spawnAtLocation(emptied);
+    }
+
+    /** Transfers fuel from one inventory slot, preserving partial-can damage and stack state. */
+    private boolean refuelFromFuelSlot(int slot)
+    {
+        ItemStack stack = driveableData.getItem(slot);
+        if (!(stack.getItem() instanceof PartItem partItem) || partItem.getConfigType().getCategory() != PartType.Category.FUEL)
+            return false;
         int capacity = Math.max(0, partItem.getConfigType().getFuel());
         if (capacity <= 0)
-            return;
+            return false;
         int stored = Math.max(0, capacity - stack.getDamageValue());
         if (stored <= 0)
         {
             stack.shrink(1);
-            driveableData.setFuelStack(stack.isEmpty() ? ItemStack.EMPTY : stack);
-            return;
+            driveableData.setItem(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
+            return false;
         }
         int transfer = Math.min(stored, Math.max(1, Mth.ceil(configType.getFuelTankSize() - getFuel())));
         setFuel(getFuel() + transfer);
         stack.setDamageValue(stack.getDamageValue() + transfer);
         if (stack.getDamageValue() >= capacity)
             stack.shrink(1);
-        driveableData.setFuelStack(stack.isEmpty() ? ItemStack.EMPTY : stack);
+        driveableData.setItem(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
+        return true;
     }
 
     private void refuelFromEnergyItems(@NotNull PartType engine)
@@ -2795,9 +4464,18 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         }
     }
 
+    /**
+     * Purely visual, so each client spawns these from the replicated throttle, engine
+     * and part state instead of the server streaming one packet per emission.
+     */
     protected void emitConfiguredParticles()
     {
-        if (configType == null || (configType.isEmittersRequireOccupant() && !hasDriveableOccupant()))
+        if (!level().isClientSide || configType == null || configType.getEmitters().isEmpty()
+            || !ClientHooks.PLAYER.isLocalPlayerWithinSqr(this, EMITTER_PARTICLE_RANGE * EMITTER_PARTICLE_RANGE))
+            return;
+        if (configType.isEmittersRequireOccupant() && !hasDriveableOccupant())
+            return;
+        if ((this instanceof Vehicle || this instanceof Plane) && !isEngineActive())
             return;
         configType.getEmitters().forEach(emitter -> {
             if (tickCount % emitter.getEmitRate() != 0 || !isPartIntact(emitter.getPart()))
@@ -2835,8 +4513,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
                 origin = modelLocalToWorld(localOrigin);
                 direction = modelLocalDirectionToWorld(localVelocity);
             }
-            PacketHandler.sendToAllAround(new PacketParticle(emitter.getParticleType(), origin.x, origin.y, origin.z,
-                direction.x, direction.y, direction.z), origin, 128D, level().dimension());
+            ClientHooks.RENDER.spawnParticle(emitter.getParticleType(), origin.x, origin.y, origin.z,
+                direction.x, direction.y, direction.z, 1F);
         });
     }
 
@@ -2856,6 +4534,30 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     protected static Vec3 rotateLegacyModelVector(@NotNull Vec3 vector)
     {
         return LegacyDriveableCoordinates.toLocal(vector);
+    }
+    /**
+     * Converts a type-file vector to the model-local facing used by this
+     * driveable, without the lateral mirror that {@link #attachmentModelLocal}
+     * applies.
+     *
+     * <p>Kept for the points where the mirror would be wrong or pointless: the
+     * synthetic forward vector, whose lateral component is zero either way; the
+     * turret pivot, which every pack puts on the centreline; and wheel anchors,
+     * which come in symmetric sets and whose left/right lever arms are derived
+     * in this same basis by {@code applyWheelContactPhysics}. Mirroring wheels
+     * alone would inverse the roll response on side slopes while moving nothing
+     * a player can see.</p>
+     */
+    private Vec3 configuredModelLocal(@NotNull Vec3 legacy)
+    {
+        Vec3 local = LegacyDriveableCoordinates.toLocal(legacy);
+        return this instanceof Plane ? LegacyDriveableCoordinates.applyPlaneModelFacing(local) : local;
+    }
+
+    private Vec3 configuredModelLocal(@NotNull com.flansmod.common.vector.Vector3f legacy)
+    {
+        Vec3 local = LegacyDriveableCoordinates.toLocal(legacy);
+        return this instanceof Plane ? LegacyDriveableCoordinates.applyPlaneModelFacing(local) : local;
     }
 
     /** Mirrors a legacy-derived seat point across the driveable's local Z axis. */
@@ -2905,14 +4607,47 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return driveableData;
     }
 
+    /** Opens the inventory window this driveable uses by default. */
     public boolean openDriveableMenu(@NotNull ServerPlayer player)
+    {
+        return openDriveableInventoryMenu(player);
+    }
+
+    /** Opens the paged driveable inventory window, even for driveables with a window of their own. */
+    public boolean openDriveableInventoryMenu(@NotNull ServerPlayer player)
+    {
+        return openDriveableInventoryMenu(player, DriveableInventoryMenu.Page.MENU);
+    }
+
+    /** Opens the paged driveable inventory window directly on one of its pages. */
+    public boolean openDriveableInventoryMenu(@NotNull ServerPlayer player, DriveableInventoryMenu.Page page)
     {
         if (!canPlayerAccessInventory(player) || driveableData == null || configType == null)
             return false;
         player.openMenu(
-            new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this),
+            new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page),
                 Component.literal(configType.getName())),
-            buffer -> buffer.writeVarInt(getId()));
+            buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()).writeVarInt(-1));
+        return true;
+    }
+
+    /** Opens only the ammunition slot belonging to the passenger's gunner seat. */
+    public boolean openPassengerGunInventoryMenu(@NotNull ServerPlayer player, @NotNull Seat seat)
+    {
+        if (!canPlayerAccessInventory(player) || driveableData == null || configType == null
+            || seat.getDriveable() != this || seat.getRiddenByEntity() != player || seat.isDriverSeat())
+            return false;
+        SeatInfo info = configType.getSeat(seat.getSeatIndex());
+        if (info == null || info.getGunType() == null || info.getGunnerID() < 0
+            || info.getGunnerID() >= driveableData.getNumAmmoSlots())
+            return false;
+
+        int seatIndex = seat.getSeatIndex();
+        player.openMenu(
+            new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId,
+                inventory, this, DriveableInventoryMenu.Page.GUNS, seatIndex), ModUtils.getDisplayName(configType)),
+            buffer -> buffer.writeVarInt(getId()).writeVarInt(DriveableInventoryMenu.Page.GUNS.ordinal())
+                .writeVarInt(seatIndex));
         return true;
     }
 
@@ -2938,9 +4673,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             target = findPreferredAvailableSeat();
         if (target == null)
             return InteractionResult.PASS;
-        if (player.getVehicle() != null)
-            player.stopRiding();
-        return player.startRiding(target, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
+        return target.tryEnter(player) ? InteractionResult.CONSUME : InteractionResult.PASS;
     }
 
     @Nullable
@@ -3122,6 +4855,8 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     public void remove(@NotNull RemovalReason reason)
     {
         restoreRiderVisibility();
+        if (collisionHelper != null)
+            collisionHelper.unregister();
         for (Seat seat : seats)
         {
             if (seat != null && !seat.isRemoved())
@@ -3157,6 +4892,20 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return up.scale(Math.cos(roll)).subtract(horizontalRight.scale(Math.sin(roll))).normalize();
     }
 
+    /** Hull-local pivot that turret-mounted part boxes rotate around during projectile collision. */
+    public Vec3 getCollisionTurretPivot()
+    {
+        return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO
+            : LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
+    }
+
+    /** Hull-local offset that turret-mounted part boxes carry, yawed with the turret, during projectile collision. */
+    public Vec3 getCollisionTurretOffset()
+    {
+        return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO
+            : LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
+    }
+
     public Vec3 localToWorld(double x, double y, double z)
     {
         return position().add(localDirectionToWorld(new Vec3(x, y, z)));
@@ -3183,7 +4932,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return LegacyDriveableCoordinates.modelLocalToWorldDirection(local, yaw, pitch, roll);
     }
 
-    private static Vec3 localDirectionToWorld(@NotNull Vec3 local, float yaw, float pitch, float roll)
+    protected static Vec3 localDirectionToWorld(@NotNull Vec3 local, float yaw, float pitch, float roll)
     {
         Vec3 forward = ModUtils.getDirectionFromPitchAndYaw(pitch, yaw).normalize();
         Vec3 horizontalRight = ModUtils.getDirectionFromPitchAndYaw(0F, yaw - 90F).normalize();
@@ -3204,14 +4953,50 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return new Vec3(worldDirection.dot(getForwardVector()), worldDirection.dot(getUpVector()), worldDirection.dot(getRightVector()));
     }
 
+    /**
+     * Applies the operator's absolute speed ceiling, in km/h, to a velocity.
+     *
+     * <p>Unlike the movement clamp below this is a real speed limit rather than
+     * an integration guard: it is per-vehicle-class, configurable, and scales
+     * the whole vector so the direction of travel is preserved. It is inert
+     * while the driveable is slower than the configured ceiling, which at the
+     * default of 10000 km/h means always.
+     */
+    protected static Vec3 enforceSpeedCap(@NotNull Vec3 velocity, double capKmh)
+    {
+        double scale = VehiclePhysicsUnits.speedCapScale(velocity.length(), capKmh);
+        return scale >= 1D ? velocity : velocity.scale(scale);
+    }
+
+    private static double movementClamp(ResolvedVehiclePhysics physics)
+    {
+        return ModCommonConfig.forceLegacyMovement(physics.category())
+            ? VehiclePhysicsConstants.LEGACY_MOVEMENT_CLAMP_BLOCKS_PER_TICK
+            : physics.movementClampBlocksPerTick();
+    }
+
     protected void moveWithCollisions(Vec3 velocity)
     {
         if (!Double.isFinite(velocity.x) || !Double.isFinite(velocity.y) || !Double.isFinite(velocity.z))
             velocity = Vec3.ZERO;
-        double maximum = 8D;
+        // A safety bound against runaway integration, not a top speed. Legacy
+        // driveables keep the historical eight blocks per tick exactly; only a
+        // type running the real-world profile gets the raised ceiling, which is
+        // high enough for jets and low enough to bound the collision sweep.
+        double maximum = configType == null
+            ? VehiclePhysicsConstants.LEGACY_MOVEMENT_CLAMP_BLOCKS_PER_TICK
+            : movementClamp(configType.getResolvedPhysics());
         velocity = new Vec3(Mth.clamp(velocity.x, -maximum, maximum), Mth.clamp(velocity.y, -maximum, maximum), Mth.clamp(velocity.z, -maximum, maximum));
         setDeltaMovement(velocity);
+        // Vanilla only steps a collision body that rests on the ground itself,
+        // which one held clear of the terrain by its suspension never does. The
+        // wheel probes alone lift the hull by the average of all wheels, so a
+        // ledge met by a single wheel at an angle stalled it. Wheels on the
+        // ground are what lets the body step; move() recomputes onGround.
+        if (!onGround() && maxUpStep() > 0F && hasWheelContact() && stepsOnWheelContact())
+            setOnGround(true);
         move(MoverType.SELF, velocity);
+        sweepCollisionPointImpacts(velocity);
         handleCollisionConsequences(velocity);
         if (horizontalCollision)
             setDeltaMovement(getDeltaMovement().multiply(0.2D, 1D, 0.2D));
@@ -3223,10 +5008,47 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     {
         if (configType != null && configType.isFloatOnWater() && isInWater())
         {
-            double lift = Mth.clamp(configType.getBuoyancy(), 0F, 0.25F);
-            return velocity.add(0D, lift, 0D).multiply(0.92D, 0.8D, 0.92D);
+            double ceiling = Mth.clamp(configType.getBuoyancy(), 0F, 0.25F);
+            ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
+            if (!ModCommonConfig.forceLegacyMovement(physics.category()) && physics.hasDraft())
+            {
+                // A declared draft turns flotation into a restoring response that
+                // settles the hull at its real waterline. Without one the legacy
+                // constant lift is used unchanged.
+                double surface = findWaterSurfaceY();
+                if (Double.isFinite(surface))
+                {
+                    double corrected = MarineDraftPhysics.verticalVelocity(velocity.y,
+                        getBoundingBox().minY, surface, physics.draftM(), ceiling);
+                    return new Vec3(velocity.x, corrected, velocity.z).multiply(0.92D, 1D, 0.92D);
+                }
+            }
+            return velocity.add(0D, ceiling, 0D).multiply(0.92D, 0.8D, 0.92D);
         }
         return velocity.add(0D, -Math.max(0D, gravity), 0D);
+    }
+
+    /**
+     * World Y of the water surface directly above the hull, or {@code NaN} when
+     * none is found within the probe range. Bounded and chunk-guarded so it can
+     * never force a chunk load, matching {@link #isUnderWater()}.
+     */
+    private double findWaterSurfaceY()
+    {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        int startY = Mth.floor(getBoundingBox().minY);
+        double surface = Double.NaN;
+        for (int offset = 0; offset <= VehiclePhysicsConstants.DRAFT_SURFACE_PROBE_BLOCKS; offset++)
+        {
+            cursor.set(getBlockX(), startY + offset, getBlockZ());
+            if (!level().hasChunkAt(cursor))
+                break;
+            FluidState fluid = level().getFluidState(cursor);
+            if (fluid.isEmpty())
+                break;
+            surface = startY + offset + fluid.getHeight(level(), cursor);
+        }
+        return surface;
     }
 
     /**
@@ -3237,22 +5059,60 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
      */
     protected Vec3 applyWheelContactPhysics(@NotNull Vec3 velocity, boolean alignToTerrain)
     {
+        return applyWheelContactPhysics(velocity, alignToTerrain, 0D);
+    }
+
+    /**
+     * As above, told how much gravity was applied to {@code velocity} earlier in
+     * this tick so the suspension can hold the driveable up without the standing
+     * error a proportional response would otherwise need.
+     */
+    protected Vec3 applyWheelContactPhysics(@NotNull Vec3 velocity, boolean alignToTerrain, double appliedGravity)
+    {
         groundedWheelCount = 0;
         if (configType == null || configType.getWheelPositions().isEmpty())
             return velocity;
         float spring = Mth.clamp(configType.getWheelSpringStrength(), 0F, 1F);
         float step = Mth.clamp(configType.getWheelStepHeight(), 0F, 2.5F);
+        // Anchors are scaled with the model, so every distance derived from the
+        // authored wheel coordinates has to be scaled alongside them.
+        double scale = modelScale();
+        double heightScale = wheelAnchorHeightScale();
         double suspensionDroop = 0.35D + (1D - spring) * 0.2D;
         double maximumCompression = Math.max(0.15D, step + 0.1D);
+        double minimumMountHeight = Double.POSITIVE_INFINITY;
+        double maximumMountHeight = Double.NEGATIVE_INFINITY;
+        for (DriveablePosition definition : configType.getWheelPositions())
+        {
+            if (definition != null && isPartIntact(definition.getPart()))
+            {
+                minimumMountHeight = Math.min(minimumMountHeight, definition.getPosition().y * heightScale);
+                maximumMountHeight = Math.max(maximumMountHeight, definition.getPosition().y * heightScale);
+            }
+        }
+        double mountHeightRange = Double.isFinite(minimumMountHeight)
+            ? maximumMountHeight - minimumMountHeight : 0D;
+        // A legacy wheel was an independently falling collision entity. Keep
+        // probing far enough below high-mounted tail gear to reproduce that
+        // behaviour while another wheel is supporting the driveable.
+        double poseProbeDroop = suspensionDroop + mountHeightRange + step + 0.45D;
         double supportError = 0D;
         double frontHeight = 0D, backHeight = 0D, leftHeight = 0D, rightHeight = 0D;
+        double frontMountHeight = 0D, backMountHeight = 0D, leftMountHeight = 0D, rightMountHeight = 0D;
         int frontCount = 0, backCount = 0, leftCount = 0, rightCount = 0;
         double frontX = 0D, backX = 0D, leftZ = 0D, rightZ = 0D;
 
+        // The historical 1.5 block look-ahead is correct only up to about
+        // 108 km/h. A type on the real-world profile probes as far as it can
+        // actually travel in a tick; legacy types keep the historical value.
+        ResolvedVehiclePhysics resolvedPhysics = configType.getResolvedPhysics();
+        double predictionCap = ModCommonConfig.forceLegacyMovement(resolvedPhysics.category())
+            ? VehiclePhysicsConstants.LEGACY_WHEEL_PREDICTION_BLOCKS
+            : resolvedPhysics.wheelPredictionBlocks(ModCommonConfig.realisticSpeedScale(resolvedPhysics.category()));
         Vec3 horizontalPrediction = new Vec3(velocity.x, 0D, velocity.z);
         double predictionLength = horizontalPrediction.length();
-        if (predictionLength > 1.5D)
-            horizontalPrediction = horizontalPrediction.scale(1.5D / predictionLength);
+        if (predictionLength > predictionCap)
+            horizontalPrediction = horizontalPrediction.scale(predictionCap / predictionLength);
 
         for (int index = 0; index < configType.getWheelPositions().size(); index++)
         {
@@ -3261,38 +5121,68 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
                 continue;
             Vec3 wheel = getWheelWorldPosition(index).add(horizontalPrediction);
             Vec3 rayStart = wheel.add(0D, step + 0.6D, 0D);
-            Vec3 rayEnd = wheel.add(0D, -suspensionDroop - 0.45D, 0D);
+            Vec3 rayEnd = wheel.add(0D, -poseProbeDroop - 0.45D, 0D);
             BlockHitResult hit = level().clip(new ClipContext(rayStart, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             if (hit.getType() != HitResult.Type.BLOCK)
                 continue;
             double surface = hit.getLocation().y;
-            double desiredWheelY = surface + 0.375D;
+            double desiredWheelY = surface + wheelGroundClearance() * heightScale;
             double error = desiredWheelY - wheel.y;
-            if (error < -suspensionDroop || error > maximumCompression)
+            if (error < -poseProbeDroop || error > maximumCompression)
                 continue;
-            supportError += error;
-            ++groundedWheelCount;
+            if (error >= -suspensionDroop)
+            {
+                supportError += error;
+                ++groundedWheelCount;
+            }
 
-            Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition());
-            double forwardPosition = local.x;
-            double rightPosition = local.z;
-            if (forwardPosition >= 0D) { frontHeight += surface; frontX += forwardPosition; ++frontCount; }
-            else { backHeight += surface; backX += forwardPosition; ++backCount; }
-            if (rightPosition >= 0D) { rightHeight += surface; rightZ += rightPosition; ++rightCount; }
-            else { leftHeight += surface; leftZ += rightPosition; ++leftCount; }
+            Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition()).scale(scale);
+            double forwardPosition = LegacyDriveableCoordinates.legacyForwardCoordinate(local);
+            double rightPosition = LegacyDriveableCoordinates.legacyRightCoordinate(local);
+            double mountHeight = definition.getPosition().y * heightScale;
+            if (forwardPosition > 1.0E-4D)
+            {
+                frontHeight += surface;
+                frontMountHeight += mountHeight;
+                frontX += forwardPosition;
+                ++frontCount;
+            }
+            else if (forwardPosition < -1.0E-4D)
+            {
+                backHeight += surface;
+                backMountHeight += mountHeight;
+                backX += forwardPosition;
+                ++backCount;
+            }
+            if (rightPosition > 1.0E-4D)
+            {
+                rightHeight += surface;
+                rightMountHeight += mountHeight;
+                rightZ += rightPosition;
+                ++rightCount;
+            }
+            else if (rightPosition < -1.0E-4D)
+            {
+                leftHeight += surface;
+                leftMountHeight += mountHeight;
+                leftZ += rightPosition;
+                ++leftCount;
+            }
         }
         if (groundedWheelCount == 0)
             return velocity;
 
         double correctedY = SuspensionPhysics.dampVerticalVelocity(velocity.y,
-            supportError / groundedWheelCount, spring, velocity.horizontalDistance());
+            supportError / groundedWheelCount, spring, velocity.horizontalDistance(), appliedGravity);
 
         if (alignToTerrain && frontCount > 0 && backCount > 0)
         {
             double front = frontHeight / frontCount;
             double back = backHeight / backCount;
             double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
-            float targetPitch = -SuspensionPhysics.terrainAngle(front - back, length);
+            double mountDifference = frontMountHeight / frontCount - backMountHeight / backCount;
+            float targetPitch = SuspensionPhysics.supportAngle(front - back, length, mountDifference,
+                this instanceof Plane);
             float pitch = SuspensionPhysics.smoothTerrainAngle(getPitch(), targetPitch, spring);
             float roll = getRoll();
             if (configType.isCanRoll() && leftCount > 0 && rightCount > 0)
@@ -3300,7 +5190,9 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
                 double left = leftHeight / leftCount;
                 double right = rightHeight / rightCount;
                 double width = Math.max(0.5D, rightZ / rightCount - leftZ / leftCount);
-                float targetRoll = SuspensionPhysics.terrainAngle(right - left, width);
+                double lateralMountDifference = rightMountHeight / rightCount - leftMountHeight / leftCount;
+                float targetRoll = SuspensionPhysics.supportAngle(right - left, width,
+                    lateralMountDifference, this instanceof Plane);
                 roll = SuspensionPhysics.smoothTerrainAngle(getRoll(), targetRoll, spring);
             }
             setOrientation(getYaw(), pitch, roll);
@@ -3308,9 +5200,57 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return new Vec3(velocity.x, correctedY, velocity.z);
     }
 
+    /**
+     * Height at which a wheel anchor rests above the surface below it, in model
+     * space and so before ModelScale is applied.
+     *
+     * <p>Packs disagree on what WheelPosition means, so this prefers the value
+     * measured from the type's own wheel and track collision boxes and only
+     * falls back to a convention when there are none to measure.</p>
+     */
+    protected double wheelGroundClearance()
+    {
+        float derived = configType == null ? Float.NaN : configType.getWheelContactClearance();
+        return Float.isNaN(derived) ? fallbackWheelGroundClearance() : derived;
+    }
+
+    /**
+     * Clearance for a type that declares no wheel or track collision box.
+     * Aircraft landing gear is authored on the strut, above the tyre's contact
+     * patch, so planes keep the historical value; {@link Vehicle} overrides it.
+     */
+    protected double fallbackWheelGroundClearance()
+    {
+        return 0.375D;
+    }
+
     protected boolean hasWheelContact()
     {
         return groundedWheelCount > 0;
+    }
+
+    /** Whether wheel contact alone lets the collision body step up a ledge. */
+    protected boolean stepsOnWheelContact()
+    {
+        return false;
+    }
+
+    /** Forgets the last wheel contact sample, for a tick that does not take one. */
+    protected void clearWheelContact()
+    {
+        groundedWheelCount = 0;
+    }
+
+    /**
+     * Whether the driveable is resting on the world at all.
+     *
+     * <p>Vanilla's {@code onGround} is only true when the collision body itself
+     * lands, which a driveable held clear of the terrain by its own suspension
+     * never does. Anything asking "is this thing on the ground" wants both.
+     */
+    public boolean isSupportedByGround()
+    {
+        return onGround() || hasWheelContact();
     }
 
     protected boolean isNearGround(int distance)
@@ -3337,9 +5277,107 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         return false;
     }
 
+    /**
+     * Weighs every velocity change this driveable did not make itself since its
+     * last tick against its mass: explosions of any origin, melee knockback,
+     * flowing water and pushes from other mods alike. Runs on the server, which
+     * owns driveable motion; clients only interpolate it.
+     */
+    private void absorbExternalImpulses()
+    {
+        Vec3 current = getDeltaMovement();
+        if (ModCommonConfig.forceLegacyVehicleKnockback())
+        {
+            externalImpulses.settle(current);
+            return;
+        }
+        Vec3 absorbed = externalImpulses.absorb(current, getImpulseMassKg(),
+            ModCommonConfig.vehicleKnockbackReferenceMassKg());
+        if (absorbed != current)
+            setDeltaMovement(absorbed);
+    }
+
+    @Override
+    public double getImpulseMassKg()
+    {
+        return configType == null ? ModCommonConfig.fallbackImpulseMassKg(null) : configType.getImpulseMass().massKg();
+    }
+
+    @Override
+    public void applyResolvedImpulse(@NotNull Vec3 impulse)
+    {
+        setDeltaMovement(getDeltaMovement().add(impulse));
+        externalImpulses.addResolvedImpulse(impulse);
+    }
+
+    /**
+     * Holds a grounded driveable to at least {@code decelerationMs2} of
+     * horizontal slowing this tick and brings it to rest once it is crawling,
+     * so a push leaves a parked or idling vehicle standing after a short slide
+     * instead of coasting away. Afloat, airborne or on the legacy knockback
+     * switch, the movement model's own result stands.
+     */
+    protected Vec3 applyMinimumGroundDeceleration(@NotNull Vec3 before, @NotNull Vec3 after, double decelerationMs2)
+    {
+        if (ModCommonConfig.forceLegacyVehicleKnockback() || isInWater() || !isSupportedByGround())
+            return after;
+        return VehicleImpulsePhysics.enforceMinimumDeceleration(before, after,
+            VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(decelerationMs2),
+            VehiclePhysicsConstants.GROUND_REST_SPEED_BLOCKS_PER_TICK);
+    }
+
+    /**
+     * Resolves contact with other driveables and AA guns as an inelastic
+     * collision along the line between their centres, weighed by both masses.
+     *
+     * <p>Hulls do not collide with each other as solids, so this is what stops a
+     * jeep from shoving a tank aside and a tank from stopping for a jeep. It runs
+     * at any speed, since a vehicle creeping below the impact threshold would
+     * otherwise drive into the other hull, and only while the two are closing,
+     * so vehicles resting against each other exchange nothing.
+     */
+    private void resolveHeavyContacts()
+    {
+        Vec3 velocity = getDeltaMovement();
+        double horizontalSpeed = velocity.horizontalDistance();
+        if (!(horizontalSpeed >= VehiclePhysicsConstants.MIN_DRIVEABLE_CONTACT_SPEED_BLOCKS_PER_TICK))
+            return;
+        double reach = Math.min(1.5D, horizontalSpeed + 0.25D);
+        AABB contactBox = getBoundingBox().inflate(reach, 0.25D, reach);
+        double selfMass = getImpulseMassKg();
+        for (Entity entity : level().getEntities(this, contactBox,
+            candidate -> candidate instanceof IMassiveEntity && candidate.isAlive() && !isPartOfThis(candidate)))
+        {
+            Vec3 normal = new Vec3(entity.getX() - getX(), 0D, entity.getZ() - getZ());
+            if (normal.lengthSqr() < 1.0E-6D)
+                normal = new Vec3(velocity.x, 0D, velocity.z);
+            normal = normal.normalize();
+            IMassiveEntity other = (IMassiveEntity) entity;
+            double closingSpeed = getDeltaMovement().subtract(entity.getDeltaMovement()).dot(normal);
+            VehicleImpulsePhysics.CollisionImpulse impulse = VehicleImpulsePhysics.collision(selfMass,
+                other.getImpulseMassKg(), closingSpeed, VehiclePhysicsConstants.DRIVEABLE_COLLISION_RESTITUTION);
+            if (impulse.isNone())
+                continue;
+            setDeltaMovement(getDeltaMovement().add(normal.scale(impulse.selfDelta())));
+            other.applyResolvedImpulse(normal.scale(impulse.otherDelta()));
+        }
+    }
+
+    /** Bodies whose contact is resolved by momentum exchange: other heavy entities, and the seats and wheels that follow their hulls. */
+    private static boolean isHeavyContactBody(Entity entity)
+    {
+        return entity instanceof IMassiveEntity || entity instanceof Seat || entity instanceof Wheel;
+    }
+
     protected void handleCollisionConsequences(@NotNull Vec3 requestedVelocity)
     {
-        if (configType == null || requestedVelocity.lengthSqr() < 0.0025D)
+        // Pushing, damaging and squashing others is the server's; a predicting client only moves.
+        if (configType == null || level().isClientSide)
+            return;
+        boolean legacyKnockback = ModCommonConfig.forceLegacyVehicleKnockback();
+        if (!legacyKnockback)
+            resolveHeavyContacts();
+        if (requestedVelocity.lengthSqr() < 0.0025D)
             return;
         double horizontalSpeed = requestedVelocity.horizontalDistance();
         if (horizontalCollision && configType.isCollisionDamageEnable()
@@ -3354,6 +5392,14 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         AABB impactBox = getBoundingBox().inflate(Math.min(1.5D, horizontalSpeed + 0.25D), 0.25D, Math.min(1.5D, horizontalSpeed + 0.25D));
         for (Entity entity : level().getEntities(this, impactBox, candidate -> candidate.isAlive() && !isPartOfThis(candidate)))
         {
+            // Shaped collision resolves these entities against actual hull
+            // surfaces. Applying this old coarse AABB push as well dislodges
+            // anything already supported by a deck, even while parked.
+            if (collisionHelper != null && collisionHelper.hasGeometry()
+                && DriveableCollisionWorld.collidesWithHulls(entity))
+                continue;
+            if (!legacyKnockback && isHeavyContactBody(entity))
+                continue;
             if (squash && entity instanceof LivingEntity && horizontalSpeed > 0.12D)
                 entity.hurt(level().damageSources().flyIntoWall(), (float) Math.min(40D, 2D + horizontalSpeed * 12D));
             Vec3 push = entity.position().subtract(position());
@@ -3361,21 +5407,88 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
                 push = getForwardVector();
             entity.push(push.x * 0.2D, Math.min(0.25D, horizontalSpeed * 0.1D), push.z * 0.2D);
         }
+    }
 
-        if (horizontalCollision && !configType.getCollisionPoints().isEmpty())
+    /**
+     * Traces every configured collision point along the path it actually
+     * travelled this tick and damages whatever struck a block.
+     *
+     * <p>Ported from the legacy {@code checkForCollisions}. A driveable's entity
+     * box is deliberately compact - at most four blocks across, centred on the
+     * core - so a wingtip, a nose or a tail reaches well outside it. Only
+     * sweeping the authored points registers a wing clipping a hillside at all,
+     * and only sweeping them from where they were rather than testing where they
+     * are catches an aircraft fast enough to cross a block in one tick.
+     */
+    protected void sweepCollisionPointImpacts(@NotNull Vec3 impactVelocity)
+    {
+        if (level().isClientSide || destroyed || configType == null || driveableData == null)
+            return;
+        double speed = impactVelocity.length();
+        if (speed < DriveableImpactDamage.MIN_IMPACT_SPEED || configType.getCollisionPoints().isEmpty())
+            return;
+        // Reach a little past the sweep: the move has already been stopped short
+        // by whatever was struck, leaving the point resting just shy of it.
+        Vec3 overshoot = impactVelocity.normalize().scale(0.2D);
+        for (DriveablePosition point : configType.getCollisionPoints())
         {
-            for (DriveablePosition point : configType.getCollisionPoints())
+            if (point == null)
+                continue;
+            DriveablePart part = driveableData.getPart(point.getPart());
+            if (part == null || part.isDestroyed() || part.getMaxHealth() <= 0F)
+                continue;
+            Vec3 local = LegacyDriveableCoordinates.toLocal(point.getPosition());
+            Vec3 from = previousLocalToWorld(local);
+            // A point that began the tick inside terrain is being dragged, not
+            // driven into it, and must not grind the part away while taxiing.
+            if (level().getBlockState(BlockPos.containing(from)).blocksMotion())
+                continue;
+            Vec3 to = localToWorld(local.x, local.y, local.z).add(overshoot);
+            BlockHitResult hit = level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE, this));
+            if (hit.getType() != HitResult.Type.BLOCK)
+                continue;
+            BlockPos blockPos = hit.getBlockPos();
+            BlockState state = level().getBlockState(blockPos);
+            float fraction = DriveableImpactDamage.blockStrikeHealthFraction(
+                state.getDestroySpeed(level(), blockPos), speed);
+            if (fraction <= 0F)
+                continue;
+            float damage = part.getMaxHealth() * fraction;
+            // Legacy broke the block only when the part survived the strike; a
+            // part-killing strike instead produced a small impact explosion at
+            // the authored collision point. Configured part/core explosions are
+            // deliberately separate and may make the resulting crash larger.
+            boolean survives = damage < part.getHealth();
+            damagePart(point.getPart(), damage, level().damageSources().flyIntoWall());
+            if (survives)
+                breakCollisionBlock(blockPos, speed);
+            else
             {
-                if (point == null)
-                    continue;
-                Vec3 local = LegacyDriveableCoordinates.toLocal(point.getPosition());
-                Vec3 world = localToWorld(local.x, local.y, local.z)
-                    .add(requestedVelocity.normalize().scale(0.2D));
-                BlockPos blockPos = BlockPos.containing(world);
-                if (hasCollisionAt(blockPos))
-                    damagePart(point.getPart(), (float) Math.min(20D, horizontalSpeed * 5D), level().damageSources().flyIntoWall());
+                Vec3 centre = hit.getLocation();
+                level().explode(this, centre.x, centre.y, centre.z, 1F, false, Level.ExplosionInteraction.NONE);
+                if (destroyed)
+                    return;
             }
         }
+    }
+
+    /** The world position a hull-local point occupied at the start of this tick. */
+    protected Vec3 previousLocalToWorld(@NotNull Vec3 local)
+    {
+        return new Vec3(xo, yo, zo).add(localDirectionToWorld(local, prevYaw, prevPitch, prevRoll));
+    }
+
+    protected void breakCollisionBlock(@NotNull BlockPos pos, double collisionSpeed)
+    {
+        if (!ModCommonConfig.driveableCollisionsBreakBlocks() || !(level() instanceof ServerLevel serverLevel))
+            return;
+        BlockState state = serverLevel.getBlockState(pos);
+        float hardness = state.getDestroySpeed(serverLevel, pos);
+        if (state.isAir() || hardness < 0F || hardness > Math.max(0.5D, collisionSpeed * 8D)
+            || serverLevel.getBlockEntity(pos) != null)
+            return;
+        ModUtils.destroyBlock(serverLevel, pos, getControllingEntity(), true);
     }
 
     /** Executes a bounded, permission-checked legacy harvester pass. */

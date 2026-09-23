@@ -6,7 +6,6 @@ import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
@@ -49,6 +48,8 @@ public final class DriveableData implements Container
     private static final String NBT_PAINT = "paintjob_id";
     private static final String NBT_ITEMS = "items";
     private static final String NBT_PARTS = "parts";
+    private static final String NBT_AMMO_LAYOUT = "ammo_layout";
+    private static final int AMMO_LAYOUT_PASSENGER_FIRST = 1;
 
     @Getter private final DriveableType driveableType;
     private final HolderLookup.Provider registries;
@@ -60,8 +61,10 @@ public final class DriveableData implements Container
     @Getter private final Map<EnumDriveablePart, DriveablePart> parts;
     @Getter private final NonNullList<ItemStack> inventory;
     @Getter private float fuelInTank;
-    @Getter @Setter private int paintjobID;
-    @Getter @Setter private boolean inventoryChanged;
+    @Getter private int paintjobID;
+    @Getter private boolean inventoryChanged;
+    /** Independent of the reload dirty flag, which firing/reloading may consume before visual sync. */
+    @Getter private long inventoryRevision;
     @Getter private String engineShortName = StringUtils.EMPTY;
     private CompoundTag preservedTag = new CompoundTag();
 
@@ -81,7 +84,8 @@ public final class DriveableData implements Container
             mutableParts.put(part, new DriveablePart(part, driveableType.getHealth().get(part)));
         parts = Collections.unmodifiableMap(mutableParts);
 
-        PartType defaultEngine = PartType.getDefaultEngine(driveableType.getType());
+        PartType defaultEngine = PartType.getDefaultEngine(driveableType.getType(), driveableType.getContentPack(),
+            driveableType.getEngine());
         if (defaultEngine != null)
             engineShortName = defaultEngine.getShortName();
     }
@@ -124,7 +128,8 @@ public final class DriveableData implements Container
     public PartType getEngine()
     {
         InfoType resolved = InfoType.getInfoType(engineShortName, driveableType.getContentPack());
-        return resolved instanceof PartType partType ? partType : PartType.getDefaultEngine(driveableType.getType());
+        return resolved instanceof PartType partType ? partType
+            : PartType.getDefaultEngine(driveableType.getType(), driveableType.getContentPack(), driveableType.getEngine());
     }
 
     public int getAmmoInventoryStart() { return 0; }
@@ -133,6 +138,9 @@ public final class DriveableData implements Container
     public int getCargoInventoryStart() { return numAmmoSlots + numBombSlots + numMissileSlots; }
     public int getMechaInventoryStart() { return numAmmoSlots + numBombSlots + numMissileSlots + numCargoSlots; }
     public int getFuelSlot() { return getMechaInventoryStart() + numMechaSlots; }
+
+    /** Gun ammunition, bomb and missile slots, which each hold a single loaded item. */
+    public boolean isWeaponSlot(int slot) { return slot >= 0 && slot < getCargoInventoryStart(); }
 
     public int getRenderSlotCount()
     {
@@ -237,6 +245,24 @@ public final class DriveableData implements Container
     public void setChanged()
     {
         inventoryChanged = true;
+        ++inventoryRevision;
+    }
+
+    public void setInventoryChanged(boolean changed)
+    {
+        if (changed)
+            setChanged();
+        else
+            inventoryChanged = false;
+    }
+
+    public void setPaintjobID(int paintjobID)
+    {
+        if (this.paintjobID != paintjobID)
+        {
+            this.paintjobID = paintjobID;
+            ++inventoryRevision;
+        }
     }
 
     @Override
@@ -257,12 +283,8 @@ public final class DriveableData implements Container
     {
         if (slot < 0 || slot >= inventory.size() || stack == null || stack.isEmpty())
             return false;
-        if (slot < getBombInventoryStart())
-            return isGunAmmo(slot, stack);
-        if (slot < getMissileInventoryStart())
-            return isAmmo(stack, EnumWeaponType.BOMB, EnumWeaponType.MINE);
         if (slot < getCargoInventoryStart())
-            return isAmmo(stack, EnumWeaponType.MISSILE, EnumWeaponType.SHELL);
+            return allowsAmmunitionInput(driveableType.isFilterAmmunition(), stack.getItem() instanceof ShootableItem);
         if (slot < getMechaInventoryStart())
             return canPlaceCargo(stack);
         if (slot < getFuelSlot())
@@ -271,8 +293,8 @@ public final class DriveableData implements Container
             if (mechaSlot < 0 || mechaSlot >= EnumMechaSlotType.values().length)
                 return false;
             EnumMechaSlotType slotType = EnumMechaSlotType.values()[mechaSlot];
-            if ((slotType == EnumMechaSlotType.LEFT_TOOL || slotType == EnumMechaSlotType.RIGHT_TOOL) && stack.getItem() instanceof GunItem)
-                return true;
+            if ((slotType == EnumMechaSlotType.LEFT_TOOL || slotType == EnumMechaSlotType.RIGHT_TOOL) && stack.getItem() instanceof GunItem gunItem)
+                return gunItem.getConfigType().isUsableByMechas();
             if ((slotType == EnumMechaSlotType.LEFT_ARM || slotType == EnumMechaSlotType.RIGHT_ARM) && stack.getItem() instanceof BulletItem)
                 return true;
             return stack.getItem() instanceof MechaAddonItem addon && slotType.accepts(addon.getConfigType().getMechaItemType());
@@ -283,19 +305,9 @@ public final class DriveableData implements Container
         return stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL;
     }
 
-    private boolean isAmmo(ItemStack stack, EnumWeaponType first, EnumWeaponType second)
+    static boolean allowsAmmunitionInput(boolean filterAmmunition, boolean shootableItem)
     {
-        if (!(stack.getItem() instanceof BulletItem bulletItem))
-            return false;
-        BulletType bulletType = bulletItem.getConfigType();
-        EnumWeaponType weaponType = bulletType.getWeaponType();
-        return driveableType.isValidAmmo(bulletType) && (weaponType == first || weaponType == second);
-    }
-
-    private boolean isGunAmmo(int slot, ItemStack stack)
-    {
-        return stack.getItem() instanceof ShootableItem shootable
-            && driveableType.isValidGunAmmo(slot, shootable.getConfigType());
+        return !filterAmmunition || shootableItem;
     }
 
     private boolean canPlaceCargo(ItemStack stack)
@@ -305,6 +317,8 @@ public final class DriveableData implements Container
         if (stack.getItem() instanceof ShootableItem)
             return true;
         if (stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL)
+            return true;
+        if (FluidFuel.isFuelContainer(stack))
             return true;
         return mechaType.isAllowMechaToolsInRestrictedInv() && stack.getItem() instanceof MechaAddonItem;
     }
@@ -318,6 +332,7 @@ public final class DriveableData implements Container
         data.putString(NBT_ENGINE, engineShortName);
         data.putFloat(NBT_FUEL, fuelInTank);
         data.putInt(NBT_PAINT, paintjobID);
+        data.putInt(NBT_AMMO_LAYOUT, AMMO_LAYOUT_PASSENGER_FIRST);
 
         ListTag itemTags = new ListTag();
         for (int slot = 0; slot < inventory.size(); slot++)
@@ -361,6 +376,7 @@ public final class DriveableData implements Container
         data.putString(NBT_ENGINE, engineShortName);
         data.putFloat(NBT_FUEL, fuelInTank);
         data.putInt(NBT_PAINT, paintjobID);
+        data.putInt(NBT_AMMO_LAYOUT, AMMO_LAYOUT_PASSENGER_FIRST);
 
         ListTag itemTags = new ListTag();
         for (int index = 0; index < getRenderSlotCount(); index++)
@@ -414,6 +430,7 @@ public final class DriveableData implements Container
             tag.remove(NBT_PAINT);
             tag.remove(NBT_ITEMS);
             tag.remove(NBT_PARTS);
+            tag.remove(NBT_AMMO_LAYOUT);
         }
         tag.remove(IPaintableItem.NBT_PAINTJOB_ID);
         tag.remove("Type");
@@ -462,10 +479,14 @@ public final class DriveableData implements Container
             : source.getInt("Paint");
 
         inventory.replaceAll(ignored -> ItemStack.EMPTY);
-        if (data.contains(NBT_ITEMS, Tag.TAG_LIST))
-            loadItemList(data.getList(NBT_ITEMS, Tag.TAG_COMPOUND));
-        else if (hasNestedData && source.contains(NBT_ITEMS, Tag.TAG_LIST))
-            loadItemList(source.getList(NBT_ITEMS, Tag.TAG_COMPOUND));
+        CompoundTag canonicalInventory = data.contains(NBT_ITEMS, Tag.TAG_LIST) ? data
+            : hasNestedData && source.contains(NBT_ITEMS, Tag.TAG_LIST) ? source : null;
+        if (canonicalInventory != null)
+        {
+            loadItemList(canonicalInventory.getList(NBT_ITEMS, Tag.TAG_COMPOUND));
+            if (canonicalInventory.getInt(NBT_AMMO_LAYOUT) != AMMO_LAYOUT_PASSENGER_FIRST)
+                migratePilotFirstAmmoLayout();
+        }
         else
         {
             if (hasNestedData)
@@ -488,6 +509,7 @@ public final class DriveableData implements Container
             parts.values().forEach(part -> part.loadLegacy(data));
         }
         inventoryChanged = false;
+        ++inventoryRevision;
     }
 
     private float readFuel(CompoundTag data, @Nullable CompoundTag root)
@@ -529,6 +551,33 @@ public final class DriveableData implements Container
         loadLegacyRange(data, "Cargo ", getCargoInventoryStart(), numCargoSlots);
         if (data.contains("Fuel", Tag.TAG_COMPOUND))
             putLoadedStack(getFuelSlot(), ItemStackData.parse(registries, data.getCompound("Fuel")));
+    }
+
+    /**
+     * Canonical inventories written before the layout marker used pilot guns
+     * first. Remap that one historical 2.0 layout while leaving actual 1.7.10
+     * {@code Ammo n} data untouched, since it was already passenger-first.
+     */
+    private void migratePilotFirstAmmoLayout()
+    {
+        int pilotGuns = driveableType.getPilotGuns().size();
+        int passengerGuns = driveableType.getNumPassengerGunners();
+        int ammoSlots = pilotGuns + passengerGuns;
+        if (pilotGuns <= 0 || passengerGuns <= 0 || ammoSlots > numAmmoSlots)
+            return;
+
+        ArrayList<ItemStack> oldOrder = new ArrayList<>(ammoSlots);
+        for (int index = 0; index < ammoSlots; index++)
+            oldOrder.add(getAmmo(index));
+        for (int oldIndex = 0; oldIndex < ammoSlots; oldIndex++)
+            inventory.set(remapPilotFirstAmmoIndex(oldIndex, pilotGuns, passengerGuns), oldOrder.get(oldIndex));
+    }
+
+    static int remapPilotFirstAmmoIndex(int oldIndex, int pilotGuns, int passengerGuns)
+    {
+        if (oldIndex < 0 || pilotGuns < 0 || passengerGuns < 0 || oldIndex >= pilotGuns + passengerGuns)
+            return -1;
+        return oldIndex < pilotGuns ? passengerGuns + oldIndex : oldIndex - pilotGuns;
     }
 
     private void loadLegacyRange(CompoundTag data, String prefix, int offset, int length)

@@ -1,0 +1,18 @@
+// Identity
+Name German Officer Hat Feldgrau
+ShortName 44_GermanOfficerHatFeldgrau
+Type Helmet
+
+// Rendering
+Icon 44_GermanOfficerHatFeldgrau
+Model W44.GermanOfficerHat
+ModelScale 1
+ArmorTexture Skin44_GermanOfficerFeldgrau
+
+// Protection
+ArmorPoints 0
+Defence 0.01
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

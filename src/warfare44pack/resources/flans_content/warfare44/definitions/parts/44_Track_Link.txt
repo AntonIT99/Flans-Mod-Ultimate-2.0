@@ -1,0 +1,11 @@
+// Identity
+Name Track Link
+ShortName 44_Track_Link
+Category Misc
+
+// Rendering
+Icon 44_Track_Link
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 3

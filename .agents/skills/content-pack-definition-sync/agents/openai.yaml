@@ -1,0 +1,4 @@
+interface:
+  display_name: "Content Pack Definition Sync"
+  short_description: "Normalize definitions from category truth"
+  default_prompt: "Use $content-pack-definition-sync to reorganize and synchronize source content-pack definitions with their built-in categories."

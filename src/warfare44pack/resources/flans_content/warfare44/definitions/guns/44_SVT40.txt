@@ -1,0 +1,62 @@
+// Identity
+Name SVT40
+ShortName 44_SVT40
+Description Soviet Semi/Auto Rifle
+
+// Rendering
+Icon 44_SVT40
+Model W44.SVT40
+ModelScale 0.25
+Texture Skin44_SVT40
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_SVT40Ammo
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.85
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 300.0
+ReloadTime 79
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 830.0
+Dispersion 0.22
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 7.0
+RandomRecoilRange 6
+RandomRecoilYawRange 0.75
+DecreaseRecoil 3.75
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_PUScope 44_LensSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound G43Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Stg44Reload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

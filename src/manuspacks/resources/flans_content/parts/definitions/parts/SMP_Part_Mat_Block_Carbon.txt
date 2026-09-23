@@ -1,0 +1,16 @@
+// Identity
+Name Carbon Block
+ShortName SMP_Part_Mat_Block_Carbon
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Block_Carbon
+
+// Recipe and Inventory
+Recipe C coal M SMP_Part_Mat_Block_Aluminium
+CMC
+   
+   
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

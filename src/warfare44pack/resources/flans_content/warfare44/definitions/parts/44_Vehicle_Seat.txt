@@ -1,0 +1,11 @@
+// Identity
+Name Vehicle Seat
+ShortName 44_Vehicle_Seat
+Category Misc
+
+// Rendering
+Icon 44_Vehicle_Seat
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 8

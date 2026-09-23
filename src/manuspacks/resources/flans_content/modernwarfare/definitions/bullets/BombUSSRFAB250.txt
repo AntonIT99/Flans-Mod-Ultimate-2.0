@@ -1,0 +1,43 @@
+// Identity
+Name FAB-250 Bomb
+ShortName BombUSSRFAB250
+Description Bomb for Tu-22M
+
+// Model and Rendering
+Model manus_modern_warfare.LargeBomb
+Colour 255 255 255
+Icon IconBombUSSRFAB250
+
+// Recipe and Inventory
+RoundsPerItem 1
+MaxStackSize 8
+RecipeOutput 2
+Recipe B SMP_Part_Misc_Ammo_BombBody T tnt F SMP_Part_Misc_Ammo_Fuse
+ F 
+TT 
+ B 
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 0.75
+Penetrates False
+Bomb True
+
+// Ballistics and Damage
+Mass 250000.0
+ExplosiveMassTNTKg 112.5
+FragType GP_BOMB
+Damage 75
+DamageVsVehicles 75
+Explosion 4
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail False

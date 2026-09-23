@@ -1,17 +1,30 @@
+// Identity
 Name Exoskeleton Helmet
 ShortName exoskeletonHelmet
+
+// Item and rendering
 Icon ExoskeletonHelmet
 Colour 255 255 255
-Type Helmet
 Model mw.ExoskeletonHelmet
-Defence 0.1
 ArmourTexture Exoskeleton
-MoveSpeedModifier 1.0
-KnockbackModifier 1.0
-JumpModifier 1.0
-SmokeProtection True
 ModelScale 0.25
+
+// Recipe
 Enchantability 0
-Toughness 2
 Durability 0
-DamageReductionAmount 3
+
+// Protection
+Type Helmet
+Defence 0.1
+KnockbackModifier 1.0
+Toughness 3
+BulletDefence 0.10
+PenetrationResistance 2.40
+ArmorPoints 3
+
+// Movement
+MoveSpeedModifier 1.0
+JumpModifier 1.0
+
+// Effects
+SmokeProtection True

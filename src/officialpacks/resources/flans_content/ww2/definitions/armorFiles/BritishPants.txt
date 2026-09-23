@@ -1,7 +1,16 @@
+// Identity
 Name British WW2 Trousers
 ShortName britishPants
+
+// Item and rendering
 Icon britishpants
 Colour 255 255 255
-Type Pants
-Defence 0.1
 ArmourTexture british
+
+// Protection
+Type Pants
+Defence 0.02
+BulletDefence 0.01
+PenetrationResistance 0.65
+ArmorPoints 0
+Toughness 0

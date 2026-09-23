@@ -1,4 +1,6 @@
 {
+  "render_type": "minecraft:cutout",
+  "parent": "minecraft:block/thin_block",
   "textures": { "particle": "flansmod:block/teams_vehicle_spawner_1", "base": "flansmod:block/teams_vehicle_spawner_1", "overlay": "flansmod:block/teams_vehicle_spawner_2" },
   "elements": [
     { "from": [0, 0, 0], "to": [16, 1, 16], "faces": {

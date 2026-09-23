@@ -1,0 +1,20 @@
+// Identity
+Name Suppressor
+ShortName 44_Suppressor
+Description Suppressor Attachment : _Sten _Sterling _M3A1 Greasegun
+AttachmentType barrel
+
+// Rendering
+Icon 44_Suppressor
+Model W44.Suppressor
+ModelScale 0.25
+Texture Skin44_Suppressor
+
+// Modifiers
+Silencer true
+DamageMultiplier 0.85
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.9
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

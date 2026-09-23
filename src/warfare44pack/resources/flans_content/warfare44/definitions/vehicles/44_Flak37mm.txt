@@ -1,0 +1,108 @@
+// Identity
+Name FlaK-36 AA-Gun [37mm]
+ShortName 44_Flak37
+Description German Anti-Aircraft Gun__Uses Flak 3.7cm Ammo__Year Introduced : 1936
+
+// Rendering
+Icon 44_Flak37
+Model W44.Flak37
+ModelScale 1
+Texture Skin44_Flak37
+CameraDistance 7.5
+
+// Recipe and inventory
+AddRecipeParts turret 1 44_Metal_Tube 1 44_Gun_Shield
+AddRecipeParts core 8 ingotIron
+CargoSlots 0
+ShellSlots 3
+FuelTankSize 2000
+
+// Paintjobs
+AddDye 3 gray
+
+// Real-world specifications
+RealMassKg 1544
+
+// Movement
+Tank true
+FourWheelDrive true
+MaxThrottle 0
+MaxNegativeThrottle 0
+TurnLeftSpeed 0
+TurnRightSpeed 0
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -16 -10 -14
+WheelPosition 1 -16 -10 14
+WheelPosition 2 16 -10 14
+WheelPosition 3 16 -10 -14
+WheelSpringStrength 0.5
+
+// Weapons
+ReadWeaponsFromGunTypes true
+RoundsPerMinPrimary 160
+ReloadTimePrimary 45
+ReloadRoundsPrimary 6
+ShootDelay 1
+BulletSpread 2
+BulletSpeed 12
+BulletDetection 7
+AllowAllAmmo false
+AddAmmo 44_Flak37Ammo
+BarrelPosition 93 18 0
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 300 -41 -10 -26 75 35 52
+
+// Seats
+Driver 0 7 0 -360 360 -10 70
+Passengers 0
+RotatedDriverOffset -32 0 12
+DriverAimSpeed 1.64f 1.54f 0f
+DriverYawBeforePitch false
+
+// Optics
+hasScope true
+Gunsight warfare44_flak20
+gunsightZoom 2.5
+heliGUI warfare44_tap_binoculars
+
+// Sounds
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+YawSound TurretTraverse2
+YawSoundLength 38
+PitchSound TurretTraverse1
+PitchSoundLength 61
+DriverTraverseSounds false
+ShootSoundPrimary 30mmShoot

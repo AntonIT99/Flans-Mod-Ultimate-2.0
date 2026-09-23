@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.render;
 
-import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
@@ -9,8 +9,6 @@ import com.flansmodultimate.util.TransformOp;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
-import com.wolffsmod.api.client.model.ModelBase;
-import com.wolffsmod.api.client.model.ModelRenderer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.joml.Quaternionf;
@@ -30,8 +28,20 @@ public final class LegacyTransformApplier
 
         boolean translucent = ModClientConfig.get().useTranslucentRendering(infoType);
         boolean cull = ModClientConfig.get().useCullingRendering(infoType);
-        for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            renderModelLayer(model, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay, red, green, blue, alpha, renderPass);
+        if (model instanceof ModelBase modelBase)
+        {
+            for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
+            {
+
+                VertexConsumer vertexConsumer = buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull));
+                modelBase.renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, renderPass);
+            }
+        }
+        else
+        {
+            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, translucent, cull));
+            model.renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        }
 
         poseStack.popPose();
     }
@@ -43,31 +53,14 @@ public final class LegacyTransformApplier
      */
     public static void applyModelTransform(IModelBase model, InfoType infoType, PoseStack poseStack)
     {
-        applyForClass(poseStack, model.getClass().getName());
+        applyForClass(poseStack, model.getClass());
         if (model instanceof ModelBase modelBase)
             modelBase.setScale(infoType.getModelScale());
     }
 
-    private static void renderModelLayer(IModelBase model, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)
+    private static void applyForClass(PoseStack poseStack, Class<?> legacyModelClass)
     {
-        float modelScale = model instanceof ModelBase modelBase ? modelBase.getScale() : 1F;
-
-        for (ModelRenderer modelRenderer : model.getBoxList())
-        {
-            if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo)
-            {
-                modelRendererTurbo.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale, renderPass);
-            }
-            else if (renderPass == EnumRenderPass.DEFAULT)
-            {
-                modelRenderer.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, modelScale);
-            }
-        }
-    }
-
-    private static void applyForClass(PoseStack poseStack, String legacyClassFqn)
-    {
-        List<TransformOp> ops = ClassLoaderUtils.getTransforms().get(legacyClassFqn);
+        List<TransformOp> ops = ClassLoaderUtils.getTransforms(legacyModelClass);
         if (ops == null || ops.isEmpty())
             return;
 

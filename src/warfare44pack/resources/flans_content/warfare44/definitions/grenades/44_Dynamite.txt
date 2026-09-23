@@ -1,0 +1,48 @@
+// Identity
+Name Dynamite
+ShortName 44_Dynamite
+
+// Rendering
+Icon 44_Dynamite
+Model W44.Dynamite
+ModelScale 0.35
+Texture Skin44_Dynamite
+Colour 255 255 255
+
+// Inventory
+StackSize 1
+
+// Throwing and physics
+ThrowSpeed 1.25
+ThrowDelay 20
+FallSpeed 0.75
+Bounciness 0.5
+HitBoxSize 0.8
+SpinWhenThrown true
+Sticky false
+PenetratesBlocks false
+BreaksGlass true
+
+// Damage and healing
+HitEntityDamage 1
+
+// Detonation and explosion
+PrimeDelay 0
+DetonateOnImpact false
+DetonateWhenShot true
+Remote true
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+ExplosiveMassTNTg 230
+FragType DEFAULT
+ExplosionRadius 6.0
+ExplosionDamageVsLiving 1.0
+ExplosionDamageVsVehicle 4
+ExplosionDamageVsPlane 150.0
+ExplosionBreaksBlocks true
+FireRadius 0.0
+
+// Effects
+TrailParticles false
+ExplodeParticles 4
+SmokeTime 0

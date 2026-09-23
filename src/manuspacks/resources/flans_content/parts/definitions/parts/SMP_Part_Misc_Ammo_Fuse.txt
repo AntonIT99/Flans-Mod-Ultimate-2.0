@@ -1,0 +1,16 @@
+// Identity
+Name Fuse
+ShortName SMP_Part_Misc_Ammo_Fuse
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_Ammo_Fuse
+
+// Recipe and Inventory
+Recipe P SMP_Part_Misc_Part_Mechanical M SMP_Part_Mat_Block_Steel
+ M 
+MPM
+   
+RecipeOutput 16
+Category Misc
+PartBoxRecipe
+StackSize 64

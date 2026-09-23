@@ -1,0 +1,40 @@
+// Identity
+Name German 20mm Ammo for MG/FF - 100 Bullet Box
+ShortName WW2_Ammo_MGFF
+description Amunition for MG FF
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_MGFF
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 100
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 80
+DamageVsVehicles 80
+DamageVsPlanes 10
+Explosion 0
+Fire 0
+Mass 92
+MuzzleVelocity 585
+ExplosiveMassTNTg 24
+PenetrationAt100m 8
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType smoke

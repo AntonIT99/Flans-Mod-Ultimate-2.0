@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.ParticleNameCodec;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +35,7 @@ public class PacketFlak implements IClientPacket
         data.writeDouble(position.y);
         data.writeDouble(position.z);
         data.writeInt(numParticles);
-        data.writeUtf(particleType);
+        ParticleNameCodec.write(data, particleType);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class PacketFlak implements IClientPacket
     {
         position = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         numParticles = data.readInt();
-        particleType = data.readUtf();
+        particleType = ParticleNameCodec.read(data);
     }
 
     @Override

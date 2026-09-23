@@ -1,0 +1,11 @@
+// Identity
+Name Engine Piston
+ShortName 44_Engine_Piston
+Category Misc
+
+// Rendering
+Icon 44_Engine_Piston
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

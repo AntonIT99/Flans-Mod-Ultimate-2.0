@@ -1,0 +1,48 @@
+// Identity
+Name TripMine
+ShortName 44_TripMine
+
+// Rendering
+Icon 44_TripMine
+Model W44.TripMine
+ModelScale 1
+Texture Skin44_TripMine
+Colour 255 255 255
+
+// Inventory
+StackSize 1
+
+// Throwing and physics
+ThrowSpeed 0.5
+ThrowDelay 20
+FallSpeed 1
+Bounciness 0
+HitBoxSize 1.5
+SpinWhenThrown false
+Sticky false
+PenetratesBlocks false
+BreaksGlass true
+
+// Damage and healing
+HitEntityDamage 1
+
+// Detonation and explosion
+PrimeDelay 45
+DetonateOnImpact false
+DetonateWhenShot true
+Remote false
+LivingProximityTrigger 1.75
+VehicleProximityTrigger -0
+ExplosiveMassTNTg 180
+FragType STD_FRAG
+ExplosionRadius 3
+ExplosionDamageVsLiving 0
+ExplosionDamageVsVehicle 0
+ExplosionDamageVsPlane 0
+ExplosionBreaksBlocks false
+FireRadius 0.0
+
+// Effects
+TrailParticles false
+ExplodeParticles 4
+SmokeTime 0

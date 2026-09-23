@@ -1,0 +1,93 @@
+
+package com.flansmod.client.model.Manus_WH40K.Armor;
+
+import com.flansmod.client.model.ModelCustomArmour;
+import com.flansmod.client.tmt.ModelRendererTurbo;
+
+public class ModelWH40K_Armor_CadiaCamo_1 extends ModelCustomArmour {
+   int textureX = 512;
+   int textureY = 512;
+
+   public ModelWH40K_Armor_CadiaCamo_1() {
+      headModel = new ModelRendererTurbo[32];
+      headModel[0] = new ModelRendererTurbo(this, 0, 476, textureX, textureY);
+      headModel[1] = new ModelRendererTurbo(this, 98, 498, textureX, textureY);
+      headModel[2] = new ModelRendererTurbo(this, 0, 490, textureX, textureY);
+      headModel[3] = new ModelRendererTurbo(this, 0, 470, textureX, textureY);
+      headModel[4] = new ModelRendererTurbo(this, 0, 490, textureX, textureY);
+      headModel[5] = new ModelRendererTurbo(this, 210, 0, textureX, textureY);
+      headModel[6] = new ModelRendererTurbo(this, 0, 425, textureX, textureY);
+      headModel[7] = new ModelRendererTurbo(this, 140, 468, textureX, textureY);
+      headModel[8] = new ModelRendererTurbo(this, 110, 419, textureX, textureY);
+      headModel[9] = new ModelRendererTurbo(this, 98, 470, textureX, textureY);
+      headModel[10] = new ModelRendererTurbo(this, 110, 419, textureX, textureY);
+      headModel[11] = new ModelRendererTurbo(this, 170, 438, textureX, textureY);
+      headModel[12] = new ModelRendererTurbo(this, 210, 451, textureX, textureY);
+      headModel[13] = new ModelRendererTurbo(this, 170, 438, textureX, textureY);
+      headModel[14] = new ModelRendererTurbo(this, 197, 73, textureX, textureY);
+      headModel[15] = new ModelRendererTurbo(this, 369, 176, textureX, textureY);
+      headModel[16] = new ModelRendererTurbo(this, 399, 148, textureX, textureY);
+      headModel[17] = new ModelRendererTurbo(this, 151, 37, textureX, textureY);
+      headModel[18] = new ModelRendererTurbo(this, 295, 110, textureX, textureY);
+      headModel[19] = new ModelRendererTurbo(this, 389, 61, textureX, textureY);
+      headModel[20] = new ModelRendererTurbo(this, 467, 69, textureX, textureY);
+      headModel[21] = new ModelRendererTurbo(this, 377, 41, textureX, textureY);
+      headModel[22] = new ModelRendererTurbo(this, 293, 42, textureX, textureY);
+      headModel[23] = new ModelRendererTurbo(this, 199, 60, textureX, textureY);
+      headModel[24] = new ModelRendererTurbo(this, 338, 69, textureX, textureY);
+      headModel[25] = new ModelRendererTurbo(this, 416, 113, textureX, textureY);
+      headModel[26] = new ModelRendererTurbo(this, 373, 114, textureX, textureY);
+      headModel[27] = new ModelRendererTurbo(this, 467, 5, textureX, textureY);
+      headModel[28] = new ModelRendererTurbo(this, 319, 237, textureX, textureY);
+      headModel[29] = new ModelRendererTurbo(this, 291, 55, textureX, textureY);
+      headModel[30] = new ModelRendererTurbo(this, 470, 290, textureX, textureY);
+      headModel[31] = new ModelRendererTurbo(this, 470, 314, textureX, textureY);
+      headModel[0].addTrapezoid(-16.0F, -35.0F, -16.0F, 32, 3, 32, 0.0F, -8.0F, 4);
+      headModel[1].addBox(-8.0F, -2.0F, -18.0F, 16, 4, 4, 0.0F);
+      headModel[2].addShapeBox(-17.0F, -11.0F, -17.0F, 1, 12, 2, 0.0F, 0.0F, 0.0F, -7.0F, 0.0F, 0.0F, -7.0F, 0.0F, 0.0F, 14.0F, 0.0F, 0.0F, 14.0F, 0.0F, -2.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      headModel[3].addBox(-17.0F, -1.0F, -17.0F, 34, 2, 2, 0.0F);
+      headModel[4].addShapeBox(16.0F, -11.0F, -17.0F, 1, 12, 2, 0.0F, 0.0F, 0.0F, -7.0F, 0.0F, 0.0F, -7.0F, 0.0F, 0.0F, 14.0F, 0.0F, 0.0F, 14.0F, 0.0F, -2.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      headModel[5].addShapeBox(-6.0F, -24.0F, -18.01F, 120, 33, 1, 0.0F, 0.0F, 0.0F, 0.0F, -108.0F, 0.0F, 0.0F, -108.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -29.7F, 0.0F, -108.0F, -29.7F, 0.0F, -108.0F, -29.7F, 0.0F, 0.0F, -29.7F, 0.0F);
+      headModel[6].addTrapezoid(-18.0F, -32.0F, -18.0F, 36, 7, 36, 0.0F, -2.0F, 4);
+      headModel[7].addBox(-18.0F, -25.0F, -18.0F, 36, 7, 36, 0.0F);
+      headModel[8].addShapeBox(-18.0F, -18.0F, -8.0F, 3, 14, 26, 0.0F, 0.0F, 0.0F, 4.0F, 0.0F, 0.0F, 4.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      headModel[9].addBox(-15.0F, -18.0F, 15.0F, 30, 14, 3, 0.0F);
+      headModel[10].addShapeBox(15.0F, -18.0F, -8.0F, 3, 14, 26, 0.0F, 0.0F, 0.0F, 4.0F, 0.0F, 0.0F, 4.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      headModel[11].addBox(-19.0F, -21.0F, -3.0F, 3, 12, 16, 0.0F);
+      headModel[12].addBox(-8.0F, -21.0F, 16.0F, 16, 12, 3, 0.0F);
+      headModel[13].addBox(16.0F, -21.0F, -3.0F, 3, 12, 16, 0.0F);
+      headModel[14].addShapeBox(-19.01F, -25.0F, -19.0F, 1, 4, 39, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -1.0F, 1.0F, 0.0F, 0.0F, -1.0F, 0.0F, -1.0F, -1.0F, 0.0F, -1.0F, 1.0F, 0.0F, 0.0F);
+      headModel[15].addShapeBox(-20.01F, -21.0F, -19.0F, 1, 24, 19, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, -6.0F, 0.0F, 0.0F, -6.0F, 0.0F);
+      headModel[16].addShapeBox(-20.01F, -21.0F, 0.0F, 1, 24, 19, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, -6.0F, 0.0F, 0.0F, -6.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F);
+      headModel[17].addShapeBox(-17.01F, -32.0F, -19.0F, 1, 7, 38, 0.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, -2.0F, 2.0F, 0.0F, 0.0F, -2.0F, 0.0F, -1.0F, -2.0F, 0.0F, -1.0F, 2.0F, 0.0F, 0.0F);
+      headModel[18].addShapeBox(-20.0F, -25.0F, -19.01F, 40, 4, 1, 0.0F, -1.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F);
+      headModel[19].addShapeBox(-20.0F, -25.0F, 18.01F, 40, 4, 1, 0.0F, -2.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, -1.0F, 0.0F, -1.0F, -1.0F, 0.0F, -1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 1.0F);
+      headModel[20].addShapeBox(-19.0F, -21.0F, 19.01F, 19, 30, 1, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, -6.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, -6.0F, 0.0F);
+      headModel[21].addShapeBox(-19.0F, -21.0F, -19.01F, 38, 6, 1, 0.0F, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      headModel[22].addShapeBox(-19.0F, -32.0F, -17.01F, 38, 7, 1, 0.0F, -2.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, 0.0F, 0.0F, 2.0F, 0.0F, 0.0F, 2.0F, -1.0F, 0.0F, -2.0F, -1.0F, 0.0F, -2.0F);
+      headModel[23].addShapeBox(-19.0F, -32.0F, 16.01F, 38, 7, 1, 0.0F, -3.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -1.0F, 0.0F, -2.0F, -1.0F, 0.0F, -2.0F, 0.0F, 0.0F, 2.0F, 0.0F, 0.0F, 2.0F);
+      headModel[24].addTrapezoid(-17.0F, -36.0F, -17.0F, 34, 4, 34, 0.0F, -8.0F, 4);
+      headModel[25].addShapeBox(0.0F, -21.0F, 19.01F, 19, 30, 1, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -6.0F, 0.0F, 1.0F, -6.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      headModel[26].addShapeBox(19.01F, -21.0F, 0.0F, 1, 24, 19, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, -6.0F, 0.0F, 0.0F, -6.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F);
+      headModel[27].addShapeBox(19.01F, -21.0F, -19.0F, 1, 24, 19, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F, -6.0F, 0.0F, 0.0F, -6.0F, 0.0F);
+      headModel[28].addShapeBox(18.01F, -25.0F, -19.0F, 1, 4, 39, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -1.0F, 0.0F, 0.0F, -2.0F, -1.0F, 0.0F, -1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, -1.0F, 0.0F, -1.0F);
+      headModel[29].addShapeBox(16.01F, -32.0F, -19.0F, 1, 7, 38, 0.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -2.0F, 0.0F, 0.0F, -3.0F, -2.0F, 0.0F, -1.0F, 2.0F, 0.0F, 0.0F, 2.0F, 0.0F, 0.0F, -2.0F, 0.0F, -1.0F);
+      headModel[30].addShapeBox(-19.0F, -11.0F, -19.01F, 19, 20, 1, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, -6.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -6.0F, 0.0F);
+      headModel[31].addShapeBox(0.0F, -11.0F, -19.01F, 19, 20, 1, 0.0F, 0.0F, -3.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, -6.0F, 0.0F, 0.0F, -6.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      bodyModel = new ModelRendererTurbo[1];
+      bodyModel[0] = new ModelRendererTurbo(this, 396, 199, textureX, textureY);
+      bodyModel[0].addShapeBox(-16.0F, 0.0F, -11.0F, 32, 52, 23, 0.0F, 0.02F, 0.0F, 1.0F, 0.02F, 0.0F, 1.0F, 0.02F, 0.0F, 0.0F, 0.02F, 0.0F, 0.0F, 2.02F, 0.0F, 3.0F, 2.02F, 0.0F, 3.0F, 2.02F, 0.0F, 3.0F, 2.02F, 0.0F, 3.0F);
+      leftArmModel = new ModelRendererTurbo[1];
+      leftArmModel[0] = new ModelRendererTurbo(this, 379, 291, textureX, textureY);
+      leftArmModel[0].addShapeBox(-4.0F, -12.0F, -12.0F, 20, 44, 24, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      rightArmModel = new ModelRendererTurbo[1];
+      rightArmModel[0] = new ModelRendererTurbo(this, 197, 369, textureX, textureY);
+      rightArmModel[0].addShapeBox(-16.0F, -12.0F, -12.0F, 20, 44, 24, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, -3.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      leftLegModel = new ModelRendererTurbo[1];
+      leftLegModel[0] = new ModelRendererTurbo(this, 290, 213, textureX, textureY);
+      leftLegModel[0].addShapeBox(-8.0F, 0.0F, -8.0F, 16, 39, 16, 0.0F, 0.11F, 0.11F, 1.01F, 1.01F, 0.11F, 1.01F, 1.01F, 0.11F, 1.01F, 0.11F, 0.11F, 1.01F, 0.11F, 0.11F, 1.01F, 1.01F, 0.11F, 1.01F, 1.01F, 0.11F, 1.01F, 0.11F, 0.11F, 1.01F);
+      rightLegModel = new ModelRendererTurbo[1];
+      rightLegModel[0] = new ModelRendererTurbo(this, 442, 139, textureX, textureY);
+      rightLegModel[0].addShapeBox(-8.0F, 0.0F, -8.0F, 16, 39, 16, 0.0F, 1.01F, 0.11F, 1.01F, 0.11F, 0.11F, 1.01F, 0.11F, 0.11F, 1.01F, 1.01F, 0.11F, 1.01F, 1.01F, 0.11F, 1.01F, 0.11F, 0.11F, 1.01F, 0.11F, 0.11F, 1.01F, 1.01F, 0.11F, 1.01F);
+   }
+}

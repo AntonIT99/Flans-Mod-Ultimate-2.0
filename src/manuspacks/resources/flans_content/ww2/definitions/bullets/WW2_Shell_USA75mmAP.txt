@@ -1,0 +1,51 @@
+// Identity
+Name US 75 mm M61 APCBC-HE (M3)
+ShortName WW2_Shell_USA75mmAP
+description Amunition for M4A1 Tank
+
+// Model and Rendering
+Icon Icon_WW2_Shell_USA75mmAP
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Steel
+ F 
+GBG
+ S 
+RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
+
+// Behaviour
+Bomb False
+Shell True
+HasSubmunitions false
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 1.0
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 25
+DamageVsVehicles 0
+Mass 6790.0
+MuzzleVelocity 618
+ExplosiveMassTNTg 65
+PenetrationAt100m 102
+Explosion 1
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+ExplodeParticles 8
+TrailParticleType flansmod.fmtracer
+HasLight True
+FlareParticleCount 4
+DebrisParticleCount 3

@@ -1,5 +1,8 @@
+// Identity
 Name Engineer
-ShortName russianEngineer
+ShortName OfficialWW2_RussianEngineer
+
+// Items
 AddItem nagant
 AddItem tt33
 AddItem rgd33 1

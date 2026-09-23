@@ -1,0 +1,720 @@
+{
+  "version": 2,
+  "sounds": {
+    "20mmcannonshoot.ogg": {
+      "key": "20mmcannonshoot",
+      "size": 39197,
+      "ticks": 42
+    },
+    "30calshoot.ogg": {
+      "key": "30calshoot",
+      "size": 22216,
+      "ticks": 40
+    },
+    "30mmshoot.ogg": {
+      "key": "30mmshoot",
+      "size": 45729,
+      "ticks": 39
+    },
+    "37mmshoot.ogg": {
+      "key": "37mmshoot",
+      "size": 84173,
+      "ticks": 116
+    },
+    "47mmshoot.ogg": {
+      "key": "47mmshoot",
+      "size": 85548,
+      "ticks": 134
+    },
+    "50calshoot.ogg": {
+      "key": "50calshoot",
+      "size": 25873,
+      "ticks": 45
+    },
+    "75mmshoot.ogg": {
+      "key": "75mmshoot",
+      "size": 96835,
+      "ticks": 176
+    },
+    "barreload.ogg": {
+      "key": "barreload",
+      "size": 46352,
+      "ticks": 81
+    },
+    "barshoot.ogg": {
+      "key": "barshoot",
+      "size": 51569,
+      "ticks": 52
+    },
+    "beartrap.ogg": {
+      "key": "beartrap",
+      "size": 13775,
+      "ticks": 10
+    },
+    "berezinubmgshoot.ogg": {
+      "key": "berezinubmgshoot",
+      "size": 16096,
+      "ticks": 16
+    },
+    "bf109_20mmshoot.ogg": {
+      "key": "bf109_20mmshoot",
+      "size": 24071,
+      "ticks": 29
+    },
+    "bombdrop.ogg": {
+      "key": "bombdrop",
+      "size": 23436,
+      "ticks": 42
+    },
+    "breach.ogg": {
+      "key": "breach",
+      "size": 38815,
+      "ticks": 56
+    },
+    "brenshoot.ogg": {
+      "key": "brenshoot",
+      "size": 13765,
+      "ticks": 15
+    },
+    "c96reload.ogg": {
+      "key": "c96reload",
+      "size": 51196,
+      "ticks": 117
+    },
+    "c96shoot.ogg": {
+      "key": "c96shoot",
+      "size": 38510,
+      "ticks": 37
+    },
+    "coltshoot.ogg": {
+      "key": "coltshoot",
+      "size": 32842,
+      "ticks": 31
+    },
+    "dp28shoot.ogg": {
+      "key": "dp28shoot",
+      "size": 18799,
+      "ticks": 35
+    },
+    "engine_ht_is.ogg": {
+      "key": "engine_ht_is",
+      "size": 23077,
+      "ticks": 40
+    },
+    "engine_ht_pzv.ogg": {
+      "key": "engine_ht_pzv",
+      "size": 23054,
+      "ticks": 40
+    },
+    "engine_ht_pzvi.ogg": {
+      "key": "engine_ht_pzvi",
+      "size": 30418,
+      "ticks": 40
+    },
+    "engine_ht_pzvikt.ogg": {
+      "key": "engine_ht_pzvikt",
+      "size": 23168,
+      "ticks": 40
+    },
+    "engine_lt_armoredcar.ogg": {
+      "key": "engine_lt_armoredcar",
+      "size": 22987,
+      "ticks": 40
+    },
+    "engine_lt_bt.ogg": {
+      "key": "engine_lt_bt",
+      "size": 23684,
+      "ticks": 40
+    },
+    "engine_lt_lvt.ogg": {
+      "key": "engine_lt_lvt",
+      "size": 23045,
+      "ticks": 40
+    },
+    "engine_lt_m5.ogg": {
+      "key": "engine_lt_m5",
+      "size": 22766,
+      "ticks": 40
+    },
+    "engine_lt_pzii.ogg": {
+      "key": "engine_lt_pzii",
+      "size": 22987,
+      "ticks": 40
+    },
+    "engine_lt_truck.ogg": {
+      "key": "engine_lt_truck",
+      "size": 22727,
+      "ticks": 40
+    },
+    "engine_mt_chinu.ogg": {
+      "key": "engine_mt_chinu",
+      "size": 23268,
+      "ticks": 40
+    },
+    "engine_mt_comet.ogg": {
+      "key": "engine_mt_comet",
+      "size": 23097,
+      "ticks": 40
+    },
+    "engine_mt_m26.ogg": {
+      "key": "engine_mt_m26",
+      "size": 23144,
+      "ticks": 40
+    },
+    "engine_mt_m4.ogg": {
+      "key": "engine_mt_m4",
+      "size": 24042,
+      "ticks": 40
+    },
+    "engine_mt_m4a3.ogg": {
+      "key": "engine_mt_m4a3",
+      "size": 22707,
+      "ticks": 40
+    },
+    "engine_mt_pziii.ogg": {
+      "key": "engine_mt_pziii",
+      "size": 22973,
+      "ticks": 40
+    },
+    "engine_mt_pziv.ogg": {
+      "key": "engine_mt_pziv",
+      "size": 22842,
+      "ticks": 40
+    },
+    "engine_mt_t34.ogg": {
+      "key": "engine_mt_t34",
+      "size": 22836,
+      "ticks": 40
+    },
+    "engine_td_m18.ogg": {
+      "key": "engine_td_m18",
+      "size": 22608,
+      "ticks": 40
+    },
+    "engine_tr_halftrack.ogg": {
+      "key": "engine_tr_halftrack",
+      "size": 22121,
+      "ticks": 40
+    },
+    "fg42shoot.ogg": {
+      "key": "fg42shoot",
+      "size": 49871,
+      "ticks": 49
+    },
+    "fighterengine.ogg": {
+      "key": "fighterengine",
+      "size": 25162,
+      "ticks": 40
+    },
+    "fighterstart.ogg": {
+      "key": "fighterstart",
+      "size": 15267,
+      "ticks": 20
+    },
+    "g43shoot.ogg": {
+      "key": "g43shoot",
+      "size": 15977,
+      "ticks": 28
+    },
+    "greasegunreload.ogg": {
+      "key": "greasegunreload",
+      "size": 41147,
+      "ticks": 52
+    },
+    "greasegunshoot.ogg": {
+      "key": "greasegunshoot",
+      "size": 32799,
+      "ticks": 31
+    },
+    "jeepback.ogg": {
+      "key": "jeepback",
+      "size": 22712,
+      "ticks": 60
+    },
+    "jeepidle.ogg": {
+      "key": "jeepidle",
+      "size": 6492,
+      "ticks": 7
+    },
+    "jeepmove.ogg": {
+      "key": "jeepmove",
+      "size": 22876,
+      "ticks": 60
+    },
+    "kar98kreload.ogg": {
+      "key": "kar98kreload",
+      "size": 17817,
+      "ticks": 52
+    },
+    "kar98kshoot.ogg": {
+      "key": "kar98kshoot",
+      "size": 50424,
+      "ticks": 56
+    },
+    "largeimpact.ogg": {
+      "key": "largeimpact",
+      "size": 12793,
+      "ticks": 12
+    },
+    "leeenfieldshoot.ogg": {
+      "key": "leeenfieldshoot",
+      "size": 32961,
+      "ticks": 42
+    },
+    "lugerreload.ogg": {
+      "key": "lugerreload",
+      "size": 51196,
+      "ticks": 117
+    },
+    "lugershoot.ogg": {
+      "key": "lugershoot",
+      "size": 27462,
+      "ticks": 25
+    },
+    "m1903springfieldshoot.ogg": {
+      "key": "m1903springfieldshoot",
+      "size": 28642,
+      "ticks": 51
+    },
+    "m1carbinereload.ogg": {
+      "key": "m1carbinereload",
+      "size": 40584,
+      "ticks": 91
+    },
+    "m1carbineshoot.ogg": {
+      "key": "m1carbineshoot",
+      "size": 27523,
+      "ticks": 25
+    },
+    "m1garandreload.ogg": {
+      "key": "m1garandreload",
+      "size": 24859,
+      "ticks": 58
+    },
+    "m1garandshoot.ogg": {
+      "key": "m1garandshoot",
+      "size": 45630,
+      "ticks": 45
+    },
+    "mediumimpact.ogg": {
+      "key": "mediumimpact",
+      "size": 15934,
+      "ticks": 16
+    },
+    "mg34reload.ogg": {
+      "key": "mg34reload",
+      "size": 26327,
+      "ticks": 107
+    },
+    "mg34shoot.ogg": {
+      "key": "mg34shoot",
+      "size": 10521,
+      "ticks": 13
+    },
+    "mg42shoot.ogg": {
+      "key": "mg42shoot",
+      "size": 31332,
+      "ticks": 54
+    },
+    "model10trenchgunreload.ogg": {
+      "key": "model10trenchgunreload",
+      "size": 76997,
+      "ticks": 115
+    },
+    "model10trenchgunshoot.ogg": {
+      "key": "model10trenchgunshoot",
+      "size": 14779,
+      "ticks": 17
+    },
+    "modell1915reload.ogg": {
+      "key": "modell1915reload",
+      "size": 16818,
+      "ticks": 89
+    },
+    "modell1915shoot.ogg": {
+      "key": "modell1915shoot",
+      "size": 15182,
+      "ticks": 33
+    },
+    "mortarshoot.ogg": {
+      "key": "mortarshoot",
+      "size": 37092,
+      "ticks": 32
+    },
+    "mosinnagantshoot.ogg": {
+      "key": "mosinnagantshoot",
+      "size": 26667,
+      "ticks": 46
+    },
+    "mp40reload.ogg": {
+      "key": "mp40reload",
+      "size": 22337,
+      "ticks": 67
+    },
+    "mp40shoot.ogg": {
+      "key": "mp40shoot",
+      "size": 29165,
+      "ticks": 27
+    },
+    "oldmg34shoot.ogg": {
+      "key": "oldmg34shoot",
+      "size": 55060,
+      "ticks": 56
+    },
+    "panzerschreckreload.ogg": {
+      "key": "panzerschreckreload",
+      "size": 60508,
+      "ticks": 117
+    },
+    "panzerschreckshoot.ogg": {
+      "key": "panzerschreckshoot",
+      "size": 22011,
+      "ticks": 35
+    },
+    "plane30calshoot.ogg": {
+      "key": "plane30calshoot",
+      "size": 20009,
+      "ticks": 25
+    },
+    "plane50calshoot.ogg": {
+      "key": "plane50calshoot",
+      "size": 17528,
+      "ticks": 20
+    },
+    "planemgshoot.ogg": {
+      "key": "planemgshoot",
+      "size": 24477,
+      "ticks": 30
+    },
+    "pps43shoot.ogg": {
+      "key": "pps43shoot",
+      "size": 12837,
+      "ticks": 21
+    },
+    "ppsh41shoot.ogg": {
+      "key": "ppsh41shoot",
+      "size": 14879,
+      "ticks": 23
+    },
+    "ptboatidle.ogg": {
+      "key": "ptboatidle",
+      "size": 14518,
+      "ticks": 20
+    },
+    "ptboatmove.ogg": {
+      "key": "ptboatmove",
+      "size": 16096,
+      "ticks": 20
+    },
+    "rocketshoot.ogg": {
+      "key": "rocketshoot",
+      "size": 18109,
+      "ticks": 23
+    },
+    "shell.ogg": {
+      "key": "shell",
+      "size": 46714,
+      "ticks": 82
+    },
+    "shoot_100mmussr.ogg": {
+      "key": "shoot_100mmussr",
+      "size": 31259,
+      "ticks": 60
+    },
+    "shoot_105mm.ogg": {
+      "key": "shoot_105mm",
+      "size": 61398,
+      "ticks": 71
+    },
+    "shoot_122mmussr.ogg": {
+      "key": "shoot_122mmussr",
+      "size": 31112,
+      "ticks": 60
+    },
+    "shoot_152mm.ogg": {
+      "key": "shoot_152mm",
+      "size": 99517,
+      "ticks": 106
+    },
+    "shoot_20mmaade.ogg": {
+      "key": "shoot_20mmaade",
+      "size": 10396,
+      "ticks": 11
+    },
+    "shoot_20mmpzii.ogg": {
+      "key": "shoot_20mmpzii",
+      "size": 30850,
+      "ticks": 60
+    },
+    "shoot_37mde.ogg": {
+      "key": "shoot_37mde",
+      "size": 32054,
+      "ticks": 60
+    },
+    "shoot_37mm.ogg": {
+      "key": "shoot_37mm",
+      "size": 36691,
+      "ticks": 38
+    },
+    "shoot_37mus.ogg": {
+      "key": "shoot_37mus",
+      "size": 32300,
+      "ticks": 60
+    },
+    "shoot_45mmussr.ogg": {
+      "key": "shoot_45mmussr",
+      "size": 31456,
+      "ticks": 60
+    },
+    "shoot_47mm.ogg": {
+      "key": "shoot_47mm",
+      "size": 36420,
+      "ticks": 37
+    },
+    "shoot_50mmde.ogg": {
+      "key": "shoot_50mmde",
+      "size": 31046,
+      "ticks": 60
+    },
+    "shoot_57mm.ogg": {
+      "key": "shoot_57mm",
+      "size": 57421,
+      "ticks": 61
+    },
+    "shoot_57mmuk.ogg": {
+      "key": "shoot_57mmuk",
+      "size": 26852,
+      "ticks": 49
+    },
+    "shoot_75mmde.ogg": {
+      "key": "shoot_75mmde",
+      "size": 32631,
+      "ticks": 60
+    },
+    "shoot_75mmjp.ogg": {
+      "key": "shoot_75mmjp",
+      "size": 32048,
+      "ticks": 60
+    },
+    "shoot_75mmlongde.ogg": {
+      "key": "shoot_75mmlongde",
+      "size": 32545,
+      "ticks": 60
+    },
+    "shoot_75mmlongjp.ogg": {
+      "key": "shoot_75mmlongjp",
+      "size": 32069,
+      "ticks": 60
+    },
+    "shoot_75mmus.ogg": {
+      "key": "shoot_75mmus",
+      "size": 32583,
+      "ticks": 60
+    },
+    "shoot_76mmuk.ogg": {
+      "key": "shoot_76mmuk",
+      "size": 32945,
+      "ticks": 60
+    },
+    "shoot_76mmus.ogg": {
+      "key": "shoot_76mmus",
+      "size": 32227,
+      "ticks": 60
+    },
+    "shoot_76mmussr.ogg": {
+      "key": "shoot_76mmussr",
+      "size": 31535,
+      "ticks": 60
+    },
+    "shoot_85mmussr.ogg": {
+      "key": "shoot_85mmussr",
+      "size": 31683,
+      "ticks": 60
+    },
+    "shoot_88flakde.ogg": {
+      "key": "shoot_88flakde",
+      "size": 31848,
+      "ticks": 60
+    },
+    "shoot_88mmde.ogg": {
+      "key": "shoot_88mmde",
+      "size": 31618,
+      "ticks": 60
+    },
+    "shoot_88mmlongde.ogg": {
+      "key": "shoot_88mmlongde",
+      "size": 32587,
+      "ticks": 60
+    },
+    "shoot_90mmus.ogg": {
+      "key": "shoot_90mmus",
+      "size": 31798,
+      "ticks": 60
+    },
+    "shoot_mg_dt28.ogg": {
+      "key": "shoot_mg_dt28",
+      "size": 21886,
+      "ticks": 40
+    },
+    "shoot_mg_m2hb.ogg": {
+      "key": "shoot_mg_m2hb",
+      "size": 23082,
+      "ticks": 40
+    },
+    "shoot_mg_m2m1919.ogg": {
+      "key": "shoot_mg_m2m1919",
+      "size": 13821,
+      "ticks": 19
+    },
+    "shoot_mg_type97.ogg": {
+      "key": "shoot_mg_type97",
+      "size": 10165,
+      "ticks": 12
+    },
+    "shoot_stalinorgel.ogg": {
+      "key": "shoot_stalinorgel",
+      "size": 32270,
+      "ticks": 60
+    },
+    "sksshoot.ogg": {
+      "key": "sksshoot",
+      "size": 10118,
+      "ticks": 14
+    },
+    "smallimpact.ogg": {
+      "key": "smallimpact",
+      "size": 13622,
+      "ticks": 14
+    },
+    "smokegrenadeshoot.ogg": {
+      "key": "smokegrenadeshoot",
+      "size": 10676,
+      "ticks": 12
+    },
+    "spitfire_20mmshoot.ogg": {
+      "key": "spitfire_20mmshoot",
+      "size": 26819,
+      "ticks": 34
+    },
+    "stenreload.ogg": {
+      "key": "stenreload",
+      "size": 19140,
+      "ticks": 55
+    },
+    "stenshoot.ogg": {
+      "key": "stenshoot",
+      "size": 16786,
+      "ticks": 20
+    },
+    "sterlingshoot.ogg": {
+      "key": "sterlingshoot",
+      "size": 9927,
+      "ticks": 13
+    },
+    "stg44reload.ogg": {
+      "key": "stg44reload",
+      "size": 16818,
+      "ticks": 89
+    },
+    "stg44shoot.ogg": {
+      "key": "stg44shoot",
+      "size": 29912,
+      "ticks": 28
+    },
+    "tankback1.ogg": {
+      "key": "tankback1",
+      "size": 34738,
+      "ticks": 40
+    },
+    "tankback2.ogg": {
+      "key": "tankback2",
+      "size": 35323,
+      "ticks": 40
+    },
+    "tankback3.ogg": {
+      "key": "tankback3",
+      "size": 34578,
+      "ticks": 40
+    },
+    "tankidle1.ogg": {
+      "key": "tankidle1",
+      "size": 32730,
+      "ticks": 40
+    },
+    "tankidle2.ogg": {
+      "key": "tankidle2",
+      "size": 34100,
+      "ticks": 40
+    },
+    "tankidle3.ogg": {
+      "key": "tankidle3",
+      "size": 32129,
+      "ticks": 40
+    },
+    "tankplace.ogg": {
+      "key": "tankplace",
+      "size": 35035,
+      "ticks": 52
+    },
+    "tankreload1.ogg": {
+      "key": "tankreload1",
+      "size": 42712,
+      "ticks": 46
+    },
+    "tankrun1.ogg": {
+      "key": "tankrun1",
+      "size": 34035,
+      "ticks": 40
+    },
+    "tankrun2.ogg": {
+      "key": "tankrun2",
+      "size": 35208,
+      "ticks": 40
+    },
+    "tankrun3.ogg": {
+      "key": "tankrun3",
+      "size": 34773,
+      "ticks": 40
+    },
+    "thompsonm1a1reload.ogg": {
+      "key": "thompsonm1a1reload",
+      "size": 32830,
+      "ticks": 71
+    },
+    "thompsonm1a1shoot.ogg": {
+      "key": "thompsonm1a1shoot",
+      "size": 10923,
+      "ticks": 9
+    },
+    "turrettraverse1.ogg": {
+      "key": "turrettraverse1",
+      "size": 19347,
+      "ticks": 21
+    },
+    "turrettraverse2.ogg": {
+      "key": "turrettraverse2",
+      "size": 15907,
+      "ticks": 20
+    },
+    "type100shoot.ogg": {
+      "key": "type100shoot",
+      "size": 26113,
+      "ticks": 36
+    },
+    "type99shoot.ogg": {
+      "key": "type99shoot",
+      "size": 40521,
+      "ticks": 53
+    },
+    "winchestermodel70shoot.ogg": {
+      "key": "winchestermodel70shoot",
+      "size": 23218,
+      "ticks": 41
+    },
+    "yak_37mmshoot.ogg": {
+      "key": "yak_37mmshoot",
+      "size": 12977,
+      "ticks": 15
+    }
+  }
+}

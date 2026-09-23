@@ -1,0 +1,76 @@
+// Identity
+Name F-22 Raptor
+ShortName F22
+
+// Model and Rendering
+Icon IconPlaneF22
+Model manus_modern_warfare.F22
+Texture SkinPlaneF22
+
+// Recipe and Inventory
+FuelTankSize 6000
+CargoSlots 0
+BombSlots 4
+AddRecipeParts core 1 Part_Cockpit_Jet 12 Mat_Plate_Carbon
+AddRecipeParts nose 1 Part_Nose_Plane 4 Mat_Plate_Carbon
+AddRecipeParts tail 1 Part_Tail_Jet 12 Mat_Plate_Carbon
+AddRecipeParts leftWing 1 27030_Part_Wing_Jet 10 Mat_Plate_Carbon
+AddRecipeParts rightWing 1 27030_Part_Wing_Jet 10 Mat_Plate_Carbon
+AddRecipeParts leftWingWheel 1 Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 Part_Wheel_Plane
+AddRecipeParts coreWheel 1 Part_Wheel_Plane
+AddDye 10 gray
+
+// Movement and Physics
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+Drag 0.98
+Lift 3.2
+RestingPitch 0.0
+HasGear True
+RealMassKg 29410
+RealEngineThrustKn 231.3
+RealMaxSpeedKmh 2414
+RealWingSpanM 13.56
+RealWingAreaM2 78.04
+RealClimbRateMs 330
+
+// Weapons
+AddGun 129 7 0 nose GAU4
+ShootDelay 5
+BombDelay 1
+BombPosition 7 -10 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 10.0
+Propeller 0 0 0 0 core Part_Propeller_TurbineJet
+Propeller 1 0 0 0 core Part_Propeller_TurbineJet
+Pilot 73 12 0
+Passengers 0
+SetupPart nose 100 93 7 -8 36 16 16
+SetupPart coreWheel 50 50 -10 -3 8 14 6
+SetupPart leftWingWheel 50 -28 -10 15 10 20 10
+SetupPart tail 200 -80 4 -24 49 19 48
+SetupPart core 400 -31 4 -24 124 19 48
+SetupPart rightWing 150 -56 16 -85 87 1 61
+SetupPart leftWing 150 -56 16 24 87 1 61
+SetupPart rightWingWheel 50 -28 -10 -25 10 20 10
+BulletDetection 25
+
+// Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb

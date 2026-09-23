@@ -1,0 +1,20 @@
+// Identity
+Name Clone Green Company Armor
+ShortName clone327Armor
+
+// Item and rendering
+Icon clone327armor
+Colour 255 255 255
+ArmourTexture clonetrooper327chestplate
+Model wolffstarwars.CloneChestplate
+
+// Protection
+Type Body
+Defence 0.16
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 6
+Toughness 1
+
+// Movement
+MoveSpeedModifier 0.98

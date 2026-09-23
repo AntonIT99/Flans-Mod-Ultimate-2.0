@@ -1,0 +1,28 @@
+// Identity
+Name Blue Laser
+ShortName BlueLaser
+
+// Item and rendering
+Icon laserblue
+Model wolffstarwars.LaserBeam
+Colour 255 255 255
+Texture wolffstarwars_laser_blue
+RoundsPerItem 100
+
+// Ballistics
+FallSpeed 0
+
+// Damage and detonation
+Damage 10
+Explosion 0
+ExplodeOnImpact false
+Fuse 0
+Fire 0
+BreaksGlass True
+HitBoxSize 0.1
+Penetrates False
+
+// Sounds and particles
+FlakParticles 0
+HitSound bullet
+SmokeTrail False

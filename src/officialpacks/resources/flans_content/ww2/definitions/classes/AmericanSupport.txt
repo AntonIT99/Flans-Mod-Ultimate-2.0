@@ -1,5 +1,8 @@
+// Identity
 Name Support
-ShortName americanSupport
+ShortName OfficialWW2_AmericanSupport
+
+// Items
 AddItem browning
 AddItem bazooka
 AddItem colt

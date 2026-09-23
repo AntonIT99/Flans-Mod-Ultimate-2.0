@@ -1,0 +1,44 @@
+// Identity
+Name 250kg/500lb Bomb
+ShortName 44_250kg500lbBomb
+Description Bomb used for Aircraft_ - BF-110 G2 _ - JU-87 D3 "Stuka" _ - P47-D _ - B17-G
+
+// Rendering
+Icon 44_250kg500lbBomb
+Model W44.Warfarebomb
+Texture warfarebomb
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 1
+RoundsPerItem 1
+
+// Ammunition
+Bomb True
+
+// Ballistics
+FallSpeed 1
+HitBoxSize 0.5
+Penetrates False
+BreaksGlass True
+
+// Damage
+Mass 250000.0
+DamageVsLiving 100
+DamageVsVehicles 250
+DamageVsPlanes 250
+Fire 0
+
+// Explosion
+ExplosiveMassTNTKg 125
+FragType GP_BOMB
+Explosion 8
+ExplodeOnImpact True
+Fuse 200
+
+// Effects
+SmokeTrail False
+FlakParticles 0
+
+// Sounds
+HitSound bomb

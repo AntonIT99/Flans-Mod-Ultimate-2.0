@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.IEntityBullet;
+import com.flansmodultimate.api.IInfoType;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
@@ -28,6 +30,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -53,7 +56,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Bullet extends Shootable implements IFlanEntity<BulletType>
+public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntityBullet
 {
     public static final int RENDER_DISTANCE = 128;
 
@@ -64,6 +67,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     public static final String NBT_FIREABLE_GUN_TYPE_NAME = "info_type";
     public static final String NBT_FIREABLE_GUN_SPREAD = "spread";
     public static final String NBT_FIREABLE_GUN_SPEED = "speed";
+    public static final String NBT_FIREABLE_GUN_SPEED_MULTIPLIER = "speed_multiplier";
     public static final String NBT_FIREABLE_GUN_DAMAGE = "damage";
     public static final String NBT_FIREABLE_GUN_SPREAD_PATTERN = "spread_pattern";
 
@@ -91,6 +95,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
 
     /** Penetration */
     protected float penetratingPower;
+    /** Penetrating power this bullet was fired with, kept so penetration losses can be expressed as a fraction of it */
+    @Getter
+    protected float initialPenetratingPower;
     /** When the bullet loses penetration, the cause and amount is saved to this list */
     @Getter
     protected final List<PenetrationLoss> penetrationLosses = new ArrayList<>();
@@ -136,9 +143,12 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         super(FlansMod.bulletEntity.get(), level, firedShot.getBulletType());
         this.firedShot = firedShot;
         configType = firedShot.getBulletType();
-        penetratingPower = firedShot.getBulletType().getPenetratingPower();
+        initialPenetratingPower = ShootingHelper.getInitialPenetratingPower(firedShot);
+        penetratingPower = initialPenetratingPower;
         setPos(origin);
-        setArrowHeading(direction, firedShot.getSpread(), firedShot.getFireableGun().getBulletSpeed(), firedShot.getFireableGun().getSpreadPattern());
+        // The ammunition's own muzzle velocity decides how fast the round flies, exactly as it decides
+        // the kinetic damage it lands with. The weapon is only the fallback.
+        setArrowHeading(direction, firedShot.getSpread(), firedShot.getMuzzleVelocity(), firedShot.getSpreadPattern());
         useDesignatedDriveableTarget();
     }
 
@@ -334,17 +344,19 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             {
                 FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
                 discard();
+                return;
             }
 
             if (shooterId != 0)
-                shooter = level.getEntity(attackerId);
+                shooter = level.getEntity(shooterId);
             if (attackerId != 0 && level.getEntity(attackerId) instanceof LivingEntity living)
                 attacker = living;
             if (lockedOnToId != 0)
                 lockedOnTo = level.getEntity(lockedOnToId);
 
             firedShot = new FiredShot(null, configType, shooter, attacker, shot);
-            penetratingPower = configType.getPenetratingPower();
+            initialPenetratingPower = firedShot.getPenetratingPower();
+            penetratingPower = initialPenetratingPower;
         }
         catch (Exception e)
         {
@@ -367,6 +379,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             gunTag.putString(NBT_FIREABLE_GUN_TYPE_NAME, gun.getType().getShortName());
             gunTag.putFloat(NBT_FIREABLE_GUN_SPREAD, gun.getSpread());
             gunTag.putFloat(NBT_FIREABLE_GUN_SPEED, gun.getBulletSpeed());
+            gunTag.putFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER, gun.getBulletSpeedMultiplier());
             gunTag.putFloat(NBT_FIREABLE_GUN_DAMAGE, gun.getDamage());
             gunTag.putString(NBT_FIREABLE_GUN_SPREAD_PATTERN, gun.getSpreadPattern().name());
             tag.put(NBT_FIREABLE_GUN, gunTag);
@@ -392,11 +405,13 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 float damage = gun.getFloat(NBT_FIREABLE_GUN_DAMAGE);
                 float spread = gun.getFloat(NBT_FIREABLE_GUN_SPREAD);
                 float speed = gun.getFloat(NBT_FIREABLE_GUN_SPEED);
+                float speedMultiplier = gun.contains(NBT_FIREABLE_GUN_SPEED_MULTIPLIER)
+                    ? gun.getFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) : 1F;
                 EnumSpreadPattern spreadPattern = EnumSpreadPattern.valueOf(gun.getString(NBT_FIREABLE_GUN_SPREAD_PATTERN));
 
                 InfoType fireableGunInfoType = InfoType.getInfoType(gun.getString(NBT_FIREABLE_GUN_TYPE_NAME));
                 if (fireableGunInfoType != null)
-                    fireableGun = new FireableGun(fireableGunInfoType, damage, spread, speed, spreadPattern);
+                    fireableGun = new FireableGun(fireableGunInfoType, damage, spread, speed, speedMultiplier, spreadPattern);
             }
 
             if (tag.hasUUID(NBT_ATTACKER))
@@ -426,9 +441,18 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         Level level = level();
         try
         {
+            if (isLeavingEntityTickingArea(level))
+            {
+                discard();
+                return;
+            }
+
             resolveUUIDs(level);
             setInitialSpeed();
             updatePreviousPosition();
+
+            if (handleSmoke(level))
+                return;
 
             if (shouldDespawn())
             {
@@ -454,6 +478,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             ClientHooks.RENDER.spawnDebugVector(position(), velocity, 1000);
 
             performRaytraceAndApplyHits(level);
+            if (isSmoking())
+                return;
             applyDragAndGravity();
             updatePenetrationPower();
             applyHomingIfLocked(level);
@@ -470,6 +496,23 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             FlansMod.log.error("Error ticking bullet {}", shortname, ex);
             discard();
         }
+    }
+
+    /**
+     * Entities outside the simulation distance stop ticking, which would leave the bullet frozen in mid-air
+     * with no drag, gravity, hit detection or lifetime. Remove it before it gets stuck there.
+     */
+    protected boolean isLeavingEntityTickingArea(Level level)
+    {
+        return level instanceof ServerLevel serverLevel
+            && !serverLevel.isPositionEntityTicking(BlockPos.containing(position().add(velocity)));
+    }
+
+    /** Bullets are transient: never write them to chunk data, where they would come back frozen after a reload */
+    @Override
+    public boolean shouldBeSaved()
+    {
+        return false;
     }
 
     protected void setInitialSpeed()
@@ -576,7 +619,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
                 setDead(level);
         }
 
-        return isRemoved();
+        return isRemoved() || isSmoking();
     }
 
     /** returns true if bullet was discarded */
@@ -593,7 +636,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             setDead(level);
         }
 
-        return isRemoved();
+        return isRemoved() || isSmoking();
     }
 
     @Override
@@ -614,6 +657,18 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
     public Optional<LivingEntity> getOwner()
     {
         return firedShot.getAttacker();
+    }
+
+    @Override
+    public IInfoType getBulletInfoType()
+    {
+        return configType;
+    }
+
+    @Override
+    public Optional<IInfoType> getFiredFrom()
+    {
+        return Optional.ofNullable(firedShot.getFireableGun()).map(FireableGun::getType);
     }
 
     protected void handleSubmunitions(Level level)
@@ -1074,7 +1129,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
         }
     }
 
-    /** detonate() also discards bullet entities */
+    /** Detonate and retain the bullet as a stationary smoke source when configured. */
     @Override
     public void detonate(Level level)
     {
@@ -1082,6 +1137,10 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
 
         detonate(level, firedShot.getAttacker().orElse(null));
+        if (startSmoke())
+            setDeltaMovement(Vec3.ZERO);
+        else
+            discard();
     }
 
     public void setDead(Level level)
@@ -1090,7 +1149,11 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>
             return;
 
         ShootingHelper.onBulletDeath(level, configType, position(), this, Optional.ofNullable(firedShot).flatMap(FiredShot::getAttacker).orElse(null));
-        discard();
+        detonated = true;
+        if (startSmoke())
+            setDeltaMovement(Vec3.ZERO);
+        else
+            discard();
     }
 
     protected void clientTick(Level level)

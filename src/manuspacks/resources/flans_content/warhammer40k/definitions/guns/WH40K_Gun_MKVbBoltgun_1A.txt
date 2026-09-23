@@ -1,0 +1,41 @@
+﻿// Identity
+Name MK Vb Godwyn Pattern Boltgun
+ShortName WH40K_Gun_MKVbBoltgun_1A
+
+// Model and Rendering
+Icon Icon_WH40K_Gun_MKVbBoltgun_1A
+Model Manus_WH40K.Gun.WH40K_Gun_MKVbBoltgun_1
+DeployedModel None
+ModelScale 0.11
+Texture Skin_WH40K_Gun_MKVbBoltgun_1A
+
+// Recipe and Inventory
+AllowGripAttachments False
+Ammo WH40K_Ammo_BoltCal75
+Ammo WH40K_Ammo_BoltCal75Seeker
+Ammo WH40K_Ammo_BoltCal75Inferno
+AllowAllAttachments False
+AllowAttachments WH40K_Attachment_MKVbBoltgunScope_1A WH40K_Attachment_MKVbBoltgunSilencer_1A WH40K_Attachment_MKVbBoltgunStock_1A
+AllowBarrelAttachments True
+AllowScopeAttachments True
+AllowStockAttachments True
+NumGenericAttachmentSlots 1
+
+// Weapons
+Deployable False
+Mode FULLAUTO
+Recoil 2
+ReloadTime 40
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+RoundsPerMin 550.0
+Dispersion 0.26
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 300.0
+
+// Sounds
+ShootSound boltgun_fire
+ReloadSound boltgun_reload

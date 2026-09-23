@@ -1,0 +1,11 @@
+// Identity
+Name Tank Track
+ShortName 44_Tank_Track
+Category Wheel
+
+// Rendering
+Icon 44_Tank_Track
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 4

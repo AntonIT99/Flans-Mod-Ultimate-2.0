@@ -1,0 +1,22 @@
+// Identity
+Name Clone Shadow Trooper Phase 2 Helmet
+ShortName cloneShadowIIHelmet
+
+// Item and rendering
+Icon cloneshadowiihelmet
+Colour 255 255 255
+ArmourTexture clonetrooperiishadowhelmet
+Model wolffstarwars.CloneHelmetIIShadow
+Overlay clonehelmetshadow
+
+// Protection
+Type Helmet
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 1.90
+ArmorPoints 2
+Toughness 1
+
+// Effects
+SmokeProtection True
+NightVision True

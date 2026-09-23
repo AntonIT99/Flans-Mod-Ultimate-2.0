@@ -1,0 +1,53 @@
+// Identity
+Name 37mmAircraftAmmo
+ShortName 44_37mmAircraftAmmo
+Description Ammo used for Aircraft_ - Yak-9T
+
+// Rendering
+Icon 44_37mmAircraftAmmo
+Model W44.W44Bullet
+Texture Skin44_W44Bullet_Tracer_White
+Texture defaultBullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 5
+RoundsPerItem 20
+
+// Ammunition
+WeaponType Missile
+
+// Ballistics
+MuzzleVelocity 610
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates False
+PenetrationAt100m 20
+BreaksGlass True
+
+// Damage
+Mass 608
+DamageVsLiving 50
+DamageVsVehicles 100
+DamageVsPlanes 95
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 39
+Explosion 1
+ExplodeOnImpact True
+Fuse 0
+
+// Guidance
+LockOnToDriveables False
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 37.0
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+FlakParticles 0
+
+// Sounds
+HitSound bullet

@@ -1,0 +1,38 @@
+// Identity
+Name Berezin-UB MG
+ShortName 44_BerezinUBMG
+Description Soviet Aircraft MG - Plane Part
+
+// Rendering
+Icon 44_BerezinUBMG
+Colour 255 255 255
+
+// Ammunition
+Ammo 44_BerezinUBMGAmmo
+
+// Handling
+Mode FullAuto
+Deployable false
+UsableByPlayers false
+usableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 1000.0
+ReloadTime 200
+
+// Ballistics
+MuzzleVelocity 815.0
+Dispersion 0.25
+
+// Damage
+Damage 7
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound Mp40Shoot
+DistortSound True
+SoundLength 0
+ReloadSound Mp40Reload

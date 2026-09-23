@@ -1,5 +1,8 @@
+// Identity
 Name Assault
 ShortName nerfRampageClass
+
+// Items
 AddItem nerfRampage
 AddItem nerfStrongarm
 AddItem 25DartEliteDrum

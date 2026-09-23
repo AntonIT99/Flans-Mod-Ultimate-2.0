@@ -1,0 +1,47 @@
+// Identity
+Name 120 mm DM43 APFSDS-T Shell
+ShortName ShellNATO120mmDM43KE
+Description Kinetic-energy ammunition for the Leopard 2 Rh-120 L/55
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon IconShellNATO120mmDM43KE
+
+// Recipe and Inventory
+RoundsPerItem 1
+MaxStackSize 16
+RecipeOutput 5
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Titan
+ B 
+GF 
+ S 
+
+// Behaviour
+HasSubmunitions false
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+Bomb False
+Shell True
+
+// Ballistics and Damage
+Mass 4300
+MuzzleVelocity 1650
+PenetrationAt100m 600
+Damage 550
+DamageVsVehicles 550
+Explosion 0
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+HasLight True

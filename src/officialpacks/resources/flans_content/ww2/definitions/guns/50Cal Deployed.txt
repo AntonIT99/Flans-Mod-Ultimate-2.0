@@ -1,0 +1,39 @@
+// Identity
+Name Browning .50Cal
+ShortName 50Cal
+
+// Item and rendering
+Icon 50Cal
+Colour 255 255 255
+DeployedModel ww2.50Cal
+DeployedTexture 50Cal
+
+// Ammunition
+Ammo 50CalAmmo
+ReloadTime 100
+
+// Operation
+Mode FullAuto
+Deployable True
+StandBackDistance 1.2
+TopViewLimit 20
+BottomViewLimit 30
+SideViewLimit 45
+PivotHeight 0.375
+RoundsPerMin 500.0
+
+// Ballistics
+Recoil 1
+MuzzleVelocity 890.0
+Dispersion 0.35
+
+// Damage and protection
+Damage 25
+
+// Optics
+Scope None
+
+// Sounds
+DistortSound False
+ShootSound 50CalShoot
+ReloadSound BrowningReload

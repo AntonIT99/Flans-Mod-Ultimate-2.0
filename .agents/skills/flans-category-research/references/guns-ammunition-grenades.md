@@ -1,0 +1,513 @@
+# Guns, Ammunition, and Grenades
+
+Read this reference when editing `gun_categories.json`, `aagun_categories.json`,
+`bullet_categories.json`, or `grenade_categories.json`.
+
+## Guns
+
+For each identifiable gun, research and normally define:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `MuzzleVelocity` | metres per second | Required only when the gun is velocity-authoritative: normal service load from the represented barrel. A cartridge velocity from another barrel length is not equivalent. |
+| `RoundsPerMin` | rounds per minute | Mandatory for a gun that fires ammunition; omit on a melee-only gun. Cyclic rate for automatic weapons; credible practical/mechanical rate for manual or semiautomatic weapons. Never use magazine capacity. |
+| `ReloadTime` | ticks | Mandatory for a gun that fires ammunition; omit on a melee-only gun. The documented time to change a magazine, clip, belt box or single round, at 20 ticks per second. It is what actually sets the rate of fire of anything that reloads often — a bolt-action rifle or a single-shot launcher spends most of its time here, not in `RoundsPerMin`. |
+| `Dispersion` | degrees | Mandatory for a gun that fires ammunition; omit on a melee-only gun. Actual angular accuracy/spread for the configuration. Convert MOA with `degrees = MOA / 60`; do not infer it from effective range. |
+
+Two kinds of `guns` definition are outside the cadence and spread requirement:
+
+- **Melee-only weapons.** `MeleeDamage` with no `Ammo`, as the table says.
+- **Signal, marker and utility devices.** Binoculars, whistles, bugles, horns,
+  shouted orders, regimental standards and similar props are authored as guns that
+  fire a zero-damage, massless token so the pack gets a sound or a visual cue. They
+  fire ammunition in the parser's sense but are not weapons, and their `ShootDelay`
+  is usually a deliberate cooldown — a trench whistle on `ShootDelay 1200` is a
+  one-minute cycle, and a category `RoundsPerMin` would silently cut it to seconds.
+  Leave them with an empty property block and say so in the report.
+
+The distinction is what the token does, not what the item is called. A "flag" that
+fires a real gas grenade, and a "polearm" that throws a projectile with mass, are
+weapons and take the full mandatory set.
+
+A gun whose ammunition is damage-authoritative — an energy weapon whose bolt carries
+`Damage` instead of `Mass` — additionally requires its own `Damage: 1`, because the
+legacy path multiplies the two. See *Energy and exotic ammunition* in
+[generic-and-fictional.md](generic-and-fictional.md).
+
+Keep shotgun dispersion representative of the full shot pattern and ordinary gun
+dispersion representative of the base weapon without movement or attachment
+modifiers. `MuzzleVelocity` is internally divided by 20 to obtain blocks/tick.
+`RoundsPerMin` overrides legacy `ShootDelay`; its delay is `1200 / RPM` ticks.
+Fractional delays are preserved and a gun fires as many times in a tick as its
+delay allows, so rates above 1200 RPM are represented faithfully. Author the real
+cyclic rate of a minigun or an aircraft cannon rather than clamping it.
+
+An entry sitting at exactly `1200` is a clamping suspect, because that used to be
+the ceiling. When a task touches such an entry, re-check the source: a minigun at
+`1200` is wrong and should carry its real several-thousand RPM. A weapon whose
+researched rate genuinely is 1200 needs no change; say which it was in the report.
+
+`ReloadTime` and `RoundsPerMin` describe different halves of the same behaviour
+and are researched together. The wait after the round that empties the gun is
+`max(ReloadTime, the cadence)`, so a quick reload can never make a slow action
+cycle faster than it really does. How often that wait arrives is set by the
+ammunition's `RoundsPerItem`: a weapon whose round is a single item reloads after
+every shot, which is how launchers and break-action weapons should behave.
+
+When reliable research and configuration-compatible game sources cannot establish
+either mandatory value, author a gameplay-coherent fallback rather than omitting
+it. Base it on the weapon type, action, calibre, era, barrel length, and comparable
+already-categorized weapons; do not derive dispersion from effective range. Label
+the value as invented in the final report.
+
+### Muzzle-velocity ownership
+
+Choose the primary source for each weapon/ammunition configuration before researching
+velocity. Ammunition `MuzzleVelocity` / `BulletSpeed` takes precedence at runtime
+when present, so a gun-category `MuzzleVelocity` is a compatible fallback rather
+than a competing override:
+
+- **Gun-authoritative:** ordinary simple guns and small arms normally own
+  `MuzzleVelocity` in `gun_categories.json`. Use the exact represented barrel and
+  service loading. Their ordinary ammunition categories normally omit the key even
+  though they still supply projectile `Mass`.
+- **Ammunition-authoritative:** autocannon belts, individually selectable cannon
+  shells, missiles, and other shell-based patterns own `MuzzleVelocity` in
+  `bullet_categories.json`. It is the exact projectile/load velocity for the
+  represented gun or barrel. The matching gun or AA-gun category may retain a
+  compatible fallback velocity, but it does not override the ammunition value.
+- **Weapon-authoritative:** a gun, AA gun, or driveable may restate a shared round
+  outright with `AmmoMuzzleVelocity <ammoShortName> <mps>`. This wins over both sides
+  above, and it is the correct answer when one generic ammunition item is fired by
+  several materially different real barrels. See
+  [Per-ammo overrides](#per-ammo-overrides).
+
+The resolved velocity combines with ammunition projectile `Mass` for kinetic damage;
+keep both values consistent with the same service loading. When both sides define a
+velocity, they must describe compatible configurations. When the same nominal
+ammunition is fired from materially different barrels whose velocities must differ,
+override on each weapon rather than trying to pick one velocity for the item.
+
+Projectile mass, explosive filler, and penetration belong to ammunition, not gun
+categories. Exact aliases and skins may share one gun category; split materially
+different calibres, marks, actions, or barrel lengths.
+
+## AA guns
+
+For each identifiable AA gun or complete AA mounting, research and define:
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `RoundsPerMin` | firing events per minute | Required. Use the represented mounting's mechanical cadence and interpret it with the definition's barrel behavior as described below. This overrides `ShootDelay` using `1200 / RPM` ticks, as for guns. |
+| `ReloadTime` | ticks | Required. Time to reload the whole mounting, at 20 ticks per second. A multi-barrel mount reloads every barrel together and only once all of them have run dry, so research the figure for the complete mounting, not for one barrel. Together with the loaded round's `RoundsPerItem` this produces the burst-then-reload signature of a clip- or magazine-fed AA gun such as the 2 cm Flak 30 or the Bofors 40 mm. |
+| `Dispersion` | degrees | Required. Convert MOA with `degrees = MOA / 60`; never derive it from range. |
+| `RealMassKg` | kilograms | Required firing/operational mass of the complete represented gun and integral mounting, carriage, or shield. Exclude crew, towing vehicle, and non-integral ammunition reserves. |
+| `UseRealisticVehicleHealth` | quoted boolean | Required as `"true"`. Total entity HP becomes `realisticVehicleHealthScale * RealMassKg^(2/3)`, rounded to the nearest integer with a minimum of one. |
+
+`Health` remains the legacy fallback. If realistic health is requested without a
+valid positive `RealMassKg`, the loader reports a warning and retains authored
+`Health`. AA guns have one health pool, so unlike driveables there are no hitbox
+weights to allocate.
+
+`RoundsPerMin` describes firing events, not automatically the sum of every barrel's
+projectile output. Inspect `NumBarrels`, `FireAlternately`, and `NumBullets` in the
+actual definition:
+
+- With `FireAlternately true`, one barrel fires per event. Use the documented total
+  system rate; if the source only gives an independently cycling per-barrel rate,
+  multiply by the number of barrels when the mounting actually staggers them.
+- With `FireAlternately false`, every loaded barrel fires in the same event. If the
+  source gives a per-barrel cyclic rate, use that rate. If it gives only combined
+  projectile output, divide by `NumBarrels * NumBullets` to obtain event RPM.
+- The modeled projectile output is event RPM multiplied by `NumBullets`, and also
+  by `NumBarrels` for non-alternating fire. Do not multiply a documented combined
+  rate a second time.
+
+Firing events may now fall closer together than one tick, so event rates above
+1200 RPM are representable and should be authored at their real value. A
+simultaneous multi-barrel mounting still emits several projectiles per event, so
+its projectile output remains event RPM multiplied by `NumBarrels` and
+`NumBullets`.
+
+When reliable research and configuration-compatible game sources cannot establish
+AA-gun `RoundsPerMin`, `ReloadTime` or `Dispersion`, author a gameplay-coherent
+fallback rather than omitting it. Base it on the gun calibre, era, mounting,
+barrel count, firing mode, and comparable categorized AA guns; report it
+explicitly as invented.
+
+Projectile mass, muzzle velocity, explosive filler, penetration, and belt/shell
+composition belong to the compatible `bullet_categories.json` entries because
+`AAGunType` takes flight and damage data from its ammunition. Add exact
+`UseAmmoGroup` mappings when a compatible ammunition family exists, and validate
+both sides of the group. `Recoil`, reload timing, view limits, targeting, and sound
+settings are gameplay/configuration properties, not mandatory historical category
+statistics unless the task specifically includes balancing them.
+
+## Ammunition: classify the content pattern first
+
+Every bullet category is exactly one of:
+
+1. Ordinary gun ammunition selected by a gun definition.
+2. A mixed small-cannon/autocannon belt represented by `AddRound`.
+3. An individually selectable cannon shell or missile joined through
+   `AddToAmmoGroup`.
+4. Dropped or released ordnance carried by a driveable: bombs, depth charges, naval
+   mines, and torpedoes. See [Bombs and dropped ordnance](#bombs-and-dropped-ordnance).
+
+Inspect `Bomb True`, `Shell True`, `Missile True`, `Torpedo True`, `WeaponType`,
+`RoundsPerItem`, all consuming guns/vehicles/aircraft, and neighboring definitions
+before choosing a pattern.
+
+### Ordinary gun ammunition
+
+Every category requires:
+
+- `Mass`: projectile/bullet mass in grams, never complete cartridge, case,
+  propellant, or loaded-magazine mass.
+- `FallSpeed: 1.0` for ordinary ballistic projectiles. Omit it, or use a separately
+  justified value, only for a self-propelled projectile capable of sustaining its
+  flight.
+
+  "Rocket" in the pack's name is not that test. A recoilless or spigot weapon —
+  Panzerfaust, PIAT, AT4, Panzerfaust 3 — burns its propellant before the round
+  leaves the tube, so the projectile is ballistic for its entire flight and takes
+  `FallSpeed: 1.0` like any shell. Ask whether a motor is still burning downrange:
+  a Hydra 70, an HVAR, a Nebelwerfer round or any guided missile sustains flight and
+  correctly omits the key; a launcher that is a tube with a charge in it does not.
+
+Also define when applicable:
+
+| Property | Unit | Guidance |
+| --- | --- | --- |
+| `PenetrationAt100m` | millimetres | Perpendicular penetration at 100 m, preferably comparable RHA, for AP and heavy anti-materiel rounds. The game currently applies the authored value at every range despite the key name. |
+| `ExplosiveMassTNTg` / `ExplosiveMassTNTKg` | grams / kilograms TNT equivalent | Only for explosive ammunition; derive from filler mass/composition, never total projectile mass. |
+| `FlakParticles` | particle count | Legacy visual count, not fragment count or a researched historical statistic. Ball ammunition normally uses `0`. |
+
+Normal small-arms muzzle velocity belongs to the matching gun category because
+barrel length changes it. Equivalent items with the same projectile/load may share
+a category despite magazine capacity differences. Split tracer, AP, incendiary,
+subsonic, explosive, or otherwise materially different loadings. Do not add
+`AddRound`, `AddToAmmoGroup`, or ammo-level `MuzzleVelocity` unless the content
+actually uses an ammunition-authoritative cannon, shell, or missile pattern.
+
+### Shells and missiles: mandatory fields
+
+A definition with `Shell True`, `Missile True`, `WeaponType Shell`, or
+`WeaponType Missile` requires:
+
+- projectile `Mass` in grams, or `MassKg` in kilograms, unless its statistics live in each `AddRound`;
+- `MuzzleVelocity` in metres per second;
+- normally `FallSpeed: 1.0`, except for a self-propelled projectile capable of
+  sustained flight;
+- `PenetrationAt100m` in millimetres at 100 m and normal impact whenever the
+  intended value is nonzero;
+- `ExplosiveMassTNTg` (grams) or `ExplosiveMassTNTKg` (kilograms) TNT equivalent whenever the intended value is
+  nonzero. Omit it for genuinely inert ammunition such as many APCR projectiles.
+
+These are gameplay-critical and ammunition-authoritative when present. Continue down
+the source ladder rather than leaving a nonzero value unset. A weaker
+configuration-compatible value is preferable to an absent value; record the fallback
+and any conversion.
+
+### Mixed autocannon belts with `AddRound`
+
+Use `AddRound` only when one ammunition item contains multiple round types and its
+definition has `RoundsPerItem > 1`. Each array element becomes one repeated legacy
+line:
+
+```json
+"AddRound": [
+    "AP 1 162 0 800 45",
+    "HE 2 135 16 835 0"
+]
+```
+
+The exact positional format is:
+
+```text
+<name> <count> <massG> <explosiveMassGTntEq> <muzzleVelocityMps> <penetrationAt100mMm>
+```
+
+Every entry has exactly six tokens:
+
+- `name`: one-token round abbreviation; exact designations such as
+  `Pzgr.L'Spur` and `Sprgr.` are allowed.
+- `count`: positive number of consecutive shots in the repeating pattern.
+- `massG`: projectile mass in grams.
+- `explosiveMassGTntEq`: grams TNT equivalent; use `0` deliberately for an
+  inert round.
+- `muzzleVelocityMps`: exact projectile/load velocity in metres per second.
+- `penetrationAt100mMm`: normal-impact millimetres at 100 m; use `0` only when no
+  modeled armour penetration is intended.
+
+Prefer a documented service belt. If none can be established, inspect every gun,
+ground vehicle, and aircraft consuming the item. Bias an inferred belt toward AP
+for principally ground-vehicle use and toward HE for principally aircraft use. A
+repeating `1 AP : 1 HE` belt is an acceptable final gameplay default for genuine
+shared use. Report inferred composition.
+
+An `AddRound` category omits top-level `Mass`, `ExplosiveMassTNTg`/`ExplosiveMassTNTKg`, `MuzzleVelocity`,
+and `PenetrationAt100m`; each active round supplies its own values. It still normally
+has category-level `FallSpeed: 1.0`. Because `AddRound` accumulates with lines from
+the definition and other categories, inspect every affected definition and avoid
+accidentally appending a second belt. Validate `RoundsPerItem`, positional fields,
+and the total repeating count.
+
+### Individual cannon shells and ammunition groups
+
+Use one category per selectable AP, APCR, HE, HEAT, smoke, missile, or other exact
+round. The item supplies its own statistics and joins a compatible cannon family:
+
+```json
+"75mm Pzgr.39": {
+    "properties": {
+        "AddToAmmoGroup": "75mm KwK/PaK 40",
+        "Mass": 6800,
+        "MuzzleVelocity": 770,
+        "FallSpeed": 1.0,
+        "ExplosiveMassTNTg": 29,
+        "PenetrationAt100m": 143
+    },
+    "items": [
+        "shell_shortname"
+    ]
+}
+```
+
+- `AddToAmmoGroup` is the exact canonical compatible-ammunition family consumed by
+  `UseAmmoGroup`. Matching is case-insensitive and names may contain spaces. Group
+  weapons only when ammunition is actually compatible, not merely similar in
+  calibre.
+- Strongly prefer ammo groups for shells used exclusively by consumers whose primary
+  weapons have materially equivalent statistics. Define the primary-weapon family
+  by giving every compatible shell that family's `AddToAmmoGroup`, then give every
+  gun, AA gun, or driveable consumer the matching `UseAmmoGroup`. Name and scope the
+  group for the weapon family, not for a broad calibre that includes materially
+  different guns. This is the normal representation for the equivalent-stat case
+  that does not require per-ammo overrides.
+- `Mass` is complete fired projectile/shell mass in grams, excluding case and
+  propellant. Author it in grams as `Mass`, or in kilograms as `MassKg` — the two are the
+  same stat at different scales, so never set both.
+- `MuzzleVelocity` is for this exact shell from the represented gun.
+- `FallSpeed` is `1.0` for ballistic shells; sustained-flight projectiles are the
+  exception.
+- `ExplosiveMassTNTg` (grams) or `ExplosiveMassTNTKg` (kilograms) is the TNT equivalent of
+  the bursting charge and is omitted only for genuinely non-explosive rounds. Pick whichever
+  key keeps the number readable: grams below 1 kg, kilograms at or above it.
+- `PenetrationAt100m` is millimetres at 100 m and normal impact, omitted only when
+  zero is intentional.
+- `FragType` is optional. For explosive cannon shells, use the supported enum that
+  describes construction—usually `HE_SHELL`—rather than guessed numeric tuning.
+
+Do not model an individually selectable shell as a mixed belt, or split a mixed
+belt into ammo-group items when those rounds are not individually selectable.
+
+`UseAmmoGroup` and `AddToAmmoGroup` are repeatable. Represent multiple values as a
+JSON array so each becomes a separate legacy line:
+
+```json
+"UseAmmoGroup": [
+    "75mm KwK/PaK 40",
+    "Compatible 75mm Smoke"
+]
+```
+
+Never place several group names after one legacy `UseAmmoGroup`; the parser treats
+the entire remainder as one name. Validate membership in both directions and check
+for duplicate ammunition after combining groups. Every vehicle with a real main
+gun should use an existing matching group when its shells already define one. Do
+not invent an empty group or attach an incompatible group; if no group exists,
+leave it unset and report the missing cannon family unless the task includes adding
+the shell categories.
+
+## Per-Ammo Overrides
+
+A gun, AA gun, or driveable can restate what one shared ammunition item does out of
+its own barrel. These are weapon-category properties and belong in
+`gun_categories.json`, `aagun_categories.json`, `vehicle_categories.json`, or
+`plane_categories.json` — never in `bullet_categories.json`.
+
+| Property | Format | Overrides |
+| --- | --- | --- |
+| `AmmoMass` | `<ammoShortName> <grams>` | the round's projectile mass |
+| `AmmoMuzzleVelocity` | `<ammoShortName> <metresPerSecond>` | the round's muzzle velocity |
+| `AmmoExplosiveMassTNTg` / `AmmoExplosiveMassTNTKg` | `<ammoShortName> <gTntEquivalent>` / `<ammoShortName> <kgTntEquivalent>` | the round's bursting charge, and the blast derived from it |
+| `AmmoPenetrationAt100m` | `<ammoShortName> <millimetres>` | the round's armour penetration |
+| `AddRoundForAmmo` | `<ammoShortName> <name> <count> <massG> [explG] [mps] [mm]` | the round's whole `AddRound` belt, replacing rather than appending |
+
+All five are repeatable, so use a JSON array when a weapon restates more than one
+ammunition:
+
+```json
+"UseAmmoGroup": "75mm KwK/PaK 40",
+"AmmoMass": [
+    "44_75apshell 6800",
+    "44_smallheshell 5700"
+],
+"AmmoMuzzleVelocity": [
+    "44_75apshell 770",
+    "44_smallheshell 770"
+]
+```
+
+Rules that matter when authoring them:
+
+- The short name is the ammunition's **own `ShortName`**, matched case-insensitively.
+- Each ammunition is overridden individually. Overriding one round says nothing about
+  the others the weapon accepts.
+- Resolution is against the weapon that fires. A driveable's own bank uses the
+  driveable's overrides; the same driveable firing through an `AddGun`/`PilotGun`
+  mount uses that gun's. Overrides never cascade from a driveable into its mounts, so
+  put them on whichever definition actually declares the ammunition.
+- Precedence per field: the scalar override, then `AddRoundForAmmo`, then the
+  ammunition's own `AddRound`, then the ammunition's own top-level value, then for
+  velocity only the weapon's `BulletSpeed`.
+- An override may give a mass to a round that had none, which puts that round on the
+  kinetic scale for that weapon alone. Use this deliberately, not accidentally.
+- Inspect the complete consumer set reachable through both source definitions and
+  category-supplied ammunition. A vehicle, gun, or AA gun **must** provide coherent
+  per-ammo overrides for every shell it can fire when that shell is generic, or when
+  it is shared with a materially different primary weapon whose real projectile
+  mass, muzzle velocity, explosive filler, penetration, or belt composition differs.
+  This includes broad shared items such as `44_SmallHEShell` and `44_75APShell`.
+  Overrides may be omitted only when the shell is used exclusively by consumers
+  whose primary weapons have materially equivalent statistics: for example,
+  `WW2_Shell_German75mmAP` when it is exclusive to the 75 mm KwK 40 L/48 family, or
+  `WW2_Shell_German88mmAP` when it is exclusive to the near-equivalent 88 mm KwK 36
+  L/56 and FlaK 36. See [generic-and-fictional.md](generic-and-fictional.md) R3.
+- Keep an overridden set coherent: a weapon that restates velocity and penetration
+  but leaves the item's mass alone is describing two different shells.
+
+### Removing Ammunition
+
+`RemoveAmmo <ammoShortName>` drops a round from a weapon. It is repeatable, one line
+may name several rounds, and it is applied after `Ammo`, `AddAmmo` and every
+`UseAmmoGroup`, so it takes precedence over all three.
+
+Use it when a pack has handed a weapon ammunition it plainly could never fire - a
+20.3 cm main battery fed the ship's 2 cm AA shell, say - or when a category
+deliberately narrows what a weapon accepts. Do **not** use it merely because a round
+is generic: shared generic ammunition is a per-ammo override problem, not a removal
+problem, and removing it would leave a consumer with nothing to fire. Never remove a
+weapon's only remaining ammunition.
+
+```json
+"Ammo": "ships_shell_german20cmhe",
+"RemoveAmmo": "ships_shell_german20mmaa"
+```
+
+## Bombs And Dropped Ordnance
+
+`bullets` definitions whose `WeaponType` resolves to `BOMB` or `MINE`, including the
+legacy `Bomb True` shorthand, are ammunition in `bullet_categories.json`, not
+grenades. They are researched like grenades — the value that matters is the
+explosive charge — but they carry a bomb's mass, they are released from a driveable
+rather than thrown, and their `Fuse` means something different.
+
+Torpedoes (`Torpedo True`) and depth charges are usually authored as bombs or
+missiles by the pack. Follow the definition, not the name.
+
+### Mandatory and expected fields
+
+| Property | Unit | Requirement |
+| --- | --- | --- |
+| `ExplosiveMassTNTg` / `ExplosiveMassTNTKg` | grams / kilograms TNT equivalent | Mandatory for every bomb with a charge. Derive from filler mass and composition, never from the bomb's total weight. Omit only for genuinely inert practice or ballast stores. |
+| `FragType` | enum | Required. Chosen from casing construction, not from the word in the name. |
+| `Mass` / `MassKg` | grams / kilograms | Expected. For a bomb this is the **complete filled store**, because the whole bomb is what falls and strikes — unlike a shell, where case and propellant are excluded. It enables the kinetic system for direct hits. |
+| `FallSpeed` | multiplier | `1.0` for a free-fall bomb. A retarded, parachute-braked, or glide store is the exception; reduce it or use `DragInAir` and report the choice. |
+| `PenetrationAt100m` | millimetres | Only for armour-piercing and semi-armour-piercing bombs with a real deck- or concrete-penetration figure. Omit for ordinary general-purpose bombs. |
+
+Do not author `MuzzleVelocity` or `BulletSpeed` for a gravity bomb; it is released
+at the carrier's velocity and an authored value overrides that. Rocket-boosted and
+glide weapons are the exception and are usually `Missile` definitions anyway.
+
+### `Fuse` on a bomb is not a grenade fuse
+
+For a grenade, `Fuse` is the nominal timed delay after which it detonates. For a
+bullet-type entity, `Fuse` is a **maximum airborne lifetime in ticks**, after which
+the projectile is removed and detonates in mid-air. It is a self-destruct ceiling,
+not a historical arming delay.
+
+Consequences:
+
+- Do not convert a bomb's real arming or delay-fuse time into `Fuse`. A 0.01-second
+  instantaneous nose fuse authored as `Fuse 0` would be ignored; authored as a small
+  number it would detonate the bomb the instant it leaves the aircraft.
+- Leave the definition's authored value alone for an ordinary impact-fused bomb.
+  Packs typically use 200 ticks. Gravity is real at `9.81 / 400` blocks per tick
+  squared, so ten seconds of fall covers far more than the world's build height and
+  the cap never fires in practice.
+- Author `Fuse` in a category only when the ordnance genuinely has a timed function
+  the lifetime cap can represent: a depth charge set to a stated depth, an airburst
+  or dispenser store, or a delayed-action mine. Convert as `ticks = seconds * 20` and
+  say in the report what the timer represents.
+
+### Charge-to-weight ratio method
+
+Most bomb sources give a nominal weight and a filler, not a TNT equivalent. Derive
+`ExplosiveMassTNTg`/`ExplosiveMassTNTKg` as:
+
+```text
+explosiveMassKgTnt = totalBombMassKg * chargeToWeightRatio * tntEquivalenceFactor
+```
+
+Use the documented filler mass whenever one exists. Fall back to the construction's
+ratio band only when it does not, and report the fallback.
+
+| Construction | Charge-to-weight ratio | Usual `FragType` |
+| --- | --- | --- |
+| General-purpose bomb | 0.45 – 0.55 | `GP_BOMB` |
+| Light-case / high-capacity blast bomb | 0.70 – 0.80 | `LOW_FRAG` |
+| Fragmentation bomb | 0.10 – 0.20 | `HIGH_FRAG` |
+| Semi-armour-piercing bomb | 0.20 – 0.30 | `THICK_CASE` |
+| Armour-piercing / penetrator bomb | 0.05 – 0.15 | `THICK_CASE` |
+| Depth charge | 0.35 – 0.55 | `LOW_FRAG` |
+| Naval mine | 0.30 – 0.50 | `LOW_FRAG` |
+| Torpedo warhead section | as documented warhead mass | `THICK_CASE` |
+| Cluster dispenser | sum of submunition charges | `AIRBURST_AP` |
+| Incendiary bomb | charge is the incendiary fill | `LOW_FRAG` |
+
+Then apply the filler's TNT equivalence: Amatol 80/20 about 0.90–1.0, TNT 1.0,
+Tritonal about 1.05–1.10, Trialen about 1.20–1.30, RDX and Composition B about
+1.30–1.35, Torpex about 1.40–1.50. Record the composition and the factor.
+
+A cluster or submunition dispenser sets its own `ExplosiveMassTNTg`/`ExplosiveMassTNTKg` from its own burster
+only; the submunition it spawns is a separate definition with its own category, and
+authoring the total payload on both double-counts the damage.
+
+Nuclear and thermonuclear stores need no special treatment in the category. Author
+the real yield as kilograms of TNT equivalent like any other charge - a 50 Mt device
+is `50000000000` - and let the server's `maxExplosionRadius` setting bound what is
+actually simulated. That ceiling is a performance guard applied to every detonation's
+radii at runtime; it leaves the authored charge, and therefore the damage, honest.
+Never bake a gameplay cap into `ExplosiveMassTNTg`/`ExplosiveMassTNTKg`: doing so silently misreports the
+weapon and cannot be tuned per server.
+
+### Grouping and splitting
+
+Split by nominal weight and construction: an SC 250 and an SC 500 are separate
+categories, and a 500 lb GP bomb and a 500 lb SAP bomb are separate categories.
+Do not split by carrier aircraft, by icon, or by which weapon bank the pack put the
+store in. Exact aliases across packs share one category.
+
+Generic bombs whose only stated property is a nominal weight follow the generic
+doctrine in [generic-and-fictional.md](generic-and-fictional.md); the ratio table
+above is the correct derivation for them, using the general-purpose band unless the
+definition says otherwise.
+
+## Grenades
+
+Research and define:
+
+| Property | Unit | Guidance |
+| --- | --- | --- |
+| `ExplosiveMassTNTg` / `ExplosiveMassTNTKg` | grams / kilograms TNT equivalent | Mandatory for every grenade with an explosive charge. Use an exact TNT-equivalent figure when available; otherwise derive it from documented filler mass and composition using a defensible TNT-equivalence factor. Omit only when the grenade has no explosive charge. |
+| `FragType` | enum | Choose from casing/design and intended fragmentation: `LOW_FRAG`, `STD_FRAG`, `SLEEVE_FRAG`, `HIGH_FRAG`, `IED_SHRAPNEL`, `HE_SHELL`, `GP_BOMB`, `THICK_CASE`, or `AIRBURST_AP`; `DEFAULT` opts out of a preset. |
+| `Fuse` | ticks | Use nominal timed delay multiplied by 20. Omit for impact, proximity, mine, or other non-timed behavior and when timing cannot be established defensibly. |
+
+Distinguish nominal fuse delay from tolerance range. A fragmentation sleeve changes
+`FragType`; it does not automatically alter explosive mass. Determine fragmentation
+from physical construction and intended behavior, not only from the word
+"fragmentation" in a name. Never use total grenade weight as filler mass or assume
+TNT when a different charge is documented; record the composition, conversion, and
+any lower-tier source in the task report.

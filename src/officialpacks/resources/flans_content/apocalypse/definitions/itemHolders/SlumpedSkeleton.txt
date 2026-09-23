@@ -1,5 +1,8 @@
+// Identity
 Name Slumped Skeleton
 ShortName flanSkeleton2
+
+// Item and rendering
 Icon SlumpedSkeleton
 Texture SlumpedSkeleton
 Model apocalypse.SlumpedSkeleton

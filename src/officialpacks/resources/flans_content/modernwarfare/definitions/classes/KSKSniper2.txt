@@ -1,5 +1,8 @@
+// Identity
 Name Stealth Sniper
 ShortName kskSniper2
+
+// Items
 AddItem sg550+flanMWSilencer+flanMW4xScope
 AddItem usp+flanMWSilencer
 AddItem mwKnife

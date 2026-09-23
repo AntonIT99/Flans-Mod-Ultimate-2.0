@@ -1,0 +1,18 @@
+// Identity
+Name American M42 Airborne Pants
+ShortName 44_AmericanM42AirbornePants
+Type Pants
+
+// Rendering
+Icon 44_AmericanM42AirbornePants
+Model W44.AmericanM42AirbornePants
+ModelScale 1
+ArmorTexture Skin44_AmericanM42Airborne
+
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
+SmokeProtection false

@@ -1,0 +1,11 @@
+// Identity
+Name Receiver
+ShortName 44_Receiver
+Category Misc
+
+// Rendering
+Icon 44_Receiver
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

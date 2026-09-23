@@ -1,0 +1,108 @@
+﻿// Identity
+Name Messerschmidt Bf-109 E-3, JG 26
+ShortName WW2_Plane_Bf109E_1C
+
+// Model and Rendering
+Model Manus_WW2.Plane.WW2_Plane_Bf109E_1
+ModelScale 1
+Icon Icon_WW2_Plane_Bf109E_1C
+Texture Skin_WW2_Plane_Bf109E_1C
+
+// Recipe and Inventory
+AllowAllAmmo False
+AddAmmo WW2_Bomb_German50kg
+CargoSlots 0
+BombSlots 3
+MissileSlots 0
+FuelTankSize 6000
+AddRecipeParts core 1 SMP_Part_Cockpit_Jet 6 SMP_Part_Mat_Plate_Steel
+AddRecipeParts nose 1 SMP_Part_Nose_Plane 3 SMP_Part_Mat_Plate_Steel
+AddRecipeParts tail 1 SMP_Part_Tail_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts rightWing 1 SMP_Part_Wing_Jet 5 SMP_Part_Mat_Plate_Steel
+AddRecipeParts leftWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts rightWingWheel 1 SMP_Part_Wheel_Plane
+AddRecipeParts tailWheel 1 SMP_Part_Wheel_Plane
+AddDye 5 blue
+
+// Movement and Physics
+MaxThrottle 5.0
+MaxNegativeThrottle 0.0
+Drag 1.0
+WheelSpringStrength 0.125
+Mode Plane
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+RestingPitch 13.0
+RealMassKg 2340
+RealEnginePowerPS 1175
+RealMaxSpeedKmh 536
+RealWingSpanM 9.87
+RealWingAreaM2 16.4
+RealClimbRateMs 14.7
+
+// Weapons
+Primary Gun
+Secondary Bomb
+ShootDelayPrimary 7
+ShootDelaySecondary 100
+AlternatePrimary False
+AlternateSecondary False
+ModePrimary FullAuto
+ModeSecondary FullAuto
+ShootPointPrimary 47 31 3 core WW2_MG_MG17_1A
+ShootPointPrimary 47 31 -3 core WW2_MG_MG17_1A
+ShootPointPrimary 16 19 -43 leftWing WW2_MG_MGFF_1A
+ShootPointPrimary 16 19 43 rightWing WW2_MG_MGFF_1A
+ShootPointSecondary -5 0 0 core
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+WheelPosition 0 10 -8 -18
+WheelPosition 1 10 -8 18
+WheelPosition 2 -106 19 0
+Pilot -21 18 0
+Passengers 0
+SetupPart core 200 -34 12 -10 68 25 20
+SetupPart tail 200 -115 19 -7 81 21 14
+SetupPart nose 100 34 14 -7 11 16 14
+SetupPart rightWing 100 -22 16 10 29 9 88
+SetupPart leftWing 100 -23 16 -98 29 9 88
+SetupPart rightWingWheel 50 2 -10 11 13 24 7
+SetupPart leftWingWheel 50 2 -10 -18 13 24 7
+SetupPart tailWheel 500 -109 17 -1 5 8 2
+CollisionPoint 42 22 0 nose
+CollisionPoint -40 22 0 tail
+CollisionPoint -56 26 0 tail
+CollisionPoint -72 27 0 tail
+CollisionPoint -88 28 0 tail
+CollisionPoint -104 35 0 tail
+CollisionPoint -114 43 0 tail
+CollisionPoint -2 18 -26 leftWing
+CollisionPoint -2 19 -42 leftWing
+CollisionPoint -2 21 -58 leftWing
+CollisionPoint -2 22 -73 leftWing
+CollisionPoint -2 24 -90 leftWing
+CollisionPoint -2 18 26 rightWing
+CollisionPoint -2 19 42 rightWing
+CollisionPoint -2 21 58 rightWing
+CollisionPoint -2 22 73 rightWing
+CollisionPoint -2 24 90 rightWing
+BulletDetection 10
+CameraDistance 10.0
+Propeller 0 0 0 0 nose SMP_Part_Propeller_RotorPlane
+
+// Sounds
+StartSound propStart
+StartSoundLength 20
+ShootSoundPrimary PlaneShoot
+ShootSoundSecondary bomb
+PropSoundLength 30
+PropSound propSound

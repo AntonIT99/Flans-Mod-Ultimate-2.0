@@ -1,5 +1,8 @@
+// Identity
 Name Medic
-ShortName britishMedic
+ShortName OfficialWW2_BritishMedic
+
+// Items
 AddItem leeEnfield
 AddItem webley
 AddItem millsBomb 2

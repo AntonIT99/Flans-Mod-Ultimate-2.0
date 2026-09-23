@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.block;
 
-import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
+import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;

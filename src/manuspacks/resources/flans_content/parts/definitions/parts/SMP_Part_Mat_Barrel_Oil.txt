@@ -1,0 +1,16 @@
+// Identity
+Name Oil Barrel
+ShortName SMP_Part_Mat_Barrel_Oil
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Barrel_Oil
+
+// Recipe and Inventory
+Recipe C coal S slimeball B bucketWater
+CSC
+ B 
+   
+RecipeOutput 4
+Category Misc
+PartBoxRecipe
+StackSize 4

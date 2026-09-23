@@ -7,7 +7,9 @@ import com.flansmodultimate.client.gui.DriveableCraftingScreen;
 import com.flansmodultimate.client.gui.DriveableInventoryScreen;
 import com.flansmodultimate.client.gui.GunBoxScreen;
 import com.flansmodultimate.client.gui.GunWorkbenchScreen;
+import com.flansmodultimate.client.gui.MechaInventoryScreen;
 import com.flansmodultimate.client.gui.PaintjobTableScreen;
+import com.flansmodultimate.client.gui.options.FlansSettingsHubScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
@@ -26,6 +28,8 @@ import com.flansmodultimate.client.particle.SmokeBurstParticle;
 import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
+import com.flansmodultimate.client.render.PlayerSkinOverrides;
+import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
 import com.flansmodultimate.client.render.entity.AAGunRenderer;
 import com.flansmodultimate.client.render.entity.BulletRenderer;
@@ -35,7 +39,9 @@ import com.flansmodultimate.client.render.entity.GrenadeRenderer;
 import com.flansmodultimate.client.render.entity.InvisibleEntityRenderer;
 import com.flansmodultimate.client.render.entity.ParachuteRenderer;
 import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
+import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
@@ -57,7 +63,9 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
@@ -94,6 +102,11 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
     {
+        // The Config button of the mod list opens the same screen as the pause menu button
+        ModList.get().getModContainerById(FlansMod.MOD_ID).ifPresent(container ->
+            container.registerExtensionPoint(IConfigScreenFactory.class,
+                (IConfigScreenFactory) (mod, parent) -> new FlansSettingsHubScreen(parent)));
+
         event.enqueueWork(() -> {
             CustomItemRenderers.registerAll();
 
@@ -108,7 +121,7 @@ public final class ModClientEventHandler
                     });
                 }
             }
-            ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "teams_mode"),
+            ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
 
         });
@@ -227,9 +240,25 @@ public final class ModClientEventHandler
         event.registerSpriteSet(FlansMod.smokeGrenadeParticle.get(), SmokeGrenadeParticle.Provider::new);
     }
 
+    /** Team spawners paint their overlay decal in the colour of the team that owns them. */
+    @SubscribeEvent
+    public static void registerBlockColors(RegisterColorHandlersEvent.Block event)
+    {
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex != 0 || level == null || pos == null)
+                return TeamSpawnerBlockEntity.UNOWNED_COLOUR;
+            return level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner
+                ? spawner.getTeamColour() : TeamSpawnerBlockEntity.UNOWNED_COLOUR;
+        }, FlansMod.playerSpawner.get(), FlansMod.itemSpawner.get(), FlansMod.vehicleSpawner.get());
+    }
+
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event)
     {
+        // A spawner in the inventory belongs to no team yet
+        event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF,
+            FlansMod.playerSpawnerItem.get(), FlansMod.itemSpawnerItem.get(), FlansMod.vehicleSpawnerItem.get());
+
         event.register((stack, tintIndex) -> {
             Item item = stack.getItem();
             if (item instanceof IFlanItem<?> flanItem)
@@ -256,9 +285,17 @@ public final class ModClientEventHandler
     public static void onClientReload(RegisterClientReloadListenersEvent event)
     {
         event.registerReloadListener((ResourceManagerReloadListener) rm -> {
+            VehicleThermalRenderer.reset();
             ModelCache.reload();
+            PlayerSkinOverrides.clearValidationCache();
             ContentManager.logMissingModelTextures(rm);
         });
+    }
+
+    @SubscribeEvent
+    public static void registerGpuModelShader(net.neoforged.neoforge.client.event.RegisterShadersEvent event)
+    {
+        GpuModelCache.registerShader(event);
     }
 
     @SubscribeEvent

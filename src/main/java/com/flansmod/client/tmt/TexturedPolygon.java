@@ -1,8 +1,8 @@
 package com.flansmod.client.tmt;
 
+import com.flansmodultimate.client.render.gpu.GeometryRevision;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import lombok.Setter;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -20,13 +20,20 @@ public class TexturedPolygon
     public PositionTextureVertex[] vertexPositions;
     public int nVertices;
 
-    @Setter
     private boolean invertNormal;
     private float[] normals;
     private List<Vec3> iNormals;
-    private final boolean hasTransformVertices;
-    private final int[] renderVertexIndices;
+    private boolean hasTransformVertices;
+    private boolean externalNormals;
+    private PositionTextureVertex[] observedVertices;
+    private Vec3[] observedPositions;
+    private float[] observedUvs;
+    private int observedCount;
+    private long geometryRevision;
+    private int[] renderVertexIndices;
+    private int[] legacyRenderVertexIndices;
     private float[] compiledStaticVertices;
+    private Vec3[] compiledTransformPositions;
     private boolean cachedFaceNormalValid;
     private float cachedFaceNormalX;
     private float cachedFaceNormalY;
@@ -60,6 +67,15 @@ public class TexturedPolygon
     public void setNormals(float x, float y, float z)
     {
         normals = new float[]{x, y, z};
+        geometryRevision++;
+        GeometryRevision.changed();
+    }
+
+    public void setInvertNormal(boolean invertNormal)
+    {
+        this.invertNormal = invertNormal;
+        geometryRevision++;
+        GeometryRevision.changed();
     }
 
     public void flipFace()
@@ -72,13 +88,15 @@ public class TexturedPolygon
         }
 
         this.vertexPositions = var1;
-        compiledStaticVertices = null;
-        cachedFaceNormalValid = false;
+        invalidateCompiledVertices();
     }
 
     public void setNormals(List<Vec3> vec)
     {
         iNormals = vec;
+        externalNormals = true;
+        geometryRevision++;
+        GeometryRevision.changed();
     }
 
     public void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
@@ -111,7 +129,7 @@ public class TexturedPolygon
         final Vector3f transformedNormal = scratch.normal;
 
         if (hasTransformVertices)
-            transformVertices(transformationSequence);
+            refreshTransformedVertices(transformationSequence);
 
         if (!hasPerVertexNormals)
         {
@@ -128,30 +146,19 @@ public class TexturedPolygon
                 return;
         }
 
-        if (!hasTransformVertices)
+        float[] staticVertices = getCompiledStaticVertices();
+        // Incomplete legacy normal lists inherit the previous emitted normal.
+        // Preserve their original emission order instead of changing that fallback.
+        int[] indices = !glow && hasPerVertexNormals && perVertexNormalCount < nVertices
+            ? getLegacyRenderVertexIndices() : renderVertexIndices;
+        for (int vertexIndex : indices)
         {
-            float[] staticVertices = getCompiledStaticVertices();
-            for (int vertexIndex : renderVertexIndices)
-            {
-                int dataIndex = vertexIndex * 5;
-                emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer,
-                        packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                        perVertexNormalCount, hasPerVertexNormals, vertexIndex,
-                        staticVertices[dataIndex], staticVertices[dataIndex + 1], staticVertices[dataIndex + 2],
-                        staticVertices[dataIndex + 3], staticVertices[dataIndex + 4]);
-            }
-        }
-        else
-        {
-            for (int vertexIndex : renderVertexIndices)
-            {
-                PositionTextureVertex vertex = vertexPositions[vertexIndex];
-                emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer,
-                        packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                        perVertexNormalCount, hasPerVertexNormals, vertexIndex,
-                        (float)vertex.vector3D.x() * INV_16, (float)vertex.vector3D.y() * INV_16,
-                        (float)vertex.vector3D.z() * INV_16, vertex.texturePositionX, vertex.texturePositionY);
-            }
+            int dataIndex = vertexIndex * 5;
+            emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer,
+                    packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
+                    perVertexNormalCount, hasPerVertexNormals, vertexIndex,
+                    staticVertices[dataIndex], staticVertices[dataIndex + 1], staticVertices[dataIndex + 2],
+                    staticVertices[dataIndex + 3], staticVertices[dataIndex + 4]);
         }
     }
 
@@ -175,15 +182,72 @@ public class TexturedPolygon
         return data;
     }
 
-    void invalidateCompiledVertices()
+    public void invalidateCompiledVertices()
     {
+        geometryRevision++;
+        GeometryRevision.changed();
+        hasTransformVertices = false;
+        for (PositionTextureVertex vertex : vertexPositions)
+            hasTransformVertices |= vertex instanceof PositionTransformVertex;
+        renderVertexIndices = createRenderVertexIndices(nVertices);
+        legacyRenderVertexIndices = null;
         compiledStaticVertices = null;
+        compiledTransformPositions = null;
+        cachedFaceNormalValid = false;
+    }
+
+    /**
+     * Compatibility path for geometry handed to external code. Public array elements,
+     * vertex fields and retained list references cannot emit mutation notifications.
+     * Internally owned model geometry never pays for this scan during normal rendering.
+     */
+    void observeExternalMutations()
+    {
+        boolean changed = observedVertices == null || observedVertices.length != vertexPositions.length || observedCount != nVertices;
+        if (observedVertices == null || observedVertices.length != vertexPositions.length)
+        {
+            observedVertices = new PositionTextureVertex[vertexPositions.length];
+            observedPositions = new Vec3[vertexPositions.length];
+            observedUvs = new float[vertexPositions.length * 2];
+        }
+        for (int i = 0; i < vertexPositions.length; i++)
+        {
+            PositionTextureVertex vertex = vertexPositions[i];
+            if (observedVertices[i] != vertex || !(vertex instanceof PositionTransformVertex) && observedPositions[i] != vertex.vector3D
+                || Float.floatToIntBits(observedUvs[i * 2]) != Float.floatToIntBits(vertex.texturePositionX)
+                || Float.floatToIntBits(observedUvs[i * 2 + 1]) != Float.floatToIntBits(vertex.texturePositionY))
+                changed = true;
+            observedVertices[i] = vertex;
+            observedPositions[i] = vertex.vector3D;
+            observedUvs[i * 2] = vertex.texturePositionX;
+            observedUvs[i * 2 + 1] = vertex.texturePositionY;
+        }
+        observedCount = nVertices;
+        if (changed) invalidateCompiledVertices();
+    }
+
+    /** Derived LOD geometry must not freeze legacy bone deformation. */
+    public boolean isRigidLodGeometry()
+    {
+        return getClass() == TexturedPolygon.class && !hasTransformVertices && !invertNormal && iNormals.isEmpty();
+    }
+
+    /** A retained empty normals list may acquire normals without calling a setter. */
+    public boolean isRigidGpuGeometry()
+    {
+        return isRigidLodGeometry() && !externalNormals;
+    }
+
+    public long geometryRevision()
+    {
+        return geometryRevision;
     }
 
     /**
      * Minecraft's entity buffers consume quads. Cache the immutable expansion of
-     * triangles and polygon fans once rather than rebuilding that control flow for
-     * every instance on every frame.
+     * triangles and polygon fans once. Pair adjacent fan triangles into a quad:
+     * Minecraft's (0,1,2), (2,3,0) indices preserve the original triangles and winding,
+     * without submitting four vertices for every triangle separately.
      */
     private static int[] createRenderVertexIndices(int vertexCount)
     {
@@ -194,22 +258,53 @@ public class TexturedPolygon
         if (vertexCount == 4)
             return new int[]{0, 1, 2, 3};
 
-        int[] indices = new int[(vertexCount - 2) * 4];
+        int[] indices = new int[((vertexCount - 1) / 2) * 4];
         int outputIndex = 0;
-        for (int vertexIndex = 1; vertexIndex < vertexCount - 1; vertexIndex++)
+        for (int vertexIndex = 1; vertexIndex < vertexCount - 1; vertexIndex += 2)
         {
             indices[outputIndex++] = 0;
             indices[outputIndex++] = vertexIndex;
             indices[outputIndex++] = vertexIndex + 1;
-            indices[outputIndex++] = vertexIndex + 1;
+            indices[outputIndex++] = Math.min(vertexIndex + 2, vertexCount - 1);
         }
         return indices;
     }
 
-    private void transformVertices(long transformationSequence)
+    private int[] getLegacyRenderVertexIndices()
     {
-        for (PositionTextureVertex vertex : vertexPositions)
+        if (nVertices <= 4)
+            return renderVertexIndices;
+        if (legacyRenderVertexIndices == null)
         {
+            legacyRenderVertexIndices = new int[(nVertices - 2) * 4];
+            int outputIndex = 0;
+            for (int vertexIndex = 1; vertexIndex < nVertices - 1; vertexIndex++)
+            {
+                legacyRenderVertexIndices[outputIndex++] = 0;
+                legacyRenderVertexIndices[outputIndex++] = vertexIndex;
+                legacyRenderVertexIndices[outputIndex++] = vertexIndex + 1;
+                legacyRenderVertexIndices[outputIndex++] = vertexIndex + 1;
+            }
+        }
+        return legacyRenderVertexIndices;
+    }
+
+    /**
+     * Extruded rigid shapes also use transform vertices. Keep invoking their legacy
+     * transformations, but retain positions and face normals while the resulting
+     * immutable Vec3 instances are unchanged. This also observes groups added later
+     * through the public legacy lists, without permanently classifying a part static.
+     */
+    private void refreshTransformedVertices(long transformationSequence)
+    {
+        if (compiledStaticVertices == null)
+        {
+            compiledStaticVertices = new float[nVertices * 5];
+            compiledTransformPositions = new Vec3[nVertices];
+        }
+        for (int index = 0; index < nVertices; index++)
+        {
+            PositionTextureVertex vertex = vertexPositions[index];
             if (vertex instanceof PositionTransformVertex transformVertex)
             {
                 if (transformationSequence == Long.MIN_VALUE)
@@ -217,12 +312,24 @@ public class TexturedPolygon
                 else
                     transformVertex.setTransformation(transformationSequence);
             }
+            Vec3 position = vertex.vector3D;
+            int dataIndex = index * 5;
+            if (compiledTransformPositions[index] != position)
+            {
+                compiledTransformPositions[index] = position;
+                compiledStaticVertices[dataIndex] = (float)position.x * INV_16;
+                compiledStaticVertices[dataIndex + 1] = (float)position.y * INV_16;
+                compiledStaticVertices[dataIndex + 2] = (float)position.z * INV_16;
+                cachedFaceNormalValid = false;
+            }
+            compiledStaticVertices[dataIndex + 3] = vertex.texturePositionX;
+            compiledStaticVertices[dataIndex + 4] = vertex.texturePositionY;
         }
     }
 
     private void setFaceNormal(Vector3f transformedNormal, Matrix3f normalMatrix, float normalSign)
     {
-        if (!cachedFaceNormalValid || hasTransformVertices)
+        if (!cachedFaceNormalValid)
         {
             Vec3 vector0 = vertexPositions[0].vector3D;
             Vec3 vector1 = vertexPositions[1].vector3D;
@@ -251,7 +358,7 @@ public class TexturedPolygon
             cachedFaceNormalX = (float)normalX;
             cachedFaceNormalY = (float)normalY;
             cachedFaceNormalZ = (float)normalZ;
-            cachedFaceNormalValid = !hasTransformVertices;
+            cachedFaceNormalValid = true;
         }
 
         transformedNormal.set(cachedFaceNormalX * normalSign, cachedFaceNormalY * normalSign, cachedFaceNormalZ * normalSign);

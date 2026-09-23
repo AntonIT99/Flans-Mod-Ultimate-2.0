@@ -1,0 +1,16 @@
+// Identity
+Name Spacefitted Turbine
+ShortName SMP_Part_Propeller_TurbineSpace
+
+// Model and Rendering
+Icon Icon_SMP_Part_Propeller_TurbineSpace
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Titan P SMP_Part_Mat_Plate_DuraSteel R SMP_Part_Propeller_RotorTurbine C SMP_Part_Misc_Computer
+CMC
+MRM
+PMP
+RecipeOutput 1
+Category Propeller
+PartBoxRecipe
+StackSize 64

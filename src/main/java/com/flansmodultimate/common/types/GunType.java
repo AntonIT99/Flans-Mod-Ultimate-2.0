@@ -3,14 +3,17 @@ package com.flansmodultimate.common.types;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.GunRecoil;
+import com.flansmodultimate.common.guns.RemovedAmmo;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.AttachmentItem;
-import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
@@ -43,7 +46,7 @@ import java.util.Set;
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor
-public class GunType extends PaintableType implements IScope
+public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IAmmoOverrideUser
 {
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
@@ -76,7 +79,10 @@ public class GunType extends PaintableType implements IScope
      */
     protected float decreaseRecoilPitch;
     /**
-     * DEPRECATED DO NOT USE. Divisor for yaw recoil when crouching.
+     * DEPRECATED DO NOT USE. Divisor for yaw recoil when crouching, so 2 halves
+     * it. Zero means the gun did not author one and
+     * {@link #recoilSneakingMultiplierYaw} applies instead; a gun stating both
+     * keeps this one, as {@link #decreaseRecoilPitch} does for pitch.
      */
     protected float decreaseRecoilYaw;
 
@@ -91,19 +97,23 @@ public class GunType extends PaintableType implements IScope
     protected float recoilSneakingMultiplier = -1F;
     protected float recoilSneakingMultiplierYaw = 0.8F;
 
+    public static final float DEFAULT_RECOIL_CONTROL = 0.8F;
+    public static final float DEFAULT_RECOIL_CONTROL_SPRINTING = 0.9F;
+    public static final float DEFAULT_RECOIL_CONTROL_SNEAKING = 0.7F;
+
     /* Countering gun recoil can be modelled with angle=n^tick where n is the coefficient here. */
     /**
      * HIGHER means less force to center, meaning it takes longer to return.
      */
-    protected float recoilCounterCoefficient = 0.8F;
+    protected float recoilCounterCoefficient = DEFAULT_RECOIL_CONTROL;
     /**
      * The above variable but for sprinting.
      */
-    protected float recoilCounterCoefficientSprinting = 0.9F;
+    protected float recoilCounterCoefficientSprinting = DEFAULT_RECOIL_CONTROL_SPRINTING;
     /**
      * The above variable but for sneaking.
      */
-    protected float recoilCounterCoefficientSneaking = 0.7F;
+    protected float recoilCounterCoefficientSneaking = DEFAULT_RECOIL_CONTROL_SNEAKING;
 
     //Ammo & Reload Variables
     /**
@@ -111,6 +121,18 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter
     protected Set<String> ammo = new LinkedHashSet<>();
+    /**
+     * Ammo groups pulled in with "UseAmmoGroup". Every ammo item declaring "AddToAmmoGroup" with one of these
+     * names is usable in this gun, exactly as if it had been listed individually.
+     */
+    @Getter
+    protected Set<String> ammoGroups = new LinkedHashSet<>();
+    /** Per-ammunition statistic overrides declared by this gun. */
+    @Getter
+    protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
+    /** Ammunition this weapon explicitly refuses; applied after every other ammunition source. */
+    @Getter
+    protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
     /**
      * Whether the player can press the reload key (default R) to reload this gun
      */
@@ -142,7 +164,6 @@ public class GunType extends PaintableType implements IScope
     /**
      * The amount that bullets spread out when fired from this gun
      */
-    @Setter
     protected float bulletSpread;
     protected boolean readDispersion;
     protected EnumSpreadPattern spreadPattern = EnumSpreadPattern.CIRCLE;
@@ -239,7 +260,6 @@ public class GunType extends PaintableType implements IScope
     /**
      * If true, then this gun can be dual wielded
      */
-    @Getter
     protected boolean oneHanded;
     /**
      * For one shot items like a panzerfaust
@@ -260,6 +280,7 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter
     protected boolean usableByPlayers = true;
+    @Getter
     protected boolean usableByMechas = true;
     /**
      * If false, then attachments wil not be listed in item GUI
@@ -564,6 +585,9 @@ public class GunType extends PaintableType implements IScope
      * Set a hit marker texture
      */
     protected String hitTextureName = StringUtils.EMPTY;
+    /** Client-side hit marker texture, replacing the built-in one while this gun is held */
+    @Getter
+    protected ResourceLocation hitTexture;
 
     @Getter
     protected String muzzleFlashParticle = FlanParticles.FM_MUZZLE_FLASH;
@@ -623,10 +647,6 @@ public class GunType extends PaintableType implements IScope
      */
     @Getter
     protected float knockbackModifier;
-    /**
-     * Default spread of the gun. Do not modify.
-     */
-    protected float defaultSpread;
     /** Modifier for (usually decreasing) spread when gun is ADS. -1 uses default values from flansmod.cfg */
     @Getter
     protected float adsSpreadModifier = -1F;
@@ -706,6 +726,9 @@ public class GunType extends PaintableType implements IScope
         if (muzzleVelocity > 0F)
             bulletSpeed = muzzleVelocity / 20F;
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
+        ShootableType.readAmmoGroups(file, ammoGroups);
+        ammoOverrides = readAmmoOverrides(file);
+        removedAmmo = RemovedAmmo.read(file);
 
         //Lock on settings
         canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);
@@ -813,6 +836,11 @@ public class GunType extends PaintableType implements IScope
         distantSoundRange = readValue("DistantSoundRange", distantSoundRange, file);
         useLoopingSounds = StringUtils.isNotBlank(loopedSound);
 
+        registerSoundTimer("SoundLength", () -> shootSound, () -> shootSoundLength, length -> shootSoundLength = length);
+        registerSoundTimer("IdleSoundLength", () -> idleSound, () -> idleSoundLength, length -> idleSoundLength = length);
+        registerSoundTimer("WarmupSoundLength", () -> warmupSound, () -> warmupSoundLength, length -> warmupSoundLength = length);
+        registerSoundTimer("LoopedSoundLength", () -> loopedSound, () -> loopedSoundLength, length -> loopedSoundLength = length);
+
         // Mode. Legacy content permits multiple values here (for example
         // "Mode FullAuto Burst SemiAuto"). Do not use readValue: it correctly
         // warns about additional values for scalar fields, but Mode is a list.
@@ -906,9 +934,13 @@ public class GunType extends PaintableType implements IScope
             secondaryFunction = EnumFunction.CUSTOM_MELEE;
         secondaryFunction = EnumFunction.get(readValue("SecondaryFunction", secondaryFunction.toString(), file));
 
-        defaultSpread = bulletSpread;
         recoilYaw /= 10F;
-        decreaseRecoilYaw = (decreaseRecoilYaw > 0F) ? decreaseRecoilYaw : 0.5F;
+        // Zero means "not authored", which is what hands crouching over to
+        // RecoilSneakingMultiplierYaw. A divisor of zero or less cannot decrease
+        // anything - it would divide by zero or flip the recoil - so it is
+        // discarded rather than honoured.
+        if (decreaseRecoilYaw < 0F || !Float.isFinite(decreaseRecoilYaw))
+            decreaseRecoilYaw = 0F;
 
         if (lockOnToDriveables)
         {
@@ -930,6 +962,7 @@ public class GunType extends PaintableType implements IScope
         casingTexture = loadTexture(casingTextureName, this);
         flashModelClassName = findModelClass(flashModelName, contentPack);
         flashTexture = loadTexture(flashTextureName, this);
+        hitTexture = StringUtils.isBlank(hitTextureName) ? null : loadTexture(hitTextureName, this);
         muzzleFlashModelClassName = findModelClass(muzzleFlashModelName, contentPack);
     }
 
@@ -1032,13 +1065,24 @@ public class GunType extends PaintableType implements IScope
         return allowAllAttachments || ModCommonConfig.forceAllowAllAttachments();
     }
 
+    /** Whether this gun is currently allowed to occupy one hand under the server's gameplay policy. */
+    public boolean isOneHanded()
+    {
+        return effectiveOneHanded(oneHanded, ModCommonConfig.disableDualWielding());
+    }
+
+    static boolean effectiveOneHanded(boolean definitionAllows, boolean globallyDisabled)
+    {
+        return definitionAllows && !globallyDisabled;
+    }
+
     public Optional<ShootableType> getDefaultAmmo()
     {
         if (!ammo.isEmpty())
         {
             return ShootableType.findAmmoType(ammo.iterator().next(), contentPack);
         }
-        return Optional.empty();
+        return getAmmoTypes().stream().findFirst();
     }
 
     @Override
@@ -1057,9 +1101,14 @@ public class GunType extends PaintableType implements IScope
     {
         List<ShootableType> ammoInGunType = ShootableType.findAmmoTypes(ammo, contentPack);
         List<ShootableType> ammoFromAdditionalMapping = ShootableType.getAdditionalAmmoMapping().getOrDefault(originalShortName, List.of());
-        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size());
+        List<ShootableType> ammoFromGroups = ShootableType.findAmmoTypesInGroups(ammoGroups);
+        List<ShootableType> ammoTypes = new ArrayList<>(ammoInGunType.size() + ammoFromAdditionalMapping.size() + ammoFromGroups.size());
         ammoTypes.addAll(ammoInGunType);
         ammoTypes.addAll(ammoFromAdditionalMapping);
+        ammoFromGroups.stream().filter(ammoType -> !ammoTypes.contains(ammoType)).forEach(ammoTypes::add);
+        // RemoveAmmo is applied last so it overrides Ammo, AddAmmo and every ammo group.
+        if (!removedAmmo.isEmpty())
+            ammoTypes.removeIf(ammoType -> removedAmmo.removes(ammoType.getOriginalShortName()));
         return ammoTypes;
     }
 
@@ -1071,6 +1120,60 @@ public class GunType extends PaintableType implements IScope
     {
         IScope attachedScope = getScope(gunStack);
         return attachedScope == null ? this : attachedScope;
+    }
+
+    @Override
+    public boolean hasVariableZoom()
+    {
+        return hasVariableZoom;
+    }
+
+    @Override
+    public float getMinZoom()
+    {
+        return minZoom;
+    }
+
+    @Override
+    public float getMaxZoom()
+    {
+        return maxZoom;
+    }
+
+    @Override
+    public float getZoomAugment()
+    {
+        return zoomAugment;
+    }
+
+    /**
+     * The ammunition currently chambered in this gun, or null when it is empty or
+     * not a gun item. Guns holding several magazines report the first loaded one,
+     * which is also the one they fire next.
+     *
+     * <p>Used for the stats a round modifies while it merely sits in the weapon -
+     * recoil and reload time - rather than at the moment it leaves the barrel.</p>
+     */
+    @Nullable
+    public ShootableType getLoadedAmmo(@Nullable ItemStack gunStack)
+    {
+        if (gunStack == null || !(gunStack.getItem() instanceof GunItem gunItem))
+            return null;
+        for (int slot = 0; slot < getNumAmmoItemsInGun(gunStack); slot++)
+        {
+            ItemStack ammoStack = gunItem.getAmmoItemStack(gunStack, slot, ItemStackData.builtInRegistries());
+            if (ammoStack != null && ammoStack.getItem() instanceof ShootableItem shootableItem
+                && ShootableItem.hasRoundsLeft(ammoStack))
+                return shootableItem.getConfigType();
+        }
+        return null;
+    }
+
+    /** The recoil factor of the chambered round, or 1 when the gun is empty. */
+    private float loadedRecoilMultiplier(@Nullable ItemStack gunStack)
+    {
+        ShootableType ammo = getLoadedAmmo(gunStack);
+        return ammo == null ? 1F : ammo.getRecoilMultiplier();
     }
 
     /**
@@ -1318,9 +1421,11 @@ public class GunType extends PaintableType implements IScope
     public float getDamageForDisplay(ShootableType type, ItemStack gunStack, @Nullable Class<? extends Entity> entityClass)
     {
         if (type.useKineticDamageSystem())
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(type.getMass()) * getBulletSpeed(gunStack) * 20.0);
+            // Kinetic rounds take their damage from mass and velocity alone, so
+            // neither the weapon's Damage nor the round's DamageMultiplier applies.
+            return ShootingHelper.getKineticDamage(type.getMass(), getBulletSpeed(gunStack));
         else
-            return type.getDamage().getDamageAgainstEntityClass(entityClass) * getDamage(gunStack);
+            return type.getDamage().getDamageAgainstEntityClass(entityClass) * getDamage(gunStack) * type.getDamageMultiplier();
     }
 
     /**
@@ -1369,16 +1474,21 @@ public class GunType extends PaintableType implements IScope
     }
 
     /**
-     * Get the default spread of a specific gun, taking into account attachments
+     * What aiming down the sights does to this gun's spread.
+     *
+     * <p>Shotguns use their own modifier, because tightening a pellet cone the way a single
+     * bullet's spread tightens would turn every shotgun into a slug gun. A modifier of -1 means
+     * the pack did not author one, so the server's configured default applies.
+     *
+     * <p>Aim state is player state, so this is a multiplier rather than a spread: the caller
+     * folds it into the shot it is composing and nothing here is stored on the shared type.
      */
-    public float getDefaultSpread(ItemStack stack)
+    public float getAdsSpreadMultiplier(@Nullable ItemStack stack)
     {
-        float stackSpread = defaultSpread;
-
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-            stackSpread *= attachment.spreadMultiplier;
-
-        return stackSpread;
+        if (getNumBullets(stack, null) == 1)
+            return adsSpreadModifier == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplier() : adsSpreadModifier;
+        else
+            return adsSpreadModifierShotgun == -1F ? ModCommonConfig.get().defaultADSSpreadMultiplierShotgun() : adsSpreadModifierShotgun;
     }
 
     public EnumSpreadPattern getSpreadPattern(@Nullable ItemStack stack)
@@ -1404,6 +1514,8 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil *= attachment.recoilMultiplier;
 
+        stackRecoil *= loadedRecoilMultiplier(stack);
+
         switch (enumMovement) {
             case SNEAKING:
                 if (decreaseRecoilPitch != 0) {
@@ -1428,6 +1540,26 @@ public class GunType extends PaintableType implements IScope
     }
 
     /**
+     * Yaw recoil while crouched.
+     *
+     * <p>{@code DecreaseRecoilYaw} is a divisor, matching its name and the pitch
+     * side's {@code DecreaseRecoil}: a gun stating 2 fires with half its yaw
+     * recoil while crouched. It has priority over
+     * {@code RecoilSneakingMultiplierYaw}, exactly as {@code DecreaseRecoil} has
+     * over {@code RecoilSneakingMultiplier}, and a gun that states neither takes
+     * the multiplier's default.</p>
+     *
+     * <p>Anything other than a positive divisor means no legacy value was
+     * authored, so the modern multiplier applies. This is the whole fix: the
+     * divisor used to be tested for being negative, which the parser had already
+     * made impossible, so every authored {@code DecreaseRecoilYaw} was ignored.</p>
+     */
+    static float sneakingYawRecoil(float recoilYaw, float decreaseRecoilYaw, float sneakingMultiplierYaw)
+    {
+        return decreaseRecoilYaw > 0F ? recoilYaw / decreaseRecoilYaw : recoilYaw * sneakingMultiplierYaw;
+    }
+
+    /**
      * Get the yaw recoil of a specific gun, taking into account attachments, randomess and sneak/sprint
      */
     public float getRecoilYaw(ItemStack stack, EnumMovement enumMovement)
@@ -1437,19 +1569,19 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoilYaw *= attachment.recoilMultiplier;
 
+        stackRecoilYaw *= loadedRecoilMultiplier(stack);
+
         switch (enumMovement) {
             case SNEAKING:
-                if (decreaseRecoilYaw < 0) {
-                    stackRecoilYaw /= decreaseRecoilYaw;
-                } else {
-                    stackRecoilYaw *= recoilSneakingMultiplierYaw;
-                }
+                stackRecoilYaw = sneakingYawRecoil(stackRecoilYaw, decreaseRecoilYaw, recoilSneakingMultiplierYaw);
                 break;
             case SPRINTING:
                 stackRecoilYaw *= recoilSprintingMultiplierYaw;
                 break;
             case WALKING:
                 stackRecoilYaw *= recoilWalkingMultiplierYaw;
+                break;
+            case NONE:
                 break;
         }
 
@@ -1463,6 +1595,8 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil *= attachment.recoilMultiplier;
 
+        stackRecoil *= loadedRecoilMultiplier(stack);
+
         return stackRecoil * ModCommonConfig.get().gunRecoilModifier();
     }
 
@@ -1473,59 +1607,47 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoilYaw *= attachment.recoilMultiplier;
 
+        stackRecoilYaw *= loadedRecoilMultiplier(stack);
+
         return stackRecoilYaw * ModCommonConfig.get().gunRecoilModifier();
     }
 
     /**
-     * Get the bullet speed of a specific gun, taking into account attachments
+     * The muzzle velocity this gun supplies on its own, honouring a secondary grip but not the
+     * attachment multipliers. Ammunition that declares a {@code MuzzleVelocity} replaces this value;
+     * see {@link com.flansmodultimate.common.guns.FiredShot#getMuzzleVelocity()}.
      */
-    public float getBulletSpeed(@Nullable ItemStack stack, ItemStack bulletStack)
+    public float getBaseBulletSpeed(@Nullable ItemStack stack)
     {
-        float stackBulletSpeed;
+        if (stack != null && getGrip(stack) != null && getSecondaryFire(stack))
+            return getGrip(stack).secondarySpeed;
 
-        if (bulletStack != null && bulletStack.getItem() instanceof BulletItem bulletItem)
-        {
-            float bulletSpeedOfBulletItem = bulletItem.getConfigType().getBulletSpeed();
+        return bulletSpeed;
+    }
 
-            if (bulletItem.getConfigType().hasDifferentRounds())
-                bulletSpeedOfBulletItem = bulletItem.getConfigType().statsForShot(bulletStack.getDamageValue()).bulletSpeed();
+    /**
+     * The combined muzzle-velocity multiplier of the attachments on this gun. It is applied on top of
+     * whichever velocity wins, so a barrel still speeds up ammunition that states its own.
+     */
+    public float getBulletSpeedMultiplier(@Nullable ItemStack stack)
+    {
+        if (stack == null)
+            return 1F;
 
-            if (bulletSpeedOfBulletItem > 0F)
-                stackBulletSpeed = bulletSpeedOfBulletItem;
-            else
-                stackBulletSpeed = bulletSpeed * bulletItem.getConfigType().speedMultiplier;
-        }
-        else
-        {
-            stackBulletSpeed = bulletSpeed;
-        }
+        float multiplier = 1F;
 
-        if (stack != null)
-        {
-            if (getGrip(stack) != null && getSecondaryFire(stack))
-                stackBulletSpeed = getGrip(stack).secondarySpeed;
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+            multiplier *= attachment.bulletSpeedMultiplier;
 
-            for (AttachmentType attachment : getCurrentAttachments(stack))
-                stackBulletSpeed *= attachment.bulletSpeedMultiplier;
-        }
-
-        return stackBulletSpeed;
+        return multiplier;
     }
 
     /**
      * Get the bullet speed of a specific gun, taking into account attachments
      */
-    public float getBulletSpeed(ItemStack stack)
+    public float getBulletSpeed(@Nullable ItemStack stack)
     {
-        float stackBulletSpeed = bulletSpeed;
-
-        if (getGrip(stack) != null && getSecondaryFire(stack))
-            stackBulletSpeed = getGrip(stack).secondarySpeed;
-
-        for (AttachmentType attachment : getCurrentAttachments(stack))
-            stackBulletSpeed *= attachment.bulletSpeedMultiplier;
-
-        return stackBulletSpeed;
+        return getBaseBulletSpeed(stack) * getBulletSpeedMultiplier(stack);
     }
 
     /**
@@ -1541,6 +1663,10 @@ public class GunType extends PaintableType implements IScope
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackReloadTime *= attachment.reloadTimeMultiplier;
 
+        ShootableType loadedAmmo = getLoadedAmmo(stack);
+        if (loadedAmmo != null)
+            stackReloadTime *= loadedAmmo.getReloadTimeMultiplier();
+
         return stackReloadTime;
     }
 
@@ -1553,12 +1679,8 @@ public class GunType extends PaintableType implements IScope
 
         if (stack != null && getGrip(stack) != null && getSecondaryFire(stack))
             stackShootDelay = getGrip(stack).secondaryShootDelay;
-        else if (roundsPerMin != 0F)
-            stackShootDelay = 1200F / roundsPerMin;
-        else if (shootDelay != 0F)
-            stackShootDelay = shootDelay;
         else
-            stackShootDelay = DEFAULT_SHOOT_DELAY;
+            stackShootDelay = ShotCooldown.baseDelay(roundsPerMin, shootDelay, DEFAULT_SHOOT_DELAY);
 
         if (stack != null)
         {
@@ -1647,6 +1769,19 @@ public class GunType extends PaintableType implements IScope
     public void setSecondaryFire(ItemStack stack, boolean mode)
     {
         ItemStackData.update(stack, tag -> tag.putBoolean(GunItem.NBT_SECONDARY_FIRE, mode));
+    }
+
+    public boolean canToggleSecondaryFire(ItemStack stack)
+    {
+        AttachmentType grip = getGrip(stack);
+        return grip != null && grip.secondaryFire;
+    }
+
+    @Nullable
+    public String getSecondaryFireToggleSound(ItemStack stack)
+    {
+        AttachmentType grip = getGrip(stack);
+        return grip != null ? grip.toggleSound : null;
     }
 
     /**
@@ -1769,6 +1904,8 @@ public class GunType extends PaintableType implements IScope
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
             stackRecoil.applyModifier(attachment.recoilMultiplier);
+
+        stackRecoil.applyModifier(loadedRecoilMultiplier(stack));
 
         return stackRecoil;
     }

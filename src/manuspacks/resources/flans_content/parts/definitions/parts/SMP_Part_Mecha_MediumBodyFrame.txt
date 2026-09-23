@@ -1,0 +1,16 @@
+// Identity
+Name Medium Mecha Body Frame
+ShortName SMP_Part_Mecha_MediumBodyFrame
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mecha_MediumBodyFrame
+
+// Recipe and Inventory
+Recipe G glass R SMP_Part_Misc_Seat_Jet H SMP_Part_Misc_Hydraulics B SMP_Part_Mat_Block_DuraSteel
+GGG
+GRG
+HBH
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 16

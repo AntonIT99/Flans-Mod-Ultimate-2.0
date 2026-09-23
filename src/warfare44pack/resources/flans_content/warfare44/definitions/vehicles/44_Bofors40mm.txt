@@ -1,0 +1,108 @@
+// Identity
+Name Bofors AA-Gun [40mm]
+ShortName 44_Bofors40mm
+Description American Anti-Aircraft Gun__Uses Bofors 40mm Ammo__Year Introduced : 1934
+
+// Rendering
+Icon 44_Bofors40mm
+Model W44.Bofors40mm
+ModelScale 0.8
+Texture Skin44_Bofors_American
+CameraDistance 7.5
+
+// Recipe and inventory
+AddRecipeParts turret 1 44_Metal_Tube 1 44_Gun_Shield
+AddRecipeParts core 8 ingotIron
+CargoSlots 0
+ShellSlots 3
+FuelTankSize 2000
+
+// Paintjobs
+advpaintjob British 44_Bofors40mm_British 44_Bofors40mm_British gray 3
+AddDye 3 green
+
+// Real-world specifications
+RealMassKg 1981
+
+// Movement
+Tank true
+FourWheelDrive true
+MaxThrottle 0
+MaxNegativeThrottle 0
+TurnLeftSpeed 0
+TurnRightSpeed 0
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -16 -10 -14
+WheelPosition 1 -16 -10 14
+WheelPosition 2 16 -10 14
+WheelPosition 3 16 -10 -14
+WheelSpringStrength 0.5
+
+// Weapons
+ReadWeaponsFromGunTypes true
+RoundsPerMinPrimary 120
+ReloadTimePrimary 20
+ReloadRoundsPrimary 4
+ShootDelay 1
+BulletSpread 2
+BulletSpeed 12
+BulletDetection 7
+AllowAllAmmo false
+AddAmmo 44_Bofors40mmAmmo
+BarrelPosition 52 9 0
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 300 -41 -10 -26 75 35 52
+
+// Seats
+Driver 0 0 0 -360 360 -5 80
+Passengers 0
+RotatedDriverOffset -3 0 -11
+DriverAimSpeed 1.18f 1.08f 0f
+DriverYawBeforePitch false
+
+// Optics
+hasScope true
+Gunsight warfare44_flak20
+gunsightZoom 2.5
+
+// Sounds
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+YawSound TurretTraverse2
+YawSoundLength 38
+PitchSound TurretTraverse1
+PitchSoundLength 61
+DriverTraverseSounds false
+ShootSoundPrimary 30mmShoot

@@ -1,0 +1,104 @@
+// Identity
+Name Panzerkampfwagen VI Tiger - Version E
+ShortName WW2_Vehicle_TigerI_1A
+
+// Model and Rendering
+Model Manus_WW2.Vehicle.WW2_Vehicle_TigerI_1
+Icon Icon_WW2_Vehicle_TigerI_1A
+Texture Skin_WW2_Vehicle_TigerI_1A
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 2500
+CargoSlots 0
+ShellSlots 5
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 14 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 18 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 gray
+AllowAllAmmo False
+AddAmmo WW2_Shell_German88mmKwK36AP
+AddAmmo WW2_Shell_German88mmKwK36HE
+AddAmmo WW2_Shell_German88mmKwK36APCR
+AddAmmo 44_88APShell
+AddAmmo 44_LargeHEShell
+
+// Movement and Physics
+MaxThrottle 0.5
+MaxNegativeThrottle 0.3
+Drag 1.0
+RealMassKg 57000
+RealEnginePowerPS 700
+RealMaxSpeedKmh 45
+RealMaxReverseSpeedKmh 8
+DriveType TRACKED
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+Tank true
+
+// Weapons
+AddGun 30 32 7 turret WW2_MG_MG42ZB_1A
+BarrelPosition 0 32 0
+ShellDelay 100
+ShootDelay 2
+ShootDelayPrimarySeconds 8
+ReadWeaponsFromGunTypes true
+GunOrigin 1 52 18 11
+PlaceTimePrimary 80
+ReloadTimeSecondary 100
+
+// Protection
+ArmorFrontMm 100 9
+ArmorSideMm 80
+ArmorRearMm 80 9
+ArmorTopMm 25
+ArmorBottomMm 25
+TurretArmorFrontMm 100
+TurretArmorSideMm 80
+TurretArmorRearMm 80
+TurretArmorTopMm 25
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+
+// Parts and Seats
+WheelPosition 0 -36 -8 -35
+WheelPosition 1 -36 -8 35
+WheelPosition 2 42 -8 35
+WheelPosition 3 42 -8 -35
+Driver 0 34 0 -360 360 -10 20
+RotatedDriverOffset -9 0 -9
+Passengers 1
+Passenger 1 33 12 17 core -30 30 -10 10 WW2_MG_MG42ZB_1A FrontMG
+SetupPart turret 6000 -32 26 -23 56 15 46
+SetupPart leftTrack 300 -53 -10 21 106 22 15
+SetupPart core 6000 -53 -3 -20 113 28 40
+SetupPart rightTrack 300 -53 -10 -36 106 22 15
+BulletDetection 7
+CameraDistance 7.5
+
+// Optics
+hasScope true
+Gunsight manus_tiger
+gunsightZoom 4
+heliGuiSeat 1 true
+heliGUI manus_gercomm
+
+// Sounds
+StartSound TankIdle3
+StartSoundLength 41
+EngineSound TankRun3
+EngineSoundLength 41
+BackSoundLength 41
+BackSound TankBack3
+StartSoundRange 12
+EngineSoundRange 22
+BackSoundRange 10
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ShootSoundPrimary 88mmShoot
+ShootSoundSecondary Mg34Shoot

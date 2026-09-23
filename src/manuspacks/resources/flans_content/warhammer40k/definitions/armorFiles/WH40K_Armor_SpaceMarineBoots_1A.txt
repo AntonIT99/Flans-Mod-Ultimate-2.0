@@ -1,0 +1,19 @@
+﻿// Identity
+Name Ultra Marines Space Marine Boots
+ShortName WH40K_Armor_SpaceMarineBoots_1A
+
+// Model and Rendering
+Model Manus_WH40K.Armor.WH40K_Armor_SpaceMarineBoots_1
+ModelScale 0.25
+Icon Icon_WH40K_Armor_SpaceMarineBoots_1A
+ArmourTexture Skin_WH40K_Armor_SpaceMarine_1A
+
+// Recipe and Inventory
+Type Boots
+
+// Protection
+Defence 0.10
+BulletDefence 0.10
+PenetrationResistance 0.84
+ArmorPoints 3
+Toughness 3

@@ -1,16 +1,19 @@
-//Description for hover text. Underscores represent new lines.
+// Identity
 Description Helps cut diamonds_out of the rock_to increase yield_(1.2x Diamond Drop Rate)_Requires Item Vacuum
 Name Diamond Cutter
 ShortName mechaDiamondCutter
+Type armUpgrade
+
+// Item and rendering
 Icon DiamondCutter
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
+
+// Recipe
 RecipeOutput 1
 Recipe I blockIron D diamond R redstone
 DR 
 IDR
  ID
-//The item type. This decides the slot it goes in. Options are upgrade, tool, armUpgrade, legUpgrade, headUpgrade, shoulderUpgrade, hipsUpgrade.
-Type armUpgrade
-//The modifiers this item enacts on the mecha
+
+// Mecha item
 DiamondMultiplier 1.2

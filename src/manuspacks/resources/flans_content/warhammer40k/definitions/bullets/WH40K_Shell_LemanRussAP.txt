@@ -1,0 +1,45 @@
+// Identity
+Name Mk12 G4 Anti Tank Shell
+ShortName WH40K_Shell_LemanRussAP
+Description Amunition for Leman Russ
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon Icon_WH40K_Shell_LemanRussAP
+
+// Recipe and Inventory
+RoundsPerItem 1
+MaxStackSize 16
+RecipeOutput 3
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+ F 
+ G 
+ S 
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+Bomb False
+Shell True
+
+// Ballistics and Damage
+Damage 700
+DamageVsVehicles 700
+Explosion 3
+Fire 0
+Mass 23000.0
+MuzzleVelocity 880
+ExplosiveMassTNTg 750
+PenetrationAt100m 240
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail False

@@ -1,5 +1,8 @@
+// Identity
 Name Light Assault
 ShortName sasAssault1
+
+// Items
 AddItem fnscar
 AddItem sigP226
 AddItem m67 2

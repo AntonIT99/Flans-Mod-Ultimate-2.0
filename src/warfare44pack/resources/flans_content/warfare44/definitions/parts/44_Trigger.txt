@@ -1,0 +1,11 @@
+// Identity
+Name Trigger
+ShortName 44_Trigger
+Category Misc
+
+// Rendering
+Icon 44_Trigger
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

@@ -1,0 +1,18 @@
+// Identity
+Name Japanese Type 3 'Sen-bou' Field Cap (Khaki)
+ShortName 44_JapaneseType3FieldCap
+Type Helmet
+
+// Rendering
+Icon 44_JapaneseType3FieldCap
+Model W44.JapaneseType3FieldCap
+ModelScale 1
+ArmorTexture Skin44_JapaneseType98Khaki
+
+// Protection
+ArmorPoints 0
+Defence 0.01
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

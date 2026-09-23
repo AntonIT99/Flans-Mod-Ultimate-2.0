@@ -1,0 +1,25 @@
+// Identity
+Name Droideka
+ShortName droideka
+
+// Item and rendering
+Icon droideka
+Colour 255 255 255
+ArmourTexture droideka
+Model wolffstarwars.Droideka
+
+// Protection
+Type Head
+Defence 0.08
+BulletDefence 0.07
+PenetrationResistance 1.90
+ArmorPoints 3
+Toughness 2
+
+// Movement
+MoveSpeedModifier 0.8
+
+// Effects
+SmokeProtection False
+NightVision True
+Invisible True

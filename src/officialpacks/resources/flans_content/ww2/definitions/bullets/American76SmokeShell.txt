@@ -1,0 +1,45 @@
+// Identity
+Name American 76 mm M88 HC Smoke (M1)
+ShortName American76SmokeShell
+Description Base-emission smoke ammunition for the 76 mm M1
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell76aHE
+HasLight False
+
+// Ammunition
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Mass 3450
+MuzzleVelocity 274
+FallSpeed 1
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+Damage 10
+DamageVsLiving 10
+DamageVsVehicles 5
+Explosion 0
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+
+// Smoke and effects
+SmokeTime 250
+SmokeRadius 5
+SmokeEffect 15 25 0
+SmokeEffect 2 25 2
+
+// Sounds and particles
+SmokeParticleType cloud
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+FlakParticles 0

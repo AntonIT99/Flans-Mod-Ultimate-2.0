@@ -1,0 +1,1535 @@
+{
+  "version": 2,
+  "sounds": {
+    "20mmplane.ogg": {
+      "key": "20mmplane",
+      "size": 26819,
+      "ticks": 34
+    },
+    "40uk.ogg": {
+      "key": "40uk",
+      "size": 158311,
+      "ticks": 130
+    },
+    "50calshoot.ogg": {
+      "key": "50calshoot",
+      "size": 25873,
+      "ticks": 45
+    },
+    "57mmgun.ogg": {
+      "key": "57mmgun",
+      "size": 70226,
+      "ticks": 75
+    },
+    "75mmgun.ogg": {
+      "key": "75mmgun",
+      "size": 108900,
+      "ticks": 112
+    },
+    "88mmgun.ogg": {
+      "key": "88mmgun",
+      "size": 170390,
+      "ticks": 278
+    },
+    "90mm.ogg": {
+      "key": "90mm",
+      "size": 42641,
+      "ticks": 44
+    },
+    "aa12reload.ogg": {
+      "key": "aa12reload",
+      "size": 16207,
+      "ticks": 53
+    },
+    "aa12shoot.ogg": {
+      "key": "aa12shoot",
+      "size": 193374,
+      "ticks": 76
+    },
+    "aafire.ogg": {
+      "key": "aafire",
+      "size": 15488,
+      "ticks": 27
+    },
+    "aagun_40mm_boforsfire.ogg": {
+      "key": "aagun_40mm_boforsfire",
+      "size": 30458,
+      "ticks": 48
+    },
+    "adar15reload.ogg": {
+      "key": "adar15reload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "adar15shoot.ogg": {
+      "key": "adar15shoot",
+      "size": 181016,
+      "ticks": 71
+    },
+    "ak47shoot.ogg": {
+      "key": "ak47shoot",
+      "size": 188943,
+      "ticks": 71
+    },
+    "ak74shoot.ogg": {
+      "key": "ak74shoot",
+      "size": 188891,
+      "ticks": 77
+    },
+    "alarmtrapdetonate.ogg": {
+      "key": "alarmtrapdetonate",
+      "size": 1854882,
+      "ticks": 638
+    },
+    "ammobagplace.ogg": {
+      "key": "ammobagplace",
+      "size": 27292,
+      "ticks": 32
+    },
+    "an94reload.ogg": {
+      "key": "an94reload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "an94shoot.ogg": {
+      "key": "an94shoot",
+      "size": 188125,
+      "ticks": 77
+    },
+    "ash12reload.ogg": {
+      "key": "ash12reload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "ash12shoot.ogg": {
+      "key": "ash12shoot",
+      "size": 230117,
+      "ticks": 85
+    },
+    "at4shoot.ogg": {
+      "key": "at4shoot",
+      "size": 85760,
+      "ticks": 40
+    },
+    "b4crossbowreload.ogg": {
+      "key": "b4crossbowreload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "b4crossbowshoot.ogg": {
+      "key": "b4crossbowshoot",
+      "size": 19614,
+      "ticks": 9
+    },
+    "barreload.ogg": {
+      "key": "barreload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "barrettshoot.ogg": {
+      "key": "barrettshoot",
+      "size": 306177,
+      "ticks": 115
+    },
+    "barshoot.ogg": {
+      "key": "barshoot",
+      "size": 49427,
+      "ticks": 50
+    },
+    "bazookareload.ogg": {
+      "key": "bazookareload",
+      "size": 59682,
+      "ticks": 87
+    },
+    "bazookashoot.ogg": {
+      "key": "bazookashoot",
+      "size": 45119,
+      "ticks": 57
+    },
+    "beartrap.ogg": {
+      "key": "beartrap",
+      "size": 16221,
+      "ticks": 15
+    },
+    "bomb.ogg": {
+      "key": "bomb",
+      "size": 8023,
+      "ticks": 7
+    },
+    "bow.ogg": {
+      "key": "bow",
+      "size": 6658,
+      "ticks": 9
+    },
+    "brenreload.ogg": {
+      "key": "brenreload",
+      "size": 180791,
+      "ticks": 62
+    },
+    "brenshoot.ogg": {
+      "key": "brenshoot",
+      "size": 30712,
+      "ticks": 35
+    },
+    "browningreload.ogg": {
+      "key": "browningreload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "browningshoot.ogg": {
+      "key": "browningshoot",
+      "size": 8377,
+      "ticks": 2
+    },
+    "bullet.ogg": {
+      "key": "bullet",
+      "size": 11025,
+      "ticks": 13
+    },
+    "bullethit.ogg": {
+      "key": "bullethit",
+      "size": 29243,
+      "ticks": 21
+    },
+    "challengeridle.ogg": {
+      "key": "challengeridle",
+      "size": 31458,
+      "ticks": 40
+    },
+    "challengerrun.ogg": {
+      "key": "challengerrun",
+      "size": 32386,
+      "ticks": 40
+    },
+    "chirp.ogg": {
+      "key": "chirp",
+      "size": 4916,
+      "ticks": 1
+    },
+    "coldware2reload.ogg": {
+      "key": "coldware2reload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "coldware2shoot.ogg": {
+      "key": "coldware2shoot",
+      "size": 74854,
+      "ticks": 32
+    },
+    "coltpythonreload.ogg": {
+      "key": "coltpythonreload",
+      "size": 59109,
+      "ticks": 106
+    },
+    "coltpythonshoot.ogg": {
+      "key": "coltpythonshoot",
+      "size": 29784,
+      "ticks": 56
+    },
+    "coltreload.ogg": {
+      "key": "coltreload",
+      "size": 33001,
+      "ticks": 55
+    },
+    "coltshoot.ogg": {
+      "key": "coltshoot",
+      "size": 25476,
+      "ticks": 24
+    },
+    "creeperexplode.ogg": {
+      "key": "creeperexplode",
+      "size": 29271,
+      "ticks": 56
+    },
+    "decoycanisterdetonate.ogg": {
+      "key": "decoycanisterdetonate",
+      "size": 1777426,
+      "ticks": 634
+    },
+    "deserteagleshoot.ogg": {
+      "key": "deserteagleshoot",
+      "size": 120644,
+      "ticks": 45
+    },
+    "devotionx55reload.ogg": {
+      "key": "devotionx55reload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "devotionx55shoot.ogg": {
+      "key": "devotionx55shoot",
+      "size": 57085,
+      "ticks": 21
+    },
+    "dp28reload.ogg": {
+      "key": "dp28reload",
+      "size": 79203,
+      "ticks": 108
+    },
+    "dp28shoot.ogg": {
+      "key": "dp28shoot",
+      "size": 19537,
+      "ticks": 27
+    },
+    "dragunovshoot.ogg": {
+      "key": "dragunovshoot",
+      "size": 289247,
+      "ticks": 115
+    },
+    "eldiabloshoot.ogg": {
+      "key": "eldiabloshoot",
+      "size": 209132,
+      "ticks": 72
+    },
+    "electricsmokegrenadedetonate.ogg": {
+      "key": "electricsmokegrenadedetonate",
+      "size": 23256,
+      "ticks": 35
+    },
+    "emp4shoot.ogg": {
+      "key": "emp4shoot",
+      "size": 130240,
+      "ticks": 38
+    },
+    "enaturretshoot.ogg": {
+      "key": "enaturretshoot",
+      "size": 67756,
+      "ticks": 20
+    },
+    "engine.ogg": {
+      "key": "engine",
+      "size": 14198,
+      "ticks": 22
+    },
+    "engine_ht_is.ogg": {
+      "key": "engine_ht_is",
+      "size": 23077,
+      "ticks": 40
+    },
+    "engine_ht_pzvi.ogg": {
+      "key": "engine_ht_pzvi",
+      "size": 30418,
+      "ticks": 40
+    },
+    "engine_ht_pzvikt.ogg": {
+      "key": "engine_ht_pzvikt",
+      "size": 23168,
+      "ticks": 40
+    },
+    "engine_jep_humvee.ogg": {
+      "key": "engine_jep_humvee",
+      "size": 25425,
+      "ticks": 40
+    },
+    "engine_lt_armoredcar.ogg": {
+      "key": "engine_lt_armoredcar",
+      "size": 22987,
+      "ticks": 40
+    },
+    "engine_lt_bt.ogg": {
+      "key": "engine_lt_bt",
+      "size": 23684,
+      "ticks": 40
+    },
+    "engine_lt_lvt.ogg": {
+      "key": "engine_lt_lvt",
+      "size": 23045,
+      "ticks": 40
+    },
+    "engine_lt_pzii.ogg": {
+      "key": "engine_lt_pzii",
+      "size": 22987,
+      "ticks": 40
+    },
+    "engine_lt_truck.ogg": {
+      "key": "engine_lt_truck",
+      "size": 22727,
+      "ticks": 40
+    },
+    "engine_mt_chinu.ogg": {
+      "key": "engine_mt_chinu",
+      "size": 23268,
+      "ticks": 40
+    },
+    "engine_mt_comet.ogg": {
+      "key": "engine_mt_comet",
+      "size": 23097,
+      "ticks": 40
+    },
+    "engine_mt_m26.ogg": {
+      "key": "engine_mt_m26",
+      "size": 23144,
+      "ticks": 40
+    },
+    "engine_mt_m4.ogg": {
+      "key": "engine_mt_m4",
+      "size": 24042,
+      "ticks": 40
+    },
+    "engine_mt_m4a3.ogg": {
+      "key": "engine_mt_m4a3",
+      "size": 22707,
+      "ticks": 40
+    },
+    "engine_mt_pziii.ogg": {
+      "key": "engine_mt_pziii",
+      "size": 22973,
+      "ticks": 40
+    },
+    "engine_mt_pziv.ogg": {
+      "key": "engine_mt_pziv",
+      "size": 22842,
+      "ticks": 40
+    },
+    "engine_mt_t34.ogg": {
+      "key": "engine_mt_t34",
+      "size": 22836,
+      "ticks": 40
+    },
+    "engine_td_m18.ogg": {
+      "key": "engine_td_m18",
+      "size": 22608,
+      "ticks": 40
+    },
+    "engine_tr_halftrack.ogg": {
+      "key": "engine_tr_halftrack",
+      "size": 22121,
+      "ticks": 40
+    },
+    "enginestart.ogg": {
+      "key": "enginestart",
+      "size": 27223,
+      "ticks": 24
+    },
+    "executionerreload.ogg": {
+      "key": "executionerreload",
+      "size": 36519,
+      "ticks": 29
+    },
+    "executionershoot.ogg": {
+      "key": "executionershoot",
+      "size": 238458,
+      "ticks": 84
+    },
+    "famasreload.ogg": {
+      "key": "famasreload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "famasshoot.ogg": {
+      "key": "famasshoot",
+      "size": 228714,
+      "ticks": 105
+    },
+    "fg42reload.ogg": {
+      "key": "fg42reload",
+      "size": 18574,
+      "ticks": 66
+    },
+    "fg42shoot.ogg": {
+      "key": "fg42shoot",
+      "size": 22035,
+      "ticks": 24
+    },
+    "flak.ogg": {
+      "key": "flak",
+      "size": 8916,
+      "ticks": 10
+    },
+    "flak1shoot.ogg": {
+      "key": "flak1shoot",
+      "size": 39197,
+      "ticks": 42
+    },
+    "flakvierlingshoot.ogg": {
+      "key": "flakvierlingshoot",
+      "size": 19834,
+      "ticks": 29
+    },
+    "flamethrowercooldown.ogg": {
+      "key": "flamethrowercooldown",
+      "size": 19031,
+      "ticks": 28
+    },
+    "flamethrowerloop.ogg": {
+      "key": "flamethrowerloop",
+      "size": 22396,
+      "ticks": 35
+    },
+    "flamethrowerreload.ogg": {
+      "key": "flamethrowerreload",
+      "size": 18574,
+      "ticks": 66
+    },
+    "flamethrowershoot.ogg": {
+      "key": "flamethrowershoot",
+      "size": 33764,
+      "ticks": 20
+    },
+    "flamethrowerwarmup.ogg": {
+      "key": "flamethrowerwarmup",
+      "size": 15834,
+      "ticks": 28
+    },
+    "flaregunreload.ogg": {
+      "key": "flaregunreload",
+      "size": 20272,
+      "ticks": 15
+    },
+    "flaregunshoot.ogg": {
+      "key": "flaregunshoot",
+      "size": 19938,
+      "ticks": 15
+    },
+    "fnscarshoot.ogg": {
+      "key": "fnscarshoot",
+      "size": 168285,
+      "ticks": 71
+    },
+    "fragmentationgrenadedetonate.ogg": {
+      "key": "fragmentationgrenadedetonate",
+      "size": 24000,
+      "ticks": 35
+    },
+    "g36shoot.ogg": {
+      "key": "g36shoot",
+      "size": 224613,
+      "ticks": 105
+    },
+    "galilreload.ogg": {
+      "key": "galilreload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "galilshoot.ogg": {
+      "key": "galilshoot",
+      "size": 62858,
+      "ticks": 20
+    },
+    "gewehr43shoot.ogg": {
+      "key": "gewehr43shoot",
+      "size": 42968,
+      "ticks": 44
+    },
+    "gl6reload.ogg": {
+      "key": "gl6reload",
+      "size": 46329,
+      "ticks": 73
+    },
+    "glockshoot.ogg": {
+      "key": "glockshoot",
+      "size": 169993,
+      "ticks": 71
+    },
+    "grenadelauncherreload.ogg": {
+      "key": "grenadelauncherreload",
+      "size": 29135,
+      "ticks": 54
+    },
+    "grenadelaunchershoot.ogg": {
+      "key": "grenadelaunchershoot",
+      "size": 25863,
+      "ticks": 8
+    },
+    "grizzlybrshoot.ogg": {
+      "key": "grizzlybrshoot",
+      "size": 63628,
+      "ticks": 19
+    },
+    "guncocking.ogg": {
+      "key": "guncocking",
+      "size": 25986,
+      "ticks": 26
+    },
+    "hcarshoot.ogg": {
+      "key": "hcarshoot",
+      "size": 86761,
+      "ticks": 30
+    },
+    "helicopter1.ogg": {
+      "key": "helicopter1",
+      "size": 36965,
+      "ticks": 92
+    },
+    "helicopter2.ogg": {
+      "key": "helicopter2",
+      "size": 40398,
+      "ticks": 78
+    },
+    "helicopterstart.ogg": {
+      "key": "helicopterstart",
+      "size": 43822,
+      "ticks": 113
+    },
+    "honeybadgershoot.ogg": {
+      "key": "honeybadgershoot",
+      "size": 239321,
+      "ticks": 99
+    },
+    "jeepidle.ogg": {
+      "key": "jeepidle",
+      "size": 6492,
+      "ticks": 7
+    },
+    "jeepmove.ogg": {
+      "key": "jeepmove",
+      "size": 22876,
+      "ticks": 60
+    },
+    "jetengine1.ogg": {
+      "key": "jetengine1",
+      "size": 27226,
+      "ticks": 68
+    },
+    "jetengine2.ogg": {
+      "key": "jetengine2",
+      "size": 24057,
+      "ticks": 47
+    },
+    "jetidle.ogg": {
+      "key": "jetidle",
+      "size": 120497,
+      "ticks": 169
+    },
+    "judgereload.ogg": {
+      "key": "judgereload",
+      "size": 83244,
+      "ticks": 86
+    },
+    "juryreload.ogg": {
+      "key": "juryreload",
+      "size": 54358,
+      "ticks": 91
+    },
+    "juryshoot.ogg": {
+      "key": "juryshoot",
+      "size": 210352,
+      "ticks": 77
+    },
+    "kamazenginerun.ogg": {
+      "key": "kamazenginerun",
+      "size": 52306,
+      "ticks": 101
+    },
+    "kar98kreload.ogg": {
+      "key": "kar98kreload",
+      "size": 17817,
+      "ticks": 52
+    },
+    "kar98kshoot.ogg": {
+      "key": "kar98kshoot",
+      "size": 27140,
+      "ticks": 41
+    },
+    "kar98ksniperreload.ogg": {
+      "key": "kar98ksniperreload",
+      "size": 54795,
+      "ticks": 94
+    },
+    "kar98ksnipershoot.ogg": {
+      "key": "kar98ksnipershoot",
+      "size": 31120,
+      "ticks": 55
+    },
+    "kcasmartpistolreload.ogg": {
+      "key": "kcasmartpistolreload",
+      "size": 20673,
+      "ticks": 64
+    },
+    "kcasmartpistolshoot.ogg": {
+      "key": "kcasmartpistolshoot",
+      "size": 90232,
+      "ticks": 45
+    },
+    "kraberreload.ogg": {
+      "key": "kraberreload",
+      "size": 43685,
+      "ticks": 47
+    },
+    "krabershoot.ogg": {
+      "key": "krabershoot",
+      "size": 209596,
+      "ticks": 80
+    },
+    "krissvectorreload.ogg": {
+      "key": "krissvectorreload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "krissvectorshoot.ogg": {
+      "key": "krissvectorshoot",
+      "size": 228714,
+      "ticks": 105
+    },
+    "l86shoot.ogg": {
+      "key": "l86shoot",
+      "size": 191480,
+      "ticks": 77
+    },
+    "l96shoot.ogg": {
+      "key": "l96shoot",
+      "size": 161314,
+      "ticks": 75
+    },
+    "lancasterprop.ogg": {
+      "key": "lancasterprop",
+      "size": 21143,
+      "ticks": 49
+    },
+    "leeenfieldreload.ogg": {
+      "key": "leeenfieldreload",
+      "size": 20673,
+      "ticks": 64
+    },
+    "leeenfieldshoot.ogg": {
+      "key": "leeenfieldshoot",
+      "size": 42692,
+      "ticks": 56
+    },
+    "longstrikereload.ogg": {
+      "key": "longstrikereload",
+      "size": 118521,
+      "ticks": 125
+    },
+    "longstrikeshoot.ogg": {
+      "key": "longstrikeshoot",
+      "size": 42174,
+      "ticks": 42
+    },
+    "lugerreload.ogg": {
+      "key": "lugerreload",
+      "size": 49671,
+      "ticks": 104
+    },
+    "lugershoot.ogg": {
+      "key": "lugershoot",
+      "size": 24366,
+      "ticks": 23
+    },
+    "m1014reload.ogg": {
+      "key": "m1014reload",
+      "size": 66429,
+      "ticks": 56
+    },
+    "m1014shoot.ogg": {
+      "key": "m1014shoot",
+      "size": 205789,
+      "ticks": 84
+    },
+    "m14shoot.ogg": {
+      "key": "m14shoot",
+      "size": 204020,
+      "ticks": 72
+    },
+    "m1887reload.ogg": {
+      "key": "m1887reload",
+      "size": 65391,
+      "ticks": 100
+    },
+    "m1887shoot.ogg": {
+      "key": "m1887shoot",
+      "size": 14740,
+      "ticks": 27
+    },
+    "m1a2_run.ogg": {
+      "key": "m1a2_run",
+      "size": 18748,
+      "ticks": 39
+    },
+    "m1a2start.ogg": {
+      "key": "m1a2start",
+      "size": 119448,
+      "ticks": 300
+    },
+    "m1carbinereload.ogg": {
+      "key": "m1carbinereload",
+      "size": 37031,
+      "ticks": 66
+    },
+    "m1carbineshoot.ogg": {
+      "key": "m1carbineshoot",
+      "size": 14790,
+      "ticks": 21
+    },
+    "m1garandreload.ogg": {
+      "key": "m1garandreload",
+      "size": 22368,
+      "ticks": 32
+    },
+    "m1garandshoot.ogg": {
+      "key": "m1garandshoot",
+      "size": 14427,
+      "ticks": 20
+    },
+    "m21shoot.ogg": {
+      "key": "m21shoot",
+      "size": 302164,
+      "ticks": 115
+    },
+    "m249shoot.ogg": {
+      "key": "m249shoot",
+      "size": 179523,
+      "ticks": 71
+    },
+    "m3a1reload.ogg": {
+      "key": "m3a1reload",
+      "size": 41709,
+      "ticks": 61
+    },
+    "m3a1shoot.ogg": {
+      "key": "m3a1shoot",
+      "size": 30656,
+      "ticks": 45
+    },
+    "m4carbinereload.ogg": {
+      "key": "m4carbinereload",
+      "size": 16207,
+      "ticks": 53
+    },
+    "m4carbineshoot.ogg": {
+      "key": "m4carbineshoot",
+      "size": 20229,
+      "ticks": 32
+    },
+    "m60shoot.ogg": {
+      "key": "m60shoot",
+      "size": 88113,
+      "ticks": 30
+    },
+    "m9shoot.ogg": {
+      "key": "m9shoot",
+      "size": 168563,
+      "ticks": 65
+    },
+    "makarovshoot.ogg": {
+      "key": "makarovshoot",
+      "size": 187681,
+      "ticks": 73
+    },
+    "mastiffreload.ogg": {
+      "key": "mastiffreload",
+      "size": 43685,
+      "ticks": 47
+    },
+    "mastiffshoot.ogg": {
+      "key": "mastiffshoot",
+      "size": 220488,
+      "ticks": 84
+    },
+    "maverickreload.ogg": {
+      "key": "maverickreload",
+      "size": 95242,
+      "ticks": 122
+    },
+    "maverickshoot.ogg": {
+      "key": "maverickshoot",
+      "size": 30412,
+      "ticks": 29
+    },
+    "medicbagplace.ogg": {
+      "key": "medicbagplace",
+      "size": 27292,
+      "ticks": 32
+    },
+    "mg34reload.ogg": {
+      "key": "mg34reload",
+      "size": 59711,
+      "ticks": 88
+    },
+    "mg34shoot.ogg": {
+      "key": "mg34shoot",
+      "size": 29220,
+      "ticks": 35
+    },
+    "mg42reload.ogg": {
+      "key": "mg42reload",
+      "size": 26327,
+      "ticks": 107
+    },
+    "mg42shoot.ogg": {
+      "key": "mg42shoot",
+      "size": 9742,
+      "ticks": 10
+    },
+    "miniguncooldown.ogg": {
+      "key": "miniguncooldown",
+      "size": 138444,
+      "ticks": 68
+    },
+    "minigunshoot.ogg": {
+      "key": "minigunshoot",
+      "size": 202756,
+      "ticks": 72
+    },
+    "minigunspin.ogg": {
+      "key": "minigunspin",
+      "size": 22202,
+      "ticks": 9
+    },
+    "minigunwarmup.ogg": {
+      "key": "minigunwarmup",
+      "size": 30528,
+      "ticks": 11
+    },
+    "miniuzishoot.ogg": {
+      "key": "miniuzishoot",
+      "size": 153589,
+      "ticks": 71
+    },
+    "mlrs6reload.ogg": {
+      "key": "mlrs6reload",
+      "size": 46329,
+      "ticks": 73
+    },
+    "mlrs6shoot.ogg": {
+      "key": "mlrs6shoot",
+      "size": 85760,
+      "ticks": 40
+    },
+    "mosinnagantshoot.ogg": {
+      "key": "mosinnagantshoot",
+      "size": 20553,
+      "ticks": 24
+    },
+    "mosinnagantsnipershoot.ogg": {
+      "key": "mosinnagantsnipershoot",
+      "size": 39921,
+      "ticks": 59
+    },
+    "mp40reload.ogg": {
+      "key": "mp40reload",
+      "size": 55611,
+      "ticks": 125
+    },
+    "mp40shoot.ogg": {
+      "key": "mp40shoot",
+      "size": 23998,
+      "ticks": 22
+    },
+    "mp44reload.ogg": {
+      "key": "mp44reload",
+      "size": 45543,
+      "ticks": 112
+    },
+    "mp44shoot.ogg": {
+      "key": "mp44shoot",
+      "size": 37356,
+      "ticks": 33
+    },
+    "mp5kreload.ogg": {
+      "key": "mp5kreload",
+      "size": 14657,
+      "ticks": 31
+    },
+    "mp5kshoot.ogg": {
+      "key": "mp5kshoot",
+      "size": 10643,
+      "ticks": 13
+    },
+    "mp5shoot.ogg": {
+      "key": "mp5shoot",
+      "size": 215065,
+      "ticks": 83
+    },
+    "mwbazookareload.ogg": {
+      "key": "mwbazookareload",
+      "size": 60508,
+      "ticks": 117
+    },
+    "mwcoltreload.ogg": {
+      "key": "mwcoltreload",
+      "size": 27551,
+      "ticks": 44
+    },
+    "mwlugerreload.ogg": {
+      "key": "mwlugerreload",
+      "size": 51196,
+      "ticks": 117
+    },
+    "mwmp40reload.ogg": {
+      "key": "mwmp40reload",
+      "size": 21904,
+      "ticks": 57
+    },
+    "mwmp44reload.ogg": {
+      "key": "mwmp44reload",
+      "size": 16207,
+      "ticks": 53
+    },
+    "mwspringfieldreload.ogg": {
+      "key": "mwspringfieldreload",
+      "size": 34912,
+      "ticks": 86
+    },
+    "mwstenreload.ogg": {
+      "key": "mwstenreload",
+      "size": 19140,
+      "ticks": 55
+    },
+    "mwthompsonreload.ogg": {
+      "key": "mwthompsonreload",
+      "size": 50020,
+      "ticks": 116
+    },
+    "nitronreload.ogg": {
+      "key": "nitronreload",
+      "size": 41464,
+      "ticks": 48
+    },
+    "nitronshoot.ogg": {
+      "key": "nitronshoot",
+      "size": 13556,
+      "ticks": 13
+    },
+    "p90shoot.ogg": {
+      "key": "p90shoot",
+      "size": 203600,
+      "ticks": 105
+    },
+    "peacekeeperreload.ogg": {
+      "key": "peacekeeperreload",
+      "size": 83244,
+      "ticks": 86
+    },
+    "peacekeepershoot.ogg": {
+      "key": "peacekeepershoot",
+      "size": 240432,
+      "ticks": 84
+    },
+    "planeshoot.ogg": {
+      "key": "planeshoot",
+      "size": 5770,
+      "ticks": 2
+    },
+    "ppshreload.ogg": {
+      "key": "ppshreload",
+      "size": 22531,
+      "ticks": 60
+    },
+    "ppshshoot.ogg": {
+      "key": "ppshshoot",
+      "size": 23149,
+      "ticks": 30
+    },
+    "pr3reload.ogg": {
+      "key": "pr3reload",
+      "size": 50074,
+      "ticks": 18
+    },
+    "pr3shoot.ogg": {
+      "key": "pr3shoot",
+      "size": 198112,
+      "ticks": 77
+    },
+    "praxisreload.ogg": {
+      "key": "praxisreload",
+      "size": 42916,
+      "ticks": 48
+    },
+    "praxisshoot.ogg": {
+      "key": "praxisshoot",
+      "size": 18909,
+      "ticks": 17
+    },
+    "propsound.ogg": {
+      "key": "propsound",
+      "size": 23304,
+      "ticks": 40
+    },
+    "propstart.ogg": {
+      "key": "propstart",
+      "size": 18167,
+      "ticks": 28
+    },
+    "ptboatidle.ogg": {
+      "key": "ptboatidle",
+      "size": 14518,
+      "ticks": 20
+    },
+    "ptboatmove.ogg": {
+      "key": "ptboatmove",
+      "size": 16096,
+      "ticks": 20
+    },
+    "pyragonreload.ogg": {
+      "key": "pyragonreload",
+      "size": 42508,
+      "ticks": 53
+    },
+    "pyragonshoot.ogg": {
+      "key": "pyragonshoot",
+      "size": 10075,
+      "ticks": 6
+    },
+    "r700shoot.ogg": {
+      "key": "r700shoot",
+      "size": 187328,
+      "ticks": 75
+    },
+    "r870shoot.ogg": {
+      "key": "r870shoot",
+      "size": 205789,
+      "ticks": 84
+    },
+    "raiderreload.ogg": {
+      "key": "raiderreload",
+      "size": 176944,
+      "ticks": 202
+    },
+    "raidershoot.ogg": {
+      "key": "raidershoot",
+      "size": 21591,
+      "ticks": 19
+    },
+    "rampagereload.ogg": {
+      "key": "rampagereload",
+      "size": 60159,
+      "ticks": 75
+    },
+    "rampageshoot.ogg": {
+      "key": "rampageshoot",
+      "size": 13017,
+      "ticks": 10
+    },
+    "reconreload.ogg": {
+      "key": "reconreload",
+      "size": 92675,
+      "ticks": 101
+    },
+    "reconshoot.ogg": {
+      "key": "reconshoot",
+      "size": 35525,
+      "ticks": 35
+    },
+    "reload1.ogg": {
+      "key": "reload1",
+      "size": 18048,
+      "ticks": 23
+    },
+    "reom35loop.ogg": {
+      "key": "reom35loop",
+      "size": 19935,
+      "ticks": 20
+    },
+    "retaliatorreload.ogg": {
+      "key": "retaliatorreload",
+      "size": 57645,
+      "ticks": 74
+    },
+    "retaliatorshoot.ogg": {
+      "key": "retaliatorshoot",
+      "size": 21331,
+      "ticks": 19
+    },
+    "rocket1reload.ogg": {
+      "key": "rocket1reload",
+      "size": 113560,
+      "ticks": 40
+    },
+    "rocket1shoot.ogg": {
+      "key": "rocket1shoot",
+      "size": 79594,
+      "ticks": 31
+    },
+    "rocket2reload.ogg": {
+      "key": "rocket2reload",
+      "size": 113560,
+      "ticks": 40
+    },
+    "rocket2shoot.ogg": {
+      "key": "rocket2shoot",
+      "size": 72232,
+      "ticks": 31
+    },
+    "rocket3reload.ogg": {
+      "key": "rocket3reload",
+      "size": 113560,
+      "ticks": 40
+    },
+    "rocket3shoot.ogg": {
+      "key": "rocket3shoot",
+      "size": 72232,
+      "ticks": 31
+    },
+    "rocket4reload.ogg": {
+      "key": "rocket4reload",
+      "size": 113560,
+      "ticks": 40
+    },
+    "rocket4shoot.ogg": {
+      "key": "rocket4shoot",
+      "size": 72232,
+      "ticks": 31
+    },
+    "rocketfire1.ogg": {
+      "key": "rocketfire1",
+      "size": 182141,
+      "ticks": 58
+    },
+    "rocketfire2.ogg": {
+      "key": "rocketfire2",
+      "size": 174147,
+      "ticks": 58
+    },
+    "rocketrumble.ogg": {
+      "key": "rocketrumble",
+      "size": 11521,
+      "ticks": 10
+    },
+    "rpdshoot.ogg": {
+      "key": "rpdshoot",
+      "size": 191375,
+      "ticks": 71
+    },
+    "rpgshoot.ogg": {
+      "key": "rpgshoot",
+      "size": 180941,
+      "ticks": 58
+    },
+    "sg550shoot.ogg": {
+      "key": "sg550shoot",
+      "size": 209132,
+      "ticks": 72
+    },
+    "shell.ogg": {
+      "key": "shell",
+      "size": 46714,
+      "ticks": 82
+    },
+    "shoot_122mmussr.ogg": {
+      "key": "shoot_122mmussr",
+      "size": 31112,
+      "ticks": 60
+    },
+    "shoot_152mm.ogg": {
+      "key": "shoot_152mm",
+      "size": 99517,
+      "ticks": 106
+    },
+    "shoot_20mmaade.ogg": {
+      "key": "shoot_20mmaade",
+      "size": 10396,
+      "ticks": 11
+    },
+    "shoot_20mmpzii.ogg": {
+      "key": "shoot_20mmpzii",
+      "size": 30850,
+      "ticks": 60
+    },
+    "shoot_37mus.ogg": {
+      "key": "shoot_37mus",
+      "size": 32300,
+      "ticks": 60
+    },
+    "shoot_47mm.ogg": {
+      "key": "shoot_47mm",
+      "size": 36420,
+      "ticks": 37
+    },
+    "shoot_57mm.ogg": {
+      "key": "shoot_57mm",
+      "size": 57421,
+      "ticks": 61
+    },
+    "shoot_57mmuk.ogg": {
+      "key": "shoot_57mmuk",
+      "size": 26852,
+      "ticks": 49
+    },
+    "shoot_75mmde.ogg": {
+      "key": "shoot_75mmde",
+      "size": 32631,
+      "ticks": 60
+    },
+    "shoot_75mmjp.ogg": {
+      "key": "shoot_75mmjp",
+      "size": 32048,
+      "ticks": 60
+    },
+    "shoot_75mmus.ogg": {
+      "key": "shoot_75mmus",
+      "size": 32583,
+      "ticks": 60
+    },
+    "shoot_76mmus.ogg": {
+      "key": "shoot_76mmus",
+      "size": 32227,
+      "ticks": 60
+    },
+    "shoot_76mmussr.ogg": {
+      "key": "shoot_76mmussr",
+      "size": 31535,
+      "ticks": 60
+    },
+    "shoot_85mmussr.ogg": {
+      "key": "shoot_85mmussr",
+      "size": 31683,
+      "ticks": 60
+    },
+    "shoot_88flakde.ogg": {
+      "key": "shoot_88flakde",
+      "size": 31848,
+      "ticks": 60
+    },
+    "shoot_88mmde.ogg": {
+      "key": "shoot_88mmde",
+      "size": 31618,
+      "ticks": 60
+    },
+    "shotgunreload.ogg": {
+      "key": "shotgunreload",
+      "size": 25043,
+      "ticks": 52
+    },
+    "shotgunshoot.ogg": {
+      "key": "shotgunshoot",
+      "size": 15930,
+      "ticks": 39
+    },
+    "sigp229shoot.ogg": {
+      "key": "sigp229shoot",
+      "size": 125901,
+      "ticks": 45
+    },
+    "skorpionshoot.ogg": {
+      "key": "skorpionshoot",
+      "size": 170907,
+      "ticks": 63
+    },
+    "spasreload.ogg": {
+      "key": "spasreload",
+      "size": 115672,
+      "ticks": 78
+    },
+    "spasshoot.ogg": {
+      "key": "spasshoot",
+      "size": 247635,
+      "ticks": 84
+    },
+    "springfieldreload.ogg": {
+      "key": "springfieldreload",
+      "size": 41336,
+      "ticks": 88
+    },
+    "springfieldshoot.ogg": {
+      "key": "springfieldshoot",
+      "size": 64445,
+      "ticks": 65
+    },
+    "stampedereload.ogg": {
+      "key": "stampedereload",
+      "size": 97012,
+      "ticks": 107
+    },
+    "stampedeshoot.ogg": {
+      "key": "stampedeshoot",
+      "size": 14312,
+      "ticks": 12
+    },
+    "steamengine.ogg": {
+      "key": "steamengine",
+      "size": 38504,
+      "ticks": 41
+    },
+    "stenreload.ogg": {
+      "key": "stenreload",
+      "size": 63251,
+      "ticks": 103
+    },
+    "stenshoot.ogg": {
+      "key": "stenshoot",
+      "size": 15993,
+      "ticks": 11
+    },
+    "strongarmshoot.ogg": {
+      "key": "strongarmshoot",
+      "size": 19773,
+      "ticks": 20
+    },
+    "stryfereload.ogg": {
+      "key": "stryfereload",
+      "size": 38547,
+      "ticks": 48
+    },
+    "stryfeshoot.ogg": {
+      "key": "stryfeshoot",
+      "size": 19419,
+      "ticks": 20
+    },
+    "tank1shoot.ogg": {
+      "key": "tank1shoot",
+      "size": 47902,
+      "ticks": 79
+    },
+    "tank2shoot.ogg": {
+      "key": "tank2shoot",
+      "size": 43945,
+      "ticks": 76
+    },
+    "tank3shoot.ogg": {
+      "key": "tank3shoot",
+      "size": 53433,
+      "ticks": 79
+    },
+    "tank4shoot.ogg": {
+      "key": "tank4shoot",
+      "size": 37115,
+      "ticks": 53
+    },
+    "tankidle.ogg": {
+      "key": "tankidle",
+      "size": 32730,
+      "ticks": 40
+    },
+    "tankidle1.ogg": {
+      "key": "tankidle1",
+      "size": 32730,
+      "ticks": 40
+    },
+    "tankidle2.ogg": {
+      "key": "tankidle2",
+      "size": 34100,
+      "ticks": 40
+    },
+    "tankidle3.ogg": {
+      "key": "tankidle3",
+      "size": 32129,
+      "ticks": 40
+    },
+    "tankmove.ogg": {
+      "key": "tankmove",
+      "size": 27180,
+      "ticks": 62
+    },
+    "tankshell.ogg": {
+      "key": "tankshell",
+      "size": 46714,
+      "ticks": 82
+    },
+    "thompsonreload.ogg": {
+      "key": "thompsonreload",
+      "size": 50020,
+      "ticks": 116
+    },
+    "thompsonshoot.ogg": {
+      "key": "thompsonshoot",
+      "size": 10082,
+      "ticks": 12
+    },
+    "trenchgunreload.ogg": {
+      "key": "trenchgunreload",
+      "size": 85535,
+      "ticks": 126
+    },
+    "trenchgunshoot.ogg": {
+      "key": "trenchgunshoot",
+      "size": 14779,
+      "ticks": 17
+    },
+    "tripletakereload.ogg": {
+      "key": "tripletakereload",
+      "size": 186281,
+      "ticks": 65
+    },
+    "tripletakeshoot.ogg": {
+      "key": "tripletakeshoot",
+      "size": 223513,
+      "ticks": 77
+    },
+    "tt33reload.ogg": {
+      "key": "tt33reload",
+      "size": 128315,
+      "ticks": 39
+    },
+    "tt33shoot.ogg": {
+      "key": "tt33shoot",
+      "size": 13353,
+      "ticks": 14
+    },
+    "turrettraverse1.ogg": {
+      "key": "turrettraverse1",
+      "size": 38312,
+      "ticks": 61
+    },
+    "turrettraverse2.ogg": {
+      "key": "turrettraverse2",
+      "size": 28740,
+      "ticks": 38
+    },
+    "type100reload.ogg": {
+      "key": "type100reload",
+      "size": 14240,
+      "ticks": 18
+    },
+    "type100shoot.ogg": {
+      "key": "type100shoot",
+      "size": 26113,
+      "ticks": 36
+    },
+    "type38shoot.ogg": {
+      "key": "type38shoot",
+      "size": 13640,
+      "ticks": 18
+    },
+    "type99shoot.ogg": {
+      "key": "type99shoot",
+      "size": 40521,
+      "ticks": 53
+    },
+    "ural4320start.ogg": {
+      "key": "ural4320start",
+      "size": 22118,
+      "ticks": 40
+    },
+    "uspshoot.ogg": {
+      "key": "uspshoot",
+      "size": 125901,
+      "ticks": 45
+    },
+    "vulcanreload.ogg": {
+      "key": "vulcanreload",
+      "size": 342573,
+      "ticks": 395
+    },
+    "vulcanshoot.ogg": {
+      "key": "vulcanshoot",
+      "size": 14506,
+      "ticks": 12
+    },
+    "w1200reload.ogg": {
+      "key": "w1200reload",
+      "size": 115672,
+      "ticks": 78
+    },
+    "w1200shoot.ogg": {
+      "key": "w1200shoot",
+      "size": 107992,
+      "ticks": 44
+    },
+    "webleyreload.ogg": {
+      "key": "webleyreload",
+      "size": 56327,
+      "ticks": 106
+    },
+    "webleyshoot.ogg": {
+      "key": "webleyshoot",
+      "size": 13231,
+      "ticks": 17
+    },
+    "willystart.ogg": {
+      "key": "willystart",
+      "size": 31303,
+      "ticks": 38
+    },
+    "winchestermodel70reload.ogg": {
+      "key": "winchestermodel70reload",
+      "size": 34912,
+      "ticks": 86
+    },
+    "winchestermodel70shoot.ogg": {
+      "key": "winchestermodel70shoot",
+      "size": 19966,
+      "ticks": 35
+    }
+  }
+}

@@ -1,0 +1,34 @@
+// Identity
+Name FGM-148 Javelin Deployable
+ShortName M148JavelinDep
+
+// Model and Rendering
+Icon IconGunM148JavelinDep
+Colour 255 255 255
+DeployedModel manus_modern_warfare.M148Javelin
+DeployedTexture SkinGunM148Javelin
+
+// Recipe and Inventory
+Ammo AmmoNATOM148Javelin
+
+// Weapons
+ReloadTime 120
+Recoil 10
+Mode SemiAuto
+Scope M148Javelin
+Deployable True
+StandBackDistance 0.8
+TopViewLimit 30
+BottomViewLimit 30
+SideViewLimit 45
+PivotHeight 0.75
+RoundsPerMin 2
+Dispersion 0.5
+
+// Ballistics and Damage
+Damage 1
+
+// Sounds
+DistortSound False
+ShootSound RPGShoot
+ReloadSound bazookaReload

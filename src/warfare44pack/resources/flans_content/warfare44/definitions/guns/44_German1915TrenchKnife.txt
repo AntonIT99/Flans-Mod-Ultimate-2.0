@@ -1,0 +1,33 @@
+// Identity
+Name 1915 Trench Knife
+ShortName 44_German1915TrenchKnife
+
+// Rendering
+Icon 44_German1915TrenchKnife
+Model W44.German1915TrenchKnife
+Texture Skin44_German1915TrenchKnife
+Colour 255 255 255
+DeployedModel None
+
+// Ammunition
+NumBullets 0
+
+// Handling
+Mode SemiAuto
+Deployable False
+Scope None
+FOVZoomLevel 1.0
+
+// Fire rate and reload
+ShootDelay 0
+ReloadTime 0
+
+// Ballistics
+Accuracy 0
+
+// Damage
+Damage 0
+MeleeDamage 6
+
+// Recoil
+Recoil 0

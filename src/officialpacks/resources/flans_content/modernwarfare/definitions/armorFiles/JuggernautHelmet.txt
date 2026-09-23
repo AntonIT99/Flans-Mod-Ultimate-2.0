@@ -1,14 +1,27 @@
+// Identity
 Name Juggernaut Heavy Helmet (Green)
 ShortName juggernautHelmet
+
+// Item and rendering
 Icon JuggernautHelmet
 Colour 255 255 255
-Type Hat
-Defence 0.15
 ArmourTexture Juggernaut
-MoveSpeedModifier 0.85
-KnockbackModifier 0.25
-SmokeProtection True
+
+// Recipe
 Enchantability 0
-Toughness 2
 Durability 0
-DamageReductionAmount 3
+
+// Protection
+Type Hat
+Defence 0.08
+KnockbackModifier 0.25
+Toughness 2
+BulletDefence 0.07
+PenetrationResistance 1.90
+ArmorPoints 3
+
+// Movement
+MoveSpeedModifier 0.85
+
+// Effects
+SmokeProtection True

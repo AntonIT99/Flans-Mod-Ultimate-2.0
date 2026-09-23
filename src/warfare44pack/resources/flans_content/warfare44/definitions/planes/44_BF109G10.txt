@@ -1,0 +1,123 @@
+// Identity
+Name Messerschmitt BF-109 G-10
+ShortName 44_BF109G10
+Description German Fighter Aircraft__Uses Mg131 Ammo / 20mm Aircraft Ammo__Year Introduced : 1944
+
+// Rendering
+Icon 44_BF109G10
+Model W44.BF109G10
+ModelScale 1.1
+Texture Skin44_BF109G10
+CameraDistance 10.0
+
+// Recipe and inventory
+AddRecipeParts core 1 44_FighterAircraftBody
+AddRecipeParts nose 2 44_Mg131 1 44_20mmCannon
+CargoSlots 30
+BombSlots 0
+MissileSlots 2
+FuelTankSize 6000
+
+// Paintjobs
+advpaintjob BlackAce BF109G10_AceDark BF109G10_AceDark black 8 yellow 2
+advpaintjob Trop BF109G10_Trop BF109G10_Trop yellow 8 silver 2
+advpaintjob ErichHartmann BF109G10_ErichHartmann BF109G10_ErichHartmann green 8 black 2
+AddDye 5 gray
+AddDye 3 green
+
+// Real-world specifications
+RealMassKg 3280
+RealEnginePowerPS 1800
+RealMaxSpeedKmh 685
+RealWingSpanM 9.97
+RealWingAreaM2 16.4
+RealClimbRateMs 17.2
+
+// Movement
+Mode Plane
+MaxThrottle 2.5
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.5
+TurnRightSpeed 1.5
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
+RestingPitch 15.0
+Drag 1.0
+
+// Wheels and tracks
+WheelPosition 0 16 -8 -27
+WheelPosition 1 16 -8 27
+WheelPosition 2 -91 15 0
+WheelSpringStrength 0.125
+Propeller 0 70 20 0 nose 44_Metal_Propeller
+
+// Weapons
+Primary Gun
+Secondary Missile
+ReadWeaponsFromGunTypes true
+ShootDelayPrimary 3
+ShootDelaySecondary 3
+ModePrimary FullAuto
+ModeSecondary FullAuto
+AlternatePrimary False
+AlternateSecondary False
+BulletSpread 4
+BulletSpeed 12
+BulletDetection 10
+AllowAllAmmo False
+AddAmmo 44_20mmAircraftAmmo
+ShootPointPrimary 47 34 4 nose 44_Mg131
+ShootPointPrimary 47 34 -4 nose 44_Mg131
+ShootPointSecondary 85 23 0 nose
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+ShootParticlesSecondary crit 0.4 0 0
+ShootParticlesSecondary crit 0.4 -0.1 0
+ShootParticlesSecondary crit 0.4 0.1 0
+ShootParticlesSecondary crit 0.4 0 -0.1
+ShootParticlesSecondary crit 0.4 0 0.1
+ShootParticlesSecondary flansmod.fmflame 0 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 2.0
+CollisionDamageTimes 145
+
+// Parts and collision
+SetupPart core 450 -150 9 -17 220 48 34
+SetupPart rightWing 275 -45 17 17 58 22 105
+SetupPart leftWing 275 -45 17 -123 58 22 105
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+
+// Seats
+Pilot 1 20 0
+Passengers 0
+
+// Sounds
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary PlaneMGShoot
+ShootSoundSecondary BF109_20mmShoot
+
+// Effects
+AddEmitter largesmoke 1 [50,18,12] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [50,18,12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter largesmoke 1 [50,18,-12] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [50,18,-12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [50,18,12] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [50,18,12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [50,18,-12] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [50,18,-12] [0,0,0] [0,2,0] 0.5 0.51 0 1 core

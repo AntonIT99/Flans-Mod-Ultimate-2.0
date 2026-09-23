@@ -4,11 +4,11 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.item.BulletItem;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.PartItem;
-import com.flansmodultimate.common.types.BulletType;
+import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.util.InventoryHelper;
 import lombok.Getter;
@@ -71,6 +71,8 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     private final DriveableMappedSlot fuelSlot;
     @Getter private Page page = Page.MENU;
     @Getter private int scrollRow;
+    /** Seat whose single passenger-gun slot this menu exposes, or -1 for the ordinary driver menu. */
+    @Getter private final int passengerSeatIndex;
     private final int driveableSlotEnd;
     private final int playerInventoryStart;
     private final int playerInventoryEnd;
@@ -78,14 +80,30 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     public static DriveableInventoryMenu createFromNetwork(int containerId, Inventory inventory, RegistryFriendlyByteBuf buffer)
     {
         Entity entity = inventory.player.level().getEntity(buffer.readVarInt());
-        return new DriveableInventoryMenu(containerId, inventory, entity instanceof Driveable found ? found : null);
+        Page[] pages = Page.values();
+        int pageIndex = buffer.readVarInt();
+        int passengerSeatIndex = buffer.readVarInt();
+        return new DriveableInventoryMenu(containerId, inventory, entity instanceof Driveable found ? found : null,
+            pageIndex >= 0 && pageIndex < pages.length ? pages[pageIndex] : Page.MENU, passengerSeatIndex);
     }
 
     public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable)
     {
+        this(containerId, playerInventory, driveable, Page.MENU);
+    }
+
+    public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable, Page initialPage)
+    {
+        this(containerId, playerInventory, driveable, initialPage, -1);
+    }
+
+    public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable,
+                                  Page initialPage, int passengerSeatIndex)
+    {
         super(FlansMod.driveableInventoryMenu.get(), containerId);
         this.playerInventory = playerInventory;
         this.driveable = driveable;
+        this.passengerSeatIndex = passengerSeatIndex;
         driveableInventory = driveable == null || driveable.getDriveableData() == null
             ? new SimpleContainer(1) : driveable.getDriveableData();
 
@@ -121,7 +139,38 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         for (int column = 0; column < 9; column++)
             addSlot(new PageAwarePlayerSlot(playerInventory, column, GUI_X_OFFSET + 8 + column * SLOT_SIZE, 156));
         playerInventoryEnd = slots.size();
+        if (isPassengerGunMenu())
+            page = Page.GUNS;
+        else if (hasPage(initialPage))
+            page = initialPage;
         remapVisibleSlots();
+    }
+
+    public boolean isPassengerGunMenu()
+    {
+        return passengerSeatIndex >= 0;
+    }
+
+    /** First ammo index visible on the Guns page, relative to the driveable ammo range. */
+    public int getVisibleGunStart()
+    {
+        return isPassengerGunMenu() ? getPassengerGunAmmoIndex() : 0;
+    }
+
+    public int getVisibleGunCount()
+    {
+        if (!(driveableInventory instanceof DriveableData data))
+            return 0;
+        return isPassengerGunMenu() ? (getPassengerGunAmmoIndex() >= 0 ? 1 : 0) : data.getNumAmmoSlots();
+    }
+
+    private int getPassengerGunAmmoIndex()
+    {
+        if (driveable == null || driveable.getConfigType() == null)
+            return -1;
+        SeatInfo info = driveable.getConfigType().getSeat(passengerSeatIndex);
+        int ammoIndex = info == null || info.isDriver() || info.getGunType() == null ? -1 : info.getGunnerID();
+        return ammoIndex >= 0 && ammoIndex < driveable.getConfigType().getNumAmmoSlots() ? ammoIndex : -1;
     }
 
     public int getEntityId()
@@ -133,6 +182,8 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     {
         if (!(driveableInventory instanceof DriveableData data) || driveable == null || driveable.getConfigType() == null)
             return false;
+        if (isPassengerGunMenu())
+            return candidate == Page.GUNS && getPassengerGunAmmoIndex() >= 0;
         return switch (candidate)
         {
             case MENU -> true;
@@ -156,7 +207,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
 
     public List<DriveablePart> getRepairParts()
     {
-        if (!(driveableInventory instanceof DriveableData data))
+        if (isPassengerGunMenu() || !(driveableInventory instanceof DriveableData data))
             return List.of();
         return data.getParts().values().stream()
             .filter(part -> part.getMaxHealth() > 0F)
@@ -226,7 +277,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         return switch (page)
         {
             case MENU -> 0;
-            case GUNS -> data.getNumAmmoSlots();
+            case GUNS -> getVisibleGunCount();
             case BOMBS -> data.getNumBombSlots();
             case MISSILES -> data.getNumMissileSlots();
             case CARGO -> data.getNumCargoSlots();
@@ -243,7 +294,9 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         return switch (page)
         {
             case MENU -> -1;
-            case GUNS -> data.getAmmoInventoryStart();
+            // Driver and passenger menus deliberately map onto the same DriveableData slot.
+            // Server-side menu clicks are serialized, and each open menu broadcasts that shared state.
+            case GUNS -> data.getAmmoInventoryStart() + getVisibleGunStart();
             case BOMBS -> data.getBombInventoryStart();
             case MISSILES -> data.getMissileInventoryStart();
             case CARGO -> data.getCargoInventoryStart();
@@ -294,11 +347,10 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         return switch (page)
         {
             case MENU -> false;
-            // DriveableData performs the exact mounted-gun check for the
-            // mapped slot. Do not reject that gun's ammo via vehicle AddAmmo.
-            case GUNS -> stack.getItem() instanceof BulletItem;
-            case BOMBS -> isAmmo(stack, EnumWeaponType.BOMB) || isAmmo(stack, EnumWeaponType.MINE);
-            case MISSILES -> isAmmo(stack, EnumWeaponType.MISSILE) || isAmmo(stack, EnumWeaponType.SHELL);
+            // Legacy FilterAmmunitionInput accepts bullets and grenades in all
+            // weapon pages; when disabled it intentionally accepts any item.
+            case GUNS, BOMBS, MISSILES -> !driveable.getConfigType().isFilterAmmunition()
+                || stack.getItem() instanceof ShootableItem;
             case CARGO -> true;
             case FUEL -> stack.getItem() instanceof PartItem part
                 && part.getConfigType().getCategory() == PartType.Category.FUEL;
@@ -309,19 +361,16 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         };
     }
 
-    private boolean isAmmo(ItemStack stack, EnumWeaponType weaponType)
-    {
-        if (!(stack.getItem() instanceof BulletItem bulletItem))
-            return false;
-        BulletType bullet = bulletItem.getConfigType();
-        return driveable != null && driveable.getConfigType().isValidAmmo(bullet)
-            && (bullet.getWeaponType() == weaponType || weaponType == EnumWeaponType.GUN && bullet.getWeaponType() == EnumWeaponType.NONE);
-    }
-
     @Override
     public boolean stillValid(@NotNull Player player)
     {
-        return driveable != null && driveable.isAlive() && driveable.canPlayerAccessInventory(player);
+        if (driveable == null || !driveable.isAlive() || !driveable.canPlayerAccessInventory(player))
+            return false;
+        if (!isPassengerGunMenu())
+            return true;
+        Seat seat = driveable.getSeat(player);
+        return seat != null && !seat.isDriverSeat() && seat.getSeatIndex() == passengerSeatIndex
+            && getPassengerGunAmmoIndex() >= 0;
     }
 
     @Override

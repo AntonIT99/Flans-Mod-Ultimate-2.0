@@ -1,0 +1,38 @@
+// Identity
+Name Powerpack for Vulture Multi-Laser - 150 Rounds
+ShortName WH40K_Ammo_MultiLaser_1
+description Amunition for Vulture Multi Laser
+
+// Model and Rendering
+Icon Icon_WH40K_Ammo_LasCannon
+Model Manus_WH40K.Misc.WH40K_Misc_LaserSmall_1
+Texture Skin_WH40K_Bullet_Laser_1C
+
+// Recipe and Inventory
+MaxStackSize 3
+RoundsPerItem 150
+
+// Behaviour
+ExplodeOnImpact False
+FallSpeed 0.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 38
+DamageVsVehicles 25
+Explosion 0
+Fire 0
+SetEntitiesOnFire False
+MuzzleVelocity 700.0
+PenetrationAt100m 24
+
+// Sounds
+HitSound bullet
+
+// Effects
+HasLight True
+FlakParticles 0
+SmokeTrail False

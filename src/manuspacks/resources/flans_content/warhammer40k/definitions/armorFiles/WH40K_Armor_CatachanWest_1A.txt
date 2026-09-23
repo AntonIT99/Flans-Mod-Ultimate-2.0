@@ -1,0 +1,19 @@
+﻿// Identity
+Name Catachan West
+ShortName WH40K_Armor_CatachanWest_1A
+
+// Model and Rendering
+Model Manus_WH40K.Armor.WH40K_Armor_CatachanWest_1
+ModelScale 0.25
+Icon Icon_WH40K_Armor_CatachanWest_1A
+ArmourTexture Skin_WH40K_Armor_Catachan_1A
+
+// Recipe and Inventory
+Type Chest
+
+// Protection
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

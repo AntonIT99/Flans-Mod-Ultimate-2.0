@@ -1,0 +1,61 @@
+// Identity
+Name PPS-43
+ShortName 44_PPs43
+Description Soviet Sub Machine Gun
+
+// Rendering
+Icon 44_PPs43
+Model W44.PPs43
+ModelScale 0.2
+Texture Skin44_PPs43
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_PPs43Ammo
+
+// Handling
+Mode FullAuto
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 550.0
+ReloadTime 53
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 500.0
+Dispersion 0.45
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1.75
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound PPs43Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Mp40Reload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

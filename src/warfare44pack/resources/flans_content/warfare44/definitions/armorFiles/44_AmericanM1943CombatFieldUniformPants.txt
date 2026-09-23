@@ -1,0 +1,18 @@
+// Identity
+Name American M-1943 Combat Field Uniform Pants
+ShortName 44_AmericanM1943CombatFieldUniformPants
+Type Pants
+
+// Rendering
+Icon 44_AmericanM1943CombatFieldUniformPants
+Model W44.AmericanM1943CombatFieldUniformPants
+ModelScale 1
+ArmorTexture Skin44_AmericanM1943CombatFieldUniform
+
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
+SmokeProtection false

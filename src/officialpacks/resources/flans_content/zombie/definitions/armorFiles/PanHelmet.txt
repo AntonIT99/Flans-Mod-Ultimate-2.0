@@ -1,10 +1,21 @@
+// Identity
 Name Pan Helmet
 ShortName panHelmet
+
+// Item and rendering
 Icon PanHelmet
 Colour 255 255 255
-Type Helmet
 Model zombie.PanHelmet
-Defence 0.2
 ArmourTexture PanHelmet
-MoveSpeedModifier 0.95
+
+// Protection
+Type Helmet
+Defence 0.02
 KnockbackModifier 0.25
+BulletDefence 0.01
+PenetrationResistance 1.10
+ArmorPoints 1
+Toughness 0
+
+// Movement
+MoveSpeedModifier 0.95

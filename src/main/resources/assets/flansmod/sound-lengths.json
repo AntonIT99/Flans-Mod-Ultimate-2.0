@@ -1,0 +1,250 @@
+{
+  "version": 2,
+  "sounds": {
+    "bullet1.ogg": {
+      "key": "bullet1",
+      "size": 8794,
+      "ticks": 7
+    },
+    "bullet2.ogg": {
+      "key": "bullet2",
+      "size": 7055,
+      "ticks": 5
+    },
+    "bullet3.ogg": {
+      "key": "bullet3",
+      "size": 10285,
+      "ticks": 8
+    },
+    "bullet4.ogg": {
+      "key": "bullet4",
+      "size": 6108,
+      "ticks": 3
+    },
+    "bulletair1.ogg": {
+      "key": "bulletair1",
+      "size": 6237,
+      "ticks": 3
+    },
+    "bulletair2.ogg": {
+      "key": "bulletair2",
+      "size": 6092,
+      "ticks": 3
+    },
+    "bulletair3.ogg": {
+      "key": "bulletair3",
+      "size": 6291,
+      "ticks": 3
+    },
+    "bulletair4.ogg": {
+      "key": "bulletair4",
+      "size": 6376,
+      "ticks": 4
+    },
+    "bulletair5.ogg": {
+      "key": "bulletair5",
+      "size": 6440,
+      "ticks": 4
+    },
+    "bulletair6.ogg": {
+      "key": "bulletair6",
+      "size": 6075,
+      "ticks": 3
+    },
+    "bulletair7.ogg": {
+      "key": "bulletair7",
+      "size": 6373,
+      "ticks": 3
+    },
+    "defaultshellinsert.ogg": {
+      "key": "defaultshellinsert",
+      "size": 12555,
+      "ticks": 10
+    },
+    "emptyclick.ogg": {
+      "key": "emptyclick",
+      "size": 12726,
+      "ticks": 9
+    },
+    "impact_bricks-01.ogg": {
+      "key": "impact_bricks-01",
+      "size": 15416,
+      "ticks": 16
+    },
+    "impact_bricks-02.ogg": {
+      "key": "impact_bricks-02",
+      "size": 19106,
+      "ticks": 20
+    },
+    "impact_bricks-03.ogg": {
+      "key": "impact_bricks-03",
+      "size": 19934,
+      "ticks": 23
+    },
+    "impact_bricks-04.ogg": {
+      "key": "impact_bricks-04",
+      "size": 19246,
+      "ticks": 21
+    },
+    "impact_bricks-05.ogg": {
+      "key": "impact_bricks-05",
+      "size": 13771,
+      "ticks": 17
+    },
+    "impact_dirt-01.ogg": {
+      "key": "impact_dirt-01",
+      "size": 13670,
+      "ticks": 15
+    },
+    "impact_dirt-02.ogg": {
+      "key": "impact_dirt-02",
+      "size": 14011,
+      "ticks": 15
+    },
+    "impact_dirt-03.ogg": {
+      "key": "impact_dirt-03",
+      "size": 13623,
+      "ticks": 15
+    },
+    "impact_dirt-04.ogg": {
+      "key": "impact_dirt-04",
+      "size": 14071,
+      "ticks": 15
+    },
+    "impact_glass-01.ogg": {
+      "key": "impact_glass-01",
+      "size": 15310,
+      "ticks": 14
+    },
+    "impact_glass-02.ogg": {
+      "key": "impact_glass-02",
+      "size": 13689,
+      "ticks": 14
+    },
+    "impact_glass-03.ogg": {
+      "key": "impact_glass-03",
+      "size": 14029,
+      "ticks": 14
+    },
+    "impact_glass-04.ogg": {
+      "key": "impact_glass-04",
+      "size": 10189,
+      "ticks": 10
+    },
+    "impact_glass-05.ogg": {
+      "key": "impact_glass-05",
+      "size": 12075,
+      "ticks": 14
+    },
+    "impact_metal-01.ogg": {
+      "key": "impact_metal-01",
+      "size": 14595,
+      "ticks": 19
+    },
+    "impact_metal-02.ogg": {
+      "key": "impact_metal-02",
+      "size": 10665,
+      "ticks": 11
+    },
+    "impact_metal-03.ogg": {
+      "key": "impact_metal-03",
+      "size": 12325,
+      "ticks": 14
+    },
+    "impact_metal-04.ogg": {
+      "key": "impact_metal-04",
+      "size": 13890,
+      "ticks": 17
+    },
+    "impact_metal-05.ogg": {
+      "key": "impact_metal-05",
+      "size": 12437,
+      "ticks": 14
+    },
+    "impact_rock-01.ogg": {
+      "key": "impact_rock-01",
+      "size": 13214,
+      "ticks": 15
+    },
+    "impact_rock-02.ogg": {
+      "key": "impact_rock-02",
+      "size": 13624,
+      "ticks": 15
+    },
+    "impact_rock-03.ogg": {
+      "key": "impact_rock-03",
+      "size": 14827,
+      "ticks": 15
+    },
+    "impact_rock-04.ogg": {
+      "key": "impact_rock-04",
+      "size": 13116,
+      "ticks": 15
+    },
+    "impact_water-01.ogg": {
+      "key": "impact_water-01",
+      "size": 17721,
+      "ticks": 24
+    },
+    "impact_water-02.ogg": {
+      "key": "impact_water-02",
+      "size": 17412,
+      "ticks": 24
+    },
+    "impact_water-03.ogg": {
+      "key": "impact_water-03",
+      "size": 12646,
+      "ticks": 19
+    },
+    "impact_water-04.ogg": {
+      "key": "impact_water-04",
+      "size": 15258,
+      "ticks": 24
+    },
+    "impact_water-05.ogg": {
+      "key": "impact_water-05",
+      "size": 16434,
+      "ticks": 23
+    },
+    "impact_wood-01.ogg": {
+      "key": "impact_wood-01",
+      "size": 19283,
+      "ticks": 18
+    },
+    "impact_wood-02.ogg": {
+      "key": "impact_wood-02",
+      "size": 16221,
+      "ticks": 16
+    },
+    "impact_wood-03.ogg": {
+      "key": "impact_wood-03",
+      "size": 17567,
+      "ticks": 18
+    },
+    "impact_wood-04.ogg": {
+      "key": "impact_wood-04",
+      "size": 14086,
+      "ticks": 15
+    },
+    "impact_wood-05.ogg": {
+      "key": "impact_wood-05",
+      "size": 16241,
+      "ticks": 15
+    },
+    "skullboss_laugh.ogg": {
+      "key": "skullboss_laugh",
+      "size": 41591,
+      "ticks": 73
+    },
+    "skullboss_spawn.ogg": {
+      "key": "skullboss_spawn",
+      "size": 28972,
+      "ticks": 49
+    },
+    "unlocknotch.ogg": {
+      "key": "unlocknotch",
+      "size": 5126,
+      "ticks": 1
+    }
+  }
+}

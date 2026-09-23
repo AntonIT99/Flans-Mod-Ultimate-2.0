@@ -62,8 +62,8 @@ public class SmokeGrenadeParticle extends ParticleBase
 
         if (dischargeTime < 0)
         {
-            level.addParticle(FlansMod.smokeBurstParticle.get(), x, y, z, 0.0D, 0.0D, 0.0D);
-            level.addParticle(FlansMod.bigSmokeParticle.get(), x, y, z, 0.0D, 0.0D, 0.0D);
+            ParticleHelper.spawnSubParticle(FlansMod.smokeBurstParticle.get(), x, y, z);
+            ParticleHelper.spawnSubParticle(FlansMod.bigSmokeParticle.get(), x, y, z);
             remove();
         }
         
@@ -78,7 +78,7 @@ public class SmokeGrenadeParticle extends ParticleBase
             double py = yo + dy * i;
             double pz = zo + dz * i;
 
-            level.addParticle(FlansMod.explodeParticle.get(), px, py, pz, 0.0D, 0.0D, 0.0D);
+            ParticleHelper.spawnSubParticle(FlansMod.explodeParticle.get(), px, py, pz);
         }
 
         if (onGround)

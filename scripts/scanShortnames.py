@@ -12,25 +12,36 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ZIP_ROOT = PROJECT_ROOT / "run" / "flan"
+SOURCE_ROOT = PROJECT_ROOT / "src"
 CONFIG_DIR = PROJECT_ROOT / "src" / "main" / "resources" / "config"
 OUTPUT_CSV = PROJECT_ROOT / "missing_shortnames.csv"
 
 FOLDER_TO_CATEGORY: Dict[str, str] = {
+    "aaguns": "aagun",
     "armorFiles": "armor",
     "guns": "gun",
     "grenades": "grenade",
     "bullets": "bullet",
+    "vehicles": "vehicle",
+    "planes": "plane",
+    "mechas": "mecha",
 }
 
 CATEGORY_TO_JSON: Dict[str, str] = {
+    "aagun": "aagun_categories.json",
     "armor": "armor_categories.json",
     "gun": "gun_categories.json",
     "grenade": "grenade_categories.json",
     "bullet": "bullet_categories.json",
+    "vehicle": "vehicle_categories.json",
+    "plane": "plane_categories.json",
+    "mecha": "mecha_categories.json",
 }
 
 SHORTNAME_RE = re.compile(r"^\s*Shortname\s+(\S+)\s*$", re.IGNORECASE)
 NAME_RE = re.compile(r"^\s*Name\s+(.+?)\s*$", re.IGNORECASE)
+LANG_FILE_SUFFIX = "assets/flansmod/lang/en_us.json"
+LANG_KEY_PREFIX = "item.flansmod."
 
 
 @dataclass(frozen=True)
@@ -48,12 +59,30 @@ def iter_zip_files(root: Path) -> Iterable[Path]:
     return sorted(p for p in root.rglob("*.zip") if p.is_file())
 
 
+def iter_flans_content_dirs(source_root: Path) -> Iterable[Path]:
+    if not source_root.exists():
+        return []
+    definition_dirs: List[Path] = []
+    for source_folder in source_root.iterdir():
+        if not source_folder.is_dir():
+            continue
+        flans_content_dir = source_folder / "resources" / "flans_content"
+        if flans_content_dir.is_dir():
+            definition_dirs.extend(
+                candidate
+                for candidate in flans_content_dir.rglob("definitions")
+                if candidate.is_dir()
+            )
+    return sorted(definition_dirs)
+
+
 def is_txt_in_category(internal_path: str) -> Optional[str]:
     normalized_path = internal_path.replace("\\", "/")
     if not normalized_path.lower().endswith(".txt"):
         return None
+    parent_folders = {part.lower() for part in normalized_path.split("/")[:-1]}
     for folder, category in FOLDER_TO_CATEGORY.items():
-        if normalized_path.startswith(folder.rstrip("/") + "/"):
+        if folder.rstrip("/").lower() in parent_folders:
             return category
     return None
 
@@ -75,10 +104,100 @@ def extract_full_name_from_text(text: str) -> str:
     return ""
 
 
+def decode_pack_text(raw: bytes) -> str:
+    try:
+        return raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1", errors="replace")
+
+
+def extract_localized_names(text: str, source: str) -> Dict[str, str]:
+    try:
+        data = json.loads(text)
+    except Exception as error:
+        print(f"[WARN] Could not parse localization JSON {source}: {error}", file=sys.stderr)
+        return {}
+
+    if not isinstance(data, dict):
+        print(f"[WARN] Localization JSON is not an object: {source}", file=sys.stderr)
+        return {}
+
+    localized_names: Dict[str, str] = {}
+    for key, value in data.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            continue
+        key_lower = key.lower()
+        if key_lower.startswith(LANG_KEY_PREFIX):
+            localized_names[key_lower[len(LANG_KEY_PREFIX):]] = value
+    return localized_names
+
+
+def merge_localized_names(
+    destination: Dict[str, str], incoming: Dict[str, str], source: str
+) -> None:
+    for shortname, localized_name in incoming.items():
+        existing = destination.get(shortname)
+        if existing is None:
+            destination[shortname] = localized_name
+        elif existing != localized_name:
+            print(
+                f"[WARN] Conflicting localization for {shortname!r} in {source}; "
+                f"keeping {existing!r} instead of {localized_name!r}",
+                file=sys.stderr,
+            )
+
+
+def read_zip_localized_names(zip_file: zipfile.ZipFile, zip_path: Path) -> Dict[str, str]:
+    localized_names: Dict[str, str] = {}
+    lang_infos = sorted(
+        (
+            info
+            for info in zip_file.infolist()
+            if not info.is_dir()
+            and info.filename.replace("\\", "/").lower().endswith(LANG_FILE_SUFFIX)
+        ),
+        key=lambda info: (info.filename.replace("\\", "/").count("/"), info.filename.lower()),
+    )
+    for info in lang_infos:
+        source = f"{zip_path}::{info.filename}"
+        try:
+            text = decode_pack_text(zip_file.read(info.filename))
+        except Exception as error:
+            print(f"[WARN] Could not read {source}: {error}", file=sys.stderr)
+            continue
+        merge_localized_names(localized_names, extract_localized_names(text, source), source)
+    return localized_names
+
+
+def find_resources_dir(definitions_dir: Path) -> Optional[Path]:
+    for parent in definitions_dir.parents:
+        if parent.name.lower() == "resources":
+            return parent
+    return None
+
+
+def read_loose_localized_names(definitions_dir: Path) -> Dict[str, str]:
+    resources_dir = find_resources_dir(definitions_dir)
+    if resources_dir is None:
+        return {}
+
+    lang_path = resources_dir / LANG_FILE_SUFFIX
+    if not lang_path.is_file():
+        return {}
+
+    try:
+        text = decode_pack_text(lang_path.read_bytes())
+    except Exception as error:
+        print(f"[WARN] Could not read {lang_path}: {error}", file=sys.stderr)
+        return {}
+    return extract_localized_names(text, str(lang_path))
+
+
 def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
     results: List[ShortnameOrigin] = []
     try:
         with zipfile.ZipFile(zip_path, "r") as zip_file:
+            localized_names = read_zip_localized_names(zip_file, zip_path)
             for info in zip_file.infolist():
                 if info.is_dir():
                     continue
@@ -93,24 +212,54 @@ def read_zip_txt_shortnames(zip_path: Path) -> List[ShortnameOrigin]:
                     print(f"[WARN] Could not read {zip_path}::{info.filename}: {error}", file=sys.stderr)
                     continue
 
-                try:
-                    text = raw.decode("utf-8")
-                except UnicodeDecodeError:
-                    text = raw.decode("latin-1", errors="replace")
+                text = decode_pack_text(raw)
 
-                full_name = extract_full_name_from_text(text)
+                definition_name = extract_full_name_from_text(text)
                 for shortname in extract_shortnames_from_text(text):
                     results.append(
                         ShortnameOrigin(
                             category=category,
                             shortname_lower=shortname,
-                            full_name=full_name,
+                            full_name=localized_names.get(shortname, definition_name),
                             zip_path=str(zip_path.relative_to(PROJECT_ROOT)),
                             internal_txt_path=info.filename.replace("\\", "/"),
                         )
                     )
     except Exception as error:
         print(f"[WARN] Failed to process zip {zip_path}: {error}", file=sys.stderr)
+
+    return results
+
+
+def read_loose_txt_shortnames(flans_content_dir: Path) -> List[ShortnameOrigin]:
+    results: List[ShortnameOrigin] = []
+    localized_names = read_loose_localized_names(flans_content_dir)
+    for txt_path in sorted(flans_content_dir.rglob("*.txt")):
+        if not txt_path.is_file():
+            continue
+
+        relative_path = txt_path.relative_to(flans_content_dir).as_posix()
+        category = is_txt_in_category(relative_path)
+        if not category:
+            continue
+
+        try:
+            text = decode_pack_text(txt_path.read_bytes())
+        except Exception as error:
+            print(f"[WARN] Could not read {txt_path}: {error}", file=sys.stderr)
+            continue
+
+        definition_name = extract_full_name_from_text(text)
+        for shortname in extract_shortnames_from_text(text):
+            results.append(
+                ShortnameOrigin(
+                    category=category,
+                    shortname_lower=shortname,
+                    full_name=localized_names.get(shortname, definition_name),
+                    zip_path=str(flans_content_dir.relative_to(PROJECT_ROOT)),
+                    internal_txt_path=relative_path,
+                )
+            )
 
     return results
 
@@ -144,6 +293,10 @@ def main() -> int:
 
     for zip_path in iter_zip_files(ZIP_ROOT):
         for origin in read_zip_txt_shortnames(zip_path):
+            origins_by_category[origin.category].append(origin)
+
+    for flans_content_dir in iter_flans_content_dirs(SOURCE_ROOT):
+        for origin in read_loose_txt_shortnames(flans_content_dir):
             origins_by_category[origin.category].append(origin)
 
     json_items_by_category = {

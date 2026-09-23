@@ -1,0 +1,16 @@
+// Identity
+Name Plane Wheel
+ShortName SMP_Part_Wheel_Plane
+
+// Model and Rendering
+Icon Icon_SMP_Part_Wheel_Plane
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Aluminium G SMP_Part_Mat_Block_Gummi
+GGG
+GMG
+GGG
+RecipeOutput 1
+Category Wheel
+PartBoxRecipe
+StackSize 64

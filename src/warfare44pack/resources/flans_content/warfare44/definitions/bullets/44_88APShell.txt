@@ -1,0 +1,52 @@
+// Identity
+Name 88mm AP Tank Shell
+ShortName 44_88APShell
+
+// Rendering
+Icon 44_88APShell
+Model W44.W44ShellLarge
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 3
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 773
+FallSpeed 1.0
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 162
+BreaksGlass True
+
+// Damage
+Mass 10200
+Damage 1
+DamageVsLiving 150
+DamageVsVehicles 1800
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 109
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+HasSubmunitions false
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 0
+ExplodeParticles 9
+FlareParticleCount 5
+DebrisParticleCount 5
+
+// Sounds
+HitSound

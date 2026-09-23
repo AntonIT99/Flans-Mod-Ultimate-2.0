@@ -1,0 +1,143 @@
+// Identity
+Name M20 Armored Car [M2 Browning .50 Cal]
+ShortName 44_M20ArmoredCar
+Description American Armored Car__Uses : M2 Browning .50 Cal Belt __Year Introduced : 1943
+
+// Rendering
+Icon 44_M20ArmoredCar
+Model W44.M20ArmoredCar
+ModelScale 1
+Texture Skin44_M8Greyhound
+RotateWheels True
+CameraDistance 7.5
+
+// Recipe and inventory
+AddRecipeParts core 1 44_Car_Chassis 1 44_Vehicle_Seat 8 ingotIron
+AddRecipeParts leftTrack 3 44_Car_Wheel
+AddRecipeParts rightTrack 3 44_Car_Wheel
+CargoSlots 25
+ShellSlots 1
+FuelTankSize 2000
+
+// Paintjobs
+advpaintjob Olive 44_M20ArmoredCar_Olive 44_M8Greyhound_Olive gray 2
+AddDye 3 green
+
+// Real-world specifications
+DriveType AWD
+RealMassKg 5850
+RealEnginePowerHp 110
+RealMaxSpeedKmh 89
+RealMaxReverseSpeedKmh 12
+
+// Movement
+Tank false
+FourWheelDrive true
+MaxThrottle 1.0
+MaxNegativeThrottle 0.65
+TurnLeftSpeed 0.65
+TurnRightSpeed 0.65
+CanRoll true
+SquashMobs True
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -32 -8 -18
+WheelPosition 1 -32 -8 18
+WheelPosition 2 32 -8 18
+WheelPosition 3 32 -8 -18
+WheelSpringStrength 0.5
+FixTrackLink 4
+FlipLinkFix false
+
+// Weapons
+ReadWeaponsFromGunTypes true
+RoundsPerMinPrimary 575
+BulletSpread 3
+BulletSpeed 15
+BulletDetection 5
+AllowAllAmmo false
+AddAmmo 44_50CalAmmo
+BarrelPosition 35 39 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0 0
+ShootParticlesPrimary flansmod.fmflame 0.25 0 0
+ShootParticlesSecondary crit 0.5 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 19
+ArmorSideMm 9.5
+ArmorRearMm 9.5
+ArmorTopMm 0
+ArmorBottomMm 6.35
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 800 -42 -3 -22 102 44 44
+SetupPart frontLeftWheel 35 23 -10 17 19 19 8
+SetupPart frontRightWheel 35 23 -10 -25 19 19 8
+SetupPart backLeftWheel 35 -46 -10 17 43 19 8
+SetupPart backRightWheel 35 -46 -10 -26 43 19 8
+
+// Seats
+Driver 0 27 0 -360 360 -25 45
+Passengers 2
+Passenger 1 15 9 9 core -360 360 -89 89
+Passenger 2 15 9 -9 core -360 360 -89 89
+RotatedDriverOffset -2 0 0
+DriverAimSpeed 3 2.75 0
+DriverYawBeforePitch false
+
+// Sounds
+StartSound JeepIdle
+StartSoundLength 7
+StartSoundRange 12
+EngineSound JeepMove
+EngineSoundLength 61
+EngineSoundRange 50
+BackSound JeepBack
+BackSoundLength 61
+BackSoundRange 25
+YawSound TurretTraverse1
+YawSoundLength 21
+PitchSound TurretTraverse2
+PitchSoundLength 20
+DriverTraverseSounds false
+ShootSoundPrimary 50CalShoot
+PlaceSoundPrimary TankPlace
+SoundsPlaceTimePrimary 60
+
+// Effects
+AddEmitter smoke 1 [-40,6,7] [1,1,1] [0,0.5,0] -1 1 0 1 core
+AddEmitter smoke 1 [-40,6,-7] [1,1,1] [0,0.5,0] -1 1 0 1 core
+AddEmitter smoke 2 [-34,26,-23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-34,26,23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+AddEmitter largesmoke 3 [-34,26,-23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-34,26,23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+AddEmitter largesmoke 1 [-34,26,-23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+AddEmitter largesmoke 1 [-40,6,7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter largesmoke 1 [-40,6,-7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter explode 1 [-40,6,7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter explode 1 [-40,6,-7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter largesmoke 1 [-40,6,7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+AddEmitter largesmoke 1 [-40,6,-7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+AddEmitter explode 1 [-40,6,7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+AddEmitter explode 1 [-40,6,-7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+AddEmitter largesmoke 1 [-40,6,7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+AddEmitter largesmoke 1 [-40,6,-7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+AddEmitter flame 1 [-40,6,7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter flame 1 [-40,6,-7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [-40,6,7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter explode 1 [-40,6,-7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter largesmoke 3 [-40,6,7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+AddEmitter largesmoke 3 [-40,6,-7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+AddEmitter largesmoke 1 [-40,6,7] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+AddEmitter largesmoke 1 [-40,6,-7] [1,1,1] [0,5,0] 0.7 0.77 0 1 core
+AddEmitter flame 1 [-40,6,7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+AddEmitter flame 1 [-40,6,-7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core

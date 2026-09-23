@@ -4,17 +4,29 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.OpticsHud;
+import com.flansmodultimate.common.driveables.OpticsState;
 import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.driveables.VehicleOptics;
+import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -26,6 +38,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.OptionalInt;
+
 /**
  * Lightweight mount proxy for a driveable seat.
  *
@@ -36,14 +50,106 @@ import net.minecraft.world.phys.Vec3;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Seat extends Entity implements IControllable
 {
+    private static final EntityDataAccessor<Boolean> DATA_SCOPED = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_SIGHT = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_THERMAL = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.BOOLEAN);
+    private final OpticsState opticsState = new OpticsState();
+    private Entity opticsOccupant;
+
+    @Nullable
+    public VehicleOptics getOptics()
+    {
+        if (seatInfo == null || driveable == null || driveable.getConfigType() == null) return null;
+        return isDriverSeat() && !seatInfo.getOptics().isOpticsMode()
+            ? driveable.getConfigType().getOptics() : seatInfo.getOptics();
+    }
+
+    public boolean isScoped() { return entityData.get(DATA_SCOPED); }
+    public int getCurrentSight() { return entityData.get(DATA_SIGHT); }
+    public boolean isThermalScoped() { return isScoped() && entityData.get(DATA_THERMAL); }
+    public boolean isNightSightActive()
+    {
+        return isScoped() && getOptics() != null && (getOptics().isNightSight()
+            || driveable.getConfigType().getOptics().isNightSight());
+    }
+    public float getScopeZoom()
+    {
+        VehicleOptics optics = getOptics();
+        return !isScoped() || optics == null ? 1F : optics.available() ? optics.zoom(getCurrentSight()) : 7F;
+    }
+
+    @Nullable
+    public OpticsHud getOpticsHud()
+    {
+        if (seatInfo == null || driveable == null || driveable.getConfigType() == null) return null;
+        OpticsHud own = seatInfo.getOptics().getHud();
+        int source = own.getInheritSeat();
+        if (source == -2 && isDriverSeat() && !own.isOverridePilotDefaults()) source = 1;
+        SeatInfo inherited = source >= 0 ? driveable.getConfigType().getSeat(source) : null;
+        return inherited == null ? own : inherited.getOptics().getHud();
+    }
+
+    private void updateOptics(boolean toggle, boolean cycle)
+    {
+        Entity occupant = getFirstPassenger();
+        if (opticsOccupant != occupant)
+        {
+            opticsState.reset();
+            opticsOccupant = occupant;
+        }
+        VehicleOptics definition = getOptics();
+        // As in the reference, authored optics work independently of the teams
+        // permission for the optional, unconfigured driver zoom.
+        boolean allowed = occupant instanceof Player && occupant.isAlive() && definition != null
+            && driveable != null && driveable.isAlive()
+            && (definition.available() || isDriverSeat() && driveable instanceof Vehicle
+                && TeamsManager.getInstance().isVehiclesCanZoom());
+        boolean wasActive = opticsState.isActive();
+        if (definition == null) opticsState.reset();
+        else opticsState.update(definition, allowed, level().getGameTime(), toggle, cycle);
+        entityData.set(DATA_SCOPED, opticsState.isActive());
+        entityData.set(DATA_SIGHT, opticsState.getSight());
+        entityData.set(DATA_THERMAL, opticsState.isThermal());
+        if (wasActive != opticsState.isActive() && occupant != null)
+            level().playSound(null, occupant.blockPosition(), SoundEvents.SPYGLASS_USE,
+                SoundSource.PLAYERS, 0.35F, opticsState.isActive() ? 1F : 0.8F);
+    }
     private static final EntityDataAccessor<Integer> DATA_PARENT_ID = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_SEAT_INDEX = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> DATA_AIM_YAW = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> DATA_AIM_PITCH = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DATA_INPUT_MASK = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
+    /** Rounds this seat's gun still has to fire, or -1 when the seat mounts no gun. */
+    private static final EntityDataAccessor<Integer> DATA_GUN_ROUNDS = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
+    /** What a full magazine of this seat's gun holds. */
+    private static final EntityDataAccessor<Integer> DATA_GUN_MAGAZINE_SIZE = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
+    /** Ticks of reload this seat's gun still owes, excluding the ordinary delay between shots. */
+    private static final EntityDataAccessor<Integer> DATA_GUN_RELOAD_TICKS = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
+    /** Display name of what this seat's gun has loaded, empty when nothing is. */
+    private static final EntityDataAccessor<Component> DATA_GUN_AMMO_NAME = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.COMPONENT);
 
     private static final int MAX_ORPHAN_TICKS = 100;
-    private static final double LEGACY_PLAYER_RIDING_OFFSET = -0.35D;
+    /**
+     * Where a rider's feet sit relative to their seat anchor, in blocks.
+     *
+     * <p>Derived from the 1.7.10 sources rather than estimated. {@code
+     * EntitySeat.onUpdate} placed the rider at {@code seat.posY +
+     * riddenByEntity.getYOffset()}, {@code EntityPlayer.getYOffset()} returned
+     * {@code yOffset - 0.5F} against a standing player's {@code yOffset} of
+     * {@code 1.62F}, and 1.7.10 hung a bounding box from {@code posY - yOffset},
+     * so the feet landed at {@code seat.posY + 1.12 - 1.62}. Modern {@code
+     * setPos} places the feet directly, which makes the same placement a flat
+     * -0.5.</p>
+     */
+    static final double LEGACY_PLAYER_RIDING_OFFSET = -0.5D;
+    /**
+     * Extra drop for a mecha cockpit, on top of the shared rider offset.
+     *
+     * <p>Kept at the total it was tuned to by eye while the shared offset was
+     * 0.15 short, so correcting that offset does not silently sink every mecha
+     * pilot by the same amount.</p>
+     */
+    private static final double MECHA_COCKPIT_RIDING_OFFSET = -0.05D;
 
     @Getter @Nullable
     protected Driveable driveable;
@@ -57,6 +163,7 @@ public class Seat extends Entity implements IControllable
     private boolean clientViewAimInitialized;
     private float clientViewAimYaw;
     private float clientViewAimPitch;
+    private float clientViewWorldYaw;
 
     private int orphanTicks;
     private int localInputMask;
@@ -64,6 +171,10 @@ public class Seat extends Entity implements IControllable
     private int lastInputSequence;
     private long lastInputGameTime;
     private boolean receivedInputSequence;
+    private Entity inputOccupant;
+    /** The rider's client predicts the driveable's movement and wants the server's reports. */
+    @Getter @Setter
+    private boolean inputPredicted;
 
     public Seat(EntityType<?> entityType, Level level)
     {
@@ -110,7 +221,41 @@ public class Seat extends Entity implements IControllable
 
     public float getViewAimYaw()
     {
-        return clientViewAimInitialized ? clientViewAimYaw : getAimYaw();
+        return getViewAimYaw(1F);
+    }
+
+    /**
+     * @param partialTick the same partial tick the caller is about to compose the chassis yaw
+     *                    with, so the two interpolate from the same instant. Callers that read
+     *                    the chassis yaw raw (input sending, once-per-tick bookkeeping) should
+     *                    keep using the no-arg overload, which behaves as if the tick just landed.
+     */
+    public float getViewAimYaw(float partialTick)
+    {
+        if (!clientViewAimInitialized)
+            return getAimYaw();
+        // A mecha turns its whole torso to follow the driver's look, so the aim
+        // reproducing a requested view depends on where the torso currently is.
+        // Deriving it from an absolute world yaw on every read keeps the camera
+        // steady while the torso interpolates towards the server angle. Storing
+        // a relative aim and subtracting the torso motion once per tick instead
+        // made the view stutter by one tick worth of torso rotation.
+        //
+        // The torso motion has to be read with the exact same partial tick the render
+        // camera is about to interpolate the chassis yaw with. Subtracting the raw,
+        // un-interpolated chassis yaw here left a residual term equal to the gap between
+        // the interpolated and raw chassis yaw - zero only at the end of each tick - which
+        // reintroduced the same one-tick sawtooth on top of an otherwise perfectly smooth,
+        // continuously mouse-driven view whenever the torso was actually turning.
+        if (usesAbsoluteViewYaw())
+            return Mth.wrapDegrees(clientViewWorldYaw - Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()));
+        return clientViewAimYaw;
+    }
+
+    /** Whether this seat stores its look as a world yaw instead of a driveable relative aim. */
+    private boolean usesAbsoluteViewYaw()
+    {
+        return level().isClientSide && driveable instanceof Mecha && isDriverSeat();
     }
 
     public float getViewAimPitch()
@@ -134,15 +279,37 @@ public class Seat extends Entity implements IControllable
             || Math.abs(getRequestedAimPitch() - getAimPitch()) >= epsilon;
     }
 
+    /**
+     * World camera angles of the rider in this seat.
+     *
+     * <p>Aim is local to the driveable, so it is composed with the driveable
+     * orientation. Summing the two sets of Euler angles instead makes the aim
+     * turn around the world axes, which stops matching the rolled cockpit the
+     * rider actually sees as soon as the driveable leaves level flight.</p>
+     */
+    public LegacyDriveableCoordinates.ViewAngles getMountedView()
+    {
+        return driveable == null
+            ? new LegacyDriveableCoordinates.ViewAngles(getYRot(), getXRot(), 0F)
+            : driveable.getMountedViewAngles(getViewAimYaw(), getViewAimPitch());
+    }
+
     public float getMountedViewYaw()
     {
-        return driveable == null ? getYRot() : Mth.wrapDegrees(driveable.getYaw() + 90F + getViewAimYaw());
+        return getMountedView().yaw();
+    }
+
+    /** World yaw of a rider looking straight along the rendered driveable. */
+    public float getMountedForwardYaw()
+    {
+        if (driveable == null)
+            return getYRot();
+        return driveable.getEntityFacingYaw();
     }
 
     public float getMountedViewPitch()
     {
-        return driveable == null ? getXRot()
-            : Mth.clamp(driveable.getPitch() + getViewAimPitch(), -89.9F, 89.9F);
+        return getMountedView().pitch();
     }
 
     public int getInputMask()
@@ -183,6 +350,28 @@ public class Seat extends Entity implements IControllable
         builder.define(DATA_AIM_YAW, 0F);
         builder.define(DATA_AIM_PITCH, 0F);
         builder.define(DATA_INPUT_MASK, 0);
+        builder.define(DATA_GUN_ROUNDS, -1);
+        builder.define(DATA_GUN_MAGAZINE_SIZE, 0);
+        builder.define(DATA_GUN_RELOAD_TICKS, 0);
+        builder.define(DATA_GUN_AMMO_NAME, Component.empty());
+    }
+
+    public int getGunRounds() { return entityData.get(DATA_GUN_ROUNDS); }
+    public int getGunMagazineSize() { return entityData.get(DATA_GUN_MAGAZINE_SIZE); }
+    public int getGunReloadTicks() { return entityData.get(DATA_GUN_RELOAD_TICKS); }
+    public Component getGunAmmoName() { return entityData.get(DATA_GUN_AMMO_NAME); }
+
+    /** Publishes the gunner HUD state from the server. */
+    public void setGunState(int rounds, int magazineSize, int reloadTicks, Component ammoName)
+    {
+        if (!entityData.get(DATA_GUN_AMMO_NAME).equals(ammoName))
+            entityData.set(DATA_GUN_AMMO_NAME, ammoName);
+        if (entityData.get(DATA_GUN_ROUNDS) != rounds)
+            entityData.set(DATA_GUN_ROUNDS, rounds);
+        if (entityData.get(DATA_GUN_MAGAZINE_SIZE) != magazineSize)
+            entityData.set(DATA_GUN_MAGAZINE_SIZE, magazineSize);
+        if (entityData.get(DATA_GUN_RELOAD_TICKS) != reloadTicks)
+            entityData.set(DATA_GUN_RELOAD_TICKS, reloadTicks);
     }
 
     @Override
@@ -225,7 +414,9 @@ public class Seat extends Entity implements IControllable
         snapToParent();
 
         EnumDriveablePart part = seatInfo == null ? EnumDriveablePart.CORE : seatInfo.getPart();
-        if (!driveable.isPartIntact(part) && isVehicle())
+        boolean keepDestroyedPassengerGun = ModCommonConfig.gunsInDestroyedPartsWork()
+            && !isDriverSeat() && seatInfo != null && seatInfo.getGunType() != null;
+        if (!driveable.isPartIntact(part) && isVehicle() && !keepDestroyedPassengerGun)
             ejectPassengers();
 
         Entity passenger = getFirstPassenger();
@@ -241,6 +432,13 @@ public class Seat extends Entity implements IControllable
         }
         if (passenger == null && level().isClientSide)
             clientViewAimInitialized = false;
+        if (passenger == null && !level().isClientSide)
+        {
+            inputOccupant = null;
+            receivedInputSequence = false;
+        }
+        if (!level().isClientSide)
+            updateOptics(false, false);
     }
 
     private boolean resolveParent()
@@ -265,8 +463,10 @@ public class Seat extends Entity implements IControllable
         Vec3 position = driveable.getSeatWorldPosition(getSeatIndex());
         setPos(position.x, position.y, position.z);
         setDeltaMovement(Vec3.ZERO);
-        setYRot(Mth.wrapDegrees(driveable.getYaw() + 90F + getAimYaw()));
-        setXRot(getAimPitch());
+        LegacyDriveableCoordinates.ViewAngles view =
+            driveable.getMountedViewAngles(getAimYaw(), getAimPitch());
+        setYRot(view.yaw());
+        setXRot(view.pitch());
     }
 
     /**
@@ -299,8 +499,14 @@ public class Seat extends Entity implements IControllable
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
-        if (driveable == null || level().isClientSide)
-            return driveable != null;
+        if (driveable == null)
+            return false;
+        // A click on the seat is a click on the aircraft: offer the same pickup
+        // the hull would, before treating it as damage.
+        if (driveable.tryPickupOnAttack(source))
+            return true;
+        if (level().isClientSide)
+            return true;
         EnumDriveablePart part = seatInfo == null ? EnumDriveablePart.CORE : seatInfo.getPart();
         return driveable.damagePart(part, amount, source);
     }
@@ -321,9 +527,20 @@ public class Seat extends Entity implements IControllable
             player.stopRiding();
             return InteractionResult.CONSUME;
         }
+        return tryEnter(player) ? InteractionResult.CONSUME : InteractionResult.PASS;
+    }
+
+    /**
+     * Seats {@code player} here unless a {@link PlayerEnterSeatEvent} listener cancels
+     * it, as the 1.7.10 seat did. Server side.
+     */
+    public boolean tryEnter(@NotNull Player player)
+    {
+        if (NeoForge.EVENT_BUS.post(new PlayerEnterSeatEvent(this, player)).isCanceled())
+            return false;
         if (player.getVehicle() != null)
             player.stopRiding();
-        return player.startRiding(this, true) ? InteractionResult.CONSUME : InteractionResult.PASS;
+        return player.startRiding(this, true);
     }
 
     @Override
@@ -341,14 +558,19 @@ public class Seat extends Entity implements IControllable
         // EntityPlayer 1.7.10 contributed a -0.35 Y offset here, whereas the
         // modern default mount offset raises the player by about 0.45 blocks.
         double ridingOffset = getPassengerRidingOffset(passenger);
-        move.accept(passenger, getX(), getY() + ridingOffset, getZ());
+        Vec3 riderPosition = driveable == null
+            ? new Vec3(getX(), getY() + ridingOffset, getZ())
+            : driveable.getRiderWorldPosition(getSeatIndex(), ridingOffset);
+        move.accept(passenger, riderPosition.x, riderPosition.y, riderPosition.z);
         passenger.setDeltaMovement(driveable == null ? Vec3.ZERO : driveable.getDeltaMovement());
         passenger.fallDistance = 0F;
     }
 
     public double getPassengerRidingOffset(@NotNull Entity passenger)
     {
-        return passenger instanceof Player ? LEGACY_PLAYER_RIDING_OFFSET : 0D;
+        if (!(passenger instanceof Player))
+            return 0D;
+        return LEGACY_PLAYER_RIDING_OFFSET + (driveable instanceof Mecha ? MECHA_COCKPIT_RIDING_OFFSET : 0D);
     }
 
     @Override
@@ -362,7 +584,17 @@ public class Seat extends Entity implements IControllable
 
     public boolean acceptInput(@NotNull ServerPlayer player, int mask, float requestedYaw, float requestedPitch, int sequence)
     {
-        if (getFirstPassenger() != player || driveable == null || !isNewSequence(sequence))
+        if (getFirstPassenger() != player || driveable == null)
+            return false;
+        // Sequences belong to a client's session, not to the seat another client
+        // previously occupied. A new gunner must not inherit the old replay floor.
+        if (inputOccupant != player)
+        {
+            inputOccupant = player;
+            receivedInputSequence = false;
+            entityData.set(DATA_INPUT_MASK, 0);
+        }
+        if (!isNewSequence(sequence))
             return false;
 
         long now = level().getGameTime();
@@ -384,11 +616,8 @@ public class Seat extends Entity implements IControllable
         float pitch = getAimPitch() + pitchDelta;
         if (info != null)
         {
-            if (info.getMinYaw() <= -359.9F && info.getMaxYaw() >= 359.9F)
-                yaw = Mth.wrapDegrees(yaw);
-            else
-                yaw = Mth.clamp(Mth.wrapDegrees(yaw), info.getMinYaw(), info.getMaxYaw());
-            pitch = Mth.clamp(pitch, info.getMinPitch(), info.getMaxPitch());
+            yaw = info.clampYaw(yaw);
+            pitch = info.clampPitch(pitch);
         }
         else
         {
@@ -400,6 +629,7 @@ public class Seat extends Entity implements IControllable
         entityData.set(DATA_AIM_PITCH, pitch);
         previousInputMask = getInputMask();
         entityData.set(DATA_INPUT_MASK, DriveableInput.sanitize(mask));
+        updateOptics(isInputRising(DriveableInput.TOGGLE_SCOPE), isInputRising(DriveableInput.CYCLE_SIGHT));
         return true;
     }
 
@@ -417,6 +647,12 @@ public class Seat extends Entity implements IControllable
         applyClientAimDelta((float) deltaX * yawSpeed, -(float) deltaY * pitchSpeed);
     }
 
+    /** The latest input step accepted from the rider, which prediction reports acknowledge. */
+    public OptionalInt getAcknowledgedInputSequence()
+    {
+        return receivedInputSequence ? OptionalInt.of(lastInputSequence) : OptionalInt.empty();
+    }
+
     /** Applies a local view impulse while retaining the limits declared by this seat. */
     public void applyClientAimDelta(float yawDelta, float pitchDelta)
     {
@@ -424,16 +660,21 @@ public class Seat extends Entity implements IControllable
             return;
 
         initializeClientViewAim();
+        if (usesAbsoluteViewYaw())
+        {
+            // The torso is free to spin, so only the pitch keeps its seat limits.
+            clientViewWorldYaw = Mth.wrapDegrees(clientViewWorldYaw + yawDelta);
+            float pitched = clientViewAimPitch + pitchDelta;
+            clientViewAimPitch = Mth.clamp(seatInfo == null ? pitched : seatInfo.clampPitch(pitched), -89.9F, 89.9F);
+            return;
+        }
         SeatInfo info = seatInfo;
         float yaw = clientViewAimYaw + yawDelta;
         float pitch = clientViewAimPitch + pitchDelta;
         if (info != null)
         {
-            if (info.getMinYaw() <= -359.9F && info.getMaxYaw() >= 359.9F)
-                yaw = Mth.wrapDegrees(yaw);
-            else
-                yaw = Mth.clamp(Mth.wrapDegrees(yaw), info.getMinYaw(), info.getMaxYaw());
-            pitch = Mth.clamp(pitch, info.getMinPitch(), info.getMaxPitch());
+            yaw = info.clampYaw(yaw);
+            pitch = info.clampPitch(pitch);
         }
         clientViewAimYaw = yaw;
         clientViewAimPitch = Mth.clamp(pitch, -89.9F, 89.9F);
@@ -443,7 +684,15 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = getAimYaw();
         clientViewAimPitch = getAimPitch();
+        clientViewWorldYaw = Mth.wrapDegrees((driveable == null ? 0F : driveable.getYaw()) + getAimYaw());
         clientViewAimInitialized = true;
+    }
+
+    /** Removes torso rotation from relative aim so a mecha look input is consumed only once. */
+    public void consumeAimYaw(float yawDelta)
+    {
+        if (Float.isFinite(yawDelta))
+            entityData.set(DATA_AIM_YAW, Mth.wrapDegrees(getAimYaw() - yawDelta));
     }
 
     private void initializeClientViewAim()
@@ -457,6 +706,7 @@ public class Seat extends Entity implements IControllable
     {
         clientViewAimYaw = 0F;
         clientViewAimPitch = 0F;
+        clientViewWorldYaw = driveable == null ? 0F : driveable.getYaw();
         clientViewAimInitialized = true;
     }
 

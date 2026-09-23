@@ -1,0 +1,42 @@
+﻿// Identity
+Name Warhound Titan Vulcan Mega Bolter
+ShortName WH40K_Gun_WarhoundVulcanMegaBolter_1A
+
+// Model and Rendering
+ModelScale 1
+Icon Icon_WH40K_Gun_WarhoundVulcanMegaBolter_1A
+Model Manus_WH40K.Gun.WH40K_Gun_WarhoundVulcanMegaBolter_1
+DeployedModel None
+Texture Skin_WH40K_Gun_WarhoundVulcanMegaBolter_1A
+
+// Recipe and Inventory
+UsableByPlayers False
+AllowGripAttachments False
+Ammo WH40K_Ammo_WarhoundVulcanMegaBolter
+AllowAllAttachments False
+AllowAttachments MKVbBoltgunSilencer MKVbBoltgunScope MKVbBoltgunStock
+AllowBarrelAttachments False
+AllowScopeAttachments False
+AllowStockAttachments False
+NumGenericAttachmentSlots 0
+
+// Weapons
+Deployable False
+Mode FullAuto
+Recoil 0
+ReloadTime 40
+OneHanded True
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+RoundsPerMin 1200.0
+Dispersion 0.4
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 800.0
+
+// Sounds
+DistortSound False
+ShootSound boltgun_fire
+ReloadSound boltgun_reload

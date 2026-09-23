@@ -1,0 +1,16 @@
+// Identity
+Name Electronic Parts
+ShortName SMP_Part_Misc_Part_Electronic
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_Part_Electronic
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Plastic G ingotGold
+GGG
+MMM
+GGG
+RecipeOutput 4
+Category Misc
+PartBoxRecipe
+StackSize 64

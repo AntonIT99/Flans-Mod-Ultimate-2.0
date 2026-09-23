@@ -1,5 +1,8 @@
+// Identity
 Name Support
 ShortName nerfVulcanClass
+
+// Items
 AddItem nerfVulcan
 AddItem nerfMaverick
 AddItem 25DartBelt 2

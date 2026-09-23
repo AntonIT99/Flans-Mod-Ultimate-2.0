@@ -1,14 +1,19 @@
+// Identity
 Name Fuel Can
 ShortName fuelCan
-Icon FuelCan
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Fuel, Misc
 Category Fuel
-Fuel 1000
+
+// Item and rendering
+Icon FuelCan
+Colour 255 255 255
 StackSize 8
+
+// Recipe
 RecipeOutput 1
 Recipe I ingotIron C coal
   I
  CC
  CC
+
+// Part
+Fuel 1000

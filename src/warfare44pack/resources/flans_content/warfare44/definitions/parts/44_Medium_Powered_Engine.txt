@@ -1,0 +1,16 @@
+// Identity
+Name Medium Powered Engine
+ShortName 44_Medium_Powered_Engine
+Category Engine
+
+// Rendering
+Icon 44_Medium_Powered_Engine
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 4
+
+// Engine
+EngineSpeed 1.35
+FuelConsumption 1.15
+WorksWith vehicles planes

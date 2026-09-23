@@ -1,0 +1,64 @@
+// Identity
+Name Z-6 Rotary Blaster Cannon
+ShortName Z6rotaryblaster
+
+// Item and rendering
+Icon minigun
+Colour 255 255 255
+DeployedModel None
+Model wolffstarwars.Z6Blaster
+Texture z6blaster
+ModelScale 1.0
+FlashModel wolffstarwars.MuzzleFlash
+FlashTexture sw_blueflash
+
+// Ammunition
+Ammo Dc15Ammo
+Ammo blasterStunAmmo
+ReloadTime 100
+NumBullets 1
+
+// Operation
+RoundsPerMin 2000.0
+Mode MiniGun
+Deployable False
+MoveSpeedModifier 0.8
+KnockbackModifier 0.4
+
+// Ballistics
+Recoil 1
+Knockback 0.5
+Dispersion 0.45
+MuzzleVelocity 280.0
+
+// Damage and protection
+Damage 1
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.0
+
+// Attachments
+AllowAllAttachments false
+AllowBarrelAttachments false
+AllowScopeAttachments false
+AllowStockAttachments false
+AllowGripAttachments false
+NumGenericAttachmentSlots 1
+
+// Sounds
+WarmupSound z6blasterwarmup
+SpinSound MinigunSpin
+CooldownSound z6blastercooldown
+WarmupSoundLength 13
+SpinSoundLength 9
+ShootSound z6blastershoot
+SoundLength 30
+ReloadSound MG42Reload
+
+// Tooltip
+ShowDamage True
+ShowRecoil True
+ShowAccuracy True
+ShowReloadTime True

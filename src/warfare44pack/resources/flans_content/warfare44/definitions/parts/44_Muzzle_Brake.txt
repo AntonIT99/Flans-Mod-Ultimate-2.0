@@ -1,0 +1,11 @@
+// Identity
+Name Muzzle Brake
+ShortName 44_Muzzle_Brake
+Category Misc
+
+// Rendering
+Icon 44_Muzzle_Break
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

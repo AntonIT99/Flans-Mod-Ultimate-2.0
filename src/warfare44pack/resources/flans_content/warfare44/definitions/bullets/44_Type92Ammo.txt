@@ -1,0 +1,44 @@
+// Identity
+Name Type 92 Belt
+ShortName 44_Type92Ammo
+
+// Rendering
+Icon 44_Type92Ammo
+Model W44.W44Bullet
+Texture Skin44_W44Bullet_Tracer_White
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 30
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates True
+BreaksGlass True
+
+// Damage
+Mass 13.2
+Damage 1
+DamageVsLiving 14
+DamageVsVehicles 1
+DamageVsPlanes 25
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 0
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+FlakParticles 0
+
+// Sounds
+HitSound bullet
+HitSound LargeImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true

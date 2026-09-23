@@ -1,0 +1,21 @@
+// Identity
+Name Clone Jet Trooper Armour
+ShortName JettrooperArmor
+
+// Item and rendering
+Icon jettrooperarmor
+Colour 255 255 255
+ArmourTexture clonejettrooperchestplate
+Model wolffstarwars.CloneJettrooperArmour
+
+// Protection
+Type Boots
+Defence 0.06
+BulletDefence 0.07
+PenetrationResistance 0.67
+ArmorPoints 2
+Toughness 1
+
+// Movement
+NegateFallDamage True
+MoveSpeedModifier 0.98

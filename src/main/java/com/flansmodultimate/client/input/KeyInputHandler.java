@@ -1,34 +1,47 @@
 package com.flansmodultimate.client.input;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelVehicle;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.gui.GunAmmoSelectScreen;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.VehicleOpticsHud;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.DriveableInput;
+import com.flansmodultimate.common.driveables.DriveablePrediction;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketDriveableInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunReload;
+import com.flansmodultimate.network.server.PacketGunSecondaryMode;
+import com.flansmodultimate.network.server.PacketGunVariableZoom;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.flansmodultimate.network.server.PacketTeamsAction;
 import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -37,37 +50,115 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.Objects;
 
 /** Central client key router for guns, teams and server-authoritative driveables. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class KeyInputHandler
 {
-    private static final String CATEGORY = "key.categories." + FlansMod.MOD_ID;
+    private static final String CATEGORY_GENERAL = "key.categories." + FlansMod.MOD_ID + ".general";
+    private static final String CATEGORY_DRIVEABLES = "key.categories." + FlansMod.MOD_ID + ".driveables";
+    private static final String CATEGORY_VEHICLES = "key.categories." + FlansMod.MOD_ID + ".vehicles";
+    private static final String CATEGORY_PLANES = "key.categories." + FlansMod.MOD_ID + ".planes";
     private static final int INPUT_KEEPALIVE_TICKS = 5;
     private static final float AIM_CHANGE_EPSILON = 0.1F;
     private static final float FLIGHT_CONTROL_EPSILON = 0.005F;
 
-    private static final KeyMapping reloadKey = key("reload", InputConstants.KEY_R);
-    private static final KeyMapping fireModeKey = key("fireMode", InputConstants.KEY_B);
-    private static final KeyMapping lookAtGunKey = key("lookAtGun", InputConstants.KEY_M);
-    private static final KeyMapping debugKey = new KeyMapping("key." + FlansMod.MOD_ID + ".debug", KeyConflictContext.UNIVERSAL,
-        InputConstants.Type.KEYSYM, InputConstants.KEY_F10, CATEGORY);
-    private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_G);
-    private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_H);
-    private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O);
+    // On foot: guns, teams and debugging.
+    private static final KeyMapping reloadKey = key("reload", InputConstants.KEY_R, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping fireModeKey = key("fire_mode", InputConstants.KEY_B, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping lookAtGunKey = key("look_at_gun", InputConstants.KEY_M, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping preferredAmmoKey = key("preferred_ammo", InputConstants.KEY_LBRACKET, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping secondaryModeKey = key("secondary_mode", InputConstants.KEY_K, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping increaseZoomKey = key("increase_zoom", InputConstants.KEY_UP, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping decreaseZoomKey = key("decrease_zoom", InputConstants.KEY_DOWN, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping debugKey = new KeyMapping("key." + FlansMod.MOD_ID + ".debug", KeyConflictContext.UNIVERSAL, InputConstants.Type.KEYSYM, InputConstants.KEY_F10, CATEGORY_GENERAL);
+    private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_U, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
 
-    private static final KeyMapping descendKey = key("driveable.descend", InputConstants.KEY_LCONTROL);
-    private static final KeyMapping driveableInventoryKey = key("driveable.inventory", InputConstants.KEY_R);
-    private static final KeyMapping primaryKey = key("driveable.primary", InputConstants.KEY_V);
-    private static final KeyMapping secondaryKey = key("driveable.secondary", InputConstants.KEY_B);
-    private static final KeyMapping controlModeKey = key("driveable.control_mode", InputConstants.KEY_C);
-    private static final KeyMapping rollLeftKey = key("driveable.roll_left", InputConstants.KEY_Z);
-    private static final KeyMapping rollRightKey = key("driveable.roll_right", InputConstants.KEY_X);
-    private static final KeyMapping gearKey = key("driveable.gear", InputConstants.KEY_L);
-    private static final KeyMapping doorKey = key("driveable.door", InputConstants.KEY_K);
-    private static final KeyMapping modeKey = key("driveable.mode", InputConstants.KEY_J);
-    private static final KeyMapping flareKey = key("driveable.flare", InputConstants.KEY_N);
+    // Every driveable: planes, ground vehicles and mechas alike.
+    private static final KeyMapping driveableInventoryKey = key("driveable.inventory", InputConstants.KEY_R, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping primaryKey = mouseKey("driveable.primary", GLFW.GLFW_MOUSE_BUTTON_LEFT, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping primaryAlternativeKey = key("driveable.primary_alternative", InputConstants.UNKNOWN.getValue(), EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping secondaryKey = mouseKey("driveable.secondary", GLFW.GLFW_MOUSE_BUTTON_RIGHT, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping secondaryAlternativeKey = key("driveable.secondary_alternative", InputConstants.UNKNOWN.getValue(), EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping changeSeatKey = key("driveable.change_seat", InputConstants.KEY_NUMPAD0, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping doorKey = key("driveable.door", InputConstants.KEY_K, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping engineKey = key("driveable.engine", InputConstants.KEY_SEMICOLON, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping flareKey = key("driveable.flare", InputConstants.KEY_X, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+
+    // Ground vehicles and mechas. These default to the vanilla movement keys so
+    // driving is unchanged, but they are explicit binds so the controls screen
+    // shows what a tank or a mecha actually answers to.
+    private static final KeyMapping driveForwardKey = key("vehicle.forward", InputConstants.KEY_W, EnumKeyConflictContext.GROUND_DRIVEABLE, CATEGORY_VEHICLES);
+    private static final KeyMapping driveBackwardKey = key("vehicle.backward", InputConstants.KEY_S, EnumKeyConflictContext.GROUND_DRIVEABLE, CATEGORY_VEHICLES);
+    private static final KeyMapping steerLeftKey = key("vehicle.left", InputConstants.KEY_A, EnumKeyConflictContext.GROUND_DRIVEABLE, CATEGORY_VEHICLES);
+    private static final KeyMapping steerRightKey = key("vehicle.right", InputConstants.KEY_D, EnumKeyConflictContext.GROUND_DRIVEABLE, CATEGORY_VEHICLES);
+    private static final KeyMapping brakeKey = key("vehicle.brake", InputConstants.KEY_SPACE, EnumKeyConflictContext.GROUND_DRIVEABLE, CATEGORY_VEHICLES);
+    private static final KeyMapping decreaseVehicleThrottleKey = key("vehicle.throttle_decrease", InputConstants.KEY_Q, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
+    private static final KeyMapping increaseVehicleThrottleKey = key("vehicle.throttle_increase", InputConstants.KEY_E, EnumKeyConflictContext.VEHICLE, CATEGORY_VEHICLES);
+    private static final KeyMapping vehicleZoomKey = mouseKey("vehicle.zoom", GLFW.GLFW_MOUSE_BUTTON_MIDDLE, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping cycleSightKey = key("driveable.cycle_sight", InputConstants.KEY_B, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping rangefinderKey = key("driveable.rangefinder", InputConstants.KEY_Y, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping resetRangeKey = key("driveable.reset_range", InputConstants.KEY_H, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+    private static final KeyMapping opticsEditorKey = key("driveable.optics_editor", InputConstants.KEY_F8, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+
+    // Planes and helicopters. Aircraft fly on their own binds rather than the
+    // vanilla movement keys, so the flight axes can be rebound without changing
+    // how a player walks or drives.
+    private static final KeyMapping pitchDownKey = key("plane.pitch_down", InputConstants.KEY_W, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping pitchUpKey = key("plane.pitch_up", InputConstants.KEY_S, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping yawLeftKey = key("plane.yaw_left", InputConstants.KEY_Q, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping yawRightKey = key("plane.yaw_right", InputConstants.KEY_E, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping rollLeftKey = key("plane.roll_left", InputConstants.KEY_A, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping rollRightKey = key("plane.roll_right", InputConstants.KEY_D, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping throttleUpKey = key("plane.throttle_up", InputConstants.KEY_SPACE, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping throttleDownKey = key("plane.throttle_down", InputConstants.KEY_LCONTROL, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping controlModeKey = key("plane.control_mode", InputConstants.KEY_C, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping gearKey = key("plane.gear", InputConstants.KEY_G, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping airBrakeKey = key("plane.air_brake", InputConstants.KEY_V, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping modeKey = key("plane.mode", InputConstants.KEY_J, EnumKeyConflictContext.PLANE, CATEGORY_PLANES);
+    private static final KeyMapping driveablePlayerInventoryKey = key("driveable.player_inventory", InputConstants.KEY_Z, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
+
+    /**
+     * General binds that checkKeys only reads on foot, behind the gun branch.
+     * Mounting a driveable takes the other branch, so these can share a key with
+     * a driveable bind without either losing anything.
+     */
+    private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey,
+        preferredAmmoKey, secondaryModeKey, increaseZoomKey, decreaseZoomKey);
+
+    private static final List<KeyMapping> DRIVEABLE_BINDS = List.of(driveableInventoryKey, driveablePlayerInventoryKey,
+        primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey,
+        vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
+    /** Binds that claim their key while the player is at the controls of an aircraft. */
+    private static final List<KeyMapping> AIRCRAFT_BINDS = List.of(pitchDownKey, pitchUpKey,
+        yawLeftKey, yawRightKey, rollLeftKey, rollRightKey, throttleUpKey, throttleDownKey,
+        controlModeKey, gearKey, airBrakeKey, modeKey,
+        driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
+        changeSeatKey, doorKey, engineKey, flareKey, driveablePlayerInventoryKey,
+        vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
+    /** Binds that claim their key while the player is at the controls of anything else. */
+    private static final List<KeyMapping> GROUND_BINDS = List.of(driveForwardKey, driveBackwardKey,
+        steerLeftKey, steerRightKey, brakeKey, driveableInventoryKey, primaryKey, primaryAlternativeKey,
+        secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, flareKey, driveablePlayerInventoryKey,
+        vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
+    /** Ground binds plus the persistent throttle lever that only vehicles answer. */
+    private static final List<KeyMapping> VEHICLE_BINDS = List.of(driveForwardKey, driveBackwardKey,
+        steerLeftKey, steerRightKey, brakeKey, decreaseVehicleThrottleKey, increaseVehicleThrottleKey,
+        vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey,
+        driveableInventoryKey, primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey,
+        changeSeatKey, doorKey, engineKey, flareKey, driveablePlayerInventoryKey);
+    /**
+     * Binds read with consumeClick. Forge gates isDown on the conflict context
+     * but not consumeClick, so a press made outside the context stays queued and
+     * would fire the moment the player mounts. These are drained instead.
+     */
+    private static final List<KeyMapping> CLICK_BINDS = List.of(driveableInventoryKey, changeSeatKey, doorKey, engineKey,
+        flareKey, controlModeKey, gearKey, airBrakeKey, modeKey, driveablePlayerInventoryKey, vehicleZoomKey,
+        cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey);
 
     private static final int[] LEGACY_KEYS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18};
 
@@ -81,12 +172,16 @@ public final class KeyInputHandler
     private static float lastFlightRoll;
     private static boolean lastMouseControl;
     private static boolean wasSneaking;
-    private static boolean inventoryActionQueued;
+    private static List<KeyMapping> claimableVanillaActions;
 
-    private static KeyMapping key(String name, int keyCode)
+    private static KeyMapping key(String name, int keyCode, IKeyConflictContext context, String category)
     {
-        return new KeyMapping("key." + FlansMod.MOD_ID + "." + name, KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM, keyCode, CATEGORY);
+        return new KeyMapping("key." + FlansMod.MOD_ID + "." + name, context, InputConstants.Type.KEYSYM, keyCode, category);
+    }
+
+    private static KeyMapping mouseKey(String name, int button, IKeyConflictContext context, String category)
+    {
+        return new KeyMapping("key." + FlansMod.MOD_ID + "." + name, context, InputConstants.Type.MOUSE, button, category);
     }
 
     public static void registerKeys(RegisterKeyMappingsEvent event)
@@ -94,21 +189,164 @@ public final class KeyInputHandler
         event.register(reloadKey);
         event.register(fireModeKey);
         event.register(lookAtGunKey);
+        event.register(preferredAmmoKey);
+        event.register(secondaryModeKey);
+        event.register(increaseZoomKey);
+        event.register(decreaseZoomKey);
         event.register(debugKey);
         event.register(teamsMenuKey);
         event.register(teamsScoresKey);
         event.register(teamsClassKey);
-        event.register(descendKey);
         event.register(driveableInventoryKey);
         event.register(primaryKey);
+        event.register(primaryAlternativeKey);
         event.register(secondaryKey);
-        event.register(controlModeKey);
+        event.register(secondaryAlternativeKey);
+        event.register(changeSeatKey);
+        event.register(doorKey);
+        event.register(engineKey);
+        event.register(flareKey);
+        event.register(driveForwardKey);
+        event.register(driveBackwardKey);
+        event.register(steerLeftKey);
+        event.register(steerRightKey);
+        event.register(brakeKey);
+        event.register(decreaseVehicleThrottleKey);
+        event.register(increaseVehicleThrottleKey);
+        event.register(vehicleZoomKey);
+        event.register(cycleSightKey);
+        event.register(rangefinderKey);
+        event.register(resetRangeKey);
+        event.register(opticsEditorKey);
+        event.register(pitchDownKey);
+        event.register(pitchUpKey);
+        event.register(yawLeftKey);
+        event.register(yawRightKey);
         event.register(rollLeftKey);
         event.register(rollRightKey);
+        event.register(throttleUpKey);
+        event.register(throttleDownKey);
+        event.register(controlModeKey);
         event.register(gearKey);
-        event.register(doorKey);
+        event.register(airBrakeKey);
         event.register(modeKey);
-        event.register(flareKey);
+        event.register(driveablePlayerInventoryKey);
+    }
+
+    /**
+     * Gives the player's own inventory a way back while controlling any
+     * driveable, since its controls take over the vanilla key. Mirrors what
+     * {@code Minecraft.handleKeybinds} does, because that is exactly the
+     * handling claimConflictingVanillaKeys suppresses. The other claimed
+     * actions get no stand-in: none of them is worth a key while driving.
+     */
+    private static void handleDriveableShortcuts(Minecraft mc, LocalPlayer player)
+    {
+        while (driveablePlayerInventoryKey.consumeClick())
+        {
+            if (mc.gameMode != null && mc.gameMode.isServerControlledInventory())
+            {
+                player.sendOpenInventory();
+            }
+            else
+            {
+                mc.getTutorial().onOpenInventory();
+                mc.setScreen(new InventoryScreen(player));
+            }
+        }
+    }
+
+    /** True for a bind that this router stops reading as soon as the player mounts. */
+    public static boolean isOnFootOnly(KeyMapping mapping)
+    {
+        return ON_FOOT_BINDS.contains(mapping);
+    }
+
+    /**
+     * Drops presses queued by binds that are not live for the driveable the
+     * player is on right now, so tapping a plane key on foot does not fire the
+     * moment they climb in.
+     */
+    private static void discardInactiveClicks()
+    {
+        for (KeyMapping bind : CLICK_BINDS)
+        {
+            if (!bind.isConflictContextAndModifierActive())
+            {
+                while (bind.consumeClick()) { /* never applied, so never queued */ }
+            }
+        }
+    }
+
+    /**
+     * Claims keys shared with vanilla before {@code Minecraft.handleKeybinds}
+     * gets to consume them. Drop and player inventory are always reserved while
+     * driving, freeing Q and E for every driveable control scheme; the other
+     * actions are claimed only when a live driveable bind uses their key.
+     */
+    public static void claimConflictingVanillaKeys()
+    {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.screen != null)
+            return;
+
+        Driveable driveable = resolveDriveable(player);
+        Entity mount = player.getVehicle();
+        // Only the seat that actually steers loses the vanilla actions. A
+        // passenger's Q and E do nothing to the aircraft, so they keep theirs.
+        boolean driving = mount instanceof Seat seat ? seat.isDriverSeat() : mount instanceof Driveable;
+        if (driveable == null || !driving)
+            return;
+
+        List<KeyMapping> claimed = driveable instanceof Plane ? AIRCRAFT_BINDS
+            : driveable instanceof Vehicle ? VEHICLE_BINDS : GROUND_BINDS;
+        for (KeyMapping vanilla : claimableVanillaActions())
+        {
+            boolean alwaysReserved = vanilla == mc.options.keyInventory || vanilla == mc.options.keyDrop;
+            if (vanilla.isUnbound() || !alwaysReserved && !isClaimedBy(vanilla, claimed))
+                continue;
+            // consumeClick drains one queued press at a time; the hotbar
+            // activators are read as a held key instead, so clear that too.
+            while (vanilla.consumeClick()) { /* claimed by the driveable bind */ }
+            vanilla.setDown(false);
+        }
+    }
+
+    /**
+     * Vanilla actions that a live driveable bind takes over. Everything here is
+     * switched off while the player is at the controls, which is also why the
+     * controls screen has nothing left to warn about for these keys.
+     */
+    private static List<KeyMapping> claimableVanillaActions()
+    {
+        if (claimableVanillaActions == null)
+        {
+            Options options = Minecraft.getInstance().options;
+            claimableVanillaActions = List.of(options.keyInventory, options.keyDrop,
+                options.keySwapOffhand, options.keyAdvancements, options.keySocialInteractions,
+                options.keySaveHotbarActivator, options.keyLoadHotbarActivator);
+        }
+        return claimableVanillaActions;
+    }
+
+    /** True for a vanilla action a driveable bind is allowed to take over. */
+    public static boolean isClaimableVanillaAction(KeyMapping mapping)
+    {
+        return claimableVanillaActions().contains(mapping);
+    }
+
+    private static boolean isClaimedBy(KeyMapping vanilla, List<KeyMapping> claimed)
+    {
+        for (KeyMapping bind : claimed)
+        {
+            // Compare the bound key directly. KeyMapping.same answers a
+            // different question (should the options screen call this a
+            // conflict) and is filtered by KeyMappingConflictMixin.
+            if (!bind.isUnbound() && vanilla.getKey().equals(bind.getKey()))
+                return true;
+        }
+        return false;
     }
 
     public static void checkKeys()
@@ -117,6 +355,7 @@ public final class KeyInputHandler
         LocalPlayer player = mc.player;
         boolean noScreen = mc.screen == null;
 
+        discardInactiveClicks();
         if (player != null && resolveControllable(player) != null)
         {
             updateDriveableControls(mc, player, noScreen);
@@ -136,6 +375,26 @@ public final class KeyInputHandler
                     doSwitchFireMode();
                     return;
                 }
+                if (preferredAmmoKey.consumeClick())
+                {
+                    doOpenPreferredAmmoScreen();
+                    return;
+                }
+                if (secondaryModeKey.consumeClick())
+                {
+                    doToggleSecondaryMode();
+                    return;
+                }
+                if (increaseZoomKey.consumeClick())
+                {
+                    doChangeVariableZoom(true);
+                    return;
+                }
+                if (decreaseZoomKey.consumeClick())
+                {
+                    doChangeVariableZoom(false);
+                    return;
+                }
                 if (lookAtGunKey.consumeClick())
                     doLookAtGun();
             }
@@ -144,9 +403,12 @@ public final class KeyInputHandler
         if (noScreen && debugKey.consumeClick())
         {
             if (ModClient.isDebug())
+            {
                 ModClient.setDebug(false);
+                PacketHandler.sendToServer(new PacketRequestDebug(false));
+            }
             else
-                PacketHandler.sendToServer(new PacketRequestDebug());
+                PacketHandler.sendToServer(new PacketRequestDebug(true));
         }
 
         if (noScreen && teamsMenuKey.consumeClick())
@@ -173,39 +435,76 @@ public final class KeyInputHandler
 
         int mask = 0;
         int edgeMask = 0;
+        boolean aircraft = driveable instanceof Plane;
         if (acceptInput)
         {
-            if (mc.options.keyUp.isDown()) mask |= DriveableInput.FORWARD;
-            if (mc.options.keyDown.isDown()) mask |= DriveableInput.BACKWARD;
-            if (mc.options.keyLeft.isDown()) mask |= DriveableInput.LEFT;
-            if (mc.options.keyRight.isDown()) mask |= DriveableInput.RIGHT;
-            if (mc.options.keyJump.isDown()) mask |= DriveableInput.ASCEND;
-            if (descendKey.isDown()) mask |= DriveableInput.DESCEND;
-            if (rollLeftKey.isDown()) mask |= DriveableInput.ROLL_LEFT;
-            if (rollRightKey.isDown()) mask |= DriveableInput.ROLL_RIGHT;
+            handleDriveableShortcuts(mc, player);
+            if (aircraft)
+            {
+                // The flight axes are their own binds. FORWARD and BACKWARD
+                // still mean throttle to the server; only the keys behind them
+                // moved, off the stick and onto the throttle hand.
+                if (throttleUpKey.isDown()) mask |= DriveableInput.FORWARD;
+                if (throttleDownKey.isDown()) mask |= DriveableInput.BACKWARD;
+                if (yawLeftKey.isDown()) mask |= DriveableInput.LEFT;
+                if (yawRightKey.isDown()) mask |= DriveableInput.RIGHT;
+                if (pitchUpKey.isDown()) mask |= DriveableInput.ASCEND;
+                if (pitchDownKey.isDown()) mask |= DriveableInput.DESCEND;
+                if (rollLeftKey.isDown()) mask |= DriveableInput.ROLL_LEFT;
+                if (rollRightKey.isDown()) mask |= DriveableInput.ROLL_RIGHT;
+            }
+            else
+            {
+                // A vehicle reads these as throttle, steering and brake; a mecha
+                // reads the same flags as walking, strafing and jumping.
+                if (driveForwardKey.isDown()) mask |= DriveableInput.FORWARD;
+                if (driveBackwardKey.isDown()) mask |= DriveableInput.BACKWARD;
+                if (steerLeftKey.isDown()) mask |= DriveableInput.LEFT;
+                if (steerRightKey.isDown()) mask |= DriveableInput.RIGHT;
+                if (brakeKey.isDown()) mask |= DriveableInput.ASCEND;
+                if (driveable instanceof Vehicle)
+                {
+                    if (increaseVehicleThrottleKey.isDown()) mask |= DriveableInput.THROTTLE_INCREASE;
+                    if (decreaseVehicleThrottleKey.isDown()) mask |= DriveableInput.THROTTLE_DECREASE;
+                }
+            }
 
-            // Support both the classic V/B binds and the normal attack/use buttons.
-            if (primaryKey.isDown() || mc.options.keyAttack.isDown()) mask |= DriveableInput.PRIMARY_FIRE;
-            if (secondaryKey.isDown() || mc.options.keyUse.isDown()) mask |= DriveableInput.SECONDARY_FIRE;
+            if (primaryKey.isDown() || primaryAlternativeKey.isDown())
+                mask |= DriveableInput.PRIMARY_FIRE;
+            if (secondaryKey.isDown() || secondaryAlternativeKey.isDown())
+                mask |= DriveableInput.SECONDARY_FIRE;
 
             boolean sneaking = mc.options.keyShift.isDown();
             if (sneaking && !wasSneaking)
                 edgeMask |= DriveableInput.EXIT;
             wasSneaking = sneaking;
 
-            if (driveableInventoryKey.consumeClick() || inventoryActionQueued)
+            if (driveableInventoryKey.consumeClick())
                 edgeMask |= DriveableInput.MENU;
-            inventoryActionQueued = false;
+            if (changeSeatKey.consumeClick()) edgeMask |= DriveableInput.CHANGE_SEAT;
+            if (vehicleZoomKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_SCOPE;
+            if (cycleSightKey.consumeClick()) edgeMask |= DriveableInput.CYCLE_SIGHT;
+            if (rangefinderKey.consumeClick()) VehicleOpticsHud.requestRange();
+            if (resetRangeKey.consumeClick()) VehicleOpticsHud.resetRange();
+            if (opticsEditorKey.consumeClick()) VehicleOpticsHud.openEditor();
             if (gearKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_GEAR;
+            if (airBrakeKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_AIR_BRAKE;
             if (doorKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_DOOR;
+            if (engineKey.consumeClick() && (driveable instanceof Vehicle || driveable instanceof Plane))
+                edgeMask |= DriveableInput.TOGGLE_ENGINE;
             if (modeKey.consumeClick()) edgeMask |= DriveableInput.TOGGLE_MODE;
             if (flareKey.consumeClick()) edgeMask |= DriveableInput.FLARE;
+            // The same key that picks a handheld gun's ammunition chambers the
+            // next shell, bomb or missile while the player is at the controls.
+            if (preferredAmmoKey.consumeClick()) edgeMask |= DriveableInput.SWITCH_AMMO;
             if (controlModeKey.consumeClick() && ModClient.tryToggleDriveableControlMode(player, driveable))
                 edgeMask |= DriveableInput.CONTROL_MODE;
         }
         else
         {
             wasSneaking = false;
+            for (KeyMapping key : List.of(vehicleZoomKey, cycleSightKey, rangefinderKey, resetRangeKey, opticsEditorKey))
+                while (key.consumeClick()) { /* do not defer optics actions until a screen closes */ }
         }
 
         mask |= edgeMask;
@@ -215,7 +514,11 @@ public final class KeyInputHandler
         float aimPitch;
         if (mount instanceof Seat seat)
         {
-            aimYaw = seat.getRequestedAimYaw();
+            // A mecha consumes relative look into its torso. Send the resulting
+            // world-space torso target so delayed retries remain idempotent.
+            aimYaw = driveable instanceof Mecha
+                ? Mth.wrapDegrees(driveable.getYaw() + seat.getRequestedAimYaw())
+                : seat.getRequestedAimYaw();
             aimPitch = seat.getRequestedAimPitch();
         }
         else
@@ -224,7 +527,8 @@ public final class KeyInputHandler
             aimPitch = player.getXRot();
         }
 
-        boolean mouseControl = driveable instanceof Plane && ModClient.isMouseControlEnabled();
+        boolean mouseControl = driveable instanceof Plane && ModClient.isMouseControlEnabled()
+            && !(mount instanceof Seat opticSeat && opticSeat.isScoped());
         float flightPitch = mouseControl ? MouseInputHandler.getFlightPitchControl() : 0F;
         float flightRoll = mouseControl ? MouseInputHandler.getFlightRollControl() : 0F;
 
@@ -236,8 +540,11 @@ public final class KeyInputHandler
         boolean changedFlightControl = Math.abs(flightPitch - lastFlightPitch) >= FLIGHT_CONTROL_EPSILON
             || Math.abs(flightRoll - lastFlightRoll) >= FLIGHT_CONTROL_EPSILON || mouseControl != lastMouseControl;
         boolean keepAlive = ++ticksSinceInputPacket >= INPUT_KEEPALIVE_TICKS;
+        // A predicting driver simulates every tick, so every tick is one acknowledged input step.
+        boolean predicting = mount instanceof Seat driverSeat && driverSeat.isDriverSeat()
+            && driveable.supportsClientPrediction() && ModClientConfig.get().predictDriveableMovement;
 
-        if (changedMount || changedMask || changedAim || pendingAim || changedFlightControl || keepAlive)
+        if (predicting || changedMount || changedMask || changedAim || pendingAim || changedFlightControl || keepAlive)
         {
             Vec3 barrelPitchPivot = getActiveModelAimPivot(driveable, mount);
             if (mount instanceof Seat seat && !seat.isDriverSeat())
@@ -249,7 +556,10 @@ public final class KeyInputHandler
                     mouseControl, barrelPitchPivot, ++inputSequence)
                 : new PacketDriveableInput(driveable, mask, aimYaw, aimPitch, flightPitch, flightRoll,
                     mouseControl, barrelPitchPivot, ++inputSequence);
-            PacketHandler.sendToServer(packet);
+            PacketHandler.sendToServer(packet.withPrediction(predicting));
+            if (predicting)
+                driveable.submitPredictedInput(new DriveablePrediction.Frame(inputSequence, mask,
+                    flightPitch, flightRoll, mouseControl));
             lastControlEntityId = driveable.getId();
             lastInputMask = mask;
             lastAimYaw = aimYaw;
@@ -303,14 +613,7 @@ public final class KeyInputHandler
         lastMouseControl = false;
         ticksSinceInputPacket = INPUT_KEEPALIVE_TICKS;
         wasSneaking = false;
-        inventoryActionQueued = false;
         MouseInputHandler.resetFlightControls();
-    }
-
-    /** Called when vanilla tries to open the player inventory while mounted. */
-    public static void queueDriveableInventoryAction()
-    {
-        inventoryActionQueued = true;
     }
 
     @Nullable
@@ -354,6 +657,43 @@ public final class KeyInputHandler
     private static boolean canSwitchFireMode(ItemStack stack)
     {
         return stack.getItem() instanceof GunItem gunItem && gunItem.getConfigType().canSwitchFireMode(stack);
+    }
+
+    private static void doOpenPreferredAmmoScreen()
+    {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        InteractionHand hand = findGunHand(player, (gunItem, stack) -> !gunItem.getConfigType().getAmmoTypes().isEmpty());
+        if (hand != null && PlayerData.getInstance(player, LogicalSide.CLIENT).getShootTime(hand) <= 0F)
+            Minecraft.getInstance().setScreen(new GunAmmoSelectScreen(hand));
+    }
+
+    private static void doToggleSecondaryMode()
+    {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        InteractionHand hand = findGunHand(player,
+            (gunItem, stack) -> gunItem.getConfigType().canToggleSecondaryFire(stack));
+        if (hand != null && PlayerData.getInstance(player, LogicalSide.CLIENT).getShootTime(hand) <= 0F)
+            PacketHandler.sendToServer(new PacketGunSecondaryMode(hand));
+    }
+
+    private static void doChangeVariableZoom(boolean increase)
+    {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        ItemStack stack = player.getMainHandItem();
+        if (stack.getItem() instanceof GunItem gunItem && gunItem.hasVariableZoom(stack))
+            PacketHandler.sendToServer(new PacketGunVariableZoom(InteractionHand.MAIN_HAND, increase));
+    }
+
+    @Nullable
+    private static InteractionHand findGunHand(Player player, java.util.function.BiPredicate<GunItem, ItemStack> predicate)
+    {
+        ItemStack main = player.getMainHandItem();
+        if (main.getItem() instanceof GunItem gunItem && predicate.test(gunItem, main))
+            return InteractionHand.MAIN_HAND;
+        ItemStack off = player.getOffhandItem();
+        if (off.getItem() instanceof GunItem gunItem && predicate.test(gunItem, off))
+            return InteractionHand.OFF_HAND;
+        return null;
     }
 
     private static boolean isGunContext()

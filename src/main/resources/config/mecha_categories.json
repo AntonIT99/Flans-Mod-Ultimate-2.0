@@ -1,0 +1,270 @@
+{
+    "Alpha Titan operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 10000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "alphatitan"
+        ]
+    },
+
+    "Assault / medium combat chassis (Fictional)": {
+        "properties": {
+            "RealMaxSpeedKmh": 19,
+            "RotateSpeed": 15,
+            "StepHeight": 2,
+            "JumpHeight": 1,
+            "Reach": 4,
+            "TakeFallDamage": "true",
+            "FallDamageMultiplier": 1.0,
+            "FallDamageFactor": 1.0,
+            "DamageBlocksFromFalling": "false",
+            "BlockDamageFromFalling": 1.0,
+            "SquashMobs": "false",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "alphatitan",
+            "hapa",
+            "prinzmech"
+        ]
+    },
+
+    "Assault war-elephant chassis (Generic)": {
+        "properties": {
+            "RealMaxSpeedKmh": 19,
+            "RotateSpeed": 15,
+            "StepHeight": 2,
+            "JumpHeight": 1,
+            "Reach": 4,
+            "TakeFallDamage": "true",
+            "FallDamageMultiplier": 1.0,
+            "FallDamageFactor": 1.0,
+            "DamageBlocksFromFalling": "false",
+            "BlockDamageFromFalling": 1.0,
+            "SquashMobs": "false",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "delandephant",
+            "romaphant"
+        ]
+    },
+
+    "Camel weapon-platform operational mass estimate (Generic)": {
+        "properties": {
+            "RealMassKg": 750,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "cannoncamel",
+            "gatlingcamel"
+        ]
+    },
+
+    "Cataphract horse operational mass estimate (Generic)": {
+        "properties": {
+            "RealMassKg": 650,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "byzanhorse",
+            "hellenichorse",
+            "sassyhorse"
+        ]
+    },
+
+    "Colorado fleet-girl operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 30000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "coloradomech"
+        ]
+    },
+
+    "Elephant operational mass estimate (Generic)": {
+        "properties": {
+            "RealMassKg": 5000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "delandephant",
+            "elephant",
+            "romaphant"
+        ]
+    },
+
+    "Heavy / siege combat chassis (Fictional)": {
+        "properties": {
+            "RealMaxSpeedKmh": 12,
+            "RotateSpeed": 10,
+            "StepHeight": 2,
+            "JumpHeight": 0,
+            "Reach": 5,
+            "TakeFallDamage": "true",
+            "FallDamageMultiplier": 1.0,
+            "FallDamageFactor": 1.0,
+            "DamageBlocksFromFalling": "false",
+            "BlockDamageFromFalling": 1.0,
+            "SquashMobs": "false",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "coloradomech",
+            "madcat",
+            "wh40k_mecha_warhound_1a",
+            "zerotitan"
+        ]
+    },
+
+    "Heavy Assault Protection Armor operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 1000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "hapa"
+        ]
+    },
+
+    "Horse operational mass estimate (Generic)": {
+        "properties": {
+            "RealMassKg": 550,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "horsey",
+            "horseyclassical"
+        ]
+    },
+
+    "Mad Cat canonical operational mass (Fictional)": {
+        "properties": {
+            "RealMassKg": 75000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "madcat"
+        ]
+    },
+
+    "Naked elephant operational mass estimate (Generic)": {
+        "properties": {
+            "RealMassKg": 4500,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "nakedelephant"
+        ]
+    },
+
+    "Prinz Eugen fleet-girl operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 55000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "prinzmech"
+        ]
+    },
+
+    "Proto Titan operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 1250,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "prototitan"
+        ]
+    },
+
+    "Recon / light combat chassis (Fictional)": {
+        "properties": {
+            "RealMaxSpeedKmh": 22,
+            "RotateSpeed": 20,
+            "StepHeight": 1,
+            "JumpHeight": 2,
+            "Reach": 3,
+            "TakeFallDamage": "true",
+            "FallDamageMultiplier": 1.0,
+            "FallDamageFactor": 1.0,
+            "DamageBlocksFromFalling": "false",
+            "BlockDamageFromFalling": 1.0,
+            "SquashMobs": "false",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "prototitan"
+        ]
+    },
+
+    "Recon animal combat chassis (Generic)": {
+        "properties": {
+            "RealMaxSpeedKmh": 22,
+            "RotateSpeed": 20,
+            "StepHeight": 1,
+            "JumpHeight": 2,
+            "Reach": 3,
+            "TakeFallDamage": "true",
+            "FallDamageMultiplier": 1.0,
+            "FallDamageFactor": 1.0,
+            "DamageBlocksFromFalling": "false",
+            "BlockDamageFromFalling": 1.0,
+            "SquashMobs": "false",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "byzanhorse",
+            "cannoncamel",
+            "gatlingcamel",
+            "hellenichorse",
+            "sassyhorse"
+        ]
+    },
+
+    "Utility / unarmored animal chassis (Generic)": {
+        "properties": {
+            "RealMaxSpeedKmh": 15,
+            "RotateSpeed": 15,
+            "StepHeight": 1,
+            "JumpHeight": 0,
+            "Reach": 3,
+            "TakeFallDamage": "true",
+            "FallDamageMultiplier": 1.0,
+            "FallDamageFactor": 1.0,
+            "DamageBlocksFromFalling": "false",
+            "BlockDamageFromFalling": 1.0,
+            "SquashMobs": "false",
+            "ReadWeaponsFromGunTypes": "true"
+        },
+        "items": [
+            "elephant",
+            "horsey",
+            "horseyclassical",
+            "nakedelephant"
+        ]
+    },
+
+    "Warhound Titan canonical operational mass (Fictional)": {
+        "properties": {
+            "RealMassKg": 410000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "wh40k_mecha_warhound_1a"
+        ]
+    },
+
+    "Zero Titan operational mass estimate (Fictional)": {
+        "properties": {
+            "RealMassKg": 30000,
+            "UseRealisticVehicleHealth": "true"
+        },
+        "items": [
+            "zerotitan"
+        ]
+    }
+}

@@ -33,6 +33,7 @@ public final class PackagedContentRepositorySource
             {
                 addPack(acceptor, packType, module.modId() + ":assets",
                     "Official Flan content assets", module.resourceRoot());
+                addEncryptedResourcePack(acceptor, module);
                 continue;
             }
 
@@ -46,6 +47,44 @@ public final class PackagedContentRepositorySource
                 }
             }
         }
+    }
+
+    private static void addEncryptedResourcePack(Consumer<Pack> acceptor,
+                                                 PackagedContentPackApi.RegisteredModule module)
+    {
+        Path bundlePath = module.resourceRoot().resolve(EncryptedResourcePack.BUNDLE_RESOURCE_PATH);
+        if (!java.nio.file.Files.isRegularFile(bundlePath))
+            return;
+
+        // PackRepository stores discovered packs in a sorted map and inserts required TOP packs
+        // in reverse key order. The leading underscore makes this pack sort before ":assets",
+        // which places the encrypted overlay after the normal assets in the effective stack.
+        String id = encryptedPackId(module.modId());
+        PackLocationInfo location = new PackLocationInfo(id, Component.literal("Optional uncensored Flan content"),
+            PackSource.BUILT_IN, Optional.empty());
+        Pack.ResourcesSupplier resources = new Pack.ResourcesSupplier()
+        {
+            @Override
+            public net.minecraft.server.packs.PackResources openPrimary(PackLocationInfo info)
+            {
+                return new EncryptedResourcePack(info, module.modId(), bundlePath);
+            }
+
+            @Override
+            public net.minecraft.server.packs.PackResources openFull(PackLocationInfo info, Pack.Metadata metadata)
+            {
+                return new EncryptedResourcePack(info, module.modId(), bundlePath);
+            }
+        };
+        PackSelectionConfig selection = new PackSelectionConfig(true, Pack.Position.TOP, true);
+        Pack pack = Pack.readMetaAndCreate(location, resources, PackType.CLIENT_RESOURCES, selection);
+        if (pack != null)
+            acceptor.accept(pack);
+    }
+
+    static String encryptedPackId(String modId)
+    {
+        return modId + ":_encrypted_assets";
     }
 
     private static void addPack(Consumer<Pack> acceptor, PackType packType, String id,

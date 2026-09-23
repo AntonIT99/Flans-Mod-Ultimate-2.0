@@ -1,0 +1,20 @@
+// Identity
+Name Clone 501st Legion Armor
+ShortName clone332Armor
+
+// Item and rendering
+Icon clone501armor
+Colour 255 255 255
+ArmourTexture clonetrooper501chestplate
+Model wolffstarwars.CloneChestplate501
+
+// Protection
+Type Body
+Defence 0.16
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 6
+Toughness 1
+
+// Movement
+MoveSpeedModifier 0.98

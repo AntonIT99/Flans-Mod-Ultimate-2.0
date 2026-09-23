@@ -2,7 +2,6 @@ package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
-import com.flansmodultimate.common.FlanExplosion;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Bullet;
@@ -11,9 +10,11 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ShootableFactory;
+import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
+import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.hits.BlockHit;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -74,74 +75,88 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class ShootingHelper
 {
     public static final float ANGULAR_SPREAD_FACTOR = 0.0025F;
+    /** Preserves the established infantry-damage baseline while larger projectiles scale geometrically. */
+    public static final double KINETIC_DAMAGE_REFERENCE_MASS_GRAMS = 9D;
 
     /** Call this to fire bullets or grenades from a living entity holding a gun item (Server side) */
     public static void fireGun(@NotNull Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull ShootingHandler handler)
     {
-        int numBullets = gunType.getNumBullets(gunStack, shootableType);
+        FireableGun fireableGun = new FireableGun(gunType, gunStack, shooter, otherHandStack,
+            ModUtils.getEnumMovement(shooter), !shooter.onGround());
 
-        if (gunType.getBulletSpeed(gunStack, shootableStack) == 0F && shootableType instanceof BulletType bulletType)
-        {
-            // Raytrace without entity
-            FiredShot firedShot = new FiredShot(gunType, bulletType, gunStack, shootableStack, otherHandStack, shooter);
-            for (int i = 0; i < numBullets; i++)
-                createShot(level, firedShot, shooter.getEyePosition(0.0F), shooter.getLookAngle());
-        }
-        else
-        {
-            for (int i = 0; i < numBullets; i++)
-            {
-                Shootable shootable = ShootableFactory.createShootable(level, gunType, shootableType, shooter, gunStack, shootableStack, otherHandStack);
-                level.addFreshEntity(shootable);
-            }
-        }
-
-        handler.onShoot();
+        fireWeapon(level, fireableGun, shootableType, gunType.getNumBullets(gunStack, shootableType),
+            shooter.getEyePosition(0.0F), shooter.getLookAngle(), shooter, shooter,
+            ShootableItem.getRoundsFired(shootableStack), handler);
     }
 
     /** Call this to fire bullets or grenades from a living entity controlling a deployed gun (Server side) */
     public static void fireGun(@NotNull Level level, @Nullable LivingEntity shooter, @NotNull DeployedGun deployedGun, @NotNull ShootableType shootableType, @NotNull ItemStack shootableStack, @NotNull ShootingHandler handler)
     {
-        int numBullets = deployedGun.getConfigType().getNumBullets(null, shootableType);
+        GunType gunType = deployedGun.getConfigType();
 
-        if (deployedGun.getConfigType().getBulletSpeed() <= 0F && shootableType instanceof BulletType bulletType)
+        fireWeapon(level, new FireableGun(gunType), shootableType, gunType.getNumBullets(null, shootableType),
+            deployedGun.getShootingOrigin(), deployedGun.getShootingDirection(), deployedGun, shooter,
+            ShootableItem.getRoundsFired(shootableStack), handler);
+    }
+
+    /**
+     * Call this to fire bullets or grenades from any other weapon (Server side).
+     *
+     * <p>This is the shared entry point: it decides how many projectiles leave the barrel and hands
+     * each of them to {@link ShootableFactory}, so a mounted gun or a weapon bank fires exactly what
+     * the same weapon fires in a player's hands.
+     *
+     * @param shot position in the magazine, which selects the round of a belt
+     */
+    public static void fireWeapon(@NotNull Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType shootableType,
+                                  int numShots, Vec3 shootingOrigin, Vec3 shootingDirection, @Nullable Entity shooter,
+                                  @Nullable LivingEntity attacker, int shot, @NotNull ShootingHandler handler)
+    {
+        numShots = Math.max(1, numShots);
+        // The one place a weapon and its ammunition meet on this path, so the
+        // round's weapon modifiers are folded in here rather than at every caller.
+        fireableGun.applyAmmunition(shootableType);
+
+        if (shootableType instanceof BulletType bulletType)
         {
-            // Raytrace without entity
-            FiredShot firedShot = new FiredShot(new FireableGun(deployedGun.getConfigType(), shootableStack), bulletType, deployedGun, shooter, shootableStack.getDamageValue());
-            for (int i = 0; i < numBullets; i++)
-                createShot(level, firedShot, deployedGun.getShootingOrigin(), deployedGun.getShootingDirection());
+            fireBullets(level, new FiredShot(fireableGun, bulletType, shooter, attacker, shot), numShots,
+                shootingOrigin, shootingDirection);
         }
         else
         {
-            for (int i = 0; i < numBullets; i++)
-            {
-                Shootable shootable = ShootableFactory.createShootable(level, shootableType, deployedGun, shooter, shootableStack);
-                level.addFreshEntity(shootable);
-            }
+            for (int i = 0; i < numShots; i++)
+                level.addFreshEntity(ShootableFactory.createShootable(level, fireableGun, shootableType,
+                    shootingOrigin, shootingDirection, shooter, attacker, shot));
         }
 
         handler.onShoot();
     }
 
-    /** Call this to fire bullets from other sources (Server side) */
+    /** Call this to fire bullets from a shot that is already resolved (Server side) */
     public static void fireGun(@NotNull Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 shootingOrigin, Vec3 shootingDirection, @NotNull ShootingHandler handler)
     {
-        if (firedShot.getFireableGun().getBulletSpeed() <= 0F)
-        {
-            // Raytrace without entity
-            for (int i = 0; i < numBullets; i++)
-                createShot(level, firedShot, shootingOrigin, shootingDirection);
-        }
-        else
-        {
-            for (int i = 0; i < numBullets; i++)
-            {
-                Bullet bullet = new Bullet(level, firedShot, shootingOrigin, shootingDirection);
-                level.addFreshEntity(bullet);
-            }
-        }
-
+        fireBullets(level, firedShot, Math.max(1, numBullets), shootingOrigin, shootingDirection);
         handler.onShoot();
+    }
+
+    /**
+     * Spawns one shot per projectile the weapon fires at once.
+     *
+     * <p>A weapon is hitscan only when nothing in the chain declares a muzzle velocity: not the
+     * ammunition, not a per-ammunition override and not the weapon itself. Anything with a velocity
+     * flies as a {@link Bullet} entity at that velocity.
+     */
+    private static void fireBullets(@NotNull Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 shootingOrigin, Vec3 shootingDirection)
+    {
+        boolean instant = firedShot.getMuzzleVelocity(false) <= 0F;
+
+        for (int i = 0; i < numBullets; i++)
+        {
+            if (instant)
+                createShot(level, firedShot, shootingOrigin, shootingDirection);
+            else
+                level.addFreshEntity(ShootableFactory.createBullet(level, firedShot, shootingOrigin, shootingDirection));
+        }
     }
 
     public record HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot) {}
@@ -192,7 +207,8 @@ public final class ShootingHelper
                 penetratingPower = 0F;
             else
             {
-                HitData driveableHitData = driveableHit.getDriveable().bulletHit(bulletType, driveableHit, hitData);
+                HitData driveableHitData = driveableHit.getDriveable().bulletHit(
+                    shot, bulletType, driveableHit, hitData);
                 penetratingPower = driveableHitData.penetratingPower();
                 lastHitPenAmount = driveableHitData.lastHitPenAmount();
                 lastHitHeadshot = driveableHitData.lastHitHeadshot();
@@ -394,16 +410,18 @@ public final class ShootingHelper
         {
             BulletType bulletType = firedShot.getBulletType();
             type = bulletType;
-            projectileMass = bulletType.getMass(firedShot.getShot());
+            // Resolved through the shot so a per-weapon AmmoMass override is honoured.
+            projectileMass = firedShot.getProjectileMass();
         }
 
         if (type == null)
             return 0F;
 
-        if (shootable != null && projectileMass > 0F)
+        if (projectileMass > 0F)
         {
-            // proportional to the square root of kinetic energy
-            return (float) (ModCommonConfig.get().newDamageSystemDamageReference() * 0.001 * Math.sqrt(projectileMass) * shootable.getDeltaMovement().length() * 20.0);
+            // Use the authored firing velocity rather than mutable entity motion. This also keeps
+            // entity bullets and raytraced shots on the same kinetic-damage scale.
+            return getKineticDamage(projectileMass, firedShot.getMuzzleVelocity());
         }
         else
         {
@@ -419,9 +437,76 @@ public final class ShootingHelper
         }
     }
 
+    /**
+     * Resolves the fixed velocity used by kinetic damage when no {@link FiredShot} is at hand, with the same
+     * precedence as {@link FiredShot#getMuzzleVelocity()} minus the per-ammunition overrides a shot would carry.
+     * Per-round or ammunition velocity takes precedence over the firing weapon, and {@link BulletType} supplies
+     * its deterministic default when neither is authored.
+     */
+    public static float getMuzzleVelocity(@Nullable BulletType bulletType, int shotsFired,
+                                          @Nullable FireableGun fireableGun)
+    {
+        if (bulletType == null)
+            return 0F;
+        if (fireableGun == null)
+            return bulletType.getBulletSpeed(shotsFired, 0F);
+        return bulletType.getBulletSpeed(shotsFired, fireableGun.getBulletSpeed()) * fireableGun.getBulletSpeedMultiplier();
+    }
+
+    /**
+     * Canonical kinetic damage formula shared by ordinary entities and normalized-health vehicles.
+     *
+     * <p>The legacy square-root-energy term is multiplied by a sixth-root mass progression. This preserves the
+     * established 9 g infantry-round baseline while making damage proportional to {@code mass^(2/3)} at a fixed
+     * velocity, matching the geometric exponent used by normalized vehicle health.</p>
+     */
+    public static float getKineticDamage(float projectileMassGrams, double velocityBlocksPerTick)
+    {
+        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F
+            || !Double.isFinite(velocityBlocksPerTick) || velocityBlocksPerTick <= 0D)
+            return 0F;
+        double reference = ModCommonConfig.get() == null
+            ? 5D : ModCommonConfig.get().newDamageSystemDamageReference();
+        double massProgression = Math.pow(projectileMassGrams / KINETIC_DAMAGE_REFERENCE_MASS_GRAMS, 1D / 6D);
+        double damage = reference * 0.001D * Math.sqrt(projectileMassGrams)
+            * massProgression * velocityBlocksPerTick * 20D;
+        return Double.isFinite(damage) && damage > 0D ? (float) Math.min(damage, Float.MAX_VALUE) : 0F;
+    }
+
+    /**
+     * Canonical kinetic penetration formula, the counterpart of {@link #getKineticDamage} for penetrating power.
+     *
+     * <p>Penetrating power is taken as proportional to the cube root of the muzzle kinetic energy. Energy itself
+     * spans about four orders of magnitude between a pistol round and a tank shell, which would be unusable as a
+     * penetration budget; the cube root compresses that into a range where one point of power is worth roughly one
+     * unarmoured player, so a pistol round stops in the first target while an anti-materiel round passes through
+     * two and a cannon shell through a dozen. The scale is set by
+     * {@link ModCommonConfig#kineticPenetrationReference()}.
+     *
+     * @param projectileMassGrams   projectile mass in grams
+     * @param velocityBlocksPerTick projectile velocity in blocks per tick (one block = one metre, twenty ticks = one second)
+     * @return the derived penetrating power, or the legacy default when the inputs are unusable
+     */
+    public static float getKineticPenetratingPower(float projectileMassGrams, double velocityBlocksPerTick)
+    {
+        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F
+            || !Double.isFinite(velocityBlocksPerTick) || velocityBlocksPerTick <= 0D)
+            return BulletType.DEFAULT_PENETRATING_POWER;
+
+        double velocityMetersPerSecond = velocityBlocksPerTick * 20D;
+        double energyJoules = 0.5D * (projectileMassGrams / 1000D) * velocityMetersPerSecond * velocityMetersPerSecond;
+        double power = ModCommonConfig.kineticPenetrationReference() * Math.cbrt(energyJoules);
+        return Double.isFinite(power) && power > 0D ? (float) Math.min(power, Float.MAX_VALUE) : BulletType.DEFAULT_PENETRATING_POWER;
+    }
+
     public static float getDamageAffectedByPenetration(float gunDamage, BulletType type, @Nullable Bullet bullet)
     {
-        if (bullet == null || type.getPenetratingPower() <= 0F || (type.getPlayerPenetrationEffectOnDamage() == 0F && type.getEntityPenetrationEffectOnDamage() == 0F && type.getBlockPenetrationEffectOnDamage() == 0F && type.getPenetrationDecayEffectOnDamage() == 0F))
+        if (bullet == null || (type.getPlayerPenetrationEffectOnDamage() == 0F && type.getEntityPenetrationEffectOnDamage() == 0F && type.getBlockPenetrationEffectOnDamage() == 0F && type.getPenetrationDecayEffectOnDamage() == 0F))
+            return gunDamage;
+
+        // The power this very bullet was fired with, which for kinetic ammunition depends on its round and gun
+        float initialPenetratingPower = bullet.getInitialPenetratingPower();
+        if (initialPenetratingPower <= 0F)
             return gunDamage;
 
         float totalPenetrationLostPercentage = 0F;
@@ -434,7 +519,7 @@ public final class ShootingHelper
             if (effectOnDamage <= 0 || effectOnDamage > 1 || loss <= 0)
                 continue;
 
-            float penetrationLostPercentage = (loss / type.getPenetratingPower());
+            float penetrationLostPercentage = (loss / initialPenetratingPower);
             if (penetrationLostPercentage == 0)
                 continue;
 
@@ -485,9 +570,8 @@ public final class ShootingHelper
 
         new FlanExplosion(level, explosive, causingEntity, type, position.x, position.y, position.z, false);
 
-        // Despawn bullets (not grenades)
-        if (explosive instanceof Bullet bullet)
-            bullet.discard();
+        // The caller owns the projectile lifecycle. In particular, smoke shells must remain as
+        // stationary smoke sources after their explosive payload has been processed.
     }
 
     private static void spreadFire(Level level, ShootableType type, Vec3 position, boolean volumetric)
@@ -559,11 +643,20 @@ public final class ShootingHelper
         }
     }
 
+    /**
+     * @return the penetrating power a shot starts with, resolved for the round being fired and for the speed the
+     * firing weapon actually gives it
+     */
+    public static float getInitialPenetratingPower(FiredShot shot)
+    {
+        return shot.getPenetratingPower();
+    }
+
     private static void createShot(Level level, FiredShot shot, Vec3 shootingOrigin, Vec3 shootingDirection)
     {
-        Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getFireableGun().getSpreadPattern());
+        Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getSpreadPattern());
 
-        HitData hitData = new HitData(shot.getBulletType().getPenetratingPower(), 0F, false);
+        HitData hitData = new HitData(getInitialPenetratingPower(shot), 0F, false);
         List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
         Vec3 previousHitPos = shootingOrigin;
         Vec3 finalhit = null;

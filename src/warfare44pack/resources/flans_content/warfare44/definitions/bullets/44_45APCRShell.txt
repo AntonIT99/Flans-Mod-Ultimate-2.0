@@ -1,0 +1,51 @@
+// Identity
+Name 45mm BR-240P APCR (20-K)
+ShortName 44_45APCRShell
+Description Sub-calibre armour-piercing shot for the 45 mm 20-K tank gun
+
+// Rendering
+Icon 44_47apshell
+Model W44.W44ShellSmall
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 5
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 985
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 87
+BreaksGlass True
+
+// Damage
+Mass 850
+Damage 1
+DamageVsLiving 50
+DamageVsVehicles 480
+Fire 0
+
+// Explosion
+Explosion 1
+ExplodeOnImpact True
+Fuse 200
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmtracer
+FlakParticles 0
+ExplodeParticles 6
+FlareParticleCount 3
+DebrisParticleCount 1
+
+// Sounds
+HitSound

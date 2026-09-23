@@ -1,0 +1,24 @@
+// Identity
+Name AA Sight
+ShortName 44_AASight
+Description Scope Attachment : LMG Sight
+AttachmentType sights
+
+// Rendering
+Icon 44_AASight
+Model W44.AASight
+ModelScale 0.15
+Texture Skin44_AASight
+
+// Optics
+ZoomLevel 1.0
+FOVZoomLevel 2.5
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.8
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

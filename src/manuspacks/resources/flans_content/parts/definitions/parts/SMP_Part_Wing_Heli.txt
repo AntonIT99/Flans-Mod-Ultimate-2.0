@@ -1,0 +1,16 @@
+// Identity
+Name Helicopter Wing Frame
+ShortName SMP_Part_Wing_Heli
+
+// Model and Rendering
+Icon Icon_SMP_Part_Wing_Heli
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
+   
+PM 
+PM 
+RecipeOutput 1
+Category Wing
+PartBoxRecipe
+StackSize 64

@@ -1,0 +1,107 @@
+// Identity
+Name Type 98 AA-Gun [20mm]
+ShortName 44_Type98AA
+Description Japanese Anti-Aircraft Gun__Uses Type 98 AA Ammo__Year Introduced : 1938
+
+// Rendering
+Icon 44_Type98AA
+Model W44.Type98AA
+ModelScale 1
+Texture Skin44_Type98AA
+CameraDistance 7.5
+
+// Recipe and inventory
+AddRecipeParts turret 1 44_Metal_Tube 2 44_Car_Wheel
+AddRecipeParts core 8 ingotIron
+CargoSlots 0
+ShellSlots 3
+FuelTankSize 2000
+
+// Paintjobs
+AddDye 3 gray
+
+// Real-world specifications
+RealMassKg 373
+
+// Movement
+Tank true
+FourWheelDrive true
+MaxThrottle 0
+MaxNegativeThrottle 0
+TurnLeftSpeed 0
+TurnRightSpeed 0
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -16 -10 -14
+WheelPosition 1 -16 -10 14
+WheelPosition 2 16 -10 14
+WheelPosition 3 16 -10 -14
+WheelSpringStrength 0.5
+
+// Weapons
+ReadWeaponsFromGunTypes true
+RoundsPerMinPrimary 300
+ReloadTimePrimary 120
+ReloadRoundsPrimary 20
+ShootDelay 6
+BulletSpread 2
+BulletSpeed 12
+BulletDetection 7
+AllowAllAmmo false
+AddAmmo 44_Type98AAAmmo
+BarrelPosition 22 7 0
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 300 -41 -10 -26 75 35 52
+
+// Seats
+Driver 0 1 0 -360 360 -5 85
+Passengers 0
+RotatedDriverOffset -20 0 -5
+DriverAimSpeed 1.35f 1.25f 0f
+DriverYawBeforePitch false
+
+// Optics
+hasScope true
+Gunsight warfare44_jap
+gunsightZoom 2.5
+
+// Sounds
+StartSound
+StartSoundLength 0
+EngineSound
+EngineSoundLength 0
+YawSound TurretTraverse2
+YawSoundLength 38
+PitchSound TurretTraverse1
+PitchSoundLength 61
+DriverTraverseSounds false
+ShootSoundPrimary 20mmCannonShoot

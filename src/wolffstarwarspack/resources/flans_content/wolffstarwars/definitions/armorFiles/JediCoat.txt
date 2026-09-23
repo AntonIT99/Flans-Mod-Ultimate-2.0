@@ -1,0 +1,16 @@
+// Identity
+Name Jedi Boots
+ShortName JediCoat
+
+// Item and rendering
+Icon jedichestplate
+Colour 255 255 255
+ArmourTexture jedi_layer
+
+// Protection
+Type Body
+Defence 0.03
+BulletDefence 0.01
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

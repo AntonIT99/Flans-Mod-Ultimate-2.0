@@ -1,9 +1,12 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.common.recipe.GunpowderRecipeCondition;
+
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.block.PaintjobTableBlock;
 import com.flansmodultimate.common.block.TeamSpawnerBlock;
+import com.flansmodultimate.common.block.VehicleCraftingTableBlock;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
@@ -26,6 +29,7 @@ import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.inventory.GunBoxMenu;
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
+import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
 import com.flansmodultimate.common.item.FlagpoleItem;
 import com.flansmodultimate.common.item.ItemOpStick;
@@ -107,12 +111,12 @@ public class FlansMod
     public static final String MOD_ID = "flansmodultimate";
     public static final String FLANSMOD_ID = "flansmod";
     public static final String APOCALYPSE_ID = "flansmodapocalypse";
-    public static final String PACKS_ID = "flansmodultimate_packs";
-    private static final int PACKS_EXTRACTION_STATE_PROTOCOL_VERSION = 1;
-    private static final String PACKS_EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
-    private static final String PACKS_EXTRACTION_STATE_COMPLETE = "complete";
-    private static final String PACKS_EXTRACTION_STATE_FAILED = "failed";
-    private static final int TIMEOUT_PACKS_EXTRACTION = 120;
+    public static final String PACKS_MANAGER_ID = "flansmodultimate_packs_manager";
+    private static final int PACKS_MANAGER_EXTRACTION_STATE_PROTOCOL_VERSION = 1;
+    private static final String PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME = ".flansmod_packs_extraction_state.json";
+    private static final String PACKS_MANAGER_EXTRACTION_STATE_COMPLETE = "complete";
+    private static final String PACKS_MANAGER_EXTRACTION_STATE_FAILED = "failed";
+    private static final int TIMEOUT_PACKS_MANAGER_EXTRACTION = 120;
 
     public static final Logger log = LogUtils.getLogger();
     public static final TeamsManager teamsManager = new TeamsManager();
@@ -141,6 +145,38 @@ public class FlansMod
     public static final ResourceLocation defaultMuzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
     /** Valid fallback for render APIs which no longer accept an empty resource path. */
     public static final ResourceLocation defaultFallbackTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultbullet.png");
+    public static final ResourceLocation PAINTJOB = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
+    public static final ResourceLocation TEXTURE_BANNER = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/banner.png");
+    public static final ResourceLocation TEXTURE_DEFAULTMUZZLEFLASH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
+    public static final ResourceLocation TEXTURE_FLAGPOLE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/flagpole.png");
+    public static final ResourceLocation TEXTURE_GUI_AMMOGUI = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/ammo_gui.png");
+    public static final ResourceLocation TEXTURE_GUI_ARMORBOX = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armor_box.png");
+    public static final ResourceLocation TEXTURE_GUI_BASEEDIT = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/base_edit.png");
+    public static final ResourceLocation TEXTURE_GUI_BASICHITMARKER = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
+    public static final ResourceLocation TEXTURE_GUI_FLARE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/flare.png");
+    public static final ResourceLocation TEXTURE_GUI_DRIVEABLECRAFTING = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/driveable_crafting.png");
+    public static final ResourceLocation TEXTURE_GUI_DRIVEABLEFUEL = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/driveable_fuel.png");
+    public static final ResourceLocation TEXTURE_GUI_DRIVEABLEINVENTORY = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/driveable_inventory.png");
+    public static final ResourceLocation TEXTURE_GUI_DRIVEABLEMENU = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/driveable_menu.png");
+    public static final ResourceLocation TEXTURE_GUI_DRIVEABLEREPAIR = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/driveable_repair.png");
+    public static final ResourceLocation TEXTURE_GUI_FMUHITMARKER = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/fmu_hitmarker.png");
+    public static final ResourceLocation TEXTURE_GUI_FMUHITMARKERHD = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/fmu_hitmarker_hd.png");
+    public static final ResourceLocation TEXTURE_GUI_GUNWORKBENCH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/gun_workbench.png");
+    public static final ResourceLocation TEXTURE_GUI_HEADSHOTSYMBOL = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/headshotsymbol.png");
+    public static final ResourceLocation TEXTURE_GUI_MECHAINVENTORY = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/mecha_inventory.png");
+    public static final ResourceLocation TEXTURE_GUI_PAINTJOBTABLE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/paintjob_table.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMS = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMSLANDINGPAGE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_landing_page.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMSLOADOUTEDITOR = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_loadout_editor.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMSMISSIONRESULTS = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_mission_results.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMSOPENCREATES = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_open_crates.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMSRANKS = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_ranks.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMSSCORES = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_scores.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMSSCORES2 = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_scores_2.png");
+    public static final ResourceLocation TEXTURE_GUI_TEAMSVOTE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_vote.png");
+    public static final ResourceLocation TEXTURE_GUI_WEAPONBOX = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponbox.png");
+    public static final ResourceLocation TEXTURE_GUI_FLASH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/flash.png");
+    public static final ResourceLocation TEXTURE_GUI_BLOOD = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/blood.png");
     public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
     public static final ResourceLocation gunWorkbenchGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/gun_workbench.png");
     public static final ResourceLocation paintjobTableGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/paintjob_table.png");
@@ -170,6 +206,13 @@ public class FlansMod
         .requiresCorrectToolForDrops()
         .pushReaction(PushReaction.BLOCK))
     );
+    public static final DeferredHolder<Block, ? extends Block> vehicleCraftingTable = blockRegistry.register("vehiclecraftingtable", () -> new VehicleCraftingTableBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(3F, 6F)
+        .sound(SoundType.METAL)
+        .requiresCorrectToolForDrops()
+        .pushReaction(PushReaction.BLOCK))
+    );
     public static final DeferredHolder<Block, ? extends Block> paintjobTable = blockRegistry.register("paintjobtable", () -> new PaintjobTableBlock(BlockBehaviour.Properties.of()
         .strength(2F, 4F)
         .sound(SoundType.STONE))
@@ -189,6 +232,7 @@ public class FlansMod
     // Items
     public static final DeferredHolder<Item, ? extends Item> rainbowPaintcan = itemRegistry.register("rainbowpaintcan", () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, ? extends Item> gunWorkbenchItem = itemRegistry.register("gunworkbench", () -> new BlockItem(gunWorkbench.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, ? extends Item> vehicleCraftingTableItem = itemRegistry.register("vehiclecraftingtable", () -> new BlockItem(vehicleCraftingTable.get(), new Item.Properties()));
     public static final DeferredHolder<Item, ? extends Item> paintjobTableItem = itemRegistry.register("paintjobtable", () -> new BlockItem(paintjobTable.get(), new Item.Properties()));
     public static final DeferredHolder<Item, ? extends Item> playerSpawnerItem = itemRegistry.register("teams_player_spawner", () -> new BlockItem(playerSpawner.get(), new Item.Properties()));
     public static final DeferredHolder<Item, ? extends Item> itemSpawnerItem = itemRegistry.register("teams_item_spawner", () -> new BlockItem(itemSpawner.get(), new Item.Properties()));
@@ -200,6 +244,7 @@ public class FlansMod
     public static final DeferredHolder<MenuType<?>, MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> menuType((windowId, inv, buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
     public static final DeferredHolder<MenuType<?>, MenuType<DriveableCraftingMenu>> driveableCraftingMenu = menuRegistry.register("driveable_crafting_menu", () -> menuType((windowId, inv, buf) -> new DriveableCraftingMenu(windowId, inv, buf.readBlockPos())));
     public static final DeferredHolder<MenuType<?>, MenuType<DriveableInventoryMenu>> driveableInventoryMenu = menuRegistry.register("driveable_inventory_menu", () -> menuType(DriveableInventoryMenu::createFromNetwork));
+    public static final DeferredHolder<MenuType<?>, MenuType<MechaInventoryMenu>> mechaInventoryMenu = menuRegistry.register("mecha_inventory_menu", () -> menuType(MechaInventoryMenu::createFromNetwork));
     public static final DeferredHolder<MenuType<?>, MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> menuType(PaintjobTableMenu::createFromNetwork));
     public static final DeferredHolder<MenuType<?>, MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> menuType(ArmorBoxMenu::createFromNetwork));
     public static final DeferredHolder<MenuType<?>, MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> menuType(GunBoxMenu::createFromNetwork));
@@ -222,6 +267,7 @@ public class FlansMod
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
 
     // Entities
+    private static final int PROXY_UPDATE_INTERVAL = 20;
     public static final DeferredHolder<EntityType<?>, EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () -> EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
         .clientTrackingRange(ModCommonConfig.bulletRegistrationTrackingRange())
@@ -287,7 +333,7 @@ public class FlansMod
     public static final DeferredHolder<EntityType<?>, EntityType<Seat>> seatEntity = entityRegistry.register("driveable_seat", () -> EntityType.Builder.<Seat>of(Seat::new, MobCategory.MISC)
         .sized(0.6F, 0.6F)
         .clientTrackingRange(128)
-        .updateInterval(1)
+        .updateInterval(PROXY_UPDATE_INTERVAL)
         .setShouldReceiveVelocityUpdates(false)
         .noSave()
         .noSummon()
@@ -296,7 +342,7 @@ public class FlansMod
     public static final DeferredHolder<EntityType<?>, EntityType<Wheel>> wheelEntity = entityRegistry.register("driveable_wheel", () -> EntityType.Builder.<Wheel>of(Wheel::new, MobCategory.MISC)
         .sized(0.75F, 0.75F)
         .clientTrackingRange(128)
-        .updateInterval(1)
+        .updateInterval(PROXY_UPDATE_INTERVAL)
         .setShouldReceiveVelocityUpdates(false)
         .noSave()
         .noSummon()
@@ -318,6 +364,7 @@ public class FlansMod
 
     public FlansMod(IEventBus modEventBus, ModContainer modContainer)
     {
+        GunpowderRecipeCondition.CODECS.register(modEventBus);
         modEventBus.addListener(PacketHandler::register);
         modEventBus.addListener(NeoForgeChunkTickets::register);
         ModLogFile.initialize(MOD_ID);
@@ -340,7 +387,7 @@ public class FlansMod
         entityRegistry.register(modEventBus);
         menuRegistry.register(modEventBus);
 
-        waitForPacksExtractionIfPresent();
+        waitForPacksManagerExtractionIfPresent();
 
         // Register Everything
         CategoryManager.loadAll();
@@ -356,22 +403,22 @@ public class FlansMod
         return new MenuType<>(factory, FeatureFlags.DEFAULT_FLAGS);
     }
 
-    private static void waitForPacksExtractionIfPresent()
+    private static void waitForPacksManagerExtractionIfPresent()
     {
-        if (!ModList.get().isLoaded(PACKS_ID))
+        if (!ModList.get().isLoaded(PACKS_MANAGER_ID))
             return;
 
         if (!FMLEnvironment.production)
         {
-            log.info("Flan's Mod Ultimate Packs Extractor found, but extraction is disabled outside production. Continuing without waiting.");
+            log.info("Flan's Mod Ultimate Packs Manager found, but extraction is disabled outside production. Continuing without waiting.");
             return;
         }
 
-        log.info("Flan's Mod Ultimate Packs Extractor found. Waiting for extraction...");
+        log.info("Flan's Mod Ultimate Packs Manager found. Waiting for extraction...");
 
-        Path stateFile = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize().resolve(PACKS_EXTRACTION_STATE_FILE_NAME);
+        Path stateFile = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize().resolve(PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME);
 
-        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(TIMEOUT_PACKS_EXTRACTION);
+        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(TIMEOUT_PACKS_MANAGER_EXTRACTION);
         while (true)
         {
             PacksExtractionWaitState state = readPacksExtractionWaitState(stateFile);
@@ -413,13 +460,13 @@ public class FlansMod
             if (!object.has("protocolVersion") || !object.has("state"))
                 return PacksExtractionWaitState.WAITING;
 
-            if (object.get("protocolVersion").getAsInt() != PACKS_EXTRACTION_STATE_PROTOCOL_VERSION)
+            if (object.get("protocolVersion").getAsInt() != PACKS_MANAGER_EXTRACTION_STATE_PROTOCOL_VERSION)
                 return PacksExtractionWaitState.UNSUPPORTED;
 
             String state = object.get("state").getAsString();
-            if (PACKS_EXTRACTION_STATE_COMPLETE.equals(state))
+            if (PACKS_MANAGER_EXTRACTION_STATE_COMPLETE.equals(state))
                 return PacksExtractionWaitState.COMPLETE;
-            if (PACKS_EXTRACTION_STATE_FAILED.equals(state))
+            if (PACKS_MANAGER_EXTRACTION_STATE_FAILED.equals(state))
                 return PacksExtractionWaitState.FAILED;
 
             return PacksExtractionWaitState.WAITING;
@@ -452,6 +499,7 @@ public class FlansMod
 
         List<DeferredHolder<Item, ? extends Item>> generalItemList = new ArrayList<>();
         generalItemList.add(FlansMod.gunWorkbenchItem);
+        generalItemList.add(FlansMod.vehicleCraftingTableItem);
         generalItemList.add(FlansMod.paintjobTableItem);
         generalItemList.add(FlansMod.rainbowPaintcan);
         generalItemList.add(FlansMod.flagpoleItem);

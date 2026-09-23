@@ -5,6 +5,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
+import com.flansmodultimate.common.driveables.ValkyrieAnimation;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.types.DriveableType;
@@ -12,6 +13,7 @@ import com.flansmodultimate.common.types.PlaneType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 
 /** Extensible, pass-aware model base for legacy plane content packs. */
@@ -72,7 +74,7 @@ public class ModelPlane extends ModelDriveable
     public ModelRendererTurbo[] leftWingPos2Model = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] hudModel = new ModelRendererTurbo[0];
 
-    /** Experimental multi-part animation frames retained for pack compatibility. */
+    /** Valkyrie joint geometry, indexed like {@link ValkyrieAnimation} joints. Used when the type sets Valkyrie. */
     public ModelRendererTurbo[][] valkyrie = new ModelRendererTurbo[0][0];
 
     @Override
@@ -127,18 +129,12 @@ public class ModelPlane extends ModelDriveable
                     ? helicopterModeParts : planeModeParts,
                 poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        poseStack.pushPose();
-        poseStack.mulPose(Axis.XP.rotationDegrees(-state.roll()));
-        renderPart(hudModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        poseStack.popPose();
+        renderWithRotation(hudModel, RotationAxis.X, -state.roll() * Mth.DEG_TO_RAD,
+            poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        if (driveable.getConfigType() instanceof PlaneType planeType && planeType.isValkyrie() && valkyrie.length > 0)
-        {
-            int frameCount = Math.min(valkyrie.length, Math.max(1, planeType.getAnimFrames() + 1));
-            int frame = Mth.clamp(Math.round(state.modeProgress() * (frameCount - 1)), 0, frameCount - 1);
-            renderPart(valkyrie[frame], poseStack, vertexConsumer, packedLight, packedOverlay,
-                red, green, blue, alpha, scale, renderPass);
-        }
+        if (driveable instanceof Plane plane && plane.getValkyrieAnimation() != null && valkyrie.length > 0)
+            renderValkyriePart(plane, state, plane.getValkyrieAnimation().getCore(), null, poseStack, vertexConsumer,
+                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderRegisteredGuns(driveable, state, GunMountFilter.ALL, GunYawConvention.PLANE,
             poseStack, vertexConsumer, packedLight, packedOverlay,
             red, green, blue, alpha, scale, renderPass);
@@ -214,7 +210,7 @@ public class ModelPlane extends ModelDriveable
                 continue;
             int count = Math.max(1, propeller.length);
             for (int blade = 0; blade < propeller.length; blade++)
-                renderWithRotation(propeller[blade], blade * Mth.TWO_PI / count, 0F, 0F,
+                renderWithRotation(propeller[blade], RotationAxis.X, blade * Mth.TWO_PI / count,
                     poseStack, vertexConsumer, packedLight, packedOverlay,
                     red, green, blue, alpha, scale, renderPass);
         }
@@ -225,29 +221,27 @@ public class ModelPlane extends ModelDriveable
                                        float scale, EnumRenderPass renderPass)
     {
         float yawControl = driveable instanceof Plane plane
-            ? plane.getFlapYaw() * Mth.DEG_TO_RAD
+            ? Mth.lerp(state.partialTick(), plane.getPrevFlapYaw(), plane.getFlapYaw()) * Mth.DEG_TO_RAD
             : Mth.clamp(state.steeringAngle(), -30F, 30F) * Mth.DEG_TO_RAD;
         float leftPitch = driveable instanceof Plane plane
-            ? plane.getFlapPitchLeft() * Mth.DEG_TO_RAD : 0F;
+            ? Mth.lerp(state.partialTick(), plane.getPrevFlapPitchLeft(), plane.getFlapPitchLeft()) * Mth.DEG_TO_RAD : 0F;
         float rightPitch = driveable instanceof Plane plane
-            ? plane.getFlapPitchRight() * Mth.DEG_TO_RAD : 0F;
+            ? Mth.lerp(state.partialTick(), plane.getPrevFlapPitchRight(), plane.getFlapPitchRight()) * Mth.DEG_TO_RAD : 0F;
         if (driveable.isPartIntact(EnumDriveablePart.TAIL))
-            renderWithRotation(yawFlapModel, 0F, yawControl, 0F, poseStack, vertexConsumer,
+        {
+            renderWithRotationOffset(yawFlapModel, RotationAxis.Y, yawControl, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderWithRotationOffset(pitchFlapLeftModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer,
+                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderWithRotationOffset(pitchFlapRightModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer,
+                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        }
         if (driveable.isPartIntact(EnumDriveablePart.LEFT_WING))
-        {
-            renderWithRotation(pitchFlapLeftModel, 0F, 0F, leftPitch, poseStack, vertexConsumer,
+            renderWithRotationOffset(pitchFlapLeftWingModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderWithRotation(pitchFlapLeftWingModel, 0F, 0F, leftPitch, poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        }
         if (driveable.isPartIntact(EnumDriveablePart.RIGHT_WING))
-        {
-            renderWithRotation(pitchFlapRightModel, 0F, 0F, rightPitch, poseStack, vertexConsumer,
+            renderWithRotationOffset(pitchFlapRightWingModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderWithRotation(pitchFlapRightWingModel, 0F, 0F, rightPitch, poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        }
     }
 
     private void renderPropellers(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer,
@@ -269,8 +263,8 @@ public class ModelPlane extends ModelDriveable
             int count = Math.max(1, propeller.length);
             for (int blade = 0; blade < propeller.length; blade++)
             {
-                renderWithRotation(propeller[blade],
-                    rotation + blade * Mth.TWO_PI / count, 0F, 0F, poseStack, vertexConsumer,
+                renderWithRotation(propeller[blade], RotationAxis.X,
+                    rotation + blade * Mth.TWO_PI / count, poseStack, vertexConsumer,
                     packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             }
         }
@@ -281,24 +275,31 @@ public class ModelPlane extends ModelDriveable
                               float scale, EnumRenderPass renderPass)
     {
         PlaneType type = driveable.getConfigType() instanceof PlaneType planeType ? planeType : null;
-        float rotorAngle = driveable instanceof Plane plane
-            ? Mth.rotLerp(state.partialTick(), plane.getPrevPropellerAngle(), plane.getPropellerAngle())
-            : state.animationTime() * (18F + 34F * Math.abs(state.throttle()));
+        // Scale continuous phase before wrapping. Multiplying a wrapped base
+        // angle makes fractional-speed rotors jump once every base revolution.
         for (int i = 0; i < heliMainRotorModels.length; i++)
         {
+            if (!driveable.isPartIntact(EnumDriveablePart.BLADES))
+                continue;
             if (type != null && i < type.getHeliPropellers().size()
                 && !driveable.isPartIntact(type.getHeliPropellers().get(i).getPlanePart()))
                 continue;
-            float speed = i < heliRotorSpeeds.length ? heliRotorSpeeds[i] : 1F;
+            float speed = heliRotorSpeeds != null && i < heliRotorSpeeds.length ? heliRotorSpeeds[i] : 1F;
+            float rotorAngle = driveable instanceof Plane plane
+                ? plane.getRotorRenderAngle(state.partialTick(), speed) : 0F;
             renderAround(heliMainRotorModels[i], vectorAt(heliMainRotorOrigins, i), Axis.YP,
-                rotorAngle * speed, poseStack, vertexConsumer,
+                rotorAngle, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
         for (int i = 0; i < heliTailRotorModels.length; i++)
         {
+            if (!driveable.isPartIntact(EnumDriveablePart.TAIL))
+                continue;
             if (type != null && i < type.getHeliTailPropellers().size()
                 && !driveable.isPartIntact(type.getHeliTailPropellers().get(i).getPlanePart()))
                 continue;
+            float rotorAngle = driveable instanceof Plane plane
+                ? plane.getRotorRenderAngle(state.partialTick(), 1F) : 0F;
             renderAround(heliTailRotorModels[i], vectorAt(heliTailRotorOrigins, i), Axis.ZP,
                 rotorAngle, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -363,7 +364,7 @@ public class ModelPlane extends ModelDriveable
         poseStack.popPose();
     }
 
-    private void renderAround(ModelRendererTurbo[] parts, Vector3f origin, Axis axis, float angleDegrees,
+    void renderAround(ModelRendererTurbo[] parts, Vector3f origin, Axis axis, float angleDegrees,
                               PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                               float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
@@ -371,15 +372,39 @@ public class ModelPlane extends ModelDriveable
             return;
         poseStack.pushPose();
         if (origin != null)
-            poseStack.translate(origin.x, origin.y, origin.z);
+            poseStack.translate(origin.x * scale, origin.y * scale, origin.z * scale);
         poseStack.mulPose(axis.rotationDegrees(angleDegrees));
         if (origin != null)
-            poseStack.translate(-origin.x, -origin.y, -origin.z);
-        renderPart(parts, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            poseStack.translate(-origin.x * scale, -origin.y * scale, -origin.z * scale);
+        // Legacy renderRotor/renderTailRotor used ordinary TMT rendering even
+        // when the airframe requested oldRotateOrder. Applying the airframe's
+        // alternate order here reverses authored blade rotations and offsets.
+        for (ModelRendererTurbo part : parts)
+        {
+            if (part != null)
+                part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                    red, green, blue, alpha, scale, renderPass, false);
+        }
         poseStack.popPose();
     }
 
-    private void renderWithRotation(ModelRendererTurbo[] parts, float x, float y, float z,
+    private void renderWithRotation(ModelRendererTurbo[] parts, RotationAxis axis, float angle,
+                                    PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                                    float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        renderWithRotation(parts, axis, angle, false, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+    }
+
+    private void renderWithRotationOffset(ModelRendererTurbo[] parts, RotationAxis axis, float angle,
+                                          PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                                          float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        renderWithRotation(parts, axis, angle, true, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+    }
+
+    private void renderWithRotation(ModelRendererTurbo[] parts, RotationAxis axis, float angle, boolean additive,
                                     PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                                     float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
@@ -389,37 +414,59 @@ public class ModelPlane extends ModelDriveable
         {
             if (part == null)
                 continue;
-            float oldX = part.rotateAngleX;
-            float oldY = part.rotateAngleY;
-            float oldZ = part.rotateAngleZ;
-            part.rotateAngleX = x;
-            part.rotateAngleY = y;
-            part.rotateAngleZ = z;
-            part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-                red, green, blue, alpha, scale, renderPass, oldRotateOrder);
-            part.rotateAngleX = oldX;
-            part.rotateAngleY = oldY;
-            part.rotateAngleZ = oldZ;
+            float oldAngle = axis.get(part);
+            axis.set(part, additive ? oldAngle + angle : angle);
+            try
+            {
+                part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                    red, green, blue, alpha, scale, renderPass, oldRotateOrder);
+            }
+            finally
+            {
+                axis.set(part, oldAngle);
+            }
         }
     }
 
-    private void renderWithRotation(ModelRendererTurbo part, float x, float y, float z,
+    private void renderWithRotation(ModelRendererTurbo part, RotationAxis axis, float angle,
                                     PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                                     float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (part == null)
             return;
-        float oldX = part.rotateAngleX;
-        float oldY = part.rotateAngleY;
-        float oldZ = part.rotateAngleZ;
-        part.rotateAngleX = x;
-        part.rotateAngleY = y;
-        part.rotateAngleZ = z;
-        part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass, oldRotateOrder);
-        part.rotateAngleX = oldX;
-        part.rotateAngleY = oldY;
-        part.rotateAngleZ = oldZ;
+        float oldAngle = axis.get(part);
+        axis.set(part, angle);
+        try
+        {
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass, oldRotateOrder);
+        }
+        finally
+        {
+            axis.set(part, oldAngle);
+        }
+    }
+
+    private enum RotationAxis
+    {
+        X
+        {
+            @Override float get(ModelRendererTurbo part) { return part.rotateAngleX; }
+            @Override void set(ModelRendererTurbo part, float angle) { part.rotateAngleX = angle; }
+        },
+        Y
+        {
+            @Override float get(ModelRendererTurbo part) { return part.rotateAngleY; }
+            @Override void set(ModelRendererTurbo part, float angle) { part.rotateAngleY = angle; }
+        },
+        Z
+        {
+            @Override float get(ModelRendererTurbo part) { return part.rotateAngleZ; }
+            @Override void set(ModelRendererTurbo part, float angle) { part.rotateAngleZ = angle; }
+        };
+
+        abstract float get(ModelRendererTurbo part);
+        abstract void set(ModelRendererTurbo part, float angle);
     }
 
     private static Vector3f vectorAt(Vector3f[] vectors, int index)
@@ -428,12 +475,48 @@ public class ModelPlane extends ModelDriveable
             ? vectors[index] : null;
     }
 
+    /**
+     * 1.7.10 RenderPlane.renderAnimPart: each joint is placed relative to its parent,
+     * rotated X, Y, Z, then shifted by its animated offset, and carries its children.
+     */
+    void renderValkyriePart(Plane plane, RenderState state, ValkyrieAnimation.Part part,
+                            @Nullable org.joml.Vector3f parentPosition, PoseStack poseStack,
+                            VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+                            float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        org.joml.Vector3f joint = new org.joml.Vector3f(part.getPosition());
+        if (parentPosition != null)
+            joint.sub(parentPosition);
+        org.joml.Vector3f offset = part.getOffset(state.partialTick());
+        org.joml.Vector3f rotation = part.getRotation(state.partialTick());
+        float unit = MODEL_SCALE * scale;
+        poseStack.pushPose();
+        poseStack.translate(joint.x * unit, -joint.y * unit, -joint.z * unit);
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotation.x));
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotation.y));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotation.z));
+        poseStack.translate(offset.x * unit, offset.y * unit, offset.z * unit);
+        renderValk(plane, state, part.getId(), poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass);
+        for (ValkyrieAnimation.Part child : part.getChildren())
+            renderValkyriePart(plane, state, child, part.getPosition(), poseStack, vertexConsumer,
+                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        poseStack.popPose();
+    }
+
     public void renderValk(Driveable plane, RenderState state, int id, PoseStack poseStack, VertexConsumer vertexConsumer,
                            int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
                            float scale, EnumRenderPass renderPass)
     {
-        if (id >= 0 && id < valkyrie.length)
-            renderPart(valkyrie[id], poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (id < 0 || id >= valkyrie.length || valkyrie[id] == null)
+            return;
+        // Like the legacy renderValk, joints use ordinary TMT rotation order.
+        for (ModelRendererTurbo part : valkyrie[id])
+        {
+            if (part != null)
+                part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                    red, green, blue, alpha, scale, renderPass, false);
+        }
     }
 
     @Override

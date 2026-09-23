@@ -1,0 +1,34 @@
+// Identity
+Name Imperial Guard Laser cannon
+ShortName WH40K_MG_LasCannon_1A
+
+// Model and Rendering
+Icon Icon_WH40K_MG_LasCannon_1A
+DeployedModel Manus_WH40K.MG.WH40K_MG_LasCannon_1
+DeployedTexture Skin_WH40K_MG_LasCannon_1A
+
+// Recipe and Inventory
+Ammo WH40K_Ammo_LasCannon
+
+// Weapons
+Deployable True
+Scope None
+Mode FullAuto
+Recoil 1
+ReloadTime 100
+TopViewLimit 20
+BottomViewLimit 20
+SideViewLimit 45
+PivotHeight 0.5
+StandBackDistance 1.0
+RoundsPerMin 300.0
+Dispersion 0.3
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 1000.0
+
+// Sounds
+DistortSound False
+ShootSound LasGun_fire
+ReloadSound boltgun_reload

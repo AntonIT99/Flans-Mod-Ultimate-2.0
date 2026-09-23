@@ -1,0 +1,61 @@
+// Identity
+Name Thompson M1A1
+ShortName 44_ThompsonM1A1
+Description American Sub Machine Gun
+
+// Rendering
+Icon 44_ThompsonM1A1
+Model W44.ThompsonM1A1
+ModelScale 0.3
+Texture Skin44_ThompsonM1A1
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_ThompsonM1A1Ammo
+
+// Handling
+Mode FullAuto
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 700.0
+ReloadTime 58
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 285.0
+Dispersion 0.4
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1.75
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound ThompsonM1A1Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound ThompsonM1A1Reload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

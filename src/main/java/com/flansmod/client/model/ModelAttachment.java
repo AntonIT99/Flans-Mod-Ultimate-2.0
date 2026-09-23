@@ -3,11 +3,11 @@ package com.flansmod.client.model;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.model.IFlanTypeModel;
+import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -82,5 +82,20 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
             anAmmoModel.doMirror(false, true, true);
             anAmmoModel.setRotationPoint(anAmmoModel.rotationPointX, -anAmmoModel.rotationPointY, -anAmmoModel.rotationPointZ);
         }
+    }
+
+    protected void translate(ModelRendererTurbo[] model, float x, float y, float z)
+    {
+        for(ModelRendererTurbo anAttachmentModel : attachmentModel)
+        {
+            anAttachmentModel.rotationPointX += x;
+            anAttachmentModel.rotationPointY += y;
+            anAttachmentModel.rotationPointZ += z;
+        }
+    }
+
+    public void translateAll(float x, float y, float z)
+    {
+        translate(attachmentModel, x, y, z);
     }
 }

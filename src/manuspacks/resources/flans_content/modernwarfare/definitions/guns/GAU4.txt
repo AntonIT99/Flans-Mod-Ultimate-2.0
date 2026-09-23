@@ -1,0 +1,35 @@
+// Identity
+Name M61A1 Vulcan (GAU-4/A)
+ShortName GAU4
+
+// Model and Rendering
+Icon IconGunGAU4
+Colour 255 255 255
+DeployedModel manus_modern_warfare.M134
+DeployedTexture SkinGunM134
+
+// Recipe and Inventory
+Ammo ShellNATO20mm
+
+// Weapons
+ReloadTime 100
+Recoil 1
+Mode FullAuto
+Scope None
+Deployable True
+StandBackDistance 1.0
+TopViewLimit 10
+BottomViewLimit 10
+SideViewLimit 45
+PivotHeight 0.75
+RoundsPerMin 1200.0
+Dispersion 0.15
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 1036.0
+
+// Sounds
+ShootSound MG42Shoot
+DistortSound False
+ReloadSound MG42Reload

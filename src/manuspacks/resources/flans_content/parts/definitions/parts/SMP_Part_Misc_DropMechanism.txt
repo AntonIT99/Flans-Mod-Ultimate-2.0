@@ -1,0 +1,16 @@
+// Identity
+Name Drop Mechanism
+ShortName SMP_Part_Misc_DropMechanism
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_DropMechanism
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel D SMP_Part_Misc_DropMechanism
+ M 
+ D 
+P P
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 64

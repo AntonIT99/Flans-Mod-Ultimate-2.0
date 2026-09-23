@@ -1,0 +1,18 @@
+// Identity
+Name Bandage
+ShortName 44_Bandage
+
+// Rendering
+Icon 44_Bandage
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 2
+ToolLife 1
+DestroyOnEmpty true
+RechargeRecipe 1 potion.8229
+
+// Behaviour
+Repair false
+Heal true
+HealAmount 6

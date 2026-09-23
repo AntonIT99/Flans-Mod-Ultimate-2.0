@@ -1,0 +1,51 @@
+// Identity
+Name Very Large HE Shell
+ShortName 44_VeryLargeHEShell
+Description 130mm - 152mm Calibers
+
+// Rendering
+Icon 44_VeryLargeHEShell
+Model Bullet
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 520
+FallSpeed 1.0
+HitBoxSize 1.0
+Penetrates False
+PenetrationAt100m 41
+BreaksGlass True
+
+// Damage
+Mass 43500.0
+Damage 1
+DamageVsLiving 100
+DamageVsVehicles 2500
+Fire 0
+
+// Explosion
+ExplosiveMassTNTKg 5.1
+Explosion 8
+ExplodeOnImpact True
+Fuse 500
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 0
+ExplodeParticles 15
+FlareParticleCount 15
+DebrisParticleCount 6
+
+// Sounds
+HitSound

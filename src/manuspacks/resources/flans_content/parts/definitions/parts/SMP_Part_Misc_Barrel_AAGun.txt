@@ -1,0 +1,16 @@
+// Identity
+Name AA Gun Barrel
+ShortName SMP_Part_Misc_Barrel_AAGun
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_Barrel_AAGun
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel
+M  
+ M 
+  M
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 64

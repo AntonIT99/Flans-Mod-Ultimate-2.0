@@ -1,0 +1,35 @@
+// Identity
+Name Imperial Laser Cannon
+ShortName ImperialLaserCannon
+
+// Model and Rendering
+Icon IconGunImperialLaserCannon
+Colour 255 255 255
+DeployedModel manus_sifi.LaserCannon
+DeployedTexture SkinGunImperialLaserCannon
+
+// Recipe and Inventory
+Ammo AmmoPowerpackImperialLaserCannon
+
+// Weapons
+ReloadTime 100
+Recoil 1
+Mode FullAuto
+Scope None
+Deployable True
+StandBackDistance 1.3
+TopViewLimit 20
+BottomViewLimit 10
+SideViewLimit 30
+PivotHeight 0.11
+RoundsPerMin 300.0
+Dispersion 0.28
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 700.0
+
+// Sounds
+DistortSound False
+ShootSound imperiallaser_fire
+ReloadSound BrowningReload

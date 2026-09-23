@@ -1,0 +1,19 @@
+// Identity
+Name Field-modified Rifling Barrel
+ShortName 44_FieldmodifiedRiflingBarrel
+Description Barrel Attachment : _Increases Damage by 15% _Increases Recoil by 10%
+AttachmentType barrel
+
+// Rendering
+Icon 44_FieldmodifiedRiflingBarrel
+Model W44.Barrel
+Texture None
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.15
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 1.0
+RecoilMultiplier 1.1
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

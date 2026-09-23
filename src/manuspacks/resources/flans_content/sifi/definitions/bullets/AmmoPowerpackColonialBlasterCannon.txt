@@ -1,0 +1,36 @@
+// Identity
+Name Powerpack for Colonial Blaster Cannon
+ShortName AmmoPowerpackColonialBlasterCannon
+
+// Model and Rendering
+Model manus_sifi.Laser
+Texture SkinBulletLaserRed
+Colour 255 255 255
+Icon IconAmmoPowerpackColonialBlasterCannon
+
+// Recipe and Inventory
+MaxStackSize 3
+RoundsPerItem 300
+
+// Behaviour
+FallSpeed 0.0
+ExplodeOnImpact True
+Fuse 100
+BreaksGlass True
+HitBoxSize 0.1
+Penetrates False
+
+// Ballistics and Damage
+Damage 38
+Explosion 0
+Fire 1
+MuzzleVelocity 700.0
+PenetrationAt100m 24
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail False
+HasLight True

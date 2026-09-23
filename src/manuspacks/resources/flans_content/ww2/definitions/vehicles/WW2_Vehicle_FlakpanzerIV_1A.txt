@@ -1,0 +1,103 @@
+// Identity
+Name Flakpanzer IV - Wirbelwind
+ShortName WW2_Vehicle_FlakpanzerIV_1A
+
+// Model and Rendering
+Model Manus_WW2.Vehicle.WW2_Vehicle_FlakpanzerIV_1
+Icon Icon_WW2_Vehicle_FlakpanzerIV_1A
+Texture Skin_WW2_Vehicle_FlakpanzerIV_1A
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 2000
+CargoSlots 0
+ShellSlots 10
+AddRecipeParts turret 1 SMP_Part_Turret_Tank 6 SMP_Part_Mat_Armor_Steel
+AddRecipeParts core 1 SMP_Part_Chassis_Tank 12 SMP_Part_Mat_Armor_Steel
+AddRecipeParts leftTrack 1 SMP_Part_Wheel_Tanktrack
+AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
+AddDye 10 gray
+AllowAllAmmo False
+AddAmmo WW2_Shell_German20mmAA
+AddAmmo 44_20mmAircraftAmmo
+
+// Movement and Physics
+MaxThrottle 0.6
+MaxNegativeThrottle 0.3
+Drag 1.0
+RealMassKg 22000
+RealEnginePowerPS 265
+RealMaxSpeedKmh 38
+RealMaxReverseSpeedKmh 7
+DriveType TRACKED
+WheelRadius 1.0
+WheelSpringStrength 0.5
+FourWheelDrive true
+TurnLeftSpeed 1
+TurnRightSpeed 1
+SquashMobs True
+Tank true
+
+// Weapons
+BarrelPosition 0 40 0
+ShellDelay 1
+ShootDelay 1
+RoundsPerMinPrimary 1400
+ReadWeaponsFromGunTypes true
+BarrelPosition 0 40 0
+GunOrigin 1 48 18 12
+PlaceTimePrimary 80
+ReloadTimeSecondary 100
+ReloadTimePrimary 51
+ReloadRoundsPrimary 80
+
+// Protection
+ArmorFrontMm 80
+ArmorSideMm 30
+ArmorRearMm 30
+ArmorTopMm 20
+ArmorBottomMm 10
+TurretArmorFrontMm 16
+TurretArmorSideMm 16
+TurretArmorRearMm 16
+TurretArmorTopMm 0
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+
+// Parts and Seats
+WheelPosition 0 -35 -8 -28
+WheelPosition 1 -35 -8 28
+WheelPosition 2 46 -8 28
+WheelPosition 3 46 -8 -28
+Driver 0 34 0 -360 360 -5 85
+RotatedDriverOffset -23 0 0
+Passengers 1
+Passenger 1 31 12 12 core -30 30 -10 10 WW2_MG_MG42ZB_1A FrontMG
+SetupPart core 3000 -48 -2 -20 111 27 40
+SetupPart turret 800 -31 26 -25 54 20 50
+SetupPart leftTrack 300 -55 -10 22 110 22 8
+SetupPart rightTrack 300 -55 -10 -30 110 22 8
+BulletDetection 7
+CameraDistance 7.5
+
+// Optics
+hasScope true
+Gunsight manus_20mmtank
+gunsightZoom 3.5
+
+// Sounds
+StartSound TankIdle2
+StartSoundLength 41
+EngineSound TankRun2
+EngineSoundLength 41
+BackSoundLength 41
+BackSound TankBack2
+StartSoundRange 12
+EngineSoundRange 22
+BackSoundRange 10
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+ShootSoundPrimary flakvierlingshoot
+ShootSoundSecondary Mg34Shoot
+ShootSoundPrimary flakvierlingshoot
+ShootSoundSecondary Mg34Shoot

@@ -1,0 +1,62 @@
+// Identity
+Name FG-42
+ShortName 44_Fg42
+Description German Automatic Rifle
+
+// Rendering
+Icon 44_Fg42
+Model W44.Fg42
+ModelScale 0.85
+Texture Skin44_FG42
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Fg42Ammo
+
+// Handling
+Mode FullAuto SemiAuto
+Deployable False
+MoveSpeedModifier 0.8
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 900
+ReloadTime 83
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 740.0
+Dispersion 0.09
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 4.0
+RandomRecoilRange 3
+RandomRecoilYawRange 0.75
+DecreaseRecoil 2
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_ZF4Scope 44_ZF41Scope 44_OpticalSight 44_LensSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound Fg42Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Stg44Reload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

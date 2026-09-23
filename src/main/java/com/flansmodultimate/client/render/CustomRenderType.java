@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render;
 
 import org.lwjgl.opengl.GL11C;
 
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -15,6 +16,7 @@ import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.LinkedHashMap;
 import java.util.function.Function;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -22,6 +24,39 @@ public class CustomRenderType
 {
     private record TexDepthCullKey(ResourceLocation texture, boolean depthWrite, boolean cull) {}
     private record TexCullKey(ResourceLocation texture, boolean cull) {}
+    private static final LinkedHashMap<ResourceLocation, RenderType[]> GPU_MODELS = new LinkedHashMap<>(64, 0.75F, true);
+
+    public static RenderType gpuModel(ResourceLocation texture, boolean translucent, boolean cull)
+    {
+        RenderType[] variants = GPU_MODELS.get(texture);
+        if (variants == null)
+        {
+            if (GPU_MODELS.size() >= 256)
+            {
+                var iterator = GPU_MODELS.keySet().iterator();
+                iterator.next();
+                iterator.remove();
+            }
+            variants = new RenderType[4];
+            GPU_MODELS.put(texture, variants);
+        }
+        int variant = (translucent ? 2 : 0) + (cull ? 1 : 0);
+        if (variants[variant] == null)
+        {
+            RenderType.CompositeState state = RenderType.CompositeState.builder()
+                .setShaderState(new RenderStateShard.ShaderStateShard(GpuModelCache::shader))
+                .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                .setTransparencyState(translucent ? EMISSIVE_ALPHA_TRANSPARENCY
+                    : new RenderStateShard.TransparencyStateShard("gpu_opaque", RenderSystem::disableBlend, () -> {}))
+                .setCullState(new RenderStateShard.CullStateShard(cull))
+                .setLightmapState(new RenderStateShard.LightmapStateShard(true))
+                .setOverlayState(new RenderStateShard.OverlayStateShard(true))
+                .createCompositeState(false);
+            variants[variant] = RenderType.create("rigid_model", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
+                256, false, false, state);
+        }
+        return variants[variant];
+    }
 
     /** Standard alpha blending */
     private static final RenderStateShard.TransparencyStateShard EMISSIVE_ALPHA_TRANSPARENCY =
@@ -208,5 +243,49 @@ public class CustomRenderType
     public static RenderType armorTranslucentNoCull(ResourceLocation tex)
     {
         return armorTranslucent(tex, false);
+    }
+
+    /** Debug lines drawn over all geometry, like the legacy debug boxes rendered with depth testing disabled */
+    public static RenderType debugLinesSeeThrough()
+    {
+        return VanillaShardRenderTypes.DEBUG_LINES_SEE_THROUGH;
+    }
+
+    /** Vanilla debug filled box drawn over all geometry */
+    public static RenderType debugFilledBoxSeeThrough()
+    {
+        return VanillaShardRenderTypes.DEBUG_FILLED_BOX_SEE_THROUGH;
+    }
+
+    /** Never instantiated; extends RenderType only to reach the protected vanilla render state shards */
+    private abstract static class VanillaShardRenderTypes extends RenderType
+    {
+        /** Vanilla lines without depth testing or depth writes */
+        private static final RenderType DEBUG_LINES_SEE_THROUGH = RenderType.create("debug_lines_see_through",
+            DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, false, false,
+            RenderType.CompositeState.builder()
+                .setShaderState(RENDERTYPE_LINES_SHADER)
+                .setLineState(DEFAULT_LINE)
+                .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                .setCullState(NO_CULL)
+                .setWriteMaskState(COLOR_WRITE)
+                .setDepthTestState(NO_DEPTH_TEST)
+                .createCompositeState(false));
+
+        /** Vanilla debug filled box without depth testing or depth writes */
+        private static final RenderType DEBUG_FILLED_BOX_SEE_THROUGH = RenderType.create("debug_filled_box_see_through",
+            DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, 131072, false, true,
+            RenderType.CompositeState.builder()
+                .setShaderState(POSITION_COLOR_SHADER)
+                .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                .setWriteMaskState(COLOR_WRITE)
+                .setDepthTestState(NO_DEPTH_TEST)
+                .createCompositeState(false));
+
+        private VanillaShardRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize,
+                                        boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState)
+        {
+            super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
+        }
     }
 }

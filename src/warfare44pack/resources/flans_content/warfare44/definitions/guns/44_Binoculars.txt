@@ -1,0 +1,34 @@
+// Identity
+Name Binoculars
+ShortName 44_Binoculars
+
+// Rendering
+Icon 44_Binoculars
+Model W44.Binoculars
+ModelScale 0.35
+Texture Skin44_Binoculars
+Colour 255 255 255
+DeployedModel None
+
+// Ammunition
+NumBullets 0
+
+// Handling
+Mode SemiAuto
+Deployable False
+Scope Binoculars
+ZoomLevel 16
+FOVZoomLevel 1.0
+
+// Fire rate and reload
+ShootDelay 0
+ReloadTime 0
+
+// Ballistics
+Accuracy 0
+
+// Damage
+Damage 0
+
+// Recoil
+Recoil 0

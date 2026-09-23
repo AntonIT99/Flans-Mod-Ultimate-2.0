@@ -1,0 +1,11 @@
+// Identity
+Name Spring
+ShortName 44_Spring
+Category Misc
+
+// Rendering
+Icon 44_Spring
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

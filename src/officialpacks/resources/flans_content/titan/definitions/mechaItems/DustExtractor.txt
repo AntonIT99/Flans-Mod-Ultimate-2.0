@@ -1,16 +1,19 @@
-//Description for hover text. Underscores represent new lines.
+// Identity
 Description Extracts and combines_coal dust to increase yield_(1.5x Coal Drop Rate)_Requires Item Vacuum
 Name Dust Extractor
 ShortName mechaDustExtractor
+Type armUpgrade
+
+// Item and rendering
 Icon DustExtractor
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
+
+// Recipe
 RecipeOutput 1
 Recipe I blockIron C coal R redstone
 CR 
 ICR
  IC
-//The item type. This decides the slot it goes in. Options are upgrade, tool, armUpgrade, legUpgrade, headUpgrade, shoulderUpgrade, hipsUpgrade.
-Type armUpgrade
-//The modifiers this item enacts on the mecha
+
+// Mecha item
 CoalMultiplier 1.5

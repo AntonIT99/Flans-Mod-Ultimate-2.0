@@ -1,16 +1,19 @@
+// Identity
 Name Speed Increase
-//Description for hover text. Underscores represent new lines.
 Description Increase mecha speed by 50%
 ShortName mechaSpeedIncrease
+Type legUpgrade
+
+// Item and rendering
 Icon speedIncrease
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
+
+// Recipe
 RecipeOutput 1
 Recipe A advHydraulics I ingotIron
 I I
 A A
 I I
-//The item type. This decides the slot it goes in. Options are upgrade, tool, armUpgrade, legUpgrade, headUpgrade, shoulderUpgrade, hipsUpgrade.
-Type legUpgrade
-//The modifiers this item enacts on the mecha
+
+// Mecha item
 SpeedMultiplier 1.2

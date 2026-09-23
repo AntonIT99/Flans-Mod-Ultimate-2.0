@@ -3,12 +3,12 @@ package com.flansmod.client.model;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.model.IFlanTypeModel;
+import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.types.GunAnimationConfig;
 import com.flansmodultimate.common.types.GunType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.wolffsmod.api.client.model.ModelBase;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -640,6 +640,9 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         setTranslateClip(Optional.ofNullable(config.getTranslateClip()).orElse(getTranslateClip()));
         setStagedtranslateClip(Optional.ofNullable(config.getStagedtranslateClip()).orElse(getStagedtranslateClip()));
         setStagedReload(Optional.ofNullable(config.getStagedReload()).orElse(isStagedReload()));
+
+        setAnimationType(Optional.ofNullable(config.getAnimationType()).orElse(getAnimationType()));
+        setMeleeAnimation(Optional.ofNullable(config.getMeleeAnimation()).orElse(getMeleeAnimation()));
 
         setThirdPersonOffset(Optional.ofNullable(config.getThirdPersonOffset()).orElse(getThirdPersonOffset()));
         setItemFrameOffset(Optional.ofNullable(config.getItemFrameOffset()).orElse(getItemFrameOffset()));

@@ -13,13 +13,35 @@ import com.flansmodultimate.common.driveables.ParticleEmitter;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.VehicleOptics;
+import com.flansmodultimate.common.driveables.VehicleOpticsReader;
+import com.flansmodultimate.common.driveables.armor.ResolvedVehicleArmor;
+import com.flansmodultimate.common.driveables.armor.VehicleArmorResolver;
+import com.flansmodultimate.common.driveables.armor.VehicleArmorSpec;
+import com.flansmodultimate.common.driveables.armor.VehicleArmorSpecReader;
+import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
+import com.flansmodultimate.common.driveables.physics.EnumDriveType;
+import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
+import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
+import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
+import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
+import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.VehicleGeometry;
+import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsResolver;
+import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumFireMode;
+import com.flansmodultimate.common.guns.RemovedAmmo;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ModUtils;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,10 +50,13 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -40,16 +65,37 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 /** Shared content definition for planes, vehicles and mechas. */
 @Getter
 @NoArgsConstructor
-public class DriveableType extends PaintableType
+public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmmoOverrideUser
 {
+    protected VehicleOptics optics = new VehicleOptics();
+    /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
+    private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
+    /** Slightly narrower than the former hard-coded 0.5-to-1.5 engine pitch sweep. */
+    public static final float DEFAULT_ENGINE_SOUND_PITCH_RANGE = 0.8F;
+
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
+    /** Original, unscaled definitions retained so repeated finalization is idempotent. */
+    private final Map<EnumDriveablePart, CollisionBox> authoredHealth = new EnumMap<>(EnumDriveablePart.class);
     protected final Map<EnumDriveablePart, DriveableExplosion> partDeathExplosions = new EnumMap<>(EnumDriveablePart.class);
     protected final Map<EnumDriveablePart, List<RecipeIngredient>> partwiseRecipe = new EnumMap<>(EnumDriveablePart.class);
     protected final List<RecipeIngredient> driveableRecipe = new ArrayList<>();
 
-    protected boolean acceptAllAmmo = true;
+    protected boolean acceptAllAmmo = false;
     protected final Set<String> ammo = new LinkedHashSet<>();
+    /**
+     * Ammo groups pulled in with "UseAmmoGroup". Every ammo item declaring "AddToAmmoGroup" with one of these
+     * names is accepted by this driveable, exactly as if it had been listed with "AddAmmo".
+     */
+    protected final Set<String> ammoGroups = new LinkedHashSet<>();
+    /** Per-ammunition statistic overrides declared by this driveable. */
+    @Getter
+    protected AmmoOverrides ammoOverrides = AmmoOverrides.EMPTY;
+    /** Ammunition this weapon explicitly refuses; applied after every other ammunition source. */
+    @Getter
+    protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
     private volatile List<BulletType> resolvedAmmoTypes;
+    /** Ammo group revision the cache above was built from; groups can still grow while later packs load */
+    private volatile int resolvedAmmoGroupRevision;
 
     protected boolean harvestBlocks;
     protected final Set<String> materialsHarvested = new LinkedHashSet<>();
@@ -60,6 +106,8 @@ public class DriveableType extends PaintableType
     protected int reloadSoundTick = 15_214_541;
     protected float fallDamageFactor = 1F;
     protected int engineStartTime;
+    /** Optional engine shortname/item ID that overrides global automatic engine selection. */
+    protected String engine = StringUtils.EMPTY;
 
     protected EnumWeaponType primary = EnumWeaponType.NONE;
     protected EnumWeaponType secondary = EnumWeaponType.NONE;
@@ -67,20 +115,63 @@ public class DriveableType extends PaintableType
     protected boolean alternateSecondary;
     protected float shootDelayPrimary = -1F;
     protected float shootDelaySecondary = -1F;
+    /**
+     * When true, a weapon bank whose shoot points mount a gun ignores its own
+     * ShootDelay/BulletSpeed/BulletSpread/damage-multiplier fields and reads them
+     * directly from the GunType referenced by that mount instead. This applies to
+     * both banks, so a fighter firing wing machine guns as its primary weapon and
+     * cannons as its secondary takes each bank's numbers from the mounted gun.
+     */
+    protected boolean readWeaponsFromGunTypes;
     protected float damageMultiplierPrimary = 1F;
     protected float damageMultiplierSecondary = 1F;
     protected EnumFireMode modePrimary = EnumFireMode.FULLAUTO;
     protected EnumFireMode modeSecondary = EnumFireMode.FULLAUTO;
     protected String shootSoundPrimary = StringUtils.EMPTY;
     protected String shootSoundSecondary = StringUtils.EMPTY;
+    /** Legacy generic and weapon-type sounds used when a bank has no explicit modern sound. */
+    protected String shootSound = StringUtils.EMPTY;
+    protected String shellSound = StringUtils.EMPTY;
+    protected String bombSound = StringUtils.EMPTY;
     protected String shootReloadSound = StringUtils.EMPTY;
     protected final List<ShootPoint> shootPointsPrimary = new ArrayList<>();
     protected final List<ShootPoint> shootPointsSecondary = new ArrayList<>();
     protected final List<PilotGun> pilotGuns = new ArrayList<>();
+    /**
+     * Authored weapon geometry set aside while the shoot-point debug command has
+     * overrides installed, so {@code reset} can put the type back the way its file
+     * describes it without re-reading the file. Empty until the first override.
+     */
+    @Getter(AccessLevel.NONE)
+    private final Map<Boolean, List<ShootPoint>> authoredShootPoints = new HashMap<>();
+    @Getter(AccessLevel.NONE)
+    private final Map<Integer, Vector3f> authoredGunOrigins = new HashMap<>();
     protected int reloadTimePrimary;
     protected int reloadTimeSecondary;
+    /** Shared {@code ReloadTime}, counted into both banks' reload time the way the bank keys are. */
+    protected int reloadTimeShared;
+    /**
+     * Whether the pack stated a rate of fire for this bank at all. A bank that
+     * states none falls back to {@link #DEFAULT_ROUNDS_PER_MIN}, and for a bank
+     * firing mounted guns that fallback must not outrank the gun's own cadence.
+     */
+    protected boolean shootDelayDeclaredPrimary;
+    protected boolean shootDelayDeclaredSecondary;
+    /** The longest delay any of this bank's timing keys states, in ticks; see {@link #reloadTime(boolean)}. */
+    protected float longestDeclaredDelayPrimary;
+    protected float longestDeclaredDelaySecondary;
+    /**
+     * Rounds this bank puts out between full reloads, when that is fewer than the
+     * loaded ammunition carries. A Panzer II feeding its 2 cm gun from ten-round
+     * magazines states {@code ReloadRoundsPrimary 10} whatever the ammunition item
+     * holds. Zero leaves the ammunition item's own round count in charge.
+     */
+    protected int reloadRoundsPrimary;
+    protected int reloadRoundsSecondary;
     protected String reloadSoundPrimary = StringUtils.EMPTY;
     protected String reloadSoundSecondary = StringUtils.EMPTY;
+    /** Shared {@code ReloadSound}, used by a bank that names none of its own. */
+    protected String reloadSoundShared = StringUtils.EMPTY;
     protected int placeTimePrimary = 5;
     protected int placeTimeSecondary = 5;
     protected String placeSoundPrimary = StringUtils.EMPTY;
@@ -114,6 +205,19 @@ public class DriveableType extends PaintableType
     protected final List<DriveablePosition> wheelPositions = new ArrayList<>();
     protected float wheelSpringStrength = 0.5F;
     protected float wheelStepHeight = 1F;
+    /**
+     * Vertical gap, in blocks, between the wheel anchors and the bottom of the
+     * geometry that actually meets the ground, or NaN when the type declares no
+     * wheel or track collision box to derive it from.
+     *
+     * <p>WheelPosition is only an anchor, and packs do not agree on where it
+     * sits: the official content puts it on the contact plane, while others put
+     * it an axle height above. The collision boxes of the wheel and track parts
+     * do describe the geometry that touches the ground, so the gap between the
+     * lowest of those and the lowest anchor is the clearance the suspension has
+     * to keep for the rendered model to rest on the surface.</p>
+     */
+    protected float wheelContactClearance = Float.NaN;
     protected boolean canRoll = true;
     protected final List<DriveablePosition> collisionPoints = new ArrayList<>();
     protected float drag = 1F;
@@ -125,15 +229,20 @@ public class DriveableType extends PaintableType
     protected float buoyancy = 0.0165F;
     protected float floatOffset;
     protected float bulletDetectionRadius = -1F;
+    /** Largest detection radius of any loaded type; only grows, so it stays a safe bound across reloads. */
+    private static volatile float maxBulletDetectionRadius = 8F;
     protected boolean onRadar;
     protected int animFrames = 2;
 
     protected int startSoundRange = 50;
     protected String startSound = StringUtils.EMPTY;
     protected int startSoundLength;
+    protected String startEngineSound = StringUtils.EMPTY;
+    protected int startEngineSoundLength = 20;
     protected int engineSoundRange = 50;
     protected String engineSound = StringUtils.EMPTY;
     protected int engineSoundLength;
+    protected float engineSoundPitchRange = DEFAULT_ENGINE_SOUND_PITCH_RANGE;
     protected int backSoundRange = 50;
     protected String exitSound = StringUtils.EMPTY;
     protected int exitSoundLength = 50;
@@ -189,16 +298,50 @@ public class DriveableType extends PaintableType
     protected final List<Vector3f> leftTrackPoints = new ArrayList<>();
     protected final List<Vector3f> rightTrackPoints = new ArrayList<>();
     protected float trackLinkLength;
-    protected boolean IT1;
+    protected boolean it1;
     protected final List<CollisionMesh> collisionMeshes = new ArrayList<>();
     protected boolean fancyCollision;
     private transient volatile DriveableCollisionProfile collisionProfile;
+
+    /**
+     * Optional real-world source data exactly as authored, in real-world units.
+     * Empty for every definition that declares no {@code Real*} key, which is what
+     * keeps such definitions on the legacy physics path.
+     */
+    protected RealWorldVehicleSpec realWorldSpec = RealWorldVehicleSpec.EMPTY;
+    /**
+     * The legacy {@code Mass} key converted to kilograms with
+     * {@link #legacyMassKilogramsPerUnit()}, or null when the definition does not
+     * declare it. Only a fallback for the impulse mass, and a discouraged one; the
+     * legacy propulsion fields of the subclasses keep their own reading.
+     */
+    @Nullable
+    protected Float authoredMassKg;
+    /**
+     * Minecraft-scaled physics resolved from {@link #realWorldSpec}, existing
+     * geometry and the legacy fields. Never null: runtime code branches on
+     * {@link ResolvedVehiclePhysics#mode()} instead of null-checking.
+     */
+    protected ResolvedVehiclePhysics resolvedPhysics =
+        ResolvedVehiclePhysics.legacy(EnumVehicleCategory.OTHER, EnumDriveType.RWD);
+
+    /** Optional authored armour. Missing entries remain distinct from explicit zero plates. */
+    protected VehicleArmorSpec armorSpec = VehicleArmorSpec.EMPTY;
+    /** Immutable definition-time armour table used by projectile and explosion hits. */
+    protected ResolvedVehicleArmor resolvedArmor = VehicleArmorResolver.resolve(VehicleArmorSpec.EMPTY, List.of());
+    /** Explicit opt-in; false preserves authored HP exactly. */
+    protected boolean useRealisticVehicleHealth;
+    /** Final normalized or legacy health allocation exposed to UI/debug consumers. */
+    protected VehicleHealthScaler.Result resolvedHealth =
+        VehicleHealthScaler.resolve(false, null, Map.of(), ModCommonConfig.DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE);
 
     @Override
     protected void read(TypeFile file)
     {
         super.read(file);
+        engine = readValue("Engine", engine, file).trim();
         readSeats(file);
+        optics = VehicleOpticsReader.read(file, seats, warning -> logError(warning, file));
         readWheels(file);
         readPartsAndRecipes(file);
         readWeapons(file);
@@ -206,7 +349,36 @@ public class DriveableType extends PaintableType
         readSounds(file);
         readCollisionMeshes(file);
         readParticles(file);
+        readRealWorldSpec(file);
+        readArmorAndHealthSpec(file);
         finishDerivedValues();
+    }
+
+    /**
+     * Reads the optional real-world keys. This touches no key that already
+     * existed, so legacy parsing is unchanged, and a malformed optional value is
+     * reported and dropped rather than aborting the content pack load.
+     */
+    private void readRealWorldSpec(TypeFile file)
+    {
+        RealWorldSpecReader.Result result = RealWorldSpecReader.read(file);
+        realWorldSpec = result.spec();
+        for (String warning : result.warnings())
+            logError(warning, file);
+        authoredMassKg = file.hasConfigLine("Mass") ? readValue("Mass", 0F, file) * legacyMassKilogramsPerUnit() : null;
+    }
+
+    private void readArmorAndHealthSpec(TypeFile file)
+    {
+        VehicleArmorSpecReader.Result armorResult = VehicleArmorSpecReader.read(file);
+        armorSpec = armorResult.spec();
+        for (String warning : armorResult.warnings())
+            logError(warning, file);
+
+        useRealisticVehicleHealth = readValue("UseRealisticVehicleHealth", false, file);
+        if (useRealisticVehicleHealth && realWorldSpec.massKg() == null)
+            logError("UseRealisticVehicleHealth requires a valid RealMassKg; authored hitbox health will be retained", file);
+        // Missing per-part health is no longer fatal: the scaler falls back to hitbox volume
     }
 
     private void readSeats(TypeFile file)
@@ -429,10 +601,19 @@ public class DriveableType extends PaintableType
             }
             float resistance = values.length > start + 8 ? parseLegacyFloat(values[start + 8]) : 5F;
             float crew = values.length > start + 9 ? parseLegacyFloat(values[start + 9]) : defaultCrewMultiplier;
-            health.put(part, new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]),
+            CollisionBox box = new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]),
                 parseLegacyFloat(values[start + 3]), parseLegacyFloat(values[start + 4]), parseLegacyFloat(values[start + 5]),
-                parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance, crew));
+                parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance, crew);
+            health.put(part, this instanceof PlaneType ? applyPlaneModelFacing(box) : box);
         });
+    }
+
+    /** Plane models face the opposite way to the simulation frame, as seats and wheels already account for. */
+    private static CollisionBox applyPlaneModelFacing(CollisionBox box)
+    {
+        return CollisionBox.inWorldUnits(box.getHealth(), -(box.getX() + box.getWidth()), box.getY(),
+            -(box.getZ() + box.getDepth()), box.getWidth(), box.getHeight(), box.getDepth(),
+            box.getPenetrationResistance(), box.getCrewDamageMultiplier());
     }
 
     private void readWeapons(TypeFile file)
@@ -442,6 +623,9 @@ public class DriveableType extends PaintableType
         acceptAllAmmo = readValue("AcceptAllAmmo", acceptAllAmmo, file);
         readLines("AddAmmo", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank)
             .map(String::trim).forEach(ammo::add));
+        ShootableType.readAmmoGroups(file, ammoGroups);
+        ammoOverrides = readAmmoOverrides(file);
+        removedAmmo = RemovedAmmo.read(file);
 
         primary = EnumWeaponType.parse(readOptionalValue("Primary", primary.name(), file), primary);
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
@@ -450,16 +634,27 @@ public class DriveableType extends PaintableType
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierSecondary = readValue("DamageMultiplierSecondary", damageMultiplierSecondary, file);
         damageMultiplierSecondary = readValue("DamageModifierSecondary", damageMultiplierSecondary, file);
-        shootDelayPrimary = aliasFloat(shootDelayPrimary, file, "ShootDelayPrimary", "ShellDelay", "BombDelay");
-        shootDelaySecondary = aliasFloat(shootDelaySecondary, file, "ShootDelaySecondary", "ShootDelay");
-        if (shootDelayPrimary < 0F)
-            shootDelayPrimary = Math.max(1F, 1200F / Math.max(1F, readValue("RoundsPerMinPrimary", 60F, file)));
-        if (shootDelaySecondary < 0F)
-            shootDelaySecondary = Math.max(1F, 1200F / Math.max(1F, readValue("RoundsPerMinSecondary", 60F, file)));
+        BankTiming primaryTiming = resolveBankTiming(file, shootDelayPrimary,
+            "ShootDelayPrimarySeconds", "RoundsPerMinPrimary", "ShootDelayPrimary", "ShellDelay", "BombDelay");
+        shootDelayPrimary = primaryTiming.delay();
+        shootDelayDeclaredPrimary = primaryTiming.declared();
+        longestDeclaredDelayPrimary = primaryTiming.longestDeclared();
+        BankTiming secondaryTiming = resolveBankTiming(file, shootDelaySecondary,
+            "ShootDelaySecondarySeconds", "RoundsPerMinSecondary", "ShootDelaySecondary", "ShootDelay");
+        shootDelaySecondary = secondaryTiming.delay();
+        shootDelayDeclaredSecondary = secondaryTiming.declared();
+        longestDeclaredDelaySecondary = secondaryTiming.longestDeclared();
+        readWeaponsFromGunTypes = readValue("ReadSecondaryWeaponFromGunType", readWeaponsFromGunTypes, file);
+        readWeaponsFromGunTypes = readValue("ReadWeaponsFromGunTypes", readWeaponsFromGunTypes, file);
         placeTimePrimary = Math.max(0, readOptionalValue("PlaceTimePrimary", placeTimePrimary, file));
         placeTimeSecondary = Math.max(0, readOptionalValue("PlaceTimeSecondary", placeTimeSecondary, file));
+        reloadTimeShared = Math.max(0, readOptionalValue("ReloadTime", reloadTimeShared, file));
         reloadTimePrimary = Math.max(0, readOptionalValue("ReloadTimePrimary", reloadTimePrimary, file));
         reloadTimeSecondary = Math.max(0, readOptionalValue("ReloadTimeSecondary", reloadTimeSecondary, file));
+        reloadRoundsPrimary = Math.max(0, readOptionalValue("ReloadRounds", reloadRoundsPrimary, file));
+        reloadRoundsSecondary = reloadRoundsPrimary;
+        reloadRoundsPrimary = Math.max(0, readOptionalValue("ReloadRoundsPrimary", reloadRoundsPrimary, file));
+        reloadRoundsSecondary = Math.max(0, readOptionalValue("ReloadRoundsSecondary", reloadRoundsSecondary, file));
         alternatePrimary = readValue("AlternatePrimary", alternatePrimary, file);
         alternateSecondary = readValue("AlternateSecondary", alternateSecondary, file);
         modePrimary = EnumFireMode.getFireMode(readValue("ModePrimary", modePrimary.name(), file));
@@ -479,7 +674,7 @@ public class DriveableType extends PaintableType
         readLegacyWeaponPosition("BarrelPosition", EnumDriveablePart.TURRET, EnumWeaponType.SHELL, file);
 
         setPlayerInvisible = readValue("SetPlayerInvisible", setPlayerInvisible, file);
-        IT1 = readValue("IT1", IT1, file);
+        it1 = readValue("IT1", it1, file);
         fixedPrimaryFire = readValue("FixedPrimary", fixedPrimaryFire, file);
         fixedSecondaryFire = readValue("FixedSecondary", fixedSecondaryFire, file);
         primaryFireAngle = readVector("PrimaryAngle", primaryFireAngle, file);
@@ -592,9 +787,13 @@ public class DriveableType extends PaintableType
     {
         startSoundRange = readValue("StartSoundRange", startSoundRange, file);
         startSoundLength = readSoundLength("StartSoundLength", startSoundLength, file);
+        startEngineSoundLength = readSoundLength("StartEngineSoundLength", startEngineSoundLength, file);
         engineSoundRange = readValue("EngineSoundRange", engineSoundRange, file);
         engineSoundLength = readSoundLength("EngineSoundLength", engineSoundLength, file);
+        float configuredPitchRange = readValue("EngineSoundPitchRange", engineSoundPitchRange, file);
+        engineSoundPitchRange = Float.isFinite(configuredPitchRange) ? Math.max(0F, configuredPitchRange) : 0F;
         idleSoundLength = readSoundLength("IdleSoundLength", idleSoundLength, file);
+        idleSoundLength = readSoundLength("IdleEngineSoundLength", idleSoundLength, file);
         exitSoundLength = readSoundLength("ExitSoundLength", exitSoundLength, file);
         backSoundRange = readValue("BackSoundRange", backSoundRange, file);
         backSoundLength = readSoundLength("BackSoundLength", backSoundLength, file);
@@ -609,21 +808,38 @@ public class DriveableType extends PaintableType
             driver.setPitchSound(readSound("PitchSound", driver.getPitchSound(), file));
         }
         startSound = readSound("StartSound", startSound, file);
+        startEngineSound = readSound("StartEngineSound", startEngineSound, file);
         engineSound = readSound("EngineSound", engineSound, file);
-        idleSound = readSound("IdleSound", idleSound, file);
+        idleSound = aliasSound(idleSound, file, "IdleSound", "IdleEngineSound");
         exitSound = readSound("ExitSound", exitSound, file);
         backSound = readSound("BackSound", backSound, file);
-        shootSoundPrimary = aliasSound(shootSoundPrimary, file, "ShootMainSound", "BombSound", "ShootSoundPrimary", "ShellSound");
+        shootSound = readSound("ShootSound", shootSound, file);
+        shellSound = readSound("ShellSound", shellSound, file);
+        bombSound = readSound("BombSound", bombSound, file);
+        shootSoundPrimary = aliasSound(shootSoundPrimary, file, "ShootMainSound", "ShootSoundPrimary");
         shootReloadSound = readSound("ShootReloadSound", shootReloadSound, file);
         shootSoundSecondary = aliasSound(shootSoundSecondary, file, "ShootSecondarySound", "ShootSoundSecondary");
         placeSoundPrimary = readSound("PlaceSoundPrimary", placeSoundPrimary, file);
         placeSoundSecondary = readSound("PlaceSoundSecondary", placeSoundSecondary, file);
+        reloadSoundShared = readSound("ReloadSound", reloadSoundShared, file);
         reloadSoundPrimary = readSound("ReloadSoundPrimary", reloadSoundPrimary, file);
         reloadSoundSecondary = readSound("ReloadSoundSecondary", reloadSoundSecondary, file);
         lockedOnSound = readSound("LockedOnSound", lockedOnSound, file);
         lockOnSound = readSound("LockOnSound", lockOnSound, file);
         lockingOnSound = readSound("LockingOnSound", lockingOnSound, file);
         flareSound = readSound("FlareSound", flareSound, file);
+
+        registerSoundTimer("StartSoundLength", () -> startSound, () -> startSoundLength, length -> startSoundLength = length);
+        registerSoundTimer("StartEngineSoundLength", () -> startEngineSound, () -> startEngineSoundLength, length -> startEngineSoundLength = length);
+        registerSoundTimer("EngineSoundLength", () -> engineSound, () -> engineSoundLength, length -> engineSoundLength = length);
+        registerSoundTimer("IdleSoundLength", () -> idleSound, () -> idleSoundLength, length -> idleSoundLength = length);
+        registerSoundTimer("ExitSoundLength", () -> exitSound, () -> exitSoundLength, length -> exitSoundLength = length);
+        registerSoundTimer("BackSoundLength", () -> backSound, () -> backSoundLength, length -> backSoundLength = length);
+        if (driver != null)
+        {
+            registerSoundTimer("YawSoundLength", driver::getYawSound, driver::getYawSoundLength, driver::setYawSoundLength);
+            registerSoundTimer("PitchSoundLength", driver::getPitchSound, driver::getPitchSoundLength, driver::setPitchSoundLength);
+        }
     }
 
     private void readCollisionMeshes(TypeFile file)
@@ -651,8 +867,20 @@ public class DriveableType extends PaintableType
         forEachLine("AddEmitter", file, 10, parser);
     }
 
-    private void finishDerivedValues()
+    /**
+     * Finalization stage. Subclasses call this again after their own reads so
+     * that physics resolution sees the complete definition; every step here is
+     * idempotent, which is what makes the second call safe.
+     */
+    protected void finishDerivedValues()
     {
+        if (authoredHealth.isEmpty() && !health.isEmpty())
+            authoredHealth.putAll(health);
+        if (!authoredHealth.isEmpty())
+        {
+            health.clear();
+            health.putAll(authoredHealth);
+        }
         if (bulletDetectionRadius < 0F)
         {
             bulletDetectionRadius = 0F;
@@ -660,12 +888,166 @@ public class DriveableType extends PaintableType
                 bulletDetectionRadius = Math.max(bulletDetectionRadius, box.getRootPosition().length() + box.getRadius());
             bulletDetectionRadius += 1F;
         }
+        maxBulletDetectionRadius = Math.max(maxBulletDetectionRadius, bulletDetectionRadius);
+        deriveWheelContactClearance();
+        resolvedPhysics = VehiclePhysicsResolver.resolve(physicsCategory(), realWorldSpec,
+            deriveGeometry(), legacyPhysicsHints());
+        resolvedArmor = VehicleArmorResolver.resolve(armorSpec, authoredHealth.keySet());
+        resolvedHealth = VehicleHealthScaler.resolve(useRealisticVehicleHealth, realWorldSpec.massKg(),
+            authoredHealth, ModCommonConfig.realisticVehicleHealthScale());
+        health.clear();
+        health.putAll(resolvedHealth.boxes());
+    }
+
+    /**
+     * Returns the maximum combined health represented by this driveable's parts.
+     *
+     * <p>Normalized health has an authoritative total before its per-part values
+     * are rounded to floats. Legacy driveables instead define their total as the
+     * sum of the authored health of every part.</p>
+     */
+    /** How far any driveable's hull can reach from its centre, for bounding bullet searches. */
+    public static float getMaxBulletDetectionRadius()
+    {
+        return maxBulletDetectionRadius;
+    }
+
+    public float getTotalHp()
+    {
+        if (resolvedHealth != null && resolvedHealth.enabled())
+            return resolvedHealth.totalHp();
+
+        float total = 0F;
+        for (CollisionBox box : health.values())
+        {
+            if (box != null)
+                total += box.getHealth();
+        }
+        return total;
+    }
+
+    /**
+     * Mass outside pushes, knockback and collisions are weighed against:
+     * {@code RealMassKg}, then a plausible legacy {@code Mass} in kilograms, then
+     * the configured fallback for the class. Resolved on each call so a server
+     * override of the fallback applies without reloading content.
+     */
+    public VehicleImpulsePhysics.ImpulseMass getImpulseMass()
+    {
+        return VehicleImpulsePhysics.resolveMass(realWorldSpec.massKg(), authoredMassKg,
+            ModCommonConfig.fallbackImpulseMassKg(physicsCategory()));
+    }
+
+    /**
+     * Kilograms per unit of the legacy {@code Mass} key. Aircraft definitions
+     * descend from packs that authored it in kilograms, so that is the default;
+     * vehicle packs used tonnes and override it.
+     */
+    protected float legacyMassKilogramsPerUnit()
+    {
+        return 1F;
+    }
+
+    /** Which coupled real-world profile this type can qualify for. */
+    protected EnumVehicleCategory physicsCategory()
+    {
+        return EnumVehicleCategory.OTHER;
+    }
+
+    /** The legacy fields the resolver needs in order to pick its fallbacks. */
+    protected LegacyPhysicsHints legacyPhysicsHints()
+    {
+        return new LegacyPhysicsHints(false, false, maxNegativeThrottle, floatOnWater, false, false);
+    }
+
+    /**
+     * Derives physical dimensions from data the definition already declares, so
+     * no new parsing keys are needed for length, width, beam, wheelbase or track.
+     * Length, width and height come from the core collision box; the wheelbase and
+     * track come from the spread of the declared wheel positions, whose legacy X
+     * is the fore-aft axis and legacy Z the lateral one.
+     * <p>
+     * Parts whose collision boxes describe where a driveable meets the ground. */
+    private static final Set<EnumDriveablePart> GROUND_CONTACT_PARTS = EnumSet.of(
+        EnumDriveablePart.CORE_WHEEL, EnumDriveablePart.FRONT_WHEEL, EnumDriveablePart.BACK_WHEEL,
+        EnumDriveablePart.FRONT_LEFT_WHEEL, EnumDriveablePart.FRONT_RIGHT_WHEEL,
+        EnumDriveablePart.BACK_LEFT_WHEEL, EnumDriveablePart.BACK_RIGHT_WHEEL,
+        EnumDriveablePart.LEFT_TRACK, EnumDriveablePart.RIGHT_TRACK, EnumDriveablePart.TAIL_WHEEL,
+        EnumDriveablePart.LEFT_WING_WHEEL, EnumDriveablePart.RIGHT_WING_WHEEL, EnumDriveablePart.SKIDS);
+
+    /**
+     * Measures {@link #wheelContactClearance} from the authored geometry.
+     *
+     * <p>The contact plane is the lower of the two things a type declares about
+     * where it meets the ground: its wheel anchors and the bottoms of its wheel
+     * and track boxes. Taking the lower of the two is what makes the measurement
+     * safe against either one being authored loosely, since a box that stops
+     * short of the anchors is a tight box rather than a driveable that hovers.
+     * The upper bound then stops a single mis-authored box from levitating the
+     * whole driveable.</p>
+     */
+    private void deriveWheelContactClearance()
+    {
+        float lowestBox = Float.NaN;
+        for (Map.Entry<EnumDriveablePart, CollisionBox> entry : authoredHealth.entrySet())
+        {
+            if (!GROUND_CONTACT_PARTS.contains(entry.getKey()))
+                continue;
+            float bottom = entry.getValue().getY();
+            if (Float.isNaN(lowestBox) || bottom < lowestBox)
+                lowestBox = bottom;
+        }
+        float lowestAnchor = Float.NaN;
+        for (DriveablePosition wheel : wheelPositions)
+        {
+            if (wheel == null)
+                continue;
+            float anchor = wheel.getPosition().y;
+            if (Float.isNaN(lowestAnchor) || anchor < lowestAnchor)
+                lowestAnchor = anchor;
+        }
+        wheelContactClearance = Float.isNaN(lowestBox) || Float.isNaN(lowestAnchor)
+            ? Float.NaN : Math.max(0F, Math.min(0.5F, lowestAnchor - lowestBox));
+    }
+
+    private VehicleGeometry deriveGeometry()
+    {
+        int wheelCount = 0;
+        for (DriveablePosition wheel : wheelPositions)
+        {
+            if (wheel != null)
+                ++wheelCount;
+        }
+        Float wheelbase = null;
+        Float trackWidth = null;
+        if (wheelCount >= 2)
+        {
+            float[] forward = new float[wheelCount];
+            float[] lateral = new float[wheelCount];
+            int index = 0;
+            for (DriveablePosition wheel : wheelPositions)
+            {
+                if (wheel == null)
+                    continue;
+                forward[index] = wheel.getPosition().x;
+                lateral[index] = wheel.getPosition().z;
+                ++index;
+            }
+            wheelbase = VehiclePhysicsResolver.deriveWheelbase(forward);
+            trackWidth = VehiclePhysicsResolver.deriveTrackWidth(lateral);
+        }
+
+        CollisionBox core = health.get(EnumDriveablePart.CORE);
+        if (core == null)
+            return new VehicleGeometry(null, null, null, wheelbase, trackWidth);
+        return VehicleGeometry.fromCoreBox(core.getWidth(), core.getHeight(), core.getDepth(), wheelbase, trackWidth);
     }
 
     public List<BulletType> getAmmoTypes()
     {
+        int revision = ShootableType.getAmmoGroupRevision();
         List<BulletType> cached = resolvedAmmoTypes;
-        if (cached != null)
+        if (cached != null && resolvedAmmoGroupRevision == revision)
             return cached;
 
         List<BulletType> result = new ArrayList<>();
@@ -675,8 +1057,17 @@ public class DriveableType extends PaintableType
             if (resolved instanceof BulletType bulletType)
                 result.add(bulletType);
         }
+        for (ShootableType ammoInGroup : ShootableType.findAmmoTypesInGroups(ammoGroups))
+        {
+            if (ammoInGroup instanceof BulletType bulletType && !result.contains(bulletType))
+                result.add(bulletType);
+        }
+        // RemoveAmmo is applied last so it overrides Ammo, AddAmmo and every ammo group.
+        if (!removedAmmo.isEmpty())
+            result.removeIf(bulletType -> removedAmmo.removes(bulletType.getOriginalShortName()));
         cached = List.copyOf(result);
         resolvedAmmoTypes = cached;
+        resolvedAmmoGroupRevision = revision;
         return cached;
     }
 
@@ -687,7 +1078,7 @@ public class DriveableType extends PaintableType
 
     public boolean isValidAmmo(@Nullable BulletType bulletType, @Nullable EnumWeaponType weaponType)
     {
-        return isValidAmmo(bulletType) && weaponType != null && bulletType.getWeaponType() == weaponType;
+        return isValidAmmo(bulletType) && weaponType != null && Objects.requireNonNull(bulletType).getWeaponType() == weaponType;
     }
 
     public int getNumAmmoSlots()
@@ -701,25 +1092,27 @@ public class DriveableType extends PaintableType
     }
 
     /**
-     * Resolves the mounted gun fed by an ammo inventory slot. The compact
-     * inventory stores pilot guns first, followed by passenger guns ordered by
-     * their automatically assigned gunner id.
+     * Resolves the mounted gun fed by an ammo inventory slot. Legacy driveable
+     * inventories store passenger guns first, ordered by their automatically
+     * assigned gunner id, followed by the pilot guns.
      */
     @Nullable
     public GunType getGunTypeForAmmoSlot(int ammoSlot)
     {
         if (ammoSlot < 0 || ammoSlot >= getNumAmmoSlots())
             return null;
-        if (ammoSlot < pilotGuns.size())
-            return pilotGuns.get(ammoSlot).getType();
-
-        int gunnerId = ammoSlot - pilotGuns.size();
-        for (SeatInfo seat : seats)
+        if (ammoSlot < numPassengerGunners)
         {
-            if (seat != null && seat.getGunnerID() == gunnerId)
-                return seat.getGunType();
+            for (SeatInfo seat : seats)
+            {
+                if (seat != null && seat.getGunnerID() == ammoSlot)
+                    return seat.getGunType();
+            }
+            return null;
         }
-        return null;
+
+        int pilotGunIndex = ammoSlot - numPassengerGunners;
+        return pilotGunIndex < pilotGuns.size() ? pilotGuns.get(pilotGunIndex).getType() : null;
     }
 
     /** The gun definition, rather than the vehicle AddAmmo list, owns this rule. */
@@ -746,29 +1139,199 @@ public class DriveableType extends PaintableType
         return secondaryWeapon ? Collections.unmodifiableList(shootPointsSecondary) : Collections.unmodifiableList(shootPointsPrimary);
     }
 
+    /**
+     * Moves one shoot point to {@code modelPixels}, for the shoot-point debug command.
+     *
+     * <p>Rewrites the point's offset rather than its root so the mount itself is
+     * left alone: a root that is a {@link PilotGun} stays the same object, keeps
+     * its ammunition and stays out of {@link #pilotGuns} twice. Since the firing
+     * path reads root plus offset as the muzzle, the point lands exactly where
+     * asked either way.</p>
+     *
+     * @param modelPixels the new muzzle, in the units and convention of a type file
+     * @return false when this weapon bank has no point at {@code index}
+     */
+    public boolean setDebugShootPoint(boolean secondaryWeapon, int index, Vector3f modelPixels)
+    {
+        List<ShootPoint> points = secondaryWeapon ? shootPointsSecondary : shootPointsPrimary;
+        if (index < 0 || index >= points.size())
+            return false;
+        rememberAuthoredShootPoints(secondaryWeapon);
+
+        DriveablePosition root = points.get(index).getRootPos();
+        Vector3f offset = new Vector3f(modelPixels.x / 16F - root.getPosition().x,
+            modelPixels.y / 16F - root.getPosition().y,
+            modelPixels.z / 16F - root.getPosition().z);
+        points.set(index, new ShootPoint(root, offset, true));
+        return true;
+    }
+
+    /**
+     * Appends a shoot point at {@code modelPixels}, for the shoot-point debug command.
+     * Needed because a definition that declares none, as a {@code BarrelPosition}-only
+     * tank does for its secondary bank, has nothing to move.
+     *
+     * @return the index of the new point
+     */
+    public int addDebugShootPoint(boolean secondaryWeapon, Vector3f modelPixels, @Nullable EnumDriveablePart part)
+    {
+        List<ShootPoint> points = secondaryWeapon ? shootPointsSecondary : shootPointsPrimary;
+        rememberAuthoredShootPoints(secondaryWeapon);
+
+        Vector3f position = new Vector3f(modelPixels.x / 16F, modelPixels.y / 16F, modelPixels.z / 16F);
+        points.add(new ShootPoint(new DriveablePosition(position, part), new Vector3f(), true));
+        return points.size() - 1;
+    }
+
+    /**
+     * Moves one seat's {@code GunOrigin}, for the shoot-point debug command.
+     *
+     * @return false when the seat does not exist or mounts no gun
+     */
+    public boolean setDebugGunOrigin(int seatIndex, Vector3f modelPixels)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        if (seat == null || seat.getGunType() == null)
+            return false;
+        authoredGunOrigins.computeIfAbsent(seatIndex, ignored -> seat.getGunOrigin());
+        seat.setGunOrigin(new Vector3f(modelPixels.x / 16F, modelPixels.y / 16F, modelPixels.z / 16F));
+        return true;
+    }
+
+    public boolean isGunOriginOverridden(int seatIndex)
+    {
+        return authoredGunOrigins.containsKey(seatIndex);
+    }
+
+    public boolean hasDebugOverrides()
+    {
+        return !authoredShootPoints.isEmpty() || !authoredGunOrigins.isEmpty();
+    }
+
+    /** Restores every shoot point and {@code GunOrigin} the debug command has moved. */
+    public void resetDebugOverrides()
+    {
+        for (Map.Entry<Boolean, List<ShootPoint>> entry : authoredShootPoints.entrySet())
+        {
+            List<ShootPoint> points = Boolean.TRUE.equals(entry.getKey()) ? shootPointsSecondary : shootPointsPrimary;
+            points.clear();
+            points.addAll(entry.getValue());
+        }
+        authoredShootPoints.clear();
+
+        for (Map.Entry<Integer, Vector3f> entry : authoredGunOrigins.entrySet())
+        {
+            SeatInfo seat = getSeat(entry.getKey());
+            if (seat != null)
+                seat.setGunOrigin(entry.getValue());
+        }
+        authoredGunOrigins.clear();
+    }
+
+    private void rememberAuthoredShootPoints(boolean secondaryWeapon)
+    {
+        authoredShootPoints.computeIfAbsent(secondaryWeapon, s -> List.copyOf(BooleanUtils.isTrue(s) ? shootPointsSecondary : shootPointsPrimary));
+    }
+
     public boolean alternate(boolean secondaryWeapon)
     {
         return secondaryWeapon ? alternateSecondary : alternatePrimary;
     }
 
+    /**
+     * The cadence between shots of a weapon bank.
+     *
+     * <p>A bank firing mounted guns takes its cadence from the gun, because the
+     * gun is what fires: the vehicle only overrides that by stating a rate of its
+     * own for the bank. {@code ReadWeaponsFromGunTypes} removes even that, handing
+     * the gun the last word. A bank firing the vehicle's own ordnance has no gun
+     * to defer to and always uses the bank's figure.
+     */
     public float shootDelay(boolean secondaryWeapon)
     {
+        GunType gunType = getPilotGunType(secondaryWeapon);
+        if (gunType != null && (readWeaponsFromGunTypes || !shootDelayDeclared(secondaryWeapon)))
+            return gunType.getShootDelay(null);
         return secondaryWeapon ? shootDelaySecondary : shootDelayPrimary;
+    }
+
+    public boolean shootDelayDeclared(boolean secondaryWeapon)
+    {
+        return secondaryWeapon ? shootDelayDeclaredSecondary : shootDelayDeclaredPrimary;
+    }
+
+    /**
+     * How long a full reload of this bank takes, in ticks.
+     *
+     * <p>For the vehicle's own ordnance this is the longest figure the pack states
+     * anywhere for the bank - its reload keys and every one of its timing keys -
+     * so a pack that expresses a tank's cycle as {@code ShellDelay} alone keeps the
+     * cycle it always had, and one that states both gets the slower of the two
+     * rather than whichever key happens to be read last.
+     *
+     * <p>For a bank firing mounted guns the gun's own reload time stands in,
+     * unless the vehicle states a reload time for the bank;
+     * {@code ReadWeaponsFromGunTypes} again hands the gun the last word.
+     */
+    public float reloadTime(boolean secondaryWeapon)
+    {
+        int bankReload = secondaryWeapon ? reloadTimeSecondary : reloadTimePrimary;
+        GunType gunType = getPilotGunType(secondaryWeapon);
+        if (gunType != null && (readWeaponsFromGunTypes || bankReload <= 0 && reloadTimeShared <= 0))
+            return Math.max(gunType.getReloadTime(), gunType.getShootDelay(null));
+
+        float longestDelay = secondaryWeapon ? longestDeclaredDelaySecondary : longestDeclaredDelayPrimary;
+        return Math.max(Math.max(bankReload, reloadTimeShared), Math.max(longestDelay, shootDelay(secondaryWeapon)));
+    }
+
+    /**
+     * Rounds this bank fires between full reloads, or zero to let the loaded
+     * ammunition item's own round count decide.
+     */
+    public int reloadRounds(boolean secondaryWeapon)
+    {
+        return Math.max(0, secondaryWeapon ? reloadRoundsSecondary : reloadRoundsPrimary);
+    }
+
+    /** The sound a full reload of this bank plays, preferring the bank's own over the shared one. */
+    public String reloadSound(boolean secondaryWeapon)
+    {
+        return StringUtils.firstNonBlank(
+            secondaryWeapon ? reloadSoundSecondary : reloadSoundPrimary, reloadSoundShared, StringUtils.EMPTY);
+    }
+
+    /** The GunType referenced by the AddGun/PilotGun mount used for this weapon bank, if any. */
+    @Nullable
+    public GunType getPilotGunType(boolean secondaryWeapon)
+    {
+        for (ShootPoint point : shootPoints(secondaryWeapon))
+        {
+            if (point.getRootPos() instanceof PilotGun pilotGun)
+            {
+                GunType gunType = pilotGun.getType();
+                if (gunType != null)
+                    return gunType;
+            }
+        }
+        return null;
     }
 
     public String shootSound(boolean secondaryWeapon)
     {
-        return secondaryWeapon ? shootSoundSecondary : shootSoundPrimary;
+        String bankSound = secondaryWeapon ? shootSoundSecondary : shootSoundPrimary;
+        if (StringUtils.isNotBlank(bankSound))
+            return bankSound;
+        EnumWeaponType bankType = weaponType(secondaryWeapon);
+        if (bankType == EnumWeaponType.SHELL && StringUtils.isNotBlank(shellSound))
+            return shellSound;
+        if (bankType == EnumWeaponType.BOMB && StringUtils.isNotBlank(bombSound))
+            return bombSound;
+        return shootSound;
     }
 
     public List<ShootParticle> shootParticle(boolean secondaryWeapon)
     {
         return Collections.unmodifiableList(secondaryWeapon ? shootParticlesSecondary : shootParticlesPrimary);
-    }
-
-    public int reloadTime(boolean secondaryWeapon)
-    {
-        return secondaryWeapon ? reloadTimeSecondary : reloadTimePrimary;
     }
 
     public EnumFireMode fireMode(boolean secondaryWeapon)
@@ -812,12 +1375,6 @@ public class DriveableType extends PaintableType
     public float getRecommendedScale()
     {
         return 100F / Math.max(1F, cameraDistance);
-    }
-
-    /** Legacy-capitalized alias retained for model code and older extensions. */
-    public float GetRecommendedScale()
-    {
-        return getRecommendedScale();
     }
 
     public List<ItemStack> getDriveableRecipe()
@@ -1030,7 +1587,7 @@ public class DriveableType extends PaintableType
 
     private void readSeatVectorLines(String key, TypeFile file, SeatVectorSetter setter, boolean modelUnits)
     {
-        int minimumValues = key.equals("GunOrigin") ? 3 : 4;
+        int minimumValues = 4;
         forEachLine(key, file, minimumValues, values -> {
             SeatInfo seat = getSeat(Integer.parseInt(values[0]));
             if (seat != null)
@@ -1165,10 +1722,11 @@ public class DriveableType extends PaintableType
         }
     }
 
-    private static float parseLegacyFloat(String raw)
+    protected static float parseLegacyFloat(String raw)
     {
         String value = raw.trim();
-        if (value.indexOf(',') == value.lastIndexOf(',') && value.indexOf(',') > 0 && value.indexOf('.') < 0)
+        int commaIndex = value.indexOf(',');
+        if (commaIndex >= 0 && commaIndex == value.lastIndexOf(',') && value.indexOf('.') < 0)
             value = value.replace(',', '.');
         return Float.parseFloat(value);
     }
@@ -1222,6 +1780,72 @@ public class DriveableType extends PaintableType
         return vector == null ? fallback : vector.scale(1F / 16F);
     }
 
+    /**
+     * Resolves a weapon bank's shoot delay under a deliberate, descending
+     * precedence: an explicit delay in seconds first, then the rounds-per-minute
+     * rate, then the bank's own delay key, then the legacy delay keys it
+     * inherited. The first key actually present in the file wins, so a pack
+     * that carries several of them for backwards compatibility still gets the
+     * reading it intends.
+     *
+     * <p>{@link #aliasFloat} cannot express this, because it lets the
+     * <em>last</em> key present win.
+     */
+    /**
+     * What one weapon bank's timing keys add up to.
+     *
+     * @param delay           the cadence between shots, by the precedence above
+     * @param declared        whether the pack stated any of these keys at all
+     * @param longestDeclared the longest delay any stated key works out to, in ticks
+     */
+    private record BankTiming(float delay, boolean declared, float longestDeclared) {}
+
+    private static BankTiming resolveBankTiming(TypeFile file, float current, String secondsKey, String roundsPerMinKey, String... delayKeys)
+    {
+        float chosen = -1F;
+        float longest = 0F;
+
+        Float seconds = readOptionalFloat(secondsKey, file);
+        if (seconds != null)
+        {
+            chosen = ShotCooldown.clampDelay(seconds * 20F);
+            longest = Math.max(longest, chosen);
+        }
+        Float roundsPerMin = readOptionalFloat(roundsPerMinKey, file);
+        if (roundsPerMin != null)
+        {
+            float fromRate = delayFromRoundsPerMin(roundsPerMin);
+            if (chosen < 0F)
+                chosen = fromRate;
+            longest = Math.max(longest, fromRate);
+        }
+        for (String key : delayKeys)
+        {
+            Float delay = readOptionalFloat(key, file);
+            if (delay == null)
+                continue;
+            float fromDelay = ShotCooldown.clampDelay(delay);
+            if (chosen < 0F)
+                chosen = fromDelay;
+            longest = Math.max(longest, fromDelay);
+        }
+
+        if (chosen >= 0F)
+            return new BankTiming(chosen, true, longest);
+        return new BankTiming(current >= 0F ? current : delayFromRoundsPerMin(DEFAULT_ROUNDS_PER_MIN), false, 0F);
+    }
+
+    /** A number of legacy vehicle definitions declare unused delay fields with no value. */
+    private static Float readOptionalFloat(String key, TypeFile file)
+    {
+        return hasValueForConfigField(key, file) ? readFloat(key, file) : null;
+    }
+
+    private static float delayFromRoundsPerMin(float roundsPerMin)
+    {
+        return ShotCooldown.clampDelay(1200F / Math.max(1F, roundsPerMin));
+    }
+
     private static float aliasFloat(float fallback, TypeFile file, String... keys)
     {
         float result = fallback;
@@ -1244,6 +1868,30 @@ public class DriveableType extends PaintableType
         for (String key : keys)
             result = readSound(key, result, file);
         return result;
+    }
+
+    /** Sound played once when this driveable's engine finishes starting. */
+    public String getEngineStartupSound()
+    {
+        return startEngineSound;
+    }
+
+    /** Length of {@link #getEngineStartupSound()}, used to defer the continuous engine loop. */
+    public int getEngineStartupSoundLength()
+    {
+        return startEngineSoundLength;
+    }
+
+    /** Continuous sound used by a running engine while the throttle is neutral. */
+    public String getEngineIdleLoopSound()
+    {
+        return StringUtils.firstNonBlank(idleSound, startSound);
+    }
+
+    /** Pitch range for the neutral-throttle loop. Vehicles keep their idle loop at normal pitch. */
+    public float getEngineIdleLoopPitchRange()
+    {
+        return 0F;
     }
 
     @FunctionalInterface private interface SeatVectorSetter { void set(SeatInfo seat, Vector3f value); }

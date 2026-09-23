@@ -1,0 +1,76 @@
+// Identity
+Name Tupolev Tu-22M Backfire
+ShortName TU22M
+
+// Model and Rendering
+Icon IconPlaneTU22M
+Model manus_modern_warfare.TU22M
+Texture SkinPlaneTU22M
+
+// Recipe and Inventory
+FuelTankSize 32000
+CargoSlots 0
+BombSlots 16
+AddRecipeParts core 1 Part_Cockpit_Large 16 Mat_Plate_Steel
+AddRecipeParts nose 1 Part_Nose_Plane 10 Mat_Plate_Steel
+AddRecipeParts tail 1 Part_Tail_Large 25 Mat_Plate_Steel
+AddRecipeParts leftWing 1 Part_Wing_Large 30 Mat_Plate_Steel
+AddRecipeParts rightWing 1 Part_Wing_Large 30 Mat_Plate_Steel
+AddRecipeParts leftWingWheel 6 Part_Wheel_Plane
+AddRecipeParts rightWingWheel 6 Part_Wheel_Plane
+AddRecipeParts coreWheel 2 Part_Wheel_Plane
+AddDye 25 cyan
+
+// Movement and Physics
+MaxThrottle 8.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1
+TurnRightSpeed 1
+LookUpSpeed 1
+LookDownSpeed 1
+RollLeftSpeed 1
+RollRightSpeed 1
+Drag 9.0
+Lift 16.7
+RestingPitch 0.0
+HasGear True
+RealMassKg 112000
+RealEngineThrustKn 490
+RealMaxSpeedKmh 1997
+RealWingSpanM 34.28
+RealWingAreaM2 183.6
+RealClimbRateMs 15
+
+// Weapons
+ShootDelay 5
+BombDelay 1
+BombPosition 7 -10 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 10.0
+Propeller 0 0 0 0 core Part_Propeller_TurbineJet
+Propeller 1 0 0 0 core Part_Propeller_TurbineJet
+Pilot 230 42 -8
+Passengers 1
+Passenger 1 230 42 8 core
+SetupPart nose 200 259 22 -16 80 32 32
+SetupPart core 600 -149 22 -16 408 48 32
+SetupPart tail 400 -293 22 -36 144 48 72
+SetupPart coreWheel 100 170 -10 -6 12 32 12
+SetupPart leftWingWheel 100 -97 -10 71 36 40 12
+SetupPart rightWing 300 -145 30 -262 85 6 226
+SetupPart leftWing 300 -145 30 36 85 6 226
+SetupPart rightWingWheel 100 -97 -10 -83 36 40 12
+BulletDetection 25
+
+// Sounds
+StartSound viper
+StartSoundLength 20
+PropSound viper
+PropSoundLength 30
+ShootSound gatling
+BombSound bomb

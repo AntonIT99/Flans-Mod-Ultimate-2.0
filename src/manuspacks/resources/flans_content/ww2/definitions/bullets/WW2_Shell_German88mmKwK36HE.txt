@@ -1,0 +1,51 @@
+// Identity
+Name German 88 mm Sprgr. L/4.5 HE (KwK 36)
+ShortName WW2_Shell_German88mmKwK36HE
+description Amunition for Flak 88mm
+
+// Model and Rendering
+Icon Icon_WW2_Shell_German88mmHE
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse P SMP_Part_Mat_Plate_Steel
+ F 
+GGG
+SPS
+RecipeOutput 3
+MaxStackSize 16
+RoundsPerItem 1
+
+// Behaviour
+Bomb False
+Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 2.0
+
+// Ballistics and Damage
+Damage 50
+DamageVsLiving 2000
+DamageVsVehicles 2000
+Mass 9000
+MuzzleVelocity 820
+ExplosiveMassTNTg 900
+PenetrationAt100m 18
+FragType HE_SHELL
+Explosion 5
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 5
+SmokeTrail True
+ExplodeParticles 12
+TrailParticleType flansmod.fmflame
+HasLight True
+FlareParticleCount 12
+DebrisParticleCount 5

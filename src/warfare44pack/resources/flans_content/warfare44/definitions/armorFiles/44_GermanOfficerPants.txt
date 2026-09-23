@@ -1,0 +1,18 @@
+// Identity
+Name German Officer Pants
+ShortName 44_GermanOfficerPants
+Type Pants
+
+// Rendering
+Icon 44_GermanOfficerPants
+Model W44.GermanOfficerPants
+ModelScale 1
+ArmorTexture Skin44_GermanOfficer
+
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
+SmokeProtection false

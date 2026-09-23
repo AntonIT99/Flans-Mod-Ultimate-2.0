@@ -1,0 +1,62 @@
+// Identity
+Name WinchesterModel70
+ShortName 44_WinchesterModel70
+Description American Bolt-Action Rifle
+
+// Rendering
+Icon 44_WinchesterModel70
+Model W44.WinchesterModel70
+ModelScale 0.25
+Texture Skin44_WinchesterModel70
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_WinchesterModel70Ammo
+
+// Handling
+Mode SemiAuto
+Deployable False
+MoveSpeedModifier 0.85
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 45.0
+ReloadTime 50
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 850.0
+Dispersion 0.1
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 8.0
+RandomRecoilRange 7
+RandomRecoilYawRange 0.75
+DecreaseRecoil 4.5
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_Unertl8XScope 44_M3InfraredScope 44_LensSight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound WinchesterModel70Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Kar98kReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

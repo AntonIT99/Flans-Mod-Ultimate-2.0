@@ -1,0 +1,43 @@
+// Identity
+Name US 500lb Bomb for Bomber
+ShortName WW2_Bomb_USA500lbs
+
+// Model and Rendering
+Icon Icon_WW2_Bomb_USA500lbs
+Model Bomb
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_BombBody G gunpowder F SMP_Part_Misc_Ammo_Fuse
+ F 
+GGG
+ S 
+RecipeOutput 4
+MaxStackSize 12
+RoundsPerItem 1
+
+// Behaviour
+Bomb True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.75
+
+// Ballistics and Damage
+Damage 5000
+DamageVsVehicles 5000
+Explosion 8
+Fire 0
+SetEntitiesOnFire False
+Mass 227000.0
+ExplosiveMassTNTKg 113.5
+FragType GP_BOMB
+
+// Sounds
+HitSound bomb
+
+// Effects
+HasLight False
+FlakParticles 0
+SmokeTrail False

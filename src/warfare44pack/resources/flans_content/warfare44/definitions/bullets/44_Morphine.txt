@@ -1,0 +1,40 @@
+// Identity
+Name Tube of Morphine
+ShortName 44_Morphine
+
+// Rendering
+Icon 44_Morphine
+Model None
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 5
+RoundsPerItem 1
+
+// Ballistics
+FallSpeed 0.25
+HitBoxSize 0.1
+Penetrates True
+Penetration 1.0
+BreaksGlass True
+
+// Damage
+Damage 0
+DamageVsLiving 0
+DamageVsVehicles 0
+Fire 0
+PotionEffect 10 200 3
+PotionEffect 9 60 1
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 1
+
+// Effects
+SmokeTrail False
+FlakParticles 10
+FlakParticleType heart
+
+// Sounds
+HitSound bullet

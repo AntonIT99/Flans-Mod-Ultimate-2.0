@@ -1,0 +1,41 @@
+// Identity
+Name German 120 mm DM12A1 HEAT-MP-T (Rh-120 L/55)
+ShortName gpshell120mm
+Description Multipurpose shaped-charge ammunition for the Leopard 2A6 Rh-120 L/55
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon gpshell120mm
+HasLight True
+
+// Ammunition
+MaxStackSize 4
+RoundsPerItem 1
+
+// Ballistics
+Mass 14100
+MuzzleVelocity 1140
+FallSpeed 1
+PenetrationAt100m 480
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+ExplosiveMassTNTKg 1.62
+FragType HE_SHELL
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 4
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+
+// Sounds and particles
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 10

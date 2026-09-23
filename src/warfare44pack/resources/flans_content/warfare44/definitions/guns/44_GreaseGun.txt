@@ -1,0 +1,61 @@
+// Identity
+Name M3 Grease Gun
+ShortName 44_GreaseGun
+Description American Sub Machine Gun
+
+// Rendering
+Icon 44_GreaseGun
+Model W44.GreaseGun
+ModelScale 0.2
+Texture Skin44_GreaseGun
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_GreaseGunAmmo
+
+// Handling
+Mode FullAuto
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 450
+ReloadTime 50
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 275.0
+Dispersion 0.52
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 2.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1.5
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_Suppressor 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound GreaseGunShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound GreaseGunReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

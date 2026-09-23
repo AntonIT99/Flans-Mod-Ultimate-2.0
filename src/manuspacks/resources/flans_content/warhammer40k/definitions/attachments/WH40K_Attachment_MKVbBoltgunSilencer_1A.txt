@@ -1,0 +1,29 @@
+﻿// Identity
+name Silencer for MK Vb Godwyn pattern Boltgun
+ShortName WH40K_Attachment_MKVbBoltgunSilencer_1A
+
+// Model and Rendering
+Icon Icon_WH40K_Attachment_MKVbBoltgunSilencer_1A
+ModelScale 0.11
+Model Manus_WH40K.Attachment.WH40K_Attachment_MKVbBoltgun_2
+Texture Skin_WH40K_Gun_MKVbBoltgun_1A
+
+// Recipe and Inventory
+Recipe W cloth F SMP_Part_Mat_Plate_PlaSteel
+Recipe FFF
+Recipe WWW
+Recipe FFF
+RecipeOutput 1
+AttachmentType barrel
+
+// Weapons
+ZoomLevel 1.0
+
+// Ballistics and Damage
+SpreadMultiplier 1.0
+DamageMultiplier 0.8
+RecoilMultiplier 1.0
+MeleeDamageMultiplier 1.0
+Silencer True
+BulletSpeedMultiplier 0.9
+ReloadTimeMultiplier 1.0

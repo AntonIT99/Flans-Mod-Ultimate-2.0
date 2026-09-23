@@ -1,16 +1,21 @@
+// Identity
 Name Basic CPU
 ShortName basicCPU
-Icon BasicCPU
-//Colour in Red, Green, Blue, each going up to 255.
-Colour 255 255 255
-//Categories are Cockpit, Wing, Engine, Propeller, Bay, Tail, Wheel, Chassis, Turret, Misc
 Category Engine
-EngineSpeed 0.7
-FuelConsumption 1
-WorksWith mechas
+
+// Item and rendering
+Icon BasicCPU
+Colour 255 255 255
 StackSize 8
+
+// Recipe
 RecipeOutput 2
 Recipe R redstone D diode C comparator B blockRedstone
 RCR
 DBD
 RCR
+
+// Part
+EngineSpeed 0.7
+FuelConsumption 1
+WorksWith mechas

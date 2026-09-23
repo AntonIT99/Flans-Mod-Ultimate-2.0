@@ -1,0 +1,18 @@
+// Identity
+Name German Officer Hat
+ShortName 44_GermanOfficerHat
+Type Helmet
+
+// Rendering
+Icon 44_GermanOfficerHat
+Model W44.GermanOfficerHat
+ModelScale 1
+ArmorTexture Skin44_GermanOfficer
+
+// Protection
+ArmorPoints 0
+Defence 0.01
+BulletDefence 0.00
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

@@ -1,0 +1,51 @@
+// Identity
+Name FlaK-36 37mm Mag
+ShortName 44_Flak37Ammo
+
+// Rendering
+Icon 44_Flak37Ammo
+Model Bullet
+Texture defaultBullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 35
+
+// Ammunition
+WeaponType Shell
+
+// Ballistics
+MuzzleVelocity 820
+FallSpeed 1.0
+HitBoxSize 10
+Penetrates False
+PenetrationAt100m 35
+BreaksGlass True
+
+// Damage
+Mass 640
+DamageVsLiving 25
+DamageVsVehicles 75
+DamageVsPlanes 125
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 21
+Explosion 0
+ExplodeOnImpact True
+Fuse 50
+
+// Guidance
+LockOnToDriveables False
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 20.0
+
+// Effects
+SmokeTrail True
+TrailParticleType smoke
+FlakParticles 5
+
+// Sounds
+HitSound bullet

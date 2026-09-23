@@ -1,0 +1,84 @@
+// Identity
+Name GTK Boxer
+ShortName Boxer1
+
+// Model and Rendering
+Icon IconVehicleBoxer1
+Model manus_modern_warfare.Boxer1
+Texture SkinVehicleBoxer
+RotateWheels True
+
+// Recipe and Inventory
+FuelTankSize 2000
+CargoSlots 18
+ShellSlots 0
+AddRecipeParts core 1 27066_Part_Chassis_APC 10 Mat_Plate_Steel 15 Mat_Armor_Steel
+AddRecipeParts frontLeftWheel 2 Part_Wheel_APC
+AddRecipeParts frontRightWheel 2 Part_Wheel_APC
+AddRecipeParts backLeftWheel 2 Part_Wheel_APC
+AddRecipeParts backRightWheel 2 Part_Wheel_APC
+AddDye 10 green
+
+// Movement and Physics
+MaxThrottle 0.8
+MaxNegativeThrottle 0.5
+TurnLeftSpeed 1
+TurnRightSpeed 1
+Drag 1.0
+WheelRadius 1.0
+FourWheelDrive true
+Tank false
+RealMassKg 36500
+RealEnginePowerHp 711
+RealMaxSpeedKmh 103
+DriveType AWD
+RealMaxReverseSpeedKmh 15
+
+// Weapons
+ShootDelay 5
+ShellDelay 110
+ReadWeaponsFromGunTypes true
+
+// Protection
+ArmorFrontMm 60
+ArmorSideMm 40
+ArmorRearMm 30
+ArmorTopMm 20
+ArmorBottomMm 25
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 10
+Driver 42 9 9 -80 80 -45 45
+RotatedDriverOffset 0 0 0
+Passengers 7
+Passenger 1 38 7 -9 core -80 80 -45 45
+Passenger 2 -14 7 -8 core 60 160 -45 45
+Passenger 3 -29 7 -8 core 60 160 -45 45
+Passenger 4 -44 7 -8 core 60 160 -45 45
+Passenger 5 -14 7 8 core -160 -60 -45 45
+Passenger 6 -29 7 8 core -160 -60 -45 45
+Passenger 7 -44 7 8 core -160 -60 -45 45
+SetupPart core 400 -55 0 -22 127 31 44
+SetupPart frontRightWheel 200 10 -10 -24 50 22 7
+SetupPart frontLeftWheel 200 10 -10 17 50 22 7
+SetupPart backLeftWheel 200 -48 -10 17 48 22 7
+SetupPart backRightWheel 200 -48 -10 -24 48 22 7
+BulletDetection 7
+WheelPosition 0 -37 -8 -23
+WheelPosition 1 -37 -8 23
+WheelPosition 2 49 -8 23
+WheelPosition 3 49 -8 -23
+
+// Optics
+hasScope true
+Gunsight manus_crows
+gunsightZoom 3
+thermalSight true
+
+// Sounds
+StartSound engineidle_ifv_stryker
+StartSoundLength 20
+EngineSound engine_ifv_stryker
+EngineSoundLength 20
+ShootSound bullet

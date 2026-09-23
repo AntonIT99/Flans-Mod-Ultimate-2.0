@@ -1,0 +1,18 @@
+// Identity
+Name German Palmenmuster Jacket
+ShortName 44_GermanPalmenmusterChest
+Type Body
+
+// Rendering
+Icon 44_GermanPalmenmusterChest
+Model W44.GermanPalmenmusterChest
+ModelScale 1
+ArmorTexture Skin44_GermanPalmenmusterChest
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

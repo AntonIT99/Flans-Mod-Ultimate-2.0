@@ -1,0 +1,18 @@
+// Identity
+Name Soviet Summer Obr43 Pants
+ShortName 44_SovietSummerObr43Pants
+Type Pants
+
+// Rendering
+Icon 44_SovietSummerObr43Pants
+Model W44.SovietSummerObr43Pants
+ModelScale 1
+ArmorTexture Skin44_SovietSummerObr43
+
+// Protection
+ArmorPoints 0
+Defence 0.02
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 0.65
+SmokeProtection false

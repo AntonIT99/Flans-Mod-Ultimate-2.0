@@ -1,0 +1,39 @@
+// Identity
+Name German 7.92mm Ammo - 250 Bullet Box
+ShortName WW2_Ammo_German792mm
+description Amunition for MG42 and MG81
+
+// Model and Rendering
+Icon Icon_WW2_Ammo_German792mm
+Model Bullet
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 250
+
+// Behaviour
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 0.1
+
+// Ballistics and Damage
+Damage 1
+DamageVsLiving 10
+DamageVsVehicles 1
+DamageVsPlanes 8
+Explosion 0
+Fire 0
+Mass 12.8
+
+// Sounds
+HitSound LargeImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true
+
+// Effects
+FlakParticles 0
+SmokeTrail False

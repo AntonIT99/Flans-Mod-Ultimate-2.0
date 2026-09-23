@@ -1,0 +1,51 @@
+// Identity
+Name US 75 mm M64 WP Smoke (M3)
+ShortName 44_SmokeShell
+Description White-phosphorus screening ammunition for the US 75 mm M3
+
+// Rendering
+Icon 44_MediumHEShell
+Model W44.W44ShellMedium
+Texture Skin44_W44Shell_Orange
+Colour 255 255 255
+HasLight False
+
+// Recipe and inventory
+MaxStackSize 3
+RoundsPerItem 1
+
+// Ammunition
+WeaponType Shell
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 594
+FallSpeed 1
+HitBoxSize 1.0
+Penetrates False
+BreaksGlass True
+
+// Damage
+Mass 6620
+Damage 10
+DamageVsLiving 10
+DamageVsVehicles 5
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 36
+FragType LOW_FRAG
+Explosion 1
+ExplodeOnImpact True
+Fuse 500
+
+// Effects
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke
+FlakParticles 0
+SmokeEffect 15 25 0
+SmokeEffect 2 25 2
+SmokeTime 250
+SmokeRadius 5
+SmokeParticleType cloud

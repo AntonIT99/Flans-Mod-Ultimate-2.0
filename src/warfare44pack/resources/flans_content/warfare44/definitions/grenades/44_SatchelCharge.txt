@@ -1,0 +1,50 @@
+// Identity
+Name Satchel Charge
+ShortName 44_SatchelCharge
+
+// Rendering
+Icon 44_SatchelCharge
+Model W44.SatchelCharge
+ModelScale 1
+Texture Skin44_SatchelCharge
+Colour 255 255 255
+
+// Inventory
+StackSize 1
+
+// Throwing and physics
+ThrowSpeed 1.25
+ThrowDelay 45
+FallSpeed 0.75
+Bounciness 0.5
+HitBoxSize 0.8
+SpinWhenThrown true
+Sticky false
+PenetratesBlocks false
+BreaksGlass true
+
+// Damage and healing
+HitEntityDamage 1
+
+// Detonation and explosion
+Fuse 145
+PrimeDelay 0
+DetonateOnImpact false
+DetonateWhenShot true
+Remote false
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+ExplosiveMassTNTKg 3
+FragType DEFAULT
+ExplosionRadius 7.0
+ExplosionDamageVsLiving 10.0
+ExplosionDamageVsVehicle 5
+ExplosionDamageVsPlane 100
+ExplosionBreaksBlocks true
+FireRadius 0.0
+
+// Effects
+TrailParticles true
+TrailParticleType smoke
+ExplodeParticles 5
+SmokeTime 0

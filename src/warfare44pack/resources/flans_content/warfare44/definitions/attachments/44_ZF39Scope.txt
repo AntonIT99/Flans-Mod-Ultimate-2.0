@@ -1,0 +1,25 @@
+// Identity
+Name ZF-39 Scope
+ShortName 44_ZF39Scope
+Description Scope Attachment : German High-Powered Scope [X4]
+AttachmentType sights
+
+// Rendering
+Icon 44_ZF39Scope
+Model W44.ZF39Scope
+ModelScale 0.15
+Texture Skin44_ZF39Scope
+
+// Optics
+ZoomLevel 8
+FOVZoomLevel 1.0
+ZoomOverlay GermanScope
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.5
+RecoilMultiplier 1.0
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

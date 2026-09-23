@@ -8,6 +8,7 @@ import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,7 +54,7 @@ public class PlayerData
     private float shootTimeLeft;
     /** Stops player shooting immediately after swapping weapons */
     @Getter @Setter
-    private int shootClickDelay; //TODO: implement shootClick
+    private int shootClickDelay;
     /** True if this player is shooting */
     private boolean isShootingRight;
     private boolean isShootingLeft;
@@ -80,11 +81,22 @@ public class PlayerData
     @Getter @Setter
     private int meleeLength;
     /** When the player shoots a burst fire weapon, one shot is fired immediately and this counter keeps track of how many more should be fired */
-    private int burstRoundsRemainingLeft = 0; //TODO: implement burst
+    private int burstRoundsRemainingLeft = 0;
     @Getter @Setter
     private int burstRoundsRemainingRight = 0;
     private PendingReload pendingReload;
-    private boolean reloadedAfterRespawn; //TODO: implement
+    /** In a teams round, the first reload after respawning is instant so that players are not defenceless on spawn */
+    @Getter @Setter
+    private boolean reloadedAfterRespawn;
+    /**
+     * The player's own reload inventory preferences, sent by the client on login and whenever they are changed.
+     * Null means the player never announced a preference (vanilla or outdated client), in which case the
+     * server configuration decides on its own.
+     */
+    @Setter
+    private Boolean combineAmmoOnReloadPreference;
+    @Setter
+    private Boolean ammoToUpperInventoryOnReloadPreference;
     @Getter
     private Vector3f[] lastMeleePositions;
 
@@ -260,6 +272,12 @@ public class PlayerData
         if (!player.level().isClientSide)
             GunReloader.handlePendingReload(player.level(), (ServerPlayer) player, this);
 
+        // Snapshots exist for the server's lag-compensated hit detection, so the client keeps none:
+        // a bullet there is only a visual, and both it and the melee sweep fall back to the plain
+        // hitbox when a snapshot is missing. This is one snapshot per player per tick not built.
+        if (player.level().isClientSide)
+            return;
+
         //Move all snapshots along one place
         System.arraycopy(snapshots, 0, snapshots, 1, snapshots.length - 2 + 1);
         //Take new snapshot
@@ -303,17 +321,45 @@ public class PlayerData
         serverSideData.remove(playerId);
     }
 
+    /**
+     * Whether a reload by this player combines the unloaded ammo with damaged ammo in the inventory.
+     * The player can opt out, but the server can also forbid it for everyone.
+     */
+    public boolean shouldCombineAmmoOnReload()
+    {
+        return ModCommonConfig.get().combineAmmoOnReload()
+            && (combineAmmoOnReloadPreference == null || combineAmmoOnReloadPreference);
+    }
+
+    /** Whether a reload by this player puts the unloaded ammo in the upper inventory first. */
+    public boolean shouldPutAmmoToUpperInventoryOnReload()
+    {
+        return ammoToUpperInventoryOnReloadPreference != null
+            ? ammoToUpperInventoryOnReloadPreference
+            : ModCommonConfig.get().ammoToUpperInventoryOnReload();
+    }
+
     public void playerKilled()
     {
         isShootingRight = isShootingLeft = false;
+        // Nobody keeps aiming through their own death: the client stops sending scope
+        // state once it is out of the world, so the end of it has to be assumed here.
+        scoped = false;
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
 
-    public void doGunReload(InteractionHand hand, float reloadTime)
+    /**
+     * @param reloadTime how long the reload itself takes, which drives the animation
+     * @param blockTime  how long the player may not shoot for, which is the reload
+     *                   time or the gun's own cadence, whichever is longer: a quick
+     *                   reload must not let a slow gun outrun its rate of fire
+     */
+    public void doGunReload(InteractionHand hand, float reloadTime, float blockTime)
     {
         // Set player shoot delay to be the reload delay - Set both gun delays to avoid reloading two guns at once
-        shootTimeRight = reloadTime;
-        shootTimeLeft = reloadTime;
+        float delay = Math.max(reloadTime, blockTime);
+        shootTimeRight = delay;
+        shootTimeLeft = delay;
         setReloading(hand, true);
         setBurstRoundsRemaining(hand,0);
     }
@@ -338,5 +384,4 @@ public class PlayerData
         }
     }
 
-    //TODO: Events from PlayerHandler
 }

@@ -1,0 +1,62 @@
+// Identity
+Name MG-42
+ShortName 44_Mg42
+Description German General Purpose Machine Gun
+
+// Rendering
+Icon 44_Mg42
+Model W44.Mg42
+ModelScale 0.75
+Texture Skin44_Mg42
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Mg42Ammo
+
+// Handling
+Mode FullAuto
+Deployable False
+MoveSpeedModifier 0.35
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 1200.0
+ReloadTime 100
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 740.0
+Dispersion 0.38
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 8.25
+RandomRecoilRange 1
+RandomRecoilYawRange 0.5
+DecreaseRecoil 7.0
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_AASight 44_PaddedStock 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound Mg42Shoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Stg44Reload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

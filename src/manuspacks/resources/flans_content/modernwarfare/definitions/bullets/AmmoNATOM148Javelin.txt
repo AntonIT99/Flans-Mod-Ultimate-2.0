@@ -1,0 +1,50 @@
+// Identity
+Name FGM-148 Javelin Missile
+ShortName AmmoNATOM148Javelin
+Description Ammunition for the FGM-148 Javelin launcher
+
+// Model and Rendering
+Model Bullet //manus_modern_warfare.ATMissile
+Texture SkinAmmoATMissile
+Colour 255 255 255
+Icon IconAmmoNATOM148Javelin
+
+// Recipe and Inventory
+MaxStackSize 8
+RoundsPerItem 1
+
+// Behaviour
+FallSpeed 0.25
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+LockOnForce 8
+LockOnToPlanes False
+LockOnToVehicles True
+LockOnToMechas True
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 200
+WeaponType Missile
+Missile True
+
+// Ballistics and Damage
+Mass 22300
+MuzzleVelocity 290
+ExplosiveMassTNTKg 6
+PenetrationAt100m 750
+FragType HE_SHELL
+Damage 300
+DamageVsVehicles 300
+Explosion 3
+Fire 0
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType flame

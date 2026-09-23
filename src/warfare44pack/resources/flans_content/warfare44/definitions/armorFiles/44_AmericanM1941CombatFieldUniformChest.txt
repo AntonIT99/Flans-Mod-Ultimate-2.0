@@ -1,0 +1,18 @@
+// Identity
+Name American M-1941 Combat Field Uniform Jacket
+ShortName 44_AmericanM1941CombatFieldUniformChest
+Type Body
+
+// Rendering
+Icon 44_AmericanM1941CombatFieldUniformChest
+Model W44.AmericanM1941CombatFieldUniformChest
+ModelScale 1
+ArmorTexture Skin44_AmericanM1941CombatFieldUniform
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

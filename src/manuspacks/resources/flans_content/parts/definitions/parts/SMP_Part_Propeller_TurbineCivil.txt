@@ -1,0 +1,16 @@
+// Identity
+Name Civil Turbine
+ShortName SMP_Part_Propeller_TurbineCivil
+
+// Model and Rendering
+Icon Icon_SMP_Part_Propeller_TurbineCivil
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Aluminium R SMP_Part_Propeller_RotorTurbine
+ M 
+MRM
+ M 
+RecipeOutput 1
+Category Propeller
+PartBoxRecipe
+StackSize 64

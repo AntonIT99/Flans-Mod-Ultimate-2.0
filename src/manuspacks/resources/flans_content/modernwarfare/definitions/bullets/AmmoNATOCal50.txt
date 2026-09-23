@@ -1,0 +1,36 @@
+// Identity
+Name NATO Cal.50 Ammo - 150 Bullet Box
+ShortName AmmoNATOCal50
+Description Ammunition for the Browning M2HB
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon IconAmmoNATOCal50
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 150
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 0.1
+Penetrates False
+
+// Ballistics and Damage
+Mass 42.0
+PenetrationAt100m 20
+Damage 6
+DamageVsVehicles 1
+Explosion 0
+Fire 0
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail False

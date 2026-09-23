@@ -29,7 +29,7 @@ ordering="NONE"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
-modId="${mod_id_packs}"
+modId="flansmodultimate_packs_manager"
 type="optional"
 versionRange="[0,)"
 ordering="AFTER"

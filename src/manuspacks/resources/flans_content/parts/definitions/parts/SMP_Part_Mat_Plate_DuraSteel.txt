@@ -1,0 +1,16 @@
+// Identity
+Name DuraSteel Plate
+ShortName SMP_Part_Mat_Plate_DuraSteel
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Plate_DuraSteel
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_DuraSteel
+   
+   
+MMM
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

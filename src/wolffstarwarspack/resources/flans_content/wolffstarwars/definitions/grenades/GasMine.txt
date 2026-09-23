@@ -1,0 +1,54 @@
+// Identity
+Name Gas Mine
+ShortName Gasmine
+
+// Item and rendering
+Icon hx2mine
+Colour 255 255 255
+StackSize 5
+Model wolffstarwars.SWMine
+Texture itemhx2minegas
+
+// Throwing
+SpinWhenThrown false
+ThrowDelay 10
+ThrowSpeed 0.1
+Remote false
+
+// Physics
+Bounciness 0.0
+FallSpeed 1.0
+BreaksGlass false
+PenetratesBlocks false
+HitBoxSize 0.5
+Sticky true
+DespawnTime 32000
+
+// Detonation
+DetonateOnImpact false
+VehicleProximityTrigger 0.0
+LivingProximityTrigger 4.0
+Fuse 0
+DetonateWhenShot true
+PrimeDelay 100
+
+// Damage and explosion
+HitEntityDamage 0
+FireRadius 0.0
+ExplosionRadius 0.0
+ExplosionBreaksBlocks false
+FragType DEFAULT
+
+// Smoke and effects
+SmokeTime 600
+SmokeEffect 15 100 0
+SmokeEffect 2 100 1
+SmokeEffect 4 100 1
+SmokeEffect 9 100 0
+SmokeEffect 18 100 1
+SmokeEffect 19 100 0
+SmokeRadius 8
+
+// Sounds and particles
+TrailParticles false
+ExplodeParticles 0

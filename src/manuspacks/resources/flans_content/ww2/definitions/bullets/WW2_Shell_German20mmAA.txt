@@ -1,0 +1,50 @@
+// Identity
+Name German 20 mm FlaK 38 Mixed Belt
+ShortName WW2_Shell_German20mmAA
+description Amunition for Flakpanzer IV Tank
+
+// Model and Rendering
+Icon Icon_WW2_Shell_German20mmAA
+Model Bullet
+
+// Recipe and Inventory
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse
+   
+GGG
+SSS
+RecipeOutput 32
+MaxStackSize 64
+RoundsPerItem 20
+AddRound Sprgr.L'Spur 7 115 6.2 930 0
+AddRound Brsprgr.L'Spur 7 120 2.4 900 0
+AddRound Pzgr.L'Spur.Zerl 6 148 0 800 23
+
+// Behaviour
+Bomb False
+Shell True
+ExplodeOnImpact True
+FallSpeed 1.0
+Fuse 200
+Penetrates False
+BreaksGlass True
+HitBoxSize 2.0
+
+// Ballistics and Damage
+DamageVsLiving 80
+DamageVsVehicles 80
+DamageVsPlanes 10
+Mass 115
+MuzzleVelocity 900
+ExplosiveMassTNTg 6
+PenetrationAt100m 25
+Explosion 1
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+HasLight True
+FlakParticles 0
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke

@@ -1,0 +1,11 @@
+// Identity
+Name Metal Rod
+ShortName 44_Metal_Rod
+Category Misc
+
+// Rendering
+Icon 44_Metal_Rod
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

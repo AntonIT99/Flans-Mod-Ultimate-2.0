@@ -1,0 +1,45 @@
+// Identity
+Name 30x173 mm GAU-8/A AC56 Combat Mix
+ShortName ShellNATO30mm
+Description Two PGU-14/B API rounds to one PGU-13/B HEI round for the GAU-8/A Avenger
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon IconAmmoNATO30mm
+
+// Recipe and Inventory
+RoundsPerItem 150
+MaxStackSize 1
+RecipeOutput 32
+AddRound PGU-14/B_API 2 395 0 1013 77
+AddRound PGU-13/B_HEI 1 378 92.8 1020 8
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 0
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+Bomb False
+Shell True
+
+// Ballistics and Damage
+Mass 360
+MuzzleVelocity 1020
+ExplosiveMassTNTg 49
+PenetrationAt100m 25
+FragType HE_SHELL
+Damage 100
+DamageVsVehicles 100
+Explosion 0
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke

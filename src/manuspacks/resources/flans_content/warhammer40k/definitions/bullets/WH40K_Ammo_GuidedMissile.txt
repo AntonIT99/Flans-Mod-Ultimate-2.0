@@ -1,0 +1,43 @@
+// Identity
+Name Vulture Guided Anti-Tank Missile
+ShortName WH40K_Ammo_GuidedMissile
+
+// Model and Rendering
+Model Manus_WH40K.Misc.WH40K_Misc_Missile_1
+Texture Skin_WH40K_Misc_Missile_1A
+Colour 255 255 255
+Icon Icon_WH40K_Ammo_GuidedMissile_1A
+
+// Recipe and Inventory
+MaxStackSize 4
+RoundsPerItem 1
+
+// Behaviour
+FallSpeed 0.25
+ExplodeOnImpact True
+Fuse 0
+BreaksGlass True
+HitBoxSize 0.1
+WeaponType Missile
+Penetrates False
+LockOnToDriveables True
+LockOnToPlayers False
+LockOnToLivings False
+MaxLockOnAngle 20.0
+
+// Ballistics and Damage
+DamageVsLiving 20
+DamageVsVehicles 500
+Explosion 2
+Fire 0
+Mass 9000.0
+MuzzleVelocity 400
+PenetrationAt100m 600
+ExplosiveMassTNTKg 8
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True

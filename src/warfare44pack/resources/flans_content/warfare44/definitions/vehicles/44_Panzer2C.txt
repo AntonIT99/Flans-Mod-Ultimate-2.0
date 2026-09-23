@@ -1,0 +1,189 @@
+// Identity
+Name Panzer II Ausf. C [20mm]
+ShortName 44_Panzer2C
+Description German Light Tank__Uses 20mm Ammo__Year Introduced : 1936
+
+// Rendering
+Icon 44_Panzer2C
+Model W44.Panzer2C
+ModelScale 1
+Texture Skin44_Panzer2C
+RotateWheels True
+CameraDistance 6.0
+
+// Recipe and inventory
+AddRecipeParts turret 1 44_Light_Tank_Turret 1 44_Vehicle_Seat
+AddRecipeParts core 1 44_Light_Tank_Chassis 1 44_Vehicle_Seat
+AddRecipeParts leftTrack 1 44_Tank_Track
+AddRecipeParts rightTrack 1 44_Tank_Track
+CargoSlots 20
+ShellSlots 3
+FuelTankSize 2000
+
+// Paintjobs
+advpaintjob Beige 44_Panzer2C_Beige 44_Panzer2C_Beige yellow 3
+AddDye 3 gray
+
+// Real-world specifications
+DriveType TRACKED
+RealMassKg 8900
+RealEnginePowerPS 140
+RealMaxSpeedKmh 40
+RealMaxReverseSpeedKmh 8
+
+// Movement
+Tank true
+FourWheelDrive true
+MaxThrottle 0.88
+MaxNegativeThrottle 0.4904
+ClutchBrake 0.022
+TurnLeftSpeed 0.44
+TurnRightSpeed 0.44
+CanRoll true
+SquashMobs True
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -32 -8 -18
+WheelPosition 1 -32 -8 18
+WheelPosition 2 32 -8 18
+WheelPosition 3 32 -8 -18
+WheelSpringStrength 0.5
+TrackLinkLength 2.75
+LeftLinkPoint [37,11,22.2]
+LeftLinkPoint [40.3,10,22.2]
+LeftLinkPoint [40.3,1,22.2]
+LeftLinkPoint [28,-9,22.2]
+LeftLinkPoint [-32,-9,22.2]
+LeftLinkPoint [-46.5,-1,22.2]
+LeftLinkPoint [-46.5,5,22.2]
+LeftLinkPoint [-43,8,22.2]
+LeftLinkPoint [-27,10,22.2]
+LeftLinkPoint [30,11,22.2]
+LeftLinkPoint [35,11,22.2]
+RightLinkPoint [37,11,-12.2]
+RightLinkPoint [40.3,10,-12.2]
+RightLinkPoint [40.3,1,-12.2]
+RightLinkPoint [28,-9,-12.2]
+RightLinkPoint [-32,-9,-12.2]
+RightLinkPoint [-46.5,-1,-12.2]
+RightLinkPoint [-46.5,5,-12.2]
+RightLinkPoint [-43,8,-12.2]
+RightLinkPoint [-27,10,-12.2]
+RightLinkPoint [30,11,-12.2]
+RightLinkPoint [35,11,-12.2]
+FixTrackLink 4
+FlipLinkFix false
+
+// Weapons
+ReadWeaponsFromGunTypes true
+RoundsPerMinPrimary 280
+ReloadTimePrimary 57
+ReloadRoundsPrimary 10
+ShootDelay 2
+ReloadTimeSecondary 100
+PlaceTimePrimary 80
+BulletSpread 4
+BulletSpeed 11
+BulletDetection 5
+AllowAllAmmo false
+AddAmmo 44_20mmAmmo
+AddGun 21 23 5 turret 44_Mg34
+BarrelPosition 40 20 -4
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.5 0 0
+ShootParticlesPrimary largesmoke 0.5 0 0.1
+ShootParticlesPrimary largesmoke 0.5 0 -0.1
+ShootParticlesPrimary largesmoke 0.5 0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke 0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.5 -0.1 0
+ShootParticlesPrimary largesmoke 0.5 0.1 0
+ShootParticlesPrimary cloud 0.05 0 0.2
+ShootParticlesPrimary cloud 0.05 0 -0.2
+ShootParticlesPrimary cloud 0.05 0.13 0.13
+ShootParticlesPrimary cloud 0.05 0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.13 0.13
+ShootParticlesPrimary cloud 0.05 -0.13 -0.13
+ShootParticlesPrimary cloud 0.05 -0.2 0
+ShootParticlesPrimary cloud 0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame 1 0 0
+ShootParticlesPrimary flansmod.fmflame 1.75 0 0
+ShootParticlesPrimary flansmod.fmflame 1.5 0 0
+ShootParticlesSecondary crit 0.5 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 20
+ArmorSideMm 14
+ArmorRearMm 15
+ArmorTopMm 10
+ArmorBottomMm 5
+TurretArmorFrontMm 14
+TurretArmorSideMm 14
+TurretArmorRearMm 14
+TurretArmorTopMm 10
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 1250 -52 -1 -13 100 30 32
+SetupPart leftTrack 300 -52 -10 -16 100 22 6
+SetupPart rightTrack 300 -52 -10 19 100 22 6
+
+// Seats
+Driver 0 18 0 -360 360 -10 20
+Passengers 0
+RotatedDriverOffset 0 0 5
+DriverAimSpeed 0.65 0.55 0
+DriverYawBeforePitch false
+
+// Optics
+heliGUI warfare44_gercomm
+hasScope true
+Gunsight warfare44_20mmtank
+gunsightZoom 3.5
+
+// Sounds
+StartSound TankIdle1
+StartSoundLength 41
+StartSoundRange 12
+EngineSound Engine_LT_PzII
+EngineSoundLength 39
+EngineSoundRange 50
+BackSound Engine_LT_PzII
+BackSoundLength 39
+BackSoundRange 25
+YawSound TurretTraverse1
+YawSoundLength 21
+PitchSound TurretTraverse2
+PitchSoundLength 20
+DriverTraverseSounds true
+ShootSoundPrimary Shoot_20mmPzII
+ShootSoundSecondary Mg34Shoot
+PlaceSoundPrimary TankPlace
+ReloadSoundSecondary Mg34Reload
+
+// Effects
+AddEmitter smoke 1 [-45,16,-7] [1,1,1] [0,0.5,0] -1 1 0 1 core
+AddEmitter smoke 2 [-34,26,-22.2] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-34,26,22.2] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+AddEmitter largesmoke 3 [-34,26,-22.2] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-34,26,22.2] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+AddEmitter largesmoke 1 [-34,26,-22.2] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-34,26,22.2] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,-22.2] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,22.2] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+AddEmitter largesmoke 1 [-45,16,-7] [1,1,1] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter explode 1 [-45,16,-7] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter largesmoke 1 [-45,16,-7] [1,1,1] [0,3,0] 0.2 0.25 0 1 core
+AddEmitter explode 1 [-45,16,-7] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+AddEmitter largesmoke 1 [-45,16,-7] [1,1,1] [0,4,0] 0.5 0.52 0 1 core
+AddEmitter flame 1 [-45,16,-7] [1,1,1] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [-45,16,-7] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter largesmoke 3 [-45,16,-7] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+AddEmitter largesmoke 1 [-45,16,-7] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
+AddEmitter flame 1 [-45,16,-7] [1,1,1] [0,5,0] 0.7 0.73 0 1 core

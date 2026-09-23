@@ -1,0 +1,18 @@
+// Identity
+Name American M42 Airborne Jacket
+ShortName 44_AmericanM42AirborneChest
+Type Body
+
+// Rendering
+Icon 44_AmericanM42AirborneChest
+Model W44.AmericanM42AirborneChest
+ModelScale 1
+ArmorTexture Skin44_AmericanM42Airborne
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

@@ -1,0 +1,34 @@
+// Identity
+Name Browning M2
+ShortName WW2_MG_BrowningM2_1A
+
+// Model and Rendering
+Icon Icon_WW2_MG_BrowningM2_1A
+DeployedModel Manus_WW2.MG.WW2_MG_BrowningM2_1
+DeployedTexture Skin_WW2_MG_BrowningM2_1A
+
+// Recipe and Inventory
+Ammo WW2_Ammo_USACal50
+
+// Weapons
+Deployable True
+Scope None
+Mode FullAuto
+Recoil 1
+ReloadTime 100
+TopViewLimit 20
+BottomViewLimit 20
+SideViewLimit 45
+PivotHeight 0.75
+StandBackDistance 1.0
+RoundsPerMin 500.0
+Dispersion 0.35
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 890.0
+
+// Sounds
+DistortSound False
+ShootSound BrowningShoot
+ReloadSound BrowningReload

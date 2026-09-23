@@ -1,0 +1,16 @@
+// Identity
+Name Bike Chassis Frame
+ShortName SMP_Part_Chassis_Bike
+
+// Model and Rendering
+Icon Icon_SMP_Part_Chassis_Bike
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Plate_Steel S SMP_Part_Misc_Seat_Car
+   
+MS 
+ MM
+RecipeOutput 1
+Category Chassis
+PartBoxRecipe
+StackSize 64

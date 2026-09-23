@@ -1,15 +1,18 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
@@ -55,12 +58,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntity<AAGunType>
+public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntity<AAGunType>, IMassiveEntity
 {
+    private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 128;
     public static final float DEFAULT_HITBOX_SIZE = 2F;
 
     private static final double SENTRY_ORIGIN_Y_OFFSET = 1.5D;
+    private static final double LEGACY_PLAYER_EYE_HEIGHT = 1.62D;
     private static final int TARGET_ACQUIRE_INTERVAL = 10;
 
     public static final String NBT_TYPE_NAME = "type";
@@ -83,10 +88,12 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
     protected static final EntityDataAccessor<Integer> DATA_CURRENT_BARREL = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_HEALTH = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Component> DATA_CURRENT_AMMO_NAME = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.COMPONENT);
+    protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_LEFT = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
+    protected static final EntityDataAccessor<Integer> DATA_MAGAZINE_SIZE = SynchedEntityData.defineId(AAGun.class, EntityDataSerializers.INT);
 
     protected AAGunType configType;
     protected String shortname = StringUtils.EMPTY;
-    protected int shootDelay;
+    protected float shootDelay;
     protected int soundTimer;
     protected int currentBarrel;
     protected int ticksSinceUsed;
@@ -108,6 +115,8 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
     protected UUID placerId;
     @Nullable
     protected Entity target;
+    /** Tells the gun's own motion apart from outside pushes, which are weighed against its mass. Server only. */
+    private final ExternalImpulseTracker externalImpulses = new ExternalImpulseTracker();
 
     public AAGun(EntityType<?> entityType, Level level)
     {
@@ -260,6 +269,24 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         return entityData.get(DATA_AMMO_MASK);
     }
 
+    public int getAmmoSlotCount()
+    {
+        return ammo.length;
+    }
+
+    public ItemStack getAmmo(int slot)
+    {
+        return slot >= 0 && slot < ammo.length ? ammo[slot] : ItemStack.EMPTY;
+    }
+
+    public void setAmmo(int slot, ItemStack stack)
+    {
+        if (slot < 0 || slot >= ammo.length)
+            return;
+        ammo[slot] = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack;
+        updateAmmoMask();
+    }
+
     public void setAmmoMask(int mask)
     {
         entityData.set(DATA_AMMO_MASK, mask);
@@ -277,6 +304,12 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
 
     private void updateAmmoMask()
     {
+        // The client never holds the ammunition stacks, only what the server
+        // syncs about them. Recomputing here on the client - initType does, when
+        // a loaded gun comes back into view - would publish "no ammo" over the
+        // real state until the server next changed it.
+        if (level().isClientSide)
+            return;
         int mask = 0;
         for (int i = 0; i < Math.min(ammo.length, Integer.SIZE); i++)
         {
@@ -285,6 +318,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         }
         setAmmoMask(mask);
         updateCurrentAmmoName();
+        updateMagazineState();
     }
 
     private void updateCurrentAmmoName()
@@ -304,6 +338,37 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             }
         }
         entityData.set(DATA_CURRENT_AMMO_NAME, Component.empty());
+    }
+
+    /**
+     * Rounds the whole mounting still has, and what it holds when full. Every
+     * barrel reloads together, so the crew is shown the mounting's total rather
+     * than whichever barrel happens to be next.
+     */
+    private void updateMagazineState()
+    {
+        int left = 0;
+        for (ItemStack stack : ammo)
+            left += ShootableItem.getTotalRounds(stack);
+
+        // The capacity to count down from is whatever went aboard at the last
+        // restock, which is the only figure that means anything here: the gun
+        // reloads when every barrel is dry, so a mounting loaded with three
+        // forty-round drums is forty short after forty rounds, not after one item.
+        if (left > entityData.get(DATA_MAGAZINE_LEFT))
+            entityData.set(DATA_MAGAZINE_SIZE, left);
+        if (entityData.get(DATA_MAGAZINE_LEFT) != left)
+            entityData.set(DATA_MAGAZINE_LEFT, left);
+    }
+
+    public int getMagazineLeft()
+    {
+        return entityData.get(DATA_MAGAZINE_LEFT);
+    }
+
+    public int getMagazineSize()
+    {
+        return entityData.get(DATA_MAGAZINE_SIZE);
     }
 
     @Override
@@ -473,7 +538,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             Level level = level();
             AAGunType type = getConfigType();
 
-            if (!level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK && type != null && FlansMod.teamsManager.getWeaponDrops() != TeamsManager.EnumWeaponDrop.NONE)
+            if (!suppressRemovalDrops && !level.isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK && type != null && FlansMod.teamsManager.getWeaponDrops() != TeamsManager.EnumWeaponDrop.NONE)
             {
                 if (type.isDropThis())
                     spawnAtLocation(ModUtils.getItemStack(type).orElse(ItemStack.EMPTY), 0F);
@@ -490,6 +555,13 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         }
 
         super.remove(reason);
+    }
+
+    /** Removes this gun for an administrative cleanup without creating item drops. */
+    public void discardWithoutDrops()
+    {
+        suppressRemovalDrops = true;
+        discard();
     }
 
     @Override
@@ -625,8 +697,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             return;
         }
 
-        if (shootDelay > 0)
-            shootDelay--;
+        shootDelay = ShotCooldown.tick(shootDelay);
         if (soundTimer > 0)
             soundTimer--;
         if (getReloadTimer() > 0)
@@ -649,7 +720,38 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             fireGun(level, getPlacer(level).orElse(null), false);
         }
 
+        absorbExternalImpulses();
         applyMotion();
+        externalImpulses.settle(getDeltaMovement());
+    }
+
+    /** Weighs every velocity change the gun did not make itself since its last tick against its mass. */
+    private void absorbExternalImpulses()
+    {
+        Vec3 current = getDeltaMovement();
+        if (ModCommonConfig.forceLegacyVehicleKnockback())
+        {
+            externalImpulses.settle(current);
+            return;
+        }
+        Vec3 absorbed = externalImpulses.absorb(current, getImpulseMassKg(),
+            ModCommonConfig.vehicleKnockbackReferenceMassKg());
+        if (absorbed != current)
+            setDeltaMovement(absorbed);
+    }
+
+    @Override
+    public double getImpulseMassKg()
+    {
+        AAGunType type = getConfigType();
+        return type == null ? ModCommonConfig.fallbackAAGunMassKg() : type.getImpulseMass().massKg();
+    }
+
+    @Override
+    public void applyResolvedImpulse(@NotNull Vec3 impulse)
+    {
+        setDeltaMovement(getDeltaMovement().add(impulse));
+        externalImpulses.addResolvedImpulse(impulse);
     }
 
     private void updateAimFromPassenger(LivingEntity passenger)
@@ -733,18 +835,34 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
     private void fireGun(Level level, @Nullable LivingEntity attacker, boolean requireInput)
     {
         AAGunType type = getConfigType();
-        if (type == null || shootDelay > 0 || getReloadTimer() > 0)
+        if (type == null || !ShotCooldown.isReady(shootDelay) || getReloadTimer() > 0)
             return;
         if (requireInput && !shootKeyPressed)
             return;
         if (!requireInput && target == null)
             return;
 
+        // A delay shorter than a tick puts more than one volley into this tick.
+        // Charging the delay rather than assigning it carries the remainder, so a
+        // rate that does not divide evenly into ticks stays honest over time.
+        while (ShotCooldown.isReady(shootDelay))
+        {
+            if (!fireVolley(level, attacker, requireInput))
+                return;
+            shootDelay = ShotCooldown.charge(shootDelay, type.getShootDelay());
+        }
+    }
+
+    /**
+     * One pass over the barrels. Returns false when the gun fired nothing, either
+     * because no barrel had ammunition or because the gun destroyed itself.
+     */
+    private boolean fireVolley(Level level, @Nullable LivingEntity attacker, boolean requireInput)
+    {
+        AAGunType type = getConfigType();
         boolean attempted = false;
         for (int barrel = 0; barrel < type.getNumBarrels(); barrel++)
         {
-            if (shootDelay > 0)
-                break;
             if (type.isFireAlternately() && barrel != getCurrentBarrelIndex())
                 continue;
 
@@ -757,11 +875,13 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
                 && type.getCountExplodeAfterShoot() != -1 && shotsFired >= type.getCountExplodeAfterShoot())
             {
                 discard();
+                return false;
             }
         }
 
         if (attempted)
             setCurrentBarrel(getCurrentBarrelIndex() + 1);
+        return attempted;
     }
 
     private boolean fireBarrel(Level level, @Nullable LivingEntity attacker, int barrel, int slot, boolean sentryShot)
@@ -771,16 +891,19 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         if (type == null || !(ammoStack.getItem() instanceof ShootableItem shootableItem) || !(shootableItem.getConfigType() instanceof BulletType bulletType))
             return false;
 
-        FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getBulletSpread(), bulletType.getBulletSpeed(true), type.getSpreadPattern());
-        FiredShot firedShot = new FiredShot(fireableGun, bulletType, this, attacker, ammoStack.getDamageValue());
+        // The AA gun declares no velocity of its own, so it hands over the default as a fallback and
+        // lets the ammunition's MuzzleVelocity win.
+        FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getBulletSpread(),
+            BulletType.DEFAULT_BULLET_SPEED, type.getSpreadPattern());
+        fireableGun.applyAmmunition(bulletType);
+        FiredShot firedShot = new FiredShot(fireableGun, bulletType, this, attacker, ShootableItem.getRoundsFired(ammoStack));
 
         Vec3 shootingDir = getShootingDirection();
         Vec3 barrelOrigin = getBarrelOrigin(barrel, sentryShot);
 
         ShootingHelper.fireGun(level, firedShot, type.getNumBullets(), barrelOrigin, shootingDir, () -> damageAmmo(slot));
 
-        shootDelay = type.getShootDelay();
-        barrelRecoil[barrel] = type.getRecoil();
+        barrelRecoil[barrel] = type.getRecoil() * bulletType.getRecoilMultiplier();
         shotsFired++;
 
         if (soundTimer <= 0 && StringUtils.isNotBlank(type.getShootSound()))
@@ -798,23 +921,13 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             return;
 
         ItemStack stack = ammo[slot];
-        if (stack.getItem() instanceof ShootableItem shootableItem)
+        if (stack.getItem() instanceof ShootableItem)
         {
-            int roundsPerItem = shootableItem.getConfigType().getRoundsPerItem();
-            if (roundsPerItem > 1)
-            {
-                int remaining = ShootableItem.getRoundsRemaining(stack) - 1;
-                if (remaining <= 0)
-                    ammo[slot] = ItemStack.EMPTY;
-                else
-                    ShootableItem.setRoundsRemaining(stack, remaining);
-            }
-            else
-            {
-                stack.shrink(1);
-                if (stack.isEmpty())
-                    ammo[slot] = ItemStack.EMPTY;
-            }
+            // Spending a round is the item's own business: a magazine or belt
+            // holding several rounds has to move on to the next item of the stack
+            // when the current one runs dry, rather than throwing the rest away.
+            if (!ShootableItem.consumeRound(stack) || !ShootableItem.hasRoundsLeft(stack))
+                ammo[slot] = ItemStack.EMPTY;
         }
         else
         {
@@ -828,10 +941,11 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
     private void reloadGun(Level level, Player player)
     {
         AAGunType type = getConfigType();
-        if (level.isClientSide || type == null || getReloadTimer() > 0)
+        if (level.isClientSide || type == null || getReloadTimer() > 0 || !isFullySpent())
             return;
 
         boolean loadedAny = false;
+        float reloadFactor = 1F;
         for (int i = 0; i < ammo.length; i++)
         {
             if (!ammo[i].isEmpty())
@@ -846,16 +960,40 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             {
                 ammo[i] = loaded;
                 loadedAny = true;
+                // A slower round to load holds up the whole reload, so the
+                // heaviest factor among what went in wins.
+                if (loaded.getItem() instanceof ShootableItem shootableItem)
+                    reloadFactor = Math.max(reloadFactor, shootableItem.getConfigType().getReloadTimeMultiplier());
             }
         }
 
         if (loadedAny)
         {
             updateAmmoMask();
-            setReloadTimer(type.getReloadTime());
+            // Reloading never lets the gun outrun its own rate of fire, so the wait
+            // after the round that emptied a barrel is the longer of the two.
+            setReloadTimer(Mth.ceil(Math.max(type.getReloadTime() * reloadFactor, type.getShootDelay())));
             if (StringUtils.isNotBlank(type.getReloadSound()))
                 PacketPlaySound.sendSoundPacket(this, type.getReloadSoundRange(), type.getReloadSound(), false);
         }
+    }
+
+    /**
+     * Whether every barrel has run dry.
+     *
+     * <p>A multi-barrel mount is worked as one weapon, so the crew reloads it in
+     * one go once nothing is left to fire. Reloading the moment a single barrel
+     * emptied would stand the whole mount down while its other barrels still had
+     * rounds in them, which is the opposite of what a second barrel is for.
+     */
+    private boolean isFullySpent()
+    {
+        for (ItemStack stack : ammo)
+        {
+            if (ShootableItem.hasRoundsLeft(stack))
+                return false;
+        }
+        return true;
     }
 
     private int findAmmo(Player player)
@@ -968,7 +1106,8 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         double x2 = x * cosYaw + z * sinYaw;
         double z2 = -x * sinYaw + z * cosYaw;
 
-        return new Vec3(getX() + x2, getY() + y - 1.5, getZ() + z2);
+        // 1.7.10 placed the local player's eye point (feet + 1.62) at the gunner position.
+        return new Vec3(getX() + x2, getY() + y - LEGACY_PLAYER_EYE_HEIGHT, getZ() + z2);
     }
 
     public Vec3 getBarrelOrigin(int barrel, boolean sentryShot)

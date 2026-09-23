@@ -1,0 +1,45 @@
+﻿// Identity
+Name Impact Grenade for Mk5 Grenade Launcher
+ShortName WH40K_Grenade_MkVGrenadeLauncher
+
+// Model and Rendering
+Model Manus_WH40K.Misc.WH40K_Misc_GunGrenade_1
+Colour 255 255 255
+Icon Icon_WH40K_Grenade_MkVGrenadeLauncher
+Texture Skin_WH40K_Bullet_GunGrenade_1A
+
+// Recipe and Inventory
+StackSize 16
+
+// Behaviour
+FallSpeed 1.0
+ThrowSpeed 3.0
+HitBoxSize 0.5
+BreaksGlass True
+Fuse 40
+DetonateOnImpact True
+ThrowDelay 10
+SpinWhenThrown True
+CanThrow False
+Bounciness 0.8
+PenetratesBlocks False
+Sticky False
+LivingProximityTrigger -1.0
+VehicleProximityTrigger -1.0
+DetonateWhenShot True
+PrimeDelay 0
+Remote False
+
+// Ballistics and Damage
+HitEntityDamage 1
+FireRadius 0.0
+ExplosionRadius 4.0
+ExplosionBreaksBlocks True
+MeleeDamage 4
+ExplosiveMassTNTg 32
+FragType HE_SHELL
+
+// Effects
+TrailParticles False
+ExplodeParticles 0
+SmokeTime 0

@@ -21,6 +21,8 @@ public final class ContentLoadingConfig
     private static boolean forceRegenContentPacksAssetsAndIds = false;
     @Getter
     private static boolean useDefaultCategories = true;
+    @Getter
+    private static boolean overrideConfiguredSoundLengths = true;
 
     private static final int CONTENT_LOADING_SYSTEM_VERSION = 6;
     private static final String FILE_NAME = FlansMod.MOD_ID + "-content-loading.toml";
@@ -45,6 +47,7 @@ public final class ContentLoadingConfig
             forceRegenContentPacksAssetsAndIds = readBoolean(config, "forceRegenContentPacksAssetsAndIds", forceRegenContentPacksAssetsAndIds);
             int lastContentLoadingSystemVersion = readInt(config, "contentLoadingSystemVersion", CONTENT_LOADING_SYSTEM_VERSION);
             useDefaultCategories = readBoolean(config, "useDefaultCategories", useDefaultCategories);
+            overrideConfiguredSoundLengths = readBoolean(config, "overrideConfiguredSoundLengths", overrideConfiguredSoundLengths);
 
             save(config);
 
@@ -92,7 +95,16 @@ public final class ContentLoadingConfig
             The new category system allows items to be grouped and modified without modifying their config files in content packs.
             Categories can apply or override settings for all items within them.
             By default, this mod provides preconfigured categories in .minecraft/config/flansmodultimate/default.
-            Set this option to false if you want to disable these default categories.""");
+            Set this option to false if you want to disable these default categories.
+            User categories can still explicitly inherit them with "inherits": "default:Category Name" in category JSON.""");
+
+        config.set("overrideConfiguredSoundLengths", overrideConfiguredSoundLengths);
+        config.setComment("overrideConfiguredSoundLengths", """
+            Sound lengths such as EngineSoundLength or LoopedSoundLength tell the mod when to play a looping sound again.
+            Content packs often configure them only roughly, which makes looping sounds overlap or leave a gap.
+            By default these values are replaced with the real length of the sound file, measured while loading the pack.
+            Set this option to false if you want the values configured in the content packs to be used as they are.
+            Sound lengths that are disabled with None, or that are not set at all, are never filled in automatically.""");
 
         config.save();
     }

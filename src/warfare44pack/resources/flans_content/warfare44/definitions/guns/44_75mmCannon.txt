@@ -1,0 +1,39 @@
+// Identity
+Name 75mm Cannon
+ShortName 44_75mmCannon
+Description Tank Cannon - Vehicle Part
+
+// Rendering
+Icon 44_75mmCannon
+Colour 255 255 255
+
+// Ammunition
+Ammo 44_75APShell
+Ammo 44_MediumHEShell
+
+// Handling
+Mode SemiAuto
+Deployable false
+UsableByPlayers false
+UsableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 20.0
+ReloadTime 200
+
+// Ballistics
+MuzzleVelocity 618.0
+Dispersion 0.2
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound 75mmShoot
+DistortSound True
+SoundLength 0
+ReloadSound Mp40Reload

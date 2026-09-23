@@ -1,0 +1,38 @@
+// Identity
+Name Type 92 MG
+ShortName 44_Type92
+Description Japanese HMG - Gun Recipe Part
+
+// Rendering
+Icon 44_Type92
+Colour 255 255 255
+
+// Ammunition
+Ammo 44_Type92Ammo
+
+// Handling
+Mode FullAuto
+Deployable false
+UsableByPlayers false
+usableByMechas false
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 475.0
+ReloadTime 200
+
+// Ballistics
+MuzzleVelocity 780.0
+Dispersion 0.35
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound Type99Shoot
+DistortSound True
+SoundLength 0
+ReloadSound Mp40Reload

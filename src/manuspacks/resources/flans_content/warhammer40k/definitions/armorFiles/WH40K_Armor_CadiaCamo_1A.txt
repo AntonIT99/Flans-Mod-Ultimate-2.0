@@ -1,0 +1,19 @@
+﻿// Identity
+Name Cadia Camouflage Cape
+ShortName WH40K_Armor_CadiaCamo_1A
+
+// Model and Rendering
+Model Manus_WH40K.Armor.WH40K_Armor_CadiaCamo_1
+ModelScale 0.25
+Icon Icon_WH40K_Armor_CadiaCamo_1A
+ArmourTexture Skin_WH40K_Armor_CadiaCamo_1A
+
+// Recipe and Inventory
+Type Hat
+
+// Protection
+Defence 0.01
+BulletDefence 0.00
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0

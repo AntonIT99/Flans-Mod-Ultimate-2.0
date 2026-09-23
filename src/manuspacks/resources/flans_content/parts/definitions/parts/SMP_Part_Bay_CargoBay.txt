@@ -1,0 +1,16 @@
+// Identity
+Name Cargo Transport Bay Frame
+ShortName SMP_Part_Bay_CargoBay
+
+// Model and Rendering
+Icon Icon_SMP_Part_Bay_CargoBay
+
+// Recipe and Inventory
+Recipe C chest P SMP_Part_Mat_Plate_Steel
+PPP
+CCC
+PPP
+RecipeOutput 1
+Category Bay
+PartBoxRecipe
+StackSize 64

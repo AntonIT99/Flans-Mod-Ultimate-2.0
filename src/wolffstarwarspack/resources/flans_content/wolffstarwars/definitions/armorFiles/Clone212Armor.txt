@@ -1,0 +1,20 @@
+// Identity
+Name Clone 212th Attack Battalion Armor
+ShortName clone212Armor
+
+// Item and rendering
+Icon clone212armor
+Colour 255 255 255
+ArmourTexture clonetrooper212chestplate
+Model wolffstarwars.CloneChestplate212
+
+// Protection
+Type Body
+Defence 0.16
+BulletDefence 0.19
+PenetrationResistance 1.90
+ArmorPoints 6
+Toughness 1
+
+// Movement
+MoveSpeedModifier 0.98

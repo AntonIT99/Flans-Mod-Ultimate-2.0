@@ -64,6 +64,14 @@ public class FlashParticle extends ParticleBase
     }
 
     @Override
+    public Particle scale(float factor)
+    {
+        // The flash draws itself at scaleMultiplier every tick, so a requested size has to go
+        // through applyScale rather than ParticleBase's bounding-box-only scale.
+        return applyScale(factor);
+    }
+
+    @Override
     public int getLightColor(float partialTick)
     {
         return 0xF000F0;

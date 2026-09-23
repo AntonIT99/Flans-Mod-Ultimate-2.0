@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -53,6 +55,8 @@ public final class ModUtils
 {
     private static final GameProfile BLOCK_BREAK_FAKE_PLAYER = new GameProfile(
         UUID.fromString("8b90a6f3-93ce-4a42-bd86-88ec5eb17b5d"), "[FlansMod]");
+    /** The value the defaulted item registry hands back for any id it does not know. */
+    private static final ResourceLocation AIR_ID = ResourceLocation.fromNamespaceAndPath("minecraft", "air");
 
     public static boolean isVehicleLike(Entity entity)
     {
@@ -177,6 +181,28 @@ public final class ModUtils
         return Optional.empty();
     }
 
+    /**
+     * Display name of a content pack type, exactly as the player reads it in their own inventory.
+     * The generated language file is the single source of truth: it is keyed by shortname and seeded from the
+     * content pack's own {@code .lang} files, falling back to the type definition's {@code Name} line only where
+     * the pack ships no translation. Types without an item (player classes, teams, loadout pools) have no
+     * translation key, so those keep the {@code Name} line.
+     *
+     * @see com.flansmodultimate.ContentManager
+     */
+    public static Component getDisplayName(@Nullable InfoType infoType)
+    {
+        return getItemStack(infoType)
+            .map(ItemStack::getHoverName)
+            .orElseGet(() -> Component.literal(infoType == null ? StringUtils.EMPTY : infoType.getName()));
+    }
+
+    /** {@link #getDisplayName(InfoType)} as plain text, for the string-based font and layout helpers. */
+    public static String getDisplayNameString(@Nullable InfoType infoType)
+    {
+        return getDisplayName(infoType).getString();
+    }
+
     public static Optional<Item> getItem(@Nullable InfoType infoType)
     {
         if (infoType != null && infoType.getType().isHasItem())
@@ -184,6 +210,22 @@ public final class ModUtils
             return Optional.ofNullable(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
         }
         return Optional.empty();
+    }
+
+    /**
+     * The Forge item registry is a defaulted registry, so an unknown id resolves to {@code minecraft:air}
+     * instead of null. Passing that on would hand callers a present-but-empty stack and hide the failure,
+     * so an air result is only accepted when air is what was actually asked for.
+     */
+    private static Optional<Item> resolveItem(@Nullable ResourceLocation id)
+    {
+        if (id == null)
+            return Optional.empty();
+
+        Item item = BuiltInRegistries.ITEM.get(id);
+        if (item == null || (item == Items.AIR && !AIR_ID.equals(id)))
+            return Optional.empty();
+        return Optional.of(item);
     }
 
     /**
@@ -245,30 +287,33 @@ public final class ModUtils
         }
     }
 
+    /**
+     * Resolves a block from a registry name. Numeric ids are a 1.7.10 / 1.12 legacy syntax: since 1.13 numeric ids are
+     * a dynamic runtime palette, so resolving them would yield an arbitrary block. Such ids are therefore rejected.
+     */
     public static Optional<BlockState> getBlockState(String id)
     {
-        //Warning: Block.stateById() probably not working correctly in 1.20+ -> TODO: use a mapping from 1.12?
         if (isInteger(id))
         {
-            return Optional.of(Block.stateById(Integer.parseInt(id)));
+            FlansMod.log.warn("Numeric block id '{}' is not supported since Minecraft 1.13, use a registry name such as 'minecraft:stone' instead", id);
+            return Optional.empty();
         }
-        else
-        {
-            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(BuiltInRegistries.BLOCK::get).map(Block::defaultBlockState);
-        }
+
+        return Optional.ofNullable(ResourceLocation.tryParse(id)).map(BuiltInRegistries.BLOCK::get).map(Block::defaultBlockState);
     }
 
+    /**
+     * Resolves an item from a registry name. Numeric ids are rejected, see {@link #getBlockState(String)}.
+     */
     public static Optional<ItemStack> getItemStack(String id)
     {
-        //Warning: Item.byId() probably not working correctly in 1.20+ -> TODO: use a mapping from 1.12?
         if (isInteger(id))
         {
-            return Optional.of(new ItemStack(Item.byId(Integer.parseInt(id))));
+            FlansMod.log.warn("Numeric item id '{}' is not supported since Minecraft 1.13, use a registry name such as 'minecraft:stone' instead", id);
+            return Optional.empty();
         }
-        else
-        {
-            return Optional.ofNullable(ResourceLocation.tryParse(id)).map(BuiltInRegistries.ITEM::get).map(ItemStack::new);
-        }
+
+        return resolveItem(ResourceLocation.tryParse(id)).map(ItemStack::new);
     }
 
     public static boolean isGlass(BlockState state)

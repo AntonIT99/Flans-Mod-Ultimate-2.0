@@ -46,8 +46,7 @@ public interface IControllable
 	 * @return The player's 3rd person view distance
 	 */
 	float getCameraDistance();
-	
-	@OnlyIn(Dist.CLIENT)
+
     LivingEntity getCamera();
 
 	Seat getSeat(LivingEntity living);

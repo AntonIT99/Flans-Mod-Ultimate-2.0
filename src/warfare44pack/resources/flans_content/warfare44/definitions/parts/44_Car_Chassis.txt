@@ -1,0 +1,11 @@
+// Identity
+Name Car Chassis
+ShortName 44_Car_Chassis
+Category Misc
+
+// Rendering
+Icon 44_Car_Chassis
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 8

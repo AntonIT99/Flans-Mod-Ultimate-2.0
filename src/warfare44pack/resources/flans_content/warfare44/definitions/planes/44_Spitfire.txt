@@ -1,0 +1,120 @@
+// Identity
+Name Supermarine Mk.IX Spitfire
+ShortName 44_Spitfire
+Description British Fighter Aircraft__Uses Browning .30 Cal Ammo / 20mm Aircraft Ammo__Year Introduced : 1942
+
+// Rendering
+Icon 44_Spitfire
+Model W44.Spitfire
+Texture Skin44_Spitfire
+CameraDistance 10.0
+
+// Recipe and inventory
+AddRecipeParts core 1 44_FighterAircraftBody
+AddRecipeParts leftWing 1 44_20mmCannon 2 44_30Cal
+AddRecipeParts rightWing 1 44_20mmCannon 2 44_30Cal
+CargoSlots 30
+BombSlots 0
+MissileSlots 2
+FuelTankSize 6000
+
+// Paintjobs
+advpaintjob Australian 44_Spitfire_Australian 44_Spitfire_Australian AddDye 4 cyan
+advpaintjob Desert 44_Spitfire_Desert 44_Spitfire_Desert AddDye 4 yellow
+advpaintjob Desert2 44_SpitfireDesert2 44_SpitfireDesert2 AddDye 4 brown
+AddDye 3 cyan
+AddDye 5 green
+
+// Real-world specifications
+RealMassKg 3370
+RealEnginePowerHp 1565
+RealMaxSpeedKmh 650
+RealWingSpanM 11.23
+RealWingAreaM2 22.48
+RealClimbRateMs 19.5
+
+// Movement
+Mode Plane
+MaxThrottle 2.15
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1.5
+TurnRightSpeed 1.5
+LookUpSpeed 2.5
+LookDownSpeed 2.5
+RollLeftSpeed 2.5
+RollRightSpeed 2.5
+RestingPitch 15.0
+Drag 1.0
+
+// Wheels and tracks
+WheelPosition 0 16 -10 -29
+WheelPosition 1 16 -10 29
+WheelPosition 2 -152 22 0
+WheelSpringStrength 0.125
+Propeller 0 67 38 0 nose 44_Metal_Propeller
+
+// Weapons
+Primary Gun
+Secondary Missile
+ReadWeaponsFromGunTypes true
+ShootDelayPrimary 3
+ShootDelaySecondary 3
+ModePrimary FullAuto
+ModeSecondary FullAuto
+AlternatePrimary False
+AlternateSecondary False
+BulletSpread 4
+BulletSpeed 12
+BulletDetection 10
+AllowAllAmmo False
+AddAmmo 44_20mmAircraftAmmo
+ShootPointPrimary 23 25 72 core 44_30Cal
+ShootPointPrimary 23 25 -72 core 44_30Cal
+ShootPointPrimary 21 27 93 core 44_30Cal
+ShootPointPrimary 21 27 -93 core 44_30Cal
+ShootPointSecondary 52 22 55 core
+ShootPointSecondary 52 22 -55 core
+ShootParticlesPrimary crit 0.4 0 0
+ShootParticlesPrimary crit 0.4 -0.1 0
+ShootParticlesPrimary crit 0.4 0.1 0
+ShootParticlesPrimary crit 0.4 0 -0.1
+ShootParticlesPrimary crit 0.4 0 0.1
+ShootParticlesPrimary flansmod.fmflame 0 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+IsExplosionWhenDestroyed true
+CollisionDamageEnable true
+CollisionDamageThrottle 0.21
+CollisionDamageTimes 20
+
+// Parts and collision
+SetupPart core 450 -150 9 -17 220 48 34
+SetupPart rightWing 275 -45 17 17 58 22 105
+SetupPart leftWing 275 -45 17 -123 58 22 105
+CollisionPoint 45 36 0 core
+CollisionPoint -9 31 111 core
+CollisionPoint -9 31 -111 core
+CollisionPoint -116 36 0 core
+
+// Seats
+Pilot -25 32 0
+Passengers 0
+
+// Sounds
+StartSound FighterStart
+StartSoundLength 22
+PropSound FighterEngine
+PropSoundLength 30
+ShootSoundPrimary Plane30CalShoot
+ShootSoundSecondary Spitfire_20mmShoot
+
+// Effects
+AddEmitter largesmoke 1 [40,37,14] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [40,37,14] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter largesmoke 1 [40,37,-14] [0,0,0] [0,1.5,0] 0.02 0.07 0 1 core
+AddEmitter flame 1 [40,37,-14] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [40,37,14] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [40,37,14] [0,0,0] [0,2,0] 0.5 0.51 0 1 core
+AddEmitter explode 1 [40,37,-14] [0,0,0] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter flame 1 [40,37,-14] [0,0,0] [0,2,0] 0.5 0.51 0 1 core

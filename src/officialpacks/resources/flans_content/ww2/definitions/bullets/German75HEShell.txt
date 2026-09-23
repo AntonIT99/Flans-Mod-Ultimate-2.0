@@ -1,0 +1,41 @@
+// Identity
+Name German 75 mm Sprgr. 34 HE (KwK 40)
+ShortName German75HEShell
+Description High-explosive ammunition for the 7.5 cm KwK 40, StuK 40 and PaK 40
+Bomb False
+Shell True
+
+// Item and rendering
+Model Bullet
+Colour 255 255 255
+Icon TankShell75gHE
+HasLight True
+
+// Ammunition
+MaxStackSize 8
+RoundsPerItem 1
+
+// Ballistics
+Mass 5740
+MuzzleVelocity 550
+FallSpeed 1
+PenetrationAt100m 10
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Damage and detonation
+ExplosiveMassTNTg 725
+FragType HE_SHELL
+Damage 50
+DamageVsLiving 100
+DamageVsVehicles 25
+Explosion 3
+ExplodeOnImpact True
+Fuse 200
+Fire 0
+
+// Sounds and particles
+SmokeTrail True
+TrailParticleType flansmod.fmflame
+FlakParticles 6

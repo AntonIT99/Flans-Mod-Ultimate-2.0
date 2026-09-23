@@ -1,0 +1,20 @@
+// Identity
+Name Pistol Stock
+ShortName 44_PistolStock
+Description Stock Attachment : _Luger _Mauser M712
+AttachmentType stock
+
+// Rendering
+Icon 44_PistolStock
+Model W44.PistolStock
+ModelScale 0.15
+Texture Skin44_PistolStock
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.8
+RecoilMultiplier 0.8
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

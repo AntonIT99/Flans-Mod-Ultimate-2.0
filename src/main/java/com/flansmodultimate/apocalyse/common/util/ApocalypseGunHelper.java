@@ -43,7 +43,9 @@ public final class ApocalypseGunHelper
         {
             if (!(type instanceof GunType gun))
                 continue;
-            if (gun.isDeployable() || gun.isShield() || !gun.isUsableByPlayers())
+            // As 1.12.2, only guns allowed in dungeon loot arm the wasteland, which keeps
+            // novelty weapons such as the Nerf blasters out of it.
+            if (gun.isDeployable() || gun.isShield() || !gun.isUsableByPlayers() || gun.getDungeonChance() == 0)
                 continue;
             if (preferSemiAuto && gun.getMode() != EnumFireMode.SEMIAUTO)
                 continue;
@@ -101,6 +103,21 @@ public final class ApocalypseGunHelper
 
         ShootableType selected = ammoTypes.get(random.nextInt(ammoTypes.size()));
         int count = selected.getMaxStackSize() > 1 && random.nextBoolean() ? 1 + random.nextInt(Math.min(3, selected.getMaxStackSize())) : 1;
+        return ModUtils.getItemStack(selected, count).map(stack -> {
+            if (stack.getItem() instanceof ShootableItem)
+                ShootableItem.setRoundsRemaining(stack, Math.max(1, selected.getRoundsPerItem()));
+            return stack;
+        });
+    }
+
+    /** A spare magazine for {@code gun}, for stocking the cargo of whatever carries it. */
+    public static Optional<ItemStack> spareAmmoFor(GunType gun, RandomSource random)
+    {
+        List<BulletType> ammo = combatAmmoTypes(gun, false);
+        if (ammo.isEmpty())
+            return Optional.empty();
+        BulletType selected = ammo.get(random.nextInt(ammo.size()));
+        int count = selected.getMaxStackSize() > 1 ? 1 + random.nextInt(Math.min(3, selected.getMaxStackSize())) : 1;
         return ModUtils.getItemStack(selected, count).map(stack -> {
             if (stack.getItem() instanceof ShootableItem)
                 ShootableItem.setRoundsRemaining(stack, Math.max(1, selected.getRoundsPerItem()));

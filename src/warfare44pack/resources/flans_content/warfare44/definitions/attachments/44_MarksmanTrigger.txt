@@ -1,0 +1,17 @@
+// Identity
+Name Marksman Trigger
+ShortName 44_MarksmanTrigger
+Description Gadget Attachment : _Increases Accuracy by 10% _Increases Recoil by 5%
+AttachmentType gadget
+
+// Rendering
+Icon 44_MarksmanTrigger
+
+// Modifiers
+Silencer false
+DamageMultiplier 1.0
+MeleeDamageMultiplier 1.0
+SpreadMultiplier 0.9
+RecoilMultiplier 1.05
+BulletSpeedMultiplier 1.0
+ReloadTimeMultiplier 1.0

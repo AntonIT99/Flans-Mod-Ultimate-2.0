@@ -1,0 +1,18 @@
+// Identity
+Name German Splittermuster Camo Smock
+ShortName 44_GermanSplittermusterCamoSmock
+Type Body
+
+// Rendering
+Icon 44_GermanSplittermusterCamoSmock
+Model W44.GermanCamoSmock
+ModelScale 1
+ArmorTexture Skin44_SplittermusterCamoSmock
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

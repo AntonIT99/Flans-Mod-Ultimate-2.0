@@ -1,0 +1,11 @@
+// Identity
+Name Fuselage
+ShortName 44_Fuselage
+Category Misc
+
+// Rendering
+Icon 44_Fuselage
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

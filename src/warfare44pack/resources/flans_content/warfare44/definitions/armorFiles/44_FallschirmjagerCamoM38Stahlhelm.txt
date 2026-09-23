@@ -1,0 +1,18 @@
+// Identity
+Name Fallschirmjager Camo M38 Stahlhelm
+ShortName 44_FallschirmjagerCamoM38Stahlhelm
+Type Helmet
+
+// Rendering
+Icon 44_FallschirmjagerCamoM38Stahlhelm
+Model W44.FallschirmjagerCamoM38Stahlhelm
+ModelScale 1
+ArmorTexture Skin44_FallschirmjagerCamo
+
+// Protection
+ArmorPoints 2
+Defence 0.04
+BulletDefence 0.02
+Toughness 0
+PenetrationResistance 1.25
+SmokeProtection false

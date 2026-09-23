@@ -1,0 +1,36 @@
+// Identity
+Name Blaster Stun Ammo
+ShortName blasterStunAmmo
+
+// Item and rendering
+Model wolffstarwars.StunBeam
+Colour 255 255 255
+Texture wolffstarwars_laser_blue
+Icon laserblasterammo
+RoundsPerItem 50
+ModelScale 1.5
+
+// Ballistics
+FallSpeed 0
+
+// Damage and detonation
+Damage 0
+Explosion 0
+ExplodeOnImpact false
+Fuse 0
+Fire 0
+BreaksGlass false
+HitBoxSize 1.0
+Penetrates True
+PotionEffect 6 1 3
+PotionEffect 8 800 128
+PotionEffect 2 800 8
+PotionEffect 4 800 5
+PotionEffect 8 800 128
+PotionEffect 15 800 1
+PotionEffect 18 1200 5
+
+// Sounds and particles
+FlakParticles 0
+HitSound bullet
+SmokeTrail False

@@ -1,0 +1,11 @@
+// Identity
+Name Light Tank Chassis
+ShortName 44_Light_Tank_Chassis
+Category Chassis
+
+// Rendering
+Icon 44_Light_Tank_Chassis
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 4

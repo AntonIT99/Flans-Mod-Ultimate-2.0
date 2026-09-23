@@ -1,11 +1,20 @@
+// Identity
 Name U.S. Marine Helmet
 ShortName marineHelmet
+
+// Item and rendering
 Icon MarineHelmet
 Colour 255 255 255
-Type Hat
-Defence 0.1
 ArmourTexture Marine
+
+// Recipe
 Enchantability 0
-Toughness 0
 Durability 0
-DamageReductionAmount 2
+
+// Protection
+Type Hat
+Defence 0.06
+Toughness 1
+BulletDefence 0.05
+PenetrationResistance 1.50
+ArmorPoints 2

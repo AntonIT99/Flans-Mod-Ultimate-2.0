@@ -1,0 +1,16 @@
+// Identity
+Name Mecha Hydraulics
+ShortName SMP_Part_Misc_Hydraulics
+
+// Model and Rendering
+Icon Icon_SMP_Part_Misc_Hydraulics
+
+// Recipe and Inventory
+Recipe I SMP_Part_Mat_Plate_DuraSteel W bucketWater P pistonBase
+IPI
+IWI
+IPI
+RecipeOutput 1
+Category Misc
+PartBoxRecipe
+StackSize 64

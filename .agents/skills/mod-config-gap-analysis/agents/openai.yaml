@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mod Config Gap Analysis"
+  short_description: "Find reference mod config options missing in target"
+  default_prompt: "Use $mod-config-gap-analysis to compare a reference mod configuration against the default target and report reference options with no equivalent."

@@ -1,5 +1,8 @@
+// Identity
 Name Assault
 ShortName CriminalAssault
+
+// Items
 AddItem fnscar+flanMWACOG
 AddItem desertEagle
 AddItem m67 2

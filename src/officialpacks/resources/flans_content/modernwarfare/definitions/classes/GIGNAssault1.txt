@@ -1,5 +1,8 @@
+// Identity
 Name Light Assault
 ShortName gignAssault1
+
+// Items
 AddItem m4Carbine
 AddItem m1911
 AddItem m67 2

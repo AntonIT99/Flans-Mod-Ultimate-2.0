@@ -1,0 +1,35 @@
+// Identity
+Name NATO 7.62mm Ammo for M134 - 1000 Bullet Box
+ShortName AmmoNATO762mmM134
+Description Ammunition for the M134 Minigun
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon IconAmmoNATO762mmM134
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 1000
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 0.1
+Penetrates False
+
+// Ballistics and Damage
+Mass 9.5
+Damage 4
+DamageVsVehicles 1
+Explosion 0
+Fire 0
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail False

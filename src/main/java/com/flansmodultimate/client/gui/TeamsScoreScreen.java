@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.Comparator;
 import java.util.List;
@@ -16,9 +15,6 @@ import java.util.List;
 /** Legacy-styled team and free-for-all scoreboard. */
 public final class TeamsScoreScreen extends Screen
 {
-    private static final ResourceLocation DM_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_scores.png");
-    private static final ResourceLocation TEAM_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_scores_2.png");
-
     public TeamsScoreScreen()
     {
         super(Component.translatable("gui.flansmod.teams.scores"));
@@ -47,10 +43,10 @@ public final class TeamsScoreScreen extends Screen
         int guiHeight = 78 + 9 * lines;
         int left = width / 2 - 156;
         int top = height / 2 - guiHeight / 2;
-        graphics.blit(TEAM_TEXTURE, left, top, 100, 0, 312, 66, 512, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES2, left, top, 100, 0, 312, 66, 512, 256);
         for (int line = 0; line < lines; line++)
-            graphics.blit(TEAM_TEXTURE, left, top + 66 + 9 * line, 100, 71, 312, 9, 512, 256);
-        graphics.blit(TEAM_TEXTURE, left, top + 66 + lines * 9, 100, 168, 312, 12, 512, 256);
+            graphics.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES2, left, top + 66 + 9 * line, 100, 71, 312, 9, 512, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES2, left, top + 66 + lines * 9, 100, 168, 312, 12, 512, 256);
 
         graphics.drawString(font, state.getMapName(), left + 6, top + 6, 0xFFFFFF, false);
         graphics.drawString(font, state.getGameType(), left + 306 - font.width(state.getGameType()), top + 6, 0xFFFFFF, false);
@@ -85,10 +81,10 @@ public final class TeamsScoreScreen extends Screen
         int guiHeight = 34 + 9 * players.size();
         int left = width / 2 - 128;
         int top = height / 2 - guiHeight / 2;
-        graphics.blit(DM_TEXTURE, left, top, 0, 45, 256, 24, 256, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES, left, top, 0, 45, 256, 24, 256, 256);
         for (int line = 0; line < players.size(); line++)
-            graphics.blit(DM_TEXTURE, left, top + 24 + 9 * line, 0, 71, 256, 9, 256, 256);
-        graphics.blit(DM_TEXTURE, left, top + 24 + 9 * players.size(), 0, 87, 256, 10, 256, 256);
+            graphics.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES, left, top + 24 + 9 * line, 0, 71, 256, 9, 256, 256);
+        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES, left, top + 24 + 9 * players.size(), 0, 87, 256, 10, 256, 256);
         graphics.drawCenteredString(font, state.getGameType() + " — " + timeText(state), width / 2, top + 4, 0xFFFFFF);
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.name"), left + 8, top + 14, 0xFFFFFF, false);
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.score"), left + 100, top + 14, 0xFFFFFF, false);

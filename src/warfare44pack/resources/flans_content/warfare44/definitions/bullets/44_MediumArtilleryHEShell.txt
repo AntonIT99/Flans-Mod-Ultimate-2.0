@@ -1,0 +1,49 @@
+// Identity
+Name Medium Artillery HE Shell
+ShortName 44_MediumArtilleryHEShell
+Description 105mm-120mm HE Artillery Shell
+
+// Rendering
+Icon 44_MediumArtilleryHEShell
+Colour 255 255 255
+HasLight True
+
+// Recipe and inventory
+MaxStackSize 1
+RoundsPerItem 1
+
+// Ammunition
+Bomb False
+Shell True
+
+// Ballistics
+MuzzleVelocity 470
+FallSpeed 1.0
+HitBoxSize 0.15
+Penetrates False
+PenetrationAt100m 20
+BreaksGlass True
+
+// Damage
+Mass 14810
+DamageVsLiving 300
+DamageVsVehicles 540
+Fire 0
+
+// Explosion
+ExplosiveMassTNTKg 1.38
+Explosion 4
+ExplosionRadius 6.0
+ExplosionDamageVsLiving 5.30
+ExplosionDamageVsVehicle 1.5
+ExplosionDamageVsPlane 5.0
+ExplodeOnImpact True
+Fuse 500
+
+// Effects
+SmokeTrail True
+TrailParticleType explode
+FlakParticles 150
+FlakParticleType largeexplode
+FlareParticleCount 10
+DebrisParticleCount 5

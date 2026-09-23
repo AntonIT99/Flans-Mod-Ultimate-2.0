@@ -1,0 +1,47 @@
+{
+  "has_precipitation": false,
+  "temperature": 2,
+  "downfall": 0,
+  "effects": {
+    "sky_color": 13158520,
+    "fog_color": 13684864,
+    "water_color": 11052604,
+    "water_fog_color": 7368740,
+    "grass_color": 10596608,
+    "foliage_color": 9470285
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {
+    "air": [
+      "minecraft:canyon"
+    ]
+  },
+  "features": [
+    [],
+    [
+      "flansmodapocalypse:sulphur_lake"
+    ],
+    [],
+    [
+      "flansmodapocalypse:monster_room"
+    ],
+    [],
+    [],
+    [
+      "flansmodapocalypse:ore_dirt",
+      "flansmodapocalypse:ore_gravel",
+      "flansmodapocalypse:ore_diorite",
+      "flansmodapocalypse:ore_granite",
+      "flansmodapocalypse:ore_andesite",
+      "flansmodapocalypse:ore_iron",
+      "flansmodapocalypse:ore_coal"
+    ],
+    [],
+    [],
+    [],
+    [
+      "flansmodapocalypse:wasteland"
+    ]
+  ]
+}

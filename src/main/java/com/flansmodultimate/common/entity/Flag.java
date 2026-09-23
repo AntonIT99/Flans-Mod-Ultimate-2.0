@@ -238,6 +238,15 @@ public final class Flag extends Entity implements ITeamObject
     }
 
     @Override
+    public boolean hurt(@NotNull DamageSource source, float amount)
+    {
+        // Still invulnerable: the running game type is only told about the attempt.
+        if (!level().isClientSide)
+            TeamsManager.getInstance().teamEntityAttacked(this, source);
+        return false;
+    }
+
+    @Override
     public UUID getObjectId()
     {
         return getUUID();

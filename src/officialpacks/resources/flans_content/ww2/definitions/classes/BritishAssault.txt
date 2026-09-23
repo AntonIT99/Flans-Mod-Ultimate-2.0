@@ -1,5 +1,8 @@
+// Identity
 Name Assault
-ShortName britishAssault
+ShortName OfficialWW2_BritishAssault
+
+// Items
 AddItem sten
 AddItem webley
 AddItem millsBomb 3

@@ -1,0 +1,62 @@
+// Identity
+Name TT33
+ShortName 44_TT33
+Description Soviet Pistol
+
+// Rendering
+Icon 44_TT33
+Model W44.TT33
+ModelScale 0.7
+Texture Skin44_TT33
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_TT33Ammo
+
+// Handling
+Mode SemiAuto
+OneHanded True
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 300.0
+ReloadTime 50
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 420.0
+Dispersion 0.7
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1.5
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound ColtShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound LugerReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

@@ -1,0 +1,62 @@
+// Identity
+Name M1911 Colt
+ShortName 44_Colt
+Description American Pistol
+
+// Rendering
+Icon 44_Colt
+Model W44.Colt
+ModelScale 0.85
+Texture Skin44_Colt
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_ColtAmmo
+
+// Handling
+Mode SemiAuto
+OneHanded True
+Deployable False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 300.0
+ReloadTime 50
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 250.0
+Dispersion 0.72
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 3.0
+RandomRecoilRange 2
+RandomRecoilYawRange 0.75
+DecreaseRecoil 1.5
+DecreaseRecoilYaw 2
+
+// Attachments
+AllowAttachments 44_OpticalSight 44_APBullet 44_HPBullet 44_MatchTrigger 44_MarksmanTrigger
+AllowBarrelAttachments false
+AllowScopeAttachments true
+AllowStockAttachments false
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound ColtShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound LugerReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

@@ -1,0 +1,67 @@
+// Identity
+Name Model10 TrenchGun
+ShortName 44_Model10TrenchGun
+Description American Pump Shotgun
+
+// Rendering
+Icon 44_Model10TrenchGun
+Model W44.Model10TrenchGun
+ModelScale 0.25
+Texture Skin44_Model10TrenchGun
+Colour 255 255 255
+DeployedModel None
+FlashModel W44.W44MuzzleFlash
+FlashTexture Skin44_MuzzleFlash1
+CasingModel W44.W44BulletCasing
+CasingTexture Skin44_BulletCasing
+
+// Ammunition
+Ammo 44_Model10TrenchGunAmmo
+NumBullets 5
+
+// Handling
+Mode SemiAuto
+OneHanded False
+Deployable False
+MoveSpeedModifier 0.85
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Fire rate and reload
+RoundsPerMin 90.0
+ReloadTime 93
+ShowReloadTime true
+
+// Ballistics
+MuzzleVelocity 400.0
+Dispersion 1.2
+ShowAccuracy true
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 6
+RandomRecoilRange 5
+RandomRecoilYawRange 0.75
+DecreaseRecoil 3.5
+DecreaseRecoilYaw 2.0
+
+// Attachments
+AllowAllAttachments false
+AllowAttachments 44_OpticalSight 44_PaddedStock 44_MatchTrigger 44_MarksmanTrigger 44_FieldmodifiedRiflingBarrel 44_SmoothboreBarrel 44_StainlessSteelBarrel
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments false
+AllowGadgetAttachments true
+NumGenericAttachmentSlots 1
+
+// Sounds
+ShootSound Model10TrenchGunShoot
+DistortSound False
+GunSoundRange 400
+ReloadSound Model10TrenchGunReload
+ReloadSoundRange 5
+EmptyClickSound emptyclick

@@ -1,28 +1,10 @@
+// Identity
 Name M1 Garand
 ShortName m1Garand
-//The ammo this gun uses (shortName)
-Ammo m1GarandAmmo
+
+// Item and rendering
 Icon m1garand
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-//Reload time in ticks, 1/20ths of a second
-ReloadTime 30
-CanForceReload false
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
-Recoil 5
-//Damage in half hearts
-Damage 7
-//The higher this value, the more the bullets spread
-Accuracy 3
-//Time in ticks between rounds
-ShootDelay 5
-ShootSound m1garandShoot
-ReloadSound m1garandReload
-Mode SemiAuto
-//Bullet speed, default 3.0
-BulletSpeed 10.0
-Scope None
-Deployable False
 DeployedModel None
 Model ww2.M1Garand
 Texture m1garand
@@ -33,3 +15,28 @@ Paintjob m1garand_frog m1garand_frog green 1 brown 1
 Paintjob m1garand_green m1garand_green green 2
 Paintjob m1garand_oak m1garand_oak brown 2
 ModelScale 0.35
+
+// Ammunition
+Ammo m1GarandAmmo
+ReloadTime 30
+CanForceReload false
+
+// Operation
+Mode SemiAuto
+Deployable False
+RoundsPerMin 240.0
+
+// Ballistics
+Recoil 5
+MuzzleVelocity 850.0
+Dispersion 0.18
+
+// Damage and protection
+Damage 7
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound m1garandShoot
+ReloadSound m1garandReload

@@ -1,0 +1,49 @@
+// Identity
+Name 120 mm DM11 HE-FRAG-T Shell
+ShortName ShellNATO120mmDM11HE
+Description Programmable high-explosive ammunition for the Leopard 2 Rh-120 L/55
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon IconShellNATO120mmDM11HE
+
+// Recipe and Inventory
+RoundsPerItem 1
+MaxStackSize 16
+RecipeOutput 5
+Recipe S SMP_Part_Misc_Ammo_Shell G gunpowder F SMP_Part_Misc_Ammo_Fuse B SMP_Part_Mat_Block_Titan
+ G 
+GBG
+ S 
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+Bomb False
+Shell True
+
+// Ballistics and Damage
+Mass 12900
+MuzzleVelocity 1000
+ExplosiveMassTNTKg 2.6
+PenetrationAt100m 30
+FragType HE_SHELL
+Damage 100
+DamageVsVehicles 100
+Explosion 4
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 24
+FlakParticleType hugeexplosion
+SmokeTrail True
+TrailParticleType flame
+HasLight True

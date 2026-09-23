@@ -1,0 +1,19 @@
+// Identity
+Name Fuel Barrel
+ShortName SMP_Part_Fuel_FuelBarrel
+
+// Model and Rendering
+Icon Icon_SMP_Part_Fuel_FuelBarrel
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Barrel_Oil
+MM 
+   
+   
+RecipeOutput 1
+Category Fuel
+PartBoxRecipe
+StackSize 8
+
+// Movement and Physics
+Fuel 8000

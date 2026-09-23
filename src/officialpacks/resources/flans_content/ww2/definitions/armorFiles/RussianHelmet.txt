@@ -1,7 +1,16 @@
+// Identity
 Name Russian WW2 Helmet
 ShortName russianHelmet
+
+// Item and rendering
 Icon russianhelmet
 Colour 255 255 255
-Type Helmet
-Defence 0.1
 ArmourTexture russian
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

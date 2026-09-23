@@ -1,5 +1,8 @@
+// Identity
 Name Combat Medic
 ShortName SWATCombatMedic
+
+// Items
 AddItem spas
 AddItem m9
 AddItem m67 2

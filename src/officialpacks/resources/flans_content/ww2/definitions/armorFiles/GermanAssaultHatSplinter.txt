@@ -1,40 +1,20 @@
-//---Standard Armor Config for Flans Mod----------
-//Created by Minecraft-SMP Toolbox 2.2.0.0
-
-
-//---Standard-------------------------------------
-// Naming
+// Identity
 Name GermanAssaultHatSplinter
 ShortName GermanAssaultHatSplinter
-ItemID Your ID
 
-
-// Visuals
+// Item and rendering
 ModelScale 1
 Icon germanahat
-
-// Recipe
-
-
-//Misc
-
-//------------------------------------------------
-
-//---Armor----------------------------------------
-//Type
-Type Helmet
-Defence 0.1
-
-
-//Visuals
 Model ww2.GermanAssaultHat
 ArmorTexture gassaultsplinter
 
+// Protection
+Type Helmet
+Defence 0.01
+BulletDefence 0.00
+PenetrationResistance 1.00
+ArmorPoints 0
+Toughness 0
 
-//Armor Settings
-
-
-//Helmet Settings
+// Effects
 SmokeProtection false
-
-//------------------------------------------------

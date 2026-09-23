@@ -1,0 +1,42 @@
+// Identity
+Name Bren Magazine
+ShortName 44_BrenAmmo
+
+// Rendering
+Icon 44_BrenAmmo
+Model Bullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 30
+
+// Ballistics
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates True
+BreaksGlass True
+
+// Damage
+Mass 11.3
+Damage 1
+DamageVsLiving 12
+DamageVsVehicles 1
+DamageVsPlanes 8
+Fire 0
+
+// Explosion
+Explosion 0
+ExplodeOnImpact False
+Fuse 0
+
+// Effects
+SmokeTrail False
+FlakParticles 0
+
+// Sounds
+HitSound bullet
+HitSound LargeImpact
+HitSoundRange 15
+HitSoundEnable true
+EntityHitSoundEnable true

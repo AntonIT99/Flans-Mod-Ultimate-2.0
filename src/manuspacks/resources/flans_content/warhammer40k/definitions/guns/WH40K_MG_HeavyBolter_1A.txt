@@ -1,0 +1,34 @@
+// Identity
+Name Imperial Guard Heavy Bolter
+ShortName WH40K_MG_HeavyBolter_1A
+
+// Model and Rendering
+Icon Icon_WH40K_MG_HeavyBolter_1A
+DeployedModel Manus_WH40K.MG.WH40K_MG_HeavyBolter_1
+DeployedTexture Skin_WH40K_MG_HeavyBolter_1A
+
+// Recipe and Inventory
+Ammo WH40K_Ammo_HeavyBolter
+
+// Weapons
+Deployable True
+Scope None
+Mode FullAuto
+Recoil 1
+ReloadTime 100
+TopViewLimit 20
+BottomViewLimit 20
+SideViewLimit 45
+PivotHeight 0.5
+StandBackDistance 1.0
+RoundsPerMin 500.0
+Dispersion 0.32
+
+// Ballistics and Damage
+Damage 1
+MuzzleVelocity 320.0
+
+// Sounds
+DistortSound False
+ShootSound boltgun_fire
+ReloadSound boltgun_reload

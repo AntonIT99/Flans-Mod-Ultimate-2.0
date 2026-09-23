@@ -1,0 +1,190 @@
+// Identity
+Name Studebaker BM13-N "Katyusha"
+ShortName 44_StudebakerBM13N
+Description Soviet Truck - mounted rocket launcher [Lend Lease]__Uses : Unguided Rocket__Year Introduced : 1939
+
+// Rendering
+Icon 44_StudebakerBM13N
+Model W44.StudebakerBM13N
+ModelScale 1.15
+Texture Skin44_StudebakerBM13N
+RotateWheels True
+CameraDistance 10.5
+
+// Recipe and inventory
+AddRecipeParts core 1 44_Car_Chassis 4 44_Vehicle_Seat 8 44_Metal_Tube
+AddRecipeParts frontLeftWheel 1 44_Car_Wheel
+AddRecipeParts frontRightWheel 1 44_Car_Wheel
+AddRecipeParts backLeftWheel 2 44_Car_Wheel
+AddRecipeParts backRightWheel 2 44_Car_Wheel
+CargoSlots 20
+ShellSlots 2
+FuelTankSize 2000
+
+// Paintjobs
+AddDye 5 green
+
+// Real-world specifications
+DriveType AWD
+RealMassKg 7200
+RealEnginePowerHp 87
+RealMaxSpeedKmh 72
+RealMaxReverseSpeedKmh 12
+
+// Movement
+Tank false
+FourWheelDrive true
+MaxThrottle 0.75
+MaxNegativeThrottle 0.5
+TurnLeftSpeed 0.5
+TurnRightSpeed 0.5
+CanRoll true
+CanRoll false
+SquashMobs True
+
+// Wheels and tracks
+WheelRadius 1.0
+WheelPosition 0 -32 -8 -18
+WheelPosition 1 -32 -8 18
+WheelPosition 2 32 -8 18
+WheelPosition 3 32 -8 -18
+WheelSpringStrength 0.5
+
+// Weapons
+Primary Shell
+ReadWeaponsFromGunTypes true
+ShootDelayPrimarySeconds 0.5
+ShootDelay 3
+ModePrimary FullAuto
+ModeSecondary FullAuto
+AlternatePrimary True
+AlternateSecondary False
+BulletSpread 5
+BulletSpeed 6
+BulletDetection 5
+AllowAllAmmo false
+AddAmmo 44_UnguidedRocket
+ShootPointPrimary -60 46 23 turret
+ShootPointPrimary -60 46 16 turret
+ShootPointPrimary -60 46 10 turret
+ShootPointPrimary -60 46 3 turret
+ShootPointPrimary -60 46 -3 turret
+ShootPointPrimary -60 46 -10 turret
+ShootPointPrimary -60 46 -16 turret
+ShootPointPrimary -60 46 -23 turret
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode -1.5 0 0
+ShootParticlesPrimary largesmoke -0.5 0 0.1
+ShootParticlesPrimary largesmoke -0.5 0 -0.1
+ShootParticlesPrimary largesmoke -0.5 0.06 0.06
+ShootParticlesPrimary largesmoke -0.5 0.06 -0.06
+ShootParticlesPrimary largesmoke -0.5 -0.06 0.06
+ShootParticlesPrimary largesmoke -0.5 -0.06 -0.06
+ShootParticlesPrimary largesmoke -0.5 -0.1 0
+ShootParticlesPrimary largesmoke -0.5 0.1 0
+ShootParticlesPrimary cloud -0.05 0 0.2
+ShootParticlesPrimary cloud -0.05 0 -0.2
+ShootParticlesPrimary cloud -0.05 0.13 0.13
+ShootParticlesPrimary cloud -0.05 0.13 -0.13
+ShootParticlesPrimary cloud -0.05 -0.13 0.13
+ShootParticlesPrimary cloud -0.05 -0.13 -0.13
+ShootParticlesPrimary cloud -0.05 -0.2 0
+ShootParticlesPrimary cloud -0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame -1 0 0
+ShootParticlesPrimary flansmod.fmflame -1.5 0 0
+ShootParticlesPrimary flansmod.fmflame -0.5 0 0
+ShootParticlesPrimary flansmod.fmflame -0.25 0 0
+ShootParticlesPrimary flansmod.fmflame -1.5 0 0
+ShootParticlesPrimary flansmod.fmflame -0.5 0 0.1
+ShootParticlesPrimary flansmod.fmflame -0.5 0 -0.1
+ShootParticlesPrimary flansmod.fmflame -0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame -0.5 0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame -0.5 -0.06 0.06
+ShootParticlesPrimary flansmod.fmflame -0.5 -0.06 -0.06
+ShootParticlesPrimary flansmod.fmflame -0.5 -0.1 0
+ShootParticlesPrimary flansmod.fmflame -0.5 0.1 0
+ShootParticlesPrimary flansmod.fmflame -0.05 0 0.2
+ShootParticlesPrimary flansmod.fmflame -0.05 0 -0.2
+ShootParticlesPrimary flansmod.fmflame -0.05 0.13 0.13
+ShootParticlesPrimary flansmod.fmflame -0.05 0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame -0.05 -0.13 0.13
+ShootParticlesPrimary flansmod.fmflame -0.05 -0.13 -0.13
+ShootParticlesPrimary flansmod.fmflame -0.05 -0.2 0
+ShootParticlesPrimary flansmod.fmflame -0.05 0.2 0
+ShootParticlesPrimary flansmod.fmflame -0.1 0 0.4
+ShootParticlesPrimary flansmod.fmflame -0.1 0 -0.4
+ShootParticlesPrimary flansmod.fmflame -0.1 0.26 0.26
+ShootParticlesPrimary flansmod.fmflame -0.1 0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame -0.1 -0.26 0.26
+ShootParticlesPrimary flansmod.fmflame -0.1 -0.26 -0.26
+ShootParticlesPrimary flansmod.fmflame -0.1 -0.4 0
+ShootParticlesPrimary flansmod.fmflame -0.1 0.4 0
+ShootParticlesSecondary crit 0.5 0 0
+
+// Armour and damage
+UseRealisticVehicleHealth true
+ArmorFrontMm 0
+ArmorSideMm 0
+ArmorRearMm 0
+ArmorTopMm 0
+ArmorBottomMm 0
+IsExplosionWhenDestroyed true
+
+// Parts and collision
+SetupPart core 300 -79 4 -25 145 47 50
+SetupPart frontLeftWheel 25 39 -10 15 21 21 6
+SetupPart frontRightWheel 25 39 -10 -20 21 21 6
+SetupPart backLeftWheel 25 -68 -10 13 46 21 11
+SetupPart backRightWheel 25 -68 -10 -24 46 21 11
+
+// Seats
+Driver 16 15 -8 -25 25 8 30
+Passengers 1
+Passenger 1 16 15 8 core
+RotatedDriverOffset 0 0 0
+DriverAimSpeed 0.35 0.25 0
+DriverYawBeforePitch false
+TurretOrigin -45 0 0
+
+// Optics
+hasScope true
+Gunsight warfare44_artysight
+gunsightZoom 0.5
+
+// Sounds
+StartSound JeepIdle
+StartSoundLength 7
+StartSoundRange 12
+EngineSound Engine_LT_Truck
+EngineSoundLength 39
+EngineSoundRange 50
+BackSound Engine_LT_Truck
+BackSoundLength 39
+BackSoundRange 25
+YawSound TurretTraverse1
+YawSoundLength 21
+PitchSound TurretTraverse2
+PitchSoundLength 20
+DriverTraverseSounds false
+ShootSoundPrimary Shoot_StalinOrgel
+ShootSoundSecondary None
+PlaceSoundPrimary TankPlace
+SoundsPlaceTimePrimary 60
+
+// Effects
+AddEmitter smoke 2 [-34,26,-23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [-34,26,23.25] [7,1,7] [0,0.5,0] -1 1 0 0.75 core
+AddEmitter smoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.75 turret
+AddEmitter largesmoke 3 [-34,26,-23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 3 [-34,26,23.25] [7,1,7] [0,1,0] -1 1 0 0.5 core
+AddEmitter largesmoke 2 [5,43,14] [3,1,3] [0,0.5,0] -1 1 0 0.5 turret
+AddEmitter largesmoke 1 [-34,26,-23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
+AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.7,0] 0.2 0.5 0 1 core
+AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
+AddEmitter largesmoke 3 [-35,-2,8] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
+AddEmitter largesmoke 1 [-35,-2,8] [1,1,1] [0,5,0] 0.7 0.75 0 1 core

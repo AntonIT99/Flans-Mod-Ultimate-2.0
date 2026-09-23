@@ -1,0 +1,39 @@
+// Identity
+Name 40x53 mm HEDP Grenade Belt - 50 Rounds
+ShortName AmmoNATO40mm
+Description Ammunition for the HK GMG 40x53 mm grenade machine gun
+
+// Model and Rendering
+Model Bullet
+Colour 255 255 255
+Icon IconAmmoNATO40mm
+
+// Recipe and Inventory
+MaxStackSize 1
+RoundsPerItem 50
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 1.0
+Penetrates False
+
+// Ballistics and Damage
+Mass 240
+MuzzleVelocity 241
+ExplosiveMassTNTg 43
+FragType HE_SHELL
+Damage 25
+DamageVsVehicles 25
+Explosion 2
+Fire 0
+
+// Sounds
+HitSound bullet
+
+// Effects
+FlakParticles 0
+SmokeTrail True
+TrailParticleType flansmod.fmsmoke

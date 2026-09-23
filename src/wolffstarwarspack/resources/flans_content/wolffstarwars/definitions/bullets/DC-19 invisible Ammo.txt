@@ -1,0 +1,28 @@
+// Identity
+Name DC-19 Ammo Invisible Ammo
+ShortName Dc19invisibleAmmo
+
+// Item and rendering
+Model wolffstarwars.LaserBeam
+Colour 255 255 255
+Texture skininvisible
+Icon laserblasterammo
+RoundsPerItem 10
+
+// Ballistics
+FallSpeed 0
+
+// Damage and detonation
+Damage 10
+Explosion 0
+ExplodeOnImpact false
+Fuse 0
+Fire 0
+BreaksGlass True
+HitBoxSize 0.1
+Penetrates False
+
+// Sounds and particles
+FlakParticles 0
+HitSound bullet
+SmokeTrail False

@@ -1,0 +1,43 @@
+// Identity
+Name FAB-500 Bomb
+ShortName BombUSSRFAB500
+Description Bomb for Tu-22M
+
+// Model and Rendering
+Model manus_modern_warfare.LargeBomb
+Colour 255 255 255
+Icon IconBombUSSRFAB500
+
+// Recipe and Inventory
+RoundsPerItem 1
+MaxStackSize 4
+RecipeOutput 2
+Recipe B SMP_Part_Misc_Ammo_BombBody T tnt F SMP_Part_Misc_Ammo_Fuse
+ F 
+TTT
+ B 
+
+// Behaviour
+FallSpeed 1.0
+ExplodeOnImpact True
+Fuse 200
+BreaksGlass True
+HitBoxSize 0.75
+Penetrates False
+Bomb True
+
+// Ballistics and Damage
+Mass 500000.0
+ExplosiveMassTNTKg 225
+FragType GP_BOMB
+Damage 100
+DamageVsVehicles 100
+Explosion 5
+Fire 0
+
+// Sounds
+HitSound bomb
+
+// Effects
+FlakParticles 0
+SmokeTrail False

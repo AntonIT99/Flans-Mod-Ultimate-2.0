@@ -1,0 +1,16 @@
+// Identity
+Name Carbon Armorplate
+ShortName SMP_Part_Mat_Armor_Carbon
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Armor_Carbon
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Carbon P SMP_Part_Mat_Plate_Carbon
+   
+PPP
+MMM
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

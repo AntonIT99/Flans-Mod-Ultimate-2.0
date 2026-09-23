@@ -1,0 +1,18 @@
+// Identity
+Name German Pz.Grenadier Feldgrau Jacket
+ShortName 44_GermanPzGrenadierFeldgrauChest
+Type Body
+
+// Rendering
+Icon 44_GermanPzGrenadierFeldgrauChest
+Model W44.GermanPzGrenadierChest
+ModelScale 1
+ArmorTexture Skin44_PzGrenadierFeldgrau
+
+// Protection
+ArmorPoints 0
+Defence 0.03
+BulletDefence 0.01
+Toughness 0
+PenetrationResistance 1.00
+SmokeProtection false

@@ -1,0 +1,16 @@
+// Identity
+Name PlaSteel Plate
+ShortName SMP_Part_Mat_Plate_PlaSteel
+
+// Model and Rendering
+Icon Icon_SMP_Part_Mat_Plate_PlaSteel
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_PlaSteel
+   
+   
+MMM
+RecipeOutput 3
+Category Misc
+PartBoxRecipe
+StackSize 64

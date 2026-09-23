@@ -150,6 +150,15 @@ public final class Flagpole extends Entity implements ITeamBase
     }
 
     @Override
+    public boolean hurt(@NotNull DamageSource source, float amount)
+    {
+        // Still invulnerable: the running game type is only told about the attempt.
+        if (!level().isClientSide)
+            TeamsManager.getInstance().teamEntityAttacked(this, source);
+        return false;
+    }
+
+    @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         setDefaultOwnerId(tag.getInt(NBT_DEFAULT_OWNER)); setOwnerId(tag.getInt(NBT_OWNER)); setBaseName(tag.getString(NBT_NAME)); setMapId(tag.getString(NBT_MAP));

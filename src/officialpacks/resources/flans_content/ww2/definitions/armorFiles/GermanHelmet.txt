@@ -1,7 +1,16 @@
+// Identity
 Name German WW2 Helmet
 ShortName germanHelmet
+
+// Item and rendering
 Icon germanhelmet
 Colour 255 255 255
-Type Helmet
-Defence 0.1
 ArmourTexture german
+
+// Protection
+Type Helmet
+Defence 0.04
+BulletDefence 0.02
+PenetrationResistance 1.25
+ArmorPoints 2
+Toughness 0

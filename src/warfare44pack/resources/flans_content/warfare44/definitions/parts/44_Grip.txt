@@ -1,0 +1,11 @@
+// Identity
+Name Grip
+ShortName 44_Grip
+Category Misc
+
+// Rendering
+Icon 44_Grip
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

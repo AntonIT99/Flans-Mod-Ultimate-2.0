@@ -15,6 +15,7 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.PlayerShootingHandler;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.reload.GunReloader;
@@ -25,6 +26,7 @@ import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -44,6 +46,7 @@ import lombok.Getter;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.StringUtils;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
@@ -144,10 +147,13 @@ public class GunItemHandler
 
         if (!actionRequested)
             return EnumFireDecision.NO_ACTION;
+        // Stops the player shooting immediately after picking a gun up from the ground
+        if (data.getShootClickDelay() > 0)
+            return EnumFireDecision.NO_ACTION;
         if (data.getShootTime(hand) > 0F)
             return EnumFireDecision.NO_ACTION;
         if (emptyAmmo)
-            return EnumFireDecision.RELOAD;
+            return ModCommonConfig.reloadOnEmptyFire() ? EnumFireDecision.RELOAD : EnumFireDecision.NO_ACTION;
         if (mode == EnumFireMode.MINIGUN)
             return (data.getMinigunSpeed() >= type.getMinigunStartSpeed()) ? EnumFireDecision.SHOOT : EnumFireDecision.NO_ACTION;
         return EnumFireDecision.SHOOT;
@@ -174,7 +180,7 @@ public class GunItemHandler
             PacketPlaySound.sendSoundPacket(player, item.configType.getMeleeSoundRange(), item.configType.getMeleeSound(), true);
 
         data.doMelee(player, item.configType.getMeleeTime(), item.configType);
-        PacketHandler.sendToDimension(level.dimension(), new PacketGunMeleeClient(player.getUUID(), hand));
+        PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
     }
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
@@ -197,19 +203,19 @@ public class GunItemHandler
         if (gunFireEvent.isCanceled())
         {
             data.setShooting(hand, false);
-            PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, false));
+            PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, false), player);
             return;
         }
 
         data.setShooting(hand, true);
-        PacketHandler.sendToDimension(level.dimension(), new PacketGunShootClient(player.getUUID(), hand, true));
+        PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, true), player);
 
         EnumFireMode fireMode = item.configType.getFireMode(gunStack);
         boolean automaticFire = fireMode.isAutomaticFire();
         float shootTime = data.getShootTime(hand);
-        float shootDelay = item.configType.getShootDelay(gunStack);
+        float shootDelay = ShotCooldown.clampDelay(item.configType.getShootDelay(gunStack));
 
-        while (shootTime <= 0F)
+        while (ShotCooldown.isReady(shootTime))
         {
             AmmoSlot ammoSlot = findLoadedAmmoInGun(item, gunStack, item.configType, level.registryAccess()).orElse(null);
             if (ammoSlot == null)
@@ -295,17 +301,25 @@ public class GunItemHandler
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
         float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand);
 
-        boolean reloaded = gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, ModCommonConfig.get().combineAmmoOnReload(), ModCommonConfig.get().ammoToUpperInventoryOnReload(), reloadTime, reloadSoundUUID);
+        // The first reload after respawning into a running teams round is instant, so players are not defenceless on spawn
+        boolean instantRespawnReload = !data.isReloadedAfterRespawn() && TeamsManager.getInstance().isRoundRunning();
+        if (instantRespawnReload)
+            reloadTime = 0F;
+
+        boolean reloaded = gunReloader.reload(level, player, data, gunStack, hand, isForced, player.getAbilities().instabuild, data.shouldCombineAmmoOnReload(), data.shouldPutAmmoToUpperInventoryOnReload(), reloadTime, reloadSoundUUID);
         if (reloaded)
         {
+            if (instantRespawnReload)
+                data.setReloadedAfterRespawn(true);
+
             EnchantmentModule.damageReloadModifier(player, otherHand);
 
             int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
             int reloadCount = item.getReloadCount(gunStack, level.registryAccess());
 
-            data.doGunReload(hand, reloadTime);
-            PacketHandler.sendToDimension(level.dimension(), new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo));
+            data.doGunReload(hand, reloadTime, item.configType.getShootDelay(gunStack));
+            PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo), player);
 
             String reloadSound = item.configType.getReloadSound(gunStack);
             // Play reload sound
@@ -621,7 +635,7 @@ public class GunItemHandler
         }
 
         Optional<Vec3> clip = otherPlayer.getBoundingBox().clip(segment.start, segment.end);
-        clip.ifPresent(hit -> outHits.add(new PlayerBulletHit(new PlayerHitbox(otherPlayer, new RotatedAxes(), new Vector3f(), new Vector3f(), new Vector3f(), new Vector3f(), EnumHitboxType.BODY), (float) segment.lambdaAt(hit))));
+        clip.ifPresent(hit -> outHits.add(new PlayerBulletHit(new PlayerHitbox(otherPlayer, new Matrix4f(), new Vector3f(), new Vector3f(), new Vector3f(), EnumHitboxType.BODY), (float) segment.lambdaAt(hit))));
     }
 
     private PlayerSnapshot selectSnapshot(Player attacker, PlayerData otherData)

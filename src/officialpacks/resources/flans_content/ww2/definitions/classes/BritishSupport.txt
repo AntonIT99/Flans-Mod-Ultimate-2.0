@@ -1,5 +1,8 @@
+// Identity
 Name Support
-ShortName britishSupport
+ShortName OfficialWW2_BritishSupport
+
+// Items
 AddItem bren
 AddItem PIAT
 AddItem webley

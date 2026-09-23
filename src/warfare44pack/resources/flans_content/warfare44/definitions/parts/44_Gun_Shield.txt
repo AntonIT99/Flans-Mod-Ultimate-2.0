@@ -1,0 +1,11 @@
+// Identity
+Name Gun_Shield
+ShortName 44_Gun_Shield
+Category Misc
+
+// Rendering
+Icon 44_Gun_Shield
+Colour 255 255 255
+
+// Recipe and inventory
+StackSize 64

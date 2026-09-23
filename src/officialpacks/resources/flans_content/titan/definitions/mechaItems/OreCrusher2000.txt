@@ -1,17 +1,20 @@
-//Description for hover text. Underscores represent new lines.
+// Identity
 Description 1.2x Diamond Drop Rate_1.5x Coal, Redstone,_Emerald and Iron_Ingot Drop Rate
 ShortName mechaOreCrusher2000
+Type armUpgrade
+
+// Item and rendering
 Icon OreCrusher2000
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
+
+// Recipe
 RecipeOutput 1
 Recipe I blockIron B mechaDustExtractor C mechaRedstoneMagnet D mechaMetalMagpie E mechaRotaryMagnet R blockRedstone A mechaDiamondCutter
 BRC
 IAR
 EID
-//The item type. This decides the slot it goes in. Options are upgrade, tool, armUpgrade, legUpgrade, headUpgrade, shoulderUpgrade, hipsUpgrade.
-Type armUpgrade
-//The modifiers this item enacts on the mecha
+
+// Mecha item
 DiamondMultiplier 1.2
 CoalMultiplier 1.5
 RedstoneMultiplier 1.5

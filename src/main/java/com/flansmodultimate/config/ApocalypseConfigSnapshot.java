@@ -15,6 +15,7 @@ public record ApocalypseConfigSnapshot(
     int apocalypseCountdownLength,
     int apocalypseSurvivorRarity,
     int apocalypseWanderingSurvivorRarity,
+    int apocalypseFlyByRarity,
     int apocalypseSkeletonRarity,
     int apocalypseDeadTreeRarity,
     int apocalypseVehicleRarity,
@@ -32,7 +33,7 @@ public record ApocalypseConfigSnapshot(
     int apocalypseNukeVisualTicks
 )
 {
-    public static final int CURRENT_VERSION = 1;
+    public static final int CURRENT_VERSION = 2;
 
     public static void write(FriendlyByteBuf buf, ApocalypseConfigSnapshot s)
     {
@@ -48,6 +49,7 @@ public record ApocalypseConfigSnapshot(
         buf.writeVarInt(s.apocalypseCountdownLength);
         buf.writeVarInt(s.apocalypseSurvivorRarity);
         buf.writeVarInt(s.apocalypseWanderingSurvivorRarity);
+        buf.writeVarInt(s.apocalypseFlyByRarity);
         buf.writeVarInt(s.apocalypseSkeletonRarity);
         buf.writeVarInt(s.apocalypseDeadTreeRarity);
         buf.writeVarInt(s.apocalypseVehicleRarity);
@@ -77,6 +79,7 @@ public record ApocalypseConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),

@@ -1,0 +1,16 @@
+// Identity
+Name Helicopter Tail Frame
+ShortName SMP_Part_Tail_Heli
+
+// Model and Rendering
+Icon Icon_SMP_Part_Tail_Heli
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel P SMP_Part_Mat_Plate_Steel
+  P
+MMP
+   
+RecipeOutput 1
+Category Tail
+PartBoxRecipe
+StackSize 64

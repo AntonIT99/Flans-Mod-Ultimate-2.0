@@ -1,0 +1,16 @@
+// Identity
+Name Truck Wheel
+ShortName SMP_Part_Wheel_Truck
+
+// Model and Rendering
+Icon Icon_SMP_Part_Wheel_Truck
+
+// Recipe and Inventory
+Recipe M SMP_Part_Mat_Block_Steel G SMP_Part_Mat_Block_Gummi
+GGG
+GMG
+GGG
+RecipeOutput 1
+Category Wheel
+PartBoxRecipe
+StackSize 64

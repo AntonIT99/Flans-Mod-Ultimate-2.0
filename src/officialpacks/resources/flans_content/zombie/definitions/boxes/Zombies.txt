@@ -1,17 +1,19 @@
+// Identity
 Name Anti-Zombie Weapons Box
 ShortName zombieBox
+
+// Item and rendering
 TopTexture ZombieWeaponBoxTop
 SideTexture ZombieWeaponBox
 BottomTexture ZombieWeaponBox
+
+// Recipe
 Recipe I ingotIron W wood
 WWW
 III
 WWW
-//AddGun shortName amountOf item
-//AddAmmo must come immediately after AddGun for them to be in the same slot
-//The names of the items / blocks are those in the code, with some exceptions such as ingotIron (ingotingotIron) and gunpowder (sulphur)
-//And with parts from this mod, they are the shortName of the item
-//Guns cannot yet have multiple ammo types in the same slot. For now, just list them under two seperate guns that are the same
+
+// Contents
 SetPage Guns
 AddGun winchesterModel70 12 ingotIron 8 wood 4 glass
 AddAmmo 3006Bullet 1 ingotIron 1 gunpowder

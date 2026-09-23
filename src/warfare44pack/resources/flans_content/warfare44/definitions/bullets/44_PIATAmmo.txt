@@ -1,0 +1,39 @@
+// Identity
+Name PIAT Shaped Charge
+ShortName 44_PIATAmmo
+
+// Rendering
+Icon 44_PIATAmmo
+Model Bullet
+Colour 255 255 255
+
+// Recipe and inventory
+MaxStackSize 2
+RoundsPerItem 1
+
+// Ballistics
+MuzzleVelocity 76
+FallSpeed 1.0
+HitBoxSize 0.1
+Penetrates False
+PenetrationAt100m 100
+BreaksGlass True
+
+// Damage
+Mass 1130
+DamageVsLiving 100
+DamageVsVehicles 950
+Fire 0
+
+// Explosion
+ExplosiveMassTNTg 400
+Explosion 2
+ExplodeOnImpact True
+Fuse 0
+
+// Effects
+SmokeTrail True
+FlakParticles 0
+
+// Sounds
+HitSound bullet

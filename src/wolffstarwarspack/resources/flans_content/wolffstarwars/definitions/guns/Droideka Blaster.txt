@@ -1,0 +1,55 @@
+// Identity
+Name Droideka Blaster
+ShortName droidekablaster
+Description Use with E-5 Ammo
+
+// Item and rendering
+Icon droidekablaster
+Colour 255 255 255
+Model wolffstarwars.DroidekaBlaster
+Texture droidekablaster
+
+// Ammunition
+Ammo E-5Ammo
+ReloadTime 40
+NumBullets 2
+
+// Operation
+NumBurstRounds 2
+RoundsPerMin 900.0
+Mode Burst
+Deployable False
+OneHanded True
+
+// Ballistics
+Recoil 1
+Dispersion 0.3
+MuzzleVelocity 280.0
+
+// Damage and protection
+Damage 1
+
+// Optics
+Scope None
+ZoomLevel 1.0
+FOVZoomLevel 1.25
+
+// Attachments
+AllowAllAttachments true
+NumGenericAttachmentSlots 2
+AllowBarrelAttachments true
+AllowScopeAttachments true
+AllowStockAttachments true
+AllowGripAttachments true
+
+// Sounds
+ShootSound droidekashoot
+SoundLength 0
+DistortSound False
+ReloadSound MG42Reload
+
+// Tooltip
+ShowDamage True
+ShowRecoil True
+ShowAccuracy True
+ShowReloadTime True

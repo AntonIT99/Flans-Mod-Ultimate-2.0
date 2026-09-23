@@ -22,7 +22,6 @@ public final class GunInputState
     @Getter
     private static ButtonState secondaryFunctionState = new ButtonState(false, false);
 
-    @OnlyIn(Dist.CLIENT)
     public static void tick()
     {
         Minecraft mc = Minecraft.getInstance();

@@ -1,0 +1,80 @@
+// Identity
+Name C-130H - US Air Force
+ShortName C130HAirForce
+
+// Model and Rendering
+Icon IconPlaneC130HAirForce
+Model manus_modern_warfare.C130H
+Texture SkinPlaneC130HAirForce
+HasDoor True
+ModelScale 1
+
+// Recipe and Inventory
+FuelTankSize 32000
+CargoSlots 36
+BombSlots 0
+AddRecipeParts core 1 Part_Cockpit_Large 12 Mat_Plate_Steel
+AddRecipeParts nose 1 Part_Nose_Plane 6 Mat_Plate_Steel
+AddRecipeParts tail 1 Part_Tail_Large 16 Mat_Plate_Steel
+AddRecipeParts leftWing 1 Part_Wing_Large 20 Mat_Plate_Steel
+AddRecipeParts rightWing 1 Part_Wing_Large 20 Mat_Plate_Steel
+AddRecipeParts leftWingWheel 4 Part_Wheel_Plane
+AddRecipeParts rightWingWheel 4 Part_Wheel_Plane
+AddRecipeParts coreWheel 2 Part_Wheel_Plane
+AddDye 25 gray
+
+// Movement and Physics
+MaxThrottle 8.0
+MaxNegativeThrottle 0.0
+TurnLeftSpeed 1
+TurnRightSpeed 1
+LookUpSpeed 1
+LookDownSpeed 1
+RollLeftSpeed 1
+RollRightSpeed 1
+Drag 9.0
+Lift 16.7
+RestingPitch 0.0
+HasGear True
+RealMassKg 70307
+RealEnginePowerHp 18360
+RealMaxSpeedKmh 592
+RealWingSpanM 40.411
+RealWingAreaM2 162.12
+RealClimbRateMs 9.3
+
+// Weapons
+ShootDelay 7
+BombDelay 1
+BombPosition 7 -10 0
+ReadWeaponsFromGunTypes true
+
+// Protection
+UseRealisticVehicleHealth true
+
+// Parts and Seats
+CameraDistance 60.0
+Propeller 0 0 0 0 leftWing Part_Propeller_RotorPlane
+Propeller 1 0 0 0 leftWing Part_Propeller_RotorPlane
+Propeller 2 0 0 0 rightWing Part_Propeller_RotorPlane
+Propeller 3 0 0 0 rightWing Part_Propeller_RotorPlane
+Pilot 146 24 -9
+Passengers 1
+Passenger 1 146 24 9 core
+SetupPart nose 200 170 8 -12 24 24 24
+SetupPart core 600 -94 -2 -31 264 64 62
+SetupPart coreWheel 100 114 -10 -6 16 16 12
+SetupPart leftWingWheel 100 -51 -10 32 44 8 7
+SetupPart rightWingWheel 100 -51 -10 -39 44 8 7
+SetupPart tail 400 -272 -2 -31 178 64 62
+SetupPart rightWing 300 -70 54 -336 80 8 304
+SetupPart leftWing 300 -70 54 31 80 8 304
+BulletDetection 25
+
+// Sounds
+StartSound propStart
+StartSoundLength 20
+PropSound LancasterProp
+PropSoundLength 49
+ShootSound PlaneShoot
+BombSound bomb

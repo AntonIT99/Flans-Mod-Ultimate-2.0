@@ -1,29 +1,35 @@
+// Identity
 Name 2Pdr
 ShortName 2Pdr
-//The ammo this gun uses (shortName)
-Ammo British2pdrAPShell
+
+// Item and rendering
 Icon 2Pdr
-//Colour in Red, Green, Blue, each going up to 255.
 Colour 255 255 255
-ItemID 7475
-//Reload time in ticks, 1/20ths of a second
+
+// Ammunition
+Ammo British2pdrAPShell
 ReloadTime 200
-//The amount of gun recoil, all relative : Sten = 1, Mp40 = 3, Kar98kSniper = 20
+
+// Operation
+Mode FullAuto
+Deployable false
+UsableByMechas false
+UsableByPlayers false
+RoundsPerMin 22.0
+
+// Ballistics
 Recoil 1
-//Damage in half hearts
+MuzzleVelocity 792.0
+Dispersion 0.12
+
+// Damage and protection
 Damage 1
-//The higher this value, the more the bullets spread
-Accuracy 5
-//Time in ticks between rounds
-ShootDelay 55
-ShootSound Tank4Shoot
-//The length of the sound. 0 for a single shot sound. Other values are for looping sounds
+
+// Optics
+Scope None
+
+// Sounds
+ShootSound 40uk
 SoundLength 0
 DistortSound False
 ReloadSound BARReload
-Mode FullAuto
-Scope None
-Deployable false
-BulletSpeed 10.0
-UsableByMechas false
-UsableByPlayers false

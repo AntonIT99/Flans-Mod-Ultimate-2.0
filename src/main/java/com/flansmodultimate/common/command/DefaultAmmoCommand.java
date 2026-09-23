@@ -1,6 +1,13 @@
 package com.flansmodultimate.common.command;
 
+import com.flansmodultimate.common.driveables.DriveableAmmoLoader;
+import com.flansmodultimate.common.driveables.DriveableData;
+import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.DeployedGun;
+import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.AAGunItem;
+import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.ShootableType;
@@ -17,9 +24,14 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class DefaultAmmoCommand
@@ -38,69 +50,122 @@ public final class DefaultAmmoCommand
     private static int giveDefaultAmmo(CommandContext<CommandSourceStack> context, int amount) throws CommandSyntaxException
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        HeldWeapon heldWeapon = getHeldWeapon(player);
-        if (heldWeapon == null)
+        List<AmmoSource> sources = getHeldSources(player);
+        if (sources.isEmpty())
         {
-            context.getSource().sendFailure(Component.literal("Hold a Flan's Mod gun or AA gun in either hand"));
+            AmmoSource ridden = getRiddenSource(player);
+            if (ridden != null)
+                sources = List.of(ridden);
+        }
+        if (sources.isEmpty())
+        {
+            context.getSource().sendFailure(Component.literal(
+                "Hold an ammo-using Flan's Mod item or ride a driveable, AA gun, or deployed gun"));
             return 0;
         }
 
-        Optional<ShootableType> ammoType = getDefaultAmmoType(heldWeapon.stack());
-        if (ammoType.isEmpty())
+        Set<ShootableType> ammoTypes = new LinkedHashSet<>();
+        sources.forEach(source -> ammoTypes.addAll(source.ammo()));
+        String sourceNames = String.join(", ", sources.stream().map(AmmoSource::name).distinct().toList());
+        if (ammoTypes.isEmpty())
         {
-            context.getSource().sendFailure(Component.literal("Held item has no default ammo"));
+            context.getSource().sendFailure(Component.literal(sourceNames + " has no default ammunition"));
             return 0;
         }
 
-        ItemStack ammoStack = ModUtils.getItemStack(ammoType.get(), amount).orElse(ItemStack.EMPTY);
-        if (ammoStack.isEmpty())
+        int totalGiven = 0;
+        List<String> givenAmmo = new ArrayList<>();
+        List<String> missingAmmo = new ArrayList<>();
+        for (ShootableType ammoType : ammoTypes)
         {
-            context.getSource().sendFailure(Component.literal("Default ammo item is not registered: " + ammoType.get().getShortName()));
-            return 0;
+            ItemStack ammoStack = ModUtils.getItemStack(ammoType, amount).orElse(ItemStack.EMPTY);
+            if (ammoStack.isEmpty())
+            {
+                missingAmmo.add(ammoType.getShortName());
+                continue;
+            }
+
+            if (ammoStack.getItem() instanceof ShootableItem && ammoType.getRoundsPerItem() > 1)
+                ShootableItem.setRoundsRemaining(ammoStack, ammoType.getRoundsPerItem());
+
+            ItemStack displayStack = ammoStack.copy();
+            if (!player.addItem(ammoStack) && !ammoStack.isEmpty())
+                player.drop(ammoStack, false);
+
+            totalGiven += displayStack.getCount();
+            givenAmmo.add(displayStack.getCount() + "x " + displayStack.getHoverName().getString());
         }
 
-        if (ammoStack.getItem() instanceof ShootableItem)
-            ShootableItem.setRoundsRemaining(ammoStack, ammoType.get().getRoundsPerItem());
+        if (!givenAmmo.isEmpty())
+            context.getSource().sendSuccess(() -> Component.literal(
+                "Gave " + String.join(", ", givenAmmo) + " for " + sourceNames), true);
+        if (!missingAmmo.isEmpty())
+            context.getSource().sendFailure(Component.literal(
+                "Default ammunition item is not registered: " + String.join(", ", missingAmmo)));
+        return totalGiven;
+    }
 
-        ItemStack displayStack = ammoStack.copy();
-        boolean added = player.addItem(ammoStack);
-        if (!added && !ammoStack.isEmpty())
-            player.drop(ammoStack, false);
-
-        String weaponName = heldWeapon.stack().getHoverName().getString();
-        String ammoName = displayStack.getHoverName().getString();
-        int given = displayStack.getCount();
-        context.getSource().sendSuccess(() -> Component.literal("Gave " + given + "x " + ammoName + " for " + weaponName), true);
-        return given;
+    private static List<AmmoSource> getHeldSources(ServerPlayer player)
+    {
+        List<AmmoSource> sources = new ArrayList<>(2);
+        for (InteractionHand hand : InteractionHand.values())
+        {
+            ItemStack stack = player.getItemInHand(hand);
+            AmmoSource source = getHeldSource(stack, player.registryAccess());
+            if (source != null)
+                sources.add(source);
+        }
+        return sources;
     }
 
     @Nullable
-    private static HeldWeapon getHeldWeapon(ServerPlayer player)
+    private static AmmoSource getHeldSource(ItemStack stack, net.minecraft.core.HolderLookup.Provider registries)
     {
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (isSupportedWeapon(mainHand))
-            return new HeldWeapon(mainHand);
-
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        if (isSupportedWeapon(offHand))
-            return new HeldWeapon(offHand);
-
+        if (stack.isEmpty())
+            return null;
+        String name = stack.getHoverName().getString();
+        if (stack.getItem() instanceof GunItem gunItem)
+            return source(name, defaultAmmo(gunItem.getConfigType().getDefaultAmmo()));
+        if (stack.getItem() instanceof AAGunItem aaGunItem)
+            return source(name, defaultAmmo(aaGunItem.getConfigType().getDefaultAmmo()));
+        if (stack.getItem() instanceof DriveableItem<?, ?> driveableItem)
+        {
+            DriveableData data = DriveableData.fromStack(driveableItem.getConfigType(), stack, registries);
+            return source(name, DriveableAmmoLoader.defaultAmmo(driveableItem.getConfigType(), data));
+        }
         return null;
     }
 
-    private static boolean isSupportedWeapon(ItemStack stack)
+    @Nullable
+    private static AmmoSource getRiddenSource(ServerPlayer player)
     {
-        return !stack.isEmpty() && (stack.getItem() instanceof GunItem || stack.getItem() instanceof AAGunItem);
+        Entity vehicle = player.getVehicle();
+        if (vehicle instanceof AAGun gun && gun.getConfigType() != null)
+            return source(gun.getConfigType().getName(), defaultAmmo(gun.getConfigType().getDefaultAmmo()));
+        if (vehicle instanceof DeployedGun gun && gun.getConfigType() != null)
+            return source(gun.getConfigType().getName(), defaultAmmo(gun.getConfigType().getDefaultAmmo()));
+
+        Driveable driveable = vehicle instanceof Driveable direct ? direct
+            : vehicle instanceof Seat seat ? seat.getDriveable()
+            : vehicle != null && vehicle.getVehicle() instanceof Driveable parent ? parent : null;
+        if (driveable == null || driveable.getConfigType() == null || driveable.getDriveableData() == null)
+            return null;
+        return source(driveable.getConfigType().getName(),
+            DriveableAmmoLoader.defaultAmmo(driveable.getConfigType(), driveable.getDriveableData()));
     }
 
-    private static Optional<ShootableType> getDefaultAmmoType(ItemStack weaponStack)
+    private static Set<ShootableType> defaultAmmo(Optional<ShootableType> ammo)
     {
-        if (weaponStack.getItem() instanceof GunItem gunItem)
-            return gunItem.getConfigType().getDefaultAmmo();
-        if (weaponStack.getItem() instanceof AAGunItem aaGunItem)
-            return aaGunItem.getConfigType().getDefaultAmmo();
-        return Optional.empty();
+        Set<ShootableType> result = new LinkedHashSet<>();
+        ammo.ifPresent(result::add);
+        return result;
     }
 
-    private record HeldWeapon(ItemStack stack) {}
+    @Nullable
+    private static AmmoSource source(String name, Set<ShootableType> ammo)
+    {
+        return ammo.isEmpty() ? null : new AmmoSource(name, ammo);
+    }
+
+    private record AmmoSource(String name, Set<ShootableType> ammo) {}
 }

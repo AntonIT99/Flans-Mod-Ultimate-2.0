@@ -1,0 +1,12 @@
+// Identity
+Name German Flag
+ShortName 44_GermanFlag
+Category Misc
+
+// Rendering
+Icon 44_GermanFlag
+Colour 255 255 255
+
+// Recipe and inventory
+RecipeOutput 3
+StackSize 6
