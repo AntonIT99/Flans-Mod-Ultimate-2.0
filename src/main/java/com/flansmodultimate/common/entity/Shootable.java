@@ -139,6 +139,7 @@ public abstract class Shootable extends Entity implements IEntityWithComplexSpaw
     {
         builder.define(DATA_SHOOTABLE_TYPE, StringUtils.EMPTY);
         builder.define(DATA_HITBOX_SIZE, DEFAULT_HITBOX_SIZE);
+        builder.define(DATA_SMOKING, false);
     }
 
     @Override
