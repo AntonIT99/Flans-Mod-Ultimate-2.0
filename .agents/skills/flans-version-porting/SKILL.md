@@ -123,6 +123,17 @@ the Git merge as a way to collect changes, not as the completed port:
 - NeoForge's `IConfigSpec.ILoadedConfig` is sealed. Tests that attached an
   anonymous Forge loaded config need a NeoForge test fixture or loader context;
   updating the import alone is insufficient.
+- Compare every mixin class with the entries in `flansmodultimate.mixins.json`.
+  Git can carry a mixin source file across a merge while leaving it unregistered,
+  so compilation and startup still pass with the feature silently inactive.
+  Restore the intended common and client roster, then run both a dedicated
+  server and a client with mixins enabled. For 1.21.1, inspect transformed
+  Minecraft bytecode or sources when an injection fails: player sneaking edge
+  collision moved into `canFallAtLeast`, `MultiBufferSource.BufferSource` uses
+  `startedBuilders`, the camera boom constant is a float, player renderer
+  rotations gained a scale parameter, and world creation no longer ticks.
+  Runtime startup does not load every screen or prove in-world behavior, so
+  inspect selectors for later-loaded targets as well.
 
 This section supplements the smaller end-to-end workflow below; it does not
 make the destination's branch-specific APIs subordinate to `master` files.
