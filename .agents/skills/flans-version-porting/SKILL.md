@@ -80,6 +80,50 @@ the Git merge as a way to collect changes, not as the completed port:
    risks. Commit the merge only after the destination builds and the scoped diff
    has been checked, or explicitly record why a gate is unavailable.
 
+### 1.20.1 Forge to 1.21.1 NeoForge findings
+
+- A conflict resolution that retains the target side of a declaration block can
+  leave source-only call sites in auto-merged code. Check each new referenced
+  config value, resource location, registry entry, synced entity datum, menu
+  page, and packet registration against its initializer and consumer. A clean
+  Java compile is necessary but does not catch an unregistered packet or an
+  omitted packaged module.
+- NeoForge event-bus `post` returns the event. For cancellable gameplay events,
+  test `.isCanceled()` on the returned event; a direct boolean check is a Forge
+  API leftover. Use `ICancellableEvent` on custom cancellable event classes.
+- Pass `HolderLookup.Provider` when serializing item stacks or their embedded
+  magazines. Use the destination's `ItemStackData` boundary for custom data and
+  stack persistence; 1.21 item stacks no longer expose the old mutable NBT tag
+  methods. Entity synced data must be defined through
+  `SynchedEntityData.Builder` in every subclass that adds accessors.
+- 1.21 menu opening needs the complete buffer contract expected by the menu's
+  network constructor. Recheck all fields when replacing `NetworkHooks` with
+  `ServerPlayer.openMenu`. Screen background rendering also takes mouse
+  coordinates and partial tick, and scroll callbacks take both axes.
+- World data migration must use `Path`-based NBT IO with an `NbtAccounter` and
+  `Path`-based replacement. Recipe conditions use NeoForge condition codecs and
+  `neoforge:conditions` data. In 1.21.1, recipes live under `data/<namespace>/recipe/`,
+  loot tables under `loot_table/`, and block tags under `tags/block/`. Crafting
+  recipe outputs use `result.id` while ingredients still use `item` or `tag`.
+  Biome modifiers live under `data/<namespace>/neoforge/biome_modifier/` and
+  use `neoforge:add_features`. Audit both the main mod and packaged content
+  packs; a successful Java compile does not validate these paths or schemas.
+- Rendering is a separate porting phase. `VertexConsumer`, `BufferBuilder`,
+  shaders, GUI layers, and post-processing changed enough that mechanical
+  renames can compile partially while still producing the wrong frame. Verify
+  the destination renderer API and test client startup and representative scenes.
+  In 1.21.1 `fog_distance` takes `(vec3 position, int shape)`, so source shaders
+  using the old model-view argument can compile as resources but fail during
+  client reload. An optional OpenGL shader test can catch this before launch.
+- Keep optional modules discoverable through their `src/<module>/fmu-module.gradle`
+  descriptors when porting the root build. Under ModDevGradle, register each
+  module source set, NeoForge mod binding, compile dependency on main, and jar
+  task; convert Forge `mods.toml` and pack metadata in newly added modules.
+  Inspect produced jars and check that all expected mod IDs load in a dev run.
+- NeoForge's `IConfigSpec.ILoadedConfig` is sealed. Tests that attached an
+  anonymous Forge loaded config need a NeoForge test fixture or loader context;
+  updating the import alone is insufficient.
+
 This section supplements the smaller end-to-end workflow below; it does not
 make the destination's branch-specific APIs subordinate to `master` files.
 
