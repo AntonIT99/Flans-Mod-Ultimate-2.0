@@ -140,6 +140,10 @@ the Git merge as a way to collect changes, not as the completed port:
   rotations gained a scale parameter, and world creation no longer ticks.
   Runtime startup does not load every screen or prove in-world behavior, so
   inspect selectors for later-loaded targets as well.
+- NeoForge 1.21.1 runs official Minecraft names and ModDevGradle does not
+  generate the Forge branch's refmap. Remove a stale `refmap` entry from the
+  NeoForge mixin JSON after verifying both game sides with the full roster;
+  keep Forge's refmap configuration on `master`.
 
 This section supplements the smaller end-to-end workflow below; it does not
 make the destination's branch-specific APIs subordinate to `master` files.
