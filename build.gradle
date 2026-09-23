@@ -23,6 +23,7 @@ sourceSets.main.resources {
 
     // Exclude common development only resources from finalized outputs
     exclude("**/*.bbmodel") // BlockBench project files
+    exclude('**/AGENTS.md')
 
     exclude("src/generated/**/.cache") // datagen cache files
 }
