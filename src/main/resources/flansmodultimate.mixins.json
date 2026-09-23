@@ -5,11 +5,25 @@
   "refmap": "flansmodultimate.refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+      "EntityDriveableCollisionMixin",
+      "LevelDriveableHullsMixin",
+      "PlayerDriveableEdgeMixin",
+      "ServerGamePacketListenerDriveableMixin"
   ],
   "client": [
+      "BufferSourceAccessor",
+      "CreateWorldScreenApocalypseMixin",
+      "DriveableCameraMixin",
       "EntityNameTagRenderDistanceMixin",
       "ForceDarkLightMixin",
-      "HumanoidArmorLayerMixin"
+      "HumanoidArmorLayerMixin",
+      "KeyMappingConflictMixin",
+      "LivingEntityNameTagRangeMixin",
+      "MountedRiderTurnMixin",
+      "PlayerSkinOverrideMixin",
+      "SeatedPlayerRendererMixin",
+      "VehicleOpticsLightMixin",
+      "WorldOpenFlowsApocalypseMixin"
   ],
   "server": [
   ],

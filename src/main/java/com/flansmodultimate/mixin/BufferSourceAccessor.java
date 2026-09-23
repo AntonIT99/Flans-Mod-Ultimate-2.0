@@ -6,12 +6,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import net.minecraft.client.renderer.MultiBufferSource;
 
-import java.util.Set;
+import java.util.Map;
 
 /** Read-only use: detect buffered work queued by custom renderers outside our consumer. */
 @Mixin(MultiBufferSource.BufferSource.class)
 public interface BufferSourceAccessor
 {
-    @Accessor("startedBuffers")
-    Set<BufferBuilder> flansmodultimate$startedBuffers();
+    @Accessor("startedBuilders")
+    Map<?, BufferBuilder> flansmodultimate$startedBuilders();
 }

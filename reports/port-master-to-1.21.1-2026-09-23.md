@@ -64,6 +64,25 @@
   build yet, so the user-facing wiki should be updated when that version is
   actually published.
 
+## Final source-diff audit
+
+- Compared source-only paths from the merge base to `master` against the target.
+  The apparent missing recipes, loot tables, block tags, and biome modifiers
+  are the intentional 1.21.1 resource path migrations described above. The
+  genuinely missing source file was `DriveableCameraMixin`.
+- Compared every mixin source class with `flansmodultimate.mixins.json`. Only
+  three client mixins had been registered, leaving four common and ten client
+  hooks inactive despite clean compilation and the earlier startup runs.
+  Restored the full source roster and adapted the camera, sneaking edge,
+  buffer accessor, seated rider rendering, and apocalypse world creation
+  hooks to the 1.21.1 bytecode and screen lifecycle.
+- With the restored mixins, `build` passed and the dedicated server reached
+  `Done`. The client passed mixin application and reached resource reload and
+  texture atlas creation. The development client was then stopped manually.
+  The previous client and server smoke runs did not exercise these hooks,
+  so in-world camera, rider rendering, deck sneaking, and apocalypse choice
+  still need interactive gameplay checks before release.
+
 ## Remaining release checks
 
 - Exercise joining a world, firing and reloading, driving and using vehicle

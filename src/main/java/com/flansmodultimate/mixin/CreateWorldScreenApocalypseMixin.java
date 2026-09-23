@@ -6,7 +6,6 @@ import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoice;
 import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoiceScreen;
 import com.mojang.datafixers.util.Pair;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -15,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
 import net.minecraft.network.chat.Component;
@@ -37,8 +37,7 @@ import java.util.function.Consumer;
 public abstract class CreateWorldScreenApocalypseMixin extends Screen
 {
     @Shadow
-    @Final
-    WorldCreationUiState uiState;
+    public abstract WorldCreationUiState getUiState();
 
     /** Set while re-entering {@code onCreate} after the player has answered. */
     @Unique
@@ -79,7 +78,7 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
             flansmodultimate$answered = false;
             return;
         }
-        if (!ApocalypseWorldChoice.isOffered(uiState.getSettings().dataConfiguration()))
+        if (!ApocalypseWorldChoice.isOffered(getUiState().getSettings().dataConfiguration()))
             return;
         callback.cancel();
         Screen createScreen = this;
@@ -90,10 +89,11 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
     /**
      * Once the data packs have reloaded with the player's answer, carries on creating the world.
      * The reload returns to this screen without initialising it again, so this waits for the
-     * screen's first tick after it is shown once more.
+     * screen's first render after it is shown once more.
      */
-    @Inject(method = "tick", at = @At("HEAD"))
-    private void flansmodultimate$resumeAfterReload(CallbackInfo callback)
+    @Inject(method = "render", at = @At("HEAD"))
+    private void flansmodultimate$resumeAfterReload(GuiGraphics graphics, int mouseX, int mouseY,
+                                                     float partialTick, CallbackInfo callback)
     {
         Boolean pending = flansmodultimate$pendingApocalypse;
         if (pending == null)
@@ -102,7 +102,7 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
         // A failed reload returns here with the old packs: the player is back on this screen
         // to try again, and nothing is created with a configuration they did not choose.
         // Created outside the screen tick, as a click on Create would be.
-        if (ApocalypseWorldChoice.isEnabled(uiState.getSettings().dataConfiguration()) == pending)
+        if (ApocalypseWorldChoice.isEnabled(getUiState().getSettings().dataConfiguration()) == pending)
             minecraft.tell(this::flansmodultimate$createAnswered);
     }
 
@@ -110,7 +110,7 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
     private void flansmodultimate$applyChoice(boolean withApocalypse)
     {
         Screen createScreen = this;
-        WorldDataConfiguration configuration = uiState.getSettings().dataConfiguration();
+        WorldDataConfiguration configuration = getUiState().getSettings().dataConfiguration();
         if (ApocalypseWorldChoice.isEnabled(configuration) == withApocalypse)
         {
             minecraft.setScreen(createScreen);

@@ -19,7 +19,7 @@ import net.minecraft.world.phys.AABB;
 @Mixin(Player.class)
 public abstract class PlayerDriveableEdgeMixin
 {
-    @Redirect(method = {"maybeBackOffFromEdge", "isAboveGround"}, at = @At(value = "INVOKE",
+    @Redirect(method = "canFallAtLeast", at = @At(value = "INVOKE",
         target = "Lnet/minecraft/world/level/Level;noCollision(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Z"))
     private boolean flansmodultimate$noDriveableHullBelow(Level level, Entity entity, AABB box)
     {

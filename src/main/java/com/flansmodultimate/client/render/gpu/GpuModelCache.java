@@ -285,7 +285,7 @@ public final class GpuModelCache
             // Consecutive GPU batches have no intervening buffered vertices. Only
             // initial entry, fallback vertices and reentrant boundaries need this.
             if (flushPending || !(source instanceof BufferSourceAccessor buffers)
-                || !buffers.flansmodultimate$startedBuffers().isEmpty()) source.endBatch();
+                || !buffers.flansmodultimate$startedBuilders().isEmpty()) source.endBatch();
             previousShader = RenderSystem.getShader();
             try
             {
