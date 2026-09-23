@@ -49,6 +49,10 @@
 - `clean build` passed with all pack jars, including `packsManagerJar` and
   `officialPacksJar`. Each produced jar has `neoforge.mods.toml`; the main jar
   carries version `2.0` and the four optional pack modules are separate.
+- A later metadata audit compared the built NeoForge TOML in all six jars with
+  the corresponding 1.20.1 Forge TOML. License, mod ID, version, display name,
+  logo, credits, author, and description now match for every module; all three
+  declared logos are present in their jars. The corrected build passed.
 - The dedicated server loaded the mod and pack modules and reached `Done`.
   It was stopped after startup, so the Gradle `runServer` process exited with
   status 1 from termination, not from a startup crash.
