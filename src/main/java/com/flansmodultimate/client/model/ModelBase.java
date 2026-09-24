@@ -125,4 +125,15 @@ public abstract class ModelBase extends Model implements IModelBase
             }
         }
     }
+    protected static void addVertex(PoseStack poseStack, VertexConsumer vertexConsumer, float x, float y, float z, float u, float v, float normalX, float normalY, float normalZ, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    {
+        PoseStack.Pose pose = poseStack.last();
+        vertexConsumer.vertex(pose.pose(), x, y, z)
+            .color(red, green, blue, alpha)
+            .uv(u, v)
+            .overlayCoords(packedOverlay)
+            .uv2(packedLight)
+            .normal(pose.normal(), normalX, normalY, normalZ)
+            .endVertex();
+    }
 }
