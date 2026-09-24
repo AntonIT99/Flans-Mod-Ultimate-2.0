@@ -58,7 +58,7 @@ the Git merge as a way to collect changes, not as the completed port:
    base, and run a destination baseline compile. Preserve unrelated files.
 2. Inventory source-only commits and changed paths by subsystem before merging.
    Count source and destination commits separately; previous merge commits can
-   hide a large new release delta. Record a short port plan/report when the
+   hide a large new release delta. Keep a short working port plan when the
    change set spans multiple systems.
 3. Merge with `--no-commit` in the destination worktree. Group conflicts by
    build/metadata, common gameplay, networking, client/rendering, resources,
@@ -76,85 +76,16 @@ the Git merge as a way to collect changes, not as the completed port:
    separate. Moves of content definitions and large binary assets can defeat
    rename detection; validate final source-set membership and jar contents,
    rather than judging the raw diff size or copying generated artifacts.
-7. Update the report with resolved seams, validation, and remaining runtime
-   risks. Commit the merge only after the destination builds and the scoped diff
-   has been checked, or explicitly record why a gate is unavailable.
+7. Update the cumulative version-differences document for persistent API seams;
+   include resolved conflicts, validation, and remaining runtime risks in the
+   final result. Commit the merge only after the destination builds and the
+   scoped diff has been checked, or explicitly state why a gate is unavailable.
 
-### 1.20.1 Forge to 1.21.1 NeoForge findings
-
-- A conflict resolution that retains the target side of a declaration block can
-  leave source-only call sites in auto-merged code. Check each new referenced
-  config value, resource location, registry entry, synced entity datum, menu
-  page, and packet registration against its initializer and consumer. A clean
-  Java compile is necessary but does not catch an unregistered packet or an
-  omitted packaged module.
-- NeoForge event-bus `post` returns the event. For cancellable gameplay events,
-  test `.isCanceled()` on the returned event; a direct boolean check is a Forge
-  API leftover. Use `ICancellableEvent` on custom cancellable event classes.
-- Pass `HolderLookup.Provider` when serializing item stacks or their embedded
-  magazines. Use the destination's `ItemStackData` boundary for custom data and
-  stack persistence; 1.21 item stacks no longer expose the old mutable NBT tag
-  methods. Entity synced data must be defined through
-  `SynchedEntityData.Builder` in every subclass that adds accessors.
-- 1.21 menu opening needs the complete buffer contract expected by the menu's
-  network constructor. Recheck all fields when replacing `NetworkHooks` with
-  `ServerPlayer.openMenu`. Screen background rendering also takes mouse
-  coordinates and partial tick, and scroll callbacks take both axes.
-- World data migration must use `Path`-based NBT IO with an `NbtAccounter` and
-  `Path`-based replacement. Recipe conditions use NeoForge condition codecs and
-  `neoforge:conditions` data. In 1.21.1, recipes live under `data/<namespace>/recipe/`,
-  loot tables under `loot_table/`, and block tags under `tags/block/`. Crafting
-  recipe outputs use `result.id` while ingredients still use `item` or `tag`.
-  Smelting outputs changed from a result string to an object with `id`. Keep
-  legacy `.txt` definitions shared across branches; the generator must write
-  version-specific JSON into `recipes/` on 1.20.1 and `recipe/` on 1.21.1.
-  A 1.20.1-preprocessed pack can already contain old JSON, so detect and
-  regenerate or migrate it when loading on 1.21.1, including the directory
-  rename and output schema. Check output `count` against the registered item's
-  maximum stack size: for shootables the parser raises `MaxStackSize` to at
-  least `RecipeOutput`; durability-based fuel parts remain single items.
-  Biome modifiers live under `data/<namespace>/neoforge/biome_modifier/` and
-  use `neoforge:add_features`. Audit both the main mod and packaged content
-  packs; a successful Java compile does not validate these paths or schemas.
-- Rendering is a separate porting phase. `VertexConsumer`, `BufferBuilder`,
-  shaders, GUI layers, and post-processing changed enough that mechanical
-  renames can compile partially while still producing the wrong frame. Verify
-  the destination renderer API and test client startup and representative scenes.
-  In 1.21.1 `fog_distance` takes `(vec3 position, int shape)`, so source shaders
-  using the old model-view argument can compile as resources but fail during
-  client reload. An optional OpenGL shader test can catch this before launch.
-- Keep optional modules discoverable through their `src/<module>/fmu-module.gradle`
-  descriptors when porting the root build. Under ModDevGradle, register each
-  module source set, NeoForge mod binding, compile dependency on main, and jar
-  task; convert Forge `mods.toml` and pack metadata in newly added modules.
-  Inspect produced jars and check that all expected mod IDs load in a dev run.
-- The packaged content module's logical recipe roots have no `pack.mcmeta`.
-  Forge 1.20.1 supplies their pack metadata when constructing `Pack.Info`;
-  NeoForge 1.21.1 must likewise construct `Pack.Metadata` for them rather than
-  calling `Pack.readMetaAndCreate`. Otherwise the repository silently skips
-  those packs. Check server logs for `Missing metadata in pack` and compare
-  loaded recipe counts before and after a packaging port.
-- NeoForge's `IConfigSpec.ILoadedConfig` is sealed. Tests that attached an
-  anonymous Forge loaded config need a NeoForge test fixture or loader context;
-  updating the import alone is insufficient.
-- Compare every mixin class with the entries in `flansmodultimate.mixins.json`.
-  Git can carry a mixin source file across a merge while leaving it unregistered,
-  so compilation and startup still pass with the feature silently inactive.
-  Restore the intended common and client roster, then run both a dedicated
-  server and a client with mixins enabled. For 1.21.1, inspect transformed
-  Minecraft bytecode or sources when an injection fails: player sneaking edge
-  collision moved into `canFallAtLeast`, `MultiBufferSource.BufferSource` uses
-  `startedBuilders`, the camera boom constant is a float, player renderer
-  rotations gained a scale parameter, and world creation no longer ticks.
-  Runtime startup does not load every screen or prove in-world behavior, so
-  inspect selectors for later-loaded targets as well.
-- NeoForge 1.21.1 runs official Minecraft names and ModDevGradle does not
-  generate the Forge branch's refmap. Remove a stale `refmap` entry from the
-  NeoForge mixin JSON after verifying both game sides with the full roster;
-  keep Forge's refmap configuration on `master`.
-
-This section supplements the smaller end-to-end workflow below; it does not
-make the destination's branch-specific APIs subordinate to `master` files.
+For maintained class- and location-specific API differences, read
+[`docs/minecraft-version-code-differences.md`](../../../docs/minecraft-version-code-differences.md)
+before porting and update the relevant version section as the implementation
+changes. The merge workflow above still applies when an existing entry covers
+an API seam.
 
 ## Invariants and branch seams
 
@@ -169,9 +100,10 @@ make the destination's branch-specific APIs subordinate to `master` files.
   wrapper until the destination has been searched for its native equivalent.
 - `master` uses Forge and `META-INF/mods.toml`; newer branches use NeoForge and
   generated metadata. Do not copy build or metadata files across this boundary.
-- The 26.x branches use Mojang names and render-state extraction. `26.2` also
-  uses feature rendering. Keep mutable entity/game access in extraction and
-  render immutable state in the render phase.
+- The 26.x branches use Mojang names, render-state extraction, and feature
+  submission. Keep mutable entity/game access in extraction and render immutable
+  state in the render phase. See the class-level differences document for the
+  26.2 render-buffer boundary.
 - Do not overwrite unrelated branch-specific improvements to make files match.
   Compare semantics and merge only the required behavior.
 - If the feature or its user-facing behavior is significant, inspect the sibling
