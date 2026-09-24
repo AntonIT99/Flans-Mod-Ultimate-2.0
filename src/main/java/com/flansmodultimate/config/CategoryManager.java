@@ -1,5 +1,6 @@
 package com.flansmodultimate.config;
 
+import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
@@ -12,7 +13,6 @@ import com.google.gson.reflect.TypeToken;
 import com.mojang.logging.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.fml.loading.FMLPaths;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -59,7 +59,7 @@ public final class CategoryManager
 
     public static void loadAll()
     {
-        Path configDir = FMLPaths.CONFIGDIR.get().resolve(FlansMod.MOD_ID);
+        Path configDir = PlatformPaths.configDir().resolve(FlansMod.MOD_ID);
         Path defaultConfigDir = configDir.resolve("default");
 
         if (!FileUtils.tryCreateDirectories(configDir))

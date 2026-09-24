@@ -1,4 +1,5 @@
 package com.flansmodultimate.config;
+import com.flansmodultimate.platform.PlatformPaths;
 import org.jetbrains.annotations.Nullable;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
@@ -15,7 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.fml.loading.FMLPaths;
 
 import net.minecraft.resources.ResourceLocation;
 
@@ -1073,7 +1073,7 @@ public final class ModCommonConfig
             DEFAULT_DEPLOYED_GUN_TRACKING_RANGE,
             DEFAULT_AA_GUN_TRACKING_RANGE
         );
-        Path configPath = FMLPaths.CONFIGDIR.get().resolve(FlansMod.MOD_ID + "-common.toml");
+        Path configPath = PlatformPaths.configDir().resolve(FlansMod.MOD_ID + "-common.toml");
         if (!Files.isRegularFile(configPath))
             return defaults;
 

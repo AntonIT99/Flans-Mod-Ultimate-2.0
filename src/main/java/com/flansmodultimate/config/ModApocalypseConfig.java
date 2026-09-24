@@ -1,12 +1,12 @@
 package com.flansmodultimate.config;
 
+import com.flansmodultimate.platform.PlatformPaths;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.fml.loading.FMLPaths;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -163,11 +163,11 @@ public final class ModApocalypseConfig
 
     private static EarlyApocalypseSettings readEarlyApocalypseSettings()
     {
-        Path configPath = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE_NAME);
+        Path configPath = PlatformPaths.configDir().resolve(CONFIG_FILE_NAME);
         if (Files.isRegularFile(configPath))
             return readEarlyApocalypseSettings(configPath);
 
-        Path legacyConfigPath = FMLPaths.CONFIGDIR.get().resolve(LEGACY_COMMON_CONFIG_FILE_NAME);
+        Path legacyConfigPath = PlatformPaths.configDir().resolve(LEGACY_COMMON_CONFIG_FILE_NAME);
         if (Files.isRegularFile(legacyConfigPath))
             return readEarlyApocalypseSettings(legacyConfigPath);
 

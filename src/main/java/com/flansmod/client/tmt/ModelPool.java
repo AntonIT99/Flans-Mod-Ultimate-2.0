@@ -1,7 +1,7 @@
 package com.flansmod.client.tmt;
 
+import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.FlansMod;
-import net.neoforged.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -47,7 +47,7 @@ public class ModelPool
 
         for (int i = 0; i < resourceDir.length && (modelFile == null || !modelFile.exists()); i++)
         {
-            String absPath = new File(FMLPaths.CONFIGDIR.get().getParent().toFile(), resourceDir[i]).getAbsolutePath();
+            String absPath = new File(PlatformPaths.configDir().getParent().toFile(), resourceDir[i]).getAbsolutePath();
             if(!absPath.endsWith("/") || !absPath.endsWith("\\"))
                 absPath += "/";
             modelFile = entry.checkValidPath(absPath + file);

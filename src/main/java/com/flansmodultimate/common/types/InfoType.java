@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
@@ -19,7 +20,6 @@ import lombok.Setter;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
-import net.neoforged.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -201,7 +201,7 @@ public abstract class InfoType implements IInfoType
             String[] split = lines.get(i).split("\\s+");
             readLine(split, i, file);
         }
-        if (FMLEnvironment.dist == Dist.CLIENT)
+        if (PlatformEnvironment.isClient())
             readClient(file);
     }
 

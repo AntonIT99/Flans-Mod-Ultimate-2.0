@@ -1,5 +1,7 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.common.block.BlockFactory;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;
@@ -39,9 +41,6 @@ import com.google.gson.JsonSyntaxException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.loading.FMLPaths;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -99,7 +98,6 @@ public class ContentManager
     public static final String FOLDER_TEXTURES_ITEMS = "items";
     public static final String FOLDER_SOUND = "sound";
     public static final String FOLDER_SOUNDS = "sounds";
-    public static final String FOLDER_RECIPES = "recipe";
 
     private static final String TRANSLATION_KEY_PREFIX_ITEM = "item.";
     private static final String TRANSLATION_KEY_PREFIX_BLOCK = "block.";
@@ -108,8 +106,8 @@ public class ContentManager
 
     @Getter
     private static Path flanFolder;
-    private static final Path defaultFlanPath = FMLPaths.GAMEDIR.get().resolve(ContentLoadingConfig.getContentPacksRelativePath());
-    private static final Path fallbackFlanPath = FMLPaths.GAMEDIR.get().resolve("Flan");
+    private static final Path defaultFlanPath = PlatformPaths.gameDir().resolve(ContentLoadingConfig.getContentPacksRelativePath());
+    private static final Path fallbackFlanPath = PlatformPaths.gameDir().resolve("Flan");
 
     // Mappings which allow to use aliases for duplicate short names and texture names (also contain unmodified references)
     // The idea behind dynamic references is to allow references to shortnames and textures to change
@@ -180,7 +178,7 @@ public class ContentManager
         if (flanFolder == null)
             return;
 
-        Path gameDir = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize();
+        Path gameDir = PlatformPaths.gameDir().toAbsolutePath().normalize();
         Path normalizedFlanFolder = flanFolder.toAbsolutePath().normalize();
         boolean isGameDirectory = normalizedFlanFolder.equals(gameDir);
         try
@@ -197,7 +195,7 @@ public class ContentManager
         }
 
         ContentPackRelocator.RelocationResult result = ContentPackRelocator.reconcile(
-            FMLPaths.MODSDIR.get(), normalizedFlanFolder,
+            PlatformPaths.modsDir(), normalizedFlanFolder,
             gameDir.resolve(ContentPackRelocator.CACHE_FILE_NAME)
         );
         excludedFlanArchives = result.excludedFromContentLoading();
@@ -207,7 +205,7 @@ public class ContentManager
                 result.movedContentPacks(), normalizedFlanFolder);
         if (result.restartRequired())
             FlansMod.log.warn("Moved {} Flan pack mod bundle(s) to '{}'. Restart the game to activate them.",
-                result.movedBundles(), FMLPaths.MODSDIR.get().toAbsolutePath());
+                result.movedBundles(), PlatformPaths.modsDir().toAbsolutePath());
         FlansMod.log.debug("Verified Flan archive locations in {} ms; inspected {} new or changed archive(s).",
             result.elapsedMillis(), result.inspectedArchives());
     }
@@ -314,7 +312,7 @@ public class ContentManager
                 loadTypes(provider);
                 postTypeStart = System.nanoTime();
 
-                if (FMLEnvironment.dist == Dist.CLIENT && provider.shouldIndexAssetsForConflicts())
+                if (PlatformEnvironment.isClient() && provider.shouldIndexAssetsForConflicts())
                 {
                     long phaseStart = System.nanoTime();
                     findDuplicateTextures(provider);
@@ -597,7 +595,7 @@ public class ContentManager
                     {
                         readAliasMappingFile(path.getFileName().toString(), provider, shortnameReferences);
                     }
-                    if (FMLEnvironment.dist == Dist.CLIENT)
+                    if (PlatformEnvironment.isClient())
                     {
                         if (path.getFileName().toString().equals(ARMOR_TEXTURES_ALIAS_FILE))
                         {
@@ -743,7 +741,7 @@ public class ContentManager
     private static void addConfig(IContentProvider contentPack, InfoType config)
     {
         configs.get(contentPack).add(config);
-        if (FMLEnvironment.dist == Dist.CLIENT)
+        if (PlatformEnvironment.isClient())
             registerModelTextureOrigins(config);
     }
 
@@ -986,7 +984,7 @@ public class ContentManager
 
     private static boolean shouldPreLoadAssets(IContentProvider provider, boolean idAliasNeedsUpdate)
     {
-        if (FMLEnvironment.dist != Dist.CLIENT)
+        if (!PlatformEnvironment.isClient())
             return false;
 
         if (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds())
@@ -1105,9 +1103,8 @@ public class ContentManager
             return true;
 
         FileSystem fs = FileUtils.createFileSystem(provider);
-        boolean missingData = isMissingGeneratedRecipeFiles(provider, fs)
-            || RecipeDataCompatibility.hasMissingCounterparts(provider.getDataPath(fs).getParent())
-            || RecipeJsonGenerator.hasOversizedGeneratedRecipeOutputs(listItems(provider), provider.getDataPath(fs));
+        boolean missingData = RecipeJsonGenerator.needsRegeneration(listItems(provider), provider.getDataPath(fs))
+            || RecipeDataCompatibility.hasMissingCounterparts(provider.getDataPath(fs).getParent());
         FileUtils.closeFileSystem(fs, provider);
         return missingData;
     }
@@ -1120,7 +1117,7 @@ public class ContentManager
 
     private static void compileJavaModelsIfNeeded(IContentProvider provider)
     {
-        if (FMLEnvironment.dist != Dist.CLIENT)
+        if (!PlatformEnvironment.isClient())
             return;
 
         try
@@ -1184,20 +1181,6 @@ public class ContentManager
         {
             RecipeJsonGenerator.writeRecipes(config, provider.getDataPath());
         }
-    }
-
-    private static boolean isMissingGeneratedRecipeFiles(IContentProvider provider, FileSystem fs)
-    {
-        Path recipeFolderPath = provider.getDataPath(fs).resolve(FOLDER_RECIPES);
-        for (InfoType config : listItems(provider))
-        {
-            for (String recipeFileName : RecipeJsonGenerator.getRecipeFileNames(config))
-            {
-                if (!Files.exists(recipeFolderPath.resolve(recipeFileName)))
-                    return true;
-            }
-        }
-        return false;
     }
 
     private static void convertExistingJsonFiles(Path jsonFolderPath)

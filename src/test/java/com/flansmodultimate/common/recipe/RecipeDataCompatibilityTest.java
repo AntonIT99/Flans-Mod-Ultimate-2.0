@@ -68,4 +68,31 @@ class RecipeDataCompatibilityTest
         assertFalse(modern.getAsJsonObject("result").has("count"));
 
     }
+
+    @Test
+    void generatedRecipesRequireBothLayoutsAndLegalModernOutput() throws Exception
+    {
+        ToolType tool = new ToolType()
+        {
+            @Override
+            public String getShortName()
+            {
+                return "example";
+            }
+        };
+        tool.load(new TypeFile("example", EnumType.TOOL, new ContentPack("test", dataRoot), List.of(
+            "ShortName example", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
+        Path legacy = Files.createDirectories(dataRoot.resolve("recipes")).resolve("example_shapeless.json");
+        Path modern = Files.createDirectories(dataRoot.resolve("recipe")).resolve("example_shapeless.json");
+
+        assertTrue(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
+        Files.writeString(legacy, "{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"item\":\"flansmod:example\",\"count\":16}}");
+        assertTrue(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
+        Files.writeString(modern, "{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"id\":\"flansmod:example\",\"count\":16}}");
+        assertTrue(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
+        Files.writeString(modern, "{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"id\":\"flansmod:example\"}}");
+        assertFalse(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
+        Files.delete(legacy);
+        assertTrue(RecipeJsonGenerator.needsRegeneration(List.of(tool), dataRoot));
+    }
 }

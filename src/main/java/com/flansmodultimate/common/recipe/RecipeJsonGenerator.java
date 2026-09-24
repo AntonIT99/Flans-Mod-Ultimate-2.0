@@ -44,27 +44,30 @@ public final class RecipeJsonGenerator
         return fileNames;
     }
 
-    /** Rebuild old generated recipes that 1.21.1 rejects for exceeding the item's stack limit. */
-    public static boolean hasOversizedGeneratedRecipeOutputs(List<InfoType> items, Path dataFolder)
+    /** Both generated layouts must exist, and modern crafting results must fit the output stack. */
+    public static boolean needsRegeneration(List<InfoType> items, Path dataFolder)
     {
-        Path recipeFolder = dataFolder.resolve("recipe");
         for (InfoType config : items)
         {
+            for (String fileName : getRecipeFileNames(config))
+                for (RecipeDataCompatibility.Format format : RecipeDataCompatibility.Format.values())
+                    if (!Files.isRegularFile(format.resolve(dataFolder).resolve(fileName)))
+                        return true;
+
             if (!config.hasCraftingRecipe())
                 continue;
-            Path recipeFile = recipeFolder.resolve(getCraftingFileName(config));
-            if (!Files.isRegularFile(recipeFile))
-                continue;
+            Path modernRecipe = RecipeDataCompatibility.Format.MODERN.resolve(dataFolder).resolve(getCraftingFileName(config));
             try
             {
-                JsonObject recipe = JsonParser.parseString(Files.readString(recipeFile, StandardCharsets.UTF_8)).getAsJsonObject();
+                JsonObject recipe = JsonParser.parseString(Files.readString(modernRecipe, StandardCharsets.UTF_8)).getAsJsonObject();
                 JsonObject result = recipe.getAsJsonObject("result");
-                if (result == null || (result.has("count") && result.get("count").getAsInt() > maxRecipeStackSize(config)))
+                if (result == null || (result.has("count") && (result.get("count").getAsInt() < 1
+                    || result.get("count").getAsInt() > RecipeDataCompatibility.maxRecipeStackSize(config))))
                     return true;
             }
             catch (RuntimeException | IOException exception)
             {
-                FlansMod.log.warn("Could not inspect generated recipe {}; regenerating it", recipeFile, exception);
+                FlansMod.log.warn("Could not inspect generated recipe {}; regenerating it", modernRecipe, exception);
                 return true;
             }
         }

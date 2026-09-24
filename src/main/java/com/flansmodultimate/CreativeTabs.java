@@ -9,11 +9,9 @@ import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.creative.CreativeTabPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.DeferredHolder;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -27,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -46,9 +45,9 @@ public final class CreativeTabs
     public static final String TAB_PARTS = "parts";
 
     @SafeVarargs
-    public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<? extends Supplier<? extends Item>> itemsForTab, List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
+    public static void registerCreativeTab(BiConsumer<String, Supplier<CreativeModeTab>> tabRegistrar, String tabName, List<? extends Supplier<? extends Item>> itemsForTab, List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
-        creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
+        tabRegistrar.accept(tabName, () -> CreativeModeTab.builder()
             .title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName))
             .icon(createIcon(tabName, itemsForTab, typesForIcon))
             .withSearchBar()
@@ -96,23 +95,24 @@ public final class CreativeTabs
                     || onlyVehicleAmmo && !EnumWeaponType.TAB_DRIVEABLES_TYPES.contains(bi.getConfigType().getWeaponType())))
                         continue;
 
-                output.accept(createCreativeStack(new ItemStack(item), parameters.holders()));
+                output.accept(createCreativeStack(new ItemStack(item), parameters));
 
                 if (ModCommonConfig.get().addAllPaintjobsToCreative() && item instanceof IPaintableItem<?> paintableItem)
                 {
                     for (Paintjob pj : paintableItem.getPaintableType().getPaintjobs().values())
                         if (!pj.isDefault())
-                            output.accept(createCreativeStack(paintableItem.makePaintjobStack(pj), parameters.holders()));
+                            output.accept(createCreativeStack(paintableItem.makePaintjobStack(pj), parameters));
                 }
             }
         };
     }
 
-    private static ItemStack createCreativeStack(ItemStack stack, net.minecraft.core.HolderLookup.Provider registries)
+    private static ItemStack createCreativeStack(ItemStack stack, CreativeModeTab.ItemDisplayParameters parameters)
     {
         if (!(stack.getItem() instanceof DriveableItem<?, ?> driveableItem))
             return stack;
-        DriveableData data = DriveableData.fromStack(driveableItem.getConfigType(), stack, registries);
+
+        DriveableData data = CreativeTabPlatform.readDriveableData(driveableItem.getConfigType(), stack, parameters);
         data.setFuelInTank(driveableItem.getConfigType().getFuelTankSize());
         return data.copyToStack(stack);
     }
@@ -151,7 +151,7 @@ public final class CreativeTabs
 
     private static String getRegistryName(Item item)
     {
-        ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
+        ResourceLocation key = CreativeTabPlatform.itemId(item);
         return key != null ? key.toString() : null;
     }
 }

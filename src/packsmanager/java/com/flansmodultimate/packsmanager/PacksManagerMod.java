@@ -1,5 +1,7 @@
 package com.flansmodultimate.packsmanager;
 
+import com.flansmodultimate.packsmanager.platform.PlatformEnvironment;
+import com.flansmodultimate.packsmanager.platform.PlatformPaths;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.google.gson.Gson;
@@ -8,8 +10,6 @@ import com.google.gson.annotations.SerializedName;
 import com.mojang.logging.LogUtils;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -79,7 +79,7 @@ public class PacksManagerMod
 
     public PacksManagerMod()
     {
-        if (!FMLEnvironment.production)
+        if (!PlatformEnvironment.isProduction())
             return;
 
         try
@@ -153,7 +153,7 @@ public class PacksManagerMod
 
     private static Path resolveFlanOutputDir()
     {
-        Path gameDir = FMLPaths.GAMEDIR.get().toAbsolutePath().normalize();
+        Path gameDir = PlatformPaths.gameDir().toAbsolutePath().normalize();
         Path defaultFlanPath = gameDir.resolve(readContentPacksRelativePath()).toAbsolutePath().normalize();
         Path fallbackFlanPath = gameDir.resolve(FALLBACK_FLAN_DIR_NAME).toAbsolutePath().normalize();
         Path resolvedPath = !Files.exists(defaultFlanPath) && Files.exists(fallbackFlanPath)
@@ -168,12 +168,12 @@ public class PacksManagerMod
 
     private static Path resolveExtractionStatePath()
     {
-        return FMLPaths.GAMEDIR.get().toAbsolutePath().normalize().resolve(EXTRACTION_STATE_FILE_NAME);
+        return PlatformPaths.gameDir().toAbsolutePath().normalize().resolve(EXTRACTION_STATE_FILE_NAME);
     }
 
     private static String readContentPacksRelativePath()
     {
-        Path file = FMLPaths.CONFIGDIR.get().resolve(CONTENT_LOADING_CONFIG_FILE_NAME);
+        Path file = PlatformPaths.configDir().resolve(CONTENT_LOADING_CONFIG_FILE_NAME);
         if (!Files.isRegularFile(file))
             return FLAN_DIR_NAME;
 

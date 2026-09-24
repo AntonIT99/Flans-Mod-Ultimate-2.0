@@ -1,5 +1,7 @@
 package com.flansmodultimate.config;
 
+import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.PlatformPaths;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
@@ -12,9 +14,6 @@ import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.types.InfoType;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.loading.FMLPaths;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -591,7 +590,7 @@ public final class ModClientConfig
                 startupValue = startupUncensoredContentEnabled;
                 if (startupValue == null)
                 {
-                    Path configPath = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE_NAME);
+                    Path configPath = PlatformPaths.configDir().resolve(CONFIG_FILE_NAME);
                     startupValue = readUncensoredContentSetting(configPath);
                     startupUncensoredContentEnabled = startupValue;
                 }
@@ -865,10 +864,10 @@ public final class ModClientConfig
         instance.set(new ModClientConfig());
 
         if (old != null && old.enableUncensoredContent != get().enableUncensoredContent
-            && FMLEnvironment.dist == Dist.CLIENT)
+            && PlatformEnvironment.isClient())
             UncensoredResources.reload();
 
-        if (FMLEnvironment.dist == Dist.CLIENT
+        if (PlatformEnvironment.isClient()
             && (old == null
                 || old.combineAmmoOnReload != get().combineAmmoOnReload
                 || old.ammoToUpperInventoryOnReload != get().ammoToUpperInventoryOnReload))
@@ -877,7 +876,7 @@ public final class ModClientConfig
         if (old == null)
             return;
 
-        if (FMLEnvironment.dist == Dist.CLIENT && old.enableGpuModelCache != get().enableGpuModelCache)
+        if (PlatformEnvironment.isClient() && old.enableGpuModelCache != get().enableGpuModelCache)
             GpuModelCache.clear();
 
         if (old.searchModelsInOtherContentPacks != get().searchModelsInOtherContentPacks
