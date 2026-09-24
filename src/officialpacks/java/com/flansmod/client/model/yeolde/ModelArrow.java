@@ -57,15 +57,4 @@ public class ModelArrow extends ModelBase
         }
         poseStack.popPose();
     }
-
-    private static void addVertex(PoseStack poseStack, VertexConsumer vertexConsumer, float x, float y, float z, float u, float v, float normalX, float normalY, float normalZ, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
-    {
-        PoseStack.Pose pose = poseStack.last();
-        vertexConsumer.addVertex(pose.pose(), x, y, z)
-            .setColor(red, green, blue, alpha)
-            .setUv(u, v)
-            .setOverlay(packedOverlay)
-            .setLight(packedLight)
-            .setNormal(pose, normalX, normalY, normalZ);
-    }
 }

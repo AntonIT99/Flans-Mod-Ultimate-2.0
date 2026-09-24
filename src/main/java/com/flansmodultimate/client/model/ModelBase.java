@@ -135,4 +135,15 @@ public abstract class ModelBase extends Model implements IModelBase
         float blue = (packedColor & 0xFF) / 255F;
         renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
     }
+
+    protected static void addVertex(PoseStack poseStack, VertexConsumer vertexConsumer, float x, float y, float z, float u, float v, float normalX, float normalY, float normalZ, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+    {
+        PoseStack.Pose pose = poseStack.last();
+        vertexConsumer.addVertex(pose.pose(), x, y, z)
+            .setColor(red, green, blue, alpha)
+            .setUv(u, v)
+            .setOverlay(packedOverlay)
+            .setLight(packedLight)
+            .setNormal(pose, normalX, normalY, normalZ);
+    }
 }
