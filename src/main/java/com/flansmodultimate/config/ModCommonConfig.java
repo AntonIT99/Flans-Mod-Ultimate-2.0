@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.platform.PlatformPaths;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
