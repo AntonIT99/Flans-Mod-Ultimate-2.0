@@ -7,6 +7,6 @@
   "max_level": 3,
   "min_cost": { "base": 5, "per_level_above_first": 10 },
   "slots": ["offhand"],
-  "supported_items": "#minecraft:enchantable/durability",
+  "supported_items": "#flansmodultimate:enchantable/offhand",
   "weight": 10
 }

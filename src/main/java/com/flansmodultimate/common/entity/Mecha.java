@@ -259,7 +259,13 @@ public class Mecha extends Driveable
         MechaType type = getMechaType();
         if (type != null)
         {
-            updateLegAnimation(type, Math.abs(getThrottle()) > 0.01F);
+            float forwardInput = axis(getInputMask(), DriveableInput.FORWARD, DriveableInput.BACKWARD);
+            float sideInput = axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT);
+            Vec3 intent = MechaPhysics.movementIntent(
+                MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), forwardInput, sideInput);
+            boolean walking = Math.abs(getThrottle()) > 0.01F && intent.lengthSqr() > 0.01D;
+            updateLegFacing(type, intent, walking);
+            updateLegAnimation(type, walking);
         }
     }
 

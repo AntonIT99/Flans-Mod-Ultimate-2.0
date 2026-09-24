@@ -133,6 +133,7 @@ public final class ModClientEventHandler
         event.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
         event.register(FlansMod.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
         event.register(FlansMod.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
+        event.register(FlansMod.mechaInventoryMenu.get(), MechaInventoryScreen::new);
         event.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
         event.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
         event.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
@@ -216,6 +217,8 @@ public final class ModClientEventHandler
     {
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "scope"), ClientHudOverlays.SCOPE);
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "armor"), ClientHudOverlays.ARMOR);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "wounded_flash"), ClientHudOverlays.WOUNDED_FLASH);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flash_bang"), ClientHudOverlays.FLASH_BANG);
         event.registerAbove(VanillaGuiLayers.ARMOR_LEVEL, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "damage_absorption"), ClientHudOverlays.DAMAGE_ABSORPTION);
         event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "hud"), ClientHudOverlays.HUD);
     }

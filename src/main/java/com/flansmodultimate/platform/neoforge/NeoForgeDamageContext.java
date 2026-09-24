@@ -3,43 +3,53 @@ package com.flansmodultimate.platform.neoforge;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
 
-public record NeoForgeDamageContext(LivingIncomingDamageEvent event) implements MutableDamageContext
+public final class NeoForgeDamageContext implements MutableDamageContext
 {
+    private final LivingEntity entity;
+    private final DamageContainer container;
+    private boolean canceled;
+
+    public NeoForgeDamageContext(LivingEntity entity, DamageContainer container)
+    {
+        this.entity = entity;
+        this.container = container;
+    }
+
     @Override
     public LivingEntity entity()
     {
-        return event.getEntity();
+        return entity;
     }
 
     @Override
     public DamageSource source()
     {
-        return event.getSource();
+        return container.getSource();
     }
 
     @Override
     public float amount()
     {
-        return event.getAmount();
+        return container.getNewDamage();
     }
 
     @Override
     public void setAmount(float amount)
     {
-        event.setAmount(amount);
+        container.setNewDamage(amount);
     }
 
     @Override
     public void cancel()
     {
-        event.setCanceled(true);
+        canceled = true;
     }
 
     @Override
     public boolean isCanceled()
     {
-        return event.isCanceled();
+        return canceled;
     }
 }

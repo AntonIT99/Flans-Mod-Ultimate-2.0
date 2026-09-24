@@ -117,6 +117,7 @@ public class SurvivorEntity extends Monster
     protected void dropCustomDeathLoot(@NotNull net.minecraft.server.level.ServerLevel level, @NotNull DamageSource source, boolean recentlyHit)
     {
         super.dropCustomDeathLoot(level, source, recentlyHit);
+        gun.dropReserve();
         ApocalypseLoot.dropSurvivorLoot(this);
     }
 

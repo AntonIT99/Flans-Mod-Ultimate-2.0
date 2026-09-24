@@ -166,6 +166,12 @@ public final class ClientEventHandler
     }
 
     @SubscribeEvent
+    public static void onClientTickStart(ClientTickEvent.Pre event)
+    {
+        KeyInputHandler.claimConflictingVanillaKeys();
+    }
+
+    @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event)
     {
         GunInputState.tick();
@@ -209,7 +215,9 @@ public final class ClientEventHandler
         VehicleThermalRenderer.render(event);
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
-        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick().getGameTimeDeltaPartialTick(true), event.getCamera());
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), partialTick, event.getCamera());
+        OpStickConnectionRenderer.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(), event.getCamera(), partialTick);
 
         if (ModClient.isDebug())
         {
@@ -239,7 +247,9 @@ public final class ClientEventHandler
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
         if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)
-            && (ModClient.getCurrentScope() != null || gunConfigHidesCrosshair || (ModCommonConfig.get().disableCrosshairForGuns() && holdingNonMeleeGun)))
+            && (VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
+                || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
+                || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun)))
         {
             int w = mc.getWindow().getGuiScaledWidth();
             int h = mc.getWindow().getGuiScaledHeight();

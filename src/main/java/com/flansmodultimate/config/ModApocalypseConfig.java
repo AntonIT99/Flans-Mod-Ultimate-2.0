@@ -127,7 +127,12 @@ public final class ModApocalypseConfig
             .comment("If true, players who die in the apocalypse dimension respawn near their death point instead of normal overworld spawn behavior.")
             .define("apocalypseRespawnInApocalypse", false);
         APOCALYPSE_TELEPORT_OPTION = builder
-            .comment("Who is sent by legacy AI-chip apocalypse triggers. Reserved until mecha trigger support is complete.")
+            .comment("Who an AI-chip apocalypse trigger sends to the apocalypse dimension when it fires.",
+                "PLACER_ONLY: only the player who placed the mecha.",
+                "DIM: everyone in the dimension it was placed in.",
+                "NEARBY: everyone within 50 blocks of it.",
+                "DIM_OPT_IN / NEARBY_OPT_IN: nobody is moved automatically; those players are told the",
+                "apocalypse has begun and travel through a portal if they choose to.")
             .defineEnum("apocalypseTeleportOption", ApocalypseTeleportOption.PLACER_ONLY);
         APOCALYPSE_ACID_DAMAGE = builder
             .comment("Damage per tick from sulphuric acid.")

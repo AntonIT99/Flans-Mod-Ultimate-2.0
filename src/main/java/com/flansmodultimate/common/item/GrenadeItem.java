@@ -93,9 +93,6 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     @Override
     public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack)
     {
-        if (stack.getEquipmentSlot() != EquipmentSlot.MAINHAND)
-            return super.getDefaultAttributeModifiers(stack);
-
         ItemAttributeModifiers.Builder b = ItemAttributeModifiers.builder();
         for (ItemAttributeModifiers.Entry entry : super.getDefaultAttributeModifiers(stack).modifiers())
             b.add(entry.attribute(), entry.modifier(), entry.slot());

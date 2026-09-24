@@ -1,6 +1,7 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.ContentManager;
+import com.flansmodultimate.EnchantmentItemRepositorySource;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
 import com.flansmodultimate.PackagedContentRepositorySource;
@@ -42,6 +43,8 @@ public final class ModCommonEventHandler
     public static void registerPack(AddPackFindersEvent event)
     {
         event.addRepositorySource(PackagedContentRepositorySource.create(event.getPackType()));
+        if (event.getPackType() == PackType.SERVER_DATA)
+            event.addRepositorySource(EnchantmentItemRepositorySource.create());
 
         if (event.getPackType() == PackType.SERVER_DATA && ModApocalypseConfig.apocalypseDimensionDatapackEnabled())
             event.addRepositorySource(ApocalypseDatapackSource.create());

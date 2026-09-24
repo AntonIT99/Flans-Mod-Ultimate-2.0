@@ -144,6 +144,12 @@ public final class PacketLoadoutState implements IClientPacket
             data.writeUUID(box.id()); data.writeUtf(box.boxId()); data.writeUtf(box.name()); data.writeBoolean(box.opened());
             data.writeUtf(box.rewardKey()); PacketIO.writeItem(data, box.preview());
         }
+        data.writeVarInt(boxTypes.size());
+        for (BoxTypeView box : boxTypes)
+        {
+            data.writeUtf(box.boxId()); data.writeUtf(box.name());
+            PacketIO.writeItem(data, box.preview()); data.writeVarInt(box.unopened());
+        }
         data.writeCollection(rewards, (buf, reward) -> {
             buf.writeUtf(reward.key()); buf.writeUtf(reward.typeId()); buf.writeUtf(reward.name()); buf.writeVarInt(reward.rarity());
         });
@@ -176,6 +182,10 @@ public final class PacketLoadoutState implements IClientPacket
         boxes = new ArrayList<>(boxCount);
         for (int i = 0; i < boxCount; i++)
             boxes.add(new BoxView(data.readUUID(), data.readUtf(), data.readUtf(), data.readBoolean(), data.readUtf(), PacketIO.readItem(data)));
+        int boxTypeCount = data.readVarInt();
+        boxTypes = new ArrayList<>(boxTypeCount);
+        for (int i = 0; i < boxTypeCount; i++)
+            boxTypes.add(new BoxTypeView(data.readUtf(), data.readUtf(), PacketIO.readItem(data), data.readVarInt()));
         rewards = data.readList(buf -> new RewardView(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readVarInt()));
     }
 

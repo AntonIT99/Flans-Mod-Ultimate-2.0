@@ -219,16 +219,14 @@ public class SkullBossEntity extends Monster
             return;
 
         playSound(resolveSound("skullboss_spawn", SoundEvents.WITHER_SPAWN), 8.0F, 1.0F);
-        int count = 1 + random.nextInt(3);
-        for (int i = 0; i < count; i++)
-        {
-            SkullDroneEntity drone = ApocalypseContent.skullDrone.get().create(serverLevel);
-            if (drone == null)
-                continue;
-            drone.moveTo(getX() + random.nextGaussian() * 4.0D, getY() - 2.0D + random.nextDouble() * 4.0D, getZ() + random.nextGaussian() * 4.0D, random.nextFloat() * 360.0F, 0.0F);
-            drone.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(drone.blockPosition()), MobSpawnType.MOB_SUMMONED, null);
-            serverLevel.addFreshEntity(drone);
-        }
+        SkullDroneEntity drone = ApocalypseContent.skullDrone.get().create(serverLevel);
+        if (drone == null)
+            return;
+        drone.moveTo(getX(), getY() - 5.0D, getZ(), random.nextFloat() * 360.0F, 0.0F);
+        drone.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(drone.blockPosition()), MobSpawnType.MOB_SUMMONED, null);
+        if (target != null)
+            drone.setTarget(target);
+        serverLevel.addFreshEntity(drone);
     }
 
     private void shootTnt(Level level, LivingEntity target)

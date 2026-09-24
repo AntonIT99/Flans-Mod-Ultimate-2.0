@@ -128,6 +128,10 @@ public final class ItemOpStick extends Item
         {
             tag.putUUID(NBT_CONNECTION, object.getObjectId());
             tag.putBoolean(NBT_CONNECTION_BASE, object instanceof ITeamBase);
+            Vec3 position = object.getTeamObjectPosition();
+            tag.putLongArray(NBT_CONNECTION_POS, new long[] {
+                Double.doubleToRawLongBits(position.x), Double.doubleToRawLongBits(position.y), Double.doubleToRawLongBits(position.z)
+            });
             ItemStackData.set(stack, tag);
             player.displayClientMessage(Component.literal("First endpoint selected"), false);
             return;
@@ -199,6 +203,7 @@ public final class ItemOpStick extends Item
         ItemStackData.update(stack, tag -> {
             tag.remove(NBT_CONNECTION);
             tag.remove(NBT_CONNECTION_BASE);
+            tag.remove(NBT_CONNECTION_POS);
         });
     }
 

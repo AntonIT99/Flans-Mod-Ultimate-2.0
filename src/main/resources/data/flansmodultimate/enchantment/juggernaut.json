@@ -6,6 +6,6 @@
   "max_level": 1,
   "min_cost": { "base": 25, "per_level_above_first": 25 },
   "slots": ["armor"],
-  "supported_items": "#minecraft:enchantable/armor",
+  "supported_items": "#flansmodultimate:enchantable/armor",
   "weight": 1
 }

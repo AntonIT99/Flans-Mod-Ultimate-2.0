@@ -6,6 +6,7 @@
   "mixins": [
       "EntityDriveableCollisionMixin",
       "LevelDriveableHullsMixin",
+      "LivingEntityDamageMixin",
       "PlayerDriveableEdgeMixin",
       "ServerGamePacketListenerDriveableMixin"
   ],

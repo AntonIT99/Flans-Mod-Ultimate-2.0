@@ -144,30 +144,25 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     @NotNull
     public ItemAttributeModifiers getDefaultAttributeModifiers(@NotNull ItemStack stack) {
         ItemAttributeModifiers vanilla = super.getDefaultAttributeModifiers(stack);
-        EquipmentSlot slot = stack.getEquipmentSlot();
+        EquipmentSlot slot = configType.getArmorItemType().getSlot();
 
-        if (slot == configType.getArmorItemType().getSlot())
+        ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
+
+        for (ItemAttributeModifiers.Entry entry : vanilla.modifiers())
         {
-            ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
-
-            for (ItemAttributeModifiers.Entry entry : vanilla.modifiers())
-            {
-                var attr = entry.attribute();
-                if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == Attributes.KNOCKBACK_RESISTANCE || attr == Attributes.MOVEMENT_SPEED)
-                    continue;
-                builder.add(attr, entry.modifier(), entry.slot());
-            }
-
-            EquipmentSlotGroup group = EquipmentSlotGroup.bySlot(slot);
-            String slotName = slot.getName();
-            builder.add(Attributes.ARMOR, modifier("armor/" + slotName, getDefense(), AttributeModifier.Operation.ADD_VALUE), group);
-            builder.add(Attributes.ARMOR_TOUGHNESS, modifier("armor_toughness/" + slotName, getToughness(), AttributeModifier.Operation.ADD_VALUE), group);
-            builder.add(Attributes.MOVEMENT_SPEED, modifier("movement_speed/" + slotName, configType.getMoveSpeedModifier() - 1F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
-            builder.add(Attributes.KNOCKBACK_RESISTANCE, modifier("knockback_resistance/" + slotName, configType.getKnockbackModifier(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
-            return builder.build();
+            var attr = entry.attribute();
+            if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == Attributes.KNOCKBACK_RESISTANCE || attr == Attributes.MOVEMENT_SPEED)
+                continue;
+            builder.add(attr, entry.modifier(), entry.slot());
         }
 
-        return vanilla;
+        EquipmentSlotGroup group = EquipmentSlotGroup.bySlot(slot);
+        String slotName = slot.getName();
+        builder.add(Attributes.ARMOR, modifier("armor/" + slotName, getDefense(), AttributeModifier.Operation.ADD_VALUE), group);
+        builder.add(Attributes.ARMOR_TOUGHNESS, modifier("armor_toughness/" + slotName, getToughness(), AttributeModifier.Operation.ADD_VALUE), group);
+        builder.add(Attributes.MOVEMENT_SPEED, modifier("movement_speed/" + slotName, configType.getMoveSpeedModifier() - 1F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
+        builder.add(Attributes.KNOCKBACK_RESISTANCE, modifier("knockback_resistance/" + slotName, configType.getKnockbackModifier(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
+        return builder.build();
     }
 
     private static AttributeModifier modifier(String path, double amount, AttributeModifier.Operation operation)

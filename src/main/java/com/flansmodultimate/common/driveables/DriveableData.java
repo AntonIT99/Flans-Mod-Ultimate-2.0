@@ -302,7 +302,9 @@ public final class DriveableData implements Container
         PartType engine = getEngine();
         if (engine != null && engine.isUseRFPower())
             return stack.getCapability(Capabilities.EnergyStorage.ITEM) != null;
-        return stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL;
+        if (stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL)
+            return true;
+        return FluidFuel.isFuelContainer(stack);
     }
 
     static boolean allowsAmmunitionInput(boolean filterAmmunition, boolean shootableItem)

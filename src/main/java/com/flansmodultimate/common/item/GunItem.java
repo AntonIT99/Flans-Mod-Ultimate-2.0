@@ -523,9 +523,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack)
     {
-        if (stack.getEquipmentSlot() != EquipmentSlot.MAINHAND)
-            return super.getDefaultAttributeModifiers(stack);
-
         ItemAttributeModifiers.Builder b = ItemAttributeModifiers.builder();
         for (ItemAttributeModifiers.Entry entry : super.getDefaultAttributeModifiers(stack).modifiers())
             b.add(entry.attribute(), entry.modifier(), entry.slot());
@@ -759,7 +756,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         {
             List<ShootableType> ammoTypes = configType.getAmmoTypes();
             if (!ammoTypes.isEmpty())
-                setPreferredAmmo(gun, ammoTypes.get(0).getOriginalShortName());
+            {
+                String preferred = ammoTypes.get(0).getOriginalShortName();
+                setPreferredAmmo(gun, preferred);
+                return preferred;
+            }
         }
 
         return tag.getString(NBT_PREFERRED_AMMO);

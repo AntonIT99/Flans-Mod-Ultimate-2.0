@@ -123,6 +123,33 @@ public final class RecipeJsonGenerator
         return fileNames;
     }
 
+    /** Rebuild old generated recipes that 1.21.1 rejects for exceeding the item's stack limit. */
+    public static boolean hasOversizedGeneratedRecipeOutputs(List<InfoType> items, Path dataFolder)
+    {
+        Path recipeFolder = dataFolder.resolve("recipe");
+        for (InfoType config : items)
+        {
+            if (!config.hasCraftingRecipe())
+                continue;
+            Path recipeFile = recipeFolder.resolve(getCraftingFileName(config));
+            if (!Files.isRegularFile(recipeFile))
+                continue;
+            try
+            {
+                JsonObject recipe = JsonParser.parseString(Files.readString(recipeFile, StandardCharsets.UTF_8)).getAsJsonObject();
+                JsonObject result = recipe.getAsJsonObject("result");
+                if (result == null || (result.has("count") && result.get("count").getAsInt() > maxRecipeStackSize(config)))
+                    return true;
+            }
+            catch (RuntimeException | IOException exception)
+            {
+                FlansMod.log.warn("Could not inspect generated recipe {}; regenerating it", recipeFile, exception);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void writeRecipes(InfoType config, Path outputFolder)
     {
         if (!config.getType().isHasItem() || (!config.hasCraftingRecipe() && !config.hasSmeltingRecipe()))
@@ -260,12 +287,7 @@ public final class RecipeJsonGenerator
         JsonObject result = new JsonObject();
         result.addProperty("id", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
         int count = Math.max(1, config.getRecipeOutput());
-        int maxStackSize = Integer.MAX_VALUE;
-        if (config instanceof ShootableType shootable)
-            maxStackSize = Math.max(1, shootable.getMaxStackSize());
-        else if (config instanceof PartType part)
-            maxStackSize = part.getCategory() == PartType.Category.FUEL && part.getFuel() > 0
-                ? 1 : part.getStackSize();
+        int maxStackSize = maxRecipeStackSize(config);
 
         if (count > maxStackSize)
         {
@@ -276,6 +298,16 @@ public final class RecipeJsonGenerator
         if (count != 1)
             result.addProperty("count", count);
         return result;
+    }
+
+    static int maxRecipeStackSize(InfoType config)
+    {
+        if (config instanceof ShootableType shootable)
+            return Math.max(1, shootable.getMaxStackSize());
+        if (config instanceof PartType part)
+            return part.getCategory() == PartType.Category.FUEL && part.getFuel() > 0
+                ? 1 : Math.max(1, part.getStackSize());
+        return config.getType().isHasBlock() ? 64 : 1;
     }
 
     private static Map<Character, String> parseShapedRecipeKeys(InfoType config)

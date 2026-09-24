@@ -460,7 +460,11 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         if (!level().isClientSide)
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         if (!sourceStack.isEmpty())
-            driveableData.removeSerializedState(ItemStackData.copy(sourceStack));
+        {
+            CompoundTag sourceData = ItemStackData.copy(sourceStack);
+            driveableData.removeSerializedState(sourceData);
+            ItemStackData.set(sourceStack, sourceData);
+        }
         weaponInventoryFingerprint = weaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
         renderInventoryFingerprint = renderInventoryFingerprint();
@@ -4630,7 +4634,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return false;
         player.openMenu(
             new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page),
-                Component.literal(configType.getName())),
+                ModUtils.getDisplayName(configType)),
             buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()).writeVarInt(-1));
         return true;
     }

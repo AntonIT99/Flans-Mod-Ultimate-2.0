@@ -207,13 +207,13 @@ public final class ModUtils
     {
         if (infoType != null && infoType.getType().isHasItem())
         {
-            return Optional.ofNullable(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName())));
+            return resolveItem(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, infoType.getShortName()));
         }
         return Optional.empty();
     }
 
     /**
-     * The Forge item registry is a defaulted registry, so an unknown id resolves to {@code minecraft:air}
+     * The item registry is defaulted, so an unknown id resolves to {@code minecraft:air}
      * instead of null. Passing that on would hand callers a present-but-empty stack and hide the failure,
      * so an air result is only accepted when air is what was actually asked for.
      */
@@ -265,11 +265,7 @@ public final class ModUtils
             id = "minecraft:" + ResourceUtils.sanitize(id);
         }
 
-        ResourceLocation rl = ResourceLocation.tryParse(id);
-        if (rl == null)
-            return Optional.empty();
-
-        return Optional.ofNullable(BuiltInRegistries.ITEM.get(rl));
+        return resolveItem(ResourceLocation.tryParse(id));
     }
 
     private static boolean isInteger(String s)
@@ -299,7 +295,10 @@ public final class ModUtils
             return Optional.empty();
         }
 
-        return Optional.ofNullable(ResourceLocation.tryParse(id)).map(BuiltInRegistries.BLOCK::get).map(Block::defaultBlockState);
+        return Optional.ofNullable(ResourceLocation.tryParse(id))
+            .filter(BuiltInRegistries.BLOCK::containsKey)
+            .map(BuiltInRegistries.BLOCK::get)
+            .map(Block::defaultBlockState);
     }
 
     /**
@@ -369,10 +368,9 @@ public final class ModUtils
 
     public static String getItemLocalizedName(String itemId)
     {
-        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId));
-        if (item != null)
-            return item.getDescription().getString();
-        return itemId;
+        return resolveItem(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId))
+            .map(item -> item.getDescription().getString())
+            .orElse(itemId);
     }
 
     public static float getYawFromDirection(Vec3 dir)

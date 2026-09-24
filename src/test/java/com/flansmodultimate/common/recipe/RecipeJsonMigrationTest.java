@@ -1,5 +1,9 @@
 package com.flansmodultimate.common.recipe;
 
+import com.flansmodultimate.ContentPack;
+import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.common.types.TypeFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
@@ -7,6 +11,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -39,5 +44,28 @@ class RecipeJsonMigrationTest
         assertEquals("flansmod:example", smeltingResult.get("id").getAsString());
         assertFalse(RecipeJsonGenerator.hasUnmigratedLegacyRecipes(dataFolder));
         assertTrue(Files.readString(crafting).contains("\"item\""));
+    }
+
+    @Test
+    void detectsPreprocessedRecipeWhoseOutputExceedsToolStackLimit() throws Exception
+    {
+        ToolType tool = new ToolType()
+        {
+            @Override
+            public String getShortName()
+            {
+                return "hardtack";
+            }
+        };
+        tool.load(new TypeFile("hardtack", EnumType.TOOL, new ContentPack("test", dataFolder), List.of(
+            "ShortName hardtack", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
+        Path recipeFolder = Files.createDirectories(dataFolder.resolve("recipe"));
+        Path recipeFile = recipeFolder.resolve("hardtack_shapeless.json");
+        Files.writeString(recipeFile, "{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"id\":\"flansmod:hardtack\",\"count\":16}}");
+
+        assertEquals(1, RecipeJsonGenerator.maxRecipeStackSize(tool));
+        assertTrue(RecipeJsonGenerator.hasOversizedGeneratedRecipeOutputs(List.of(tool), dataFolder));
+        Files.writeString(recipeFile, "{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"id\":\"flansmod:hardtack\"}}");
+        assertFalse(RecipeJsonGenerator.hasOversizedGeneratedRecipeOutputs(List.of(tool), dataFolder));
     }
 }

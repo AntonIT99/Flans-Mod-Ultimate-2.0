@@ -1105,7 +1105,8 @@ public class ContentManager
 
         FileSystem fs = FileUtils.createFileSystem(provider);
         boolean missingData = isMissingGeneratedRecipeFiles(provider, fs)
-            || RecipeJsonGenerator.hasUnmigratedLegacyRecipes(provider.getDataPath(fs));
+            || RecipeJsonGenerator.hasUnmigratedLegacyRecipes(provider.getDataPath(fs))
+            || RecipeJsonGenerator.hasOversizedGeneratedRecipeOutputs(listItems(provider), provider.getDataPath(fs));
         FileUtils.closeFileSystem(fs, provider);
         return missingData;
     }

@@ -40,7 +40,6 @@ import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
-import com.flansmodultimate.platform.neoforge.NeoForgeDamageContext;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -375,11 +374,12 @@ public final class CommonEventHandler
                     event.setCanceled(true);
             });
         }
+    }
 
-        if (event.isCanceled())
-            return;
-
-        MutableDamageContext damage = new NeoForgeDamageContext(event);
+    /** Called from LivingEntity.actuallyHurt after shield and cooldown handling. */
+    public static void applyLivingHurt(MutableDamageContext damage)
+    {
+        LivingEntity entity = damage.entity();
         DamageSource source = damage.source();
 
         if (entity.level().isClientSide)

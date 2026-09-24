@@ -163,6 +163,9 @@ public final class ClientHudOverlays
     };
 
     public static final LayeredDraw.Layer HUD = (g, deltaTracker) -> {
+        if (!ModClientConfig.get().showFlansHud || Minecraft.getInstance().options.hideGui)
+            return;
+
         int sw = g.guiWidth();
         int sh = g.guiHeight();
         float partialTick = deltaTracker.getGameTimeDeltaPartialTick(true);
