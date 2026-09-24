@@ -8,14 +8,14 @@ import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,7 +62,7 @@ public final class ModUtils
         if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("vehicle"))
             return true;
 
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         if (id == null)
             return false;
 
@@ -75,7 +75,7 @@ public final class ModUtils
         if (entity.getClass().getName().toLowerCase(Locale.ROOT).contains("plane"))
             return true;
 
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         if (id == null)
             return false;
 
@@ -212,7 +212,7 @@ public final class ModUtils
     }
 
     /**
-     * The Forge item registry is a defaulted registry, so an unknown id resolves to {@code minecraft:air}
+     * The item registry is defaulted, so an unknown id resolves to {@code minecraft:air}
      * instead of null. Passing that on would hand callers a present-but-empty stack and hide the failure,
      * so an air result is only accepted when air is what was actually asked for.
      */
@@ -221,7 +221,7 @@ public final class ModUtils
         if (id == null)
             return Optional.empty();
 
-        Item item = ForgeRegistries.ITEMS.getValue(id);
+        Item item = BuiltInRegistries.ITEM.get(id);
         if (item == null || (item == Items.AIR && !AIR_ID.equals(id)))
             return Optional.empty();
         return Optional.of(item);
@@ -294,7 +294,10 @@ public final class ModUtils
             return Optional.empty();
         }
 
-        return Optional.ofNullable(ResourceLocation.tryParse(id)).map(ForgeRegistries.BLOCKS::getValue).map(Block::defaultBlockState);
+        return Optional.ofNullable(ResourceLocation.tryParse(id))
+            .filter(BuiltInRegistries.BLOCK::containsKey)
+            .map(BuiltInRegistries.BLOCK::get)
+            .map(Block::defaultBlockState);
     }
 
     /**
@@ -342,7 +345,7 @@ public final class ModUtils
             return false;
 
         BlockEvent.BreakEvent breakEvent = new BlockEvent.BreakEvent(level, pos, state, player);
-        MinecraftForge.EVENT_BUS.post(breakEvent);
+        PlatformEvents.post(breakEvent);
 
         if (breakEvent.isCanceled())
             return false;
@@ -364,10 +367,9 @@ public final class ModUtils
 
     public static String getItemLocalizedName(String itemId)
     {
-        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId));
-        if (item != null)
-            return item.getDescription().getString();
-        return itemId;
+        return resolveItem(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId))
+            .map(item -> item.getDescription().getString())
+            .orElse(itemId);
     }
 
     public static float getYawFromDirection(Vec3 dir)

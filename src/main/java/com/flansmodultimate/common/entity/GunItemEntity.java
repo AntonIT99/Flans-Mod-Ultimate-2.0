@@ -7,6 +7,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 
@@ -229,7 +230,7 @@ public class GunItemEntity extends ItemEntity
         for (ItemStack stack : ammoStacks)
         {
             if (stack != null && !stack.isEmpty())
-                ammoList.add(stack.save(new CompoundTag()));
+                ammoList.add(ItemStackData.save(stack, level().registryAccess()));
         }
         tag.put(NBT_AMMO_LIST, ammoList);
     }
@@ -245,7 +246,7 @@ public class GunItemEntity extends ItemEntity
             for (int i = 0; i < ammoList.size(); i++)
             {
                 CompoundTag stackTag = ammoList.getCompound(i);
-                ItemStack stack = ItemStack.of(stackTag);
+                ItemStack stack = ItemStackData.parse(level().registryAccess(), stackTag);
                 if (!stack.isEmpty())
                     ammoStacks.add(stack);
             }

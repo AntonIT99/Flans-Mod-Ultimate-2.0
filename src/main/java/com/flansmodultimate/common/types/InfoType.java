@@ -17,10 +17,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -169,7 +169,7 @@ public abstract class InfoType implements IInfoType
     {
         if (type == null || !type.isHasItem())
             return null;
-        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, getShortName()));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, getShortName()));
         return item == null || item == Items.AIR ? null : item;
     }
 
@@ -584,7 +584,7 @@ public abstract class InfoType implements IInfoType
     @OnlyIn(Dist.CLIENT)
     public static ResourceLocation loadTexture(String textureName, InfoType type)
     {
-        ResourceLocation texture = ResourceLocation.parse("");
+        ResourceLocation texture = FlansMod.FALLBACK_TEXTURE;
         if (StringUtils.isNotBlank(textureName))
         {
             DynamicReference ref;

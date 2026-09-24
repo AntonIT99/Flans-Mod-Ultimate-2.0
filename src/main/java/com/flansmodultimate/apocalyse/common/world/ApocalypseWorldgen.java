@@ -14,7 +14,7 @@ import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -368,7 +368,7 @@ public final class ApocalypseWorldgen
 
     static Optional<Block> flanBlock(String path)
     {
-        Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, path));
+        Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, path));
         if (block == null || block == Blocks.AIR)
             return Optional.empty();
         return Optional.of(block);

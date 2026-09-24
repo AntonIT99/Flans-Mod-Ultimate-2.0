@@ -699,7 +699,7 @@ public final class ClientHudOverlays
 
             int xAccum = 0;
 
-            List<ItemStack> bulletStacks = gunItem.getBulletItemStackList(stack);
+            List<ItemStack> bulletStacks = gunItem.getBulletItemStackList(stack, Minecraft.getInstance().level.registryAccess());
 
             java.util.Map<ShootableItem, Integer> simpleAmmoTotals = new java.util.LinkedHashMap<>();
             java.util.Map<ShootableItem, ItemStack> simpleAmmoSamples = new java.util.LinkedHashMap<>();
@@ -804,7 +804,7 @@ public final class ClientHudOverlays
         EnumAmmoHudLayout.Placement placement = layout.placement(hand);
         int x = 0;
 
-        for (ItemStack bulletStack : gunItem.getBulletItemStackList(gunStack))
+        for (ItemStack bulletStack : gunItem.getBulletItemStackList(gunStack, Minecraft.getInstance().level.registryAccess()))
         {
             if (bulletStack == null || bulletStack.isEmpty() || !(bulletStack.getItem() instanceof ShootableItem shootableItem))
                 continue;

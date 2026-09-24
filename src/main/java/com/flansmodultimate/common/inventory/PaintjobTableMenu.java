@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.network.PacketBuffer;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -55,7 +55,7 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         }
     }
 
-    public static PaintjobTableMenu createFromNetwork(int id, Inventory playerInv, FriendlyByteBuf buf)
+    public static PaintjobTableMenu createFromNetwork(int id, Inventory playerInv, PacketBuffer buf)
     {
         return new PaintjobTableMenu(id, playerInv, buf.readBlockPos());
     }

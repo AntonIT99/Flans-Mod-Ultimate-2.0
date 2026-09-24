@@ -12,10 +12,10 @@ import com.flansmodultimate.common.driveables.VehicleOptics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
+import com.flansmodultimate.platform.PlatformEvents;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -542,7 +542,7 @@ public class Seat extends Entity implements IControllable
      */
     public boolean tryEnter(@NotNull Player player)
     {
-        if (MinecraftForge.EVENT_BUS.post(new PlayerEnterSeatEvent(this, player)))
+        if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(this, player)))
             return false;
         if (player.getVehicle() != null)
             player.stopRiding();

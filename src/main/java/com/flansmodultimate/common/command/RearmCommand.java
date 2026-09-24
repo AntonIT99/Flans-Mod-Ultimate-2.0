@@ -174,7 +174,7 @@ public final class RearmCommand
         {
             ItemStack stack = player.getItemInHand(hand);
             if (stack.getItem() instanceof DriveableItem<?, ?> item)
-                return new DriveableTarget(item.getConfigType(), DriveableData.fromStack(item.getConfigType(), stack), stack);
+                return new DriveableTarget(item.getConfigType(), DriveableData.fromStack(item.getConfigType(), stack, player.level().registryAccess()), stack);
         }
         return null;
     }

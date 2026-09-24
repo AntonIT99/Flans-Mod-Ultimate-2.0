@@ -1,9 +1,12 @@
 package com.flansmodultimate.apocalyse.common.world;
 
+import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.world.SavedDataPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -49,10 +52,10 @@ public class ApocalypseSavedData extends SavedData
     {
         ServerLevel overworld = level.getServer().getLevel(Level.OVERWORLD);
         ServerLevel storageLevel = overworld != null ? overworld : level;
-        return storageLevel.getDataStorage().computeIfAbsent(ApocalypseSavedData::load, ApocalypseSavedData::new, DATA_NAME);
+        return SavedDataPlatform.computeIfAbsent(storageLevel, DATA_NAME, ApocalypseSavedData::new, ApocalypseSavedData::load);
     }
 
-    public static ApocalypseSavedData load(CompoundTag tag)
+    public static ApocalypseSavedData load(CompoundTag tag, HolderLookup.Provider registries)
     {
         ApocalypseSavedData data = new ApocalypseSavedData();
         ListTag list = tag.getList(NBT_ENTRY_POINTS, Tag.TAG_COMPOUND);
@@ -161,9 +164,16 @@ public class ApocalypseSavedData extends SavedData
         return Optional.ofNullable(deathPoints.get(uuid));
     }
 
+    /** 1.20.1 saves without registry context. */
     @Override
     @NotNull
     public CompoundTag save(@NotNull CompoundTag tag)
+    {
+        return save(tag, ItemStackData.builtInRegistries());
+    }
+
+    @NotNull
+    public CompoundTag save(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
         ListTag list = new ListTag();
         for (Map.Entry<UUID, BlockPos> entry : entryPoints.entrySet())

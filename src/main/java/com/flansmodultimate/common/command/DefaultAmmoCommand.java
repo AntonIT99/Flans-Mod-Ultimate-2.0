@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -111,7 +112,7 @@ public final class DefaultAmmoCommand
         for (InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
-            AmmoSource source = getHeldSource(stack);
+            AmmoSource source = getHeldSource(stack, player.level().registryAccess());
             if (source != null)
                 sources.add(source);
         }
@@ -119,7 +120,7 @@ public final class DefaultAmmoCommand
     }
 
     @Nullable
-    private static AmmoSource getHeldSource(ItemStack stack)
+    private static AmmoSource getHeldSource(ItemStack stack, net.minecraft.core.HolderLookup.Provider registries)
     {
         if (stack.isEmpty())
             return null;
@@ -130,7 +131,7 @@ public final class DefaultAmmoCommand
             return source(name, defaultAmmo(aaGunItem.getConfigType().getDefaultAmmo()));
         if (stack.getItem() instanceof DriveableItem<?, ?> driveableItem)
         {
-            DriveableData data = DriveableData.fromStack(driveableItem.getConfigType(), stack);
+            DriveableData data = DriveableData.fromStack(driveableItem.getConfigType(), stack, registries);
             return source(name, DriveableAmmoLoader.defaultAmmo(driveableItem.getConfigType(), data));
         }
         return null;

@@ -5,6 +5,7 @@ import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.world.Container;
@@ -41,7 +42,7 @@ public class GunWorkbenchSlot extends Slot
 
         return switch (slotId)
         {
-            case 0 -> stack.getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable() && stack.hasTag();
+            case 0 -> stack.getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable() && ItemStackData.has(stack);
             case 1 -> isAttachmentOfType(stack, EnumAttachmentType.BARREL) && isSlotAllowedByGun(EnumAttachmentType.BARREL);
             case 2 -> isAttachmentOfType(stack, EnumAttachmentType.SIGHTS) && isSlotAllowedByGun(EnumAttachmentType.SIGHTS);
             case 3 -> isAttachmentOfType(stack, EnumAttachmentType.STOCK) && isSlotAllowedByGun(EnumAttachmentType.STOCK);

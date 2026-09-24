@@ -14,12 +14,15 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +30,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -56,7 +58,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<AAGunType>, IMassiveEntity
+public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity
 {
     private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 128;
@@ -418,7 +420,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(PacketBuffer buf)
     {
         buf.writeUtf(getShortName());
         buf.writeFloat(getGunYaw());
@@ -427,13 +429,13 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
         buf.writeInt(getReloadTimer());
         buf.writeInt(getCurrentBarrelIndex());
         buf.writeInt(getHealth());
-        buf.writeComponent(getCurrentAmmoName());
+        PacketIO.writeComponent(buf, getCurrentAmmoName());
         buf.writeInt(getMagazineLeft());
         buf.writeInt(getMagazineSize());
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(PacketBuffer buf)
     {
         try
         {
@@ -453,7 +455,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
             setReloadTimer(buf.readInt());
             setCurrentBarrel(buf.readInt());
             setHealth(buf.readInt());
-            entityData.set(DATA_CURRENT_AMMO_NAME, buf.readComponent());
+            entityData.set(DATA_CURRENT_AMMO_NAME, PacketIO.readComponent(buf));
             entityData.set(DATA_MAGAZINE_LEFT, buf.readInt());
             entityData.set(DATA_MAGAZINE_SIZE, buf.readInt());
         }
@@ -495,7 +497,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
                 CompoundTag ammoTag = ammoList.getCompound(i);
                 int slot = ammoTag.getInt(NBT_AMMO_SLOT);
                 if (slot >= 0 && slot < ammo.length && ammoTag.contains(NBT_AMMO_STACK, Tag.TAG_COMPOUND))
-                    ammo[slot] = ItemStack.of(ammoTag.getCompound(NBT_AMMO_STACK));
+                    ammo[slot] = ItemStackData.parse(level().registryAccess(), ammoTag.getCompound(NBT_AMMO_STACK));
             }
         }
         updateAmmoMask();
@@ -526,7 +528,7 @@ public class AAGun extends Entity implements IEntityAdditionalSpawnData, IFlanEn
 
             CompoundTag ammoTag = new CompoundTag();
             CompoundTag stackTag = new CompoundTag();
-            ammo[i].save(stackTag);
+            ItemStackData.save(ammo[i], level().registryAccess(), stackTag);
             ammoTag.putInt(NBT_AMMO_SLOT, i);
             ammoTag.put(NBT_AMMO_STACK, stackTag);
             ammoList.add(ammoTag);

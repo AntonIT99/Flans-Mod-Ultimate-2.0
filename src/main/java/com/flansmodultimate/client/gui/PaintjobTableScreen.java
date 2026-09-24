@@ -9,6 +9,7 @@ import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -123,7 +124,7 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
     @Override
     public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg);
+        ClientPlatform.renderBackground(this, gg, mouseX, mouseY, partialTick);
         super.render(gg, mouseX, mouseY, partialTick);
         renderTooltip(gg, mouseX, mouseY);
         renderDyeRequirementStrip(gg, mouseX, mouseY, hoveringPaintjob);

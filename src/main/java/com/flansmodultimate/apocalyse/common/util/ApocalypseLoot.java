@@ -13,7 +13,7 @@ import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import net.minecraft.ChatFormatting;
@@ -266,12 +266,12 @@ public final class ApocalypseLoot
 
     private static ItemStack randomFluidBucket(RandomSource random)
     {
-        List<Item> buckets = ForgeRegistries.FLUIDS.getValues().stream()
+        List<Item> buckets = BuiltInRegistries.FLUID.stream()
             .filter(fluid -> fluid.isSource(fluid.defaultFluidState()))
             .map(Fluid::getBucket)
             .filter(bucket -> bucket != Items.AIR)
             .distinct()
-            .sorted(Comparator.comparing(bucket -> String.valueOf(ForgeRegistries.ITEMS.getKey(bucket))))
+            .sorted(Comparator.comparing(bucket -> String.valueOf(BuiltInRegistries.ITEM.getKey(bucket))))
             .toList();
         return buckets.isEmpty() ? ItemStack.EMPTY : new ItemStack(buckets.get(random.nextInt(buckets.size())));
     }

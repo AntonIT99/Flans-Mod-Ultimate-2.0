@@ -112,6 +112,11 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
     @NotNull
     public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
+        return interact(state, level, pos, player, hand);
+    }
+
+    private InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
+    {
         if (!(level.getBlockEntity(pos) instanceof ItemHolderBlockEntity holder))
             return InteractionResult.PASS;
 

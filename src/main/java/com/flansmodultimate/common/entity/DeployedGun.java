@@ -13,13 +13,15 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +29,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -50,11 +51,13 @@ import java.util.Collections;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<GunType>
+public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<GunType>
 {
     private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 1F;
+    /** Player#getMyRidingOffset() in 1.20.1, removed from the 1.21.1 API. */
+    public static final double LEGACY_PLAYER_RIDING_OFFSET = -0.35D;
 
     public static final String NBT_TYPE_NAME = "type";
     public static final String NBT_AMMO = "ammo";
@@ -236,7 +239,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(PacketBuffer buf)
     {
         buf.writeUtf(shortname);
         buf.writeInt(gunDirection);
@@ -247,7 +250,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(PacketBuffer buf)
     {
         try
         {
@@ -284,7 +287,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         blockPos = new BlockPos(tag.getInt(NBT_BLOCK_X), tag.getInt(NBT_BLOCK_Y), tag.getInt(NBT_BLOCK_Z));
 
         if (tag.contains(NBT_AMMO, Tag.TAG_COMPOUND))
-            ammo = ItemStack.of(tag.getCompound(NBT_AMMO));
+            ammo = ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_AMMO));
         else
             ammo = ItemStack.EMPTY;
         setHasAmmo(!ammo.isEmpty());
@@ -308,7 +311,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         if (!ammo.isEmpty())
         {
             CompoundTag ammoTag = new CompoundTag();
-            ammo.save(ammoTag);
+            ItemStackData.save(ammo, level().registryAccess(), ammoTag);
             tag.put(NBT_AMMO, ammoTag);
         }
     }
@@ -456,7 +459,7 @@ public class DeployedGun extends Entity implements IEntityAdditionalSpawnData, I
         float pitchNorm = (maxAbsPitch > 0.0001F) ? (pitch / maxAbsPitch) : 0F;
         double maxPitchYOffset = 0.5D;
         double pitchYOffset = maxPitchYOffset * pitchNorm;
-        double baseY = blockPos.getY() + p.getMyRidingOffset() - 0.65D;
+        double baseY = blockPos.getY() + LEGACY_PLAYER_RIDING_OFFSET - 0.65D;
         double y = baseY + pitchYOffset;
 
         move.accept(passenger, x, y, z);

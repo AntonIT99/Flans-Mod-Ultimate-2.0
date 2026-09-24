@@ -26,7 +26,6 @@ import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.network.server.PacketGunSwitchDelay;
 import com.flansmodultimate.util.ModUtils;
-import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,7 +102,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     @Override
     public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
     {
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+        PlayerData data = PlayerData.getInstance(player);
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
 
         data.doGunReload(hand, reloadTime, gunItem.getConfigType().getShootDelay(player.getItemInHand(hand)));
@@ -127,7 +126,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     @Override
     public void cancelReloadGunItem(Player player, InteractionHand hand)
     {
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+        PlayerData data = PlayerData.getInstance(player);
         data.setShootTimeRight(0);
         data.setShootTimeLeft(0);
         data.setReloading(hand, false);

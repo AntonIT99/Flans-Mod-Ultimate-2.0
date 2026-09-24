@@ -19,14 +19,15 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketManualGuidance;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +36,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -248,7 +248,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntit
         if (closestEntity != null)
         {
             BulletLockOnEvent bulletLockOnEvent = new BulletLockOnEvent(this, closestEntity);
-            MinecraftForge.EVENT_BUS.post(bulletLockOnEvent);
+            PlatformEvents.post(bulletLockOnEvent);
             if (!bulletLockOnEvent.isCanceled())
                 lockedOnTo = bulletLockOnEvent.getLockedOnTo();
         }
@@ -263,7 +263,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntit
         if (designated == null || !canLockOnEntity(designated) || !isUsableLockOnTarget(designated))
             return;
         BulletLockOnEvent event = new BulletLockOnEvent(this, designated);
-        MinecraftForge.EVENT_BUS.post(event);
+        PlatformEvents.post(event);
         if (!event.isCanceled())
             lockedOnTo = event.getLockedOnTo();
     }
@@ -306,7 +306,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntit
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(PacketBuffer buf)
     {
         super.writeSpawnData(buf);
         buf.writeInt(firedShot.getShot());
@@ -319,7 +319,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntit
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(PacketBuffer buf)
     {
         try
         {
@@ -708,7 +708,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntit
         for (BulletHit bulletHit : hits)
         {
             BulletHitEvent bulletHitEvent = new BulletHitEvent(this, bulletHit);
-            MinecraftForge.EVENT_BUS.post(bulletHitEvent);
+            PlatformEvents.post(bulletHitEvent);
             if (bulletHitEvent.isCanceled())
                 continue;
 

@@ -16,6 +16,7 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -163,9 +165,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         // Legendary crafter tag
-        if (stack.hasTag() && stack.getTag() != null && stack.getTag().contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
+        CompoundTag customTag = ItemStackData.copy(stack);
+        if (customTag.contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
         {
-            String crafter = stack.getTag().getString(NBT_LEGENDARY_CRAFTER);
+            String crafter = customTag.getString(NBT_LEGENDARY_CRAFTER);
             tooltipComponents.add(Component.translatable(TooltipKeys.LEGENDARY_SKIN_CRAFTER, crafter).withStyle(ChatFormatting.GOLD));
         }
 
@@ -188,7 +191,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
 
             // Ammo info
-            for (ItemStack bulletStack : getBulletItemStackList(stack))
+            for (ItemStack bulletStack : getBulletItemStackList(stack, ItemStackData.builtInRegistries()))
             {
                 if (bulletStack != null && !bulletStack.isEmpty() && bulletStack.getItem() instanceof BulletItem bulletItem)
                 {
@@ -236,7 +239,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BOX), originGunbox));
 
             List<ShootableType> ammoTypes = new ArrayList<>(configType.getAmmoTypes());
-            getBulletItemStackList(stack).stream()
+            getBulletItemStackList(stack, ItemStackData.builtInRegistries()).stream()
                 .map(ItemStack::getItem)
                 .filter(ShootableItem.class::isInstance)
                 .map(ShootableItem.class::cast)
@@ -590,7 +593,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (configType.getPrimaryFunction() == EnumFunction.SHOOT)
         {
-            EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand);
+            EnumFireDecision decision = gunItemHandler.computeFireDecision(data, gunStack, hand, level.registryAccess());
             if (decision == EnumFireDecision.RELOAD)
             {
                 boolean reloading = gunItemHandler.doPlayerReload(level, player, data, gunStack, hand, false);
@@ -625,7 +628,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     private void ensureGunTags(ItemStack stack)
     {
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(stack);
+        boolean dirty = false;
 
         if (!tag.contains(NBT_AMMO, Tag.TAG_LIST))
         {
@@ -634,10 +638,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 ammoList.add(new CompoundTag());
 
             tag.put(NBT_AMMO, ammoList);
+            dirty = true;
         }
 
         if (!tag.contains(IPaintableItem.NBT_PAINTJOB_ID, Tag.TAG_INT))
+        {
             tag.putInt(NBT_PAINTJOB_ID, configType.getDefaultPaintjob().getId());
+            dirty = true;
+        }
+
+        if (dirty)
+            ItemStackData.set(stack, tag);
 
         configType.checkForTags(stack);
     }
@@ -646,16 +657,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
      * Get the ammo item stack stored in the gun's NBT data (the loaded magazine / bullets).
      * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
-    public ItemStack getAmmoItemStack(ItemStack gun, int id) {
+    public ItemStack getAmmoItemStack(ItemStack gun, int id, HolderLookup.Provider registries) {
         if (gun.isEmpty())
             return ItemStack.EMPTY;
 
-        CompoundTag tag = gun.getTag();
-        if (tag == null)
-        {
-            gun.setTag(new CompoundTag());
-            return ItemStack.EMPTY;
-        }
+        CompoundTag tag = ItemStackData.copy(gun);
 
         String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
 
@@ -664,7 +670,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             ListTag list = new ListTag();
             for (int i = 0; i < configType.getNumAmmoItemsInGun(gun); i++)
                 list.add(new CompoundTag());
-            tag.put(nbt, list);
             return ItemStack.EMPTY;
         }
 
@@ -673,19 +678,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return ItemStack.EMPTY;
 
         CompoundTag slotTag = list.getCompound(id);
-        return ItemStack.of(slotTag);
+        return ItemStackData.parse(registries, slotTag);
     }
 
     /**
      * Set the bullet item stack stored in the gun's NBT data (the loaded magazine / bullets).
      * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
-    public void setBulletItemStack(ItemStack gun, ItemStack bullet, int id) {
+    public void setBulletItemStack(ItemStack gun, ItemStack bullet, int id, HolderLookup.Provider registries) {
         if (gun.isEmpty() || id < 0)
             return;
 
         ListTag list;
-        CompoundTag tag = gun.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(gun);
         String nbt = configType.getSecondaryFire(gun) ? NBT_SECONDARY_AMMO : NBT_AMMO;
 
         if (tag.contains(nbt, Tag.TAG_LIST))
@@ -703,22 +708,23 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         while (id >= list.size())
             list.add(new CompoundTag());
 
-        CompoundTag slotTag = (bullet == null || bullet.isEmpty()) ? new CompoundTag() : bullet.save(new CompoundTag());
+        CompoundTag slotTag = (bullet == null || bullet.isEmpty()) ? new CompoundTag() : ItemStackData.save(bullet, registries);
 
         list.set(id, slotTag);
         tag.put(nbt, list);
+        ItemStackData.set(gun, tag);
     }
 
     @Unmodifiable
-    public List<ItemStack> getBulletItemStackList(ItemStack gun)
+    public List<ItemStack> getBulletItemStackList(ItemStack gun, HolderLookup.Provider registries)
     {
         return IntStream.range(0, configType.getNumAmmoItemsInGun(gun))
-            .mapToObj(i -> getAmmoItemStack(gun, i))
+            .mapToObj(i -> getAmmoItemStack(gun, i, registries))
             .filter(s -> s != null && s.getItem() instanceof ShootableItem && ShootableItem.hasRoundsLeft(s))
             .toList();
     }
 
-    public int getReloadCount(ItemStack gunStack)
+    public int getReloadCount(ItemStack gunStack, HolderLookup.Provider registries)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
         if (maxAmmo <= 1)
@@ -726,34 +732,37 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         int emptySlots = 0;
         for (int i = 0; i < maxAmmo; i++)
         {
-            ItemStack bulletStack = getAmmoItemStack(gunStack, i);
+            ItemStack bulletStack = getAmmoItemStack(gunStack, i, registries);
             if (bulletStack == null || bulletStack.isEmpty() || !ShootableItem.hasRoundsLeft(bulletStack))
                 emptySlots++;
         }
         return emptySlots;
     }
 
-    public float getActualReloadTime(ItemStack gunStack, @Nullable ItemStack otherHand)
+    public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
-        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack);
+        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack, registries);
         return EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
     }
 
     public void setPreferredAmmo(ItemStack gun, String ammoName)
     {
-        CompoundTag tag = gun.getOrCreateTag();
-        tag.putString(NBT_PREFERRED_AMMO, ammoName);
+        ItemStackData.update(gun, tag -> tag.putString(NBT_PREFERRED_AMMO, ammoName));
     }
 
     public String getPreferredAmmo(ItemStack gun)
     {
-        CompoundTag tag = gun.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(gun);
         if (!tag.contains(NBT_PREFERRED_AMMO))
         {
             List<ShootableType> ammoTypes = configType.getAmmoTypes();
             if (!ammoTypes.isEmpty())
-                setPreferredAmmo(gun, ammoTypes.get(0).getOriginalShortName());
+            {
+                String preferred = ammoTypes.get(0).getOriginalShortName();
+                setPreferredAmmo(gun, preferred);
+                return preferred;
+            }
         }
 
         return tag.getString(NBT_PREFERRED_AMMO);
@@ -770,7 +779,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (!scope.hasVariableZoom())
             return scope.getZoomFactor();
 
-        CompoundTag tag = gun.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(gun);
         float current = tag.contains(NBT_CURRENT_ZOOM, Tag.TAG_FLOAT)
             ? tag.getFloat(NBT_CURRENT_ZOOM) : ScopeZoom.minimum(scope);
         return ScopeZoom.clamp(current, scope);
@@ -784,7 +793,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         float current = getCurrentVariableZoom(gun);
         float next = ScopeZoom.next(current, scope, increase);
-        gun.getOrCreateTag().putFloat(NBT_CURRENT_ZOOM, next);
+        CompoundTag tag = ItemStackData.copy(gun);
+        tag.putFloat(NBT_CURRENT_ZOOM, next);
+        ItemStackData.set(gun, tag);
         return next;
     }
 
@@ -793,6 +804,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         IScope scope = configType.getCurrentScope(gun);
         if (!scope.hasVariableZoom() || !Float.isFinite(zoom))
             return;
-        gun.getOrCreateTag().putFloat(NBT_CURRENT_ZOOM, ScopeZoom.clamp(zoom, scope));
+        CompoundTag tag = ItemStackData.copy(gun);
+        tag.putFloat(NBT_CURRENT_ZOOM, ScopeZoom.clamp(zoom, scope));
+        ItemStackData.set(gun, tag);
     }
 }

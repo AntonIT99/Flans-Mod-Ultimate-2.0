@@ -3,16 +3,16 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -32,7 +32,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Parachute extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<ToolType>
+public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<ToolType>
 {
     public static final float DEFAULT_HITBOX_WIDTH = 1.0F;
     public static final float DEFAULT_HITBOX_HEIGHT = 0.5F;
@@ -102,13 +102,13 @@ public class Parachute extends Entity implements IEntityAdditionalSpawnData, IFl
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(PacketBuffer buf)
     {
         buf.writeUtf(getShortName());
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(PacketBuffer buf)
     {
         setShortName(buf.readUtf());
         resolveTypeOrDiscard();

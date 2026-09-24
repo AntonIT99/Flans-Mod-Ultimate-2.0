@@ -1,7 +1,11 @@
 package com.flansmodultimate.common.teams;
 
+import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketIO;
+import com.flansmodultimate.platform.item.ItemStackData;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
@@ -40,31 +44,31 @@ public final class PlayerLoadout
         return result;
     }
 
-    public CompoundTag save()
+    public CompoundTag save(HolderLookup.Provider registries)
     {
         CompoundTag tag = new CompoundTag();
         for (LoadoutSlot slot : LoadoutSlot.values())
-            if (!get(slot).isEmpty()) tag.put(tagKey(slot), get(slot).save(new CompoundTag()));
+            if (!get(slot).isEmpty()) tag.put(tagKey(slot), ItemStackData.save(get(slot), registries));
         return tag;
     }
 
-    public static PlayerLoadout load(CompoundTag tag)
+    public static PlayerLoadout load(CompoundTag tag, HolderLookup.Provider registries)
     {
         PlayerLoadout result = new PlayerLoadout();
         for (LoadoutSlot slot : LoadoutSlot.values())
-            if (tag.contains(tagKey(slot))) result.set(slot, ItemStack.of(tag.getCompound(tagKey(slot))));
+            if (tag.contains(tagKey(slot))) result.set(slot, ItemStackData.parse(registries, tag.getCompound(tagKey(slot))));
         return result;
     }
 
-    public void write(FriendlyByteBuf data)
+    public void write(PacketBuffer data)
     {
-        for (LoadoutSlot slot : LoadoutSlot.values()) data.writeItem(get(slot));
+        for (LoadoutSlot slot : LoadoutSlot.values()) PacketIO.writeItem(data, get(slot));
     }
 
-    public static PlayerLoadout read(FriendlyByteBuf data)
+    public static PlayerLoadout read(PacketBuffer data)
     {
         PlayerLoadout result = new PlayerLoadout();
-        for (LoadoutSlot slot : LoadoutSlot.values()) result.set(slot, data.readItem());
+        for (LoadoutSlot slot : LoadoutSlot.values()) result.set(slot, PacketIO.readItem(data));
         return result;
     }
 

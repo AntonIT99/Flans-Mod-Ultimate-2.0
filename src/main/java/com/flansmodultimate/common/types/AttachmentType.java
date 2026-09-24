@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
@@ -234,7 +235,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return Optional.ofNullable(overlay).orElse(ResourceLocation.parse(""));
+        return Optional.ofNullable(overlay).orElse(FlansMod.FALLBACK_TEXTURE);
     }
 
     @Nullable

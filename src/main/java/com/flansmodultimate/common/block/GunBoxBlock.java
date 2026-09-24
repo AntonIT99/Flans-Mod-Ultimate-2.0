@@ -7,10 +7,11 @@ import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
@@ -67,13 +68,18 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
     @NotNull
     public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
+        return open(state, level, pos, player);
+    }
+
+    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
+    {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
 
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
-            NetworkHooks.openScreen(serverPlayer, provider, pos);
+            MenuPlatform.open(serverPlayer, provider, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -125,7 +131,7 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
         if (stack.getItem() instanceof GunItem gunItem)
         {
             GunType gunType = gunItem.getConfigType();
-            CompoundTag tag = stack.getOrCreateTag();
+            CompoundTag tag = ItemStackData.copy(stack);
 
             if (!tag.contains(GunItem.NBT_AMMO, Tag.TAG_LIST))
             {
@@ -134,6 +140,8 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
                     ammoList.add(new CompoundTag());
                 tag.put(GunItem.NBT_AMMO, ammoList);
             }
+
+            ItemStackData.set(stack, tag);
 
             if (!tag.contains(IPaintableItem.NBT_PAINTJOB_ID, Tag.TAG_INT))
                 gunType.applyPaintjobToStack(stack, gunType.getDefaultPaintjob());

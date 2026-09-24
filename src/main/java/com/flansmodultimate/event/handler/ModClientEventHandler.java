@@ -47,8 +47,10 @@ import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -64,7 +66,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -108,8 +109,8 @@ public final class ModClientEventHandler
                 if (item.get() instanceof IPaintableItem<?>)
                 {
                     ItemProperties.register(item.get(), FlansMod.PAINTJOB, (stack, level, entity, seed) -> {
-                        CompoundTag tag = stack.getTag();
-                        return (tag != null && tag.contains(IPaintableItem.NBT_PAINTJOB_ID)) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
+                        CompoundTag tag = ItemStackData.copy(stack);
+                        return tag.contains(IPaintableItem.NBT_PAINTJOB_ID) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
                     });
                 }
             }
@@ -158,7 +159,7 @@ public final class ModClientEventHandler
             }
         }
 
-        for (EntityType<?> entityType : ForgeRegistries.ENTITY_TYPES.getValues())
+        for (EntityType<?> entityType : BuiltInRegistries.ENTITY_TYPE)
         {
             EntityType<? extends LivingEntity> livingType = (EntityType<? extends LivingEntity>) entityType;
             EntityRenderer<? extends LivingEntity> renderer = event.getRenderer(livingType);

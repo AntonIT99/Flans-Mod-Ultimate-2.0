@@ -11,6 +11,7 @@ import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.nbt.CompoundTag;
@@ -120,7 +121,7 @@ public final class ApocalypseGunCombat
         ItemStack gunStack = owner.getMainHandItem();
         if (gunStack.getItem() instanceof GunItem gunItem)
         {
-            ItemStack loaded = gunItem.getAmmoItemStack(gunStack, 0);
+            ItemStack loaded = gunItem.getAmmoItemStack(gunStack, 0, owner.level().registryAccess());
             if (!loaded.isEmpty())
                 addReserve(loaded.copyWithCount(1));
         }
@@ -161,7 +162,7 @@ public final class ApocalypseGunCombat
             return false;
         }
 
-        ItemStack ammoStack = gunItem.getAmmoItemStack(gunStack, slot);
+        ItemStack ammoStack = gunItem.getAmmoItemStack(gunStack, slot, owner.level().registryAccess());
         if (!(ammoStack.getItem() instanceof ShootableItem shootableItem))
             return false;
         ShootableType shootableType = shootableItem.getConfigType();
@@ -169,7 +170,7 @@ public final class ApocalypseGunCombat
 
         fire(gunType, gunStack, shootableType, ammoStack, target, () -> {
             ShootableItem.consumeRound(ammoStack);
-            gunItem.setBulletItemStack(gunStack, ammoStack, slot);
+            gunItem.setBulletItemStack(gunStack, ammoStack, slot, owner.level().registryAccess());
         });
 
         if (soundDelay <= 0 && playSound(gunType.getShootSound(gunStack, lastBullet), gunType.getGunSoundRange(),
@@ -233,7 +234,7 @@ public final class ApocalypseGunCombat
         int slots = gunType.getNumAmmoItemsInGun(gunStack);
         for (int slot = 0; slot < slots; slot++)
         {
-            if (ShootableItem.hasRoundsLeft(gunItem.getAmmoItemStack(gunStack, slot)))
+            if (ShootableItem.hasRoundsLeft(gunItem.getAmmoItemStack(gunStack, slot, owner.level().registryAccess())))
                 continue;
             int best = -1;
             int bestRounds = 0;
@@ -252,7 +253,7 @@ public final class ApocalypseGunCombat
             if (best < 0)
                 continue;
             ItemStack magazine = reserve.get(best);
-            gunItem.setBulletItemStack(gunStack, magazine.copyWithCount(1), slot);
+            gunItem.setBulletItemStack(gunStack, magazine.copyWithCount(1), slot, owner.level().registryAccess());
             magazine.shrink(1);
             if (magazine.isEmpty())
                 reserve.remove(best);
@@ -261,12 +262,12 @@ public final class ApocalypseGunCombat
         return reloaded;
     }
 
-    private static int findLoadedSlot(GunItem gunItem, ItemStack gunStack)
+    private int findLoadedSlot(GunItem gunItem, ItemStack gunStack)
     {
         int slots = gunItem.getConfigType().getNumAmmoItemsInGun(gunStack);
         for (int slot = 0; slot < slots; slot++)
         {
-            ItemStack ammo = gunItem.getAmmoItemStack(gunStack, slot);
+            ItemStack ammo = gunItem.getAmmoItemStack(gunStack, slot, owner.level().registryAccess());
             if (ammo.getItem() instanceof ShootableItem && ShootableItem.hasRoundsLeft(ammo))
                 return slot;
         }
@@ -285,7 +286,7 @@ public final class ApocalypseGunCombat
     {
         ListTag list = new ListTag();
         for (ItemStack stack : reserve)
-            list.add(stack.save(new CompoundTag()));
+            list.add(ItemStackData.save(stack, owner.level().registryAccess()));
         tag.put(NBT_RESERVE, list);
         tag.putFloat(NBT_SHOOT_DELAY, shootDelay);
     }
@@ -294,7 +295,8 @@ public final class ApocalypseGunCombat
     {
         reserve.clear();
         for (Tag entry : tag.getList(NBT_RESERVE, Tag.TAG_COMPOUND))
-            Optional.of(ItemStack.of((CompoundTag) entry)).filter(stack -> !stack.isEmpty()).ifPresent(this::addReserve);
+            Optional.of(ItemStackData.parse(owner.level().registryAccess(), (CompoundTag) entry))
+                .filter(stack -> !stack.isEmpty()).ifPresent(this::addReserve);
         shootDelay = tag.getFloat(NBT_SHOOT_DELAY);
     }
 }

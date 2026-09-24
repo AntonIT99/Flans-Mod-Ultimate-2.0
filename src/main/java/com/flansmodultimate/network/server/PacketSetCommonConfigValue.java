@@ -4,8 +4,8 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ConfigSpecValues;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
@@ -42,7 +42,7 @@ public class PacketSetCommonConfigValue implements IServerPacket
         if (player.hasPermissions(REQUIRED_PERMISSION_LEVEL))
             return true;
 
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        MinecraftServer server = PlatformEnvironment.currentServer();
         return server != null && server.isSingleplayer() && server.isSingleplayerOwner(player.getGameProfile());
     }
 

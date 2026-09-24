@@ -76,13 +76,13 @@ public final class ApocalypseContent
     }
 
     // Registries
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(ForgeRegistries.BLOCKS, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<Fluid> fluidRegistry = DeferredRegister.create(ForgeRegistries.FLUIDS, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(Registries.BLOCK, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(Registries.ITEM, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Fluid> fluidRegistry = DeferredRegister.create(Registries.FLUID, FlansMod.APOCALYPSE_ID);
     private static final DeferredRegister<FluidType> fluidTypeRegistry = DeferredRegister.create(ForgeRegistries.Keys.FLUID_TYPES, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<Feature<?>> featureRegistry = DeferredRegister.create(ForgeRegistries.FEATURES, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(Registries.ENTITY_TYPE, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Feature<?>> featureRegistry = DeferredRegister.create(Registries.FEATURE, FlansMod.APOCALYPSE_ID);
 
     // Fluid Types
     public static final RegistryObject<FluidType> sulphuricAcidFluidType = fluidTypeRegistry.register("sulphuric_acid", () ->

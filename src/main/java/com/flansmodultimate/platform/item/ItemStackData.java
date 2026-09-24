@@ -8,7 +8,10 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Consumer;
 
-/** Version boundary for custom stack data and stack serialization. */
+/**
+ * Version boundary for custom item data and item-stack serialization.
+ * Business code should not depend directly on Minecraft's item NBT or data-component API.
+ */
 public final class ItemStackData
 {
     private ItemStackData() {}
@@ -53,11 +56,13 @@ public final class ItemStackData
         return tag.isEmpty() ? ItemStack.EMPTY : ItemStack.of(tag);
     }
 
+    /** For stacks whose components only reference static built-in registries. */
     public static ItemStack parseBuiltIn(CompoundTag tag)
     {
         return parse(builtInRegistries(), tag);
     }
 
+    /** Registry view for content-pack stacks that only use vanilla/static registry entries. */
     public static HolderLookup.Provider builtInRegistries()
     {
         return RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY);

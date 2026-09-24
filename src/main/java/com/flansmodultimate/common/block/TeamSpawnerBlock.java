@@ -79,6 +79,11 @@ public final class TeamSpawnerBlock extends BaseEntityBlock
     public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
                                  @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
+        return interact(level, pos, player, hand);
+    }
+
+    private InteractionResult interact(Level level, BlockPos pos, Player player, InteractionHand hand)
+    {
         if (!(level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner))
             return InteractionResult.PASS;
         if (level.isClientSide)

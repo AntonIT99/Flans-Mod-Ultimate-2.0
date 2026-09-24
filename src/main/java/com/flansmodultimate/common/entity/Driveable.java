@@ -64,6 +64,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
@@ -71,18 +72,19 @@ import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -92,7 +94,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -150,7 +151,7 @@ import java.util.UUID;
  * transforms, fuel, inventory, weapon delays and damage are owned by the
  * server and replicated through normal entity data/position tracking.</p>
  */
-public abstract class Driveable extends Entity implements IEntityAdditionalSpawnData, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
+public abstract class Driveable extends Entity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
 {
     public static final String NBT_TYPE = "driveable_type";
     public static final String NBT_YAW = "driveable_yaw";
@@ -455,11 +456,15 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         setShortName(type.getShortName());
         sourceStack = stack.copy();
         sourceStack.setCount(sourceStack.isEmpty() ? 0 : 1);
-        driveableData = stack.isEmpty() ? new DriveableData(type) : DriveableData.fromStack(type, stack);
+        driveableData = stack.isEmpty() ? new DriveableData(type, level().registryAccess()) : DriveableData.fromStack(type, stack, level().registryAccess());
         if (!level().isClientSide)
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         if (!sourceStack.isEmpty())
-            driveableData.removeSerializedState(sourceStack.getTag());
+        {
+            CompoundTag sourceData = ItemStackData.copy(sourceStack);
+            driveableData.removeSerializedState(sourceData);
+            ItemStackData.set(sourceStack, sourceData);
+        }
         weaponInventoryFingerprint = weaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
         renderInventoryFingerprint = renderInventoryFingerprint();
@@ -848,7 +853,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer)
+    public void writeSpawnData(PacketBuffer buffer)
     {
         CompoundTag state = new CompoundTag();
         writeRuntimeState(state);
@@ -859,7 +864,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buffer)
+    public void readSpawnData(PacketBuffer buffer)
     {
         try
         {
@@ -889,9 +894,9 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         }
 
         ItemStack savedSource = tag.contains(NBT_SOURCE_STACK, Tag.TAG_COMPOUND)
-            ? ItemStack.of(tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
+            ? ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
         initialize(type, savedSource);
-        driveableData = new DriveableData(type, tag);
+        driveableData = new DriveableData(type, tag, level().registryAccess());
         if (!level().isClientSide)
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         weaponInventoryFingerprint = weaponInventoryFingerprint();
@@ -950,7 +955,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!sourceStack.isEmpty())
         {
             CompoundTag sourceTag = new CompoundTag();
-            sourceStack.save(sourceTag);
+            ItemStackData.save(sourceStack, level().registryAccess(), sourceTag);
             tag.put(NBT_SOURCE_STACK, sourceTag);
         }
         driveableData.save(tag);
@@ -2193,7 +2198,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             result = 31 * result + (stack.isEmpty() ? 0 : stack.getItem().hashCode());
             result = 31 * result + stack.getCount();
             result = 31 * result + stack.getDamageValue();
-            result = 31 * result + (stack.hasTag() ? stack.getTag().hashCode() : 0);
+            result = 31 * result + ItemStackData.copy(stack).hashCode();
         }
         return result;
     }
@@ -2209,7 +2214,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             result = 31 * result + (stack.isEmpty() ? 0 : stack.getItem().hashCode());
             result = 31 * result + stack.getCount();
             result = 31 * result + stack.getDamageValue();
-            result = 31 * result + (stack.hasTag() ? stack.getTag().hashCode() : 0);
+            result = 31 * result + ItemStackData.copy(stack).hashCode();
         }
         return result;
     }
@@ -2268,7 +2273,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         List<ShootPoint> points = configType.shootPoints(secondary);
         if (points.isEmpty())
             return false;
-        if (MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
+        if (PlatformEvents.postCancellable(new GunFiredEvent(this)))
             return false;
         List<ShootPoint> selected;
         if (configType.alternate(secondary))
@@ -2879,7 +2884,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         ItemStack ammo = driveableData.getAmmo(ammoSlot);
         if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable))
             return false;
-        if (MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
+        if (PlatformEvents.postCancellable(new GunFiredEvent(this)))
             return false;
 
         ShootableType shootableType = shootable.getConfigType();
@@ -3924,7 +3929,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         });
         if (targetIndex < 0)
             return false;
-        if (MinecraftForge.EVENT_BUS.post(new PlayerEnterSeatEvent(seats[targetIndex], player)))
+        if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(seats[targetIndex], player)))
             return false;
         setInputMask(0);
         setFlightControls(0F, 0F, isMouseControlEnabled());
@@ -4574,12 +4579,12 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
         if (!(keyStack.getItem() instanceof ToolItem tool) || !tool.getConfigType().isKey())
             return false;
         String expected = getUUID().toString();
-        String key = keyStack.getOrCreateTag().getString(NBT_KEY_ID);
+        String key = ItemStackData.copy(keyStack).getString(NBT_KEY_ID);
         if (StringUtils.isBlank(key))
         {
             if (locked && ownerId != null && !ownerId.equals(player.getUUID()) && !player.getAbilities().instabuild)
                 return false;
-            keyStack.getOrCreateTag().putString(NBT_KEY_ID, expected);
+            ItemStackData.update(keyStack, tag -> tag.putString(NBT_KEY_ID, expected));
             locked = true;
             if (ownerId == null)
                 ownerId = player.getUUID();
@@ -4627,7 +4632,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
     {
         if (!canPlayerAccessInventory(player) || driveableData == null || configType == null)
             return false;
-        NetworkHooks.openScreen(player,
+        MenuPlatform.open(player,
             new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page),
                 ModUtils.getDisplayName(configType)),
             buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()).writeVarInt(-1));
@@ -4646,7 +4651,7 @@ public abstract class Driveable extends Entity implements IEntityAdditionalSpawn
             return false;
 
         int seatIndex = seat.getSeatIndex();
-        NetworkHooks.openScreen(player,
+        MenuPlatform.open(player,
             new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId,
                 inventory, this, DriveableInventoryMenu.Page.GUNS, seatIndex), ModUtils.getDisplayName(configType)),
             buffer -> buffer.writeVarInt(getId()).writeVarInt(DriveableInventoryMenu.Page.GUNS.ordinal())

@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.fml.LogicalSide;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -115,7 +114,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
-        PlayerData data = PlayerData.getInstance(player, level.isClientSide ? LogicalSide.CLIENT : LogicalSide.SERVER);
+        PlayerData data = PlayerData.getInstance(player);
 
         // If can throw grenade
         if (configType.isCanThrow() && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)

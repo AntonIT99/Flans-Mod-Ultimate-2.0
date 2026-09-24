@@ -10,6 +10,7 @@ import com.flansmod.client.model.TrackLinkAnimation;
 import com.flansmod.client.model.TrackLinkLod;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
@@ -291,7 +292,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     {
         DriveableType type = driveable.getConfigType();
         if (type == null)
-            return ResourceLocation.parse("");
+            return FlansMod.FALLBACK_TEXTURE;
 
         Paintjob paintjob = type.getPaintjob(driveable.getPaintjobId());
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
@@ -618,19 +619,19 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 return;
             HandAnimationState left = updateHandGunAnimation(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL),
                 leftGunItem, leftGunRounds, leftGunAnimations,
-                DriveableInput.isDown(driveable.getInputMask(), DriveableInput.PRIMARY_FIRE), elapsed);
+                DriveableInput.isDown(driveable.getInputMask(), DriveableInput.PRIMARY_FIRE), elapsed, driveable);
             leftGunItem = left.item();
             leftGunRounds = left.rounds();
             HandAnimationState right = updateHandGunAnimation(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL),
                 rightGunItem, rightGunRounds, rightGunAnimations,
-                DriveableInput.isDown(driveable.getInputMask(), DriveableInput.SECONDARY_FIRE), elapsed);
+                DriveableInput.isDown(driveable.getInputMask(), DriveableInput.SECONDARY_FIRE), elapsed, driveable);
             rightGunItem = right.item();
             rightGunRounds = right.rounds();
         }
 
         private static HandAnimationState updateHandGunAnimation(ItemStack stack, GunItem previousItem,
                                                                   int previousRounds, GunAnimations animations,
-                                                                  boolean active, int elapsed)
+                                                                  boolean active, int elapsed, Driveable driveable)
         {
             for (int tick = 0; tick < elapsed; tick++)
                 animations.update();
@@ -639,7 +640,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
             int rounds = 0;
             for (int slot = 0; slot < gunItem.getConfigType().getNumAmmoItemsInGun(stack); slot++)
-                rounds += ShootableItem.getRoundsRemaining(gunItem.getAmmoItemStack(stack, slot));
+                rounds += ShootableItem.getRoundsRemaining(gunItem.getAmmoItemStack(stack, slot, driveable.level().registryAccess()));
             if (previousItem == gunItem && previousRounds >= 0
                 && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun model)
             {
@@ -647,7 +648,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                     animations.doShoot(model.getPumpDelay(), model.getPumpTime(), model.getHammerDelay(),
                         model.getHammerAngle(), model.getAlthammerAngle(), model.getCasingDelay());
                 else if (rounds > previousRounds)
-                    animations.doReload(Math.max(1F, gunItem.getActualReloadTime(stack, ItemStack.EMPTY)),
+                    animations.doReload(Math.max(1F, gunItem.getActualReloadTime(stack, driveable.level().registryAccess(), ItemStack.EMPTY)),
                         model.getPumpDelayAfterReload(), model.getPumpTime(), model.getChargeDelayAfterReload(),
                         model.getChargeTime(), 1, false);
             }

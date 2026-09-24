@@ -40,17 +40,18 @@ import com.flansmodultimate.network.client.PacketGunMuzzleFlash;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -127,12 +128,12 @@ public class GunItemHandler
             || entity instanceof Grenade grenade && grenade.getConfigType().isDeployableBag());
     }
 
-    public EnumFireDecision computeFireDecision(PlayerData data, ItemStack gunStack, InteractionHand hand)
+    public EnumFireDecision computeFireDecision(PlayerData data, ItemStack gunStack, InteractionHand hand, HolderLookup.Provider registries)
     {
         GunType type = item.configType;
         EnumFireMode mode = type.getFireMode(gunStack);
 
-        boolean emptyAmmo = hasEmptyAmmo(gunStack);
+        boolean emptyAmmo = hasEmptyAmmo(gunStack, registries);
         boolean shootPressed = data.isShootKeyPressed(hand);
         boolean shootEdgePressed = data.isShootKeyPressed(hand) && !data.isPrevShootKeyPressed(hand);
 
@@ -158,9 +159,9 @@ public class GunItemHandler
         return EnumFireDecision.SHOOT;
     }
 
-    public boolean hasEmptyAmmo(ItemStack gunStack)
+    public boolean hasEmptyAmmo(ItemStack gunStack, HolderLookup.Provider registries)
     {
-        for (ItemStack bulletStack : item.getBulletItemStackList(gunStack))
+        for (ItemStack bulletStack : item.getBulletItemStackList(gunStack, registries))
         {
             if (ShootableItem.hasRoundsLeft(bulletStack))
                 return false;
@@ -198,7 +199,7 @@ public class GunItemHandler
             doCustomMelee(level, player, data, hand);
 
         GunFiredEvent gunFireEvent = new GunFiredEvent(player);
-        MinecraftForge.EVENT_BUS.post(gunFireEvent);
+        PlatformEvents.post(gunFireEvent);
         if (gunFireEvent.isCanceled())
         {
             data.setShooting(hand, false);
@@ -216,7 +217,7 @@ public class GunItemHandler
 
         while (ShotCooldown.isReady(shootTime))
         {
-            AmmoSlot ammoSlot = findLoadedAmmoInGun(item, gunStack, item.configType).orElse(null);
+            AmmoSlot ammoSlot = findLoadedAmmoInGun(item, gunStack, item.configType, level.registryAccess()).orElse(null);
             if (ammoSlot == null)
                 return;
 
@@ -224,7 +225,7 @@ public class GunItemHandler
             ShootableItem shootableItem = (ShootableItem) ammoSlot.stack().getItem();
             ShootableType shootableType = shootableItem.getConfigType();
             ShootingHandler handler = new PlayerShootingHandler(level, player, hand, gunStack, ammoSlot.stack(), ammoSlot.index());
-            boolean lastBullet = isLastBullet(gunStack);
+            boolean lastBullet = isLastBullet(gunStack, level.registryAccess());
 
             ShootingHelper.fireGun(level, player, item.configType, shootableType, gunStack, shootableStack, (hand == InteractionHand.MAIN_HAND) ? player.getOffhandItem() : player.getMainHandItem(), handler);
 
@@ -256,12 +257,12 @@ public class GunItemHandler
             PacketHandler.sendToDonut(level.dimension(), player.position(), item.configType.getGunSoundRange(), item.configType.getDistantSoundRange(), new PacketPlaySound(player.position(), item.configType.getDistantSoundRange(), item.configType.getDistantShootSound(), false, false, null));
     }
 
-    private boolean isLastBullet(ItemStack gunStack)
+    private boolean isLastBullet(ItemStack gunStack, HolderLookup.Provider registries)
     {
         int slots = item.configType.getNumAmmoItemsInGun(gunStack);
         for (int i = 0; i < slots; i++)
         {
-            ItemStack ammoStack = item.getAmmoItemStack(gunStack, i);
+            ItemStack ammoStack = item.getAmmoItemStack(gunStack, i, registries);
             if (!ammoStack.isEmpty() && ammoStack.getItem() instanceof ShootableItem && ShootableItem.getRoundsRemaining(ammoStack) == 1)
                 return true;
         }
@@ -298,7 +299,7 @@ public class GunItemHandler
     {
         UUID reloadSoundUUID = UUID.randomUUID();
         ItemStack otherHand = hand == InteractionHand.MAIN_HAND ? player.getOffhandItem() : player.getMainHandItem();
-        float reloadTime = item.getActualReloadTime(gunStack, otherHand);
+        float reloadTime = item.getActualReloadTime(gunStack, level.registryAccess(), otherHand);
 
         // The first reload after respawning into a running teams round is instant, so players are not defenceless on spawn
         boolean instantRespawnReload = !data.isReloadedAfterRespawn() && TeamsManager.getInstance().isRoundRunning();
@@ -315,7 +316,7 @@ public class GunItemHandler
 
             int maxAmmo = item.configType.getNumAmmoItemsInGun(gunStack);
             boolean hasMultipleAmmo = (maxAmmo > 1);
-            int reloadCount = item.getReloadCount(gunStack);
+            int reloadCount = item.getReloadCount(gunStack, level.registryAccess());
 
             data.doGunReload(hand, reloadTime, item.configType.getShootDelay(gunStack));
             PacketHandler.sendToTracking(new PacketGunReloadClient(player.getUUID(), hand, reloadTime, reloadCount, hasMultipleAmmo), player);
@@ -346,12 +347,12 @@ public class GunItemHandler
 
     public record AmmoSlot(int index, ItemStack stack) {}
 
-    public static Optional<AmmoSlot> findLoadedAmmoInGun(GunItem item, ItemStack gunStack, GunType configType)
+    public static Optional<AmmoSlot> findLoadedAmmoInGun(GunItem item, ItemStack gunStack, GunType configType, HolderLookup.Provider registries)
     {
         int slots = configType.getNumAmmoItemsInGun(gunStack);
         for (int i = 0; i < slots; i++)
         {
-            ItemStack s = item.getAmmoItemStack(gunStack, i);
+            ItemStack s = item.getAmmoItemStack(gunStack, i, registries);
             if (s != null && !s.isEmpty() && ShootableItem.hasRoundsLeft(s))
             {
                 return Optional.of(new AmmoSlot(i, s));

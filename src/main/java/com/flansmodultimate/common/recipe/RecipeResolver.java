@@ -7,7 +7,6 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -256,7 +255,7 @@ public final class RecipeResolver
     private static Optional<ResourceLocation> resolveRawItemId(String id)
     {
         ResourceLocation location = ResourceLocation.tryParse(id);
-        if (location != null && ForgeRegistries.ITEMS.containsKey(location))
+        if (location != null && BuiltInRegistries.ITEM.containsKey(location))
             return Optional.of(location);
 
         return Optional.empty();
@@ -265,10 +264,10 @@ public final class RecipeResolver
     private static Optional<ItemStack> resolveRawRecipeElement(String id, int amount, int damage)
     {
         ResourceLocation location = ResourceLocation.tryParse(id);
-        if (location == null || !ForgeRegistries.ITEMS.containsKey(location))
+        if (location == null || !BuiltInRegistries.ITEM.containsKey(location))
             return Optional.empty();
 
-        Item item = ForgeRegistries.ITEMS.getValue(location);
+        Item item = BuiltInRegistries.ITEM.get(location);
         if (item == null)
             return Optional.empty();
 
@@ -291,7 +290,7 @@ public final class RecipeResolver
     private static Optional<ResourceLocation> resolveRegisteredItemId(String namespace, String path)
     {
         ResourceLocation location = ResourceLocation.tryBuild(namespace, path);
-        if (location != null && ForgeRegistries.ITEMS.containsKey(location))
+        if (location != null && BuiltInRegistries.ITEM.containsKey(location))
             return Optional.of(location);
 
         return Optional.empty();
@@ -309,10 +308,10 @@ public final class RecipeResolver
     private static Optional<ItemStack> getRegisteredRecipeElement(String namespace, String path, int amount, int damage)
     {
         ResourceLocation location = ResourceLocation.tryBuild(namespace, path);
-        if (location == null || !ForgeRegistries.ITEMS.containsKey(location))
+        if (location == null || !BuiltInRegistries.ITEM.containsKey(location))
             return Optional.empty();
 
-        Item item = ForgeRegistries.ITEMS.getValue(location);
+        Item item = BuiltInRegistries.ITEM.get(location);
         if (item == null)
             return Optional.empty();
 
@@ -479,9 +478,9 @@ public final class RecipeResolver
     private static Optional<ItemLike> getVanillaRegistryPathRecipeItem(String id)
     {
         String lookupPath = getLookupPath(id);
-        for (Item item : ForgeRegistries.ITEMS)
+        for (Item item : BuiltInRegistries.ITEM)
         {
-            ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
+            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
             if (itemId != null && itemId.getNamespace().equals("minecraft") && registryPathMatches(itemId.getPath(), lookupPath))
                 return Optional.of(item);
         }
@@ -604,7 +603,7 @@ public final class RecipeResolver
 
     private static Optional<ResourceLocation> id(ItemLike item)
     {
-        ResourceLocation location = ForgeRegistries.ITEMS.getKey(item.asItem());
+        ResourceLocation location = BuiltInRegistries.ITEM.getKey(item.asItem());
         if (location == null)
             location = BuiltInRegistries.ITEM.getKey(item.asItem());
         return Optional.ofNullable(location);

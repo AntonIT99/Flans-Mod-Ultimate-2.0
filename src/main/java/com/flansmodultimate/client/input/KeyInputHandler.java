@@ -35,7 +35,6 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
-import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.KeyMapping;
@@ -663,7 +662,7 @@ public final class KeyInputHandler
     {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         InteractionHand hand = findGunHand(player, (gunItem, stack) -> !gunItem.getConfigType().getAmmoTypes().isEmpty());
-        if (hand != null && PlayerData.getInstance(player, LogicalSide.CLIENT).getShootTime(hand) <= 0F)
+        if (hand != null && PlayerData.getInstance(player).getShootTime(hand) <= 0F)
             Minecraft.getInstance().setScreen(new GunAmmoSelectScreen(hand));
     }
 
@@ -672,7 +671,7 @@ public final class KeyInputHandler
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         InteractionHand hand = findGunHand(player,
             (gunItem, stack) -> gunItem.getConfigType().canToggleSecondaryFire(stack));
-        if (hand != null && PlayerData.getInstance(player, LogicalSide.CLIENT).getShootTime(hand) <= 0F)
+        if (hand != null && PlayerData.getInstance(player).getShootTime(hand) <= 0F)
             PacketHandler.sendToServer(new PacketGunSecondaryMode(hand));
     }
 
@@ -706,7 +705,7 @@ public final class KeyInputHandler
     private static void doReload()
     {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+        PlayerData data = PlayerData.getInstance(player);
         ItemStack mainHandStack = player.getMainHandItem();
         ItemStack offhandStack = player.getOffhandItem();
 
@@ -726,8 +725,8 @@ public final class KeyInputHandler
             {
                 if (offhandGunItem.getGunItemHandler().canReload(player.getInventory())
                     && (!mainHandGunItem.getGunItemHandler().canReload(player.getInventory())
-                    || (!mainHandGunItem.getGunItemHandler().hasEmptyAmmo(mainHandStack)
-                    && offhandGunItem.getGunItemHandler().hasEmptyAmmo(offhandStack))))
+                    || (!mainHandGunItem.getGunItemHandler().hasEmptyAmmo(mainHandStack, player.level().registryAccess())
+                    && offhandGunItem.getGunItemHandler().hasEmptyAmmo(offhandStack, player.level().registryAccess()))))
                 {
                     PacketHandler.sendToServer(new PacketGunReload(InteractionHand.OFF_HAND));
                 }

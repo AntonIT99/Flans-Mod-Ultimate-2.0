@@ -4,11 +4,11 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
 import com.flansmodultimate.common.entity.Mecha;
+import com.flansmodultimate.network.PacketBuffer;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -70,7 +70,7 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
     private final int playerInventoryStart;
     private final int playerInventoryEnd;
 
-    public static MechaInventoryMenu createFromNetwork(int containerId, Inventory inventory, FriendlyByteBuf buffer)
+    public static MechaInventoryMenu createFromNetwork(int containerId, Inventory inventory, PacketBuffer buffer)
     {
         Entity entity = inventory.player.level().getEntity(buffer.readVarInt());
         return new MechaInventoryMenu(containerId, inventory, entity instanceof Mecha found ? found : null);

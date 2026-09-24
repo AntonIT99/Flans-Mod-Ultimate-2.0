@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
-import net.minecraftforge.network.NetworkHooks;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,12 +40,17 @@ public class PaintjobTableBlock extends BaseEntityBlock
     @Override
     public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
+        return open(level, pos, player);
+    }
+
+    private InteractionResult open(Level level, BlockPos pos, Player player)
+    {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
 
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof PaintjobTableBlockEntity blockEntity)
         {
-            NetworkHooks.openScreen(serverPlayer, blockEntity, pos);
+            MenuPlatform.open(serverPlayer, blockEntity, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

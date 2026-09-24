@@ -16,6 +16,7 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -160,12 +161,14 @@ public final class PacketLoadoutAction implements IServerPacket
             {
                 ItemStack gun = edited.get(slot);
                 if (!(gun.getItem() instanceof GunItem gunItem) || !accepts(gunItem.getConfigType(), attachment)) return;
-                CompoundTag attachments = gun.getOrCreateTag().getCompound(GunItem.NBT_ATTACHMENTS);
+                CompoundTag gunData = ItemStackData.copy(gun);
+                CompoundTag attachments = gunData.getCompound(GunItem.NBT_ATTACHMENTS);
                 String attachmentSlot = attachmentSlot(attachment.getEnumAttachmentType());
                 ItemStack attachmentStack = ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
                 if (attachmentStack.isEmpty()) return;
-                attachments.put(attachmentSlot, attachmentStack.save(new CompoundTag()));
-                gun.getOrCreateTag().put(GunItem.NBT_ATTACHMENTS, attachments);
+                attachments.put(attachmentSlot, ItemStackData.save(attachmentStack, player.level().registryAccess()));
+                gunData.put(GunItem.NBT_ATTACHMENTS, attachments);
+                ItemStackData.set(gun, gunData);
                 edited.set(slot, gun);
             }
             else

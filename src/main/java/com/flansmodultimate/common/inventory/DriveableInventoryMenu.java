@@ -10,12 +10,12 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.util.InventoryHelper;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
@@ -77,7 +77,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     private final int playerInventoryStart;
     private final int playerInventoryEnd;
 
-    public static DriveableInventoryMenu createFromNetwork(int containerId, Inventory inventory, FriendlyByteBuf buffer)
+    public static DriveableInventoryMenu createFromNetwork(int containerId, Inventory inventory, PacketBuffer buffer)
     {
         Entity entity = inventory.player.level().getEntity(buffer.readVarInt());
         Page[] pages = Page.values();

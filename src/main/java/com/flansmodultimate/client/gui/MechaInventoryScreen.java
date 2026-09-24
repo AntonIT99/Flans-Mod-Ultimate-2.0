@@ -5,6 +5,7 @@ import com.flansmodultimate.client.render.entity.DriveableRenderer;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.types.MechaType;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -97,7 +98,7 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
     }

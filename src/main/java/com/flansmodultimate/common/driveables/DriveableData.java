@@ -10,12 +10,14 @@ import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -49,6 +51,7 @@ public final class DriveableData implements Container
     private static final int AMMO_LAYOUT_PASSENGER_FIRST = 1;
 
     @Getter private final DriveableType driveableType;
+    private final HolderLookup.Provider registries;
     @Getter private final int numAmmoSlots;
     @Getter private final int numBombSlots;
     @Getter private final int numMissileSlots;
@@ -64,9 +67,10 @@ public final class DriveableData implements Container
     @Getter private String engineShortName = StringUtils.EMPTY;
     private CompoundTag preservedTag = new CompoundTag();
 
-    public DriveableData(@NotNull DriveableType driveableType)
+    public DriveableData(@NotNull DriveableType driveableType, @NotNull HolderLookup.Provider registries)
     {
         this.driveableType = driveableType;
+        this.registries = registries;
         numAmmoSlots = Math.max(0, driveableType.getNumAmmoSlots());
         numBombSlots = Math.max(0, driveableType.getNumBombSlots());
         numMissileSlots = Math.max(0, driveableType.getNumMissileSlots());
@@ -85,16 +89,16 @@ public final class DriveableData implements Container
             engineShortName = defaultEngine.getShortName();
     }
 
-    public DriveableData(@NotNull DriveableType driveableType, @Nullable CompoundTag tag)
+    public DriveableData(@NotNull DriveableType driveableType, @Nullable CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
-        this(driveableType);
+        this(driveableType, registries);
         if (tag != null)
             load(tag);
     }
 
-    public static DriveableData fromStack(@NotNull DriveableType type, @NotNull ItemStack stack)
+    public static DriveableData fromStack(@NotNull DriveableType type, @NotNull ItemStack stack, @NotNull HolderLookup.Provider registries)
     {
-        return new DriveableData(type, stack.getTag());
+        return new DriveableData(type, ItemStackData.copy(stack), registries);
     }
 
     public String getType()
@@ -339,7 +343,7 @@ public final class DriveableData implements Container
                 continue;
             CompoundTag entry = new CompoundTag();
             entry.putInt("slot", slot);
-            stack.save(entry);
+            ItemStackData.save(stack, registries, entry);
             itemTags.add(entry);
         }
         data.put(NBT_ITEMS, itemTags);
@@ -384,7 +388,7 @@ public final class DriveableData implements Container
                 continue;
             CompoundTag entry = new CompoundTag();
             entry.putInt("slot", slot);
-            stack.save(entry);
+            ItemStackData.save(stack, registries, entry);
             itemTags.add(entry);
         }
         data.put(NBT_ITEMS, itemTags);
@@ -452,7 +456,7 @@ public final class DriveableData implements Container
 
     public ItemStack copyToStack(ItemStack stack)
     {
-        save(stack.getOrCreateTag());
+        ItemStackData.set(stack, save(ItemStackData.copy(stack)));
         return stack;
     }
 
@@ -525,7 +529,7 @@ public final class DriveableData implements Container
         for (int i = 0; i < itemTags.size(); i++)
         {
             CompoundTag entry = itemTags.getCompound(i);
-            putLoadedStack(entry.getInt("slot"), ItemStack.of(entry));
+            putLoadedStack(entry.getInt("slot"), ItemStackData.parse(registries, entry));
         }
     }
 
@@ -547,7 +551,7 @@ public final class DriveableData implements Container
         loadLegacyRange(data, "Missiles ", getMissileInventoryStart(), numMissileSlots);
         loadLegacyRange(data, "Cargo ", getCargoInventoryStart(), numCargoSlots);
         if (data.contains("Fuel", Tag.TAG_COMPOUND))
-            putLoadedStack(getFuelSlot(), ItemStack.of(data.getCompound("Fuel")));
+            putLoadedStack(getFuelSlot(), ItemStackData.parse(registries, data.getCompound("Fuel")));
     }
 
     /**
@@ -582,7 +586,7 @@ public final class DriveableData implements Container
         for (int i = 0; i < length; i++)
         {
             if (data.contains(prefix + i, Tag.TAG_COMPOUND))
-                putLoadedStack(offset + i, ItemStack.of(data.getCompound(prefix + i)));
+                putLoadedStack(offset + i, ItemStackData.parse(registries, data.getCompound(prefix + i)));
         }
     }
 
@@ -592,7 +596,7 @@ public final class DriveableData implements Container
         {
             String key = legacyMechaSlotName(slot);
             if (data.contains(key, Tag.TAG_COMPOUND))
-                putLoadedStack(getMechaInventoryStart() + slot.ordinal(), ItemStack.of(data.getCompound(key)));
+                putLoadedStack(getMechaInventoryStart() + slot.ordinal(), ItemStackData.parse(registries, data.getCompound(key)));
         }
     }
 
@@ -650,7 +654,7 @@ public final class DriveableData implements Container
         return true;
     }
 
-    private static void writeLegacyStack(CompoundTag tag, String key, ItemStack stack)
+    private void writeLegacyStack(CompoundTag tag, String key, ItemStack stack)
     {
         if (stack == null || stack.isEmpty())
         {
@@ -658,7 +662,7 @@ public final class DriveableData implements Container
             return;
         }
         CompoundTag stackTag = new CompoundTag();
-        stack.save(stackTag);
+        ItemStackData.save(stack, registries, stackTag);
         tag.put(key, stackTag);
     }
 

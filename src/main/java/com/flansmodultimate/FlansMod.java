@@ -41,21 +41,18 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.ModLogFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
 import lombok.Getter;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -65,13 +62,11 @@ import org.spongepowered.asm.mixin.Mixins;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -141,6 +136,8 @@ public class FlansMod
 
     // Resource Locations
     public static final ResourceLocation PAINTJOB = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
+    /** Placeholder for callers without a texture. 1.20.1 still accepts the empty resource location. */
+    public static final ResourceLocation FALLBACK_TEXTURE = ResourceLocation.parse("");
     public static final ResourceLocation TEXTURE_BANNER = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/banner.png");
     public static final ResourceLocation TEXTURE_DEFAULTMUZZLEFLASH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
     public static final ResourceLocation TEXTURE_FLAGPOLE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/flagpole.png");
@@ -174,15 +171,15 @@ public class FlansMod
     public static final ResourceLocation TEXTURE_GUI_WEAPONBOX = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponbox.png");
 
     // Registries
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(ForgeRegistries.BLOCKS, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(ForgeRegistries.ITEMS, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(ForgeRegistries.MENU_TYPES, FlansMod.MOD_ID);
-    private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(Registries.BLOCK, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(Registries.ITEM, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(Registries.MENU, FlansMod.MOD_ID);
+    private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(Registries.PARTICLE_TYPE, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(Registries.SOUND_EVENT, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
-    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, FlansMod.MOD_ID);
-    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, FlansMod.MOD_ID);
-    private static final DeferredRegister<Enchantment> enchantmentRegistry = DeferredRegister.create(ForgeRegistries.ENCHANTMENTS, FlansMod.MOD_ID);
+    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(Registries.ENTITY_TYPE, FlansMod.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, FlansMod.MOD_ID);
+    private static final DeferredRegister<Enchantment> enchantmentRegistry = DeferredRegister.create(Registries.ENCHANTMENT, FlansMod.MOD_ID);
 
     // Blocks
     public static final Supplier<? extends Block> gunWorkbench = blockRegistry.register("gunworkbench", () -> new GunWorkbenchBlock(BlockBehaviour.Properties.of()
@@ -227,13 +224,13 @@ public class FlansMod
     public static final Supplier<? extends Item> flagpoleItem = itemRegistry.register("flagpole", FlagpoleItem::new);
 
     // Menus
-    public static final Supplier<? extends MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
-    public static final Supplier<? extends MenuType<DriveableCraftingMenu>> driveableCraftingMenu = menuRegistry.register("driveable_crafting_menu", () -> IForgeMenuType.create((int windowId, Inventory inv, FriendlyByteBuf buf) -> new DriveableCraftingMenu(windowId, inv, buf.readBlockPos())));
-    public static final Supplier<? extends MenuType<DriveableInventoryMenu>> driveableInventoryMenu = menuRegistry.register("driveable_inventory_menu", () -> IForgeMenuType.create(DriveableInventoryMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<MechaInventoryMenu>> mechaInventoryMenu = menuRegistry.register("mecha_inventory_menu", () -> IForgeMenuType.create(MechaInventoryMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> IForgeMenuType.create(PaintjobTableMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> IForgeMenuType.create(ArmorBoxMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> IForgeMenuType.create(GunBoxMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> MenuPlatform.menuType((windowId, inv, buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
+    public static final Supplier<? extends MenuType<DriveableCraftingMenu>> driveableCraftingMenu = menuRegistry.register("driveable_crafting_menu", () -> MenuPlatform.menuType((windowId, inv, buf) -> new DriveableCraftingMenu(windowId, inv, buf.readBlockPos())));
+    public static final Supplier<? extends MenuType<DriveableInventoryMenu>> driveableInventoryMenu = menuRegistry.register("driveable_inventory_menu", () -> MenuPlatform.menuType(DriveableInventoryMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<MechaInventoryMenu>> mechaInventoryMenu = menuRegistry.register("mecha_inventory_menu", () -> MenuPlatform.menuType(MechaInventoryMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> MenuPlatform.menuType(PaintjobTableMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> MenuPlatform.menuType(ArmorBoxMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> MenuPlatform.menuType(GunBoxMenu::createFromNetwork));
 
     // Particles
     public static final Supplier<? extends SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
@@ -391,13 +388,11 @@ public class FlansMod
         ContentManager.readContentPacks();
         registerSounds();
         registerCreativeModeTabs();
-
-        MinecraftForge.EVENT_BUS.register(this);
     }
 
     private static void waitForPacksManagerExtractionIfPresent()
     {
-        if (!ModList.get().isLoaded(PACKS_MANAGER_ID))
+        if (!PlatformEnvironment.isModLoaded(PACKS_MANAGER_ID))
             return;
 
         if (!PlatformEnvironment.isProduction())

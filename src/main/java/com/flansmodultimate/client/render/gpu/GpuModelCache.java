@@ -6,6 +6,7 @@ import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.mixin.BufferSourceAccessor;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -16,7 +17,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.fml.ModList;
 import org.slf4j.Logger;
 
 import net.minecraft.client.GraphicsStatus;
@@ -111,7 +111,7 @@ public final class GpuModelCache
     {
         if (incompatibleRenderer == null)
         {
-            incompatibleRenderer = ModList.get().isLoaded("oculus") || ModList.get().isLoaded("iris");
+            incompatibleRenderer = PlatformEnvironment.isModLoaded("oculus") || PlatformEnvironment.isModLoaded("iris");
             try
             {
                 Class.forName("net.optifine.Config", false, GpuModelCache.class.getClassLoader());

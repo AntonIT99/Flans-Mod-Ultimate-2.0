@@ -8,7 +8,7 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * Posted on the Forge event bus, server side, when a player chooses to enter a
+ * Posted on the game event bus, server side, when a player chooses to enter a
  * driveable seat: by clicking the seat or the hull, or by cycling seats.
  * Cancelling it keeps the player out. It is not posted when a player leaves.
  */

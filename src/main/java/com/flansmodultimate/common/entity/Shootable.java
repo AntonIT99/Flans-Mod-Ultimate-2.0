@@ -6,18 +6,18 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
+import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public abstract class Shootable extends Entity implements IEntityAdditionalSpawnData
+public abstract class Shootable extends Entity implements SpawnDataEntity
 {
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
 
@@ -159,7 +159,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buf)
+    public void writeSpawnData(PacketBuffer buf)
     {
         buf.writeUtf(shortname);
         buf.writeFloat(getHitboxSize());
@@ -169,7 +169,7 @@ public abstract class Shootable extends Entity implements IEntityAdditionalSpawn
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buf)
+    public void readSpawnData(PacketBuffer buf)
     {
         setShortName(buf.readUtf());
         setHitboxSize(buf.readFloat());

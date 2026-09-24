@@ -5,6 +5,7 @@ import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,7 +69,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
     @Override
     public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg);
+        ClientPlatform.renderBackground(this, gg, mouseX, mouseY, partialTick);
         super.render(gg, mouseX, mouseY, partialTick);
         renderTooltip(gg, mouseX, mouseY);
     }

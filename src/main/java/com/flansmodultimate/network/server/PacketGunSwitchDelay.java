@@ -4,7 +4,6 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import com.flansmodultimate.network.PacketBuffer;
@@ -50,7 +49,7 @@ public class PacketGunSwitchDelay implements IServerPacket
         if (switchDelay <= 0F)
             return;
 
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.SERVER);
+        PlayerData data = PlayerData.getInstance(player);
         data.setShootTime(hand, Math.max(data.getShootTime(hand), switchDelay));
     }
 }

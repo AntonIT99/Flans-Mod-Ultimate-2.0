@@ -37,7 +37,6 @@ import net.minecraft.world.item.UseAnim;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -1093,7 +1092,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return Optional.ofNullable(overlay).orElse(ResourceLocation.parse(""));
+        return Optional.ofNullable(overlay).orElse(FlansMod.FALLBACK_TEXTURE);
     }
 
     public List<ShootableType> getAmmoTypes()
@@ -1160,7 +1159,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             return null;
         for (int slot = 0; slot < getNumAmmoItemsInGun(gunStack); slot++)
         {
-            ItemStack ammoStack = gunItem.getAmmoItemStack(gunStack, slot);
+            ItemStack ammoStack = gunItem.getAmmoItemStack(gunStack, slot, ItemStackData.builtInRegistries());
             if (ammoStack != null && ammoStack.getItem() instanceof ShootableItem shootableItem
                 && ShootableItem.hasRoundsLeft(ammoStack))
                 return shootableItem.getConfigType();

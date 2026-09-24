@@ -6,7 +6,7 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -577,13 +577,13 @@ public final class ParticleHelper
         if (s.contains(":"))
         {
             return Optional.ofNullable(ResourceLocation.tryParse(s))
-                .map(ForgeRegistries.PARTICLE_TYPES::getValue)
+                .map(BuiltInRegistries.PARTICLE_TYPE::get)
                 .filter(ParticleOptions.class::isInstance)
                 .map(ParticleOptions.class::cast);
         }
 
         return Optional.of(ResourceLocation.fromNamespaceAndPath("minecraft", s))
-            .map(ForgeRegistries.PARTICLE_TYPES::getValue)
+            .map(BuiltInRegistries.PARTICLE_TYPE::get)
             .filter(ParticleOptions.class::isInstance)
             .map(ParticleOptions.class::cast);
     }

@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
-import net.minecraftforge.network.NetworkHooks;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
@@ -38,8 +38,13 @@ public class VehicleCraftingTableBlock extends Block
     public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player,
                                  @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
+        return open(state, level, pos, player);
+    }
+
+    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
+    {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
-            NetworkHooks.openScreen(serverPlayer, getMenuProvider(state, level, pos), pos);
+            MenuPlatform.open(serverPlayer, getMenuProvider(state, level, pos), pos);
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }

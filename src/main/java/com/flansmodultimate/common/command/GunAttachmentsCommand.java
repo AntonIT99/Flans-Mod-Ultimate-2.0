@@ -11,7 +11,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -98,7 +98,7 @@ public final class GunAttachmentsCommand
     {
         ItemStack stack = ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
         Component name = ModUtils.getDisplayName(attachment);
-        ResourceLocation id = stack.isEmpty() ? null : ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation id = stack.isEmpty() ? null : BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (id == null)
             id = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, attachment.getShortName());
 

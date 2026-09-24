@@ -1,6 +1,5 @@
 package com.flansmodultimate.network;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.client.PacketAllowDebug;
 import com.flansmodultimate.network.client.PacketApocalypseCountdown;
 import com.flansmodultimate.network.client.PacketBaseEditState;
@@ -63,19 +62,12 @@ import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
 import com.flansmodultimate.network.server.PacketSetCommonConfigValue;
 import com.flansmodultimate.network.server.PacketTeamsAction;
+import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.network.NetworkPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.simple.SimpleChannel;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -83,262 +75,175 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Loader-neutral packet registry and send API. Gameplay packets implement {@link IPacket};
+ * the loader-specific transport lives in {@link NetworkPlatform}.
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PacketHandler {
+public final class PacketHandler
+{
+    private static final List<Class<? extends IClientPacket>> CLIENT_PACKET_TYPES = new ArrayList<>();
+    private static final List<Class<? extends IServerPacket>> SERVER_PACKET_TYPES = new ArrayList<>();
+    private static boolean prepared;
 
-    public static final String PROTOCOL = "15";
-    public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
-    public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(CHANNEL_ID)
-            .networkProtocolVersion(() -> PROTOCOL)
-            .clientAcceptedVersions(PROTOCOL::equals)
-            .serverAcceptedVersions(PROTOCOL::equals)
-            .simpleChannel();
-
-    private static final List<Entry> entries = new ArrayList<>();
-    private static boolean frozen;
-    private static int nextId;
-
-    private record Entry(Class<? extends IPacket> clazz, NetworkDirection dir) {}
-
-    /**
-     * Initialisation method called from FMLCommonSetupEvent
-     */
-    public static void registerPackets()
+    /** Server-to-client packet types, sorted by class name so every side derives the same network order. */
+    public static synchronized List<Class<? extends IClientPacket>> clientPacketTypes()
     {
-        // Server to Client Packets
-        registerS2C(PacketAllowDebug.class);
-        registerS2C(PacketApocalypseCountdown.class);
-        registerS2C(PacketBaseEditState.class);
-        registerS2C(PacketBlockHitEffect.class);
-        registerS2C(PacketBulletTrail.class);
-        registerS2C(PacketCancelGunReloadClient.class);
-        registerS2C(PacketCancelSound.class);
-        registerS2C(PacketDebugShootPoint.class);
-        registerS2C(PacketDriveableCrashFireball.class);
-        registerS2C(PacketDriveableDamage.class);
-        registerS2C(PacketDriveablePrediction.class);
-        registerS2C(PacketDriveableRenderState.class);
-        registerS2C(PacketExplodeParticles.class);
-        registerS2C(PacketFlak.class);
-        registerS2C(PacketFlanExplosionBlockParticles.class);
-        registerS2C(PacketFlanExplosionParticles.class);
-        registerS2C(PacketFlashBang.class);
-        registerS2C(PacketGunFireModeClient.class);
-        registerS2C(PacketGunMeleeClient.class);
-        registerS2C(PacketGunPreferredAmmoClient.class);
-        registerS2C(PacketGunMuzzleFlash.class);
-        registerS2C(PacketGunReloadClient.class);
-        registerS2C(PacketGunShootClient.class);
-        registerS2C(PacketGunSecondaryModeClient.class);
-        registerS2C(PacketGunVariableZoomClient.class);
-        registerS2C(PacketHitMarker.class);
-        registerS2C(PacketParticle.class);
-        registerS2C(PacketParticles.class);
-        registerS2C(PacketSmokeShell.class);
-        registerS2C(PacketDriveableBankFired.class);
-        registerS2C(PacketPlayerClassSkins.class);
-        registerS2C(PacketPlaySound.class);
-        registerS2C(PacketCommonConfigValues.class);
-        registerS2C(PacketSyncCommonConfig.class);
-        registerS2C(PacketContentFingerprint.class);
-        registerS2C(PacketSyncDigitalAmmo.class);
-        registerS2C(PacketTeamsState.class);
-        registerS2C(PacketKillMessage.class);
-        registerS2C(PacketLoadoutState.class);
-
-        // Client to Server Packets
-        registerC2S(PacketAAGunModelBarrelOrigins.class);
-        registerC2S(PacketBaseEditAction.class);
-        registerC2S(ArmorBoxBuyPacket.class);
-        registerC2S(PacketDeployedGunInput.class);
-        registerC2S(PacketDriveableInput.class);
-        registerC2S(PacketBuyWeapon.class);
-        registerC2S(PacketGunFireMode.class);
-        registerC2S(PacketGunInput.class);
-        registerC2S(PacketGunPreferredAmmo.class);
-        registerC2S(PacketGunReload.class);
-        registerC2S(PacketReloadPreferences.class);
-        registerC2S(PacketGunScopedState.class);
-        registerC2S(PacketGunSwitchDelay.class);
-        registerC2S(PacketGunSecondaryMode.class);
-        registerC2S(PacketGunVariableZoom.class);
-        registerC2S(PacketManualGuidance.class);
-        registerC2S(PacketRequestDebug.class);
-        registerC2S(PacketRequestDismount.class);
-        registerC2S(PacketRequestCommonConfig.class);
-        registerC2S(PacketSelectPaintjob.class);
-        registerC2S(PacketSetCommonConfigValue.class);
-        registerC2S(PacketTeamsAction.class);
-        registerC2S(PacketLoadoutAction.class);
-
-        initAndRegister();
+        preparePacketTypes();
+        return Collections.unmodifiableList(CLIENT_PACKET_TYPES);
     }
 
-    /** Register a packet type for C2S (client -> server). */
-    public static void registerC2S(Class<? extends IServerPacket> clz)
+    /** Client-to-server packet types, sorted by class name so every side derives the same network order. */
+    public static synchronized List<Class<? extends IServerPacket>> serverPacketTypes()
     {
-        add(clz, NetworkDirection.PLAY_TO_SERVER);
+        preparePacketTypes();
+        return Collections.unmodifiableList(SERVER_PACKET_TYPES);
     }
 
-    /** Register a packet type for S2C (server -> client). */
-    public static void registerS2C(Class<? extends IClientPacket> clz)
+    private static void preparePacketTypes()
     {
-        add(clz, NetworkDirection.PLAY_TO_CLIENT);
-    }
-
-    private static void add(Class<? extends IPacket> clz, NetworkDirection dir)
-    {
-        if (frozen)
-        {
-            FlansMod.log.warn("Tried to register {} after init", clz.getCanonicalName());
-        }
-        if (entries.stream().anyMatch(e -> e.clazz == clz && e.dir == dir))
-        {
-            FlansMod.log.warn("Duplicate packet registration for {} {}", clz.getCanonicalName(), dir);
-        }
-        entries.add(new Entry(clz, dir));
-    }
-
-    /** Call during common setup (inside enqueueWork). Sort deterministically and register with IDs. */
-    public static void initAndRegister()
-    {
-        if (frozen)
+        if (prepared)
             return;
 
-        frozen = true;
-        nextId = 0;
+        addClientPackets(
+            PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class,
+            PacketBlockHitEffect.class, PacketBulletTrail.class, PacketCancelGunReloadClient.class,
+            PacketCancelSound.class, PacketCommonConfigValues.class, PacketContentFingerprint.class,
+            PacketDebugShootPoint.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
+            PacketDriveableDamage.class, PacketDriveablePrediction.class, PacketDriveableRenderState.class,
+            PacketExplodeParticles.class, PacketFlak.class,
+            PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class,
+            PacketGunFireModeClient.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class,
+            PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class,
+            PacketGunShootClient.class, PacketGunVariableZoomClient.class, PacketHitMarker.class,
+            PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class, PacketParticles.class,
+            PacketPlayerClassSkins.class, PacketPlaySound.class, PacketSmokeShell.class,
+            PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketTeamsState.class
+        );
+        addServerPackets(
+            PacketAAGunModelBarrelOrigins.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class,
+            PacketDeployedGunInput.class, PacketDriveableInput.class, PacketBuyWeapon.class, PacketGunFireMode.class,
+            PacketGunInput.class, PacketGunPreferredAmmo.class, PacketGunReload.class, PacketGunScopedState.class,
+            PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunVariableZoom.class,
+            PacketManualGuidance.class, PacketReloadPreferences.class, PacketRequestCommonConfig.class,
+            PacketRequestDebug.class, PacketRequestDismount.class, PacketSelectPaintjob.class,
+            PacketSetCommonConfigValue.class, PacketTeamsAction.class, PacketLoadoutAction.class
+        );
 
-        entries.sort(Comparator
-            .comparing((Entry e) -> e.clazz().getName(), String.CASE_INSENSITIVE_ORDER)
-            .thenComparing(e -> e.dir().name()));
-
-        for (Entry e : entries)
-            registerOne(e.clazz, e.dir);
+        Comparator<Class<?>> byName = Comparator.comparing(Class::getName, String.CASE_INSENSITIVE_ORDER);
+        CLIENT_PACKET_TYPES.sort(byName);
+        SERVER_PACKET_TYPES.sort(byName);
+        prepared = true;
     }
 
-    private static <T extends IPacket> void registerOne(Class<T> clz, NetworkDirection dir)
+    @SafeVarargs
+    private static void addClientPackets(Class<? extends IClientPacket>... types)
     {
-        CHANNEL.messageBuilder(clz, nextId++, dir)
-            .encoder((packet, buf) -> packet.encodeInto(new PacketBuffer(buf)))
-            .decoder(buf -> {
-                try
-                {
-                    T p = clz.getDeclaredConstructor().newInstance();
-                    p.decodeInto(new PacketBuffer(buf));
-                    return p;
-                }
-                catch (Exception ex)
-                {
-                    throw new RuntimeException("Failed to construct/decode " + clz.getCanonicalName(), ex);
-                }
-            })
-            .consumerMainThread((msg, ctxSup) -> {
-                NetworkEvent.Context ctx = ctxSup.get();
-                ctx.enqueueWork(() -> {
-                    if (ctx.getDirection().getReceptionSide().isServer() && msg instanceof IServerPacket serverPacket)
-                    {
-                        // Server
-                        ServerPlayer sender = ctx.getSender();
-                        if (sender != null)
-                            serverPacket.handleServerSide(sender, sender.serverLevel());
-                    }
-                    else if (msg instanceof IClientPacket clientPacket)
-                    {
-                        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketDispatcher.dispatch(clientPacket));
-                    }
-                });
-                ctx.setPacketHandled(true);
-            })
-            .add();
+        CLIENT_PACKET_TYPES.addAll(List.of(types));
+    }
+
+    @SafeVarargs
+    private static void addServerPackets(Class<? extends IServerPacket>... types)
+    {
+        SERVER_PACKET_TYPES.addAll(List.of(types));
+    }
+
+    /** Creates an empty packet of the given type and reads its content from the buffer. */
+    public static <T extends IPacket> T decode(Class<? extends T> type, PacketBuffer buffer)
+    {
+        try
+        {
+            T packet = type.getDeclaredConstructor().newInstance();
+            packet.decodeInto(buffer);
+            return packet;
+        }
+        catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception)
+        {
+            throw new IllegalStateException("Failed to decode " + type.getName(), exception);
+        }
     }
 
     /** client -> server */
-    public static void sendToServer(IServerPacket msg)
+    public static void sendToServer(IServerPacket message)
     {
-        CHANNEL.sendToServer(msg);
+        NetworkPlatform.sendToServer(message);
     }
 
     /** server -> specific player */
-    public static void sendTo(IClientPacket msg, ServerPlayer player)
+    public static void sendTo(IClientPacket message, ServerPlayer player)
     {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), msg);
+        NetworkPlatform.sendToPlayer(player, message);
     }
 
     /** server -> everyone */
-    public static void sendToAll(IClientPacket msg)
+    public static void sendToAll(IClientPacket message)
     {
-        CHANNEL.send(PacketDistributor.ALL.noArg(), msg);
+        NetworkPlatform.sendToAll(message);
     }
 
     /** server -> players currently tracking an entity (and the entity itself, if it is a player) */
-    public static void sendToTracking(IClientPacket msg, Entity entity)
+    public static void sendToTracking(IClientPacket message, Entity entity)
     {
-        CHANNEL.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity), msg);
+        NetworkPlatform.sendToTrackingEntityAndSelf(entity, message);
     }
 
     /** server -> all in a dimension */
-    public static void sendToDimension(ResourceKey<Level> dimension, IClientPacket msg)
+    public static void sendToDimension(ResourceKey<Level> dimension, IClientPacket message)
     {
-        CHANNEL.send(PacketDistributor.DIMENSION.with(() -> dimension), msg);
+        NetworkPlatform.sendToDimension(dimension, message);
     }
 
     /** server -> players near a point */
-    public static void sendToAllAround(IClientPacket msg, double x, double y, double z, double range, ResourceKey<Level> dim)
+    public static void sendToAllAround(IClientPacket message, double x, double y, double z, double range, ResourceKey<Level> dimension)
     {
-        PacketDistributor.TargetPoint tp = new PacketDistributor.TargetPoint(x, y, z, range, dim);
-        CHANNEL.send(PacketDistributor.NEAR.with(() -> tp), msg);
+        NetworkPlatform.sendToNear(dimension, x, y, z, range, message);
     }
 
     /** server -> players near a point */
-    public static void sendToAllAround(IClientPacket msg, Vec3 position, double range, ResourceKey<Level> dim)
+    public static void sendToAllAround(IClientPacket message, Vec3 position, double range, ResourceKey<Level> dimension)
     {
-        sendToAllAround(msg, position.x, position.y, position.z, range, dim);
+        sendToAllAround(message, position.x, position.y, position.z, range, dimension);
     }
 
     /** server -> all in a donut (min..max radius) */
-    public static void sendToDonut(ResourceKey<Level> dimension, Vec3 center, double minRange, double maxRange, IClientPacket msg)
+    public static void sendToDonut(ResourceKey<Level> dimension, Vec3 center, double minRange, double maxRange, IClientPacket message)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null)
-            return;
-        ServerLevel level = server.getLevel(dimension);
+        MinecraftServer server = PlatformEnvironment.currentServer();
+        ServerLevel level = server == null ? null : server.getLevel(dimension);
         if (level == null)
             return;
 
-        double min2 = minRange * minRange;
-        double max2 = maxRange * maxRange;
-        for (ServerPlayer p : level.players())
+        double minSquared = minRange * minRange;
+        double maxSquared = maxRange * maxRange;
+        for (ServerPlayer player : level.players())
         {
-            double d2 = p.position().distanceToSqr(center);
-            if (d2 > min2 && d2 < max2)
-                sendTo(msg, p);
+            double distanceSquared = player.position().distanceToSqr(center);
+            if (distanceSquared > minSquared && distanceSquared < maxSquared)
+                sendTo(message, player);
         }
     }
 
     /** server -> all within range except one player */
-    public static void sendToAllExcept(ResourceKey<Level> dim, Vec3 center, double range, ServerPlayer except, IClientPacket msg)
+    public static void sendToAllExcept(ResourceKey<Level> dimension, Vec3 center, double range, ServerPlayer except, IClientPacket message)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null)
-            return;
-        ServerLevel level = server.getLevel(dim);
+        MinecraftServer server = PlatformEnvironment.currentServer();
+        ServerLevel level = server == null ? null : server.getLevel(dimension);
         if (level == null)
             return;
 
-        double r2 = range * range;
-        UUID ex = except.getUUID();
-        for (ServerPlayer p : level.players())
+        double rangeSquared = range * range;
+        UUID excludedId = except.getUUID();
+        for (ServerPlayer player : level.players())
         {
-            if (p.getUUID().equals(ex))
-                continue;
-            if (p.position().distanceToSqr(center) < r2)
-                sendTo(msg, p);
+            if (!player.getUUID().equals(excludedId) && player.position().distanceToSqr(center) < rangeSquared)
+                sendTo(message, player);
         }
     }
 }

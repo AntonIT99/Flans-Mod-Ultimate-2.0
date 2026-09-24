@@ -3,6 +3,7 @@ package com.flansmodultimate.client.gui.options;
 import com.flansmodultimate.client.CommonConfigMirror;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
@@ -254,7 +255,7 @@ public class FlansOptionsScreen extends Screen
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         list.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, TITLE_TOP, 0xFFFFFF);
 

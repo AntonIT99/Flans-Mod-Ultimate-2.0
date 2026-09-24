@@ -3,10 +3,10 @@ package com.flansmodultimate.common.block;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
@@ -61,13 +61,18 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
     @NotNull
     public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
+        return open(state, level, pos, player);
+    }
+
+    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
+    {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
 
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
-            NetworkHooks.openScreen(serverPlayer, provider, pos);
+            MenuPlatform.open(serverPlayer, provider, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

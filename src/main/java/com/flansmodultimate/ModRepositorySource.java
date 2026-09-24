@@ -38,7 +38,8 @@ public class ModRepositorySource extends FolderRepositorySource
     }
 
     @Override
-    public void loadPacks(@NotNull Consumer<Pack> pOnLoad) {
+    public void loadPacks(@NotNull Consumer<Pack> pOnLoad)
+    {
         try
         {
             FileUtil.createDirectoriesSafe(folder);

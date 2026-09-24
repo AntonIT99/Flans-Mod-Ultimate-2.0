@@ -2,8 +2,7 @@ package com.flansmodultimate.platform.creative;
 
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.types.DriveableType;
-import net.minecraftforge.registries.ForgeRegistries;
-
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -17,11 +16,11 @@ public final class CreativeTabPlatform
     public static DriveableData readDriveableData(DriveableType type, ItemStack stack,
                                                  CreativeModeTab.ItemDisplayParameters parameters)
     {
-        return DriveableData.fromStack(type, stack);
+        return DriveableData.fromStack(type, stack, parameters.holders());
     }
 
     public static ResourceLocation itemId(Item item)
     {
-        return ForgeRegistries.ITEMS.getKey(item);
+        return BuiltInRegistries.ITEM.getKey(item);
     }
 }

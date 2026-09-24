@@ -5,6 +5,7 @@ import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import com.flansmodultimate.network.server.PacketTeamsAction;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -42,7 +43,7 @@ public final class TeamsVotingScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         PacketTeamsState state = TeamsClientState.get();
         if (state == null)
             return;

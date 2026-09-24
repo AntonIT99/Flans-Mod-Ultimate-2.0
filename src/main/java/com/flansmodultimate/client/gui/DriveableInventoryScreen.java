@@ -24,6 +24,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.Nullable;
@@ -237,7 +238,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
         renderLegacyTooltip(graphics, mouseX, mouseY);

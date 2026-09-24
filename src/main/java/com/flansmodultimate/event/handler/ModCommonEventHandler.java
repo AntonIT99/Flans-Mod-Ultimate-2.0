@@ -10,7 +10,7 @@ import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
-import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.platform.network.NetworkPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.crafting.CraftingHelper;
@@ -31,7 +31,7 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void commonSetup(FMLCommonSetupEvent event)
     {
-        PacketHandler.registerPackets();
+        NetworkPlatform.register();
         event.enqueueWork(() -> CraftingHelper.register(GunpowderRecipeCondition.SERIALIZER));
     }
 

@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -92,8 +93,8 @@ public final class KillMessageFeed
             if (!player.getGameProfile().getName().equals(data.killerName()))
                 continue;
             ItemStack held = player.getMainHandItem();
-            if (held.getItem() instanceof IPaintableItem<?> && held.getItem() == stack.getItem() && held.hasTag())
-                stack.setTag(held.getOrCreateTag().copy());
+            if (held.getItem() instanceof IPaintableItem<?> && held.getItem() == stack.getItem() && ItemStackData.has(held))
+                ItemStackData.set(stack, ItemStackData.copy(held));
             break;
         }
         return stack;

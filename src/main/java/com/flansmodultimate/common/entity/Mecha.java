@@ -27,11 +27,12 @@ import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -487,7 +488,7 @@ public class Mecha extends Driveable
         LoadedHandAmmo loaded = findLoadedHandAmmo(gunItem, gunType, gunStack);
         if (loaded == null)
         {
-            float reloadTime = gunItem.getActualReloadTime(gunStack, oppositeHandStack(left));
+            float reloadTime = gunItem.getActualReloadTime(gunStack, level().registryAccess(), oppositeHandStack(left));
             if (reloadHandGun(slot, gunItem, gunType, gunStack))
             {
                 handGunCooldown[index] = Math.max(1F, reloadTime);
@@ -504,7 +505,7 @@ public class Mecha extends Driveable
             }
             return false;
         }
-        if (!weaponEnabled(EnumWeaponType.GUN) || MinecraftForge.EVENT_BUS.post(new GunFiredEvent(this)))
+        if (!weaponEnabled(EnumWeaponType.GUN) || PlatformEvents.postCancellable(new GunFiredEvent(this)))
             return false;
 
         LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
@@ -527,7 +528,7 @@ public class Mecha extends Driveable
                 if (consumeAmmo)
                 {
                     ShootableItem.consumeRound(loaded.stack());
-                    gunItem.setBulletItemStack(gunStack, loaded.stack(), loaded.slot());
+                    gunItem.setBulletItemStack(gunStack, loaded.stack(), loaded.slot(), level().registryAccess());
                     if (StringUtils.isNotBlank(loaded.bulletType().getDropItemOnShoot()))
                         ModUtils.dropItem(level(), this, loaded.bulletType().getDropItemOnShoot(), loaded.bulletType().getContentPack());
                     driveableData.setMechaAddon(slot, gunStack);
@@ -552,7 +553,7 @@ public class Mecha extends Driveable
     {
         for (int slot = 0; slot < gunType.getNumAmmoItemsInGun(gunStack); slot++)
         {
-            ItemStack stack = gunItem.getAmmoItemStack(gunStack, slot);
+            ItemStack stack = gunItem.getAmmoItemStack(gunStack, slot, level().registryAccess());
             if (stack.getItem() instanceof ShootableItem shootableItem
                 && shootableItem.getConfigType() instanceof BulletType bulletType
                 && gunType.getAmmoTypes().contains(bulletType) && ShootableItem.hasRoundsLeft(stack))
@@ -565,14 +566,14 @@ public class Mecha extends Driveable
     {
         if (gunType.getAmmoTypes().isEmpty())
             return false;
-        String preferred = gunStack.hasTag() ? gunStack.getTag().getString(GunItem.NBT_PREFERRED_AMMO) : StringUtils.EMPTY;
+        String preferred = ItemStackData.copy(gunStack).getString(GunItem.NBT_PREFERRED_AMMO);
         boolean creative = getControllingEntity() instanceof Player player && player.getAbilities().instabuild;
         boolean preserveSource = creative || infiniteAmmo();
         boolean reloaded = false;
 
         for (int internalSlot = 0; internalSlot < gunType.getNumAmmoItemsInGun(gunStack); internalSlot++)
         {
-            ItemStack current = gunItem.getAmmoItemStack(gunStack, internalSlot);
+            ItemStack current = gunItem.getAmmoItemStack(gunStack, internalSlot, level().registryAccess());
             if (ShootableItem.hasRoundsLeft(current))
                 continue;
             int sourceSlot = findBestReloadSource(gunType, preferred);
@@ -581,7 +582,7 @@ public class Mecha extends Driveable
             ItemStack source = driveableData.getItem(sourceSlot);
             ItemStack loaded = source.copy();
             loaded.setCount(1);
-            gunItem.setBulletItemStack(gunStack, loaded, internalSlot);
+            gunItem.setBulletItemStack(gunStack, loaded, internalSlot, level().registryAccess());
             if (!preserveSource)
             {
                 source.shrink(1);
@@ -626,7 +627,7 @@ public class Mecha extends Driveable
     {
         int rounds = 0;
         for (int slot = 0; slot < gunType.getNumAmmoItemsInGun(gunStack); slot++)
-            rounds += ShootableItem.getTotalRounds(gunItem.getAmmoItemStack(gunStack, slot));
+            rounds += ShootableItem.getTotalRounds(gunItem.getAmmoItemStack(gunStack, slot, level().registryAccess()));
         return rounds;
     }
 
@@ -1006,7 +1007,7 @@ public class Mecha extends Driveable
     {
         if (!canPlayerAccessInventory(player) || getDriveableData() == null || getConfigType() == null)
             return false;
-        NetworkHooks.openScreen(player,
+        MenuPlatform.open(player,
             new SimpleMenuProvider((containerId, inventory, ignored) -> new MechaInventoryMenu(containerId, inventory, this),
                 ModUtils.getDisplayName(getConfigType())),
             buffer -> buffer.writeVarInt(getId()));

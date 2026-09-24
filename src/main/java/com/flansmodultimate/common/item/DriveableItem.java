@@ -8,6 +8,7 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -144,7 +145,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
-        DriveableData data = DriveableData.fromStack(configType, stack);
+        DriveableData data = DriveableData.fromStack(configType, stack, ItemStackData.builtInRegistries());
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {

@@ -1,6 +1,7 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -119,7 +120,7 @@ public class InventoryHolderEntity extends PathfinderMob
         ListTag list = tag.getList(NBT_HELD_ITEMS, Tag.TAG_COMPOUND);
         for (int index = 0; index < list.size(); index++)
         {
-            ItemStack stack = ItemStack.of(list.getCompound(index));
+            ItemStack stack = ItemStackData.parse(level().registryAccess(), list.getCompound(index));
             if (!stack.isEmpty())
                 heldItems.add(stack);
         }
@@ -131,7 +132,7 @@ public class InventoryHolderEntity extends PathfinderMob
         super.addAdditionalSaveData(tag);
         ListTag list = new ListTag();
         for (ItemStack stack : heldItems)
-            list.add(stack.save(new CompoundTag()));
+            list.add(ItemStackData.save(stack, level().registryAccess()));
         tag.put(NBT_HELD_ITEMS, list);
     }
 }

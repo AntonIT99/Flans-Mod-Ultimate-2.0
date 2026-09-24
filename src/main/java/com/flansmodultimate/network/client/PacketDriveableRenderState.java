@@ -3,6 +3,7 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketIO;
 import org.jetbrains.annotations.NotNull;
 
 import com.flansmodultimate.network.PacketBuffer;
@@ -47,7 +48,7 @@ public final class PacketDriveableRenderState implements IClientPacket
         for (int index = 0; index < slots.length; index++)
         {
             buffer.writeVarInt(slots[index]);
-            buffer.writeItem(stacks[index]);
+            PacketIO.writeItem(buffer, stacks[index]);
         }
     }
 
@@ -64,7 +65,7 @@ public final class PacketDriveableRenderState implements IClientPacket
         for (int index = 0; index < count; index++)
         {
             slots[index] = buffer.readVarInt();
-            stacks[index] = buffer.readItem();
+            stacks[index] = PacketIO.readItem(buffer);
         }
     }
 
