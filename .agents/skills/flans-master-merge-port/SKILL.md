@@ -25,6 +25,10 @@ is current.
    the current checkout is `master` or has unrelated changes. Do not switch or
    clean a dirty checkout, overwrite local work, or use a worktree with an
    unrelated merge in progress. Preserve unrelated changes throughout.
+   Inspect nested Git repositories under `src/` in both worktrees as separate
+   repositories, including locally excluded pack directories. Record each pack's
+   source and target branch, HEAD, merge base, remote state, and worktree status;
+   the parent repository's status and diff do not include their files.
 3. Run a destination baseline compile with its required Java version. Record any
    pre-existing failure so it is not mistaken for a regression.
 4. Inventory `master`-only and target-only commits from the merge base. Review
@@ -57,6 +61,13 @@ them in the final result; do not create a report file for each merge run.
 4. Resolve one subsystem at a time and run focused checks where useful. Inspect
    the full merge result for omitted changes, duplicate behavior, unregistered
    components, and client-only code reachable from a dedicated server.
+5. For each nested pack repository, compare its corresponding source and target
+   branches independently. When the parent change requires a pack adaptation,
+   commit that pack's source change in its own repository, merge it into the
+   pack's target branch, and resolve loader-specific conflicts there. If its
+   target already contains its source and no adaptation is needed, record that
+   finding. Preserve unrelated pack changes and never stage pack files through
+   the parent repository.
 
 ## Document version differences
 
@@ -94,11 +105,15 @@ details in user-facing wiki pages unless they help users make a decision.
 Run focused tests first, then the destination's full `build` after changes to
 loader setup, registries, networking, entities, resources, source sets, or
 packaging. Run `packsManagerJar` and/or `officialPacksJar` when their inputs or
-packaging change. Verify client and dedicated-server startup for affected loader,
+packaging change. Build affected nested pack modules too; a parent build may
+compile locally excluded pack sources even though the parent diff omits them.
+Verify client and dedicated-server startup for affected loader,
 rendering, mixin, or networking paths when runnable. Review the scoped diff,
-check jar contents when packaging changed, and run `git diff --check`.
+check jar contents when packaging changed, and run `git diff --check` in the
+parent and every changed nested repository.
 
 Commit the merge only after the required checks pass or an unavailable gate is
 explicitly explained in the user-facing result. Stage explicit
 paths in a mixed worktree. Report the merge commit, key adaptations, validation,
-and remaining risks. Do not push or create a pull request unless requested.
+and remaining risks for the parent and each changed pack repository. Do not push
+or create a pull request unless requested.
