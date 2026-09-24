@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 public final class ModClientConfig
 {
@@ -31,7 +32,7 @@ public final class ModClientConfig
     public static final ModConfigSpec.EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
     public static final ModConfigSpec.BooleanValue SHOW_FLANS_HUD;
     public static final ModConfigSpec.BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
-    private static final ModConfigSpec.BooleanValue PREFER_BUILT_IN_MODEL_CLASSES;
+    private static final Supplier<Boolean> PREFER_BUILT_IN_MODEL_CLASSES;
     public static final ModConfigSpec.BooleanValue SHOW_AMMO_HUD;
     public static final ModConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_X;
@@ -43,21 +44,21 @@ public final class ModClientConfig
     private static final int DEFAULT_VEHICLE_HUD_TOP = 2;
     private static final int MAX_VEHICLE_HUD_OFFSET = 500;
     public static final ModConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
-    private static final ModConfigSpec.BooleanValue HD_HIT_MARKER;
+    private static final Supplier<Boolean> HD_HIT_MARKER;
     public static final ModConfigSpec.BooleanValue FANCY_HIT_MARKER;
     public static final ModConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
-    private static final ModConfigSpec.BooleanValue ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
+    private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     public static final ModConfigSpec.BooleanValue ENABLE_GPU_MODEL_CACHE;
     private static final ModConfigSpec.DoubleValue DRIVEABLE_LOD_DETAIL_MULTIPLIER;
-    private static final ModConfigSpec.DoubleValue GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
+    private static final Supplier<Double> GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
     private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER;
     private static final ModConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE;
     private static final ModConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE;
     public static final ModConfigSpec.EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
     public static final ModConfigSpec.BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
-    private static final ModConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
-    private static final ModConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
-    private static final ModConfigSpec.BooleanValue SHOW_CASING_EJECTIONS;
+    private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
+    private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
+    private static final Supplier<Boolean> SHOW_CASING_EJECTIONS;
 
     private static volatile Boolean startupUncensoredContentEnabled;
 
@@ -140,16 +141,16 @@ public final class ModClientConfig
     public final boolean alwaysEnablePlaneCullingByDefault;
     public final boolean alwaysEnableMechaCullingByDefault;
 
-    private static final ModConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
-    private static final ModConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
-    private static final ModConfigSpec.BooleanValue SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
+    private static final Supplier<Boolean> SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
+    private static final Supplier<Boolean> LOAD_ALL_MODELS_IN_CACHE;
+    private static final Supplier<Boolean> SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
     public static final ModConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     public static final ModConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
     public static final ModConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
-    private static final ModConfigSpec.IntValue BULLET_RENDER_DISTANCE;
-    private static final ModConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
-    private static final ModConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
-    private static final ModConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
+    private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
+    private static final Supplier<Integer> GRENADE_RENDER_DISTANCE;
+    private static final Supplier<Integer> DEPLOYED_GUN_RENDER_DISTANCE;
+    private static final Supplier<Integer> AA_GUN_RENDER_DISTANCE;
     private static final ModConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
     private static final ModConfigSpec.BooleanValue ENABLE_DRIVEABLE_LOD;
     private static final ModConfigSpec.DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
@@ -158,42 +159,42 @@ public final class ModClientConfig
     private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE;
     private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_RESOLUTION;
     private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_YAW_ANGLES;
-    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
-    private static final ModConfigSpec.IntValue PARTICLE_RENDER_DISTANCE;
-    private static final ModConfigSpec.IntValue FULL_PARTICLE_DENSITY_DISTANCE;
-    private static final ModConfigSpec.DoubleValue DISTANT_PARTICLE_DENSITY;
-    private static final ModConfigSpec.IntValue MAX_FLANS_PARTICLES_PER_TICK;
+    private static final Supplier<Integer> DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
+    private static final Supplier<Integer> PARTICLE_RENDER_DISTANCE;
+    private static final Supplier<Integer> FULL_PARTICLE_DENSITY_DISTANCE;
+    private static final Supplier<Double> DISTANT_PARTICLE_DENSITY;
+    private static final Supplier<Integer> MAX_FLANS_PARTICLES_PER_TICK;
 
-    private static final ModConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
-    private static final ModConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
-    private static final ModConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
+    private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
+    private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
+    private static final Supplier<EnumMouseButton> AIM_BUTTON;
     public static final ModConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
 
-    private static final ModConfigSpec.BooleanValue ENABLE_ARMS;
-    private static final ModConfigSpec.BooleanValue ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
-    private static final ModConfigSpec.BooleanValue ENABLE_WEAPON_SPRINT_STANCE;
-    private static final ModConfigSpec.BooleanValue ENABLE_RANDOM_SPRINT_STANCE;
+    private static final Supplier<Boolean> ENABLE_ARMS;
+    private static final Supplier<Boolean> ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
+    private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
+    private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
 
-    private static final ModConfigSpec.BooleanValue ENABLE_FAST_TRANSLUCENT_RENDERING;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ENABLE_FAST_TRANSLUCENT_RENDERING;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT;
 
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT;
-    private static final ModConfigSpec.BooleanValue ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT;
 
     private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();

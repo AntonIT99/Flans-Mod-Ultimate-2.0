@@ -12,7 +12,7 @@ import com.flansmodultimate.network.PacketIO;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -166,7 +166,7 @@ public final class PacketTeamsState implements IClientPacket
     }
 
     @Override
-    public void encodeInto(RegistryFriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeByte(openScreen.ordinal());
         data.writeBoolean(enabled);
@@ -209,7 +209,7 @@ public final class PacketTeamsState implements IClientPacket
     }
 
     @Override
-    public void decodeInto(RegistryFriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;

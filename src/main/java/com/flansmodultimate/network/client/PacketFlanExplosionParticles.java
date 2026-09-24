@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -77,7 +77,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
     }
 
     @Override
-    public void encodeInto(RegistryFriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeDouble(position.x);
         data.writeDouble(position.y);
@@ -91,7 +91,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
     }
 
     @Override
-    public void decodeInto(RegistryFriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         position = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         numSmoke = data.readInt();

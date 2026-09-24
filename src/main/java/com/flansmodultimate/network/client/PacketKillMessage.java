@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -24,7 +24,7 @@ public class PacketKillMessage implements IClientPacket
     }
 
     @Override
-    public void encodeInto(RegistryFriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeBoolean(message.headshot());
         data.writeUtf(message.weaponShortName());
@@ -35,7 +35,7 @@ public class PacketKillMessage implements IClientPacket
     }
 
     @Override
-    public void decodeInto(RegistryFriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         message = new KillMessageData(data.readBoolean(), data.readUtf(),
             data.readUtf(), data.readEnum(ChatFormatting.class),

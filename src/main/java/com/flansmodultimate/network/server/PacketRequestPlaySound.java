@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,7 +37,7 @@ public class PacketRequestPlaySound implements IServerPacket
     }
 
     @Override
-    public void encodeInto(RegistryFriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeFloat(posX);
         data.writeFloat(posY);
@@ -47,7 +47,7 @@ public class PacketRequestPlaySound implements IServerPacket
     }
 
     @Override
-    public void decodeInto(RegistryFriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         posX = data.readFloat();
         posY = data.readFloat();

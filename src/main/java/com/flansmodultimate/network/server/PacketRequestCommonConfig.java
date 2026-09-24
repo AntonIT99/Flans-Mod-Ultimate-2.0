@@ -8,7 +8,7 @@ import com.flansmodultimate.network.client.PacketCommonConfigValues;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -17,13 +17,13 @@ import net.minecraft.server.level.ServerPlayer;
 public class PacketRequestCommonConfig implements IServerPacket
 {
     @Override
-    public void encodeInto(RegistryFriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         // The request carries nothing: the answer is the same for every player but their permission
     }
 
     @Override
-    public void decodeInto(RegistryFriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
     }
 

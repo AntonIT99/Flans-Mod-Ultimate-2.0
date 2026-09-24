@@ -46,7 +46,7 @@ public final class CreativeTabs
     public static final String TAB_PARTS = "parts";
 
     @SafeVarargs
-    public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<DeferredHolder<Item, ? extends Item>> itemsForTab, List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
+    public static void registerCreativeTab(DeferredRegister<CreativeModeTab> creativeTabRegistry, String tabName, List<? extends Supplier<? extends Item>> itemsForTab, List<EnumType> typesForIcon, ResourceKey<CreativeModeTab> beforeTab, ResourceKey<CreativeModeTab>... afterTab)
     {
         creativeTabRegistry.register(tabName, () -> CreativeModeTab.builder()
             .title(Component.translatable("creativetab." + FlansMod.MOD_ID + "." + tabName))
@@ -58,13 +58,13 @@ public final class CreativeTabs
             .build());
     }
 
-    private static Supplier<ItemStack> createIcon(String tabName, List<DeferredHolder<Item, ? extends Item>> itemsForTab, List<EnumType> typesForIcons)
+    private static Supplier<ItemStack> createIcon(String tabName, List<? extends Supplier<? extends Item>> itemsForTab, List<EnumType> typesForIcons)
     {
         return () -> {
             if (tabName.equals(TAB_GENERAL))
                 return new ItemStack(FlansMod.gunWorkbenchItem.get());
 
-            List<DeferredHolder<Item, ? extends Item>> itemsForIcon = itemsForTab.stream()
+            List<? extends Supplier<? extends Item>> itemsForIcon = itemsForTab.stream()
                 .filter(ro -> {
                     for (EnumType type: typesForIcons) {
                         Class<?> itemClass = type.getItemClass();
@@ -81,13 +81,13 @@ public final class CreativeTabs
         };
     }
 
-    private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(String tabName, List<DeferredHolder<Item, ? extends Item>> itemsForTab)
+    private static CreativeModeTab.DisplayItemsGenerator displayItemsWithPaintjobsGenerator(String tabName, List<? extends Supplier<? extends Item>> itemsForTab)
     {
         boolean onlyGunAmmo = tabName.equals(TAB_GUNS);
         boolean onlyVehicleAmmo = tabName.equals(TAB_BOMBS_AND_SHELLS);
 
         return (parameters, output) -> {
-            for (DeferredHolder<Item, ? extends Item> ro : sortForCreativeTab(itemsForTab))
+            for (Supplier<? extends Item> ro : sortForCreativeTab(itemsForTab))
             {
                 Item item = ro.get();
 
@@ -117,12 +117,12 @@ public final class CreativeTabs
         return data.copyToStack(stack);
     }
 
-    private static List<DeferredHolder<Item, ? extends Item>> sortForCreativeTab(List<DeferredHolder<Item, ? extends Item>> itemsForTab)
+    private static List<Supplier<? extends Item>> sortForCreativeTab(List<? extends Supplier<? extends Item>> itemsForTab)
     {
-        List<DeferredHolder<Item, ? extends Item>> sorted = new ArrayList<>(itemsForTab);
-        Comparator<DeferredHolder<Item, ? extends Item>> cmp = Comparator
+        List<Supplier<? extends Item>> sorted = new ArrayList<>(itemsForTab);
+        Comparator<Supplier<? extends Item>> cmp = Comparator
             // 1) content pack name (case-insensitive)
-            .comparing((DeferredHolder<Item, ? extends Item> ro) -> getPackName(ro.get()), Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
+            .comparing((Supplier<? extends Item> ro) -> getPackName(ro.get()), Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER))
             // 2) item type (EnumType)
             .thenComparing(ro -> getPackType(ro.get()), Comparator.nullsFirst(Comparator.naturalOrder()))
             // 3) registry name (alphabetical)

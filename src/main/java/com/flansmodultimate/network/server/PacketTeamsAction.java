@@ -10,7 +10,7 @@ import com.flansmodultimate.network.client.PacketTeamsState;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -68,14 +68,14 @@ public final class PacketTeamsAction implements IServerPacket
     }
 
     @Override
-    public void encodeInto(RegistryFriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeByte(action.ordinal());
         data.writeUtf(value, 128);
     }
 
     @Override
-    public void decodeInto(RegistryFriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         int actionId = data.readUnsignedByte();
         action = actionId < Action.values().length ? Action.values()[actionId] : Action.OPEN_SCOREBOARD;

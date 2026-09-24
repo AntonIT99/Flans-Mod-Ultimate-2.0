@@ -7,7 +7,7 @@ import com.flansmodultimate.network.client.PacketGunVariableZoomClient;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -26,14 +26,14 @@ public class PacketGunVariableZoom implements IServerPacket
     }
 
     @Override
-    public void encodeInto(RegistryFriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeEnum(hand);
         data.writeBoolean(increase);
     }
 
     @Override
-    public void decodeInto(RegistryFriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         hand = data.readEnum(InteractionHand.class);
         increase = data.readBoolean();

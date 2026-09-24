@@ -1,5 +1,6 @@
 package com.flansmodultimate.network.client;
 
+import com.flansmodultimate.network.PacketBuffer;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ class PacketPlaySoundTest
                     distort, !distort, cancellable, instance, null);
                 byte[] first = encode(original);
                 PacketPlaySound decoded = new PacketPlaySound();
-                decoded.decodeInto(new RegistryFriendlyByteBuf(Unpooled.wrappedBuffer(first), RegistryAccess.EMPTY));
+                decoded.decodeInto(new PacketBuffer(new RegistryFriendlyByteBuf(Unpooled.wrappedBuffer(first), RegistryAccess.EMPTY)));
                 // A plain sound keeps only the pitch seed; encoding it again must give the same bytes.
                 assertArrayEquals(first, encode(decoded));
             }
@@ -49,7 +50,7 @@ class PacketPlaySoundTest
     private static byte[] encode(PacketPlaySound packet)
     {
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
-        packet.encodeInto(buffer);
+        packet.encodeInto(new PacketBuffer(buffer));
         return ByteBufUtil.getBytes(buffer);
     }
 }

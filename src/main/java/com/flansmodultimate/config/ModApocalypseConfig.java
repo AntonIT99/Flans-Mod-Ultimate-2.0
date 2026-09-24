@@ -11,6 +11,7 @@ import net.neoforged.fml.loading.FMLPaths;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -25,32 +26,32 @@ public final class ModApocalypseConfig
     private static final AtomicReference<ApocalypseConfigSnapshot> instance = new AtomicReference<>();
     private static final AtomicReference<ApocalypseConfigSnapshot> serverOverride = new AtomicReference<>();
 
-    private static final ModConfigSpec.BooleanValue APOCALYPSE_ENABLED;
-    private static final ModConfigSpec.BooleanValue APOCALYPSE_DIMENSION_ENABLED;
-    private static final ModConfigSpec.BooleanValue APOCALYPSE_PORTALS_ENABLED;
-    private static final ModConfigSpec.BooleanValue APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED;
-    private static final ModConfigSpec.BooleanValue APOCALYPSE_WORLDGEN_ENABLED;
-    private static final ModConfigSpec.BooleanValue APOCALYPSE_MOBS_ENABLED;
-    private static final ModConfigSpec.BooleanValue APOCALYPSE_NUKE_DROPS_ENABLED;
-    private static final ModConfigSpec.IntValue APOCALYPSE_COUNTDOWN_LENGTH;
-    private static final ModConfigSpec.IntValue APOCALYPSE_SURVIVOR_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_WANDERING_SURVIVOR_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_FLY_BY_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_SKELETON_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_DEAD_TREE_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_VEHICLE_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_AIRPORT_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_DYE_FACTORY_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_LAB_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_ABANDONED_PORTAL_OVERWORLD_RARITY;
-    private static final ModConfigSpec.IntValue APOCALYPSE_RETURN_RADIUS;
-    private static final ModConfigSpec.IntValue APOCALYPSE_SPAWN_RADIUS;
-    private static final ModConfigSpec.BooleanValue APOCALYPSE_RESPAWN_IN_APOCALYPSE;
-    private static final ModConfigSpec.EnumValue<ApocalypseTeleportOption> APOCALYPSE_TELEPORT_OPTION;
-    private static final ModConfigSpec.DoubleValue APOCALYPSE_ACID_DAMAGE;
-    private static final ModConfigSpec.DoubleValue APOCALYPSE_NUKE_EXPLOSION_POWER;
-    private static final ModConfigSpec.IntValue APOCALYPSE_NUKE_VISUAL_TICKS;
+    private static final Supplier<Boolean> APOCALYPSE_ENABLED;
+    private static final Supplier<Boolean> APOCALYPSE_DIMENSION_ENABLED;
+    private static final Supplier<Boolean> APOCALYPSE_PORTALS_ENABLED;
+    private static final Supplier<Boolean> APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED;
+    private static final Supplier<Boolean> APOCALYPSE_WORLDGEN_ENABLED;
+    private static final Supplier<Boolean> APOCALYPSE_MOBS_ENABLED;
+    private static final Supplier<Boolean> APOCALYPSE_NUKE_DROPS_ENABLED;
+    private static final Supplier<Integer> APOCALYPSE_COUNTDOWN_LENGTH;
+    private static final Supplier<Integer> APOCALYPSE_SURVIVOR_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_WANDERING_SURVIVOR_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_FLY_BY_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_SKELETON_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_DEAD_TREE_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_VEHICLE_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_AIRPORT_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_DYE_FACTORY_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_LAB_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_ABANDONED_PORTAL_OVERWORLD_RARITY;
+    private static final Supplier<Integer> APOCALYPSE_RETURN_RADIUS;
+    private static final Supplier<Integer> APOCALYPSE_SPAWN_RADIUS;
+    private static final Supplier<Boolean> APOCALYPSE_RESPAWN_IN_APOCALYPSE;
+    private static final Supplier<ApocalypseTeleportOption> APOCALYPSE_TELEPORT_OPTION;
+    private static final Supplier<Double> APOCALYPSE_ACID_DAMAGE;
+    private static final Supplier<Double> APOCALYPSE_NUKE_EXPLOSION_POWER;
+    private static final Supplier<Integer> APOCALYPSE_NUKE_VISUAL_TICKS;
 
     static
     {

@@ -189,7 +189,7 @@ public final class PacketHandler
         try
         {
             T packet = type.getDeclaredConstructor().newInstance();
-            packet.decodeInto(buffer);
+            packet.decodeInto(new PacketBuffer(buffer));
             return packet;
         }
         catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception)
@@ -205,7 +205,7 @@ public final class PacketHandler
         if (id == null)
             throw new IllegalArgumentException("Unregistered Flan's Mod packet " + packet.getClass().getName());
         buffer.writeVarInt(id);
-        packet.encodeInto(buffer);
+        packet.encodeInto(new PacketBuffer(buffer));
     }
 
     private record ClientboundPayload(IClientPacket packet) implements CustomPacketPayload

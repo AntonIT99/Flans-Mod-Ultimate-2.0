@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -28,14 +28,14 @@ public class PacketReloadPreferences implements IServerPacket
     }
 
     @Override
-    public void encodeInto(RegistryFriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeBoolean(combineAmmoOnReload);
         data.writeBoolean(ammoToUpperInventoryOnReload);
     }
 
     @Override
-    public void decodeInto(RegistryFriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         combineAmmoOnReload = data.readBoolean();
         ammoToUpperInventoryOnReload = data.readBoolean();
