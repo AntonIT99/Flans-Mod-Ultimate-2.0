@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.render.entity;
 
+import com.flansmodultimate.platform.render.VertexPlatform;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -393,9 +394,7 @@ public final class DriveableImpostorCache
 
     private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float u, float v, int packedLight)
     {
-        vertices.vertex(pose.pose(), x, y, 0F).color(1F, 1F, 1F, 1F).uv(u, v)
-            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(packedLight)
-            .normal(pose.normal(), 0F, 1F, 0F).endVertex();
+        VertexPlatform.vertex(vertices, pose, x, y, 0F, 1F, 1F, 1F, 1F, u, v, OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
     }
 
     private static int yawIndex(float viewYaw, int yawAngles)

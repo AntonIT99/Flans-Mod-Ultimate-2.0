@@ -42,6 +42,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.platform.menu.MenuPlatform;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModLogFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -53,7 +54,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
@@ -343,10 +343,10 @@ public class FlansMod
         .sized(0.75F, 0.75F).clientTrackingRange(64).updateInterval(2)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "flag").toString()));
 
-    private static final Map<EnumType, List<RegistryObject<Item>>> items = new EnumMap<>(EnumType.class);
+    private static final Map<EnumType, List<RegistryEntry<Item>>> items = new EnumMap<>(EnumType.class);
     @Getter
-    private static final Map<EnumType, Map<String, RegistryObject<Block>>> blocks = new EnumMap<>(EnumType.class);
-    private static final Map<ResourceLocation, RegistryObject<SoundEvent>> sounds = new HashMap<>();
+    private static final Map<EnumType, Map<String, RegistryEntry<Block>>> blocks = new EnumMap<>(EnumType.class);
+    private static final Map<ResourceLocation, RegistryEntry<SoundEvent>> sounds = new HashMap<>();
     @Getter
     private static final Map<ResourceLocation, TypeFile> soundsOrigins = new HashMap<>();
 
@@ -523,10 +523,10 @@ public class FlansMod
 
     private static Block[] getRegisteredBlocks(EnumType type)
     {
-        Map<String, RegistryObject<Block>> registeredBlocks = blocks.get(type);
+        Map<String, RegistryEntry<Block>> registeredBlocks = blocks.get(type);
         if (registeredBlocks == null)
             return new Block[0];
-        return registeredBlocks.values().stream().map(RegistryObject::get).toArray(Block[]::new);
+        return registeredBlocks.values().stream().map(RegistryEntry::get).toArray(Block[]::new);
     }
 
     private static void registerSounds()
@@ -549,12 +549,12 @@ public class FlansMod
 
     public static void registerItem(String itemName, EnumType type, Supplier<? extends Item> initItem)
     {
-        items.get(type).add(itemRegistry.register(itemName, initItem));
+        items.get(type).add(RegistryEntry.of(itemRegistry.register(itemName, initItem)));
     }
 
     public static void registerBlock(String blockName, EnumType type, Supplier<? extends Block> initItem)
     {
-        blocks.get(type).put(blockName, blockRegistry.register(blockName, initItem));
+        blocks.get(type).put(blockName, RegistryEntry.of(blockRegistry.register(blockName, initItem)));
     }
 
     public static void registerSound(String soundName, @Nullable TypeFile typeFile)
@@ -563,30 +563,30 @@ public class FlansMod
         if (sounds.containsKey(rl))
             return;
 
-        RegistryObject<SoundEvent> soundEvent = soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(rl));
+        RegistryEntry<SoundEvent> soundEvent = RegistryEntry.of(soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(rl)));
         sounds.put(rl, soundEvent);
         if (typeFile != null)
             soundsOrigins.put(rl, typeFile);
     }
 
     @Unmodifiable
-    public static List<RegistryObject<Item>> getItems()
+    public static List<RegistryEntry<Item>> getItems()
     {
         return items.values().stream().flatMap(List::stream).toList();
     }
 
-    public static List<RegistryObject<Item>> getItems(EnumType type)
+    public static List<RegistryEntry<Item>> getItems(EnumType type)
     {
         return items.get(type);
     }
 
     @Unmodifiable
-    public static List<RegistryObject<Item>> getItems(Set<EnumType> types)
+    public static List<RegistryEntry<Item>> getItems(Set<EnumType> types)
     {
         return types.stream().map(items::get).flatMap(List::stream).toList();
     }
 
-    public static Optional<RegistryObject<SoundEvent>> getSoundEvent(String soundName)
+    public static Optional<RegistryEntry<SoundEvent>> getSoundEvent(String soundName)
     {
         ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
         return Optional.ofNullable(sounds.get(rl));

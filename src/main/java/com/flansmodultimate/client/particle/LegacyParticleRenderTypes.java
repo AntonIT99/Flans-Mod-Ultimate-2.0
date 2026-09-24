@@ -12,6 +12,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
 
 public final class LegacyParticleRenderTypes
 {
@@ -23,7 +24,7 @@ public final class LegacyParticleRenderTypes
         public void begin(BufferBuilder builder, TextureManager textureManager)
         {
             RenderSystem.depthMask(false);
-            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+            RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);

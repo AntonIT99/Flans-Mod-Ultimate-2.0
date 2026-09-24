@@ -20,8 +20,6 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -949,7 +947,6 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     protected void readClient(TypeFile file)
     {
         animationConfig.read(file);

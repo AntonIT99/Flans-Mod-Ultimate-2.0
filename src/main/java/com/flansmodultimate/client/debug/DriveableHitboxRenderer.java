@@ -7,6 +7,7 @@ import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
@@ -99,9 +100,7 @@ public final class DriveableHitboxRenderer
     private static void addLine(PoseStack.Pose pose, VertexConsumer consumer, Vec3 from, Vec3 to, float red, float green, float blue)
     {
         Vec3 normal = to.subtract(from).normalize();
-        consumer.vertex(pose.pose(), (float) from.x, (float) from.y, (float) from.z).color(red, green, blue, 1F)
-            .normal(pose.normal(), (float) normal.x, (float) normal.y, (float) normal.z).endVertex();
-        consumer.vertex(pose.pose(), (float) to.x, (float) to.y, (float) to.z).color(red, green, blue, 1F)
-            .normal(pose.normal(), (float) normal.x, (float) normal.y, (float) normal.z).endVertex();
+        VertexPlatform.lineVertex(consumer, pose, (float) from.x, (float) from.y, (float) from.z, red, green, blue, 1F, (float) normal.x, (float) normal.y, (float) normal.z);
+        VertexPlatform.lineVertex(consumer, pose, (float) to.x, (float) to.y, (float) to.z, red, green, blue, 1F, (float) normal.x, (float) normal.y, (float) normal.z);
     }
 }

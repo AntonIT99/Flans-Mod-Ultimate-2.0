@@ -24,6 +24,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -553,7 +554,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntit
     protected void updatePingOfShooter(Level level)
     {
         if (!level.isClientSide)
-            firedShot.getPlayerAttacker().ifPresent(player -> pingOfShooter = player.latency);
+            firedShot.getPlayerAttacker().ifPresent(player -> pingOfShooter = EntityPlatform.latency(player));
     }
 
     protected void handleSubmunitionsTimers()

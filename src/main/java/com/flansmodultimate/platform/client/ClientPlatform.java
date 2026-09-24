@@ -1,5 +1,10 @@
 package com.flansmodultimate.platform.client;
 
+import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderNameTagEvent;
+import net.minecraftforge.eventbus.api.Event;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -24,5 +29,21 @@ public final class ClientPlatform
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         screen.renderBackground(graphics);
+    }
+
+    public static float partialTick(RenderLevelStageEvent event)
+    {
+        return event.getPartialTick();
+    }
+
+    /** Vertical mouse-wheel movement of the event. */
+    public static double scrollDelta(InputEvent.MouseScrollingEvent event)
+    {
+        return event.getScrollDelta();
+    }
+
+    public static void hideNameTag(RenderNameTagEvent event)
+    {
+        event.setResult(Event.Result.DENY);
     }
 }

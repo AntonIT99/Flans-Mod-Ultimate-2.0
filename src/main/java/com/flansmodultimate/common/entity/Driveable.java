@@ -74,6 +74,7 @@ import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
@@ -819,37 +820,42 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     @Override
     protected void defineSynchedData()
     {
-        entityData.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
-        entityData.define(DATA_YAW, 0F);
-        entityData.define(DATA_PITCH, 0F);
-        entityData.define(DATA_ROLL, 0F);
-        entityData.define(DATA_THROTTLE, 0F);
-        entityData.define(DATA_TURRET_YAW, 0F);
-        entityData.define(DATA_TURRET_PITCH, 0F);
-        entityData.define(DATA_FLIGHT_PITCH, 0F);
-        entityData.define(DATA_FLIGHT_ROLL, 0F);
-        entityData.define(DATA_MOUSE_CONTROL, false);
-        entityData.define(DATA_RECOIL_PROGRESS, 0F);
-        entityData.define(DATA_IT1_DOOR_ANGLE, 0F);
-        entityData.define(DATA_PREV_IT1_DOOR_ANGLE, 0F);
-        entityData.define(DATA_IT1_ARM_ANGLE, 0F);
-        entityData.define(DATA_PREV_IT1_ARM_ANGLE, 0F);
-        entityData.define(DATA_IT1_RAIL_ANGLE, 0F);
-        entityData.define(DATA_PREV_IT1_RAIL_ANGLE, 0F);
-        entityData.define(DATA_INPUT_MASK, 0);
-        entityData.define(DATA_FLAGS, FLAG_GEAR);
-        entityData.define(DATA_MODE, 0);
-        entityData.define(DATA_FUEL, 0F);
-        entityData.define(DATA_PAINTJOB_ID, 0);
-        entityData.define(DATA_LOCK_TARGET, -1);
-        entityData.define(DATA_PRIMARY_RELOAD_TICKS, 0);
-        entityData.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
-        entityData.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
-        entityData.define(DATA_SECONDARY_RELOAD_TICKS, 0);
-        entityData.define(DATA_PRIMARY_MAGAZINE_LEFT, 0);
-        entityData.define(DATA_PRIMARY_MAGAZINE_SIZE, 0);
-        entityData.define(DATA_SECONDARY_MAGAZINE_LEFT, 0);
-        entityData.define(DATA_SECONDARY_MAGAZINE_SIZE, 0);
+        defineEntityData(new SynchedDataDefinition(entityData));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
+        data.define(DATA_YAW, 0F);
+        data.define(DATA_PITCH, 0F);
+        data.define(DATA_ROLL, 0F);
+        data.define(DATA_THROTTLE, 0F);
+        data.define(DATA_TURRET_YAW, 0F);
+        data.define(DATA_TURRET_PITCH, 0F);
+        data.define(DATA_FLIGHT_PITCH, 0F);
+        data.define(DATA_FLIGHT_ROLL, 0F);
+        data.define(DATA_MOUSE_CONTROL, false);
+        data.define(DATA_RECOIL_PROGRESS, 0F);
+        data.define(DATA_IT1_DOOR_ANGLE, 0F);
+        data.define(DATA_PREV_IT1_DOOR_ANGLE, 0F);
+        data.define(DATA_IT1_ARM_ANGLE, 0F);
+        data.define(DATA_PREV_IT1_ARM_ANGLE, 0F);
+        data.define(DATA_IT1_RAIL_ANGLE, 0F);
+        data.define(DATA_PREV_IT1_RAIL_ANGLE, 0F);
+        data.define(DATA_INPUT_MASK, 0);
+        data.define(DATA_FLAGS, FLAG_GEAR);
+        data.define(DATA_MODE, 0);
+        data.define(DATA_FUEL, 0F);
+        data.define(DATA_PAINTJOB_ID, 0);
+        data.define(DATA_LOCK_TARGET, -1);
+        data.define(DATA_PRIMARY_RELOAD_TICKS, 0);
+        data.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
+        data.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
+        data.define(DATA_SECONDARY_RELOAD_TICKS, 0);
+        data.define(DATA_PRIMARY_MAGAZINE_LEFT, 0);
+        data.define(DATA_PRIMARY_MAGAZINE_SIZE, 0);
+        data.define(DATA_SECONDARY_MAGAZINE_LEFT, 0);
+        data.define(DATA_SECONDARY_MAGAZINE_SIZE, 0);
     }
 
     @Override
@@ -5001,7 +5007,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // wheel probes alone lift the hull by the average of all wheels, so a
         // ledge met by a single wheel at an angle stalled it. Wheels on the
         // ground are what lets the body step; move() recomputes onGround.
-        if (!onGround() && getStepHeight() > 0F && hasWheelContact() && stepsOnWheelContact())
+        if (!onGround() && maxUpStep() > 0F && hasWheelContact() && stepsOnWheelContact())
             setOnGround(true);
         move(MoverType.SELF, velocity);
         sweepCollisionPointImpacts(velocity);
@@ -5582,7 +5588,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 driveableData.setCargo(slot, placed);
                 incoming.shrink(moved);
             }
-            else if (ItemStack.isSameItemSameTags(existing, incoming) && existing.getCount() < existing.getMaxStackSize())
+            else if (ItemStackData.isSameItemSameData(existing, incoming) && existing.getCount() < existing.getMaxStackSize())
             {
                 int moved = Math.min(incoming.getCount(), existing.getMaxStackSize() - existing.getCount());
                 existing.grow(moved);

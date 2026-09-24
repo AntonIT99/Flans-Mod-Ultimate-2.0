@@ -16,9 +16,9 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.item.ItemAttributes;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -526,15 +526,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
     {
-        if (slot != EquipmentSlot.MAINHAND)
-            return super.getAttributeModifiers(slot, stack);
+        return ItemAttributes.mainHand(slot, super.getAttributeModifiers(slot, stack), modifiers -> addAttributeModifiers(stack, modifiers));
+    }
 
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.putAll(super.getAttributeModifiers(slot, stack));
-        b.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID), "Knockback resistance", configType.getKnockbackModifier(), AttributeModifier.Operation.ADDITION));
-        b.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed", configType.getMovementSpeed(stack) - 1F, AttributeModifier.Operation.MULTIPLY_TOTAL));
-        b.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(stack, false), AttributeModifier.Operation.ADDITION));
-        return b.build();
+    private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
+    {
+        modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID),
+            "Knockback resistance", configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID),
+            "Movement speed", configType.getMovementSpeed(stack) - 1F, ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
+        modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID),
+            "Weapon modifier", configType.getMeleeDamage(stack, false), ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override

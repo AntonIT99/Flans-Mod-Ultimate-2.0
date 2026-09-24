@@ -47,7 +47,9 @@ import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -61,12 +63,10 @@ import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.client.event.sound.SoundEngineLoadEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.RegistryObject;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.HumanoidModel;
@@ -104,7 +104,7 @@ public final class ModClientEventHandler
             CustomItemRenderers.registerAll();
 
             // Paintjob registrations
-            for (RegistryObject<Item> item : FlansMod.getItems())
+            for (RegistryEntry<Item> item : FlansMod.getItems())
             {
                 if (item.get() instanceof IPaintableItem<?>)
                 {
@@ -192,12 +192,7 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent event)
     {
-        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "scope", ClientHudOverlays.SCOPE);
-        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "armor", ClientHudOverlays.ARMOR);
-        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "wounded_flash", ClientHudOverlays.WOUNDED_FLASH);
-        event.registerAbove(VanillaGuiOverlay.HELMET.id(), "flash_bang", ClientHudOverlays.FLASH_BANG);
-        event.registerAbove(VanillaGuiOverlay.ARMOR_LEVEL.id(), "damage_absorption", ClientHudOverlays.DAMAGE_ABSORPTION);
-        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "hud", ClientHudOverlays.HUD);
+        ClientHudOverlays.register(HudOverlayPlatform.registrar(event));
     }
 
     @SubscribeEvent
@@ -246,7 +241,7 @@ public final class ModClientEventHandler
             return 0xFFFFFFFF;
         },
         FlansMod.getItems().stream()
-            .map(RegistryObject::get)
+            .map(RegistryEntry::get)
             .toArray(Item[]::new)
         );
     }

@@ -4,13 +4,14 @@ import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.flansmodultimate.platform.PlatformEvents;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -96,12 +97,12 @@ public final class DigitalAmmoSupplyHandler
 
         if (event.getEntity() instanceof ServerPlayer player)
         {
-            if (event.getUseBlock() == Event.Result.DENY) return;
+            if (PlatformEvents.isBlockUseDenied(event)) return;
 
             Level level = event.getLevel();
             BlockPos pos = event.getPos();
             BlockState state = level.getBlockState(pos);
-            ResourceLocation blockId = state.getBlock().builtInRegistryHolder().key().location();
+            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
 
             if (!isSupplyBlock(blockId)) return;
 

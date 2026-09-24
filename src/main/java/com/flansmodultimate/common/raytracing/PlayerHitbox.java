@@ -11,6 +11,7 @@ import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -150,7 +151,7 @@ public class PlayerHitbox
 
         BulletType bulletType = shot.getBulletType();
         if (bulletType.isSetEntitiesOnFire())
-            player.setSecondsOnFire(20);
+            EntityPlatform.igniteForSeconds(player, 20);
 
         bulletType.getHitEffects().forEach(effect -> player.addEffect(new MobEffectInstance(effect)));
 

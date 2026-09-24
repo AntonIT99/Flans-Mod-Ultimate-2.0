@@ -4,10 +4,10 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.google.common.collect.ImmutableMultimap;
+import com.flansmodultimate.platform.damage.MutableDamageContext;
+import com.flansmodultimate.platform.item.ItemAttributes;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -137,29 +137,24 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     @Override
     @NotNull
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot) {
-        Multimap<Attribute, AttributeModifier> vanilla = super.getDefaultAttributeModifiers(slot);
+    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(@NotNull EquipmentSlot slot)
+    {
+        return ItemAttributes.armor(slot, configType.getArmorItemType().getSlot(), super.getDefaultAttributeModifiers(slot), this::addAttributeModifiers);
+    }
 
-        if (slot == configType.getArmorItemType().getSlot())
-        {
-            ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-
-            for (var entry : vanilla.entries())
-            {
-                Attribute attr = entry.getKey();
-                if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == Attributes.KNOCKBACK_RESISTANCE || attr == null || entry.getValue() == null)
-                    continue;
-                builder.put(attr, entry.getValue());
-            }
-
-            builder.put(Attributes.ARMOR, new AttributeModifier(armor_uuid[configType.getArmorItemType().getSlot().getIndex()], "Armor modifier", getDefense(), AttributeModifier.Operation.ADDITION));
-            builder.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(armor_uuid[configType.getArmorItemType().getSlot().getIndex()], "Armor toughness", getToughness(), AttributeModifier.Operation.ADDITION));
-            builder.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(speed_uuid[configType.getArmorItemType().getSlot().getIndex()], "Movement Speed", configType.getMoveSpeedModifier() - 1F, AttributeModifier.Operation.MULTIPLY_TOTAL));
-            builder.put(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(kb_uuid[configType.getArmorItemType().getSlot().getIndex()], "Knockback Resistance", configType.getKnockbackModifier(), AttributeModifier.Operation.MULTIPLY_TOTAL));
-            return builder.build();
-        }
-
-        return vanilla;
+    private void addAttributeModifiers(ItemAttributes.Modifiers modifiers)
+    {
+        EquipmentSlot slot = configType.getArmorItemType().getSlot();
+        String slotName = slot.getName();
+        int index = slot.getIndex();
+        modifiers.add(Attributes.ARMOR, "armor/" + slotName, () -> armor_uuid[index],
+            "Armor modifier", getDefense(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.ARMOR_TOUGHNESS, "armor_toughness/" + slotName, () -> armor_uuid[index],
+            "Armor toughness", getToughness(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed/" + slotName, () -> speed_uuid[index],
+            "Movement Speed", configType.getMoveSpeedModifier() - 1F, ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
+        modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance/" + slotName, () -> kb_uuid[index],
+            "Knockback Resistance", configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     @Override
@@ -416,9 +411,9 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         entity.hurtMarked = true;
     }
 
-    public static void applyOldArmorRatioSystem(LivingHurtEvent event, LivingEntity entity)
+    public static void applyOldArmorRatioSystem(MutableDamageContext event, LivingEntity entity)
     {
-        float incoming = event.getAmount();
+        float incoming = event.amount();
         if (incoming <= 0F)
             return;
 
@@ -446,9 +441,9 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         event.setAmount(remaining);
     }
 
-    public static boolean tryApplyIgnoreArmorShot(LivingHurtEvent event, LivingEntity entity, DamageSource source)
+    public static boolean tryApplyIgnoreArmorShot(MutableDamageContext event, LivingEntity entity, DamageSource source)
     {
-        float damage = event.getAmount();
+        float damage = event.amount();
         if (damage <= 0.0F)
             return false;
 
@@ -489,11 +484,11 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         }
 
         //  Cancel the event so vanilla damage and your armor scaling don't run
-        event.setCanceled(true);
+        event.cancel();
         return true;
     }
 
-    public static void applyArmorBulletDefense(LivingHurtEvent event, LivingEntity entity)
+    public static void applyArmorBulletDefense(MutableDamageContext event, LivingEntity entity)
     {
         float totalNormalDef = 0.0F;
         float totalBulletDef = 0.0F;
@@ -510,7 +505,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         totalNormalDef = Mth.clamp(totalNormalDef, 0F, 1F);
         totalBulletDef = Mth.clamp(totalBulletDef, 0F, 1F);
 
-        float current = event.getAmount();
+        float current = event.amount();
         float denom = 1.0F - totalNormalDef;
         float target = 1.0F - totalBulletDef;
 

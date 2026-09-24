@@ -30,11 +30,11 @@ import com.flansmodultimate.config.EnumHitMarkerStyle;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import com.flansmodultimate.util.ModUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.CameraType;
@@ -110,7 +110,17 @@ public final class ClientHudOverlays
         2.0, 19.0, 36.0, 53.0, 70.0, 87.0, 104.0
     };
 
-    public static final IGuiOverlay SCOPE = (gui, g, partialTick, sw, sh) -> {
+    public static void register(HudOverlayPlatform.Registrar registrar)
+    {
+        registrar.aboveCameraOverlays("scope", SCOPE);
+        registrar.aboveCameraOverlays("armor", ARMOR);
+        registrar.aboveCameraOverlays("wounded_flash", WOUNDED_FLASH);
+        registrar.aboveCameraOverlays("flash_bang", FLASH_BANG);
+        registrar.aboveArmorLevel("damage_absorption", DAMAGE_ABSORPTION);
+        registrar.aboveHotbar("hud", HUD);
+    }
+
+    public static final HudOverlayPlatform.HudLayer SCOPE = (g, partialTick, sw, sh) -> {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().options.getCameraType() != CameraType.FIRST_PERSON)
             return;
@@ -130,7 +140,7 @@ public final class ClientHudOverlays
             renderScopeOverlay(g, scopeTexture, sw, sh);
     };
 
-    public static final IGuiOverlay ARMOR = (gui, g, partialTick, sw, sh) -> {
+    public static final HudOverlayPlatform.HudLayer ARMOR = (g, partialTick, sw, sh) -> {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().options.getCameraType() != CameraType.FIRST_PERSON)
             return;
@@ -158,8 +168,8 @@ public final class ClientHudOverlays
         RenderSystem.enableCull();
     };
 
-    public static final IGuiOverlay HUD = (gui, g, partialTick, sw, sh) -> {
-        if (!ModClientConfig.get().showFlansHud || gui.getMinecraft().options.hideGui)
+    public static final HudOverlayPlatform.HudLayer HUD = (g, partialTick, sw, sh) -> {
+        if (!ModClientConfig.get().showFlansHud || Minecraft.getInstance().options.hideGui)
             return;
 
         renderAAGunHud(g, partialTick, sw);
@@ -446,15 +456,15 @@ public final class ClientHudOverlays
         return Component.translatable("hud.flansmodultimate.driveable.compass.north");
     }
 
-    public static final IGuiOverlay DAMAGE_ABSORPTION = (gui, g, partialTick, sw, sh) -> {
-        if (!ModClientConfig.get().showArmorDamageAbsorptionBar || gui.getMinecraft().options.hideGui || !gui.shouldDrawSurvivalElements())
+    public static final HudOverlayPlatform.HudLayer DAMAGE_ABSORPTION = (g, partialTick, sw, sh) -> {
+        if (!ModClientConfig.get().showArmorDamageAbsorptionBar || Minecraft.getInstance().options.hideGui || !HudOverlayPlatform.drawsSurvivalElements())
             return;
 
-        LocalPlayer player = gui.getMinecraft().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         boolean vanillaArmorVisible = player != null && player.getArmorValue() > 0;
-        int top = sh - gui.leftHeight + (vanillaArmorVisible ? 0 : 10);
+        int top = HudOverlayPlatform.leftStatusRowTop(sh, vanillaArmorVisible);
         if (renderDamageAbsorptionArmorBar(player, g, sw / 2 - 91, top) && vanillaArmorVisible)
-            gui.leftHeight += 10;
+            HudOverlayPlatform.claimLeftStatusRow();
     };
 
     /** Draw the hit marker in the style selected in the client config, with fade-out alpha. */
@@ -558,8 +568,8 @@ public final class ClientHudOverlays
      * Blinding white overlay of a flashbang. It is held at full strength for most of
      * its time and then faded out, instead of the legacy hard cut back to normal.
      */
-    public static final IGuiOverlay FLASH_BANG = (gui, g, partialTick, sw, sh) -> {
-        if (!ModClient.isInFlash() || ModClient.getFlashTime() <= 0 || gui.getMinecraft().options.hideGui)
+    public static final HudOverlayPlatform.HudLayer FLASH_BANG = (g, partialTick, sw, sh) -> {
+        if (!ModClient.isInFlash() || ModClient.getFlashTime() <= 0 || Minecraft.getInstance().options.hideGui)
             return;
 
         float remaining = ModClient.getFlashTime() - partialTick;
@@ -569,8 +579,8 @@ public final class ClientHudOverlays
     };
 
     /** Flan's Mod Ultimate 1.7.10 style red flash shown while the player is wounded. */
-    public static final IGuiOverlay WOUNDED_FLASH = (gui, g, partialTick, sw, sh) -> {
-        if (!ModClientConfig.get().showFlashesWhenWounded || ModClient.getWoundedTime() <= 0 || gui.getMinecraft().options.hideGui)
+    public static final HudOverlayPlatform.HudLayer WOUNDED_FLASH = (g, partialTick, sw, sh) -> {
+        if (!ModClientConfig.get().showFlashesWhenWounded || ModClient.getWoundedTime() <= 0 || Minecraft.getInstance().options.hideGui)
             return;
 
         float alpha = Mth.clamp((ModClient.getWoundedTime() - partialTick) / WOUNDED_FLASH_FADE_TICKS, 0F, 1F);

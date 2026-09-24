@@ -4,9 +4,9 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.RegistryObject;
 
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -65,7 +65,7 @@ public final class AmbientMobArmor
     private static EquipmentPool buildEquipmentPool()
     {
         List<ItemStack> armorPieces = FlansMod.getItems(EnumType.ARMOR).stream()
-            .map(RegistryObject::get)
+            .map(RegistryEntry::get)
             .filter(CustomArmorItem.class::isInstance)
             .map(ItemStack::new)
             .toList();

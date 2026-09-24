@@ -113,7 +113,6 @@ public class Vehicle extends Driveable
         // probes can reach. Legacy vehicles always used a one-block entity
         // step; using the configured value preserves that behaviour without
         // injecting an upward suspension impulse.
-        setMaxUpStep(Mth.clamp(type.getWheelStepHeight(), 0F, 2.5F));
         float previousLeftPhase = leftTrackProgress;
         float previousRightPhase = rightTrackProgress;
         advanceAnimations(type);
@@ -241,6 +240,13 @@ public class Vehicle extends Driveable
         harvestConfiguredBlocks();
         if (isEngineActive())
             consumeFuel(DriveableControlPhysics.vehicleFuelLoad(effectiveThrottle, type.getWheelPositions().size()));
+    }
+
+    @Override
+    public float maxUpStep()
+    {
+        VehicleType type = getVehicleType();
+        return type == null ? super.maxUpStep() : Mth.clamp(type.getWheelStepHeight(), 0F, 2.5F);
     }
 
     @Override

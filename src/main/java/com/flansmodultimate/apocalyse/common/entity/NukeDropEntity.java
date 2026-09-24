@@ -1,6 +1,7 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
@@ -73,7 +74,12 @@ public class NukeDropEntity extends Entity
     @Override
     protected void defineSynchedData()
     {
-        entityData.define(DATA_EXPLODED_TICKS, 0);
+        defineEntityData(new SynchedDataDefinition(entityData));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_EXPLODED_TICKS, 0);
     }
 
     @Override

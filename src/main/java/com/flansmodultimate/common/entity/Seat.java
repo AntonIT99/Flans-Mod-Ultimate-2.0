@@ -13,6 +13,7 @@ import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -345,18 +346,23 @@ public class Seat extends Entity implements IControllable
     @Override
     protected void defineSynchedData()
     {
-        entityData.define(DATA_SCOPED, false);
-        entityData.define(DATA_SIGHT, 0);
-        entityData.define(DATA_THERMAL, false);
-        entityData.define(DATA_PARENT_ID, -1);
-        entityData.define(DATA_SEAT_INDEX, -1);
-        entityData.define(DATA_AIM_YAW, 0F);
-        entityData.define(DATA_AIM_PITCH, 0F);
-        entityData.define(DATA_INPUT_MASK, 0);
-        entityData.define(DATA_GUN_ROUNDS, -1);
-        entityData.define(DATA_GUN_MAGAZINE_SIZE, 0);
-        entityData.define(DATA_GUN_RELOAD_TICKS, 0);
-        entityData.define(DATA_GUN_AMMO_NAME, Component.empty());
+        defineEntityData(new SynchedDataDefinition(entityData));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_SCOPED, false);
+        data.define(DATA_SIGHT, 0);
+        data.define(DATA_THERMAL, false);
+        data.define(DATA_PARENT_ID, -1);
+        data.define(DATA_SEAT_INDEX, -1);
+        data.define(DATA_AIM_YAW, 0F);
+        data.define(DATA_AIM_PITCH, 0F);
+        data.define(DATA_INPUT_MASK, 0);
+        data.define(DATA_GUN_ROUNDS, -1);
+        data.define(DATA_GUN_MAGAZINE_SIZE, 0);
+        data.define(DATA_GUN_RELOAD_TICKS, 0);
+        data.define(DATA_GUN_AMMO_NAME, Component.empty());
     }
 
     public int getGunRounds() { return entityData.get(DATA_GUN_ROUNDS); }

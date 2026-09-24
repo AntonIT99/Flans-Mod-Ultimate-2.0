@@ -8,12 +8,12 @@ import com.flansmodultimate.apocalyse.client.render.ItemEntityRenderer;
 import com.flansmodultimate.apocalyse.client.render.PowerCubeRenderer;
 import com.flansmodultimate.apocalyse.client.render.SurvivorRenderer;
 import com.flansmodultimate.client.render.entity.DriveableRenderer;
+import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -55,6 +55,6 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiOverlaysEvent event)
     {
-        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "apocalypse_countdown", ApocalypseHudOverlays.COUNTDOWN);
+        ApocalypseHudOverlays.register(HudOverlayPlatform.registrar(event));
     }
 }

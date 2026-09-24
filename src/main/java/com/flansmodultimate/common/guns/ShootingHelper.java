@@ -36,6 +36,7 @@ import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -261,7 +262,7 @@ public final class ShootingHelper
             }
 
             if (bulletType.isSetEntitiesOnFire())
-                entity.setSecondsOnFire(20);
+                EntityPlatform.igniteForSeconds(entity, 20);
 
             penetratingPower -= 1F;
 

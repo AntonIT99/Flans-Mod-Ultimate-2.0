@@ -1,8 +1,8 @@
 package com.flansmodultimate.apocalyse.client;
 
+import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -19,7 +19,12 @@ public final class ApocalypseHudOverlays
     private static final int CALM_COLOUR = 0xFFD54F;
     private static final int URGENT_COLOUR = 0xFF5252;
 
-    public static final IGuiOverlay COUNTDOWN = (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+    public static void register(HudOverlayPlatform.Registrar registrar)
+    {
+        registrar.aboveHotbar("apocalypse_countdown", COUNTDOWN);
+    }
+
+    public static final HudOverlayPlatform.HudLayer COUNTDOWN = (graphics, partialTick, screenWidth, screenHeight) -> {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.options.hideGui || minecraft.player == null || !ApocalypseClientState.isCountingDown())
             return;

@@ -5,8 +5,9 @@ import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.item.GloveItem;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.damage.MutableDamageContext;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +23,6 @@ import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
@@ -102,16 +102,16 @@ public final class EnchantmentModule
             damageEquipment(otherHand, entity, EquipmentSlot.OFFHAND, 1);
     }
 
-    public static void applyOffHandWeaponDamage(LivingHurtEvent event)
+    public static void applyOffHandWeaponDamage(MutableDamageContext event)
     {
-        if (!isEnabled() || event.getEntity().level().isClientSide)
+        if (!isEnabled() || event.entity().level().isClientSide)
             return;
 
-        Entity sourceEntity = event.getSource().getEntity();
+        Entity sourceEntity = event.source().getEntity();
         if (!(sourceEntity instanceof LivingEntity attacker))
             return;
 
-        Entity directEntity = event.getSource().getDirectEntity();
+        Entity directEntity = event.source().getDirectEntity();
         if (directEntity != null && directEntity != attacker)
             return;
 
@@ -130,16 +130,16 @@ public final class EnchantmentModule
         if (level <= 0)
             return;
 
-        event.setAmount(event.getAmount() * (float) Math.pow(1.10F, level));
+        event.setAmount(event.amount() * (float) Math.pow(1.10F, level));
         damageEquipment(offHandStack, attacker, EquipmentSlot.OFFHAND, 1);
     }
 
-    public static void applyJuggernaut(LivingHurtEvent event)
+    public static void applyJuggernaut(MutableDamageContext event)
     {
-        if (!isEnabled() || event.getEntity().level().isClientSide)
+        if (!isEnabled() || event.entity().level().isClientSide)
             return;
 
-        LivingEntity entity = event.getEntity();
+        LivingEntity entity = event.entity();
         int juggernautLevel = 0;
 
         for (EquipmentSlot slot : ARMOR_SLOTS)
@@ -154,10 +154,10 @@ public final class EnchantmentModule
         float maxHealthWithArmor = entity.getMaxHealth() + entity.getArmorValue();
         float threshold = maxHealthWithArmor * maxDamagePercent;
 
-        if (event.getAmount() <= threshold)
+        if (event.amount() <= threshold)
             return;
 
-        float absorbedDamage = Math.min(event.getAmount() - threshold, 256.0F);
+        float absorbedDamage = Math.min(event.amount() - threshold, 256.0F);
         int armorDamage = Mth.floor(absorbedDamage);
 
         if (armorDamage > 0)
@@ -170,7 +170,7 @@ public final class EnchantmentModule
             }
         }
 
-        FlansMod.log.debug("Juggernaut capped incoming damage {} to {}", event.getAmount(), threshold);
+        FlansMod.log.debug("Juggernaut capped incoming damage {} to {}", event.amount(), threshold);
         event.setAmount(threshold);
     }
 
@@ -186,7 +186,7 @@ public final class EnchantmentModule
         if (amount <= 0 || entity == null || entity.level().isClientSide || stack.isEmpty() || !stack.isDamageableItem())
             return;
 
-        stack.hurtAndBreak(amount, entity, owner -> Optional.ofNullable(owner).ifPresent(o -> o.broadcastBreakEvent(slot)));
+        ItemStackData.hurtAndBreak(stack, amount, entity, slot);
     }
 
     private static boolean isEnabled()

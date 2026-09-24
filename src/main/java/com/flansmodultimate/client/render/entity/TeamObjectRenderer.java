@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Flag;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -83,7 +84,7 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
 
             int colour = flagEntity.getColour();
             poseStack.scale(-1F, -1F, 1F);
-            flag.render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY,
+            VertexPlatform.renderModelPart(flag, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY,
                 (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F, (colour & 255) / 255F, 1F);
         }
         else

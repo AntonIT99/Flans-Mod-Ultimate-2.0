@@ -2,16 +2,14 @@ package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
+import com.flansmodultimate.platform.block.FlanBlockEntity;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -23,14 +21,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvider
+public class PaintjobTableBlockEntity extends FlanBlockEntity implements MenuProvider
 {
     public static final String NBT_ITEMS = "items";
 
-    private LazyOptional<IItemHandler> itemCap = LazyOptional.empty();
     private final BlockState blockState;
 
     private final ItemStackHandler items = new ItemStackHandler(2)
@@ -49,40 +45,22 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
     }
 
     @Override
-    public void onLoad()
-    {
-        super.onLoad();
-        itemCap = LazyOptional.of(() -> items);
-    }
-
-    @Override
-    public void invalidateCaps()
-    {
-        super.invalidateCaps();
-        itemCap.invalidate();
-    }
-
-    @Override
     @NotNull
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side)
+    public IItemHandler getItemHandler()
     {
-        if (cap == ForgeCapabilities.ITEM_HANDLER)
-            return itemCap.cast();
-        return super.getCapability(cap, side);
+        return items;
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag)
+    protected void saveData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag);
-        tag.put(NBT_ITEMS, items.serializeNBT());
+        tag.put(NBT_ITEMS, serializeItems(items, registries));
     }
 
     @Override
-    public void load(@NotNull CompoundTag tag)
+    protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.load(tag);
-        items.deserializeNBT(tag.getCompound(NBT_ITEMS));
+        deserializeItems(items, registries, tag.getCompound(NBT_ITEMS));
     }
 
     @Override

@@ -41,6 +41,7 @@ import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -642,7 +643,7 @@ public class GunItemHandler
     {
         int snapshotToTry = 0;
         if (attacker instanceof ServerPlayer sp)
-            snapshotToTry = sp.latency / 50;
+            snapshotToTry = EntityPlatform.latency(sp) / 50;
 
         if (snapshotToTry >= otherData.getSnapshots().length)
             snapshotToTry = otherData.getSnapshots().length - 1;

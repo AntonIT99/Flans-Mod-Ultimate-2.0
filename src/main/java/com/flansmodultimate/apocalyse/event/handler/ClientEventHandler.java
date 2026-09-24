@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -16,10 +15,10 @@ import net.minecraft.client.Minecraft;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientEventHandler
 {
-    @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event)
+    /** Runs at the end of every client tick. */
+    public static void onClientTick()
     {
-        if (event.phase != TickEvent.Phase.END || Minecraft.getInstance().isPaused())
+        if (Minecraft.getInstance().isPaused())
             return;
         ApocalypseClientState.tick();
     }

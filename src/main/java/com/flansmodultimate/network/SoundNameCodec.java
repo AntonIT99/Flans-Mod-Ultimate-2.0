@@ -2,9 +2,9 @@ package com.flansmodultimate.network;
 
 import com.flansmodultimate.FlansMod;
 import io.netty.handler.codec.DecoderException;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.registries.RegistryObject;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
@@ -54,7 +54,7 @@ public final class SoundNameCodec
     {
         if (name.isEmpty() || !ResourceLocation.isValidPath(name))
             return -1;
-        RegistryObject<SoundEvent> soundEvent = FlansMod.getSoundEvent(name).orElse(null);
+        RegistryEntry<SoundEvent> soundEvent = FlansMod.getSoundEvent(name).orElse(null);
         if (soundEvent == null || !soundEvent.isPresent())
             return -1;
         return BuiltInRegistries.SOUND_EVENT.getId(soundEvent.get());

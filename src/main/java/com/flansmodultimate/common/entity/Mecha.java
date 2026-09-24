@@ -28,6 +28,8 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.ModUtils;
@@ -122,10 +124,10 @@ public class Mecha extends Driveable
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineEntityData(SynchedDataDefinition data)
     {
-        super.defineSynchedData();
-        entityData.define(DATA_LEG_YAW, 0F);
+        super.defineEntityData(data);
+        data.define(DATA_LEG_YAW, 0F);
     }
 
     @Override
@@ -154,12 +156,18 @@ public class Mecha extends Driveable
     }
 
     @Override
+    public float maxUpStep()
+    {
+        MechaType type = getMechaType();
+        return type == null ? super.maxUpStep() : Mth.clamp(type.getStepHeight(), 0F, 8F);
+    }
+
+    @Override
     protected void tickDriveable()
     {
         MechaType type = getMechaType();
         if (type == null)
             return;
-        setMaxUpStep(Mth.clamp(type.getStepHeight(), 0F, 8F));
         boolean hipsIntact = isPartIntact(EnumDriveablePart.HIPS);
         if (!hipsStateInitialized || hipsIntact != lastHipsIntact)
         {
@@ -255,7 +263,6 @@ public class Mecha extends Driveable
         MechaType type = getMechaType();
         if (type != null)
         {
-            setMaxUpStep(Mth.clamp(type.getStepHeight(), 0F, 8F));
             float forwardInput = axis(getInputMask(), DriveableInput.FORWARD, DriveableInput.BACKWARD);
             float sideInput = axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT);
             Vec3 intent = MechaPhysics.movementIntent(
@@ -678,7 +685,7 @@ public class Mecha extends Driveable
         {
             target.hurt(level().damageSources().mobAttack(attacker), Math.max(1F, 6F * tool.getSpeed()));
             if (tool.isFlameBurst())
-                target.setSecondsOnFire(4);
+                EntityPlatform.igniteForSeconds(target, 4);
         }
         playToolSound(tool);
         toolCooldown[index] = Math.max(4, Mth.ceil(10F / Math.max(0.1F, tool.getSpeed())));

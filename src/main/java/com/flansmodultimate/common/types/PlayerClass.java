@@ -8,8 +8,6 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,7 +74,6 @@ public class PlayerClass extends InfoType
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     protected void readClient(TypeFile file)
     {
         super.readClient(file);

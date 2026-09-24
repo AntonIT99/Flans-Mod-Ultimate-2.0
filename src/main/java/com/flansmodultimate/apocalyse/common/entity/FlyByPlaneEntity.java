@@ -5,6 +5,7 @@ import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
@@ -99,7 +100,7 @@ public class FlyByPlaneEntity extends Plane
         if (pilot == null)
             return;
         pilot.moveTo(getX(), getY(), getZ(), getYRot(), 0F);
-        pilot.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPosition()), MobSpawnType.EVENT, null, null);
+        EntityPlatform.finalizeSpawn(pilot, serverLevel, serverLevel.getCurrentDifficultyAt(blockPosition()), MobSpawnType.EVENT);
         pilot.setPersistenceRequired();
         pilot.getPersistentData().putBoolean(NBT_FLYBY_CREW, true);
         if (serverLevel.addFreshEntity(pilot))

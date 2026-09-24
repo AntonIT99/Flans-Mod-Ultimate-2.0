@@ -4,21 +4,19 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.world.LevelFilePlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,7 +72,7 @@ public final class ApocalypseWorldChoice
             return false;
         try
         {
-            CompoundTag data = NbtIo.readCompressed(levelData.toFile()).getCompound(NBT_DATA);
+            CompoundTag data = LevelFilePlatform.readCompressed(levelData).getCompound(NBT_DATA);
             if (data.getCompound(NBT_WORLD_GEN_SETTINGS).getCompound(NBT_DIMENSIONS)
                 .contains(ApocalypseContent.APOCALYPSE_LEVEL.location().toString()))
                 return false;
@@ -99,8 +97,8 @@ public final class ApocalypseWorldChoice
     {
         try (LevelStorageSource.LevelStorageAccess access = minecraft.getLevelSource().createAccess(levelId))
         {
-            File levelData = access.getLevelPath(LevelResource.LEVEL_DATA_FILE).toFile();
-            CompoundTag root = NbtIo.readCompressed(levelData);
+            Path levelData = access.getLevelPath(LevelResource.LEVEL_DATA_FILE);
+            CompoundTag root = LevelFilePlatform.readCompressed(levelData);
             CompoundTag data = root.getCompound(NBT_DATA);
             boolean hadDataPacks = data.contains(NBT_DATA_PACKS, Tag.TAG_COMPOUND);
             CompoundTag dataPacks = data.getCompound(NBT_DATA_PACKS);
@@ -118,9 +116,9 @@ public final class ApocalypseWorldChoice
             root.put(NBT_DATA, data);
 
             Path levelDirectory = access.getLevelPath(LevelResource.ROOT);
-            File written = File.createTempFile("level", ".dat", levelDirectory.toFile());
-            NbtIo.writeCompressed(root, written);
-            Util.safeReplaceFile(levelData, written, access.getLevelPath(LevelResource.OLD_LEVEL_DATA_FILE).toFile());
+            Path written = Files.createTempFile(levelDirectory, "level", ".dat");
+            LevelFilePlatform.writeCompressed(root, written);
+            LevelFilePlatform.safeReplaceFile(levelData, written, access.getLevelPath(LevelResource.OLD_LEVEL_DATA_FILE));
         }
         FlansMod.log.info("World '{}' {} the Apocalypse dimension", levelId, withApocalypse ? "now includes" : "keeps out");
     }

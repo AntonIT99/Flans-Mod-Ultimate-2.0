@@ -36,13 +36,13 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketRequestDismount;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
@@ -50,15 +50,13 @@ import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -145,28 +143,26 @@ public final class ClientEventHandler
         event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
     }
 
-    @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event)
+    /**
+     * Runs at the start of every client tick. Vanilla consumes its own key clicks later in the same tick,
+     * so a driveable bind has to claim a shared key before that happens.
+     */
+    public static void onClientTickStart()
     {
-        // Vanilla consumes its own key clicks later in the same tick, so a
-        // driveable bind has to claim a shared key before that happens.
-        if (event.phase == TickEvent.Phase.START)
-        {
-            KeyInputHandler.claimConflictingVanillaKeys();
-            return;
-        }
+        KeyInputHandler.claimConflictingVanillaKeys();
+    }
 
+    /** Runs at the end of every client tick. */
+    public static void onClientTick()
+    {
         GunInputState.tick();
         ModClient.tick();
         ParticleHelper.tick();
     }
 
-    @SubscribeEvent
-    public static void onRenderTick(TickEvent.RenderTickEvent event)
+    /** Runs once per rendered frame, after the frame. */
+    public static void onRenderTick()
     {
-        if (event.phase != TickEvent.Phase.END)
-            return;
-
         ModClient.renderTick();
     }
 
@@ -183,7 +179,7 @@ public final class ClientEventHandler
         {
             boolean isOneHanded = gunItem.getConfigType().isOneHanded();
             boolean isSneakingKeyDown = Minecraft.getInstance().options.keyShift.isDown();
-            double scrollDelta = event.getScrollDelta();
+            double scrollDelta = ClientPlatform.scrollDelta(event);
 
             if (isOneHanded && isSneakingKeyDown && Math.abs(scrollDelta) > 0.0D)
             {
@@ -200,9 +196,10 @@ public final class ClientEventHandler
         VehicleThermalRenderer.render(event);
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
-        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), event.getPartialTick(), event.getCamera());
+        float partialTick = ClientPlatform.partialTick(event);
+        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), partialTick, event.getCamera());
         OpStickConnectionRenderer.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(),
-            event.getCamera(), event.getPartialTick());
+            event.getCamera(), partialTick);
 
         if (ModClient.isDebug())
         {
@@ -214,48 +211,33 @@ public final class ClientEventHandler
             }
             // Flush now, while everything drawn so far (entities included) is already on screen to draw over
             bufferSource.endBatch(CustomRenderType.debugFilledBoxSeeThrough());
-            DriveableHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), event.getPartialTick());
-            PlayerHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), event.getPartialTick());
+            DriveableHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), partialTick);
+            PlayerHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), partialTick);
         }
     }
 
-    /** CROSSHAIR: pre = we can cancel vanilla*/
-    @SubscribeEvent
-    public static void onPreRenderGuiOverlay(RenderGuiOverlayEvent.Pre event)
+    /** Whether the vanilla crosshair is replaced by the hit marker alone for the current frame. */
+    public static boolean hidesCrosshair()
     {
-        Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
+        Player player = Minecraft.getInstance().player;
         if (player == null)
-            return;
+            return false;
 
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
-        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type()
-            && (VehicleOpticsClient.activeSeat() != null
-                && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
-                || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
-                || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun)))
-        {
-            int w = mc.getWindow().getGuiScaledWidth();
-            int h = mc.getWindow().getGuiScaledHeight();
-            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick(), w, h);
-            event.setCanceled(true);
-        }
+        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
+            || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
+            || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
     }
 
-    /** CROSSHAIR: post = draw hit marker overlay */
-    @SubscribeEvent
-    public static void onPostRenderGuiOverlay(RenderGuiOverlayEvent.Post event)
+    /** Draws the hit marker where the crosshair is, whether or not the crosshair itself is shown. */
+    public static void renderCrosshairHitMarker(GuiGraphics graphics, float partialTick)
     {
         Minecraft mc = Minecraft.getInstance();
-
-        if (event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
-        {
-            int w = mc.getWindow().getGuiScaledWidth();
-            int h = mc.getWindow().getGuiScaledHeight();
-            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick(), w, h);
-        }
+        int w = mc.getWindow().getGuiScaledWidth();
+        int h = mc.getWindow().getGuiScaledHeight();
+        ClientHudOverlays.renderHitMarker(graphics, partialTick, w, h);
     }
 
     /** Set up RenderContext for gun animations and set Aim Pose when GunItem is held by players */
@@ -467,11 +449,11 @@ public final class ClientEventHandler
     {
         if (VehicleThermalRenderer.isRenderingMask())
         {
-            event.setResult(Event.Result.DENY);
+            ClientPlatform.hideNameTag(event);
             return;
         }
         if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
-            event.setResult(Event.Result.DENY);
+            ClientPlatform.hideNameTag(event);
     }
 
     @SubscribeEvent

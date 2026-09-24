@@ -3,16 +3,14 @@ package com.flansmodultimate.common.block.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.ItemHolderBlock;
 import com.flansmodultimate.common.types.ItemHolderType;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
+import com.flansmodultimate.platform.block.FlanBlockEntity;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -20,15 +18,13 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class ItemHolderBlockEntity extends BlockEntity
+public class ItemHolderBlockEntity extends FlanBlockEntity
 {
     public static final String NBT_ITEMS = "items";
     public static final String NBT_TYPE = "type";
 
-    private LazyOptional<IItemHandler> itemCap = LazyOptional.empty();
     private ItemHolderType type;
 
     private final ItemStackHandler items = new ItemStackHandler(1)
@@ -48,43 +44,25 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
-    public void onLoad()
-    {
-        super.onLoad();
-        itemCap = LazyOptional.of(() -> items);
-    }
-
-    @Override
-    public void invalidateCaps()
-    {
-        super.invalidateCaps();
-        itemCap.invalidate();
-    }
-
-    @Override
     @NotNull
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side)
+    public IItemHandler getItemHandler()
     {
-        if (cap == ForgeCapabilities.ITEM_HANDLER)
-            return itemCap.cast();
-        return super.getCapability(cap, side);
+        return items;
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag)
+    protected void saveData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag);
-        tag.put(NBT_ITEMS, items.serializeNBT());
+        tag.put(NBT_ITEMS, serializeItems(items, registries));
         ItemHolderType holderType = getItemHolderType();
         if (holderType != null)
             tag.putString(NBT_TYPE, holderType.getShortName());
     }
 
     @Override
-    public void load(@NotNull CompoundTag tag)
+    protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.load(tag);
-        items.deserializeNBT(tag.getCompound(NBT_ITEMS));
+        deserializeItems(items, registries, tag.getCompound(NBT_ITEMS));
         if (tag.contains(NBT_TYPE))
             type = ItemHolderType.getItemHolder(tag.getString(NBT_TYPE));
     }
@@ -118,18 +96,17 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
-    @NotNull
-    public CompoundTag getUpdateTag()
+    protected CompoundTag createUpdateTag(HolderLookup.Provider registries)
     {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag);
+        writeFullData(tag, registries);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag)
+    protected void readUpdateTag(CompoundTag tag, HolderLookup.Provider registries)
     {
-        load(tag);
+        readFullData(tag, registries);
     }
 
     @Nullable
@@ -140,11 +117,11 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet)
+    protected void readDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries)
     {
         CompoundTag tag = packet.getTag();
         if (tag != null)
-            load(tag);
+            readFullData(tag, registries);
     }
 
     private void setChangedAndSync()

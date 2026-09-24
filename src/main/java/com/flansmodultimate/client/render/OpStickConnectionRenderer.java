@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.common.item.ItemOpStick;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
@@ -72,9 +73,7 @@ public final class OpStickConnectionRenderer
         if (delta.lengthSqr() < 1.0E-6D)
             return;
         Vec3 normal = delta.normalize();
-        consumer.vertex(pose.pose(), (float) from.x, (float) from.y, (float) from.z).color(RED, GREEN, BLUE, 1F)
-            .normal(pose.normal(), (float) normal.x, (float) normal.y, (float) normal.z).endVertex();
-        consumer.vertex(pose.pose(), (float) to.x, (float) to.y, (float) to.z).color(RED, GREEN, BLUE, 1F)
-            .normal(pose.normal(), (float) normal.x, (float) normal.y, (float) normal.z).endVertex();
+        VertexPlatform.lineVertex(consumer, pose, (float) from.x, (float) from.y, (float) from.z, RED, GREEN, BLUE, 1F, (float) normal.x, (float) normal.y, (float) normal.z);
+        VertexPlatform.lineVertex(consumer, pose, (float) to.x, (float) to.y, (float) to.z, RED, GREEN, BLUE, 1F, (float) normal.x, (float) normal.y, (float) normal.z);
     }
 }

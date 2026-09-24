@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.world;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SkullBossEntity;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -125,7 +126,7 @@ public final class ApocalypseBossFightManager
         boss.setHome(home);
         if (placer != null)
             boss.setTarget(placer);
-        boss.finalizeSpawn(level, level.getCurrentDifficultyAt(center), MobSpawnType.TRIGGERED, null, null);
+        EntityPlatform.finalizeSpawn(boss, level, level.getCurrentDifficultyAt(center), MobSpawnType.TRIGGERED);
         level.addFreshEntity(boss);
         level.players().stream()
             .filter(player -> player.distanceToSqr(center.getX(), center.getY(), center.getZ()) < 256.0D * 256.0D)

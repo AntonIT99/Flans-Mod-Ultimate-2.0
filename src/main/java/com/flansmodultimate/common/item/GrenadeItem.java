@@ -5,7 +5,7 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.google.common.collect.ImmutableMultimap;
+import com.flansmodultimate.platform.item.ItemAttributes;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -94,13 +94,13 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack)
     {
-        if (slot != EquipmentSlot.MAINHAND)
-            return super.getAttributeModifiers(slot, stack);
+        return ItemAttributes.mainHand(slot, super.getAttributeModifiers(slot, stack), modifiers -> addAttributeModifiers(stack, modifiers));
+    }
 
-        ImmutableMultimap.Builder<Attribute, AttributeModifier> b = ImmutableMultimap.builder();
-        b.putAll(super.getAttributeModifiers(slot, stack));
-        b.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(), AttributeModifier.Operation.ADDITION));
-        return b.build();
+    private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
+    {
+        modifiers.add(Attributes.ATTACK_DAMAGE, "grenade_attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID),
+            "Weapon modifier", configType.getMeleeDamage(), ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override

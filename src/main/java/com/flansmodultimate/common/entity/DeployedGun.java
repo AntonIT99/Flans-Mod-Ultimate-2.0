@@ -17,6 +17,7 @@ import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
@@ -196,12 +197,17 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     @Override
     protected void defineSynchedData()
     {
-        entityData.define(DATA_GUN_TYPE, StringUtils.EMPTY);
-        entityData.define(DATA_HAS_AMMO, false);
-        entityData.define(DATA_RELOAD_TIMER, 0);
-        entityData.define(DATA_GUN_DIRECTION, 0);
-        entityData.define(DATA_ROUNDS_LEFT, 0);
-        entityData.define(DATA_MAGAZINE_SIZE, 0);
+        defineEntityData(new SynchedDataDefinition(entityData));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_GUN_TYPE, StringUtils.EMPTY);
+        data.define(DATA_HAS_AMMO, false);
+        data.define(DATA_RELOAD_TIMER, 0);
+        data.define(DATA_GUN_DIRECTION, 0);
+        data.define(DATA_ROUNDS_LEFT, 0);
+        data.define(DATA_MAGAZINE_SIZE, 0);
     }
 
     public int getRoundsLeft()
