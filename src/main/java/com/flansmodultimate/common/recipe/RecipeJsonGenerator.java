@@ -43,27 +43,37 @@ public final class RecipeJsonGenerator
         return fileNames;
     }
 
-    public static void writeRecipes(InfoType config, Path outputFolder)
+    public static void writeRecipes(InfoType config, Path dataFolder)
     {
         if (!config.getType().isHasItem() || (!config.hasCraftingRecipe() && !config.hasSmeltingRecipe()))
             return;
 
-        if (!FileUtils.tryCreateDirectories(outputFolder))
+        Path legacyFolder = RecipeDataCompatibility.Format.LEGACY.resolve(dataFolder);
+        Path modernFolder = RecipeDataCompatibility.Format.MODERN.resolve(dataFolder);
+        if (!FileUtils.tryCreateDirectories(legacyFolder) || !FileUtils.tryCreateDirectories(modernFolder))
             return;
 
-        deleteGeneratedRecipes(config, outputFolder);
+        deleteGeneratedRecipes(config, legacyFolder);
+        deleteGeneratedRecipes(config, modernFolder);
 
         if (config.hasCraftingRecipe())
         {
             JsonObject recipe = config.isShapeless() ? createShapelessRecipe(config) : createShapedRecipe(config);
-            writeRecipe(outputFolder.resolve(getCraftingFileName(config)), recipe);
+            writeBothVersions(config, dataFolder, getCraftingFileName(config), recipe);
         }
 
         if (config.hasSmeltingRecipe())
         {
             JsonObject recipe = createSmeltingRecipe(config);
-            writeRecipe(outputFolder.resolve(getSmeltingFileName(config)), recipe);
+            writeBothVersions(config, dataFolder, getSmeltingFileName(config), recipe);
         }
+    }
+
+    private static void writeBothVersions(InfoType config, Path dataFolder, String fileName, JsonObject recipe)
+    {
+        for (RecipeDataCompatibility.Format format : RecipeDataCompatibility.Format.values())
+            writeRecipe(format.resolve(dataFolder).resolve(fileName),
+                RecipeDataCompatibility.formatGenerated(recipe, config, format));
     }
 
     private static JsonObject createShapedRecipe(InfoType config)
