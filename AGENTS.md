@@ -6,6 +6,8 @@ Nested `AGENTS.md` files add rules for their directories.
 
 - For version-dependent changes or work ported between maintained branches, read
   `.agents/skills/flans-version-porting/SKILL.md` before editing.
+- For merging `master` into a target version branch, also read
+  `.agents/skills/flans-master-merge-port/SKILL.md` before starting the merge.
 - For built-in `*_categories.json` research or maintenance, read
   `src/main/resources/config/AGENTS.md`, then
   `.agents/skills/flans-category-research/SKILL.md` and the references it routes to.
