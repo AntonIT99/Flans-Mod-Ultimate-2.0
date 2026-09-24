@@ -335,14 +335,11 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY)
     {
-        DriveableType selected = getSelectedBlueprint();
-        if (selected != null && isInside(mouseX, mouseY, leftPos + RECIPE_LEFT, topPos + RECIPE_TOP,
-            RECIPE_COLUMNS * SLOT_SIZE, RECIPE_ROWS * SLOT_SIZE))
-        {
-            scrollRecipe(scrollY < 0D ? 1 : -1);
-            return true;
-        }
-        scrollBlueprints(scrollY < 0D ? 1 : -1);
+        int direction = scrollY < 0D ? 1 : -1;
+        if (isInside(mouseX, mouseY, leftPos + RECIPE_LEFT, topPos + RECIPE_TOP, RECIPE_COLUMNS * SLOT_SIZE, RECIPE_ROWS * SLOT_SIZE))
+            scrollRecipe(direction);
+        else
+            scrollBlueprints(direction);
         return true;
     }
 

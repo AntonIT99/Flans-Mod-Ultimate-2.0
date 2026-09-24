@@ -27,6 +27,7 @@ import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -569,7 +570,7 @@ public class Mecha extends Driveable
     {
         if (gunType.getAmmoTypes().isEmpty())
             return false;
-            String preferred = gunItem.getPreferredAmmo(gunStack);
+        String preferred = ItemStackData.copy(gunStack).getString(GunItem.NBT_PREFERRED_AMMO);
         boolean creative = getControllingEntity() instanceof Player player && player.getAbilities().instabuild;
         boolean preserveSource = creative || infiniteAmmo();
         boolean reloaded = false;

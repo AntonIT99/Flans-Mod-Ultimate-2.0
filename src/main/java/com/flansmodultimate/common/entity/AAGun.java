@@ -430,6 +430,8 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         buf.writeInt(getCurrentBarrelIndex());
         buf.writeInt(getHealth());
         ComponentSerialization.STREAM_CODEC.encode(buf, getCurrentAmmoName());
+        buf.writeInt(getMagazineLeft());
+        buf.writeInt(getMagazineSize());
     }
 
     @Override
@@ -454,6 +456,8 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             setCurrentBarrel(buf.readInt());
             setHealth(buf.readInt());
             entityData.set(DATA_CURRENT_AMMO_NAME, ComponentSerialization.STREAM_CODEC.decode(buf));
+            entityData.set(DATA_MAGAZINE_LEFT, buf.readInt());
+            entityData.set(DATA_MAGAZINE_SIZE, buf.readInt());
         }
         catch (Exception e)
         {
