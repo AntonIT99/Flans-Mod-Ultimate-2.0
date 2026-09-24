@@ -6,6 +6,7 @@ import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.api.IInfoType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.ModUtils;
@@ -19,7 +20,6 @@ import lombok.Setter;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -201,7 +201,7 @@ public abstract class InfoType implements IInfoType
             String[] split = lines.get(i).split("\\s+");
             readLine(split, i, file);
         }
-        if (FMLEnvironment.dist == Dist.CLIENT)
+        if (PlatformEnvironment.isClient())
             readClient(file);
     }
 

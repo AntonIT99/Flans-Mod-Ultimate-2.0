@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,36 @@ public final class RecipeJsonGenerator
         if (config.hasSmeltingRecipe())
             fileNames.add(getSmeltingFileName(config));
         return fileNames;
+    }
+
+    /** Both generated layouts must exist, and modern crafting results must fit the output stack. */
+    public static boolean needsRegeneration(List<InfoType> items, Path dataFolder)
+    {
+        for (InfoType config : items)
+        {
+            for (String fileName : getRecipeFileNames(config))
+                for (RecipeDataCompatibility.Format format : RecipeDataCompatibility.Format.values())
+                    if (!Files.isRegularFile(format.resolve(dataFolder).resolve(fileName)))
+                        return true;
+
+            if (!config.hasCraftingRecipe())
+                continue;
+            Path modernRecipe = RecipeDataCompatibility.Format.MODERN.resolve(dataFolder).resolve(getCraftingFileName(config));
+            try
+            {
+                JsonObject recipe = JsonParser.parseString(Files.readString(modernRecipe, StandardCharsets.UTF_8)).getAsJsonObject();
+                JsonObject result = recipe.getAsJsonObject("result");
+                if (result == null || (result.has("count") && (result.get("count").getAsInt() < 1
+                    || result.get("count").getAsInt() > RecipeDataCompatibility.maxRecipeStackSize(config))))
+                    return true;
+            }
+            catch (RuntimeException | IOException exception)
+            {
+                FlansMod.log.warn("Could not inspect generated recipe {}; regenerating it", modernRecipe, exception);
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void writeRecipes(InfoType config, Path dataFolder)

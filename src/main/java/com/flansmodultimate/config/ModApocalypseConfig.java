@@ -3,16 +3,16 @@ package com.flansmodultimate.config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.platform.PlatformPaths;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModApocalypseConfig
@@ -163,11 +163,11 @@ public final class ModApocalypseConfig
 
     private static EarlyApocalypseSettings readEarlyApocalypseSettings()
     {
-        Path configPath = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE_NAME);
+        Path configPath = PlatformPaths.configDir().resolve(CONFIG_FILE_NAME);
         if (Files.isRegularFile(configPath))
             return readEarlyApocalypseSettings(configPath);
 
-        Path legacyConfigPath = FMLPaths.CONFIGDIR.get().resolve(LEGACY_COMMON_CONFIG_FILE_NAME);
+        Path legacyConfigPath = PlatformPaths.configDir().resolve(LEGACY_COMMON_CONFIG_FILE_NAME);
         if (Files.isRegularFile(legacyConfigPath))
             return readEarlyApocalypseSettings(legacyConfigPath);
 

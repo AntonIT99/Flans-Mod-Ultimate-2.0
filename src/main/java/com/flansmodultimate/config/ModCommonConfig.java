@@ -9,12 +9,12 @@ import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.platform.PlatformPaths;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
@@ -1079,7 +1079,7 @@ public final class ModCommonConfig
             DEFAULT_DEPLOYED_GUN_TRACKING_RANGE,
             DEFAULT_AA_GUN_TRACKING_RANGE
         );
-        Path configPath = FMLPaths.CONFIGDIR.get().resolve(FlansMod.MOD_ID + "-common.toml");
+        Path configPath = PlatformPaths.configDir().resolve(FlansMod.MOD_ID + "-common.toml");
         if (!Files.isRegularFile(configPath))
             return defaults;
 

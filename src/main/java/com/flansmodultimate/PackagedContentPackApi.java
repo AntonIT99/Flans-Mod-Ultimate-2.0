@@ -1,6 +1,8 @@
 package com.flansmodultimate;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.PlatformPaths;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -8,8 +10,6 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 
 import java.nio.charset.StandardCharsets;
@@ -93,7 +93,7 @@ public final class PackagedContentPackApi
             .map(container -> container.getModInfo().getDisplayName())
             .filter(displayName -> !displayName.isBlank())
             .orElse(modId);
-        boolean archiveBacked = FMLEnvironment.production;
+        boolean archiveBacked = PlatformEnvironment.isProduction();
 
         if (archiveBacked && (!Files.isRegularFile(modulePath)
             || !modulePath.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")))
@@ -202,7 +202,7 @@ public final class PackagedContentPackApi
         context.registerConfig(ModConfig.Type.COMMON, spec, fileName);
 
         Set<String> enabled = new LinkedHashSet<>(enforced);
-        Path configPath = FMLPaths.CONFIGDIR.get().resolve(fileName);
+        Path configPath = PlatformPaths.configDir().resolve(fileName);
         try
         {
             Files.createDirectories(configPath.getParent());

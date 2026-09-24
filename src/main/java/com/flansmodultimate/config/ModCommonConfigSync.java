@@ -4,9 +4,9 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketCommonConfigValues;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import com.flansmodultimate.network.server.PacketSetCommonConfigValue;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import net.minecraft.server.MinecraftServer;
@@ -19,7 +19,7 @@ public final class ModCommonConfigSync
 {
     public static void resyncAllClientsIfServer()
     {
-        if (FMLEnvironment.dist.isClient())
+        if (PlatformEnvironment.isClient())
             return;
 
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();

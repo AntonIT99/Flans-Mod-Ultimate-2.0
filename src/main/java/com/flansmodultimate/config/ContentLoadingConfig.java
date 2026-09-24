@@ -3,11 +3,11 @@ package com.flansmodultimate.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FileUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +34,7 @@ public final class ContentLoadingConfig
 
     public static void load()
     {
-        Path configDir = FMLPaths.CONFIGDIR.get();
+        Path configDir = PlatformPaths.configDir();
         Path file = configDir.resolve(FILE_NAME);
 
         FileUtils.tryCreateDirectories(configDir);

@@ -1,7 +1,7 @@
 package com.flansmodultimate.util;
 
+import com.flansmodultimate.platform.PlatformPaths;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -33,7 +33,7 @@ public final class ModLogFile
         if (configuration.getAppender(APPENDER_NAME) != null)
             return;
 
-        Path logFile = FMLPaths.GAMEDIR.get().resolve("logs").resolve(modId + ".log");
+        Path logFile = PlatformPaths.gameDir().resolve("logs").resolve(modId + ".log");
         try
         {
             Files.createDirectories(logFile.getParent());

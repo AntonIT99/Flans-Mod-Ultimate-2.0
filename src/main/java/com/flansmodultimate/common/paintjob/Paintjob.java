@@ -2,10 +2,9 @@ package com.flansmodultimate.common.paintjob;
 
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.Unmodifiable;
 
 import net.minecraft.resources.ResourceLocation;
@@ -57,7 +56,7 @@ public class Paintjob
 
     public Paintjob(PaintableType type, int id, String displayName, String iconName, String textureName, List<Supplier<ItemStack>> dyesNeeded)
     {
-        this(type, id, displayName, iconName, textureName, (FMLEnvironment.dist == Dist.CLIENT) ? InfoType.loadTexture(textureName, type) : null, dyesNeeded);
+        this(type, id, displayName, iconName, textureName, (PlatformEnvironment.isClient()) ? InfoType.loadTexture(textureName, type) : null, dyesNeeded);
     }
 
     public boolean isDefault()
