@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.network.FriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -65,7 +65,7 @@ public class PacketPlaySound implements IClientPacket
      * id; any other uses it just to seed the pitch, which the XOR of its halves reproduces exactly.
      */
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeFloat(posX);
         data.writeFloat(posY);
@@ -84,7 +84,7 @@ public class PacketPlaySound implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         posX = data.readFloat();
         posY = data.readFloat();

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -40,7 +40,7 @@ public final class PacketBaseEditState implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeUUID(baseId);
         data.writeUtf(baseName, 60);
@@ -50,7 +50,7 @@ public final class PacketBaseEditState implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         baseId = data.readUUID();
         baseName = data.readUtf(60);

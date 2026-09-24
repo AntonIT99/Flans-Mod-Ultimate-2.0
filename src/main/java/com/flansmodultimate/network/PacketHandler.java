@@ -225,12 +225,12 @@ public final class PacketHandler {
     private static <T extends IPacket> void registerOne(Class<T> clz, NetworkDirection dir)
     {
         CHANNEL.messageBuilder(clz, nextId++, dir)
-            .encoder(IPacket::encodeInto)
+            .encoder((packet, buf) -> packet.encodeInto(new PacketBuffer(buf)))
             .decoder(buf -> {
                 try
                 {
                     T p = clz.getDeclaredConstructor().newInstance();
-                    p.decodeInto(buf);
+                    p.decodeInto(new PacketBuffer(buf));
                     return p;
                 }
                 catch (Exception ex)

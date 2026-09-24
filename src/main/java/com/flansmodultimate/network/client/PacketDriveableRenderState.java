@@ -5,7 +5,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +39,7 @@ public final class PacketDriveableRenderState implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf buffer)
+    public void encodeInto(PacketBuffer buffer)
     {
         buffer.writeVarInt(driveableId);
         buffer.writeVarInt(paintjobId);
@@ -52,7 +52,7 @@ public final class PacketDriveableRenderState implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf buffer)
+    public void decodeInto(PacketBuffer buffer)
     {
         driveableId = buffer.readVarInt();
         paintjobId = buffer.readVarInt();

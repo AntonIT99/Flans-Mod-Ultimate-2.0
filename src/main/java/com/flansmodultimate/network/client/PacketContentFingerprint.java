@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.FriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -38,7 +38,7 @@ public class PacketContentFingerprint implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf buf)
+    public void encodeInto(PacketBuffer buf)
     {
         buf.writeVarInt(fingerprints.size());
         fingerprints.forEach((pack, fingerprint) -> {
@@ -48,7 +48,7 @@ public class PacketContentFingerprint implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf buf)
+    public void decodeInto(PacketBuffer buf)
     {
         int size = Math.min(buf.readVarInt(), MAX_PACKS);
         Map<String, String> read = new TreeMap<>();

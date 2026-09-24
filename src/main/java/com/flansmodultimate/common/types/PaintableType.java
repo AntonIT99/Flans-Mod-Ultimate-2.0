@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.AccessLevel;
@@ -138,12 +139,12 @@ public abstract class PaintableType extends InfoType
 
     public void applyPaintjobToStack(ItemStack stack, Paintjob paintjob)
     {
-        stack.getOrCreateTag().putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob.getId());
+        ItemStackData.update(stack, tag -> tag.putInt(IPaintableItem.NBT_PAINTJOB_ID, paintjob.getId()));
     }
 
     public int getPaintjobId(ItemStack stack)
     {
-        return stack.getOrCreateTag().getInt(IPaintableItem.NBT_PAINTJOB_ID);
+        return ItemStackData.copy(stack).getInt(IPaintableItem.NBT_PAINTJOB_ID);
     }
 
     public Paintjob getPaintjob(ItemStack stack)

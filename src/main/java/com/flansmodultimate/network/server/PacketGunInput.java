@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -28,7 +28,7 @@ public class PacketGunInput implements IServerPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeBoolean(shootKeyPressed);
         data.writeBoolean(prevShootKeyPressed);
@@ -37,7 +37,7 @@ public class PacketGunInput implements IServerPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         shootKeyPressed = data.readBoolean();
         prevShootKeyPressed = data.readBoolean();

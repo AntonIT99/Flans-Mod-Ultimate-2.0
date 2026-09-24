@@ -7,7 +7,7 @@ import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -45,7 +45,7 @@ public class PacketDriveableCrashFireball implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeDouble(position.x);
         data.writeDouble(position.y);
@@ -54,7 +54,7 @@ public class PacketDriveableCrashFireball implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         position = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         radius = data.readFloat();

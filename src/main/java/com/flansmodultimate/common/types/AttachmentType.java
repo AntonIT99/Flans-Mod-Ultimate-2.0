@@ -4,6 +4,7 @@ import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.item.AttachmentItem;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -238,7 +239,7 @@ public class AttachmentType extends PaintableType implements IScope
 
     @Nullable
     public static AttachmentType getFromNBT(CompoundTag tags) {
-        ItemStack stack = ItemStack.of(tags);
+        ItemStack stack = ItemStackData.parseBuiltIn(tags);
         if (!stack.isEmpty() && stack.getItem() instanceof AttachmentItem attachment) {
             return attachment.getConfigType();
         }

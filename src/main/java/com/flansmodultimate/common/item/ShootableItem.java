@@ -5,6 +5,7 @@ import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,8 +55,8 @@ public abstract class ShootableItem extends Item
             return stack.getCount();
         }
 
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(NBT_ROUNDS))
+        CompoundTag tag = ItemStackData.copy(stack);
+        if (tag.contains(NBT_ROUNDS))
         {
             return tag.getInt(NBT_ROUNDS);
         }
@@ -92,7 +93,7 @@ public abstract class ShootableItem extends Item
             return;
         }
 
-        stack.getOrCreateTag().putInt(NBT_ROUNDS, Math.max(0, Math.min(rounds, roundsPerItem)));
+        ItemStackData.update(stack, tag -> tag.putInt(NBT_ROUNDS, Math.max(0, Math.min(rounds, roundsPerItem))));
     }
 
     public static int getMaxRounds(ItemStack stack)

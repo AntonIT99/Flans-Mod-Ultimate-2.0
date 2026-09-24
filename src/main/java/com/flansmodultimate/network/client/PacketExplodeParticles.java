@@ -6,7 +6,7 @@ import com.flansmodultimate.network.ParticleNameCodec;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -30,7 +30,7 @@ public class PacketExplodeParticles implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         ParticleNameCodec.write(data, particleType);
         data.writeInt(number);
@@ -40,7 +40,7 @@ public class PacketExplodeParticles implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         particleType = ParticleNameCodec.read(data);
         number = data.readInt();

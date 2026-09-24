@@ -16,6 +16,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -1322,7 +1323,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public AttachmentType getAttachment(ItemStack gun, String name)
     {
         checkForTags(gun);
-        CompoundTag tag = Objects.requireNonNull(gun.getTag());
+        CompoundTag tag = ItemStackData.copy(gun);
         CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS);
         CompoundTag data = attachments.getCompound(name);
         return AttachmentType.getFromNBT(data);
@@ -1334,10 +1335,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public ItemStack getAttachmentItemStack(ItemStack gun, String name)
     {
         checkForTags(gun);
-        CompoundTag tag = Objects.requireNonNull(gun.getTag());
+        CompoundTag tag = ItemStackData.copy(gun);
         CompoundTag attachments = tag.getCompound(GunItem.NBT_ATTACHMENTS);
         CompoundTag stackTag = attachments.getCompound(name);
-        return ItemStack.of(stackTag);
+        return ItemStackData.parseBuiltIn(stackTag);
     }
 
     /**
@@ -1346,7 +1347,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public void checkForTags(ItemStack gun)
     {
         // Ensure the root tag exists
-        CompoundTag tag = gun.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(gun);
 
         // If there's no "attachments" compound, create and populate it
         if (!tag.contains(GunItem.NBT_ATTACHMENTS, Tag.TAG_COMPOUND))
@@ -1366,6 +1367,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             attachments.put(GunItem.NBT_ACCESSORY, new CompoundTag());
 
             tag.put(GunItem.NBT_ATTACHMENTS, attachments);
+            ItemStackData.set(gun, tag);
         }
     }
 
@@ -1765,8 +1767,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public void setSecondaryFire(ItemStack stack, boolean mode)
     {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putBoolean(GunItem.NBT_SECONDARY_FIRE, mode);
+        ItemStackData.update(stack, tag -> tag.putBoolean(GunItem.NBT_SECONDARY_FIRE, mode));
     }
 
     public boolean canToggleSecondaryFire(ItemStack stack)
@@ -1787,11 +1788,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public boolean getSecondaryFire(ItemStack stack)
     {
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = ItemStackData.copy(stack);
 
         if (!tag.contains(GunItem.NBT_SECONDARY_FIRE))
         {
-            tag.putBoolean(GunItem.NBT_SECONDARY_FIRE, false);
             return false;
         }
 
@@ -1811,8 +1811,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     public void setFireMode(ItemStack stack, EnumFireMode mode)
     {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putString(GunItem.NBT_GUN_MODE, mode.name());
+        ItemStackData.update(stack, tag -> tag.putString(GunItem.NBT_GUN_MODE, mode.name()));
     }
 
     public EnumFireMode cycleFireMode(ItemStack stack)
@@ -1879,8 +1878,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             }
 
             // Set the fire mode from the gun stack
-            CompoundTag tag = stack.getTag();
-            if (tag != null && tag.contains(GunItem.NBT_GUN_MODE))
+            CompoundTag tag = ItemStackData.copy(stack);
+            if (tag.contains(GunItem.NBT_GUN_MODE))
             {
                 EnumFireMode stored = EnumFireMode.getFireMode(tag.getString(GunItem.NBT_GUN_MODE));
                 for (EnumFireMode allowed : submode)

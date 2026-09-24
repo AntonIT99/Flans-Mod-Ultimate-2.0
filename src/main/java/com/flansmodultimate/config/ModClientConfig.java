@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 public final class ModClientConfig
 {
@@ -108,14 +109,14 @@ public final class ModClientConfig
     public final boolean alwaysEnablePlaneCullingByDefault;
     public final boolean alwaysEnableMechaCullingByDefault;
 
-    private static final ForgeConfigSpec.BooleanValue SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
+    private static final Supplier<Boolean> SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     public static final ForgeConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
     public static final ForgeConfigSpec.EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
     public static final ForgeConfigSpec.BooleanValue SHOW_FLANS_HUD;
     public static final ForgeConfigSpec.BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
-    private static final ForgeConfigSpec.BooleanValue LOAD_ALL_MODELS_IN_CACHE;
-    private static final ForgeConfigSpec.BooleanValue SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
-    private static final ForgeConfigSpec.BooleanValue PREFER_BUILT_IN_MODEL_CLASSES;
+    private static final Supplier<Boolean> LOAD_ALL_MODELS_IN_CACHE;
+    private static final Supplier<Boolean> SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
+    private static final Supplier<Boolean> PREFER_BUILT_IN_MODEL_CLASSES;
     public static final ForgeConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     public static final ForgeConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
     public static final ForgeConfigSpec.BooleanValue SHOW_AMMO_HUD;
@@ -130,20 +131,20 @@ public final class ModClientConfig
     private static final int DEFAULT_VEHICLE_HUD_TOP = 2;
     private static final int MAX_VEHICLE_HUD_OFFSET = 500;
     public static final ForgeConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
-    private static final ForgeConfigSpec.BooleanValue HD_HIT_MARKER;
+    private static final Supplier<Boolean> HD_HIT_MARKER;
     public static final ForgeConfigSpec.BooleanValue FANCY_HIT_MARKER;
     public static final ForgeConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
-    private static final ForgeConfigSpec.IntValue BULLET_RENDER_DISTANCE;
-    private static final ForgeConfigSpec.IntValue GRENADE_RENDER_DISTANCE;
-    private static final ForgeConfigSpec.IntValue DEPLOYED_GUN_RENDER_DISTANCE;
-    private static final ForgeConfigSpec.IntValue AA_GUN_RENDER_DISTANCE;
+    private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
+    private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
+    private static final Supplier<Integer> GRENADE_RENDER_DISTANCE;
+    private static final Supplier<Integer> DEPLOYED_GUN_RENDER_DISTANCE;
+    private static final Supplier<Integer> AA_GUN_RENDER_DISTANCE;
     private static final ForgeConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
     private static final ForgeConfigSpec.BooleanValue ENABLE_DRIVEABLE_LOD;
     public static final ForgeConfigSpec.BooleanValue ENABLE_GPU_MODEL_CACHE;
     private static final ForgeConfigSpec.DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
     private static final ForgeConfigSpec.DoubleValue DRIVEABLE_LOD_DETAIL_MULTIPLIER;
-    private static final ForgeConfigSpec.DoubleValue GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
+    private static final Supplier<Double> GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER;
     private static final ForgeConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE;
     private static final ForgeConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE;
@@ -152,48 +153,48 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE;
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_RESOLUTION;
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_YAW_ANGLES;
-    private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
-    private static final ForgeConfigSpec.IntValue PARTICLE_RENDER_DISTANCE;
-    private static final ForgeConfigSpec.IntValue FULL_PARTICLE_DENSITY_DISTANCE;
-    private static final ForgeConfigSpec.DoubleValue DISTANT_PARTICLE_DENSITY;
-    private static final ForgeConfigSpec.IntValue MAX_FLANS_PARTICLES_PER_TICK;
+    private static final Supplier<Integer> DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
+    private static final Supplier<Integer> PARTICLE_RENDER_DISTANCE;
+    private static final Supplier<Integer> FULL_PARTICLE_DENSITY_DISTANCE;
+    private static final Supplier<Double> DISTANT_PARTICLE_DENSITY;
+    private static final Supplier<Integer> MAX_FLANS_PARTICLES_PER_TICK;
 
-    private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON;
-    private static final ForgeConfigSpec.EnumValue<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
-    private static final ForgeConfigSpec.EnumValue<EnumMouseButton> AIM_BUTTON;
+    private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
+    private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
+    private static final Supplier<EnumMouseButton> AIM_BUTTON;
     public static final ForgeConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
     public static final ForgeConfigSpec.EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
     public static final ForgeConfigSpec.BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
 
-    private static final ForgeConfigSpec.BooleanValue COMBINE_AMMO_ON_RELOAD;
-    private static final ForgeConfigSpec.BooleanValue AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
+    private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
+    private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
 
-    private static final ForgeConfigSpec.BooleanValue ENABLE_ARMS;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_WEAPON_SPRINT_STANCE;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_RANDOM_SPRINT_STANCE;
-    private static final ForgeConfigSpec.BooleanValue SHOW_CASING_EJECTIONS;
+    private static final Supplier<Boolean> ENABLE_ARMS;
+    private static final Supplier<Boolean> ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
+    private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
+    private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
+    private static final Supplier<Boolean> SHOW_CASING_EJECTIONS;
 
-    private static final ForgeConfigSpec.BooleanValue ENABLE_FAST_TRANSLUCENT_RENDERING;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ENABLE_FAST_TRANSLUCENT_RENDERING;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_GRENADE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_BULLET_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_ATTACHMENT_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_AA_GUN_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_VEHICLE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_PLANE_TRANSLUCENT_RENDERING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_MECHA_TRANSLUCENT_RENDERING_BY_DEFAULT;
 
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT;
-    private static final ForgeConfigSpec.BooleanValue ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_ARMOR_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_GUN_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_GRENADE_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_BULLET_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_ATTACHMENT_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_AA_GUN_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT;
+    private static final Supplier<Boolean> ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT;
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();

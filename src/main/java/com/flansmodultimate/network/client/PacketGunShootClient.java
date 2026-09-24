@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.FriendlyByteBuf;
+import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -28,7 +28,7 @@ public class PacketGunShootClient implements IClientPacket
     }
 
     @Override
-    public void encodeInto(FriendlyByteBuf data)
+    public void encodeInto(PacketBuffer data)
     {
         data.writeUUID(playerUUID);
         data.writeEnum(hand);
@@ -36,7 +36,7 @@ public class PacketGunShootClient implements IClientPacket
     }
 
     @Override
-    public void decodeInto(FriendlyByteBuf data)
+    public void decodeInto(PacketBuffer data)
     {
         playerUUID = data.readUUID();
         hand = data.readEnum(InteractionHand.class);
