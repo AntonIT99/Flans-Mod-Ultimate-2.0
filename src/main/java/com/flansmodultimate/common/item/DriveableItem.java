@@ -139,14 +139,40 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
         DriveableData data = DriveableData.fromStack(configType, stack, context.registries());
-        if (data.getEngine() != null)
-            tooltip.add(IFlanItem.statLine(Component.literal("Engine"), data.getEngine().getName()));
-        if (configType.getFuelTankSize() > 0)
-            tooltip.add(IFlanItem.statLine(Component.literal("Fuel"), IFlanItem.formatFloat(data.getFuelInTank()) + " / " + configType.getFuelTankSize()));
-        long damagedParts = data.getParts().values().stream()
-            .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
-        if (damagedParts > 0)
-            tooltip.add(Component.literal(damagedParts + " damaged part" + (damagedParts == 1 ? "" : "s")).withStyle(ChatFormatting.RED));
+
+        if (!ClientHooks.TOOLTIPS.isShiftDown())
+        {
+            if (configType.getFuelTankSize() > 0)
+                tooltip.add(Component.translatable(TooltipKeys.FUEL, IFlanItem.formatFloat(data.getFuelInTank()), configType.getFuelTankSize()).withStyle(ChatFormatting.DARK_BLUE));
+            if (data.getEngine() != null)
+                tooltip.add(Component.translatable(TooltipKeys.ENGINE, ModUtils.getDisplayName(data.getEngine())).withStyle(ChatFormatting.DARK_BLUE));
+
+            float totalHealth = 0F;
+            float totalMaxHealth = 0F;
+            for (DriveablePart part : data.getParts().values())
+            {
+                totalHealth += part.getHealth();
+                totalMaxHealth += part.getMaxHealth();
+            }
+            if (totalMaxHealth > 0F)
+                tooltip.add(IFlanItem.healthLine(TooltipKeys.HEALTH, totalHealth, totalMaxHealth));
+
+            long damagedParts = data.getParts().values().stream()
+                .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
+            if (damagedParts > 0)
+                tooltip.add(Component.translatable(TooltipKeys.DAMAGED_PARTS, damagedParts).withStyle(ChatFormatting.RED));
+
+            tooltip.add(Component.empty());
+
+            Component keyName = ClientHooks.TOOLTIPS.getShiftKeyName().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+            tooltip.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));
+        }
+        else
+        {
+            tooltip.add(Component.empty());
+            DriveablePhysicsTooltip.append(configType, tooltip);
+            DriveableWeaponTooltip.append(configType, tooltip);
+        }
     }
 
     private boolean canPlayerPlace(Player player)

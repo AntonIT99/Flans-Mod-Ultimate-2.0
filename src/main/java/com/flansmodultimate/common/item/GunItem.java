@@ -167,7 +167,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (customTag.contains(NBT_LEGENDARY_CRAFTER, Tag.TAG_STRING))
         {
             String crafter = customTag.getString(NBT_LEGENDARY_CRAFTER);
-            tooltipComponents.add(Component.literal("Legendary Skin Crafted by " + crafter).withStyle(ChatFormatting.GOLD));
+            tooltipComponents.add(Component.translatable(TooltipKeys.LEGENDARY_SKIN_CRAFTER, crafter).withStyle(ChatFormatting.GOLD));
         }
 
         if (configType.isDeployable())

@@ -116,7 +116,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         if (configType.getDurability() > 0F)
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DURABILITY), IFlanItem.formatDouble(configType.getDurability())));
         if (configType.getEnchantability() > 0F)
-            tooltipComponents.add(IFlanItem.statLine(Component.literal("Enchantability"), IFlanItem.formatDouble(getEnchantmentValue(stack))));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ENCHANTABILITY), IFlanItem.formatDouble(getEnchantmentValue(stack))));
 
         if (Math.abs(configType.getJumpModifier() - 1F) > 0F)
             tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.JUMP_HEIGHT), configType.getJumpModifier(), false));
