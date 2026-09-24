@@ -3,6 +3,7 @@ package com.flansmodultimate.platform;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /** Loader boundary for posting events to the game event bus. */
 public final class PlatformEvents
@@ -18,5 +19,11 @@ public final class PlatformEvents
     public static <T extends Event & ICancellableEvent> boolean postCancellable(T event)
     {
         return NeoForge.EVENT_BUS.post(event).isCanceled();
+    }
+
+    /** Whether another listener denied using the clicked block. */
+    public static boolean isBlockUseDenied(PlayerInteractEvent.RightClickBlock event)
+    {
+        return event.getUseBlock().isFalse();
     }
 }

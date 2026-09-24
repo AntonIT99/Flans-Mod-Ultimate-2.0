@@ -1,27 +1,24 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
+import com.flansmodultimate.platform.item.ItemAttributes;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
@@ -137,32 +134,24 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     @Override
     @NotNull
-    public ItemAttributeModifiers getDefaultAttributeModifiers(@NotNull ItemStack stack) {
-        ItemAttributeModifiers vanilla = super.getDefaultAttributeModifiers(stack);
-        EquipmentSlot slot = configType.getArmorItemType().getSlot();
-
-        ItemAttributeModifiers.Builder builder = ItemAttributeModifiers.builder();
-
-        for (ItemAttributeModifiers.Entry entry : vanilla.modifiers())
-        {
-            var attr = entry.attribute();
-            if (attr == Attributes.ARMOR || attr == Attributes.ARMOR_TOUGHNESS || attr == Attributes.KNOCKBACK_RESISTANCE || attr == Attributes.MOVEMENT_SPEED)
-                continue;
-            builder.add(attr, entry.modifier(), entry.slot());
-        }
-
-        EquipmentSlotGroup group = EquipmentSlotGroup.bySlot(slot);
-        String slotName = slot.getName();
-        builder.add(Attributes.ARMOR, modifier("armor/" + slotName, getDefense(), AttributeModifier.Operation.ADD_VALUE), group);
-        builder.add(Attributes.ARMOR_TOUGHNESS, modifier("armor_toughness/" + slotName, getToughness(), AttributeModifier.Operation.ADD_VALUE), group);
-        builder.add(Attributes.MOVEMENT_SPEED, modifier("movement_speed/" + slotName, configType.getMoveSpeedModifier() - 1F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
-        builder.add(Attributes.KNOCKBACK_RESISTANCE, modifier("knockback_resistance/" + slotName, configType.getKnockbackModifier(), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), group);
-        return builder.build();
+    public ItemAttributeModifiers getDefaultAttributeModifiers(@NotNull ItemStack stack)
+    {
+        return ItemAttributes.armor(configType.getArmorItemType().getSlot(), super.getDefaultAttributeModifiers(stack), this::addAttributeModifiers);
     }
 
-    private static AttributeModifier modifier(String path, double amount, AttributeModifier.Operation operation)
+    private void addAttributeModifiers(ItemAttributes.Modifiers modifiers)
     {
-        return new AttributeModifier(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, path), amount, operation);
+        EquipmentSlot slot = configType.getArmorItemType().getSlot();
+        String slotName = slot.getName();
+        int index = slot.getIndex();
+        modifiers.add(Attributes.ARMOR, "armor/" + slotName, () -> armor_uuid[index],
+            "Armor modifier", getDefense(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.ARMOR_TOUGHNESS, "armor_toughness/" + slotName, () -> armor_uuid[index],
+            "Armor toughness", getToughness(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed/" + slotName, () -> speed_uuid[index],
+            "Movement Speed", configType.getMoveSpeedModifier() - 1F, ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
+        modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance/" + slotName, () -> kb_uuid[index],
+            "Knockback Resistance", configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     @Override

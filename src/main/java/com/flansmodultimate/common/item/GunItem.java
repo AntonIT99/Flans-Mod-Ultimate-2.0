@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Plane;
@@ -17,6 +16,7 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.item.ItemAttributes;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -33,14 +33,11 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -517,16 +514,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack)
     {
-        ItemAttributeModifiers.Builder b = ItemAttributeModifiers.builder();
-        for (ItemAttributeModifiers.Entry entry : super.getDefaultAttributeModifiers(stack).modifiers())
-            b.add(entry.attribute(), entry.modifier(), entry.slot());
-        b.add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(
-            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "knockback_resistance"), configType.getKnockbackModifier(), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
-        b.add(Attributes.MOVEMENT_SPEED, new AttributeModifier(
-            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "movement_speed"), configType.getMovementSpeed(stack) - 1F, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL), EquipmentSlotGroup.MAINHAND);
-        b.add(Attributes.ATTACK_DAMAGE, new AttributeModifier(
-            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "attack_damage"), configType.getMeleeDamage(stack, false), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
-        return b.build();
+        return ItemAttributes.mainHand(super.getDefaultAttributeModifiers(stack), modifiers -> addAttributeModifiers(stack, modifiers));
+    }
+
+    private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
+    {
+        modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID),
+            "Knockback resistance", configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID),
+            "Movement speed", configType.getMovementSpeed(stack) - 1F, ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
+        modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID),
+            "Weapon modifier", configType.getMeleeDamage(stack, false), ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override

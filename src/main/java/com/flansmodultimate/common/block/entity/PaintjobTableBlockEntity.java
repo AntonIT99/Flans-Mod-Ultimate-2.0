@@ -2,6 +2,7 @@ package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
+import com.flansmodultimate.platform.block.FlanBlockEntity;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
@@ -20,10 +21,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvider
+public class PaintjobTableBlockEntity extends FlanBlockEntity implements MenuProvider
 {
     public static final String NBT_ITEMS = "items";
 
@@ -44,6 +44,7 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
         blockState = state;
     }
 
+    @Override
     @NotNull
     public IItemHandler getItemHandler()
     {
@@ -51,17 +52,15 @@ public class PaintjobTableBlockEntity extends BlockEntity implements MenuProvide
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void saveData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag, registries);
-        tag.put(NBT_ITEMS, items.serializeNBT(registries));
+        tag.put(NBT_ITEMS, serializeItems(items, registries));
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.loadAdditional(tag, registries);
-        items.deserializeNBT(registries, tag.getCompound(NBT_ITEMS));
+        deserializeItems(items, registries, tag.getCompound(NBT_ITEMS));
     }
 
     @Override

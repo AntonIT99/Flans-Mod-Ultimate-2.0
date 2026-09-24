@@ -16,6 +16,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
@@ -407,16 +408,21 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        builder.define(DATA_AA_TYPE, StringUtils.EMPTY);
-        builder.define(DATA_GUN_YAW, 0F);
-        builder.define(DATA_GUN_PITCH, 0F);
-        builder.define(DATA_AMMO_MASK, 0);
-        builder.define(DATA_RELOAD_TIMER, 0);
-        builder.define(DATA_CURRENT_BARREL, 0);
-        builder.define(DATA_HEALTH, 0);
-        builder.define(DATA_CURRENT_AMMO_NAME, Component.empty());
-        builder.define(DATA_MAGAZINE_LEFT, 0);
-        builder.define(DATA_MAGAZINE_SIZE, 0);
+        defineEntityData(new SynchedDataDefinition(builder));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_AA_TYPE, StringUtils.EMPTY);
+        data.define(DATA_GUN_YAW, 0F);
+        data.define(DATA_GUN_PITCH, 0F);
+        data.define(DATA_AMMO_MASK, 0);
+        data.define(DATA_RELOAD_TIMER, 0);
+        data.define(DATA_CURRENT_BARREL, 0);
+        data.define(DATA_HEALTH, 0);
+        data.define(DATA_CURRENT_AMMO_NAME, Component.empty());
+        data.define(DATA_MAGAZINE_LEFT, 0);
+        data.define(DATA_MAGAZINE_SIZE, 0);
     }
 
     @Override

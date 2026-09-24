@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Flag;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -83,7 +84,8 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
 
             int colour = flagEntity.getColour();
             poseStack.scale(-1F, -1F, 1F);
-            flag.render(poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY, 0xFF000000 | colour);
+            VertexPlatform.renderModelPart(flag, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY,
+                (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F, (colour & 255) / 255F, 1F);
         }
         else
         {
@@ -93,24 +95,6 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
 
         poseStack.popPose();
         super.render(entity, yaw, partialTick, poseStack, buffer, packedLight);
-    }
-
-    private static void quad(PoseStack.Pose pose, VertexConsumer vertices,
-                             float x0, float y0, float z0, float x1, float y1, float z1,
-                             float u0, float v0, float u1, float v1,
-                             float red, float green, float blue, int light)
-    {
-        vertex(pose, vertices, x0, y1, z0, u0, v0, red, green, blue, light);
-        vertex(pose, vertices, x1, y1, z1, u1, v0, red, green, blue, light);
-        vertex(pose, vertices, x1, y0, z1, u1, v1, red, green, blue, light);
-        vertex(pose, vertices, x0, y0, z0, u0, v1, red, green, blue, light);
-    }
-
-    private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float z,
-                               float u, float v, float red, float green, float blue, int light)
-    {
-        vertices.addVertex(pose.pose(), x, y, z).setColor(red, green, blue, 1F).setUv(u, v)
-            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0F, 0F, 1F);
     }
 
     @NotNull

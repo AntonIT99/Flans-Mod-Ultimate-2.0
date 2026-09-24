@@ -5,6 +5,8 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
@@ -75,5 +77,17 @@ public final class ItemStackData
     public static CompoundTag saveBuiltIn(ItemStack stack)
     {
         return save(stack, builtInRegistries());
+    }
+
+    /** Whether both stacks hold the same item with the same custom data, ignoring count. */
+    public static boolean isSameItemSameData(ItemStack first, ItemStack second)
+    {
+        return ItemStack.isSameItemSameComponents(first, second);
+    }
+
+    /** Damages the stack, breaking it with the usual effects when it runs out of durability. */
+    public static void hurtAndBreak(ItemStack stack, int amount, LivingEntity entity, EquipmentSlot slot)
+    {
+        stack.hurtAndBreak(amount, entity, slot);
     }
 }

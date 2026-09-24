@@ -35,18 +35,15 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketRequestDismount;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
@@ -54,11 +51,11 @@ import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -86,20 +83,6 @@ import java.util.List;
 @EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
 public final class ClientEventHandler
 {
-    @SubscribeEvent
-    public static void onDetachedCameraDistance(CalculateDetachedCameraDistanceEvent event)
-    {
-        if (!(event.getCamera().getEntity() instanceof Player player))
-            return;
-
-        var controllable = KeyInputHandler.resolveControllable(player);
-        if (controllable == null)
-            return;
-
-        float requestedDistance = controllable.getCameraDistance();
-        if (Float.isFinite(requestedDistance))
-            event.setDistance(Mth.clamp(requestedDistance, 1F, 64F));
-    }
 
     @SubscribeEvent
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
@@ -160,24 +143,25 @@ public final class ClientEventHandler
         event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
     }
 
-    @SubscribeEvent
-    public static void onClientTickStart(ClientTickEvent.Pre event)
+    /**
+     * Runs at the start of every client tick. Vanilla consumes its own key clicks later in the same tick,
+     * so a driveable bind has to claim a shared key before that happens.
+     */
+    public static void onClientTickStart()
     {
-        // Vanilla consumes its own key clicks later in the same tick, so a
-        // driveable bind has to claim a shared key before that happens.
         KeyInputHandler.claimConflictingVanillaKeys();
     }
 
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event)
+    /** Runs at the end of every client tick. */
+    public static void onClientTick()
     {
         GunInputState.tick();
         ModClient.tick();
         ParticleHelper.tick();
     }
 
-    @SubscribeEvent
-    public static void onRenderTick(RenderFrameEvent.Post event)
+    /** Runs once per rendered frame, after the frame. */
+    public static void onRenderTick()
     {
         ModClient.renderTick();
     }
@@ -195,7 +179,7 @@ public final class ClientEventHandler
         {
             boolean isOneHanded = gunItem.getConfigType().isOneHanded();
             boolean isSneakingKeyDown = Minecraft.getInstance().options.keyShift.isDown();
-            double scrollDelta = event.getScrollDeltaY();
+            double scrollDelta = ClientPlatform.scrollDelta(event);
 
             if (isOneHanded && isSneakingKeyDown && Math.abs(scrollDelta) > 0.0D)
             {
@@ -212,9 +196,10 @@ public final class ClientEventHandler
         VehicleThermalRenderer.render(event);
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
-        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+        float partialTick = ClientPlatform.partialTick(event);
         InstantBulletRenderer.renderAllTrails(event.getPoseStack(), partialTick, event.getCamera());
-        OpStickConnectionRenderer.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(), event.getCamera(), partialTick);
+        OpStickConnectionRenderer.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(),
+            event.getCamera(), partialTick);
 
         if (ModClient.isDebug())
         {
@@ -226,47 +211,33 @@ public final class ClientEventHandler
             }
             // Flush now, while everything drawn so far (entities included) is already on screen to draw over
             bufferSource.endBatch(CustomRenderType.debugFilledBoxSeeThrough());
-            DriveableHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), event.getPartialTick().getGameTimeDeltaPartialTick(true));
-            PlayerHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), event.getPartialTick().getGameTimeDeltaPartialTick(true));
+            DriveableHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), partialTick);
+            PlayerHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), partialTick);
         }
     }
 
-    /** CROSSHAIR: pre = we can cancel vanilla*/
-    @SubscribeEvent
-    public static void onPreRenderGuiOverlay(RenderGuiLayerEvent.Pre event)
+    /** Whether the vanilla crosshair is replaced by the hit marker alone for the current frame. */
+    public static boolean hidesCrosshair()
     {
-        Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
+        Player player = Minecraft.getInstance().player;
         if (player == null)
-            return;
+            return false;
 
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
         boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
-        if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)
-            && (VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
-                || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
-                || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun)))
-        {
-            int w = mc.getWindow().getGuiScaledWidth();
-            int h = mc.getWindow().getGuiScaledHeight();
-            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(true), w, h);
-            event.setCanceled(true);
-        }
+        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
+            || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
+            || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
     }
 
-    /** CROSSHAIR: post = draw hit marker overlay */
-    @SubscribeEvent
-    public static void onPostRenderGuiOverlay(RenderGuiLayerEvent.Post event)
+    /** Draws the hit marker where the crosshair is, whether or not the crosshair itself is shown. */
+    public static void renderCrosshairHitMarker(GuiGraphics graphics, float partialTick)
     {
         Minecraft mc = Minecraft.getInstance();
-
-        if (event.getName().equals(VanillaGuiLayers.CROSSHAIR))
-        {
-            int w = mc.getWindow().getGuiScaledWidth();
-            int h = mc.getWindow().getGuiScaledHeight();
-            ClientHudOverlays.renderHitMarker(event.getGuiGraphics(), event.getPartialTick().getGameTimeDeltaPartialTick(true), w, h);
-        }
+        int w = mc.getWindow().getGuiScaledWidth();
+        int h = mc.getWindow().getGuiScaledHeight();
+        ClientHudOverlays.renderHitMarker(graphics, partialTick, w, h);
     }
 
     /** Set up RenderContext for gun animations and set Aim Pose when GunItem is held by players */
@@ -478,11 +449,11 @@ public final class ClientEventHandler
     {
         if (VehicleThermalRenderer.isRenderingMask())
         {
-            event.setCanRender(net.neoforged.neoforge.common.util.TriState.FALSE);
+            ClientPlatform.hideNameTag(event);
             return;
         }
         if (event.getEntity() instanceof Player player && TeamsClientState.shouldHideNameTag(player))
-            event.setCanRender(net.neoforged.neoforge.common.util.TriState.FALSE);
+            ClientPlatform.hideNameTag(event);
     }
 
     @SubscribeEvent

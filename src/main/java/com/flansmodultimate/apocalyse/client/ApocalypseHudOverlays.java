@@ -1,11 +1,11 @@
 package com.flansmodultimate.apocalyse.client;
 
+import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -19,7 +19,12 @@ public final class ApocalypseHudOverlays
     private static final int CALM_COLOUR = 0xFFD54F;
     private static final int URGENT_COLOUR = 0xFF5252;
 
-    public static final LayeredDraw.Layer COUNTDOWN = (graphics, deltaTracker) -> {
+    public static void register(HudOverlayPlatform.Registrar registrar)
+    {
+        registrar.aboveHotbar("apocalypse_countdown", COUNTDOWN);
+    }
+
+    public static final HudOverlayPlatform.HudLayer COUNTDOWN = (graphics, partialTick, screenWidth, screenHeight) -> {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.options.hideGui || minecraft.player == null || !ApocalypseClientState.isCountingDown())
             return;
@@ -29,7 +34,7 @@ public final class ApocalypseHudOverlays
         Component text = Component.translatable("hud.flansmodultimate.apocalypse_countdown", seconds);
 
         Font font = minecraft.font;
-        int x = (graphics.guiWidth() - font.width(text)) / 2;
+        int x = (screenWidth - font.width(text)) / 2;
         graphics.drawString(font, text, x, TOP_MARGIN, colourFor(seconds, ticks), true);
     };
 

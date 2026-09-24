@@ -4,8 +4,9 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.EqualsAndHashCode;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -223,7 +224,7 @@ public class SkullBossEntity extends Monster
         if (drone == null)
             return;
         drone.moveTo(getX(), getY() - 5.0D, getZ(), random.nextFloat() * 360.0F, 0.0F);
-        drone.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(drone.blockPosition()), MobSpawnType.MOB_SUMMONED, null);
+        EntityPlatform.finalizeSpawn(drone, serverLevel, serverLevel.getCurrentDifficultyAt(drone.blockPosition()), MobSpawnType.MOB_SUMMONED);
         if (target != null)
             drone.setTarget(target);
         serverLevel.addFreshEntity(drone);
@@ -258,7 +259,7 @@ public class SkullBossEntity extends Monster
 
     private static SoundEvent resolveSound(String name, SoundEvent fallback)
     {
-        return FlansMod.getSoundEvent(name).map(DeferredHolder::get).orElse(fallback);
+        return FlansMod.getSoundEvent(name).map(RegistryEntry::get).orElse(fallback);
     }
 
     /**

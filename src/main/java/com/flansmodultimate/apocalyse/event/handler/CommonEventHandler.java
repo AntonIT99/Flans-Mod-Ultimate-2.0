@@ -15,9 +15,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -32,18 +33,18 @@ public final class CommonEventHandler
 {
     private static final double WANDERING_SURVIVOR_DISTANCE = 50.0D;
 
-    @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event)
+    /** Runs at the end of every server tick. */
+    public static void onServerTick(@Nullable MinecraftServer server)
     {
-        if (event.getServer() == null)
+        if (server == null)
             return;
 
-        ApocalypseEventManager.tick(event.getServer());
+        ApocalypseEventManager.tick(server);
 
         if (!ModApocalypseConfig.apocalypseDimensionEnabled())
             return;
 
-        for (ServerPlayer player : event.getServer().getPlayerList().getPlayers())
+        for (ServerPlayer player : server.getPlayerList().getPlayers())
         {
             if (!player.serverLevel().dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL) || player.isSpectator())
                 continue;

@@ -1,5 +1,10 @@
 package com.flansmodultimate.platform.client;
 
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderNameTagEvent;
+import net.neoforged.neoforge.common.util.TriState;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -24,5 +29,21 @@ public final class ClientPlatform
     public static void renderBackground(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         screen.renderBackground(graphics, mouseX, mouseY, partialTick);
+    }
+
+    public static float partialTick(RenderLevelStageEvent event)
+    {
+        return event.getPartialTick().getGameTimeDeltaPartialTick(true);
+    }
+
+    /** Vertical mouse-wheel movement of the event. */
+    public static double scrollDelta(InputEvent.MouseScrollingEvent event)
+    {
+        return event.getScrollDeltaY();
+    }
+
+    public static void hideNameTag(RenderNameTagEvent event)
+    {
+        event.setCanRender(TriState.FALSE);
     }
 }

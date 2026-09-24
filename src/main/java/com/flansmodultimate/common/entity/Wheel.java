@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -65,8 +66,13 @@ public class Wheel extends Entity
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        builder.define(DATA_PARENT_ID, -1);
-        builder.define(DATA_WHEEL_INDEX, -1);
+        defineEntityData(new SynchedDataDefinition(builder));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_PARENT_ID, -1);
+        data.define(DATA_WHEEL_INDEX, -1);
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -137,9 +138,14 @@ public abstract class Shootable extends Entity implements SpawnDataEntity
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        builder.define(DATA_SHOOTABLE_TYPE, StringUtils.EMPTY);
-        builder.define(DATA_HITBOX_SIZE, DEFAULT_HITBOX_SIZE);
-        builder.define(DATA_SMOKING, false);
+        defineEntityData(new SynchedDataDefinition(builder));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_SHOOTABLE_TYPE, StringUtils.EMPTY);
+        data.define(DATA_HITBOX_SIZE, DEFAULT_HITBOX_SIZE);
+        data.define(DATA_SMOKING, false);
     }
 
     @Override

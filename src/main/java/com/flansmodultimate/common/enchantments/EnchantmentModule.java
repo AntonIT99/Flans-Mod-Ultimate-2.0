@@ -6,6 +6,7 @@ import com.flansmodultimate.common.item.GloveItem;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -178,7 +179,7 @@ public final class EnchantmentModule
         if (amount <= 0 || entity == null || entity.level().isClientSide || stack.isEmpty() || !stack.isDamageableItem())
             return;
 
-        stack.hurtAndBreak(amount, entity, slot);
+        ItemStackData.hurtAndBreak(stack, amount, entity, slot);
     }
 
     private static boolean isEnabled()

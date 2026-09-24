@@ -5,6 +5,7 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -90,7 +91,7 @@ public final class DriveableCollisionWorld
             || !level.isClientSide && !isSimulatedHere(entity))
             return null;
         AABB box = entity.getBoundingBox();
-        AABB reach = box.expandTowards(movement).expandTowards(0D, Math.max(0F, entity.maxUpStep()), 0D)
+        AABB reach = box.expandTowards(movement).expandTowards(0D, Math.max(0F, EntityPlatform.stepHeight(entity)), 0D)
             .inflate(REACH_MARGIN);
         List<DriveableHullGeometry> nearby = hulls.collect(entity, reach);
         return nearby.isEmpty() ? null : collide(entity, movement, box, nearby);
@@ -143,7 +144,7 @@ public final class DriveableCollisionWorld
         boolean blockedY = movement.y != result.y;
         boolean blockedZ = movement.z != result.z;
         boolean grounded = entity.onGround() || blockedY && movement.y < 0D;
-        float stepHeight = entity.maxUpStep();
+        float stepHeight = EntityPlatform.stepHeight(entity);
         if (stepHeight > 0F && grounded && (blockedX || blockedZ))
         {
             Vec3 stepped = collideBoundingBox(entity, new Vec3(movement.x, stepHeight, movement.z), box, level,

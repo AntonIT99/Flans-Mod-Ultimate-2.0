@@ -263,7 +263,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
         // Detect gun change (replacement)
         boolean gunChanged = lastGunStack.isEmpty()
-            || !ItemStack.isSameItemSameComponents(gunStack, lastGunStack);
+            || !ItemStackData.isSameItemSameData(gunStack, lastGunStack);
 
         if (gunChanged)
         {

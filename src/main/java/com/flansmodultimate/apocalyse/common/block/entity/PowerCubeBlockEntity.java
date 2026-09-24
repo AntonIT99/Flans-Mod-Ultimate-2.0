@@ -1,17 +1,16 @@
 package com.flansmodultimate.apocalyse.common.block.entity;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
+import com.flansmodultimate.platform.block.FlanBlockEntity;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 @Getter
-public class PowerCubeBlockEntity extends BlockEntity
+public class PowerCubeBlockEntity extends FlanBlockEntity
 {
     private static final String NBT_AGE = "age";
     private int age;
@@ -27,16 +26,14 @@ public class PowerCubeBlockEntity extends BlockEntity
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void saveData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag, registries);
         tag.putInt(NBT_AGE, age);
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.loadAdditional(tag, registries);
         age = tag.getInt(NBT_AGE);
     }
 }

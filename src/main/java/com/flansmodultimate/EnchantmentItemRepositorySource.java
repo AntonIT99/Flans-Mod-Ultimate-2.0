@@ -2,6 +2,7 @@ package com.flansmodultimate;
 
 import com.flansmodultimate.common.item.GloveItem;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.SharedConstants;
@@ -23,7 +24,6 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ShieldItem;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
@@ -90,7 +90,7 @@ public final class EnchantmentItemRepositorySource
     private static List<String> itemIds(EnumType type)
     {
         List<String> result = new ArrayList<>();
-        for (DeferredHolder<Item, ? extends Item> holder : FlansMod.getItems(type))
+        for (RegistryEntry<Item> holder : FlansMod.getItems(type))
             result.add(holder.getId().toString());
         return result;
     }

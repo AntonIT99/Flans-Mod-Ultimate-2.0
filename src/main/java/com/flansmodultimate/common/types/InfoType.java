@@ -17,13 +17,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Item;
@@ -506,7 +504,6 @@ public abstract class InfoType implements IInfoType
         }));
     }
 
-    @OnlyIn(Dist.CLIENT)
     protected void readClient(TypeFile file)
     {
         modelClassName = findModelClass(modelName, contentPack);
@@ -523,7 +520,6 @@ public abstract class InfoType implements IInfoType
      * Resolves the model class name a {@code Model} entry refers to inside its own content pack. Content
      * packs are free to ship equally named model classes, every pack loads its own class files.
      */
-    @OnlyIn(Dist.CLIENT)
     protected static String findModelClass(String modelName, IContentProvider contentPack)
     {
         String modelClassName = StringUtils.EMPTY;
@@ -582,7 +578,6 @@ public abstract class InfoType implements IInfoType
         return modelClassName;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static ResourceLocation loadTexture(String textureName, InfoType type)
     {
         ResourceLocation texture = FlansMod.FALLBACK_TEXTURE;
@@ -604,7 +599,6 @@ public abstract class InfoType implements IInfoType
         return texture;
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)
     {
         if (StringUtils.isNotBlank(overlayName) && !overlayName.equalsIgnoreCase("none"))
@@ -620,7 +614,6 @@ public abstract class InfoType implements IInfoType
         return Optional.empty();
     }
 
-    @OnlyIn(Dist.CLIENT)
     protected ResourceLocation loadGuiTextureLocation(String textureName, ResourceLocation defaultTexture)
     {
         if (StringUtils.isBlank(textureName) || textureName.equalsIgnoreCase("none"))

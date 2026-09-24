@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,11 +65,16 @@ public final class Flag extends Entity implements ITeamObject
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        builder.define(DATA_BASE, Optional.empty());
-        builder.define(DATA_CARRIER, Optional.empty());
-        builder.define(DATA_HOME, true);
-        builder.define(DATA_TEAM, 0);
-        builder.define(DATA_COLOUR, 0xFFFFFF);
+        defineEntityData(new SynchedDataDefinition(builder));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_BASE, Optional.empty());
+        data.define(DATA_CARRIER, Optional.empty());
+        data.define(DATA_HOME, true);
+        data.define(DATA_TEAM, 0);
+        data.define(DATA_COLOUR, 0xFFFFFF);
     }
 
     @Override

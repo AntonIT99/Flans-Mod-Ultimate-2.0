@@ -9,10 +9,10 @@ import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.platform.creative.CreativeTabPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -112,7 +112,7 @@ public final class CreativeTabs
         if (!(stack.getItem() instanceof DriveableItem<?, ?> driveableItem))
             return stack;
 
-        DriveableData data = CreativeTabPlatform.readDriveableData(driveableItem.getConfigType(), stack, parameters);
+        DriveableData data = DriveableData.fromStack(driveableItem.getConfigType(), stack, parameters.holders());
         data.setFuelInTank(driveableItem.getConfigType().getFuelTankSize());
         return data.copyToStack(stack);
     }
@@ -151,7 +151,7 @@ public final class CreativeTabs
 
     private static String getRegistryName(Item item)
     {
-        ResourceLocation key = CreativeTabPlatform.itemId(item);
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
         return key != null ? key.toString() : null;
     }
 }

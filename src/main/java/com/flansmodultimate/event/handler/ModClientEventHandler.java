@@ -48,7 +48,9 @@ import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
@@ -67,8 +69,6 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.registries.DeferredHolder;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -107,7 +107,7 @@ public final class ModClientEventHandler
             CustomItemRenderers.registerAll();
 
             // Paintjob registrations
-            for (DeferredHolder<Item, ? extends Item> item : FlansMod.getItems())
+            for (RegistryEntry<Item> item : FlansMod.getItems())
             {
                 if (item.get() instanceof IPaintableItem<?>)
                 {
@@ -139,7 +139,7 @@ public final class ModClientEventHandler
     public static void registerClientExtensions(RegisterClientExtensionsEvent event)
     {
         Item[] customRenderedItems = FlansMod.getItems().stream()
-            .map(DeferredHolder::get)
+            .map(RegistryEntry::get)
             .filter(ICustomRendereredItem.class::isInstance)
             .toArray(Item[]::new);
         if (customRenderedItems.length > 0)
@@ -151,7 +151,7 @@ public final class ModClientEventHandler
     {
         Set<ResourceLocation> customRenderedItemIds = FlansMod.getItems().stream()
             .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>)
-            .map(DeferredHolder::getId)
+            .map(RegistryEntry::getId)
             .filter(java.util.Objects::nonNull)
             .collect(Collectors.toUnmodifiableSet());
 
@@ -211,12 +211,7 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiLayersEvent event)
     {
-        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "scope"), ClientHudOverlays.SCOPE);
-        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "armor"), ClientHudOverlays.ARMOR);
-        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "wounded_flash"), ClientHudOverlays.WOUNDED_FLASH);
-        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "flash_bang"), ClientHudOverlays.FLASH_BANG);
-        event.registerAbove(VanillaGuiLayers.ARMOR_LEVEL, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "damage_absorption"), ClientHudOverlays.DAMAGE_ABSORPTION);
-        event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "hud"), ClientHudOverlays.HUD);
+        ClientHudOverlays.register(HudOverlayPlatform.registrar(event));
     }
 
     @SubscribeEvent
@@ -269,7 +264,7 @@ public final class ModClientEventHandler
             return 0xFFFFFFFF;
         },
         FlansMod.getItems().stream()
-            .map(DeferredHolder::get)
+            .map(RegistryEntry::get)
             .toArray(Item[]::new)
         );
     }

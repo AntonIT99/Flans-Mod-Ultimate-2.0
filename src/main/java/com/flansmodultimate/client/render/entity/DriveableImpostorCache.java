@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.render.entity;
 
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import org.joml.Matrix4fStack;
 import org.lwjgl.opengl.GL11;
@@ -396,9 +397,7 @@ public final class DriveableImpostorCache
 
     private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float u, float v, int packedLight)
     {
-        vertices.addVertex(pose.pose(), x, y, 0F).setColor(1F, 1F, 1F, 1F).setUv(u, v)
-            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(packedLight)
-            .setNormal(pose, 0F, 1F, 0F);
+        VertexPlatform.vertex(vertices, pose, x, y, 0F, 1F, 1F, 1F, 1F, u, v, OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
     }
 
     private static int yawIndex(float viewYaw, int yawAngles)

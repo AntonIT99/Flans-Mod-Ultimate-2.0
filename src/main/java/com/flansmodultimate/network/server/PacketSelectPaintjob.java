@@ -8,6 +8,7 @@ import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.InventoryHelper;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -178,7 +179,7 @@ public class PacketSelectPaintjob implements IServerPacket
             int required = want.getCount();
 
             int fromCans = 0;
-            if (!cansSlot.isEmpty() && ItemStack.isSameItemSameComponents(cansSlot, want))
+            if (!cansSlot.isEmpty() && ItemStackData.isSameItemSameData(cansSlot, want))
                 fromCans = cansSlot.getCount();
 
             int fromInv = InventoryHelper.countInInventory(inv, want);
@@ -204,7 +205,7 @@ public class PacketSelectPaintjob implements IServerPacket
             int remaining = want.getCount();
 
             // 1) Consume from slot 1 first (if it matches)
-            if (!cansSlot.isEmpty() && ItemStack.isSameItemSameComponents(cansSlot, want))
+            if (!cansSlot.isEmpty() && ItemStackData.isSameItemSameData(cansSlot, want))
             {
                 int take = Math.min(remaining, cansSlot.getCount());
                 cansSlot.shrink(take);

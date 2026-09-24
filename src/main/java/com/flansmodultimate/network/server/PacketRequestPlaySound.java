@@ -2,8 +2,8 @@ package com.flansmodultimate.network.server;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,7 +62,7 @@ public class PacketRequestPlaySound implements IServerPacket
         if (sound.isBlank())
             return;
 
-        DeferredHolder<SoundEvent, SoundEvent> event = FlansMod.getSoundEvent(sound).orElse(null);
+        RegistryEntry<SoundEvent> event = FlansMod.getSoundEvent(sound).orElse(null);
         if (event == null || event.getId() == null)
         {
             FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));

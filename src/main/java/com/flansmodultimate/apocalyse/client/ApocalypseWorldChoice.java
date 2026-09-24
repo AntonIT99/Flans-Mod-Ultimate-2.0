@@ -4,15 +4,13 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.world.LevelFilePlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.WorldDataConfiguration;
@@ -74,7 +72,7 @@ public final class ApocalypseWorldChoice
             return false;
         try
         {
-            CompoundTag data = NbtIo.readCompressed(levelData, NbtAccounter.unlimitedHeap()).getCompound(NBT_DATA);
+            CompoundTag data = LevelFilePlatform.readCompressed(levelData).getCompound(NBT_DATA);
             if (data.getCompound(NBT_WORLD_GEN_SETTINGS).getCompound(NBT_DIMENSIONS)
                 .contains(ApocalypseContent.APOCALYPSE_LEVEL.location().toString()))
                 return false;
@@ -100,7 +98,7 @@ public final class ApocalypseWorldChoice
         try (LevelStorageSource.LevelStorageAccess access = minecraft.getLevelSource().createAccess(levelId))
         {
             Path levelData = access.getLevelPath(LevelResource.LEVEL_DATA_FILE);
-            CompoundTag root = NbtIo.readCompressed(levelData, NbtAccounter.unlimitedHeap());
+            CompoundTag root = LevelFilePlatform.readCompressed(levelData);
             CompoundTag data = root.getCompound(NBT_DATA);
             boolean hadDataPacks = data.contains(NBT_DATA_PACKS, Tag.TAG_COMPOUND);
             CompoundTag dataPacks = data.getCompound(NBT_DATA_PACKS);
@@ -119,8 +117,8 @@ public final class ApocalypseWorldChoice
 
             Path levelDirectory = access.getLevelPath(LevelResource.ROOT);
             Path written = Files.createTempFile(levelDirectory, "level", ".dat");
-            NbtIo.writeCompressed(root, written);
-            Util.safeReplaceFile(levelData, written, access.getLevelPath(LevelResource.OLD_LEVEL_DATA_FILE));
+            LevelFilePlatform.writeCompressed(root, written);
+            LevelFilePlatform.safeReplaceFile(levelData, written, access.getLevelPath(LevelResource.OLD_LEVEL_DATA_FILE));
         }
         FlansMod.log.info("World '{}' {} the Apocalypse dimension", levelId, withApocalypse ? "now includes" : "keeps out");
     }

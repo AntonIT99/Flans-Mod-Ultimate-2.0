@@ -38,30 +38,24 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketKillMessage;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
+import com.flansmodultimate.platform.world.LootTablePlatform;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.AnvilUpdateEvent;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
-import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
@@ -96,11 +90,11 @@ import java.util.WeakHashMap;
 public final class CommonEventHandler
 {
     private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(
-        BuiltInLootTables.ABANDONED_MINESHAFT.location(),
-        BuiltInLootTables.VILLAGE_WEAPONSMITH.location(),
-        BuiltInLootTables.END_CITY_TREASURE.location(),
-        BuiltInLootTables.NETHER_BRIDGE.location(),
-        BuiltInLootTables.DESERT_PYRAMID.location(),
+        LootTablePlatform.id(BuiltInLootTables.ABANDONED_MINESHAFT),
+        LootTablePlatform.id(BuiltInLootTables.VILLAGE_WEAPONSMITH),
+        LootTablePlatform.id(BuiltInLootTables.END_CITY_TREASURE),
+        LootTablePlatform.id(BuiltInLootTables.NETHER_BRIDGE),
+        LootTablePlatform.id(BuiltInLootTables.DESERT_PYRAMID),
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"),
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest")
     );
@@ -113,11 +107,9 @@ public final class CommonEventHandler
     private static final Set<Mob> AMBIENT_ARMOR_SPAWNS = Collections.newSetFromMap(new WeakHashMap<>());
     private static boolean contentReferencesValidated;
 
-    @SubscribeEvent
-    public static void onMobFinalizeSpawn(FinalizeSpawnEvent event)
+    /** Marks naturally spawned zombies and skeletons that will receive ambient armor. */
+    public static void onMobFinalizeSpawn(Mob mob, MobSpawnType spawnType)
     {
-        Mob mob = event.getEntity();
-        MobSpawnType spawnType = event.getSpawnType();
         if (!(mob instanceof Zombie) && !(mob instanceof AbstractSkeleton)
             || spawnType != MobSpawnType.NATURAL && spawnType != MobSpawnType.CHUNK_GENERATION)
             return;
@@ -208,15 +200,14 @@ public final class CommonEventHandler
         contentReferencesValidated = false;
     }
 
-    @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event)
+    /** Runs at the end of every server tick. */
+    public static void onServerTick(@Nullable MinecraftServer server)
     {
         if (ticker == Long.MAX_VALUE)
             ticker = 0;
         else
             ticker++;
 
-        MinecraftServer server = event.getServer();
         if (server == null)
             return;
 
@@ -248,10 +239,9 @@ public final class CommonEventHandler
         return itemGun.getConfigType().isAllowNightVision() || (scope != null && scope.isHasNightVision());
     }
 
-    @SubscribeEvent
-    public static void onPlayerTick(PlayerTickEvent.Post event)
+    /** Runs at the end of every player tick, on both sides. */
+    public static void onPlayerTick(Player player)
     {
-        Player player = event.getEntity();
         PlayerData.getInstance(player).tick(player);
 
         if (!player.level().isClientSide)
@@ -303,15 +293,12 @@ public final class CommonEventHandler
             FlansMod.teamsManager.respawnPlayer(player, false);
     }
 
-    @SubscribeEvent
-    public static void onItemPickup(ItemEntityPickupEvent.Pre event)
+    /** Whether the running Teams game type lets the player pick up the stack. */
+    public static boolean canPickUp(ServerPlayer player, ItemStack stack)
     {
-        if (!(event.getPlayer() instanceof ServerPlayer player))
-            return;
-        FlansMod.teamsManager.getCurrentGameType().ifPresent(type -> {
-            if (!type.canPlayerPickup(FlansMod.teamsManager, player, event.getItemEntity().getItem()))
-                event.setCanPickup(TriState.FALSE);
-        });
+        return FlansMod.teamsManager.getCurrentGameType()
+            .map(type -> type.canPlayerPickup(FlansMod.teamsManager, player, stack))
+            .orElse(true);
     }
 
     /** Items whose type declares {@code CanDrop False} cannot be tossed out of the inventory. */
@@ -335,10 +322,10 @@ public final class CommonEventHandler
         return !(stack.getItem() instanceof IFlanItem<?> flanItem) || flanItem.getConfigType().isCanDrop();
     }
 
-    @SubscribeEvent
-    public static void onLivingTick(EntityTickEvent.Post event)
+    /** Runs at the end of every living entity tick. */
+    public static void onLivingTick(LivingEntity living)
     {
-        if (!(event.getEntity() instanceof LivingEntity living) || living.level().isClientSide)
+        if (living.level().isClientSide)
             return;
 
         if (living instanceof Player || living instanceof Mob)
@@ -358,23 +345,21 @@ public final class CommonEventHandler
             CustomArmorItem.handleJumpModifier(event.getEntity());
     }
 
-    @SubscribeEvent
-    public static void onLivingDamage(LivingIncomingDamageEvent event)
+    /**
+     * Whether incoming damage is cancelled before any processing: entities riding Flan vehicles are immune,
+     * and the Teams game type may reject the attack.
+     */
+    public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source)
     {
-        LivingEntity entity = event.getEntity();
-        if (entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat)
-            event.setCanceled(true);
+        boolean cancel = entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat;
 
-        if (!entity.level().isClientSide && entity instanceof ServerPlayer player)
-        {
-            FlansMod.teamsManager.getCurrentGameType().ifPresent(type -> {
-                if (!type.playerAttacked(player, event.getSource()))
-                    event.setCanceled(true);
-            });
-        }
+        if (!entity.level().isClientSide && entity instanceof ServerPlayer player
+            && FlansMod.teamsManager.getCurrentGameType().map(type -> !type.playerAttacked(player, source)).orElse(false))
+            cancel = true;
+        return cancel;
     }
 
-    /** Called from LivingEntity.actuallyHurt after shield and cooldown handling. */
+    /** Applies Flan damage modifiers once shields and attack cooldown have been handled. */
     public static void applyLivingHurt(MutableDamageContext damage)
     {
         LivingEntity entity = damage.entity();
@@ -397,11 +382,8 @@ public final class CommonEventHandler
 
         if (entity instanceof Player || entity instanceof Mob)
         {
-            if (FlanDamageSources.isShootableDamage(source))
-            {
-                if (CustomArmorItem.tryApplyIgnoreArmorShot(damage, entity, source))
-                    return;
-            }
+            if (FlanDamageSources.isShootableDamage(source) && CustomArmorItem.tryApplyIgnoreArmorShot(damage, entity, source))
+                return;
 
             CustomArmorItem.applyOldArmorRatioSystem(damage, entity);
 

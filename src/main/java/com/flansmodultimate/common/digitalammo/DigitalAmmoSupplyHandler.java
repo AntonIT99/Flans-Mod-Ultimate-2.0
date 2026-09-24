@@ -3,16 +3,17 @@ package com.flansmodultimate.common.digitalammo;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.flansmodultimate.platform.PlatformEvents;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.HashSet;
 import java.util.List;
@@ -96,7 +97,7 @@ public final class DigitalAmmoSupplyHandler
 
         if (event.getEntity() instanceof ServerPlayer player)
         {
-            if (event.getUseBlock().isFalse()) return;
+            if (PlatformEvents.isBlockUseDenied(event)) return;
 
             Level level = event.getLevel();
             BlockPos pos = event.getPos();

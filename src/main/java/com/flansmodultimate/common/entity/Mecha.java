@@ -28,6 +28,8 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.ModUtils;
@@ -122,10 +124,10 @@ public class Mecha extends Driveable
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder)
+    protected void defineEntityData(SynchedDataDefinition data)
     {
-        super.defineSynchedData(builder);
-        builder.define(DATA_LEG_YAW, 0F);
+        super.defineEntityData(data);
+        data.define(DATA_LEG_YAW, 0F);
     }
 
     @Override
@@ -683,7 +685,7 @@ public class Mecha extends Driveable
         {
             target.hurt(level().damageSources().mobAttack(attacker), Math.max(1F, 6F * tool.getSpeed()));
             if (tool.isFlameBurst())
-                target.igniteForSeconds(4);
+                EntityPlatform.igniteForSeconds(target, 4);
         }
         playToolSound(tool);
         toolCooldown[index] = Math.max(4, Mth.ceil(10F / Math.max(0.1F, tool.getSpeed())));

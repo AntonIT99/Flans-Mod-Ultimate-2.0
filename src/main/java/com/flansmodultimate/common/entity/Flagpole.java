@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -70,10 +71,15 @@ public final class Flagpole extends Entity implements ITeamBase
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        builder.define(DATA_DEFAULT_OWNER, 0);
-        builder.define(DATA_OWNER, 0);
-        builder.define(DATA_NAME, "Default Base");
-        builder.define(DATA_MAP, "");
+        defineEntityData(new SynchedDataDefinition(builder));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_DEFAULT_OWNER, 0);
+        data.define(DATA_OWNER, 0);
+        data.define(DATA_NAME, "Default Base");
+        data.define(DATA_MAP, "");
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -30,7 +31,7 @@ final class CustomArmorMaterial
             defense.put(armorType, type.getDefaultMinecraftArmorPoints());
 
         Holder<SoundEvent> equipSound = FlansMod.getSoundEvent(type.getEquipSound())
-            .<Holder<SoundEvent>>map(holder -> holder)
+            .<Holder<SoundEvent>>map(RegistryEntry::holder)
             .orElse(SoundEvents.ARMOR_EQUIP_GENERIC);
 
         ArmorMaterial material = new ArmorMaterial(

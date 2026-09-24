@@ -8,6 +8,7 @@ import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.platform.block.FlanBlockEntity;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +28,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamObject
+public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITeamObject
 {
     private static final String NBT_SPAWNER = "teams_spawner";
     private static final String NBT_OBJECT_ID = "object_id";
@@ -156,9 +156,8 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void saveData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag, registries);
         tag.putUUID(NBT_OBJECT_ID, objectId);
         if (baseId != null)
             tag.putUUID(NBT_BASE_ID, baseId);
@@ -170,9 +169,8 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.loadAdditional(tag, registries);
         objectId = tag.hasUUID(NBT_OBJECT_ID) ? tag.getUUID(NBT_OBJECT_ID) : UUID.randomUUID();
         baseId = tag.hasUUID(NBT_BASE_ID) ? tag.getUUID(NBT_BASE_ID) : null;
 
@@ -218,10 +216,10 @@ public final class TeamSpawnerBlockEntity extends BlockEntity implements ITeamOb
 
     @Override
     @NotNull
-    public CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider registries)
+    protected CompoundTag createUpdateTag(HolderLookup.Provider registries)
     {
-        CompoundTag tag = super.getUpdateTag(registries);
-        saveAdditional(tag, registries);
+        CompoundTag tag = defaultUpdateTag(registries);
+        writeFullData(tag, registries);
         return tag;
     }
 

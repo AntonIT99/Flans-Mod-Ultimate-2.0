@@ -8,7 +8,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 import net.minecraft.client.Minecraft;
 
@@ -16,8 +15,8 @@ import net.minecraft.client.Minecraft;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientEventHandler
 {
-    @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event)
+    /** Runs at the end of every client tick. */
+    public static void onClientTick()
     {
         if (Minecraft.getInstance().isPaused())
             return;

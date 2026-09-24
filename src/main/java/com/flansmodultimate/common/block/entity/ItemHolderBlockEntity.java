@@ -3,6 +3,7 @@ package com.flansmodultimate.common.block.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.ItemHolderBlock;
 import com.flansmodultimate.common.types.ItemHolderType;
+import com.flansmodultimate.platform.block.FlanBlockEntity;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
@@ -17,10 +18,9 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class ItemHolderBlockEntity extends BlockEntity
+public class ItemHolderBlockEntity extends FlanBlockEntity
 {
     public static final String NBT_ITEMS = "items";
     public static final String NBT_TYPE = "type";
@@ -43,6 +43,7 @@ public class ItemHolderBlockEntity extends BlockEntity
             type = itemHolderBlock.getConfigType();
     }
 
+    @Override
     @NotNull
     public IItemHandler getItemHandler()
     {
@@ -50,20 +51,18 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void saveData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.saveAdditional(tag, registries);
-        tag.put(NBT_ITEMS, items.serializeNBT(registries));
+        tag.put(NBT_ITEMS, serializeItems(items, registries));
         ItemHolderType holderType = getItemHolderType();
         if (holderType != null)
             tag.putString(NBT_TYPE, holderType.getShortName());
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
+    protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
     {
-        super.loadAdditional(tag, registries);
-        items.deserializeNBT(registries, tag.getCompound(NBT_ITEMS));
+        deserializeItems(items, registries, tag.getCompound(NBT_ITEMS));
         if (tag.contains(NBT_TYPE))
             type = ItemHolderType.getItemHolder(tag.getString(NBT_TYPE));
     }
@@ -97,18 +96,17 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
-    @NotNull
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries)
+    protected CompoundTag createUpdateTag(HolderLookup.Provider registries)
     {
         CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, registries);
+        writeFullData(tag, registries);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries)
+    protected void readUpdateTag(CompoundTag tag, HolderLookup.Provider registries)
     {
-        loadAdditional(tag, registries);
+        readFullData(tag, registries);
     }
 
     @Nullable
@@ -119,11 +117,11 @@ public class ItemHolderBlockEntity extends BlockEntity
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries)
+    protected void readDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries)
     {
         CompoundTag tag = packet.getTag();
         if (tag != null)
-            loadAdditional(tag, registries);
+            readFullData(tag, registries);
     }
 
     private void setChangedAndSync()

@@ -10,6 +10,7 @@ import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
 import com.flansmodultimate.platform.client.ClientPlatform;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -261,7 +262,7 @@ public class PaintjobTableScreen extends AbstractContainerScreen<PaintjobTableMe
                 if (inv.isEmpty())
                     continue;
 
-                if (ItemStack.isSameItemSameComponents(inv, req))
+                if (ItemStackData.isSameItemSameData(inv, req))
                 {
                     needed -= inv.getCount();
                     if (needed <= 0)

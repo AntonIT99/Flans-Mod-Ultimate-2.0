@@ -44,6 +44,7 @@ import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
 import com.flansmodultimate.platform.network.NetworkPlatform;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModLogFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -54,7 +55,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -342,10 +342,10 @@ public class FlansMod
         .sized(0.75F, 0.75F).clientTrackingRange(64).updateInterval(2)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "flag").toString()));
 
-    private static final Map<EnumType, List<DeferredHolder<Item, ? extends Item>>> items = new EnumMap<>(EnumType.class);
+    private static final Map<EnumType, List<RegistryEntry<Item>>> items = new EnumMap<>(EnumType.class);
     @Getter
-    private static final Map<EnumType, Map<String, DeferredHolder<Block, ? extends Block>>> blocks = new EnumMap<>(EnumType.class);
-    private static final Map<ResourceLocation, DeferredHolder<SoundEvent, SoundEvent>> sounds = new HashMap<>();
+    private static final Map<EnumType, Map<String, RegistryEntry<Block>>> blocks = new EnumMap<>(EnumType.class);
+    private static final Map<ResourceLocation, RegistryEntry<SoundEvent>> sounds = new HashMap<>();
     @Getter
     private static final Map<ResourceLocation, TypeFile> soundsOrigins = new HashMap<>();
 
@@ -518,10 +518,10 @@ public class FlansMod
 
     private static Block[] getRegisteredBlocks(EnumType type)
     {
-        Map<String, DeferredHolder<Block, ? extends Block>> registeredBlocks = blocks.get(type);
+        Map<String, RegistryEntry<Block>> registeredBlocks = blocks.get(type);
         if (registeredBlocks == null)
             return new Block[0];
-        return registeredBlocks.values().stream().map(DeferredHolder::get).toArray(Block[]::new);
+        return registeredBlocks.values().stream().map(RegistryEntry::get).toArray(Block[]::new);
     }
 
     private static void registerSounds()
@@ -544,12 +544,12 @@ public class FlansMod
 
     public static void registerItem(String itemName, EnumType type, Supplier<? extends Item> initItem)
     {
-        items.get(type).add(itemRegistry.register(itemName, initItem));
+        items.get(type).add(RegistryEntry.of(itemRegistry.register(itemName, initItem)));
     }
 
     public static void registerBlock(String blockName, EnumType type, Supplier<? extends Block> initItem)
     {
-        blocks.get(type).put(blockName, blockRegistry.register(blockName, initItem));
+        blocks.get(type).put(blockName, RegistryEntry.of(blockRegistry.register(blockName, initItem)));
     }
 
     public static void registerSound(String soundName, @Nullable TypeFile typeFile)
@@ -558,30 +558,30 @@ public class FlansMod
         if (sounds.containsKey(rl))
             return;
 
-        DeferredHolder<SoundEvent, SoundEvent> soundEvent = soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(rl));
+        RegistryEntry<SoundEvent> soundEvent = RegistryEntry.of(soundEventRegistry.register(soundName, () -> SoundEvent.createVariableRangeEvent(rl)));
         sounds.put(rl, soundEvent);
         if (typeFile != null)
             soundsOrigins.put(rl, typeFile);
     }
 
     @Unmodifiable
-    public static List<DeferredHolder<Item, ? extends Item>> getItems()
+    public static List<RegistryEntry<Item>> getItems()
     {
         return items.values().stream().flatMap(List::stream).toList();
     }
 
-    public static List<DeferredHolder<Item, ? extends Item>> getItems(EnumType type)
+    public static List<RegistryEntry<Item>> getItems(EnumType type)
     {
         return items.get(type);
     }
 
     @Unmodifiable
-    public static List<DeferredHolder<Item, ? extends Item>> getItems(Set<EnumType> types)
+    public static List<RegistryEntry<Item>> getItems(Set<EnumType> types)
     {
         return types.stream().map(items::get).flatMap(List::stream).toList();
     }
 
-    public static Optional<DeferredHolder<SoundEvent, SoundEvent>> getSoundEvent(String soundName)
+    public static Optional<RegistryEntry<SoundEvent>> getSoundEvent(String soundName)
     {
         ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, soundName);
         return Optional.ofNullable(sounds.get(rl));

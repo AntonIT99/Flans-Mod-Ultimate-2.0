@@ -8,6 +8,7 @@ import com.flansmodultimate.apocalyse.client.render.ItemEntityRenderer;
 import com.flansmodultimate.apocalyse.client.render.PowerCubeRenderer;
 import com.flansmodultimate.apocalyse.client.render.SurvivorRenderer;
 import com.flansmodultimate.client.render.entity.DriveableRenderer;
+import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
@@ -18,7 +19,6 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -88,8 +88,6 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerOverlays(RegisterGuiLayersEvent event)
     {
-        event.registerAbove(VanillaGuiLayers.HOTBAR,
-            ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "apocalypse_countdown"),
-            ApocalypseHudOverlays.COUNTDOWN);
+        ApocalypseHudOverlays.register(HudOverlayPlatform.registrar(event));
     }
 }

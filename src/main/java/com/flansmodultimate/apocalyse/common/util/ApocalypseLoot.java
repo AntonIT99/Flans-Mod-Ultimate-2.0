@@ -10,10 +10,10 @@ import com.flansmodultimate.common.types.MechaItemType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -243,7 +243,7 @@ public final class ApocalypseLoot
     public static Optional<Block> randomWeaponBox(RandomSource random)
     {
         EnumType boxType = random.nextInt(4) == 0 ? EnumType.ARMOR_BOX : EnumType.GUN_BOX;
-        Map<String, DeferredHolder<Block, ? extends Block>> boxes = FlansMod.getBlocks().get(boxType);
+        Map<String, RegistryEntry<Block>> boxes = FlansMod.getBlocks().get(boxType);
         if (boxes == null || boxes.isEmpty())
             return Optional.empty();
         List<String> names = boxes.keySet().stream().sorted().toList();

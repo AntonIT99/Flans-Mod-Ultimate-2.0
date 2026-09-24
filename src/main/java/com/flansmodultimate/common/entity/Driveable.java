@@ -74,6 +74,7 @@ import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
@@ -820,37 +821,42 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        builder.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
-        builder.define(DATA_YAW, 0F);
-        builder.define(DATA_PITCH, 0F);
-        builder.define(DATA_ROLL, 0F);
-        builder.define(DATA_THROTTLE, 0F);
-        builder.define(DATA_TURRET_YAW, 0F);
-        builder.define(DATA_TURRET_PITCH, 0F);
-        builder.define(DATA_FLIGHT_PITCH, 0F);
-        builder.define(DATA_FLIGHT_ROLL, 0F);
-        builder.define(DATA_MOUSE_CONTROL, false);
-        builder.define(DATA_RECOIL_PROGRESS, 0F);
-        builder.define(DATA_IT1_DOOR_ANGLE, 0F);
-        builder.define(DATA_PREV_IT1_DOOR_ANGLE, 0F);
-        builder.define(DATA_IT1_ARM_ANGLE, 0F);
-        builder.define(DATA_PREV_IT1_ARM_ANGLE, 0F);
-        builder.define(DATA_IT1_RAIL_ANGLE, 0F);
-        builder.define(DATA_PREV_IT1_RAIL_ANGLE, 0F);
-        builder.define(DATA_INPUT_MASK, 0);
-        builder.define(DATA_FLAGS, FLAG_GEAR);
-        builder.define(DATA_MODE, 0);
-        builder.define(DATA_FUEL, 0F);
-        builder.define(DATA_PAINTJOB_ID, 0);
-        builder.define(DATA_LOCK_TARGET, -1);
-        builder.define(DATA_PRIMARY_RELOAD_TICKS, 0);
-        builder.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
-        builder.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
-        builder.define(DATA_SECONDARY_RELOAD_TICKS, 0);
-        builder.define(DATA_PRIMARY_MAGAZINE_LEFT, 0);
-        builder.define(DATA_PRIMARY_MAGAZINE_SIZE, 0);
-        builder.define(DATA_SECONDARY_MAGAZINE_LEFT, 0);
-        builder.define(DATA_SECONDARY_MAGAZINE_SIZE, 0);
+        defineEntityData(new SynchedDataDefinition(builder));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
+        data.define(DATA_YAW, 0F);
+        data.define(DATA_PITCH, 0F);
+        data.define(DATA_ROLL, 0F);
+        data.define(DATA_THROTTLE, 0F);
+        data.define(DATA_TURRET_YAW, 0F);
+        data.define(DATA_TURRET_PITCH, 0F);
+        data.define(DATA_FLIGHT_PITCH, 0F);
+        data.define(DATA_FLIGHT_ROLL, 0F);
+        data.define(DATA_MOUSE_CONTROL, false);
+        data.define(DATA_RECOIL_PROGRESS, 0F);
+        data.define(DATA_IT1_DOOR_ANGLE, 0F);
+        data.define(DATA_PREV_IT1_DOOR_ANGLE, 0F);
+        data.define(DATA_IT1_ARM_ANGLE, 0F);
+        data.define(DATA_PREV_IT1_ARM_ANGLE, 0F);
+        data.define(DATA_IT1_RAIL_ANGLE, 0F);
+        data.define(DATA_PREV_IT1_RAIL_ANGLE, 0F);
+        data.define(DATA_INPUT_MASK, 0);
+        data.define(DATA_FLAGS, FLAG_GEAR);
+        data.define(DATA_MODE, 0);
+        data.define(DATA_FUEL, 0F);
+        data.define(DATA_PAINTJOB_ID, 0);
+        data.define(DATA_LOCK_TARGET, -1);
+        data.define(DATA_PRIMARY_RELOAD_TICKS, 0);
+        data.define(DATA_PRIMARY_AMMO_NAME, Component.empty());
+        data.define(DATA_SECONDARY_AMMO_NAME, Component.empty());
+        data.define(DATA_SECONDARY_RELOAD_TICKS, 0);
+        data.define(DATA_PRIMARY_MAGAZINE_LEFT, 0);
+        data.define(DATA_PRIMARY_MAGAZINE_SIZE, 0);
+        data.define(DATA_SECONDARY_MAGAZINE_LEFT, 0);
+        data.define(DATA_SECONDARY_MAGAZINE_SIZE, 0);
     }
 
     @Override
@@ -1728,7 +1734,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 for (int blockZ = minZ; blockZ <= maxZ; blockZ++)
                 {
                     cursor.set(blockX, blockY, blockZ);
-                    if (level().hasChunk(cursor.getX() >> 4, cursor.getZ() >> 4) && !level().getFluidState(cursor).isEmpty())
+                    if (level().hasChunkAt(cursor) && !level().getFluidState(cursor).isEmpty())
                     {
                         liquid = true;
                         break outer;
@@ -5589,7 +5595,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 driveableData.setCargo(slot, placed);
                 incoming.shrink(moved);
             }
-            else if (ItemStack.isSameItemSameComponents(existing, incoming) && existing.getCount() < existing.getMaxStackSize())
+            else if (ItemStackData.isSameItemSameData(existing, incoming) && existing.getCount() < existing.getMaxStackSize())
             {
                 int moved = Math.min(incoming.getCount(), existing.getMaxStackSize() - existing.getCount());
                 existing.grow(moved);

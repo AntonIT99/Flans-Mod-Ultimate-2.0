@@ -5,6 +5,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
@@ -97,7 +98,12 @@ public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<To
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        builder.define(DATA_TOOL_TYPE, StringUtils.EMPTY);
+        defineEntityData(new SynchedDataDefinition(builder));
+    }
+
+    protected void defineEntityData(SynchedDataDefinition data)
+    {
+        data.define(DATA_TOOL_TYPE, StringUtils.EMPTY);
     }
 
     @Override

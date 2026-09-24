@@ -11,6 +11,7 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -191,7 +192,7 @@ public final class ApocalypseWorldgen
         if (survivor == null)
             return;
         survivor.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
-        survivor.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.CHUNK_GENERATION, null);
+        EntityPlatform.finalizeSpawn(survivor, level, level.getCurrentDifficultyAt(pos), MobSpawnType.CHUNK_GENERATION);
         level.addFreshEntity(survivor);
     }
 
