@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CMC",
+    "MRM",
+    "PMP"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_durasteel"
+    },
+    "R": {
+      "item": "flansmod:smp_part_propeller_rotorturbine"
+    },
+    "C": {
+      "item": "flansmod:smp_part_misc_computer"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_titan"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_propeller_turbinespace"
+  }
+}

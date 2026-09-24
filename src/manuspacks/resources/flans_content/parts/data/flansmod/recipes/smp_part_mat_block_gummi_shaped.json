@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:slime_ball"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_barrel_oil"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_mat_block_gummi",
+    "count": 4
+  }
+}

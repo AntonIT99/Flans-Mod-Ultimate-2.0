@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "IWI",
+    "IPI"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "I": {
+      "item": "flansmod:smp_part_mat_plate_durasteel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_hydraulics"
+  }
+}

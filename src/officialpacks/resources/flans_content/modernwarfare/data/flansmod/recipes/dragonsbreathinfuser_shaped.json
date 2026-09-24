@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "SSS",
+    "III"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:dragon_breath"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:dragonsbreathinfuser"
+  }
+}

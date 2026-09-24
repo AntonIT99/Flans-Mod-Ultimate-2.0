@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " L",
+    " L",
+    "MM"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_gummi"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_seat_plane"
+  }
+}

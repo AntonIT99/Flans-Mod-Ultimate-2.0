@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  B",
+    "LP ",
+    "MMM"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_misc_part_mechanical"
+    },
+    "B": {
+      "item": "flansmod:smp_part_misc_barrel_aagun"
+    },
+    "L": {
+      "item": "flansmod:smp_part_misc_seat_car"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:ww2_aagun_flak20mmvierling_2a"
+  }
+}

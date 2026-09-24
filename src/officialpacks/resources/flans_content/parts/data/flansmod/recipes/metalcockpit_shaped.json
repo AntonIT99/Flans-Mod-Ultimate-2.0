@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "G",
+    "C"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:minecart"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    }
+  },
+  "result": {
+    "item": "flansmod:metalcockpit"
+  }
+}

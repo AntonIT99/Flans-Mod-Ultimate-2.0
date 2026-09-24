@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "MMM"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_durasteel"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_durasteel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_mat_armor_durasteel",
+    "count": 3
+  }
+}

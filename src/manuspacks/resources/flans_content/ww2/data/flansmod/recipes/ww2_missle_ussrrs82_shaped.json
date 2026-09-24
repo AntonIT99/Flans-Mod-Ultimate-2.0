@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " M ",
+    "GGG",
+    " M "
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gunpowder"
+    },
+    "M": {
+      "item": "flansmod:smp_part_misc_ammo_missilebody"
+    }
+  },
+  "result": {
+    "item": "flansmod:ww2_missle_ussrrs82",
+    "count": 8
+  }
+}

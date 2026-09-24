@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "FFF",
+    "WWW",
+    "FFF"
+  ],
+  "key": {
+    "F": {
+      "item": "flansmod:fiberglass"
+    },
+    "W": {
+      "item": "minecraft:white_wool"
+    }
+  },
+  "result": {
+    "item": "flansmod:flanmwsilencer"
+  }
+}

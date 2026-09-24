@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " F ",
+    "PGP",
+    " S "
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    },
+    "S": {
+      "item": "flansmod:smp_part_misc_ammo_shell"
+    },
+    "F": {
+      "item": "flansmod:smp_part_misc_ammo_fuse"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "item": "flansmod:ww2_shell_usa114mmrockethe",
+    "count": 3
+  }
+}

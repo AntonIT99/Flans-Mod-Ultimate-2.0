@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MMM",
+    " P ",
+    " P "
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_enginepiston",
+    "count": 4
+  }
+}

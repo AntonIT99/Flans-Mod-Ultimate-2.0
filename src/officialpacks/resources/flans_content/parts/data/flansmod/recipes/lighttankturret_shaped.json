@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IIB"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:tankbarrel"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:lighttankturret"
+  }
+}

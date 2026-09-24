@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GRG",
+    "HBH"
+  ],
+  "key": {
+    "R": {
+      "item": "flansmod:smp_part_misc_seat_jet"
+    },
+    "B": {
+      "item": "flansmod:smp_part_mat_block_durasteel"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "H": {
+      "item": "flansmod:smp_part_misc_hydraulics"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_mecha_mediumbodyframe"
+  }
+}

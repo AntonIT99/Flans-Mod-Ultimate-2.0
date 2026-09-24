@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  F",
+    "MMM"
+  ],
+  "key": {
+    "F": {
+      "item": "flansmod:smp_part_fuel_fuelcan"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_chassis_kart"
+  }
+}

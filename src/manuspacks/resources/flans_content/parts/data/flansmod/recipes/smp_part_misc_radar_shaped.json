@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "EM ",
+    "EMC",
+    "EM "
+  ],
+  "key": {
+    "C": {
+      "item": "flansmod:smp_part_misc_computer"
+    },
+    "E": {
+      "item": "flansmod:smp_part_misc_part_electronic"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_plastic"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_radar",
+    "count": 2
+  }
+}

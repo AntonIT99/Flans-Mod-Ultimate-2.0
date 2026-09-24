@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GAG"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:advcpu"
+    },
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "result": {
+    "item": "flansmod:mechailluminator"
+  }
+}

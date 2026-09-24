@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "flansmod:v4engine"
+    },
+    {
+      "item": "flansmod:v4engine"
+    }
+  ],
+  "result": {
+    "item": "flansmod:v8engine"
+  }
+}

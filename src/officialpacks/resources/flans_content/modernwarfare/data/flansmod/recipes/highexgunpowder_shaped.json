@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GFG",
+    "FGF",
+    "GFG"
+  ],
+  "key": {
+    "F": {
+      "item": "flansmodapocalypse:flansulphur"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "item": "flansmod:highexgunpowder",
+    "count": 2
+  }
+}

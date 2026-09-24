@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "PPP",
+    "MIM"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_misc_enginepiston"
+    },
+    "I": {
+      "item": "flansmod:smp_part_misc_engineignition"
+    },
+    "M": {
+      "item": "flansmod:smp_part_misc_enginemotorblock"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_engine_v6"
+  }
+}

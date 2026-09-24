@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " M ",
+    "M M",
+    " M "
+  ],
+  "key": {
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_part_mechanical",
+    "count": 4
+  }
+}

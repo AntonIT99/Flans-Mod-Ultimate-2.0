@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "FFF",
+    "PPP",
+    "FFF"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:potion"
+    },
+    "F": {
+      "item": "flansmod:fiberglass"
+    }
+  },
+  "result": {
+    "item": "flansmod:mwmedkit"
+  }
+}

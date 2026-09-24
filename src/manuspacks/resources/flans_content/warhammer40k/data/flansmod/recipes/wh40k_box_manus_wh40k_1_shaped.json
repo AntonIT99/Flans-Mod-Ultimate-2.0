@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "IRI",
+    "III"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:red_dye"
+    },
+    "I": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:wh40k_box_manus_wh40k_1"
+  }
+}

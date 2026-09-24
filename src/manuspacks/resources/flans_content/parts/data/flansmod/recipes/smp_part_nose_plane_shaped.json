@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " PP",
+    "P  ",
+    " PP"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_nose_plane"
+  }
+}

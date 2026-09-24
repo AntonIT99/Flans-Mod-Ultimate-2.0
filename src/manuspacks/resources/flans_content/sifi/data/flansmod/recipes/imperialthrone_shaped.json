@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " L ",
+    "MLM",
+    "MMM"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_plasteel"
+    }
+  },
+  "result": {
+    "item": "flansmod:imperialthrone"
+  }
+}

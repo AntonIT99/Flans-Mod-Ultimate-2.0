@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GMG",
+    "MMM",
+    "GMG"
+  ],
+  "key": {
+    "G": {
+      "item": "flansmod:smp_part_mat_block_gummi"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_wheel_apc"
+  }
+}

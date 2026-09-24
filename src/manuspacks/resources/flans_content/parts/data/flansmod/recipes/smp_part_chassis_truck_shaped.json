@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MM ",
+    "GSM",
+    " M "
+  ],
+  "key": {
+    "S": {
+      "item": "flansmod:smp_part_misc_seat_car"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_chassis_truck"
+  }
+}

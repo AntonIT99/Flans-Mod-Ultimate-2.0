@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SFS",
+    "TTT",
+    " B "
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:smp_part_misc_ammo_bombbody"
+    },
+    "S": {
+      "item": "minecraft:flint_and_steel"
+    },
+    "T": {
+      "item": "minecraft:tnt"
+    },
+    "F": {
+      "item": "flansmod:smp_part_misc_ammo_fuse"
+    }
+  },
+  "result": {
+    "item": "flansmod:bombussrofzab500",
+    "count": 4
+  }
+}

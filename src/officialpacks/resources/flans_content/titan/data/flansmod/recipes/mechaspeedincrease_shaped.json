@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I I",
+    "A A",
+    "I I"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:advhydraulics"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:mechaspeedincrease"
+  }
+}

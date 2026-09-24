@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " W ",
+    "SWS",
+    " W "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "W": {
+      "item": "flansmod:woodenwing"
+    }
+  },
+  "result": {
+    "item": "flansmod:triplanewing"
+  }
+}

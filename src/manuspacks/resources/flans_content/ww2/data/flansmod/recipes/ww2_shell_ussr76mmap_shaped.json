@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "G",
+    "S"
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    },
+    "S": {
+      "item": "flansmod:smp_part_misc_ammo_shell"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "item": "flansmod:ww2_shell_ussr76mmap",
+    "count": 3
+  }
+}

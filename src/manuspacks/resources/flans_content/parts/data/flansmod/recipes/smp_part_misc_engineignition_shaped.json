@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MMM",
+    "EEE",
+    "MMM"
+  ],
+  "key": {
+    "E": {
+      "item": "flansmod:smp_part_misc_part_electronic"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_engineignition"
+  }
+}

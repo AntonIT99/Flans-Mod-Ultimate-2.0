@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MMM",
+    "TTI",
+    "MMM"
+  ],
+  "key": {
+    "T": {
+      "item": "flansmod:smp_part_propeller_turbinejet"
+    },
+    "I": {
+      "item": "flansmod:smp_part_misc_engineignition"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_durasteel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_engine_milenginemk3"
+  }
+}

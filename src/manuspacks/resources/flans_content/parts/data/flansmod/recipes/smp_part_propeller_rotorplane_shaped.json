@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " P ",
+    " M ",
+    "P P"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_aluminium"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_propeller_rotorplane"
+  }
+}

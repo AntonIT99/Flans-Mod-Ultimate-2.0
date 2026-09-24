@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RRR",
+    "FFF",
+    "RRR"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:iron_ingot"
+    },
+    "F": {
+      "item": "flansmod:fiberglass"
+    }
+  },
+  "result": {
+    "item": "flansmod:flanmwmuzzlebreak"
+  }
+}

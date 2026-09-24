@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DDD",
+    "DHD",
+    "DDD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "H": {
+      "item": "minecraft:skeleton_skull"
+    }
+  },
+  "result": {
+    "item": "flansmod:flanmwcharmjamioflansight"
+  }
+}

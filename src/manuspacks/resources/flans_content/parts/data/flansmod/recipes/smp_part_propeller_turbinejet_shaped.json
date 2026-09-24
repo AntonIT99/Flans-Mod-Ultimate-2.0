@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AMA",
+    "MRM",
+    "AMA"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:smp_part_mat_armor_aluminium"
+    },
+    "R": {
+      "item": "flansmod:smp_part_propeller_rotorturbine"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_aluminium"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_propeller_turbinejet"
+  }
+}

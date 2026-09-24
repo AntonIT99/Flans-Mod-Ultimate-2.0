@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " G ",
+    "GBG",
+    " S "
+  ],
+  "key": {
+    "B": {
+      "item": "flansmod:smp_part_mat_block_titan"
+    },
+    "S": {
+      "item": "flansmod:smp_part_misc_ammo_shell"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "item": "flansmod:shellnato120mmdm11he",
+    "count": 5
+  }
+}

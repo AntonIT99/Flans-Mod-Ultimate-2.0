@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    " D ",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    },
+    "D": {
+      "item": "flansmod:smp_part_misc_dropmechanism"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_bay_bombbay"
+  }
+}

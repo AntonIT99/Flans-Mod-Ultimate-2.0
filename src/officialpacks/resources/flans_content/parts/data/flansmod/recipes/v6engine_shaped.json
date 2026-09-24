@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PIP",
+    "PIP",
+    "PIP"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:enginepiston"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:v6engine"
+  }
+}

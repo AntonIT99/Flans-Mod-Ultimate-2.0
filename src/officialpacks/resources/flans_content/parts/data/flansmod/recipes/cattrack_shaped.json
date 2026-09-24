@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "PWP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:cattrackpiece"
+    },
+    "W": {
+      "item": "flansmod:wheel"
+    }
+  },
+  "result": {
+    "item": "flansmod:cattrack"
+  }
+}

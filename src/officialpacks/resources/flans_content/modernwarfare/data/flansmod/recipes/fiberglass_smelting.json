@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "flansmod:clayandsand"
+  },
+  "result": "flansmod:fiberglass",
+  "experience": 0.0,
+  "cookingtime": 200
+}

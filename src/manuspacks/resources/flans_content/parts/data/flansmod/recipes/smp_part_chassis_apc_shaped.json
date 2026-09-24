@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AAA",
+    "MSM",
+    " M "
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:smp_part_mat_armor_steel"
+    },
+    "S": {
+      "item": "flansmod:smp_part_misc_seat_car"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_chassis_apc"
+  }
+}

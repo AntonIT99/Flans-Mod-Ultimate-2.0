@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " M ",
+    " M ",
+    "PMP"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_steel"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_steel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_misc_ammo_missilebody",
+    "count": 4
+  }
+}

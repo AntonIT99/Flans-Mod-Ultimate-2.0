@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IAI",
+    "   ",
+    "IAI"
+  ],
+  "key": {
+    "A": {
+      "item": "flansmod:advhydraulics"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:mechaspeeddecrease"
+  }
+}

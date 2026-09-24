@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPB",
+    "II "
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:iron_block"
+    },
+    "B": {
+      "item": "flansmod:tankbarrel"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "flansmod:heavytankturret"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MPM",
+    "PAP",
+    "MPM"
+  ],
+  "key": {
+    "P": {
+      "item": "flansmod:smp_part_mat_plate_titan"
+    },
+    "A": {
+      "item": "flansmod:smp_part_mat_block_aluminium"
+    },
+    "M": {
+      "item": "flansmod:smp_part_mat_block_titan"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_propeller_rotorturbine"
+  }
+}

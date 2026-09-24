@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "FF"
+  ],
+  "key": {
+    "F": {
+      "item": "flansmod:smp_part_fuel_fuelbarrel"
+    }
+  },
+  "result": {
+    "item": "flansmod:smp_part_fuel_fuelcan",
+    "count": 8
+  }
+}

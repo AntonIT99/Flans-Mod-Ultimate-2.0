@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "C C",
+    "C C",
+    " P "
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "C": {
+      "item": "flansmod:canister"
+    }
+  },
+  "result": {
+    "item": "flansmod:mechafloat"
+  }
+}
