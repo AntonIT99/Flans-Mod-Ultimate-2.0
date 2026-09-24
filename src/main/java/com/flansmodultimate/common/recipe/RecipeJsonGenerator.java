@@ -2,13 +2,10 @@ package com.flansmodultimate.common.recipe;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.PartType;
-import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.util.FileUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.AccessLevel;
@@ -28,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RecipeJsonGenerator
@@ -37,81 +33,6 @@ public final class RecipeJsonGenerator
     private static final String SHAPED_SUFFIX = "_shaped";
     private static final String SHAPELESS_SUFFIX = "_shapeless";
     private static final String SMELTING_SUFFIX = "_smelting";
-
-    /** Copies 1.20.1 recipe data into the 1.21.1 directory without changing the old pack files. */
-    public static void migrateLegacyRecipes(Path dataFolder)
-    {
-        Path oldFolder = dataFolder.resolve("recipes");
-        if (!Files.isDirectory(oldFolder))
-            return;
-
-        try (Stream<Path> paths = Files.walk(oldFolder))
-        {
-            for (Path oldFile : paths.filter(Files::isRegularFile)
-                .filter(path -> path.toString().endsWith(".json")).toList())
-            {
-                Path newFile = dataFolder.resolve("recipe").resolve(oldFolder.relativize(oldFile));
-                if (Files.exists(newFile))
-                    continue;
-
-                try
-                {
-                    JsonElement parsed = JsonParser.parseString(Files.readString(oldFile, StandardCharsets.UTF_8));
-                    if (!parsed.isJsonObject())
-                        continue;
-                    JsonObject recipe = parsed.getAsJsonObject();
-                    String type = recipe.has("type") ? recipe.get("type").getAsString() : "";
-                    JsonElement result = recipe.get("result");
-                    if ((type.equals("minecraft:smelting") || type.equals("minecraft:blasting")
-                        || type.equals("minecraft:smoking") || type.equals("minecraft:campfire_cooking"))
-                        && result != null && result.isJsonPrimitive() && result.getAsJsonPrimitive().isString())
-                    {
-                        JsonObject migrated = new JsonObject();
-                        migrated.add("id", result.deepCopy());
-                        recipe.add("result", migrated);
-                    }
-                    else if ((type.equals("minecraft:crafting_shaped") || type.equals("minecraft:crafting_shapeless"))
-                        && result != null && result.isJsonObject())
-                    {
-                        JsonObject output = result.getAsJsonObject();
-                        if (output.has("item") && !output.has("id"))
-                        {
-                            output.add("id", output.remove("item"));
-                        }
-                    }
-
-                    Files.createDirectories(newFile.getParent());
-                    Files.writeString(newFile, GSON.toJson(recipe), StandardCharsets.UTF_8);
-                }
-                catch (RuntimeException | IOException e)
-                {
-                    FlansMod.log.warn("Could not migrate legacy recipe {}", oldFile, e);
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.warn("Could not inspect legacy recipes in {}", oldFolder, e);
-        }
-    }
-
-    public static boolean hasUnmigratedLegacyRecipes(Path dataFolder)
-    {
-        Path oldFolder = dataFolder.resolve("recipes");
-        if (!Files.isDirectory(oldFolder))
-            return false;
-        try (Stream<Path> paths = Files.walk(oldFolder))
-        {
-            return paths.filter(Files::isRegularFile)
-                .filter(path -> path.toString().endsWith(".json"))
-                .anyMatch(path -> !Files.exists(dataFolder.resolve("recipe").resolve(oldFolder.relativize(path))));
-        }
-        catch (IOException e)
-        {
-            FlansMod.log.warn("Could not inspect legacy recipes in {}", oldFolder, e);
-            return false;
-        }
-    }
 
     public static Set<String> getRecipeFileNames(InfoType config)
     {
@@ -150,27 +71,37 @@ public final class RecipeJsonGenerator
         return false;
     }
 
-    public static void writeRecipes(InfoType config, Path outputFolder)
+    public static void writeRecipes(InfoType config, Path dataFolder)
     {
         if (!config.getType().isHasItem() || (!config.hasCraftingRecipe() && !config.hasSmeltingRecipe()))
             return;
 
-        if (!FileUtils.tryCreateDirectories(outputFolder))
+        Path legacyFolder = RecipeDataCompatibility.Format.LEGACY.resolve(dataFolder);
+        Path modernFolder = RecipeDataCompatibility.Format.MODERN.resolve(dataFolder);
+        if (!FileUtils.tryCreateDirectories(legacyFolder) || !FileUtils.tryCreateDirectories(modernFolder))
             return;
 
-        deleteGeneratedRecipes(config, outputFolder);
+        deleteGeneratedRecipes(config, legacyFolder);
+        deleteGeneratedRecipes(config, modernFolder);
 
         if (config.hasCraftingRecipe())
         {
             JsonObject recipe = config.isShapeless() ? createShapelessRecipe(config) : createShapedRecipe(config);
-            writeRecipe(outputFolder.resolve(getCraftingFileName(config)), recipe);
+            writeBothVersions(config, dataFolder, getCraftingFileName(config), recipe);
         }
 
         if (config.hasSmeltingRecipe())
         {
             JsonObject recipe = createSmeltingRecipe(config);
-            writeRecipe(outputFolder.resolve(getSmeltingFileName(config)), recipe);
+            writeBothVersions(config, dataFolder, getSmeltingFileName(config), recipe);
         }
+    }
+
+    private static void writeBothVersions(InfoType config, Path dataFolder, String fileName, JsonObject recipe)
+    {
+        for (RecipeDataCompatibility.Format format : RecipeDataCompatibility.Format.values())
+            writeRecipe(format.resolve(dataFolder).resolve(fileName),
+                RecipeDataCompatibility.formatGenerated(recipe, config, format));
     }
 
     private static JsonObject createShapedRecipe(InfoType config)
@@ -302,12 +233,7 @@ public final class RecipeJsonGenerator
 
     static int maxRecipeStackSize(InfoType config)
     {
-        if (config instanceof ShootableType shootable)
-            return Math.max(1, shootable.getMaxStackSize());
-        if (config instanceof PartType part)
-            return part.getCategory() == PartType.Category.FUEL && part.getFuel() > 0
-                ? 1 : Math.max(1, part.getStackSize());
-        return config.getType().isHasBlock() ? 64 : 1;
+        return RecipeDataCompatibility.maxRecipeStackSize(config);
     }
 
     private static Map<Character, String> parseShapedRecipeKeys(InfoType config)

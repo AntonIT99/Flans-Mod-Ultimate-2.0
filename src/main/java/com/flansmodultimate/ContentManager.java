@@ -3,6 +3,7 @@ package com.flansmodultimate;
 import com.flansmodultimate.common.block.BlockFactory;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.common.recipe.RecipeDataCompatibility;
 import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.types.ArmorBoxType;
@@ -1105,7 +1106,7 @@ public class ContentManager
 
         FileSystem fs = FileUtils.createFileSystem(provider);
         boolean missingData = isMissingGeneratedRecipeFiles(provider, fs)
-            || RecipeJsonGenerator.hasUnmigratedLegacyRecipes(provider.getDataPath(fs))
+            || RecipeDataCompatibility.hasMissingCounterparts(provider.getDataPath(fs).getParent())
             || RecipeJsonGenerator.hasOversizedGeneratedRecipeOutputs(listItems(provider), provider.getDataPath(fs));
         FileUtils.closeFileSystem(fs, provider);
         return missingData;
@@ -1178,11 +1179,10 @@ public class ContentManager
 
     private static void createRecipeJsonFiles(IContentProvider provider)
     {
-        RecipeJsonGenerator.migrateLegacyRecipes(provider.getDataPath());
-        Path recipeFolderPath = provider.getDataPath().resolve(FOLDER_RECIPES);
+        RecipeDataCompatibility.fillMissingCounterparts(provider.getDataPath().getParent());
         for (InfoType config : listItems(provider))
         {
-            RecipeJsonGenerator.writeRecipes(config, recipeFolderPath);
+            RecipeJsonGenerator.writeRecipes(config, provider.getDataPath());
         }
     }
 
