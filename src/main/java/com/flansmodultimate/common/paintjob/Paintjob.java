@@ -3,6 +3,7 @@ package com.flansmodultimate.common.paintjob;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Unmodifiable;

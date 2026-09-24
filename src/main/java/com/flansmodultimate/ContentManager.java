@@ -24,6 +24,8 @@ import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ContentLoadingConfig;
+import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.AliasFileManager;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;

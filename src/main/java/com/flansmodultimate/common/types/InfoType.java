@@ -1,12 +1,12 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.api.IInfoType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.ModUtils;

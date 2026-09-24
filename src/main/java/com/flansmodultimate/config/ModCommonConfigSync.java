@@ -1,10 +1,10 @@
 package com.flansmodultimate.config;
 
-import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketCommonConfigValues;
 import com.flansmodultimate.network.client.PacketSyncCommonConfig;
 import com.flansmodultimate.network.server.PacketSetCommonConfigValue;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;

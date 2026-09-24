@@ -4,6 +4,7 @@ import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.StringOrNumberListMapAdapter;

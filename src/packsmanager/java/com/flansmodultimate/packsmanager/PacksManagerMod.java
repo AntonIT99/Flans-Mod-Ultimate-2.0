@@ -1,9 +1,9 @@
 package com.flansmodultimate.packsmanager;
 
-import com.flansmodultimate.packsmanager.platform.PlatformEnvironment;
-import com.flansmodultimate.packsmanager.platform.PlatformPaths;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
+import com.flansmodultimate.packsmanager.platform.PlatformEnvironment;
+import com.flansmodultimate.packsmanager.platform.PlatformPaths;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;

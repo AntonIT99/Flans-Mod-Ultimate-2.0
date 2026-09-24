@@ -4,6 +4,7 @@ import com.flansmodultimate.platform.PlatformPaths;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FileUtils;
 import lombok.AccessLevel;
 import lombok.Getter;

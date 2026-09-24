@@ -1,7 +1,5 @@
 package com.flansmodultimate.config;
 
-import com.flansmodultimate.platform.PlatformEnvironment;
-import com.flansmodultimate.platform.PlatformPaths;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
@@ -13,6 +11,8 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.PlatformPaths;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.nio.file.Files;

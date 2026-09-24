@@ -1,7 +1,7 @@
 package com.flansmod.client.tmt;
 
-import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.platform.PlatformPaths;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;

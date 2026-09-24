@@ -1,9 +1,9 @@
 package com.flansmodultimate.config;
 
-import com.flansmodultimate.platform.PlatformPaths;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.platform.PlatformPaths;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -11,8 +11,8 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModApocalypseConfig

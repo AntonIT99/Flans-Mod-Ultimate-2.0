@@ -1,8 +1,8 @@
 package com.flansmodultimate;
 
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

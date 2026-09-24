@@ -1,9 +1,6 @@
 package com.flansmodultimate;
 
-import com.flansmodultimate.platform.PlatformEnvironment;
-import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.common.recipe.GunpowderRecipeCondition;
-
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.block.PaintjobTableBlock;
@@ -42,24 +39,20 @@ import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
 import com.flansmodultimate.util.ModLogFile;
+import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.PlatformPaths;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
 import lombok.Getter;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import net.neoforged.neoforge.registries.DeferredHolder;
+
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
@@ -67,19 +60,16 @@ import org.slf4j.Logger;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -103,7 +93,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 @Mod(FlansMod.MOD_ID)
@@ -268,6 +257,11 @@ public class FlansMod
     public static final Supplier<? extends SimpleParticleType> smokeGrenadeParticle = particleRegistry.register("smoke_grenade", () -> new SimpleParticleType(false));
 
     // Entities
+    /**
+     * Seats and wheels snap to their parent on both sides every tick, so their own movement
+     * packets carry nothing a client uses. Synced data such as seat aim is still sent as soon
+     * as it changes, independently of this interval.
+     */
     private static final int PROXY_UPDATE_INTERVAL = 20;
     public static final Supplier<? extends EntityType<Bullet>> bulletEntity = entityRegistry.register("bullet", () -> EntityType.Builder.<Bullet>of(Bullet::new, MobCategory.MISC)
         .sized(Shootable.DEFAULT_HITBOX_SIZE, Shootable.DEFAULT_HITBOX_SIZE)
@@ -486,7 +480,6 @@ public class FlansMod
         UNSUPPORTED
     }
 
-    @SuppressWarnings("unchecked") // Java cannot create a generic ResourceKey varargs array directly.
     private static void registerCreativeModeTabs()
     {
         ResourceKey<CreativeModeTab> creativeTabMainKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(MOD_ID, CreativeTabs.TAB_GENERAL));
@@ -596,7 +589,7 @@ public class FlansMod
     }
 
     @Unmodifiable
-    public static List<DeferredHolder<Item, ? extends Item>> getItems(Set<EnumType> types)
+    public static List<RegistryObject<Item>> getItems(Set<EnumType> types)
     {
         return types.stream().map(items::get).flatMap(List::stream).toList();
     }
