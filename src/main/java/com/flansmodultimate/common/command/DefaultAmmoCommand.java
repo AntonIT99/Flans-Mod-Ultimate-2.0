@@ -111,7 +111,7 @@ public final class DefaultAmmoCommand
         for (InteractionHand hand : InteractionHand.values())
         {
             ItemStack stack = player.getItemInHand(hand);
-            AmmoSource source = getHeldSource(stack, player.registryAccess());
+            AmmoSource source = getHeldSource(stack, player.level().registryAccess());
             if (source != null)
                 sources.add(source);
         }

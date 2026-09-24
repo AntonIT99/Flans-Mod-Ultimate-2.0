@@ -1,8 +1,9 @@
 package com.flansmodultimate.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,10 +17,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
 import java.util.List;
 

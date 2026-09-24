@@ -1,7 +1,5 @@
 package com.flansmodultimate;
 
-import com.flansmodultimate.platform.PlatformEnvironment;
-import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.common.block.BlockFactory;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;

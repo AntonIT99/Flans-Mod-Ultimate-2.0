@@ -7,7 +7,6 @@ import com.flansmodultimate.network.server.PacketSetCommonConfigValue;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,7 +21,7 @@ public final class ModCommonConfigSync
         if (PlatformEnvironment.isClient())
             return;
 
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        MinecraftServer server = PlatformEnvironment.currentServer();
         if (server == null)
             return;
 
@@ -44,7 +43,7 @@ public final class ModCommonConfigSync
      */
     public static void resyncCommonConfigValuesIfServer()
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        MinecraftServer server = PlatformEnvironment.currentServer();
         if (server == null)
             return;
 

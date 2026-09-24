@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.block;
 
-import com.mojang.serialization.MapCodec;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
+import com.mojang.serialization.MapCodec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

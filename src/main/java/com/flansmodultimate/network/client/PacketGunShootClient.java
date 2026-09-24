@@ -3,7 +3,6 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
-import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import com.flansmodultimate.network.PacketBuffer;
@@ -49,7 +48,7 @@ public class PacketGunShootClient implements IClientPacket
         Player shootingPlayer = level.getPlayerByUUID(playerUUID);
         if (shootingPlayer != null)
         {
-            PlayerData data = PlayerData.getInstance(shootingPlayer, LogicalSide.CLIENT);
+            PlayerData data = PlayerData.getInstance(shootingPlayer);
             data.setShooting(hand, isShooting);
         }
     }

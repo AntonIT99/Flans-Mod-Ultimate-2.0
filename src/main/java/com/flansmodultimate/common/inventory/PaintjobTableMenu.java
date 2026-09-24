@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.network.PacketBuffer;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -35,6 +35,8 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         super(FlansMod.paintjobTableMenu.get(), id);
         this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
 
+        // The two working slots belong to this menu, not to the block, so several players
+        // can paint at the same table at once without seeing or taking each other's items
         addSlot(new Slot(workspace, 0, 187, GUI_TOP_H + 17));
         addSlot(new Slot(workspace, 1, 187, GUI_TOP_H + 71));
 
@@ -53,7 +55,7 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         }
     }
 
-    public static PaintjobTableMenu createFromNetwork(int id, Inventory playerInv, RegistryFriendlyByteBuf buf)
+    public static PaintjobTableMenu createFromNetwork(int id, Inventory playerInv, PacketBuffer buf)
     {
         return new PaintjobTableMenu(id, playerInv, buf.readBlockPos());
     }

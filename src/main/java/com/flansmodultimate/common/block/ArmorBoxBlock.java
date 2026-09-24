@@ -3,6 +3,7 @@ package com.flansmodultimate.common.block;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -83,7 +84,7 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
-            serverPlayer.openMenu(provider, buffer -> buffer.writeBlockPos(pos));
+            MenuPlatform.open(serverPlayer, provider, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

@@ -9,6 +9,7 @@ import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import com.mojang.blaze3d.platform.Lighting;
@@ -128,7 +129,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         hoveredStack = ItemStack.EMPTY;
         clampSelection();
         updateButtons();

@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.teams;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
@@ -13,9 +12,10 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketPlayerClassSkins;
 import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
+import com.flansmodultimate.platform.world.SavedDataPlatform;
 import lombok.Getter;
 import lombok.Setter;
-import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -232,7 +232,7 @@ public final class TeamsManager
             return;
 
         this.server = server;
-        savedData = server.overworld().getDataStorage().computeIfAbsent(TeamsSavedData.FACTORY, TeamsSavedData.ID);
+        savedData = SavedDataPlatform.computeIfAbsent(server.overworld(), TeamsSavedData.ID, TeamsSavedData::new, TeamsSavedData::load);
         loadRuntime(savedData.runtime);
         if (roundRunning)
             updateActiveChunkTickets(true);

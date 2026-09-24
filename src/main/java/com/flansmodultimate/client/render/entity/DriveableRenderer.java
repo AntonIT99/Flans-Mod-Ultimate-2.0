@@ -1,17 +1,16 @@
 package com.flansmodultimate.client.render.entity;
 
-import com.flansmod.client.model.TrackLinkAnimation;
-import com.flansmod.client.model.TrackLinkLod;
-import com.flansmod.client.model.ModelVehicle;
-
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMecha;
 import com.flansmod.client.model.ModelMechaTool;
-import com.flansmodultimate.FlansMod;
+import com.flansmod.client.model.ModelVehicle;
+import com.flansmod.client.model.TrackLinkAnimation;
+import com.flansmod.client.model.TrackLinkLod;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
@@ -293,7 +292,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     {
         DriveableType type = driveable.getConfigType();
         if (type == null)
-            return FlansMod.defaultFallbackTexture;
+            return FlansMod.FALLBACK_TEXTURE;
 
         Paintjob paintjob = type.getPaintjob(driveable.getPaintjobId());
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();

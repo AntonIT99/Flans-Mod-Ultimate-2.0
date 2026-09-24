@@ -10,7 +10,6 @@ import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +34,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 /** Common, server-authoritative placement item for every driveable family. */
 public abstract class DriveableItem<T extends DriveableType, D extends Driveable> extends Item implements IPaintableItem<T>, ICustomRendereredItem<T>

@@ -12,7 +12,6 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.JomlUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
@@ -143,25 +142,20 @@ public class PlayerData
     @NotNull
     public static PlayerData getInstance(@NotNull Player player)
     {
-        return getInstance(player.getUUID(), player.level().isClientSide ? LogicalSide.CLIENT : LogicalSide.SERVER);
+        return getInstance(player.getUUID(), player.level().isClientSide);
     }
 
+    /** Server-side data of the given player. */
     @NotNull
     public static PlayerData getInstance(UUID playerId)
     {
-        return getInstance(playerId, LogicalSide.SERVER);
+        return getInstance(playerId, false);
     }
 
     @NotNull
-    public static PlayerData getInstance(@NotNull Player player, LogicalSide side)
+    private static PlayerData getInstance(UUID playerId, boolean clientSide)
     {
-        return getInstance(player.getUUID(), side);
-    }
-
-    @NotNull
-    public static PlayerData getInstance(UUID playerId, LogicalSide side)
-    {
-        if (side.isClient())
+        if (clientSide)
             return clientSideData.computeIfAbsent(playerId, PlayerData::new);
         else
             return serverSideData.computeIfAbsent(playerId, PlayerData::new);

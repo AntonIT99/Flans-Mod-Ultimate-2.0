@@ -1,6 +1,5 @@
 package com.flansmodultimate.config;
 
-import com.flansmodultimate.platform.PlatformPaths;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;

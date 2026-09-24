@@ -1,5 +1,8 @@
 package com.flansmodultimate.client.input;
 
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import org.lwjgl.glfw.GLFW;
 
 import com.flansmod.client.model.GunAnimations;
@@ -32,10 +35,6 @@ import com.flansmodultimate.network.server.PacketTeamsAction;
 import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.settings.IKeyConflictContext;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.KeyMapping;
@@ -663,7 +662,7 @@ public final class KeyInputHandler
     {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         InteractionHand hand = findGunHand(player, (gunItem, stack) -> !gunItem.getConfigType().getAmmoTypes().isEmpty());
-        if (hand != null && PlayerData.getInstance(player, LogicalSide.CLIENT).getShootTime(hand) <= 0F)
+        if (hand != null && PlayerData.getInstance(player).getShootTime(hand) <= 0F)
             Minecraft.getInstance().setScreen(new GunAmmoSelectScreen(hand));
     }
 
@@ -672,7 +671,7 @@ public final class KeyInputHandler
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         InteractionHand hand = findGunHand(player,
             (gunItem, stack) -> gunItem.getConfigType().canToggleSecondaryFire(stack));
-        if (hand != null && PlayerData.getInstance(player, LogicalSide.CLIENT).getShootTime(hand) <= 0F)
+        if (hand != null && PlayerData.getInstance(player).getShootTime(hand) <= 0F)
             PacketHandler.sendToServer(new PacketGunSecondaryMode(hand));
     }
 
@@ -706,7 +705,7 @@ public final class KeyInputHandler
     private static void doReload()
     {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+        PlayerData data = PlayerData.getInstance(player);
         ItemStack mainHandStack = player.getMainHandItem();
         ItemStack offhandStack = player.getOffhandItem();
 

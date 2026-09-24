@@ -7,8 +7,6 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.NoArgsConstructor;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 

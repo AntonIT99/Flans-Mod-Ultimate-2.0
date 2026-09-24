@@ -17,12 +17,11 @@ import com.flansmodultimate.apocalyse.common.entity.WorldgenSpawnMarker;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseChunkFeature;
 import lombok.NoArgsConstructor;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -41,7 +40,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.MapColor;
@@ -51,8 +49,7 @@ import net.minecraft.world.level.material.PushReaction;
 public final class ApocalypseContent
 {
     // Resource Locations
-    public static final ResourceLocation survivorTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/entity/survivor.png");
-    public static final ResourceLocation SURVIVOR_TEXTURE = survivorTexture;
+    public static final ResourceLocation SURVIVOR_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/entity/survivor.png");
     public static final ResourceKey<Level> APOCALYPSE_LEVEL = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "apocalypse"));
 
     // Biomes of the wasteland. Supplied by the built-in apocalypse datapack; worldgen reads
@@ -70,13 +67,13 @@ public final class ApocalypseContent
     }
 
     // Registries
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(BuiltInRegistries.ITEM, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<Fluid> fluidRegistry = DeferredRegister.create(BuiltInRegistries.FLUID, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(Registries.BLOCK, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(Registries.ITEM, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Fluid> fluidRegistry = DeferredRegister.create(Registries.FLUID, FlansMod.APOCALYPSE_ID);
     private static final DeferredRegister<FluidType> fluidTypeRegistry = DeferredRegister.create(NeoForgeRegistries.Keys.FLUID_TYPES, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, FlansMod.APOCALYPSE_ID);
-    private static final DeferredRegister<Feature<?>> featureRegistry = DeferredRegister.create(BuiltInRegistries.FEATURE, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(Registries.ENTITY_TYPE, FlansMod.APOCALYPSE_ID);
+    private static final DeferredRegister<Feature<?>> featureRegistry = DeferredRegister.create(Registries.FEATURE, FlansMod.APOCALYPSE_ID);
 
     // Fluid Types
     public static final DeferredHolder<FluidType, FluidType> sulphuricAcidFluidType = fluidTypeRegistry.register("sulphuric_acid", () ->
@@ -145,17 +142,13 @@ public final class ApocalypseContent
         .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "teleporter").toString())
     );
     public static final DeferredHolder<EntityType<?>, EntityType<WorldgenSpawnMarker>> worldgenSpawnMarker = entityRegistry.register("worldgen_spawn_marker", () -> EntityType.Builder.<WorldgenSpawnMarker>of(WorldgenSpawnMarker::new, MobCategory.MISC)
-        .sized(0.0F, 0.0F).clientTrackingRange(0).updateInterval(20).noSummon().fireImmune()
-        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "worldgen_spawn_marker").toString()));
-    public static final DeferredHolder<EntityType<?>, EntityType<InventoryHolderEntity>> inventoryHolder = entityRegistry.register("fakeplayer", () -> EntityType.Builder.of(InventoryHolderEntity::new, MobCategory.CREATURE)
-        .sized(0.6F, 1.95F).clientTrackingRange(80).updateInterval(3)
-        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "fakeplayer").toString()));
-    public static final DeferredHolder<EntityType<?>, EntityType<FlyByPlaneEntity>> flyByPlane = entityRegistry.register("flybyplane", () -> EntityType.Builder.<FlyByPlaneEntity>of(FlyByPlaneEntity::new, MobCategory.MISC)
-        .sized(3F, 2F).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "flybyplane").toString()));
-    public static final DeferredHolder<EntityType<?>, EntityType<AiMechaEntity>> aiMecha = entityRegistry.register("aimecha", () -> EntityType.Builder.<AiMechaEntity>of(AiMechaEntity::new, MobCategory.MISC)
-        .sized(2F, 4F).clientTrackingRange(128).updateInterval(1).setShouldReceiveVelocityUpdates(true)
-        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "aimecha").toString()));
+        .sized(0.0F, 0.0F)
+        .clientTrackingRange(0)
+        .updateInterval(20)
+        .noSummon()
+        .fireImmune()
+        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "worldgen_spawn_marker").toString())
+    );
     public static final DeferredHolder<EntityType<?>, EntityType<NukeDropEntity>> nukeDrop = entityRegistry.register("nukedrop", () -> EntityType.Builder.of(NukeDropEntity::new, MobCategory.MISC)
         .sized(1.0F, 1.0F)
         .clientTrackingRange(256)
@@ -173,6 +166,28 @@ public final class ApocalypseContent
         .clientTrackingRange(128)
         .updateInterval(2)
         .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "autodrone").toString())
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<InventoryHolderEntity>> inventoryHolder = entityRegistry.register("fakeplayer", () -> EntityType.Builder.of(InventoryHolderEntity::new, MobCategory.CREATURE)
+        .sized(0.6F, 1.95F)
+        .clientTrackingRange(80)
+        .updateInterval(3)
+        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "fakeplayer").toString())
+    );
+    // The two autonomous driveables mirror the plane and mecha entity types they extend, so
+    // they are tracked and sized exactly like the piloted ones.
+    public static final DeferredHolder<EntityType<?>, EntityType<FlyByPlaneEntity>> flyByPlane = entityRegistry.register("flybyplane", () -> EntityType.Builder.<FlyByPlaneEntity>of(FlyByPlaneEntity::new, MobCategory.MISC)
+        .sized(3F, 2F)
+        .clientTrackingRange(128)
+        .updateInterval(1)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "flybyplane").toString())
+    );
+    public static final DeferredHolder<EntityType<?>, EntityType<AiMechaEntity>> aiMecha = entityRegistry.register("aimecha", () -> EntityType.Builder.<AiMechaEntity>of(AiMechaEntity::new, MobCategory.MISC)
+        .sized(2F, 4F)
+        .clientTrackingRange(128)
+        .updateInterval(1)
+        .setShouldReceiveVelocityUpdates(true)
+        .build(ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "aimecha").toString())
     );
     public static final DeferredHolder<EntityType<?>, EntityType<SkullBossEntity>> skullBoss = entityRegistry.register("skullboss", () -> EntityType.Builder.of(SkullBossEntity::new, MobCategory.MONSTER)
         .sized(8.0F, 8.0F)

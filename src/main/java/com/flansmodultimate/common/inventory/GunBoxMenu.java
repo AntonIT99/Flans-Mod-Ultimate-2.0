@@ -2,11 +2,11 @@ package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.GunBoxBlock;
+import com.flansmodultimate.network.PacketBuffer;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -53,7 +53,7 @@ public class GunBoxMenu extends AbstractContainerMenu
         }
     }
 
-    public static GunBoxMenu createFromNetwork(int id, Inventory playerInv, RegistryFriendlyByteBuf buf)
+    public static GunBoxMenu createFromNetwork(int id, Inventory playerInv, PacketBuffer buf)
     {
         Level level = playerInv.player.level();
         BlockPos pos = buf.readBlockPos();

@@ -13,7 +13,7 @@ import net.minecraft.world.entity.Entity;
 /** Renderer for logical seat/wheel proxies whose visuals belong to the root model. */
 public final class InvisibleEntityRenderer<T extends Entity> extends EntityRenderer<T>
 {
-    private static final ResourceLocation EMPTY = FlansMod.defaultFallbackTexture;
+    private static final ResourceLocation EMPTY = FlansMod.FALLBACK_TEXTURE;
 
     public InvisibleEntityRenderer(EntityRendererProvider.Context context)
     {

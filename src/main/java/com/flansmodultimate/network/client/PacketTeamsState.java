@@ -8,7 +8,7 @@ import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.network.PacketIO;
+import com.flansmodultimate.platform.network.PacketIO;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 

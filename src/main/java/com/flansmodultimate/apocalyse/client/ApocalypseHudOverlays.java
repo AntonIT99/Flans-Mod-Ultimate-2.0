@@ -2,10 +2,10 @@ package com.flansmodultimate.apocalyse.client;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.client.gui.LayeredDraw;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 

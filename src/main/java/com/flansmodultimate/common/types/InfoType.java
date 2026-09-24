@@ -17,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
@@ -24,9 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -586,7 +585,7 @@ public abstract class InfoType implements IInfoType
     @OnlyIn(Dist.CLIENT)
     public static ResourceLocation loadTexture(String textureName, InfoType type)
     {
-        ResourceLocation texture = FlansMod.defaultFallbackTexture;
+        ResourceLocation texture = FlansMod.FALLBACK_TEXTURE;
         if (StringUtils.isNotBlank(textureName))
         {
             DynamicReference ref;

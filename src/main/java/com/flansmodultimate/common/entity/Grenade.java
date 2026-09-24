@@ -14,17 +14,17 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GrenadeProximityEvent;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlashBang;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.neoforged.neoforge.common.NeoForge;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -33,7 +33,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -202,7 +201,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     }
 
     @Override
-    public void writeSpawnData(RegistryFriendlyByteBuf buf)
+    public void writeSpawnData(PacketBuffer buf)
     {
         super.writeSpawnData(buf);
         buf.writeInt(Optional.ofNullable(thrower).map(Entity::getId).orElse(0));
@@ -211,7 +210,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     }
 
     @Override
-    public void readSpawnData(RegistryFriendlyByteBuf buf)
+    public void readSpawnData(PacketBuffer buf)
     {
         try
         {
@@ -478,7 +477,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity)
     {
         GrenadeProximityEvent event = new GrenadeProximityEvent(this, entity);
-        NeoForge.EVENT_BUS.post(event);
+        PlatformEvents.post(event);
         if (event.isCanceled())
             return false;
 

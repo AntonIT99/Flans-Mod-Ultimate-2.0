@@ -10,7 +10,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.LoadoutPool;
 import com.flansmodultimate.common.types.RewardBox;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.network.PacketIO;
+import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

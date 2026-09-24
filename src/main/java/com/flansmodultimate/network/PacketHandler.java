@@ -1,6 +1,5 @@
 package com.flansmodultimate.network;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.client.PacketAllowDebug;
 import com.flansmodultimate.network.client.PacketApocalypseCountdown;
 import com.flansmodultimate.network.client.PacketBaseEditState;
@@ -63,58 +62,52 @@ import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
 import com.flansmodultimate.network.server.PacketSetCommonConfigValue;
 import com.flansmodultimate.network.server.PacketTeamsAction;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.network.NetworkPlatform;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
- * NeoForge network bridge. Gameplay packets keep their loader-neutral {@link IPacket}
- * contract and are transported through one payload envelope per direction.
+ * Loader-neutral packet registry and send API. Gameplay packets implement {@link IPacket};
+ * the loader-specific transport lives in {@link NetworkPlatform}.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PacketHandler
 {
-    public static final String PROTOCOL = "8";
-
     private static final List<Class<? extends IClientPacket>> CLIENT_PACKET_TYPES = new ArrayList<>();
     private static final List<Class<? extends IServerPacket>> SERVER_PACKET_TYPES = new ArrayList<>();
-    private static final Map<Class<? extends IClientPacket>, Integer> CLIENT_PACKET_IDS = new HashMap<>();
-    private static final Map<Class<? extends IServerPacket>, Integer> SERVER_PACKET_IDS = new HashMap<>();
     private static boolean prepared;
 
-    private PacketHandler()
-    {
-    }
-
-    public static void register(RegisterPayloadHandlersEvent event)
+    /** Server-to-client packet types, sorted by class name so every side derives the same network order. */
+    public static synchronized List<Class<? extends IClientPacket>> clientPacketTypes()
     {
         preparePacketTypes();
-        PayloadRegistrar registrar = event.registrar(PROTOCOL);
-        registrar.playToClient(ClientboundPayload.TYPE, ClientboundPayload.STREAM_CODEC, PacketHandler::handleClientPayload);
-        registrar.playToServer(ServerboundPayload.TYPE, ServerboundPayload.STREAM_CODEC, PacketHandler::handleServerPayload);
+        return Collections.unmodifiableList(CLIENT_PACKET_TYPES);
     }
 
-    private static synchronized void preparePacketTypes()
+    /** Client-to-server packet types, sorted by class name so every side derives the same network order. */
+    public static synchronized List<Class<? extends IServerPacket>> serverPacketTypes()
+    {
+        preparePacketTypes();
+        return Collections.unmodifiableList(SERVER_PACKET_TYPES);
+    }
+
+    private static void preparePacketTypes()
     {
         if (prepared)
             return;
@@ -147,10 +140,6 @@ public final class PacketHandler
         Comparator<Class<?>> byName = Comparator.comparing(Class::getName, String.CASE_INSENSITIVE_ORDER);
         CLIENT_PACKET_TYPES.sort(byName);
         SERVER_PACKET_TYPES.sort(byName);
-        for (int i = 0; i < CLIENT_PACKET_TYPES.size(); i++)
-            CLIENT_PACKET_IDS.put(CLIENT_PACKET_TYPES.get(i), i);
-        for (int i = 0; i < SERVER_PACKET_TYPES.size(); i++)
-            SERVER_PACKET_IDS.put(SERVER_PACKET_TYPES.get(i), i);
         prepared = true;
     }
 
@@ -166,30 +155,13 @@ public final class PacketHandler
         SERVER_PACKET_TYPES.addAll(List.of(types));
     }
 
-    private static void handleClientPayload(ClientboundPayload payload, IPayloadContext context)
+    /** Creates an empty packet of the given type and reads its content from the buffer. */
+    public static <T extends IPacket> T decode(Class<? extends T> type, PacketBuffer buffer)
     {
-        context.enqueueWork(() -> ClientPacketDispatcher.dispatch(payload.packet()));
-    }
-
-    private static void handleServerPayload(ServerboundPayload payload, IPayloadContext context)
-    {
-        context.enqueueWork(() -> {
-            if (context.player() instanceof ServerPlayer sender)
-                payload.packet().handleServerSide(sender, sender.serverLevel());
-        });
-    }
-
-    private static <T extends IPacket> T decodePacket(RegistryFriendlyByteBuf buffer, List<Class<? extends T>> types)
-    {
-        int id = buffer.readVarInt();
-        if (id < 0 || id >= types.size())
-            throw new IllegalArgumentException("Unknown Flan's Mod packet id " + id);
-
-        Class<? extends T> type = types.get(id);
         try
         {
             T packet = type.getDeclaredConstructor().newInstance();
-            packet.decodeInto(new PacketBuffer(buffer));
+            packet.decodeInto(buffer);
             return packet;
         }
         catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception)
@@ -198,100 +170,52 @@ public final class PacketHandler
         }
     }
 
-    private static <T extends IPacket> void encodePacket(RegistryFriendlyByteBuf buffer, T packet, Map<Class<? extends T>, Integer> ids)
-    {
-        @SuppressWarnings("unchecked")
-        Integer id = ids.get((Class<? extends T>) packet.getClass());
-        if (id == null)
-            throw new IllegalArgumentException("Unregistered Flan's Mod packet " + packet.getClass().getName());
-        buffer.writeVarInt(id);
-        packet.encodeInto(new PacketBuffer(buffer));
-    }
-
-    private record ClientboundPayload(IClientPacket packet) implements CustomPacketPayload
-    {
-        private static final Type<ClientboundPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "clientbound"));
-        private static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPayload> STREAM_CODEC = StreamCodec.ofMember(
-            (payload, buffer) -> encodePacket(buffer, payload.packet, CLIENT_PACKET_IDS),
-            buffer -> new ClientboundPayload(decodePacket(buffer, CLIENT_PACKET_TYPES))
-        );
-
-        @Override
-        public Type<? extends CustomPacketPayload> type()
-        {
-            return TYPE;
-        }
-    }
-
-    private record ServerboundPayload(IServerPacket packet) implements CustomPacketPayload
-    {
-        private static final Type<ServerboundPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "serverbound"));
-        private static final StreamCodec<RegistryFriendlyByteBuf, ServerboundPayload> STREAM_CODEC = StreamCodec.ofMember(
-            (payload, buffer) -> encodePacket(buffer, payload.packet, SERVER_PACKET_IDS),
-            buffer -> new ServerboundPayload(decodePacket(buffer, SERVER_PACKET_TYPES))
-        );
-
-        @Override
-        public Type<? extends CustomPacketPayload> type()
-        {
-            return TYPE;
-        }
-    }
-
+    /** client -> server */
     public static void sendToServer(IServerPacket message)
     {
-        preparePacketTypes();
-        PacketDistributor.sendToServer(new ServerboundPayload(message));
+        NetworkPlatform.sendToServer(message);
     }
 
+    /** server -> specific player */
     public static void sendTo(IClientPacket message, ServerPlayer player)
     {
-        preparePacketTypes();
-        PacketDistributor.sendToPlayer(player, new ClientboundPayload(message));
+        NetworkPlatform.sendToPlayer(player, message);
     }
 
+    /** server -> everyone */
     public static void sendToAll(IClientPacket message)
     {
-        preparePacketTypes();
-        PacketDistributor.sendToAllPlayers(new ClientboundPayload(message));
+        NetworkPlatform.sendToAll(message);
     }
 
+    /** server -> players currently tracking an entity (and the entity itself, if it is a player) */
     public static void sendToTracking(IClientPacket message, Entity entity)
     {
-        preparePacketTypes();
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, new ClientboundPayload(message));
+        NetworkPlatform.sendToTrackingEntityAndSelf(entity, message);
     }
 
+    /** server -> all in a dimension */
     public static void sendToDimension(ResourceKey<Level> dimension, IClientPacket message)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server != null)
-        {
-            ServerLevel level = server.getLevel(dimension);
-            if (level != null)
-                PacketDistributor.sendToPlayersInDimension(level, new ClientboundPayload(message));
-        }
+        NetworkPlatform.sendToDimension(dimension, message);
     }
 
+    /** server -> players near a point */
     public static void sendToAllAround(IClientPacket message, double x, double y, double z, double range, ResourceKey<Level> dimension)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server != null)
-        {
-            ServerLevel level = server.getLevel(dimension);
-            if (level != null)
-                PacketDistributor.sendToPlayersNear(level, null, x, y, z, range, new ClientboundPayload(message));
-        }
+        NetworkPlatform.sendToNear(dimension, x, y, z, range, message);
     }
 
+    /** server -> players near a point */
     public static void sendToAllAround(IClientPacket message, Vec3 position, double range, ResourceKey<Level> dimension)
     {
         sendToAllAround(message, position.x, position.y, position.z, range, dimension);
     }
 
+    /** server -> all in a donut (min..max radius) */
     public static void sendToDonut(ResourceKey<Level> dimension, Vec3 center, double minRange, double maxRange, IClientPacket message)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        MinecraftServer server = PlatformEnvironment.currentServer();
         ServerLevel level = server == null ? null : server.getLevel(dimension);
         if (level == null)
             return;
@@ -306,9 +230,10 @@ public final class PacketHandler
         }
     }
 
+    /** server -> all within range except one player */
     public static void sendToAllExcept(ResourceKey<Level> dimension, Vec3 center, double range, ServerPlayer except, IClientPacket message)
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        MinecraftServer server = PlatformEnvironment.currentServer();
         ServerLevel level = server == null ? null : server.getLevel(dimension);
         if (level == null)
             return;

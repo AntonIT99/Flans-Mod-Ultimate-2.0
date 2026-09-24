@@ -5,10 +5,10 @@ import com.flansmodultimate.apocalyse.client.ApocalypseClientState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 
 import net.minecraft.client.Minecraft;
 

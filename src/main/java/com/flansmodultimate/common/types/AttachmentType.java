@@ -235,7 +235,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return Optional.ofNullable(overlay).orElse(FlansMod.defaultFallbackTexture);
+        return Optional.ofNullable(overlay).orElse(FlansMod.FALLBACK_TEXTURE);
     }
 
     @Nullable

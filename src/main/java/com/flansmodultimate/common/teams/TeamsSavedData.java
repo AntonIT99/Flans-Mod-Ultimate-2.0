@@ -2,8 +2,8 @@ package com.flansmodultimate.common.teams;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -19,7 +19,6 @@ import java.util.UUID;
 /** The single SavedData payload for maps, rotations, runtime state and player stats. */
 public final class TeamsSavedData extends SavedData
 {
-    public static final Factory<TeamsSavedData> FACTORY = new Factory<>(TeamsSavedData::new, TeamsSavedData::load);
     public static final String ID = "flansmodultimate_teams";
     private static final String NBT_MAPS = "maps";
     private static final String NBT_ROUNDS = "rounds";
@@ -36,8 +35,8 @@ public final class TeamsSavedData extends SavedData
         return Collections.unmodifiableCollection(stats.values());
     }
 
-    @Override
     @NotNull
+    @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries)
     {
         ListTag mapList = new ListTag();

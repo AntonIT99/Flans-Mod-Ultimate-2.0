@@ -5,6 +5,7 @@ import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.server.PacketLoadoutAction;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -38,7 +39,7 @@ public final class TeamsChooseLoadoutScreen extends Screen
     }
     @Override public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
         graphics.drawCenteredString(font, title, width / 2, height / 2 - 92, 0xFFFFFF);
         if (state != null)

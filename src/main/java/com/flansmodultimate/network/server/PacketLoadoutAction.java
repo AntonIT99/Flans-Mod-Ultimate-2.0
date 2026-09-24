@@ -16,8 +16,8 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketTeamsState;
-import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.util.ModUtils;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 

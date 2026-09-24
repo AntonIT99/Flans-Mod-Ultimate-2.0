@@ -12,13 +12,11 @@ import java.util.function.Consumer;
 
 /**
  * Version boundary for custom item data and item-stack serialization.
- * Business code should not depend directly on Minecraft's data-component API.
+ * Business code should not depend directly on Minecraft's item NBT or data-component API.
  */
 public final class ItemStackData
 {
-    private ItemStackData()
-    {
-    }
+    private ItemStackData() {}
 
     public static boolean has(ItemStack stack)
     {

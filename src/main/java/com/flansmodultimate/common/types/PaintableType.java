@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;

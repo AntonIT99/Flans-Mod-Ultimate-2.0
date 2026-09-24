@@ -13,14 +13,15 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +29,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -51,7 +51,7 @@ import java.util.Collections;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFlanEntity<GunType>
+public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<GunType>
 {
     private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 64;
@@ -204,8 +204,42 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
         builder.define(DATA_MAGAZINE_SIZE, 0);
     }
 
+    public int getRoundsLeft()
+    {
+        return entityData.get(DATA_ROUNDS_LEFT);
+    }
+
+    public ItemStack getAmmo()
+    {
+        return ammo;
+    }
+
+    public void setAmmo(ItemStack stack)
+    {
+        ammo = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack;
+        updateAmmoState();
+    }
+
+    /** Keeps the synced ammunition state in step with the stack the gun is firing. */
+    protected void updateAmmoState()
+    {
+        int rounds = ShootableItem.getTotalRounds(ammo);
+        // The capacity to count down from is what went in at the last reload, so a
+        // belt reads 247/300 rather than against one item's worth.
+        if (rounds > entityData.get(DATA_ROUNDS_LEFT))
+            entityData.set(DATA_MAGAZINE_SIZE, rounds);
+        if (entityData.get(DATA_ROUNDS_LEFT) != rounds)
+            entityData.set(DATA_ROUNDS_LEFT, rounds);
+        setHasAmmo(rounds > 0);
+    }
+
+    public int getMagazineSize()
+    {
+        return entityData.get(DATA_MAGAZINE_SIZE);
+    }
+
     @Override
-    public void writeSpawnData(RegistryFriendlyByteBuf buf)
+    public void writeSpawnData(PacketBuffer buf)
     {
         buf.writeUtf(shortname);
         buf.writeInt(gunDirection);
@@ -216,7 +250,7 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
     }
 
     @Override
-    public void readSpawnData(RegistryFriendlyByteBuf buf)
+    public void readSpawnData(PacketBuffer buf)
     {
         try
         {
@@ -549,38 +583,6 @@ public class DeployedGun extends Entity implements IEntityWithComplexSpawn, IFla
                 reloadGun(level, player);
             fireGun(level, living);
         }
-    }
-
-    /** Keeps the synced ammunition state in step with the stack the gun is firing. */
-    protected void updateAmmoState()
-    {
-        int rounds = ShootableItem.getTotalRounds(ammo);
-        if (rounds > entityData.get(DATA_ROUNDS_LEFT))
-            entityData.set(DATA_MAGAZINE_SIZE, rounds);
-        if (entityData.get(DATA_ROUNDS_LEFT) != rounds)
-            entityData.set(DATA_ROUNDS_LEFT, rounds);
-        setHasAmmo(rounds > 0);
-    }
-
-    public int getMagazineSize()
-    {
-        return entityData.get(DATA_MAGAZINE_SIZE);
-    }
-
-    public int getRoundsLeft()
-    {
-        return entityData.get(DATA_ROUNDS_LEFT);
-    }
-
-    public ItemStack getAmmo()
-    {
-        return ammo;
-    }
-
-    public void setAmmo(ItemStack stack)
-    {
-        ammo = stack == null || stack.isEmpty() ? ItemStack.EMPTY : stack;
-        updateAmmoState();
     }
 
     protected int findAmmo(Player player)

@@ -7,6 +7,7 @@ import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.server.PacketLoadoutAction;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -111,7 +112,7 @@ public final class TeamsLoadoutEditScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;

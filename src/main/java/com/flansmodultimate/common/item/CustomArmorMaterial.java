@@ -2,6 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.ArmorType;
+
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;

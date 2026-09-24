@@ -1,11 +1,11 @@
 package com.flansmodultimate.hooks;
 
-import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.hooks.server.ClientGunHooksNoop;
 import com.flansmodultimate.hooks.server.ClientPlayerHooksNoop;
 import com.flansmodultimate.hooks.server.ClientRenderHooksNoop;
 import com.flansmodultimate.hooks.server.ClientSoundHooksNoop;
 import com.flansmodultimate.hooks.server.ClientTooltipHooksNoop;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

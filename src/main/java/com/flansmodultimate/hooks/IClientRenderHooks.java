@@ -3,7 +3,6 @@ package com.flansmodultimate.hooks;
 import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.types.DriveableType;
-
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 import net.minecraft.core.BlockPos;

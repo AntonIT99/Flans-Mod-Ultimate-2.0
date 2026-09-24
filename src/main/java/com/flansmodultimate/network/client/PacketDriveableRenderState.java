@@ -3,7 +3,7 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.network.PacketIO;
+import com.flansmodultimate.platform.network.PacketIO;
 import org.jetbrains.annotations.NotNull;
 
 import com.flansmodultimate.network.PacketBuffer;

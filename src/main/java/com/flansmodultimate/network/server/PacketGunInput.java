@@ -3,7 +3,6 @@ package com.flansmodultimate.network.server;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
-import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import com.flansmodultimate.network.PacketBuffer;
@@ -48,7 +47,7 @@ public class PacketGunInput implements IServerPacket
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.SERVER);
+        PlayerData data = PlayerData.getInstance(player);
         data.setShootKeyPressed(hand, shootKeyPressed);
         data.setPrevShootKeyPressed(hand, prevShootKeyPressed);
         data.setSecondaryFunctionKeyPressed(secondaryFunctionKeyPressed);

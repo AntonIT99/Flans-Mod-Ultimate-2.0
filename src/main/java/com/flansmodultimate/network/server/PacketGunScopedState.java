@@ -6,7 +6,6 @@ import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.event.handler.CommonEventHandler;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
-import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import com.flansmodultimate.network.PacketBuffer;
@@ -41,7 +40,7 @@ public class PacketGunScopedState implements IServerPacket
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        PlayerData.getInstance(player, LogicalSide.SERVER).setScoped(isScoped);
+        PlayerData.getInstance(player).setScoped(isScoped);
 
         ItemStack stack = player.getInventory().getSelected();
         if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)

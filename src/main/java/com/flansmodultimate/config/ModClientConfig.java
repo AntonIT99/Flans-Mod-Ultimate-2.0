@@ -23,41 +23,9 @@ import java.util.function.Supplier;
 
 public final class ModClientConfig
 {
-    public static final ModConfigSpec configSpec;
-
     private static final String CONFIG_FILE_NAME = FlansMod.MOD_ID + "-client.toml";
     private static final String UNCENSORED_CONTENT_CONFIG_PATH = "General Settings.enableUncensoredContent";
-    public static final ModConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
-    public static final ModConfigSpec.EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
-    public static final ModConfigSpec.BooleanValue SHOW_FLANS_HUD;
-    public static final ModConfigSpec.BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
-    private static final Supplier<Boolean> PREFER_BUILT_IN_MODEL_CLASSES;
-    public static final ModConfigSpec.BooleanValue SHOW_AMMO_HUD;
-    public static final ModConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
-    public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_X;
-    public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_Y;
-    public static final ModConfigSpec.IntValue VEHICLE_HUD_RIGHT_X;
-    public static final ModConfigSpec.IntValue VEHICLE_HUD_RIGHT_Y;
-    private static final int DEFAULT_VEHICLE_HUD_LEFT_X = 2;
-    private static final int DEFAULT_VEHICLE_HUD_RIGHT_X = 12;
-    private static final int DEFAULT_VEHICLE_HUD_TOP = 2;
-    private static final int MAX_VEHICLE_HUD_OFFSET = 500;
-    public static final ModConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
-    private static final Supplier<Boolean> HD_HIT_MARKER;
-    public static final ModConfigSpec.BooleanValue FANCY_HIT_MARKER;
-    public static final ModConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
-    private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
-    public static final ModConfigSpec.BooleanValue ENABLE_GPU_MODEL_CACHE;
-    private static final ModConfigSpec.DoubleValue DRIVEABLE_LOD_DETAIL_MULTIPLIER;
-    private static final Supplier<Double> GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
-    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER;
-    private static final ModConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE;
-    private static final ModConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE;
-    public static final ModConfigSpec.EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
-    public static final ModConfigSpec.BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
-    private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
-    private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
-    private static final Supplier<Boolean> SHOW_CASING_EJECTIONS;
+    public static final ModConfigSpec configSpec;
 
     private static volatile Boolean startupUncensoredContentEnabled;
 
@@ -141,18 +109,44 @@ public final class ModClientConfig
     public final boolean alwaysEnableMechaCullingByDefault;
 
     private static final Supplier<Boolean> SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
+    public static final ModConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
+    public static final ModConfigSpec.EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
+    public static final ModConfigSpec.BooleanValue SHOW_FLANS_HUD;
+    public static final ModConfigSpec.BooleanValue HIDE_CROSSHAIR_FOR_GUNS;
     private static final Supplier<Boolean> LOAD_ALL_MODELS_IN_CACHE;
     private static final Supplier<Boolean> SEARCH_MODELS_IN_OTHER_CONTENT_PACKS;
+    private static final Supplier<Boolean> PREFER_BUILT_IN_MODEL_CLASSES;
     public static final ModConfigSpec.BooleanValue SHOW_SHOOTABLE_DURABILITY_BARS;
     public static final ModConfigSpec.BooleanValue SHOW_ARMOR_DAMAGE_ABSORPTION_BAR;
+    public static final ModConfigSpec.BooleanValue SHOW_AMMO_HUD;
+    public static final ModConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     public static final ModConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
+    public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_X;
+    public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_Y;
+    public static final ModConfigSpec.IntValue VEHICLE_HUD_RIGHT_X;
+    public static final ModConfigSpec.IntValue VEHICLE_HUD_RIGHT_Y;
+    private static final int DEFAULT_VEHICLE_HUD_LEFT_X = 2;
+    private static final int DEFAULT_VEHICLE_HUD_RIGHT_X = 12;
+    private static final int DEFAULT_VEHICLE_HUD_TOP = 2;
+    private static final int MAX_VEHICLE_HUD_OFFSET = 500;
+    public static final ModConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
+    private static final Supplier<Boolean> HD_HIT_MARKER;
+    public static final ModConfigSpec.BooleanValue FANCY_HIT_MARKER;
+    public static final ModConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
+    private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
     private static final Supplier<Integer> GRENADE_RENDER_DISTANCE;
     private static final Supplier<Integer> DEPLOYED_GUN_RENDER_DISTANCE;
     private static final Supplier<Integer> AA_GUN_RENDER_DISTANCE;
     private static final ModConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
     private static final ModConfigSpec.BooleanValue ENABLE_DRIVEABLE_LOD;
+    public static final ModConfigSpec.BooleanValue ENABLE_GPU_MODEL_CACHE;
     private static final ModConfigSpec.DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
+    private static final ModConfigSpec.DoubleValue DRIVEABLE_LOD_DETAIL_MULTIPLIER;
+    private static final Supplier<Double> GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
+    private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER;
+    private static final ModConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE;
+    private static final ModConfigSpec.DoubleValue DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE;
     private static final ModConfigSpec.DoubleValue DRIVEABLE_IMPOSTOR_PIXEL_SIZE;
     private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE;
     private static final ModConfigSpec.IntValue DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE;
@@ -168,11 +162,17 @@ public final class ModClientConfig
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
     private static final Supplier<EnumMouseButton> AIM_BUTTON;
     public static final ModConfigSpec.EnumValue<EnumAimType> AIM_TYPE;
+    public static final ModConfigSpec.EnumValue<EnumGunBlockInteraction> GUN_BLOCK_INTERACTION;
+    public static final ModConfigSpec.BooleanValue PREDICT_DRIVEABLE_MOVEMENT;
+
+    private static final Supplier<Boolean> COMBINE_AMMO_ON_RELOAD;
+    private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
 
     private static final Supplier<Boolean> ENABLE_ARMS;
     private static final Supplier<Boolean> ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
     private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
     private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
+    private static final Supplier<Boolean> SHOW_CASING_EJECTIONS;
 
     private static final Supplier<Boolean> ENABLE_FAST_TRANSLUCENT_RENDERING;
     private static final Supplier<Boolean> ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;

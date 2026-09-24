@@ -1,6 +1,8 @@
-package com.flansmodultimate.network;
+package com.flansmodultimate.platform.network;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -33,5 +35,15 @@ public final class PacketIO
         List<ItemStack> result = new ArrayList<>(size);
         for (int i = 0; i < size; i++) result.add(readItem(buffer));
         return result;
+    }
+
+    public static void writeComponent(RegistryFriendlyByteBuf buffer, Component component)
+    {
+        ComponentSerialization.STREAM_CODEC.encode(buffer, component);
+    }
+
+    public static Component readComponent(RegistryFriendlyByteBuf buffer)
+    {
+        return ComponentSerialization.STREAM_CODEC.decode(buffer);
     }
 }

@@ -40,18 +40,18 @@ import com.flansmodultimate.network.client.PacketGunMuzzleFlash;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import net.neoforged.neoforge.common.NeoForgeMod;
-import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -199,7 +199,7 @@ public class GunItemHandler
             doCustomMelee(level, player, data, hand);
 
         GunFiredEvent gunFireEvent = new GunFiredEvent(player);
-        NeoForge.EVENT_BUS.post(gunFireEvent);
+        PlatformEvents.post(gunFireEvent);
         if (gunFireEvent.isCanceled())
         {
             data.setShooting(hand, false);

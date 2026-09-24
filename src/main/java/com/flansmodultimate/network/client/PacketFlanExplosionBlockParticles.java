@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;

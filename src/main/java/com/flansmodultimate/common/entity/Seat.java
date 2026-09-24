@@ -12,10 +12,10 @@ import com.flansmodultimate.common.driveables.VehicleOptics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
+import com.flansmodultimate.platform.PlatformEvents;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -360,11 +360,14 @@ public class Seat extends Entity implements IControllable
     }
 
     public int getGunRounds() { return entityData.get(DATA_GUN_ROUNDS); }
+
     public int getGunMagazineSize() { return entityData.get(DATA_GUN_MAGAZINE_SIZE); }
+
     public int getGunReloadTicks() { return entityData.get(DATA_GUN_RELOAD_TICKS); }
+
     public Component getGunAmmoName() { return entityData.get(DATA_GUN_AMMO_NAME); }
 
-    /** Publishes the gunner HUD state from the server. */
+    /** Publishes what this seat's gunner needs on their HUD. Server side; only changes go out. */
     public void setGunState(int rounds, int magazineSize, int reloadTicks, Component ammoName)
     {
         if (!entityData.get(DATA_GUN_AMMO_NAME).equals(ammoName))
@@ -539,7 +542,7 @@ public class Seat extends Entity implements IControllable
      */
     public boolean tryEnter(@NotNull Player player)
     {
-        if (NeoForge.EVENT_BUS.post(new PlayerEnterSeatEvent(this, player)).isCanceled())
+        if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(this, player)))
             return false;
         if (player.getVehicle() != null)
             player.stopRiding();

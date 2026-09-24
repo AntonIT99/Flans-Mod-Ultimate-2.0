@@ -1,11 +1,12 @@
 package com.flansmodultimate.common.teams;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.world.item.ItemStack;
+import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.platform.item.ItemStackData;
-import com.flansmodultimate.network.PacketIO;
+
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,12 +60,12 @@ public final class PlayerLoadout
         return result;
     }
 
-    public void write(RegistryFriendlyByteBuf data)
+    public void write(PacketBuffer data)
     {
         for (LoadoutSlot slot : LoadoutSlot.values()) PacketIO.writeItem(data, get(slot));
     }
 
-    public static PlayerLoadout read(RegistryFriendlyByteBuf data)
+    public static PlayerLoadout read(PacketBuffer data)
     {
         PlayerLoadout result = new PlayerLoadout();
         for (LoadoutSlot slot : LoadoutSlot.values()) result.set(slot, PacketIO.readItem(data));

@@ -2,10 +2,9 @@ package com.flansmodultimate.common.digitalammo;
 
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;

@@ -27,11 +27,12 @@ import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -509,7 +510,7 @@ public class Mecha extends Driveable
             }
             return false;
         }
-        if (!weaponEnabled(EnumWeaponType.GUN) || NeoForge.EVENT_BUS.post(new GunFiredEvent(this)).isCanceled())
+        if (!weaponEnabled(EnumWeaponType.GUN) || PlatformEvents.postCancellable(new GunFiredEvent(this)))
             return false;
 
         LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
@@ -1011,7 +1012,7 @@ public class Mecha extends Driveable
     {
         if (!canPlayerAccessInventory(player) || getDriveableData() == null || getConfigType() == null)
             return false;
-        player.openMenu(
+        MenuPlatform.open(player,
             new SimpleMenuProvider((containerId, inventory, ignored) -> new MechaInventoryMenu(containerId, inventory, this),
                 ModUtils.getDisplayName(getConfigType())),
             buffer -> buffer.writeVarInt(getId()));

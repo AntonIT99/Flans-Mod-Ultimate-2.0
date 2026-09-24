@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.block;
 
-import com.mojang.serialization.MapCodec;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.types.ItemHolderType;
+import com.mojang.serialization.MapCodec;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

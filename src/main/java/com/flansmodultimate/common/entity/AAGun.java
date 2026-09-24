@@ -14,13 +14,15 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,9 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -58,7 +58,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntity<AAGunType>, IMassiveEntity
+public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity
 {
     private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 128;
@@ -420,7 +420,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
     }
 
     @Override
-    public void writeSpawnData(RegistryFriendlyByteBuf buf)
+    public void writeSpawnData(PacketBuffer buf)
     {
         buf.writeUtf(getShortName());
         buf.writeFloat(getGunYaw());
@@ -429,13 +429,13 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
         buf.writeInt(getReloadTimer());
         buf.writeInt(getCurrentBarrelIndex());
         buf.writeInt(getHealth());
-        ComponentSerialization.STREAM_CODEC.encode(buf, getCurrentAmmoName());
+        PacketIO.writeComponent(buf, getCurrentAmmoName());
         buf.writeInt(getMagazineLeft());
         buf.writeInt(getMagazineSize());
     }
 
     @Override
-    public void readSpawnData(RegistryFriendlyByteBuf buf)
+    public void readSpawnData(PacketBuffer buf)
     {
         try
         {
@@ -455,7 +455,7 @@ public class AAGun extends Entity implements IEntityWithComplexSpawn, IFlanEntit
             setReloadTimer(buf.readInt());
             setCurrentBarrel(buf.readInt());
             setHealth(buf.readInt());
-            entityData.set(DATA_CURRENT_AMMO_NAME, ComponentSerialization.STREAM_CODEC.decode(buf));
+            entityData.set(DATA_CURRENT_AMMO_NAME, PacketIO.readComponent(buf));
             entityData.set(DATA_MAGAZINE_LEFT, buf.readInt());
             entityData.set(DATA_MAGAZINE_SIZE, buf.readInt());
         }

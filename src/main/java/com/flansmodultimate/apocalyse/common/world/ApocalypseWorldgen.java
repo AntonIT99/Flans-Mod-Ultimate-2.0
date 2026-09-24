@@ -1,6 +1,4 @@
 package com.flansmodultimate.apocalyse.common.world;
-import org.jetbrains.annotations.Nullable;
-
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
@@ -16,7 +14,7 @@ import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

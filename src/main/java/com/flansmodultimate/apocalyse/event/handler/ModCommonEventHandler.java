@@ -8,10 +8,9 @@ import com.flansmodultimate.apocalyse.common.entity.SkullDroneEntity;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 
 @EventBusSubscriber(modid = FlansMod.MOD_ID)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

@@ -64,6 +64,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
@@ -71,15 +72,16 @@ import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.item.ItemStackData;
-import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
+import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
@@ -92,7 +94,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -151,7 +152,7 @@ import java.util.UUID;
  * transforms, fuel, inventory, weapon delays and damage are owned by the
  * server and replicated through normal entity data/position tracking.</p>
  */
-public abstract class Driveable extends Entity implements IEntityWithComplexSpawn, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
+public abstract class Driveable extends Entity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
 {
     public static final String NBT_TYPE = "driveable_type";
     public static final String NBT_YAW = "driveable_yaw";
@@ -853,7 +854,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     }
 
     @Override
-    public void writeSpawnData(RegistryFriendlyByteBuf buffer)
+    public void writeSpawnData(PacketBuffer buffer)
     {
         CompoundTag state = new CompoundTag();
         writeRuntimeState(state);
@@ -864,7 +865,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     }
 
     @Override
-    public void readSpawnData(RegistryFriendlyByteBuf buffer)
+    public void readSpawnData(PacketBuffer buffer)
     {
         try
         {
@@ -2273,7 +2274,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         List<ShootPoint> points = configType.shootPoints(secondary);
         if (points.isEmpty())
             return false;
-        if (NeoForge.EVENT_BUS.post(new GunFiredEvent(this)).isCanceled())
+        if (PlatformEvents.postCancellable(new GunFiredEvent(this)))
             return false;
         List<ShootPoint> selected;
         if (configType.alternate(secondary))
@@ -2884,7 +2885,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         ItemStack ammo = driveableData.getAmmo(ammoSlot);
         if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable))
             return false;
-        if (NeoForge.EVENT_BUS.post(new GunFiredEvent(this)).isCanceled())
+        if (PlatformEvents.postCancellable(new GunFiredEvent(this)))
             return false;
 
         ShootableType shootableType = shootable.getConfigType();
@@ -3929,7 +3930,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
         });
         if (targetIndex < 0)
             return false;
-        if (NeoForge.EVENT_BUS.post(new PlayerEnterSeatEvent(seats[targetIndex], player)).isCanceled())
+        if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(seats[targetIndex], player)))
             return false;
         setInputMask(0);
         setFlightControls(0F, 0F, isMouseControlEnabled());
@@ -4632,14 +4633,14 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
     {
         if (!canPlayerAccessInventory(player) || driveableData == null || configType == null)
             return false;
-        player.openMenu(
+        MenuPlatform.open(player,
             new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page),
                 ModUtils.getDisplayName(configType)),
             buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()).writeVarInt(-1));
         return true;
     }
 
-    /** Opens only the ammunition slot belonging to the passenger's gunner seat. */
+    /** Opens only the ammunition slot belonging to the passenger's current gunner seat. */
     public boolean openPassengerGunInventoryMenu(@NotNull ServerPlayer player, @NotNull Seat seat)
     {
         if (!canPlayerAccessInventory(player) || driveableData == null || configType == null
@@ -4651,7 +4652,7 @@ public abstract class Driveable extends Entity implements IEntityWithComplexSpaw
             return false;
 
         int seatIndex = seat.getSeatIndex();
-        player.openMenu(
+        MenuPlatform.open(player,
             new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId,
                 inventory, this, DriveableInventoryMenu.Page.GUNS, seatIndex), ModUtils.getDisplayName(configType)),
             buffer -> buffer.writeVarInt(getId()).writeVarInt(DriveableInventoryMenu.Page.GUNS.ordinal())

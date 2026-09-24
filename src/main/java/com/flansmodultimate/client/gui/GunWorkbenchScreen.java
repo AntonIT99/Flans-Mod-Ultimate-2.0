@@ -9,6 +9,7 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -86,7 +87,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
     @Override
     public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(this, gg, mouseX, mouseY, partialTick);
         updateHoveringModSlotTooltip(mouseX, mouseY);
         super.render(gg, mouseX, mouseY, partialTick);
         renderTooltip(gg, mouseX, mouseY);

@@ -1,6 +1,5 @@
 package com.flansmodultimate;
 
-import com.flansmodultimate.common.recipe.GunpowderRecipeCondition;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.block.PaintjobTableBlock;
@@ -32,6 +31,7 @@ import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
 import com.flansmodultimate.common.item.FlagpoleItem;
 import com.flansmodultimate.common.item.ItemOpStick;
+import com.flansmodultimate.common.recipe.GunpowderRecipeCondition;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
@@ -39,10 +39,11 @@ import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
+import com.flansmodultimate.platform.network.NetworkPlatform;
 import com.flansmodultimate.util.ModLogFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -51,20 +52,16 @@ import com.mojang.logging.LogUtils;
 import lombok.Getter;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -76,7 +73,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -139,11 +135,9 @@ public class FlansMod
     public static final String DEFAULT_BULLET_TRAIL_TEXTURE = "defaultbullettrail";
 
     // Resource Locations
-    public static final ResourceLocation paintjob = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
-    public static final ResourceLocation defaultMuzzleFlashTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
-    /** Valid fallback for render APIs which no longer accept an empty resource path. */
-    public static final ResourceLocation defaultFallbackTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultbullet.png");
     public static final ResourceLocation PAINTJOB = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
+    /** Valid fallback for render APIs which no longer accept an empty resource path. */
+    public static final ResourceLocation FALLBACK_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultbullet.png");
     public static final ResourceLocation TEXTURE_BANNER = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/banner.png");
     public static final ResourceLocation TEXTURE_DEFAULTMUZZLEFLASH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
     public static final ResourceLocation TEXTURE_FLAGPOLE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/flagpole.png");
@@ -151,7 +145,9 @@ public class FlansMod
     public static final ResourceLocation TEXTURE_GUI_ARMORBOX = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armor_box.png");
     public static final ResourceLocation TEXTURE_GUI_BASEEDIT = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/base_edit.png");
     public static final ResourceLocation TEXTURE_GUI_BASICHITMARKER = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
+    public static final ResourceLocation TEXTURE_GUI_BLOOD = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/blood.png");
     public static final ResourceLocation TEXTURE_GUI_FLARE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/flare.png");
+    public static final ResourceLocation TEXTURE_GUI_FLASH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/flash.png");
     public static final ResourceLocation TEXTURE_GUI_DRIVEABLECRAFTING = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/driveable_crafting.png");
     public static final ResourceLocation TEXTURE_GUI_DRIVEABLEFUEL = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/driveable_fuel.png");
     public static final ResourceLocation TEXTURE_GUI_DRIVEABLEINVENTORY = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/driveable_inventory.png");
@@ -173,28 +169,16 @@ public class FlansMod
     public static final ResourceLocation TEXTURE_GUI_TEAMSSCORES2 = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_scores_2.png");
     public static final ResourceLocation TEXTURE_GUI_TEAMSVOTE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/teams_vote.png");
     public static final ResourceLocation TEXTURE_GUI_WEAPONBOX = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponbox.png");
-    public static final ResourceLocation TEXTURE_GUI_FLASH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/flash.png");
-    public static final ResourceLocation TEXTURE_GUI_BLOOD = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/blood.png");
-    public static final ResourceLocation hitmarkerTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/basic_hitmarker.png");
-    public static final ResourceLocation gunWorkbenchGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/gun_workbench.png");
-    public static final ResourceLocation paintjobTableGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/paintjob_table.png");
-    public static final ResourceLocation armorBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armour_box.png");
-    public static final ResourceLocation gunBoxGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/weaponboxdefault.png");
-    public static final ResourceLocation ammoGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/ammo_gui.png");
-    public static final ResourceLocation teamsLoadoutEditorGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_loadout_editor.png");
-    public static final ResourceLocation teamsLandingPageGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_landing_page.png");
-    public static final ResourceLocation teamsMissionResultsGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_mission_results.png");
-    public static final ResourceLocation teamsOpenCreatesGuiTexture = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "textures/gui/teams_open_crates.png");
 
     // Registries
-    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(BuiltInRegistries.ITEM, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(BuiltInRegistries.MENU, FlansMod.MOD_ID);
-    private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, FlansMod.FLANSMOD_ID);
-    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<Block> blockRegistry = DeferredRegister.create(Registries.BLOCK, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<Item> itemRegistry = DeferredRegister.create(Registries.ITEM, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<MenuType<?>> menuRegistry = DeferredRegister.create(Registries.MENU, FlansMod.MOD_ID);
+    private static final DeferredRegister<ParticleType<?>> particleRegistry = DeferredRegister.create(Registries.PARTICLE_TYPE, FlansMod.FLANSMOD_ID);
+    private static final DeferredRegister<SoundEvent> soundEventRegistry = DeferredRegister.create(Registries.SOUND_EVENT, FlansMod.FLANSMOD_ID);
     private static final DeferredRegister<CreativeModeTab> creativeModeTabRegistry = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FlansMod.MOD_ID);
-    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, FlansMod.MOD_ID);
-    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FlansMod.MOD_ID);
+    private static final DeferredRegister<EntityType<?>> entityRegistry = DeferredRegister.create(Registries.ENTITY_TYPE, FlansMod.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> blockEntityRegistry = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, FlansMod.MOD_ID);
 
     // Blocks
     public static final Supplier<? extends Block> gunWorkbench = blockRegistry.register("gunworkbench", () -> new GunWorkbenchBlock(BlockBehaviour.Properties.of()
@@ -239,13 +223,13 @@ public class FlansMod
     public static final Supplier<? extends Item> flagpoleItem = itemRegistry.register("flagpole", FlagpoleItem::new);
 
     // Menus
-    public static final Supplier<? extends MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> menuType((windowId, inv, buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
-    public static final Supplier<? extends MenuType<DriveableCraftingMenu>> driveableCraftingMenu = menuRegistry.register("driveable_crafting_menu", () -> menuType((windowId, inv, buf) -> new DriveableCraftingMenu(windowId, inv, buf.readBlockPos())));
-    public static final Supplier<? extends MenuType<DriveableInventoryMenu>> driveableInventoryMenu = menuRegistry.register("driveable_inventory_menu", () -> menuType(DriveableInventoryMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<MechaInventoryMenu>> mechaInventoryMenu = menuRegistry.register("mecha_inventory_menu", () -> menuType(MechaInventoryMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> menuType(PaintjobTableMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> menuType(ArmorBoxMenu::createFromNetwork));
-    public static final Supplier<? extends MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> menuType(GunBoxMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<GunWorkbenchMenu>> gunWorkbenchMenu = menuRegistry.register("gunworkbench_menu", () -> MenuPlatform.menuType((windowId, inv, buf) -> new GunWorkbenchMenu(windowId, inv, buf.readBlockPos())));
+    public static final Supplier<? extends MenuType<DriveableCraftingMenu>> driveableCraftingMenu = menuRegistry.register("driveable_crafting_menu", () -> MenuPlatform.menuType((windowId, inv, buf) -> new DriveableCraftingMenu(windowId, inv, buf.readBlockPos())));
+    public static final Supplier<? extends MenuType<DriveableInventoryMenu>> driveableInventoryMenu = menuRegistry.register("driveable_inventory_menu", () -> MenuPlatform.menuType(DriveableInventoryMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<MechaInventoryMenu>> mechaInventoryMenu = menuRegistry.register("mecha_inventory_menu", () -> MenuPlatform.menuType(MechaInventoryMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<PaintjobTableMenu>> paintjobTableMenu = menuRegistry.register("paintjob_table_menu", () -> MenuPlatform.menuType(PaintjobTableMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<ArmorBoxMenu>> armorBoxMenu = menuRegistry.register("armorbox_menu", () -> MenuPlatform.menuType(ArmorBoxMenu::createFromNetwork));
+    public static final Supplier<? extends MenuType<GunBoxMenu>> gunBoxMenu = menuRegistry.register("gunbox_menu", () -> MenuPlatform.menuType(GunBoxMenu::createFromNetwork));
 
     // Particles
     public static final Supplier<? extends SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
@@ -368,7 +352,7 @@ public class FlansMod
     public FlansMod(IEventBus modEventBus, ModContainer modContainer)
     {
         GunpowderRecipeCondition.CODECS.register(modEventBus);
-        modEventBus.addListener(PacketHandler::register);
+        modEventBus.addListener(NetworkPlatform::register);
         modEventBus.addListener(NeoForgeChunkTickets::register);
         ModLogFile.initialize(MOD_ID);
         Arrays.stream(EnumType.values()).filter(EnumType::isHasItem).forEach(type -> items.put(type, new ArrayList<>()));
@@ -401,14 +385,9 @@ public class FlansMod
         registerCreativeModeTabs();
     }
 
-    private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> MenuType<T> menuType(IContainerFactory<T> factory)
-    {
-        return new MenuType<>(factory, FeatureFlags.DEFAULT_FLAGS);
-    }
-
     private static void waitForPacksManagerExtractionIfPresent()
     {
-        if (!ModList.get().isLoaded(PACKS_MANAGER_ID))
+        if (!PlatformEnvironment.isModLoaded(PACKS_MANAGER_ID))
             return;
 
         if (!PlatformEnvironment.isProduction())

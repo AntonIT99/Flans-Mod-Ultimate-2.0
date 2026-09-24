@@ -4,7 +4,6 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.network.IServerPacket;
 import lombok.NoArgsConstructor;
-import net.neoforged.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
 import com.flansmodultimate.network.PacketBuffer;
@@ -45,7 +44,7 @@ public class PacketGunReload implements IServerPacket
         ItemStack stack = player.getItemInHand(hand);
         if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)
         {
-            PlayerData data = PlayerData.getInstance(player, LogicalSide.SERVER);
+            PlayerData data = PlayerData.getInstance(player);
             gunItem.getGunItemHandler().doPlayerReload(level, player, data, stack, hand, true);
         }
     }

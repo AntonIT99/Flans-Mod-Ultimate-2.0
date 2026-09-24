@@ -5,6 +5,7 @@ import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -65,7 +66,7 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
     @Override
     public void render(@NotNull GuiGraphics gg, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(gg, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(this, gg, mouseX, mouseY, partialTick);
         updateHoverState(mouseX, mouseY);
         super.render(gg, mouseX, mouseY, partialTick);
         renderTooltip(gg, mouseX, mouseY);

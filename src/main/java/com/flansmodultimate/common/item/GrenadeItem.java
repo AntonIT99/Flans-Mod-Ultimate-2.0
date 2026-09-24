@@ -1,40 +1,32 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.FlansMod;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import net.neoforged.fml.LogicalSide;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<GrenadeType>
 {
@@ -113,7 +105,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
-        PlayerData data = PlayerData.getInstance(player, level.isClientSide ? LogicalSide.CLIENT : LogicalSide.SERVER);
+        PlayerData data = PlayerData.getInstance(player);
 
         // If can throw grenade
         if (configType.isCanThrow() && data.getShootTimeRight() <= 0F && data.getShootTimeLeft() <= 0F)

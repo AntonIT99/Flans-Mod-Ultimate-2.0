@@ -1,6 +1,4 @@
 package com.flansmodultimate.event.handler;
-import org.jetbrains.annotations.Nullable;
-
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.CommonConfigMirror;
 import com.flansmodultimate.client.ModClient;
@@ -41,35 +39,32 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.LogicalSide;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
-import org.joml.Vector3f;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.screens.options.OptionsScreen;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
@@ -168,6 +163,8 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onClientTickStart(ClientTickEvent.Pre event)
     {
+        // Vanilla consumes its own key clicks later in the same tick, so a
+        // driveable bind has to claim a shared key before that happens.
         KeyInputHandler.claimConflictingVanillaKeys();
     }
 

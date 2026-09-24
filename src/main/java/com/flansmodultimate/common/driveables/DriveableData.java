@@ -12,14 +12,13 @@ import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
-import lombok.Setter;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;

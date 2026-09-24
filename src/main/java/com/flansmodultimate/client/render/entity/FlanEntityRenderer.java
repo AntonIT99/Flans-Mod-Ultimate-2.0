@@ -99,6 +99,6 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
             if (infoType != null)
                 return infoType.getTexture();
         }
-        return FlansMod.defaultFallbackTexture;
+        return FlansMod.FALLBACK_TEXTURE;
     }
 }

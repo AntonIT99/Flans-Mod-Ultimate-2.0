@@ -2,8 +2,8 @@ package com.flansmodultimate.event;
 
 import com.flansmodultimate.common.entity.Bullet;
 import lombok.Getter;
-import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.ICancellableEvent;
 
 import net.minecraft.world.entity.Entity;
 

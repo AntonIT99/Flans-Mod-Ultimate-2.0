@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.guns.penetration;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;

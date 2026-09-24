@@ -1,5 +1,6 @@
 package com.flansmodultimate.apocalyse.common.world;
 
+import com.flansmodultimate.platform.world.SavedDataPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,8 +23,6 @@ import java.util.UUID;
 
 public class ApocalypseSavedData extends SavedData
 {
-    private static final Factory<ApocalypseSavedData> FACTORY =
-        new Factory<>(ApocalypseSavedData::new, ApocalypseSavedData::load);
     private static final String DATA_NAME = "flansmodultimate_apocalypse";
     private static final String NBT_ENTRY_POINTS = "entry_points";
     private static final String NBT_DEATH_POINTS = "death_points";
@@ -52,7 +51,7 @@ public class ApocalypseSavedData extends SavedData
     {
         ServerLevel overworld = level.getServer().getLevel(Level.OVERWORLD);
         ServerLevel storageLevel = overworld != null ? overworld : level;
-        return storageLevel.getDataStorage().computeIfAbsent(FACTORY, DATA_NAME);
+        return SavedDataPlatform.computeIfAbsent(storageLevel, DATA_NAME, ApocalypseSavedData::new, ApocalypseSavedData::load);
     }
 
     public static ApocalypseSavedData load(CompoundTag tag, HolderLookup.Provider registries)
@@ -164,8 +163,8 @@ public class ApocalypseSavedData extends SavedData
         return Optional.ofNullable(deathPoints.get(uuid));
     }
 
-    @Override
     @NotNull
+    @Override
     public CompoundTag save(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries)
     {
         ListTag list = new ListTag();

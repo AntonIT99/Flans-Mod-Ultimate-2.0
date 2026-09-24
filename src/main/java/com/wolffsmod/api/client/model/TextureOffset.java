@@ -1,7 +1,5 @@
 package com.wolffsmod.api.client.model;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 /**
  * @param textureOffsetX The x coordinate offset of the texture

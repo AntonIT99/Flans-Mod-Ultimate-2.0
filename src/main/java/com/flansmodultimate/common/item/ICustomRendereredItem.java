@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.types.InfoType;
+
 import net.minecraft.world.item.ItemDisplayContext;
 
 public interface ICustomRendereredItem<T extends InfoType> extends IFlanItem<T>

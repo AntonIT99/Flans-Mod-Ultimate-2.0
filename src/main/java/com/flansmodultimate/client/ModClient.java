@@ -30,14 +30,12 @@ import com.flansmodultimate.network.server.PacketGunScopedState;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.fml.LogicalSide;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -338,7 +336,7 @@ public class ModClient
 
         VehicleOpticsClient.tick();
 
-        PlayerData data = PlayerData.getInstance(player, LogicalSide.CLIENT);
+        PlayerData data = PlayerData.getInstance(player);
 
         updateFlashlights(level);
         InstantBulletRenderer.updateAllTrails();
@@ -882,7 +880,7 @@ public class ModClient
             return;
 
         // Frame delta in seconds (approx). getDeltaFrameTime() is in ticks.
-        float dtTicks = mc.getTimer().getRealtimeDeltaTicks();
+        float dtTicks = ClientPlatform.realtimeDeltaTicks();
         float dtSeconds = dtTicks / 20.0F;
 
         // frame-rate independent smoothing

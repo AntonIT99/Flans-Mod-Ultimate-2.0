@@ -8,15 +8,14 @@ import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.event.level.BlockEvent;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -346,7 +345,7 @@ public final class ModUtils
             return false;
 
         BlockEvent.BreakEvent breakEvent = new BlockEvent.BreakEvent(level, pos, state, player);
-        NeoForge.EVENT_BUS.post(breakEvent);
+        PlatformEvents.post(breakEvent);
 
         if (breakEvent.isCanceled())
             return false;

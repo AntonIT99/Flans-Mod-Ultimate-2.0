@@ -7,9 +7,10 @@ import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
-import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -90,7 +91,7 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
         {
             MenuProvider provider = getMenuProvider(state, level, pos);
-            serverPlayer.openMenu(provider, buffer -> buffer.writeBlockPos(pos));
+            MenuPlatform.open(serverPlayer, provider, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

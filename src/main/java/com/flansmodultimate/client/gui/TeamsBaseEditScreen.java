@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketBaseEditState;
 import com.flansmodultimate.network.server.PacketBaseEditAction;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -103,7 +104,7 @@ public final class TeamsBaseEditScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         int left = width / 2 - 128;
         int top = height / 2 - 94;
         graphics.blit(FlansMod.TEXTURE_GUI_BASEEDIT, left, top, 0, 0, 256, 189, 256, 256);

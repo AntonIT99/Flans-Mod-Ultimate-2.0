@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.world;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SkullBossEntity;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import net.neoforged.neoforge.event.EventHooks;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -10,7 +11,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.neoforged.neoforge.event.EventHooks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;

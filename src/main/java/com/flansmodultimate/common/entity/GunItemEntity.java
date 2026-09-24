@@ -4,10 +4,10 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 

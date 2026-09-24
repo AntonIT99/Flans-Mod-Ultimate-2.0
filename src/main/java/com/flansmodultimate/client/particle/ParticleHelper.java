@@ -1,21 +1,19 @@
 package com.flansmodultimate.client.particle;
-import org.jetbrains.annotations.Nullable;
-
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;

@@ -1,7 +1,8 @@
 package com.flansmodultimate.common.block;
 
-import com.mojang.serialization.MapCodec;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
+import com.flansmodultimate.platform.menu.MenuPlatform;
+import com.mojang.serialization.MapCodec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,7 +68,7 @@ public class PaintjobTableBlock extends BaseEntityBlock
 
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof PaintjobTableBlockEntity blockEntity)
         {
-            serverPlayer.openMenu(blockEntity, buffer -> buffer.writeBlockPos(pos));
+            MenuPlatform.open(serverPlayer, blockEntity, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

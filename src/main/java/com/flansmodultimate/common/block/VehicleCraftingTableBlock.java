@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
+import com.flansmodultimate.platform.menu.MenuPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
@@ -37,11 +38,9 @@ public class VehicleCraftingTableBlock extends Block
     @Override
     @NotNull
     protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                                @NotNull Player player, @NotNull BlockHitResult hit)
+                                               @NotNull Player player, @NotNull BlockHitResult hit)
     {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
-            serverPlayer.openMenu(getMenuProvider(state, level, pos), buffer -> buffer.writeBlockPos(pos));
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return open(state, level, pos, player);
     }
 
     @Override
@@ -49,7 +48,14 @@ public class VehicleCraftingTableBlock extends Block
                                                @NotNull BlockPos pos, @NotNull Player player,
                                                @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
-        useWithoutItem(state, level, pos, player, hit);
+        open(state, level, pos, player);
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
+    {
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
+            MenuPlatform.open(serverPlayer, getMenuProvider(state, level, pos), pos);
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }

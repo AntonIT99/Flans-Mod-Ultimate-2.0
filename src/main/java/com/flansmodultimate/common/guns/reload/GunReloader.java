@@ -10,13 +10,13 @@ import com.flansmodultimate.event.GunReloadEvent;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -54,7 +54,7 @@ public record GunReloader(GunItem item)
 
         // Pre-reload event (cancelable + can override needsAmmo)
         GunReloadEvent evt = new GunReloadEvent(player, gunStack);
-        NeoForge.EVENT_BUS.post(evt);
+        PlatformEvents.post(evt);
         if (evt.isCanceled())
             return false;
 

@@ -1,6 +1,4 @@
 package com.flansmodultimate.client.render;
-import org.jetbrains.annotations.Nullable;
-
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
@@ -35,6 +33,8 @@ import com.flansmodultimate.util.ModUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

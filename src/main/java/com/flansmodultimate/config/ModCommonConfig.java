@@ -31,46 +31,6 @@ public final class ModCommonConfig
 {
     public static final ModConfigSpec configSpec;
 
-    private static final Supplier<Boolean> ADD_GUNPOWDER_RECIPE;
-    private static final Supplier<String> DEFAULT_VEHICLE_ENGINE;
-    private static final Supplier<String> DEFAULT_PLANE_ENGINE;
-    private static final Supplier<String> DEFAULT_MECHA_ENGINE;
-    private static final Supplier<Double> NAME_TAG_RENDER_RANGE;
-    private static final Supplier<Double> NAME_TAG_SNEAK_RENDER_RANGE;
-    private static final Supplier<Integer> NOTICE_SPAWN_KILL_TIME;
-    private static final Supplier<Boolean> FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS;
-    private static final ModConfigSpec.BooleanValue DRIVEABLE_COLLISIONS_BREAK_BLOCKS;
-    private static final Supplier<Boolean> AUTO_REFILL_VEHICLE_AMMO;
-    private static final Supplier<Boolean> GUNS_IN_DESTROYED_PARTS_WORK;
-    private static final Supplier<Integer> AMBIENT_MOB_ARMOR_SPAWN_RATE;
-    private static final Supplier<Boolean> DISABLE_DUAL_WIELDING;
-    private static final Supplier<Boolean> RELOAD_ON_EMPTY_FIRE;
-    private static final Supplier<Double> NEW_DAMAGE_SYSTEM_BLAST_RADIUS_REFERENCE;
-    private static final Supplier<Double> NEW_DAMAGE_SYSTEM_BLAST_FALLOFF_SHARPNESS;
-    private static final Supplier<Double> KINETIC_PENETRATION_REFERENCE;
-    private static final Supplier<List<? extends String>> FLUID_FUELS_RAW;
-    private static final Supplier<Boolean> FORCE_LEGACY_PLANE_PHYSICS;
-    private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
-    private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
-    private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
-    private static final Supplier<Double> REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
-    private static final Supplier<Double> REALISTIC_PLANE_SPEED_SCALE;
-    private static final Supplier<Double> REALISTIC_GROUND_VEHICLE_SPEED_SCALE;
-    private static final Supplier<Double> MAX_PLANE_SPEED_KMH;
-    private static final Supplier<Double> MAX_VEHICLE_SPEED_KMH;
-    private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_KNOCKBACK;
-    private static final Supplier<Double> VEHICLE_KNOCKBACK_REFERENCE_MASS_KG;
-    private static final Supplier<Double> FALLBACK_GROUND_VEHICLE_MASS_TONS;
-    private static final Supplier<Double> FALLBACK_AIRCRAFT_MASS_TONS;
-    private static final Supplier<Double> FALLBACK_AA_GUN_MASS_TONS;
-    private static final Supplier<Double> REALISTIC_VEHICLE_HEALTH_SCALE;
-    private static final Supplier<Double> MAX_ARMOR_IMPACT_ANGLE_DEG;
-    private static final Supplier<Double> ARMORED_BLAST_RESISTANCE_KPA_PER_MM;
-    private static final Supplier<Double> MINIMUM_BLAST_DISTANCE_METERS;
-    private static final Supplier<Double> MAX_EXPLOSION_RADIUS;
-    private static final Supplier<Double> MAX_BLAST_RADIUS;
-    private static final List<String> DEFAULT_FLUID_FUELS = List.of("buildcraftenergy:oil*; 1000", "buildcraftenergy:fuel*; 2000");
-
     /** Arcade lift scaling keeps fixed-wing takeoff runs practical in Minecraft worlds. */
     public static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.25D;
     /** A throttle lever meters engine power, so the physical exponent is one. */
@@ -143,10 +103,18 @@ public final class ModCommonConfig
     private static final String ENTITY_TRACKING_CONFIG_SECTION = "Entity Tracking Settings";
 
     private static final Supplier<Boolean> ADD_ALL_PAINTJOBS_TO_CREATIVE;
+    private static final Supplier<Boolean> ADD_GUNPOWDER_RECIPE;
     private static final Supplier<Boolean> VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD;
+    private static final Supplier<String> DEFAULT_VEHICLE_ENGINE;
+    private static final Supplier<String> DEFAULT_PLANE_ENGINE;
+    private static final Supplier<String> DEFAULT_MECHA_ENGINE;
+    private static final Supplier<Double> NAME_TAG_RENDER_RANGE;
+    private static final Supplier<Double> NAME_TAG_SNEAK_RENDER_RANGE;
+    private static final Supplier<Integer> NOTICE_SPAWN_KILL_TIME;
 
     private static final ModConfigSpec.BooleanValue DISABLE_CROSSHAIR_FOR_GUNS;
     private static final ModConfigSpec.BooleanValue EXPLOSIONS_BREAK_BLOCKS;
+    private static final Supplier<Boolean> FORCE_NEW_EXPLOSIONS_BREAK_BLOCKS;
     private static final ModConfigSpec.BooleanValue FLAN_EXPLOSIONS_DROP_BLOCKS;
     private static final Supplier<Integer> BONUS_REGEN_AMOUNT;
     private static final Supplier<Integer> BONUS_REGEN_TICK_DELAY;
@@ -161,14 +129,20 @@ public final class ModCommonConfig
     private static final Supplier<Double> ARMSHOT_DAMAGE_MODIFIER;
     private static final Supplier<Double> LEGSHOT_MODIFIER;
     private static final Supplier<Double> VEHICLE_WHEEL_SEAT_EXPLOSION_MODIFIER;
+    private static final ModConfigSpec.BooleanValue DRIVEABLE_COLLISIONS_BREAK_BLOCKS;
+    private static final Supplier<Boolean> AUTO_REFILL_VEHICLE_AMMO;
+    private static final Supplier<Boolean> GUNS_IN_DESTROYED_PARTS_WORK;
 
     private static final Supplier<Integer> BREAKABLE_ARMOR;
     private static final Supplier<Integer> DEFAULT_ARMOR_DURABILITY;
     private static final Supplier<Integer> DEFAULT_ARMOR_ENCHANTABILITY;
     private static final Supplier<Boolean> FORCE_DEFENSE_AS_MODERN_ARMOR;
+    private static final Supplier<Integer> AMBIENT_MOB_ARMOR_SPAWN_RATE;
 
     private static final Supplier<Boolean> GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE;
     private static final Supplier<Boolean> FORCE_ALLOW_ALL_ATTACHMENTS;
+    private static final Supplier<Boolean> DISABLE_DUAL_WIELDING;
+    private static final Supplier<Boolean> RELOAD_ON_EMPTY_FIRE;
     private static final Supplier<Double> GUN_DAMAGE_MODIFIER;
     private static final Supplier<Double> GUN_RECOIL_MODIFIER;
     private static final Supplier<Double> GUN_DISPERSION_MODIFIER;
@@ -188,6 +162,8 @@ public final class ModCommonConfig
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_EXPLOSIVE_DAMAGE_REFERENCE;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_EXPLOSIVE_POWER_REFERENCE;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_EXPLOSIVE_RADIUS_REFERENCE;
+    private static final Supplier<Double> NEW_DAMAGE_SYSTEM_BLAST_RADIUS_REFERENCE;
+    private static final Supplier<Double> NEW_DAMAGE_SYSTEM_BLAST_FALLOFF_SHARPNESS;
     private static final Supplier<Integer> SHOOTABLE_DEFAULT_RESPAWN_TIME;
     private static final Supplier<Boolean> SHOOTABLE_PROXIMITY_TRIGGER_FRIENDLY_FIRE;
     private static final Supplier<Double> LOCK_ON_RANGE;
@@ -204,8 +180,17 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> USE_NEW_PENETRATION_SYSTEM;
     private static final Supplier<Boolean> ENABLE_BLOCK_PENETRATION;
     private static final Supplier<Double> BLOCK_PENETRATION_MODIFIER;
+    private static final Supplier<Double> KINETIC_PENETRATION_REFERENCE;
 
     private static final Supplier<List<? extends String>> PENETRABLE_BLOCKS_RAW;
+    private static final Supplier<List<? extends String>> FLUID_FUELS_RAW;
+    /**
+     * BuildCraft's refined fuels carry roughly twice the energy of the crude oil they come
+     * from, the same ratio 1.7.10 used: one bucket of oil is worth a Fuel Can, one of fuel two.
+     */
+    private static final List<String> DEFAULT_FLUID_FUELS = List.of(
+        "buildcraftenergy:oil*; 1000",
+        "buildcraftenergy:fuel*; 2000");
 
     private static final Supplier<Boolean> ENABLE_DIGITAL_AMMO_SYSTEM;
     private static final Supplier<Integer> DIGITAL_AMMO_DEFAULT_AMOUNT;
@@ -213,6 +198,27 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DIGITAL_AMMO_NUM_TYPES;
     private static final Supplier<List<? extends String>> DIGITAL_AMMO_SUPPLY_BLOCKS;
     private static final Supplier<Integer> DIGITAL_AMMO_SUPPLY_AMOUNT;
+
+    private static final Supplier<Boolean> FORCE_LEGACY_PLANE_PHYSICS;
+    private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
+    private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
+    private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
+    private static final Supplier<Double> REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
+    private static final Supplier<Double> REALISTIC_PLANE_SPEED_SCALE;
+    private static final Supplier<Double> REALISTIC_GROUND_VEHICLE_SPEED_SCALE;
+    private static final Supplier<Double> MAX_PLANE_SPEED_KMH;
+    private static final Supplier<Double> MAX_VEHICLE_SPEED_KMH;
+    private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_KNOCKBACK;
+    private static final Supplier<Double> VEHICLE_KNOCKBACK_REFERENCE_MASS_KG;
+    private static final Supplier<Double> FALLBACK_GROUND_VEHICLE_MASS_TONS;
+    private static final Supplier<Double> FALLBACK_AIRCRAFT_MASS_TONS;
+    private static final Supplier<Double> FALLBACK_AA_GUN_MASS_TONS;
+    private static final Supplier<Double> REALISTIC_VEHICLE_HEALTH_SCALE;
+    private static final Supplier<Double> MAX_ARMOR_IMPACT_ANGLE_DEG;
+    private static final Supplier<Double> ARMORED_BLAST_RESISTANCE_KPA_PER_MM;
+    private static final Supplier<Double> MINIMUM_BLAST_DISTANCE_METERS;
+    private static final Supplier<Double> MAX_EXPLOSION_RADIUS;
+    private static final Supplier<Double> MAX_BLAST_RADIUS;
 
     private static final Supplier<Boolean> ENCHANTMENT_MODULE_ENABLED;
 

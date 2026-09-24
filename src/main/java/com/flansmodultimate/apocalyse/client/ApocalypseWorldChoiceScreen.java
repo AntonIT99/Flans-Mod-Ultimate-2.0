@@ -1,5 +1,6 @@
 package com.flansmodultimate.apocalyse.client;
 
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
@@ -77,7 +78,7 @@ public class ApocalypseWorldChoiceScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         int top = contentTop();
         graphics.drawCenteredString(font, title, width / 2, top - 20, 0xFFFFFF);
         messageLines.renderCentered(graphics, width / 2, top);

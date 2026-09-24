@@ -1,15 +1,12 @@
 package com.flansmodultimate.client.model;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.IModelRenderer;
 import com.wolffsmod.api.client.model.TextureOffset;
 import lombok.Getter;
 import lombok.Setter;
-
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 

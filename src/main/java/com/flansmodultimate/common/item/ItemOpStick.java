@@ -8,7 +8,6 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketBaseEditState;
 import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;

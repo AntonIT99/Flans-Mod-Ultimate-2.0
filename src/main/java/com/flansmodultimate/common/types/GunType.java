@@ -20,7 +20,6 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +37,6 @@ import net.minecraft.world.item.UseAnim;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -1094,7 +1092,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return Optional.ofNullable(overlay).orElse(FlansMod.defaultFallbackTexture);
+        return Optional.ofNullable(overlay).orElse(FlansMod.FALLBACK_TEXTURE);
     }
 
     public List<ShootableType> getAmmoTypes()

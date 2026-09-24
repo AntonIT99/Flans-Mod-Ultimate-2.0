@@ -1,8 +1,5 @@
 package com.flansmodultimate.client.digitalammo;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-
 import java.util.Arrays;
 
 public final class LocalBulletManager

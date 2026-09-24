@@ -6,21 +6,18 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.ModRepositorySource;
 import com.flansmodultimate.PackagedContentRepositorySource;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
-import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
-import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.event.AddPackFindersEvent;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.event.AddPackFindersEvent;
 
 import net.minecraft.server.packs.PackType;
 

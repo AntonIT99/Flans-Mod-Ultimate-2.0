@@ -4,6 +4,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunPreferredAmmo;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -112,7 +113,7 @@ public final class GunAmmoSelectScreen extends Screen
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         int first = page * CHOICES_PER_PAGE;
         int count = Math.min(CHOICES_PER_PAGE, choices.size() - first);
         int top = height / 2 - (count * ROW_HEIGHT + 45) / 2;

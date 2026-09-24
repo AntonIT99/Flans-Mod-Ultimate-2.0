@@ -1,6 +1,5 @@
 package com.flansmodultimate.config;
 
-import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
