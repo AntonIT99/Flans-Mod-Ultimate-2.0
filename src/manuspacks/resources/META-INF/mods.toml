@@ -4,7 +4,7 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="flansmodultimate_manuspacks"
-version="1.0"
+version="${module_version}"
 displayName="Flan's Mod Ultimate 2: Manus Packs"
 logoFile="manuspacks.png"
 credits="Manus"

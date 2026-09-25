@@ -4,7 +4,7 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="flansmodultimate_warfare44"
-version="4.0"
+version="${module_version}"
 displayName="Flan's Mod Ultimate 2: Warfare 44 Pack"
 logoFile="warfare44.png"
 credits="War_Monger / ww2destroyer"

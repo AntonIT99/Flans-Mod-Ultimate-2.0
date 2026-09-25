@@ -4,7 +4,7 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="flansmodultimate_wolffstarwars"
-version="3.0"
+version="${module_version}"
 displayName="Flan's Mod Ultimate 2: Wolff's Star Wars Pack"
 logoFile="wolffstarwars.png"
 authors="Wolff"

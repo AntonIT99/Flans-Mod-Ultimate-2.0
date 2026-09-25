@@ -288,6 +288,14 @@ ext.registerFmuModule = { Map module ->
         }
     }
 
+    // The module's mods.toml takes its version from archiveVersion.
+    tasks.named(moduleSourceSet.processResourcesTaskName, ProcessResources).configure {
+        inputs.property('moduleVersion', moduleArchiveVersion)
+        filesMatching('META-INF/mods.toml') {
+            expand(module_version: moduleArchiveVersion)
+        }
+    }
+
     // Make the module available in every ForgeGradle development run.
     minecraft.runs.configureEach { runConfig ->
         def modConfig = runConfig.mods.maybeCreate(moduleModId)
@@ -433,6 +441,14 @@ def copyFlanPacksToManager = tasks.register('copyFlanPacksToManager') {
             from 'run/flan'
             into 'src/packsmanager/resources/flan'
         }
+    }
+}
+
+// The packs manager's mods.toml takes its version from packs_manager_version.
+tasks.named(sourceSets.packsManager.processResourcesTaskName, ProcessResources).configure {
+    inputs.property('packsManagerVersion', packs_manager_version)
+    filesMatching('META-INF/mods.toml') {
+        expand(module_version: packs_manager_version)
     }
 }
 
