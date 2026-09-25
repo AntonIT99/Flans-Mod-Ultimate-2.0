@@ -70,6 +70,8 @@ public class FlanExplosion extends Explosion
     
     // Config
     protected final boolean causesFire;
+    /** Whether the client draws this as a fire explosion; true for anything that ignites, and for burning vehicles. */
+    protected final boolean fieryVisuals;
     protected final boolean breaksBlocks;
     protected final boolean canDamageSelf;
 
@@ -155,7 +157,7 @@ public class FlanExplosion extends Explosion
     private FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity,
                           ShootableType type, double x, double y, double z, Stats stats, boolean canDamageSelf)
     {
-        this(level, explosive, causingEntity, x, y, z, stats, type.getFireRadius() > 0,
+        this(level, explosive, causingEntity, x, y, z, stats, type.getFireRadius() > 0, type.getFireRadius() > 0,
             shouldBreakBlocks(type, stats),
             type.getSmokeParticleCount(), type.getDebrisParticleCount(), canDamageSelf);
     }
@@ -169,7 +171,7 @@ public class FlanExplosion extends Explosion
         return globallyAllowed && (type.isExplosionBreaksBlocks() || forcedNewExplosion);
     }
 
-    public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, Stats stats, boolean causesFire, boolean breaksBlocks, int smokeCount, int debrisCount, boolean canDamageSelf)
+    public FlanExplosion(Level level, @Nullable Entity explosive, @Nullable LivingEntity causingEntity, double x, double y, double z, Stats stats, boolean causesFire, boolean fieryVisuals, boolean breaksBlocks, int smokeCount, int debrisCount, boolean canDamageSelf)
     {
         super(level, explosive, x, y, z, stats.explosionRadius, causesFire, breaksBlocks ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.KEEP);
 
@@ -181,6 +183,7 @@ public class FlanExplosion extends Explosion
         this.stats = stats;
 
         this.causesFire = causesFire;
+        this.fieryVisuals = fieryVisuals || causesFire;
         this.breaksBlocks = breaksBlocks;
         this.smokeCount = smokeCount;
         this.debrisCount = debrisCount;
@@ -228,7 +231,8 @@ public class FlanExplosion extends Explosion
         // explosion is at least as big as the puffs it scatters. Below that it was the single
         // loudest thing on screen for a round that carries a few grams of filler, and it drowned
         // out the scaled flash and fireball that PacketFlanExplosionParticles now sends instead.
-        if (spawnParticles && stats.explosionRadius >= 2.0F)
+        // A fire explosion skips it too: its fireball is fire throughout, and grey puffs would undo that.
+        if (spawnParticles && stats.explosionRadius >= 2.0F && !fieryVisuals)
             sl.sendParticles(ParticleTypes.EXPLOSION_EMITTER, center.x, center.y, center.z, 1, 0, 0, 0, 0.0);
 
         if (interactsWithBlocks())
@@ -247,7 +251,7 @@ public class FlanExplosion extends Explosion
         {
             PacketHandler.sendToAllAround(new PacketFlanExplosionBlockParticles(center, stats.explosionRadius, sampleBlockBurstPositions(affectedBlockPositions)), center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.explosionRadius), level.dimension());
             PacketHandler.sendToAllAround(new PacketFlanExplosionParticles(center, smokeCount, debrisCount,
-                stats.blastRadius, stats.explosionRadius, stats.fragRadius, stats.fragIntensity),
+                stats.blastRadius, stats.explosionRadius, stats.fragRadius, stats.fragIntensity, fieryVisuals),
                 center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius), level.dimension());
         }
     }

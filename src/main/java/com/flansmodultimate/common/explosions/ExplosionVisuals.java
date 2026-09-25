@@ -324,6 +324,39 @@ public final class ExplosionVisuals
         return Math.min(craterRadius * LANDMARK_RANGE_PER_CRATER, MAX_LANDMARK_RANGE);
     }
 
+    /**
+     * Share of an ordinary explosion's fireball that burns as fire before it cools to the grey
+     * puff. Fire is the first moment of a detonation, smoke is what it leaves, so the hot phase
+     * leads and the grey one outlasts it.
+     */
+    private static final float HOT_FIREBALL_SHARE = 0.4F;
+    /** Share of the stem, from its foot, drawn as animated fire. Burning charges carry it further up. */
+    private static final float HOT_STEM_SHARE = 0.3F;
+    private static final float FIERY_HOT_STEM_SHARE = 0.6F;
+
+    /**
+     * How many ticks from the start the fireball is drawn with the fire-explosion sprite rather
+     * than the grey vanilla puff. A fire explosion burns for all of it. An ordinary one burns for
+     * its opening share, and only from the afterglow threshold up, so the small-calibre rounds
+     * keep the brief grey pop they have always had.
+     */
+    public static int fireballHotTicks(float craterRadius, boolean fiery)
+    {
+        int duration = fireballDurationTicks(craterRadius);
+        if (fiery)
+            return duration;
+        if (!Float.isFinite(craterRadius) || craterRadius < MIN_AFTERGLOW_CRATER_RADIUS)
+            return 0;
+        // At least the opening burst, which is emitted at tick zero.
+        return Math.max(1, Mth.ceil(duration * HOT_FIREBALL_SHARE));
+    }
+
+    /** Share of the stem's steps, from the foot, that are drawn as animated fire. */
+    public static float hotStemShare(boolean fiery)
+    {
+        return fiery ? FIERY_HOT_STEM_SHARE : HOT_STEM_SHARE;
+    }
+
     /** Size of the warm glow laid under the flash, or zero for rounds too small to have one. */
     public static float afterglowScale(float craterRadius)
     {

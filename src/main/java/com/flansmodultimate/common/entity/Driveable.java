@@ -4850,8 +4850,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         float power = configType == null ? 1F : Math.max(0F, configType.getDeathExplosionPower());
         FlanExplosion.Stats stats = new FlanExplosion.Stats(settings.explosionRadius(), power,
             settings.explosionRadius() * 1.5F, blast, settings.explosionRadius(), 0F, fragments);
+        // Drawn as a fire explosion whatever the type's fire radius: fuel and ammunition going up
+        // burn, even when the wreck is not configured to set anything alight.
         new FlanExplosion(level(), this, lastAtkEntity instanceof LivingEntity living ? living : null,
-            centre.x, centre.y, centre.z, stats, settings.fireRadius() > 0F,
+            centre.x, centre.y, centre.z, stats, settings.fireRadius() > 0F, true,
             settings.breaksBlocks() && FlansMod.teamsManager.isDriveablesBreakBlocks(), 8, 4, false);
     }
 

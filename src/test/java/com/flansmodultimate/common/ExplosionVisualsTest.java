@@ -297,6 +297,37 @@ class ExplosionVisualsTest
     }
 
     @Test
+    @DisplayName("Small-calibre HE keeps its grey pop; heavier HE burns first, then cools")
+    void ordinaryFireballsBurnBeforeTheyCool()
+    {
+        for (float massKg : new float[] {FIFTY_CAL_KG, TWENTY_MM_KG})
+            assertEquals(0, ExplosionVisuals.fireballHotTicks(crater(massKg), false),
+                massKg + " kg should not change its fireball");
+
+        float shell = crater(EIGHTY_EIGHT_MM_KG);
+        int hot = ExplosionVisuals.fireballHotTicks(shell, false);
+        assertTrue(hot >= 1, "the opening burst of a shell should be fire");
+        assertTrue(hot < ExplosionVisuals.fireballDurationTicks(shell), "a shell's fireball should cool to smoke");
+    }
+
+    @ParameterizedTest(name = "a fire explosion of {0} kg burns for its whole fireball")
+    @ValueSource(floats = {0.002F, 0.06F, 1.0F, 10.0F})
+    @DisplayName("A fire explosion never cools to the grey puff")
+    void fireExplosionsBurnThroughout(float massKg)
+    {
+        float crater = crater(massKg);
+        assertEquals(ExplosionVisuals.fireballDurationTicks(crater), ExplosionVisuals.fireballHotTicks(crater, true));
+    }
+
+    @Test
+    @DisplayName("A fire explosion's stem burns further up than an ordinary one's")
+    void fireExplosionsBurnHigherUpTheStem()
+    {
+        assertTrue(ExplosionVisuals.hotStemShare(true) > ExplosionVisuals.hotStemShare(false));
+        assertTrue(ExplosionVisuals.hotStemShare(false) > 0F && ExplosionVisuals.hotStemShare(true) <= 1F);
+    }
+
+    @Test
     @DisplayName("An unauthored particle count stays unauthored")
     void aZeroCountIsNotInvented()
     {

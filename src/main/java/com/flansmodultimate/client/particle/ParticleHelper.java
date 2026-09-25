@@ -147,7 +147,20 @@ public final class ParticleHelper
                                       double spread, double drift, float scale, int burstSize,
                                       int durationTicks, float lifetimeScale)
     {
-        int puffLifetime = emitWave(particleType, x, y, z, spread, drift, scale, burstSize, lifetimeScale);
+        spawnSustained(particleType, particleType, 0, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
+    }
+
+    /**
+     * As {@link #spawnSustained(String, double, double, double, double, double, float, int, int, float)},
+     * but waves emitted before {@code hotTicks} use {@code hotParticleType}. That is how a fireball
+     * burns as fire first and then cools to smoke without either sprite being stretched.
+     */
+    public static void spawnSustained(String hotParticleType, String particleType, int hotTicks,
+                                      double x, double y, double z, double spread, double drift,
+                                      float scale, int burstSize, int durationTicks, float lifetimeScale)
+    {
+        String opening = hotTicks > 0 ? hotParticleType : particleType;
+        int puffLifetime = emitWave(opening, x, y, z, spread, drift, scale, burstSize, lifetimeScale);
         if (ACTIVE_EMISSIONS.size() >= MAX_ACTIVE_EMITTERS)
             return;
 
@@ -159,7 +172,7 @@ public final class ParticleHelper
         if (durationTicks <= waveInterval)
             return;
 
-        ACTIVE_EMISSIONS.add(new SustainedEmission(particleType, x, y, z, spread, drift, scale,
+        ACTIVE_EMISSIONS.add(new SustainedEmission(hotParticleType, particleType, hotTicks, x, y, z, spread, drift, scale,
             burstSize, durationTicks, waveInterval, lifetimeScale));
     }
 
@@ -265,7 +278,9 @@ public final class ParticleHelper
 
     private static final class SustainedEmission
     {
+        private final String hotParticleType;
         private final String particleType;
+        private final int hotTicks;
         private final double x;
         private final double y;
         private final double z;
@@ -274,15 +289,17 @@ public final class ParticleHelper
         private final float scale;
         private final int waveSize;
         private final int durationTicks;
-        private final int waveIntervalTicks;
         private final float lifetimeScale;
+        private int nextWaveAge;
         private int age;
 
-        private SustainedEmission(String particleType, double x, double y, double z,
-                                  double spread, double drift, float scale, int waveSize,
-                                  int durationTicks, int waveIntervalTicks, float lifetimeScale)
+        private SustainedEmission(String hotParticleType, String particleType, int hotTicks,
+                                  double x, double y, double z, double spread, double drift, float scale,
+                                  int waveSize, int durationTicks, int firstWaveInterval, float lifetimeScale)
         {
+            this.hotParticleType = hotParticleType;
             this.particleType = particleType;
+            this.hotTicks = hotTicks;
             this.x = x;
             this.y = y;
             this.z = z;
@@ -291,7 +308,7 @@ public final class ParticleHelper
             this.scale = scale;
             this.waveSize = waveSize;
             this.durationTicks = durationTicks;
-            this.waveIntervalTicks = waveIntervalTicks;
+            this.nextWaveAge = firstWaveInterval;
             this.lifetimeScale = lifetimeScale;
         }
 
@@ -299,8 +316,14 @@ public final class ParticleHelper
         private boolean tick()
         {
             age++;
-            if (age % waveIntervalTicks == 0)
-                emitWave(particleType, x, y, z, spread, drift, scale, waveSize, lifetimeScale);
+            if (age >= nextWaveAge && age < durationTicks)
+            {
+                // Paced by each wave's own particles, since the hot and cool sprites live for
+                // different lengths of time and one fixed interval would leave gaps or pile-ups.
+                String type = age < hotTicks ? hotParticleType : particleType;
+                int lifetime = emitWave(type, x, y, z, spread, drift, scale, waveSize, lifetimeScale);
+                nextWaveAge = age + (lifetime > 0 ? lifetime : FALLBACK_WAVE_INTERVAL_TICKS);
+            }
             return age >= durationTicks;
         }
     }
@@ -561,6 +584,7 @@ public final class ParticleHelper
             case FlanParticles.FM_AFTERBURN -> Optional.of(FlansMod.afterburnParticle.get());
             case FlanParticles.FM_BIG_SMOKE -> Optional.of(FlansMod.bigSmokeParticle.get());
             case FlanParticles.FM_DEBRIS_1 -> Optional.of(FlansMod.debris1Particle.get());
+            case FlanParticles.FM_FIRE_EXPLOSION -> Optional.of(FlansMod.fireExplosionParticle.get());
             case FlanParticles.FM_FLARE -> Optional.of(FlansMod.flareParticle.get());
             case FlanParticles.FM_FLASH -> Optional.of(FlansMod.flashParticle.get());
             case FlanParticles.FM_FLAME -> Optional.of(FlansMod.fmFlameParticle.get());

@@ -93,9 +93,15 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
-    public void spawnExplosionSpectacle(Vec3 position, float craterRadius, float blastRadius, boolean groundBurst)
+    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
     {
-        ExplosionSpectacle.spawn(position, craterRadius, blastRadius, groundBurst);
+        ParticleHelper.spawnSustained(hotParticleType, particleType, hotTicks, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
+    }
+
+    @Override
+    public void spawnExplosionSpectacle(Vec3 position, float craterRadius, float blastRadius, boolean groundBurst, boolean fiery)
+    {
+        ExplosionSpectacle.spawn(position, craterRadius, blastRadius, groundBurst, fiery);
     }
 
     @Override
