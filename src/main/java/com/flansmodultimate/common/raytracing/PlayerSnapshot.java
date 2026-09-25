@@ -275,10 +275,10 @@ public class PlayerSnapshot
         if (stack.isEmpty())
             return ArmPose.EMPTY;
 
-        if (stack.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation())
+        if (stack.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation() && !gunItem.isChargingThrow(p, stack))
         {
             ItemStack otherStack = p.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
-            boolean otherAims = otherStack.getItem() instanceof GunItem otherGun && otherGun.useAimingAnimation();
+            boolean otherAims = otherStack.getItem() instanceof GunItem otherGun && otherGun.useAimingAnimation() && !otherGun.isChargingThrow(p, otherStack);
             return otherAims ? ArmPose.BOTH_AIM : ArmPose.AIM;
         }
 

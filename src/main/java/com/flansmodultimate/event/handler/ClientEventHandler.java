@@ -264,8 +264,8 @@ public final class ClientEventHandler
 
         ItemStack main = event.getEntity().getMainHandItem();
         ItemStack off  = event.getEntity().getOffhandItem();
-        boolean mainArmPose = isGunItemWithAiming(main);
-        boolean offArmPose = isGunItemWithAiming(off);
+        boolean mainArmPose = isGunItemWithAiming(player, main);
+        boolean offArmPose = isGunItemWithAiming(player, off);
 
         if (mainArmPose && offArmPose)
         {
@@ -294,9 +294,10 @@ public final class ClientEventHandler
         ModClient.entityRenderContext.remove();
     }
 
-    private static boolean isGunItemWithAiming(ItemStack s)
+    /** A throw being charged keeps the vanilla spear pose instead */
+    private static boolean isGunItemWithAiming(Player player, ItemStack s)
     {
-        return !s.isEmpty() && s.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation();
+        return !s.isEmpty() && s.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation() && !gunItem.isChargingThrow(player, s);
     }
 
     @SubscribeEvent
@@ -360,7 +361,8 @@ public final class ClientEventHandler
             EnumFunction primaryFunction = gunItem.getConfigType().getPrimaryFunction();
             EnumFunction secondaryFunction = gunItem.getConfigType().getSecondaryFunction();
 
-            if (isSecondaryButton && secondaryFunction != EnumFunction.MELEE)
+            // A throw is charged through the vanilla use action, so it must reach the item
+            if (isSecondaryButton && secondaryFunction != EnumFunction.MELEE && secondaryFunction != EnumFunction.THROW)
             {
                 if (mc.hitResult == null || mc.hitResult.getType() == HitResult.Type.MISS)
                 {

@@ -46,6 +46,11 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 {
     protected static final Random rand = new Random();
     protected static final int DEFAULT_SHOOT_DELAY = 2;
+    /** The vanilla trident's charge time */
+    protected static final int DEFAULT_THROW_CHARGE_TIME = 10;
+    protected static final float DEFAULT_SHIELD_BLOCK_CHANCE = 0.5F;
+    /** Blocks every blade and polearm of the melee ladder up to a sledgehammer (9), not energy blades */
+    protected static final float DEFAULT_SHIELD_MAX_BLOCKABLE_MELEE_DAMAGE = 10F;
 
     /** Extended Recoil System */
     protected GunRecoil recoil = new GunRecoil();
@@ -254,6 +259,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected EnumFunction secondaryFunction = EnumFunction.ADS_ZOOM;
     /**
+     * Mass in grams of this weapon when thrown with {@link EnumFunction#THROW}. A positive value
+     * derives the hit damage kinetically from the throw speed, like a bullet with a {@code Mass};
+     * otherwise the gun's {@code Damage} applies.
+     */
+    @Getter
+    protected float throwMass;
+    /** Ticks the throw must be charged before releasing it launches the weapon. */
+    @Getter
+    protected int throwChargeTime = DEFAULT_THROW_CHARGE_TIME;
+    /**
      * If true, then this gun can be dual wielded
      */
     protected boolean oneHanded;
@@ -358,6 +373,15 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected float shieldDamageAbsorption;
+    /**
+     * Chance between 0.00-1.00 that this shield entirely blocks a melee hit from the front. Melee is
+     * governed by this instead of {@link #shieldDamageAbsorption}.
+     */
+    @Getter
+    protected float shieldBlockChance = DEFAULT_SHIELD_BLOCK_CHANCE;
+    /** Melee hits of a weapon stronger than this cannot be blocked, so a lightsaber cuts through a scutum */
+    @Getter
+    protected float shieldMaxBlockableMeleeDamage = DEFAULT_SHIELD_MAX_BLOCKABLE_MELEE_DAMAGE;
 
     //Sounds
     /**
@@ -819,10 +843,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         meleeSound = readSound("MeleeSound", meleeSound, file);
 
         //Looping sounds
-        warmupSound = readValue("WarmupSound", warmupSound, file);
-        loopedSound = readValue("LoopedSound", loopedSound, file);
-        loopedSound = readValue("SpinSound", loopedSound, file);
-        cooldownSound = readValue("CooldownSound", cooldownSound, file);
+        warmupSound = readSound("WarmupSound", warmupSound, file);
+        loopedSound = readSound("LoopedSound", loopedSound, file);
+        loopedSound = readSound("SpinSound", loopedSound, file);
+        cooldownSound = readSound("CooldownSound", cooldownSound, file);
         lockOnSound = readSound("LockOnSound", lockOnSound, file);
         distantShootSound = readSound("DistantSound", distantShootSound, file);
         distantShootSound = readSound("DistantShootSound", distantShootSound, file);
@@ -910,6 +934,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             shieldOrigin = new Vector3f(values[1] / 16F, values[2] / 16F, values[3] / 16F);
             shieldDimensions = new Vector3f(values[4] / 16F, values[5] / 16F, values[6] / 16F);
         });
+        shieldBlockChance = Mth.clamp(readValue("ShieldBlockChance", shieldBlockChance, file), 0F, 1F);
+        shieldMaxBlockableMeleeDamage = readValue("ShieldMaxBlockableMeleeDamage", shieldMaxBlockableMeleeDamage, file);
 
         //Primary Function
         if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && ammo.isEmpty())
@@ -929,6 +955,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         if (readFieldWithOptionalValue("UseCustomMelee", false, file) && primaryFunction != EnumFunction.CUSTOM_MELEE)
             secondaryFunction = EnumFunction.CUSTOM_MELEE;
         secondaryFunction = EnumFunction.get(readValue("SecondaryFunction", secondaryFunction.toString(), file));
+        // Throwing is driven by the vanilla use key, which only the secondary function is bound to.
+        if (primaryFunction == EnumFunction.THROW)
+        {
+            logError("PrimaryFunction Throw is not supported, use SecondaryFunction Throw instead", file);
+            primaryFunction = EnumFunction.SHOOT;
+        }
+
+        //Throwing
+        throwMass = readValue("ThrowMass", throwMass, file);
+        throwChargeTime = Math.max(0, readValue("ThrowChargeTime", throwChargeTime, file));
 
         recoilYaw /= 10F;
         // Zero means "not authored", which is what hands crouching over to
@@ -1406,6 +1442,22 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         }
 
         return stackDamage * ModCommonConfig.get().gunDamageModifier();
+    }
+
+    public boolean isThrowable()
+    {
+        return secondaryFunction == EnumFunction.THROW;
+    }
+
+    /**
+     * The damage dealt when this weapon is thrown and hits an entity. A {@code ThrowMass} makes it
+     * kinetic, from the mass and the throw speed like any other projectile; without one the gun's
+     * {@code Damage} is used as written. Either is rounded to the nearest half point.
+     */
+    public float getThrowDamage(@Nullable ItemStack stack)
+    {
+        float throwDamage = throwMass > 0F ? ShootingHelper.getKineticDamage(throwMass, getBulletSpeed(stack)) : getDamage(stack);
+        return Math.round(throwDamage * 2F) / 2F;
     }
 
     public float getDamageForDisplay(ShootableType type, ItemStack gunStack)

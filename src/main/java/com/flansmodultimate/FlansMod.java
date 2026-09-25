@@ -20,6 +20,7 @@ import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
@@ -136,6 +137,7 @@ public class FlansMod
 
     // Resource Locations
     public static final ResourceLocation PAINTJOB = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "paintjob");
+    public static final ResourceLocation THROWING = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "throwing");
     /** Valid fallback for render APIs which no longer accept an empty resource path. */
     public static final ResourceLocation FALLBACK_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultbullet.png");
     public static final ResourceLocation TEXTURE_BANNER = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/banner.png");
@@ -270,6 +272,12 @@ public class FlansMod
         .updateInterval(20)
         .setShouldReceiveVelocityUpdates(true)
         .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "grenade").toString())
+    );
+    public static final Supplier<? extends EntityType<ThrownGun>> thrownGunEntity = entityRegistry.register("thrown_gun", () -> EntityType.Builder.<ThrownGun>of(ThrownGun::new, MobCategory.MISC)
+        .sized(0.5F, 0.5F)
+        .clientTrackingRange(4)
+        .updateInterval(20)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "thrown_gun").toString())
     );
     public static final Supplier<? extends EntityType<DeployedGun>> deployedGunEntity = entityRegistry.register("deployed_gun", () -> EntityType.Builder.<DeployedGun>of(DeployedGun::new, MobCategory.MISC)
         .sized(DeployedGun.DEFAULT_HITBOX_SIZE, DeployedGun.DEFAULT_HITBOX_SIZE)

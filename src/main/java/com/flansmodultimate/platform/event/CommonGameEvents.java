@@ -60,7 +60,7 @@ public final class CommonGameEvents
     @SubscribeEvent
     public static void onLivingDamage(LivingIncomingDamageEvent event)
     {
-        if (CommonEventHandler.shouldCancelIncomingDamage(event.getEntity(), event.getSource()))
+        if (CommonEventHandler.shouldCancelIncomingDamage(event.getEntity(), event.getSource(), event.getAmount()))
             event.setCanceled(true);
     }
 }

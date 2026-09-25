@@ -540,7 +540,7 @@ public final class ShootingHelper
         if (level.isClientSide)
             return;
 
-        playDetonateSound(level, type, position);
+        playDetonateSound(level, type, position, shootable);
         doExplosion(level, type, position, shootable, causingEntity);
         spreadFire(level, type, position, true);
         spawnExplosionParticles(level, type, position);
@@ -558,9 +558,10 @@ public final class ShootingHelper
         dropItemsOnDetonate(level, type.getDropItemOnHit(), type.getContentPack(), position, shootable);
     }
 
-    private static void playDetonateSound(Level level, ShootableType type, Vec3 position)
+    private static void playDetonateSound(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive)
     {
-        PacketPlaySound.sendSoundPacket(position, ModCommonConfig.get().explosionSoundRange(), level.dimension(), type.getDetonateSound(), true, null);
+        float range = FlanExplosion.soundRange(type.getExplosionStats(explosive));
+        PacketPlaySound.sendSoundPacket(position, range, level.dimension(), type.getDetonateSound(), true, null);
     }
 
     private static void doExplosion(Level level, ShootableType type, Vec3 position, @Nullable Entity explosive, @Nullable LivingEntity causingEntity)

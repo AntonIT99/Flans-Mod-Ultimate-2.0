@@ -522,15 +522,22 @@ public class BulletType extends ShootableType
         float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveCharge));
         float explosionBlastRadius = ExplosionScaling.blastRadius(ModCommonConfig.get().newDamageSystemBlastRadiusReference(), explosiveCharge);
         DamageStats explosionBlastDamage = new DamageStats();
-        explosionBlastDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(explosiveCharge)));
+        explosionBlastDamage.setDamage(ExplosionScaling.blastDamage(ModCommonConfig.get().newDamageSystemExplosiveDamageReference(), explosiveCharge));
         explosionBlastDamage.calculate();
         // The frag envelope has to come from this round's own charge too, not the type's parsed
-        // fragRadius, which was derived from the type-level explosive mass and is wrong for a belt
-        // whose rounds carry different charges.
+        // fragRadius and fragment damage, which were derived from the type-level explosive mass
+        // and are wrong for a belt whose rounds carry different charges.
         float roundFragRadius = fragType != EnumFragType.DEFAULT
             ? ExplosionScaling.fragRadius(fragType.kFragRadius, explosiveCharge) : fragRadius;
+        DamageStats roundFragDamage = explosionFragDamage;
+        if (fragType != EnumFragType.DEFAULT)
+        {
+            roundFragDamage = new DamageStats();
+            roundFragDamage.setDamage(ExplosionScaling.fragDamage(fragType.kFragDamage, explosiveCharge));
+            roundFragDamage.calculate();
+        }
         return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius,
-            explosionBlastDamage, roundFragRadius, fragIntensity, explosionFragDamage,
+            explosionBlastDamage, roundFragRadius, fragIntensity, roundFragDamage,
             Float.isFinite(explosiveCharge) && explosiveCharge > 0F ? explosiveCharge : 0F);
     }
 

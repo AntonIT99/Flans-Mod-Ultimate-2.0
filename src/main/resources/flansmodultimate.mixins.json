@@ -7,11 +7,13 @@
       "EntityDriveableCollisionMixin",
       "LevelDriveableHullsMixin",
       "LivingEntityDamageMixin",
+      "LivingEntityWaterWalkingMixin",
       "PlayerDriveableEdgeMixin",
       "ServerGamePacketListenerDriveableMixin"
   ],
   "client": [
       "BufferSourceAccessor",
+      "CapeLayerMixin",
       "CreateWorldScreenApocalypseMixin",
       "DriveableCameraMixin",
       "EntityNameTagRenderDistanceMixin",

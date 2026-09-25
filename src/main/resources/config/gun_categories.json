@@ -3363,6 +3363,19 @@
         ]
     },
 
+    "Hasta Velitaris": {
+        "properties": {
+            "MeleeDamage": 9,
+            "MuzzleVelocity": 25.0,
+            "RoundsPerMin": 20.0,
+            "Dispersion": 3.0,
+            "ThrowMass": 700
+        },
+        "items": [
+            "romanjavelin"
+        ]
+    },
+
     "HCAR": {
         "properties": {
             "MuzzleVelocity": 850.0,
@@ -5211,6 +5224,19 @@
         ]
     },
 
+    "Pilum": {
+        "properties": {
+            "MeleeDamage": 9,
+            "MuzzleVelocity": 20.0,
+            "RoundsPerMin": 15.0,
+            "Dispersion": 3.0,
+            "ThrowMass": 2000
+        },
+        "items": [
+            "romanpilum"
+        ]
+    },
+
     "Plane-Launching Longbow (Fictional)": {
         "properties": {
             "MuzzleVelocity": 300,
@@ -5246,7 +5272,8 @@
             "pilum",
             "javelin",
             "kontos",
-            "sarissa"
+            "sarissa",
+            "romanspear"
         ]
     },
 
@@ -5633,6 +5660,57 @@
             "policeshield",
             "mwriotshield",
             "zomriotshield"
+        ]
+    },
+
+    "Shield Block Large (Generic)": {
+        "properties": {
+            "ShieldBlockChance": 0.60,
+            "ShieldMaxBlockableMeleeDamage": 10
+        },
+        "items": [
+            "scutum",
+            "aspis",
+            "aspiscarthago",
+            "boetianshield",
+            "sparabara",
+            "romanlegionnaireshield",
+            "romanlegionnaireshield_2"
+        ]
+    },
+
+    "Shield Block Medium (Generic)": {
+        "properties": {
+            "ShieldBlockChance": 0.50,
+            "ShieldMaxBlockableMeleeDamage": 10
+        },
+        "items": [
+            "romanauxiliashield",
+            "roundshieldslav",
+            "skirmishshield"
+        ]
+    },
+
+    "Shield Block Riot (Generic)": {
+        "properties": {
+            "ShieldBlockChance": 0.70,
+            "ShieldMaxBlockableMeleeDamage": 10
+        },
+        "items": [
+            "mwriotshield",
+            "zomriotshield",
+            "policeshield",
+            "cloneriotshield"
+        ]
+    },
+
+    "Shield Block Small (Generic)": {
+        "properties": {
+            "ShieldBlockChance": 0.40,
+            "ShieldMaxBlockableMeleeDamage": 10
+        },
+        "items": [
+            "parma"
         ]
     },
 

@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -24,6 +25,7 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
@@ -38,6 +40,8 @@ import java.util.UUID;
 public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 {
     private static final int EFFECT_CHECK_PERIOD = 40; // every 2 seconds
+    /** Deepest water an OnWaterWalking wearer may stand in; standing on a still surface is about 0.39 blocks. */
+    private static final double WATER_WALKING_MAX_DEPTH = 0.5;
     protected static final int EFFECT_DURATION = 600; // 30 seconds
     protected static final int EFFECT_REFRESH_THRESHOLD = 60; // refresh when < 3 seconds remaining
     protected static final Map<UUID, Set<Holder<MobEffect>>> LAST_ARMOR_EFFECTS = new HashMap<>();
@@ -367,27 +371,34 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
     public static void handleSpecialEffects(LivingEntity entity)
     {
-        boolean waterWalk = false;
-        boolean negateFall = false;
-
-        for (ItemStack armor : entity.getArmorSlots()) {
-            if (armor.getItem() instanceof CustomArmorItem armorItem)
+        for (ItemStack armor : entity.getArmorSlots())
+        {
+            if (armor.getItem() instanceof CustomArmorItem armorItem && armorItem.configType.isNegateFallDamage())
             {
-                waterWalk |= armorItem.configType.isOnWaterWalking();
-                negateFall |= armorItem.configType.isNegateFallDamage();
+                entity.fallDistance = 0F;
+                return;
             }
         }
+    }
 
-        if (negateFall)
-            entity.fallDistance = 0F;
+    /**
+     * Whether {@code entity} can stand on the surface of {@code fluid} because it wears
+     * {@code OnWaterWalking} armor. Runs on both sides from collision and travel code.
+     *
+     * <p>Only an entity that is at most ankle-deep qualifies, so a wearer who is already
+     * submerged keeps normal swimming physics and can still reach the surface.</p>
+     */
+    public static boolean canWalkOnFluid(LivingEntity entity, FluidState fluid)
+    {
+        if (!fluid.is(FluidTags.WATER) || entity.getFluidHeight(FluidTags.WATER) > WATER_WALKING_MAX_DEPTH)
+            return false;
 
-        // If in water and near surface, keep them from sinking
-        if (waterWalk && entity.isInWater() && entity.getDeltaMovement().y < 0)
+        for (ItemStack armor : entity.getArmorSlots())
         {
-            Vec3 v = entity.getDeltaMovement();
-            entity.setDeltaMovement(v.x, 0.08, v.z);
-            entity.fallDistance = 0;
+            if (armor.getItem() instanceof CustomArmorItem armorItem && armorItem.configType.isOnWaterWalking())
+                return true;
         }
+        return false;
     }
 
     public static void handleJumpModifier(LivingEntity entity)

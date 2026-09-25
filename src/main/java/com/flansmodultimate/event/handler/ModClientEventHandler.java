@@ -22,6 +22,7 @@ import com.flansmodultimate.client.particle.LegacyExplodeParticle;
 import com.flansmodultimate.client.particle.RocketExhaustParticle;
 import com.flansmodultimate.client.particle.SmokeBurstParticle;
 import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
+import com.flansmodultimate.client.render.ArmorCapeLayer;
 import com.flansmodultimate.client.render.ClientHudOverlays;
 import com.flansmodultimate.client.render.CustomArmorLayer;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
@@ -35,9 +36,11 @@ import com.flansmodultimate.client.render.entity.GrenadeRenderer;
 import com.flansmodultimate.client.render.entity.InvisibleEntityRenderer;
 import com.flansmodultimate.client.render.entity.ParachuteRenderer;
 import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
+import com.flansmodultimate.client.render.entity.ThrownGunRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
@@ -113,6 +116,13 @@ public final class ModClientEventHandler
                         return tag.contains(IPaintableItem.NBT_PAINTJOB_ID) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
                     });
                 }
+
+                // Like the trident's, lets a model switch to a raised pose while a throw is charged
+                if (item.get() instanceof GunItem gunItem && gunItem.getConfigType().isThrowable())
+                {
+                    ItemProperties.register(item.get(), FlansMod.THROWING, (stack, level, entity, seed) ->
+                        entity != null && gunItem.isChargingThrow(entity, stack) ? 1F : 0F);
+                }
             }
             ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
@@ -165,6 +175,7 @@ public final class ModClientEventHandler
             if (renderer instanceof PlayerRenderer playerRenderer)
             {
                 playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer));
+                playerRenderer.addLayer(new ArmorCapeLayer<>(playerRenderer));
             }
         }
 
@@ -176,6 +187,7 @@ public final class ModClientEventHandler
             if (renderer instanceof LivingEntityRenderer<?, ?> livingRenderer && livingRenderer.getModel() instanceof HumanoidModel<?>)
             {
                 livingRenderer.addLayer(new CustomArmorLayer<>((RenderLayerParent) livingRenderer));
+                livingRenderer.addLayer(new ArmorCapeLayer<>((RenderLayerParent) livingRenderer));
             }
         }
     }
@@ -185,6 +197,7 @@ public final class ModClientEventHandler
     {
         event.registerEntityRenderer(FlansMod.bulletEntity.get(), BulletRenderer::new);
         event.registerEntityRenderer(FlansMod.grenadeEntity.get(), GrenadeRenderer::new);
+        event.registerEntityRenderer(FlansMod.thrownGunEntity.get(), ThrownGunRenderer::new);
         event.registerEntityRenderer(FlansMod.deployedGunEntity.get(), DeployableGunRenderer::new);
         event.registerEntityRenderer(FlansMod.aaGunEntity.get(), AAGunRenderer::new);
         event.registerEntityRenderer(FlansMod.parachuteEntity.get(), ParachuteRenderer::new);
@@ -274,6 +287,7 @@ public final class ModClientEventHandler
             VehicleThermalRenderer.reset();
             ModelCache.reload();
             PlayerSkinOverrides.clearValidationCache();
+            ArmorCapeLayer.clearValidationCache();
             ContentManager.logMissingModelTextures(rm);
         });
     }

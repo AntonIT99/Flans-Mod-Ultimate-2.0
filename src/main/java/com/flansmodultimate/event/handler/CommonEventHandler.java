@@ -22,6 +22,7 @@ import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -62,16 +63,22 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
@@ -347,16 +354,79 @@ public final class CommonEventHandler
 
     /**
      * Whether incoming damage is cancelled before any processing: entities riding Flan vehicles are immune,
-     * and the Teams game type may reject the attack.
+     * the Teams game type may reject the attack, and a shield may block a melee hit or a thrown projectile.
      */
-    public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source)
+    public static boolean shouldCancelIncomingDamage(LivingEntity entity, DamageSource source, float amount)
     {
         boolean cancel = entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat;
 
         if (!entity.level().isClientSide && entity instanceof ServerPlayer player
             && FlansMod.teamsManager.getCurrentGameType().map(type -> !type.playerAttacked(player, source)).orElse(false))
             cancel = true;
+
+        if (!cancel && !entity.level().isClientSide && entity instanceof Player player && tryShieldBlock(player, source, amount))
+            cancel = true;
         return cancel;
+    }
+
+    /**
+     * Rolls the {@code ShieldBlockChance} of the best shield held against a hit from the front: a melee hit,
+     * vanilla or custom melee alike, or a blockable projectile such as an arrow or a thrown gun. A blocked hit
+     * deals no damage at all, but one stronger than the shield's {@code ShieldMaxBlockableMeleeDamage} cannot
+     * be blocked.
+     */
+    private static boolean tryShieldBlock(Player player, DamageSource source, float amount)
+    {
+        if (!isShieldBlockable(source) || !isAttackFromFront(player, source))
+            return false;
+
+        float hitStrength = getShieldBlockHitStrength(source, amount);
+
+        float blockChance = 0F;
+        for (InteractionHand hand : InteractionHand.values())
+        {
+            if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield()
+                && hitStrength <= gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
+                blockChance = Math.max(blockChance, gunItem.getConfigType().getShieldBlockChance());
+        }
+
+        if (blockChance <= 0F || player.getRandom().nextFloat() >= blockChance)
+            return false;
+
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1F, 0.8F + player.getRandom().nextFloat() * 0.4F);
+        return true;
+    }
+
+    /**
+     * How strong a hit is against {@code ShieldMaxBlockableMeleeDamage}: a Flan's weapon counts with its
+     * {@code MeleeDamage}, thrown or swung, other melee with the attacker's attack damage and other
+     * projectiles with the damage they deal.
+     */
+    private static float getShieldBlockHitStrength(DamageSource source, float amount)
+    {
+        if (source.getDirectEntity() instanceof ThrownGun thrownGun)
+            return thrownGun.getGunType() != null ? thrownGun.getGunType().getMeleeDamage(thrownGun.getWeapon(), false) : amount;
+        if (!isMeleeDamage(source))
+            return amount;
+
+        Entity attacker = source.getEntity();
+        if (attacker instanceof LivingEntity living && living.getMainHandItem().getItem() instanceof GunItem gunItem)
+            return gunItem.getConfigType().getMeleeDamage(living.getMainHandItem(), false);
+        return attacker instanceof LivingEntity living ? (float) living.getAttributeValue(Attributes.ATTACK_DAMAGE) : amount;
+    }
+
+    /** Melee, thrown guns and vanilla projectiles; Flan's bullets and grenades meet the shield hitbox instead */
+    private static boolean isShieldBlockable(DamageSource source)
+    {
+        return isMeleeDamage(source) || source.getDirectEntity() instanceof ThrownGun
+            || source.is(DamageTypeTags.IS_PROJECTILE) && !FlanDamageSources.isShootableDamage(source);
+    }
+
+    /** A direct hit by a player or mob, or a Flan's custom melee swing */
+    private static boolean isMeleeDamage(DamageSource source)
+    {
+        return source.is(FlanDamageSources.MELEE) || source.is(DamageTypes.PLAYER_ATTACK)
+            || source.is(DamageTypes.MOB_ATTACK) || source.is(DamageTypes.MOB_ATTACK_NO_AGGRO);
     }
 
     /** Applies Flan damage modifiers once shields and attack cooldown have been handled. */
@@ -374,7 +444,8 @@ public final class CommonEventHandler
         if (entity instanceof Player player)
         {
             float absorption = getShieldAbsorption(player);
-            if (absorption > 0F && !FlanDamageSources.isShootableDamage(source) && isAttackFromFront(player, source))
+            // Melee and thrown projectiles are instead blocked outright, or not at all, by ShieldBlockChance
+            if (absorption > 0F && !FlanDamageSources.isShootableDamage(source) && !isShieldBlockable(source) && isAttackFromFront(player, source))
             {
                 damage.setAmount(damage.amount() * (1F - absorption));
             }
@@ -415,7 +486,10 @@ public final class CommonEventHandler
             return true;
 
         Vec3 playerLook = player.getLookAngle();
-        Vec3 toAttacker = player.position().vectorTo(attacker.position()).normalize();
+        // A projectile has already reached the player, so the side it came from is where it flies from
+        Vec3 toAttacker = attacker instanceof Projectile projectile && projectile.getDeltaMovement().lengthSqr() > 1.0E-6
+            ? projectile.getDeltaMovement().reverse().normalize()
+            : player.position().vectorTo(attacker.position()).normalize();
         if (toAttacker.lengthSqr() < 0.001)
             return true;
 
@@ -457,7 +531,7 @@ public final class CommonEventHandler
     }
 
     /**
-     * The icon shown in the feed. Projectiles know the gun that fired them; thrown weapons and
+     * The icon shown in the feed. Projectiles know the gun that fired them and thrown guns know themselves;
      * melee kills fall back to the weapon the killer is holding.
      */
     @Nullable
@@ -468,6 +542,8 @@ public final class CommonEventHandler
             return bullet.getFiredShot().getFireableGun().getType();
         if (source.getDirectEntity() instanceof Shootable shootable)
             return shootable.getConfigType();
+        if (source.getDirectEntity() instanceof ThrownGun thrownGun)
+            return thrownGun.getGunType();
         if (!FlanDamageSources.isShootableDamage(source) && !source.is(FlanDamageSources.MELEE)
             && !source.is(FlanDamageSources.EXPLOSION))
             return null;

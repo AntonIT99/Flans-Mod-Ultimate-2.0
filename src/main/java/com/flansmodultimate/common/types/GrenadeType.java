@@ -134,7 +134,7 @@ public class GrenadeType extends ShootableType
         //Grenade Throwing
         throwDelay = readValue("ThrowDelay", throwDelay, file);
         meleeDamage = readValue("MeleeDamage", meleeDamage, file);
-        throwSound = readValue("ThrowSound", throwSound, file);
+        throwSound = readSound("ThrowSound", throwSound, file);
         dropItemOnThrow = readValue("DropItemOnThrow", dropItemOnThrow, file);
         canThrow = readValue("CanThrow", canThrow, file);
         penetratesBlocks = readValue("PenetratesBlocks", penetratesBlocks, file);

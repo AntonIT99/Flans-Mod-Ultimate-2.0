@@ -20,7 +20,9 @@ public interface ICustomItemRenderer
         CustomItemRenderers.SKIP_BEWLR.set(true);
         try
         {
-            ir.renderStatic(stack, itemDisplayContext, light, overlay, pose, buffers, null, 0);
+            // The left-hand flag mirrors the model's left-hand transform, as vanilla does for held items
+            boolean leftHand = itemDisplayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || itemDisplayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
+            ir.renderStatic(null, stack, itemDisplayContext, leftHand, pose, buffers, null, light, overlay, 0);
         }
         finally
         {

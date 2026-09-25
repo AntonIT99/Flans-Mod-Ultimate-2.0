@@ -8,7 +8,9 @@ public enum EnumFunction
     ZOOM,
     ADS_ZOOM,
     MELEE,
-    CUSTOM_MELEE;
+    CUSTOM_MELEE,
+    /** Hold to charge and release to throw the weapon itself, like a trident. Secondary function only. */
+    THROW;
 
     public boolean isZoom()
     {
@@ -28,6 +30,7 @@ public enum EnumFunction
             case "zoom" -> ZOOM;
             case "melee" -> MELEE;
             case "custommelee", "custom_melee" -> CUSTOM_MELEE;
+            case "throw" -> THROW;
             default -> ADS_ZOOM;
         };
     }

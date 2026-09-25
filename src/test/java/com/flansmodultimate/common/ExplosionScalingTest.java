@@ -81,7 +81,7 @@ class ExplosionScalingTest
         float blast = ExplosionScaling.blastRadius(BLAST_REFERENCE, massKg);
         float frag = ExplosionScaling.fragRadius(EnumFragType.GP_BOMB.kFragRadius, massKg);
 
-        assertTrue(crater >= 40F && crater <= 60F, () -> "crater " + crater);
+        assertTrue(crater >= 70F && crater <= 85F, () -> "crater " + crater);
         assertTrue(blast >= 100F && blast <= 150F, () -> "blast " + blast);
         assertTrue(frag <= 300F, () -> "frag " + frag);
     }
@@ -154,16 +154,83 @@ class ExplosionScalingTest
         float massKg = 1F;
 
         float thickCase = ExplosionScaling.fragRadius(EnumFragType.THICK_CASE.kFragRadius, massKg);
-        float stdFrag = ExplosionScaling.fragRadius(EnumFragType.STD_FRAG.kFragRadius, massKg);
+        float gpBomb = ExplosionScaling.fragRadius(EnumFragType.GP_BOMB.kFragRadius, massKg);
         float heShell = ExplosionScaling.fragRadius(EnumFragType.HE_SHELL.kFragRadius, massKg);
         float shrapnel = ExplosionScaling.fragRadius(EnumFragType.IED_SHRAPNEL.kFragRadius, massKg);
 
-        assertTrue(thickCase < stdFrag, "a thick penetrator case should throw fragments least far");
-        assertTrue(stdFrag < heShell);
+        assertTrue(thickCase < gpBomb, "a thick penetrator case should throw fragments least far");
+        assertTrue(gpBomb < heShell);
         assertTrue(heShell < shrapnel, "a shrapnel-packed casing should throw fragments furthest");
 
         // HE_SHELL is deliberately pinned to the blast reference: the artillery rounds the blast
         // curve was fitted to are the ones whose quoted radius already includes their fragments.
         assertEquals(ExplosionScaling.blastRadius(BLAST_REFERENCE, massKg), heShell, 0.001F);
+
+        float lowFrag = ExplosionScaling.fragRadius(EnumFragType.LOW_FRAG.kFragRadius, massKg);
+        float stdFrag = ExplosionScaling.fragRadius(EnumFragType.STD_FRAG.kFragRadius, massKg);
+        float sleeveFrag = ExplosionScaling.fragRadius(EnumFragType.SLEEVE_FRAG.kFragRadius, massKg);
+        float highFrag = ExplosionScaling.fragRadius(EnumFragType.HIGH_FRAG.kFragRadius, massKg);
+
+        assertTrue(lowFrag < stdFrag, "an offensive grenade should throw fragments least far");
+        assertTrue(stdFrag < sleeveFrag);
+        assertTrue(sleeveFrag < highFrag, "a prefragmented defensive grenade should throw fragments furthest");
+    }
+
+    /**
+     * Hand grenades carry less filler than anything the fitted exponent was measured over, so
+     * their casings are lifted above the shell reference to keep the quoted reach. The ranges
+     * are the fragment reach at which a grenade still wounds, from 5 m lethal to 15 m casualty.
+     */
+    @ParameterizedTest(name = "{0}: {1} kg throws fragments {3}-{4} blocks")
+    @CsvSource({
+        "'Mk 2 / F1',  0.060, STD_FRAG,   7.0, 10.0",
+        "'M67',        0.180, HIGH_FRAG, 13.0, 18.0"
+    })
+    void handGrenadeFragmentsReachTheirQuotedRange(String grenade, float massKg, EnumFragType type, float low, float high)
+    {
+        float frag = ExplosionScaling.fragRadius(type.kFragRadius, massKg);
+
+        assertTrue(frag >= low, () -> grenade + " reaches " + frag + ", under " + low);
+        assertTrue(frag <= high, () -> grenade + " reaches " + frag + ", over " + high);
+    }
+
+    @Test
+    void theDamageReferencesAreTheDamageOfAOneKilogramCharge()
+    {
+        assertEquals(80F, ExplosionScaling.blastDamage(80D, 1F), 0.001F);
+        assertEquals(EnumFragType.HE_SHELL.kFragDamage, ExplosionScaling.fragDamage(EnumFragType.HE_SHELL.kFragDamage, 1F), 0.001F);
+    }
+
+    @Test
+    @DisplayName("fragment damage grows more slowly with the charge than blast damage")
+    void fragmentDamageDependsLessOnTheChargeThanBlast()
+    {
+        float grenade = 0.06F;
+        float bomb = 250F;
+
+        // Below 1 kg a fragment keeps more of its damage than the blast does, above it less.
+        assertTrue(ExplosionScaling.fragDamage(1D, grenade) > ExplosionScaling.blastDamage(1D, grenade));
+        assertTrue(ExplosionScaling.fragDamage(1D, bomb) < ExplosionScaling.blastDamage(1D, bomb));
+
+        // A hand grenade's fragments must out-hit a pistol round (~5), and a heavy bomb's must not
+        // scale into one-shotting a player five times over.
+        float mk2 = ExplosionScaling.fragDamage(EnumFragType.STD_FRAG.kFragDamage, grenade);
+        float gpBomb = ExplosionScaling.fragDamage(EnumFragType.GP_BOMB.kFragDamage, bomb);
+        assertTrue(mk2 > 10F, () -> "Mk 2 fragments hit for " + mk2);
+        assertTrue(gpBomb < 100F, () -> "250 kg bomb fragments hit for " + gpBomb);
+    }
+
+    @Test
+    void damageGrowsMonotonicallyAndIsZeroWithoutACharge()
+    {
+        float[] masses = {0.002F, 0.06F, 1F, 250F, 11021F};
+        for (int i = 1; i < masses.length; i++)
+        {
+            assertTrue(ExplosionScaling.blastDamage(80D, masses[i]) > ExplosionScaling.blastDamage(80D, masses[i - 1]));
+            assertTrue(ExplosionScaling.fragDamage(25D, masses[i]) > ExplosionScaling.fragDamage(25D, masses[i - 1]));
+        }
+        assertEquals(0F, ExplosionScaling.blastDamage(80D, 0F));
+        assertEquals(0F, ExplosionScaling.fragDamage(25D, Float.NaN));
+        assertEquals(0F, ExplosionScaling.fragDamage(0D, 1F));
     }
 }

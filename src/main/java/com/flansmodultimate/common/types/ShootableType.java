@@ -88,28 +88,40 @@ public abstract class ShootableType extends InfoType
      * comparable. HE_SHELL sits exactly on the blast reference, because the artillery rounds the
      * blast curve was fitted to are the ones whose quoted casualty radius includes their
      * fragments; thinner casings reach less far and shrapnel-packed ones further.
+     * <p>
+     * The hand-grenade casings (STD_FRAG, SLEEVE_FRAG, HIGH_FRAG) sit above that reference on
+     * purpose. Their tens of grams of filler fall below the range the fitted exponent was
+     * measured over, and taking the curve literally left a Mk 2 with a 5 block fragment reach
+     * against a ~15 m real casualty radius. They are only used by grenades, so the boost does
+     * not leak into shells or bombs. LOW_FRAG is shared with blast bombs and mines and keeps
+     * its short reach.
+     * <p>
+     * {@code kFragDamage} is the peak fragment damage of a 1 kg charge. It is tuned so that
+     * fragments, not overpressure, carry most of a grenade's lethality, as they do in reality.
+     * Armour on a vehicle part blocks the fragment channel entirely, so this does not change
+     * damage against armoured vehicles.
      */
     public enum EnumFragType
     {
         DEFAULT(0.0f, 0.0f, 0.0f),
         /** Thin casing / offensive or concussion style (e.g., Stielhandgranate 24). */
-        LOW_FRAG(9.5f, 6.0f, 0.9f),
+        LOW_FRAG(9.5f, 15.0f, 0.9f),
         /** Typical fragmentation grenade (e.g., Mills bomb, Mk 2, many “standard” frags). */
-        STD_FRAG(15.5f, 10.0f, 2.2f),
+        STD_FRAG(25.0f, 25.0f, 2.2f),
         /** Defensive sleeve / fragmentation jacket fitted to a grenade body. */
-        SLEEVE_FRAG(18.5f, 11.0f, 2.8f),
+        SLEEVE_FRAG(29.5f, 27.5f, 2.8f),
         /** Defensive / prefragmented / scored casing with a larger casualty radius. */
-        HIGH_FRAG(20.0f, 12.0f, 3.0f),
+        HIGH_FRAG(32.0f, 30.0f, 3.0f),
         /** Shrapnel-packed / IED-style (nails, ball bearings, pipe bomb). */
-        IED_SHRAPNEL(26.5f, 14.0f, 4.0f),
+        IED_SHRAPNEL(26.5f, 35.0f, 4.0f),
         /** Artillery / mortar / HE rocket type casing fragments. */
-        HE_SHELL(22.0f, 13.0f, 3.8f),
+        HE_SHELL(22.0f, 32.5f, 3.8f),
         /** General-purpose aerial bomb fragments (blast dominates, fragments still dangerous). */
-        GP_BOMB(17.5f, 13.0f, 2.6f),
+        GP_BOMB(17.5f, 32.5f, 2.6f),
         /** Thick-case / penetrator / “earthquake” style (less long-range frag emphasis). */
-        THICK_CASE(12.5f, 10.0f, 1.4f),
+        THICK_CASE(12.5f, 25.0f, 1.4f),
         /** Airburst / proximity-fused anti-personnel (optimized fragment distribution). */
-        AIRBURST_AP(24.0f, 12.0f, 3.2f);
+        AIRBURST_AP(24.0f, 30.0f, 3.2f);
 
         public final float kFragRadius;
         public final float kFragDamage;
@@ -464,7 +476,7 @@ public abstract class ShootableType extends InfoType
             if (explosiveMass > 0F)
             {
                 explosionFragDamage = new DamageStats();
-                explosionFragDamage.setDamage((float) (fragType.kFragDamage * Math.cbrt(explosiveMass)));
+                explosionFragDamage.setDamage(ExplosionScaling.fragDamage(fragType.kFragDamage, explosiveMass));
                 fragRadius = ExplosionScaling.fragRadius(fragType.kFragRadius, explosiveMass);
             }
             fragIntensity = fragType.fragIntensity;
@@ -476,7 +488,7 @@ public abstract class ShootableType extends InfoType
         explosionBlastDamage.calculate();
 
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
-        detonateSound = readValue("DetonateSound", detonateSound, file);
+        detonateSound = readSound("DetonateSound", detonateSound, file);
 
         //Particles
         smokeParticleCount = readValue("FlareParticleCount", smokeParticleCount, file);
@@ -516,7 +528,7 @@ public abstract class ShootableType extends InfoType
         if (useNewExplosionSystem())
         {
             DamageStats newExplosionDamage = new DamageStats();
-            newExplosionDamage.setDamage((float) (ModCommonConfig.get().newDamageSystemExplosiveDamageReference() * Math.cbrt(getExplosiveMass())));
+            newExplosionDamage.setDamage(ExplosionScaling.blastDamage(ModCommonConfig.get().newDamageSystemExplosiveDamageReference(), getExplosiveMass()));
             newExplosionDamage.calculate();
             return newExplosionDamage;
         }
