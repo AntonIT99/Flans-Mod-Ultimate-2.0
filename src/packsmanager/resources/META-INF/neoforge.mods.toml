@@ -4,7 +4,7 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="flansmodultimate_packs_manager"
-version="1.0"
+version="${module_version}"
 displayName="Flan's Mod Ultimate 2: Packs Manager"
 authors="Wolff"
 description='''Companion mod for Flan's Mod Ultimate 2 that lets mod authors bundle legacy content packs inside a mod jar and extracts those packs into the configured content-pack directory at startup.'''

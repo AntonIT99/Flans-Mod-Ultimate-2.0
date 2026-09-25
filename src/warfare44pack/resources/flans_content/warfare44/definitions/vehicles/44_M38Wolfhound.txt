@@ -163,7 +163,6 @@ DriverTraverseSounds true
 ShootSoundPrimary Shoot_75mmUS
 ShootSoundSecondary 30CalShoot
 PlaceSoundPrimary TankPlace
-SoundsPlaceTimePrimary 60
 ShootReloadSound Breach
 VehicleGunReloadTick 40
 

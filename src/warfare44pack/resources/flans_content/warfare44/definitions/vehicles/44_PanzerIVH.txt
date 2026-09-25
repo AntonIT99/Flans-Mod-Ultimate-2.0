@@ -77,7 +77,6 @@ RightLinkPoint [-40,11,-23.2]
 RightLinkPoint [30,13,-23.2]
 RightLinkPoint [45,12,-23.2]
 FixTrackLink 4
-FlipLinkFix false
 
 // Weapons
 ReadWeaponsFromGunTypes true
@@ -184,7 +183,6 @@ heliGuiSeat 1 true
 heliGUI warfare44_gercomm
 
 // Countermeasures
-HasSmoke True
 AddSmokePoint [12,35,-16] [1,0.75,-0.05] 20 turret
 AddSmokePoint [15,34,-16] [0.7,0.75,-0.3] 20 turret
 AddSmokePoint [17,34,-15] [0.5,0.75,-0.5] 20 turret

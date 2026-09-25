@@ -119,7 +119,6 @@ BackSoundRange 25
 ShootSoundPrimary None
 ShootSoundSecondary None
 PlaceSoundPrimary TankPlace
-SoundsPlaceTimePrimary 60
 ReloadSoundSecondary Mg34Reload
 
 // Effects

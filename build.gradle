@@ -172,6 +172,14 @@ ext.registerFmuModule = { Map module ->
         }
     }
 
+    // The module's neoforge.mods.toml takes its version from archiveVersion.
+    tasks.named(source.processResourcesTaskName, ProcessResources).configure {
+        inputs.property('moduleVersion', module.archiveVersion.toString())
+        filesMatching('META-INF/neoforge.mods.toml') {
+            expand(module_version: module.archiveVersion.toString())
+        }
+    }
+
     def jarTask = tasks.register(module.jarTask.toString(), Jar) {
         archiveBaseName.set(module.archiveBaseName.toString())
         archiveVersion.set(module.archiveVersion.toString())
@@ -392,6 +400,15 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Vendor'   : mod_authors,
                 'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
+    }
+}
+
+// The packs manager's neoforge.mods.toml takes its version from packs_manager_version.
+String packsManagerVersion = packs_manager_version
+tasks.named(sourceSets.packsmanager.processResourcesTaskName, ProcessResources).configure {
+    inputs.property('packsManagerVersion', packsManagerVersion)
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand(module_version: packsManagerVersion)
     }
 }
 

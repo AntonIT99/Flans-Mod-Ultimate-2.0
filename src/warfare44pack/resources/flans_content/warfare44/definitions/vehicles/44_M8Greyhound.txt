@@ -49,7 +49,6 @@ WheelPosition 2 32 -8 18
 WheelPosition 3 32 -8 -18
 WheelSpringStrength 0.5
 FixTrackLink 4
-FlipLinkFix false
 
 // Weapons
 ReadWeaponsFromGunTypes true
@@ -167,7 +166,6 @@ DriverTraverseSounds true
 ShootSoundPrimary Shoot_37mUS
 ShootSoundSecondary 30CalShoot
 PlaceSoundPrimary TankPlace
-SoundsPlaceTimePrimary 60
 ShootReloadSound Breach
 VehicleGunReloadTick 40
 

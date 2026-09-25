@@ -45,7 +45,6 @@ SquashMobs True
 WheelStepHeight 2
 PlaceableOnLand True
 PlaceableOnWater True
-FloatOnLand true
 FloatOnWater True
 FloatOffset -1.2
 Buoyancy 0.6
@@ -81,7 +80,6 @@ RightLinkPoint [-38,9,-17.5]
 RightLinkPoint [34,9,-17.5]
 RightLinkPoint [41,9,-17.5]
 FixTrackLink 4
-FlipLinkFix false
 
 // Weapons
 ReadWeaponsFromGunTypes true
