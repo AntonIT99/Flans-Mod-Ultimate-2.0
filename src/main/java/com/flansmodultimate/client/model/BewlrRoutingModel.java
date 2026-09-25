@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
-@SuppressWarnings("deprecation") // BakedModel still requires its legacy bridge methods in 1.21.1.
+@SuppressWarnings("deprecation") // BakedModel still requires the vanilla methods that the loader ModelData variants supersede.
 public class BewlrRoutingModel implements BakedModel
 {
     private final BakedModel delegate;
