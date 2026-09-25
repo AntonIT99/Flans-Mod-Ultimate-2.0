@@ -1,11 +1,13 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -50,7 +52,7 @@ public final class ExplosionSpectacle
     private static final List<Staged> ACTIVE = new ArrayList<>();
 
     /** Plays the staged layers of one detonation. Called from the explosion packet on the client. */
-    public static void spawn(Vec3 position, float craterRadius, float blastRadius, boolean groundBurst)
+    public static void spawn(Vec3 position, float craterRadius, float blastRadius, boolean groundBurst, boolean fiery)
     {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null)
@@ -58,7 +60,7 @@ public final class ExplosionSpectacle
 
         spawnAfterglow(level, position, craterRadius);
 
-        Staged staged = Staged.of(level, position, craterRadius, blastRadius, groundBurst);
+        Staged staged = Staged.of(level, position, craterRadius, blastRadius, groundBurst, fiery);
         if (staged != null && ACTIVE.size() < MAX_ACTIVE && !staged.tick(level))
             ACTIVE.add(staged);
     }
@@ -103,6 +105,20 @@ public final class ExplosionSpectacle
     }
 
     /**
+     * One burst of the animated fire-explosion sprite, drawn {@code size} blocks from its centre to
+     * its edge. It is created through the engine's own provider so it animates like any other.
+     */
+    private static void emitFire(float range, double x, double y, double z, float size)
+    {
+        if (!ParticleHelper.shouldSpawnLandmark(x, y, z, range))
+            return;
+        Particle particle = Minecraft.getInstance().particleEngine.createParticle(
+            FlansMod.fireExplosionParticle.get(), x, y, z, 0D, 0D, 0D);
+        if (particle != null)
+            particle.scale(size / FireExplosionParticle.BASE_SIZE);
+    }
+
+    /**
      * The colour of dust thrown up from this block: its own map colour, pulled toward bare earth.
      * Anything growing on dirt throws dirt, so a meadow gives brown dust and snow or sand keep
      * their own colour.
@@ -141,13 +157,16 @@ public final class ExplosionSpectacle
         private final float stemHeight;
         private final int stemPuffs;
 
+        /** Steps from the foot of the stem, up to this one, that burn with animated fire. */
+        private final int hotStemSteps;
+
         private final int capPuffs;
         private final float capRadius;
 
         private final int duration;
         private int age;
 
-        private Staged(Vec3 position, float craterRadius, double skirtY, float[] dust, float blastRadius)
+        private Staged(Vec3 position, float craterRadius, double skirtY, float[] dust, float blastRadius, boolean fiery)
         {
             this.position = position;
             this.sizingRadius = ExplosionVisuals.stagedSizingRadius(craterRadius);
@@ -166,6 +185,7 @@ public final class ExplosionSpectacle
             this.stemSteps = ExplosionVisuals.fireballStemSteps(craterRadius);
             this.stemHeight = ExplosionVisuals.fireballStemHeight(craterRadius);
             this.stemPuffs = ExplosionVisuals.fireballStemPuffsPerStep(craterRadius);
+            this.hotStemSteps = Mth.ceil(stemSteps * ExplosionVisuals.hotStemShare(fiery));
 
             this.capPuffs = ExplosionVisuals.mushroomCapPuffs(craterRadius);
             this.capRadius = ExplosionVisuals.mushroomCapRadius(craterRadius);
@@ -176,7 +196,7 @@ public final class ExplosionSpectacle
         }
 
         /** The staged layers of this detonation, or {@code null} when it is too small to have any. */
-        private static Staged of(ClientLevel level, Vec3 position, float craterRadius, float blastRadius, boolean groundBurst)
+        private static Staged of(ClientLevel level, Vec3 position, float craterRadius, float blastRadius, boolean groundBurst, boolean fiery)
         {
             if (ExplosionVisuals.dustSkirtWaves(craterRadius) <= 0 && ExplosionVisuals.fireballStemSteps(craterRadius) <= 0)
                 return null;
@@ -198,7 +218,7 @@ public final class ExplosionSpectacle
                 }
                 cursor.move(0, -1, 0);
             }
-            return new Staged(position, craterRadius, skirtY, dust, blastRadius);
+            return new Staged(position, craterRadius, skirtY, dust, blastRadius, fiery);
         }
 
         /** @return true once every layer has played out and this should be dropped */
@@ -267,6 +287,23 @@ public final class ExplosionSpectacle
                     position.z + Math.sin(angle) * distance,
                     random.nextGaussian() * 0.02D, 0.03D + random.nextDouble() * 0.04D, random.nextGaussian() * 0.02D,
                     look, size * (0.8F + random.nextFloat() * 0.4F), lifetime + random.nextInt(30));
+            }
+
+            // The foot of the stem burns. The fire sprite plays out in about half a second, so it is
+            // laid over the lasting puffs rather than instead of them: the fire rolls up the lower
+            // column as it forms, and the puffs are what is left standing once it has burnt out.
+            if (step < hotStemSteps)
+            {
+                for (int i = 0; i < stemPuffs; i++)
+                {
+                    double angle = random.nextDouble() * Mth.TWO_PI;
+                    double distance = width * 0.8D * Math.sqrt(random.nextDouble());
+                    emitFire(landmarkRange,
+                        position.x + Math.cos(angle) * distance,
+                        position.y + height + random.nextGaussian() * width * 0.25D,
+                        position.z + Math.sin(angle) * distance,
+                        size * (0.9F + random.nextFloat() * 0.4F));
+                }
             }
         }
 

@@ -12,6 +12,7 @@ import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.AABB;
 
 /**
  * A soft puff whose colour, growth, drag, buoyancy and glow are chosen by whoever spawns it.
@@ -28,8 +29,6 @@ public class BlastPuffParticle extends TextureSheetParticle
     /** Captured when the provider is registered; the set itself is refilled on every resource reload. */
     @Nullable
     private static SpriteSet sprites;
-    /** Largest drawn half-width, in blocks, at which culling by the particle's centre is still invisible. */
-    private static final float MAX_CULLED_SIZE = 1.0F;
 
     private final Look look;
     private final float baseSize;
@@ -136,16 +135,15 @@ public class BlastPuffParticle extends TextureSheetParticle
     }
 
     /**
-     * The particle engine culls against the particle's bounding box, which is the small collision
-     * box and not the quad that is drawn. For a puff several blocks across that makes the whole
-     * puff vanish as soon as its centre leaves the screen, so a column or cap visibly loses pieces
-     * whenever the camera turns. Culling stays on for puffs small enough that the difference is
-     * under a block, where it cannot be seen.
+     * NeoForge culls against this box, which by default is the small collision box grown by one
+     * block. For a puff several blocks across that would make the whole puff vanish as soon as its
+     * centre left the screen, so a column or cap would visibly lose pieces whenever the camera
+     * turned. The box is grown to the largest quad the puff will draw.
      */
     @Override
-    public boolean shouldCull()
+    public AABB getRenderBoundingBox(float partialTicks)
     {
-        return baseSize * (1F + look.growth()) < MAX_CULLED_SIZE;
+        return getBoundingBox().inflate(Math.max(1.0F, baseSize * (1F + look.growth())));
     }
 
     @Override

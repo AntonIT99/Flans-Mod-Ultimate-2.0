@@ -23,6 +23,7 @@ public final class FlanParticles
     public static final String FM_AFTERBURN = "flansmod.afterburn";
     public static final String FM_BIG_SMOKE = "flansmod.bigsmoke";
     public static final String FM_DEBRIS_1 = "flansmod.debris1";
+    public static final String FM_FIRE_EXPLOSION = "flansmod.fireexplosion";
     public static final String FM_FLARE = "flansmod.flare";
     public static final String FM_FLASH = "flansmod.flash";
     public static final String FM_FLAME = "flansmod.fmflame";

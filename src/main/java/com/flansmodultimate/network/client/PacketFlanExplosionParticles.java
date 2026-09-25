@@ -63,9 +63,11 @@ public class PacketFlanExplosionParticles implements IClientPacket
     private float explosionRadius;
     private float fragRadius;
     private float fragIntensity;
+    /** Drawn as a fire explosion: the fireball burns orange throughout rather than cooling to grey. */
+    private boolean fiery;
 
     public PacketFlanExplosionParticles(Vec3 position, int numSmoke, int numDebris, float blastRadius,
-                                        float explosionRadius, float fragRadius, float fragIntensity)
+                                        float explosionRadius, float fragRadius, float fragIntensity, boolean fiery)
     {
         this.position = position;
         this.numSmoke = numSmoke;
@@ -74,6 +76,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
         this.explosionRadius = explosionRadius;
         this.fragRadius = fragRadius;
         this.fragIntensity = fragIntensity;
+        this.fiery = fiery;
     }
 
     @Override
@@ -88,6 +91,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
         data.writeFloat(explosionRadius);
         data.writeFloat(fragRadius);
         data.writeFloat(fragIntensity);
+        data.writeBoolean(fiery);
     }
 
     @Override
@@ -100,6 +104,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
         explosionRadius = data.readFloat();
         fragRadius = data.readFloat();
         fragIntensity = data.readFloat();
+        fiery = data.readBoolean();
     }
 
     @Override
@@ -136,7 +141,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
 
         // The afterglow, dust skirt, fireball stem and mushroom cap play out over the following
         // ticks, so they draw on later ticks' particle budgets rather than competing with the above.
-        ClientHooks.RENDER.spawnExplosionSpectacle(position, explosionRadius, blastRadius, groundBurst);
+        ClientHooks.RENDER.spawnExplosionSpectacle(position, explosionRadius, blastRadius, groundBurst, fiery);
     }
 
     /**
@@ -249,6 +254,9 @@ public class PacketFlanExplosionParticles implements IClientPacket
      * told to live ten times longer just animates ten times slower. Each puff runs its own
      * animation at its natural speed, and fresh ones keep taking over until the time is up. A
      * small round asks for a duration under one puff's life, which leaves it a single burst.
+     * <p>
+     * The opening waves burn as the fire-explosion sprite and the rest cool to the grey puff, so a
+     * detonation reads as fire turning into smoke. A fire explosion stays fire the whole way.
      */
     private void spawnFireball(float lifetimeScale)
     {
@@ -258,7 +266,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
         double spread = explosionRadius * 0.3D;
         double drift = explosionRadius * 0.02D;
 
-        ClientHooks.RENDER.spawnSustainedParticles(FlanParticles.LARGE_EXPLODE,
+        ClientHooks.RENDER.spawnSustainedParticles(FlanParticles.FM_FIRE_EXPLOSION, FlanParticles.LARGE_EXPLODE,
+            ExplosionVisuals.fireballHotTicks(explosionRadius, fiery),
             position.x, position.y, position.z, spread, drift,
             ExplosionVisuals.fireballScale(explosionRadius),
             ExplosionVisuals.fireballCount(explosionRadius),
