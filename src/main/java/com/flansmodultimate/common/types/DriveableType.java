@@ -478,8 +478,8 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         readSeatBooleanLines("PassengerTraverseSounds", file, SeatInfo::setTraverseSounds);
         readSeatIntLines("PassengerYawSoundLength", file, SeatInfo::setYawSoundLength);
         readSeatIntLines("PassengerPitchSoundLength", file, SeatInfo::setPitchSoundLength);
-        readSeatStringLines("PassengerYawSound", file, SeatInfo::setYawSound);
-        readSeatStringLines("PassengerPitchSound", file, SeatInfo::setPitchSound);
+        readSeatStringLines("PassengerYawSound", file, (seat, sound) -> seat.setYawSound(registerConfiguredSound(sound, file)));
+        readSeatStringLines("PassengerPitchSound", file, (seat, sound) -> seat.setPitchSound(registerConfiguredSound(sound, file)));
     }
 
     private void readWheels(TypeFile file)

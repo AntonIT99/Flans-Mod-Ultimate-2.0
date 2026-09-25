@@ -93,6 +93,24 @@ public class FlanExplosion extends Explosion
     @Nullable
     protected ExplosionCrater deferredCrater;
 
+    /** How far an explosion is heard per block of blast radius. */
+    public static final float SOUND_RANGE_PER_BLAST_BLOCK = 6F;
+    /** Hearing distance of the smallest charges, and of detonations that do not explode at all. */
+    public static final float MIN_SOUND_RANGE = 48F;
+
+    /**
+     * How far an explosion is heard, growing with its blast radius up to the configured
+     * {@code explosionSoundRange}. Minecraft caps loudness at the source, so a sound's volume only
+     * sets how far it carries: without this a hand grenade carried as far as a 10 t bomb.
+     */
+    public static float soundRange(Stats stats)
+    {
+        float maxRange = ModCommonConfig.get().explosionSoundRange();
+        float reach = Math.max(stats.blastRadius(), stats.explosionRadius());
+        float range = Float.isFinite(reach) ? Math.max(MIN_SOUND_RANGE, reach * SOUND_RANGE_PER_BLAST_BLOCK) : maxRange;
+        return Math.min(range, maxRange);
+    }
+
     /**
      * Stats of the Explosion
      * @param explosionRadius radius of main explosion visuals (particles) and block breaking
@@ -225,7 +243,7 @@ public class FlanExplosion extends Explosion
             GameEvent.Context.of(explosive != null ? explosive : causingEntity));
 
         // Sound broadcast (server-side playSound with null player broadcasts)
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, ModCommonConfig.get().explosionSoundRange() / 16F, (1.0F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F);
+        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, soundRange(stats) / 16F, (1.0F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F);
 
         // The vanilla emitter is a fixed size whatever the charge, so it only helps where the
         // explosion is at least as big as the puffs it scatters. Below that it was the single

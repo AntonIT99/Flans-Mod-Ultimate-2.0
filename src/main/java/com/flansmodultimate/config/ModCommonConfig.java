@@ -468,8 +468,8 @@ public final class ModCommonConfig
             .comment("Range in blocks for gun fire sound packets (also determines volume).")
             .defineInRange("gunFireSoundRange", 128.0, 1.0, 4096.0);
         EXPLOSION_SOUND_RANGE = builder
-            .comment("Range in blocks for explosion sound packets (also determines volume).")
-            .defineInRange("explosionSoundRange", 256.0, 1.0, 4096.0);
+            .comment("Maximum range in blocks at which explosions are heard. Each explosion is heard at 6 blocks per block of blast radius (at least 48), up to this cap.")
+            .defineInRange("explosionSoundRange", 1024.0, 1.0, 4096.0);
         builder.pop();
 
         builder.push("Penetration System Settings");

@@ -385,8 +385,16 @@ public abstract class InfoType implements IInfoType
         if (!hasValueForConfigField(key, file))
             return StringUtils.EMPTY;
 
-        String configuredSound = readValue(key, defaultValue, file);
-        if (StringUtils.equalsIgnoreCase(configuredSound, "none"))
+        return registerConfiguredSound(readValue(key, defaultValue, file), file);
+    }
+
+    /**
+     * Turns a configured sound name into the registered sound it plays. Every sound a content pack
+     * names must pass through here, or the client has no sound event for it and plays nothing.
+     */
+    protected static String registerConfiguredSound(String configuredSound, TypeFile file)
+    {
+        if (StringUtils.isBlank(configuredSound) || StringUtils.equalsIgnoreCase(configuredSound, "none"))
             return StringUtils.EMPTY;
 
         String sound = ResourceUtils.sanitize(configuredSound);
