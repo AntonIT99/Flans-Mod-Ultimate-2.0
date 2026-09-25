@@ -6,11 +6,6 @@ plugins {
 }
 
 tasks.named('wrapper', Wrapper).configure {
-    // Define wrapper values here so as to not have to always do so when updating gradlew.properties.
-    // Switching this to Wrapper.DistributionType.ALL will download the full gradle sources that comes with
-    // documentation attached on cursor hover of gradle classes and methods. However, this comes with increased
-    // file size for Gradle. If you do switch this to ALL, run the Gradle wrapper task twice afterwards.
-    // (Verify by checking gradle/wrapper/gradle-wrapper.properties to see if distributionUrl now points to `-all`)
     distributionType = Wrapper.DistributionType.BIN
 }
 
@@ -34,9 +29,6 @@ sourceSets {
         runtimeClasspath += sourceSets.main.runtimeClasspath
     }
     test {
-        // ModDevGradle attaches the remapped Minecraft/NeoForge artifacts to
-        // the main source set. Unit tests exercise classes with Minecraft API
-        // signatures, so they need the same remapped classpaths as main.
         compileClasspath += sourceSets.main.compileClasspath
         runtimeClasspath += sourceSets.main.runtimeClasspath
     }
@@ -301,6 +293,7 @@ configurations {
 
 dependencies {
     packsmanagerImplementation sourceSets.main.output
+
     annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
     compileOnly 'org.jetbrains:annotations:26.0.2'
@@ -310,32 +303,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // Optional compatibility mod used only in local development runs. Keeping
-    // it off the published/compile API prevents unrelated consumers from
-    // inheriting this local file dependency.
     localRuntime files('libs/CustomNPCs-Unofficial-NeoForge-1.21.1.20251230.jar')
-
-    // Example optional mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
-    // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
-    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
-
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
-
-    // Example mod dependency using a file as dependency
-    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
-
-    // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
 }
 
 tasks.named('test', Test).configure {
@@ -413,7 +381,7 @@ tasks.named(sourceSets.packsmanager.processResourcesTaskName, ProcessResources).
 }
 
 def packsManagerJar = tasks.register('packsManagerJar', Jar) {
-    archiveBaseName.set("[$minecraft_version] $mod_name_packs_manager")
+    archiveBaseName.set("[$minecraft_version] $packs_manager_name")
     archiveVersion.set(packs_manager_version)
     from sourceSets.packsmanager.output
     from('run/flan') { into 'flan' }
@@ -428,7 +396,6 @@ tasks.named('assemble').configure {
     dependsOn fmuModules.collect { it.jarTask }
 }
 
-// IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
     module {
         downloadSources = true
