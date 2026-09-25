@@ -98,7 +98,10 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
         // The armor box GUI draws its own title in renderBg and does not need the default inventory label.
     }
 
-    /** Keeps the legacy GUI-sheet arrows while using the 1.21 button API. */
+    /**
+     * Arrow button drawn from a 10x10 region of the GUI sheet. As with the legacy image buttons,
+     * the hovered or focused state uses the region directly below.
+     */
     private static final class TextureRegionButton extends Button
     {
         private final int textureU;
@@ -112,9 +115,9 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
         }
 
         @Override
-        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
         {
-            graphics.blit(texture, getX(), getY(), textureU, 0, width, height);
+            graphics.blit(texture, getX(), getY(), textureU, isHoveredOrFocused() ? height : 0, width, height);
         }
     }
 

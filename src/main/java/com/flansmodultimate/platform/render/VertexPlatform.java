@@ -1,7 +1,9 @@
 package com.flansmodultimate.platform.render;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -9,8 +11,9 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import org.joml.Matrix4f;
 
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.MultiBufferSource;
 
-/** Version boundary for emitting vertices and immediate-mode quads. Client-only. */
+/** Version boundary for emitting vertices, immediate-mode quads and buffers, and the model-view matrix. Client-only. */
 public final class VertexPlatform
 {
     private VertexPlatform() {}
@@ -75,5 +78,38 @@ public final class VertexPlatform
         int color = Math.round(alpha * 255F) << 24 | Math.round(red * 255F) << 16
             | Math.round(green * 255F) << 8 | Math.round(blue * 255F);
         part.render(poseStack, consumer, packedLight, packedOverlay, color);
+    }
+
+    /** Pushes the global model-view matrix; pair with {@link #popModelView}. Call {@link RenderSystem#applyModelViewMatrix} after changing it. */
+    public static void pushModelView()
+    {
+        RenderSystem.getModelViewStack().pushMatrix();
+    }
+
+    public static void popModelView()
+    {
+        RenderSystem.getModelViewStack().popMatrix();
+    }
+
+    public static void resetModelView()
+    {
+        RenderSystem.getModelViewStack().identity();
+    }
+
+    public static void scaleModelView(float x, float y, float z)
+    {
+        RenderSystem.getModelViewStack().scale(x, y, z);
+    }
+
+    /** Multiplies the pose stack by the matrix. */
+    public static void mulPose(PoseStack poseStack, Matrix4f matrix)
+    {
+        poseStack.mulPose(matrix);
+    }
+
+    /** An immediate buffer source backed by one growable buffer of the given initial capacity. */
+    public static MultiBufferSource.BufferSource immediateBuffers(int capacity)
+    {
+        return MultiBufferSource.immediate(new ByteBufferBuilder(capacity));
     }
 }

@@ -75,13 +75,14 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.platform.fluid.FluidPlatform;
+import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -4396,7 +4397,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return false;
 
         // Named explicitly so a multi-tank container cannot hand back a different liquid.
-        FluidStack drained = handler.drain(held.copyWithAmount(drawn), IFluidHandler.FluidAction.EXECUTE);
+        FluidStack drained = handler.drain(FluidPlatform.copyWithAmount(held, drawn), IFluidHandler.FluidAction.EXECUTE);
         if (drained.isEmpty())
             return false;
 
@@ -4463,7 +4464,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             ItemStack stack = driveableData.getItem(slot);
             if (stack.isEmpty())
                 continue;
-            IEnergyStorage energy = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+            IEnergyStorage energy = ItemCapabilities.energy(stack);
             if (energy == null || !energy.canExtract())
                 continue;
 
@@ -5281,7 +5282,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return false;
     }
 
-    /** Uses the actual entity collision shape instead of the removed legacy material-solid flag. */
+    /** Whether the block at the position has a collision shape for this driveable, i.e. something it could rest on. */
     private boolean hasCollisionAt(BlockPos pos)
     {
         return !level().getBlockState(pos).getCollisionShape(level(), pos, CollisionContext.of(this)).isEmpty();

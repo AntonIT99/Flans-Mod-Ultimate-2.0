@@ -2,13 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.gui.ArmorBoxScreen;
-import com.flansmodultimate.client.gui.DriveableCraftingScreen;
-import com.flansmodultimate.client.gui.DriveableInventoryScreen;
-import com.flansmodultimate.client.gui.GunBoxScreen;
-import com.flansmodultimate.client.gui.GunWorkbenchScreen;
-import com.flansmodultimate.client.gui.MechaInventoryScreen;
-import com.flansmodultimate.client.gui.PaintjobTableScreen;
+import com.flansmodultimate.client.gui.ModMenuScreens;
 import com.flansmodultimate.client.gui.options.FlansSettingsHubScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
@@ -48,6 +42,7 @@ import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
@@ -119,20 +114,13 @@ public final class ModClientEventHandler
             }
             ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
-
         });
     }
 
     @SubscribeEvent
     public static void registerMenuScreens(RegisterMenuScreensEvent event)
     {
-        event.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
-        event.register(FlansMod.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
-        event.register(FlansMod.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
-        event.register(FlansMod.mechaInventoryMenu.get(), MechaInventoryScreen::new);
-        event.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
-        event.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
-        event.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
+        ModMenuScreens.register(event::register);
     }
 
     @SubscribeEvent
@@ -159,7 +147,7 @@ public final class ModClientEventHandler
         // thousands of registered Flan items, so one full map scan per item is
         // prohibitively expensive during every resource reload.
         event.getModels().replaceAll((location, original) -> {
-            if (customRenderedItemIds.contains(location.id()) && !(original instanceof BewlrRoutingModel))
+            if (customRenderedItemIds.contains(ClientPlatform.modelItemId(location)) && !(original instanceof BewlrRoutingModel))
                 return new BewlrRoutingModel(original);
             return original;
         });
@@ -256,10 +244,10 @@ public final class ModClientEventHandler
         event.register((stack, tintIndex) -> {
             Item item = stack.getItem();
             if (item instanceof IFlanItem<?> flanItem)
-                // Legacy content packs store colours as 24-bit RGB. Since
-                // 1.21 the item renderer consumes ARGB and therefore treated
-                // the missing high byte as alpha=0, making every tinted Flan
-                // item completely transparent in every render context.
+                // Legacy content packs store colours as 24-bit RGB. The 1.21
+                // item renderer reads ARGB and would treat the missing high
+                // byte as alpha=0, making tinted items transparent; 1.20.1
+                // ignores the alpha byte.
                 return 0xFF000000 | flanItem.getConfigType().getColour();
             return 0xFFFFFFFF;
         },

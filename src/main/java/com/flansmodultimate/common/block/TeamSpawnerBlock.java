@@ -3,7 +3,7 @@ package com.flansmodultimate.common.block;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
-import com.mojang.serialization.MapCodec;
+import com.flansmodultimate.platform.block.FlanEntityBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,23 +12,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public final class TeamSpawnerBlock extends BaseEntityBlock
+public final class TeamSpawnerBlock extends FlanEntityBlock
 {
     private static final VoxelShape SHAPE = box(0D, 0D, 0D, 16D, 1D, 16D);
     private final TeamSpawnerBlockEntity.Mode mode;
@@ -38,9 +35,6 @@ public final class TeamSpawnerBlock extends BaseEntityBlock
         super(properties);
         this.mode = mode;
     }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() { return MapCodec.unit(this); }
 
     @Nullable
     @Override
@@ -79,25 +73,8 @@ public final class TeamSpawnerBlock extends BaseEntityBlock
         return level.isClientSide ? null : createTickerHelper(type, FlansMod.teamSpawnerBlockEntity.get(), TeamSpawnerBlockEntity::serverTick);
     }
 
-    @NotNull
     @Override
-    protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                               @NotNull Player player, @NotNull BlockHitResult hit)
-    {
-        return interact(level, pos, player, InteractionHand.MAIN_HAND);
-    }
-
-    @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
-                                               @NotNull BlockPos pos, @NotNull Player player,
-                                               @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
-    {
-        InteractionResult result = interact(level, pos, player, hand);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    private InteractionResult interact(Level level, BlockPos pos, Player player, InteractionHand hand)
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (!(level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner))
             return InteractionResult.PASS;

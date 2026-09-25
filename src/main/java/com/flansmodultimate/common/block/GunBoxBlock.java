@@ -7,6 +7,7 @@ import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.platform.block.FlanBlock;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
@@ -21,7 +22,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -31,9 +31,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.BlockHitResult;
 
-public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
+public class GunBoxBlock extends FlanBlock implements IFlanBlock<GunBoxType>
 {
     @Getter
     protected final GunBoxType configType;
@@ -66,24 +65,7 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
     }
 
     @Override
-    @NotNull
-    protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                               Player player, @NotNull BlockHitResult hit)
-    {
-        return open(state, level, pos, player);
-    }
-
-    @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
-                                               @NotNull BlockPos pos, @NotNull Player player,
-                                               @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
-    {
-        InteractionResult result = open(state, level, pos, player);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;

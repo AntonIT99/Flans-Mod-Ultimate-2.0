@@ -1,11 +1,5 @@
 package com.flansmodultimate.client.render.entity;
 
-import com.flansmodultimate.platform.render.VertexPlatform;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import org.joml.Matrix4fStack;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.model.ModelCache;
@@ -14,10 +8,12 @@ import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
@@ -28,6 +24,8 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
@@ -276,7 +274,6 @@ public final class DriveableImpostorCache
         GL11.glGetIntegerv(GL11.GL_VIEWPORT, restoreViewport);
         Matrix4f restoreProjection = new Matrix4f(RenderSystem.getProjectionMatrix());
         VertexSorting restoreSorting = RenderSystem.getVertexSorting();
-        Matrix4fStack modelView = RenderSystem.getModelViewStack();
         NativeImage pixels = new NativeImage(settings.resolution(), settings.resolution(), true);
         boolean modelViewPushed = false;
 
@@ -291,9 +288,9 @@ public final class DriveableImpostorCache
             captureTarget.bindWrite(true);
             RenderSystem.setProjectionMatrix(projection, VertexSorting.ORTHOGRAPHIC_Z);
 
-            modelView.pushMatrix();
+            VertexPlatform.pushModelView();
             modelViewPushed = true;
-            modelView.identity();
+            VertexPlatform.resetModelView();
             RenderSystem.applyModelViewMatrix();
 
             PoseStack capturePose = new PoseStack();
@@ -307,7 +304,7 @@ public final class DriveableImpostorCache
                 for (EnumRenderPass renderPass : ModelCache.getRenderPasses(entry.model))
                 {
                     PoseStack layerPose = new PoseStack();
-                    layerPose.mulPose(capturePose.last().pose());
+                    VertexPlatform.mulPose(layerPose, capturePose.last().pose());
                     renderNeutralModel(entry.model, entry.type, layerPose,
                         captureBuffer.getBuffer(renderPass.getRenderType(entry.sourceTexture,
                             entry.translucent, entry.cull)), LightTexture.FULL_BRIGHT,
@@ -323,7 +320,7 @@ public final class DriveableImpostorCache
         {
             if (modelViewPushed)
             {
-                modelView.popMatrix();
+                VertexPlatform.popModelView();
                 RenderSystem.applyModelViewMatrix();
             }
             RenderSystem.setProjectionMatrix(restoreProjection, restoreSorting);

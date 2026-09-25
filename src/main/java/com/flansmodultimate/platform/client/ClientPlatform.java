@@ -8,6 +8,8 @@ import net.neoforged.neoforge.common.util.TriState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 /** Version boundary for client frame timing and screen helpers. Client-only. */
 public final class ClientPlatform
@@ -45,5 +47,11 @@ public final class ClientPlatform
     public static void hideNameTag(RenderNameTagEvent event)
     {
         event.setCanRender(TriState.FALSE);
+    }
+
+    /** The item or block id of a baked model location, without its variant. */
+    public static ResourceLocation modelItemId(ModelResourceLocation location)
+    {
+        return location.id();
     }
 }

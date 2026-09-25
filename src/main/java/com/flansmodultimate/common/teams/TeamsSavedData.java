@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.teams;
 
+import com.flansmodultimate.platform.world.FlanSavedData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.HolderLookup;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /** The single SavedData payload for maps, rotations, runtime state and player stats. */
-public final class TeamsSavedData extends SavedData
+public final class TeamsSavedData extends FlanSavedData
 {
     public static final String ID = "flansmodultimate_teams";
     private static final String NBT_MAPS = "maps";

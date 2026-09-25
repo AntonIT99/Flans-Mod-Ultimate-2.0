@@ -1,15 +1,24 @@
 package com.flansmodultimate.platform.item;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.network.Filterable;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.WrittenBookContent;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -89,5 +98,20 @@ public final class ItemStackData
     public static void hurtAndBreak(ItemStack stack, int amount, LivingEntity entity, EquipmentSlot slot)
     {
         stack.hurtAndBreak(amount, entity, slot);
+    }
+
+    /** A stack of the item, such as a potion or splash potion, holding the given potion. */
+    public static ItemStack potion(Item item, Holder<Potion> potion)
+    {
+        return PotionContents.createItemStack(item, potion);
+    }
+
+    /** A signed written book with one page per component. */
+    public static ItemStack writtenBook(String title, String author, List<Component> pages)
+    {
+        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
+        book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(Filterable.passThrough(title), author, 0,
+            pages.stream().map(Filterable::passThrough).toList(), true));
+        return book;
     }
 }

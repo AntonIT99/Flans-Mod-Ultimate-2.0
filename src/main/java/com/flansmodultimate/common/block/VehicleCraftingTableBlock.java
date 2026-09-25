@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
+import com.flansmodultimate.platform.block.FlanBlock;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,18 +10,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 
 /** The legacy Vehicle Crafting Table: the only survival way to build a driveable. */
-public class VehicleCraftingTableBlock extends Block
+public class VehicleCraftingTableBlock extends FlanBlock
 {
     public VehicleCraftingTableBlock(Properties props)
     {
@@ -36,23 +33,7 @@ public class VehicleCraftingTableBlock extends Block
     }
 
     @Override
-    @NotNull
-    protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                               @NotNull Player player, @NotNull BlockHitResult hit)
-    {
-        return open(state, level, pos, player);
-    }
-
-    @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
-                                               @NotNull BlockPos pos, @NotNull Player player,
-                                               @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
-    {
-        open(state, level, pos, player);
-        return ItemInteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
             MenuPlatform.open(serverPlayer, getMenuProvider(state, level, pos), pos);

@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
+import com.flansmodultimate.platform.block.FlanEntityBlock;
 import com.flansmodultimate.platform.menu.MenuPlatform;
-import com.mojang.serialization.MapCodec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,26 +10,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 
-public class PaintjobTableBlock extends BaseEntityBlock
+public class PaintjobTableBlock extends FlanEntityBlock
 {
-    public static final MapCodec<PaintjobTableBlock> CODEC = simpleCodec(PaintjobTableBlock::new);
     public PaintjobTableBlock(Properties props)
     {
         super(props);
     }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
 
     @Override
     public RenderShape getRenderShape(@NotNull BlockState state)
@@ -45,23 +37,7 @@ public class PaintjobTableBlock extends BaseEntityBlock
     }
 
     @Override
-    protected InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                               @NotNull Player player, @NotNull BlockHitResult hit)
-    {
-        return open(level, pos, player);
-    }
-
-    @Override
-    protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
-                                               @NotNull BlockPos pos, @NotNull Player player,
-                                               @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
-    {
-        InteractionResult result = open(level, pos, player);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    private InteractionResult open(Level level, BlockPos pos, Player player)
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;

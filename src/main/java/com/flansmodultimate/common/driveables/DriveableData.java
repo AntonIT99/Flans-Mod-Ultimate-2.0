@@ -10,9 +10,9 @@ import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -300,7 +300,7 @@ public final class DriveableData implements Container
         }
         PartType engine = getEngine();
         if (engine != null && engine.isUseRFPower())
-            return stack.getCapability(Capabilities.EnergyStorage.ITEM) != null;
+            return ItemCapabilities.energy(stack) != null;
         if (stack.getItem() instanceof PartItem partItem && partItem.getConfigType().getCategory() == PartType.Category.FUEL)
             return true;
         return FluidFuel.isFuelContainer(stack);

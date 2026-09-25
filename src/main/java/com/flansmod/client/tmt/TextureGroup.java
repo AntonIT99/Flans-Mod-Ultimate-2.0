@@ -1,9 +1,6 @@
 package com.flansmod.client.tmt;
 
 import com.flansmodultimate.client.render.gpu.GeometryRevision;
-import com.mojang.blaze3d.systems.RenderSystem;
-
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -14,6 +11,7 @@ import java.util.RandomAccess;
 public class TextureGroup
 {
     public List<TexturedPolygon> poly;
+    /** Legacy per-group texture, kept for compiled models that call setGroupTexture; renderers bind the model texture. */
     public String texture;
 
     public TextureGroup()
@@ -69,23 +67,4 @@ public class TextureGroup
         }
     }
 
-    public void loadTexture()
-    {
-        loadTexture(-1);
-    }
-
-    public void loadTexture(int defaultTexture)
-    {
-        ResourceLocation textureLocation = ResourceLocation.tryParse(texture.trim().replace('\\', '/'));
-        if (textureLocation != null && !textureLocation.getPath().isEmpty())
-        {
-            RenderSystem.setShaderTexture(0, textureLocation);
-        }
-        else if (defaultTexture > -1)
-        {
-            // The legacy fallback is an already allocated OpenGL texture id,
-            // not a resource path. 1.21 rejects the former "minecraft:" shim.
-            RenderSystem.setShaderTexture(0, defaultTexture);
-        }
-    }
 }

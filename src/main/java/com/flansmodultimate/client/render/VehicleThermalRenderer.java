@@ -3,9 +3,10 @@ package com.flansmodultimate.client.render;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.platform.client.ClientPlatform;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.logging.LogUtils;
@@ -32,7 +33,7 @@ public final class VehicleThermalRenderer
     private static final ResourceLocation EFFECT = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "shaders/post/vehicle_thermal.json");
     private static PostChain chain;
     private static ResourceLocation whiteTexture;
-    private static final MultiBufferSource.BufferSource buffers = MultiBufferSource.immediate(new ByteBufferBuilder(256));
+    private static final MultiBufferSource.BufferSource buffers = VertexPlatform.immediateBuffers(256);
     private static boolean renderingMask;
     private static boolean failed;
     private static boolean maskReady;
@@ -53,7 +54,7 @@ public final class VehicleThermalRenderer
     {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL)
         {
-            composite(event.getPartialTick().getGameTimeDeltaPartialTick(true));
+            composite(ClientPlatform.partialTick(event));
             return;
         }
         // AFTER_LEVEL's Forge 1.20.1 pose contains the projection, not the world
@@ -106,7 +107,7 @@ public final class VehicleThermalRenderer
                 if (!(entity instanceof LivingEntity || entity instanceof Driveable) || entity == mc.player
                     || !entity.isAlive() || entity.isInvisible() || occupied != null && entity == occupied.getDriveable()
                     || !event.getFrustum().isVisible(entity.getBoundingBox())) continue;
-                renderEntity(entity, camera, event.getPartialTick().getGameTimeDeltaPartialTick(true), event.getPoseStack(), maskBuffers);
+                renderEntity(entity, camera, ClientPlatform.partialTick(event), event.getPoseStack(), maskBuffers);
             }
             buffers.endBatch();
             renderingMask = false;

@@ -10,17 +10,16 @@ import com.flansmodultimate.common.types.MechaItemType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.network.Filterable;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
@@ -33,9 +32,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
@@ -188,7 +185,7 @@ public final class ApocalypseLoot
                 case 0 -> new ItemStack(Items.BOWL, random.nextInt(5) + 1);
                 case 1 -> new ItemStack(Items.WATER_BUCKET);
                 case 2 -> randomFluidBucket(random);
-                case 3, 4, 5, 6 -> PotionContents.createItemStack(Items.POTION, Potions.STRENGTH);
+                case 3, 4, 5, 6 -> ItemStackData.potion(Items.POTION, Potions.STRENGTH);
                 case 7 -> new ItemStack(ApocalypseContent.SULPHUR.get(), random.nextInt(12) + 1);
                 default -> scientistJournal(random);
             };
@@ -202,7 +199,7 @@ public final class ApocalypseLoot
         for (int slot = 0; slot < 3 && slot < brewingStand.getContainerSize(); slot++)
         {
             if (random.nextBoolean())
-                brewingStand.setItem(slot, PotionContents.createItemStack(Items.POTION, BREWING_STAND_POTIONS.get(random.nextInt(BREWING_STAND_POTIONS.size()))));
+                brewingStand.setItem(slot, ItemStackData.potion(Items.POTION, BREWING_STAND_POTIONS.get(random.nextInt(BREWING_STAND_POTIONS.size()))));
         }
     }
 
@@ -253,11 +250,7 @@ public final class ApocalypseLoot
     public static ItemStack scientistJournal(RandomSource random)
     {
         String[] entry = SCIENTIST_JOURNAL[random.nextInt(SCIENTIST_JOURNAL.length)];
-        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
-            Filterable.passThrough(entry[0]), "Dr. Brazier", 0,
-            List.of(Filterable.passThrough(Component.literal(entry[1]))), true));
-        return book;
+        return ItemStackData.writtenBook(entry[0], "Dr. Brazier", List.of(Component.literal(entry[1])));
     }
 
     private static ItemStack randomFluidBucket(RandomSource random)
@@ -325,12 +318,8 @@ public final class ApocalypseLoot
 
     public static ItemStack survivorJournal(RandomSource random)
     {
-        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         String text = JOURNAL_LINES[random.nextInt(JOURNAL_LINES.length)];
-        book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(
-            Filterable.passThrough("Survivor Journal"), "Unknown Survivor", 0,
-            List.of(Filterable.passThrough(Component.literal(text).withStyle(ChatFormatting.DARK_GRAY))), true));
-        return book;
+        return ItemStackData.writtenBook("Survivor Journal", "Unknown Survivor", List.of(Component.literal(text).withStyle(ChatFormatting.DARK_GRAY)));
     }
 
     public static Optional<ItemStack> randomPart(RandomSource random)

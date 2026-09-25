@@ -1,5 +1,6 @@
 package com.flansmodultimate.apocalyse.common.world;
 
+import com.flansmodultimate.platform.world.FlanSavedData;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,14 +15,13 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public class ApocalypseSavedData extends SavedData
+public class ApocalypseSavedData extends FlanSavedData
 {
     private static final String DATA_NAME = "flansmodultimate_apocalypse";
     private static final String NBT_ENTRY_POINTS = "entry_points";
