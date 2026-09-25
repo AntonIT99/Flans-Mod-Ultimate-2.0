@@ -5,6 +5,7 @@ import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.world.LootTablePlatform;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.AccessLevel;
@@ -18,7 +19,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.functions.SetNbtFunction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -185,7 +185,7 @@ public abstract class PaintableType extends InfoType
         return LootItem.lootTableItem(item)
             .setWeight(weight)
             .setQuality(1)
-            .apply(SetNbtFunction.setTag(tag))
+            .apply(LootTablePlatform.setCustomData(tag))
             .build();
     }
 }

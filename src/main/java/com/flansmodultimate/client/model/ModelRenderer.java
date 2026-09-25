@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.model;
 
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -195,7 +196,7 @@ public class ModelRenderer implements IModelRenderer
     {
         for (ModelPart.Cube cube : cubeList)
         {
-            cube.compile(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+            VertexPlatform.compileCube(cube, pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
         }
     }
 

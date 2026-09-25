@@ -126,7 +126,7 @@ public final class ApocalypseBossFightManager
         boss.setHome(home);
         if (placer != null)
             boss.setTarget(placer);
-        EntityPlatform.finalizeSpawn(boss, level, level.getCurrentDifficultyAt(center), MobSpawnType.TRIGGERED);
+        EntityPlatform.finalizeSpawnWithEvent(boss, level, level.getCurrentDifficultyAt(center), MobSpawnType.TRIGGERED);
         level.addFreshEntity(boss);
         level.players().stream()
             .filter(player -> player.distanceToSqr(center.getX(), center.getY(), center.getZ()) < 256.0D * 256.0D)

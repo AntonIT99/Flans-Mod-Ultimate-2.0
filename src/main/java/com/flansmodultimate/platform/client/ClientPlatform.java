@@ -8,6 +8,7 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
 
 /** Version boundary for client frame timing and screen helpers. Client-only. */
@@ -52,5 +53,11 @@ public final class ClientPlatform
     public static ResourceLocation modelItemId(ResourceLocation location)
     {
         return ResourceLocation.fromNamespaceAndPath(location.getNamespace(), location.getPath());
+    }
+
+    /** The player's skin texture. */
+    public static ResourceLocation skinTexture(AbstractClientPlayer player)
+    {
+        return player.getSkinTextureLocation();
     }
 }

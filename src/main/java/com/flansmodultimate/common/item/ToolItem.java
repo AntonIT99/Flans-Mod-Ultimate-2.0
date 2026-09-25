@@ -71,12 +71,6 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
     }
 
     @Override
-    public void onCraftedBy(ItemStack stack, @NotNull Level level, @NotNull Player player)
-    {
-        stack.getOrCreateTag();
-    }
-
-    @Override
     @NotNull
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {

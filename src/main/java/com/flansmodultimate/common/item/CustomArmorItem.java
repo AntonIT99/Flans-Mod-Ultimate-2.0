@@ -66,11 +66,11 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     }
 
     @Override
-    public int getEnchantmentValue()
+    public int getEnchantmentValue(ItemStack stack)
     {
         if (!configType.isReadEnchantability())
             return ModCommonConfig.get().defaultArmorEnchantability();
-        return material.getEnchantmentValue();
+        return configType.getEnchantability();
     }
 
     @Override
@@ -111,7 +111,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
         if (configType.getDurability() > 0F)
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DURABILITY), IFlanItem.formatDouble(configType.getDurability())));
         if (configType.getEnchantability() > 0F)
-            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ENCHANTABILITY), IFlanItem.formatDouble(getEnchantmentValue())));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ENCHANTABILITY), IFlanItem.formatDouble(getEnchantmentValue(stack))));
 
         if (Math.abs(configType.getJumpModifier() - 1F) > 0F)
             tooltipComponents.add(IFlanItem.modifierLine(Component.translatable(TooltipKeys.JUMP_HEIGHT), configType.getJumpModifier(), false));

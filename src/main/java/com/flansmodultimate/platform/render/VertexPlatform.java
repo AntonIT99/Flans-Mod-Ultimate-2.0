@@ -107,4 +107,11 @@ public final class VertexPlatform
     {
         return MultiBufferSource.immediate(new BufferBuilder(capacity));
     }
+
+    /** Emits one model cube with a float colour. */
+    public static void compileCube(ModelPart.Cube cube, PoseStack.Pose pose, VertexConsumer consumer, int packedLight, int packedOverlay,
+                                   float red, float green, float blue, float alpha)
+    {
+        cube.compile(pose, consumer, packedLight, packedOverlay, red, green, blue, alpha);
+    }
 }

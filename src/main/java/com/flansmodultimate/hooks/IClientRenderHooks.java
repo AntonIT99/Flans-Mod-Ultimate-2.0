@@ -13,11 +13,9 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
-
 public interface IClientRenderHooks
 {
-    void initCustomBewlr(Consumer<IClientItemExtensions> consumer);
+    IClientItemExtensions customItemExtensions();
 
     void spawnParticle(String s, double x, double y, double z, float scale);
 

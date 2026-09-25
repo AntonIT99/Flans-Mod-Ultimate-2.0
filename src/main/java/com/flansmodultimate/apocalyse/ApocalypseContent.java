@@ -1,6 +1,7 @@
 package com.flansmodultimate.apocalyse;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.apocalyse.client.SulphuricAcidFluidExtensions;
 import com.flansmodultimate.apocalyse.common.block.PowerCubeBlock;
 import com.flansmodultimate.apocalyse.common.block.SulphurBlock;
 import com.flansmodultimate.apocalyse.common.block.SulphuricAcidBlock;
@@ -23,7 +24,6 @@ import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -55,10 +55,6 @@ public final class ApocalypseContent
 {
     // Resource Locations
     public static final ResourceLocation SURVIVOR_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/entity/survivor.png");
-    public static final ResourceLocation SULPHURIC_ACID_STILL_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidstill");
-    public static final ResourceLocation SULPHURIC_ACID_FLOWING_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "block/sulphuricacidflowing");
-    public static final ResourceLocation SULPHURIC_ACID_OVERLAY_TEXTURE = ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "textures/misc/sulphuric_acid_overlay.png");
-
     public static final ResourceKey<Level> APOCALYPSE_LEVEL = ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "apocalypse"));
 
     // Biomes of the wasteland. Supplied by the built-in apocalypse datapack; worldgen reads
@@ -96,26 +92,7 @@ public final class ApocalypseContent
             @Override
             public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer)
             {
-                consumer.accept(new IClientFluidTypeExtensions()
-                {
-                    @Override
-                    public ResourceLocation getStillTexture()
-                    {
-                        return SULPHURIC_ACID_STILL_TEXTURE;
-                    }
-
-                    @Override
-                    public ResourceLocation getFlowingTexture()
-                    {
-                        return SULPHURIC_ACID_FLOWING_TEXTURE;
-                    }
-
-                    @Override
-                    public ResourceLocation getRenderOverlayTexture(Minecraft mc)
-                    {
-                        return SULPHURIC_ACID_OVERLAY_TEXTURE;
-                    }
-                });
+                consumer.accept(new SulphuricAcidFluidExtensions());
             }
         }
     );

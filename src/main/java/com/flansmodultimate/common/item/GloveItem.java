@@ -36,7 +36,7 @@ public class GloveItem extends Item implements IFlanItem<GloveType>
     }
 
     @Override
-    public int getEnchantmentValue()
+    public int getEnchantmentValue(ItemStack stack)
     {
         return configType.getEnchantability();
     }

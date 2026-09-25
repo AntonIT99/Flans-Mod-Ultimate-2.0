@@ -45,14 +45,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
-
 public final class ClientRenderHooksImpl implements IClientRenderHooks
 {
     @Override
-    public void initCustomBewlr(Consumer<IClientItemExtensions> consumer)
+    public IClientItemExtensions customItemExtensions()
     {
-        consumer.accept(new IClientItemExtensions()
+        return new IClientItemExtensions()
         {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer()
@@ -60,7 +58,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
                 Minecraft mc = Minecraft.getInstance();
                 return new CustomBewlr(mc.getBlockEntityRenderDispatcher(), mc.getEntityModels());
             }
-        });
+        };
     }
 
     @Override

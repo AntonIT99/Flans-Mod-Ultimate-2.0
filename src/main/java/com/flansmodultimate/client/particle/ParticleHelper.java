@@ -3,10 +3,10 @@ package com.flansmodultimate.client.particle;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.client.ParticlePlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -17,6 +17,7 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -115,7 +116,13 @@ public final class ParticleHelper
             return NO_PARTICLE;
         }
 
-        Optional<ParticleOptions> opt = PARTICLE_OPTIONS_CACHE.computeIfAbsent(normalized, ParticleHelper::toNamedOptions);
+        // Legacy entity-effect particles take their colour from the velocity, so they are not cached by name.
+        Optional<ParticleOptions> opt = switch (normalized)
+        {
+            case FlanParticles.MOB_SPELL -> Optional.of(ParticlePlatform.entityEffect(false, vx, vy, vz));
+            case FlanParticles.MOB_SPELL_AMBIENT -> Optional.of(ParticlePlatform.entityEffect(true, vx, vy, vz));
+            default -> PARTICLE_OPTIONS_CACHE.computeIfAbsent(normalized, ParticleHelper::toNamedOptions);
+        };
         if (opt.isEmpty())
         {
             warnCouldNotParse(s);
@@ -541,8 +548,6 @@ public final class ParticleHelper
             case FlanParticles.LARGE_SMOKE -> Optional.of(ParticleTypes.LARGE_SMOKE);
             case FlanParticles.SPELL -> Optional.of(ParticleTypes.EFFECT);
             case FlanParticles.INSTANT_SPELL -> Optional.of(ParticleTypes.INSTANT_EFFECT);
-            case FlanParticles.MOB_SPELL -> Optional.of(ParticleTypes.ENTITY_EFFECT);
-            case FlanParticles.MOB_SPELL_AMBIENT -> Optional.of(ParticleTypes.AMBIENT_ENTITY_EFFECT);
             case FlanParticles.WITCH_MAGIC -> Optional.of(ParticleTypes.WITCH);
             case FlanParticles.DRIP_LAVA -> Optional.of(ParticleTypes.DRIPPING_LAVA);
             case FlanParticles.ANGRY_VILLAGER -> Optional.of(ParticleTypes.ANGRY_VILLAGER);

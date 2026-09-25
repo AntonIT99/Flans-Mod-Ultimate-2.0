@@ -343,14 +343,14 @@ public final class ShootingHelper
         if (level.isClientSide || !type.isHitSoundEnable())
             return;
 
-        String hitToUse = resolveImpactSound(state, state.getBlock(), type).orElse(null);
+        String hitToUse = resolveImpactSound(level, pos, state, state.getBlock(), type).orElse(null);
         if (hitToUse == null)
             return;
 
         PacketPlaySound.sendSoundPacket(pos.getCenter(), type.getHitSoundRange(), level.dimension(), hitToUse, true, null);
     }
 
-    private static Optional<String> resolveImpactSound(BlockState state, Block block, BulletType type)
+    private static Optional<String> resolveImpactSound(Level level, BlockPos pos, BlockState state, Block block, BulletType type)
     {
         if (StringUtils.isNotBlank(type.getHitSound()))
             return Optional.of(type.getHitSound());
@@ -359,7 +359,7 @@ public final class ShootingHelper
         if (block == Blocks.BRICKS)
             return Optional.of(FlansMod.SOUND_IMPACT_BRICKS);
 
-        SoundType sound = state.getSoundType();
+        SoundType sound = state.getSoundType(level, pos, null);
 
         // "dirt-ish" stuff
         if (sound == SoundType.GRAVEL || sound == SoundType.SAND || sound == SoundType.ROOTED_DIRT || sound == SoundType.MUD)
@@ -535,7 +535,6 @@ public final class ShootingHelper
         onDetonate(level, firedShot.getBulletType(), detonatePos, null, firedShot.getAttacker().orElse(null));
     }
 
-
     public static void onDetonate(Level level, ShootableType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
     {
         if (level.isClientSide)
@@ -585,7 +584,6 @@ public final class ShootingHelper
         {
             for (float k = -fireRadius; k < fireRadius; k += 1F)
             {
-
                 if (volumetric)
                 {
                     for (float j = -fireRadius; j < fireRadius; j += 1F)

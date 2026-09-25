@@ -9,10 +9,10 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.PlatformTags;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.level.BlockEvent;
@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -316,7 +317,7 @@ public final class ModUtils
 
     public static boolean isGlass(BlockState state)
     {
-        return state.is(Tags.Blocks.GLASS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
+        return state.is(PlatformTags.GLASS_BLOCKS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
     }
 
     /**

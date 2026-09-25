@@ -15,7 +15,7 @@ public interface ICustomRendereredItem<T extends InfoType> extends IFlanItem<T>
      */
     default void initializeClient(Consumer<IClientItemExtensions> consumer)
     {
-        ClientHooks.RENDER.initCustomBewlr(consumer);
+        consumer.accept(ClientHooks.RENDER.customItemExtensions());
     }
 
     boolean useCustomRendererInHand();

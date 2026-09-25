@@ -14,14 +14,12 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
-
 public final class ClientRenderHooksNoop implements IClientRenderHooks
 {
     @Override
-    public void initCustomBewlr(Consumer<IClientItemExtensions> consumer)
+    public IClientItemExtensions customItemExtensions()
     {
-        /* no-op */
+        return IClientItemExtensions.DEFAULT;
     }
 
     @Override

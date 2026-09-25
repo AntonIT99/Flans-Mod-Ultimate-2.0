@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.teams;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
@@ -13,10 +12,10 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketPlayerClassSkins;
 import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.platform.world.ChunkTicketPlatform;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.world.ForgeChunkManager;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -1276,7 +1275,7 @@ public final class TeamsManager
                     if (level != null)
                     {
                         ChunkPos chunk = new ChunkPos(BlockPos.containing(base.getTeamObjectPosition()));
-                        ForgeChunkManager.forceChunk(level, FlansMod.MOD_ID, base.getObjectId(), chunk.x, chunk.z, false, true);
+                        ChunkTicketPlatform.force(level, base.getObjectId(), chunk.x, chunk.z, false, true);
                     }
                 }
                 map.removeBase(base.getObjectId());
@@ -1390,7 +1389,7 @@ public final class TeamsManager
             return;
         map.getBasePositions().forEach((owner, position) -> {
             ChunkPos chunk = new ChunkPos(position);
-            ForgeChunkManager.forceChunk(level, FlansMod.MOD_ID, owner, chunk.x, chunk.z, add, true);
+            ChunkTicketPlatform.force(level, owner, chunk.x, chunk.z, add, true);
         });
     }
 
