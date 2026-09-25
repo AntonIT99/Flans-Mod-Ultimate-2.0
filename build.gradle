@@ -32,7 +32,8 @@ String mainModId = mod_id
 SourceSet mainSourceSet = sourceSets.main
 String runDirectoryPath = file('run').absolutePath
 String dataRunDirectoryPath = file('run-data').absolutePath
-String generatedResourcesPath = file('src/generated/resources/').absolutePath
+// runData output is only for inspection; it is not packaged.
+String dataOutputPath = layout.buildDirectory.dir('datagen').get().asFile.absolutePath
 String mainResourcesPath = file('src/main/resources/').absolutePath
 
 minecraft {
@@ -74,16 +75,12 @@ minecraft {
 
         data {
             workingDirectory dataRunDirectoryPath
-            args('--mod', mainModId, '--all', '--output', generatedResourcesPath, '--existing', mainResourcesPath)
+            args('--mod', mainModId, '--all', '--output', dataOutputPath, '--existing', mainResourcesPath)
         }
     }
 }
 
 sourceSets {
-    main.resources {
-        srcDir 'src/generated/resources'
-        exclude '.cache/**'
-    }
     // flan/ was the old copy target of run/flan; packsManagerJar now bundles run/flan directly.
     packsmanager.resources.exclude 'flan/**'
 }
