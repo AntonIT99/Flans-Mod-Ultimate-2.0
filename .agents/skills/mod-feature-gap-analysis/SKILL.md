@@ -32,7 +32,7 @@ Work strategically: search before opening many files, reuse target-system findin
 
 ## Report
 
-Write the complete report in the current working directory. Use `../../../reports/feature-gap-analysis.md` when it does not already contain an unrelated analysis. Otherwise derive a short filesystem-safe identifier from the reference directory and use `feature-gap-analysis-<identifier>.md`; if needed, add a numeric suffix rather than overwriting any unrelated report.
+Write the complete report in the current working directory. Use `../../../reports/temp/feature-gap-analysis.md` when it does not already contain an unrelated analysis. Otherwise derive a short filesystem-safe identifier from the reference directory and use `feature-gap-analysis-<identifier>.md`; if needed, add a numeric suffix rather than overwriting any unrelated report.
 
 Group findings by subsystem. Every finding must contain:
 
