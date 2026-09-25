@@ -819,10 +819,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         meleeSound = readSound("MeleeSound", meleeSound, file);
 
         //Looping sounds
-        warmupSound = readValue("WarmupSound", warmupSound, file);
-        loopedSound = readValue("LoopedSound", loopedSound, file);
-        loopedSound = readValue("SpinSound", loopedSound, file);
-        cooldownSound = readValue("CooldownSound", cooldownSound, file);
+        warmupSound = readSound("WarmupSound", warmupSound, file);
+        loopedSound = readSound("LoopedSound", loopedSound, file);
+        loopedSound = readSound("SpinSound", loopedSound, file);
+        cooldownSound = readSound("CooldownSound", cooldownSound, file);
         lockOnSound = readSound("LockOnSound", lockOnSound, file);
         distantShootSound = readSound("DistantSound", distantShootSound, file);
         distantShootSound = readSound("DistantShootSound", distantShootSound, file);

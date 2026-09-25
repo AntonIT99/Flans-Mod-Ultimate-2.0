@@ -488,7 +488,7 @@ public abstract class ShootableType extends InfoType
         explosionBlastDamage.calculate();
 
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
-        detonateSound = readValue("DetonateSound", detonateSound, file);
+        detonateSound = readSound("DetonateSound", detonateSound, file);
 
         //Particles
         smokeParticleCount = readValue("FlareParticleCount", smokeParticleCount, file);
