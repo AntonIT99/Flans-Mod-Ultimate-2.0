@@ -35,6 +35,13 @@ public interface IClientRenderHooks
      */
     void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale);
 
+    /**
+     * The staged layers of a detonation that play out over several ticks: the warm afterglow, the
+     * dust skirt rolling out along the ground, the fireball stem climbing and darkening, and the
+     * mushroom cap of the heaviest charges. Each layer is sized by {@code ExplosionVisuals}.
+     */
+    void spawnExplosionSpectacle(Vec3 position, float craterRadius, float blastRadius, boolean groundBurst);
+
     /** A vehicle smoke-launcher shell, flown and burst entirely on the client. */
     void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks);
 

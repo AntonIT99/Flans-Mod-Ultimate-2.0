@@ -9,6 +9,7 @@ import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.particle.AfterburnParticle;
 import com.flansmodultimate.client.particle.BigSmokeParticle;
+import com.flansmodultimate.client.particle.BlastPuffParticle;
 import com.flansmodultimate.client.particle.Debris1Particle;
 import com.flansmodultimate.client.particle.FlareParticle;
 import com.flansmodultimate.client.particle.FlashParticle;
@@ -207,6 +208,7 @@ public final class ModClientEventHandler
     {
         event.registerSpriteSet(FlansMod.afterburnParticle.get(), AfterburnParticle.Provider::new);
         event.registerSpriteSet(FlansMod.bigSmokeParticle.get(), BigSmokeParticle.Provider::new);
+        event.registerSpriteSet(FlansMod.blastPuffParticle.get(), BlastPuffParticle.Provider::new);
         event.registerSpriteSet(FlansMod.debris1Particle.get(), Debris1Particle.Provider::new);
         event.registerSpriteSet(FlansMod.explodeParticle.get(), LegacyExplodeParticle.Provider::new);
         event.registerSpriteSet(FlansMod.flareParticle.get(), FlareParticle.Provider::new);

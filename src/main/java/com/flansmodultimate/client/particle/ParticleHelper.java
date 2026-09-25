@@ -173,9 +173,10 @@ public final class ParticleHelper
             SMOKE_SHELLS.add(new SmokeShell(x, y, z, vx, vy, vz, fuseTicks));
     }
 
-    /** Advances every sustained emission and smoke shell. Driven from the client tick. */
+    /** Advances every sustained emission, smoke shell and staged explosion. Driven from the client tick. */
     public static void tick()
     {
+        ExplosionSpectacle.tick();
         if (ACTIVE_EMISSIONS.isEmpty() && SMOKE_SHELLS.isEmpty())
             return;
 
@@ -393,7 +394,38 @@ public final class ParticleHelper
         return particle.getLifetime();
     }
 
+    /**
+     * How far an ordinary Flan's Mod particle is drawn at a {@code particleDistanceScale} of one.
+     * Larger effects declare their own, longer natural distance; the config scales every one of
+     * them alike rather than capping them all at one number.
+     */
+    public static final double DEFAULT_PARTICLE_RANGE = 128.0D;
+
     private static boolean shouldSpawn(double x, double y, double z)
+    {
+        return shouldSpawn(x, y, z, DEFAULT_PARTICLE_RANGE, true);
+    }
+
+    /**
+     * As {@link #shouldSpawn}, for a particle large enough to be a landmark: an explosion's rising
+     * column or mushroom cap is meant to be seen from across the map, which is exactly the range at
+     * which ordinary particles are dropped. Such a particle has {@code landmarkRange} as its natural
+     * distance, never less than an ordinary particle's, and is not thinned with distance - a handful
+     * of puffs tens of blocks wide is not the swarm of distant specks that thinning exists to remove,
+     * and thinning it leaves a column with holes in it. The per-tick budget still applies.
+     */
+    static boolean shouldSpawnLandmark(double x, double y, double z, double landmarkRange)
+    {
+        return shouldSpawn(x, y, z, Math.max(DEFAULT_PARTICLE_RANGE, landmarkRange), false);
+    }
+
+    /**
+     * Whether a particle at this position should be created.
+     *
+     * @param naturalRange      how far this kind of effect is drawn at a distance scale of one
+     * @param thinWithDistance  whether the effect loses density toward the edge of its range
+     */
+    private static boolean shouldSpawn(double x, double y, double z, double naturalRange, boolean thinWithDistance)
     {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
@@ -401,29 +433,40 @@ public final class ParticleHelper
             return false;
 
         ModClientConfig config = ModClientConfig.get();
-        int renderDistance = config == null ? 128 : config.particleRenderDistance;
-        int fullDensityDistance = config == null ? 32 : config.fullParticleDensityDistance;
+        double scale = config == null ? 1.0D : config.particleDistanceScale;
+        double fullDensityShare = config == null ? 0.25D : config.fullParticleDensityShare;
         double distantDensity = config == null ? 0.25D : config.distantParticleDensity;
-        int tickBudget = config == null ? 512 : config.maxFlansParticlesPerTick;
 
-        Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();
-        double dx = x - camera.x;
-        double dy = y - camera.y;
-        double dz = z - camera.z;
-        double distanceSquared = dx * dx + dy * dy + dz * dz;
-        double renderDistanceSquared = (double)renderDistance * renderDistance;
-        if (distanceSquared > renderDistanceSquared)
+        double range = naturalRange * scale;
+        double distanceSquared = distanceSquaredToCamera(minecraft, x, y, z);
+        if (distanceSquared > range * range)
             return false;
 
-        if (distanceSquared > (double)fullDensityDistance * fullDensityDistance && renderDistance > fullDensityDistance)
+        double fullDensityDistance = range * fullDensityShare;
+        if (thinWithDistance && distanceSquared > fullDensityDistance * fullDensityDistance && range > fullDensityDistance)
         {
             double distance = Math.sqrt(distanceSquared);
-            double progress = (distance - fullDensityDistance) / (renderDistance - fullDensityDistance);
+            double progress = (distance - fullDensityDistance) / (range - fullDensityDistance);
             double density = 1D + (distantDensity - 1D) * progress;
             if (level.random.nextDouble() > density)
                 return false;
         }
 
+        return takeFromBudget(level, config);
+    }
+
+    private static double distanceSquaredToCamera(Minecraft minecraft, double x, double y, double z)
+    {
+        Vec3 camera = minecraft.gameRenderer.getMainCamera().getPosition();
+        double dx = x - camera.x;
+        double dy = y - camera.y;
+        double dz = z - camera.z;
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    private static boolean takeFromBudget(ClientLevel level, @Nullable ModClientConfig config)
+    {
+        int tickBudget = config == null ? 512 : config.maxFlansParticlesPerTick;
         long gameTime = level.getGameTime();
         if (particleBudgetTick != gameTime)
         {
