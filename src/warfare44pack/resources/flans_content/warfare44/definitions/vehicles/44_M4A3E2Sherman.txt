@@ -73,7 +73,6 @@ RightLinkPoint [-42,9,-18]
 RightLinkPoint [30,9,-18]
 RightLinkPoint [37,9,-18]
 FixTrackLink 4
-FlipLinkFix false
 
 // Weapons
 ReadWeaponsFromGunTypes true

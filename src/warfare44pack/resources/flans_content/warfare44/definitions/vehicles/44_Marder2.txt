@@ -35,7 +35,6 @@ Tank true
 FourWheelDrive true
 5MaxThrottle 0.70
 MaxNegativeThrottle 0.431
-ClutchSteer 0.0175
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
 CanRoll true

@@ -93,7 +93,6 @@ BackSoundRange 25
 ShootSound bullet
 ShellSound shell
 PlaceSoundPrimary TankPlace
-SoundsPlaceTimePrimary 60
 ReloadSoundSecondary Mg34Reload
 
 // Effects

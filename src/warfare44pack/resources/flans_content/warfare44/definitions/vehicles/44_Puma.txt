@@ -49,7 +49,6 @@ WheelPosition 2 32 -8 18
 WheelPosition 3 32 -8 -18
 WheelSpringStrength 0.5
 FixTrackLink 4
-FlipLinkFix false
 
 // Weapons
 ReadWeaponsFromGunTypes true
@@ -149,7 +148,6 @@ gunsightZoom 2.5
 heliGUI warfare44_gercomm
 
 // Countermeasures
-HasSmoke True
 AddSmokePoint [11,39,-10] [1,0.75,-0.05] 20 turret
 AddSmokePoint [14,38,-10] [0.7,0.75,-0.3] 20 turret
 AddSmokePoint [17,38,-9] [0.5,0.75,-0.5] 20 turret
@@ -180,7 +178,6 @@ DriverTraverseSounds true
 ShootSoundPrimary Shoot_50mmDE
 ShootSoundSecondary Mg42Shoot
 PlaceSoundPrimary TankPlace
-SoundsPlaceTimePrimary 60
 ReloadSoundSecondary Mg34Reload
 ShootReloadSound Breach
 VehicleGunReloadTick 40

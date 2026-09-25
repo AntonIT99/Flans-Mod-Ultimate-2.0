@@ -48,7 +48,6 @@ WheelPosition 2 32 -8 18
 WheelPosition 3 32 -8 -18
 WheelSpringStrength 0.5
 FixTrackLink 4
-FlipLinkFix false
 
 // Weapons
 ReadWeaponsFromGunTypes true
@@ -105,7 +104,6 @@ PitchSoundLength 20
 DriverTraverseSounds false
 ShootSoundPrimary 50CalShoot
 PlaceSoundPrimary TankPlace
-SoundsPlaceTimePrimary 60
 
 // Effects
 AddEmitter smoke 1 [-40,6,7] [1,1,1] [0,0.5,0] -1 1 0 1 core

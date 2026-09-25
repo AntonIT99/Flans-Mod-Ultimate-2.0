@@ -94,7 +94,6 @@ BackSoundRange 25
 ShootSound bullet
 ShellSound shell
 PlaceSoundPrimary TankPlace
-SoundsPlaceTimePrimary 60
 
 // Effects
 AddEmitter explode 1 [-35,-2,8] [1,1,1] [0,0.2,0] 0.05 0.2 0 1 core
