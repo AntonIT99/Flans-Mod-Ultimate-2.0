@@ -27,7 +27,8 @@ def modsTomlPath = 'META-INF/neoforge.mods.toml'
 // Typed values for the run blocks, where 'project' and properties resolve against RunModel.
 String mainModId = mod_id
 File dataRunDirectory = file('run-data')
-String generatedResourcesPath = file('src/generated/resources/').absolutePath
+// runData output is only for inspection; it is not packaged.
+String dataOutputPath = layout.buildDirectory.dir('datagen').get().asFile.absolutePath
 String mainResourcesPath = file('src/main/resources/').absolutePath
 
 neoForge {
@@ -72,7 +73,7 @@ neoForge {
         data {
             data()
             gameDirectory = dataRunDirectory
-            programArguments.addAll('--mod', mainModId, '--all', '--output', generatedResourcesPath, '--existing', mainResourcesPath)
+            programArguments.addAll('--mod', mainModId, '--all', '--output', dataOutputPath, '--existing', mainResourcesPath)
         }
     }
 
@@ -80,10 +81,6 @@ neoForge {
 }
 
 sourceSets {
-    main.resources {
-        srcDir 'src/generated/resources'
-        exclude '.cache/**'
-    }
     // flan/ was the old copy target of run/flan; packsManagerJar now bundles run/flan directly.
     packsmanager.resources.exclude 'flan/**'
 }
