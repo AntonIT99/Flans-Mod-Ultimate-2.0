@@ -234,6 +234,7 @@ public class FlansMod
 
     // Particles
     public static final Supplier<? extends SimpleParticleType> afterburnParticle = particleRegistry.register("afterburn", () -> new SimpleParticleType(false));
+    public static final Supplier<? extends SimpleParticleType> blastPuffParticle = particleRegistry.register("blast_puff", () -> new SimpleParticleType(false));
     public static final Supplier<? extends SimpleParticleType> bigSmokeParticle = particleRegistry.register("big_smoke", () -> new SimpleParticleType(false));
     public static final Supplier<? extends SimpleParticleType> debris1Particle = particleRegistry.register("debris_1", () -> new SimpleParticleType(false));
     public static final Supplier<? extends SimpleParticleType> explodeParticle = particleRegistry.register("explode", () -> new SimpleParticleType(false));

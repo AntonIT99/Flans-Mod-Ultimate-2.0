@@ -66,8 +66,8 @@ public final class ModClientConfig
     public final int driveableImpostorResolution;
     public final int driveableImpostorYawAngles;
     public final int driveableImpostorCacheEntries;
-    public final int particleRenderDistance;
-    public final int fullParticleDensityDistance;
+    public final double particleDistanceScale;
+    public final double fullParticleDensityShare;
     public final double distantParticleDensity;
     public final int maxFlansParticlesPerTick;
 
@@ -153,8 +153,8 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_RESOLUTION;
     private static final ForgeConfigSpec.IntValue DRIVEABLE_IMPOSTOR_YAW_ANGLES;
     private static final Supplier<Integer> DRIVEABLE_IMPOSTOR_CACHE_ENTRIES;
-    private static final Supplier<Integer> PARTICLE_RENDER_DISTANCE;
-    private static final Supplier<Integer> FULL_PARTICLE_DENSITY_DISTANCE;
+    private static final Supplier<Double> PARTICLE_DISTANCE_SCALE;
+    private static final Supplier<Double> FULL_PARTICLE_DENSITY_SHARE;
     private static final Supplier<Double> DISTANT_PARTICLE_DENSITY;
     private static final Supplier<Integer> MAX_FLANS_PARTICLES_PER_TICK;
 
@@ -372,14 +372,14 @@ public final class ModClientConfig
         builder.pop();
 
         builder.push("Particle Rendering Settings");
-        PARTICLE_RENDER_DISTANCE = builder
-            .comment("Maximum camera distance in blocks for particles spawned by Flan's Mod.")
-            .defineInRange("particleRenderDistance", 128, 8, 4096);
-        FULL_PARTICLE_DENSITY_DISTANCE = builder
-            .comment("Particles inside this camera distance retain full density. Density gradually falls beyond it.")
-            .defineInRange("fullParticleDensityDistance", 32, 0, 4096);
+        PARTICLE_DISTANCE_SCALE = builder
+            .comment("Multiplies how far Flan's Mod particles are drawn. Every effect has its own natural drawing distance: 128 blocks for ordinary particles, and further for large effects such as an explosion's rising column, which grows with the charge up to 256 blocks. 0.5 halves every distance; 2 doubles it.")
+            .defineInRange("particleDistanceScale", 1.0D, 0.125D, 4.0D);
+        FULL_PARTICLE_DENSITY_SHARE = builder
+            .comment("Share of each effect's drawing distance within which its particles keep full density. Density gradually falls beyond it, down to distantParticleDensity at the edge. Large landmark effects are never thinned.")
+            .defineInRange("fullParticleDensityShare", 0.25D, 0D, 1D);
         DISTANT_PARTICLE_DENSITY = builder
-            .comment("Fraction of Flan's Mod particles retained at the maximum render distance.")
+            .comment("Fraction of Flan's Mod particles retained at the edge of each effect's drawing distance.")
             .defineInRange("distantParticleDensity", 0.25D, 0D, 1D);
         MAX_FLANS_PARTICLES_PER_TICK = builder
             .comment("Maximum particles Flan's Mod may create in one client tick. Nearby particles are considered first by normal packet and entity processing order.")
@@ -516,8 +516,8 @@ public final class ModClientConfig
         driveableImpostorResolution = DRIVEABLE_IMPOSTOR_RESOLUTION.get();
         driveableImpostorYawAngles = DRIVEABLE_IMPOSTOR_YAW_ANGLES.get();
         driveableImpostorCacheEntries = DRIVEABLE_IMPOSTOR_CACHE_ENTRIES.get();
-        particleRenderDistance = PARTICLE_RENDER_DISTANCE.get();
-        fullParticleDensityDistance = Math.min(FULL_PARTICLE_DENSITY_DISTANCE.get(), particleRenderDistance);
+        particleDistanceScale = PARTICLE_DISTANCE_SCALE.get();
+        fullParticleDensityShare = FULL_PARTICLE_DENSITY_SHARE.get();
         distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();
         maxFlansParticlesPerTick = MAX_FLANS_PARTICLES_PER_TICK.get();
 

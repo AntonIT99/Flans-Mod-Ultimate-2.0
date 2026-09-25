@@ -53,6 +53,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
+    public void spawnExplosionSpectacle(Vec3 position, float craterRadius, float blastRadius, boolean groundBurst)
+    {
+        /* no-op */
+    }
+
+    @Override
     public void spawnParticle(String s, BlockState state, BlockPos sourcePos, double x, double y, double z, double vx, double vy, double vz, float scale)
     {
         /* no-op */

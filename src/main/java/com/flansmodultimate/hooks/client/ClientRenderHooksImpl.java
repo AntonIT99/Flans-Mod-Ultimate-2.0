@@ -9,6 +9,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.particle.ExplosionSpectacle;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
 import com.flansmodultimate.client.render.InstantShotTrail;
@@ -89,6 +90,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
     {
         ParticleHelper.spawnSustained(particleType, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
+    }
+
+    @Override
+    public void spawnExplosionSpectacle(Vec3 position, float craterRadius, float blastRadius, boolean groundBurst)
+    {
+        ExplosionSpectacle.spawn(position, craterRadius, blastRadius, groundBurst);
     }
 
     @Override

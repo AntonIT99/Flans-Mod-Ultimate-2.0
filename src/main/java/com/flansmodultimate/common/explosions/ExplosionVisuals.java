@@ -240,6 +240,176 @@ public final class ExplosionVisuals
     }
 
     /**
+     * Below this crater radius the white flash is all there is; above it a warm glow is laid under
+     * it. Set just above the ~1 block crater of a 20 mm round, so hand grenades and anything
+     * heavier burn orange for a moment rather than only blinking white.
+     */
+    public static final float MIN_AFTERGLOW_CRATER_RADIUS = 1.5F;
+    /** The afterglow is wider than the flash, since it is the fireball's light and not its core. */
+    private static final float AFTERGLOW_SHARE_OF_FLASH = 1.4F;
+
+    /**
+     * Below this crater radius nothing is thrown out along the ground. Set above the ~2.5 block
+     * crater of a hand grenade, so the skirt starts with light artillery and mortars.
+     */
+    public static final float MIN_DUST_SKIRT_CRATER_RADIUS = 3.0F;
+    /** How far the dust skirt rolls out, as a multiple of the crater radius. */
+    private static final float DUST_SKIRT_REACH_PER_CRATER = 2.2F;
+    /** Never further than the overpressure itself reaches, and never absurdly far. */
+    private static final float MAX_DUST_SKIRT_REACH = 64.0F;
+    private static final int MIN_DUST_SKIRT_WAVES = 2;
+    private static final int MAX_DUST_SKIRT_WAVES = 8;
+    private static final float DUST_PUFFS_PER_CRATER = 2.5F;
+    private static final int MIN_DUST_PUFFS_PER_WAVE = 8;
+    private static final int MAX_DUST_PUFFS_PER_WAVE = 40;
+
+    /**
+     * Below this crater radius the fireball does not rise as a column of its own. It matches the
+     * smoke column threshold, so the rising stem and the column that outlasts it arrive together.
+     */
+    public static final float MIN_FIREBALL_STEM_CRATER_RADIUS = MIN_SMOKE_COLUMN_CRATER_RADIUS;
+    /** How high the stem climbs, as a multiple of the crater radius. */
+    private static final float STEM_HEIGHT_PER_CRATER = 2.4F;
+    private static final float MAX_STEM_HEIGHT = 96.0F;
+    private static final int MIN_STEM_STEPS = 4;
+    private static final int MAX_STEM_STEPS = 18;
+    private static final int MAX_STEM_PUFFS_PER_STEP = 6;
+
+    /**
+     * Below this crater radius the stem simply thins out at the top; above it, it spreads into a
+     * cap. Sits just under the ~12 block crater of a 10 kg charge, so only demolition charges and
+     * heavy bombs mushroom.
+     */
+    public static final float MIN_MUSHROOM_CAP_CRATER_RADIUS = 10.0F;
+    private static final float CAP_PUFFS_PER_CRATER = 2.5F;
+    private static final int MIN_CAP_PUFFS = 12;
+    private static final int MAX_CAP_PUFFS = 64;
+    /** How wide the cap spreads, as a share of the stem's height. */
+    private static final float CAP_WIDTH_SHARE_OF_STEM = 0.45F;
+
+    /**
+     * Crater radius past which the staged layers stop growing their puffs. It is where the stem
+     * reaches {@link #MAX_STEM_HEIGHT}; past it the column, cap and skirt no longer grow, and puffs
+     * that kept growing would swallow the shapes they are meant to draw.
+     */
+    private static final float MAX_STAGED_SIZING_RADIUS = MAX_STEM_HEIGHT / STEM_HEIGHT_PER_CRATER;
+    /**
+     * Natural drawing distance, per block of crater radius, of the staged layers. A column
+     * a few dozen blocks high is visible from well past the ordinary particle distance.
+     */
+    private static final float LANDMARK_RANGE_PER_CRATER = 16.0F;
+    /**
+     * Longest natural drawing distance of the staged layers. It matches the range the server
+     * sends explosion packets to; the client's particleDistanceScale then scales it like any other.
+     */
+    public static final float MAX_LANDMARK_RANGE = 256.0F;
+
+    /**
+     * The crater radius the staged layers size their puffs, widths and offsets from. It follows the
+     * crater up to {@link #MAX_STAGED_SIZING_RADIUS} so the puffs stay in proportion to the column
+     * and cap, whose own dimensions are capped there.
+     */
+    public static float stagedSizingRadius(float craterRadius)
+    {
+        if (!Float.isFinite(craterRadius) || craterRadius <= 0F)
+            return 0F;
+        return Math.min(craterRadius, MAX_STAGED_SIZING_RADIUS);
+    }
+
+    /** Natural drawing distance of this explosion's staged layers, before the client's particleDistanceScale. */
+    public static float landmarkRange(float craterRadius)
+    {
+        if (!Float.isFinite(craterRadius) || craterRadius <= 0F)
+            return 0F;
+        return Math.min(craterRadius * LANDMARK_RANGE_PER_CRATER, MAX_LANDMARK_RANGE);
+    }
+
+    /** Size of the warm glow laid under the flash, or zero for rounds too small to have one. */
+    public static float afterglowScale(float craterRadius)
+    {
+        if (!Float.isFinite(craterRadius) || craterRadius < MIN_AFTERGLOW_CRATER_RADIUS)
+            return 0F;
+        return flashScale(craterRadius) * AFTERGLOW_SHARE_OF_FLASH;
+    }
+
+    /**
+     * How many successive rings of dust roll out along the ground. More waves rather than one big
+     * ring is what makes the skirt read as something travelling outwards instead of a stamp.
+     */
+    public static int dustSkirtWaves(float craterRadius)
+    {
+        if (!Float.isFinite(craterRadius) || craterRadius < MIN_DUST_SKIRT_CRATER_RADIUS)
+            return 0;
+        return Mth.clamp(Mth.ceil(craterRadius / 2.0F), MIN_DUST_SKIRT_WAVES, MAX_DUST_SKIRT_WAVES);
+    }
+
+    /** Dust puffs in each ring of the skirt. */
+    public static int dustSkirtPuffsPerWave(float craterRadius)
+    {
+        if (dustSkirtWaves(craterRadius) <= 0)
+            return 0;
+        return Mth.clamp(Mth.ceil(craterRadius * DUST_PUFFS_PER_CRATER), MIN_DUST_PUFFS_PER_WAVE, MAX_DUST_PUFFS_PER_WAVE);
+    }
+
+    /**
+     * How far the last ring of the skirt reaches. It follows the crater but stops at the blast
+     * radius, because dust carried past the overpressure envelope would claim a reach the
+     * explosion does not have.
+     */
+    public static float dustSkirtReach(float craterRadius, float blastRadius)
+    {
+        if (dustSkirtWaves(craterRadius) <= 0)
+            return 0F;
+        float reach = Math.min(craterRadius * DUST_SKIRT_REACH_PER_CRATER, MAX_DUST_SKIRT_REACH);
+        if (Float.isFinite(blastRadius) && blastRadius > 0F)
+            reach = Math.min(reach, blastRadius);
+        return Math.max(reach, Math.min(craterRadius, MAX_DUST_SKIRT_REACH));
+    }
+
+    /**
+     * How many ticks the fireball stem keeps climbing. Each step lays a few puffs higher than the
+     * last and a shade darker, so the column is seen being built rather than appearing whole.
+     */
+    public static int fireballStemSteps(float craterRadius)
+    {
+        if (!Float.isFinite(craterRadius) || craterRadius < MIN_FIREBALL_STEM_CRATER_RADIUS)
+            return 0;
+        return Mth.clamp(Mth.ceil(craterRadius), MIN_STEM_STEPS, MAX_STEM_STEPS);
+    }
+
+    /** Height the stem reaches at its last step, in blocks above the blast. */
+    public static float fireballStemHeight(float craterRadius)
+    {
+        if (fireballStemSteps(craterRadius) <= 0)
+            return 0F;
+        return Math.min(craterRadius * STEM_HEIGHT_PER_CRATER, MAX_STEM_HEIGHT);
+    }
+
+    /** Puffs laid at each step of the stem. */
+    public static int fireballStemPuffsPerStep(float craterRadius)
+    {
+        if (fireballStemSteps(craterRadius) <= 0)
+            return 0;
+        return Mth.clamp(Mth.ceil(craterRadius / 3.0F), 2, MAX_STEM_PUFFS_PER_STEP);
+    }
+
+    /** Puffs spreading out to form the mushroom cap, or zero below the demolition-charge threshold. */
+    public static int mushroomCapPuffs(float craterRadius)
+    {
+        if (!Float.isFinite(craterRadius) || craterRadius < MIN_MUSHROOM_CAP_CRATER_RADIUS)
+            return 0;
+        return Mth.clamp(Mth.ceil(craterRadius * CAP_PUFFS_PER_CRATER), MIN_CAP_PUFFS, MAX_CAP_PUFFS);
+    }
+
+    /** Radius the cap spreads to around the top of the stem. */
+    public static float mushroomCapRadius(float craterRadius)
+    {
+        if (mushroomCapPuffs(craterRadius) <= 0)
+            return 0F;
+        return fireballStemHeight(craterRadius) * CAP_WIDTH_SHARE_OF_STEM;
+    }
+
+    /**
      * One of the extra particle types a large detonation gets on top of the classic fireball.
      * <p>
      * The fireball itself is the right look and is left alone; what a heavy charge was missing was

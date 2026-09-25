@@ -4,12 +4,12 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
-import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -133,6 +133,10 @@ public class PacketFlanExplosionParticles implements IClientPacket
         for (ExplosionVisuals.Layer layer : ExplosionVisuals.LAYERS)
             spawnLayer(level, layer, lifetimeScale, groundBurst);
         spawnSmokeColumn(level);
+
+        // The afterglow, dust skirt, fireball stem and mushroom cap play out over the following
+        // ticks, so they draw on later ticks' particle budgets rather than competing with the above.
+        ClientHooks.RENDER.spawnExplosionSpectacle(position, explosionRadius, blastRadius, groundBurst);
     }
 
     /**

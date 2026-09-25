@@ -211,6 +211,92 @@ class ExplosionVisualsTest
     }
 
     @Test
+    @DisplayName("The staged layers stay off for the rounds players fire by the hundred")
+    void smallCalibreRoundsGetNoStagedLayers()
+    {
+        for (float massKg : new float[] {FIFTY_CAL_KG, TWENTY_MM_KG})
+        {
+            float crater = crater(massKg);
+            assertEquals(0F, ExplosionVisuals.afterglowScale(crater), massKg + " kg should only flash white");
+            assertEquals(0, ExplosionVisuals.dustSkirtWaves(crater), massKg + " kg should not roll out a skirt");
+            assertEquals(0, ExplosionVisuals.fireballStemSteps(crater), massKg + " kg should not raise a stem");
+            assertEquals(0, ExplosionVisuals.mushroomCapPuffs(crater), massKg + " kg should not mushroom");
+        }
+    }
+
+    @Test
+    @DisplayName("A tank shell rolls out dust, a 10 kg charge rises and mushrooms")
+    void theStagedLayersSwitchOnProgressively()
+    {
+        float shell = crater(EIGHTY_EIGHT_MM_KG);
+        float charge = crater(STURMTIGER_CHARGE_KG);
+
+        assertTrue(ExplosionVisuals.afterglowScale(shell) > 0F);
+        assertTrue(ExplosionVisuals.dustSkirtWaves(shell) > 0, "an 88 mm shell should scour the ground");
+        assertEquals(0, ExplosionVisuals.fireballStemSteps(shell), "ordinary tank gunnery should not raise a stem");
+        assertEquals(0, ExplosionVisuals.mushroomCapPuffs(shell));
+
+        assertTrue(ExplosionVisuals.dustSkirtWaves(charge) > ExplosionVisuals.dustSkirtWaves(shell));
+        assertTrue(ExplosionVisuals.fireballStemSteps(charge) > 0, "a demolition charge should raise a stem");
+        assertTrue(ExplosionVisuals.mushroomCapPuffs(charge) > 0, "a demolition charge should mushroom");
+        assertTrue(ExplosionVisuals.mushroomCapRadius(charge) < ExplosionVisuals.fireballStemHeight(charge),
+            "the cap should be narrower than the stem is tall");
+    }
+
+    @Test
+    @DisplayName("The dust skirt never claims a reach the blast does not have")
+    void theDustSkirtStopsAtTheBlastRadius()
+    {
+        float charge = crater(STURMTIGER_CHARGE_KG);
+        assertTrue(ExplosionVisuals.dustSkirtReach(charge, blast(STURMTIGER_CHARGE_KG)) <= blast(STURMTIGER_CHARGE_KG));
+        assertTrue(ExplosionVisuals.dustSkirtReach(charge, 1F) >= charge,
+            "the skirt should still clear the crater itself");
+    }
+
+    @ParameterizedTest(name = "a crater radius of {0} keeps every staged layer bounded")
+    @ValueSource(floats = {Float.NaN, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, -1F, 0F, 1.0e9F})
+    @DisplayName("Extreme radii cannot make the staged layers run away")
+    void theStagedLayersStayBounded(float craterRadius)
+    {
+        assertTrue(Float.isFinite(ExplosionVisuals.afterglowScale(craterRadius)));
+        assertTrue(ExplosionVisuals.dustSkirtWaves(craterRadius) <= 8);
+        assertTrue(ExplosionVisuals.dustSkirtPuffsPerWave(craterRadius) <= 40);
+        assertTrue(ExplosionVisuals.dustSkirtReach(craterRadius, craterRadius) <= 64F);
+        assertTrue(ExplosionVisuals.fireballStemSteps(craterRadius) <= 18);
+        assertTrue(ExplosionVisuals.fireballStemPuffsPerStep(craterRadius) <= 6);
+        assertTrue(ExplosionVisuals.fireballStemHeight(craterRadius) <= 96F);
+        assertTrue(ExplosionVisuals.mushroomCapPuffs(craterRadius) <= 64);
+    }
+
+    @Test
+    @DisplayName("Puffs stop growing where the column and cap stop growing")
+    void stagedPuffSizesStayInProportionWithTheCappedShapes()
+    {
+        float charge = crater(STURMTIGER_CHARGE_KG);
+        assertEquals(charge, ExplosionVisuals.stagedSizingRadius(charge), 0.0001F,
+            "ordinary charges should size their puffs from their own crater");
+
+        // A legacy ExplosionRadius of 200 under a 256 block cap: the stem is already at its ceiling,
+        // so the puffs drawing it must be too.
+        float extreme = 200F;
+        assertEquals(ExplosionVisuals.fireballStemHeight(extreme), ExplosionVisuals.fireballStemHeight(40F), 0.0001F);
+        assertEquals(ExplosionVisuals.stagedSizingRadius(40F), ExplosionVisuals.stagedSizingRadius(extreme), 0.0001F,
+            "puffs should stop growing at the crater where the stem stops growing");
+    }
+
+    @Test
+    @DisplayName("Heavy charges are drawn from further away, but never beyond the packet range")
+    void theLandmarkRangeGrowsWithTheChargeUpToThePacketRange()
+    {
+        assertTrue(ExplosionVisuals.landmarkRange(crater(STURMTIGER_CHARGE_KG))
+            > ExplosionVisuals.landmarkRange(crater(EIGHTY_EIGHT_MM_KG)));
+        assertTrue(ExplosionVisuals.landmarkRange(crater(STURMTIGER_CHARGE_KG)) > 128F,
+            "a demolition charge's column should outlast the default particle distance");
+        assertEquals(ExplosionVisuals.MAX_LANDMARK_RANGE, ExplosionVisuals.landmarkRange(1.0e9F), 0.0001F);
+        assertEquals(0F, ExplosionVisuals.landmarkRange(Float.NaN));
+    }
+
+    @Test
     @DisplayName("An unauthored particle count stays unauthored")
     void aZeroCountIsNotInvented()
     {

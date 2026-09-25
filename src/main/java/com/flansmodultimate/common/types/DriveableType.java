@@ -231,7 +231,6 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     protected float bulletDetectionRadius = -1F;
     /** Largest detection radius of any loaded type; only grows, so it stays a safe bound across reloads. */
     private static volatile float maxBulletDetectionRadius = 8F;
-    protected boolean onRadar;
     protected int animFrames = 2;
 
     protected int startSoundRange = 50;
@@ -777,7 +776,6 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
         bulletDetectionRadius = readValue("BulletDetection", bulletDetectionRadius, file);
         yOffset = readValue("YOffset", yOffset, file);
         cameraDistance = Math.max(1F, readValue("CameraDistance", cameraDistance, file));
-        onRadar = readValue("OnRadar", onRadar, file);
         trackLinkLength = readValue("TrackLinkLength", trackLinkLength, file);
         readVectorValueLines("LeftLinkPoint", leftTrackPoints, file, 1F);
         readVectorValueLines("RightLinkPoint", rightTrackPoints, file, 1F);
