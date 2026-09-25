@@ -4,8 +4,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * How an explosion's radii grow with the charge, in one place so the law cannot drift between the
- * item tooltip, the fired round and the vehicle damage model.
+ * How an explosion's radii and peak damage grow with the charge, in one place so the law cannot
+ * drift between the item tooltip, the fired round and the vehicle damage model.
  * <p>
  * Each radius follows {@code reference * mass^exponent} up to {@link #FLATTEN_KNEE_MASS_KG}, then
  * continues from there at a much smaller exponent. The two regimes answer different questions.
@@ -35,8 +35,11 @@ public final class ExplosionScaling
 
     /** Fitted growth of the cratering radius with the charge. */
     public static final float CRATER_EXPONENT = 0.37F;
-    /** Cratering growth past the knee. Tuned so a 2.25 t bomb craters ~49 blocks. */
-    public static final float CRATER_FLATTEN_EXPONENT = 0.26F;
+    /**
+     * Cratering growth past the knee: the Hopkinson-Cranz cube root, which is how structural damage
+     * radii scale for large charges. A 2.25 t bomb craters ~76 blocks and an 11 t MOAB ~130.
+     */
+    public static final float CRATER_FLATTEN_EXPONENT = 1F / 3F;
 
     /** Fitted growth of the blast radius with the charge. */
     public static final float BLAST_EXPONENT = 0.40F;
@@ -50,6 +53,33 @@ public final class ExplosionScaling
      * overpressure envelope the way real HE does, reaching ~161 blocks on a 2.25 t bomb.
      */
     public static final float FRAG_FLATTEN_EXPONENT = 0.22F;
+
+    /**
+     * Growth of the peak blast damage with the charge. Peak overpressure at a fixed scaled
+     * distance follows Hopkinson-Cranz, so this is the textbook cube root.
+     */
+    public static final double BLAST_DAMAGE_EXPONENT = 1D / 3D;
+    /**
+     * Growth of the peak fragment damage with the charge. A single fragment is about as lethal
+     * whatever threw it; a bigger charge mostly throws more fragments further, which the frag
+     * radius and hit chance already account for. Scaling fragment damage with the cube root as
+     * well counted the charge twice, leaving grenade fragments weaker than a pistol round while a
+     * 250 kg bomb's fragments hit for ten times a player's health. Anchored at 1 kg like the other
+     * laws, so the casing's {@code kFragDamage} is still the damage of a 1 kg charge.
+     */
+    public static final double FRAG_DAMAGE_EXPONENT = 0.2D;
+
+    /** Peak blast damage for a charge in kg TNT equivalent; {@code reference} is that of 1 kg. */
+    public static float blastDamage(double reference, float massKg)
+    {
+        return damage(reference, massKg, BLAST_DAMAGE_EXPONENT);
+    }
+
+    /** Peak fragment damage for a charge in kg TNT equivalent; {@code reference} is that of 1 kg. */
+    public static float fragDamage(double reference, float massKg)
+    {
+        return damage(reference, massKg, FRAG_DAMAGE_EXPONENT);
+    }
 
     /** Cratering radius in blocks for a charge in kg TNT equivalent. */
     public static float craterRadius(double reference, float massKg)
@@ -98,5 +128,12 @@ public final class ExplosionScaling
 
         double atKnee = reference * Math.pow(FLATTEN_KNEE_MASS_KG, exponent);
         return (float) (atKnee * Math.pow(massKg / FLATTEN_KNEE_MASS_KG, flattenExponent));
+    }
+
+    private static float damage(double reference, float massKg, double exponent)
+    {
+        if (!Float.isFinite(massKg) || massKg <= 0F || !Double.isFinite(reference) || reference <= 0D)
+            return 0F;
+        return (float) Math.min(reference * Math.pow(massKg, exponent), Float.MAX_VALUE);
     }
 }
