@@ -535,7 +535,6 @@ public final class ShootingHelper
         onDetonate(level, firedShot.getBulletType(), detonatePos, null, firedShot.getAttacker().orElse(null));
     }
 
-
     public static void onDetonate(Level level, ShootableType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
     {
         if (level.isClientSide)
@@ -585,7 +584,6 @@ public final class ShootingHelper
         {
             for (float k = -fireRadius; k < fireRadius; k += 1F)
             {
-
                 if (volumetric)
                 {
                     for (float j = -fireRadius; j < fireRadius; j += 1F)
