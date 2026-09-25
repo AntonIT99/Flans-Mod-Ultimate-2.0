@@ -10,7 +10,7 @@ import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -43,14 +43,14 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
         int y0 = topPos;
         ResourceLocation guiTexture = menu.getBlock().getConfigType().getGuiTexture();
 
-        addRenderableWidget(new ImageButton(x0 + 77, y0 + 87, 10, 10, 176, 0, 10, guiTexture,
+        addRenderableWidget(new TextureRegionButton(x0 + 77, y0 + 87, 176, guiTexture,
             btn -> {
                 if (page > 0)
                     page--;
             }
         ));
 
-        addRenderableWidget(new ImageButton(x0 + 89, y0 + 87, 10, 10, 186, 0, 10, guiTexture,
+        addRenderableWidget(new TextureRegionButton(x0 + 89, y0 + 87, 186, guiTexture,
             btn -> {
                 int max = menu.getBlock().getConfigType().getPages().size() - 1;
                 if (page < max)
@@ -96,6 +96,29 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
     protected void renderLabels(@NotNull GuiGraphics gg, int mouseX, int mouseY)
     {
         // The armor box GUI draws its own title in renderBg and does not need the default inventory label.
+    }
+
+    /**
+     * Arrow button drawn from a 10x10 region of the GUI sheet. As with the legacy image buttons,
+     * the hovered or focused state uses the region directly below.
+     */
+    private static final class TextureRegionButton extends Button
+    {
+        private final int textureU;
+        private final ResourceLocation texture;
+
+        private TextureRegionButton(int x, int y, int textureU, ResourceLocation texture, OnPress onPress)
+        {
+            super(x, y, 10, 10, Component.empty(), onPress, DEFAULT_NARRATION);
+            this.textureU = textureU;
+            this.texture = texture;
+        }
+
+        @Override
+        public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        {
+            graphics.blit(texture, getX(), getY(), textureU, isHoveredOrFocused() ? height : 0, width, height);
+        }
     }
 
     private void drawRecipe(GuiGraphics gg, ArmorBoxType type, int pageIndex)

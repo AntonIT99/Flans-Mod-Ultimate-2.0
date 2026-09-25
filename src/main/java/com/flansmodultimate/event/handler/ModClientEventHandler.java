@@ -2,13 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.gui.ArmorBoxScreen;
-import com.flansmodultimate.client.gui.DriveableCraftingScreen;
-import com.flansmodultimate.client.gui.DriveableInventoryScreen;
-import com.flansmodultimate.client.gui.GunBoxScreen;
-import com.flansmodultimate.client.gui.GunWorkbenchScreen;
-import com.flansmodultimate.client.gui.MechaInventoryScreen;
-import com.flansmodultimate.client.gui.PaintjobTableScreen;
+import com.flansmodultimate.client.gui.ModMenuScreens;
 import com.flansmodultimate.client.gui.options.FlansSettingsHubScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
@@ -47,12 +41,12 @@ import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -76,6 +70,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -85,6 +80,8 @@ import net.minecraft.world.item.Item;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -117,42 +114,36 @@ public final class ModClientEventHandler
             ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
 
-            // Menus registration
-            MenuScreens.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
-            MenuScreens.register(FlansMod.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
-            MenuScreens.register(FlansMod.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
-            MenuScreens.register(FlansMod.mechaInventoryMenu.get(), MechaInventoryScreen::new);
-            MenuScreens.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
-            MenuScreens.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
-            MenuScreens.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
+            ModMenuScreens.register(MenuScreens::register);
         });
     }
 
     @SubscribeEvent
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event)
     {
-        FlansMod.getItems().stream()
+        Set<ResourceLocation> customRenderedItemIds = FlansMod.getItems().stream()
             .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>)
-            .forEach(itemRegistryObject -> {
-                ResourceLocation id = itemRegistryObject.getId();
-                // Wrap ALL baked model variants belonging to this item
-                event.getModels().replaceAll((loc, original) -> {
-                    if (id != null && loc.getNamespace().equals(id.getNamespace()) && loc.getPath().equals(id.getPath()) && !(original instanceof BewlrRoutingModel))
-                    {
-                        return new BewlrRoutingModel(original);
-                    }
-                    return original;
-                });
-            });
+            .map(RegistryEntry::getId)
+            .filter(java.util.Objects::nonNull)
+            .collect(Collectors.toUnmodifiableSet());
+
+        // Wrap all variants in one pass. Large legacy installations can have
+        // thousands of registered Flan items, so one full map scan per item is
+        // prohibitively expensive during every resource reload.
+        event.getModels().replaceAll((location, original) -> {
+            if (customRenderedItemIds.contains(ClientPlatform.modelItemId(location)) && !(original instanceof BewlrRoutingModel))
+                return new BewlrRoutingModel(original);
+            return original;
+        });
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @SubscribeEvent
     public static void registerArmorLayer(EntityRenderersEvent.AddLayers event)
     {
-        for (String skin : event.getSkins())
+        for (var skin : event.getSkins())
         {
-            LivingEntityRenderer<?, ?> renderer = event.getSkin(skin);
+            var renderer = event.getSkin(skin);
             if (renderer instanceof PlayerRenderer playerRenderer)
             {
                 playerRenderer.addLayer(new CustomArmorLayer<>(playerRenderer));
@@ -237,7 +228,11 @@ public final class ModClientEventHandler
         event.register((stack, tintIndex) -> {
             Item item = stack.getItem();
             if (item instanceof IFlanItem<?> flanItem)
-                return flanItem.getConfigType().getColour();
+                // Legacy content packs store colours as 24-bit RGB. The 1.21
+                // item renderer reads ARGB and would treat the missing high
+                // byte as alpha=0, making tinted items transparent; 1.20.1
+                // ignores the alpha byte.
+                return 0xFF000000 | flanItem.getConfigType().getColour();
             return 0xFFFFFFFF;
         },
         FlansMod.getItems().stream()

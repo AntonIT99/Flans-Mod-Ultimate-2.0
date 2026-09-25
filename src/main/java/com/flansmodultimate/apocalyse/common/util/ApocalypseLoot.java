@@ -10,15 +10,14 @@ import com.flansmodultimate.common.types.MechaItemType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.ToolType;
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.core.registries.BuiltInRegistries;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
@@ -32,7 +31,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -47,10 +45,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseLoot
 {
-    private static final String NBT_BOOK_TITLE = "title";
-    private static final String NBT_BOOK_AUTHOR = "author";
-    private static final String NBT_BOOK_PAGES = "pages";
-
     private static final String[] JOURNAL_LINES = new String[] {
         "The sky turned yellow today. The portal brought us somewhere worse than the wasteland.",
         "If you find the power cubes, do not stand between them unless you are ready to leave.",
@@ -190,7 +184,7 @@ public final class ApocalypseLoot
                 case 0 -> new ItemStack(Items.BOWL, random.nextInt(5) + 1);
                 case 1 -> new ItemStack(Items.WATER_BUCKET);
                 case 2 -> randomFluidBucket(random);
-                case 3, 4, 5, 6 -> PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.STRENGTH);
+                case 3, 4, 5, 6 -> ItemStackData.potion(Items.POTION, Potions.STRENGTH);
                 case 7 -> new ItemStack(ApocalypseContent.SULPHUR.get(), random.nextInt(12) + 1);
                 default -> scientistJournal(random);
             };
@@ -204,7 +198,7 @@ public final class ApocalypseLoot
         for (int slot = 0; slot < 3 && slot < brewingStand.getContainerSize(); slot++)
         {
             if (random.nextBoolean())
-                brewingStand.setItem(slot, PotionUtils.setPotion(new ItemStack(Items.POTION), BREWING_STAND_POTIONS.get(random.nextInt(BREWING_STAND_POTIONS.size()))));
+                brewingStand.setItem(slot, ItemStackData.potion(Items.POTION, BREWING_STAND_POTIONS.get(random.nextInt(BREWING_STAND_POTIONS.size()))));
         }
     }
 
@@ -255,13 +249,7 @@ public final class ApocalypseLoot
     public static ItemStack scientistJournal(RandomSource random)
     {
         String[] entry = SCIENTIST_JOURNAL[random.nextInt(SCIENTIST_JOURNAL.length)];
-        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        book.getOrCreateTag().putString(NBT_BOOK_TITLE, entry[0]);
-        book.getOrCreateTag().putString(NBT_BOOK_AUTHOR, "Dr. Brazier");
-        ListTag pages = new ListTag();
-        pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(entry[1]))));
-        book.getOrCreateTag().put(NBT_BOOK_PAGES, pages);
-        return book;
+        return ItemStackData.writtenBook(entry[0], "Dr. Brazier", List.of(Component.literal(entry[1])));
     }
 
     private static ItemStack randomFluidBucket(RandomSource random)
@@ -329,14 +317,8 @@ public final class ApocalypseLoot
 
     public static ItemStack survivorJournal(RandomSource random)
     {
-        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        book.getOrCreateTag().putString(NBT_BOOK_TITLE, "Survivor Journal");
-        book.getOrCreateTag().putString(NBT_BOOK_AUTHOR, "Unknown Survivor");
-        ListTag pages = new ListTag();
         String text = JOURNAL_LINES[random.nextInt(JOURNAL_LINES.length)];
-        pages.add(StringTag.valueOf(Component.Serializer.toJson(Component.literal(text).withStyle(ChatFormatting.DARK_GRAY))));
-        book.getOrCreateTag().put(NBT_BOOK_PAGES, pages);
-        return book;
+        return ItemStackData.writtenBook("Survivor Journal", "Unknown Survivor", List.of(Component.literal(text).withStyle(ChatFormatting.DARK_GRAY)));
     }
 
     public static Optional<ItemStack> randomPart(RandomSource random)

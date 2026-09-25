@@ -1,10 +1,9 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.mojang.logging.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
@@ -12,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
@@ -148,7 +148,7 @@ public final class FluidFuel
     {
         if (stack.isEmpty())
             return null;
-        return stack.copyWithCount(1).getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).orElse(null);
+        return ItemCapabilities.fluidHandler(stack.copyWithCount(1));
     }
 
     /** Contents of the first tank holding something this driveable can burn, else empty. */

@@ -1,15 +1,14 @@
 package com.flansmodultimate.client.render;
 
-import org.lwjgl.opengl.GL11C;
-
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
+import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.lwjgl.opengl.GL11C;
 
 import net.minecraft.Util;
 import net.minecraft.client.renderer.GameRenderer;
@@ -98,14 +97,12 @@ public class CustomRenderType
         new RenderStateShard.LayeringStateShard(
             "armor_view_offset_layering",
             () -> {
-                PoseStack poseStack = RenderSystem.getModelViewStack();
-                poseStack.pushPose();
-                poseStack.scale(0.99975586F, 0.99975586F, 0.99975586F);
+                VertexPlatform.pushModelView();
+                VertexPlatform.scaleModelView(0.99975586F, 0.99975586F, 0.99975586F);
                 RenderSystem.applyModelViewMatrix();
             },
             () -> {
-                PoseStack poseStack = RenderSystem.getModelViewStack();
-                poseStack.popPose();
+                VertexPlatform.popModelView();
                 RenderSystem.applyModelViewMatrix();
             }
         );

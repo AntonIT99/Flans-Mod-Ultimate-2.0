@@ -4,10 +4,19 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.WrittenBookItem;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionUtils;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -85,5 +94,25 @@ public final class ItemStackData
     public static void hurtAndBreak(ItemStack stack, int amount, LivingEntity entity, EquipmentSlot slot)
     {
         stack.hurtAndBreak(amount, entity, owner -> owner.broadcastBreakEvent(slot));
+    }
+
+    /** A stack of the item, such as a potion or splash potion, holding the given potion. */
+    public static ItemStack potion(Item item, Potion potion)
+    {
+        return PotionUtils.setPotion(new ItemStack(item), potion);
+    }
+
+    /** A signed written book with one page per component. */
+    public static ItemStack writtenBook(String title, String author, List<Component> pages)
+    {
+        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
+        CompoundTag tag = book.getOrCreateTag();
+        tag.putString(WrittenBookItem.TAG_TITLE, title);
+        tag.putString(WrittenBookItem.TAG_AUTHOR, author);
+        ListTag pageList = new ListTag();
+        for (Component page : pages)
+            pageList.add(StringTag.valueOf(Component.Serializer.toJson(page)));
+        tag.put(WrittenBookItem.TAG_PAGES, pageList);
+        return book;
     }
 }

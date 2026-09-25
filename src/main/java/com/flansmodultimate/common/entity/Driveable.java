@@ -75,13 +75,14 @@ import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.platform.fluid.FluidPlatform;
+import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -131,6 +132,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -4395,7 +4397,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return false;
 
         // Named explicitly so a multi-tank container cannot hand back a different liquid.
-        FluidStack drained = handler.drain(new FluidStack(held, drawn), IFluidHandler.FluidAction.EXECUTE);
+        FluidStack drained = handler.drain(FluidPlatform.copyWithAmount(held, drawn), IFluidHandler.FluidAction.EXECUTE);
         if (drained.isEmpty())
             return false;
 
@@ -4462,7 +4464,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             ItemStack stack = driveableData.getItem(slot);
             if (stack.isEmpty())
                 continue;
-            IEnergyStorage energy = stack.getCapability(ForgeCapabilities.ENERGY).orElse(null);
+            IEnergyStorage energy = ItemCapabilities.energy(stack);
             if (energy == null || !energy.canExtract())
                 continue;
 
@@ -5274,10 +5276,16 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         for (int offset = 0; offset <= depth; offset++)
         {
             cursor.set(getBlockX(), Mth.floor(getBoundingBox().minY) - offset, getBlockZ());
-            if (level().getBlockState(cursor).blocksMotion())
+            if (hasCollisionAt(cursor))
                 return true;
         }
         return false;
+    }
+
+    /** Whether the block at the position has a collision shape for this driveable, i.e. something it could rest on. */
+    private boolean hasCollisionAt(BlockPos pos)
+    {
+        return !level().getBlockState(pos).getCollisionShape(level(), pos, CollisionContext.of(this)).isEmpty();
     }
 
     protected boolean shouldSquashEntities()

@@ -2,6 +2,7 @@ package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.types.ItemHolderType;
+import com.flansmodultimate.platform.block.FlanEntityBlock;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +20,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
@@ -28,11 +28,10 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemHolderType>
+public class ItemHolderBlock extends FlanEntityBlock implements IFlanBlock<ItemHolderType>
 {
     public static final VoxelShape SHAPE = box(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
 
@@ -109,13 +108,7 @@ public class ItemHolderBlock extends BaseEntityBlock implements IFlanBlock<ItemH
     }
 
     @Override
-    @NotNull
-    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
-    {
-        return interact(state, level, pos, player, hand);
-    }
-
-    private InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (!(level.getBlockEntity(pos) instanceof ItemHolderBlockEntity holder))
             return InteractionResult.PASS;

@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
+import com.flansmodultimate.platform.block.FlanEntityBlock;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,13 +12,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 
-public class PaintjobTableBlock extends BaseEntityBlock
+public class PaintjobTableBlock extends FlanEntityBlock
 {
     public PaintjobTableBlock(Properties props)
     {
@@ -38,12 +37,7 @@ public class PaintjobTableBlock extends BaseEntityBlock
     }
 
     @Override
-    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
-    {
-        return open(level, pos, player);
-    }
-
-    private InteractionResult open(Level level, BlockPos pos, Player player)
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;

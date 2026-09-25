@@ -7,6 +7,7 @@ import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.flansmodultimate.platform.block.FlanBlock;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
@@ -30,9 +31,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.BlockHitResult;
 
-public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
+public class GunBoxBlock extends FlanBlock implements IFlanBlock<GunBoxType>
 {
     @Getter
     protected final GunBoxType configType;
@@ -65,13 +65,7 @@ public class GunBoxBlock extends Block implements IFlanBlock<GunBoxType>
     }
 
     @Override
-    @NotNull
-    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
-    {
-        return open(state, level, pos, player);
-    }
-
-    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;

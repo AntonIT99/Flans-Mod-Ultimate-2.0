@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.teams;
 
-import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.world.FlanSavedData;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.HolderLookup;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /** The single SavedData payload for maps, rotations, runtime state and player stats. */
-public final class TeamsSavedData extends SavedData
+public final class TeamsSavedData extends FlanSavedData
 {
     public static final String ID = "flansmodultimate_teams";
     private static final String NBT_MAPS = "maps";
@@ -36,15 +36,8 @@ public final class TeamsSavedData extends SavedData
         return Collections.unmodifiableCollection(stats.values());
     }
 
-    /** 1.20.1 saves without registry context; item stacks do not need one on this version. */
+    @NotNull
     @Override
-    @NotNull
-    public CompoundTag save(@NotNull CompoundTag tag)
-    {
-        return save(tag, ItemStackData.builtInRegistries());
-    }
-
-    @NotNull
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries)
     {
         ListTag mapList = new ListTag();

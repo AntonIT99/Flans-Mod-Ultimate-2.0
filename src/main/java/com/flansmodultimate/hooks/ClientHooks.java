@@ -5,16 +5,16 @@ import com.flansmodultimate.hooks.server.ClientPlayerHooksNoop;
 import com.flansmodultimate.hooks.server.ClientRenderHooksNoop;
 import com.flansmodultimate.hooks.server.ClientSoundHooksNoop;
 import com.flansmodultimate.hooks.server.ClientTooltipHooksNoop;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.DistExecutor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClientHooks
 {
-    public static final IClientPlayerHooks PLAYER = DistExecutor.safeRunForDist(() -> ClientHookFactories::createPlayerHooks, () -> ClientPlayerHooksNoop::new);
-    public static final IClientTooltipHooks TOOLTIPS = DistExecutor.safeRunForDist(() -> ClientHookFactories::createTooltipsHooks, () -> ClientTooltipHooksNoop::new);
-    public static final IClientGunHooks GUN = DistExecutor.safeRunForDist(() -> ClientHookFactories::createGunHooks, () -> ClientGunHooksNoop::new);
-    public static final IClientRenderHooks RENDER = DistExecutor.safeRunForDist(() -> ClientHookFactories::createRenderHooks, () -> ClientRenderHooksNoop::new);
-    public static final IClientSoundHooks SOUND = DistExecutor.safeRunForDist(() -> ClientHookFactories::createSoundHooks, () -> ClientSoundHooksNoop::new);
+    public static final IClientPlayerHooks PLAYER = PlatformEnvironment.isClient() ? ClientHookFactories.createPlayerHooks() : new ClientPlayerHooksNoop();
+    public static final IClientTooltipHooks TOOLTIPS = PlatformEnvironment.isClient() ? ClientHookFactories.createTooltipsHooks() : new ClientTooltipHooksNoop();
+    public static final IClientGunHooks GUN = PlatformEnvironment.isClient() ? ClientHookFactories.createGunHooks() : new ClientGunHooksNoop();
+    public static final IClientRenderHooks RENDER = PlatformEnvironment.isClient() ? ClientHookFactories.createRenderHooks() : new ClientRenderHooksNoop();
+    public static final IClientSoundHooks SOUND = PlatformEnvironment.isClient() ? ClientHookFactories.createSoundHooks() : new ClientSoundHooksNoop();
 }

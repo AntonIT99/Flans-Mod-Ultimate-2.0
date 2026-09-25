@@ -7,6 +7,7 @@ import com.flansmodultimate.api.IInfoType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.entity.EffectPlatform;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.ModUtils;
@@ -23,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -234,7 +234,6 @@ public abstract class InfoType implements IInfoType
 
     protected void readLine(String[] split, int lineIndex, TypeFile file)
     {
-
     }
 
     private void readRecipeDefinitions(TypeFile file)
@@ -485,10 +484,10 @@ public abstract class InfoType implements IInfoType
                     int amplifier = (effectValues.length > 2) ? Integer.parseInt(effectValues[2]) : defaultAmplifier;
                     boolean isAmbient = (effectValues.length > 3) ? Boolean.parseBoolean(effectValues[3]) : ambient;
                     boolean isVisible = (effectValues.length > 4) ? Boolean.parseBoolean(effectValues[4]) : visible;
-                    MobEffect effect = MobEffect.byId(effectId);
+                    MobEffectInstance effect = EffectPlatform.legacyEffect(effectId, duration, amplifier, isAmbient, isVisible);
                     if (effect != null)
                     {
-                        effects.add(new MobEffectInstance(effect,  duration, amplifier, isAmbient, isVisible));
+                        effects.add(effect);
                     }
                     else
                     {

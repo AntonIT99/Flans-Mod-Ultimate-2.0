@@ -830,30 +830,30 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollY)
     {
         if (ammoTooltipPagesVisible && hasShiftDown() && ammoTooltipPageCount > 1)
         {
-            int step = delta < 0D ? 1 : -1;
+            int step = scrollY < 0D ? 1 : -1;
             ammoTooltipPage = Math.floorMod(ammoTooltipPage + step, ammoTooltipPageCount);
             return true;
         }
         if (menu.getPage() == Page.REPAIR)
         {
             List<DriveablePart> parts = menu.getRepairParts();
-            if (delta < 0D && visibleRepairEnd(parts) < parts.size())
+            if (scrollY < 0D && visibleRepairEnd(parts) < parts.size())
                 ++repairOffset;
-            else if (delta > 0D && repairOffset > 0)
+            else if (scrollY > 0D && repairOffset > 0)
                 --repairOffset;
             refreshButtons();
             return true;
         }
         if (menu.getPage() != Page.MENU && menu.getPage() != Page.FUEL)
         {
-            int id = delta < 0D ? DriveableInventoryMenu.SCROLL_DOWN_BUTTON : DriveableInventoryMenu.SCROLL_UP_BUTTON;
+            int id = scrollY < 0D ? DriveableInventoryMenu.SCROLL_DOWN_BUTTON : DriveableInventoryMenu.SCROLL_UP_BUTTON;
             sendMenuButton(id);
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, delta);
+        return super.mouseScrolled(mouseX, mouseY, scrollY);
     }
 }

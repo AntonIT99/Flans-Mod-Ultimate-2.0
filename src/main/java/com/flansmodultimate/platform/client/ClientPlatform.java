@@ -8,6 +8,7 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceLocation;
 
 /** Version boundary for client frame timing and screen helpers. Client-only. */
 public final class ClientPlatform
@@ -45,5 +46,11 @@ public final class ClientPlatform
     public static void hideNameTag(RenderNameTagEvent event)
     {
         event.setResult(Event.Result.DENY);
+    }
+
+    /** The item or block id of a baked model location, without its variant. */
+    public static ResourceLocation modelItemId(ResourceLocation location)
+    {
+        return ResourceLocation.fromNamespaceAndPath(location.getNamespace(), location.getPath());
     }
 }

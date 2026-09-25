@@ -214,18 +214,18 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta)
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollY)
     {
         if (menu.getMaxScrollRow() > 0)
         {
-            int id = delta < 0D ? MechaInventoryMenu.SCROLL_DOWN_BUTTON : MechaInventoryMenu.SCROLL_UP_BUTTON;
-            if (delta < 0D ? menu.getScrollRow() < menu.getMaxScrollRow() : menu.getScrollRow() > 0)
+            int id = scrollY < 0D ? MechaInventoryMenu.SCROLL_DOWN_BUTTON : MechaInventoryMenu.SCROLL_UP_BUTTON;
+            if (scrollY < 0D ? menu.getScrollRow() < menu.getMaxScrollRow() : menu.getScrollRow() > 0)
             {
                 sendMenuButton(id);
                 return true;
             }
         }
-        return super.mouseScrolled(mouseX, mouseY, delta);
+        return super.mouseScrolled(mouseX, mouseY, scrollY);
     }
 
     @Override

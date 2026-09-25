@@ -3,6 +3,7 @@ package com.flansmodultimate.common.block;
 import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.platform.block.FlanBlock;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
@@ -23,9 +24,8 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.BlockHitResult;
 
-public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
+public class ArmorBoxBlock extends FlanBlock implements IFlanBlock<ArmorBoxType>
 {
     @Getter
     protected final ArmorBoxType configType;
@@ -58,13 +58,7 @@ public class ArmorBoxBlock extends Block implements IFlanBlock<ArmorBoxType>
     }
 
     @Override
-    @NotNull
-    public InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
-    {
-        return open(state, level, pos, player);
-    }
-
-    private InteractionResult open(BlockState state, Level level, BlockPos pos, Player player)
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
     {
         if (player.isShiftKeyDown())
             return InteractionResult.PASS;
