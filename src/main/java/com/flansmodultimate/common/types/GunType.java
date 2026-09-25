@@ -48,6 +48,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected static final int DEFAULT_SHOOT_DELAY = 2;
     /** The vanilla trident's charge time */
     protected static final int DEFAULT_THROW_CHARGE_TIME = 10;
+    protected static final float DEFAULT_SHIELD_BLOCK_CHANCE = 0.5F;
+    /** Blocks every blade and polearm of the melee ladder up to a sledgehammer (9), not energy blades */
+    protected static final float DEFAULT_SHIELD_MAX_BLOCKABLE_MELEE_DAMAGE = 10F;
 
     /** Extended Recoil System */
     protected GunRecoil recoil = new GunRecoil();
@@ -370,6 +373,15 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected float shieldDamageAbsorption;
+    /**
+     * Chance between 0.00-1.00 that this shield entirely blocks a melee hit from the front. Melee is
+     * governed by this instead of {@link #shieldDamageAbsorption}.
+     */
+    @Getter
+    protected float shieldBlockChance = DEFAULT_SHIELD_BLOCK_CHANCE;
+    /** Melee hits of a weapon stronger than this cannot be blocked, so a lightsaber cuts through a scutum */
+    @Getter
+    protected float shieldMaxBlockableMeleeDamage = DEFAULT_SHIELD_MAX_BLOCKABLE_MELEE_DAMAGE;
 
     //Sounds
     /**
@@ -922,6 +934,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             shieldOrigin = new Vector3f(values[1] / 16F, values[2] / 16F, values[3] / 16F);
             shieldDimensions = new Vector3f(values[4] / 16F, values[5] / 16F, values[6] / 16F);
         });
+        shieldBlockChance = Mth.clamp(readValue("ShieldBlockChance", shieldBlockChance, file), 0F, 1F);
+        shieldMaxBlockableMeleeDamage = readValue("ShieldMaxBlockableMeleeDamage", shieldMaxBlockableMeleeDamage, file);
 
         //Primary Function
         if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && ammo.isEmpty())

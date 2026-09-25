@@ -5663,6 +5663,57 @@
         ]
     },
 
+    "Shield Block Large (Generic)": {
+        "properties": {
+            "ShieldBlockChance": 0.60,
+            "ShieldMaxBlockableMeleeDamage": 10
+        },
+        "items": [
+            "scutum",
+            "aspis",
+            "aspiscarthago",
+            "boetianshield",
+            "sparabara",
+            "romanlegionnaireshield",
+            "romanlegionnaireshield_2"
+        ]
+    },
+
+    "Shield Block Medium (Generic)": {
+        "properties": {
+            "ShieldBlockChance": 0.50,
+            "ShieldMaxBlockableMeleeDamage": 10
+        },
+        "items": [
+            "romanauxiliashield",
+            "roundshieldslav",
+            "skirmishshield"
+        ]
+    },
+
+    "Shield Block Riot (Generic)": {
+        "properties": {
+            "ShieldBlockChance": 0.70,
+            "ShieldMaxBlockableMeleeDamage": 10
+        },
+        "items": [
+            "mwriotshield",
+            "zomriotshield",
+            "policeshield",
+            "cloneriotshield"
+        ]
+    },
+
+    "Shield Block Small (Generic)": {
+        "properties": {
+            "ShieldBlockChance": 0.40,
+            "ShieldMaxBlockableMeleeDamage": 10
+        },
+        "items": [
+            "parma"
+        ]
+    },
+
     "ShKAS": {
         "properties": {
             "MuzzleVelocity": 825.0,
