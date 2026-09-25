@@ -12,6 +12,7 @@ import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.GunItemEntity;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -54,11 +55,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -79,6 +84,9 @@ import java.util.UUID;
 
 public class GunItemHandler
 {
+    /** Angular deviation per unit of inaccuracy of vanilla {@code Projectile.shoot}, in radians */
+    private static final float VANILLA_INACCURACY_RADIANS = 0.0075F;
+
     private final GunItem item;
     @Getter
     private final GunReloader gunReloader;
@@ -182,6 +190,41 @@ public class GunItemHandler
 
         data.doMelee(player, item.configType.getMeleeTime(), item.configType);
         PacketHandler.sendToTracking(new PacketGunMeleeClient(player.getUUID(), hand), player);
+    }
+
+    /**
+     * Throws the weapon itself, as {@code SecondaryFunction Throw} does on releasing a charged throw.
+     * The gun's velocity and dispersion carry the throw; its fire rate becomes the cooldown before
+     * another weapon of this type can be thrown.
+     */
+    public void doPlayerThrow(Level level, Player player, ItemStack gunStack)
+    {
+        GunType type = item.configType;
+        if (!gunCanBeHandled(player))
+            return;
+        if (!type.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode()))
+            return;
+        if (player.getVehicle() instanceof Seat)
+            return;
+
+        float dispersionDegrees = Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR
+            * type.getSpread(gunStack, ModUtils.getEnumMovement(player), !player.onGround());
+
+        ThrownGun thrown = new ThrownGun(level, player, gunStack, type.getThrowDamage(gunStack));
+        thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0F, type.getBulletSpeed(gunStack),
+            dispersionDegrees * Mth.DEG_TO_RAD / VANILLA_INACCURACY_RADIANS);
+        if (player.getAbilities().instabuild)
+            thrown.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+        level.addFreshEntity(thrown);
+
+        if (StringUtils.isNotBlank(type.getShootSound()))
+            PacketPlaySound.sendSoundPacket(player, type.getGunSoundRange(), type.getShootSound(), type.isDistortSound(), type.isSilencedSound(gunStack));
+        else
+            level.playSound(null, thrown, SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1F, 1F);
+
+        if (!player.getAbilities().instabuild)
+            player.getInventory().removeItem(gunStack);
+        player.getCooldowns().addCooldown(item, Math.round(type.getShootDelay(gunStack)));
     }
 
     public void doPlayerShoot(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)

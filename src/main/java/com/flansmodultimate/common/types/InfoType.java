@@ -605,6 +605,23 @@ public abstract class InfoType implements IInfoType
         return texture;
     }
 
+    /**
+     * Resolves a texture of the {@code textures/skins} folder of the type's content pack, whatever
+     * folder the type's own textures live in. Unlike {@link #loadTexture} there is no fallback: a
+     * blank name yields null.
+     */
+    @Nullable
+    public static ResourceLocation loadSkinTexture(String textureName, InfoType type)
+    {
+        if (StringUtils.isBlank(textureName))
+            return null;
+
+        Map<String, DynamicReference> refsMap = ContentManager.getSkinsTextureReferences().get(type.getContentPack());
+        refsMap.putIfAbsent(textureName, new DynamicReference(textureName));
+        return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID,
+            "textures/" + ContentManager.FOLDER_TEXTURES_SKINS + "/" + refsMap.get(textureName).get() + FileUtils.PNG_EXTENSION);
+    }
+
     public static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)
     {
         if (StringUtils.isNotBlank(overlayName) && !overlayName.equalsIgnoreCase("none"))

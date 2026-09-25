@@ -36,6 +36,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -149,14 +150,37 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public int getUseDuration(@NotNull ItemStack stack)
     {
-        return 100;
+        // A throw is charged for as long as the key is held, like a trident
+        return configType.isThrowable() ? 72000 : 100;
     }
 
     @Override
     @NotNull
     public UseAnim getUseAnimation(@NotNull ItemStack stack)
     {
-        return configType.getItemUseAction();
+        return configType.isThrowable() ? UseAnim.SPEAR : configType.getItemUseAction();
+    }
+
+    /**
+     * Whether the holder is charging a throw of this stack, during which the vanilla spear pose
+     * replaces the gun aiming pose.
+     */
+    public boolean isChargingThrow(LivingEntity holder, ItemStack stack)
+    {
+        return configType.isThrowable() && holder.isUsingItem() && holder.getUseItem() == stack;
+    }
+
+    @Override
+    public void releaseUsing(@NotNull ItemStack stack, @NotNull Level level, @NotNull LivingEntity entity, int timeLeft)
+    {
+        if (!configType.isThrowable() || !(entity instanceof Player player))
+            return;
+        if (getUseDuration(stack) - timeLeft < configType.getThrowChargeTime())
+            return;
+
+        if (!level.isClientSide)
+            gunItemHandler.doPlayerThrow(level, player, stack);
+        player.awardStat(Stats.ITEM_USED.get(this));
     }
 
     @Override
@@ -321,6 +345,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
             if (configType.getPrimaryFunction().isMelee() || configType.getSecondaryFunction().isMelee())
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
+
+            if (configType.isThrowable())
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_DAMAGE), IFlanItem.formatFloat(configType.getThrowDamage(stack))));
 
             if (configType.isShowRecoil())
             {
@@ -507,6 +534,12 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (configType.isDeployable() && gunItemHandler.tryPlaceDeployable(level, player, stack))
             return InteractionResultHolder.sidedSuccess(stack, false);
+
+        if (configType.isThrowable())
+        {
+            player.startUsingItem(hand);
+            return InteractionResultHolder.consume(stack);
+        }
 
         boolean dualWield = player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof GunItem
             && player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof GunItem;

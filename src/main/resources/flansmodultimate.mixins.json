@@ -13,6 +13,7 @@
   ],
   "client": [
       "BufferSourceAccessor",
+      "CapeLayerMixin",
       "CreateWorldScreenApocalypseMixin",
       "DriveableCameraMixin",
       "EntityNameTagRenderDistanceMixin",

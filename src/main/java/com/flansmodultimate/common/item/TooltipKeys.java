@@ -144,6 +144,7 @@ public final class TooltipKeys
     public static final String TARGET_VEHICLES = "tooltip.flansmodultimate.target.vehicles";
     public static final String TARGET_RANGE = "tooltip.flansmodultimate.target_range";
     public static final String TARGETS = "tooltip.flansmodultimate.targets";
+    public static final String THROW_DAMAGE = "tooltip.flansmodultimate.throw_damage";
     public static final String TURNING_FORCE = "tooltip.flansmodultimate.turning_force";
     public static final String UNDERBARREL = "tooltip.flansmodultimate.underbarrel";
     public static final String VERTICAL_RECOIL = "tooltip.flansmodultimate.vertical_recoil";

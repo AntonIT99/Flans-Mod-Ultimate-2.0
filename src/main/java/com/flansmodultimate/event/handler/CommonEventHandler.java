@@ -23,6 +23,7 @@ import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -458,7 +459,7 @@ public final class CommonEventHandler
     }
 
     /**
-     * The icon shown in the feed. Projectiles know the gun that fired them; thrown weapons and
+     * The icon shown in the feed. Projectiles know the gun that fired them and thrown guns know themselves;
      * melee kills fall back to the weapon the killer is holding.
      */
     @Nullable
@@ -469,6 +470,8 @@ public final class CommonEventHandler
             return bullet.getFiredShot().getFireableGun().getType();
         if (source.getDirectEntity() instanceof Shootable shootable)
             return shootable.getConfigType();
+        if (source.getDirectEntity() instanceof ThrownGun thrownGun)
+            return thrownGun.getGunType();
         if (!FlanDamageSources.isShootableDamage(source) && !source.is(FlanDamageSources.MELEE)
             && !source.is(FlanDamageSources.EXPLOSION))
             return null;

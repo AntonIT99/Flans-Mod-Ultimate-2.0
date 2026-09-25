@@ -383,6 +383,12 @@ weapon's real historical draw velocity and projectile mass when the weapon is re
 and the `Rocket / recoilless launcher` dispersion band with a manual `RoundsPerMin`
 otherwise.
 
+A melee gun with `SecondaryFunction Throw` (a pilum or javelin thrown as the item
+itself, with no ammunition) keeps its melee tier below and adds its throw: the
+release speed as `MuzzleVelocity`, `Dispersion`, `RoundsPerMin` as the practical
+throwing cadence, and the weapon's real mass in grams as `ThrowMass`, from which
+its hit damage is derived kinetically like an ammunition `Mass`.
+
 ### Melee weapons
 
 A melee weapon defined as a gun takes `MeleeDamage` and nothing else. A gun that

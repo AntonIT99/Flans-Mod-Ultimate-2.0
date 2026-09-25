@@ -6,7 +6,9 @@ import com.flansmodultimate.util.FileUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ArmorItem;
 
@@ -101,8 +103,16 @@ public class ArmorType extends InfoType
     protected boolean regeneration;
     /** Map of effects and effect Amplifiers */
     @Getter
-    protected List<MobEffectInstance> effects = new ArrayList<>();@Getter
+    protected List<MobEffectInstance> effects = new ArrayList<>();
+    @Getter
     protected String equipSound = StringUtils.EMPTY;
+    /** Name of a textures/skins texture drawn as a cape on the wearer, replacing any cape of their own */
+    @Getter
+    protected String capeTexture = StringUtils.EMPTY;
+    /** Client-side location of the CapeTexture, before it is checked to exist. */
+    @Getter
+    @Nullable
+    protected ResourceLocation capeTextureLocation;
 
     @Override
     protected void read(TypeFile file)
@@ -145,6 +155,7 @@ public class ArmorType extends InfoType
         hunger = readValue("Hunger", hunger, file);
         regeneration = readValue("Regenerate", regeneration, file);
         equipSound = readSound("EquipSound", equipSound, file);
+        capeTexture = readResource("CapeTexture", capeTexture, file);
 
         addEffects("AddEffect", effects, file, true, false);
         addEffects("AddPotionEffect", effects, file, true, false);
@@ -195,6 +206,13 @@ public class ArmorType extends InfoType
             default:
                 return UNARMORED_HELMET_PENETRATION_RESISTANCE;
         }
+    }
+
+    @Override
+    protected void readClient(TypeFile file)
+    {
+        super.readClient(file);
+        capeTextureLocation = loadSkinTexture(capeTexture, this);
     }
 
     @Override
