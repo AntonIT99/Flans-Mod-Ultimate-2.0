@@ -96,7 +96,6 @@ sourceSets {
             srcDirs = ['src/main/resources']
         }
     }
-
     packsManager {
         java {
             srcDirs = ['src/packsmanager/java']
@@ -105,7 +104,6 @@ sourceSets {
             srcDirs = ['src/packsmanager/resources']
         }
     }
-
     test {
         java {
             srcDirs = ['src/test/java']
@@ -394,11 +392,17 @@ shadowJar {
 // This block of code expands all declared replace properties in the specified resource targets.
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
+            minecraft_version: minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version,
+            forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_license: mod_license,
+            mod_version: mod_version,
+            mod_authors: mod_authors,
+            mod_description: mod_description,
     ]
     inputs.properties replaceProperties
 
@@ -455,7 +459,7 @@ tasks.named(sourceSets.packsManager.processResourcesTaskName, ProcessResources).
 def packsManagerJar = tasks.register('packsManagerJar', Jar) {
     dependsOn tasks.named('copyFlanPacksToManager')
 
-    archiveBaseName.set("[$minecraft_version] $mod_name_packs_manager")
+    archiveBaseName.set("[$minecraft_version] $packs_manager_name")
     archiveVersion.set(packs_manager_version)
 
     from sourceSets.packsManager.output
