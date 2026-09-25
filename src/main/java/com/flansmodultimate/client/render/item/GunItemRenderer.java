@@ -1109,7 +1109,6 @@ public final class GunItemRenderer
             ModelMuzzleFlash muzzleFlash = ModelCache.getOrLoadMuzzleFlashModel(model.getType());
             if (muzzleFlash != null)
             {
-
                 Vector3f mfPoint = Objects.requireNonNullElse(model.getMuzzleFlashPoint(), Objects.requireNonNullElse(model.getBarrelAttachPoint(), Vector3f.Zero));
                 if (mfPoint.equals(ModelGun.getInvalid()))
                     mfPoint = model.getBarrelAttachPoint();
@@ -1242,7 +1241,7 @@ public final class GunItemRenderer
         PlayerRenderer playerRenderer = (PlayerRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
         PlayerModel<AbstractClientPlayer> playerModel = playerRenderer.getModel();
 
-        ResourceLocation skin = player.getSkin().texture();
+        ResourceLocation skin = ClientPlatform.skinTexture(player);
         RenderType rt = RenderType.entitySolid(skin); // or entityTranslucent if you need alpha
         VertexConsumer vc = buffer.getBuffer(rt);
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
@@ -1301,7 +1300,7 @@ public final class GunItemRenderer
         PlayerRenderer playerRenderer = (PlayerRenderer) mc.getEntityRenderDispatcher().getRenderer(player);
         PlayerModel<AbstractClientPlayer> playerModel = playerRenderer.getModel();
 
-        ResourceLocation skin = player.getSkin().texture();
+        ResourceLocation skin = ClientPlatform.skinTexture(player);
         RenderType rt = RenderType.entitySolid(skin); // or entityTranslucent if you need alpha
         VertexConsumer vc = buffer.getBuffer(rt);
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);

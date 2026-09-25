@@ -3,7 +3,7 @@ package com.flansmodultimate.apocalyse.common.block;
 import com.flansmodultimate.apocalyse.common.block.entity.PowerCubeBlockEntity;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseBossFightManager;
 import com.flansmodultimate.apocalyse.common.world.ApocalypsePortalManager;
-import com.mojang.serialization.MapCodec;
+import com.flansmodultimate.platform.block.FlanEntityBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,7 +16,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -26,20 +25,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class PowerCubeBlock extends BaseEntityBlock
+public class PowerCubeBlock extends FlanEntityBlock
 {
-    public static final MapCodec<PowerCubeBlock> CODEC = simpleCodec(PowerCubeBlock::new);
     private static final VoxelShape SHAPE = box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
 
     public PowerCubeBlock(BlockBehaviour.Properties properties)
     {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec()
-    {
-        return CODEC;
     }
 
     @Nullable

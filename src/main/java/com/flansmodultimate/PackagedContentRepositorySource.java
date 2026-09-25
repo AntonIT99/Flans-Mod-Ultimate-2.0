@@ -95,7 +95,7 @@ public final class PackagedContentRepositorySource
     {
         Pack.ResourcesSupplier resources = new PathPackResources.PathResourcesSupplier(root);
         PackLocationInfo location = new PackLocationInfo(id, Component.literal(displayName), PackSource.BUILT_IN, Optional.empty());
-        PackSelectionConfig selection = new PackSelectionConfig(true, Pack.Position.TOP, false);
+        PackSelectionConfig selection = new PackSelectionConfig(true, Pack.Position.TOP, true);
         // Logical pack directories contain data but no pack.mcmeta. Supply the
         // metadata here, as the 1.20.1 Pack.Info constructor did, so NeoForge
         // does not silently discard their recipes during repository discovery.

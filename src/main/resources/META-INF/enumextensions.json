@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "enum": "net/minecraft/client/model/HumanoidModel$ArmPose",
+            "name": "FLANSMODULTIMATE_BOTH_ARMS_AIM",
+            "constructor": "(ZLnet/neoforged/neoforge/client/IArmPoseTransformer;)V",
+            "parameters": {
+                "class": "com/flansmodultimate/platform/client/ArmPosePlatform",
+                "field": "BOTH_ARMS_AIM"
+            }
+        }
+    ]
+}

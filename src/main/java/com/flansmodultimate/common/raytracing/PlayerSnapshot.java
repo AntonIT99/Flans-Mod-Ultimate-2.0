@@ -4,6 +4,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.util.JomlUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -375,7 +376,7 @@ public class PlayerSnapshot
             {
                 arm.yRot = -side * 0.8F;
                 arm.xRot = -0.97079635F;
-                float chargeDuration = CrossbowItem.getChargeDuration(p.getUseItem(), p);
+                float chargeDuration = EntityPlatform.crossbowChargeDuration(p.getUseItem(), p);
                 float charge = Mth.clamp(p.getTicksUsingItem(), 0F, chargeDuration) / chargeDuration;
                 otherArm.yRot = Mth.lerp(charge, 0.4F, 0.85F) * side;
                 otherArm.xRot = Mth.lerp(charge, arm.xRot, -Mth.PI / 2F);

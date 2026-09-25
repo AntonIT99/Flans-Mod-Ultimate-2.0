@@ -42,9 +42,9 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.platform.menu.MenuPlatform;
-import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
 import com.flansmodultimate.platform.network.NetworkPlatform;
 import com.flansmodultimate.platform.registry.RegistryEntry;
+import com.flansmodultimate.platform.world.ChunkTicketPlatform;
 import com.flansmodultimate.util.ModLogFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -353,7 +353,7 @@ public class FlansMod
     {
         GunpowderRecipeCondition.CODECS.register(modEventBus);
         modEventBus.addListener(NetworkPlatform::register);
-        modEventBus.addListener(NeoForgeChunkTickets::register);
+        modEventBus.addListener(ChunkTicketPlatform::register);
         ModLogFile.initialize(MOD_ID);
         Arrays.stream(EnumType.values()).filter(EnumType::isHasItem).forEach(type -> items.put(type, new ArrayList<>()));
         Arrays.stream(EnumType.values()).filter(EnumType::isHasBlock).forEach(type -> blocks.put(type, new HashMap<>()));

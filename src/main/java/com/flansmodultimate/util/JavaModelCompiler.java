@@ -10,14 +10,9 @@ import com.google.gson.reflect.TypeToken;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.neoforged.fml.ModList;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
@@ -43,6 +38,12 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JavaModelCompiler
@@ -307,7 +308,7 @@ public final class JavaModelCompiler
         addCodeSource(entries, ModelRendererTurbo.class);
         addCodeSource(entries, "net.minecraft.world.entity.Entity");
         addCodeSource(entries, "net.minecraft.client.Minecraft");
-        addCodeSource(entries, "net.neoforged.fml.ModList");
+        addCodeSource(entries, ModList.class);
         addCodeSource(entries, "com.mojang.blaze3d.vertex.PoseStack");
         addCodeSource(entries, "org.lwjgl.opengl.GL11");
         addCodeSource(entries, "org.joml.Quaternionf");

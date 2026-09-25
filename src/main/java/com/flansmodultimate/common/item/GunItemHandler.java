@@ -42,10 +42,10 @@ import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.platform.fluid.FluidPlatform;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
-import net.neoforged.neoforge.common.NeoForgeMod;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -192,7 +192,7 @@ public class GunItemHandler
             return;
         if (player.getVehicle() instanceof Seat)
             return;
-        if (!item.configType.canShootUnderwater() && player.isEyeInFluidType(NeoForgeMod.WATER_TYPE.value()))
+        if (!item.configType.canShootUnderwater() && FluidPlatform.isEyeInWater(player))
             return;
         if (player.isSprinting() && !data.isScoped() && !item.configType.canHipFireWhileSprinting())
             return;

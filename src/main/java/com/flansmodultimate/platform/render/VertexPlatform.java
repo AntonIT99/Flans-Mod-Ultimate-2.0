@@ -112,4 +112,15 @@ public final class VertexPlatform
     {
         return MultiBufferSource.immediate(new ByteBufferBuilder(capacity));
     }
+
+    /** Emits one model cube with a float colour, packed to ARGB by truncation. */
+    public static void compileCube(ModelPart.Cube cube, PoseStack.Pose pose, VertexConsumer consumer, int packedLight, int packedOverlay,
+                                   float red, float green, float blue, float alpha)
+    {
+        int packedColor = ((int)(alpha * 255F) & 0xFF) << 24
+            | ((int)(red * 255F) & 0xFF) << 16
+            | ((int)(green * 255F) & 0xFF) << 8
+            | ((int)(blue * 255F) & 0xFF);
+        cube.compile(pose, consumer, packedLight, packedOverlay, packedColor);
+    }
 }

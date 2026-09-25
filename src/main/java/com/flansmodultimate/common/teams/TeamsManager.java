@@ -12,7 +12,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketPlayerClassSkins;
 import com.flansmodultimate.network.client.PacketTeamsState;
-import com.flansmodultimate.platform.neoforge.NeoForgeChunkTickets;
+import com.flansmodultimate.platform.world.ChunkTicketPlatform;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
 import lombok.Getter;
 import lombok.Setter;
@@ -1275,7 +1275,7 @@ public final class TeamsManager
                     if (level != null)
                     {
                         ChunkPos chunk = new ChunkPos(BlockPos.containing(base.getTeamObjectPosition()));
-                        NeoForgeChunkTickets.force(level, base.getObjectId(), chunk.x, chunk.z, false, true);
+                        ChunkTicketPlatform.force(level, base.getObjectId(), chunk.x, chunk.z, false, true);
                     }
                 }
                 map.removeBase(base.getObjectId());
@@ -1389,7 +1389,7 @@ public final class TeamsManager
             return;
         map.getBasePositions().forEach((owner, position) -> {
             ChunkPos chunk = new ChunkPos(position);
-            NeoForgeChunkTickets.force(level, owner, chunk.x, chunk.z, add, true);
+            ChunkTicketPlatform.force(level, owner, chunk.x, chunk.z, add, true);
         });
     }
 

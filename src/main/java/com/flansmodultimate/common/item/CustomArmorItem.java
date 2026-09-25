@@ -67,7 +67,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     {
         if (!configType.isReadEnchantability())
             return ModCommonConfig.get().defaultArmorEnchantability();
-        return material.value().enchantmentValue();
+        return configType.getEnchantability();
     }
 
     @Override

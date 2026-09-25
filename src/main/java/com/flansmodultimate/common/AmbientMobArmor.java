@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -38,7 +39,7 @@ public final class AmbientMobArmor
         if (equipPiece)
         {
             ItemStack armor = pool.armorPieces().get(random.nextInt(pool.armorPieces().size()));
-            mob.setItemSlot(mob.getEquipmentSlotForItem(armor), armor.copy());
+            mob.setItemSlot(EntityPlatform.equipmentSlotFor(mob, armor), armor.copy());
             return;
         }
 

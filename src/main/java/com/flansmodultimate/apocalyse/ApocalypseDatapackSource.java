@@ -60,8 +60,8 @@ public final class ApocalypseDatapackSource
 
         Path packRoot = modFileInfo.getFile().findResource("datapacks", "apocalypse");
         Pack.ResourcesSupplier resources = new PathPackResources.PathResourcesSupplier(packRoot);
-        PackLocationInfo location = new PackLocationInfo(PACK_ID, Component.literal("Flan's Mod Apocalypse"), PackSource.BUILT_IN, Optional.empty());
-        PackSelectionConfig selection = new PackSelectionConfig(true, Pack.Position.TOP, false);
+        PackLocationInfo location = new PackLocationInfo(PACK_ID, Component.literal("Flan's Mod Apocalypse"), OPT_IN, Optional.empty());
+        PackSelectionConfig selection = new PackSelectionConfig(false, Pack.Position.TOP, false);
         Pack pack = Pack.readMetaAndCreate(location, resources, PackType.SERVER_DATA, selection);
 
         if (pack == null)

@@ -10,6 +10,7 @@ logoFile="flansmodultimate2.png"
 credits="${mod_credits}"
 authors="${mod_authors}"
 description='''${mod_description}'''
+enumExtensions="META-INF/enumextensions.json"
 
 [[mixins]]
 config="${mod_id}.mixins.json"

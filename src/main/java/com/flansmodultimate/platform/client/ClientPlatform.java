@@ -8,6 +8,7 @@ import net.neoforged.neoforge.common.util.TriState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 
@@ -53,5 +54,11 @@ public final class ClientPlatform
     public static ResourceLocation modelItemId(ModelResourceLocation location)
     {
         return location.id();
+    }
+
+    /** The player's skin texture. */
+    public static ResourceLocation skinTexture(AbstractClientPlayer player)
+    {
+        return player.getSkin().texture();
     }
 }

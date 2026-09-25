@@ -5,6 +5,7 @@ import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.world.LootTablePlatform;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.AccessLevel;
@@ -13,14 +14,11 @@ import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -187,7 +185,7 @@ public abstract class PaintableType extends InfoType
         return LootItem.lootTableItem(item)
             .setWeight(weight)
             .setQuality(1)
-            .apply(SetComponentsFunction.setComponent(DataComponents.CUSTOM_DATA, CustomData.of(tag)))
+            .apply(LootTablePlatform.setCustomData(tag))
             .build();
     }
 }

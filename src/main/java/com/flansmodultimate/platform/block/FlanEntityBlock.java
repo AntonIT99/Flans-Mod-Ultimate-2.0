@@ -25,8 +25,11 @@ public abstract class FlanEntityBlock extends BaseEntityBlock
         super(properties);
     }
 
-    /** Handles a right-click on this block with the given hand. */
-    protected abstract InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand);
+    /** Handles a right-click on this block with the given hand. By default the block does nothing, as in vanilla. */
+    protected InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand)
+    {
+        return InteractionResult.PASS;
+    }
 
     @Override
     @NotNull

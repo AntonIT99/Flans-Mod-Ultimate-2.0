@@ -1,11 +1,16 @@
 package com.flansmodultimate.platform.entity;
 
+import net.neoforged.neoforge.event.EventHooks;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Explosion;
@@ -52,5 +57,23 @@ public final class EntityPlatform
         int level = EnchantmentHelper.getEnchantmentLevel(
             entity.level().registryAccess().holderOrThrow(Enchantments.BLAST_PROTECTION), entity);
         return knockback * Math.max(0.0, 1.0 - level * 0.15);
+    }
+
+    /** Runs the mob's spawn initialisation through the loader's finalize-spawn event, as vanilla spawn paths do. */
+    public static void finalizeSpawnWithEvent(Mob mob, ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType)
+    {
+        EventHooks.finalizeMobSpawn(mob, level, difficulty, spawnType, null);
+    }
+
+    /** The equipment slot the item is worn in by the entity. */
+    public static EquipmentSlot equipmentSlotFor(LivingEntity entity, ItemStack stack)
+    {
+        return entity.getEquipmentSlotForItem(stack);
+    }
+
+    /** Ticks a crossbow takes to charge for the entity. */
+    public static int crossbowChargeDuration(ItemStack crossbow, LivingEntity entity)
+    {
+        return CrossbowItem.getChargeDuration(crossbow, entity);
     }
 }

@@ -26,8 +26,9 @@ public class ModRepositorySource extends FolderRepositorySource
     // Flan content packs provide the generated models, textures and data for the
     // types registered during mod construction. They are implementation packs,
     // not optional user-selected resource packs, and therefore must always be
-    // present in the selected pack set (as they were on Forge 1.20.1).
-    private static final PackSelectionConfig DISCOVERED_PACK_SELECTION_CONFIG = new PackSelectionConfig(true, Pack.Position.TOP, false);
+    // present in the selected pack set (as they were on Forge 1.20.1). They sit below
+    // the fixed packaged official packs, which override them.
+    private static final PackSelectionConfig DISCOVERED_PACK_SELECTION_CONFIG = new PackSelectionConfig(true, Pack.Position.BOTTOM, false);
     protected final Path folder;
     protected final PackType packType;
     protected final PackSource packSource;

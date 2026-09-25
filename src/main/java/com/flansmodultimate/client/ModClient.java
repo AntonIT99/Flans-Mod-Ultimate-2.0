@@ -27,10 +27,11 @@ import com.flansmodultimate.common.types.IScope;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
+import com.flansmodultimate.platform.client.ArmPosePlatform;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
-import com.flansmodultimate.platform.client.ClientPlatform;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,6 +54,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -74,7 +76,21 @@ public class ModClient
 {
     public static final ThreadLocal<LivingEntity> entityRenderContext = new ThreadLocal<>();
 
-    public static final HumanoidModel.ArmPose bothArmsAim = HumanoidModel.ArmPose.BOW_AND_ARROW;
+    public static final HumanoidModel.ArmPose bothArmsAim = ArmPosePlatform.bothArmsAim();
+
+    /**
+     * Arm transform of {@link #bothArmsAim}: both arms straight forward, independent of head pitch.
+     * The server-side hitbox pose {@code PlayerSnapshot.ArmPose.BOTH_AIM} mirrors it.
+     */
+    public static void poseBothArmsAim(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
+    {
+        model.rightArm.xRot = -Mth.PI / 2F;
+        model.rightArm.yRot = -0.05F;
+        model.rightArm.zRot = 0F;
+        model.leftArm.xRot = -Mth.PI / 2F;
+        model.leftArm.yRot = 0.05F;
+        model.leftArm.zRot = 0F;
+    }
 
     @Getter
     private static boolean isDebug;
@@ -844,7 +860,6 @@ public class ModClient
                 }
             }
         }
-
 
     }
 
