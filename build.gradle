@@ -1,14 +1,19 @@
+import net.minecraftforge.gradle.common.util.RunConfig
+
+import javax.crypto.Cipher
+import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.SecretKeySpec
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.security.MessageDigest
+
 plugins {
-    id 'eclipse'
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'org.spongepowered.mixin' version '0.7.+'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
-
-apply plugin: 'idea'
 
 version = mod_version
 group = mod_group_id
@@ -17,352 +22,170 @@ base {
     archivesName = "[$minecraft_version] $mod_name"
 }
 
-// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+// Forge metadata file expanded in every mod source set.
+def modsTomlPath = 'META-INF/mods.toml'
+
+// Typed values for the run blocks, where 'project' and properties resolve against RunConfig.
+String mainModId = mod_id
+SourceSet mainSourceSet = sourceSets.main
+String runDirectoryPath = file('run').absolutePath
+String dataRunDirectoryPath = file('run-data').absolutePath
+String generatedResourcesPath = file('src/generated/resources/').absolutePath
+String mainResourcesPath = file('src/main/resources/').absolutePath
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
-
     copyIdeResources = true
 
     runs {
         configureEach {
-            workingDirectory project.file('run')
-
+            workingDirectory runDirectoryPath
             ideaModule "${project.name.replace('.', '_')}.main"
 
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-
+            property 'forge.logging.console.level', 'info'
+            // Force colored log levels, also in IDE consoles.
             property 'terminal.ansi', 'true'
             property 'terminal.jline', 'true'
             property 'terminal.keepMinecraftFormatting', 'true'
 
-            // Only the fixed main module is declared here.
-            // Additional modules register themselves from src/*/fmu-module.gradle.
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
+            mods.maybeCreate(mainModId).source(mainSourceSet)
         }
 
         client {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            property 'forge.enabledGameTestNamespaces', mainModId
+        }
+
+        clientDebug {
+            parent((RunConfig) minecraft.runs.getByName('client'))
+            property 'forge.logging.console.level', 'debug'
         }
 
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            property 'forge.enabledGameTestNamespaces', mainModId
             args '--nogui'
         }
 
         gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            property 'forge.enabledGameTestNamespaces', mainModId
         }
 
         data {
-            workingDirectory project.file('run-data')
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            workingDirectory dataRunDirectoryPath
+            args('--mod', mainModId, '--all', '--output', generatedResourcesPath, '--existing', mainResourcesPath)
         }
     }
+}
+
+sourceSets {
+    main.resources {
+        srcDir 'src/generated/resources'
+        exclude '.cache/**'
+    }
+    // flan/ was the old copy target of run/flan; packsManagerJar now bundles run/flan directly.
+    packsmanager.resources.exclude 'flan/**'
+}
+
+// Development-only files never ship in any jar.
+sourceSets.configureEach {
+    resources.exclude '**/AGENTS.md', '**/*.bbmodel'
 }
 
 configurations {
-    // Create the library configuration, where our non-mod libraries will be added to.
-    library
-    implementation.extendsFrom library
-
-    // packsmanager stays a fixed source set.
-    packsManagerImplementation.extendsFrom implementation
-    packsManagerRuntimeOnly.extendsFrom runtimeOnly
+    testCompileOnly.extendsFrom compileOnly
 }
 
-// Configure all runs with the following.
-minecraft.runs.all {
-    lazyToken('minecraft_classpath') {
-        configurations.library.copyRecursive().resolve().collect { it.absolutePath }.join(File.pathSeparator)
-    }
+// Gives an additional mod source set the main mod's classpath and loads it in dev runs.
+def configureModSourceSet = { SourceSet sourceSet, String modId ->
+    configurations.named(sourceSet.implementationConfigurationName) { extendsFrom configurations.implementation }
+    configurations.named(sourceSet.compileOnlyConfigurationName) { extendsFrom configurations.compileOnly }
+    dependencies.add(sourceSet.implementationConfigurationName, sourceSets.main.output)
+    minecraft.runs.configureEach { mods.maybeCreate(modId).source(sourceSet) }
 }
 
-// Fixed source sets. All optional/public/private pack modules are discovered dynamically below.
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src/main/java']
-        }
-        resources {
-            srcDirs = ['src/main/resources']
-        }
-    }
-    packsManager {
-        java {
-            srcDirs = ['src/packsmanager/java']
-        }
-        resources {
-            srcDirs = ['src/packsmanager/resources']
-        }
-    }
-    test {
-        java {
-            srcDirs = ['src/test/java']
-        }
-        resources {
-            srcDirs = ['src/test/resources']
-        }
-    }
-}
+configureModSourceSet(sourceSets.packsmanager, 'flansmodultimate_packs_manager')
 
 /*
- * Registers an FMU module described by a src/<module>/fmu-module.gradle script.
- *
- * Required properties:
- *   sourceSet       - Gradle source-set name. Usually identical to the directory name.
- *   modId           - Forge mod id used in development runs.
- *   jarTask         - Name of the Jar task to create.
- *   archiveBaseName - Output jar base name.
- *   archiveVersion  - Output jar version.
- *
- * Optional properties:
- *   directory          - Directory below src/. Defaults to sourceSet.
- *   implementationTitle - Manifest Implementation-Title. Defaults to sourceSet.
- *   javaCompileJvmArgs - JVM arguments for this source set's javac process.
+ * Registers an optional module described by src/<module>/fmu-module.gradle.
+ * Required: sourceSet, modId, jarTask, archiveBaseName, archiveVersion.
+ * Optional: directory (defaults to sourceSet), implementationTitle (defaults to sourceSet),
+ *           javaCompileJvmArgs.
  */
+def fmuModuleJars = []
 ext.registerFmuModule = { Map module ->
-    def requiredKeys = ['sourceSet', 'modId', 'jarTask', 'archiveBaseName', 'archiveVersion']
-    def missingKeys = requiredKeys.findAll { !module.containsKey(it) || module[it] == null || module[it].toString().isBlank() }
+    def missing = ['sourceSet', 'modId', 'jarTask', 'archiveBaseName', 'archiveVersion'].findAll { !module[it]?.toString()?.trim() }
+    if (missing)
+        throw new GradleException("FMU module is missing required properties: ${missing.join(', ')}")
 
-    if (!missingKeys.isEmpty()) {
-        throw new GradleException("FMU module definition is missing required properties: ${missingKeys.join(', ')}")
+    String name = module.sourceSet.toString()
+    String modId = module.modId.toString()
+    String moduleVersion = module.archiveVersion.toString()
+    File directory = file("src/${module.directory ?: name}")
+    if (!directory.isDirectory())
+        throw new GradleException("FMU module directory does not exist: ${directory}")
+    if (name in sourceSets.names)
+        throw new GradleException("FMU module source set '${name}' is already registered")
+
+    def source = sourceSets.create(name) {
+        java.srcDirs = [new File(directory, 'java')]
+        resources.srcDirs = [new File(directory, 'resources')]
+        // Plaintext optional content only ships inside the encrypted bundle below.
+        resources.exclude 'encrypted/**'
     }
+    configureModSourceSet(source, modId)
 
-    String sourceSetName = module.sourceSet.toString()
-    String moduleDirectoryName = (module.directory ?: sourceSetName).toString()
-    String moduleModId = module.modId.toString()
-    String jarTaskName = module.jarTask.toString()
-    String moduleArchiveBaseName = module.archiveBaseName.toString()
-    String moduleArchiveVersion = module.archiveVersion.toString()
-    String implementationTitle = (module.implementationTitle ?: sourceSetName).toString()
-
-    File moduleDirectory = file("src/${moduleDirectoryName}")
-
-    if (!moduleDirectory.isDirectory()) {
-        throw new GradleException("FMU module directory does not exist: ${moduleDirectory}")
-    }
-
-    if (sourceSets.findByName(sourceSetName) != null) {
-        throw new GradleException("FMU module source set '${sourceSetName}' is already registered")
-    }
-
-    def moduleSourceSet = sourceSets.create(sourceSetName) {
-        java {
-            srcDirs = [new File(moduleDirectory, 'java')]
-        }
-        resources {
-            srcDirs = [new File(moduleDirectory, 'resources')]
-            // Plain optional-content sources are encrypted separately and must
-            // never be copied into the module JAR as readable resources.
-            exclude 'encrypted/**'
-        }
-    }
-
-    // Creating a SourceSet also creates its Implementation/RuntimeOnly configurations.
-    configurations.named(moduleSourceSet.implementationConfigurationName) {
-        extendsFrom configurations.implementation
-    }
-    configurations.named(moduleSourceSet.runtimeOnlyConfigurationName) {
-        extendsFrom configurations.runtimeOnly
-    }
-
-    // Pack modules can compile against classes produced by the main mod.
-    dependencies.add(moduleSourceSet.implementationConfigurationName, sourceSets.main.output)
-
-    // Optional plaintext assets live with their pack under resources/encrypted
-    // and are gitignored. Only the authenticated encrypted bundle produced here
-    // is added to the module JAR.
-    File encryptedInputDirectory = new File(moduleDirectory, 'resources/encrypted')
-    boolean hasEncryptedInput = encryptedInputDirectory.isDirectory()
-            && fileTree(encryptedInputDirectory).files.any { it.isFile() }
-    if (hasEncryptedInput) {
-        File encryptedGeneratedResources = file("${buildDir}/generated/encrypted/${sourceSetName}")
-        File encryptedBundle = new File(encryptedGeneratedResources, 'flans_content/content.fmu')
-        String encryptionTaskName = "encrypt${sourceSetName.capitalize()}UncensoredContent"
-        def encryptionTask = tasks.register(encryptionTaskName) {
+    File encryptedInput = new File(directory, 'resources/encrypted')
+    if (encryptedInput.isDirectory() && fileTree(encryptedInput).files.any { it.isFile() }) {
+        // Packaged by processResources rather than added as a resource root, so the IDE modules stay uniform.
+        File generatedResources = layout.buildDirectory.dir("generated/encrypted/${name}").get().asFile
+        def encryptTask = tasks.register("encrypt${name.capitalize()}UncensoredContent", EncryptOptionalContent) {
             group = 'flans mod ultimate'
-            description = "Encrypt optional uncensored translations and textures for ${sourceSetName}."
-            if (encryptedInputDirectory.isDirectory())
-                inputs.dir(encryptedInputDirectory).withPathSensitivity(PathSensitivity.RELATIVE)
-            else
-                inputs.property('uncensoredInputPresent', false)
-            outputs.file(encryptedBundle)
-
-            doLast {
-                if (!encryptedInputDirectory.isDirectory()) {
-                    java.nio.file.Files.deleteIfExists(encryptedBundle.toPath())
-                    logger.lifecycle("No encrypted-content input directory for ${sourceSetName}: ${encryptedInputDirectory}")
-                    return
-                }
-
-                List<File> sourceFiles
-                try (def paths = java.nio.file.Files.walk(encryptedInputDirectory.toPath())) {
-                    sourceFiles = paths.filter { java.nio.file.Files.isRegularFile(it) }
-                            .map { it.toFile() }
-                            .sorted { left, right -> left.absolutePath <=> right.absolutePath }
-                            .toList()
-                }
-                if (sourceFiles.isEmpty()) {
-                    java.nio.file.Files.deleteIfExists(encryptedBundle.toPath())
-                    logger.lifecycle("No uncensored resources found for ${sourceSetName}.")
-                    return
-                }
-
-                Map<File, String> resourcePaths = new LinkedHashMap<>()
-                sourceFiles.each { sourceFile ->
-                    String relativePath = encryptedInputDirectory.toPath().relativize(sourceFile.toPath())
-                            .toString().replace(File.separator, '/')
-                    String[] segments = relativePath.split('/')
-                    if (segments.length < 4 || segments[0] != 'assets' || segments[1].isBlank())
-                        throw new GradleException("Uncensored resources must use assets/<namespace>/... paths: ${relativePath}")
-
-                    String assetPath = segments.drop(2).join('/')
-                    if (!(assetPath.startsWith('lang/') || assetPath.startsWith('textures/')))
-                        throw new GradleException("Only lang and textures assets may be encrypted: ${relativePath}")
-                    resourcePaths.put(sourceFile, relativePath)
-                }
-
-                def archiveBytes = new ByteArrayOutputStream()
-                def archive = new DataOutputStream(archiveBytes)
-                archive.writeInt(0x464D5552) // FMUR
-                archive.writeInt(1)
-                archive.writeInt(resourcePaths.size())
-                resourcePaths.each { sourceFile, relativePath ->
-                    byte[] data = java.nio.file.Files.readAllBytes(sourceFile.toPath())
-                    archive.writeUTF(relativePath)
-                    archive.writeInt(data.length)
-                    archive.write(data)
-                }
-                archive.close()
-                byte[] plaintext = archiveBytes.toByteArray()
-
-                String keySalt = 'Flans Mod Ultimate uncensored resources v1'
-                def keyDigest = java.security.MessageDigest.getInstance('SHA-256')
-                keyDigest.update(keySalt.getBytes(java.nio.charset.StandardCharsets.UTF_8))
-                keyDigest.update((byte) 0)
-                byte[] key = keyDigest.digest(moduleModId.getBytes(java.nio.charset.StandardCharsets.UTF_8))
-
-                def ivDigest = java.security.MessageDigest.getInstance('SHA-256')
-                ivDigest.update(plaintext)
-                ivDigest.update((byte) 0)
-                byte[] iv = java.util.Arrays.copyOf(
-                        ivDigest.digest(moduleModId.getBytes(java.nio.charset.StandardCharsets.UTF_8)), 12)
-
-                byte[] magic = 'FMUENC01'.getBytes(java.nio.charset.StandardCharsets.US_ASCII)
-                def cipher = javax.crypto.Cipher.getInstance('AES/GCM/NoPadding')
-                cipher.init(javax.crypto.Cipher.ENCRYPT_MODE,
-                        new javax.crypto.spec.SecretKeySpec(key, 'AES'),
-                        new javax.crypto.spec.GCMParameterSpec(128, iv))
-                def aad = new ByteArrayOutputStream()
-                aad.write(magic)
-                aad.write(moduleModId.getBytes(java.nio.charset.StandardCharsets.UTF_8))
-                cipher.updateAAD(aad.toByteArray())
-                byte[] encrypted = cipher.doFinal(plaintext)
-
-                java.nio.file.Files.createDirectories(encryptedBundle.parentFile.toPath())
-                def output = new DataOutputStream(new FileOutputStream(encryptedBundle))
-                output.write(magic)
-                output.writeInt(1)
-                output.writeByte(iv.length)
-                output.write(iv)
-                output.writeInt(encrypted.length)
-                output.write(encrypted)
-                output.close()
-                logger.lifecycle("Encrypted ${resourcePaths.size()} optional resource(s) into ${encryptedBundle}.")
-            }
+            description = "Encrypt optional uncensored translations and textures for ${name}."
+            inputDirectory = encryptedInput
+            bundleFile = new File(generatedResources, 'flans_content/content.fmu')
+            moduleId = modId
         }
-        moduleSourceSet.resources.srcDir(encryptedGeneratedResources)
-        tasks.named(moduleSourceSet.processResourcesTaskName).configure {
-            dependsOn encryptionTask
+        tasks.named(source.processResourcesTaskName, ProcessResources) { ProcessResources task ->
+            task.from(encryptTask) { CopySpec spec -> spec.into('flans_content') }
         }
     }
 
-    // The module's mods.toml takes its version from archiveVersion.
-    tasks.named(moduleSourceSet.processResourcesTaskName, ProcessResources).configure {
-        inputs.property('moduleVersion', moduleArchiveVersion)
-        filesMatching('META-INF/mods.toml') {
-            expand(module_version: moduleArchiveVersion)
-        }
+    tasks.named(source.processResourcesTaskName, ProcessResources) {
+        inputs.property('moduleVersion', moduleVersion)
+        filesMatching(modsTomlPath) { expand(module_version: moduleVersion) }
     }
 
-    // Make the module available in every ForgeGradle development run.
-    minecraft.runs.configureEach { runConfig ->
-        def modConfig = runConfig.mods.maybeCreate(moduleModId)
-        modConfig.source(moduleSourceSet)
-    }
-
-    def moduleJar = tasks.register(jarTaskName, Jar) {
-        archiveBaseName.set(moduleArchiveBaseName)
-        archiveVersion.set(moduleArchiveVersion)
-
-        from moduleSourceSet.output
-
+    fmuModuleJars << tasks.register(module.jarTask.toString(), Jar) {
+        archiveBaseName = module.archiveBaseName.toString()
+        archiveVersion = moduleVersion
+        from source.output
         manifest {
-            attributes(
-                    'Implementation-Title': implementationTitle,
-                    'Implementation-Version': moduleArchiveVersion
-            )
+            attributes([
+                    'Implementation-Title'  : (module.implementationTitle ?: name).toString(),
+                    'Implementation-Version': moduleVersion
+            ])
         }
     }
-
-    artifacts.add('archives', moduleJar)
 
     if (module.javaCompileJvmArgs) {
-        tasks.named(moduleSourceSet.compileJavaTaskName, JavaCompile).configure {
+        tasks.named(source.compileJavaTaskName, JavaCompile) {
             options.fork = true
             options.forkOptions.jvmArgs.addAll(module.javaCompileJvmArgs.collect { it.toString() })
         }
     }
-
-    return moduleSourceSet
+    return source
 }
 
-/*
- * Discover optional modules without naming them in the root build.
- *
- * main, packsmanager and test stay fixed. Any other directory directly below src/
- * becomes a module only if it contains fmu-module.gradle.
- *
- * This also allows a private nested Git repository to live under src/: its directory
- * and module metadata never need to appear in this public build.gradle.
- */
-def fixedSourceDirectories = ['main', 'packsmanager', 'test'] as Set
-File srcDirectory = file('src')
-
-if (srcDirectory.isDirectory()) {
-    srcDirectory.listFiles()
-            .findAll { it.isDirectory() && !fixedSourceDirectories.contains(it.name) }
-            .sort { a, b -> a.name <=> b.name }
-            .each { moduleDirectory ->
-                File moduleScript = new File(moduleDirectory, 'fmu-module.gradle')
-                if (moduleScript.isFile()) {
-                    apply from: moduleScript
-                }
-            }
-}
+// Any src/<dir> with an fmu-module.gradle becomes a module, so private packs need no entry here.
+file('src').listFiles()
+        .findAll { it.isDirectory() && !(it.name in ['main', 'packsmanager', 'test']) && new File(it, 'fmu-module.gradle').isFile() }
+        .sort { it.name }
+        .each { apply from: new File(it, 'fmu-module.gradle') }
 
 repositories {
-    // Put repositories for dependencies here.
-    // ForgeGradle automatically adds the Forge maven and Maven Central for you.
-    flatDir {
-        dir 'libs'
-    }
-}
-
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
-    debug.verbose = true
-    debug.export = true
+    flatDir { dir 'libs' }
 }
 
 dependencies {
@@ -376,104 +199,81 @@ dependencies {
 
     testImplementation platform('org.junit:junit-bom:5.10.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    implementation fg.deobf('libs:CustomNPCs:1.20.1-GBPort-Unofficial-1.20.1.20260711')
-    implementation fg.deobf('libs:flansmod:1.20.1-0.4.316')
+    // Optional mods loaded only in development runs.
+    runtimeOnly fg.deobf('libs:CustomNPCs:1.20.1-GBPort-Unofficial-1.20.1.20260711')
+    runtimeOnly fg.deobf('libs:flansmod:1.20.1-0.4.316')
 }
 
-tasks.named('test', Test).configure {
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.mixins.json"
+    debug.verbose = true
+    debug.export = true
+}
+
+tasks.named('test', Test) {
     useJUnitPlatform()
 }
 
-shadowJar {
-    mergeServiceFiles()
-}
-
-// This block of code expands all declared replace properties in the specified resource targets.
-tasks.named('processResources', ProcessResources).configure {
-    var replaceProperties = [
-            minecraft_version: minecraft_version,
+tasks.named('processResources', ProcessResources) {
+    def replaceProperties = [
+            minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version,
-            forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
-            mod_id: mod_id,
-            mod_name: mod_name,
-            mod_license: mod_license,
-            mod_version: mod_version,
-            mod_authors: mod_authors,
-            mod_description: mod_description,
+            forge_version          : forge_version,
+            forge_version_range    : forge_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_display_name       : mod_display_name,
+            mod_credits            : mod_credits,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
     ]
     inputs.properties replaceProperties
-
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
-    }
-
-    exclude '**/AGENTS.md'
+    filesMatching([modsTomlPath, 'pack.mcmeta']) { expand replaceProperties }
 }
 
-// Main mod jar.
-tasks.named('jar', Jar).configure {
+tasks.named('jar', Jar) {
     manifest {
         attributes([
                 'Specification-Title'     : mod_id,
                 'Specification-Vendor'    : mod_authors,
                 'Specification-Version'   : '1',
                 'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Version'  : version,
                 'Implementation-Vendor'   : mod_authors,
                 'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                 'MixinConfigs'            : "${mod_id}.mixins.json"
         ])
     }
-
     finalizedBy 'reobfJar'
 }
 
-// packsmanager remains fixed because it has special copy/build behavior.
-def copyFlanPacksToManager = tasks.register('copyFlanPacksToManager') {
-    doFirst {
-        def targetDir = file('src/packsmanager/resources/flan')
-        if (targetDir.exists()) {
-            targetDir.deleteDir()
-        }
-    }
-
-    doLast {
-        copy {
-            from 'run/flan'
-            into 'src/packsmanager/resources/flan'
-        }
-    }
-}
-
-// The packs manager's mods.toml takes its version from packs_manager_version.
-tasks.named(sourceSets.packsManager.processResourcesTaskName, ProcessResources).configure {
+tasks.named(sourceSets.packsmanager.processResourcesTaskName, ProcessResources) {
     inputs.property('packsManagerVersion', packs_manager_version)
-    filesMatching('META-INF/mods.toml') {
-        expand(module_version: packs_manager_version)
-    }
+    filesMatching(modsTomlPath) { expand(module_version: packs_manager_version) }
 }
 
-def packsManagerJar = tasks.register('packsManagerJar', Jar) {
-    dependsOn tasks.named('copyFlanPacksToManager')
-
-    archiveBaseName.set("[$minecraft_version] $packs_manager_name")
-    archiveVersion.set(packs_manager_version)
-
-    from sourceSets.packsManager.output
-
-    manifest {
-        attributes(
-                'Implementation-Title': 'packsManager',
-                'Implementation-Version': packs_manager_version
-        )
-    }
+// Bundles the development run/flan packs for extraction by the Packs Manager.
+String packsManagerVersion = packs_manager_version
+String packsManagerBaseName = "[$minecraft_version] $packs_manager_name"
+def packsManagerJar = tasks.register('packsManagerJar', Jar) { Jar jar ->
+    jar.archiveBaseName.set(packsManagerBaseName)
+    jar.archiveVersion.set(packsManagerVersion)
+    jar.from(sourceSets.packsmanager.output)
+    jar.from('run/flan') { CopySpec spec -> spec.into('flan') }
+    jar.manifest.attributes([
+            'Implementation-Title'  : 'packsManager',
+            'Implementation-Version': packsManagerVersion
+    ])
 }
 
-artifacts {
-    archives packsManagerJar
+tasks.named('assemble') {
+    dependsOn packsManagerJar, fmuModuleJars
 }
 
 publishing {
@@ -484,7 +284,7 @@ publishing {
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/mcmodsrepo"
+            url = uri("${projectDir}/repo")
         }
     }
 }
@@ -497,5 +297,92 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+/*
+ * Packs lang/texture assets into the authenticated FMUENC01 bundle read at runtime.
+ * Keep the format, key derivation, and file order in sync with the mod's decoder.
+ */
+abstract class EncryptOptionalContent extends DefaultTask {
+    @InputDirectory
+    @PathSensitive(PathSensitivity.RELATIVE)
+    abstract DirectoryProperty getInputDirectory()
+
+    @Input
+    abstract Property<String> getModuleId()
+
+    @OutputFile
+    abstract RegularFileProperty getBundleFile()
+
+    @TaskAction
+    void encrypt() {
+        def utf8 = StandardCharsets.UTF_8
+        def inputPath = inputDirectory.get().asFile.toPath()
+        File bundle = bundleFile.get().asFile
+        byte[] modId = moduleId.get().getBytes(utf8)
+
+        List<java.nio.file.Path> files
+        try (def paths = Files.walk(inputPath)) {
+            files = paths.filter { Files.isRegularFile(it) }
+                    .sorted { a, b -> a.toAbsolutePath().toString() <=> b.toAbsolutePath().toString() }
+                    .toList()
+        }
+        if (files.isEmpty()) {
+            Files.deleteIfExists(bundle.toPath())
+            logger.lifecycle("No uncensored resources found for ${moduleId.get()}.")
+            return
+        }
+
+        def archiveBytes = new ByteArrayOutputStream()
+        new DataOutputStream(archiveBytes).withCloseable { archive ->
+            archive.writeInt(0x464D5552) // FMUR
+            archive.writeInt(1)
+            archive.writeInt(files.size())
+            files.each { file ->
+                String relativePath = inputPath.relativize(file).toString().replace(File.separator, '/')
+                String[] segments = relativePath.split('/')
+                if (segments.length < 4 || segments[0] != 'assets' || segments[1].isBlank())
+                    throw new GradleException("Uncensored resources must use assets/<namespace>/... paths: ${relativePath}")
+                String assetPath = segments.drop(2).join('/')
+                if (!(assetPath.startsWith('lang/') || assetPath.startsWith('textures/')))
+                    throw new GradleException("Only lang and textures assets may be encrypted: ${relativePath}")
+
+                byte[] data = Files.readAllBytes(file)
+                archive.writeUTF(relativePath)
+                archive.writeInt(data.length)
+                archive.write(data)
+            }
+        }
+        byte[] plaintext = archiveBytes.toByteArray()
+
+        def keyDigest = MessageDigest.getInstance('SHA-256')
+        keyDigest.update('Flans Mod Ultimate uncensored resources v1'.getBytes(utf8))
+        keyDigest.update((byte) 0)
+        byte[] key = keyDigest.digest(modId)
+
+        def ivDigest = MessageDigest.getInstance('SHA-256')
+        ivDigest.update(plaintext)
+        ivDigest.update((byte) 0)
+        byte[] iv = Arrays.copyOf(ivDigest.digest(modId), 12)
+
+        byte[] magic = 'FMUENC01'.getBytes(StandardCharsets.US_ASCII)
+        def cipher = Cipher.getInstance('AES/GCM/NoPadding')
+        cipher.init(Cipher.ENCRYPT_MODE,
+                new SecretKeySpec(key, 'AES'),
+                new GCMParameterSpec(128, iv))
+        cipher.updateAAD(magic)
+        cipher.updateAAD(modId)
+        byte[] encrypted = cipher.doFinal(plaintext)
+
+        bundle.withDataOutputStream { output ->
+            output.write(magic)
+            output.writeInt(1)
+            output.writeByte(iv.length)
+            output.write(iv)
+            output.writeInt(encrypted.length)
+            output.write(encrypted)
+        }
+        logger.lifecycle("Encrypted ${files.size()} optional resource(s) into ${bundle}.")
     }
 }

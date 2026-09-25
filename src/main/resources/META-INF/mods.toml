@@ -1,29 +1,29 @@
 modLoader="javafml"
-loaderVersion="36.2.0"
-license="CC BY-NC-SA 3.0"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
 
 [[mods]]
-modId="flansmodultimate"
+modId="${mod_id}"
 version="${mod_version}"
-displayName="Flan's Mod Ultimate 2"
+displayName="${mod_display_name}"
 logoFile="flansmodultimate2.png"
-credits="Based on Flan's Mod by Jamioflan and contributors, and the legacy Flan's Mod Ultimate Stability Edition project. See the bundled license and repository attribution for details."
-authors="Wolff"
-description='''Unofficial and independently maintained modern continuation/reimplementation of the Flan's Mod ecosystem, with compatibility for legacy content packs.'''
+credits="${mod_credits}"
+authors="${mod_authors}"
+description='''${mod_description}'''
 
-[[dependencies.flansmodultimate]]
+[[dependencies.${mod_id}]]
     modId="forge"
     mandatory=true
-    versionRange="[47.4.10,)"
+    versionRange="${forge_version_range}"
     ordering="NONE"
     side="BOTH"
-[[dependencies.flansmodultimate]]
+[[dependencies.${mod_id}]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.20,1.21)"
+    versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-[[dependencies.flansmodultimate]]
+[[dependencies.${mod_id}]]
     modId="flansmodultimate_packs_manager"
     mandatory=false
     versionRange="*"
@@ -31,5 +31,5 @@ description='''Unofficial and independently maintained modern continuation/reimp
     side="BOTH"
 
 mixins = [
-    "flansmodultimate.mixins.json"
+    "${mod_id}.mixins.json"
 ]

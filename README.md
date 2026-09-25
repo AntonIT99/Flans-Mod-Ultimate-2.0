@@ -10,8 +10,8 @@ The repository maintains four Minecraft targets. Choose the branch that matches 
 | --- | --- | --- | --- | --- |
 | `master` | 1.20.1 | Forge 47.4.x | 17 | ForgeGradle |
 | `1.21.1` | 1.21.1 | NeoForge 21.1.x | 21 | ModDevGradle |
-| `26.1.2` | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
-| `26.2` | 26.2 | NeoForge 26.2.x | 25 | ModDevGradle |
+| `26.1.2` (WIP - not supported yet) | 26.1.2 | NeoForge 26.1.2.x | 25 | ModDevGradle |
+| `26.2` (WIP - not supported yet) | 26.2 | NeoForge 26.2.x | 25 | ModDevGradle |
 
 The main mod ID is `flansmodultimate`. The project is in beta: some legacy systems are complete, while others remain in progress.
 
@@ -53,10 +53,11 @@ Build the main mod:
 .\gradlew.bat build --stacktrace
 ```
 
-Run the development client or server:
+Run the development client or server (`runClientDebug` logs at DEBUG, the others at INFO):
 
 ```powershell
 .\gradlew.bat runClient
+.\gradlew.bat runClientDebug
 .\gradlew.bat runServer
 ```
 
@@ -82,7 +83,7 @@ Build artifacts are written under `build/libs/`.
 | `src/main/java` | Main mod Java sources |
 | `src/main/resources` | Main mod resources, assets, data, Mixin configuration, and loader metadata |
 | `src/packsmanager/java` | Packs Manager companion-mod sources and extraction logic |
-| `src/packsmanager/resources` | Packs Manager metadata and content packs bundled for extraction |
+| `src/packsmanager/resources` | Packs Manager metadata and bundled-pack version marker |
 | `src/officialpacks` | Optional official content packs and their entrypoint |
 | `libs` | Local mod jars used as development dependencies |
 | `run` | Development runtime directory |
@@ -96,7 +97,7 @@ The mod registers client and common loader configuration files at runtime. Commo
 
 Legacy packs are loaded through the mod's content-loading system. The optional **Flan's Mod Ultimate Packs Manager** companion mod allows mod authors and pack distributors to ship one or more legacy content packs inside a normal mod jar. At startup, it extracts the bundled `flan` directory into the content-pack directory configured by the main mod, while versioned extraction state prevents unnecessary repeat extraction.
 
-For local development, `packsManagerJar` copies the contents of `run/flan` into `src/packsmanager/resources/flan` and produces `[1.20.1] Flan's Mod Ultimate Packs Manager-1.0.jar` under `build/libs/`.
+For local development, `packsManagerJar` bundles the contents of `run/flan` into the jar's `flan/` directory and writes `[<Minecraft version>] Flan's Mod Ultimate Packs Manager-<version>.jar` to `build/libs/`.
 
 ## Development Notes
 
