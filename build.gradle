@@ -94,15 +94,19 @@ configurations {
     testCompileOnly.extendsFrom compileOnly
 }
 
+String lombokDependency = "org.projectlombok:lombok:$version_lombok"
+
 // Gives an additional mod source set the main mod's classpath and loads it in dev runs.
 def configureModSourceSet = { SourceSet sourceSet, String modId ->
     configurations.named(sourceSet.implementationConfigurationName) { extendsFrom configurations.implementation }
     configurations.named(sourceSet.compileOnlyConfigurationName) { extendsFrom configurations.compileOnly }
+    // Lombok is on every compile classpath, so its annotations must also be processed everywhere.
+    dependencies.add(sourceSet.annotationProcessorConfigurationName, lombokDependency)
     dependencies.add(sourceSet.implementationConfigurationName, sourceSets.main.output)
     minecraft.runs.configureEach { mods.maybeCreate(modId).source(sourceSet) }
 }
 
-configureModSourceSet(sourceSets.packsmanager, 'flansmodultimate_packs_manager')
+configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
 
 /*
  * Registers an optional module described by src/<module>/fmu-module.gradle.
@@ -191,13 +195,13 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    annotationProcessor 'org.spongepowered:mixin:0.8.6:processor'
-    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor "org.spongepowered:mixin:$version_mixin:processor"
+    annotationProcessor lombokDependency
 
-    compileOnly 'org.jetbrains:annotations:26.0.2'
-    compileOnly 'org.projectlombok:lombok:1.18.42'
+    compileOnly "org.jetbrains:annotations:$version_jetbrains_annotations"
+    compileOnly lombokDependency
 
-    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation platform("org.junit:junit-bom:$version_junit")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -221,9 +225,9 @@ tasks.named('test', Test) {
 tasks.register('muzzleReport', JavaExec) {
     group = 'flans tooling'
     description = 'Measures gun and driveable model muzzles in a package of a pack source set.'
-    def modelSet = sourceSets.getByName(findProperty('modelSourceSet')?.toString() ?: 'main')
-    dependsOn modelSet.classesTaskName, sourceSets.test.classesTaskName
-    classpath = sourceSets.test.runtimeClasspath + modelSet.runtimeClasspath
+    def modelSet = sourceSets.named(findProperty('modelSourceSet')?.toString() ?: 'main')
+    dependsOn modelSet.map { it.classesTaskName }, sourceSets.test.classesTaskName
+    classpath = sourceSets.test.runtimeClasspath + files(modelSet.map { it.runtimeClasspath })
     mainClass = 'com.flansmod.client.model.MuzzleReport'
     args = [findProperty('modelPackage')?.toString() ?: 'com.flansmod.client.model'] +
             (findProperty('reportFile') ? [file(findProperty('reportFile')).absolutePath] : [])
@@ -250,6 +254,8 @@ tasks.named('processResources', ProcessResources) {
 }
 
 tasks.named('jar', Jar) {
+    // The API package is MIT licensed and ships inside this jar, so its notice must too.
+    from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
     manifest {
         attributes([
                 'Specification-Title'     : mod_id,
@@ -263,6 +269,73 @@ tasks.named('jar', Jar) {
         ])
     }
     finalizedBy 'reobfJar'
+}
+
+/*
+ * Public API artifacts: the MIT licensed com.flansmodultimate.api package on its own, for other mods
+ * to compile against, with its sources and javadoc. Published as
+ * com.flansmodultimate:flansmodultimate-api:<minecraft version>-<api_version>.
+ */
+String apiArtifactId = 'flansmodultimate-api'
+String apiArchiveVersion = "$minecraft_version-$api_version"
+String apiPackagePattern = 'com/flansmodultimate/api/**'
+
+def apiJarTask = tasks.register('apiJar', Jar) { Jar jar ->
+    jar.group = 'flans mod ultimate'
+    jar.description = 'Assembles the public API classes, reobfuscated like the mod jar.'
+    jar.archiveBaseName.set(apiArtifactId)
+    jar.archiveVersion.set(apiArchiveVersion)
+    jar.from(sourceSets.main.output) { CopySpec spec -> spec.include(apiPackagePattern) }
+    jar.from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
+    jar.manifest.attributes([
+            'Implementation-Title'  : apiArtifactId,
+            'Implementation-Version': apiArchiveVersion,
+            'Implementation-Vendor' : mod_authors
+    ])
+    jar.finalizedBy 'reobfApiJar'
+}
+
+reobf {
+    apiJar {
+        libraries.from(sourceSets.main.compileClasspath)
+    }
+}
+// MixinGradle would otherwise stamp the main mod's MixinConfigs onto the API jars.
+tasks.matching { it.name in ['addMixinsToApiJar', 'addMixinsToApiSourcesJar', 'addMixinsToApiJavadocJar'] }.configureEach { enabled = false }
+
+def apiSourcesJarTask = tasks.register('apiSourcesJar', Jar) { Jar jar ->
+    jar.group = 'flans mod ultimate'
+    jar.description = 'Assembles the public API sources.'
+    jar.archiveBaseName.set(apiArtifactId)
+    jar.archiveVersion.set(apiArchiveVersion)
+    jar.archiveClassifier.set('sources')
+    jar.from(sourceSets.main.allJava) { CopySpec spec -> spec.include(apiPackagePattern) }
+    jar.from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
+}
+
+def apiJavadocTask = tasks.register('apiJavadoc', Javadoc) { Javadoc task ->
+    task.group = 'flans mod ultimate'
+    task.description = 'Generates the javadoc of the public API.'
+    task.source = sourceSets.main.allJava.matching { PatternFilterable filter -> filter.include(apiPackagePattern) }
+    // The API facades call into the mod, so javadoc needs its classes to resolve their imports.
+    task.classpath = sourceSets.main.compileClasspath + sourceSets.main.output
+    task.destinationDir = layout.buildDirectory.dir('docs/apiJavadoc').get().asFile
+    task.title = "Flan's Mod Ultimate API $apiArchiveVersion"
+    StandardJavadocDocletOptions options = (StandardJavadocDocletOptions) task.options
+    options.encoding = 'UTF-8'
+    options.windowTitle = task.title
+    // Fail on broken references and malformed HTML, but not on undocumented members.
+    options.addBooleanOption('Xdoclint:all,-missing', true)
+}
+
+def apiJavadocJarTask = tasks.register('apiJavadocJar', Jar) { Jar jar ->
+    jar.group = 'flans mod ultimate'
+    jar.description = 'Assembles the public API javadoc.'
+    jar.archiveBaseName.set(apiArtifactId)
+    jar.archiveVersion.set(apiArchiveVersion)
+    jar.archiveClassifier.set('javadoc')
+    jar.from(apiJavadocTask)
+    jar.from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
 }
 
 tasks.named(sourceSets.packsmanager.processResourcesTaskName, ProcessResources) {
@@ -285,7 +358,7 @@ def packsManagerJar = tasks.register('packsManagerJar', Jar) { Jar jar ->
 }
 
 tasks.named('assemble') {
-    dependsOn packsManagerJar, fmuModuleJars
+    dependsOn packsManagerJar, fmuModuleJars, apiJarTask, apiSourcesJarTask, apiJavadocJarTask
 }
 
 publishing {
@@ -293,10 +366,51 @@ publishing {
         register('mavenJava', MavenPublication) {
             artifact jar
         }
+        register('api', MavenPublication) { MavenPublication publication ->
+            publication.artifactId = apiArtifactId
+            publication.version = apiArchiveVersion
+            publication.artifact(apiJarTask) { builtBy tasks.named('reobfApiJar') }
+            publication.artifact(apiSourcesJarTask)
+            publication.artifact(apiJavadocJarTask)
+            publication.pom {
+                name = "Flan's Mod Ultimate API"
+                description = "Public API of Flan's Mod Ultimate for other mods. Compile against it; the mod itself provides it at runtime."
+                url = 'https://github.com/AntonIT99/Flans-Mod-Ultimate-2.0/wiki/API'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://github.com/AntonIT99/Flans-Mod-Ultimate-2.0/blob/master/LICENSE-API'
+                    }
+                }
+            }
+        }
     }
     repositories {
         maven {
             url = uri("${projectDir}/repo")
+        }
+        // Checkout of the Maven repository served by GitHub Pages, only when given with
+        // -PapiMavenRepoDir=<dir> or API_MAVEN_REPO_DIR. Only the API is published there.
+        String apiMavenRepoDir = findProperty('apiMavenRepoDir')?.toString() ?: System.getenv('API_MAVEN_REPO_DIR')
+        if (apiMavenRepoDir) {
+            maven {
+                name = 'apiPages'
+                url = file(apiMavenRepoDir).toURI()
+            }
+        }
+    }
+}
+
+tasks.withType(PublishToMavenRepository).configureEach { PublishToMavenRepository task ->
+    task.onlyIf('only the API is published to GitHub Pages') {
+        task.repository.name != 'apiPages' || task.publication.name == 'api'
+    }
+    if (task.name == 'publishApiPublicationToApiPagesRepository') {
+        File published = new File(file(task.repository.url), "com/flansmodultimate/$apiArtifactId/$apiArchiveVersion")
+        task.doFirst {
+            // Published versions are immutable: consumers cache them. Bump api_version instead.
+            if (published.exists())
+                throw new GradleException("API $apiArchiveVersion is already published at $published. Bump api_version first.")
         }
     }
 }

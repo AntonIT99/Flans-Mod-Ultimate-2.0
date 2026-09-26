@@ -67,40 +67,10 @@ public class Vehicle extends Driveable
         return getConfigType() instanceof VehicleType type ? type : null;
     }
 
-    /**
-     * 1.7.10 vehicles rested their origin at a fixed height above the ground:
-     * the root bounding box hung {@code YOffset} below the origin, and each
-     * wheel entity stood on the ground at its unscaled WheelPosition. ModelScale
-     * only scaled the rendered model around that origin. Models were authored
-     * against this contact plane, so scaling it with the model instead
-     * multiplies each model's authored track height error by ModelScale.
-     */
-    @Override
-    protected double wheelAnchorHeightScale()
-    {
-        return 1D;
-    }
-
     @Override
     protected boolean stepsOnWheelContact()
     {
         return true;
-    }
-
-    /** Clearance that places the origin at {@code max(YOffset, -lowest wheel anchor)}. */
-    @Override
-    protected double wheelGroundClearance()
-    {
-        VehicleType type = getVehicleType();
-        if (type == null)
-            return super.wheelGroundClearance();
-        double lowestAnchor = Double.NaN;
-        for (DriveablePosition wheel : type.getWheelPositions())
-        {
-            if (wheel != null && (Double.isNaN(lowestAnchor) || wheel.getPosition().y < lowestAnchor))
-                lowestAnchor = wheel.getPosition().y;
-        }
-        return Double.isNaN(lowestAnchor) ? 0D : Math.max(0D, type.getYOffset() + lowestAnchor);
     }
 
     @Override

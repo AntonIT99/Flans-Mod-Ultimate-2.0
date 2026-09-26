@@ -135,3 +135,8 @@ Flan's Mod Ultimate 2 is distributed under the
 (CC BY-NC-SA 3.0)** license.
 
 See [LICENSE](LICENSE) for the complete license terms.
+
+The public API in `com.flansmodultimate.api` is an exception: it is licensed
+under the **MIT License**, so other mods may build and distribute addons against
+it freely. See [LICENSE-API](LICENSE-API) and the
+[API wiki page](https://github.com/AntonIT99/Flans-Mod-Ultimate-2.0/wiki/API).

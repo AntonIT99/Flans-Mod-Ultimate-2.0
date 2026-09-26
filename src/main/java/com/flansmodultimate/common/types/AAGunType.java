@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.api.IAAGunType;
 import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
 import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
@@ -31,7 +32,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @Getter
 @NoArgsConstructor
-public class AAGunType extends InfoType implements IAmmoGroupUser, IAmmoOverrideUser
+public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, IAmmoOverrideUser
 {
     public static final int MAX_BARRELS = 16;
 

@@ -1,9 +1,9 @@
 package com.flansmodultimate.client.input;
 
-import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.client.render.MountedCameraView;
 import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.IControllable;
 import com.flansmodultimate.common.entity.Seat;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,6 +1,8 @@
 package com.wolffsmod.npcs;
 
 import com.mojang.logging.LogUtils;
+import com.wolffsmod.npcs.model.FlanModelEntities;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
@@ -17,5 +19,8 @@ public class NpcsMod
 
     public NpcsMod(FMLJavaModLoadingContext context)
     {
+        IEventBus modEventBus = context.getModEventBus();
+        modEventBus.addListener(FlanModelEntities::registerEntityTypes);
+        modEventBus.addListener(FlanModelEntities::registerAttributes);
     }
 }

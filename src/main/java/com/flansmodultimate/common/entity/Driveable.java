@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.IControllable;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
@@ -3602,13 +3601,17 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // collision points. In particular, planes need their model-facing
         // half-turn; using the generic physics basis put their rear gear at
         // the nose and also rotated wheel anchors incorrectly with pitch.
+        // Anchor heights stay unscaled: in 1.7.10 every wheel entity, plane or
+        // vehicle, stood on the ground at its unscaled WheelPosition, and
+        // ModelScale only scaled the rendered model around the origin. Models
+        // were authored against that contact plane, so scaling it with the
+        // model multiplies each model's authored height error by ModelScale.
         Vec3 local = configuredModelLocal(wheel.getPosition());
         double scale = modelScale();
-        return modelLocalToWorld(new Vec3(local.x * scale, (local.y + wheelAnchorLift()) * wheelAnchorHeightScale(),
-            local.z * scale));
+        return modelLocalToWorld(new Vec3(local.x * scale, local.y + wheelAnchorLift(), local.z * scale));
     }
 
-    /** Blocks added to every authored wheel anchor height, before scaling. */
+    /** Blocks added to every authored wheel anchor height. */
     protected double wheelAnchorLift()
     {
         return 0D;
@@ -3618,12 +3621,6 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public Vec3 legacyPointToWorld(@NotNull Vec3 legacy)
     {
         return modelLocalToWorld(configuredModelLocal(legacy).scale(modelScale()));
-    }
-
-    /** Factor applied to authored wheel anchor heights and ground clearance. */
-    protected double wheelAnchorHeightScale()
-    {
-        return modelScale();
     }
 
     /** ModelScale as the renderer applies it, guarded against degenerate values. */
@@ -5092,10 +5089,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return velocity;
         float spring = Mth.clamp(configType.getWheelSpringStrength(), 0F, 1F);
         float step = Mth.clamp(configType.getWheelStepHeight(), 0F, 2.5F);
-        // Anchors are scaled with the model, so every distance derived from the
-        // authored wheel coordinates has to be scaled alongside them.
+        // Horizontal anchor spacing follows the scaled model. Anchor heights do
+        // not: see getWheelWorldPosition.
         double scale = modelScale();
-        double heightScale = wheelAnchorHeightScale();
         double suspensionDroop = 0.35D + (1D - spring) * 0.2D;
         double maximumCompression = Math.max(0.15D, step + 0.1D);
         double minimumMountHeight = Double.POSITIVE_INFINITY;
@@ -5104,8 +5100,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         {
             if (definition != null && isPartIntact(definition.getPart()))
             {
-                minimumMountHeight = Math.min(minimumMountHeight, definition.getPosition().y * heightScale);
-                maximumMountHeight = Math.max(maximumMountHeight, definition.getPosition().y * heightScale);
+                minimumMountHeight = Math.min(minimumMountHeight, definition.getPosition().y);
+                maximumMountHeight = Math.max(maximumMountHeight, definition.getPosition().y);
             }
         }
         double mountHeightRange = Double.isFinite(minimumMountHeight)
@@ -5144,7 +5140,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             if (hit.getType() != HitResult.Type.BLOCK)
                 continue;
             double surface = hit.getLocation().y;
-            double desiredWheelY = surface + wheelGroundClearance() * heightScale;
+            double desiredWheelY = surface + wheelGroundClearance();
             double error = desiredWheelY - wheel.y;
             if (error < -poseProbeDroop || error > maximumCompression)
                 continue;
@@ -5157,7 +5153,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             Vec3 local = LegacyDriveableCoordinates.toLocal(definition.getPosition()).scale(scale);
             double forwardPosition = LegacyDriveableCoordinates.legacyForwardCoordinate(local);
             double rightPosition = LegacyDriveableCoordinates.legacyRightCoordinate(local);
-            double mountHeight = definition.getPosition().y * heightScale;
+            double mountHeight = definition.getPosition().y;
             if (forwardPosition > 1.0E-4D)
             {
                 frontHeight += surface;
@@ -5218,28 +5214,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return new Vec3(velocity.x, correctedY, velocity.z);
     }
 
-    /**
-     * Height at which a wheel anchor rests above the surface below it, in model
-     * space and so before ModelScale is applied.
-     *
-     * <p>Packs disagree on what WheelPosition means, so this prefers the value
-     * measured from the type's own wheel and track collision boxes and only
-     * falls back to a convention when there are none to measure.</p>
-     */
+    /** See {@link DriveableType#getWheelGroundClearance()}. */
     protected double wheelGroundClearance()
     {
-        float derived = configType == null ? Float.NaN : configType.getWheelContactClearance();
-        return Float.isNaN(derived) ? fallbackWheelGroundClearance() : derived;
-    }
-
-    /**
-     * Clearance for a type that declares no wheel or track collision box.
-     * Aircraft landing gear is authored on the strut, above the tyre's contact
-     * patch, so planes keep the historical value; {@link Vehicle} overrides it.
-     */
-    protected double fallbackWheelGroundClearance()
-    {
-        return 0.375D;
+        return configType == null ? 0D : configType.getWheelGroundClearance();
     }
 
     protected boolean hasWheelContact()

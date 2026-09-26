@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.api.DriveableKind;
+import com.flansmodultimate.api.IMechaType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -12,8 +14,14 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @Getter
 @NoArgsConstructor
-public class MechaType extends DriveableType
+public class MechaType extends DriveableType implements IMechaType
 {
+    @Override
+    public DriveableKind getDriveableKind()
+    {
+        return DriveableKind.MECHA;
+    }
+
     public record LegNode(int rotation, float lowerBound, float upperBound, int speed, int legPart) {}
 
     protected float turnLeftModifier = 1F;
