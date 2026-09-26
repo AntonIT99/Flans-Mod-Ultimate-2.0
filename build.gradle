@@ -180,7 +180,7 @@ ext.registerFmuModule = { Map module ->
 }
 
 // Custom NPCs: optional at runtime for the main mod, a compile dependency of modules built on it.
-ext.customNpcsDependency = 'libs:CustomNPCs:1.20.1-GBPort-Unofficial-1.20.1.20260711'
+ext.customNpcsDependency = "libs:CustomNPCs:$version_custom_npcs"
 
 // Any src/<dir> with an fmu-module.gradle becomes a module, so private packs need no entry here.
 file('src').listFiles()
