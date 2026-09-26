@@ -53,6 +53,7 @@ import java.util.OptionalInt;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -168,7 +169,7 @@ public abstract class InfoType implements IInfoType
         if (type == null || !type.isHasItem())
             return null;
         Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, getShortName()));
-        return item == null || item == Items.AIR ? null : item;
+        return item == Items.AIR ? null : item;
     }
 
     public Optional<ResourceLocation> getOverlay()
@@ -586,40 +587,30 @@ public abstract class InfoType implements IInfoType
 
     public static ResourceLocation loadTexture(String textureName, InfoType type)
     {
+        if (type instanceof ArmorType)
+            return loadTexture(textureName, ContentManager.getArmorTextureReferences().get(type.getContentPack()), type::getTexturePath);
+        return loadTexture(textureName, ContentManager.getSkinsTextureReferences().get(type.getContentPack()), type::getTexturePath);
+    }
+
+    /** Like {@link #loadTexture}, for a texture of the skins folder whatever folder the type's own textures live in. */
+    public static ResourceLocation loadSkinTexture(String textureName, InfoType type)
+    {
+        return loadTexture(textureName, ContentManager.getSkinsTextureReferences().get(type.getContentPack()),
+            name -> "textures/" + ContentManager.FOLDER_TEXTURES_SKINS + "/" + name + FileUtils.PNG_EXTENSION);
+    }
+
+    private static ResourceLocation loadTexture(String textureName, Map<String, DynamicReference> refsMap, UnaryOperator<String> texturePath)
+    {
         ResourceLocation texture = FlansMod.FALLBACK_TEXTURE;
         if (StringUtils.isNotBlank(textureName))
         {
-            DynamicReference ref;
-            Map<String, DynamicReference> refsMap;
-            if (type instanceof ArmorType)
-                refsMap = ContentManager.getArmorTextureReferences().get(type.getContentPack());
-            else
-                refsMap = ContentManager.getSkinsTextureReferences().get(type.getContentPack());
-
             refsMap.putIfAbsent(textureName, new DynamicReference(textureName));
-            ref = refsMap.get(textureName);
+            DynamicReference ref = refsMap.get(textureName);
 
             if (ref != null)
-                texture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, type.getTexturePath(ref.get()));
+                texture = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, texturePath.apply(ref.get()));
         }
         return texture;
-    }
-
-    /**
-     * Resolves a texture of the {@code textures/skins} folder of the type's content pack, whatever
-     * folder the type's own textures live in. Unlike {@link #loadTexture} there is no fallback: a
-     * blank name yields null.
-     */
-    @Nullable
-    public static ResourceLocation loadSkinTexture(String textureName, InfoType type)
-    {
-        if (StringUtils.isBlank(textureName))
-            return null;
-
-        Map<String, DynamicReference> refsMap = ContentManager.getSkinsTextureReferences().get(type.getContentPack());
-        refsMap.putIfAbsent(textureName, new DynamicReference(textureName));
-        return ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID,
-            "textures/" + ContentManager.FOLDER_TEXTURES_SKINS + "/" + refsMap.get(textureName).get() + FileUtils.PNG_EXTENSION);
     }
 
     public static Optional<ResourceLocation> loadOverlay(String overlayName, InfoType type)

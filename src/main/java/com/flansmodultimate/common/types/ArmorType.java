@@ -108,11 +108,11 @@ public class ArmorType extends InfoType
     protected String equipSound = StringUtils.EMPTY;
     /** Name of a textures/skins texture drawn as a cape on the wearer, replacing any cape of their own */
     @Getter
-    protected String capeTexture = StringUtils.EMPTY;
+    protected String capeTextureName = StringUtils.EMPTY;
     /** Client-side location of the CapeTexture, before it is checked to exist. */
     @Getter
     @Nullable
-    protected ResourceLocation capeTextureLocation;
+    protected ResourceLocation capeTexture;
 
     @Override
     protected void read(TypeFile file)
@@ -155,7 +155,7 @@ public class ArmorType extends InfoType
         hunger = readValue("Hunger", hunger, file);
         regeneration = readValue("Regenerate", regeneration, file);
         equipSound = readSound("EquipSound", equipSound, file);
-        capeTexture = readResource("CapeTexture", capeTexture, file);
+        capeTextureName = readResource("CapeTexture", capeTextureName, file);
 
         addEffects("AddEffect", effects, file, true, false);
         addEffects("AddPotionEffect", effects, file, true, false);
@@ -212,7 +212,7 @@ public class ArmorType extends InfoType
     protected void readClient(TypeFile file)
     {
         super.readClient(file);
-        capeTextureLocation = loadSkinTexture(capeTexture, this);
+        capeTexture = StringUtils.isBlank(capeTextureName) ? null : loadSkinTexture(capeTextureName, this);
     }
 
     @Override
