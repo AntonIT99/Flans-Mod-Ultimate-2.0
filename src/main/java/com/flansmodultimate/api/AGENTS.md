@@ -86,9 +86,7 @@ Each release, per Minecraft branch:
    immutable; publishing an existing one fails.
 2. Make sure `gradlew test apiJavadoc` passes.
 3. Run `Publish API` on the branch, from the Actions tab.
-4. Attach the three API jars, kept as the run's `flansmodultimate-api` artifact, to the
-   CurseForge and Modrinth release of the mod.
-5. Update the version in the wiki's API page examples.
+4. Update the version in the wiki's API page examples.
 
 Branches publish independently: a branch can only be published once it has the API tasks and this
 workflow, ported from master.
