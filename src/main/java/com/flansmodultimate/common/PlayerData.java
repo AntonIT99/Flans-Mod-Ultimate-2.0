@@ -60,6 +60,19 @@ public class PlayerData
     /** True when the client is currently looking through a gun scope. */
     @Getter @Setter
     private boolean scoped;
+    /**
+     * The player's own aim pose choice: a held gun is raised only while fired or aimed, instead of always.
+     * Sent by the client, and relayed by the server to everyone who sees the player. Until then it is the
+     * client setting's default.
+     */
+    @Getter @Setter
+    private boolean dynamicAimPose = true;
+    /**
+     * Client side: whether the server last said this player is aiming, which raises a gun in the dynamic aim
+     * pose. Kept apart from {@link #scoped}, which is server state other client code must not see change.
+     */
+    @Getter @Setter
+    private boolean shownAiming;
     /** The speed of the minigun the player is using */
     @Getter @Setter
     private float minigunSpeed;
@@ -150,6 +163,13 @@ public class PlayerData
     public static PlayerData getInstance(UUID playerId)
     {
         return getInstance(playerId, false);
+    }
+
+    /** Client-side data of the given player, whether or not their entity is loaded here. */
+    @NotNull
+    public static PlayerData getClientInstance(UUID playerId)
+    {
+        return getInstance(playerId, true);
     }
 
     @NotNull
@@ -339,6 +359,7 @@ public class PlayerData
         // Nobody keeps aiming through their own death: the client stops sending scope
         // state once it is out of the world, so the end of it has to be assumed here.
         scoped = false;
+        shownAiming = false;
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
     }
 

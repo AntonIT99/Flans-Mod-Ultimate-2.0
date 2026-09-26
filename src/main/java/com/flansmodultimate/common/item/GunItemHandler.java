@@ -15,6 +15,7 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFireMode;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.PlayerShootingHandler;
@@ -252,6 +253,7 @@ public class GunItemHandler
         }
 
         data.setShooting(hand, true);
+        GunArmPoses.onShotFired(player, hand);
         PacketHandler.sendToTracking(new PacketGunShootClient(player.getUUID(), hand, true), player);
 
         EnumFireMode fireMode = item.configType.getFireMode(gunStack);

@@ -47,6 +47,7 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -77,6 +78,7 @@ public class ModClient
     public static final ThreadLocal<LivingEntity> entityRenderContext = new ThreadLocal<>();
 
     public static final HumanoidModel.ArmPose bothArmsAim = ArmPosePlatform.bothArmsAim();
+    public static final HumanoidModel.ArmPose oneArmAim = ArmPosePlatform.oneArmAim();
 
     /**
      * Arm transform of {@link #bothArmsAim}: both arms straight forward, independent of head pitch.
@@ -90,6 +92,18 @@ public class ModClient
         model.leftArm.xRot = -Mth.PI / 2F;
         model.leftArm.yRot = 0.05F;
         model.leftArm.zRot = 0F;
+    }
+
+    /**
+     * Arm transform of {@link #oneArmAim}: the holding arm of the vanilla bow pose, following the head, without
+     * the other arm reaching across. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.ONE_AIM} mirrors it.
+     */
+    public static void poseOneArmAim(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
+    {
+        ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
+        float side = arm == HumanoidArm.RIGHT ? 1F : -1F;
+        part.yRot = -side * 0.1F + model.head.yRot;
+        part.xRot = -Mth.PI / 2F + model.head.xRot;
     }
 
     @Getter

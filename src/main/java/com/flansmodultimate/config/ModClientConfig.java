@@ -3,6 +3,7 @@ package com.flansmodultimate.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.AimPoseClient;
 import com.flansmodultimate.client.ReloadPreferencesSync;
 import com.flansmodultimate.client.UncensoredResources;
 import com.flansmodultimate.client.input.EnumAimType;
@@ -82,6 +83,7 @@ public final class ModClientConfig
     public final boolean ammoToUpperInventoryOnReload;
 
     public final boolean enableArms;
+    public final EnumAimPose aimPose;
     public final boolean enableGunAnimationsInThirdPerson;
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
@@ -169,6 +171,7 @@ public final class ModClientConfig
     private static final Supplier<Boolean> AMMO_TO_UPPER_INVENTORY_ON_RELOAD;
 
     private static final Supplier<Boolean> ENABLE_ARMS;
+    public static final ForgeConfigSpec.EnumValue<EnumAimPose> AIM_POSE;
     private static final Supplier<Boolean> ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON;
     private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
     private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
@@ -433,6 +436,14 @@ public final class ModClientConfig
         ENABLE_ARMS = builder
             .comment("Enable arms rendering")
             .define("enableArms", true);
+        AIM_POSE = builder
+            .comment("""
+                How your arms hold a gun, as other players see you. The Toggle Aim Pose key switches it while playing.
+                ENFORCED: a held gun always keeps your arms raised in the aiming pose.
+                DYNAMIC: a gun is raised only while you fire or aim it. Shields always stay raised.
+                A server can force one of the two on every player with its playerAimPose setting.
+                """)
+            .defineEnum("aimPose", EnumAimPose.DYNAMIC);
         ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON = builder
             .comment("This will display gun animations such as melee and reloading, not only in first person view but also in third person view including animations from other players")
             .define("enableGunAnimationsInThirdPerson", true);
@@ -532,6 +543,7 @@ public final class ModClientConfig
         ammoToUpperInventoryOnReload = AMMO_TO_UPPER_INVENTORY_ON_RELOAD.get();
 
         enableArms = ENABLE_ARMS.get();
+        aimPose = AIM_POSE.get();
         enableGunAnimationsInThirdPerson = ENABLE_GUN_ANIMATIONS_IN_THIRD_PERSON.get();
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
@@ -872,6 +884,9 @@ public final class ModClientConfig
                 || old.combineAmmoOnReload != get().combineAmmoOnReload
                 || old.ammoToUpperInventoryOnReload != get().ammoToUpperInventoryOnReload))
             ReloadPreferencesSync.sendToServer();
+
+        if (PlatformEnvironment.isClient() && (old == null || old.aimPose != get().aimPose))
+            AimPoseClient.sendToServer();
 
         if (old == null)
             return;

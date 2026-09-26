@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.server;
 
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.event.handler.CommonEventHandler;
@@ -40,7 +41,12 @@ public class PacketGunScopedState implements IServerPacket
     @Override
     public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
     {
-        PlayerData.getInstance(player).setScoped(isScoped);
+        PlayerData data = PlayerData.getInstance(player);
+        boolean changed = data.isScoped() != isScoped;
+        data.setScoped(isScoped);
+        // Aiming raises the gun in the dynamic aim pose, which everyone who sees the player has to know
+        if (changed)
+            GunArmPoses.syncPlayer(player);
 
         ItemStack stack = player.getInventory().getSelected();
         if (!stack.isEmpty() && stack.getItem() instanceof GunItem gunItem)

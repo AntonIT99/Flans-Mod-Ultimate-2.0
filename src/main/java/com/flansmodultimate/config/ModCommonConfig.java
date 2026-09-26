@@ -156,6 +156,8 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> ENABLE_SIGHT_DOWNWARD_MOVEMENT;
     private static final Supplier<Boolean> DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT;
     private static final Supplier<Boolean> MUZZLE_FLASH_PARTICLES_DEFAULT;
+    private static final ForgeConfigSpec.EnumValue<EnumPlayerAimPose> PLAYER_AIM_POSE;
+    private static final ForgeConfigSpec.EnumValue<EnumEntityAimPose> ENTITY_AIM_POSE;
 
     private static final ForgeConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
@@ -401,6 +403,21 @@ public final class ModCommonConfig
         MUZZLE_FLASH_PARTICLES_DEFAULT = builder
             .comment("Enable muzzle flash particles by default. Gun configs can override this with ShowMuzzleFlashParticle.")
             .define("muzzleFlashParticlesDefault", false);
+        PLAYER_AIM_POSE = builder
+            .comment("""
+                How players hold guns, as everyone sees them and as their hitboxes follow.
+                FREE_CHOICE: each player picks with their own aimPose client setting or the Toggle Aim Pose key.
+                ENFORCED: a held gun always keeps the arms raised in the aiming pose.
+                DYNAMIC: a gun is raised only while it is fired or aimed. Shields always stay raised.
+                """)
+            .defineEnum("playerAimPose", EnumPlayerAimPose.FREE_CHOICE);
+        ENTITY_AIM_POSE = builder
+            .comment("""
+                How humanoid mobs hold guns.
+                ENFORCED: a held gun always keeps the arms raised in the aiming pose.
+                DYNAMIC: a gun is raised only while the mob is firing it. Shields always stay raised.
+                """)
+            .defineEnum("entityAimPose", EnumEntityAimPose.DYNAMIC);
         builder.pop();
 
         builder.push("Shootable Settings");
@@ -726,6 +743,8 @@ public final class ModCommonConfig
             ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(),
             DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT.get(),
             MUZZLE_FLASH_PARTICLES_DEFAULT.get(),
+            PLAYER_AIM_POSE.get(),
+            ENTITY_AIM_POSE.get(),
 
             SHOOTABLES_CAN_BREAK_GLASS.get(),
             NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE.get().floatValue(),
@@ -1032,6 +1051,18 @@ public final class ModCommonConfig
         return config == null || config.reloadOnEmptyFire();
     }
 
+    public static EnumPlayerAimPose playerAimPose()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? EnumPlayerAimPose.FREE_CHOICE : config.playerAimPose();
+    }
+
+    public static EnumEntityAimPose entityAimPose()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? EnumEntityAimPose.DYNAMIC : config.entityAimPose();
+    }
+
     public static int aaGunTrackingRange()
     {
         CommonConfigSnapshot config = get();
@@ -1184,10 +1215,12 @@ public final class ModCommonConfig
         EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS),
         FLAN_EXPLOSIONS_DROP_BLOCKS(() -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS),
         DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS),
-        SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS);
+        SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS),
+        PLAYER_AIM_POSE(() -> ModCommonConfig.PLAYER_AIM_POSE),
+        ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE);
 
         /** Deferred so that the enum can be loaded before the outer config spec is built. */
-        private final Supplier<ForgeConfigSpec.BooleanValue> configValue;
+        private final Supplier<? extends ForgeConfigSpec.ConfigValue<?>> configValue;
     }
 
     /**

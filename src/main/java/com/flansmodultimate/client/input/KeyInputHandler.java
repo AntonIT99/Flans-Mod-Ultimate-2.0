@@ -7,6 +7,7 @@ import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelVehicle;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IControllable;
+import com.flansmodultimate.client.AimPoseClient;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.gui.GunAmmoSelectScreen;
 import com.flansmodultimate.client.model.ModelCache;
@@ -76,6 +77,7 @@ public final class KeyInputHandler
     private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_U, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping toggleAimPoseKey = key("toggle_aim_pose", InputConstants.KEY_N, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
 
     // Every driveable: planes, ground vehicles and mechas alike.
     private static final KeyMapping driveableInventoryKey = key("driveable.inventory", InputConstants.KEY_R, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
@@ -196,6 +198,7 @@ public final class KeyInputHandler
         event.register(teamsMenuKey);
         event.register(teamsScoresKey);
         event.register(teamsClassKey);
+        event.register(toggleAimPoseKey);
         event.register(driveableInventoryKey);
         event.register(primaryKey);
         event.register(primaryAlternativeKey);
@@ -416,6 +419,8 @@ public final class KeyInputHandler
             PacketHandler.sendToServer(PacketTeamsAction.openScoreboard());
         if (noScreen && teamsClassKey.consumeClick())
             PacketHandler.sendToServer(PacketTeamsAction.openClassMenu());
+        if (noScreen && toggleAimPoseKey.consumeClick())
+            AimPoseClient.toggle();
     }
 
     private static void updateDriveableControls(Minecraft mc, LocalPlayer player, boolean acceptInput)

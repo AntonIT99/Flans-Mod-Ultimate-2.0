@@ -74,6 +74,7 @@ public class FlansOptionsScreen extends Screen
             ModClientConfig.ENABLE_GPU_MODEL_CACHE)),
         new QuickSection("gameplay", List.of(
             ModClientConfig.AIM_TYPE,
+            ModClientConfig.AIM_POSE,
             ModClientConfig.GUN_BLOCK_INTERACTION,
             ModClientConfig.DRIVEABLE_SPEED_UNIT,
             ModClientConfig.ENABLE_UNCENSORED_CONTENT,

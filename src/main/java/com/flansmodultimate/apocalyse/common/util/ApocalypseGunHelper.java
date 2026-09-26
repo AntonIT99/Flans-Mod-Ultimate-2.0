@@ -2,6 +2,7 @@ package com.flansmodultimate.apocalyse.common.util;
 
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.FiredShot;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.item.GunItem;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -153,6 +155,7 @@ public final class ApocalypseGunHelper
         };
         FiredShot firedShot = new FiredShot(gunType, bulletType, gunStack, ammoStack, ItemStack.EMPTY, shooter);
         ShootingHelper.fireGun(shooter.level(), firedShot, gunType.getNumBullets(gunStack, bulletType), origin, direction, handler);
+        GunArmPoses.onShotFired(shooter, InteractionHand.MAIN_HAND);
         return true;
     }
 

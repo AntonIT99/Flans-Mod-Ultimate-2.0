@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.raytracing;
 
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
@@ -141,8 +142,11 @@ public class PlayerSnapshot
         }
 
         boolean rightHanded = p.getMainArm() == HumanoidArm.RIGHT;
-        ArmPose mainPose = armPose(p, InteractionHand.MAIN_HAND);
-        ArmPose offPose = armPose(p, InteractionHand.OFF_HAND);
+        ArmPose vanillaMainPose = armPose(p, InteractionHand.MAIN_HAND, false);
+        ArmPose vanillaOffPose = armPose(p, InteractionHand.OFF_HAND, vanillaMainPose.twoHanded);
+        GunArmPoses.Result gunPoses = GunArmPoses.resolve(p);
+        ArmPose mainPose = withGunPose(vanillaMainPose, gunPoses.mainHand());
+        ArmPose offPose = withGunPose(vanillaOffPose, gunPoses.offHand());
         ArmPose rightPose = rightHanded ? mainPose : offPose;
         ArmPose leftPose = rightHanded ? offPose : mainPose;
         poseArms(p, rightHanded, rightPose, leftPose, head, rightArm, leftArm);
@@ -268,22 +272,30 @@ public class PlayerSnapshot
         };
     }
 
-    /** Vanilla arm pose per hand from PlayerRenderer.getArmPose, with this mod's gun aiming poses from ClientEventHandler applied on top */
-    private static ArmPose armPose(Player p, InteractionHand hand)
+    /** The gun arm pose ClientEventHandler puts over the vanilla pose, as GunArmPoses decides it */
+    private static ArmPose withGunPose(ArmPose vanillaPose, GunArmPoses.Arm gunPose)
+    {
+        return switch (gunPose)
+        {
+            case NONE -> vanillaPose;
+            case ONE_ARM -> ArmPose.ONE_AIM;
+            case BOW -> ArmPose.AIM;
+            case BOTH -> ArmPose.BOTH_AIM;
+        };
+    }
+
+    /**
+     * Vanilla arm pose per hand from PlayerRenderer.getArmPose, before any gun pose is applied.
+     * @param mainTwoHanded whether the vanilla main hand pose is two-handed, which only matters for the off hand
+     */
+    private static ArmPose armPose(Player p, InteractionHand hand, boolean mainTwoHanded)
     {
         ItemStack stack = p.getItemInHand(hand);
         if (stack.isEmpty())
             return ArmPose.EMPTY;
 
-        if (stack.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation() && !gunItem.isChargingThrow(p, stack))
-        {
-            ItemStack otherStack = p.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
-            boolean otherAims = otherStack.getItem() instanceof GunItem otherGun && otherGun.useAimingAnimation() && !otherGun.isChargingThrow(p, otherStack);
-            return otherAims ? ArmPose.BOTH_AIM : ArmPose.AIM;
-        }
-
         // A two-handed main hand pose leaves the off hand merely holding its item
-        if (hand == InteractionHand.OFF_HAND && !(p.getMainHandItem().getItem() instanceof GunItem) && armPose(p, InteractionHand.MAIN_HAND).twoHanded)
+        if (hand == InteractionHand.OFF_HAND && mainTwoHanded)
             return ArmPose.ITEM;
 
         if (p.getUsedItemHand() == hand && p.getUseItemRemainingTicks() > 0)
@@ -356,6 +368,12 @@ public class PlayerSnapshot
                 otherArm.yRot = side * 0.5F + head.yRot;
                 arm.xRot = -Mth.PI / 2F + head.xRot;
                 otherArm.xRot = -Mth.PI / 2F + head.xRot;
+            }
+            case ONE_AIM ->
+            {
+                // ModClient.oneArmAim: the held arm of the bow pose alone
+                arm.yRot = -side * 0.1F + head.yRot;
+                arm.xRot = -Mth.PI / 2F + head.xRot;
             }
             case BOTH_AIM ->
             {
@@ -587,7 +605,7 @@ public class PlayerSnapshot
     /** Vanilla arm poses plus this mod's gun aiming poses (AIM also covers drawing a bow) */
     private enum ArmPose
     {
-        EMPTY(false), ITEM(false), BLOCK(false), AIM(true), BOTH_AIM(true), THROW_SPEAR(false),
+        EMPTY(false), ITEM(false), BLOCK(false), AIM(true), ONE_AIM(false), BOTH_AIM(true), THROW_SPEAR(false),
         CROSSBOW_CHARGE(true), CROSSBOW_HOLD(true), SPYGLASS(false), TOOT_HORN(false), BRUSH(false);
 
         private final boolean twoHanded;

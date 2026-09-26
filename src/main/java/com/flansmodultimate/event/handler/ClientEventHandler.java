@@ -1,6 +1,7 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.AimPoseClient;
 import com.flansmodultimate.client.CommonConfigMirror;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.ReloadPreferencesSync;
@@ -30,6 +31,7 @@ import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.EnumFunction;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.config.EnumGunBlockInteraction;
 import com.flansmodultimate.config.ModClientConfig;
@@ -71,6 +73,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -84,6 +88,16 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientEventHandler
 {
+    /**
+     * The mob model whose arm poses {@link #applyGunArmPoses} changed for the entity being rendered. A mob
+     * renderer shares one model between all its entities and, unlike the player renderer, does not set its
+     * arm poses every frame, so they are put back once the entity is drawn.
+     */
+    @Nullable
+    private static HumanoidModel<?> posedMobModel;
+    private static HumanoidModel.ArmPose savedRightArmPose;
+    private static HumanoidModel.ArmPose savedLeftArmPose;
+
     @SubscribeEvent
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
@@ -240,7 +254,7 @@ public final class ClientEventHandler
         ClientHudOverlays.renderHitMarker(graphics, partialTick, w, h);
     }
 
-    /** Set up RenderContext for gun animations and set Aim Pose when GunItem is held by players */
+    /** Set up RenderContext for gun animations and set the gun arm poses of players and humanoid mobs */
     @SubscribeEvent
     public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event)
     {
@@ -255,49 +269,67 @@ public final class ClientEventHandler
 
         ModClient.entityRenderContext.set(event.getEntity());
 
-        if (!(event.getEntity() instanceof Player player))
-            return;
-
-        var model = event.getRenderer().getModel();
-        if (!(model instanceof HumanoidModel<?> humanoid))
-            return;
-
-        ItemStack main = event.getEntity().getMainHandItem();
-        ItemStack off  = event.getEntity().getOffhandItem();
-        boolean mainArmPose = isGunItemWithAiming(player, main);
-        boolean offArmPose = isGunItemWithAiming(player, off);
-
-        if (mainArmPose && offArmPose)
-        {
-            humanoid.leftArmPose  = ModClient.bothArmsAim;
-            humanoid.rightArmPose = ModClient.bothArmsAim;
-        }
-        else if (mainArmPose)
-        {
-            if (player.getMainArm() == HumanoidArm.RIGHT)
-                humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
-            else
-                humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
-        }
-        else if (offArmPose)
-        {
-            if (player.getMainArm() == HumanoidArm.RIGHT)
-                humanoid.leftArmPose  = HumanoidModel.ArmPose.BOW_AND_ARROW;
-            else
-                humanoid.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
-        }
+        LivingEntity entity = event.getEntity();
+        if (event.getRenderer().getModel() instanceof HumanoidModel<?> humanoid && !(entity instanceof ArmorStand))
+            applyGunArmPoses(entity, humanoid);
     }
 
     @SubscribeEvent
     public static void onRenderLivingPost(RenderLivingEvent.Post<?, ?> e)
     {
         ModClient.entityRenderContext.remove();
+
+        if (posedMobModel != null && e.getRenderer().getModel() == posedMobModel)
+        {
+            posedMobModel.rightArmPose = savedRightArmPose;
+            posedMobModel.leftArmPose = savedLeftArmPose;
+        }
+        posedMobModel = null;
     }
 
-    /** A throw being charged keeps the vanilla spear pose instead */
-    private static boolean isGunItemWithAiming(Player player, ItemStack s)
+    /** Replaces the arm pose of each arm holding a raised gun or shield, leaving the others to vanilla. */
+    private static void applyGunArmPoses(LivingEntity entity, HumanoidModel<?> humanoid)
     {
-        return !s.isEmpty() && s.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation() && !gunItem.isChargingThrow(player, s);
+        GunArmPoses.Result poses = GunArmPoses.resolve(entity);
+        HumanoidModel.ArmPose mainPose = armPose(poses.mainHand());
+        HumanoidModel.ArmPose offPose = armPose(poses.offHand());
+        if (mainPose == null && offPose == null)
+            return;
+
+        if (!(entity instanceof Player))
+        {
+            posedMobModel = humanoid;
+            savedRightArmPose = humanoid.rightArmPose;
+            savedLeftArmPose = humanoid.leftArmPose;
+        }
+
+        boolean rightHanded = entity.getMainArm() == HumanoidArm.RIGHT;
+        if (mainPose != null)
+        {
+            if (rightHanded)
+                humanoid.rightArmPose = mainPose;
+            else
+                humanoid.leftArmPose = mainPose;
+        }
+        if (offPose != null)
+        {
+            if (rightHanded)
+                humanoid.leftArmPose = offPose;
+            else
+                humanoid.rightArmPose = offPose;
+        }
+    }
+
+    @Nullable
+    private static HumanoidModel.ArmPose armPose(GunArmPoses.Arm arm)
+    {
+        return switch (arm)
+        {
+            case NONE -> null;
+            case ONE_ARM -> ModClient.oneArmAim;
+            case BOW -> HumanoidModel.ArmPose.BOW_AND_ARROW;
+            case BOTH -> ModClient.bothArmsAim;
+        };
     }
 
     @SubscribeEvent
@@ -408,6 +440,7 @@ public final class ClientEventHandler
     public static void onLogin(ClientPlayerNetworkEvent.LoggingIn event)
     {
         ReloadPreferencesSync.sendToServer();
+        AimPoseClient.sendToServer();
         // Fetched up front so the options screen can show the server settings without a visible delay
         CommonConfigMirror.request();
     }

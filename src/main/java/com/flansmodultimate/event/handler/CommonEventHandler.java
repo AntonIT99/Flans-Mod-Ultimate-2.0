@@ -26,6 +26,7 @@ import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
@@ -278,10 +279,19 @@ public final class CommonEventHandler
             // Player data outlives the connection, so a player who disconnected while
             // aiming would come back still aiming until they next raised the sights.
             PlayerData.getInstance(sp).setScoped(false);
+            GunArmPoses.syncPlayer(sp);
             PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
             ModCommonConfigSync.syncClientIfServer(sp);
             FlansMod.teamsManager.playerLoggedIn(sp);
         }
+    }
+
+    /** A player coming into view brings how they hold their guns, which only changes when they change it. */
+    @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event)
+    {
+        if (event.getTarget() instanceof ServerPlayer target && event.getEntity() instanceof ServerPlayer tracker)
+            GunArmPoses.sendPlayerState(target, tracker);
     }
 
     @SubscribeEvent
@@ -514,6 +524,9 @@ public final class CommonEventHandler
         }
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
+        // The respawned player is not aiming, which is not otherwise sent unless they aim again
+        if (entity instanceof ServerPlayer player)
+            GunArmPoses.syncPlayer(player);
     }
 
     /** Announces a player killed by another player's Flan's weapon to the kill feed. */
