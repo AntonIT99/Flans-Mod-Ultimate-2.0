@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.AccessLevel;
@@ -39,12 +40,20 @@ public final class AmbientMobArmor
         if (equipPiece)
         {
             ItemStack armor = pool.armorPieces().get(random.nextInt(pool.armorPieces().size()));
-            mob.setItemSlot(EntityPlatform.equipmentSlotFor(mob, armor), armor.copy());
+            setArmor(mob, EntityPlatform.equipmentSlotFor(mob, armor), armor);
             return;
         }
 
         Map<EquipmentSlot, ItemStack> outfit = pool.teamOutfits().get(random.nextInt(pool.teamOutfits().size()));
-        outfit.forEach((slot, armor) -> mob.setItemSlot(slot, armor.copy()));
+        outfit.forEach((slot, armor) -> setArmor(mob, slot, armor));
+    }
+
+    private static void setArmor(Mob mob, EquipmentSlot slot, ItemStack armor)
+    {
+        mob.setItemSlot(slot, armor.copy());
+        // A drop chance above 1 guarantees the drop and keeps the item undamaged
+        if (ModCommonConfig.get().ambientMobArmorDrops())
+            mob.setDropChance(slot, 2.0F);
     }
 
     private static EquipmentPool getEquipmentPool()

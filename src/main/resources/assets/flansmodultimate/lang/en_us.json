@@ -245,6 +245,7 @@
   "options.flansmodultimate.alwaysEnableVehiclesCullingByDefault": "Culling: Vehicles",
   "options.flansmodultimate.alwaysEnableVehiclesTranslucentRenderingByDefault": "Translucent: Vehicles",
   "options.flansmodultimate.ambientMobArmorSpawnRate": "Ambient Mob Armor Spawn Rate",
+  "options.flansmodultimate.ambientMobArmorDrops": "Ambient Mob Armor Drops",
   "options.flansmodultimate.ammoHudLayout": "Ammo HUD Layout",
   "options.flansmodultimate.ammoToUpperInventoryOnReload": "Ammo To Upper Inventory",
   "options.flansmodultimate.armoredBlastResistanceKPaPerMm": "Armored Blast Resistance K Pa Per Mm",
