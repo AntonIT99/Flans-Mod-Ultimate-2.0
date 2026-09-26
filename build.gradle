@@ -200,7 +200,6 @@ dependencies {
 
     // Optional mods loaded only in development runs.
     runtimeOnly fg.deobf('libs:CustomNPCs:1.20.1-GBPort-Unofficial-1.20.1.20260711')
-    runtimeOnly fg.deobf('libs:flansmod:1.20.1-0.4.316')
 }
 
 mixin {
