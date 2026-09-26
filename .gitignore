@@ -38,3 +38,6 @@ reports/temp
 
 # Local cache of decompiled reference classes (see .agents/skills/mod-class-decompilation)
 /decompiled/
+
+# Local Maven repository written by the publishing tasks
+/repo

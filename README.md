@@ -67,11 +67,12 @@ Generate data:
 .\gradlew.bat runData
 ```
 
-Build the separate Packs Manager and content-pack artifacts:
+Build the separate Packs Manager, content-pack, and NPC Vehicles & Soldiers artifacts:
 
 ```powershell
 .\gradlew.bat packsManagerJar
 .\gradlew.bat officialPacksJar
+.\gradlew.bat npcsJar
 ```
 
 Build artifacts are written under `build/libs/`.
@@ -85,6 +86,7 @@ Build artifacts are written under `build/libs/`.
 | `src/packsmanager/java` | Packs Manager companion-mod sources and extraction logic |
 | `src/packsmanager/resources` | Packs Manager metadata and bundled-pack version marker |
 | `src/officialpacks` | Optional official content packs and their entrypoint |
+| `src/npcs` | Flan's Ultimate 2: Wolff's NPC Vehicles & Soldiers, a separate mod requiring Flan's Mod Ultimate and Custom NPCs |
 | `libs` | Local mod jars used as development dependencies |
 | `run` | Development runtime directory |
 | `run-data` | Data-generation runtime directory |
@@ -133,3 +135,8 @@ Flan's Mod Ultimate 2 is distributed under the
 (CC BY-NC-SA 3.0)** license.
 
 See [LICENSE](LICENSE) for the complete license terms.
+
+The public API in `com.flansmodultimate.api` is an exception: it is licensed
+under the **MIT License**, so other mods may build and distribute addons against
+it freely. See [LICENSE-API](LICENSE-API) and the
+[API wiki page](https://github.com/AntonIT99/Flans-Mod-Ultimate-2.0/wiki/API).

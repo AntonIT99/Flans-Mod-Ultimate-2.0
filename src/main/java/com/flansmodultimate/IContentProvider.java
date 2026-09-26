@@ -1,5 +1,6 @@
 package com.flansmodultimate;
 
+import com.flansmodultimate.api.IContentPack;
 import com.flansmodultimate.util.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.Nullable;
@@ -9,8 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 
-public interface IContentProvider
+/** Internal side of a content pack: where and how it is loaded. */
+public interface IContentProvider extends IContentPack
 {
+    @Override
     String getName();
 
     /**
@@ -22,6 +25,7 @@ public interface IContentProvider
         return getName();
     }
 
+    @Override
     Path getPath();
 
     void update(String name, Path path);
@@ -42,12 +46,6 @@ public interface IContentProvider
      * Immutable packaged providers already contain final assets and data and must never be rewritten.
      */
     default boolean isPreprocessed()
-    {
-        return false;
-    }
-
-    /** True for content bundled by the official-packs companion mod. */
-    default boolean isOfficial()
     {
         return false;
     }

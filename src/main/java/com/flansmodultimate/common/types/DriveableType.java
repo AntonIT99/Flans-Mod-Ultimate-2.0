@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.api.DriveableKind;
+import com.flansmodultimate.api.IDriveableType;
 import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.CollisionMesh;
 import com.flansmodultimate.common.driveables.DriveableCollisionProfile;
@@ -46,6 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -65,13 +69,14 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 /** Shared content definition for planes, vehicles and mechas. */
 @Getter
 @NoArgsConstructor
-public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmmoOverrideUser
+public class DriveableType extends PaintableType implements IDriveableType, IAmmoGroupUser, IAmmoOverrideUser
 {
     protected VehicleOptics optics = new VehicleOptics();
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
     /** Slightly narrower than the former hard-coded 0.5-to-1.5 engine pitch sweep. */
     public static final float DEFAULT_ENGINE_SOUND_PITCH_RANGE = 0.8F;
+    private static final float DEFAULT_WHEEL_GROUND_CLEARANCE = 0.375F;
 
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
     /** Original, unscaled definitions retained so repeated finalization is idempotent. */
@@ -1130,6 +1135,59 @@ public class DriveableType extends PaintableType implements IAmmoGroupUser, IAmm
     public DriveablePosition getWheelPosition(int id)
     {
         return id >= 0 && id < wheelPositions.size() ? wheelPositions.get(id) : null;
+    }
+
+    @Override
+    public DriveableKind getDriveableKind()
+    {
+        return DriveableKind.VEHICLE;
+    }
+
+    /** Height of the lowest wheel anchor above the origin, in unscaled blocks, or NaN without wheels. */
+    public float getLowestWheelAnchor()
+    {
+        float lowest = Float.NaN;
+        for (DriveablePosition wheel : wheelPositions)
+        {
+            if (wheel != null && (Float.isNaN(lowest) || wheel.getPosition().y < lowest))
+                lowest = wheel.getPosition().y;
+        }
+        return lowest;
+    }
+
+    /**
+     * Height at which a wheel anchor rests above the surface below it, in blocks.
+     * Like the anchors themselves, ModelScale does not apply to it.
+     *
+     * <p>Packs disagree on what WheelPosition means, so this prefers the value
+     * measured from the type's own wheel and track collision boxes and only
+     * falls back to a convention when there are none to measure. Aircraft
+     * landing gear is authored on the strut, above the tyre's contact patch,
+     * so that convention keeps the historical 6/16 block.</p>
+     */
+    public float getWheelGroundClearance()
+    {
+        return Float.isNaN(wheelContactClearance) ? DEFAULT_WHEEL_GROUND_CLEARANCE : wheelContactClearance;
+    }
+
+    @Override
+    public float getRestingHeight()
+    {
+        float lowestAnchor = getLowestWheelAnchor();
+        return Float.isNaN(lowestAnchor) ? yOffset : getWheelGroundClearance() - lowestAnchor;
+    }
+
+    @Override
+    public Optional<AABB> getCoreBounds()
+    {
+        CollisionBox core = health.get(EnumDriveablePart.CORE);
+        return core == null ? Optional.empty() : Optional.of(core.asAabb());
+    }
+
+    @Override
+    public Optional<AABB> getBounds()
+    {
+        return health.values().stream().filter(Objects::nonNull).map(CollisionBox::asAabb).reduce(AABB::minmax);
     }
 
     public List<ShootPoint> shootPoints(boolean secondaryWeapon)

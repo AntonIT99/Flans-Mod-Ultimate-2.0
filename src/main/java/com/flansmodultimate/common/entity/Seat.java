@@ -1,7 +1,9 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.IControllable;
+import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.IDriveableType;
+import com.flansmodultimate.api.ISeat;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
@@ -39,6 +41,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
@@ -49,7 +52,7 @@ import java.util.OptionalInt;
  * avoiding the legacy loaded-entity scans.</p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Seat extends Entity implements IControllable
+public class Seat extends Entity implements IControllable, ISeat
 {
     private static final EntityDataAccessor<Boolean> DATA_SCOPED = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_SIGHT = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
@@ -323,9 +326,22 @@ public class Seat extends Entity implements IControllable
         return getFirstPassenger();
     }
 
+    @Override
     public boolean isDriverSeat()
     {
         return seatInfo != null ? seatInfo.isDriver() : getSeatIndex() == 0;
+    }
+
+    @Override
+    public Optional<IDriveableType> getDriveableType()
+    {
+        return driveable == null ? Optional.empty() : Optional.ofNullable(driveable.getConfigType());
+    }
+
+    @Override
+    public Optional<IContentType> getGunType()
+    {
+        return seatInfo == null ? Optional.empty() : Optional.ofNullable(seatInfo.getGunType());
     }
 
     public boolean isInputDown(int input)

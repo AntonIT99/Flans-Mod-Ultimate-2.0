@@ -1,11 +1,12 @@
-package com.flansmodultimate.api;
+package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.common.entity.Seat;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
+/** Legacy controller protocol through which the input handlers drive a ridden driveable or seat. */
 public interface IControllable
 {
 	/**
@@ -47,5 +48,9 @@ public interface IControllable
 
     LivingEntity getCamera();
 
+	/**
+	 * @return the seat of this controllable the entity sits in, or null
+	 */
+	@Nullable
 	Seat getSeat(LivingEntity living);
 }

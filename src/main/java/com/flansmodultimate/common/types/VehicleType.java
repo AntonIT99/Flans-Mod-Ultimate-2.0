@@ -20,6 +20,18 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 public class VehicleType extends DriveableType
 {
     /**
+     * Places the origin at {@code max(YOffset, -lowest wheel anchor)}. 1.7.10 vehicles rested
+     * their origin at a fixed height above the ground: the root bounding box hung
+     * {@code YOffset} below the origin, and each wheel stood on the ground at its anchor.
+     */
+    @Override
+    public float getWheelGroundClearance()
+    {
+        float lowestAnchor = getLowestWheelAnchor();
+        return Float.isNaN(lowestAnchor) ? 0F : Math.max(0F, getYOffset() + lowestAnchor);
+    }
+
+    /**
      * Legacy turret speed is a mouse-turn coefficient. The smooth aiming replacement used
      * {@code DriverAimSpeed 2} for vehicles that previously used {@code TurretRotationSpeed 0.06}.
      */

@@ -25,6 +25,7 @@ import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
@@ -83,14 +84,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.WeakHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @EventBusSubscriber(modid = FlansMod.MOD_ID)
@@ -111,7 +110,6 @@ public final class CommonEventHandler
     @Getter
     private static final Set<UUID> nightVisionPlayers = new HashSet<>();
     private static final Map<UUID, Integer> regenTimers = new HashMap<>();
-    private static final Set<Mob> AMBIENT_ARMOR_SPAWNS = Collections.newSetFromMap(new WeakHashMap<>());
     private static boolean contentReferencesValidated;
 
     /** Marks naturally spawned zombies and skeletons that will receive ambient armor. */
@@ -123,14 +121,14 @@ public final class CommonEventHandler
 
         int spawnRate = ModCommonConfig.get().ambientMobArmorSpawnRate();
         if (spawnRate > 0 && mob.getRandom().nextInt(100) < spawnRate)
-            AMBIENT_ARMOR_SPAWNS.add(mob);
+            AmbientMobArmor.markPending(mob);
     }
 
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event)
     {
-        if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob && AMBIENT_ARMOR_SPAWNS.remove(mob))
-            AmbientMobArmor.equip(mob);
+        if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob)
+            AmbientMobArmor.equipIfPending(mob);
     }
 
     @SubscribeEvent
@@ -277,10 +275,19 @@ public final class CommonEventHandler
             // Player data outlives the connection, so a player who disconnected while
             // aiming would come back still aiming until they next raised the sights.
             PlayerData.getInstance(sp).setScoped(false);
+            GunArmPoses.syncPlayer(sp);
             PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
             ModCommonConfigSync.syncClientIfServer(sp);
             FlansMod.teamsManager.playerLoggedIn(sp);
         }
+    }
+
+    /** A player coming into view brings how they hold their guns, which only changes when they change it. */
+    @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event)
+    {
+        if (event.getTarget() instanceof ServerPlayer target && event.getEntity() instanceof ServerPlayer tracker)
+            GunArmPoses.sendPlayerState(target, tracker);
     }
 
     @SubscribeEvent
@@ -316,10 +323,12 @@ public final class CommonEventHandler
             event.setCanceled(true);
     }
 
-    /** Items whose type declares {@code CanDrop False} are removed from the player's death drops. */
+    /** Adds ambient mob armor drops; items whose type declares {@code CanDrop False} are removed from the player's death drops. */
     @SubscribeEvent
-    public static void onPlayerDrops(LivingDropsEvent event)
+    public static void onLivingDrops(LivingDropsEvent event)
     {
+        if (event.getEntity() instanceof Mob mob)
+            AmbientMobArmor.dropArmor(mob, event.getDrops());
         if (event.getEntity() instanceof Player)
             event.getDrops().removeIf(item -> !canDrop(item.getItem()));
     }
@@ -513,6 +522,9 @@ public final class CommonEventHandler
         }
         if (entity instanceof Player player)
             PlayerData.getInstance(player).playerKilled();
+        // The respawned player is not aiming, which is not otherwise sent unless they aim again
+        if (entity instanceof ServerPlayer player)
+            GunArmPoses.syncPlayer(player);
     }
 
     /** Announces a player killed by another player's Flan's weapon to the kill feed. */

@@ -3,7 +3,7 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
-import com.flansmodultimate.api.IInfoType;
+import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
 import com.flansmodultimate.platform.PlatformEnvironment;
@@ -58,7 +58,7 @@ import java.util.function.UnaryOperator;
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class InfoType implements IInfoType
+public abstract class InfoType implements IContentType
 {
     private static final String LOOT_POOL_NAME = "FlansMod";
 

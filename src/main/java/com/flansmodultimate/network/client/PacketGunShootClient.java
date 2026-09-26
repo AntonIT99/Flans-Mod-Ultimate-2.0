@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.network.IClientPacket;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +51,8 @@ public class PacketGunShootClient implements IClientPacket
         {
             PlayerData data = PlayerData.getInstance(shootingPlayer);
             data.setShooting(hand, isShooting);
+            if (isShooting)
+                GunArmPoses.recordShot(shootingPlayer, hand);
         }
     }
 }

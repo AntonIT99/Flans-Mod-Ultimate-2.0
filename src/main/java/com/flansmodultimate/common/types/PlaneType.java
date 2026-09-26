@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.api.DriveableKind;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumPlaneMode;
@@ -25,6 +26,12 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class PlaneType extends DriveableType
 {
+    @Override
+    public DriveableKind getDriveableKind()
+    {
+        return DriveableKind.PLANE;
+    }
+
     @Override
     public String getEngineStartupSound()
     {

@@ -1,0 +1,81 @@
+name: Publish API
+
+# Publishes the public API (com.flansmodultimate.api) of the selected branch to the Maven
+# repository served by GitHub Pages. Manual only: run it from the Actions tab on the branch whose
+# Minecraft version should be published. See "Releasing the API" in
+# src/main/java/com/flansmodultimate/api/AGENTS.md for the one-time setup and the release steps.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One publish at a time, since every run pushes to the same Maven repository.
+  group: publish-api
+  cancel-in-progress: false
+
+env:
+  MAVEN_REPOSITORY: AntonIT99/flansmodultimate-maven
+
+jobs:
+  publish:
+    name: Publish API from ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Select JDK for the branch
+        id: jdk
+        run: |
+          case "${{ github.ref_name }}" in
+            master) echo "version=17" >> "$GITHUB_OUTPUT" ;;
+            1.21.1) echo "version=21" >> "$GITHUB_OUTPUT" ;;
+            26.*) echo "version=25" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::No API publishing is set up for branch ${{ github.ref_name }}"; exit 1 ;;
+          esac
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Checkout Maven repository
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.MAVEN_REPOSITORY }}
+          token: ${{ secrets.API_MAVEN_TOKEN }}
+          path: maven-repo
+
+      - name: Setup JDK ${{ steps.jdk.outputs.version }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ steps.jdk.outputs.version }}
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Check the API
+        run: ./gradlew test --tests "com.flansmodultimate.ApiBoundaryTest" apiJavadoc --stacktrace --console=plain
+
+      - name: Publish the API
+        # Fails when this API version is already published: bump api_version first.
+        run: ./gradlew publishApiPublicationToApiPagesRepository -PapiMavenRepoDir="$GITHUB_WORKSPACE/maven-repo" --stacktrace --console=plain
+
+      - name: Push to the Maven repository
+        working-directory: maven-repo
+        run: |
+          version="$(grep -oP '(?<=<version>)[^<]+' "$(ls -t com/flansmodultimate/flansmodultimate-api/*/*.pom | head -1)")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish flansmodultimate-api $version from ${{ github.repository }}@${{ github.sha }}"
+          git push
+
+      - name: Keep the API jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: flansmodultimate-api
+          path: build/libs/flansmodultimate-api-*.jar

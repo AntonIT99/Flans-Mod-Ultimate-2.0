@@ -43,6 +43,7 @@ public record CommonConfigSnapshot(
     int defaultArmorEnchantability,
     boolean forceDefenseAsModernArmor,
     int ambientMobArmorSpawnRate,
+    int ambientMobArmorDropRate,
 
     boolean gunsAlwaysUsableByPlayersInCreativeMode,
     boolean forceAllowAllAttachments,
@@ -61,6 +62,8 @@ public record CommonConfigSnapshot(
     boolean enableSightDownwardMovement,
     boolean disableSprintHipFireByDefault,
     boolean muzzleFlashParticlesDefault,
+    EnumPlayerAimPose playerAimPose,
+    EnumEntityAimPose entityAimPose,
 
     boolean shootablesCanBreakGlass,
     float newDamageSystemDamageReference,
@@ -122,7 +125,7 @@ public record CommonConfigSnapshot(
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 32;
+    public static final int CURRENT_VERSION = 33;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -163,6 +166,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.defaultArmorEnchantability);
         buf.writeBoolean(s.forceDefenseAsModernArmor);
         buf.writeVarInt(s.ambientMobArmorSpawnRate);
+        buf.writeVarInt(s.ambientMobArmorDropRate);
 
         buf.writeBoolean(s.gunsAlwaysUsableByPlayersInCreativeMode);
         buf.writeBoolean(s.forceAllowAllAttachments);
@@ -181,6 +185,8 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.enableSightDownwardMovement);
         buf.writeBoolean(s.disableSprintHipFireByDefault);
         buf.writeBoolean(s.muzzleFlashParticlesDefault);
+        buf.writeEnum(s.playerAimPose);
+        buf.writeEnum(s.entityAimPose);
 
         buf.writeBoolean(s.shootablesCanBreakGlass);
         buf.writeFloat(s.newDamageSystemDamageReference);
@@ -288,6 +294,7 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readBoolean(),
             buf.readVarInt(),
+            buf.readVarInt(),
 
             buf.readBoolean(),
             buf.readBoolean(),
@@ -306,6 +313,8 @@ public record CommonConfigSnapshot(
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readEnum(EnumPlayerAimPose.class),
+            buf.readEnum(EnumEntityAimPose.class),
 
             buf.readBoolean(),
             buf.readFloat(),

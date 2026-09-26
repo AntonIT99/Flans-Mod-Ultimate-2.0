@@ -199,7 +199,9 @@ public class Plane extends Driveable
         }
         if (frontCount == 0 || backCount == 0)
             return null;
-        double length = Math.max(0.5D, frontX / frontCount - backX / backCount);
+        // Anchor spacing scales with the model, anchor heights do not.
+        double scale = Math.max(1.0E-4D, type.getModelScale());
+        double length = Math.max(0.5D, (frontX / frontCount - backX / backCount) * scale);
         double mountDifference = frontY / frontCount - backY / backCount;
         return SuspensionPhysics.supportAngle(0D, length, mountDifference, true);
     }

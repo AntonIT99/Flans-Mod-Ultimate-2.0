@@ -1,5 +1,6 @@
 package com.flansmodultimate.network;
 
+import com.flansmodultimate.network.client.PacketAimPoseState;
 import com.flansmodultimate.network.client.PacketAllowDebug;
 import com.flansmodultimate.network.client.PacketApocalypseCountdown;
 import com.flansmodultimate.network.client.PacketBaseEditState;
@@ -27,6 +28,7 @@ import com.flansmodultimate.network.client.PacketGunPreferredAmmoClient;
 import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunSecondaryModeClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
+import com.flansmodultimate.network.client.PacketGunShotPose;
 import com.flansmodultimate.network.client.PacketGunVariableZoomClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketKillMessage;
@@ -41,6 +43,7 @@ import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
 import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
+import com.flansmodultimate.network.server.PacketAimPosePreference;
 import com.flansmodultimate.network.server.PacketBaseEditAction;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
@@ -113,7 +116,7 @@ public final class PacketHandler
             return;
 
         addClientPackets(
-            PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class,
+            PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class,
             PacketBlockHitEffect.class, PacketBulletTrail.class, PacketCancelGunReloadClient.class,
             PacketCancelSound.class, PacketCommonConfigValues.class, PacketContentFingerprint.class,
             PacketDebugShootPoint.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
@@ -122,13 +125,13 @@ public final class PacketHandler
             PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class,
             PacketGunFireModeClient.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class,
             PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class,
-            PacketGunShootClient.class, PacketGunVariableZoomClient.class, PacketHitMarker.class,
+            PacketGunShootClient.class, PacketGunShotPose.class, PacketGunVariableZoomClient.class, PacketHitMarker.class,
             PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class, PacketParticles.class,
             PacketPlayerClassSkins.class, PacketPlaySound.class, PacketSmokeShell.class,
             PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketTeamsState.class
         );
         addServerPackets(
-            PacketAAGunModelBarrelOrigins.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class,
+            PacketAAGunModelBarrelOrigins.class, PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class,
             PacketDeployedGunInput.class, PacketDriveableInput.class, PacketBuyWeapon.class, PacketGunFireMode.class,
             PacketGunInput.class, PacketGunPreferredAmmo.class, PacketGunReload.class, PacketGunScopedState.class,
             PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunVariableZoom.class,

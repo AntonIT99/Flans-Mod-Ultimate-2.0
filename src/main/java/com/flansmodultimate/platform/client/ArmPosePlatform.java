@@ -8,15 +8,18 @@ import net.minecraft.client.model.HumanoidModel;
 
 /**
  * Version boundary for custom arm poses. Forge 1.20.1 extends {@link HumanoidModel.ArmPose} at runtime;
- * NeoForge 1.21 declares the constant in {@code META-INF/enumextensions.json}, which reads its constructor
- * arguments from {@link #BOTH_ARMS_AIM}. This class is loaded while the enum initializes, so it must stay
- * free of other static state. Client-only.
+ * NeoForge 1.21 declares the constants in {@code META-INF/enumextensions.json}, which reads their constructor
+ * arguments from {@link #BOTH_ARMS_AIM} and {@link #ONE_ARM_AIM}. This class is loaded while the enum
+ * initializes, so it must stay free of other static state. Client-only.
  */
 public final class ArmPosePlatform
 {
     /** Constructor arguments {@code (twoHanded, transformer)} of the {@code FLANSMODULTIMATE_BOTH_ARMS_AIM} constant. */
     public static final EnumProxy<HumanoidModel.ArmPose> BOTH_ARMS_AIM = new EnumProxy<>(HumanoidModel.ArmPose.class,
         true, (IArmPoseTransformer) ModClient::poseBothArmsAim);
+    /** Constructor arguments {@code (twoHanded, transformer)} of the {@code FLANSMODULTIMATE_ONE_ARM_AIM} constant. */
+    public static final EnumProxy<HumanoidModel.ArmPose> ONE_ARM_AIM = new EnumProxy<>(HumanoidModel.ArmPose.class,
+        false, (IArmPoseTransformer) ModClient::poseOneArmAim);
 
     private ArmPosePlatform() {}
 
@@ -24,5 +27,11 @@ public final class ArmPosePlatform
     public static HumanoidModel.ArmPose bothArmsAim()
     {
         return BOTH_ARMS_AIM.getValue();
+    }
+
+    /** Raises only the arm holding the gun or shield, leaving the other arm to its own pose. */
+    public static HumanoidModel.ArmPose oneArmAim()
+    {
+        return ONE_ARM_AIM.getValue();
     }
 }

@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.api.IEntityBullet;
-import com.flansmodultimate.api.IInfoType;
+import com.flansmodultimate.api.IBullet;
+import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
@@ -57,7 +57,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntityBullet
+public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBullet
 {
     public static final int RENDER_DISTANCE = 128;
 
@@ -654,20 +654,25 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IEntit
         return entity == firedShot.getAttacker().orElse(null) || entity == firedShot.getCausingEntity().orElse(null);
     }
 
-    @Override
     public Optional<LivingEntity> getOwner()
     {
         return firedShot.getAttacker();
     }
 
     @Override
-    public IInfoType getBulletInfoType()
+    public Optional<LivingEntity> getShooter()
+    {
+        return getOwner();
+    }
+
+    @Override
+    public IContentType getBulletType()
     {
         return configType;
     }
 
     @Override
-    public Optional<IInfoType> getFiredFrom()
+    public Optional<IContentType> getWeaponType()
     {
         return Optional.ofNullable(firedShot.getFireableGun()).map(FireableGun::getType);
     }

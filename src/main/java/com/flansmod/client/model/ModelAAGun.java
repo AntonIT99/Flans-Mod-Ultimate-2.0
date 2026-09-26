@@ -85,6 +85,27 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         }
     }
 
+    /** Draw a neutral preview, with the gun level and every barrel loaded, for renderers without an AA gun entity. */
+    public void render(AAGunType aaGunType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    {
+        renderParts(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderParts(seatModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderBarrelPartArray(gunModel, barrelX, barrelY, barrelZ, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
+        for (ModelRendererTurbo part : gunsightModel)
+        {
+            if (part == null)
+                continue;
+            part.rotateAngleZ = 0F;
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        }
+
+        for (ModelRendererTurbo[] barrel : barrelModel)
+            renderBarrelPartArray(barrel, barrelX, barrelY, barrelZ, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        for (ModelRendererTurbo[] ammo : ammoModel)
+            renderBarrelPartArray(ammo, barrelX, barrelY, barrelZ, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+    }
+
     private static void renderParts(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo part : parts)

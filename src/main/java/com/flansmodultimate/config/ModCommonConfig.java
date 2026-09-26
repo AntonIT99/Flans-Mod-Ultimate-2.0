@@ -138,6 +138,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DEFAULT_ARMOR_ENCHANTABILITY;
     private static final Supplier<Boolean> FORCE_DEFENSE_AS_MODERN_ARMOR;
     private static final Supplier<Integer> AMBIENT_MOB_ARMOR_SPAWN_RATE;
+    private static final Supplier<Integer> AMBIENT_MOB_ARMOR_DROP_RATE;
 
     private static final Supplier<Boolean> GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE;
     private static final Supplier<Boolean> FORCE_ALLOW_ALL_ATTACHMENTS;
@@ -156,6 +157,8 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> ENABLE_SIGHT_DOWNWARD_MOVEMENT;
     private static final Supplier<Boolean> DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT;
     private static final Supplier<Boolean> MUZZLE_FLASH_PARTICLES_DEFAULT;
+    private static final ModConfigSpec.EnumValue<EnumPlayerAimPose> PLAYER_AIM_POSE;
+    private static final ModConfigSpec.EnumValue<EnumEntityAimPose> ENTITY_AIM_POSE;
 
     private static final ModConfigSpec.BooleanValue SHOOTABLES_CAN_BREAK_GLASS;
     private static final Supplier<Double> NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE;
@@ -347,6 +350,9 @@ public final class ModCommonConfig
         AMBIENT_MOB_ARMOR_SPAWN_RATE = builder
             .comment("Percentage chance for naturally spawning zombies and skeletons to receive armor from loaded Flan content packs or team outfits.")
             .defineInRange("ambientMobArmorSpawnRate", 20, 0, 100);
+        AMBIENT_MOB_ARMOR_DROP_RATE = builder
+            .comment("Percentage chance for each armor piece worn by ambient armored mobs to drop on death. 0 disables the drops.")
+            .defineInRange("ambientMobArmorDropRate", 100, 0, 100);
         builder.pop();
 
         builder.push("Gun Settings");
@@ -401,6 +407,21 @@ public final class ModCommonConfig
         MUZZLE_FLASH_PARTICLES_DEFAULT = builder
             .comment("Enable muzzle flash particles by default. Gun configs can override this with ShowMuzzleFlashParticle.")
             .define("muzzleFlashParticlesDefault", false);
+        PLAYER_AIM_POSE = builder
+            .comment("""
+                How players hold guns, as everyone sees them and as their hitboxes follow.
+                FREE_CHOICE: each player picks with their own aimPose client setting or the Toggle Aim Pose key.
+                ENFORCED: a held gun always keeps the arms raised in the aiming pose.
+                DYNAMIC: a gun is raised only while it is fired or aimed. Shields always stay raised.
+                """)
+            .defineEnum("playerAimPose", EnumPlayerAimPose.FREE_CHOICE);
+        ENTITY_AIM_POSE = builder
+            .comment("""
+                How humanoid mobs hold guns.
+                ENFORCED: a held gun always keeps the arms raised in the aiming pose.
+                DYNAMIC: a gun is raised only while the mob is firing it. Shields always stay raised.
+                """)
+            .defineEnum("entityAimPose", EnumEntityAimPose.DYNAMIC);
         builder.pop();
 
         builder.push("Shootable Settings");
@@ -708,6 +729,7 @@ public final class ModCommonConfig
             DEFAULT_ARMOR_ENCHANTABILITY.get(),
             FORCE_DEFENSE_AS_MODERN_ARMOR.get(),
             AMBIENT_MOB_ARMOR_SPAWN_RATE.get(),
+            AMBIENT_MOB_ARMOR_DROP_RATE.get(),
 
             GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE.get(),
             FORCE_ALLOW_ALL_ATTACHMENTS.get(),
@@ -726,6 +748,8 @@ public final class ModCommonConfig
             ENABLE_SIGHT_DOWNWARD_MOVEMENT.get(),
             DISABLE_SPRINT_HIP_FIRE_BY_DEFAULT.get(),
             MUZZLE_FLASH_PARTICLES_DEFAULT.get(),
+            PLAYER_AIM_POSE.get(),
+            ENTITY_AIM_POSE.get(),
 
             SHOOTABLES_CAN_BREAK_GLASS.get(),
             NEW_DAMAGE_SYSTEM_DAMAGE_REFERENCE.get().floatValue(),
@@ -1032,6 +1056,18 @@ public final class ModCommonConfig
         return config == null || config.reloadOnEmptyFire();
     }
 
+    public static EnumPlayerAimPose playerAimPose()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? EnumPlayerAimPose.FREE_CHOICE : config.playerAimPose();
+    }
+
+    public static EnumEntityAimPose entityAimPose()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? EnumEntityAimPose.DYNAMIC : config.entityAimPose();
+    }
+
     public static int aaGunTrackingRange()
     {
         CommonConfigSnapshot config = get();
@@ -1184,10 +1220,12 @@ public final class ModCommonConfig
         EXPLOSIONS_BREAK_BLOCKS(() -> ModCommonConfig.EXPLOSIONS_BREAK_BLOCKS),
         FLAN_EXPLOSIONS_DROP_BLOCKS(() -> ModCommonConfig.FLAN_EXPLOSIONS_DROP_BLOCKS),
         DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS),
-        SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS);
+        SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS),
+        PLAYER_AIM_POSE(() -> ModCommonConfig.PLAYER_AIM_POSE),
+        ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE);
 
         /** Deferred so that the enum can be loaded before the outer config spec is built. */
-        private final Supplier<ModConfigSpec.BooleanValue> configValue;
+        private final Supplier<? extends ModConfigSpec.ConfigValue<?>> configValue;
     }
 
     /**
