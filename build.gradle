@@ -175,6 +175,9 @@ ext.registerFmuModule = { Map module ->
     return source
 }
 
+// Custom NPCs: optional at runtime for the main mod, a compile dependency of modules built on it.
+ext.customNpcsDependency = 'libs:CustomNPCs:1.20.1-GBPort-Unofficial-1.20.1.20260711'
+
 // Any src/<dir> with an fmu-module.gradle becomes a module, so private packs need no entry here.
 file('src').listFiles()
         .findAll { it.isDirectory() && !(it.name in ['main', 'packsmanager', 'test']) && new File(it, 'fmu-module.gradle').isFile() }
@@ -199,7 +202,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Optional mods loaded only in development runs.
-    runtimeOnly fg.deobf('libs:CustomNPCs:1.20.1-GBPort-Unofficial-1.20.1.20260711')
+    runtimeOnly fg.deobf(customNpcsDependency)
 }
 
 mixin {

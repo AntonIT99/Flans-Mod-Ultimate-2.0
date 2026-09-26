@@ -1,4 +1,4 @@
-package com.flansmodultimate.npcs;
+package com.wolffsmod.npcs;
 
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.fml.common.Mod;
@@ -12,11 +12,10 @@ import org.slf4j.Logger;
 @Mod(NpcsMod.MOD_ID)
 public class NpcsMod
 {
-    public static final String MOD_ID = "flansmodultimate_npcs";
-    public static final Logger LOG = LogUtils.getLogger();
+    public static final String MOD_ID = "wolffsmodnpcs";
+    public static final Logger log = LogUtils.getLogger();
 
     public NpcsMod(FMLJavaModLoadingContext context)
     {
-        LOG.info("Loading Flan's Ultimate 2: NPC Vehicles & Soldiers");
     }
 }

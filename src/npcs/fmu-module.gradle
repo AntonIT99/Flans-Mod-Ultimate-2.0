@@ -1,8 +1,8 @@
 def npcsSourceSet = registerFmuModule(
     sourceSet: 'npcs',
-    modId: 'flansmodultimate_npcs',
+    modId: 'wolffsmodnpcs',
     jarTask: 'npcsJar',
-    archiveBaseName: "[$minecraft_version] Flan's Ultimate 2 NPC Vehicles & Soldiers",
+    archiveBaseName: "[$minecraft_version] Flan's Mod Ultimate Wolff's NPC Vehicles & Soldiers",
     archiveVersion: '1.0',
     implementationTitle: 'npcs'
 )

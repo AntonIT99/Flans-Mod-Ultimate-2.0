@@ -3,33 +3,33 @@ loaderVersion="[47,)"
 license="All Rights Reserved"
 
 [[mods]]
-modId="flansmodultimate_npcs"
+modId="wolffsmodnpcs"
 version="${module_version}"
-displayName="Flan's Ultimate 2: NPC Vehicles & Soldiers"
+displayName="Flan's Mod Ultimate 2: Wolff's NPC Vehicles & Soldiers"
 authors="Wolff"
-description='''Companion mod for Flan's Mod Ultimate 2 that integrates Flan's vehicles and weapons with Custom NPCs soldiers.'''
+description='''Companion mod for Flan's Mod Ultimate 2 with extended CustomNPCs integration for Flan's Ultimate 2, including vehicles, soldiers, weapons, armor, and more.'''
 
-[[dependencies.flansmodultimate_npcs]]
+[[dependencies.wolffsmodnpcs]]
     modId="forge"
     mandatory=true
     versionRange="[47.4.10,)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.flansmodultimate_npcs]]
+[[dependencies.wolffsmodnpcs]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.20,1.21)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.flansmodultimate_npcs]]
+[[dependencies.wolffsmodnpcs]]
     modId="flansmodultimate"
     mandatory=true
-    versionRange="*"
+    versionRange="[2.1,)"
     ordering="AFTER"
     side="BOTH"
-[[dependencies.flansmodultimate_npcs]]
+[[dependencies.wolffsmodnpcs]]
     modId="customnpcs"
     mandatory=true
-    versionRange="*"
+    versionRange="[1.20.1.20260711,)"
     ordering="AFTER"
     side="BOTH"

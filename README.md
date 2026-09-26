@@ -67,11 +67,12 @@ Generate data:
 .\gradlew.bat runData
 ```
 
-Build the separate Packs Manager and content-pack artifacts:
+Build the separate Packs Manager, content-pack, and NPC Vehicles & Soldiers artifacts:
 
 ```powershell
 .\gradlew.bat packsManagerJar
 .\gradlew.bat officialPacksJar
+.\gradlew.bat npcsJar
 ```
 
 Build artifacts are written under `build/libs/`.
@@ -85,6 +86,7 @@ Build artifacts are written under `build/libs/`.
 | `src/packsmanager/java` | Packs Manager companion-mod sources and extraction logic |
 | `src/packsmanager/resources` | Packs Manager metadata and bundled-pack version marker |
 | `src/officialpacks` | Optional official content packs and their entrypoint |
+| `src/npcs` | Flan's Ultimate 2: Wolff's NPC Vehicles & Soldiers, a separate mod requiring Flan's Mod Ultimate and Custom NPCs |
 | `libs` | Local mod jars used as development dependencies |
 | `run` | Development runtime directory |
 | `run-data` | Data-generation runtime directory |
