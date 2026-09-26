@@ -42,7 +42,7 @@ public final class ExplosionVisuals
     public static final float FULL_CRATER_RADIUS = 12.0F;
 
     /** Share of its authored lifetime a particle keeps at the brief end. */
-    private static final float MIN_LIFETIME_SCALE = 0.25F;
+    private static final float MIN_LIFETIME_SCALE = 0.4F;
     /** Multiple of its authored lifetime a particle gets at the impressive end. */
     private static final float MAX_LIFETIME_SCALE = 1.6F;
     /**
@@ -53,8 +53,13 @@ public final class ExplosionVisuals
 
     /** Fireball quad size per block of crater radius - the linear term. */
     private static final float FIREBALL_SCALE_PER_RADIUS = 0.5F;
+    /**
+     * Fireball quad size every explosion starts from before the linear term, so the lightest HE
+     * still pops visibly instead of shrinking to a speck.
+     */
+    private static final float BASE_FIREBALL_SCALE = 0.3F;
     /** A sub-block crater still gets a visible puff, just a small one. */
-    private static final float MIN_FIREBALL_SCALE = 0.3F;
+    private static final float MIN_FIREBALL_SCALE = 0.45F;
     /**
      * Ceiling on the linear term. At the default maxExplosionRadius of 128 the fireball scales
      * linearly over the whole range and only just reaches this, so the clamp bites only when a
@@ -73,6 +78,8 @@ public final class ExplosionVisuals
      * would lift them just over and give a .50 cal round a rolling fireball.
      */
     private static final float FIREBALL_DURATION_PER_RADIUS = 7.5F;
+    /** Ticks every fireball burns on top of the linear term, so even a .50 cal round lingers a moment. */
+    private static final int BASE_FIREBALL_DURATION_TICKS = 1;
     private static final int MAX_FIREBALL_DURATION_TICKS = 200;
 
     /** Most a heavy charge multiplies the authored flare and debris counts by. */
@@ -82,7 +89,8 @@ public final class ExplosionVisuals
 
     /** A single bright flash, sized from the crater. */
     private static final float FLASH_SCALE_PER_RADIUS = 1.5F;
-    private static final float MIN_FLASH_SCALE = 0.6F;
+    private static final float BASE_FLASH_SCALE = 0.5F;
+    private static final float MIN_FLASH_SCALE = 0.9F;
     private static final float MAX_FLASH_SCALE = 30.0F;
 
     /**
@@ -171,7 +179,7 @@ public final class ExplosionVisuals
         // no size at all, so a radius that is not a number is treated as the smallest puff.
         if (!Float.isFinite(craterRadius))
             return MIN_FIREBALL_SCALE;
-        return Mth.clamp(craterRadius * FIREBALL_SCALE_PER_RADIUS, MIN_FIREBALL_SCALE, MAX_FIREBALL_SCALE);
+        return Mth.clamp(BASE_FIREBALL_SCALE + craterRadius * FIREBALL_SCALE_PER_RADIUS, MIN_FIREBALL_SCALE, MAX_FIREBALL_SCALE);
     }
 
     /** How many fireball puffs are scattered through the crater at once. */
@@ -191,7 +199,7 @@ public final class ExplosionVisuals
     {
         if (!Float.isFinite(craterRadius))
             return 1;
-        return Mth.clamp(Mth.ceil(craterRadius * FIREBALL_DURATION_PER_RADIUS), 1, MAX_FIREBALL_DURATION_TICKS);
+        return Mth.clamp(BASE_FIREBALL_DURATION_TICKS + Mth.ceil(craterRadius * FIREBALL_DURATION_PER_RADIUS), 1, MAX_FIREBALL_DURATION_TICKS);
     }
 
     /** Quad size of the single detonation flash. */
@@ -199,7 +207,7 @@ public final class ExplosionVisuals
     {
         if (!Float.isFinite(craterRadius) || craterRadius <= 0F)
             return 0F;
-        return Mth.clamp(craterRadius * FLASH_SCALE_PER_RADIUS, MIN_FLASH_SCALE, MAX_FLASH_SCALE);
+        return Mth.clamp(BASE_FLASH_SCALE + craterRadius * FLASH_SCALE_PER_RADIUS, MIN_FLASH_SCALE, MAX_FLASH_SCALE);
     }
 
     /** Particles in the expanding overpressure ring, or zero when the blast is too small to show one. */
