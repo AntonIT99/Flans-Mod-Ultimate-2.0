@@ -214,6 +214,19 @@ tasks.named('test', Test) {
     useJUnitPlatform()
 }
 
+// Developer tooling: measures gun and driveable model muzzles for flash and particle placement.
+// gradlew muzzleReport -PmodelSourceSet=<source set> -PmodelPackage=<model package> [-PreportFile=<path>]
+tasks.register('muzzleReport', JavaExec) {
+    group = 'flans tooling'
+    description = 'Measures gun and driveable model muzzles in a package of a pack source set.'
+    def modelSet = sourceSets.getByName(findProperty('modelSourceSet')?.toString() ?: 'main')
+    dependsOn modelSet.classesTaskName, sourceSets.test.classesTaskName
+    classpath = sourceSets.test.runtimeClasspath + modelSet.runtimeClasspath
+    mainClass = 'com.flansmod.client.model.MuzzleReport'
+    args = [findProperty('modelPackage')?.toString() ?: 'com.flansmod.client.model'] +
+            (findProperty('reportFile') ? [file(findProperty('reportFile')).absolutePath] : [])
+}
+
 tasks.named('processResources', ProcessResources) {
     def replaceProperties = [
             minecraft_version      : minecraft_version,

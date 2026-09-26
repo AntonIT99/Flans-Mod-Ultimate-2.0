@@ -141,7 +141,8 @@ public class FlansMod
     /** Placeholder for callers without a texture. 1.20.1 still accepts the empty resource location. */
     public static final ResourceLocation FALLBACK_TEXTURE = ResourceLocation.parse("");
     public static final ResourceLocation TEXTURE_BANNER = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/banner.png");
-    public static final ResourceLocation TEXTURE_DEFAULTMUZZLEFLASH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
+    public static final ResourceLocation TEXTURE_DEFAULTFLASH = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultflash.png");
+    public static final ResourceLocation TEXTURE_DEFAULTMUZZLEFLASH =ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/skins/defaultmuzzleflash.png");
     public static final ResourceLocation TEXTURE_FLAGPOLE = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/entity/flagpole.png");
     public static final ResourceLocation TEXTURE_GUI_AMMOGUI = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/ammo_gui.png");
     public static final ResourceLocation TEXTURE_GUI_ARMORBOX = ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "textures/gui/armor_box.png");

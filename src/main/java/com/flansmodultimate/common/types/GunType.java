@@ -582,6 +582,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected String casingModelClassName = StringUtils.EMPTY;
     @Getter
     protected ResourceLocation casingTexture;
+    /** Class of the built-in flash selected by {@code FlashModel DefaultFlash}; named here so common code need not load it. */
+    public static final String DEFAULT_FLASH_MODEL_CLASS = "com.flansmod.client.model.ModelDefaultFlash";
+
     /**
      * For adding a muzzle flash model to render
      */
@@ -992,7 +995,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         casingModelClassName = findModelClass(casingModelName, contentPack);
         casingTexture = loadTexture(casingTextureName, this);
         flashModelClassName = findModelClass(flashModelName, contentPack);
-        flashTexture = loadTexture(flashTextureName, this);
+        flashTexture = StringUtils.isBlank(flashTextureName) && DEFAULT_FLASH_MODEL_CLASS.equalsIgnoreCase(flashModelClassName)
+            ? FlansMod.TEXTURE_DEFAULTFLASH
+            : loadTexture(flashTextureName, this);
         hitTexture = StringUtils.isBlank(hitTextureName) ? null : loadTexture(hitTextureName, this);
         muzzleFlashModelClassName = findModelClass(muzzleFlashModelName, contentPack);
     }
@@ -1070,9 +1075,18 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         return useMuzzleFlashDefaults ? config == null || config.muzzleFlashParticlesDefault() : showMuzzleFlashParticles;
     }
 
+    /**
+     * False when a flash model already draws in the shooter's view. Reads the raw names, since the
+     * server asks and only clients resolve model classes; the built-in flash needs no texture line.
+     */
     public boolean shouldShowMuzzleFlashParticleToShooter()
     {
-        return StringUtils.isBlank(flashTextureName) && StringUtils.isBlank(muzzleFlashModelName);
+        return StringUtils.isBlank(flashTextureName) && isBlankModelName(flashModelName) && StringUtils.isBlank(muzzleFlashModelName);
+    }
+
+    private static boolean isBlankModelName(String modelName)
+    {
+        return StringUtils.isBlank(modelName) || modelName.equalsIgnoreCase("null") || modelName.equalsIgnoreCase("none");
     }
 
     private void readFancyRecoil(TypeFile file)

@@ -17,6 +17,12 @@ Nested `AGENTS.md` files add rules for their directories.
 - For auditing, repairing, or historically expanding ammunition in a selected
   source content pack, read
   `.agents/skills/content-pack-ammunition-expansion/SKILL.md` before editing.
+- For auditing or expanding the visual effects (muzzle flashes, shoot particles,
+  emitters, trails, explosion particles) of a selected source content pack, read
+  `.agents/skills/content-pack-visual-effects-expansion/SKILL.md` before editing.
+- For decompiling reference classes that exist only as bytecode, read
+  `.agents/skills/mod-class-decompilation/SKILL.md`; output goes to the gitignored
+  `decompiled/` cache.
 - For auditing and updating the wiki `ConfigReference.md` so it exhaustively and
   accurately documents the current legacy content-pack parsers, read
   `.agents/skills/config-reference-audit/SKILL.md` before auditing.

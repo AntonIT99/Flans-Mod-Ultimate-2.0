@@ -1,0 +1,4 @@
+interface:
+  display_name: "Content Pack Visual Effects Expansion"
+  short_description: "Add realistic flashes and particles to a Flan pack"
+  default_prompt: "Use $content-pack-visual-effects-expansion on <pack> to audit and add realistic, well-placed muzzle flashes and particle effects."

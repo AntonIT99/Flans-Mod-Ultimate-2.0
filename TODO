@@ -1,9 +1,8 @@
 General:
 - Implement TaP Flan's Mod Features
+- Continue improving rendering performance
 
 Content Packs:
-- Create a skill and add particles, sounds, visual affects to content packs just like Warfare 44:
-visuals for shootables, harmonize particles and sounds for vehicles / planes
 - Fix shooting points on vehicles based on new debug commands
 Official WW2
 - Add muzzle flashes just like w44
@@ -11,17 +10,21 @@ Official WW2
 - Fix Barrel Attachment and Muzzle Flash -> to check
 Manus:
 - Check deployable guns
+Rome:
+- refactor shields, do round shield
+- fix armors
+Reuse Skins for / from NPC Vehicles
+Implement a legacy pack
 
 Feature Ideas:
+- Option to toggle Aiming position / Dynamic activation of Aiming Pose or in game configurable option
 - Button in UI for creative mode to load ammo automatically into driveable
-- Continue improving rendering performance
 - Muzzle Flashes for deployed guns
 - Centralize all the gravity effects in a usable API for other mods. Also provide a command to test other gravities.
 - Banners
 - Block with GUI to convert bullets to magazines and vice versa + Mapping for bullets and magazines
 - Render Attachment Items in 3D
 - Assets/Sounds Priority list
-- Switching Fire Mode Sound
 - Sword blocking (GunItem)
 - Blade Activation/Deactivation with right click (GunItem)
-- Dynamic activation of Aiming Pose or in game configurable option
+- Switching Fire Mode Sound
