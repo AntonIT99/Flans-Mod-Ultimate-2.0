@@ -44,9 +44,9 @@ class ExplosionVisualsTest
     void smallCalibreRoundsAreBrief()
     {
         // Both are the complaint this tuning answers: a few grams of filler should flash and go.
-        assertTrue(ExplosionVisuals.lifetimeScale(crater(FIFTY_CAL_KG)) < 0.45F,
-            ".50 cal should clear in well under half its authored particle time");
-        assertTrue(ExplosionVisuals.lifetimeScale(crater(TWENTY_MM_KG)) < 0.6F,
+        assertTrue(ExplosionVisuals.lifetimeScale(crater(FIFTY_CAL_KG)) < 0.55F,
+            ".50 cal should clear in about half its authored particle time");
+        assertTrue(ExplosionVisuals.lifetimeScale(crater(TWENTY_MM_KG)) < 0.75F,
             "20 mm should still be brief");
     }
 

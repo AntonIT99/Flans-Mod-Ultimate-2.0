@@ -3,6 +3,7 @@ package com.flansmodultimate.client.model;
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
 import com.flansmod.client.model.ModelCasing;
+import com.flansmod.client.model.ModelDefaultFlash;
 import com.flansmod.client.model.ModelDefaultMuzzleFlash;
 import com.flansmod.client.model.ModelFlash;
 import com.flansmod.client.model.ModelGun;
@@ -245,6 +246,8 @@ public final class ModelCache
                 model = new ModelBomb();
             else if (modelClassName.equalsIgnoreCase(ModelDefaultMuzzleFlash.class.getName()))
                 model = new ModelDefaultMuzzleFlash();
+            else if (modelClassName.equalsIgnoreCase(ModelDefaultFlash.class.getName()))
+                model = new ModelDefaultFlash();
             else if (modelClassName.equalsIgnoreCase(ModelDefaultArmor.class.getName()) && type instanceof ArmorType armorType)
                 model = new ModelDefaultArmor(armorType.getArmorItemType());
             else

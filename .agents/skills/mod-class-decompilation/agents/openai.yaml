@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mod Class Decompilation"
+  short_description: "Decompile reference classes into the local cache"
+  default_prompt: "Use $mod-class-decompilation to decompile the needed reference classes into the decompiled/ cache and update its inventory."

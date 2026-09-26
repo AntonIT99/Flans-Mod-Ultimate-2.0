@@ -336,7 +336,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
 
             if (configType.isThrowable())
+            {
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_DAMAGE), IFlanItem.formatFloat(configType.getThrowDamage(stack))));
+                if (configType.getThrowMass() > 0F)
+                    tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MASS), IFlanItem.formatFloat(configType.getThrowMass()) + " g"));
+            }
 
             if (configType.isShowRecoil())
             {
