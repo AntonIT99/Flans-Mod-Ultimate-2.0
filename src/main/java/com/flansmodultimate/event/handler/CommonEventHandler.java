@@ -85,14 +85,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.WeakHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -113,7 +111,6 @@ public final class CommonEventHandler
     @Getter
     private static final Set<UUID> nightVisionPlayers = new HashSet<>();
     private static final Map<UUID, Integer> regenTimers = new HashMap<>();
-    private static final Set<Mob> AMBIENT_ARMOR_SPAWNS = Collections.newSetFromMap(new WeakHashMap<>());
     private static boolean contentReferencesValidated;
 
     /** Marks naturally spawned zombies and skeletons that will receive ambient armor. */
@@ -125,14 +122,14 @@ public final class CommonEventHandler
 
         int spawnRate = ModCommonConfig.get().ambientMobArmorSpawnRate();
         if (spawnRate > 0 && mob.getRandom().nextInt(100) < spawnRate)
-            AMBIENT_ARMOR_SPAWNS.add(mob);
+            AmbientMobArmor.markPending(mob);
     }
 
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event)
     {
-        if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob && AMBIENT_ARMOR_SPAWNS.remove(mob))
-            AmbientMobArmor.equip(mob);
+        if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob)
+            AmbientMobArmor.equipIfPending(mob);
     }
 
     @SubscribeEvent
@@ -327,10 +324,12 @@ public final class CommonEventHandler
             event.setCanceled(true);
     }
 
-    /** Items whose type declares {@code CanDrop False} are removed from the player's death drops. */
+    /** Adds ambient mob armor drops; items whose type declares {@code CanDrop False} are removed from the player's death drops. */
     @SubscribeEvent
-    public static void onPlayerDrops(LivingDropsEvent event)
+    public static void onLivingDrops(LivingDropsEvent event)
     {
+        if (event.getEntity() instanceof Mob mob)
+            AmbientMobArmor.dropArmor(mob, event.getDrops());
         if (event.getEntity() instanceof Player)
             event.getDrops().removeIf(item -> !canDrop(item.getItem()));
     }

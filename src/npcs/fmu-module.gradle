@@ -1,0 +1,21 @@
+def npcsSourceSet = registerFmuModule(
+    sourceSet: 'npcs',
+    modId: 'flansmodultimate_npcs',
+    jarTask: 'npcsJar',
+    archiveBaseName: "[$minecraft_version] Flan's Ultimate 2 NPC Vehicles & Soldiers",
+    archiveVersion: '1.0',
+    implementationTitle: 'npcs'
+)
+
+// Custom NPCs is a mandatory dependency of this module; the main mod already loads it in dev runs.
+dependencies.add(npcsSourceSet.compileOnlyConfigurationName, fg.deobf(customNpcsDependency))
+
+// Unlike the content packs, this module calls Minecraft and Custom NPCs code, so ship it in SRG names.
+reobf {
+    npcsJar {
+        libraries.from(npcsSourceSet.compileClasspath)
+    }
+}
+tasks.named('npcsJar') { finalizedBy 'reobfNpcsJar' }
+// MixinGradle would otherwise stamp the main mod's MixinConfigs onto every reobfuscated jar.
+tasks.matching { it.name == 'addMixinsToNpcsJar' }.configureEach { enabled = false }

@@ -43,7 +43,7 @@ public record CommonConfigSnapshot(
     int defaultArmorEnchantability,
     boolean forceDefenseAsModernArmor,
     int ambientMobArmorSpawnRate,
-    boolean ambientMobArmorDrops,
+    int ambientMobArmorDropRate,
 
     boolean gunsAlwaysUsableByPlayersInCreativeMode,
     boolean forceAllowAllAttachments,
@@ -166,7 +166,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.defaultArmorEnchantability);
         buf.writeBoolean(s.forceDefenseAsModernArmor);
         buf.writeVarInt(s.ambientMobArmorSpawnRate);
-        buf.writeBoolean(s.ambientMobArmorDrops);
+        buf.writeVarInt(s.ambientMobArmorDropRate);
 
         buf.writeBoolean(s.gunsAlwaysUsableByPlayersInCreativeMode);
         buf.writeBoolean(s.forceAllowAllAttachments);
@@ -294,7 +294,7 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readBoolean(),
             buf.readVarInt(),
-            buf.readBoolean(),
+            buf.readVarInt(),
 
             buf.readBoolean(),
             buf.readBoolean(),

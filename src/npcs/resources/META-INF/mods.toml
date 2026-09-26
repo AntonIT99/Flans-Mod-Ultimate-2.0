@@ -1,0 +1,35 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="flansmodultimate_npcs"
+version="${module_version}"
+displayName="Flan's Ultimate 2: NPC Vehicles & Soldiers"
+authors="Wolff"
+description='''Companion mod for Flan's Mod Ultimate 2 that integrates Flan's vehicles and weapons with Custom NPCs soldiers.'''
+
+[[dependencies.flansmodultimate_npcs]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47.4.10,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_npcs]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20,1.21)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.flansmodultimate_npcs]]
+    modId="flansmodultimate"
+    mandatory=true
+    versionRange="*"
+    ordering="AFTER"
+    side="BOTH"
+[[dependencies.flansmodultimate_npcs]]
+    modId="customnpcs"
+    mandatory=true
+    versionRange="*"
+    ordering="AFTER"
+    side="BOTH"

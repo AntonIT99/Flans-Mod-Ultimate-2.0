@@ -10,12 +10,15 @@ import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,9 @@ public final class AmbientMobArmor
 {
     private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
         EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
+
+    private static final String NBT_PENDING = "flansmodultimate:ambient_armor_pending";
+    private static final String NBT_ARMOR_SLOTS = "flansmodultimate:ambient_armor_slots";
 
     private static volatile EquipmentPool equipmentPool;
 
@@ -51,9 +57,45 @@ public final class AmbientMobArmor
     private static void setArmor(Mob mob, EquipmentSlot slot, ItemStack armor)
     {
         mob.setItemSlot(slot, armor.copy());
-        // A drop chance above 1 guarantees the drop and keeps the item undamaged
-        if (ModCommonConfig.get().ambientMobArmorDrops())
-            mob.setDropChance(slot, 2.0F);
+        // Vanilla never drops this armor; dropArmor rolls ambientMobArmorDropRate instead
+        mob.setDropChance(slot, 0.0F);
+        CompoundTag data = mob.getPersistentData();
+        data.putByte(NBT_ARMOR_SLOTS, (byte) (data.getByte(NBT_ARMOR_SLOTS) | 1 << slot.getIndex()));
+    }
+
+    /** Marks a mob to receive ambient armor once it joins the level; survives chunk-generation serialization. */
+    public static void markPending(Mob mob)
+    {
+        mob.getPersistentData().putBoolean(NBT_PENDING, true);
+    }
+
+    /** Equips a mob previously marked by {@link #markPending}. */
+    public static void equipIfPending(Mob mob)
+    {
+        CompoundTag data = mob.getPersistentData();
+        if (!data.getBoolean(NBT_PENDING))
+            return;
+        data.remove(NBT_PENDING);
+        equip(mob);
+    }
+
+    /** Adds the ambient armor still worn by a dying mob to its drops, each piece rolling ambientMobArmorDropRate. */
+    public static void dropArmor(Mob mob, Collection<ItemEntity> drops)
+    {
+        int slots = mob.getPersistentData().getByte(NBT_ARMOR_SLOTS);
+        int dropRate = ModCommonConfig.get().ambientMobArmorDropRate();
+        if (slots == 0 || dropRate <= 0)
+            return;
+
+        for (EquipmentSlot slot : ARMOR_SLOTS)
+        {
+            ItemStack armor = mob.getItemBySlot(slot);
+            if ((slots & 1 << slot.getIndex()) == 0 || armor.isEmpty() || mob.getRandom().nextInt(100) >= dropRate)
+                continue;
+            ItemEntity drop = new ItemEntity(mob.level(), mob.getX(), mob.getY(), mob.getZ(), armor.copy());
+            drop.setDefaultPickUpDelay();
+            drops.add(drop);
+        }
     }
 
     private static EquipmentPool getEquipmentPool()

@@ -138,7 +138,7 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DEFAULT_ARMOR_ENCHANTABILITY;
     private static final Supplier<Boolean> FORCE_DEFENSE_AS_MODERN_ARMOR;
     private static final Supplier<Integer> AMBIENT_MOB_ARMOR_SPAWN_RATE;
-    private static final Supplier<Boolean> AMBIENT_MOB_ARMOR_DROPS;
+    private static final Supplier<Integer> AMBIENT_MOB_ARMOR_DROP_RATE;
 
     private static final Supplier<Boolean> GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE;
     private static final Supplier<Boolean> FORCE_ALLOW_ALL_ATTACHMENTS;
@@ -350,9 +350,9 @@ public final class ModCommonConfig
         AMBIENT_MOB_ARMOR_SPAWN_RATE = builder
             .comment("Percentage chance for naturally spawning zombies and skeletons to receive armor from loaded Flan content packs or team outfits.")
             .defineInRange("ambientMobArmorSpawnRate", 20, 0, 100);
-        AMBIENT_MOB_ARMOR_DROPS = builder
-            .comment("Mobs spawned wearing armor from loaded Flan content packs or team outfits always drop that armor on death.")
-            .define("ambientMobArmorDrops", true);
+        AMBIENT_MOB_ARMOR_DROP_RATE = builder
+            .comment("Percentage chance for each armor piece worn by ambient armored mobs to drop on death. 0 disables the drops.")
+            .defineInRange("ambientMobArmorDropRate", 100, 0, 100);
         builder.pop();
 
         builder.push("Gun Settings");
@@ -729,7 +729,7 @@ public final class ModCommonConfig
             DEFAULT_ARMOR_ENCHANTABILITY.get(),
             FORCE_DEFENSE_AS_MODERN_ARMOR.get(),
             AMBIENT_MOB_ARMOR_SPAWN_RATE.get(),
-            AMBIENT_MOB_ARMOR_DROPS.get(),
+            AMBIENT_MOB_ARMOR_DROP_RATE.get(),
 
             GUNS_ALWAYS_USABLE_BY_PLAYERS_IN_CREATIVE_MODE.get(),
             FORCE_ALLOW_ALL_ATTACHMENTS.get(),
