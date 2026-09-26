@@ -69,7 +69,7 @@ public class ArmorCapeLayer<T extends LivingEntity, M extends HumanoidModel<T>> 
             if (entity.getItemBySlot(slot).getItem() instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == slot)
             {
                 ArmorType armorType = armorItem.getConfigType();
-                if (armorType.getCapeTextureLocation() != null)
+                if (armorType.getCapeTexture() != null)
                 {
                     ResourceLocation texture = VALIDATED.computeIfAbsent(armorType, ArmorCapeLayer::validate).orElse(null);
                     if (texture != null)
@@ -88,13 +88,13 @@ public class ArmorCapeLayer<T extends LivingEntity, M extends HumanoidModel<T>> 
 
     private static Optional<ResourceLocation> validate(ArmorType armorType)
     {
-        ResourceLocation texture = armorType.getCapeTextureLocation();
+        ResourceLocation texture = armorType.getCapeTexture();
         if (texture == null)
             return Optional.empty();
         if (Minecraft.getInstance().getResourceManager().getResource(texture).isEmpty())
         {
             FlansMod.log.warn("Ignoring CapeTexture '{}' of armor {}: texture {} was not found",
-                armorType.getCapeTexture(), armorType.getShortName(), texture);
+                armorType.getCapeTextureName(), armorType.getShortName(), texture);
             return Optional.empty();
         }
         return Optional.of(texture);
