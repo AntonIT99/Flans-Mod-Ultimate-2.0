@@ -186,7 +186,7 @@ ext.registerFmuModule = { Map module ->
 }
 
 // Custom NPCs: optional at runtime for the main mod, a compile dependency of modules built on it.
-ext.customNpcsDependency = files('libs/CustomNPCs-Unofficial-NeoForge-1.21.1.20251230.jar')
+ext.customNpcsDependency = files("libs/CustomNPCs-Unofficial-NeoForge-${version_custom_npcs}.jar")
 
 // Any src/<dir> with an fmu-module.gradle becomes a module, so private packs need no entry here.
 file('src').listFiles()
