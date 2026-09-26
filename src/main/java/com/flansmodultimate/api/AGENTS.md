@@ -57,7 +57,8 @@ outlives the implementation behind it.
 ## Workflow
 
 - The API ships on its own as `com.flansmodultimate:flansmodultimate-api:<minecraft>-<api_version>`,
-  built by `apiJar` (reobfuscated classes), `apiSourcesJar` and `apiJavadocJar`, and published by
+  built by `apiJar` (classes named like the mod jar's: reobfuscated on Forge, Mojang names on
+  NeoForge), `apiSourcesJar` and `apiJavadocJar`, and published by
   the `api` Maven publication. Run `apiJavadoc` after API changes: it fails on broken javadoc
   references and malformed HTML.
 - Bump `api_version` in `gradle.properties` with every released API change: the minor version for
