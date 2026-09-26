@@ -16,6 +16,6 @@ ArmorPoints 1
 Toughness 0
 
 // Movement
-MoveSpeedModifier 1.25
+MoveSpeedModifier 1.5
 JumpModifier 25.0
 NegateFallDamage True
