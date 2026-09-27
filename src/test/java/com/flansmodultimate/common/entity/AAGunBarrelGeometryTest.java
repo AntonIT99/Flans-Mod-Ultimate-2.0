@@ -46,6 +46,24 @@ class AAGunBarrelGeometryTest
     }
 
     @Test
+    void theLineKeepsFollowingTheMeasuredMuzzleAsTheGunElevatesRoundTheModelPivot()
+    {
+        Vec3 pivot = new Vec3(2D, 20D, -1D);
+        Vec3 muzzle = new Vec3(24D, 1D, 3D);
+        Vector3f line = AAGunBarrelGeometry.legacyBarrelFor(AAGunBarrelGeometry.modelBarrelOffset(pivot, muzzle, 0F, 0F), false);
+
+        for (float[] aim : new float[][] { { 0F, -45F }, { 37F, -70F }, { -140F, 20F } })
+        {
+            Vec3 model = AAGunBarrelGeometry.modelBarrelOffset(pivot, muzzle, aim[0], aim[1]);
+            Vec3 rest = AAGunBarrelGeometry.legacyBarrelOffset(line.x, line.y, line.z, aim[0], 0F);
+            Vec3 legacy = AAGunBarrelGeometry.pitchAboutModelPivot(rest, pivot, aim[0], aim[1]);
+            assertEquals(model.x, legacy.x, EPSILON);
+            assertEquals(model.y, legacy.y, EPSILON);
+            assertEquals(model.z, legacy.z, EPSILON);
+        }
+    }
+
+    @Test
     void aBarrelLaidAlongTheAimFollowsItAsTheGunElevates()
     {
         double length = 3D;

@@ -67,6 +67,19 @@ public final class AAGunBarrelGeometry
     }
 
     /**
+     * A resting offset, in blocks, elevated round the model's barrel pivot
+     * instead of the gun's position, so it moves rigidly with the barrels the
+     * model draws and with {@link #modelBarrelOffset}. The two use the same
+     * rotation, so a line matching the measured muzzle at rest matches it at
+     * every elevation.
+     */
+    public static Vec3 pitchAboutModelPivot(Vec3 rest, Vec3 modelPivot, float gunYaw, float gunPitch)
+    {
+        Vec3 pivot = modelBarrelOffset(modelPivot, Vec3.ZERO, gunYaw, 0F);
+        return pivot.add(pitchAboutGun(rest.subtract(pivot), gunYaw, gunPitch));
+    }
+
+    /**
      * Tilts a resting offset round the gun's position the way
      * {@code ModUtils#getDirectionFromPitchAndYaw} tilts the aim: positive
      * pitch lowers what lies ahead of the gun.
@@ -95,8 +108,8 @@ public final class AAGunBarrelGeometry
      * transform is kept exactly as 1.7.10 wrote it, radian slip included, so
      * it is inverted as the linear map it is rather than by hand.
      *
-     * <p>Legacy barrels pitch round the gun's position and model barrels round
-     * their own pivot, so the two agree at rest and part once the gun elevates.</p>
+     * <p>The line is solved at rest only; elevated round the model's pivot with
+     * {@link #pitchAboutModelPivot} it keeps to the measured muzzle at every aim.</p>
      */
     public static Vector3f legacyBarrelFor(Vec3 offset, boolean sentry)
     {

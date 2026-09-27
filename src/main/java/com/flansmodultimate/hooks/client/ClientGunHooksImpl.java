@@ -408,7 +408,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             // two can be compared and the line corrected with /flandebug.
             if (hasModelBarrel(barrelOriginData, barrel))
             {
-                Vec3 authored = aaGun.getAuthoredBarrelOrigin(barrel, sentry);
+                Vec3 authored = aaGun.getAuthoredBarrelOrigin(barrel, sentry, barrelOriginData.pivots()[barrel]);
                 DebugHelper.spawnDebugDot(authored, 2, 1F, 0F, 1F);
                 DebugHelper.spawnDebugVector(authored, shootingVector, 2, 1F, 0F, 1F);
             }

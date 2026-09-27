@@ -1266,28 +1266,36 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         if (barrel < modelBarrelPivots.length && barrel < modelBarrelMuzzles.length)
             return position().add(AAGunBarrelGeometry.modelBarrelOffset(modelBarrelPivots[barrel],
                 modelBarrelMuzzles[barrel], getGunYaw(), getGunPitch()));
-        return position().add(authoredBarrelOffset(type, barrel, sentryShot, getGunYaw(), getGunPitch()));
+        return position().add(authoredBarrelOffset(type, barrel, sentryShot, null, getGunYaw(), getGunPitch()));
     }
 
     /**
-     * Where a type-file {@code Barrel} line puts the round, ignoring the model.
-     * This is what fires until a client has reported the model's barrels.
+     * Where a type-file {@code Barrel} line puts the round. Without a model
+     * this is what fires until a client has reported the model's barrels; with
+     * the model's barrel pivot it elevates round that pivot, as the model's
+     * muzzles do, so the line can be compared with them at any aim.
      */
-    public Vec3 getAuthoredBarrelOrigin(int barrel, boolean sentryShot)
+    public Vec3 getAuthoredBarrelOrigin(int barrel, boolean sentryShot, @Nullable Vec3 modelPivot)
     {
         AAGunType type = getConfigType();
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
             return position();
-        return position().add(authoredBarrelOffset(type, barrel, sentryShot, getGunYaw(), getGunPitch()));
+        return position().add(authoredBarrelOffset(type, barrel, sentryShot, modelPivot, getGunYaw(), getGunPitch()));
     }
 
-    private static Vec3 authoredBarrelOffset(AAGunType type, int barrel, boolean sentryShot, float gunYaw,
-                                             float gunPitch)
+    private static Vec3 authoredBarrelOffset(AAGunType type, int barrel, boolean sentryShot,
+                                             @Nullable Vec3 modelPivot, float gunYaw, float gunPitch)
     {
-        Vec3 offset = AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
-            type.getBarrelZ()[barrel], gunYaw, gunPitch);
-        return sentryShot && type.isSentry()
-            ? offset.add(0D, AAGunBarrelGeometry.SENTRY_ORIGIN_Y_OFFSET, 0D) : offset;
+        Vec3 lift = sentryShot && type.isSentry()
+            ? new Vec3(0D, AAGunBarrelGeometry.SENTRY_ORIGIN_Y_OFFSET, 0D) : Vec3.ZERO;
+        if (modelPivot != null)
+        {
+            Vec3 rest = AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
+                type.getBarrelZ()[barrel], gunYaw, 0F).add(lift);
+            return AAGunBarrelGeometry.pitchAboutModelPivot(rest, modelPivot, gunYaw, gunPitch);
+        }
+        return AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
+            type.getBarrelZ()[barrel], gunYaw, gunPitch).add(lift);
     }
 
     public Vec3 getShootingDirection()
