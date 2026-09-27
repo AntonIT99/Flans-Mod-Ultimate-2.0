@@ -401,7 +401,12 @@ public final class ClientEventHandler
             EnumFunction primaryFunction = gunItem.getConfigType().getPrimaryFunction();
             EnumFunction secondaryFunction = gunItem.getConfigType().getSecondaryFunction();
 
-            // A throw is charged through the vanilla use action, so it must reach the item
+            // A throw is charged through the vanilla use action, so it must reach the item. Canceling the
+            // main hand's use also stops vanilla before it tries the off hand, so an off-hand throwable
+            // behind a main-hand gun or shield must let the use through as well.
+            if (event.isUseItem() && hand == InteractionHand.MAIN_HAND && isThrowable(player.getOffhandItem()))
+                return;
+
             if (isSecondaryButton && secondaryFunction != EnumFunction.MELEE && secondaryFunction != EnumFunction.THROW)
             {
                 // Aiming with the attack button must not break the block or hit the entity under the crosshair
@@ -417,6 +422,11 @@ public final class ClientEventHandler
                 event.setSwingHand(false);
             }
         }
+    }
+
+    private static boolean isThrowable(ItemStack stack)
+    {
+        return stack.getItem() instanceof GunItem gunItem && gunItem.getConfigType().isThrowable();
     }
 
     /**
