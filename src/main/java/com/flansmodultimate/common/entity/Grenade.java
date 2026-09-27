@@ -24,7 +24,6 @@ import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -32,6 +31,7 @@ import org.joml.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -346,7 +346,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     gunItem = gi;
                 }
 
-                if (gunStack != null && gunItem != null)
+                if (gunStack != null)
                 {
                     GunType gunType = gunItem.getConfigType();
                     List<ShootableType> ammoTypes = gunType.getAmmoTypes();
@@ -355,7 +355,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     {
                         ShootableType bulletToGive = ammoTypes.get(0);
                         Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, bulletToGive.getShortName()));
-                        if (item != null && item != Items.AIR)
+                        if (item != Items.AIR)
                         {
                             int totalToGive = configType.getNumClips() * gunType.getNumAmmoItemsInGun(gunStack);
                             while (totalToGive > 0)

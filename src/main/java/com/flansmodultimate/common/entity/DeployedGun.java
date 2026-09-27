@@ -80,6 +80,7 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     protected String shortname = StringUtils.EMPTY;
     protected BlockPos blockPos;
     protected int gunDirection;
+    @Getter
     protected ItemStack ammo = ItemStack.EMPTY;
     protected int reloadTimer;
     protected int soundTimer;
@@ -213,11 +214,6 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     public int getRoundsLeft()
     {
         return entityData.get(DATA_ROUNDS_LEFT);
-    }
-
-    public ItemStack getAmmo()
-    {
-        return ammo;
     }
 
     public void setAmmo(ItemStack stack)

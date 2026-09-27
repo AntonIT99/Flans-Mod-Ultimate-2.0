@@ -75,7 +75,7 @@ public final class Flagpole extends Entity implements ITeamBase
         defineEntityData(new SynchedDataDefinition(entityData));
     }
 
-    protected void defineEntityData(SynchedDataDefinition data)
+    private void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_DEFAULT_OWNER, 0);
         data.define(DATA_OWNER, 0);

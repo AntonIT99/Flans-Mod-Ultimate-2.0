@@ -329,7 +329,7 @@ public abstract class Shootable extends Entity implements SpawnDataEntity
                     if (currentRound.isPresent()
                         && owner instanceof ServerPlayer attacker
                         && entity instanceof ServerPlayer victim
-                        && !currentRound.get().getGametype().canPlayerBeAttacked(victim, attacker))
+                        && !Optional.ofNullable(currentRound.get().getGametype()).map(g -> g.canPlayerBeAttacked(victim, attacker)).orElse(false))
                         continue;
                 }
 

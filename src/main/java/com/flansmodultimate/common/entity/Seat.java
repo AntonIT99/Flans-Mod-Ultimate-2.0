@@ -38,9 +38,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -68,18 +71,32 @@ public class Seat extends Entity implements IControllable, ISeat
             ? driveable.getConfigType().getOptics() : seatInfo.getOptics();
     }
 
-    public boolean isScoped() { return entityData.get(DATA_SCOPED); }
-    public int getCurrentSight() { return entityData.get(DATA_SIGHT); }
-    public boolean isThermalScoped() { return isScoped() && entityData.get(DATA_THERMAL); }
+    public boolean isScoped()
+    {
+        return entityData.get(DATA_SCOPED);
+    }
+
+    public int getCurrentSight()
+    {
+        return entityData.get(DATA_SIGHT);
+    }
+
+    public boolean isThermalScoped()
+    {
+        return isScoped() && entityData.get(DATA_THERMAL);
+    }
+
     public boolean isNightSightActive()
     {
-        return isScoped() && getOptics() != null && (getOptics().isNightSight()
-            || driveable.getConfigType().getOptics().isNightSight());
+        return isScoped() && getOptics() != null
+            && (getOptics().isNightSight() || Optional.ofNullable(driveable).map(Driveable::getConfigType).map(d -> d.getOptics().isNightSight()).orElse(false));
     }
     public float getScopeZoom()
     {
         VehicleOptics optics = getOptics();
-        return !isScoped() || optics == null ? 1F : optics.available() ? optics.zoom(getCurrentSight()) : 7F;
+        if (!isScoped() || optics == null)
+            return 1F;
+        return optics.available() ? optics.zoom(getCurrentSight()) : 7F;
     }
 
     @Nullable
@@ -252,7 +269,7 @@ public class Seat extends Entity implements IControllable, ISeat
         // reintroduced the same one-tick sawtooth on top of an otherwise perfectly smooth,
         // continuously mouse-driven view whenever the torso was actually turning.
         if (usesAbsoluteViewYaw())
-            return Mth.wrapDegrees(clientViewWorldYaw - Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()));
+            return Mth.wrapDegrees(clientViewWorldYaw - Mth.rotLerp(partialTick, Objects.requireNonNull(driveable).getPrevYaw(), driveable.getYaw()));
         return clientViewAimYaw;
     }
 
@@ -522,6 +539,12 @@ public class Seat extends Entity implements IControllable, ISeat
     public boolean isPickable()
     {
         return isAlive();
+    }
+
+    @Override
+    public ItemStack getPickedResult(HitResult target)
+    {
+        return driveable == null ? ItemStack.EMPTY : driveable.getPickedResult(target);
     }
 
     @Override

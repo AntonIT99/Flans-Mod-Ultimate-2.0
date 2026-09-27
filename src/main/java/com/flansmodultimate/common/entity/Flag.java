@@ -69,7 +69,7 @@ public final class Flag extends Entity implements ITeamObject
         defineEntityData(new SynchedDataDefinition(entityData));
     }
 
-    protected void defineEntityData(SynchedDataDefinition data)
+    private void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_BASE, Optional.empty());
         data.define(DATA_CARRIER, Optional.empty());

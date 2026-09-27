@@ -375,19 +375,25 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
         if (gun != null)
         {
-            CompoundTag gunTag = new CompoundTag();
-
-            gunTag.putString(NBT_FIREABLE_GUN_TYPE_NAME, gun.getType().getShortName());
-            gunTag.putFloat(NBT_FIREABLE_GUN_SPREAD, gun.getSpread());
-            gunTag.putFloat(NBT_FIREABLE_GUN_SPEED, gun.getBulletSpeed());
-            gunTag.putFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER, gun.getBulletSpeedMultiplier());
-            gunTag.putFloat(NBT_FIREABLE_GUN_DAMAGE, gun.getDamage());
-            gunTag.putString(NBT_FIREABLE_GUN_SPREAD_PATTERN, gun.getSpreadPattern().name());
+            CompoundTag gunTag = createGunTag(gun);
             tag.put(NBT_FIREABLE_GUN, gunTag);
             tag.putInt(NBT_SHOT, firedShot.getShot());
             firedShot.getAttacker().ifPresent(livingEntity -> tag.putUUID(NBT_ATTACKER, livingEntity.getUUID()));
             firedShot.getCausingEntity().ifPresent(entity -> tag.putUUID(NBT_SHOOTER, entity.getUUID()));
         }
+    }
+
+    @NotNull
+    private static CompoundTag createGunTag(FireableGun gun)
+    {
+        CompoundTag gunTag = new CompoundTag();
+        gunTag.putString(NBT_FIREABLE_GUN_TYPE_NAME, gun.getType().getShortName());
+        gunTag.putFloat(NBT_FIREABLE_GUN_SPREAD, gun.getSpread());
+        gunTag.putFloat(NBT_FIREABLE_GUN_SPEED, gun.getBulletSpeed());
+        gunTag.putFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER, gun.getBulletSpeedMultiplier());
+        gunTag.putFloat(NBT_FIREABLE_GUN_DAMAGE, gun.getDamage());
+        gunTag.putString(NBT_FIREABLE_GUN_SPREAD_PATTERN, gun.getSpreadPattern().name());
+        return gunTag;
     }
 
     @Override

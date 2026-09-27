@@ -175,8 +175,13 @@ public class Plane extends Driveable
     @Nullable
     private static Float getLevelGroundPitch(@NotNull PlaneType type)
     {
-        double frontX = 0D, backX = 0D, frontY = 0D, backY = 0D;
-        int frontCount = 0, backCount = 0;
+        double frontX = 0D;
+        double backX = 0D;
+        double frontY = 0D;
+        double backY = 0D;
+        int frontCount = 0;
+        int backCount = 0;
+
         for (DriveablePosition definition : type.getWheelPositions())
         {
             if (definition == null)
@@ -250,7 +255,6 @@ public class Plane extends Driveable
                 Component.translatable("message.flansmodultimate.driveable.gear.auto_deploy"), true);
     }
 
-    /** Retracted gear is stowed inside the airframe, so it cannot be shot. */
     /**
      * Air brake toggle. A plane that declares {@code HasAirBrake False} has no
      * such surfaces and silently ignores the bind, exactly as a fixed-gear type
@@ -298,6 +302,7 @@ public class Plane extends Driveable
             wingArea == null ? 0D : wingArea);
     }
 
+    /** Retracted gear is stowed inside the airframe, so it cannot be shot. */
     @Override
     public boolean canHitPart(@Nullable EnumDriveablePart part)
     {
@@ -875,8 +880,18 @@ public class Plane extends Driveable
             climbRate == null ? 0D : climbRate, terminalMs);
         // On the wheels the path is the runway, whatever the suspension is
         // doing vertically, so rotating the nose is what unsticks the aircraft.
-        double flightPathY = rolling ? 0D
-            : airspeedBlocksPerTick > 1.0E-6D ? current.y / airspeedBlocksPerTick : forward.y;
+        double flightPathY;
+        if (rolling)
+        {
+            flightPathY = 0D;
+        }
+        else
+        {
+            if (airspeedBlocksPerTick > 1.0E-6D)
+                flightPathY = current.y / airspeedBlocksPerTick;
+            else
+                flightPathY = forward.y;
+        }
         double loadFactor = AircraftPerformancePhysics.commandedLoadFactor(forward.y, flightPathY,
             excessAllowance);
 
@@ -1010,9 +1025,9 @@ public class Plane extends Driveable
             pitchRate = 0F;
         }
         if (!isPartIntact(EnumDriveablePart.LEFT_WING))
-            rollRate -= 2F * velocity.horizontalDistance();
+            rollRate -= (float) (2D * velocity.horizontalDistance());
         if (!isPartIntact(EnumDriveablePart.RIGHT_WING))
-            rollRate += 2F * velocity.horizontalDistance();
+            rollRate += (float) (2D * velocity.horizontalDistance());
 
         float response = physics.rollInertiaFactor();
         angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yawRate, response);
@@ -1128,14 +1143,15 @@ public class Plane extends Driveable
         float loss = 0F;
         Vec3 weightedContact = Vec3.ZERO;
         Set<BlockPos> struck = new HashSet<>();
-        strikes:
         for (VoxelShape shape : serverLevel.getBlockCollisions(null,
             RotorStrikePhysics.discBounds(hub, axis, radius, halfThickness)))
         {
+            if (struck.size() >= MAX_ROTOR_STRIKE_BLOCKS)
+                break;
             for (AABB solid : shape.toAabbs())
             {
                 if (struck.size() >= MAX_ROTOR_STRIKE_BLOCKS)
-                    break strikes;
+                    break;
                 if (!RotorStrikePhysics.intersectsDisc(hub, axis, radius, halfThickness, solid))
                     continue;
                 BlockPos pos = BlockPos.containing(solid.getCenter());
@@ -1248,9 +1264,9 @@ public class Plane extends Driveable
                 pitchRate = 0F;
             }
             if (!isPartIntact(EnumDriveablePart.LEFT_WING))
-                rollRate -= 2F * velocity.horizontalDistance();
+                rollRate -= (float) (2D * velocity.horizontalDistance());
             if (!isPartIntact(EnumDriveablePart.RIGHT_WING))
-                rollRate += 2F * velocity.horizontalDistance();
+                rollRate += (float) (2D * velocity.horizontalDistance());
         }
         else if (getPlaneMode() == EnumPlaneMode.HELI && !isPartIntact(EnumDriveablePart.TAIL))
         {
@@ -1326,13 +1342,6 @@ public class Plane extends Driveable
         return velocity.scale(factor);
     }
 
-    private float wingEfficiency()
-    {
-        float left = isPartIntact(EnumDriveablePart.LEFT_WING) ? 1F : 0.15F;
-        float right = isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1F : 0.15F;
-        return (left + right) * 0.5F;
-    }
-
     private float rotorEfficiency(PlaneType type)
     {
         if (type.getHeliPropellers().isEmpty() || !isPartIntact(EnumDriveablePart.BLADES))
@@ -1352,7 +1361,9 @@ public class Plane extends Driveable
     {
         if (getThrottle() < 0F)
             return Math.max(0F, type.getMaxNegativeThrottle());
-        return isInWater() ? Math.max(0F, type.getMaxThrottleInWater()) : Math.max(0F, type.getMaxThrottle());
+        if (isInWater())
+            return Math.max(0F, type.getMaxThrottleInWater());
+        return Math.max(0F, type.getMaxThrottle());
     }
 
     private float intactPropellerFraction(List<Propeller> propellers)
@@ -1372,11 +1383,6 @@ public class Plane extends Driveable
     private Vec3 flightForwardVector()
     {
         return modelLocalDirectionToWorld(MODEL_FLIGHT_FORWARD).normalize();
-    }
-
-    private Vec3 flightRightVector()
-    {
-        return localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(0D, 0D, 1D))).normalize();
     }
 
     private Vec3 flightUpVector()

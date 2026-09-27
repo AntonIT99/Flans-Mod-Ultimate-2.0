@@ -6,6 +6,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.item.ItemStackData;
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +32,7 @@ import net.minecraft.world.phys.Vec3;
  * sticks like a trident, hits once, and carries the thrown stack so picking it up returns the very
  * same weapon.
  */
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ThrownGun extends AbstractArrow
 {
     /** Ticks a recoverable weapon stays stuck before despawning, the lifespan of a dropped item */

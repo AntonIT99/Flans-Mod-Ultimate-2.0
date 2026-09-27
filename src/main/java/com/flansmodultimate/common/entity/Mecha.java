@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -155,7 +156,9 @@ public class Mecha extends Driveable
         return getConfigType() instanceof MechaType type ? type : null;
     }
 
+    // Forge's getStepHeight() reads this, and vanilla and other mods still call it directly.
     @Override
+    @SuppressWarnings("deprecation")
     public float maxUpStep()
     {
         MechaType type = getMechaType();
@@ -466,7 +469,7 @@ public class Mecha extends Driveable
         if (gunType.getSecondaryFire(gunStack))
         {
             gunType.setSecondaryFire(gunStack, false);
-            driveableData.setMechaAddon(slot, gunStack);
+            initializedData().setMechaAddon(slot, gunStack);
             acknowledgeInternalWeaponInventoryChange();
         }
         EnumFireMode mode = gunType.getFireMode(gunStack);
@@ -538,7 +541,7 @@ public class Mecha extends Driveable
                     gunItem.setBulletItemStack(gunStack, loaded.stack(), loaded.slot(), level().registryAccess());
                     if (StringUtils.isNotBlank(loaded.bulletType().getDropItemOnShoot()))
                         ModUtils.dropItem(level(), this, loaded.bulletType().getDropItemOnShoot(), loaded.bulletType().getContentPack());
-                    driveableData.setMechaAddon(slot, gunStack);
+                    initializedData().setMechaAddon(slot, gunStack);
                     acknowledgeInternalWeaponInventoryChange();
                 }
             });
@@ -586,20 +589,20 @@ public class Mecha extends Driveable
             int sourceSlot = findBestReloadSource(gunType, preferred);
             if (sourceSlot < 0)
                 break;
-            ItemStack source = driveableData.getItem(sourceSlot);
+            ItemStack source = initializedData().getItem(sourceSlot);
             ItemStack loaded = source.copy();
             loaded.setCount(1);
             gunItem.setBulletItemStack(gunStack, loaded, internalSlot, level().registryAccess());
             if (!preserveSource)
             {
                 source.shrink(1);
-                driveableData.setItem(sourceSlot, source.isEmpty() ? ItemStack.EMPTY : source);
+                initializedData().setItem(sourceSlot, source.isEmpty() ? ItemStack.EMPTY : source);
             }
             reloaded = true;
         }
         if (reloaded)
         {
-            driveableData.setMechaAddon(handSlot, gunStack);
+            initializedData().setMechaAddon(handSlot, gunStack);
             acknowledgeInternalWeaponInventoryChange();
         }
         return reloaded;
@@ -611,9 +614,10 @@ public class Mecha extends Driveable
         int bestRounds = 0;
         boolean bestPreferred = false;
         List<ShootableType> allowed = gunType.getAmmoTypes();
-        for (int slot = 0; slot < driveableData.getContainerSize(); slot++)
+        DriveableData data = initializedData();
+        for (int slot = 0; slot < data.getContainerSize(); slot++)
         {
-            ItemStack candidate = driveableData.getItem(slot);
+            ItemStack candidate = data.getItem(slot);
             if (!(candidate.getItem() instanceof ShootableItem shootableItem)
                 || !allowed.contains(shootableItem.getConfigType()) || !ShootableItem.hasRoundsLeft(candidate))
                 continue;
@@ -640,8 +644,16 @@ public class Mecha extends Driveable
 
     private ItemStack oppositeHandStack(boolean left)
     {
-        return driveableData == null ? ItemStack.EMPTY
-            : driveableData.getMechaAddon(left ? EnumMechaSlotType.RIGHT_TOOL : EnumMechaSlotType.LEFT_TOOL);
+        if (driveableData == null)
+        {
+            return ItemStack.EMPTY;
+        }
+        else
+        {
+            if (left)
+                return driveableData.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL);
+            return driveableData.getMechaAddon(EnumMechaSlotType.LEFT_TOOL);
+        }
     }
 
     private Vec3 handGunOrigin(MechaType type, boolean left)
@@ -758,7 +770,7 @@ public class Mecha extends Driveable
     private void addEffectiveToolSpeed(EnumMechaSlotType slot, EnumDriveablePart arm, BlockState state, float hardness,
                                        List<Float> speeds)
     {
-        if (isPartIntact(arm) && driveableData.getMechaAddon(slot).getItem() instanceof MechaAddonItem addon)
+        if (isPartIntact(arm) && initializedData().getMechaAddon(slot).getItem() instanceof MechaAddonItem addon)
         {
             MechaItemType tool = addon.getConfigType();
             if (effectiveAgainst(tool.getFunction(), state) && tool.getToolHardness() + 0.001F >= hardness)
@@ -798,11 +810,35 @@ public class Mecha extends Driveable
         }
         if (wasteCompact() && (stack.is(Items.COBBLESTONE) || stack.is(Items.DIRT) || stack.is(Items.SAND)))
             return ItemStack.EMPTY;
-        float multiplier = stack.is(Items.DIAMOND) ? diamondMultiplier()
-            : stack.is(Items.REDSTONE) ? redstoneMultiplier()
-            : stack.is(Items.COAL) ? coalMultiplier()
-            : stack.is(Items.EMERALD) ? emeraldMultiplier()
-            : stack.is(Items.IRON_INGOT) ? ironMultiplier() : 1F;
+        float multiplier;
+        if (stack.is(Items.DIAMOND))
+        {
+            multiplier = diamondMultiplier();
+        }
+        else if (stack.is(Items.REDSTONE))
+        {
+            multiplier = redstoneMultiplier();
+        }
+        else if (stack.is(Items.COAL))
+        {
+
+            multiplier = coalMultiplier();
+        }
+        else if (stack.is(Items.EMERALD))
+        {
+
+            multiplier = emeraldMultiplier();
+
+        }
+        else if (stack.is(Items.IRON_INGOT))
+        {
+            multiplier = ironMultiplier();
+        }
+        else
+        {
+            multiplier = 1F;
+        }
+
         if (multiplier > 1F)
         {
             int whole = Mth.floor(multiplier);
@@ -897,6 +933,7 @@ public class Mecha extends Driveable
     }
 
     @Override
+    @NotNull
     public EntityDimensions getDimensions(@NotNull Pose pose)
     {
         MechaType type = getMechaType();
