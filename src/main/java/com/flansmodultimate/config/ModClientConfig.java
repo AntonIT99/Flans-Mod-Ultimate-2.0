@@ -43,6 +43,7 @@ public final class ModClientConfig
     public final boolean showAmmoHud;
     public final EnumAmmoHudLayout ammoHudLayout;
     public final EnumSpeedUnit driveableSpeedUnit;
+    public final EnumSpeedUnit driveableVerticalSpeedUnit;
     public final EnumHitMarkerStyle hitMarkerStyle;
     public final boolean hdHitMarker;
     public final boolean fancyHitMarker;
@@ -123,6 +124,7 @@ public final class ModClientConfig
     public static final ForgeConfigSpec.BooleanValue SHOW_AMMO_HUD;
     public static final ForgeConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     public static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
+    public static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_VERTICAL_SPEED_UNIT;
     public static final ForgeConfigSpec.IntValue VEHICLE_HUD_LEFT_X;
     public static final ForgeConfigSpec.IntValue VEHICLE_HUD_LEFT_Y;
     public static final ForgeConfigSpec.IntValue VEHICLE_HUD_RIGHT_X;
@@ -262,6 +264,9 @@ public final class ModClientConfig
         DRIVEABLE_SPEED_UNIT = builder
                 .comment("Unit used for vehicle and plane speed on the HUD")
                 .defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
+        DRIVEABLE_VERTICAL_SPEED_UNIT = builder
+                .comment("Unit used for plane vertical speed on the HUD")
+                .defineEnum("driveableVerticalSpeedUnit", EnumSpeedUnit.METERS_PER_SECOND);
         HIT_MARKER_STYLE = builder
                 .comment("""
                     Visual style of the hit marker.
@@ -503,6 +508,7 @@ public final class ModClientConfig
         showAmmoHud = SHOW_AMMO_HUD.get();
         ammoHudLayout = AMMO_HUD_LAYOUT.get();
         driveableSpeedUnit = DRIVEABLE_SPEED_UNIT.get();
+        driveableVerticalSpeedUnit = DRIVEABLE_VERTICAL_SPEED_UNIT.get();
         hitMarkerStyle = HIT_MARKER_STYLE.get();
         hdHitMarker = HD_HIT_MARKER.get();
         fancyHitMarker = FANCY_HIT_MARKER.get();

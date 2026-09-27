@@ -77,6 +77,7 @@ public class FlansOptionsScreen extends Screen
             ModClientConfig.AIM_POSE,
             ModClientConfig.GUN_BLOCK_INTERACTION,
             ModClientConfig.DRIVEABLE_SPEED_UNIT,
+            ModClientConfig.DRIVEABLE_VERTICAL_SPEED_UNIT,
             ModClientConfig.ENABLE_UNCENSORED_CONTENT,
             ModClientConfig.OPTIONS_BUTTON_PLACEMENT)));
 

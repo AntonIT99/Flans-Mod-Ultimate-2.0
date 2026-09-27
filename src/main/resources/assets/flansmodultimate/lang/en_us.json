@@ -286,6 +286,7 @@
   "options.flansmodultimate.driveableImpostorYawAngles": "Impostor Yaw Angles",
   "options.flansmodultimate.driveableLodDetailMultiplier": "LOD Detail Multiplier",
   "options.flansmodultimate.driveableSpeedUnit": "Driveable Speed Unit",
+  "options.flansmodultimate.driveableVerticalSpeedUnit": "Plane Vertical Speed Unit",
   "options.flansmodultimate.driveableTrackLinkLodPixelSize": "Track Link LOD Pixel Size",
   "options.flansmodultimate.enableAircraftRollSelfLeveling": "Enable Aircraft Roll Self Leveling",
   "options.flansmodultimate.enableArms": "Enable Arms",
