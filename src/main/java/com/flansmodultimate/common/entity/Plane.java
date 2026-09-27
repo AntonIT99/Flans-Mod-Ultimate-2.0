@@ -426,7 +426,7 @@ public class Plane extends Driveable
         if (isGearDeployed() && !liftingOff)
         {
             velocity = applyWheelContactPhysics(velocity, true);
-            if (hasWheelContact() && getPlaneMode() == EnumPlaneMode.PLANE && getThrottle() <= 0.4F)
+            if (isSupportedByGround() && getThrottle() <= 0.4F)
                 recoverLandingAttitude();
         }
         else
@@ -981,7 +981,7 @@ public class Plane extends Driveable
     }
 
     /**
-     * Eases a landed fixed-wing aircraft back into its authored resting pose.
+     * Eases a landed aircraft back into its initial resting pose.
      * Terrain alignment has already run for this tick, so this is deliberately
      * slower than the suspension response and cannot produce a visible snap.
      */
