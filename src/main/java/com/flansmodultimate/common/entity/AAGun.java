@@ -740,9 +740,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
 
         Vec3 riderPosition = getGunnerRiderPosition();
         move.accept(passenger, riderPosition.x, riderPosition.y, riderPosition.z);
-        // The turret follows the player's aim; keep the seated torso aligned
-        // with it instead of letting vanilla turn the body inside the seat.
-        player.yBodyRot += Mth.wrapDegrees(player.getYRot() - player.yBodyRot);
+        // Keep the torso with the traversing seat when the view turns faster
+        // than this mount can follow.
+        player.yBodyRot += Mth.wrapDegrees(getGunYaw() - player.yBodyRot);
         passenger.setDeltaMovement(Vec3.ZERO);
         passenger.fallDistance = 0F;
     }
@@ -842,7 +842,7 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
 
         clearSpentAmmo();
 
-        if (type.isSentry())
+        if (getFirstPassenger() == null && type.isSentry())
             updateSentryTarget(level);
         else
             target = null;
@@ -893,8 +893,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
 
     private void updateAimFromPassenger(LivingEntity passenger)
     {
-        setGunYaw(passenger.getYRot());
-        setGunPitch(passenger.getXRot());
+        float speed = configType == null ? 0F : configType.getTraverseSpeed();
+        setGunYaw(AAGunTraverse.yaw(getGunYaw(), passenger.getYRot(), speed));
+        setGunPitch(AAGunTraverse.pitch(getGunPitch(), clampPitch(passenger.getXRot()), speed));
         setYRot(getGunYaw());
         setXRot(getGunPitch());
     }
@@ -948,16 +949,14 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         float targetYaw = ModUtils.getYawFromDirection(direction);
         float targetPitch = ModUtils.getPitchFromDirection(direction);
 
-        if (getConfigType().isCanShootHomingMissile())
+        if (!getConfigType().isCanShootHomingMissile())
         {
-            setGunYaw(targetYaw);
-            setGunPitch(targetPitch);
+            targetYaw = Mth.rotLerp(0.25F, getGunYaw(), targetYaw);
+            targetPitch = Mth.lerp(0.25F, getGunPitch(), targetPitch);
         }
-        else
-        {
-            setGunYaw(Mth.rotLerp(0.25F, getGunYaw(), targetYaw));
-            setGunPitch(Mth.lerp(0.25F, getGunPitch(), targetPitch));
-        }
+        float speed = getConfigType().getTraverseSpeed();
+        setGunYaw(AAGunTraverse.yaw(getGunYaw(), targetYaw, speed));
+        setGunPitch(AAGunTraverse.pitch(getGunPitch(), clampPitch(targetPitch), speed));
         setYRot(getGunYaw());
         setXRot(getGunPitch());
     }

@@ -2,6 +2,7 @@ package com.flansmodultimate.client.input;
 
 import com.flansmodultimate.client.render.MountedCameraView;
 import com.flansmodultimate.client.render.VehicleOpticsClient;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.IControllable;
 import com.flansmodultimate.common.entity.Seat;
@@ -25,6 +26,9 @@ public final class MouseInputHandler
     private static final float TURN_DEGREES_PER_UNIT = 0.15F;
 
     private static int flightDriveableId = -1;
+    private static int aaGunTurnId = -1;
+    private static int aaGunViewId = -1;
+    private static long lastAAGunTurnNanos;
     private static int viewSeatId = -1;
     private static float synchronizedFlightViewYaw;
     private static float synchronizedFlightViewPitch;
@@ -37,6 +41,7 @@ public final class MouseInputHandler
     /** Recentres the virtual flight stick and validates its current mount once per client tick. */
     public static void beginTick(Player player)
     {
+        bindAAGunView(player);
         Driveable driveable = KeyInputHandler.resolveDriveable(player);
         if (!isMouseFlightActive(player, driveable))
         {
@@ -120,6 +125,27 @@ public final class MouseInputHandler
      */
     public static boolean turnMountedRider(Player player, double yawDelta, double pitchDelta)
     {
+        if (player.getVehicle() instanceof AAGun aaGun && aaGun.getFirstPassenger() == player)
+        {
+            float speed = aaGun.getConfigType() == null ? 0F : aaGun.getConfigType().getTraverseSpeed();
+            if (speed <= 0F)
+                return false;
+
+            long now = System.nanoTime();
+            // The input already includes vanilla sensitivity. Cap its angular
+            // change by elapsed time, so frame rate cannot change traverse speed.
+            double seconds = aaGunTurnId == aaGun.getId()
+                ? Mth.clamp((now - lastAAGunTurnNanos) * 1.0E-9D, 0D, 0.05D)
+                : 1D / 60D;
+            aaGunTurnId = aaGun.getId();
+            lastAAGunTurnNanos = now;
+            double maxInput = speed * seconds / TURN_DEGREES_PER_UNIT;
+            player.turn(Mth.clamp(yawDelta, -maxInput, maxInput),
+                Mth.clamp(pitchDelta, -maxInput, maxInput));
+            return true;
+        }
+        aaGunTurnId = -1;
+
         if (!(player.getVehicle() instanceof Seat seat) || seat.getRiddenByEntity() != player
             || seat.getDriveable() == null)
             return false;
@@ -141,6 +167,27 @@ public final class MouseInputHandler
         flightPitchControl = 0F;
         flightRollControl = 0F;
         flightViewSynchronized = false;
+    }
+
+    /** Start a new ride looking down the barrel rather than across the seat. */
+    private static void bindAAGunView(Player player)
+    {
+        if (!(player.getVehicle() instanceof AAGun aaGun) || aaGun.getFirstPassenger() != player)
+        {
+            aaGunViewId = -1;
+            return;
+        }
+        if (aaGunViewId == aaGun.getId())
+            return;
+
+        aaGunViewId = aaGun.getId();
+        float yaw = player.getYRot() + Mth.wrapDegrees(aaGun.getGunYaw() - player.getYRot());
+        player.setYRot(yaw);
+        player.setXRot(aaGun.getGunPitch());
+        player.yRotO = yaw;
+        player.xRotO = aaGun.getGunPitch();
+        player.yHeadRot = player.yHeadRotO = yaw;
+        player.yBodyRot = player.yBodyRotO = yaw;
     }
 
     /** Adopts the aim the server holds for a seat the local player just took. */

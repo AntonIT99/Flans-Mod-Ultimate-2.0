@@ -60,6 +60,13 @@ class AAGunTypeTest
     }
 
     @Test
+    void traverseSpeedDefaultsToLegacyAimAndReadsDegreesPerSecond()
+    {
+        assertEquals(0F, read("ShortName testAaGun").getTraverseSpeed());
+        assertEquals(55F, read("ShortName testAaGun", "TraverseSpeed 55").getTraverseSpeed());
+    }
+
+    @Test
     void hitBoxSizeSetsBothSidesAndWidthOrHeightRefineIt()
     {
         AAGunType square = read("ShortName testAaGun", "HitBoxSize 1.5");

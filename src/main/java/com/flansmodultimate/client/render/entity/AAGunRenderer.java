@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 
 public class AAGunRenderer extends FlanEntityRenderer<AAGun>
 {
@@ -49,16 +48,6 @@ public class AAGunRenderer extends FlanEntityRenderer<AAGun>
 
         float yaw = Mth.rotLerp(partialTicks, aaGun.getPrevGunYaw(), aaGun.getRenderGunYaw());
         float pitch = Mth.lerp(partialTicks, aaGun.getPrevGunPitch(), aaGun.getRenderGunPitch());
-        if (aaGun.getFirstPassenger() instanceof LivingEntity gunner)
-        {
-            // The gun's synced aim updates once per tick; the rider's view also has
-            // the in-between angles needed for smooth local and remote rendering.
-            yaw = Mth.rotLerp(partialTicks, gunner.yRotO, gunner.getYRot());
-            float top = -Math.abs(type.getTopViewLimit());
-            float bottom = type.getBottomViewLimit();
-            pitch = Mth.clamp(Mth.lerp(partialTicks, gunner.xRotO, gunner.getXRot()),
-                Math.min(top, bottom), Math.max(top, bottom));
-        }
         poseStack.mulPose(Axis.YP.rotationDegrees(270F - yaw));
 
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))

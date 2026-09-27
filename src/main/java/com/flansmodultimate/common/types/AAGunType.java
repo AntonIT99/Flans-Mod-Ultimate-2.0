@@ -79,6 +79,8 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     protected float topViewLimit = 75F;
     protected float bottomViewLimit = 0F;
     protected float sideViewLimit = 180F;
+    /** Maximum yaw and pitch change in degrees per second; zero keeps legacy instant aim. */
+    protected float traverseSpeed;
     protected float[] barrelX = new float[] { 0F };
     protected float[] barrelY = new float[] { 0F };
     protected float[] barrelZ = new float[] { 0F };
@@ -126,6 +128,11 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
         topViewLimit = readValue("TopViewLimit", topViewLimit, file);
         bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
         sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
+        float parsedTraverseSpeed = readValue("TraverseSpeed", traverseSpeed, file);
+        if (Float.isFinite(parsedTraverseSpeed) && parsedTraverseSpeed >= 0F)
+            traverseSpeed = parsedTraverseSpeed;
+        else
+            logError("TraverseSpeed must be a finite, non-negative number of degrees per second", file);
         spreadPattern = readValue("SpreadPattern", spreadPattern, EnumSpreadPattern.class, file);
         numBullets = readValue("NumBullets", numBullets, file);
 

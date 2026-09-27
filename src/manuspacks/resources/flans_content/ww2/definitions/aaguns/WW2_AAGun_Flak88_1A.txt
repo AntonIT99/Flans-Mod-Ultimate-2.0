@@ -25,8 +25,9 @@ HitBoxHeight 2.2
 GunnerPos 3 30 -16
 BottomViewLimit 0
 TopViewLimit 75
+TraverseSpeed 25
 NumBarrels 1
-Barrel 0 88 40 0
+Barrel 0 51.09 28 7.4
 Damage 1
 FireAlternately True
 Recoil 5

@@ -22,14 +22,15 @@ HitBoxHeight 6.0
 
 // Weapons
 NumBarrels 2
-Barrel 0 125 66 25
-Barrel 1 125 66 -25
+Barrel 0 81.49 66 29.31
+Barrel 1 86.46 66 -4.98
 FireAlternately True
 ReloadTime 60
 Recoil 4
 Damage 1
 GunnerPos 20 103 0
 TopViewLimit 80
+TraverseSpeed 35
 BottomViewLimit 0
 RoundsPerMin 120.0
 Dispersion 0.1

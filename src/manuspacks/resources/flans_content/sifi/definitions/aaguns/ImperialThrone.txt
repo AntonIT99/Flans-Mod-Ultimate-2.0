@@ -27,6 +27,7 @@ Recoil 0
 Damage 0
 GunnerPos 0 29 0
 TopViewLimit 80
+TraverseSpeed 120
 BottomViewLimit 0
 RoundsPerMin 120.0
 Dispersion 0.1
