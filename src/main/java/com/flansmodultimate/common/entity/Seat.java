@@ -14,11 +14,13 @@ import com.flansmodultimate.common.driveables.VehicleOptics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -187,6 +189,10 @@ public class Seat extends Entity implements IControllable, ISeat
     private float clientViewWorldYaw;
 
     private int orphanTicks;
+    private int yawSoundDelay;
+    private int pitchSoundDelay;
+    private float lastTraverseYaw;
+    private float lastTraversePitch;
     private int localInputMask;
     private int previousInputMask;
     private int lastInputSequence;
@@ -483,7 +489,47 @@ public class Seat extends Entity implements IControllable, ISeat
             receivedInputSequence = false;
         }
         if (!level().isClientSide)
+        {
             updateOptics(false, false);
+            updateTraverseSounds(passenger);
+        }
+    }
+
+    /** Plays the seat's yaw and pitch traverse sounds while its occupant is turning it. */
+    private void updateTraverseSounds(@Nullable Entity passenger)
+    {
+        if (yawSoundDelay > 0)
+            yawSoundDelay--;
+        if (pitchSoundDelay > 0)
+            pitchSoundDelay--;
+
+        float yaw = getAimYaw();
+        float pitch = getAimPitch();
+        boolean yawMoving = Math.abs(Mth.wrapDegrees(yaw - lastTraverseYaw)) > 1.0E-3F;
+        boolean pitchMoving = Math.abs(pitch - lastTraversePitch) > 1.0E-3F;
+        lastTraverseYaw = yaw;
+        lastTraversePitch = pitch;
+
+        if (!(passenger instanceof Player) || seatInfo == null || !seatInfo.isTraverseSounds() || driveable == null
+            || (driveable.isUnderWater() && driveable.getConfigType() != null && !driveable.getConfigType().isWorksUnderWater()))
+        {
+            yawSoundDelay = 0;
+            pitchSoundDelay = 0;
+            return;
+        }
+
+        // Legacy YawBeforePitch holds the pitch sound until the yaw traverse has finished.
+        boolean playPitch = pitchMoving && !(seatInfo.isYawBeforePitch() && yawMoving);
+        if (yawMoving && yawSoundDelay == 0 && StringUtils.isNotBlank(seatInfo.getYawSound()))
+        {
+            PacketPlaySound.sendSoundPacket(this, 50D, seatInfo.getYawSound(), false);
+            yawSoundDelay = seatInfo.getYawSoundLength();
+        }
+        if (playPitch && pitchSoundDelay == 0 && StringUtils.isNotBlank(seatInfo.getPitchSound()))
+        {
+            PacketPlaySound.sendSoundPacket(this, 50D, seatInfo.getPitchSound(), false);
+            pitchSoundDelay = seatInfo.getPitchSoundLength();
+        }
     }
 
     private boolean resolveParent()
