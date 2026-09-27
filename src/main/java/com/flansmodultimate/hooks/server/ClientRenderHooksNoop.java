@@ -2,6 +2,7 @@ package com.flansmodultimate.hooks.server;
 
 import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -78,6 +79,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
 
     @Override
     public List<DerivedMuzzle> deriveMuzzles(DriveableType type)
+    {
+        return List.of();
+    }
+
+    @Override
+    public List<Vec3> deriveAAGunBarrelOffsets(AAGunType type)
     {
         return List.of();
     }

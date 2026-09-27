@@ -7,6 +7,7 @@ import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
@@ -161,8 +162,99 @@ public class ModelVehicle extends ModelDriveable
                 bestPart.rotationPointZ / 16D);
         else if ((barrelSpecModel != null && barrelSpecModel.length > 0)
             || (animBarrelModel != null && animBarrelModel.length > 0))
-            primaryBarrelPitchPivot = new Vec3(barrelAttach.x, barrelAttach.y, barrelAttach.z);
+            // Same model-point convention as the rotation points above: the
+            // renderer applies barrelAttach with its Z negated (translateToModelPoint).
+            primaryBarrelPitchPivot = new Vec3(barrelAttach.x, barrelAttach.y, -barrelAttach.z);
         return primaryBarrelPitchPivot;
+    }
+
+    /**
+     * How far, in model pixels, a shoot point may lie from a barrel section's
+     * geometry and still be taken as built on it. A mounted gun's point is
+     * normally placed on or just in front of its own boxes.
+     */
+    private static final double SHOOT_POINT_PART_TOLERANCE = 3D;
+
+    /** Rendered bounds of each barrel section, [part][minX minY minZ maxX maxY maxZ]; filled on first use. */
+    private transient double[][] barrelPartBounds;
+
+    /**
+     * Pitch pivot of the barrel section a point is built on, in the units of
+     * {@link #getPrimaryBarrelPitchPivot}. The renderer pitches every barrel
+     * section around its own rotation point, so a machine gun modelled on the
+     * turret roof tilts in place rather than round the main gun's trunnion.
+     *
+     * @param modelPixels the point in model pixels, before ModelScale
+     * @return the section's pivot, or {@code null} when no barrel section lies near the point
+     */
+    @Nullable
+    public Vec3 getBarrelPitchPivotNear(Vec3 modelPixels)
+    {
+        if (barrelModel == null)
+            return null;
+        if (barrelPartBounds == null)
+        {
+            double[][] bounds = new double[barrelModel.length][];
+            for (int index = 0; index < barrelModel.length; index++)
+            {
+                ModelRendererTurbo part = barrelModel[index];
+                double[] box = new double[] {
+                    Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+                };
+                if (part != null && part.appendFaceBounds(box))
+                    bounds[index] = new double[] {
+                        part.rotationPointX + box[0], part.rotationPointY + box[1], part.rotationPointZ + box[2],
+                        part.rotationPointX + box[3], part.rotationPointY + box[4], part.rotationPointZ + box[5]
+                    };
+            }
+            barrelPartBounds = bounds;
+        }
+
+        ModelRendererTurbo nearest = null;
+        double nearestDistance = SHOOT_POINT_PART_TOLERANCE;
+        for (int index = 0; index < barrelModel.length; index++)
+        {
+            double[] box = barrelPartBounds[index];
+            if (box == null)
+                continue;
+            double dx = Math.max(0D, Math.max(box[0] - modelPixels.x, modelPixels.x - box[3]));
+            double dy = Math.max(0D, Math.max(box[1] - modelPixels.y, modelPixels.y - box[4]));
+            double dz = Math.max(0D, Math.max(box[2] - modelPixels.z, modelPixels.z - box[5]));
+            double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (distance <= nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = barrelModel[index];
+            }
+        }
+        return nearest == null ? null
+            : new Vec3(nearest.rotationPointX / 16D, nearest.rotationPointY / 16D, nearest.rotationPointZ / 16D);
+    }
+
+    /**
+     * {@link #getBarrelPitchPivotNear} for each point of one weapon bank, in bank
+     * order, or {@code null} for a point not on the turret or not near a barrel section.
+     */
+    public Vec3[] getShootPointPitchPivots(DriveableType type, boolean secondary)
+    {
+        List<ShootPoint> points = type.shootPoints(secondary);
+        Vec3[] pivots = new Vec3[points.size()];
+        double modelScale = Math.max(1.0E-4D, type.getModelScale());
+        for (int index = 0; index < pivots.length; index++)
+        {
+            ShootPoint point = points.get(index);
+            if (!EnumDriveablePart.isTurretMounted(point.getRootPos().getPart()))
+                continue;
+            Vector3f position = point.getRootPos().getPosition();
+            Vector3f offset = point.getOffPos();
+            // A ground vehicle's type-file point and its geometry share one frame
+            // (LegacyDriveableCoordinates.modelPixelsToTypeFile), but the points are
+            // authored at rendered size and the geometry is before ModelScale.
+            pivots[index] = getBarrelPitchPivotNear(new Vec3(position.x + offset.x, position.y + offset.y,
+                position.z + offset.z).scale(16D / modelScale));
+        }
+        return pivots;
     }
 
     /**

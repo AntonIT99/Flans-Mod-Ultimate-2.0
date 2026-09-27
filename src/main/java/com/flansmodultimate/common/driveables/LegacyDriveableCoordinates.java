@@ -161,6 +161,21 @@ public final class LegacyDriveableCoordinates
     }
 
     /**
+     * Carries a point fixed to a mounted gun round the gun's pivot as the gun aims.
+     *
+     * <p>The point is given where it sits with the gun in its model rest pose,
+     * which faces the aim yaw {@code restYawDegrees} at zero pitch. The result is
+     * turned by the same rotation that takes the rest facing to the aim, so a
+     * muzzle on the bore stays on the bore whatever the gun is pointed at.</p>
+     */
+    public static Vec3 aimAroundPivot(@NotNull Vec3 point, @NotNull Vec3 pivot, float restYawDegrees,
+                                      float yawDegrees, float pitchDegrees)
+    {
+        Vec3 forwardAtRest = rotateTurretYawLocal(point.subtract(pivot), -restYawDegrees);
+        return pivot.add(rotateTurretLocal(forwardAtRest, yawDegrees, pitchDegrees));
+    }
+
+    /**
      * Applies the exact outer transform used by DriveableRenderer:
      * model roll (X), model pitch (Z), then entity yaw (Y).
      */

@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.api.IAAGunType;
 import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
@@ -25,8 +26,10 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -198,6 +201,45 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
                 barrelY[id] = values[2];
                 barrelZ[id] = values[3];
             }));
+    }
+
+    /** Barrel lines as authored, kept while {@code /flandebug} overrides them, by barrel index. */
+    @Getter(lombok.AccessLevel.NONE)
+    private final Map<Integer, int[]> authoredBarrels = new TreeMap<>();
+
+    /**
+     * Moves one barrel's type-file line for the shoot-point debug command.
+     * Barrel lines are whole model pixels, so the value is rounded.
+     */
+    public boolean setDebugBarrel(int barrel, Vector3f legacyPixels)
+    {
+        if (barrel < 0 || barrel >= numBarrels)
+            return false;
+        authoredBarrels.computeIfAbsent(barrel, ignored -> new int[] { barrelX[barrel], barrelY[barrel], barrelZ[barrel] });
+        barrelX[barrel] = Math.round(legacyPixels.x);
+        barrelY[barrel] = Math.round(legacyPixels.y);
+        barrelZ[barrel] = Math.round(legacyPixels.z);
+        return true;
+    }
+
+    public boolean isBarrelOverridden(int barrel)
+    {
+        return authoredBarrels.containsKey(barrel);
+    }
+
+    public boolean hasDebugOverrides()
+    {
+        return !authoredBarrels.isEmpty();
+    }
+
+    public void resetDebugOverrides()
+    {
+        authoredBarrels.forEach((barrel, line) -> {
+            barrelX[barrel] = line[0];
+            barrelY[barrel] = line[1];
+            barrelZ[barrel] = line[2];
+        });
+        authoredBarrels.clear();
     }
 
     private void readGunnerPosition(TypeFile file)

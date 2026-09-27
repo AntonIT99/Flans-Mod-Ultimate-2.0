@@ -214,6 +214,15 @@ public class Seat extends Entity implements IControllable, ISeat
         super(FlansMod.seatEntity.get(), level);
         noPhysics = true;
         bind(parent, seatIndex, info);
+        // Legacy EntitySeat starts looking down the middle of its traverse and
+        // keeps whatever aim its last gunner left. Starting at 0 instead drew a
+        // gun whose traverse excludes 0, such as a rear gunner's, outside it.
+        // The driver's aim drives the saved turret, so it is left alone.
+        if (info != null && seatIndex > 0)
+        {
+            entityData.set(DATA_AIM_YAW, info.getYawCentre());
+            prevAimYaw = info.getYawCentre();
+        }
     }
 
     public void bind(@NotNull Driveable parent, int seatIndex, @Nullable SeatInfo info)

@@ -10,6 +10,7 @@ import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
@@ -30,7 +31,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -403,6 +403,15 @@ public class ClientGunHooksImpl implements IClientGunHooks
                 DebugHelper.spawnDebugDot(barrelOrigin, 2, 1F, 1F, 0F);
                 DebugHelper.spawnDebugVector(barrelOrigin, shootingVector, 2, 1F, 1F, 0F);
             }
+            // The type file's Barrel line, which only fires until a client has
+            // reported the model. Shown whenever the model is what fires, so the
+            // two can be compared and the line corrected with /flandebug.
+            if (hasModelBarrel(barrelOriginData, barrel))
+            {
+                Vec3 authored = aaGun.getAuthoredBarrelOrigin(barrel, sentry);
+                DebugHelper.spawnDebugDot(authored, 2, 1F, 0F, 1F);
+                DebugHelper.spawnDebugVector(authored, shootingVector, 2, 1F, 0F, 1F);
+            }
         }
 
         if (!sentry)
@@ -412,32 +421,19 @@ public class ClientGunHooksImpl implements IClientGunHooks
         }
     }
 
-    private static Vec3 getAAGunDebugBarrelOrigin(AAGun aaGun, int barrel, boolean sentryShot, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
+    private static boolean hasModelBarrel(@Nullable ModelAAGun.BarrelOriginData barrelOriginData, int barrel)
     {
-        if (barrelOriginData != null && barrel < barrelOriginData.pivots().length && barrel < barrelOriginData.muzzles().length)
-            return aaGun.position().add(transformAAGunModelBarrelOffset(aaGun, barrelOriginData.pivots()[barrel], barrelOriginData.muzzles()[barrel]));
-
-        return aaGun.getBarrelOrigin(barrel, sentryShot);
+        return barrelOriginData != null && barrel < barrelOriginData.pivots().length
+            && barrel < barrelOriginData.muzzles().length;
     }
 
-    private static Vec3 transformAAGunModelBarrelOffset(AAGun aaGun, Vec3 pivot, Vec3 muzzle)
+    private static Vec3 getAAGunDebugBarrelOrigin(AAGun aaGun, int barrel, boolean sentryShot, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
     {
-        double pitch = -aaGun.getGunPitch() * Mth.DEG_TO_RAD;
-        double cosPitch = Math.cos(pitch);
-        double sinPitch = Math.sin(pitch);
+        if (hasModelBarrel(barrelOriginData, barrel))
+            return aaGun.position().add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel],
+                barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch()));
 
-        double modelX = pivot.x + muzzle.x * cosPitch - muzzle.y * sinPitch;
-        double modelY = pivot.y + muzzle.x * sinPitch + muzzle.y * cosPitch;
-        double modelZ = pivot.z + muzzle.z;
-
-        double yaw = (270D - aaGun.getGunYaw()) * Mth.DEG_TO_RAD;
-        double cosYaw = Math.cos(yaw);
-        double sinYaw = Math.sin(yaw);
-
-        double x = modelX * cosYaw + modelZ * sinYaw;
-        double z = -modelX * sinYaw + modelZ * cosYaw;
-
-        return new Vec3(x / 16D, modelY / 16D, z / 16D);
+        return aaGun.getBarrelOrigin(barrel, sentryShot);
     }
 
     @Override

@@ -20,6 +20,15 @@ class ShootPointDebugCommandTest
         assertExecutable(dispatcher, "flandebug", "shootpoint", "nudge", "seat", "seat", "x", "y", "z");
     }
 
+    @Test
+    void registersApplyingEveryMeasuredPoint()
+    {
+        CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher<>();
+        ShootPointDebugCommand.register(dispatcher);
+
+        assertExecutable(dispatcher, "flandebug", "shootpoint", "apply");
+    }
+
     private static void assertExecutable(CommandDispatcher<CommandSourceStack> dispatcher, String... path)
     {
         CommandNode<CommandSourceStack> node = dispatcher.getRoot();

@@ -2,13 +2,14 @@ package com.flansmodultimate.network.client;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.PacketBuffer;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -28,7 +29,7 @@ public class PacketDebugShootPoint implements IClientPacket
     /** Widest offset a marker may be moved to, in model pixels. */
     private static final float MAX_MODEL_PIXELS = 1024F;
 
-    public enum Operation { SET_PRIMARY, SET_SECONDARY, ADD_PRIMARY, ADD_SECONDARY, GUN_ORIGIN, RESET }
+    public enum Operation { SET_PRIMARY, SET_SECONDARY, ADD_PRIMARY, ADD_SECONDARY, GUN_ORIGIN, RESET, AA_BARREL, AA_RESET }
 
     private static final Operation[] OPERATIONS = Operation.values();
 
@@ -89,7 +90,17 @@ public class PacketDebugShootPoint implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        if (!(InfoType.getInfoType(shortName) instanceof DriveableType type) || !isSaneOffset())
+        if (!isSaneOffset())
+            return;
+        if (InfoType.getInfoType(shortName) instanceof AAGunType aaGun)
+        {
+            if (operation == Operation.AA_BARREL)
+                aaGun.setDebugBarrel(index, new Vector3f(x, y, z));
+            else if (operation == Operation.AA_RESET)
+                aaGun.resetDebugOverrides();
+            return;
+        }
+        if (!(InfoType.getInfoType(shortName) instanceof DriveableType type))
             return;
 
         Vector3f position = new Vector3f(x, y, z);

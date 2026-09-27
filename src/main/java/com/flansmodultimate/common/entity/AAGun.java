@@ -15,11 +15,11 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
-import com.flansmodultimate.platform.network.PacketIO;
-import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -65,7 +65,6 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     public static final int RENDER_DISTANCE = 128;
     public static final float DEFAULT_HITBOX_SIZE = 2F;
 
-    private static final double SENTRY_ORIGIN_Y_OFFSET = 1.5D;
     private static final double LEGACY_PLAYER_EYE_HEIGHT = 1.62D;
     private static final int TARGET_ACQUIRE_INTERVAL = 10;
 
@@ -1129,61 +1128,30 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
             return position();
 
         if (barrel < modelBarrelPivots.length && barrel < modelBarrelMuzzles.length)
-            return position().add(transformModelBarrelOffset(modelBarrelPivots[barrel], modelBarrelMuzzles[barrel]));
-
-        Vec3 origin = position().add(transformLegacyConfigBarrelOffset(type, barrel));
-        return sentryShot && type.isSentry() ? origin.add(0D, SENTRY_ORIGIN_Y_OFFSET, 0D) : origin;
+            return position().add(AAGunBarrelGeometry.modelBarrelOffset(modelBarrelPivots[barrel],
+                modelBarrelMuzzles[barrel], getGunYaw(), getGunPitch()));
+        return position().add(authoredBarrelOffset(type, barrel, sentryShot, getGunYaw(), getGunPitch()));
     }
 
-    private Vec3 transformModelBarrelOffset(Vec3 pivot, Vec3 muzzle)
+    /**
+     * Where a type-file {@code Barrel} line puts the round, ignoring the model.
+     * This is what fires until a client has reported the model's barrels.
+     */
+    public Vec3 getAuthoredBarrelOrigin(int barrel, boolean sentryShot)
     {
-        double pitch = -getGunPitch() * Mth.DEG_TO_RAD;
-        double cosPitch = Math.cos(pitch);
-        double sinPitch = Math.sin(pitch);
-
-        double modelX = pivot.x + muzzle.x * cosPitch - muzzle.y * sinPitch;
-        double modelY = pivot.y + muzzle.x * sinPitch + muzzle.y * cosPitch;
-        double modelZ = pivot.z + muzzle.z;
-
-        double yaw = (270D - getGunYaw()) * Mth.DEG_TO_RAD;
-        double cosYaw = Math.cos(yaw);
-        double sinYaw = Math.sin(yaw);
-
-        double x = modelX * cosYaw + modelZ * sinYaw;
-        double z = -modelX * sinYaw + modelZ * cosYaw;
-
-        return new Vec3(x / 16D, modelY / 16D, z / 16D);
+        AAGunType type = getConfigType();
+        if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
+            return position();
+        return position().add(authoredBarrelOffset(type, barrel, sentryShot, getGunYaw(), getGunPitch()));
     }
 
-    private Vec3 transformLegacyConfigBarrelOffset(AAGunType type, int barrel)
+    private static Vec3 authoredBarrelOffset(AAGunType type, int barrel, boolean sentryShot, float gunYaw,
+                                             float gunPitch)
     {
-        // Map legacy position to actual position
-        double barrelX = type.getBarrelZ()[barrel];
-        double barrelY = type.getBarrelY()[barrel];
-        double barrelZ = -type.getBarrelX()[barrel];
-
-        double x = (barrelX - barrelZ) / 16D;
-        double y = barrelY / 16D;
-        double z = (barrelX + barrelZ) / 16D;
-
-        return rotate(x, y, z, getGunPitch(), getGunYaw());
-    }
-
-    public Vec3 rotate(double x, double y, double z, double gunPitch, double gunYaw)
-    {
-        double yaw = 180D - gunYaw * Mth.DEG_TO_RAD;
-        double pitch = gunPitch * Mth.DEG_TO_RAD;
-
-        double cosYaw = Math.cos(yaw);
-        double sinYaw = Math.sin(yaw);
-        double cosPitch = Math.cos(pitch);
-        double sinPitch = Math.sin(pitch);
-
-        double newX = x * cosYaw + (y * sinPitch + z * cosPitch) * sinYaw;
-        double newY = y * cosPitch - z * sinPitch;
-        double newZ = -x * sinYaw + (y * sinPitch + z * cosPitch) * cosYaw;
-
-        return new Vec3(newX, newY, newZ);
+        Vec3 offset = AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
+            type.getBarrelZ()[barrel], gunYaw, gunPitch);
+        return sentryShot && type.isSentry()
+            ? offset.add(0D, AAGunBarrelGeometry.SENTRY_ORIGIN_Y_OFFSET, 0D) : offset;
     }
 
     public Vec3 getShootingDirection()

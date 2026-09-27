@@ -57,6 +57,60 @@ class LegacyDriveableCoordinatesTest
     }
 
     @Test
+    void seatGunMuzzleOnThePivotStaysPutWhateverTheAim()
+    {
+        Vec3 pivot = new Vec3(0.4D, 2.1D, -0.3D);
+
+        assertVector(LegacyDriveableCoordinates.aimAroundPivot(pivot, pivot, 0F, 73F, -20F), pivot);
+    }
+
+    @Test
+    void seatGunMuzzleAheadOfThePivotStaysOnTheBoreAsTheGunAims()
+    {
+        Vec3 forward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+        Vec3 pivot = new Vec3(0.4D, 2.1D, -0.3D);
+        Vec3 muzzle = pivot.add(forward.scale(1.5D));
+
+        for (float[] aim : new float[][] { { 0F, 0F }, { 90F, 0F }, { 0F, 25F }, { -135F, -15F } })
+        {
+            Vec3 aimed = LegacyDriveableCoordinates.aimAroundPivot(muzzle, pivot, 0F, aim[0], aim[1]);
+            Vec3 bore = LegacyDriveableCoordinates.rotateTurretLocal(forward, aim[0], aim[1]);
+            assertVector(aimed, pivot.add(bore.scale(1.5D)));
+        }
+    }
+
+    @Test
+    void seatGunMuzzleAboveTheBoreKeepsItsStandOffWhenPitched()
+    {
+        Vec3 forward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
+        Vec3 pivot = Vec3.ZERO;
+        Vec3 muzzle = forward.scale(1D).add(0D, 0.25D, 0D);
+
+        Vec3 aimed = LegacyDriveableCoordinates.aimAroundPivot(muzzle, pivot, 0F, 40F, 30F);
+
+        // Rigid about the pivot: same reach, and same height above the bore.
+        assertEquals(muzzle.length(), aimed.length(), EPSILON);
+        Vec3 bore = LegacyDriveableCoordinates.rotateTurretLocal(forward, 40F, 30F);
+        assertEquals(1D, aimed.dot(bore), EPSILON);
+    }
+
+    @Test
+    void seatGunRestingAftIsTurnedOntoTheAim()
+    {
+        // Aircraft draw seat guns resting half round from aim yaw zero.
+        Vec3 forward = LegacyDriveableCoordinates.applyPlaneModelFacing(
+            LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
+        Vec3 muzzleAtRest = forward.scale(-2D);
+
+        for (float[] aim : new float[][] { { 0F, 0F }, { 30F, 10F }, { -70F, -25F } })
+        {
+            Vec3 aimed = LegacyDriveableCoordinates.aimAroundPivot(muzzleAtRest, Vec3.ZERO, 180F, aim[0], aim[1]);
+            Vec3 bore = LegacyDriveableCoordinates.rotateTurretLocal(forward, aim[0], aim[1]);
+            assertVector(aimed, bore.scale(2D));
+        }
+    }
+
+    @Test
     void pitchRotatesConvertedLegacyForwardAroundLocalXAxis()
     {
         Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));

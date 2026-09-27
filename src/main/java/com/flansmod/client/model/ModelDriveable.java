@@ -304,7 +304,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             if (gun == null || seat == null)
                 continue;
 
-            float[] angles = registeredGunAngles(seatInfo, seat, state.partialTick(), state.turretYaw(),
+            float[] angles = registeredGunAngles(seat, state.partialTick(), state.turretYaw(),
                 mountFilter == GunMountFilter.TURRET ? driverYaw : 0F, yawConvention);
             float yaw = angles[0];
             float pitch = angles[1];
@@ -353,13 +353,10 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * registered seat gun. {@code relativeYaw} is subtracted from the seat's aim,
      * which turret-mounted guns need because the turret already carries it.
      */
-    protected static float[] registeredGunAngles(SeatInfo seatInfo, Seat seat, float partialTick, float fallbackYaw,
+    protected static float[] registeredGunAngles(Seat seat, float partialTick, float fallbackYaw,
                                                  float relativeYaw, GunYawConvention yawConvention)
     {
-        float aimYaw = !seatInfo.isDriver() && !seat.isVehicle()
-            ? seatInfo.getYawCentre()
-            : interpolatedYaw(seat, partialTick, fallbackYaw);
-        aimYaw = Mth.wrapDegrees(aimYaw - relativeYaw);
+        float aimYaw = Mth.wrapDegrees(interpolatedYaw(seat, partialTick, fallbackYaw) - relativeYaw);
         float aimPitch = Mth.lerp(partialTick, seat.getPrevAimPitch(), seat.getAimPitch());
         float yaw = (yawConvention == GunYawConvention.PLANE ? 180F - aimYaw : -aimYaw) * Mth.DEG_TO_RAD;
         return new float[] { yaw, -aimPitch * Mth.DEG_TO_RAD };
@@ -386,7 +383,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         Seat driverSeat = driveable.getSeat(0);
         float turretYaw = driveable.getTurretYaw();
         float driverYaw = turretMounted ? interpolatedYaw(driverSeat, partialTick, turretYaw) : 0F;
-        float[] angles = registeredGunAngles(seatInfo, seat, partialTick, turretYaw, driverYaw,
+        float[] angles = registeredGunAngles(seat, partialTick, turretYaw, driverYaw,
             this instanceof ModelPlane ? GunYawConvention.PLANE : GunYawConvention.VEHICLE);
 
         Vec3 aimed = rotatePartOffset(muzzle.subtract(pivot.scale(16D)), angles[0], angles[1]).add(pivot.scale(16D));
@@ -513,8 +510,12 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * same depth are treated as one muzzle face. A muzzle brake is usually built
      * from a handful of boxes, and the single furthest one is often an asymmetric
      * corner piece; averaging the group is what keeps the result on the bore axis.
+     *
+     * <p>Kept tight because a gun's front sight usually stands a couple of pixels
+     * behind the muzzle: the Warfare 44 Tiger's MG34 sight ends 2.3 pixels short
+     * of the tip, and at 3 pixels it lifted the measured bore by half a pixel.</p>
      */
-    private static final float MUZZLE_FACE_TOLERANCE = 3F;
+    private static final float MUZZLE_FACE_TOLERANCE = 1.5F;
 
     /**
      * Measures the muzzle of a group of model parts: the furthest point along the

@@ -114,6 +114,42 @@ class ModelDriveableMuzzleTest
     }
 
     @Test
+    void aFrontSightBehindTheMuzzleDoesNotLiftTheBore()
+    {
+        ModelVehicle model = new ModelVehicle();
+        // The Warfare 44 Tiger's MG34, rest pose: the muzzle ring on the bore at
+        // y 18 and, 2.3 pixels short of it, a front sight standing a pixel above.
+        model.barrelModel = new ModelRendererTurbo[] {
+            barrelSection(model, 36F, 18F, 10F, 11.4F, -0.25F, -0.25F, 1, 1, 1),
+            barrelSection(model, 36F, 18F, 10F, 9.1F, 0.15F, -0.04F, 1, 1, 1)
+        };
+
+        Vec3 muzzle = model.getPrimaryBarrelMuzzle();
+
+        assertNotNull(muzzle);
+        assertEquals(48.4D, muzzle.x, 1.0E-4D);
+        assertEquals(18.25D, muzzle.y, 1.0E-4D, "centred on the muzzle ring alone");
+        assertEquals(10.25D, muzzle.z, 1.0E-4D);
+    }
+
+    @Test
+    void aShootPointPitchesRoundTheBarrelSectionItIsBuiltOn()
+    {
+        ModelVehicle model = new ModelVehicle();
+        // The Warfare 44 M4A3E8's gun and its roof .30, both in barrelModel,
+        // each drawn pitching round its own rotation point.
+        model.barrelModel = new ModelRendererTurbo[] {
+            barrelSection(model, 14F, 28F, 0F, -3F, -1F, -1F, 60, 2, 2),
+            barrelSection(model, 3F, 39.5F, -2F, 1F, 0F, -0.5F, 8, 1, 1)
+        };
+
+        assertEquals(new Vec3(14D / 16D, 28D / 16D, 0D), model.getBarrelPitchPivotNear(new Vec3(70D, 28D, 0D)));
+        assertEquals(new Vec3(3D / 16D, 39.5D / 16D, -2D / 16D),
+            model.getBarrelPitchPivotNear(new Vec3(7D, 40D, -1.7D)), "the roof gun, not the main gun's trunnion");
+        assertNull(model.getBarrelPitchPivotNear(new Vec3(-20D, 20D, 15D)), "nothing near: keep the main pivot");
+    }
+
+    @Test
     void aModelWithNoBarrelGeometryMeasuresNothing()
     {
         assertNull(new ModelVehicle().getPrimaryBarrelMuzzle());

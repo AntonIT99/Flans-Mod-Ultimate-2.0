@@ -307,10 +307,19 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     private DriveablePrediction prediction;
     /** The throttle a prediction simulates with; the synced one is a round trip old. */
     private float predictedThrottle;
-    /** Pitch pivot read from the loaded vehicle model and converted to the driveable-local basis. */
+    /** Pitch pivot read from the loaded vehicle model, as the model reports it: blocks, before ModelScale. */
     @Nullable
     private Vec3 modelBarrelPitchPivot;
-    /** Per-seat gun pivots read from registered model gun rows. */
+    /**
+     * Per shoot point, primary then secondary bank, the pivot of the barrel
+     * section the point is built on, in the same units; {@code null} entries
+     * pitch round {@link #modelBarrelPitchPivot}. Supplied by the driver's client.
+     */
+    private final Vec3[][] modelShootPointPitchPivots = { new Vec3[0], new Vec3[0] };
+    /**
+     * Per-seat gun pivots read from registered model gun rows, as the model
+     * reports them: blocks, before ModelScale. Each gunner's client supplies its own.
+     */
     private Vec3[] modelPassengerGunAimPivots = new Vec3[0];
 
     protected int localInputMask;
@@ -2656,7 +2665,38 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // only the offset leaves the root yaw-only and makes the projectile
         // origin detach from the barrel as its pitch changes.
         Vec3 muzzle = root.add(offset);
-        return turretPointToWorld(muzzle, getTurretYaw(), getTurretPitch());
+        return modelLocalToWorld(turretPointToLocal(muzzle, getTurretYaw(), getTurretPitch(),
+            shootPointPitchPivotLocal(point)));
+    }
+
+    /**
+     * The point a turret shoot point pitches round: the barrel section it is
+     * built on, which for a roof machine gun is not the main gun's trunnion.
+     */
+    @Nullable
+    private Vec3 shootPointPitchPivotLocal(@NotNull ShootPoint point)
+    {
+        Vec3 raw = rawShootPointPitchPivot(point);
+        return raw == null ? null : modelPivotToLocal(raw);
+    }
+
+    /** The client-reported pivot for one shoot point, as the model gives it. */
+    @Nullable
+    private Vec3 rawShootPointPitchPivot(@NotNull ShootPoint point)
+    {
+        if (configType == null)
+            return null;
+        for (int bank = 0; bank < 2; bank++)
+        {
+            List<ShootPoint> points = configType.shootPoints(bank == 1);
+            Vec3[] pivots = modelShootPointPitchPivots[bank];
+            for (int index = 0; index < points.size() && index < pivots.length; index++)
+            {
+                if (points.get(index) == point)
+                    return pivots[index];
+            }
+        }
+        return null;
     }
 
     /** Returns the model-aligned muzzle position for client-side diagnostics. */
@@ -2725,10 +2765,17 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private Vec3 turretPointToLocal(@NotNull Vec3 point, float yaw, float pitch)
     {
+        return turretPointToLocal(point, yaw, pitch, null);
+    }
+
+    /** As above, pitching round {@code partPivot} when the point's own barrel section is known. */
+    private Vec3 turretPointToLocal(@NotNull Vec3 point, float yaw, float pitch, @Nullable Vec3 partPivot)
+    {
         if (configType == null)
             return point;
         Vec3 turretPivot = configuredModelLocal(configType.getTurretOrigin());
-        Vec3 pitchPivot = modelBarrelPitchPivot == null ? turretPivot : modelBarrelPitchPivot;
+        Vec3 barrelPivot = modelBarrelPitchPivot == null ? null : modelPivotToLocal(modelBarrelPitchPivot);
+        Vec3 pitchPivot = partPivot != null ? partPivot : barrelPivot != null ? barrelPivot : turretPivot;
 
         // The renderer pitches each barrel around its own model pivot first,
         // then yaws the complete turret around TurretOrigin.
@@ -2740,21 +2787,28 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     }
 
     /**
-     * Supplies the pitch pivot extracted from the client-side vehicle model.
-     * The value is model-authored legacy xyz in blocks, matching shoot-point data.
+     * Supplies the pitch pivot extracted from the client-side vehicle model:
+     * blocks, as the model reports it, before ModelScale.
      */
     public void setModelBarrelPitchPivot(@Nullable Vec3 legacyPivot)
     {
-        if (legacyPivot == null)
+        if (legacyPivot == null || isPlausibleModelPivot(legacyPivot))
+            modelBarrelPitchPivot = legacyPivot;
+    }
+
+    /**
+     * Supplies, for each point of one weapon bank in bank order, the pivot of
+     * the barrel section the point is built on, or {@code null} for the main gun's.
+     */
+    public void setModelShootPointPitchPivots(boolean secondary, @Nullable Vec3[] legacyPivots)
+    {
+        Vec3[] pivots = legacyPivots == null ? new Vec3[0] : legacyPivots.clone();
+        for (int index = 0; index < pivots.length; index++)
         {
-            modelBarrelPitchPivot = null;
-            return;
+            if (pivots[index] != null && !isPlausibleModelPivot(pivots[index]))
+                pivots[index] = null;
         }
-        if (!Double.isFinite(legacyPivot.x) || !Double.isFinite(legacyPivot.y)
-            || !Double.isFinite(legacyPivot.z) || Math.abs(legacyPivot.x) > 32D
-            || Math.abs(legacyPivot.y) > 32D || Math.abs(legacyPivot.z) > 32D)
-            return;
-        modelBarrelPitchPivot = LegacyDriveableCoordinates.toLocal(legacyPivot);
+        modelShootPointPitchPivots[secondary ? 1 : 0] = pivots;
     }
 
     /** Supplies the registered gun-model pivot for one passenger seat. */
@@ -2762,22 +2816,58 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (seatIndex <= 0 || seatIndex >= modelPassengerGunAimPivots.length)
             return;
-        if (legacyPivot == null)
-        {
-            modelPassengerGunAimPivots[seatIndex] = null;
-            return;
-        }
-        if (!Double.isFinite(legacyPivot.x) || !Double.isFinite(legacyPivot.y)
-            || !Double.isFinite(legacyPivot.z) || Math.abs(legacyPivot.x) > 32D
-            || Math.abs(legacyPivot.y) > 32D || Math.abs(legacyPivot.z) > 32D)
-            return;
-        modelPassengerGunAimPivots[seatIndex] = LegacyDriveableCoordinates.toLocal(legacyPivot);
+        if (legacyPivot == null || isPlausibleModelPivot(legacyPivot))
+            modelPassengerGunAimPivots[seatIndex] = legacyPivot;
+    }
+
+    /** Pivots arrive from clients, so anything not a point on a model is ignored. */
+    private static boolean isPlausibleModelPivot(@NotNull Vec3 pivot)
+    {
+        return Double.isFinite(pivot.x) && Double.isFinite(pivot.y) && Double.isFinite(pivot.z)
+            && Math.abs(pivot.x) <= 32D && Math.abs(pivot.y) <= 32D && Math.abs(pivot.z) <= 32D;
+    }
+
+    /**
+     * A seat gun's pivot in the same model-local frame as its mounted GunOrigin,
+     * or {@code null} while no client has reported one for this seat.
+     */
+    @Nullable
+    private Vec3 passengerGunPivotLocal(int seatIndex)
+    {
+        Vec3 pivot = seatIndex > 0 && seatIndex < modelPassengerGunAimPivots.length
+            ? modelPassengerGunAimPivots[seatIndex] : null;
+        return pivot == null ? null : modelPivotToLocal(pivot);
+    }
+
+    /**
+     * A pivot read off the model, in the same model-local frame as the attachment
+     * points turning round it. The renderer draws the model scaled by ModelScale
+     * while type-file points are authored at that size, so the pivot is scaled alike.
+     */
+    private Vec3 modelPivotToLocal(@NotNull Vec3 legacyPivot)
+    {
+        float modelScale = configType == null ? 1F : Math.max(1.0E-4F, configType.getModelScale());
+        return attachmentModelLocal(LegacyDriveableCoordinates.modelPixelsToTypeFile(
+            legacyPivot.scale(modelScale), this instanceof Plane));
     }
 
     protected Vec3 aimedDirection(float yaw, float pitch)
     {
         Vec3 legacyForward = configuredModelLocal(new Vec3(1D, 0D, 0D));
-        return modelLocalDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, pitch)).normalize();
+        return modelLocalDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, localAimPitch(pitch)))
+            .normalize();
+    }
+
+    /**
+     * An aim pitch as the local pitch rotation needs it. Aim pitch is positive
+     * downwards, and the rotation turns a ground vehicle's forward down for a
+     * positive angle. An aircraft's forward is the opposite local direction,
+     * which the same rotation turns up, so its sense is flipped
+     * (as {@link LegacyDriveableCoordinates#renderedForwardPitch} does for the view).
+     */
+    protected float localAimPitch(float pitch)
+    {
+        return this instanceof Plane ? -pitch : pitch;
     }
 
     protected void playBankEffects(boolean secondary, List<ShootPoint> firedPoints)
@@ -2957,7 +3047,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         ShootableType shootableType = shootable.getConfigType();
         FireableGun fireable = new FireableGun(gun);
         LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-        Vec3 origin = getPassengerShootOrigin(info);
+        Vec3 origin = getPassengerShootOrigin(seat, info);
         Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
         ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType),
@@ -3013,7 +3103,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         Seat seat = getSeat(seatIndex);
         SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
         return seat == null || info == null || info.getGunType() == null
-            ? null : getPassengerShootOrigin(info);
+            ? null : getPassengerShootOrigin(seat, info);
     }
 
     /** Current passenger firing direction for client-side diagnostics. */
@@ -3033,20 +3123,46 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      * to, so it takes the same basis conversion. Skipping the lateral mirror
      * put every passenger gun on the wrong side of the hull, which is the
      * long-standing "GunOrigin is not positioned correctly" fault.</p>
+     *
+     * <p>GunOrigin is where the muzzle sits with the gun at rest. Once the
+     * model's pivot for the gun is known, the muzzle is carried round that
+     * pivot by the seat's aim, exactly as the drawn gun is, so a GunOrigin
+     * placed on the pivot itself still fires from one fixed point. Without a
+     * pivot the point stays fixed, which is the legacy behaviour.</p>
      */
-    private Vec3 getPassengerShootOrigin(@NotNull SeatInfo info)
+    private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info)
     {
-        return getGunOriginWorldPosition(info.getGunOrigin());
+        Vec3 muzzle = gunOriginModelLocal(info.getGunOrigin());
+        Vec3 pivot = passengerGunPivotLocal(seat.getSeatIndex());
+        if (pivot == null)
+            return modelLocalToWorld(muzzle);
+
+        // Aircraft draw seat guns turned half round from their rest pose
+        // (ModelDriveable.registeredGunAngles), so an aircraft gun rests aiming aft.
+        float restYaw = this instanceof Plane ? 180F : 0F;
+        Vec3 offset = LegacyDriveableCoordinates.aimAroundPivot(muzzle, pivot, restYaw,
+            seat.getAimYaw(), localAimPitch(seat.getAimPitch())).subtract(pivot);
+        // A vehicle draws the guns on its turret inside the turret transform.
+        // The aim is already absolute, so only the pivot rides the turret round.
+        if (this instanceof Vehicle && info.getPart() == EnumDriveablePart.TURRET)
+            pivot = turretPointToLocal(pivot, getTurretYaw(), 0F);
+        return modelLocalToWorld(pivot.add(offset));
     }
 
     /**
-     * World position an authored {@code GunOrigin} resolves to. Exposed so
-     * diagnostics can place a marker on a candidate value that no seat holds yet.
+     * World position an authored {@code GunOrigin} resolves to with the gun at
+     * rest. Exposed so diagnostics can place a marker on a candidate value that
+     * no seat holds yet.
      */
     public Vec3 getGunOriginWorldPosition(@NotNull com.flansmod.common.vector.Vector3f gunOrigin)
     {
-        Vec3 local = attachmentModelLocal(gunOrigin).add(0D, PASSENGER_GUN_MOUNTED_OFFSET, 0D);
-        return position().add(modelLocalDirectionToWorld(local));
+        return modelLocalToWorld(gunOriginModelLocal(gunOrigin));
+    }
+
+    /** A GunOrigin in the model-local frame, lifted by the legacy mounted-gunner offset. */
+    private Vec3 gunOriginModelLocal(@NotNull com.flansmod.common.vector.Vector3f gunOrigin)
+    {
+        return attachmentModelLocal(gunOrigin).add(0D, PASSENGER_GUN_MOUNTED_OFFSET, 0D);
     }
 
     protected enum AmmoBank { AMMO, BOMB, MISSILE }

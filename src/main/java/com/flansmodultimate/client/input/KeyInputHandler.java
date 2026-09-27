@@ -560,6 +560,16 @@ public final class KeyInputHandler
                     mouseControl, barrelPitchPivot, ++inputSequence)
                 : new PacketDriveableInput(driveable, mask, aimYaw, aimPitch, flightPitch, flightRoll,
                     mouseControl, barrelPitchPivot, ++inputSequence);
+            if (!(mount instanceof Seat seat && !seat.isDriverSeat())
+                && driveable.getConfigType() != null
+                && ModelCache.getOrLoadTypeModel(driveable.getConfigType()) instanceof ModelVehicle model)
+            {
+                Vec3[] primary = model.getShootPointPitchPivots(driveable.getConfigType(), false);
+                Vec3[] secondary = model.getShootPointPitchPivots(driveable.getConfigType(), true);
+                driveable.setModelShootPointPitchPivots(false, primary);
+                driveable.setModelShootPointPitchPivots(true, secondary);
+                packet.withShootPointPitchPivots(primary, secondary);
+            }
             PacketHandler.sendToServer(packet.withPrediction(predicting));
             if (predicting)
                 driveable.submitPredictedInput(new DriveablePrediction.Frame(inputSequence, mask,

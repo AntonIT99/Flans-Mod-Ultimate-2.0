@@ -6,9 +6,13 @@ import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.entity.AAGun;
+import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
@@ -36,6 +40,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Arrays;
 import java.util.List;
@@ -66,7 +71,7 @@ import java.util.Locale;
 public final class ShootPointDebugCommand
 {
     private static final String NO_TARGET =
-        "Ride a driveable or hold a driveable item to inspect or move its shoot points";
+        "Ride a driveable or AA gun, hold one as an item, or look at an AA gun or sentry, to inspect its shoot points";
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
@@ -75,6 +80,7 @@ public final class ShootPointDebugCommand
             .then(Commands.literal("shootpoint")
                 .then(Commands.literal("list").executes(ShootPointDebugCommand::list))
                 .then(Commands.literal("reset").executes(ShootPointDebugCommand::reset))
+                .then(Commands.literal("apply").executes(ShootPointDebugCommand::applyMeasured))
                 .then(Commands.literal("primary")
                     .then(Commands.argument("index", IntegerArgumentType.integer(0))
                         .then(vector(context -> setShootPoint(context, false, false)))))
@@ -140,6 +146,9 @@ public final class ShootPointDebugCommand
 
     private static int list(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
+        AAGunType aaGun = aaGunTarget(context);
+        if (aaGun != null)
+            return listAAGun(context, aaGun);
         DriveableType type = requireType(context);
         if (type == null)
             return 0;
@@ -206,10 +215,16 @@ public final class ShootPointDebugCommand
             send(context, overridden ? ChatFormatting.YELLOW : ChatFormatting.GRAY,
                 "  seat " + seat + " " + info.getGunName() + "  " + format(current)
                     + (overridden ? "  (overridden)" : StringUtils.EMPTY));
-            Vector3f measured = muzzleFor(derived, seat);
+            DerivedMuzzle measured = findMuzzle(derived, seat);
             if (measured != null)
-                send(context, ChatFormatting.DARK_AQUA, "        measured gun " + format(measured)
-                    + "   delta " + format(delta(measured, current)));
+            {
+                // Both are rest-pose values: firing turns GunOrigin round the pivot as the gun aims.
+                send(context, ChatFormatting.DARK_AQUA, "        measured gun " + format(measured.position())
+                    + "   delta " + format(delta(measured.position(), current)));
+                if (measured.pivot() != null)
+                    send(context, ChatFormatting.DARK_AQUA, "        gun pivot " + format(measured.pivot())
+                        + "   GunOrigin turns round it with the gun");
+            }
             send(context, ChatFormatting.DARK_GRAY, "        GunOrigin " + seat + " " + format(current));
         }
         if (!any)
@@ -326,8 +341,91 @@ public final class ShootPointDebugCommand
         return 1;
     }
 
+    /**
+     * Moves every point that has a trustworthy measurement onto it, so the
+     * suggestions {@code list} makes can be tried in one step and undone with
+     * {@code reset}.
+     *
+     * <p>Every passenger gun with a measured muzzle takes it as its GunOrigin.
+     * Only one barrel is measured, so it is applied only to a primary bank of
+     * exactly one point that is not an {@code AddGun}: anything else would drag
+     * a coaxial or a twin barrel onto the main gun's muzzle.</p>
+     */
+    private static int applyMeasured(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        AAGunType aaGun = aaGunTarget(context);
+        if (aaGun != null)
+            return applyAAGun(context, aaGun);
+        DriveableType type = requireType(context);
+        if (type == null)
+            return 0;
+
+        List<DerivedMuzzle> derived = ClientHooks.RENDER.deriveMuzzles(type);
+        if (derived.isEmpty())
+        {
+            context.getSource().sendFailure(Component.literal(
+                "No measured geometry: dedicated server, or this model has no barrel or gun parts"));
+            return 0;
+        }
+
+        send(context, ChatFormatting.GOLD, "=== " + type.getShortName() + " measured points applied ===");
+        int applied = 0;
+        Vector3f barrel = muzzleFor(derived, -1);
+        List<ShootPoint> primary = type.shootPoints(false);
+        if (barrel != null)
+        {
+            if (primary.size() == 1 && !(primary.get(0).getRootPos() instanceof PilotGun))
+            {
+                if (type.setDebugShootPoint(false, 0, barrel))
+                {
+                    broadcast(context, new PacketDebugShootPoint(type.getShortName(), Operation.SET_PRIMARY, 0,
+                        barrel, StringUtils.EMPTY));
+                    confirm(context, "primary [0]", barrel, typeFileLine("primary", type.shootPoints(false).get(0),
+                        barrel));
+                    applied++;
+                }
+            }
+            else
+                send(context, ChatFormatting.GRAY, "  primary skipped: the measured barrel fits one plain point, and "
+                    + "this bank has " + primary.size() + (primary.isEmpty() ? StringUtils.EMPTY : " or an AddGun"));
+        }
+
+        for (DerivedMuzzle muzzle : derived)
+        {
+            if (muzzle.isBarrel() || !type.setDebugGunOrigin(muzzle.seatIndex(), muzzle.position()))
+                continue;
+            broadcast(context, new PacketDebugShootPoint(type.getShortName(), Operation.GUN_ORIGIN,
+                muzzle.seatIndex(), muzzle.position(), StringUtils.EMPTY));
+            confirm(context, "GunOrigin seat " + muzzle.seatIndex(), muzzle.position(),
+                "GunOrigin " + muzzle.seatIndex() + " " + format(muzzle.position()));
+            applied++;
+        }
+
+        if (applied == 0)
+        {
+            send(context, ChatFormatting.GRAY, "Nothing had a measurement that could be applied");
+            return 0;
+        }
+        send(context, ChatFormatting.WHITE, applied + " point(s) moved; /flandebug shootpoint reset undoes it");
+        return applied;
+    }
+
     private static int reset(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
+        AAGunType aaGun = aaGunTarget(context);
+        if (aaGun != null)
+        {
+            if (!aaGun.hasDebugOverrides())
+            {
+                send(context, ChatFormatting.GRAY, aaGun.getShortName() + " has no overrides to reset");
+                return 0;
+            }
+            aaGun.resetDebugOverrides();
+            broadcast(context, new PacketDebugShootPoint(aaGun.getShortName(), Operation.AA_RESET, 0, new Vector3f(),
+                StringUtils.EMPTY));
+            send(context, ChatFormatting.GREEN, aaGun.getShortName() + " restored to its authored barrels");
+            return 1;
+        }
         DriveableType type = requireType(context);
         if (type == null)
             return 0;
@@ -341,6 +439,117 @@ public final class ShootPointDebugCommand
         broadcast(context, PacketDebugShootPoint.reset(type.getShortName()));
         send(context, ChatFormatting.GREEN, type.getShortName() + " restored to its authored shoot points");
         return 1;
+    }
+
+    // ---------------------------------------------------------------- AA guns
+
+    /**
+     * AA guns and sentries author their muzzles as {@code Barrel} lines. Once a
+     * client has reported the loaded model, the gun fires from the measured
+     * muzzles instead, so these lines are what fires only before that, and what
+     * the magenta markers show beside the real ones.
+     */
+    private static int listAAGun(CommandContext<CommandSourceStack> context, AAGunType type)
+    {
+        List<Vec3> measured = ClientHooks.RENDER.deriveAAGunBarrelOffsets(type);
+        send(context, ChatFormatting.GOLD, "=== " + type.getShortName() + " barrels ===");
+        send(context, ChatFormatting.WHITE, "type-file units; edit " + type.getFileName()
+            + " in " + type.getContentPack().getName()
+            + (type.hasDebugOverrides() ? "  (overridden)" : StringUtils.EMPTY));
+        if (measured.isEmpty())
+            send(context, ChatFormatting.GRAY, "no measured geometry: dedicated server, or the model's barrels are empty");
+        else
+            send(context, ChatFormatting.GRAY, "the model's muzzles fire once a client reports them; "
+                + "these lines are the fallback, matched with the gun level");
+
+        for (int barrel = 0; barrel < type.getNumBarrels(); barrel++)
+        {
+            Vector3f current = new Vector3f(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
+                type.getBarrelZ()[barrel]);
+            boolean overridden = type.isBarrelOverridden(barrel);
+            send(context, overridden ? ChatFormatting.YELLOW : ChatFormatting.GRAY,
+                "  [" + barrel + "] " + format(current) + (overridden ? "  (overridden)" : StringUtils.EMPTY));
+            if (barrel < measured.size())
+            {
+                Vector3f suggested = AAGunBarrelGeometry.legacyBarrelFor(measured.get(barrel), type.isSentry());
+                send(context, ChatFormatting.DARK_AQUA, "        measured muzzle " + format(suggested)
+                    + "   delta " + format(delta(suggested, current)));
+                send(context, ChatFormatting.DARK_GRAY, "        " + barrelLine(barrel, suggested));
+            }
+        }
+        return 1;
+    }
+
+    private static int applyAAGun(CommandContext<CommandSourceStack> context, AAGunType type)
+    {
+        List<Vec3> measured = ClientHooks.RENDER.deriveAAGunBarrelOffsets(type);
+        if (measured.isEmpty())
+        {
+            context.getSource().sendFailure(Component.literal(
+                "No measured geometry: dedicated server, or the model's barrels are empty"));
+            return 0;
+        }
+
+        send(context, ChatFormatting.GOLD, "=== " + type.getShortName() + " measured barrels applied ===");
+        int applied = 0;
+        for (int barrel = 0; barrel < type.getNumBarrels() && barrel < measured.size(); barrel++)
+        {
+            Vector3f suggested = AAGunBarrelGeometry.legacyBarrelFor(measured.get(barrel), type.isSentry());
+            if (!type.setDebugBarrel(barrel, suggested))
+                continue;
+            broadcast(context, new PacketDebugShootPoint(type.getShortName(), Operation.AA_BARREL, barrel, suggested,
+                StringUtils.EMPTY));
+            confirm(context, "Barrel " + barrel, suggested, barrelLine(barrel, suggested));
+            applied++;
+        }
+        send(context, ChatFormatting.WHITE, applied + " barrel(s) moved, rounded to whole pixels; "
+            + "/flandebug shootpoint reset undoes it");
+        return applied;
+    }
+
+    /** Barrel lines are whole model pixels. */
+    private static String barrelLine(int barrel, Vector3f position)
+    {
+        return "Barrel " + barrel + " " + Math.round(position.x) + " " + Math.round(position.y) + " "
+            + Math.round(position.z);
+    }
+
+    /** How far the look ray reaches for an AA gun or sentry nobody is riding. */
+    private static final double AA_GUN_LOOK_REACH = 8D;
+
+    /**
+     * The AA gun the command should act on, but only when no driveable is the
+     * target: ridden, held as an item, or looked at (a sentry has no seat).
+     */
+    @Nullable
+    private static AAGunType aaGunTarget(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        if (findType(player) != null)
+            return null;
+        if (player.getVehicle() instanceof AAGun ridden && ridden.getConfigType() != null)
+            return ridden.getConfigType();
+        for (InteractionHand hand : InteractionHand.values())
+        {
+            if (player.getItemInHand(hand).getItem() instanceof AAGunItem item)
+                return item.getConfigType();
+        }
+
+        Vec3 eye = player.getEyePosition();
+        Vec3 end = eye.add(player.getViewVector(1F).scale(AA_GUN_LOOK_REACH));
+        AAGun nearest = null;
+        double nearestDistance = Double.MAX_VALUE;
+        for (AAGun gun : player.level().getEntitiesOfClass(AAGun.class,
+            player.getBoundingBox().inflate(AA_GUN_LOOK_REACH)))
+        {
+            var hit = gun.getBoundingBox().inflate(0.3D).clip(eye, end);
+            if (gun.getConfigType() != null && hit.isPresent() && hit.get().distanceToSqr(eye) < nearestDistance)
+            {
+                nearest = gun;
+                nearestDistance = hit.get().distanceToSqr(eye);
+            }
+        }
+        return nearest == null ? null : nearest.getConfigType();
     }
 
     // ---------------------------------------------------------------- plumbing
@@ -426,10 +635,17 @@ public final class ShootPointDebugCommand
     @Nullable
     private static Vector3f muzzleFor(List<DerivedMuzzle> derived, int seatIndex)
     {
+        DerivedMuzzle muzzle = findMuzzle(derived, seatIndex);
+        return muzzle == null ? null : muzzle.position();
+    }
+
+    @Nullable
+    private static DerivedMuzzle findMuzzle(List<DerivedMuzzle> derived, int seatIndex)
+    {
         for (DerivedMuzzle muzzle : derived)
         {
             if (muzzle.seatIndex() == seatIndex)
-                return muzzle.position();
+                return muzzle;
         }
         return null;
     }

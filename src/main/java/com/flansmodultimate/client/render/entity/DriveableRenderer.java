@@ -126,7 +126,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         AnimationHistory history = animationStates.computeIfAbsent(driveable, ignored -> new AnimationHistory());
         history.advance(driveable, type);
-        history.updatePassengerGunPivots(driveable, type, model);
+        history.updateModelAimPivots(driveable, type, model);
         boolean thermalMask = VehicleThermalRenderer.isRenderingMask();
         if (!thermalMask)
             renderDiagnosticMarkers(driveable, type);
@@ -309,8 +309,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             Vec3 muzzle = driveable.getDebugShootOrigin(point);
             DebugHelper.spawnDebugDot(muzzle, 2, colour[0], colour[1], colour[2]);
             DebugHelper.spawnDebugVector(muzzle, driveable.getDebugShootDirection(point, secondary).scale(2D),
-                2, colour[0], colour[1], colour[2]);
-        }
+                2, colour[0], colour[1], colour[2]);        }
     }
 
     /**
@@ -548,13 +547,27 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         private int rightGunRounds = -1;
         private DriveableType passengerPivotType;
         private ModelDriveable passengerPivotModel;
+        private int shootPointPivotTick = Integer.MIN_VALUE;
         private boolean usingImpostor;
         private int trackLinkGroup;
 
-        private void updatePassengerGunPivots(Driveable driveable, DriveableType type, ModelDriveable model)
+        private void updateModelAimPivots(Driveable driveable, DriveableType type, ModelDriveable model)
         {
+            // Shoot points can be moved live by /flandebug, which can put one on a
+            // different barrel section, so these are looked up again every tick.
+            if (model instanceof ModelVehicle vehicleModel && shootPointPivotTick != driveable.tickCount)
+            {
+                shootPointPivotTick = driveable.tickCount;
+                driveable.setModelShootPointPitchPivots(false, vehicleModel.getShootPointPitchPivots(type, false));
+                driveable.setModelShootPointPitchPivots(true, vehicleModel.getShootPointPitchPivots(type, true));
+            }
             if (passengerPivotType == type && passengerPivotModel == model)
                 return;
+            // Otherwise only the driver's input supplies the barrel pivot, so a
+            // reloaded tank with its barrel elevated pitched it round TurretOrigin,
+            // misplacing its muzzle marker until someone got in.
+            if (model instanceof ModelVehicle vehicleModel)
+                driveable.setModelBarrelPitchPivot(vehicleModel.getPrimaryBarrelPitchPivot());
             for (int seat = 1; seat <= type.getNumPassengers(); seat++)
             {
                 var info = type.getSeat(seat);

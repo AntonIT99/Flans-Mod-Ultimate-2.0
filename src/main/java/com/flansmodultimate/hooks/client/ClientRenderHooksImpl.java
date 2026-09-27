@@ -1,5 +1,6 @@
 package com.flansmodultimate.hooks.client;
 
+import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelAttachment;
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelGun;
@@ -20,9 +21,11 @@ import com.flansmodultimate.client.render.item.CustomBewlr;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.GunType;
@@ -46,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 public final class ClientRenderHooksImpl implements IClientRenderHooks
 {
     @Override
@@ -261,15 +265,44 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             Vec3 muzzle = model.getRegisteredGunMuzzle(info.getGunName());
             if (muzzle == null)
                 continue;
-            // GunOrigin is not the muzzle: the firing path lifts it by the legacy
-            // mounted-gunner offset before spawning the round. Subtracting that here
-            // makes the suggested value land the shot on the measured barrel tip.
-            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(muzzle.scale(modelScale),
-                planeFacing);
-            position.y -= (float) (Driveable.PASSENGER_GUN_MOUNTED_OFFSET * 16D);
-            derived.add(new DerivedMuzzle(seat, "seat " + seat + " (" + info.getGunName() + ")", position));
+            // GunOrigin is the muzzle at rest, lifted by the legacy mounted-gunner
+            // offset when the round is spawned. Subtracting that here makes the
+            // suggested value land the shot on the measured barrel tip. Firing
+            // carries it round the gun's pivot as the gun aims, so the rest-pose
+            // measurement holds at every aim.
+            Vector3f position = seatGunPointToGunOrigin(muzzle.scale(modelScale), planeFacing);
+            Vec3 pivot = model.getRegisteredGunAimPivot(info.getGunName());
+            derived.add(new DerivedMuzzle(seat, "seat " + seat + " (" + info.getGunName() + ")", position,
+                pivot == null ? null : seatGunPointToGunOrigin(pivot.scale(16D * modelScale), planeFacing)));
         }
         return List.copyOf(derived);
+    }
+
+    @Override
+    public List<Vec3> deriveAAGunBarrelOffsets(AAGunType type)
+    {
+        if (type == null)
+            return List.of();
+        // As deriveMuzzles: off the render thread, only take what is already loaded.
+        Object loaded = Minecraft.getInstance().isSameThread()
+            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        if (!(loaded instanceof ModelAAGun model))
+            return List.of();
+        ModelAAGun.BarrelOriginData data = model.getModelBarrelOriginData(type);
+        if (data == null)
+            return List.of();
+        List<Vec3> offsets = new ArrayList<>();
+        for (int barrel = 0; barrel < data.pivots().length; barrel++)
+            offsets.add(AAGunBarrelGeometry.modelBarrelOffset(data.pivots()[barrel], data.muzzles()[barrel], 0F, 0F));
+        return List.copyOf(offsets);
+    }
+
+    /** A scaled seat-gun model point in GunOrigin terms: type-file pixels, less the mounted offset. */
+    private static Vector3f seatGunPointToGunOrigin(Vec3 modelPixels, boolean planeFacing)
+    {
+        Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(modelPixels, planeFacing);
+        position.y -= (float) (Driveable.PASSENGER_GUN_MOUNTED_OFFSET * 16D);
+        return position;
     }
 
     @Override

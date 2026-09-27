@@ -46,7 +46,7 @@ public final class MuzzleReport
     /** A measured muzzle further than this from the barrel attach point is flagged. */
     private static final double ATTACH_POINT_TOLERANCE = 2D;
     /** Matches the depth {@link ModelDriveable#measureMuzzle} centres the muzzle over. */
-    private static final double MUZZLE_FACE_DEPTH = 3D;
+    private static final double MUZZLE_FACE_DEPTH = 1.5D;
 
     private MuzzleReport() {}
 

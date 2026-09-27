@@ -4,11 +4,12 @@ import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.network.PacketBuffer;
+import io.netty.handler.codec.DecoderException;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -37,6 +38,17 @@ public final class PacketDriveableInput implements IServerPacket
     private int sequence;
     /** The client predicts the driveable and wants the server's movement reports. */
     private boolean predicting;
+    /**
+     * Driver only: per point of each weapon bank, the pivot of the barrel section
+     * it is built on ({@code null} for the main gun's), read off the client's model.
+     */
+    @Nullable
+    private Vec3[] primaryPitchPivots;
+    @Nullable
+    private Vec3[] secondaryPitchPivots;
+
+    /** More shoot points than any bank holds; a larger count is a malformed packet. */
+    private static final int MAX_SHOOT_POINT_PIVOTS = 64;
 
     public PacketDriveableInput()
     {
@@ -99,6 +111,45 @@ public final class PacketDriveableInput implements IServerPacket
         return this;
     }
 
+    /** Attaches the driver's per-shoot-point pitch pivots, in bank order. */
+    public PacketDriveableInput withShootPointPitchPivots(@Nullable Vec3[] primary, @Nullable Vec3[] secondary)
+    {
+        this.primaryPitchPivots = primary;
+        this.secondaryPitchPivots = secondary;
+        return this;
+    }
+
+    private static void writePivots(PacketBuffer data, @Nullable Vec3[] pivots)
+    {
+        int count = pivots == null ? 0 : Math.min(pivots.length, MAX_SHOOT_POINT_PIVOTS);
+        data.writeVarInt(count);
+        for (int index = 0; index < count; index++)
+        {
+            Vec3 pivot = pivots[index];
+            data.writeBoolean(pivot != null);
+            if (pivot != null)
+            {
+                data.writeFloat((float) pivot.x);
+                data.writeFloat((float) pivot.y);
+                data.writeFloat((float) pivot.z);
+            }
+        }
+    }
+
+    private static Vec3[] readPivots(PacketBuffer data)
+    {
+        int count = data.readVarInt();
+        if (count < 0 || count > MAX_SHOOT_POINT_PIVOTS)
+            throw new DecoderException("Too many shoot-point pivots: " + count);
+        Vec3[] pivots = new Vec3[count];
+        for (int index = 0; index < count; index++)
+        {
+            if (data.readBoolean())
+                pivots[index] = new Vec3(data.readFloat(), data.readFloat(), data.readFloat());
+        }
+        return pivots;
+    }
+
     @Override
     public void encodeInto(PacketBuffer data)
     {
@@ -118,6 +169,8 @@ public final class PacketDriveableInput implements IServerPacket
         }
         data.writeVarInt(sequence);
         data.writeBoolean(predicting);
+        writePivots(data, primaryPitchPivots);
+        writePivots(data, secondaryPitchPivots);
     }
 
     @Override
@@ -134,6 +187,8 @@ public final class PacketDriveableInput implements IServerPacket
             ? new Vec3(data.readDouble(), data.readDouble(), data.readDouble()) : null;
         sequence = data.readVarInt();
         predicting = data.readBoolean();
+        primaryPitchPivots = readPivots(data);
+        secondaryPitchPivots = readPivots(data);
     }
 
     @Override
@@ -151,7 +206,11 @@ public final class PacketDriveableInput implements IServerPacket
             if (seat != null)
                 seat.setInputPredicted(predicting && seat.isDriverSeat());
             if (seat != null && seat.isDriverSeat())
+            {
                 driveable.setModelBarrelPitchPivot(barrelPitchPivot);
+                driveable.setModelShootPointPitchPivots(false, primaryPitchPivots);
+                driveable.setModelShootPointPitchPivots(true, secondaryPitchPivots);
+            }
             else if (seat != null)
                 driveable.setModelPassengerGunAimPivot(seat.getSeatIndex(), barrelPitchPivot);
             driveable.acceptInput(player, inputMask, aimYaw, aimPitch,
