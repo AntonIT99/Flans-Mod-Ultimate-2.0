@@ -50,6 +50,9 @@ public class Vehicle extends Driveable
     private final ThrottleLeverRamp throttleRamp = new ThrottleLeverRamp();
     /** Real-world gearbox direction state. Transient and server-side. */
     private final DriveDirectionInterlock drivetrain = new DriveDirectionInterlock();
+    /** Hull yaw seen by the previous engine-sound tick, and the ticks left before a pivot turn counts as stopped. Client side. */
+    private float engineSoundYaw = Float.NaN;
+    private int pivotSoundTicks;
 
     public Vehicle(EntityType<?> entityType, Level level)
     {
@@ -66,6 +69,28 @@ public class Vehicle extends Driveable
     public VehicleType getVehicleType()
     {
         return getConfigType() instanceof VehicleType type ? type : null;
+    }
+
+    /**
+     * A tracked vehicle rotating on the spot drives its tracks with a closed throttle, so it keeps
+     * the driving loop. The hull yaw is compared against the previous sound tick, which covers both
+     * the predicted driver and interpolated observers, and a short grace period stops the loops
+     * flickering between ticks where the yaw update lands late.
+     */
+    @Override
+    protected boolean isEngineLoadedWithoutThrottle()
+    {
+        VehicleType type = getVehicleType();
+        float yaw = getYaw();
+        boolean rotating = !Float.isNaN(engineSoundYaw) && Math.abs(Mth.wrapDegrees(yaw - engineSoundYaw)) > 0.05F;
+        engineSoundYaw = yaw;
+        if (type == null || !type.isTank())
+            return false;
+        if (rotating)
+            pivotSoundTicks = 4;
+        else if (pivotSoundTicks > 0)
+            --pivotSoundTicks;
+        return pivotSoundTicks > 0;
     }
 
     @Override

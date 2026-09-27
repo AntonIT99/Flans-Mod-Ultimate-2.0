@@ -3209,7 +3209,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
         boolean engineActive = isEngineActive();
         boolean active = engineActive && getControllingEntity() != null;
-        boolean throttled = active && Math.abs(getThrottle()) > 0.001F;
+        boolean loaded = isEngineLoadedWithoutThrottle();
+        boolean throttled = active && (Math.abs(getThrottle()) > 0.001F || loaded);
 
         if (startSoundTicks > 0)
             --startSoundTicks;
@@ -3245,6 +3246,15 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         String reverseLoop = active && getThrottle() < -0.05F ? configType.getBackSound() : null;
         ClientHooks.SOUND.setLoopingEntitySound(this, SOUND_CHANNEL_REVERSE, reverseLoop,
             Math.max(1, configType.getBackSoundRange()), 0F);
+    }
+
+    /**
+     * Whether the engine is working although the throttle is closed, such as a tracked vehicle
+     * pivoting on the spot, so the driving loop plays instead of the idle loop. Client side only.
+     */
+    protected boolean isEngineLoadedWithoutThrottle()
+    {
+        return false;
     }
 
     protected void updateRiderVisibility()
