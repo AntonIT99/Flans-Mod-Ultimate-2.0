@@ -35,6 +35,36 @@ class DriveableHullGeometryTest
     }
 
     @Test
+    void aHullShapeSitsWhereTheModelIsDrawn()
+    {
+        // Boxes are authored in model geometry coordinates, aircraft included:
+        // one at the front of the model and one off its side, in model pixels.
+        CollisionBox front = new CollisionBox(10F, 46F, 2F, -2F, 4F, 4F, 4F);
+        CollisionBox side = new CollisionBox(10F, -2F, 2F, 14F, 4F, 4F, 4F);
+        float[][] poses = { {0F, 0F, 0F}, {35F, 20F, 0F}, {-70F, -15F, 30F} };
+        for (CollisionBox box : new CollisionBox[] { front, side })
+        {
+            for (float[] pose : poses)
+            {
+                DriveableHullGeometry geometry = new DriveableHullGeometry(DriveableCollisionProfile.of(
+                    List.of(DriveableCollisionProfile.compilePartBox(EnumDriveablePart.CORE, box))));
+                geometry.update(0D, ORIGIN_Y, 0D, pose[0], pose[1], pose[2], 0F, 0F, Vec3.ZERO, Vec3.ZERO,
+                    part -> true, false);
+                double[] bounds = new double[6];
+                assertTrue(geometry.queryBounds(bounds));
+
+                // Where the renderer draws a model vertex: the lateral mirror, then the model transform.
+                Vec3 centre = new Vec3(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+                Vec3 expected = new Vec3(0D, ORIGIN_Y, 0D).add(LegacyDriveableCoordinates.modelLocalToWorldDirection(
+                    new Vec3(-centre.x, centre.y, centre.z), pose[0], pose[1], pose[2]));
+                assertEquals(expected.x, (bounds[0] + bounds[3]) * 0.5D, EPSILON);
+                assertEquals(expected.y, (bounds[1] + bounds[4]) * 0.5D, EPSILON);
+                assertEquals(expected.z, (bounds[2] + bounds[5]) * 0.5D, EPSILON);
+            }
+        }
+    }
+
+    @Test
     void fastFallCannotTunnelThroughDeck()
     {
         DriveableHullGeometry geometry = posed(0F, 0F, deck(-2F, 4F));

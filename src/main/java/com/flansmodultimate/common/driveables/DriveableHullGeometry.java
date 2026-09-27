@@ -118,7 +118,8 @@ public final class DriveableHullGeometry
         for (int index = 0; index < shapes.size(); index++)
         {
             DriveableCollisionProfile.Shape shape = shapes.get(index);
-            transform(shape, current.vertices[index], turretYaw, shape.isBarrel() ? turretPitch : 0F,
+            transform(shape, current.vertices[index], turretYaw,
+                shape.isBarrel() ? turretPitch : 0F,
                 turretPivot, offsetX, turretOffset.y, offsetZ);
             build(current, index);
         }
@@ -375,14 +376,17 @@ public final class DriveableHullGeometry
         slot.refreshTotals();
     }
 
-    private void transform(DriveableCollisionProfile.Shape shape, double[] output, float turretYaw, float barrelPitch,
+    private void transform(DriveableCollisionProfile.Shape shape, double[] output,
+                           float turretYaw, float barrelPitch,
                            Vec3 pivot, double offsetX, double offsetY, double offsetZ)
     {
         double[] source = shape.coordinates();
         for (int vertex = 0; vertex < 8; vertex++)
         {
             int point = vertex * 3;
-            double localX = source[point];
+            // Shapes are stored in the part-box frame; the model is drawn from the
+            // model-local frame, a lateral mirror away (Driveable#partFrameToModelLocal).
+            double localX = -source[point];
             double localY = source[point + 1];
             double localZ = source[point + 2];
             if (shape.isTurret())
@@ -733,35 +737,30 @@ public final class DriveableHullGeometry
         private double rightY;
         private double rightZ;
 
+        /**
+         * Poses the model-local axes with the transform the renderer draws the
+         * model with ({@link LegacyDriveableCoordinates#modelLocalToWorldDirection}).
+         */
         private void set(double x, double y, double z, float yawDegrees, float pitchDegrees, float rollDegrees)
         {
             this.x = x;
             this.y = y;
             this.z = z;
-            double yaw = Math.toRadians(yawDegrees);
-            double pitch = Math.toRadians(pitchDegrees);
-            double roll = Math.toRadians(rollDegrees);
-            double sinYaw = Math.sin(yaw);
-            double cosYaw = Math.cos(yaw);
-            double sinPitch = Math.sin(pitch);
-            double cosPitch = Math.cos(pitch);
-            double sinRoll = Math.sin(roll);
-            double cosRoll = Math.cos(roll);
-
-            forwardX = -sinYaw * cosPitch;
-            forwardY = -sinPitch;
-            forwardZ = cosYaw * cosPitch;
-            double horizontalRightX = cosYaw;
-            double horizontalRightZ = sinYaw;
-            double unrolledUpX = -sinPitch * sinYaw;
-            double unrolledUpY = cosPitch;
-            double unrolledUpZ = sinPitch * cosYaw;
-            rightX = horizontalRightX * cosRoll + unrolledUpX * sinRoll;
-            rightY = unrolledUpY * sinRoll;
-            rightZ = horizontalRightZ * cosRoll + unrolledUpZ * sinRoll;
-            upX = unrolledUpX * cosRoll - horizontalRightX * sinRoll;
-            upY = unrolledUpY * cosRoll;
-            upZ = unrolledUpZ * cosRoll - horizontalRightZ * sinRoll;
+            Vec3 forward = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(1D, 0D, 0D),
+                yawDegrees, pitchDegrees, rollDegrees);
+            Vec3 up = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 1D, 0D),
+                yawDegrees, pitchDegrees, rollDegrees);
+            Vec3 right = LegacyDriveableCoordinates.modelLocalToWorldDirection(new Vec3(0D, 0D, 1D),
+                yawDegrees, pitchDegrees, rollDegrees);
+            forwardX = forward.x;
+            forwardY = forward.y;
+            forwardZ = forward.z;
+            upX = up.x;
+            upY = up.y;
+            upZ = up.z;
+            rightX = right.x;
+            rightY = right.y;
+            rightZ = right.z;
         }
 
         private void toWorld(double localX, double localY, double localZ, double[] output, int offset)

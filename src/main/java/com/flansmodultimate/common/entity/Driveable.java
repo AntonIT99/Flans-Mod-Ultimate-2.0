@@ -26,6 +26,7 @@ import com.flansmodultimate.common.driveables.SeatCycle;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.driveables.SuspensionPhysics;
+import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
 import com.flansmodultimate.common.driveables.armor.ResolvedArmorHit;
 import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
 import com.flansmodultimate.common.driveables.armor.VehicleProjectileDamageResolver;
@@ -3215,7 +3216,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         CollisionBox box = part.getBox();
         if (box == null)
             return;
-        Vec3 centre = localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+        Vec3 centre = partFrameToWorld(boxCentre(box));
         BlockPos position = BlockPos.containing(centre);
         if (part.isOnFire())
         {
@@ -3254,10 +3255,16 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private Vec3 randomPointInPart(CollisionBox box)
     {
-        return localToWorld(
+        return partFrameToWorld(new Vec3(
             box.getX() + random.nextFloat() * box.getWidth(),
             box.getY() + random.nextFloat() * box.getHeight(),
-            box.getZ() + random.nextFloat() * box.getDepth());
+            box.getZ() + random.nextFloat() * box.getDepth()));
+    }
+
+    protected static Vec3 boxCentre(CollisionBox box)
+    {
+        com.flansmod.common.vector.Vector3f centre = box.getCentre();
+        return new Vec3(centre.x, centre.y, centre.z);
     }
 
     protected void syncChangedPartState()
@@ -4320,8 +4327,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (driveableData == null || motion.lengthSqr() < 1.0E-12D)
             return Collections.emptyList();
-        Vec3 localOrigin = worldToLocal(origin);
-        Vec3 localMotion = worldDirectionToLocal(motion);
+        // Traced in the model-local frame so boxes sit where the model is drawn;
+        // the hit is handed back in the box frame, the one armour facings use.
+        Vec3 localOrigin = worldToModelLocal(origin);
+        Vec3 localMotion = worldDirectionToModelLocal(motion);
         Vec3 turretPivot = getCollisionTurretPivot();
         Vec3 turretOffset = getCollisionTurretOffset();
         List<BulletHit> hits = new ArrayList<>();
@@ -4332,14 +4341,16 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 || !includeDestroyedParts && !isPartHitboxActive(part))
                 continue;
             DriveableProjectileCollision.LocalHit intersection = DriveableProjectileCollision.trace(
-                box.asAabb(), localOrigin, localMotion, part.getType(), getTurretYaw(), getTurretPitch(),
+                partBoxModelLocal(box), localOrigin, localMotion, part.getType(), getTurretYaw(), getTurretPitch(),
                 turretPivot, turretOffset);
             if (intersection == null)
                 continue;
             Vec3 worldHit = origin.add(motion.scale(intersection.fraction()));
+            Vec3 normal = partFrameToModelLocal(intersection.outwardNormal());
             hits.add(new DriveableHit(this, part.getType(), intersection.fraction(), worldHit,
-                intersection.position(), intersection.projectileDirection(), intersection.outwardNormal(),
-                intersection.facing()));
+                partFrameToModelLocal(intersection.position()),
+                partFrameToModelLocal(intersection.projectileDirection()), normal,
+                EnumArmorFacing.fromOutwardNormal(normal)));
         }
         hits.sort(Comparator.naturalOrder());
         return hits;
@@ -4403,7 +4414,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (driveableData == null)
             return Optional.empty();
-        Vec3 local = worldToLocal(worldPoint);
+        Vec3 local = partFrameToModelLocal(worldToModelLocal(worldPoint));
         return driveableData.getParts().values().stream()
             .filter(part -> part.getBox() != null)
             .min(Comparator.comparingDouble(part -> distanceSquaredToBox(local, part.getBox().asAabb())))
@@ -4415,7 +4426,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (driveableData == null || configType == null)
             return Optional.empty();
-        Vec3 hullLocalPoint = worldToLocal(worldPoint);
+        Vec3 hullLocalPoint = worldToModelLocal(worldPoint);
         Vec3 turretPivot = getCollisionTurretPivot();
         Vec3 turretOffset = getCollisionTurretOffset();
         VehicleExplosionTarget best = null;
@@ -4425,10 +4436,11 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 || !canHitPart(part.getType()))
                 continue;
             DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(
-                part.getBox().asAabb(), hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
+                partBoxModelLocal(part.getBox()), hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
                 turretPivot, turretOffset);
             if (best == null || surface.distance() < best.distanceMeters())
-                best = new VehicleExplosionTarget(part.getType(), surface.facing(), surface.distance());
+                best = new VehicleExplosionTarget(part.getType(),
+                    EnumArmorFacing.fromOutwardNormal(partFrameToModelLocal(surface.outwardNormal())), surface.distance());
         }
         return Optional.ofNullable(best);
     }
@@ -4459,7 +4471,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             .filter(part -> canRepairPart(part.getType()))
             .min(Comparator.comparingDouble(part -> {
                 CollisionBox box = part.getBox();
-                Vec3 centre = box == null ? position() : localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+                Vec3 centre = box == null ? position() : partFrameToWorld(boxCentre(box));
                 return centre.distanceToSqr(origin);
             })).map(DriveablePart::getType);
     }
@@ -5024,7 +5036,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         DriveablePart part = driveableData == null ? null : driveableData.getPart(partType);
         CollisionBox box = part == null ? null : part.getBox();
-        return box == null ? position() : localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+        return box == null ? position() : partFrameToWorld(boxCentre(box));
     }
 
     protected void createExplosion(DriveableExplosion settings, Vec3 centre)
@@ -5117,18 +5129,69 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return up.scale(Math.cos(roll)).subtract(horizontalRight.scale(Math.sin(roll))).normalize();
     }
 
-    /** Hull-local pivot that turret-mounted part boxes rotate around during projectile collision. */
+    /**
+     * Model-local pivot that turret-mounted part boxes rotate around, the same
+     * one {@link #turretPointToLocal} turns shoot points round.
+     */
     public Vec3 getCollisionTurretPivot()
     {
         return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO
-            : LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
+            : configuredModelLocal(configType.getTurretOrigin());
     }
 
-    /** Hull-local offset that turret-mounted part boxes carry, yawed with the turret, during projectile collision. */
+    /** Model-local offset that turret-mounted part boxes carry, yawed with the turret. */
     public Vec3 getCollisionTurretOffset()
     {
         return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO
-            : LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
+            : configuredModelLocal(configType.getTurretOriginOffset());
+    }
+
+    /**
+     * Converts between the frame part boxes are stored in and the model-local
+     * frame the model is drawn from; the conversion is its own inverse.
+     *
+     * <p>Boxes are stored as {@link LegacyDriveableCoordinates#toLocal} of the
+     * type file, the frame armour facings are named in, and are authored in the
+     * model's own geometry coordinates on every driveable. Geometry coordinates
+     * land on the drawn model after the lateral mirror alone: unlike shoot
+     * points, an aircraft's boxes are not written in its flight-facing basis
+     * ({@link LegacyDriveableCoordinates#modelPixelsToTypeFile}), so they take no
+     * half-turn. Posing boxes with the movement basis instead left them mirrored
+     * on ground vehicles and, on aircraft, tilting round the wrong axis as the
+     * airframe pitched and rolled.</p>
+     */
+    public Vec3 partFrameToModelLocal(@NotNull Vec3 vector)
+    {
+        return mirrorAroundLocalZAxis(vector);
+    }
+
+    /** A part box in the model-local frame; see {@link #partFrameToModelLocal}. */
+    public AABB partBoxModelLocal(@NotNull CollisionBox box)
+    {
+        AABB bounds = box.asAabb();
+        Vec3 min = partFrameToModelLocal(new Vec3(bounds.minX, bounds.minY, bounds.minZ));
+        Vec3 max = partFrameToModelLocal(new Vec3(bounds.maxX, bounds.maxY, bounds.maxZ));
+        return new AABB(min, max);
+    }
+
+    /** World position of a point in the part-box frame, where the drawn model has it. */
+    public Vec3 partFrameToWorld(@NotNull Vec3 partPoint)
+    {
+        return modelLocalToWorld(partFrameToModelLocal(partPoint));
+    }
+
+    /** Inverse of {@link #modelLocalToWorld}. */
+    public Vec3 worldToModelLocal(@NotNull Vec3 world)
+    {
+        return worldDirectionToModelLocal(world.subtract(position()));
+    }
+
+    /** Inverse of {@link #modelLocalDirectionToWorld}, which is orthogonal, so its transpose. */
+    public Vec3 worldDirectionToModelLocal(@NotNull Vec3 worldDirection)
+    {
+        return new Vec3(worldDirection.dot(modelLocalDirectionToWorld(new Vec3(1D, 0D, 0D))),
+            worldDirection.dot(modelLocalDirectionToWorld(new Vec3(0D, 1D, 0D))),
+            worldDirection.dot(modelLocalDirectionToWorld(new Vec3(0D, 0D, 1D))));
     }
 
     public Vec3 localToWorld(double x, double y, double z)

@@ -80,14 +80,14 @@ public final class DriveableHitboxRenderer
             if (box == null)
                 continue;
 
-            AABB bounds = box.asAabb();
+            AABB bounds = driveable.partBoxModelLocal(box);
             for (int corner = 0; corner < corners.length; corner++)
             {
                 Vec3 partLocal = new Vec3((corner & 1) == 0 ? bounds.minX : bounds.maxX,
                     (corner & 2) == 0 ? bounds.minY : bounds.maxY, (corner & 4) == 0 ? bounds.minZ : bounds.maxZ);
                 Vec3 hullLocal = DriveableProjectileCollision.partPointToHullLocal(partLocal, part.getType(),
                     driveable.getTurretYaw(), driveable.getTurretPitch(), turretPivot, turretOffset);
-                corners[corner] = driveable.localDirectionToWorld(hullLocal);
+                corners[corner] = driveable.modelLocalDirectionToWorld(hullLocal);
             }
 
             // Legacy colours: yellow while projectiles can hit the part, red once they pass through it

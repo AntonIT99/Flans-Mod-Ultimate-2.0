@@ -1136,9 +1136,8 @@ public class Plane extends Driveable
         if (radius <= 0D)
             return;
         double halfThickness = Math.max(RotorStrikePhysics.MIN_HALF_THICKNESS, box.getHeight() * 0.5D);
-        Vector3f centre = box.getCentre();
-        Vec3 hub = localToWorld(centre.x, centre.y, centre.z);
-        Vec3 axis = getUpVector();
+        Vec3 hub = partFrameToWorld(boxCentre(box));
+        Vec3 axis = modelLocalDirectionToWorld(new Vec3(0D, 1D, 0D));
 
         float loss = 0F;
         Vec3 weightedContact = Vec3.ZERO;
