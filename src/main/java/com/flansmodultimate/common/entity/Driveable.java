@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.CollisionBox;
+import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
 import com.flansmodultimate.common.driveables.DriveableCollisionWorld;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
@@ -5388,6 +5389,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         AABB impactBox = getBoundingBox().inflate(Math.min(1.5D, horizontalSpeed + 0.25D), 0.25D, Math.min(1.5D, horizontalSpeed + 0.25D));
         for (Entity entity : level().getEntities(this, impactBox, candidate -> candidate.isAlive() && !isPartOfThis(candidate)))
         {
+            if (DriveableCollisionBypass.isEnabled(entity))
+                continue;
             // Shaped collision resolves these entities against actual hull
             // surfaces. Applying this old coarse AABB push as well dislodges
             // anything already supported by a deck, even while parked.

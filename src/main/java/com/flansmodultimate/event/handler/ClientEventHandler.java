@@ -26,6 +26,7 @@ import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.teams.TeamsClientState;
+import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;
@@ -329,6 +330,8 @@ public final class ClientEventHandler
             case ONE_ARM -> ModClient.oneArmAim;
             case BOW -> HumanoidModel.ArmPose.BOW_AND_ARROW;
             case BOTH -> ModClient.bothArmsAim;
+            case THROW -> ModClient.oneArmThrow;
+            case SUPPORT -> ModClient.bowSupport;
         };
     }
 
@@ -448,6 +451,7 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
+        DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
         ModClient.clearTransientLighting();

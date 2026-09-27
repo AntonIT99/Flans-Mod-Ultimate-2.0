@@ -37,6 +37,20 @@ class GunTypeThrowTest
     }
 
     @Test
+    void forceAimPoseDefaultsOffAndCanBeEnabledPerGun()
+    {
+        assertFalse(read("ShortName ordinaryGun").isForceAimPose());
+        assertTrue(read("ShortName flamethrower", "ForceAimPose True").isForceAimPose());
+    }
+
+    @Test
+    void mirrorInLeftHandDefaultsOffAndCanBeEnabledPerGun()
+    {
+        assertFalse(read("ShortName ordinaryGun").isMirrorInLeftHand());
+        assertTrue(read("ShortName flamethrower", "MirrorInLeftHand True").isMirrorInLeftHand());
+    }
+
+    @Test
     void throwMassMakesTheHitDamageKinetic()
     {
         GunType type = read("ShortName testPilum", "SecondaryFunction Throw", "ThrowMass 2000", "MuzzleVelocity 20.0");

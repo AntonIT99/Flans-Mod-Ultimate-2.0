@@ -19,6 +19,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -95,6 +96,10 @@ public final class GunItemRenderer
                     // no-op
                 }
             }
+            if ((ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND || ctx == ItemDisplayContext.THIRD_PERSON_LEFT_HAND)
+                && model.getType().isMirrorInLeftHand())
+                // Legacy gun models point along X; Z is their side axis.
+                poseStack.scale(1F, 1F, -1F);
             renderGunContents(model, stack, animations, ctx, poseStack, buffer, packedLight, packedOverlay);
         }
         poseStack.popPose();
@@ -157,7 +162,7 @@ public final class GunItemRenderer
         poseStack.scale(modelScale, modelScale, modelScale);
         renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
-        boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
+        boolean cull = useCulling(model.getType(), poseStack);
         var renderPasses = ModelCache.getRenderPasses(model);
         for (int passIndex = 0; passIndex < renderPasses.size(); passIndex++)
         {
@@ -188,6 +193,12 @@ public final class GunItemRenderer
         if (itemDisplayContext.firstPerson())
             return !(ModClient.getZoomProgress() > 0.9F && model.getType().getCurrentScope(item).hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay());
         return true;
+    }
+
+    /** A reflected pose reverses face winding, so its model parts need two-sided rendering. */
+    private static boolean useCulling(InfoType type, PoseStack poseStack)
+    {
+        return ModClientConfig.get().useCullingRendering(type) && poseStack.last().pose().determinant() > 0F;
     }
 
     private static boolean shouldRenderAmmo(GunAnimations animations, EnumAnimationType anim, int numRounds)
@@ -1063,7 +1074,7 @@ public final class GunItemRenderer
             if (shouldRenderAmmo(animations, model.getAnimationType(), numRounds) || !model.getType().getSecondaryFire(stack))
             {
                 boolean translucent = ModClientConfig.get().useTranslucentRendering(gripAttachment);
-                boolean cull = ModClientConfig.get().useCullingRendering(gripAttachment);
+                boolean cull = useCulling(gripAttachment, poseStack);
                 for (EnumRenderPass renderPass : ModelCache.getRenderPasses(gripModel))
                     gripModel.renderAttachmentAmmo(poseStack, buffer.getBuffer(renderPass.getRenderType(ammoTexture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, modelScale, renderPass);
             }
@@ -1090,7 +1101,7 @@ public final class GunItemRenderer
             poseStack.mulPose(Axis.of(new org.joml.Vector3f(model.getCasingRotateVector().x, model.getCasingRotateVector().y, model.getCasingRotateVector().z)).rotationDegrees(casingProg * 180));
             ResourceLocation casingTexture = model.getType().getCasingTexture();
             boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
-            boolean cull = ModClientConfig.get().useCullingRendering(model.getType());
+            boolean cull = useCulling(model.getType(), poseStack);
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(casing))
                 casing.renderCasing(poseStack, buffer.getBuffer(renderPass.getRenderType(casingTexture, translucent, cull)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, renderPass);
             poseStack.popPose();
@@ -1221,7 +1232,7 @@ public final class GunItemRenderer
             float blue = (color & 255) / 255F;
             ResourceLocation attachmentTexture = attachment.getPaintjob(stack).getTexture();
             boolean translucent = ModClientConfig.get().useTranslucentRendering(modelAttachment.getType());
-            boolean cull = ModClientConfig.get().useCullingRendering(modelAttachment.getType());
+            boolean cull = useCulling(modelAttachment.getType(), poseStack);
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(modelAttachment))
                 modelAttachment.renderAttachment(poseStack, buffer.getBuffer(renderPass.getRenderType(attachmentTexture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
         }

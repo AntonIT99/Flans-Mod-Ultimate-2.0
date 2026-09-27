@@ -53,7 +53,8 @@ public final class DriveableCollisionWorld
     /** Whether an entity's movement treats driveable hulls as solid at all. */
     public static boolean collidesWithHulls(@Nullable Entity entity)
     {
-        return entity != null && !entity.noPhysics && !entity.isSpectator() && !entity.isPassenger()
+        return entity != null && !DriveableCollisionBypass.isEnabled(entity)
+            && !entity.noPhysics && !entity.isSpectator() && !entity.isPassenger()
             && !(entity instanceof Driveable) && !(entity instanceof Seat) && !(entity instanceof Wheel)
             && !(entity instanceof Shootable) && !(entity instanceof Projectile)
             && !(entity instanceof AbstractMinecart) && !(entity instanceof HangingEntity)

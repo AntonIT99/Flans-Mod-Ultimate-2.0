@@ -7,6 +7,7 @@ import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.ClientHooks;
@@ -80,13 +81,19 @@ public final class ShootPointDebugCommand
                 .then(Commands.literal("secondary")
                     .then(Commands.argument("index", IntegerArgumentType.integer(0))
                         .then(vector(context -> setShootPoint(context, true, false)))))
+                .then(Commands.literal("seat")
+                    .then(Commands.argument("seat", IntegerArgumentType.integer(1))
+                        .then(vector(context -> setGunOrigin(context, false)))))
                 .then(Commands.literal("nudge")
                     .then(Commands.literal("primary")
                         .then(Commands.argument("index", IntegerArgumentType.integer(0))
                             .then(vector(context -> setShootPoint(context, false, true)))))
                     .then(Commands.literal("secondary")
                         .then(Commands.argument("index", IntegerArgumentType.integer(0))
-                            .then(vector(context -> setShootPoint(context, true, true))))))
+                            .then(vector(context -> setShootPoint(context, true, true)))))
+                    .then(Commands.literal("seat")
+                        .then(Commands.argument("seat", IntegerArgumentType.integer(1))
+                            .then(vector(context -> setGunOrigin(context, true))))))
                 .then(Commands.literal("add")
                     .then(Commands.literal("primary").then(addVector(false)))
                     .then(Commands.literal("secondary").then(addVector(true)))))
@@ -354,6 +361,7 @@ public final class ShootPointDebugCommand
         if (vehicle != null)
         {
             Driveable driveable = vehicle instanceof Driveable direct ? direct
+                : vehicle instanceof Seat seat ? seat.getDriveable()
                 : vehicle.getVehicle() instanceof Driveable parent ? parent : null;
             if (driveable != null && driveable.getConfigType() != null)
                 return driveable.getConfigType();

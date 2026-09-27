@@ -162,8 +162,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     /**
-     * Whether the holder is charging a throw of this stack, during which the vanilla spear pose
-     * replaces the gun aiming pose.
+     * Whether the holder is charging a throw of this stack, during which the throwing arm is drawn back
+     * over the shoulder (see {@code GunArmPoses}).
      */
     public boolean isChargingThrow(LivingEntity holder, ItemStack stack)
     {

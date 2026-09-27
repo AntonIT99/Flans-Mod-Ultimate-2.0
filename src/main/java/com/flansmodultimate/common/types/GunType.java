@@ -272,6 +272,12 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * If true, then this gun can be dual wielded
      */
     protected boolean oneHanded;
+    /** Keeps this gun's holding arm raised even when the holder uses the dynamic aim pose. */
+    @Getter
+    protected boolean forceAimPose;
+    /** Mirrors the held model across its side axis when rendered in the left hand. */
+    @Getter
+    protected boolean mirrorInLeftHand;
     /**
      * For one shot items like a panzerfaust
      */
@@ -431,6 +437,11 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * Sound to play on firing when empty(multiple times)
      */
     protected String clickSoundOnEmptyRepeated;
+    /**
+     * The sound to play when switching between firing modes. Defaults to the built-in firing mode switch sound
+     */
+    @Getter
+    protected String modeSwitchSound = FlansMod.SOUND_SWITCH_FIRING_MODE;
     /**
      * The sound to play while holding the weapon in the hand
      */
@@ -781,6 +792,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         canShootUnderwater = readValue("CanShootUnderwater", canShootUnderwater, file);
         canSetPosition = readValue("CanSetPosition", canSetPosition, file);
         oneHanded = readValue("OneHanded", oneHanded, file);
+        forceAimPose = readValue("ForceAimPose", forceAimPose, file);
+        mirrorInLeftHand = readValue("MirrorInLeftHand", mirrorInLeftHand, file);
         usableByPlayers = readValue("UsableByPlayers", usableByPlayers, file);
         usableByMechas = readValue("UsableByMechas", usableByMechas, file);
         standBackDist = readValue("StandBackDistance", standBackDist, file);
@@ -842,6 +855,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         reloadSoundOnEmpty = readSound("EmptyReloadSound", reloadSoundOnEmpty, file);
         clickSoundOnEmpty = readSound("EmptyClickSound", clickSoundOnEmpty, file);
         clickSoundOnEmptyRepeated = readSound("EmptyClickSoundRepeated", clickSoundOnEmptyRepeated, file);
+        modeSwitchSound = readSound("ModeSwitchSound", modeSwitchSound, file);
         idleSound = readSound("IdleSound", idleSound, file);
         meleeSound = readSound("MeleeSound", meleeSound, file);
 

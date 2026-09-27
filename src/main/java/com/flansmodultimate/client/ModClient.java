@@ -79,6 +79,8 @@ public class ModClient
 
     public static final HumanoidModel.ArmPose bothArmsAim = ArmPosePlatform.bothArmsAim();
     public static final HumanoidModel.ArmPose oneArmAim = ArmPosePlatform.oneArmAim();
+    public static final HumanoidModel.ArmPose oneArmThrow = ArmPosePlatform.oneArmThrow();
+    public static final HumanoidModel.ArmPose bowSupport = ArmPosePlatform.bowSupport();
 
     /**
      * Arm transform of {@link #bothArmsAim}: both arms straight forward, independent of head pitch.
@@ -103,6 +105,39 @@ public class ModClient
         ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
         float side = arm == HumanoidArm.RIGHT ? 1F : -1F;
         part.yRot = -side * 0.1F + model.head.yRot;
+        part.xRot = -Mth.PI / 2F + model.head.xRot;
+    }
+
+    /**
+     * Arm transform of {@link #oneArmThrow}: the vanilla spear charge of the throwing arm. Vanilla poses only
+     * the arm of an item in use, so this also applies the gun pose of the other arm, which would otherwise
+     * drop. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.THROW} mirrors it.
+     */
+    public static void poseOneArmThrow(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
+    {
+        ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
+        float swing = part.xRot;
+        HumanoidArm otherArm = arm.getOpposite();
+        HumanoidModel.ArmPose otherPose = otherArm == HumanoidArm.RIGHT ? model.rightArmPose : model.leftArmPose;
+        if (otherPose == oneArmAim)
+            poseOneArmAim(model, entity, otherArm);
+        else if (otherPose == bothArmsAim)
+            poseBothArmsAim(model, entity, otherArm);
+        else if (otherPose == bowSupport)
+            poseBowSupport(model, entity, otherArm);
+        part.xRot = swing * 0.5F - Mth.PI;
+        part.yRot = 0F;
+    }
+
+    /**
+     * Arm transform of {@link #bowSupport}: the free arm of the vanilla bow pose, reaching across towards
+     * where the head looks. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.SUPPORT} mirrors it.
+     */
+    public static void poseBowSupport(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
+    {
+        ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
+        float side = arm == HumanoidArm.RIGHT ? 1F : -1F;
+        part.yRot = -side * 0.5F + model.head.yRot;
         part.xRot = -Mth.PI / 2F + model.head.xRot;
     }
 

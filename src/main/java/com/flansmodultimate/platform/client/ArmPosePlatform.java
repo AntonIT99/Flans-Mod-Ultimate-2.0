@@ -14,6 +14,10 @@ public final class ArmPosePlatform
         HumanoidModel.ArmPose.create("both_arms_aim", true, ModClient::poseBothArmsAim);
     private static final HumanoidModel.ArmPose ONE_ARM_AIM =
         HumanoidModel.ArmPose.create("one_arm_aim", false, ModClient::poseOneArmAim);
+    private static final HumanoidModel.ArmPose ONE_ARM_THROW =
+        HumanoidModel.ArmPose.create("one_arm_throw", false, ModClient::poseOneArmThrow);
+    private static final HumanoidModel.ArmPose BOW_SUPPORT =
+        HumanoidModel.ArmPose.create("bow_support", false, ModClient::poseBowSupport);
 
     private ArmPosePlatform() {}
 
@@ -27,5 +31,17 @@ public final class ArmPosePlatform
     public static HumanoidModel.ArmPose oneArmAim()
     {
         return ONE_ARM_AIM;
+    }
+
+    /** Draws the arm charging a throw back over the shoulder, the other arm keeping its gun pose. */
+    public static HumanoidModel.ArmPose oneArmThrow()
+    {
+        return ONE_ARM_THROW;
+    }
+
+    /** Keeps a free arm reaching across as in the bow pose while the other arm charges a throw. */
+    public static HumanoidModel.ArmPose bowSupport()
+    {
+        return BOW_SUPPORT;
     }
 }

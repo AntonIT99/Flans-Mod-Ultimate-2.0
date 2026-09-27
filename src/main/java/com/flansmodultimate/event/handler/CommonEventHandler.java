@@ -16,8 +16,10 @@ import com.flansmodultimate.common.command.ShootPointDebugCommand;
 import com.flansmodultimate.common.command.TeamsCommand;
 import com.flansmodultimate.common.command.TryClassCommand;
 import com.flansmodultimate.common.command.TryTeamCommand;
+import com.flansmodultimate.common.command.VehicleCollisionDebugCommand;
 import com.flansmodultimate.common.command.VehiclePhysicsCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
+import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
@@ -145,6 +147,7 @@ public final class CommonEventHandler
         TeamsCommand.register(event.getDispatcher());
         TryClassCommand.register(event.getDispatcher());
         TryTeamCommand.register(event.getDispatcher());
+        VehicleCollisionDebugCommand.register(event.getDispatcher());
         VehiclePhysicsCommand.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
@@ -203,6 +206,7 @@ public final class CommonEventHandler
     {
         FlansMod.teamsManager.detachServer();
         CraterCarver.clear();
+        DriveableCollisionBypass.reset();
         contentReferencesValidated = false;
     }
 
@@ -279,6 +283,7 @@ public final class CommonEventHandler
             GunArmPoses.syncPlayer(sp);
             PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
             ModCommonConfigSync.syncClientIfServer(sp);
+            VehicleCollisionDebugCommand.syncOnLogin(sp);
             FlansMod.teamsManager.playerLoggedIn(sp);
         }
     }
@@ -296,6 +301,7 @@ public final class CommonEventHandler
     {
         ModCommonConfig.clearServerOverride();
         ModApocalypseConfig.clearServerOverride();
+        DriveableCollisionBypass.clear(event.getEntity());
         regenTimers.remove(event.getEntity().getUUID());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);

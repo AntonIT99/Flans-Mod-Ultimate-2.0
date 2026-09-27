@@ -5,6 +5,8 @@ import com.flansmodultimate.common.guns.GunArmPoses.HandItem;
 import com.flansmodultimate.common.guns.GunArmPoses.Result;
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.world.InteractionHand;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GunArmPosesTest
@@ -77,6 +79,24 @@ class GunArmPosesTest
         // The idle gun beside it stays down; firing it raises the gun arm alone
         assertEquals(new Result(Arm.NONE, Arm.ONE_ARM), dynamic(HandItem.GUN, HandItem.SHIELD, false, false));
         assertEquals(new Result(Arm.ONE_ARM, Arm.ONE_ARM), dynamic(HandItem.GUN, HandItem.SHIELD, true, false));
+    }
+
+    @Test
+    void chargingThrowMovesOnlyTheThrowingArm()
+    {
+        // A shield, or a gun raised beside the throwable, stays as it was
+        assertEquals(new Result(Arm.THROW, Arm.ONE_ARM), GunArmPoses.charging(enforced(HandItem.GUN, HandItem.SHIELD), InteractionHand.MAIN_HAND));
+        assertEquals(new Result(Arm.BOTH, Arm.THROW), GunArmPoses.charging(enforced(HandItem.GUN, HandItem.GUN), InteractionHand.OFF_HAND));
+        assertEquals(new Result(Arm.ONE_ARM, Arm.THROW), GunArmPoses.charging(dynamic(HandItem.SHIELD, HandItem.GUN, false, false), InteractionHand.OFF_HAND));
+    }
+
+    @Test
+    void chargingThrowKeepsTheFreeArmSupporting()
+    {
+        assertEquals(new Result(Arm.THROW, Arm.SUPPORT), GunArmPoses.charging(enforced(HandItem.GUN, HandItem.EMPTY), InteractionHand.MAIN_HAND));
+        assertEquals(new Result(Arm.SUPPORT, Arm.THROW), GunArmPoses.charging(enforced(HandItem.EMPTY, HandItem.GUN), InteractionHand.OFF_HAND));
+        // A lowered throwable raised no free arm, so that arm stays down
+        assertEquals(new Result(Arm.THROW, Arm.NONE), GunArmPoses.charging(dynamic(HandItem.GUN, HandItem.EMPTY, false, false), InteractionHand.MAIN_HAND));
     }
 
     @Test
