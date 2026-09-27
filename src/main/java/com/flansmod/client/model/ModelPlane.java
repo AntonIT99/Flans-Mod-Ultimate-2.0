@@ -229,18 +229,18 @@ public class ModelPlane extends ModelDriveable
             ? Mth.lerp(state.partialTick(), plane.getPrevFlapPitchRight(), plane.getFlapPitchRight()) * Mth.DEG_TO_RAD : 0F;
         if (driveable.isPartIntact(EnumDriveablePart.TAIL))
         {
-            renderWithRotationOffset(yawFlapModel, RotationAxis.Y, yawControl, poseStack, vertexConsumer,
+            renderWithRotation(yawFlapModel, RotationAxis.Y, yawControl, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderWithRotationOffset(pitchFlapLeftModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer,
+            renderWithRotation(pitchFlapLeftModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-            renderWithRotationOffset(pitchFlapRightModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer,
+            renderWithRotation(pitchFlapRightModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
         if (driveable.isPartIntact(EnumDriveablePart.LEFT_WING))
-            renderWithRotationOffset(pitchFlapLeftWingModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer,
+            renderWithRotation(pitchFlapLeftWingModel, RotationAxis.Z, leftPitch, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (driveable.isPartIntact(EnumDriveablePart.RIGHT_WING))
-            renderWithRotationOffset(pitchFlapRightWingModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer,
+            renderWithRotation(pitchFlapRightWingModel, RotationAxis.Z, rightPitch, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
@@ -388,23 +388,7 @@ public class ModelPlane extends ModelDriveable
         poseStack.popPose();
     }
 
-    private void renderWithRotation(ModelRendererTurbo[] parts, RotationAxis axis, float angle,
-                                    PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-                                    float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
-    {
-        renderWithRotation(parts, axis, angle, false, poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass);
-    }
-
-    private void renderWithRotationOffset(ModelRendererTurbo[] parts, RotationAxis axis, float angle,
-                                          PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-                                          float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
-    {
-        renderWithRotation(parts, axis, angle, true, poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass);
-    }
-
-    private void renderWithRotation(ModelRendererTurbo[] parts, RotationAxis axis, float angle, boolean additive,
+    void renderWithRotation(ModelRendererTurbo[] parts, RotationAxis axis, float angle,
                                     PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                                     float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
@@ -415,7 +399,10 @@ public class ModelPlane extends ModelDriveable
             if (part == null)
                 continue;
             float oldAngle = axis.get(part);
-            axis.set(part, additive ? oldAngle + angle : angle);
+            // Legacy ModelPlane assigns the control angle for this draw. Some
+            // content authors left a construction angle on these parts; adding
+            // it displaces the rudder or elevator from the fixed tail.
+            axis.set(part, angle);
             try
             {
                 part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
@@ -447,7 +434,7 @@ public class ModelPlane extends ModelDriveable
         }
     }
 
-    private enum RotationAxis
+    enum RotationAxis
     {
         X
         {

@@ -786,6 +786,23 @@ public class Seat extends Entity implements IControllable, ISeat
         clientViewAimPitch = Mth.clamp(pitch, -89.9F, 89.9F);
     }
 
+    /**
+     * Puts back the aim its driveable saved, since seats themselves are not
+     * saved, kept within this seat's limits.
+     */
+    public void restoreAim(float yaw, float pitch)
+    {
+        if (!Float.isFinite(yaw) || !Float.isFinite(pitch))
+            return;
+        SeatInfo info = seatInfo;
+        yaw = info == null ? Mth.wrapDegrees(yaw) : info.clampYaw(yaw);
+        pitch = info == null ? Mth.clamp(pitch, -89.9F, 89.9F) : info.clampPitch(pitch);
+        entityData.set(DATA_AIM_YAW, yaw);
+        entityData.set(DATA_AIM_PITCH, pitch);
+        prevAimYaw = yaw;
+        prevAimPitch = pitch;
+    }
+
     public void synchronizeClientViewWithAim()
     {
         clientViewAimYaw = getAimYaw();

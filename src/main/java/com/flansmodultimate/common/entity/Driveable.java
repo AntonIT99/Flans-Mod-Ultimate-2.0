@@ -148,6 +148,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 /**
  * Server-authoritative common runtime for planes, vehicles and mechas.
@@ -166,6 +167,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public static final String NBT_THROTTLE = "driveable_throttle";
     public static final String NBT_TURRET_YAW = "turret_yaw";
     public static final String NBT_TURRET_PITCH = "turret_pitch";
+    public static final String NBT_SEAT_AIMS = "seat_aims";
     public static final String NBT_FLAGS = "driveable_flags";
     public static final String NBT_MODE = "driveable_mode";
     public static final String NBT_OWNER = "driveable_owner";
@@ -260,6 +262,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     @Getter
     protected Seat[] seats = new Seat[0];
     /**
+     * Seat aims read from a save, as a yaw and a pitch per seat index, held until
+     * the seats are created again: seats are not saved themselves. NaN marks a
+     * seat with no saved aim.
+     */
+    private float[] savedSeatAims = new float[0];
+    /**
      * Height of a passenger gun's muzzle above its authored GunOrigin, in blocks.
      *
      * <p>Taken from the 1.7.10 firing path, which added
@@ -330,6 +338,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     protected float secondaryShootDelay;
     protected int primaryShootPointIndex;
     protected int secondaryShootPointIndex;
+    /** The barrel each shoot point of a multi-barrel mount fires from next, by bank then point. */
+    protected int[][] shootPointBarrelIndices = { new int[0], new int[0] };
     protected int primaryBurstRemaining;
     protected int secondaryBurstRemaining;
     protected int primaryHeldTicks;
@@ -378,6 +388,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     protected float[] passengerShootDelay = new float[0];
     protected int[] passengerBurstRemaining = new int[0];
     protected int[] passengerHeldTicks = new int[0];
+    /** The barrel each seat's twin or quad gun fires from next. */
+    protected int[] passengerBarrelIndices = new int[0];
     protected int weaponInventoryFingerprint;
     protected boolean weaponInventoryFingerprintInitialized;
     protected int renderInventoryFingerprint;
@@ -519,6 +531,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             passengerAmmoTracked = false;
             passengerBurstRemaining = Arrays.copyOf(passengerBurstRemaining, seatCount);
             passengerHeldTicks = Arrays.copyOf(passengerHeldTicks, seatCount);
+            passengerBarrelIndices = Arrays.copyOf(passengerBarrelIndices, seatCount);
         }
         if (modelPassengerGunAimPivots.length != seatCount)
             modelPassengerGunAimPivots = Arrays.copyOf(modelPassengerGunAimPivots, seatCount);
@@ -985,6 +998,62 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // Loading an existing entity (including client spawn data) must not replay placement effects.
         placementEffectsPending = false;
         resizeProxyArrays();
+        savedSeatAims = tag.contains(NBT_SEAT_AIMS, Tag.TAG_INT_ARRAY)
+            ? decodeSeatAims(tag.getIntArray(NBT_SEAT_AIMS)) : new float[0];
+    }
+
+    /**
+     * Every seat's aim, as float bits in yaw and pitch pairs by seat index. The
+     * turret follows the driver's aim, and a turret gun is drawn relative to it,
+     * so a seat that came back aiming straight ahead split the turret and its guns
+     * from where they fire.
+     */
+    private int[] encodeSeatAims()
+    {
+        int count = Math.max(seats.length, savedSeatAims.length / 2);
+        int[] bits = new int[count * 2];
+        for (int index = 0; index < count; index++)
+        {
+            Seat seat = index < seats.length ? seats[index] : null;
+            boolean live = seat != null && seat.isAlive();
+            float yaw = live ? seat.getAimYaw() : savedSeatAim(index, 0);
+            float pitch = live ? seat.getAimPitch() : savedSeatAim(index, 1);
+            bits[index * 2] = Float.floatToIntBits(yaw);
+            bits[index * 2 + 1] = Float.floatToIntBits(pitch);
+        }
+        return bits;
+    }
+
+    private static float[] decodeSeatAims(int[] bits)
+    {
+        float[] aims = new float[bits.length];
+        for (int index = 0; index < bits.length; index++)
+            aims[index] = Float.intBitsToFloat(bits[index]);
+        return aims;
+    }
+
+    private float savedSeatAim(int seatIndex, int axis)
+    {
+        int index = seatIndex * 2 + axis;
+        return index < savedSeatAims.length ? savedSeatAims[index] : Float.NaN;
+    }
+
+    /**
+     * Gives a recreated seat the aim it was saved with. A save from before seat
+     * aims were kept gives the driver the saved turret aim, which is what the
+     * driver's aim drives, so the turret does not swing back to the front.
+     */
+    private void restoreSeatAim(Seat seat, int seatIndex)
+    {
+        float yaw = savedSeatAim(seatIndex, 0);
+        float pitch = savedSeatAim(seatIndex, 1);
+        if (Float.isFinite(yaw) && Float.isFinite(pitch))
+            seat.restoreAim(yaw, pitch);
+        else if (seatIndex == 0)
+            seat.restoreAim(getTurretYaw(), getTurretPitch());
+        // Used once: a seat recreated later in the session keeps its fresh aim.
+        for (int axis = 0; axis < 2 && seatIndex * 2 + axis < savedSeatAims.length; axis++)
+            savedSeatAims[seatIndex * 2 + axis] = Float.NaN;
     }
 
     @Override
@@ -994,6 +1063,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (type == null || driveableData == null)
             return;
         writeRuntimeState(tag);
+        tag.putIntArray(NBT_SEAT_AIMS, encodeSeatAims());
         if (!sourceStack.isEmpty())
         {
             CompoundTag sourceTag = new CompoundTag();
@@ -2335,41 +2405,55 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return false;
         if (PlatformEvents.postCancellable(new GunFiredEvent(this)))
             return false;
-        List<ShootPoint> selected;
+        int[] selected;
         if (type.alternate(secondary))
         {
             int index = secondary ? secondaryShootPointIndex : primaryShootPointIndex;
-            ShootPoint point = points.get(Math.floorMod(index, points.size()));
-            selected = List.of(point);
+            selected = new int[] { Math.floorMod(index, points.size()) };
             if (secondary)
                 secondaryShootPointIndex = (index + 1) % points.size();
             else
                 primaryShootPointIndex = (index + 1) % points.size();
         }
         else
-            selected = points;
+            selected = IntStream.range(0, points.size()).toArray();
 
-        boolean fired = false;
-        List<ShootPoint> firedPoints = new ArrayList<>();
-        for (ShootPoint point : selected)
+        List<FiredMuzzle> fired = new ArrayList<>();
+        for (int index : selected)
         {
+            ShootPoint point = points.get(index);
             if (point == null || !isPartIntact(point.getRootPos().getPart()))
                 continue;
-            boolean pointFired = fireFromPoint(point, weapon, secondary,
-                getControllingEntity() instanceof LivingEntity living ? living : null);
-            fired |= pointFired;
-            if (pointFired)
-                firedPoints.add(point);
+            // A twin or quad mount fired from one point takes its barrels in turn.
+            int barrel = nextBarrel(secondary, index, point.getBarrelCount());
+            if (fireFromPoint(point, barrel, weapon, secondary,
+                getControllingEntity() instanceof LivingEntity living ? living : null))
+            {
+                shootPointBarrelIndices[secondary ? 1 : 0][index] = (barrel + 1) % point.getBarrelCount();
+                fired.add(new FiredMuzzle(index, barrel));
+            }
         }
-        if (fired)
+        if (!fired.isEmpty())
         {
-            playBankEffects(secondary, firedPoints);
+            playBankEffects(secondary, fired);
             if (weapon == EnumWeaponType.SHELL)
                 beginRecoil();
             if (type.isIt1() && weapon == EnumWeaponType.MISSILE)
                 beginIT1Reload();
         }
-        return fired;
+        return !fired.isEmpty();
+    }
+
+    /** One shoot point of a bank, and the barrel of it, that a shot left from. */
+    protected record FiredMuzzle(int pointIndex, int barrel) {}
+
+    /** The barrel a bank's point fires from next, growing the bank's record of them as needed. */
+    private int nextBarrel(boolean secondary, int pointIndex, int barrelCount)
+    {
+        int bank = secondary ? 1 : 0;
+        if (pointIndex >= shootPointBarrelIndices[bank].length)
+            shootPointBarrelIndices[bank] = Arrays.copyOf(shootPointBarrelIndices[bank], pointIndex + 1);
+        return Math.floorMod(shootPointBarrelIndices[bank][pointIndex], barrelCount);
     }
 
     protected boolean weaponEnabled(EnumWeaponType weapon)
@@ -2383,7 +2467,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         };
     }
 
-    protected boolean fireFromPoint(ShootPoint point, EnumWeaponType weapon, boolean secondary, @Nullable LivingEntity attacker)
+    protected boolean fireFromPoint(ShootPoint point, int barrel, EnumWeaponType weapon, boolean secondary,
+                                    @Nullable LivingEntity attacker)
     {
         AmmoSelection selection = selectAmmo(point, weapon, secondary);
         if (selection == null || !ShootableItem.hasRoundsLeft(selection.stack()))
@@ -2397,7 +2482,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             ? selection.gunType().getNumBullets(null, shootableType)
             : shootableType.getNumBullets();
 
-        Vec3 origin = getShootOrigin(point);
+        Vec3 origin = getShootOrigin(point, barrel);
         Vec3 direction = getShootDirection(point, secondary);
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
         ShootingHelper.fireWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
@@ -2654,10 +2739,22 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return ItemStack.EMPTY;
     }
 
+    /** Where a shoot point's muzzle is now: the middle of a multi-barrel mount's barrels. */
     protected Vec3 getShootOrigin(ShootPoint point)
     {
+        return getShootOrigin(point, point.getOffPos());
+    }
+
+    /** Where one barrel of a shoot point ends now; a single-barrel point has only barrel zero. */
+    protected Vec3 getShootOrigin(ShootPoint point, int barrel)
+    {
+        return getShootOrigin(point, point.getBarrelOffPos(barrel));
+    }
+
+    private Vec3 getShootOrigin(ShootPoint point, com.flansmod.common.vector.Vector3f offPos)
+    {
         Vec3 root = attachmentModelLocal(point.getRootPos().getPosition());
-        Vec3 offset = attachmentModelLocal(point.getOffPos());
+        Vec3 offset = attachmentModelLocal(offPos);
         EnumDriveablePart part = point.getRootPos().getPart();
         if (!isTurretMountedPart(part))
             return modelLocalToWorld(root.add(offset));
@@ -2704,6 +2801,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public Vec3 getDebugShootOrigin(@NotNull ShootPoint point)
     {
         return getShootOrigin(point);
+    }
+
+    /** As {@link #getDebugShootOrigin(ShootPoint)}, for one barrel of a multi-barrel point. */
+    public Vec3 getDebugShootOrigin(@NotNull ShootPoint point, int barrel)
+    {
+        return getShootOrigin(point, barrel);
     }
 
     /** Returns the direction paired with a diagnostic muzzle position. */
@@ -2871,49 +2974,41 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return this instanceof Plane ? -pitch : pitch;
     }
 
-    protected void playBankEffects(boolean secondary, List<ShootPoint> firedPoints)
+    protected void playBankEffects(boolean secondary, List<FiredMuzzle> fired)
     {
         DriveableType type = initializedType();
         String sound = type.shootSound(secondary);
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 128D, sound, true);
         List<DriveableType.ShootParticle> particles = secondary ? type.getShootParticlesSecondary() : type.getShootParticlesPrimary();
-        if (particles.isEmpty() || firedPoints.isEmpty())
+        if (particles.isEmpty() || fired.isEmpty())
             return;
         // Clients look the particles up from this driveable's type and place them from their own
         // view of it, so one packet per shot replaces one per particle per shoot point.
-        List<ShootPoint> points = type.shootPoints(secondary);
-        int[] indices = new int[firedPoints.size()];
-        int count = 0;
-        for (ShootPoint fired : firedPoints)
-        {
-            for (int index = 0; index < points.size(); index++)
-            {
-                if (points.get(index) == fired)
-                {
-                    indices[count++] = index;
-                    break;
-                }
-            }
-        }
-        if (count > 0)
-            PacketHandler.sendToAllAround(new PacketDriveableBankFired(getId(), secondary, Arrays.copyOf(indices, count)),
-                position(), 128D, level().dimension());
+        PacketHandler.sendToAllAround(new PacketDriveableBankFired(getId(), secondary,
+                fired.stream().mapToInt(FiredMuzzle::pointIndex).toArray(),
+                fired.stream().mapToInt(FiredMuzzle::barrel).toArray()),
+            position(), 128D, level().dimension());
     }
 
-    /** Draws the particles of a weapon bank that fired from the given shoot points, on this client. */
-    public void spawnBankParticles(boolean secondary, int[] pointIndices)
+    /**
+     * Draws the particles of a weapon bank that fired from the given shoot points, on this client.
+     *
+     * @param barrels the barrel of each point that fired, index for index; missing entries are barrel zero
+     */
+    public void spawnBankParticles(boolean secondary, int[] pointIndices, int[] barrels)
     {
         if (!level().isClientSide || configType == null)
             return;
         List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();
         List<ShootPoint> points = configType.shootPoints(secondary);
-        for (int pointIndex : pointIndices)
+        for (int fired = 0; fired < pointIndices.length; fired++)
         {
+            int pointIndex = pointIndices[fired];
             if (pointIndex < 0 || pointIndex >= points.size())
                 continue;
             ShootPoint point = points.get(pointIndex);
-            Vec3 origin = getShootOrigin(point);
+            Vec3 origin = getShootOrigin(point, fired < barrels.length ? barrels[fired] : 0);
             EnumDriveablePart part = point.getRootPos().getPart();
             for (DriveableType.ShootParticle particle : particles)
             {
@@ -3048,7 +3143,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         ShootableType shootableType = shootable.getConfigType();
         FireableGun fireable = new FireableGun(gun);
         LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-        Vec3 origin = getPassengerShootOrigin(seat, info);
+        // A twin or quad seat gun takes its barrels in turn, keeping the gun's own cadence.
+        int barrel = index < passengerBarrelIndices.length
+            ? Math.floorMod(passengerBarrelIndices[index], info.getGunBarrelCount()) : 0;
+        if (index < passengerBarrelIndices.length)
+            passengerBarrelIndices[index] = (barrel + 1) % info.getGunBarrelCount();
+        Vec3 origin = getPassengerShootOrigin(seat, info, barrel);
         Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
         ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType),
@@ -3097,14 +3197,17 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             PacketPlaySound.sendSoundPacket(this, gun.getReloadSoundRange(), reloadSound, false);
     }
 
-    /** Current passenger muzzle position, shared by firing and debug rendering. */
+    /**
+     * Current muzzle position of one barrel of a passenger's gun, shared by
+     * firing and debug rendering; a single gun has only barrel zero.
+     */
     @Nullable
-    public Vec3 getPassengerShootOrigin(int seatIndex)
+    public Vec3 getPassengerShootOrigin(int seatIndex, int barrel)
     {
         Seat seat = getSeat(seatIndex);
         SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
         return seat == null || info == null || info.getGunType() == null
-            ? null : getPassengerShootOrigin(seat, info);
+            ? null : getPassengerShootOrigin(seat, info, barrel);
     }
 
     /** Current passenger firing direction for client-side diagnostics. */
@@ -3130,10 +3233,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      * pivot by the seat's aim, exactly as the drawn gun is, so a GunOrigin
      * placed on the pivot itself still fires from one fixed point. Without a
      * pivot the point stays fixed, which is the legacy behaviour.</p>
+     *
+     * <p>Each barrel of a twin or quad gun sits at its own offset from GunOrigin
+     * and turns round the same pivot, so the barrels keep their places as the gun aims.</p>
      */
-    private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info)
+    private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info, int barrel)
     {
-        Vec3 muzzle = gunOriginModelLocal(info.getGunOrigin());
+        Vec3 muzzle = gunOriginModelLocal(info.getGunOrigin(barrel));
         Vec3 pivot = passengerGunPivotLocal(seat.getSeatIndex());
         if (pivot == null)
             return modelLocalToWorld(muzzle);
@@ -3616,6 +3722,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             if (info == null)
                 continue;
             seat = new Seat(level(), this, index, info);
+            restoreSeatAim(seat, index);
             seats[index] = seat;
             level().addFreshEntity(seat);
         }
@@ -5896,6 +6003,21 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public AABB getBoundingBoxForCulling()
     {
         float radius = configType == null ? 8F : Mth.clamp(configType.getBulletDetectionRadius() + 2F, 4F, 64F);
+        if (configType != null)
+        {
+            // Include all authored part boxes, even when a part is destroyed or
+            // the client has not received its mutable state yet. Rotation can put
+            // either horizontal corner on the far side of a large model.
+            AABB bounds = configType.getBounds().orElse(null);
+            if (bounds != null)
+            {
+                double scale = Math.abs(configType.getModelScale());
+                double farX = Math.max(Math.abs(bounds.minX), Math.abs(bounds.maxX)) * scale;
+                double farZ = Math.max(Math.abs(bounds.minZ), Math.abs(bounds.maxZ)) * scale;
+                double farY = Math.max(Math.abs(bounds.minY), Math.abs(bounds.maxY)) * scale;
+                radius = (float) Math.max(radius, Math.max(Math.hypot(farX, farZ), farY) + 4D);
+            }
+        }
         return new AABB(getX() - radius, getY() - radius, getZ() - radius, getX() + radius, getY() + radius, getZ() + radius);
     }
 

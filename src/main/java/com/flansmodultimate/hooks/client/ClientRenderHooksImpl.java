@@ -240,7 +240,24 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
         if (!(loaded instanceof ModelDriveable model))
             return List.of();
+        return MuzzleMeasurements.deriveMuzzles(model, driveableInputs(type));
+    }
 
+    @Override
+    public List<DerivedMuzzle> derivePrimaryBarrels(DriveableType type)
+    {
+        if (type == null)
+            return List.of();
+        // As deriveMuzzles: off the render thread, only take what is already loaded.
+        Object loaded = Minecraft.getInstance().isSameThread()
+            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        if (!(loaded instanceof ModelDriveable model))
+            return List.of();
+        return MuzzleMeasurements.derivePrimaryBarrels(model, driveableInputs(type));
+    }
+
+    private static MuzzleMeasurements.DriveableInputs driveableInputs(DriveableType type)
+    {
         List<MuzzleMeasurements.SeatGun> seatGuns = new ArrayList<>();
         for (int seat = 1; seat <= type.getNumPassengers(); seat++)
         {
@@ -248,8 +265,8 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             if (info != null && info.getGunType() != null && info.getGunName() != null)
                 seatGuns.add(new MuzzleMeasurements.SeatGun(seat, info.getGunName()));
         }
-        return MuzzleMeasurements.deriveMuzzles(model, new MuzzleMeasurements.DriveableInputs(
-            type instanceof PlaneType, type.getModelScale(), type.getVehicleGunModelScale(), seatGuns));
+        return new MuzzleMeasurements.DriveableInputs(type instanceof PlaneType, type.getModelScale(),
+            type.getVehicleGunModelScale(), seatGuns);
     }
 
     @Override

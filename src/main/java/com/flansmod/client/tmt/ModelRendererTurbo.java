@@ -1964,6 +1964,56 @@ public class ModelRendererTurbo extends ModelRenderer
     }
 
     /**
+     * Bounds of this part as it is drawn at rest, in model pixels: its faces
+     * turned by its own rotation angles, in the default rotation order, and
+     * placed at its rotation point. Unlike {@link #appendFaceBounds}, a sloped
+     * plate built flat and rotated into place is found where it is drawn.
+     *
+     * @return {@code {minX, minY, minZ, maxX, maxY, maxZ}}, or {@code null} when this part draws nothing
+     */
+    public double[] restBounds()
+    {
+        double[] bounds = {
+            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+        };
+        double cosX = Math.cos(rotateAngleX), sinX = Math.sin(rotateAngleX);
+        double cosY = Math.cos(rotateAngleY), sinY = Math.sin(rotateAngleY);
+        double cosZ = Math.cos(rotateAngleZ), sinZ = Math.sin(rotateAngleZ);
+        boolean found = false;
+        for (int i = 0; i < faceCount; i++)
+        {
+            TexturedPolygon face = faces[i];
+            if (face == null || face.vertexPositions == null)
+                continue;
+            for (PositionTextureVertex vertex : face.vertexPositions)
+            {
+                if (vertex == null)
+                    continue;
+                // The renderer turns a vertex by X, then Z, then Y.
+                Vec3 v = vertex.vector3D;
+                double y1 = v.y * cosX - v.z * sinX;
+                double z1 = v.y * sinX + v.z * cosX;
+                double x2 = v.x * cosZ - y1 * sinZ;
+                double y2 = v.x * sinZ + y1 * cosZ;
+                double x3 = x2 * cosY + z1 * sinY;
+                double z3 = -x2 * sinY + z1 * cosY;
+                double x = rotationPointX + x3;
+                double y = rotationPointY + y2;
+                double z = rotationPointZ + z3;
+                bounds[0] = Math.min(bounds[0], x);
+                bounds[1] = Math.min(bounds[1], y);
+                bounds[2] = Math.min(bounds[2], z);
+                bounds[3] = Math.max(bounds[3], x);
+                bounds[4] = Math.max(bounds[4], y);
+                bounds[5] = Math.max(bounds[5], z);
+                found = true;
+            }
+        }
+        return found ? bounds : null;
+    }
+
+    /**
      * Mirrors the model in any direction.
      *
      * @param x whether the model should be mirrored in the x-direction

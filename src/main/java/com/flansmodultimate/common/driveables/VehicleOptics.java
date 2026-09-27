@@ -39,14 +39,10 @@ public final class VehicleOptics
         return autoScope;
     }
 
-    /**
-     * Whether a gunner taking the seat starts out looking through its sight. A seat overlay does, as the
-     * Krishna gunner seats did, but unlike AutoScope the gunner may lower it with the zoom key just as a
-     * driver can.
-     */
+    /** Only an explicit AutoScope starts scoped when a gunner takes the seat. */
     public boolean startsActive()
     {
-        return autoScope || seatOverlay;
+        return autoScope;
     }
 
     public int sightCount()

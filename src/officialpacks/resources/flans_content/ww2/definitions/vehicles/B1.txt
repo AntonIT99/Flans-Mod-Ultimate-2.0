@@ -43,7 +43,7 @@ Tank true
 // Weaponry
 GunOrigin 1 44 -10.6 11
 BarrelPosition 35.2 30.8 3.3
-AddGun 8 20 0 turret mg42
+AddGun 21.5 30.8 -2.2 turret mg42
 ShootDelay 1
 ShellDelay 75
 TurretRotationSpeed 0.08

@@ -210,6 +210,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         AAGunType type = getConfigType();
         if (type == null || pivots == null || muzzles == null || pivots.length != type.getNumBarrels() || muzzles.length != type.getNumBarrels())
             return;
+        // The type's own measurement already places the muzzles; no client report replaces it.
+        if (type.hasMeasuredBarrels())
+            return;
 
         Vec3[] safePivots = new Vec3[type.getNumBarrels()];
         Vec3[] safeMuzzles = new Vec3[type.getNumBarrels()];
@@ -1263,9 +1266,19 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
             return position();
 
-        if (barrel < modelBarrelPivots.length && barrel < modelBarrelMuzzles.length)
-            return position().add(AAGunBarrelGeometry.modelBarrelOffset(modelBarrelPivots[barrel],
-                modelBarrelMuzzles[barrel], getGunYaw(), getGunPitch()));
+        // Barrels the server measured itself win; a client's report is only the
+        // fallback for a model the server could not load.
+        Vec3[] pivots = type.hasMeasuredBarrels() ? type.getMeasuredBarrelPivots() : modelBarrelPivots;
+        Vec3[] muzzles = type.hasMeasuredBarrels() ? type.getMeasuredBarrelMuzzles() : modelBarrelMuzzles;
+        if (type.firesFromBarrelLine(barrel))
+        {
+            // A trusted line fires as written, elevating round the model's pivot like the barrel drawn on it.
+            Vec3 pivot = type.hasMeasuredBarrels() && barrel < pivots.length ? pivots[barrel] : null;
+            return position().add(authoredBarrelOffset(type, barrel, sentryShot, pivot, getGunYaw(), getGunPitch()));
+        }
+        if (barrel < pivots.length && barrel < muzzles.length)
+            return position().add(AAGunBarrelGeometry.modelBarrelOffset(pivots[barrel], muzzles[barrel],
+                getGunYaw(), getGunPitch()));
         return position().add(authoredBarrelOffset(type, barrel, sentryShot, null, getGunYaw(), getGunPitch()));
     }
 

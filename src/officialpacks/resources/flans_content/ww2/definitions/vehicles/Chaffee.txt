@@ -46,7 +46,7 @@ Tank true
 
 // Weaponry
 BarrelPosition 53 26.5 0
-AddGun 8 34 8 turret browning
+AddGun 22 27.5 5.5 turret browning
 ShootDelay 1
 ShellDelay 85
 TurretRotationSpeed 0.02

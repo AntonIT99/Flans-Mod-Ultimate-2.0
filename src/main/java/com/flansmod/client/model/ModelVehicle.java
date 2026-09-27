@@ -19,7 +19,10 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 /** Extensible, pass-aware model base for legacy ground vehicles. */
 @SuppressWarnings({"unused", "java:S1104"})
@@ -283,6 +286,99 @@ public class ModelVehicle extends ModelDriveable
             attached = attached.add(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
         primaryBarrelMuzzle = fixed == null || (attached != null && attached.x > fixed.x) ? attached : fixed;
         return primaryBarrelMuzzle;
+    }
+
+    /**
+     * {@link #getPrimaryBarrelMuzzle()} measured on the one barrel nearest
+     * {@code lateralHint} when the main armament ends in several tubes side by
+     * side, so the muzzle of a twin mount lands on a barrel, not between them.
+     *
+     * @param lateralHint lateral position of the wanted barrel, in model pixels
+     * @return the muzzle in model pixels, or {@code null} when this model has no barrel
+     */
+    @Nullable
+    public Vec3 getPrimaryBarrelMuzzleNear(Vec3 hint)
+    {
+        Vec3 fixed = measureMuzzle(1F, hint, barrelModel);
+        // The attached groups are drawn shifted by barrelAttach, so the hint is moved into their frame.
+        Vec3 attached = measureMuzzle(1F, hint.subtract(barrelAttachPixels()), barrelSpecModel, animBarrelModel);
+        if (attached != null)
+            attached = attached.add(barrelAttachPixels());
+        return fixed == null || (attached != null && attached.x > fixed.x) ? attached : fixed;
+    }
+
+    /**
+     * The muzzle of every tube of the main armament, in model pixels: one for a
+     * single gun, four for a quad mount. Taken from whichever barrel group reaches
+     * further, as {@link #getPrimaryBarrelMuzzle()} does.
+     */
+    public List<Vec3> getPrimaryBarrelMuzzles()
+    {
+        List<Vec3> fixed = measureMuzzles(1F, barrelModel);
+        List<Vec3> attached = measureMuzzles(1F, barrelSpecModel, animBarrelModel).stream()
+            .map(muzzle -> muzzle.add(barrelAttachPixels())).toList();
+        if (fixed.isEmpty() || (!attached.isEmpty() && attached.get(0).x > fixed.get(0).x))
+            return attached;
+        return fixed;
+    }
+
+    private Vec3 barrelAttachPixels()
+    {
+        return new Vec3(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
+    }
+
+    /** Turret parts, drawn at rest scaled by {@code turretScale} and shifted by {@code turretTrans}. */
+    private transient Set<ModelRendererTurbo> turretParts;
+
+    @Override
+    protected double[] toRestPose(ModelRendererTurbo part, double[] bounds)
+    {
+        if (turretParts == null)
+        {
+            Set<ModelRendererTurbo> parts = Collections.newSetFromMap(new IdentityHashMap<>());
+            addAll(parts, turretModel);
+            addAll(parts, barrelModel);
+            for (ModelRendererTurbo[] row : ammoModel)
+                addAll(parts, row);
+            turretParts = parts;
+        }
+        boolean attached = contains(barrelSpecModel, part) || contains(animBarrelModel, part);
+        if (!attached && !turretParts.contains(part))
+            return bounds;
+
+        // renderTurret scales, then translates by turretTrans; the attached groups are drawn at barrelAttach.
+        Vec3 shift = new Vec3(turretTrans.x * 16D, turretTrans.y * 16D, turretTrans.z * 16D);
+        if (attached)
+            shift = shift.add(barrelAttachPixels());
+        double[] scale = { turretScale.x, turretScale.y, turretScale.z };
+        double[] offset = { shift.x, shift.y, shift.z };
+        double[] posed = new double[6];
+        for (int axis = 0; axis < 3; axis++)
+        {
+            double a = (bounds[axis] + offset[axis]) * scale[axis];
+            double b = (bounds[axis + 3] + offset[axis]) * scale[axis];
+            posed[axis] = Math.min(a, b);
+            posed[axis + 3] = Math.max(a, b);
+        }
+        return posed;
+    }
+
+    private static void addAll(Set<ModelRendererTurbo> set, @Nullable ModelRendererTurbo[] parts)
+    {
+        if (parts != null)
+            Collections.addAll(set, parts);
+    }
+
+    private static boolean contains(@Nullable ModelRendererTurbo[] parts, ModelRendererTurbo part)
+    {
+        if (parts == null)
+            return false;
+        for (ModelRendererTurbo candidate : parts)
+        {
+            if (candidate == part)
+                return true;
+        }
+        return false;
     }
 
     @Override

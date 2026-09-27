@@ -2,17 +2,18 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 /**
  * A driveable weapon bank fired from some of its shoot points. Clients take the particles from
  * the driveable's type and place them on their own view of it, so a shot costs one small packet
- * rather than one per particle per shoot point.
+ * rather than one per particle per shoot point. A point on a twin or quad mount also names the
+ * barrel the shot left from.
  */
 @NoArgsConstructor
 public class PacketDriveableBankFired implements IClientPacket
@@ -23,12 +24,15 @@ public class PacketDriveableBankFired implements IClientPacket
     private int entityId;
     private boolean secondary;
     private int[] pointIndices = new int[0];
+    /** The barrel of each point in {@link #pointIndices} that fired, index for index. */
+    private int[] barrels = new int[0];
 
-    public PacketDriveableBankFired(int entityId, boolean secondary, int[] pointIndices)
+    public PacketDriveableBankFired(int entityId, boolean secondary, int[] pointIndices, int[] barrels)
     {
         this.entityId = entityId;
         this.secondary = secondary;
         this.pointIndices = pointIndices;
+        this.barrels = barrels;
     }
 
     @Override
@@ -37,8 +41,11 @@ public class PacketDriveableBankFired implements IClientPacket
         data.writeVarInt(entityId);
         data.writeBoolean(secondary);
         data.writeVarInt(pointIndices.length);
-        for (int index : pointIndices)
-            data.writeVarInt(index);
+        for (int index = 0; index < pointIndices.length; index++)
+        {
+            data.writeVarInt(pointIndices[index]);
+            data.writeVarInt(index < barrels.length ? barrels[index] : 0);
+        }
     }
 
     @Override
@@ -48,14 +55,18 @@ public class PacketDriveableBankFired implements IClientPacket
         secondary = data.readBoolean();
         int count = Math.min(data.readVarInt(), MAX_POINTS);
         pointIndices = new int[count];
+        barrels = new int[count];
         for (int i = 0; i < count; i++)
+        {
             pointIndices[i] = data.readVarInt();
+            barrels[i] = data.readVarInt();
+        }
     }
 
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         if (level.getEntity(entityId) instanceof Driveable driveable)
-            driveable.spawnBankParticles(secondary, pointIndices);
+            driveable.spawnBankParticles(secondary, pointIndices, barrels);
     }
 }

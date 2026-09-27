@@ -115,8 +115,9 @@ public class Vehicle extends Driveable
         tickWalkerStompSounds(type, previousLeftPhase, previousRightPhase);
         updateThrottleAndSteering(type);
 
+        boolean pushed = type.getPushSpeedKmh() > 0F;
         float traction = traction();
-        boolean tracked = type.isTank();
+        boolean tracked = type.isTank() && !pushed;
         boolean leftTrackIntact = isPartIntact(EnumDriveablePart.LEFT_TRACK);
         boolean rightTrackIntact = isPartIntact(EnumDriveablePart.RIGHT_TRACK);
         boolean singleTrackDrive = tracked && leftTrackIntact != rightTrackIntact;
@@ -132,15 +133,19 @@ public class Vehicle extends Driveable
 
         float throttleLimit = DriveableControlPhysics.damagedThrottleLimit(getThrottleDamageNerf());
         float effectiveThrottle = Mth.clamp(getThrottle(), -throttleLimit, throttleLimit);
-        if (!isEngineActive())
+        if (pushed ? getControllingEntity() == null : !isEngineActive())
             effectiveThrottle = 0F;
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
-        boolean derivedPhysics = !ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion();
+        boolean derivedPhysics = !pushed && !ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion();
         double speedScale = ModCommonConfig.realisticSpeedScale(physics.category());
         float normalizedThrottle = DriveableControlPhysics.normalizedThrottle(effectiveThrottle,
             type.getMaxNegativeThrottle());
         double targetSpeed;
-        if (derivedPhysics)
+        if (pushed)
+        {
+            targetSpeed = normalizedThrottle * VehiclePhysicsUnits.kmhToBlocksPerTick(type.getPushSpeedKmh()) * traction;
+        }
+        else if (derivedPhysics)
         {
             // The real-world profile owns terminal speed outright. Throttle is
             // reduced to the driver demand fraction, so MaxThrottle and the
@@ -163,7 +168,7 @@ public class Vehicle extends Driveable
         }
         // A complete real-world ground profile derives a forgiving uphill response
         // from power-to-weight and drive layout; legacy propulsion stays unchanged.
-        if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion())
+        if (derivedPhysics)
             targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(),
                 Math.signum(normalizedThrottle), physics.powerToWeightKwPerKg(), physics.driveType());
         boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING)
@@ -186,9 +191,10 @@ public class Vehicle extends Driveable
         }
 
         double throttleModifier = tracked ? 1D : legacyThrottleCurve(effectiveThrottle);
-        double velocityScale = (tracked ? 0.04D : 0.1D) * throttleModifier * Math.max(0F, directionalThrottle) * getEngineSpeed();
+        double velocityScale = pushed ? 0.03D * Math.abs(effectiveThrottle)
+            : (tracked ? 0.04D : 0.1D) * throttleModifier * Math.max(0F, directionalThrottle) * getEngineSpeed();
         double steeringScale = 0.1D * Math.max(0F, steeringModifier);
-        float yawDelta = isEngineActive() ? (float) Math.toDegrees(turnControl * steeringScale * velocityScale) : 0F;
+        float yawDelta = isEngineActive() || pushed ? (float) Math.toDegrees(turnControl * steeringScale * velocityScale) : 0F;
         if (!isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
         boolean supported = onGround() || hasWheelContact();
@@ -241,13 +247,14 @@ public class Vehicle extends Driveable
         velocity = applyVehicleVerticalPhysics(velocity, type);
         double descent = velocity.y;
         velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater(), verticalGravity(type));
-        double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(derivedPhysics, type.getDrag());
+        double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(derivedPhysics || pushed, type.getDrag());
         velocity = velocity.multiply(horizontalDrag, 1D, horizontalDrag);
 
         if (!ModCommonConfig.forceLegacyVehiclePhysics())
             velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
 
-        velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked, derivedPhysics && drivetrain.isShifting() ? Math.abs(normalizedThrottle) : 0F);
+        velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked, pushed,
+            derivedPhysics && drivetrain.isShifting() ? Math.abs(normalizedThrottle) : 0F);
         moveWithCollisions(velocity);
 
         if (tickCount > 20 && verticalCollision && descent < -0.65D && !isInWater())
@@ -263,7 +270,7 @@ public class Vehicle extends Driveable
         }
 
         harvestConfiguredBlocks();
-        if (isEngineActive())
+        if (isEngineActive() && !pushed)
             consumeFuel(DriveableControlPhysics.vehicleFuelLoad(effectiveThrottle, type.getWheelPositions().size()));
     }
 
@@ -332,7 +339,7 @@ public class Vehicle extends Driveable
     {
         int input = getInputMask();
         float throttle = getThrottle();
-        boolean canControl = getControllingEntity() != null && isEngineActive();
+        boolean canControl = getControllingEntity() != null && (isEngineActive() || type.getPushSpeedKmh() > 0F);
         boolean braking = DriveableInput.isDown(input, DriveableInput.BRAKE | DriveableInput.ASCEND);
         boolean pedalInput = DriveableInput.isDown(input, DriveableInput.FORWARD | DriveableInput.BACKWARD);
         fixedThrottle = DriveableControlPhysics.fixedVehicleThrottle(fixedThrottle, canControl, braking, input);
@@ -491,10 +498,10 @@ public class Vehicle extends Driveable
      * standing on, so a full reversal of demand stops like the brake control.
      */
     private Vec3 applyGroundFriction(Vec3 before, Vec3 after, float effectiveThrottle, boolean braking, boolean tracked,
-                                     float neutralBrakeDemand)
+                                     boolean pushed, float neutralBrakeDemand)
     {
         double deceleration;
-        if (getControllingEntity() == null || !isEngineActive() || braking)
+        if (getControllingEntity() == null || !isEngineActive() && !pushed || braking)
             deceleration = VehiclePhysicsConstants.PARKED_GROUND_FRICTION_DECELERATION_MS2;
         else if (neutralBrakeDemand > 0F || Math.abs(effectiveThrottle) < 1.0E-3F
             && !DriveableInput.isDown(getInputMask(), DriveableInput.FORWARD | DriveableInput.BACKWARD))

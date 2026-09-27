@@ -193,6 +193,9 @@ public final class ShootPointDebugCommand
             send(context, point.isDebugOverride() ? ChatFormatting.YELLOW : ChatFormatting.GRAY,
                 "  [" + index + "] " + describe(point) + "  " + format(current)
                     + (point.isDebugOverride() ? "  (overridden)" : StringUtils.EMPTY));
+            if (point.getBarrelCount() > 1)
+                send(context, ChatFormatting.DARK_AQUA, "        fires from " + point.getBarrelCount()
+                    + " measured barrels in turn: " + formatBarrels(point.getBarrels()));
             if (barrel != null)
                 send(context, ChatFormatting.DARK_AQUA, "        measured barrel " + format(barrel)
                     + "   delta " + format(delta(barrel, current)));
@@ -216,6 +219,9 @@ public final class ShootPointDebugCommand
             send(context, overridden ? ChatFormatting.YELLOW : ChatFormatting.GRAY,
                 "  seat " + seat + " " + info.getGunName() + "  " + format(current)
                     + (overridden ? "  (overridden)" : StringUtils.EMPTY));
+            if (info.getGunBarrelCount() > 1)
+                send(context, ChatFormatting.DARK_AQUA, "        fires from " + info.getGunBarrelCount()
+                    + " measured barrels in turn: " + formatBarrels(info.getGunBarrels()));
             DerivedMuzzle measured = findMuzzle(derived, seat);
             if (measured != null)
             {
@@ -445,10 +451,11 @@ public final class ShootPointDebugCommand
     // ---------------------------------------------------------------- AA guns
 
     /**
-     * AA guns and sentries author their muzzles as {@code Barrel} lines. Once a
-     * client has reported the loaded model, the gun fires from the measured
-     * muzzles instead, so these lines are what fires only before that, and what
-     * the magenta markers show beside the real ones.
+     * AA guns and sentries author their muzzles as {@code Barrel} lines. A pack
+     * shipped as a mod fires from them; a flan folder pack fires from the muzzles
+     * measured off its model while the content loaded, unless that correction is
+     * switched off. Each line says which one fires, and the magenta markers show
+     * the lines beside the real muzzles.
      */
     private static int listAAGun(CommandContext<CommandSourceStack> context, AAGunType type)
     {
@@ -459,17 +466,16 @@ public final class ShootPointDebugCommand
             + (type.hasDebugOverrides() ? "  (overridden)" : StringUtils.EMPTY));
         if (measured.isEmpty())
             send(context, ChatFormatting.GRAY, "no measured geometry: dedicated server, or the model's barrels are empty");
-        else
-            send(context, ChatFormatting.GRAY, "the model's muzzles fire once a client reports them; "
-                + "these lines are the fallback, matched with the gun level");
 
         for (int barrel = 0; barrel < type.getNumBarrels(); barrel++)
         {
             Vector3f current = new Vector3f(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
                 type.getBarrelZ()[barrel]);
             boolean overridden = type.isBarrelOverridden(barrel);
+            String fires = type.firesFromBarrelLine(barrel) ? "  (fires)"
+                : type.hasMeasuredBarrels() ? "  (the measured muzzle fires)" : StringUtils.EMPTY;
             send(context, overridden ? ChatFormatting.YELLOW : ChatFormatting.GRAY,
-                "  [" + barrel + "] " + format(current) + (overridden ? "  (overridden)" : StringUtils.EMPTY));
+                "  [" + barrel + "] " + format(current) + (overridden ? "  (overridden)" : StringUtils.EMPTY) + fires);
             if (barrel < measured.size())
             {
                 Vector3f suggested = AAGunBarrelGeometry.legacyBarrelFor(measured.get(barrel), type.isSentry());
@@ -691,5 +697,11 @@ public final class ShootPointDebugCommand
     private static String format(float value)
     {
         return String.format(Locale.ROOT, "%.1f", value);
+    }
+
+    /** Barrel offsets, stored in blocks, as type-file pixels relative to the point. */
+    private static String formatBarrels(List<Vector3f> barrels)
+    {
+        return String.join(", ", barrels.stream().map(barrel -> "(" + format(scale(barrel, 16F)) + ")").toList());
     }
 }

@@ -518,6 +518,16 @@ public abstract class InfoType implements IContentType
         overlay = loadOverlay(overlayName, this).orElse(null);
     }
 
+    /**
+     * The model class this type's {@code Model} entry names. The client resolves it
+     * while reading the type; a dedicated server, which reads no client data, resolves
+     * it here without storing it, so other server code keeps seeing no model class.
+     */
+    public String resolveModelClassName()
+    {
+        return StringUtils.isNotBlank(modelClassName) ? modelClassName : findModelClass(modelName, contentPack);
+    }
+
     protected String getTexturePath(String textureName)
     {
         return "textures/" + type.getTextureFolderName() + "/" + textureName + FileUtils.PNG_EXTENSION;

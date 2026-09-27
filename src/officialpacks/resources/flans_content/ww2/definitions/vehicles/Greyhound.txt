@@ -48,7 +48,7 @@ Tank false
 
 // Weaponry
 GunOrigin 1 49.5 -2.4 9
-AddGun 8 20 10 turret browning
+AddGun 20.3 27 3.6 turret browning
 BarrelPosition 46.8 26.5 0
 ShootDelay 1
 ShellDelay 70

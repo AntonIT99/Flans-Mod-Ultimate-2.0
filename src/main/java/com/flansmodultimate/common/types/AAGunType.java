@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -84,6 +85,9 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     protected float[] barrelX = new float[] { 0F };
     protected float[] barrelY = new float[] { 0F };
     protected float[] barrelZ = new float[] { 0F };
+    /** Which barrels a {@code Barrel} line places, rather than leaving them at the 0 0 0 default. */
+    @Getter(lombok.AccessLevel.NONE)
+    protected boolean[] barrelLineAuthored = new boolean[] { false };
     /** Width and height, in blocks, of the entity box that is hit, picked and collided with. */
     protected float hitBoxWidth = DEFAULT_HIT_BOX_SIZE;
     protected float hitBoxHeight = DEFAULT_HIT_BOX_SIZE;
@@ -166,6 +170,7 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
         barrelX = new float[numBarrels];
         barrelY = new float[numBarrels];
         barrelZ = new float[numBarrels];
+        barrelLineAuthored = new boolean[numBarrels];
         readBarrels(file);
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
         ShootableType.readAmmoGroups(file, ammoGroups);
@@ -215,6 +220,7 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
                 barrelX[id] = values[1];
                 barrelY[id] = values[2];
                 barrelZ[id] = values[3];
+                barrelLineAuthored[id] = true;
             }));
     }
 
@@ -261,6 +267,64 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
             barrelZ[barrel] = line[2];
         });
         authoredBarrels.clear();
+    }
+
+    /**
+     * Barrel pivots and muzzles measured off the model while the content was
+     * loading, in model pixels as {@code ModelAAGun} reports them, or empty when
+     * the model could not be measured. They stand in for the ones a client
+     * reports, so the server places the muzzles on its own authority: a barrel
+     * fires from the measured muzzle unless {@link #firesFromBarrelLine} holds, and
+     * then from its line, elevated round the measured pivot.
+     */
+    @Getter(lombok.AccessLevel.NONE)
+    private Vec3[] measuredBarrelPivots = new Vec3[0];
+    @Getter(lombok.AccessLevel.NONE)
+    private Vec3[] measuredBarrelMuzzles = new Vec3[0];
+    /**
+     * Whether the {@code Barrel} lines are trusted over the measured muzzles:
+     * set for the packs a mod ships, whose definitions match their models, and
+     * for every pack when overriding configured shoot points is switched off.
+     */
+    @Getter(lombok.AccessLevel.NONE)
+    private boolean trustBarrelLines;
+
+    public void setTrustBarrelLines(boolean trust)
+    {
+        trustBarrelLines = trust;
+    }
+
+    /**
+     * Whether a barrel fires from its {@code Barrel} line rather than the model's
+     * muzzle. A trusted pack that gives a barrel no line would otherwise fire it
+     * from the gun's feet, so that barrel still takes the model's muzzle.
+     */
+    public boolean firesFromBarrelLine(int barrel)
+    {
+        return trustBarrelLines && barrel >= 0 && barrel < barrelLineAuthored.length && barrelLineAuthored[barrel];
+    }
+
+    /** Keeps the measured barrels, or clears them unless there is one pivot and one muzzle per barrel. */
+    public void setMeasuredBarrels(Vec3[] pivots, Vec3[] muzzles)
+    {
+        boolean complete = pivots != null && muzzles != null && pivots.length == numBarrels && muzzles.length == numBarrels;
+        measuredBarrelPivots = complete ? pivots.clone() : new Vec3[0];
+        measuredBarrelMuzzles = complete ? muzzles.clone() : new Vec3[0];
+    }
+
+    public boolean hasMeasuredBarrels()
+    {
+        return measuredBarrelPivots.length > 0;
+    }
+
+    public Vec3[] getMeasuredBarrelPivots()
+    {
+        return measuredBarrelPivots.clone();
+    }
+
+    public Vec3[] getMeasuredBarrelMuzzles()
+    {
+        return measuredBarrelMuzzles.clone();
     }
 
     private void readHitBox(TypeFile file)

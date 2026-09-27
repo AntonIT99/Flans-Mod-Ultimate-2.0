@@ -87,7 +87,7 @@ AddAmmo 44_90APShell
 AddAmmo 44_LargeHEShell
 AddAmmo 44_90HVAPShell
 AddAmmo 44_90APCBCShell
-AddGun 28 32 -7 turret 44_30Cal
+AddGun 28 32 7 turret 44_30Cal
 AddGun 9 47 -11 turret 44_50Cal
 GunOrigin 1 47.8 -8.1 12
 BarrelPosition 84 30.8 0

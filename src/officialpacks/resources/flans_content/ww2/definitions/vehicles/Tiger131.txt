@@ -45,7 +45,7 @@ CanRoll true
 
 // Weaponry
 BarrelPosition 108 33 0
-AddGun 8 20 0 turret mg42
+AddGun 10 32 10 turret mg42
 ShootDelay 1
 ShellDelay 145
 TurretRotationSpeed 0.025

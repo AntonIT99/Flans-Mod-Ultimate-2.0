@@ -6053,6 +6053,33 @@
         ]
     },
 
+    "Man-pushed Anti-Tank Guns": {
+        "properties": {
+            "PushSpeedKmh": 4,
+            "MaxNegativeThrottle": 1,
+            "TurnLeftSpeed": 1,
+            "TurnRightSpeed": 1,
+            "Tank": "false",
+            "RotateWheels": "true"
+        },
+        "items": [
+            "2pdrat",
+            "44_pak40",
+            "44_qf2pdr",
+            "44_zis2",
+            "53k",
+            "bofors37mm",
+            "pak36",
+            "pak40",
+            "pak43",
+            "qf6pdr",
+            "qf17pdr",
+            "type_1_47mm_at",
+            "type_94_at",
+            "zis2"
+        ]
+    },
+
     "Marder II (Sd.Kfz. 131)": {
         "properties": {
             "RealMassKg": 11000,

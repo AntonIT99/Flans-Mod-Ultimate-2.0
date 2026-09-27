@@ -83,7 +83,7 @@ WheelPosition 2 -156 -10 0
 HeliPropeller 0 0 48 0 blades metalPropeller
 Pilot 53 15 0
 Passengers 1
-Passenger 1 28 26 0 core -10 10 -10 10 stinger Stinger
+Passenger 1 27 -5 -31 core -10 10 -10 10 stinger Stinger
 
 // Sounds and particles
 StartSound HelicopterStart

@@ -1213,13 +1213,91 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         if (index < 0 || index >= points.size())
             return false;
         rememberAuthoredShootPoints(secondaryWeapon);
+        moveShootPoint(points, index, modelPixels, true);
+        return true;
+    }
 
-        DriveablePosition root = points.get(index).getRootPos();
+    /**
+     * Moves one shoot point onto a muzzle measured off the model while the content
+     * is loading. Unlike the debug overrides this becomes the type's baseline, so
+     * {@code /flandebug shootpoint reset} keeps it.
+     *
+     * @param modelPixels the measured muzzle, in the units and convention of a type file
+     * @return false when this weapon bank has no point at {@code index}
+     */
+    public boolean applyMeasuredShootPoint(boolean secondaryWeapon, int index, Vector3f modelPixels)
+    {
+        List<ShootPoint> points = secondaryWeapon ? shootPointsSecondary : shootPointsPrimary;
+        if (index < 0 || index >= points.size())
+            return false;
+        moveShootPoint(points, index, modelPixels, false);
+        return true;
+    }
+
+    /**
+     * Moves one seat's {@code GunOrigin} onto the muzzle measured off the model
+     * while the content is loading, as the new baseline of the type.
+     *
+     * @return false when the seat does not exist or mounts no gun
+     */
+    public boolean applyMeasuredGunOrigin(int seatIndex, Vector3f modelPixels)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        if (seat == null || seat.getGunType() == null)
+            return false;
+        seat.setGunOrigin(new Vector3f(modelPixels.x / 16F, modelPixels.y / 16F, modelPixels.z / 16F));
+        return true;
+    }
+
+    /**
+     * Gives one shoot point the barrels of a twin or quad mount measured off the
+     * model, so it fires from each of them in turn.
+     *
+     * @param offsetPixels each barrel's muzzle relative to the point's, in type-file pixels
+     * @return false when this weapon bank has no point at {@code index}
+     */
+    public boolean applyMeasuredBarrels(boolean secondaryWeapon, int index, List<Vector3f> offsetPixels)
+    {
+        List<ShootPoint> points = secondaryWeapon ? shootPointsSecondary : shootPointsPrimary;
+        if (index < 0 || index >= points.size())
+            return false;
+        points.set(index, points.get(index).withBarrels(toBlocks(offsetPixels)));
+        return true;
+    }
+
+    /**
+     * Gives one seat's gun the barrels of a twin or quad mount measured off the model.
+     *
+     * @param offsetPixels each barrel's muzzle relative to the seat's {@code GunOrigin}, in type-file pixels
+     * @return false when the seat does not exist or mounts no gun
+     */
+    public boolean applyMeasuredGunBarrels(int seatIndex, List<Vector3f> offsetPixels)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        if (seat == null || seat.getGunType() == null)
+            return false;
+        seat.setGunBarrels(toBlocks(offsetPixels));
+        return true;
+    }
+
+    private static List<Vector3f> toBlocks(List<Vector3f> pixels)
+    {
+        return pixels.stream().map(offset -> new Vector3f(offset.x / 16F, offset.y / 16F, offset.z / 16F)).toList();
+    }
+
+    /**
+     * Rewrites a point's offset rather than its root, so the mount keeps its
+     * identity while the firing path, which reads root plus offset, lands on
+     * {@code modelPixels}. Its barrels move with it.
+     */
+    private static void moveShootPoint(List<ShootPoint> points, int index, Vector3f modelPixels, boolean debugOverride)
+    {
+        ShootPoint point = points.get(index);
+        DriveablePosition root = point.getRootPos();
         Vector3f offset = new Vector3f(modelPixels.x / 16F - root.getPosition().x,
             modelPixels.y / 16F - root.getPosition().y,
             modelPixels.z / 16F - root.getPosition().z);
-        points.set(index, new ShootPoint(root, offset, true));
-        return true;
+        points.set(index, new ShootPoint(root, offset, debugOverride, point.getBarrels()));
     }
 
     /**

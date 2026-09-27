@@ -67,6 +67,13 @@ public interface IClientRenderHooks
     List<DerivedMuzzle> deriveMuzzles(DriveableType type);
 
     /**
+     * The muzzle of every tube of the primary armament of {@code type}'s loaded
+     * model, in type-file units and convention: one for a single gun, four for a
+     * quad mount. Empty when no model is loaded, as on a dedicated server.
+     */
+    List<DerivedMuzzle> derivePrimaryBarrels(DriveableType type);
+
+    /**
      * Where each barrel muzzle of an AA gun's loaded model sits with the gun at
      * rest, in blocks from the gun's position, in barrel order. Empty when no
      * model is loaded, as on a dedicated server.

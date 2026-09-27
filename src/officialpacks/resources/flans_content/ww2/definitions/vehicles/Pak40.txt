@@ -53,8 +53,8 @@ gunsightZoom 4.5
 
 // Health and armour
 SetupPart core 1500 -40 -8 -18 60 24 36
-SetupPart leftTrack 1200 -12 -8 -26 16 16 4
-SetupPart rightTrack 1200 -12 -8 22 16 16 4
+SetupPart leftTrack 1200 1.1 -9.9 -12.1 15.4 15.4 3.3
+SetupPart rightTrack 1200 1.1 -9.9 13.2 15.4 15.4 3.3
 BulletDetection 7
 ArmorFrontMm 4
 ArmorSideMm 0

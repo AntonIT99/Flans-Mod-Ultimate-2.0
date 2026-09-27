@@ -45,7 +45,7 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-AddGun 8 30 -8 turret browning
+AddGun 8 35.6 -8 turret browning
 BarrelPosition 78.8 37.4 0
 ShootDelay 2
 ShellDelay 110

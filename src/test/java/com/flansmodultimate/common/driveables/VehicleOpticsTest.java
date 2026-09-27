@@ -72,33 +72,33 @@ class VehicleOpticsTest
         assertTrue(optics.thermal(1));
     }
 
-    @Test void seatGunsightStartsScopedButOnlyAutoScopeIsForced()
+    @Test void seatGunsightStartsUnscopedButAutoScopeIsForced()
     {
         read("SeatGunsight 1 sight", "SeatAutoScope 0 true");
-        assertTrue(seats.get(1).getOptics().startsActive());
+        assertFalse(seats.get(1).getOptics().startsActive());
         assertFalse(seats.get(1).getOptics().forced());
         assertTrue(seats.get(0).getOptics().startsActive());
         assertTrue(seats.get(0).getOptics().forced());
     }
 
-    @Test void overlaySeatStartsScopedOnEntryAndTheGunnerMayLowerIt()
+    @Test void overlaySeatStartsUnscopedAndTheGunnerMayRaiseIt()
     {
         read("SeatGunsight 1 sight");
         VehicleOptics definition = seats.get(1).getOptics();
         OpticsState state = new OpticsState();
         state.update(definition, true, 1, false, false);
-        assertTrue(state.isActive());
-        state.update(definition, true, 2, true, false);
         assertFalse(state.isActive());
+        state.update(definition, true, 2, true, false);
+        assertTrue(state.isActive());
         for (int tick = 3; tick < 40; tick++)
             state.update(definition, true, tick, false, false);
-        assertFalse(state.isActive());
-        state.update(definition, true, 40, true, false);
         assertTrue(state.isActive());
-        // Leaving the seat resets it, so the next gunner starts scoped again.
+        state.update(definition, true, 40, true, false);
+        assertFalse(state.isActive());
+        // Leaving the seat resets it, so the next gunner also starts unscoped.
         state.update(definition, false, 41, false, false);
         state.update(definition, true, 42, false, false);
-        assertTrue(state.isActive());
+        assertFalse(state.isActive());
     }
 
     @Test void autoScopeCannotBeLowered()
@@ -127,7 +127,7 @@ class VehicleOpticsTest
     {
         read("PassengerGunsight legacy", "SeatOverlay 1 true");
         assertEquals("legacy", seats.get(1).getOptics().overlay(0));
-        assertTrue(seats.get(1).getOptics().startsActive());
+        assertFalse(seats.get(1).getOptics().startsActive());
         assertFalse(seats.get(0).getOptics().available());
     }
 
@@ -200,17 +200,20 @@ class VehicleOpticsTest
         assertEquals(0, state.getSight());
     }
 
-    @Test void forcedScopeStartsOnThermalChannelAndSingleSightThermalCanToggle()
+    @Test void activatedScopeStartsOnThermalChannelAndSingleSightThermalCanToggle()
     {
         read("SeatGunsight 1 flir", "SeatThermalGuis 1 1");
         VehicleOptics definition = seats.get(1).getOptics();
         OpticsState state = new OpticsState();
         state.update(definition, true, 1, false, false);
+        assertFalse(state.isActive());
+        assertFalse(state.isThermal());
+        state.update(definition, true, 2, true, false);
         assertTrue(state.isActive());
         assertTrue(state.isThermal());
-        state.update(definition, true, 2, false, true);
+        state.update(definition, true, 3, false, true);
         assertFalse(state.isThermal());
-        state.update(definition, true, 5, false, true);
+        state.update(definition, true, 6, false, true);
         assertTrue(state.isThermal());
         state.reset();
         assertFalse(state.isActive());

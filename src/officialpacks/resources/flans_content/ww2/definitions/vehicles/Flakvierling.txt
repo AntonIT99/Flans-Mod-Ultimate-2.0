@@ -44,11 +44,10 @@ AlternatePrimary True
 AlternateSecondary False
 ModePrimary FullAuto
 ModeSecondary FullAuto
-ShootPointPrimary 48 6 4 turret
-BarrelPosition 30 10 5
-BarrelPosition 30 5 5
-BarrelPosition 30 10 -5
-BarrelPosition 30 5 -5
+BarrelPosition 36 8.25 6.75
+BarrelPosition 36 3 6.75
+BarrelPosition 36 8.25 -6.75
+BarrelPosition 36 3 -6.75
 TurretRotationSpeed 0.06
 RoundsPerMinPrimary 1400
 ReloadTimePrimary 51

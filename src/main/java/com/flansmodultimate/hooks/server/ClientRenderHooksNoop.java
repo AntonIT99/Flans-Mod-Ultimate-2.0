@@ -84,6 +84,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
+    public List<DerivedMuzzle> derivePrimaryBarrels(DriveableType type)
+    {
+        return List.of();
+    }
+
+    @Override
     public List<Vec3> deriveAAGunBarrelOffsets(AAGunType type)
     {
         return List.of();

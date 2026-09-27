@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class AAGunTypeTest
 {
@@ -123,5 +122,25 @@ class AAGunTypeTest
             "UseRealisticVehicleHealth true");
         assertTrue(scaled.isRealisticVehicleHealthEnabled());
         assertEquals(500, scaled.getHealth());
+    }
+
+    @Test
+    void aTrustedPackFiresFromTheBarrelLinesItWrites()
+    {
+        AAGunType type = read("ShortName testAaGun", "NumBarrels 2", "Barrel 0 10 20 -3");
+        type.setTrustBarrelLines(true);
+
+        assertTrue(type.firesFromBarrelLine(0));
+        assertFalse(type.firesFromBarrelLine(1), "a barrel with no line would fire from the gun's feet");
+    }
+
+    @Test
+    void anUntrustedPackFiresFromTheModelWhateverItsLinesSay()
+    {
+        AAGunType type = read("ShortName testAaGun", "NumBarrels 2", "Barrel 0 10 20 -3", "Barrel 1 10 20 3");
+        type.setTrustBarrelLines(false);
+
+        assertFalse(type.firesFromBarrelLine(0));
+        assertFalse(type.firesFromBarrelLine(1));
     }
 }

@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 
+import java.util.List;
+
 /** Immutable-position, mutable-aim definition for a driver or passenger seat. */
 @Getter
 public final class SeatInfo
@@ -40,6 +42,12 @@ public final class SeatInfo
     @Setter private int yawSoundLength;
     @Setter private String pitchSound = StringUtils.EMPTY;
     @Setter private int pitchSoundLength;
+    /**
+     * Where each barrel of a twin or quad seat gun ends, as offsets in blocks
+     * from {@link #gunOrigin}, measured off the model while the content loads.
+     * Empty for a gun with one barrel.
+     */
+    private List<Vector3f> gunBarrels = List.of();
 
     public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver,
                     float minYaw, float maxYaw, float minPitch, float maxPitch,
@@ -104,6 +112,23 @@ public final class SeatInfo
     public float clampPitch(float pitch)
     {
         return Mth.clamp(pitch, -maxPitch, -minPitch);
+    }
+
+    public void setGunBarrels(List<Vector3f> offsets)
+    {
+        gunBarrels = ShootPoint.copyBarrels(offsets);
+    }
+
+    /** How many barrels this seat's gun fires from in turn, at least one. */
+    public int getGunBarrelCount()
+    {
+        return Math.max(1, gunBarrels.size());
+    }
+
+    /** The rest-pose muzzle, in blocks, of one barrel of this seat's gun: {@link #gunOrigin} for a single gun. */
+    public Vector3f getGunOrigin(int barrel)
+    {
+        return ShootPoint.plusBarrel(gunOrigin, gunBarrels, barrel);
     }
 
     public int getX() { return Math.round(position.x * 16F); }

@@ -1098,7 +1098,10 @@ public class Plane extends Driveable
             ? 1F / type.getResolvedPhysics().rollInertiaFactor() : 1F;
         float roll = rates.roll() * authority + passiveRollLevelingRate(type, authority);
         angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yaw * authority, response);
-        angularPitch = LegacyPlanePhysics.approachMomentum(angularPitch, rates.pitch() * authority, response);
+        // At zero collective the skids or gear support the airframe. Clear any
+        // stored pitch momentum too, so touchdown cannot keep tipping it over.
+        angularPitch = getThrottle() <= 0F && isSupportedByGround() ? 0F
+            : LegacyPlanePhysics.approachMomentum(angularPitch, rates.pitch() * authority, response);
         angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, roll, response);
         axes.rotateLocalYaw(angularYaw);
         axes.rotateLocalPitch(angularPitch);

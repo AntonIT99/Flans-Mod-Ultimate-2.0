@@ -12,8 +12,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,7 +24,7 @@ import java.util.Random;
 import java.util.function.Consumer;
 
 @SuppressWarnings({"unused", "java:S1104"})
-public abstract class ModelBase extends Model implements IModelBase
+public abstract class ModelBase implements IModelBase
 {
     public int textureWidth = TEXTURE_WIDTH;
     public int textureHeight = TEXTURE_HEIGHT;
@@ -37,11 +35,6 @@ public abstract class ModelBase extends Model implements IModelBase
     private ResourceLocation texture;
     @Getter @Setter
     private float scale = 1F;
-
-    protected ModelBase()
-    {
-        super(RenderType::entityTranslucent);
-    }
 
     @Override
     public void addModelBox(IModelRenderer modelRenderer)
@@ -106,7 +99,6 @@ public abstract class ModelBase extends Model implements IModelBase
         return boxList.get(rand.nextInt(boxList.size()));
     }
 
-    @Override
     public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, EnumRenderPass.DEFAULT);

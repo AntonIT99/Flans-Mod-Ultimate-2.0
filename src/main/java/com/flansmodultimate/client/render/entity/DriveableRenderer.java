@@ -57,6 +57,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -306,10 +307,15 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         for (var point : type.shootPoints(secondary))
         {
             float[] colour = point.isDebugOverride() ? OVERRIDDEN_MARKER : authoredColour;
-            Vec3 muzzle = driveable.getDebugShootOrigin(point);
-            DebugHelper.spawnDebugDot(muzzle, 2, colour[0], colour[1], colour[2]);
-            DebugHelper.spawnDebugVector(muzzle, driveable.getDebugShootDirection(point, secondary).scale(2D),
-                2, colour[0], colour[1], colour[2]);        }
+            Vec3 direction = driveable.getDebugShootDirection(point, secondary).scale(2D);
+            // A twin or quad mount fires from each of its barrels in turn, so each gets a marker.
+            for (int barrel = 0; barrel < point.getBarrelCount(); barrel++)
+            {
+                Vec3 muzzle = driveable.getDebugShootOrigin(point, barrel);
+                DebugHelper.spawnDebugDot(muzzle, 2, colour[0], colour[1], colour[2]);
+                DebugHelper.spawnDebugVector(muzzle, direction, 2, colour[0], colour[1], colour[2]);
+            }
+        }
     }
 
     /**
@@ -320,45 +326,56 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
      */
     private static void renderMeasuredMuzzles(Driveable driveable, DriveableType type)
     {
-        for (DerivedMuzzle muzzle : ClientHooks.RENDER.deriveMuzzles(type))
+        // Every tube of the main armament gets its own marker, so a quad mount shows four.
+        var authored = type.shootPoints(false);
+        EnumDriveablePart part = authored.isEmpty() ? EnumDriveablePart.TURRET : authored.get(0).getRootPos().getPart();
+        for (DerivedMuzzle barrel : ClientHooks.RENDER.derivePrimaryBarrels(type))
         {
-            Vector3f blocks = new Vector3f(muzzle.position().x / 16F, muzzle.position().y / 16F,
-                muzzle.position().z / 16F);
-            Vec3 position;
-            if (muzzle.isBarrel())
-            {
-                // Follow whichever part the authored point is mounted on, so the
-                // measured marker tracks the turret exactly as the real one does.
-                var authored = type.shootPoints(false);
-                EnumDriveablePart part = authored.isEmpty() ? EnumDriveablePart.TURRET
-                    : authored.get(0).getRootPos().getPart();
-                position = driveable.getDebugShootOrigin(
-                    new ShootPoint(new DriveablePosition(blocks, part), new Vector3f()));
-            }
-            else
-                position = driveable.getGunOriginWorldPosition(aimedSeatMuzzle(driveable, type, muzzle, blocks));
+            // Follow whichever part the authored point is mounted on, so the
+            // measured marker tracks the turret exactly as the real one does.
+            Vec3 position = driveable.getDebugShootOrigin(
+                new ShootPoint(new DriveablePosition(toBlocks(barrel), part), new Vector3f()));
             DebugHelper.spawnDebugDot(position, 2, MEASURED_MARKER[0], MEASURED_MARKER[1], MEASURED_MARKER[2]);
         }
+
+        for (DerivedMuzzle muzzle : ClientHooks.RENDER.deriveMuzzles(type))
+        {
+            if (muzzle.isBarrel())
+                continue;
+            for (Vector3f barrel : aimedSeatMuzzles(driveable, type, muzzle, toBlocks(muzzle)))
+            {
+                Vec3 position = driveable.getGunOriginWorldPosition(barrel);
+                DebugHelper.spawnDebugDot(position, 2, MEASURED_MARKER[0], MEASURED_MARKER[1], MEASURED_MARKER[2]);
+            }
+        }
+    }
+
+    private static Vector3f toBlocks(DerivedMuzzle muzzle)
+    {
+        return new Vector3f(muzzle.position().x / 16F, muzzle.position().y / 16F, muzzle.position().z / 16F);
     }
 
     /**
      * The derived seat muzzle is measured at rest, which is what a GunOrigin
-     * suggestion needs. The marker instead follows the gun as it is drawn, so
-     * this re-measures it at the seat's live aim, in the same GunOrigin terms.
+     * suggestion needs. The markers instead follow the gun as it is drawn, so
+     * this re-measures each of its barrels at the seat's live aim, in the same
+     * GunOrigin terms.
      */
-    private static Vector3f aimedSeatMuzzle(Driveable driveable, DriveableType type, DerivedMuzzle muzzle,
-                                            Vector3f restBlocks)
+    private static List<Vector3f> aimedSeatMuzzles(Driveable driveable, DriveableType type, DerivedMuzzle muzzle,
+                                                   Vector3f restBlocks)
     {
         SeatInfo seat = type.getSeat(muzzle.seatIndex());
         if (seat == null || !(ModelCache.getLoadedTypeModel(type) instanceof ModelDriveable model))
-            return restBlocks;
-        Vec3 aimed = model.getAimedRegisteredGunMuzzle(driveable, seat, 1F);
-        if (aimed == null)
-            return restBlocks;
-        Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(
-            aimed.scale(Math.max(1.0E-4D, type.getModelScale())), type instanceof PlaneType);
-        return new Vector3f(position.x / 16F,
-            position.y / 16F - (float) Driveable.PASSENGER_GUN_MOUNTED_OFFSET, position.z / 16F);
+            return List.of(restBlocks);
+        List<Vec3> aimed = model.getAimedRegisteredGunMuzzles(driveable, seat, 1F);
+        if (aimed.isEmpty())
+            return List.of(restBlocks);
+        return aimed.stream().map(barrel -> {
+            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(
+                barrel.scale(Math.max(1.0E-4D, type.getModelScale())), type instanceof PlaneType);
+            return new Vector3f(position.x / 16F,
+                position.y / 16F - (float) Driveable.PASSENGER_GUN_MOUNTED_OFFSET, position.z / 16F);
+        }).toList();
     }
 
     private void renderDiagnosticMarkers(Driveable driveable, DriveableType type)
@@ -393,11 +410,13 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             }
             if (seat > 0 && seatInfo.getGunType() != null)
             {
-                Vec3 muzzle = driveable.getPassengerShootOrigin(seat);
                 Vec3 direction = driveable.getPassengerShootDirection(seat);
-                if (muzzle != null && direction != null)
+                float[] colour = type.isGunOriginOverridden(seat) ? OVERRIDDEN_MARKER : GUN_ORIGIN_MARKER;
+                for (int barrel = 0; barrel < seatInfo.getGunBarrelCount() && direction != null; barrel++)
                 {
-                    float[] colour = type.isGunOriginOverridden(seat) ? OVERRIDDEN_MARKER : GUN_ORIGIN_MARKER;
+                    Vec3 muzzle = driveable.getPassengerShootOrigin(seat, barrel);
+                    if (muzzle == null)
+                        continue;
                     DebugHelper.spawnDebugDot(muzzle, 2, colour[0], colour[1], colour[2]);
                     DebugHelper.spawnDebugVector(muzzle, direction.scale(2D), 2, colour[0], colour[1], colour[2]);
                 }

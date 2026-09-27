@@ -46,6 +46,8 @@ public class VehicleType extends DriveableType
     protected boolean rotateWheels;
     protected boolean tank;
     protected float throttleDecay = 0.0035F;
+    /** Walking-speed movement for a crew-pushed emplacement, in km/h. */
+    protected float pushSpeedKmh;
     protected int vehicleShootDelay;
     protected int vehicleShellDelay;
     protected boolean hasDoor;
@@ -86,6 +88,8 @@ public class VehicleType extends DriveableType
         tank = readValue("Tank", tank, file);
         tank = readValue("TankMode", tank, file);
         throttleDecay = Math.max(0F, readValue("ThrottleDecay", throttleDecay, file));
+        float configuredPushSpeed = readValue("PushSpeedKmh", pushSpeedKmh, file);
+        pushSpeedKmh = Float.isFinite(configuredPushSpeed) ? Math.max(0F, configuredPushSpeed) : 0F;
         mass = Math.max(1F, readValue("Mass", mass, file));
         useRealisticAcceleration = readValue("UseRealisticAcceleration", useRealisticAcceleration, file);
         gravity = readValue("Gravity", gravity, file);
