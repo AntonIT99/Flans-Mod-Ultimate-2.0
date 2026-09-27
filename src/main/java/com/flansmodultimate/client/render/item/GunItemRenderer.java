@@ -43,6 +43,7 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -153,7 +154,7 @@ public final class GunItemRenderer
 
             //This allows you to offset your gun with a sight attached to properly align the aiming reticle
             AttachmentType scopeAttachment = model.getType().getScope(stack);
-            if (model.getGunOffset() != 0 && ModClient.getZoomProgress() >= 0.5F && scopeAttachment != null
+            if (model.getGunOffset() != 0 && isScopeGun(!firstPersonRight) && ModClient.getZoomProgress() >= 0.5F && scopeAttachment != null
                 && ModelCache.getOrLoadTypeModel(scopeAttachment) instanceof ModelAttachment scopeModel)
             {
                 poseStack.translate(0F, -scopeModel.getRenderOffset() + model.getGunOffset() / 16F, 0F);
@@ -191,8 +192,15 @@ public final class GunItemRenderer
     private static boolean shouldRenderGun(ModelGun model, ItemDisplayContext itemDisplayContext, ItemStack item)
     {
         if (itemDisplayContext.firstPerson())
-            return !(ModClient.getZoomProgress() > 0.9F && model.getType().getCurrentScope(item).hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay());
+            return !(isScopeGun(itemDisplayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND) && ModClient.getZoomProgress() > 0.9F
+                && model.getType().getCurrentScope(item).hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay());
         return true;
+    }
+
+    /** Whether the first-person gun in this arm is the one being looked down, which alone moves to the sights. */
+    private static boolean isScopeGun(boolean leftHand)
+    {
+        return ModClient.isScopeArm(leftHand ? HumanoidArm.LEFT : HumanoidArm.RIGHT);
     }
 
     /** A reflected pose reverses face winding, so its model parts need two-sided rendering. */
@@ -229,27 +237,27 @@ public final class GunItemRenderer
 
     private static void applyFirstPersonAdjustments(ModelGun model, GunAnimations animations, ItemStack stack, PoseStack poseStack, boolean leftHand)
     {
-        float adsSwitch = ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * ClientPlatform.partialTick();
-        boolean crouching = ModClient.getZoomProgress() + 0.1F > 0.9F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isCrouching() && !animations.isReloading();
-        boolean sprinting = ModClient.getZoomProgress() + 0.1F < 0.2F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isSprinting() && !animations.isReloading() && model.isFancyStance();
+        boolean scopeGun = isScopeGun(leftHand);
+        float zoomProgress = scopeGun ? ModClient.getZoomProgress() : 0F;
+        float adsSwitch = scopeGun ? ModClient.getLastZoomProgress() + (ModClient.getZoomProgress() - ModClient.getLastZoomProgress()) * ClientPlatform.partialTick() : 0F;
+        boolean crouching = zoomProgress + 0.1F > 0.9F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isCrouching() && !animations.isReloading();
+        boolean sprinting = zoomProgress + 0.1F < 0.2F && Minecraft.getInstance().player != null && Minecraft.getInstance().player.isSprinting() && !animations.isReloading() && model.isFancyStance();
 
         poseStack.mulPose(Axis.YP.rotationDegrees(90F));
 
+        // The left arm is placed 1.12 blocks left of the right one, which is +Z here. Its gun keeps its own hip
+        // position and slides across that distance while aiming, ending in the right-hand gun's sight picture.
         if (leftHand)
+            poseStack.translate(0.5F * (1F - adsSwitch), 0F, 0.31F + 0.81F * adsSwitch);
+
+        poseStack.mulPose(Axis.ZP.rotationDegrees(-5F * adsSwitch));
+        poseStack.translate(-0.25F, -0.05F + 0.175F * adsSwitch, -0.155F - 0.405F * adsSwitch);
+        if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
         {
-            poseStack.translate(0.25F, -0.05F, 0.155F);
+            poseStack.translate(-0.3F * adsSwitch, 0F, 0F);
         }
-        else
-        {
-            poseStack.mulPose(Axis.ZP.rotationDegrees(-5F * adsSwitch));
-            poseStack.translate(-0.25F, -0.05F + 0.175F * adsSwitch, -0.155F - 0.405F * adsSwitch);
-            if (model.getType().hasZoomOverlay() && !model.isStillRenderGunWhenScopedOverlay())
-            {
-                poseStack.translate(-0.3F * adsSwitch, 0F, 0F);
-            }
-            poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
-            poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
-        }
+        poseStack.mulPose(Axis.ZP.rotationDegrees(4.5F * adsSwitch));
+        poseStack.translate(crouching ? model.getCrouchZoom() : 0F, -0.03F * adsSwitch, 0F);
 
         renderWeaponSwitchMovement(animations, poseStack);
         renderSprintingMovement(model, animations, sprinting, poseStack);

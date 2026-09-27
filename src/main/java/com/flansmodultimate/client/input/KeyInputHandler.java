@@ -683,9 +683,10 @@ public final class KeyInputHandler
     private static void doChangeVariableZoom(boolean increase)
     {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
-        ItemStack stack = player.getMainHandItem();
+        InteractionHand hand = ModClient.getScopingHand(player);
+        ItemStack stack = hand == null ? ItemStack.EMPTY : player.getItemInHand(hand);
         if (stack.getItem() instanceof GunItem gunItem && gunItem.hasVariableZoom(stack))
-            PacketHandler.sendToServer(new PacketGunVariableZoom(InteractionHand.MAIN_HAND, increase));
+            PacketHandler.sendToServer(new PacketGunVariableZoom(hand, increase));
     }
 
     @Nullable

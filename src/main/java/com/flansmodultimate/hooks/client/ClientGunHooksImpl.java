@@ -153,10 +153,10 @@ public class ClientGunHooksImpl implements IClientGunHooks
         }
 
         GunInputState.ButtonState primaryFunctionState = GunInputState.getPrimaryFunctionState(hand);
-        GunInputState.ButtonState secondaryFunctionState = GunInputState.getSecondaryFunctionState();
+        GunInputState.ButtonState secondaryFunctionState = GunInputState.getSecondaryFunctionState(hand, player.getMainHandItem().isEmpty());
 
         // Scope handling
-        handleScope(gunItem, player, gunStack, primaryFunctionState, secondaryFunctionState, dualWield);
+        handleScope(gunItem, gunStack, hand, primaryFunctionState, secondaryFunctionState, dualWield);
 
         GunAnimations animations = ModClient.getGunAnimations(player, hand);
 
@@ -183,7 +183,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         }
     }
 
-    private static void handleScope(GunItem gunItem, Player player, ItemStack gunStack, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
+    private static void handleScope(GunItem gunItem, ItemStack gunStack, InteractionHand hand, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
     {
         GunType gunType = gunItem.getConfigType();
         boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom()
@@ -235,7 +235,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             }
         }
 
-        ModClient.updateScope(scope, gunStack, gunItem);
+        ModClient.updateScope(scope, gunStack, gunItem, hand);
     }
 
     private static void handleGunSwitchDelay(GunItem gunItem, @NotNull PlayerData data, @NotNull GunAnimations animations, InteractionHand hand)

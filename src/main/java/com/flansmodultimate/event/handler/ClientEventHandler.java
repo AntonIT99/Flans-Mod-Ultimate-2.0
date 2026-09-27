@@ -377,7 +377,12 @@ public final class ClientEventHandler
             return;
         }
 
-        if (player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
+        // An off-hand gun held alone may aim with the free main hand's button, whose attack is reported for the main hand
+        boolean mainHandEmpty = player.getMainHandItem().isEmpty();
+        InteractionHand hand = event.isAttack() && mainHandEmpty && player.getOffhandItem().getItem() instanceof GunItem
+            ? InteractionHand.OFF_HAND : event.getHand();
+
+        if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
         {
             // Aiming is a right-click, so a player lining up a shot at a chest opens it instead.
             // This suppresses the block, not the aim, which is read from the key itself.
@@ -388,8 +393,8 @@ public final class ClientEventHandler
                 return;
             }
 
-            EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfig.get().shootButtonOffhand : ModClientConfig.get().shootButton;
-            EnumMouseButton secondaryButton = ModClientConfig.get().aimButton;
+            EnumMouseButton primaryButton = hand == InteractionHand.OFF_HAND ? ModClientConfig.get().shootButtonOffhand : ModClientConfig.get().shootButton;
+            EnumMouseButton secondaryButton = GunInputState.getSecondaryButton(hand, mainHandEmpty);
 
             boolean isPrimaryButton = event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw();
             boolean isSecondaryButton = event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw();
@@ -399,7 +404,8 @@ public final class ClientEventHandler
             // A throw is charged through the vanilla use action, so it must reach the item
             if (isSecondaryButton && secondaryFunction != EnumFunction.MELEE && secondaryFunction != EnumFunction.THROW)
             {
-                if (mc.hitResult == null || mc.hitResult.getType() == HitResult.Type.MISS)
+                // Aiming with the attack button must not break the block or hit the entity under the crosshair
+                if (mc.hitResult == null || mc.hitResult.getType() == HitResult.Type.MISS || event.isAttack())
                 {
                     event.setCanceled(true);
                     event.setSwingHand(false);

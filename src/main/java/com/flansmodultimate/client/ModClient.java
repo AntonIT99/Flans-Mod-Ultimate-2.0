@@ -192,6 +192,8 @@ public class ModClient
     /** The scope that is currently being looked down */
     @Getter
     private static IScope currentScope;
+    /** The hand of the gun being looked down, kept after unscoping so that gun also plays the transition out */
+    private static InteractionHand scopeHand = InteractionHand.MAIN_HAND;
     /** The transition variable for zooming in / out with a smoother. 0 = unscoped, 1 = scoped */
     @Getter
     private static float zoomProgress;
@@ -339,7 +341,7 @@ public class ModClient
         return Objects.requireNonNullElse(animations, new GunAnimations());
     }
 
-    public static void updateScope(@Nullable IScope desiredScope, ItemStack gunStack, GunItem gunItem)
+    public static void updateScope(@Nullable IScope desiredScope, ItemStack gunStack, GunItem gunItem, InteractionHand hand)
     {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
@@ -348,13 +350,14 @@ public class ModClient
         if (scopeTime > 0 || player == null || mc.screen != null || currentScope == desiredScope)
             return;
 
-        if (!canUseScope(player))
+        if (!canUseScope(player, hand))
             return;
 
         if (currentScope == null && desiredScope != null)
         {
             // entering scope
             currentScope = desiredScope;
+            scopeHand = hand;
             lastZoomLevel = gunItem.hasVariableZoom(gunStack)
                 ? gunItem.getCurrentVariableZoom(gunStack) : desiredScope.getZoomFactor();
             lastFOVZoomLevel = desiredScope.getFovFactor();
@@ -791,13 +794,13 @@ public class ModClient
     {
         if (currentScope != null)
         {
-            if (!canUseScope(player))
+            if (!canUseScope(player, scopeHand))
             {
                 exitScope(mc);
                 return;
             }
 
-            ItemStack stackInHand = player.getMainHandItem();
+            ItemStack stackInHand = player.getItemInHand(scopeHand);
             Item itemInHand = stackInHand.getItem();
 
             // If the currently held item is not a gun or is the wrong gun, unscope
@@ -841,16 +844,39 @@ public class ModClient
         PacketHandler.sendToServer(new PacketGunScopedState(false));
     }
 
-    private static boolean canUseScope(Player player)
+    private static boolean canUseScope(Player player, InteractionHand hand)
     {
-        ItemStack stack = player.getMainHandItem();
-        if (player.getVehicle() instanceof Seat || player.isSprinting() || !(stack.getItem() instanceof GunItem))
+        if (player.getVehicle() instanceof Seat || player.isSprinting() || getScopingHand(player) != hand)
             return false;
 
         GunAnimations mainAnims = getGunAnimations(player, InteractionHand.MAIN_HAND);
         GunAnimations offAnims = getGunAnimations(player, InteractionHand.OFF_HAND);
 
         return !mainAnims.isReloading() && !offAnims.isReloading();
+    }
+
+    /**
+     * The hand whose gun can be looked down: the main hand's gun, or an off-hand gun held alone. A gun
+     * in each hand is fired from the hip only.
+     */
+    @Nullable
+    public static InteractionHand getScopingHand(Player player)
+    {
+        if (player.getMainHandItem().getItem() instanceof GunItem)
+            return InteractionHand.MAIN_HAND;
+        if (player.getMainHandItem().isEmpty() && player.getOffhandItem().getItem() instanceof GunItem)
+            return InteractionHand.OFF_HAND;
+        return null;
+    }
+
+    /** Whether the first-person gun in this arm is the one being looked down, or the last one that was. */
+    public static boolean isScopeArm(HumanoidArm arm)
+    {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null)
+            return arm == HumanoidArm.RIGHT;
+        HumanoidArm mainArm = player.getMainArm();
+        return arm == (scopeHand == InteractionHand.MAIN_HAND ? mainArm : mainArm.getOpposite());
     }
 
     private static void updateZoom()
