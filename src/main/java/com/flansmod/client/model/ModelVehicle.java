@@ -6,6 +6,7 @@ import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
@@ -182,14 +183,31 @@ public class ModelVehicle extends ModelDriveable
             return primaryBarrelMuzzle;
         barrelMuzzleResolved = true;
 
-        primaryBarrelMuzzle = measureMuzzle(1F, barrelModel);
-        if (primaryBarrelMuzzle != null)
-            return primaryBarrelMuzzle;
-
+        // Many packs split the gun: a mantlet in barrelModel and the recoiling
+        // tube in animBarrelModel. Whichever group reaches further is the muzzle.
+        Vec3 fixed = measureMuzzle(1F, barrelModel);
         Vec3 attached = measureMuzzle(1F, barrelSpecModel, animBarrelModel);
         if (attached != null)
-            primaryBarrelMuzzle = attached.add(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
+            attached = attached.add(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
+        primaryBarrelMuzzle = fixed == null || (attached != null && attached.x > fixed.x) ? attached : fixed;
         return primaryBarrelMuzzle;
+    }
+
+    @Override
+    protected boolean isTurretMountedGun(SeatInfo seatInfo)
+    {
+        return seatInfo.getPart() == EnumDriveablePart.TURRET;
+    }
+
+    /** The point transform {@link #renderTurret} applies before drawing turret-mounted guns. */
+    @Override
+    protected Vec3 toTurretPose(Driveable driveable, Vec3 modelPixels, float turretYaw)
+    {
+        Vec3 point = new Vec3(modelPixels.x * turretScale.x, modelPixels.y * turretScale.y,
+            modelPixels.z * turretScale.z).add(turretTrans.x * 16D, turretTrans.y * 16D, turretTrans.z * 16D);
+        Vector3f origin = driveable.getConfigType() == null ? null : driveable.getConfigType().getTurretOrigin();
+        Vec3 pivot = origin == null ? Vec3.ZERO : new Vec3(origin.x * 16D, origin.y * 16D, -origin.z * 16D);
+        return rotateY(point.subtract(pivot), -turretYaw * Mth.DEG_TO_RAD).add(pivot);
     }
 
     @Override

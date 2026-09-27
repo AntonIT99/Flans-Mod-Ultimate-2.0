@@ -90,8 +90,8 @@ class ModelDriveableMuzzleTest
         assertEquals(-11F, plane.x, 1.0E-4F, "a plane type file measures forward the other way");
         assertEquals(22F, vehicle.y, 1.0E-4F);
         assertEquals(22F, plane.y, 1.0E-4F);
-        assertEquals(42F, vehicle.z, 1.0E-4F, "the lateral mirror applies either way");
-        assertEquals(42F, plane.z, 1.0E-4F);
+        assertEquals(-42F, vehicle.z, 1.0E-4F, "geometry and attachments share the lateral mirror");
+        assertEquals(-42F, plane.z, 1.0E-4F);
     }
 
     @Test

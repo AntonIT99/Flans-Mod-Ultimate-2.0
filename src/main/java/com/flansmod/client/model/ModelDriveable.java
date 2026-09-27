@@ -304,14 +304,10 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             if (gun == null || seat == null)
                 continue;
 
-            float aimYaw = !seatInfo.isDriver() && !seat.isVehicle()
-                ? seatInfo.getYawCentre()
-                : interpolatedYaw(seat, state.partialTick(), state.turretYaw());
-            if (mountFilter == GunMountFilter.TURRET)
-                aimYaw = Mth.wrapDegrees(aimYaw - driverYaw);
-            float aimPitch = Mth.lerp(state.partialTick(), seat.getPrevAimPitch(), seat.getAimPitch());
-            float yaw = (yawConvention == GunYawConvention.PLANE ? 180F - aimYaw : -aimYaw) * Mth.DEG_TO_RAD;
-            float pitch = -aimPitch * Mth.DEG_TO_RAD;
+            float[] angles = registeredGunAngles(seatInfo, seat, state.partialTick(), state.turretYaw(),
+                mountFilter == GunMountFilter.TURRET ? driverYaw : 0F, yawConvention);
+            float yaw = angles[0];
+            float pitch = angles[1];
 
             poseStack.pushPose();
             poseStack.scale(gunScale, gunScale, gunScale);
@@ -350,6 +346,85 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             }
             poseStack.popPose();
         }
+    }
+
+    /**
+     * Part rotation angles, in radians as {yaw, pitch}, that the renderer gives a
+     * registered seat gun. {@code relativeYaw} is subtracted from the seat's aim,
+     * which turret-mounted guns need because the turret already carries it.
+     */
+    protected static float[] registeredGunAngles(SeatInfo seatInfo, Seat seat, float partialTick, float fallbackYaw,
+                                                 float relativeYaw, GunYawConvention yawConvention)
+    {
+        float aimYaw = !seatInfo.isDriver() && !seat.isVehicle()
+            ? seatInfo.getYawCentre()
+            : interpolatedYaw(seat, partialTick, fallbackYaw);
+        aimYaw = Mth.wrapDegrees(aimYaw - relativeYaw);
+        float aimPitch = Mth.lerp(partialTick, seat.getPrevAimPitch(), seat.getAimPitch());
+        float yaw = (yawConvention == GunYawConvention.PLANE ? 180F - aimYaw : -aimYaw) * Mth.DEG_TO_RAD;
+        return new float[] { yaw, -aimPitch * Mth.DEG_TO_RAD };
+    }
+
+    /**
+     * Muzzle of a registered seat gun as currently drawn, in model pixels: the
+     * rest-pose measurement turned by the seat's live yaw and pitch around the
+     * gun's pivot, the way each part turns around its rotation point. Turret
+     * guns are drawn inside the turret transform, which subclasses add.
+     *
+     * @return the aimed muzzle, or {@code null} when the seat has no measurable gun
+     */
+    @Nullable
+    public Vec3 getAimedRegisteredGunMuzzle(Driveable driveable, SeatInfo seatInfo, float partialTick)
+    {
+        Vec3 muzzle = getRegisteredGunMuzzle(seatInfo.getGunName());
+        Vec3 pivot = getRegisteredGunAimPivot(seatInfo.getGunName());
+        Seat seat = driveable.getSeat(seatInfo.getId());
+        if (muzzle == null || pivot == null || seat == null)
+            return muzzle;
+
+        boolean turretMounted = isTurretMountedGun(seatInfo);
+        Seat driverSeat = driveable.getSeat(0);
+        float turretYaw = driveable.getTurretYaw();
+        float driverYaw = turretMounted ? interpolatedYaw(driverSeat, partialTick, turretYaw) : 0F;
+        float[] angles = registeredGunAngles(seatInfo, seat, partialTick, turretYaw, driverYaw,
+            this instanceof ModelPlane ? GunYawConvention.PLANE : GunYawConvention.VEHICLE);
+
+        Vec3 aimed = rotatePartOffset(muzzle.subtract(pivot.scale(16D)), angles[0], angles[1]).add(pivot.scale(16D));
+        return turretMounted ? toTurretPose(driveable, aimed, turretYaw) : aimed;
+    }
+
+    /** Whether the renderer draws this seat's gun inside the turret transform. */
+    protected boolean isTurretMountedGun(SeatInfo seatInfo)
+    {
+        return false;
+    }
+
+    /** Applies the turret transform around a point drawn inside it. */
+    protected Vec3 toTurretPose(Driveable driveable, Vec3 modelPixels, float turretYaw)
+    {
+        return modelPixels;
+    }
+
+    /** Mirrors {@code ModelRendererTurbo#translateAndRotate} for a vector relative to a rotation point. */
+    private Vec3 rotatePartOffset(Vec3 offset, float yaw, float pitch)
+    {
+        return oldRotateOrder
+            ? rotateZ(rotateY(offset, -yaw), -pitch)
+            : rotateY(rotateZ(offset, pitch), yaw);
+    }
+
+    protected static Vec3 rotateY(Vec3 v, float radians)
+    {
+        double cos = Math.cos(radians);
+        double sin = Math.sin(radians);
+        return new Vec3(v.x * cos + v.z * sin, v.y, -v.x * sin + v.z * cos);
+    }
+
+    protected static Vec3 rotateZ(Vec3 v, float radians)
+    {
+        double cos = Math.cos(radians);
+        double sin = Math.sin(radians);
+        return new Vec3(v.x * cos - v.y * sin, v.x * sin + v.y * cos, v.z);
     }
 
     protected static float recoilOffset(Driveable driveable)

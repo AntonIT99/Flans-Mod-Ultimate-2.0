@@ -241,13 +241,16 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             return List.of();
 
         boolean planeFacing = type instanceof PlaneType;
+        // The renderer scales the whole model by ModelScale, while type-file
+        // points are not scaled, so the measured tip has to be scaled here.
+        double modelScale = Math.max(1.0E-4D, type.getModelScale());
         List<DerivedMuzzle> derived = new ArrayList<>();
         if (model instanceof ModelVehicle vehicleModel)
         {
             Vec3 barrel = vehicleModel.getPrimaryBarrelMuzzle();
             if (barrel != null)
                 derived.add(new DerivedMuzzle(-1, "barrel",
-                    LegacyDriveableCoordinates.modelPixelsToTypeFile(barrel, planeFacing)));
+                    LegacyDriveableCoordinates.modelPixelsToTypeFile(barrel.scale(modelScale), planeFacing)));
         }
 
         for (int seat = 1; seat <= type.getNumPassengers(); seat++)
@@ -261,7 +264,8 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             // GunOrigin is not the muzzle: the firing path lifts it by the legacy
             // mounted-gunner offset before spawning the round. Subtracting that here
             // makes the suggested value land the shot on the measured barrel tip.
-            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(muzzle, planeFacing);
+            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(muzzle.scale(modelScale),
+                planeFacing);
             position.y -= (float) (Driveable.PASSENGER_GUN_MOUNTED_OFFSET * 16D);
             derived.add(new DerivedMuzzle(seat, "seat " + seat + " (" + info.getGunName() + ")", position));
         }

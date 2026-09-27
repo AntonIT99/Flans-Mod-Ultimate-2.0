@@ -25,6 +25,8 @@ import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
+import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Mecha;
@@ -335,9 +337,29 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                     new ShootPoint(new DriveablePosition(blocks, part), new Vector3f()));
             }
             else
-                position = driveable.getGunOriginWorldPosition(blocks);
+                position = driveable.getGunOriginWorldPosition(aimedSeatMuzzle(driveable, type, muzzle, blocks));
             DebugHelper.spawnDebugDot(position, 2, MEASURED_MARKER[0], MEASURED_MARKER[1], MEASURED_MARKER[2]);
         }
+    }
+
+    /**
+     * The derived seat muzzle is measured at rest, which is what a GunOrigin
+     * suggestion needs. The marker instead follows the gun as it is drawn, so
+     * this re-measures it at the seat's live aim, in the same GunOrigin terms.
+     */
+    private static Vector3f aimedSeatMuzzle(Driveable driveable, DriveableType type, DerivedMuzzle muzzle,
+                                            Vector3f restBlocks)
+    {
+        SeatInfo seat = type.getSeat(muzzle.seatIndex());
+        if (seat == null || !(ModelCache.getLoadedTypeModel(type) instanceof ModelDriveable model))
+            return restBlocks;
+        Vec3 aimed = model.getAimedRegisteredGunMuzzle(driveable, seat, 1F);
+        if (aimed == null)
+            return restBlocks;
+        Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(
+            aimed.scale(Math.max(1.0E-4D, type.getModelScale())), type instanceof PlaneType);
+        return new Vector3f(position.x / 16F,
+            position.y / 16F - (float) Driveable.PASSENGER_GUN_MOUNTED_OFFSET, position.z / 16F);
     }
 
     private void renderDiagnosticMarkers(Driveable driveable, DriveableType type)
