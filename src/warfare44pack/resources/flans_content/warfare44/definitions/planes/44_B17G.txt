@@ -65,12 +65,12 @@ BulletDetection 10
 AllowAllAmmo False
 AddAmmo 44_250kg500lbBomb
 ShootPointSecondary 25 -5 0 core
-GunOrigin 2 6 68 0
-GunOrigin 3 -136 1 0
-GunOrigin 4 -190 32 18
-GunOrigin 5 -190 32 -18
-GunOrigin 6 -360 35 0
-GunOrigin 8 87 8 0
+GunOrigin 2 -16.8 67 0.2
+GunOrigin 3 -154.8 -1.1 0
+GunOrigin 4 -206.5 31 -18
+GunOrigin 5 -206.5 31 18
+GunOrigin 6 -382.5 33.4 2.5
+GunOrigin 8 64.5 5.9 2.5
 ShootParticlesPrimary crit 0.4 0 0
 ShootParticlesPrimary crit 0.4 -0.1 0
 ShootParticlesPrimary crit 0.4 0.1 0

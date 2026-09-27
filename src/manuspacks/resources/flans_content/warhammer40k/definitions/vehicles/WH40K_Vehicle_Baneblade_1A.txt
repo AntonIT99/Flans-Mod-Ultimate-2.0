@@ -39,12 +39,12 @@ ShootPointPrimary -79 89 -11 turret
 AddGun 8 34 8 turret WH40K_MG_HeavyBolter_1A
 BarrelPosition 25 34 0
 ShootDelay 5
-GunOrigin 1 104 34 -38
-GunOrigin 2 64 38 5
-GunOrigin 3 6 30 -113
-GunOrigin 4 6 30 79
-GunOrigin 5 0 51 74
-GunOrigin 6 0 51 -108
+GunOrigin 1 141.5 32.4 -38
+GunOrigin 2 104 36.4 5
+GunOrigin 3 42 30.4 -113
+GunOrigin 4 42 30.4 79
+GunOrigin 5 59 49.7 74
+GunOrigin 6 59 49.7 -108
 ShootDelay 1
 ShellDelay 100
 ShootDelayPrimarySeconds 8

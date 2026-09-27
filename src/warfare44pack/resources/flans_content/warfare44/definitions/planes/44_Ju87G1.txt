@@ -67,7 +67,7 @@ BulletDetection 10
 AllowAllAmmo False
 ShootPointPrimary 55 12 45 core 44_37mmCannon
 ShootPointPrimary 55 12 -45 core 44_37mmCannon
-GunOrigin 1 -51 26 0
+GunOrigin 1 -67 25.2 0
 ShootParticlesPrimary flansmod.fmflame 0 0 0
 ShootParticlesPrimary flansmod.fmflame 0 0 0
 ShootParticlesPrimary flansmod.fmflame 0 0 0

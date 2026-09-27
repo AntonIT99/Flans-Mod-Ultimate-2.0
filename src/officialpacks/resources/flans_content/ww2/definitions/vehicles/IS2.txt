@@ -45,7 +45,7 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 0 34 0
+BarrelPosition 126.1 34.1 0
 AddGun 8 20 0 turret dp28
 ShootDelay 1
 ShellDelay 180

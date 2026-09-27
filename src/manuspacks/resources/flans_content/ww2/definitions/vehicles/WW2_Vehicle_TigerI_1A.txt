@@ -43,12 +43,12 @@ Tank true
 
 // Weapons
 AddGun 30 32 7 turret WW2_MG_MG42ZB_1A
-BarrelPosition 0 32 0
+BarrelPosition 109 32.5 1
 ShellDelay 100
 ShootDelay 2
 ShootDelayPrimarySeconds 8
 ReadWeaponsFromGunTypes true
-GunOrigin 1 52 18 11
+GunOrigin 1 52 -3.1 11.5
 PlaceTimePrimary 80
 ReloadTimeSecondary 100
 

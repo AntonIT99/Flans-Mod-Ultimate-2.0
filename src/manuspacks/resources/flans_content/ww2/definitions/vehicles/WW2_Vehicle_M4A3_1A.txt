@@ -41,10 +41,10 @@ RealMaxReverseSpeedKmh 5
 
 // Weapons
 AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A
-BarrelPosition 0 35 0
+BarrelPosition 82 37 0
 ShellDelay 110
 ShootDelay 5
-GunOrigin 1 49 18 10
+GunOrigin 1 50 -4.1 9.5
 ShootDelayPrimarySeconds 6
 ReadWeaponsFromGunTypes true
 

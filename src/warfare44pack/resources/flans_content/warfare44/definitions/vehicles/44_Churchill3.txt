@@ -91,8 +91,8 @@ AddAmmo 44_SmallHEShell
 AddAmmo 44_6PdrAPCRShell
 AddAmmo 44_6PdrAPDSShell
 AddGun 28 33 -4 turret 44_Bren
-GunOrigin 1 120 -1 -8
-BarrelPosition 58 31 0
+GunOrigin 1 52 -1.9 -7.5
+BarrelPosition 56 31 0.5
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

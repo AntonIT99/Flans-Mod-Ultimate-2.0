@@ -58,7 +58,7 @@ AlternatePrimary False
 AlternateSecondary False
 ModePrimary FULLAUTO
 ModeSecondary FULLAUTO
-GunOrigin 1 -90 -1 0
+GunOrigin 1 64 -21.1 3
 ReadWeaponsFromGunTypes true
 
 // Protection

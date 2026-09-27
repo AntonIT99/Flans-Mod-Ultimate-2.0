@@ -57,7 +57,7 @@ BulletSpeed 15
 BulletDetection 5
 AllowAllAmmo false
 AddAmmo 44_50CalAmmo
-BarrelPosition 35 39 0
+BarrelPosition 33 39.5 0
 ShootParticlesPrimary flansmod.fmflame 0.5 0 0
 ShootParticlesPrimary flansmod.fmflame 0.25 0 0
 ShootParticlesSecondary crit 0.5 0 0

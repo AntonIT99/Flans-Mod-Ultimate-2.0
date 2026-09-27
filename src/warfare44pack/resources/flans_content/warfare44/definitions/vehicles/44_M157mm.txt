@@ -49,7 +49,7 @@ BulletDetection 7
 AllowAllAmmo false
 AddAmmo 44_57APShell
 AddAmmo 44_SmallHEShell
-BarrelPosition 55 7 0
+BarrelPosition 53.4 6.6 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

@@ -51,7 +51,7 @@ AddAmmo 44_76APShell
 AddAmmo 44_MediumHEShell
 AddAmmo 44_76APCRShell
 AddAmmo 44_76HEATShell
-BarrelPosition 62 6 0
+BarrelPosition 66 5.5 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

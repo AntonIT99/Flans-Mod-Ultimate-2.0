@@ -69,7 +69,7 @@ ShootPointPrimary 90 49 2 nose 44_Mg17
 ShootPointPrimary 90 49 -2 nose 44_Mg17
 ShootPointPrimary 90 45 -6 nose 44_Mg17
 ShootPointSecondary 25 -5 0 core
-GunOrigin 2 -50 35 0
+GunOrigin 2 -33.5 35.2 0
 ShootParticlesPrimary crit 0.4 0 0
 ShootParticlesPrimary crit 0.4 -0.1 0
 ShootParticlesPrimary crit 0.4 0.1 0

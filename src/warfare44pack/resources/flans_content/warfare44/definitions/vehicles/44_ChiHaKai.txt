@@ -93,8 +93,8 @@ BulletDetection 5
 AllowAllAmmo false
 AddAmmo 44_47APShell
 AddAmmo 44_SmallHEShell
-GunOrigin 1 30 -2 -12
-BarrelPosition 46 29 2.5
+GunOrigin 1 32.3 -3.6 -12
+BarrelPosition 47.5 28.5 2.5
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

@@ -44,7 +44,7 @@ Tank true
 CanRoll true
 
 // Weaponry
-BarrelPosition 0 34 0
+BarrelPosition 108 33 0
 AddGun 8 20 0 turret mg42
 ShootDelay 1
 ShellDelay 145

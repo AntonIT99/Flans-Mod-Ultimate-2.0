@@ -45,7 +45,7 @@ Tank false
 
 // Weaponry
 GunOrigin 1 -5 15 20
-BarrelPosition 20 33 0
+BarrelPosition 21 32.5 0
 ShootDelay 1
 ShellDelay 90
 TurretRotationSpeed 0.035

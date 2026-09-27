@@ -45,7 +45,7 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-GunOrigin 1 -2 28 -13
+GunOrigin 1 20 25.9 -14
 BarrelPosition 131 26 0
 AddGun 8 34 8 turret m60
 ShootDelay 1

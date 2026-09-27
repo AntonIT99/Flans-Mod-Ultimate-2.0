@@ -54,9 +54,9 @@ ModeSecondary FullAuto
 AlternateSecondary False
 ShootPointSecondary 0 -10 0
 ShootDelaySecondary 20
-GunOrigin 1 68 35 3
-GunOrigin 2 -46 52 0
-GunOrigin 3 -84 11 0
+GunOrigin 1 55 15.4 -3
+GunOrigin 2 -53 30.4 0
+GunOrigin 3 -88 -5.6 0
 ReadWeaponsFromGunTypes true
 
 // Protection

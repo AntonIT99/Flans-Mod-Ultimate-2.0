@@ -58,6 +58,7 @@ Propeller 1 0 0 0 tail Part_Propeller_RotorHeli
 Pilot 13 7 0
 Passengers 1
 Passenger 1 32 2 0 nose -100 100 -50 10 M134 TURRET
+GunOrigin 1 27 -22.1 2.5
 SetupPart nose 100 46 -3 -9 20 20 18
 SetupPart core 400 -26 -3 -10 72 34 20
 SetupPart tail 300 -104 -3 -9 78 23 18

@@ -49,10 +49,10 @@ Buoyancy 0.08
 BarrelPosition 250 0 -20
 BarrelPosition 250 0 20
 GunOrigin 1 -22 30 0
-GunOrigin 1 -22 30 4
+GunOrigin 1 10 25.9 -1
 GunOrigin 2 -195 25 1
-GunOrigin 2 -195 25 1
-GunOrigin 3 250 30 0
+GunOrigin 2 -150.5 26.7 11
+GunOrigin 3 281 23.4 7
 ShootDelay 1
 ShellDelay 70
 ShootDelayPrimarySeconds 5

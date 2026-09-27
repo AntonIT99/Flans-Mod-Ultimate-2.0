@@ -60,7 +60,7 @@ AddAmmo 44_MediumHEShell
 AddAmmo 44_75APCBCShell
 AddGun 20 28 6 turret 44_30Cal
 AddGun -4 39 6 turret 44_50Cal
-BarrelPosition 50 26 0
+BarrelPosition 54 22 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

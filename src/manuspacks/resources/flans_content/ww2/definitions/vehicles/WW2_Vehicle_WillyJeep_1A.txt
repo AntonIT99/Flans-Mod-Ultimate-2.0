@@ -35,7 +35,7 @@ DriveType AWD
 RealMaxReverseSpeedKmh 29
 
 // Weapons
-GunOrigin 2 -25 22 0
+GunOrigin 2 7.5 1.4 0
 ReadWeaponsFromGunTypes true
 
 // Protection

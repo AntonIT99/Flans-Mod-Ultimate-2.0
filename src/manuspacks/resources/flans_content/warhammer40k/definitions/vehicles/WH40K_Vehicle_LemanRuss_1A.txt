@@ -38,10 +38,10 @@ RealMaxReverseSpeedKmh 8
 
 // Weapons
 AddGun 33 39 12 turret WH40K_MG_HeavyBolter_1A
-BarrelPosition 0 38 0
+BarrelPosition 81 57.5 0
 ShellDelay 110
 ShootDelay 5
-GunOrigin 1 43 34 -8
+GunOrigin 1 73 12.6 -8
 ShootDelayPrimarySeconds 6
 ReadWeaponsFromGunTypes true
 

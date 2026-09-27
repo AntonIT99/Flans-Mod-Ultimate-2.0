@@ -60,6 +60,7 @@ Passenger 5 -14 7 8 core -160 -60 -45 45
 Passenger 6 -29 7 8 core -160 -60 -45 45
 Passenger 7 -44 7 8 core -160 -60 -45 45
 Passenger 8 0 26 0 core -60 60 -15 40 BrowningM2HB M2HB
+GunOrigin 8 31.5 16.4 0
 SetupPart core 400 -55 0 -22 127 31 44
 SetupPart frontRightWheel 200 10 -10 -24 50 22 7
 SetupPart frontLeftWheel 200 10 -10 17 50 22 7

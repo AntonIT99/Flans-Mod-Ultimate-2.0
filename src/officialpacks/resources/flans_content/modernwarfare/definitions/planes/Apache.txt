@@ -61,7 +61,7 @@ ShootPointSecondary 45 22 55 rightWing
 ShootPointSecondary 45 22 -55 rightWing
 ShootPointPrimary 45 22 37 rightWing Hydra70
 ShootPointPrimary 45 22 -37 rightWing Hydra70
-GunOrigin 1 73 6 0
+GunOrigin 1 41 -16.6 0
 ReadWeaponsFromGunTypes true
 
 // Health and armour

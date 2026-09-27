@@ -89,8 +89,8 @@ AddAmmo 44_75APShell
 AddAmmo 44_MediumHEShell
 AddAmmo 44_75APCRShell
 AddAmmo 44_75HEATShellB
-GunOrigin 1 5 14 5
-BarrelPosition 76 20 0
+GunOrigin 1 14.5 11.6 10
+BarrelPosition 76 20.4 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

@@ -38,7 +38,7 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 0 9 0
+BarrelPosition 52.8 6.6 0
 ShootDelay 1
 ShellDelay 110
 TurretRotationSpeed 0.02

@@ -41,12 +41,12 @@ Tank true
 
 // Weapons
 AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A
-BarrelPosition 0 62 0
+BarrelPosition 52 37 0
 ShellDelay 110
 ShootDelay 5
 ShootDelayPrimarySeconds 0.5
 ReadWeaponsFromGunTypes true
-GunOrigin 1 49 18 10
+GunOrigin 1 50 -2.1 9.5
 
 // Protection
 ArmorFrontMm 50

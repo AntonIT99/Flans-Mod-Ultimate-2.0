@@ -37,8 +37,8 @@ RealMaxReverseSpeedKn 5
 RealDraftM 0.9
 
 // Weapons
-GunOrigin 1 -87 32 -23
-GunOrigin 2 -87 32 23
+GunOrigin 1 -83 7.9 -22
+GunOrigin 2 -83 7.9 22
 ReadWeaponsFromGunTypes true
 
 // Protection

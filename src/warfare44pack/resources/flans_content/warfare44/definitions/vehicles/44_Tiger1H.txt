@@ -96,8 +96,8 @@ AddAmmo 44_88APCRShell
 AddAmmo 44_88APShellEarly
 AddAmmo 44_88HEATShell
 AddGun 28 34 6 turret 44_Mg34
-GunOrigin 1 41 -2 10
-BarrelPosition 100 33 0
+GunOrigin 1 57.8 0 12
+BarrelPosition 100.8 32.4 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

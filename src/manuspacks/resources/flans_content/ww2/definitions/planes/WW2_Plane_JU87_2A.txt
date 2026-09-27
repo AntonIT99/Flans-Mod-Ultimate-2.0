@@ -57,7 +57,7 @@ AlternateSecondary False
 ShootPointSecondary 60 13 -38 leftWing WW2_MG_BordkanoneBK37_1A
 ShootPointSecondary 60 13 38 rightWing WW2_MG_BordkanoneBK37_1A
 ShootDelaySecondary 100
-GunOrigin 1 -30 43 0
+GunOrigin 1 -35 21.4 0
 ReadWeaponsFromGunTypes true
 
 // Protection

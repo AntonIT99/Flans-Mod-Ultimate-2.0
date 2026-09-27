@@ -87,8 +87,8 @@ AddAmmo 44_VeryLargeHEShell
 AddAmmo 44_152CPShell
 AddAmmo 44_152APShell
 AddGun 31 51 5 turret 44_DT28
-GunOrigin 1 55 0 -10
-BarrelPosition 82 48 0
+GunOrigin 1 56.5 -0.3 -10.5
+BarrelPosition 77.5 48 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

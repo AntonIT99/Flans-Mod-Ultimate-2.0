@@ -54,29 +54,29 @@ Secondary Bomb
 ModeSecondary FullAuto
 AlternateSecondary False
 ShootDelaySecondary 100
-GunOrigin 1 -1231 -179 0
-GunOrigin 2 -997 -235 0
-GunOrigin 3 1079 -235 0
-GunOrigin 4 1315 -179 0
-GunOrigin 5 -599 -222 -178
-GunOrigin 6 -599 -222 178
-GunOrigin 7 326 -172 -164
-GunOrigin 8 326 -172 164
-GunOrigin 9 703 -222 -177
-GunOrigin 10 703 -222 177
-GunOrigin 11 -874 -212 -102
-GunOrigin 12 -874 -212 102
-GunOrigin 13 -710 -253 -112
-GunOrigin 14 -710 -253 112
-GunOrigin 15 -490 -335 0
-GunOrigin 16 -320 -546 -65
-GunOrigin 17 -320 -546 65
-GunOrigin 18 -138 -294 -86
-GunOrigin 19 -138 -294 86
-GunOrigin 20 618 -259 90
-GunOrigin 21 618 -259 -90
-GunOrigin 22 884 -259 -77
-GunOrigin 23 884 -259 77
+GunOrigin 1 944 117.4 0
+GunOrigin 2 710 173.4 0
+GunOrigin 3 -1366 173.4 0
+GunOrigin 4 -1602 117.4 0
+GunOrigin 5 490 167.4 178
+GunOrigin 6 490 167.4 -178
+GunOrigin 7 -435 117.4 164
+GunOrigin 8 -435 117.4 -164
+GunOrigin 9 -812 167.4 177
+GunOrigin 10 -812 167.4 -177
+GunOrigin 11 843.5 150.4 102
+GunOrigin 12 843.5 150.4 -102
+GunOrigin 13 678.5 191.4 112
+GunOrigin 14 678.5 191.4 -112
+GunOrigin 15 459.5 273.4 0
+GunOrigin 16 288.5 484.4 65
+GunOrigin 17 288.5 484.4 -65
+GunOrigin 18 106.5 232.4 86
+GunOrigin 19 106.5 232.4 -86
+GunOrigin 20 -649.5 197.4 -90
+GunOrigin 21 -649.5 197.4 90
+GunOrigin 22 -915.5 197.4 77
+GunOrigin 23 -915.5 197.4 -77
 ReadWeaponsFromGunTypes true
 
 // Protection

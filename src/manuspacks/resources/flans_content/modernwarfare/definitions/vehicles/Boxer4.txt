@@ -37,7 +37,7 @@ DriveType AWD
 RealMaxReverseSpeedKmh 15
 
 // Weapons
-BarrelPosition 0 44 0
+BarrelPosition 48 39.5 8
 ShootDelay 5
 ShellDelay 110
 ReadWeaponsFromGunTypes true

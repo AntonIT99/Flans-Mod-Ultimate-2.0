@@ -51,7 +51,7 @@ BulletSpeed 12
 BulletDetection 7
 AllowAllAmmo false
 AddAmmo 44_Bofors40mmAmmo
-BarrelPosition 52 9 0
+BarrelPosition 57.6 10 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

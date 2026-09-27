@@ -77,8 +77,8 @@ ShootDelay 999
 ReloadTimeSecondary 100
 PlaceTimePrimary 80
 BulletDetection 5
-GunOrigin 2 -4 14 0
-GunOrigin 5 -67 14 0
+GunOrigin 2 8 13.3 0
+GunOrigin 5 -54.8 15.4 0
 
 // Armour and damage
 UseRealisticVehicleHealth true

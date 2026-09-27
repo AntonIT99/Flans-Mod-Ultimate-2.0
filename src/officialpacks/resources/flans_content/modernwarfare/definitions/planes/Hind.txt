@@ -56,7 +56,7 @@ ModePrimary FullAuto
 ModeSecondary FullAuto
 ShootPointPrimary -13 7 -53 rightWing
 ShootPointPrimary -13 7 53 leftWing
-GunOrigin 1 64 -28 0
+GunOrigin 1 68 -29.1 0
 ReadWeaponsFromGunTypes true
 
 // Health and armour

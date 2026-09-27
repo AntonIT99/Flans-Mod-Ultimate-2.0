@@ -41,7 +41,7 @@ FourWheelDrive true
 Tank false
 
 // Weaponry
-BarrelPosition 0 0 0
+BarrelPosition 36.9 24.7 0
 ShootDelay 1
 ShellDelay 100
 RoundsPerMinPrimary 280

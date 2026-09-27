@@ -10,23 +10,40 @@ Paths are relative to the repository root. `<pack>` is the resolved folder
    `attachments`, `vehicles`, `planes`, `aaguns`, `mechas`) and record, per file:
    `ShortName`, `Model`, `DeployedModel`, `ModelScale`, and every effect key already
    present (§2). Record the file's encoding and line endings before touching it.
-2. Collect the pack's model packages from the `Model` values, then run the muzzle
-   report for each package, writing to the scratchpad:
+2. Guns: collect the pack's model packages from the `Model` values, then run the
+   muzzle report for each package, writing to the scratchpad:
 
    ```bash
    ./gradlew muzzleReport -PmodelSourceSet=<set> -PmodelPackage=com.flansmod.client.model.<Package> -PreportFile=<scratchpad>/<pack>-<Package>.tsv
    ```
 
-   Pass the package exactly as declared, since casing matters. The report has two
-   tables. The gun table gives the measured muzzle, the barrel face size, the barrel
-   attach point and a suggested flash point. The driveable table gives
-   main-gun and registered-gun muzzles in type-file coordinates. It constructs each
-   model the way the client does (`translateAll`, `flipAll`). Rotated parts are left
-   out and flagged in `notes`.
-3. Note which flash asset the pack already uses (`FlashModel`/`FlashTexture` pairs,
+   Pass the package exactly as declared, since casing matters. Use its gun table:
+   the measured muzzle, the barrel face size, the barrel attach point and a
+   suggested flash point. It constructs each model the way the client does
+   (`translateAll`, `flipAll`). Rotated parts are left out and flagged in `notes`.
+   Don't use its driveable table for placement. It measures seat guns at
+   `VehicleGunModelScale` 1 and ignores `ModelScale`.
+3. Driveables and AA guns: run the shoot-point sync for the pack, report only:
+
+   ```bash
+   ./gradlew shootPointSync "-Pfilter=<set>: <pack>/" -PreportFile=<scratchpad>/<pack>-shootpoints.md
+   ```
+
+   The filter is a case-insensitive substring of `<set>: <pack>/definitions/<folder>/<file>`.
+   The task measures every vehicle, plane, mecha and AA gun model the same way
+   `/flandebug shootpoint apply` does, including `ModelScale` and
+   `VehicleGunModelScale`. It compares the result with each definition's primary shoot point,
+   seat `GunOrigin` and AA gun `Barrel` lines. It never fails the build, and it writes
+   nothing without `-Pwrite`. The console line gives the counts. A pack is synced
+   when it reports `0 to update, 0 to add`. The report lists, per value, the action
+   (`unchanged`, `update`, `add`, `skipped`), the authored and measured points in
+   type-file pixels, and a **Check first** table of values scored 15 or more.
+   Those are the values where the measurement itself may be wrong, or where the
+   tool could not place the point. §5.1 turns this into placement decisions.
+4. Note which flash asset the pack already uses (`FlashModel`/`FlashTexture` pairs,
    `MuzzleFlashModel`), and the pack's particle conventions: shoot-particle sets,
    emitter sets, trail types.
-4. Identify reference families (§3.4). Warfare 44 sources live in
+5. Identify reference families (§3.4). Warfare 44 sources live in
    `src/warfare44pack`. Decompile Tyrants and Plebeians models through the
    `mod-class-decompilation` skill (slug `tap-hero-shooter-september`, mappings
    `1.7.10`) and read them from `decompiled/`.
@@ -55,7 +72,7 @@ particle names are the constants in `FlanParticles` as mapped by
 | Bullet, grenade | `FlareParticleCount`, `DebrisParticleCount` | Explosion flare and debris counts. The engine multiplies them by charge intensity (`ExplosionVisuals`). |
 | Bullet | `FlakParticles n`, `FlakParticleType` | Airburst cloud, for flak and proximity rounds only. |
 | Bullet | `BoostParticle` | Rocket and missile boost-phase particle. |
-| Driveable | `ShootParticlesPrimary` / `ShootParticlesSecondary name x y z` | Spawned once per fired shoot point at the authored shoot origin. `x y z` is a direction and speed in the model basis: +x forward, y up. |
+| Driveable | `ShootParticlesPrimary` / `ShootParticlesSecondary name x y z` | Spawned once per fired shoot point at that point's shoot origin (root plus offset), the same point the projectile leaves from. The particles are therefore exactly as well placed as the shoot point (§5.1). `x y z` is a direction and speed in the model basis: +x forward, y up. |
 | Driveable | `AddEmitter` / `AddParticle name rate [ox,oy,oz] [ex,ey,ez] [vx,vy,vz] minThrottle maxThrottle minHealth maxHealth part` | Continuous emitter. The origin, extents and velocity are in type-file pixels. It emits every `rate` ticks while throttle and part-health fraction are inside the bounds. It runs only while the engine is on (vehicles and planes) and within the local emitter range. Turret and barrel parts follow the turret. |
 | Driveable | `EmittersRequireOccupant` | Emitters only while occupied. |
 | Attachment | `DisableMuzzleFlash` / `DisableFlash` | Suppresses both flash models and the world particle while fitted. |
@@ -182,14 +199,37 @@ right after the flash lines. Never reorder or reformat unrelated lines. Follow
 
 ### 5.1 Shoot particles
 
-First compare each weapon's authored shoot origin (the `ShootPoint*`,
-`BarrelPosition` or gun position lines in type-file pixels) with the driveable
-table's `muzzleTypeFileCoords`. If they are more than 4 px apart, or the authored
-point is obviously the turret pivot, adding muzzle particles would draw them in
-the wrong place. Skip the weapon and list it as suspicious (the in-game
-`ShootPointDebugCommand` confirms such cases). Planes' wing guns are usually not
-modelled. Their authored gun positions are the only evidence, which is acceptable
-when they sit on the wing leading edge or the gun ports.
+Shoot particles are drawn at the shoot point, so place them only on a point
+whose position is known. Never measure or estimate a driveable muzzle by hand.
+Decide per bank from the `shootPointSync` report (§1.3):
+
+| Report state for the bank | Position evidence | Shoot particles |
+|---|---|---|
+| `primary` `unchanged`, not in Check first | Measured main-gun muzzle | Add |
+| `primary` `update`, or a `GunOrigin`/`Barrel` `add` | The pack is not synced yet | Apply mode: sync first (below), then add. Audit mode: propose the sync and the particles together. |
+| `primary` `skipped` (several points, or a point that mounts its own gun) | Not measured; authored only | Add only when the authored points pass the authored-only check below. Otherwise skip: `no reliable position`. |
+| Secondary bank, `AddGun`, or listed under "Nothing to measure" | Not measured; the tool never moves these | Authored-only check |
+| Any row in Check first (score 15 or more) | Measurement or placement in doubt | Skip and list as suspicious |
+| Definition missing from the report, or its model `skipped`/`failed` | None | Skip: `no reliable position` |
+
+**Syncing.** In apply mode, when the report has pending `update` or `add` rows,
+run the task with `-Pwrite` and the same filter before adding any particle. Then
+run it again without `-Pwrite` and confirm `0 to update, 0 to add`. This is the one
+permitted change to existing position lines, and only the task makes it. Never edit
+`ShootPointPrimary`, `BarrelPosition`, `GunOrigin` or `Barrel` values by hand. Report
+the synced lines apart from the added effects, because they move projectile origins
+as well. Audit mode never writes.
+
+**Authored-only check.** The authored point must sit where the weapon visibly is:
+on a gun port, a wing leading edge, a pod or a turret face that the model source
+shows. It must not sit on the turret pivot or inside the hull. Planes' wing guns are
+usually not modelled, so this check is their normal path. Anything placed this way
+goes on the suspicious list, and `/flandebug shootpoint list` can confirm it in game.
+
+Seat guns (`GunOrigin`) are synced by the same task, but the engine gives them no
+shoot particles or flash (§2 limitations). Their rows matter here only as a check
+on the model: a gun that measures far from its gunner seat, or across the hull,
+points to a model or seat problem worth reporting.
 
 Add sets only to banks without any `ShootParticles*` line. Use the pack's own set
 for the same weapon class when it exists. Otherwise use these. Rows marked W44 are
@@ -287,7 +327,9 @@ it in additions.
    Every `FlashTexture` exists under the pack's `assets/flansmod/textures/skins`.
 2. Re-run `muzzleReport` for the touched packages when model understanding
    changed, and compare each added `animMuzzleFlashPoint × flashScale × 16` with
-   `muzzlePx` (tolerance 0.5 px).
+   `muzzlePx` (tolerance 0.5 px). When driveables were touched, re-run
+   `shootPointSync` with the pack filter and confirm `0 to update, 0 to add`, and
+   that every bank that gained `ShootParticles*` is placed per §5.1.
 3. Run the pack's jar task (`manusPacksJar`, `warfare44Pack`, `officialPacksJar`,
    ... from `src/<set>/fmu-module.gradle`), plus `packsManagerJar` if its inputs
    changed.
@@ -302,6 +344,8 @@ Use these sections in the final message (audit mode: proposals; apply mode: done
 
 1. **Added**: per definition, the lines added and the evidence (report row,
    declared point, family match, or model part).
+   **Synced shoot points** (apply mode, when §5.1 ran the sync): the definitions and
+   values `shootPointSync -Pwrite` changed, listed apart from the effects.
 2. **Skipped, with reason**: `no reliable position`, `not realistic`,
    `engine limitation`, `already has effect`, `gameplay key (out of scope)`.
 3. **Suspicious (in-game check candidates)**: the short, concrete list.

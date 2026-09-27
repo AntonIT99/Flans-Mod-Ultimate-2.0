@@ -39,8 +39,8 @@ FourWheelDrive true
 Tank false
 
 // Weaponry
-GunOrigin 1 27 -5 -7
-GunOrigin 2 0 10 0
+GunOrigin 1 40 -7.1 -6.5
+GunOrigin 2 26.5 5.2 0
 ShootDelay 1
 ShellDelay 70
 ReadWeaponsFromGunTypes true

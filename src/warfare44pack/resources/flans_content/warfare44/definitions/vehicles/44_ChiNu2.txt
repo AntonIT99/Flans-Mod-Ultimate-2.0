@@ -95,8 +95,8 @@ AllowAllAmmo false
 AddAmmo 44_75APShellLong
 AddAmmo 44_MediumHEShell
 AddGun 12 51 -13 turret 44_Type99
-GunOrigin 1 24 -6 -5
-BarrelPosition 88 29 0
+GunOrigin 1 32.9 -4.1 -6.3
+BarrelPosition 87.5 30 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

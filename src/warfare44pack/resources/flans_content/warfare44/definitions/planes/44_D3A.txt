@@ -68,7 +68,7 @@ AddAmmo 44_Torpedo
 ShootPointPrimary 33 36 4 core 44_Type99
 ShootPointPrimary 33 36 -4 core 44_Type99
 ShootPointSecondary 5 -8 0 core
-GunOrigin 1 -49 18 0
+GunOrigin 1 -69.3 19.5 0
 ShootParticlesPrimary crit 0.4 0 0
 ShootParticlesPrimary crit 0.4 -0.1 0
 ShootParticlesPrimary crit 0.4 0.1 0

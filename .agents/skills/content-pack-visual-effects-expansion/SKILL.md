@@ -39,18 +39,27 @@ report it.
   every proposed line, its evidence and its placement.
 - **Apply**: make the audited changes inside the selected pack only, then validate
   and report. Apply mode also covers the built-in flash asset, which already ships
-  with the mod; it never authorizes Java, parser or category changes.
+  with the mod, and syncing the pack's shoot points with `shootPointSync -Pwrite`
+  before placing particles on them. It never authorizes Java, parser or category
+  changes.
 
 ## Non-negotiable rules
 
-- Add, never overwrite. Keep every existing effect line and value. The one
-  exception is a line that is provably broken, such as an unknown particle name
-  or a flash on an integrally suppressed weapon. Report it; repair it only when the
-  user confirms.
-- No muzzle flash without a known position. A flash requires one of these:
-  a declared `muzzleFlashPoint`, a `muzzleReport` measurement that passes the
-  checks in the workflow, or a verified same-model-family match with a reference.
-  Otherwise skip it and list it under "no reliable position".
+- Add, never overwrite. Keep every existing effect line and value. There are two
+  exceptions. A line that is provably broken, such as an unknown particle name or a
+  flash on an integrally suppressed weapon: report it, and repair it only when the
+  user confirms. And driveable position lines (`ShootPointPrimary`,
+  `BarrelPosition`, `GunOrigin`, AA gun `Barrel`): these change only through
+  `gradlew shootPointSync -Pwrite` filtered to the pack, in apply mode, and never
+  by hand (workflow §5.1).
+- No muzzle effect without a known position; never guess a muzzle.
+  - A gun flash requires a declared `muzzleFlashPoint`, a `muzzleReport`
+    measurement that passes the workflow checks, or a verified same-model-family
+    match with a reference.
+  - A driveable's shoot particles require a shoot point that `shootPointSync`
+    reports as measured and synced, or an unmeasured point that passes the
+    workflow's authored-only check.
+  - Otherwise skip it and list it under "no reliable position".
 - Realism gates every addition: no flash on melee weapons, bows, air or gas guns,
   or suppressed weapons, and none at the front of recoilless or rocket launchers.
   The workflow has the full eligibility table.
@@ -75,7 +84,8 @@ Validation is static unless the user explicitly confirms an in-game check (the
 - measurements that disagree with the model's barrel attach point;
 - models with rotated barrel parts;
 - family matches with scale differences;
-- vehicles whose authored shoot point sits far from the measured muzzle;
+- driveable values in the `shootPointSync` report's Check first table, and banks
+  placed by the authored-only check;
 - any placement estimated rather than measured.
 
 Offer to check them in game.

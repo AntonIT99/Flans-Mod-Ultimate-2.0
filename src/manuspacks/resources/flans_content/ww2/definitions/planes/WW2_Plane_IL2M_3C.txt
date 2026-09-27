@@ -59,7 +59,7 @@ ShootPointPrimary 40 28 -55 leftWing WW2_MG_ShKAS_1A
 ShootPointPrimary 58 21 55 rightWing WW2_MG_WJa23_1A
 ShootPointPrimary 58 21 -55 leftWing WW2_MG_WJa23_1A
 ShootPointSecondary 6 0 0 core
-GunOrigin 1 46 -45 0
+GunOrigin 1 -63 23.4 0
 ReadWeaponsFromGunTypes true
 
 // Protection

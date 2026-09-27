@@ -41,10 +41,10 @@ RealMaxReverseSpeedKmh 8
 
 // Weapons
 AddGun 26 30 -5 turret WW2_MG_DP28_1A
-BarrelPosition 0 32 0
+BarrelPosition 90 29 0
 ShellDelay 110
 ShootDelay 5
-GunOrigin 1 37 15 11
+GunOrigin 1 37 -7.1 10.5
 ShootDelayPrimarySeconds 6
 ReadWeaponsFromGunTypes true
 

@@ -101,7 +101,7 @@ ShootPointPrimary -25 63 7 turret
 ShootPointPrimary -25 63 -7 turret
 ShootPointPrimary -25 63 16 turret
 ShootPointPrimary -25 63 -16 turret
-GunOrigin 1 35 -5 9
+GunOrigin 1 45.8 -1.4 10.3
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode -1.5 0 0
 ShootParticlesPrimary largesmoke -0.5 0 0.1

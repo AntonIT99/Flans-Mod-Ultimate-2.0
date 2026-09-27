@@ -71,11 +71,11 @@ AllowAllAmmo false
 AddAmmo 44_Torpedo
 ShootPointPrimary 85 32 30 core
 ShootPointPrimary 85 32 -30 core
-GunOrigin 1 184 46 0
-GunOrigin 2 -24 53 0
-GunOrigin 3 -142 49 0
-GunOrigin 4 69 61 -18
-GunOrigin 5 69 61 18
+GunOrigin 1 231 51 8.3
+GunOrigin 2 -6.1 58.7 0
+GunOrigin 3 -123.8 54.3 0
+GunOrigin 4 85.8 68.4 -19.8
+GunOrigin 5 85.8 68.4 19.8
 
 // Armour and damage
 UseRealisticVehicleHealth true

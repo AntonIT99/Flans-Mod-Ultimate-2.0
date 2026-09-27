@@ -58,6 +58,7 @@ Propeller 1 0 0 0 rightWing Part_Propeller_TurbineSpace
 Pilot 55 14 -11 -80 80 -45 45
 Passengers 5
 Passenger 1 55 14 11 core -100 100 -50 10 ColonialBlasterCannon TurretGun
+GunOrigin 1 50.4 -18.6 3
 Passenger 2 22 13 -15 core 60 120 -45 45
 Passenger 3 22 13 15 core -120 -60 -45 45
 Passenger 4 -20 12 -4 core 60 120 -45 45

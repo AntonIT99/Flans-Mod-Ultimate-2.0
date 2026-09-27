@@ -87,9 +87,9 @@ BulletSpeed 6
 BulletDetection 5
 AllowAllAmmo false
 AddAmmo 44_VeryLargeHEShell
-GunOrigin 1 60 12 -18
-GunOrigin 2 60 12 18
-GunOrigin 3 -72 14 0
+GunOrigin 1 91 10.9 -18
+GunOrigin 2 91 10.9 18
+GunOrigin 3 -54 12.9 0
 BarrelPosition 76 55 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0

@@ -62,8 +62,8 @@ BulletSpread 4
 BulletSpeed 5
 BulletDetection 5
 AllowAllAmmo false
-GunOrigin 1 -14 14 -18
-GunOrigin 2 -14 14 18
+GunOrigin 1 -10.1 17 -19.8
+GunOrigin 2 -10.1 17 19.8
 
 // Armour and damage
 UseRealisticVehicleHealth true

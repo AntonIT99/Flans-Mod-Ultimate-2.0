@@ -40,7 +40,7 @@ DriveType TRACKED
 RealMaxReverseSpeedKmh 8
 
 // Weapons
-BarrelPosition 0 22 0
+BarrelPosition 93 22 5
 ShellDelay 110
 ShootDelay 5
 ShootDelayPrimarySeconds 6

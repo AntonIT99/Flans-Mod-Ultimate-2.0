@@ -43,12 +43,12 @@ Tank true
 
 // Weapons
 AddGun 58 24 14 core WW2_MG_MG42ZB_1A
-BarrelPosition 0 34 0
+BarrelPosition 125 34 0
 ShellDelay 110
 ShootDelay 5
 ShootDelayPrimarySeconds 9
 ReadWeaponsFromGunTypes true
-GunOrigin 1 19 49 6
+GunOrigin 1 25.5 27.9 6
 PlaceTimePrimary 80
 ReloadTimeSecondary 100
 

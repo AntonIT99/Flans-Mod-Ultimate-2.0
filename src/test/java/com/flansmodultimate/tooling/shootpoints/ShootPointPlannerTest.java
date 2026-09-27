@@ -58,6 +58,21 @@ class ShootPointPlannerTest
     }
 
     @Test
+    void aSecondPassChangesNothingEvenOnARoundingBoundary()
+    {
+        DefinitionFile first = parse("ShootPointPrimary 10.3 20 0 turret 40 0 0\nPassenger 1 0 30 0 turret -360 360 -10 60 MG34 mg\n");
+        DerivedMuzzle barrel = barrel(56.35F, 22.45F, -0.05F);
+        DerivedMuzzle gun = new DerivedMuzzle(1, "seat 1 (mg)", new Vector3f(32.95F, -4.05F, 8.25F));
+        plan(first, barrel, gun);
+
+        DefinitionFile second = DefinitionFile.parse(first.toBytes());
+        List<Finding> findings = plan(second, barrel, gun);
+
+        assertFalse(second.isModified());
+        assertTrue(findings.stream().allMatch(finding -> finding.action == Action.UNCHANGED), findings.toString());
+    }
+
+    @Test
     void aMatchingPointIsLeftAlone()
     {
         DefinitionFile file = parse("BarrelPosition 60 22.5 0\n");

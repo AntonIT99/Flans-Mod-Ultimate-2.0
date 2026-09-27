@@ -43,7 +43,7 @@ WheelSpringStrength 0.5
 FourWheelDrive true
 
 // Weaponry
-GunOrigin 4 13 16 0
+GunOrigin 4 23 16.4 0
 ShootDelay 999
 ShellDelay 999
 ReadWeaponsFromGunTypes true

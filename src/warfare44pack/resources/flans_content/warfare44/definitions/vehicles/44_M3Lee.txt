@@ -88,9 +88,9 @@ AllowAllAmmo false
 AddAmmo 44_37APShell
 AddAmmo 44_SmallHEShell
 AddGun 2 50 -3 turret 44_30Cal
-GunOrigin 1 10 5 25
+GunOrigin 1 64.4 3.1 27
 GunOrigin 2 -7 5 5
-BarrelPosition 42 41 0
+BarrelPosition 39.1 41.6 0.6
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

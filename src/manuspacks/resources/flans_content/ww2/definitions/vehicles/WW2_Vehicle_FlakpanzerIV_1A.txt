@@ -45,7 +45,7 @@ ShootDelay 1
 RoundsPerMinPrimary 1400
 ReadWeaponsFromGunTypes true
 BarrelPosition 0 40 0
-GunOrigin 1 48 18 12
+GunOrigin 1 47.5 -2.1 11.5
 PlaceTimePrimary 80
 ReloadTimeSecondary 100
 ReloadTimePrimary 51

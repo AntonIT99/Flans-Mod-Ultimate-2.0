@@ -404,10 +404,12 @@ final class ShootPointPlanner
                                    int firstValue, float[] current, float[] replacement, float[] authoredMuzzle,
                                    float[] measuredMuzzle, double deltaPx, int decimals)
     {
-        double tolerance = 0.5D * Math.pow(10D, -decimals);
+        // Compared as written, so a value the tool wrote reads back as unchanged
+        // however close the measurement falls to a rounding boundary.
         boolean unchanged = true;
         for (int i = 0; i < 3; i++)
-            unchanged &= Math.abs(current[i] - replacement[i]) < tolerance;
+            unchanged &= DefinitionFile.formatNumber(current[i], decimals)
+                .equals(DefinitionFile.formatNumber(replacement[i], decimals));
         if (unchanged)
             return new Finding(name, kind, target, authoredMuzzle, measuredMuzzle, deltaPx, Action.UNCHANGED, decimals);
         if (!line.plain())

@@ -83,7 +83,7 @@ AddAmmo 44_47APShell
 AddAmmo 44_SmallHEShell
 AddAmmo 44_45APCRShell
 AddGun 13 25 0 turret 44_DT28
-BarrelPosition 37 25 3
+BarrelPosition 37.8 23.8 3.1
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1

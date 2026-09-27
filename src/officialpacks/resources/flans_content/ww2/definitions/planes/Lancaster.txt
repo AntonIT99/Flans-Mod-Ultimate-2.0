@@ -61,9 +61,9 @@ AlternateSecondary False
 ModePrimary FullAuto
 ModeSecondary FullAuto
 ShootPointSecondary 0 -32 0
-GunOrigin 1 148 -2 0
-GunOrigin 4 -48 32 0
-GunOrigin 5 -128 16 0
+GunOrigin 1 116 -3.6 0
+GunOrigin 4 -80 30.4 0
+GunOrigin 5 -160 14.4 0
 ReadWeaponsFromGunTypes true
 
 // Optics

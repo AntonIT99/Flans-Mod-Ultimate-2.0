@@ -41,10 +41,10 @@ RealMaxReverseSpeedKmh 9
 
 // Weapons
 AddGun 32 35 -9 turret WW2_MG_MG42ZB_1A
-BarrelPosition 0 34 0
+BarrelPosition 125 35.5 0
 ShellDelay 110
 ShootDelay 5
-GunOrigin 1 65 20 14
+GunOrigin 1 64 -1.1 14.5
 PlaceTimePrimary 80
 ReloadTimeSecondary 100
 ShootDelayPrimarySeconds 9

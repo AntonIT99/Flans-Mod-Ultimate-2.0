@@ -53,7 +53,7 @@ ShellDelay 999
 ShootDelay 999
 ReloadTimeSecondary 10
 BulletDetection 5
-GunOrigin 1 16 -5 -6
+GunOrigin 1 22.3 -6.6 -6
 
 // Armour and damage
 UseRealisticVehicleHealth true

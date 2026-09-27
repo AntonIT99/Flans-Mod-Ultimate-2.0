@@ -88,7 +88,7 @@ AddAmmo 44_MediumHEShell
 AddAmmo 44_75APCRShellLong
 AddGun 25 33 6 turret 44_Mg34
 GunOrigin 1 54 2 11
-BarrelPosition 70 32 0
+BarrelPosition 71 32.5 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
