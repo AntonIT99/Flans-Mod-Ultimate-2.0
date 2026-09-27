@@ -30,7 +30,7 @@ TargetRange 40
 GunnerPos 21 30 0
 BottomViewLimit 0
 TopViewLimit 75
-TraverseSpeed 55
+TraverseSpeed 165
 NumBarrels 4
 Barrel 0 26.33 -7 8.1
 Barrel 1 26.33 -3 8.1

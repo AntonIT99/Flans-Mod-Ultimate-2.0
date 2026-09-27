@@ -28,7 +28,7 @@ Damage 2
 ShareAmmo true
 GunnerPos 8 28 8
 TopViewLimit 75
-TraverseSpeed 140
+TraverseSpeed 420
 BottomViewLimit 0
 RoundsPerMin 1000.0
 Dispersion 0.45
