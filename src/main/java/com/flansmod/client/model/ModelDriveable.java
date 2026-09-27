@@ -477,6 +477,17 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     @Nullable
     public Vec3 getRegisteredGunAimPivot(String gunName)
     {
+        return getRegisteredGunAimPivot(gunName, gunModelScale());
+    }
+
+    /**
+     * {@link #getRegisteredGunAimPivot(String)} at an explicit
+     * {@code VehicleGunModelScale}, for callers that measure a model without
+     * its type, such as offline tooling.
+     */
+    @Nullable
+    public Vec3 getRegisteredGunAimPivot(String gunName, float gunScale)
+    {
         ModelRendererTurbo[][] gun = gunModels.get(gunName);
         if (gun == null || gun.length == 0)
             return null;
@@ -487,7 +498,6 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         if (pivotPart == null)
             return null;
 
-        float gunScale = type == null ? 1F : Math.max(0.001F, type.getVehicleGunModelScale());
         return new Vec3(pivotPart.rotationPointX * MODEL_SCALE * gunScale,
             pivotPart.rotationPointY * MODEL_SCALE * gunScale,
             pivotPart.rotationPointZ * MODEL_SCALE * gunScale);
@@ -594,8 +604,10 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         };
     }
 
+    private record GunMuzzleKey(String gunName, float gunScale) {}
+
     /** Measurements are a full vertex walk, and diagnostics ask for them every tick. */
-    private final transient HashMap<String, Optional<Vec3>> gunMuzzles = new HashMap<>();
+    private final transient HashMap<GunMuzzleKey, Optional<Vec3>> gunMuzzles = new HashMap<>();
 
     /**
      * Muzzle of a registered passenger gun, in model pixels, or {@code null} when
@@ -604,13 +616,29 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     @Nullable
     public Vec3 getRegisteredGunMuzzle(String gunName)
     {
-        return gunMuzzles.computeIfAbsent(gunName, name -> {
-            ModelRendererTurbo[][] gun = gunModels.get(name);
+        return getRegisteredGunMuzzle(gunName, gunModelScale());
+    }
+
+    /**
+     * {@link #getRegisteredGunMuzzle(String)} at an explicit
+     * {@code VehicleGunModelScale}, for callers that measure a model without
+     * its type, such as offline tooling.
+     */
+    @Nullable
+    public Vec3 getRegisteredGunMuzzle(String gunName, float gunScale)
+    {
+        return gunMuzzles.computeIfAbsent(new GunMuzzleKey(gunName, gunScale), key -> {
+            ModelRendererTurbo[][] gun = gunModels.get(key.gunName());
             if (gun == null || gun.length == 0)
                 return Optional.empty();
-            float gunScale = type == null ? 1F : Math.max(0.001F, type.getVehicleGunModelScale());
-            return Optional.ofNullable(measureMuzzle(gunScale, gun));
+            return Optional.ofNullable(measureMuzzle(key.gunScale(), gun));
         }).orElse(null);
+    }
+
+    /** The scale the renderer draws registered passenger guns at. */
+    private float gunModelScale()
+    {
+        return type == null ? 1F : Math.max(0.001F, type.getVehicleGunModelScale());
     }
 
     protected void flip(ModelRendererTurbo[] model)

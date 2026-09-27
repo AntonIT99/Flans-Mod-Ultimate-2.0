@@ -17,6 +17,8 @@ MMM
 
 // Movement and Physics
 RealMassKg 3200.0
+HitBoxWidth 3.0
+HitBoxHeight 2.0
 
 // Weapons
 NumBarrels 1

@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -17,6 +18,9 @@ import net.minecraft.world.phys.Vec3;
 public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
 {
     public record BarrelOriginData(Vec3[] pivots, Vec3[] muzzles) {}
+
+    /** Parts ending this close behind the furthest one form the muzzle face, in model pixels. */
+    private static final double MUZZLE_FACE_TOLERANCE = 1.5D;
 
     @Getter @Setter
     protected AAGunType type;
@@ -45,9 +49,9 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         renderParts(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderGun(AAGun aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderGun(AAGun aa, float gunPitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        float pitch = -aa.getGunPitch() * Mth.DEG_TO_RAD;
+        float pitch = -gunPitch * Mth.DEG_TO_RAD;
 
         renderParts(seatModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
@@ -72,8 +76,8 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         for (int i = 0; i < barrelModel.length; i++)
         {
             float barrelRecoil = i < recoil.length ? recoil[i] : 0F;
-            float x = -barrelRecoil * Mth.cos(-aa.getGunPitch() * Mth.DEG_TO_RAD) + barrelX;
-            float y = -barrelRecoil * Mth.sin(-aa.getGunPitch() * Mth.DEG_TO_RAD) + barrelY;
+            float x = -barrelRecoil * Mth.cos(pitch) + barrelX;
+            float y = -barrelRecoil * Mth.sin(pitch) + barrelY;
             renderBarrelPartArray(barrelModel[i], x, y, barrelZ, pitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
 
@@ -132,7 +136,12 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
 
     public BarrelOriginData getModelBarrelOriginData(AAGunType type)
     {
-        int count = type.getNumBarrels();
+        return getModelBarrelOriginData(type.getNumBarrels());
+    }
+
+    /** {@link #getModelBarrelOriginData(AAGunType)} for a barrel count read without the type. */
+    public BarrelOriginData getModelBarrelOriginData(int count)
+    {
         if (count <= 0 || barrelModel == null || barrelModel.length < count)
             return null;
 
@@ -153,34 +162,55 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         return new BarrelOriginData(pivots, muzzles);
     }
 
-    private static Vec3 findMuzzlePoint(ModelRendererTurbo[] parts)
+    /**
+     * The centre of a barrel's front face, relative to the barrel pivot every
+     * barrel part is drawn at.
+     *
+     * <p>Reads face bounds, not vertex bounds: {@link #flipAll} mirrors the faces
+     * and leaves each part's vertex array where it was built, so vertex bounds
+     * put the muzzle of a flipped model on the wrong side and height. Only the
+     * parts reaching the front face count, as in
+     * {@link ModelDriveable#measureMuzzle}, so a breech, cradle or cooling jacket
+     * wider than the bore does not pull the muzzle off the barrel's axis.</p>
+     */
+    @Nullable
+    static Vec3 findMuzzlePoint(ModelRendererTurbo[] parts)
     {
         if (parts == null || parts.length == 0)
             return null;
 
-        double[] bounds = new double[] {
-            Double.POSITIVE_INFINITY,
-            Double.POSITIVE_INFINITY,
-            Double.POSITIVE_INFINITY,
-            Double.NEGATIVE_INFINITY,
-            Double.NEGATIVE_INFINITY,
-            Double.NEGATIVE_INFINITY
-        };
-        boolean found = false;
+        double furthestForward = Double.NEGATIVE_INFINITY;
         for (ModelRendererTurbo part : parts)
         {
-            if (part != null)
-                found |= part.appendVertexBounds(bounds);
+            double[] bounds = emptyBounds();
+            if (part != null && part.appendFaceBounds(bounds))
+                furthestForward = Math.max(furthestForward, bounds[3]);
         }
-
-        if (!found)
+        if (furthestForward == Double.NEGATIVE_INFINITY)
             return null;
 
-        return new Vec3(
-            bounds[3],
-            (bounds[1] + bounds[4]) * 0.5D,
-            (bounds[2] + bounds[5]) * 0.5D
-        );
+        double threshold = furthestForward - MUZZLE_FACE_TOLERANCE;
+        double[] face = emptyBounds();
+        for (ModelRendererTurbo part : parts)
+        {
+            double[] bounds = emptyBounds();
+            if (part == null || !part.appendFaceBounds(bounds) || bounds[3] < threshold)
+                continue;
+            face[1] = Math.min(face[1], bounds[1]);
+            face[2] = Math.min(face[2], bounds[2]);
+            face[4] = Math.max(face[4], bounds[4]);
+            face[5] = Math.max(face[5], bounds[5]);
+        }
+
+        return new Vec3(furthestForward, (face[1] + face[4]) * 0.5D, (face[2] + face[5]) * 0.5D);
+    }
+
+    private static double[] emptyBounds()
+    {
+        return new double[] {
+            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+        };
     }
 
     public void flipAll()

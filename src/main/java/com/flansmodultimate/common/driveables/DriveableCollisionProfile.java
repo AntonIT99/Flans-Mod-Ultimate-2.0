@@ -266,6 +266,15 @@ public final class DriveableCollisionProfile
         return EnumDriveablePart.isTurretMounted(part);
     }
 
+    /** One centred AA gun box, in world blocks, with its bottom at the gun's origin. */
+    public static DriveableCollisionProfile aaGun(float width, float height)
+    {
+        CollisionBox box = CollisionBox.inWorldUnits(0F, -width * 0.5F, 0F, -width * 0.5F,
+            width, height, width, 0F, 0F);
+        Shape shape = compilePartBox(EnumDriveablePart.CORE, box);
+        return new DriveableCollisionProfile(shape == null ? List.of() : List.of(shape), false);
+    }
+
     /** Damageable gun/barrel boxes follow both turret yaw and barrel pitch. */
     public static boolean isBarrelPart(EnumDriveablePart part)
     {

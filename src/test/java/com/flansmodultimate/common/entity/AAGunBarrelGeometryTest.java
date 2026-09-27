@@ -1,15 +1,19 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.util.ModUtils;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.phys.Vec3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AAGunBarrelGeometryTest
 {
     private static final double EPSILON = 1.0E-5D;
+    // ModUtils aims through Mth.sin, which reads a lookup table.
+    private static final double AIM_EPSILON = 1.0E-3D;
 
     @Test
     void aSuggestedBarrelLineLandsOnTheMeasuredMuzzleAtRest()
@@ -39,6 +43,33 @@ class AAGunBarrelGeometryTest
             assertEquals(model.y, legacy.y, EPSILON);
             assertEquals(model.z, legacy.z, EPSILON);
         }
+    }
+
+    @Test
+    void aBarrelLaidAlongTheAimFollowsItAsTheGunElevates()
+    {
+        double length = 3D;
+        Vector3f line = AAGunBarrelGeometry.legacyBarrelFor(new Vec3(0D, 0D, length), false);
+
+        for (float[] aim : new float[][] { { 0F, -45F }, { 37F, -70F }, { -140F, 20F } })
+        {
+            Vec3 expected = ModUtils.getDirectionFromPitchAndYaw(aim[1], aim[0]).scale(length);
+            Vec3 legacy = AAGunBarrelGeometry.legacyBarrelOffset(line.x, line.y, line.z, aim[0], aim[1]);
+            assertEquals(expected.x, legacy.x, AIM_EPSILON);
+            assertEquals(expected.y, legacy.y, AIM_EPSILON);
+            assertEquals(expected.z, legacy.z, AIM_EPSILON);
+        }
+    }
+
+    @Test
+    void aForwardBarrelRisesWhenTheGunAimsUp()
+    {
+        // Flak 88 line: Barrel 0 88 40 0.
+        Vec3 rest = AAGunBarrelGeometry.legacyBarrelOffset(88D, 40D, 0D, 0F, 0F);
+        Vec3 raised = AAGunBarrelGeometry.legacyBarrelOffset(88D, 40D, 0D, 0F, -60F);
+
+        assertTrue(raised.y > rest.y + 3D);
+        assertEquals(rest.length(), raised.length(), EPSILON);
     }
 
     @Test

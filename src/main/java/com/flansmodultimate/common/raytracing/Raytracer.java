@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.raytracing;
 
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -215,6 +216,12 @@ public class Raytracer
     @Nullable
     public static EntityHit findHitAgainstEntityAndParts(Entity entity, Vec3 start, Vec3 motion, float bulletHitBoxSize)
     {
+        if (entity instanceof AAGun gun)
+        {
+            Vec3 impact = gun.clipCollisionBox(start, start.add(motion), bulletHitBoxSize);
+            return impact == null ? null : new EntityHit(gun,
+                (float) computeHitLambda(impact.subtract(start), motion), impact);
+        }
         final double len2 = motion.lengthSqr();
         final boolean noMotion = len2 <= 1e-9;
 

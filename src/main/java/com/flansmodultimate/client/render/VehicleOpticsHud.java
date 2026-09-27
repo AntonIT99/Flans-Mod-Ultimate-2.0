@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.client.gui.OpticsHudEditorScreen;
 import com.flansmodultimate.common.driveables.OpticsHud;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Seat;
 
 import net.minecraft.client.Minecraft;
@@ -16,6 +17,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Locale;
+import java.util.Optional;
 
 /** Scope overlay plus range, speed, traverse, compass and elevation instruments. */
 public final class VehicleOpticsHud
@@ -139,7 +141,9 @@ public final class VehicleOpticsHud
             candidate -> candidate.isPickable() && !(candidate instanceof Seat) && candidate != seat.getDriveable()
                 && !candidate.isPassengerOfSameVehicle(seat)))
         {
-            var hit = entity.getBoundingBox().clip(start, end);
+            Optional<Vec3> hit = entity instanceof AAGun gun
+                ? Optional.ofNullable(gun.clipCollisionBox(start, end, 0D))
+                : entity.getBoundingBox().clip(start, end);
             if (hit.isPresent()) nearest = Math.min(nearest, start.distanceTo(hit.get()));
         }
         return Double.isFinite(nearest) ? nearest : -1D;

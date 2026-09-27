@@ -38,6 +38,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, IAmmoOverrideUser
 {
     public static final int MAX_BARRELS = 16;
+    public static final float DEFAULT_HIT_BOX_SIZE = 2F;
+    public static final float MIN_HIT_BOX_SIZE = 0.0625F;
 
     /** The ammo types used by this gun */
     protected Set<String> ammo = new LinkedHashSet<>();
@@ -77,9 +79,12 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     protected float topViewLimit = 75F;
     protected float bottomViewLimit = 0F;
     protected float sideViewLimit = 180F;
-    protected int[] barrelX = new int[] { 0 };
-    protected int[] barrelY = new int[] { 0 };
-    protected int[] barrelZ = new int[] { 0 };
+    protected float[] barrelX = new float[] { 0F };
+    protected float[] barrelY = new float[] { 0F };
+    protected float[] barrelZ = new float[] { 0F };
+    /** Width and height, in blocks, of the entity box that is hit, picked and collided with. */
+    protected float hitBoxWidth = DEFAULT_HIT_BOX_SIZE;
+    protected float hitBoxHeight = DEFAULT_HIT_BOX_SIZE;
 
     /** Sentry mode. If target players is true then it either targets everyone on the other team, or everyone other than the owner when not playing with teams */
     protected boolean targetMobs;
@@ -151,15 +156,16 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
         registerSoundTimer("ShootSoundLength", () -> shootSound, () -> shootSoundLength, length -> shootSoundLength = length);
 
         numBarrels = Math.max(1, Math.min(MAX_BARRELS, readValue("NumBarrels", numBarrels, file)));
-        barrelX = new int[numBarrels];
-        barrelY = new int[numBarrels];
-        barrelZ = new int[numBarrels];
+        barrelX = new float[numBarrels];
+        barrelY = new float[numBarrels];
+        barrelZ = new float[numBarrels];
         readBarrels(file);
         readLines("Ammo", file).ifPresent(lines -> lines.forEach(ammoLine -> ammo.add(ResourceUtils.sanitize(ammoLine))));
         ShootableType.readAmmoGroups(file, ammoGroups);
         ammoOverrides = readAmmoOverrides(file);
         removedAmmo = RemovedAmmo.read(file);
         readGunnerPosition(file);
+        readHitBox(file);
         resolveRealisticHealth(file);
     }
 
@@ -188,13 +194,15 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
 
     private void readBarrels(TypeFile file)
     {
-        readIntValuesInLines("Barrel", file, 4).ifPresent(lines -> lines.stream()
+        // 1.7.10 read whole pixels; fractions are accepted so a line can match a
+        // measured muzzle, which rarely falls on the legacy transform's pixel grid.
+        readFloatValuesInLines("Barrel", file, 4).ifPresent(lines -> lines.stream()
             .filter(values -> values != null && values.length >= 4)
             .forEach(values -> {
-                int id = values[0];
-                if (id < 0 || id >= numBarrels)
+                int id = (int) values[0];
+                if (id != values[0] || id < 0 || id >= numBarrels)
                 {
-                    logError("Barrel index " + id + " is outside NumBarrels " + numBarrels, file);
+                    logError("Barrel index " + values[0] + " is not a barrel below NumBarrels " + numBarrels, file);
                     return;
                 }
                 barrelX[id] = values[1];
@@ -205,21 +213,27 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
 
     /** Barrel lines as authored, kept while {@code /flandebug} overrides them, by barrel index. */
     @Getter(lombok.AccessLevel.NONE)
-    private final Map<Integer, int[]> authoredBarrels = new TreeMap<>();
+    private final Map<Integer, float[]> authoredBarrels = new TreeMap<>();
 
     /**
-     * Moves one barrel's type-file line for the shoot-point debug command.
-     * Barrel lines are whole model pixels, so the value is rounded.
+     * Moves one barrel's type-file line for the shoot-point debug command,
+     * rounded to the hundredth of a pixel the command prints.
      */
     public boolean setDebugBarrel(int barrel, Vector3f legacyPixels)
     {
         if (barrel < 0 || barrel >= numBarrels)
             return false;
-        authoredBarrels.computeIfAbsent(barrel, ignored -> new int[] { barrelX[barrel], barrelY[barrel], barrelZ[barrel] });
-        barrelX[barrel] = Math.round(legacyPixels.x);
-        barrelY[barrel] = Math.round(legacyPixels.y);
-        barrelZ[barrel] = Math.round(legacyPixels.z);
+        authoredBarrels.computeIfAbsent(barrel, ignored -> new float[] { barrelX[barrel], barrelY[barrel], barrelZ[barrel] });
+        barrelX[barrel] = roundBarrelPixels(legacyPixels.x);
+        barrelY[barrel] = roundBarrelPixels(legacyPixels.y);
+        barrelZ[barrel] = roundBarrelPixels(legacyPixels.z);
         return true;
+    }
+
+    /** Barrel line values are kept to the hundredth of a model pixel. */
+    public static float roundBarrelPixels(float pixels)
+    {
+        return Math.round(pixels * 100F) / 100F;
     }
 
     public boolean isBarrelOverridden(int barrel)
@@ -240,6 +254,13 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
             barrelZ[barrel] = line[2];
         });
         authoredBarrels.clear();
+    }
+
+    private void readHitBox(TypeFile file)
+    {
+        float size = readValue("HitBoxSize", DEFAULT_HIT_BOX_SIZE, file);
+        hitBoxWidth = Math.max(MIN_HIT_BOX_SIZE, readValue("HitBoxWidth", size, file));
+        hitBoxHeight = Math.max(MIN_HIT_BOX_SIZE, readValue("HitBoxHeight", size, file));
     }
 
     private void readGunnerPosition(TypeFile file)

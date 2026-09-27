@@ -17,6 +17,8 @@ Ammo WW2_Shell_German20mmAA
 
 // Movement and Physics
 RealMassKg 1518.0
+HitBoxWidth 2.0
+HitBoxHeight 2.1
 
 // Weapons
 GunnerPos 21 30 0

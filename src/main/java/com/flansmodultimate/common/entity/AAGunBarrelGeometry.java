@@ -41,7 +41,17 @@ public final class AAGunBarrelGeometry
         return new Vec3(x / 16D, modelY / 16D, z / 16D);
     }
 
-    /** Offset, in blocks, that the legacy transform gives a type-file {@code Barrel x y z} line. */
+    /**
+     * Offset, in blocks, that a type-file {@code Barrel x y z} line gives at
+     * the gun's yaw and pitch.
+     *
+     * <p>The resting position is the legacy transform's, so authored lines land
+     * where they always did. The legacy transform cannot pitch it, though: it
+     * tilts only one of the two diagonal axes its 45 degree remap spreads a
+     * barrel over, so a barrel laid forward sank as the gun elevated.
+     * Elevation is instead applied round the horizontal axis across the gun's
+     * aim, still pivoting on the gun's position.</p>
+     */
     public static Vec3 legacyBarrelOffset(double legacyX, double legacyY, double legacyZ, float gunYaw, float gunPitch)
     {
         // Map legacy position to actual position
@@ -53,14 +63,37 @@ public final class AAGunBarrelGeometry
         double y = barrelY / 16D;
         double z = (barrelX + barrelZ) / 16D;
 
-        return rotate(x, y, z, gunPitch, gunYaw);
+        return pitchAboutGun(rotate(x, y, z, 0D, gunYaw), gunYaw, gunPitch);
+    }
+
+    /**
+     * Tilts a resting offset round the gun's position the way
+     * {@code ModUtils#getDirectionFromPitchAndYaw} tilts the aim: positive
+     * pitch lowers what lies ahead of the gun.
+     */
+    static Vec3 pitchAboutGun(Vec3 rest, float gunYaw, float gunPitch)
+    {
+        double yaw = gunYaw * Mth.DEG_TO_RAD;
+        double forwardX = -Math.sin(yaw);
+        double forwardZ = Math.cos(yaw);
+        double forward = rest.x * forwardX + rest.z * forwardZ;
+        double sideX = rest.x - forward * forwardX;
+        double sideZ = rest.z - forward * forwardZ;
+
+        double pitch = gunPitch * Mth.DEG_TO_RAD;
+        double cosPitch = Math.cos(pitch);
+        double sinPitch = Math.sin(pitch);
+        double pitchedForward = forward * cosPitch + rest.y * sinPitch;
+        double pitchedY = rest.y * cosPitch - forward * sinPitch;
+
+        return new Vec3(sideX + pitchedForward * forwardX, pitchedY, sideZ + pitchedForward * forwardZ);
     }
 
     /**
      * The {@code Barrel x y z} line whose legacy transform lands on
-     * {@code offset}, in blocks, with the gun at rest. The legacy transform
-     * is kept exactly as 1.7.10 wrote it, radian slip included, so it is
-     * inverted as the linear map it is rather than by hand.
+     * {@code offset}, in blocks, with the gun at rest. The resting legacy
+     * transform is kept exactly as 1.7.10 wrote it, radian slip included, so
+     * it is inverted as the linear map it is rather than by hand.
      *
      * <p>Legacy barrels pitch round the gun's position and model barrels round
      * their own pivot, so the two agree at rest and part once the gun elevates.</p>

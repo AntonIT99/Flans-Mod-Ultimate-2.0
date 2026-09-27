@@ -131,6 +131,13 @@ public final class DriveableHullGeometry
         return posed && current.any;
     }
 
+    /** Snapshot of a posed shape's world vertices, also used by the debug outline. */
+    public double[] copyCurrentVertices(int shape)
+    {
+        return hasActiveShapes() && shape >= 0 && shape < shapes.size() && current.active[shape]
+            ? current.vertices[shape].clone() : null;
+    }
+
     /** Whether a box could touch any active hull in the current pose. */
     public boolean mayTouch(double minX, double minY, double minZ, double maxX, double maxY, double maxZ)
     {
@@ -266,6 +273,71 @@ public final class DriveableHullGeometry
                 return true;
         }
         return false;
+    }
+
+    /** Closest point where a segment enters an active convex hull, with optional ray inflation. */
+    public Vec3 clipSegment(Vec3 start, Vec3 end, double inflation)
+    {
+        if (!hasActiveShapes())
+            return null;
+        Vec3 closest = null;
+        double closestDistance = Double.POSITIVE_INFINITY;
+        double[] plane = new double[4];
+        for (int shape = 0; shape < shapes.size(); shape++)
+        {
+            if (!current.active[shape])
+                continue;
+            double[] points = current.vertices[shape];
+            double centreX = 0D, centreY = 0D, centreZ = 0D;
+            for (int vertex = 0; vertex < 8; vertex++)
+            {
+                centreX += points[vertex * 3];
+                centreY += points[vertex * 3 + 1];
+                centreZ += points[vertex * 3 + 2];
+            }
+            centreX /= 8D;
+            centreY /= 8D;
+            centreZ /= 8D;
+            double enter = 0D, exit = 1D;
+            boolean missed = false;
+            for (int[] face : DriveableCollisionProfile.FACE_QUADS)
+            {
+                if (!DriveableCollisionProfile.facePlane(points, face, centreX, centreY, centreZ, plane))
+                    continue;
+                double from = plane[0] * start.x + plane[1] * start.y + plane[2] * start.z
+                    + plane[3] - inflation;
+                double to = plane[0] * end.x + plane[1] * end.y + plane[2] * end.z
+                    + plane[3] - inflation;
+                if (from > 0D && to > 0D)
+                {
+                    missed = true;
+                    break;
+                }
+                if (from <= 0D && to <= 0D)
+                    continue;
+                double t = from / (from - to);
+                if (from > 0D)
+                    enter = Math.max(enter, t);
+                else
+                    exit = Math.min(exit, t);
+                if (enter > exit)
+                {
+                    missed = true;
+                    break;
+                }
+            }
+            if (!missed)
+            {
+                Vec3 hit = start.lerp(end, enter);
+                double distance = start.distanceToSqr(hit);
+                if (distance < closestDistance)
+                {
+                    closest = hit;
+                    closestDistance = distance;
+                }
+            }
+        }
+        return closest;
     }
 
     /**

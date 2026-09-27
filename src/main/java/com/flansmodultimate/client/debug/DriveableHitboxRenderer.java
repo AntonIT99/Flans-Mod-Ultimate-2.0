@@ -6,6 +6,7 @@ import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -24,7 +25,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Outlines the per-part collision boxes of driveables in debug mode.
+ * Outlines driveable part boxes and the single rotating AA gun collision box in debug mode.
  * Boxes go through the same hull and turret transforms as projectile tracing,
  * so what is drawn is what bullets actually hit.
  */
@@ -37,11 +38,14 @@ public final class DriveableHitboxRenderer
         {0, 2}, {1, 3}, {4, 6}, {5, 7},
         {0, 4}, {1, 5}, {2, 6}, {3, 7}
     };
+    /** Edge order of the convex hull vertices: four corners on top and four below. */
+    private static final int[][] HULL_EDGES = {
+        {0, 1}, {1, 2}, {2, 3}, {3, 0},
+        {4, 5}, {5, 6}, {6, 7}, {7, 4},
+        {0, 4}, {1, 5}, {2, 6}, {3, 7}
+    };
 
-    /**
-     * Draws the hitboxes of every visible driveable and flushes them immediately.
-     * Must run once entities have been drawn, otherwise the models are drawn over the outlines.
-     */
+    /** Draws visible driveable and AA gun hitboxes after entities, then flushes the outlines. */
     public static void renderAll(@NotNull PoseStack poseStack, @NotNull MultiBufferSource.BufferSource buffer, @NotNull Camera camera, @NotNull Frustum frustum, float partialTick)
     {
         ClientLevel level = Minecraft.getInstance().level;
@@ -52,16 +56,41 @@ public final class DriveableHitboxRenderer
         VertexConsumer lines = buffer.getBuffer(CustomRenderType.debugLinesSeeThrough());
         for (Entity entity : level.entitiesForRendering())
         {
-            if (!(entity instanceof Driveable driveable) || !frustum.isVisible(driveable.getBoundingBoxForCulling()))
+            if (!(entity instanceof Driveable) && !(entity instanceof AAGun)
+                || !frustum.isVisible(entity.getBoundingBoxForCulling()))
                 continue;
-
-            Vec3 origin = driveable.getPosition(partialTick).subtract(cameraPosition);
-            poseStack.pushPose();
-            poseStack.translate(origin.x, origin.y, origin.z);
-            render(driveable, poseStack.last(), lines);
-            poseStack.popPose();
+            if (entity instanceof Driveable driveable)
+            {
+                Vec3 origin = driveable.getPosition(partialTick).subtract(cameraPosition);
+                poseStack.pushPose();
+                poseStack.translate(origin.x, origin.y, origin.z);
+                render(driveable, poseStack.last(), lines);
+                poseStack.popPose();
+            }
+            else if (entity instanceof AAGun gun)
+            {
+                double[] vertices = gun.getCollisionBoxWorldVertices();
+                if (vertices == null)
+                    continue;
+                poseStack.pushPose();
+                poseStack.translate(-cameraPosition.x, -cameraPosition.y, -cameraPosition.z);
+                renderAAGun(vertices, poseStack.last(), lines);
+                poseStack.popPose();
+            }
         }
         buffer.endBatch(CustomRenderType.debugLinesSeeThrough());
+    }
+
+    private static void renderAAGun(double[] vertices, PoseStack.Pose pose, VertexConsumer lines)
+    {
+        for (int[] edge : HULL_EDGES)
+        {
+            int from = edge[0] * 3;
+            int to = edge[1] * 3;
+            addLine(pose, lines,
+                new Vec3(vertices[from], vertices[from + 1], vertices[from + 2]),
+                new Vec3(vertices[to], vertices[to + 1], vertices[to + 2]), 1F, 1F, 0F);
+        }
     }
 
     /** Expects {@code pose} to be translated to the driveable's origin, with no rotation applied. */

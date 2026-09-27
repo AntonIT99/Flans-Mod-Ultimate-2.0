@@ -652,7 +652,9 @@ public class GunItemHandler
         }
         else if (shouldConsiderNonPlayer(candidate, attackerData, pointIdx))
         {
-            Optional<Vec3> clip = candidate.getBoundingBox().clip(segment.start, segment.end);
+            Optional<Vec3> clip = candidate instanceof AAGun gun
+                ? Optional.ofNullable(gun.clipCollisionBox(segment.start, segment.end, 0D))
+                : candidate.getBoundingBox().clip(segment.start, segment.end);
             clip.ifPresent(hit -> outHits.add(new EntityHit(candidate, (float) segment.lambdaAt(hit), hit)));
         }
     }

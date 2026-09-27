@@ -42,6 +42,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -502,16 +503,22 @@ public final class ShootPointDebugCommand
             confirm(context, "Barrel " + barrel, suggested, barrelLine(barrel, suggested));
             applied++;
         }
-        send(context, ChatFormatting.WHITE, applied + " barrel(s) moved, rounded to whole pixels; "
+        send(context, ChatFormatting.WHITE, applied + " barrel(s) moved, to the hundredth of a pixel; "
             + "/flandebug shootpoint reset undoes it");
         return applied;
     }
 
-    /** Barrel lines are whole model pixels. */
+    /** Barrel lines are kept to the hundredth of a model pixel, without trailing zeros. */
     private static String barrelLine(int barrel, Vector3f position)
     {
-        return "Barrel " + barrel + " " + Math.round(position.x) + " " + Math.round(position.y) + " "
-            + Math.round(position.z);
+        return "Barrel " + barrel + " " + barrelPixels(position.x) + " " + barrelPixels(position.y) + " "
+            + barrelPixels(position.z);
+    }
+
+    private static String barrelPixels(float value)
+    {
+        return new BigDecimal(Float.toString(AAGunType.roundBarrelPixels(value))).stripTrailingZeros()
+            .toPlainString();
     }
 
     /** How far the look ray reaches for an AA gun or sentry nobody is riding. */

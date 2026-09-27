@@ -9,6 +9,7 @@
       "LevelDriveableHullsMixin",
       "LivingEntityWaterWalkingMixin",
       "PlayerDriveableEdgeMixin",
+      "ProjectileUtilAAGunHullMixin",
       "ServerGamePacketListenerDriveableMixin"
   ],
   "client": [
