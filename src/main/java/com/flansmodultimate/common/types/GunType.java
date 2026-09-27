@@ -271,7 +271,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /**
      * If true, then this gun can be dual wielded
      */
-    protected boolean oneHanded;
+    protected boolean oneHanded = true;
     /** Keeps this gun's holding arm raised even when the holder uses the dynamic aim pose. */
     @Getter
     protected boolean forceAimPose;
