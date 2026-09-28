@@ -30,7 +30,9 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
     public ModelRendererTurbo[] baseModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] seatModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] gunModel = new ModelRendererTurbo[0];
-    public ModelRendererTurbo[][] barrelModel = new ModelRendererTurbo[0][0];
+    // Some legacy pack models fill inherited barrel rows without allocating the outer array.
+    // Empty rows stay null until a model supplies geometry for them.
+    public ModelRendererTurbo[][] barrelModel = new ModelRendererTurbo[AAGunType.MAX_BARRELS][];
     public ModelRendererTurbo[][] ammoModel = new ModelRendererTurbo[0][0];
     public ModelRendererTurbo[] gunsightModel = new ModelRendererTurbo[0];
 
