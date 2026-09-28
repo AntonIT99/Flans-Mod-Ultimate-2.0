@@ -33,6 +33,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -47,6 +49,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,8 +61,6 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 64;
     public static final float DEFAULT_HITBOX_SIZE = 1F;
-    /** Player#getMyRidingOffset() in 1.20.1, removed from the 1.21.1 API. */
-    public static final double LEGACY_PLAYER_RIDING_OFFSET = -0.35D;
 
     public static final String NBT_TYPE_NAME = "type";
     public static final String NBT_AMMO = "ammo";
@@ -71,6 +73,10 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     protected static final EntityDataAccessor<Boolean> DATA_HAS_AMMO = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.BOOLEAN);
     protected static final EntityDataAccessor<Integer> DATA_RELOAD_TIMER = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
     protected static final EntityDataAccessor<Integer> DATA_GUN_DIRECTION = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
+    /** Remaining ticks for the client-side flash drawn on the deployed model. */
+    protected static final EntityDataAccessor<Integer> DATA_MUZZLE_FLASH_TICKS = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
+    /** Stable random frame of a three-frame flash for the current shot. */
+    protected static final EntityDataAccessor<Integer> DATA_MUZZLE_FLASH_FRAME = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
     /** Rounds the loaded ammunition still has to fire, for the gunner's HUD. */
     protected static final EntityDataAccessor<Integer> DATA_ROUNDS_LEFT = SynchedEntityData.defineId(DeployedGun.class, EntityDataSerializers.INT);
     /** What a full magazine of the loaded ammunition holds. */
@@ -79,7 +85,8 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     protected GunType configType;
     protected String shortname = StringUtils.EMPTY;
     protected BlockPos blockPos;
-    protected int gunDirection;
+    /** Local yaw used for the operator's position around the fixed emplacement. */
+    protected float riderYawOffset;
     @Getter
     protected ItemStack ammo = ItemStack.EMPTY;
     protected int reloadTimer;
@@ -104,7 +111,7 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
         setGunDirection(direction.get2DDataValue());
         configType = gunType;
         setPos(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 0.5);
-        setYRot(0F);
+        resetToPlacementFacing();
         setXRot(-60F);
     }
 
@@ -155,16 +162,29 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
         return entityData.get(DATA_GUN_DIRECTION);
     }
 
-    public void setGunDirection(int d)
+    private void setGunDirection(int d)
     {
-        gunDirection = d;
-        entityData.set(DATA_GUN_DIRECTION, d);
+        entityData.set(DATA_GUN_DIRECTION, Direction.from2DDataValue(d).get2DDataValue());
+    }
+
+    private void resetToPlacementFacing()
+    {
+        float baseYaw = Direction.from2DDataValue(getGunDirection()).toYRot();
+        setYRot(baseYaw);
+        yRotO = baseYaw;
+        riderYawOffset = 0F;
     }
 
     @Override
     public boolean isPickable()
     {
         return isAlive();
+    }
+
+    @Override
+    public boolean shouldRiderSit()
+    {
+        return false;
     }
 
     @Override
@@ -207,8 +227,20 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
         data.define(DATA_HAS_AMMO, false);
         data.define(DATA_RELOAD_TIMER, 0);
         data.define(DATA_GUN_DIRECTION, 0);
+        data.define(DATA_MUZZLE_FLASH_TICKS, 0);
+        data.define(DATA_MUZZLE_FLASH_FRAME, 0);
         data.define(DATA_ROUNDS_LEFT, 0);
         data.define(DATA_MAGAZINE_SIZE, 0);
+    }
+
+    public int getMuzzleFlashTicks()
+    {
+        return entityData.get(DATA_MUZZLE_FLASH_TICKS);
+    }
+
+    public int getMuzzleFlashFrame()
+    {
+        return entityData.get(DATA_MUZZLE_FLASH_FRAME);
     }
 
     public int getRoundsLeft()
@@ -244,7 +276,7 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     public void writeSpawnData(PacketBuffer buf)
     {
         buf.writeUtf(shortname);
-        buf.writeInt(gunDirection);
+        buf.writeInt(getGunDirection());
         buf.writeInt(blockPos.getX());
         buf.writeInt(blockPos.getY());
         buf.writeInt(blockPos.getZ());
@@ -264,9 +296,10 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
                 FlansMod.log.warn("Unknown gun type {}, discarding.", shortname);
                 discard();
             }
-            gunDirection = buf.readInt();
+            setGunDirection(buf.readInt());
             blockPos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
             setHasAmmo(buf.readBoolean());
+            resetToPlacementFacing();
         }
         catch (Exception e)
         {
@@ -287,6 +320,7 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
 
         setGunDirection(tag.getInt(NBT_DIRECTION));
         blockPos = new BlockPos(tag.getInt(NBT_BLOCK_X), tag.getInt(NBT_BLOCK_Y), tag.getInt(NBT_BLOCK_Z));
+        resetToPlacementFacing();
 
         if (tag.contains(NBT_AMMO, Tag.TAG_COMPOUND))
             ammo = ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_AMMO));
@@ -305,7 +339,7 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
         }
 
         tag.putString(NBT_TYPE_NAME, shortname);
-        tag.putInt(NBT_DIRECTION, gunDirection);
+        tag.putInt(NBT_DIRECTION, getGunDirection());
         tag.putInt(NBT_BLOCK_X, blockPos.getX());
         tag.putInt(NBT_BLOCK_Y, blockPos.getY());
         tag.putInt(NBT_BLOCK_Z, blockPos.getZ());
@@ -411,6 +445,31 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
         if (FlansMod.teamsManager.getCurrentRound().isPresent() && Team.SPECTATORS.equals(data.getTeam()))
             return InteractionResult.CONSUME;
 
+        if (configType == null || blockPos == null)
+            return InteractionResult.CONSUME;
+
+        float baseYaw = Direction.from2DDataValue(getGunDirection()).toYRot();
+        Vec3 behind = getRiderPosition(player, baseYaw);
+        if (behind == null)
+            return InteractionResult.CONSUME;
+
+        // A player operating the gun from its front must move clear of the
+        // tripod before mounting, rather than being pulled through it later.
+        double yawRad = baseYaw * Mth.DEG_TO_RAD;
+        double rearDot = (player.getX() - getX()) * Math.sin(yawRad)
+            - (player.getZ() - getZ()) * Math.cos(yawRad);
+        if (rearDot < 0D)
+        {
+            if (player instanceof ServerPlayer serverPlayer)
+                serverPlayer.teleportTo((ServerLevel) level, behind.x, behind.y, behind.z,
+                    baseYaw, player.getXRot());
+            else
+            {
+                player.setPos(behind);
+                player.setYRot(baseYaw);
+            }
+        }
+
         // None of the above applied, so mount the gun
         player.startRiding(this, true);
         // Auto-reload if ammo empty
@@ -426,11 +485,9 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
             return;
 
         float baseYaw = Direction.from2DDataValue(getGunDirection()).toYRot();
-        float localYaw = Mth.wrapDegrees(p.getYRot() - baseYaw);
-
-        // Clamp yaw
         float side = configType.getSideViewLimit();
-        localYaw = Mth.clamp(localYaw, -side, side);
+        float requestedYaw = Mth.clamp(Mth.wrapDegrees(p.getYRot() - baseYaw), -side, side);
+        riderYawOffset = limitRiderYaw(p, baseYaw, riderYawOffset, requestedYaw);
 
         // Clamp pitch
         float top = configType.getTopViewLimit();
@@ -442,39 +499,108 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
         }
         float pitch = Mth.clamp(p.getXRot(), top, bottom);
 
-        setYRot(baseYaw + localYaw);
+        float gunYaw = baseYaw + requestedYaw;
+        setYRot(gunYaw);
         setXRot(pitch);
+        // The weapon keeps traversing within its own limits even when an
+        // obstruction prevents the operator from following it around.
+        if (Math.abs(Mth.wrapDegrees(p.getYRot() - gunYaw)) > 0.01F)
+            p.setYRot(gunYaw);
 
-        double standBack = configType.getStandBackDist();
-        float yawRad = getYRot() * Mth.DEG_TO_RAD;
-
-        double offX = standBack * Math.sin(yawRad);
-        double offZ = -standBack * Math.cos(yawRad);
-
-        double x = getX() + offX;
-        double z = getZ() + offZ;
-
-        // Pitch -> Y offset
-        // Positive pitch (looking down) -> +Y (go up)
-        // Negative pitch (looking up) -> -Y (go down)
-        float maxAbsPitch = Math.max(Math.abs(top), Math.abs(bottom));
-        float pitchNorm = (maxAbsPitch > 0.0001F) ? (pitch / maxAbsPitch) : 0F;
-        double maxPitchYOffset = 0.5D;
-        double pitchYOffset = maxPitchYOffset * pitchNorm;
-        double baseY = blockPos.getY() + LEGACY_PLAYER_RIDING_OFFSET - 0.65D;
-        double y = baseY + pitchYOffset;
-
-        move.accept(passenger, x, y, z);
+        float riderYaw = baseYaw + riderYawOffset;
+        Vec3 standing = getRiderPosition(passenger, riderYaw);
+        if (standing == null)
+        {
+            if (!level().isClientSide)
+                p.stopRiding();
+            return;
+        }
+        move.accept(passenger, standing.x, standing.y, standing.z);
+        p.yBodyRot += Mth.wrapDegrees(riderYaw - p.yBodyRot);
 
         // Prevent sliding / falling weirdness while mounted
         passenger.setDeltaMovement(Vec3.ZERO);
         passenger.fallDistance = 0.0F;
     }
 
+    /** Stop only the operator at the first yaw where their standing box hits an obstruction. */
+    private float limitRiderYaw(Entity passenger, float baseYaw, float currentYaw, float requestedYaw)
+    {
+        float delta = requestedYaw - currentYaw;
+        int steps = Math.max(1, Mth.ceil(Math.abs(delta) / 5F));
+        float safeYaw = currentYaw;
+        for (int step = 1; step <= steps; step++)
+        {
+            float candidate = currentYaw + delta * step / steps;
+            if (getRiderPosition(passenger, baseYaw + candidate) == null)
+            {
+                float blockedYaw = candidate;
+                for (int refine = 0; refine < 6; refine++)
+                {
+                    float middle = (safeYaw + blockedYaw) * 0.5F;
+                    if (getRiderPosition(passenger, baseYaw + middle) == null)
+                        blockedYaw = middle;
+                    else
+                        safeYaw = middle;
+                }
+                return safeYaw;
+            }
+            safeYaw = candidate;
+        }
+        return requestedYaw;
+    }
+
+    /** Position behind the gun if it has ground and room for the player. */
+    private Vec3 getRiderPosition(Entity passenger, float yaw)
+    {
+        double yawRad = yaw * Mth.DEG_TO_RAD;
+        double distance = configType.getStandBackDist();
+        double x = getX() + distance * Math.sin(yawRad);
+        double z = getZ() - distance * Math.cos(yawRad);
+        double y = getStandingY(passenger, x, z);
+        if (!Double.isFinite(y))
+            return null;
+        AABB targetBox = passenger.getBoundingBox().move(x - passenger.getX(), y - passenger.getY(), z - passenger.getZ());
+        return level().noCollision(passenger, targetBox) ? new Vec3(x, y, z) : null;
+    }
+
+    /** Surface under the operator, or NaN if no support is within one block below the gun. */
+    private double getStandingY(Entity passenger, double x, double z)
+    {
+        int gunY = blockPos.getY();
+        double halfWidth = passenger.getBbWidth() * 0.5D;
+        double surface = Double.NEGATIVE_INFINITY;
+        for (int dy = -1; dy >= -2; dy--)
+        {
+            for (int blockX = Mth.floor(x - halfWidth); blockX <= Mth.floor(x + halfWidth); blockX++)
+            {
+                for (int blockZ = Mth.floor(z - halfWidth); blockZ <= Mth.floor(z + halfWidth); blockZ++)
+                {
+                    BlockPos support = new BlockPos(blockX, gunY + dy, blockZ);
+                    VoxelShape shape = level().getBlockState(support).getCollisionShape(level(), support, CollisionContext.of(passenger));
+                    double localX = x - blockX;
+                    double localZ = z - blockZ;
+                    for (AABB box : shape.toAabbs())
+                    {
+                        if (box.maxX <= localX - halfWidth || box.minX >= localX + halfWidth
+                            || box.maxZ <= localZ - halfWidth || box.minZ >= localZ + halfWidth)
+                            continue;
+                        double top = support.getY() + box.maxY;
+                        if (top >= gunY - 1D && top <= gunY)
+                            surface = Math.max(surface, top);
+                    }
+                }
+            }
+        }
+        return surface > Double.NEGATIVE_INFINITY ? surface : Double.NaN;
+    }
+
     @Override
     protected void addPassenger(@NotNull Entity passenger)
     {
         super.addPassenger(passenger);
+
+        resetToPlacementFacing();
 
         shootKeyPressed = false;
         prevShootKeyPressed = false;
@@ -484,6 +610,8 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     protected void removePassenger(@NotNull Entity passenger)
     {
         super.removePassenger(passenger);
+
+        resetToPlacementFacing();
 
         shootKeyPressed = false;
         prevShootKeyPressed = false;
@@ -497,16 +625,19 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
 
         if (blockPos != null)
         {
-            // Put them behind the gun (tweak distance as you like)
-            float yawRad = getShootingYaw() * Mth.DEG_TO_RAD;
+            // The barrel recenters when the operator leaves; keep the player
+            // at their own last grounded position instead of following it.
+            double x = passenger.getX();
+            double z = passenger.getZ();
+            double standingY = getStandingY(passenger, x, z);
+            if (Double.isFinite(standingY))
+            {
+                Vec3 preferred = new Vec3(x, standingY, z);
 
-            double dist = configType.getStandBackDist();
-            Vec3 preferred = new Vec3(blockPos.getX() + 0.5D, blockPos.getY() - 1D, blockPos.getZ() + 0.5D)
-                .add(dist * Math.sin(yawRad), 0.0D, -dist * Math.cos(yawRad));
-
-            // Make it safe: must not collide at that position.
-            if (isSafeDismount(level, passenger, preferred))
-                return preferred;
+                // Make it safe: must not collide at that position.
+                if (isSafeDismount(level, passenger, preferred))
+                    return preferred;
+            }
         }
 
         return super.getDismountLocationForPassenger(passenger);
@@ -534,7 +665,10 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
             blockPos = this.blockPosition();
 
         if (gunner == null || !gunner.isAlive())
+        {
             shootKeyPressed = false;
+            resetToPlacementFacing();
+        }
 
         if (level.isClientSide)
             ClientHooks.GUN.tickDeployedGun(this);
@@ -572,6 +706,9 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
             soundTimer--;
         if (reloadTimer > 0)
             setReloadTimer(reloadTimer - 1);
+        int muzzleFlashTicks = getMuzzleFlashTicks();
+        if (muzzleFlashTicks > 0)
+            entityData.set(DATA_MUZZLE_FLASH_TICKS, muzzleFlashTicks - 1);
 
         // Ammo broken/empty
         if (!ammo.isEmpty() && ammo.isDamageableItem() && ammo.getDamageValue() >= ammo.getMaxDamage())
@@ -656,6 +793,8 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
             while (ShotCooldown.isReady(shootTimer))
             {
                 ShootingHelper.fireGun(level, gunner, this, shootableItem.getConfigType(), ammo, new DeployableGunShootingHandler(ammo));
+                entityData.set(DATA_MUZZLE_FLASH_FRAME, random.nextInt(3));
+                entityData.set(DATA_MUZZLE_FLASH_TICKS, 2);
 
                 if (soundTimer <= 0)
                 {
@@ -720,6 +859,14 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
 
     public Vec3 getShootingOrigin()
     {
+        if (configType.hasMeasuredDeployableMuzzle())
+        {
+            Vec3 pivot = configType.getMeasuredDeployableMuzzlePivot();
+            Vec3 muzzle = configType.getMeasuredDeployableMuzzle();
+            if (pivot != null && muzzle != null)
+                return position().add(DeployedGunMuzzleGeometry.modelMuzzleOffset(pivot, muzzle,
+                    configType.getModelScale(), getShootingYaw(), getShootingPitch()));
+        }
         return new Vec3(blockPos.getX() + 0.5, blockPos.getY() + configType.getPivotHeight(), blockPos.getZ() + 0.5);
     }
 

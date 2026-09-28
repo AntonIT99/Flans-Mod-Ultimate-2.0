@@ -16,9 +16,9 @@ Scope None
 Mode FullAuto
 Recoil 1
 ReloadTime 100
-TopViewLimit 20
+TopViewLimit 30
 BottomViewLimit 20
-SideViewLimit 45
+SideViewLimit 40
 PivotHeight 0.75
 StandBackDistance 1.0
 RoundsPerMin 500.0

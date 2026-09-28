@@ -18,9 +18,9 @@ Mode FullAuto
 Scope None
 Deployable True
 StandBackDistance 1.0
-TopViewLimit 20
+TopViewLimit 30
 BottomViewLimit 20
-SideViewLimit 45
+SideViewLimit 40
 PivotHeight 0.75
 RoundsPerMin 500.0
 Dispersion 0.35

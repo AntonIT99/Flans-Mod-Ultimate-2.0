@@ -5,6 +5,7 @@ import com.flansmodultimate.ContentPack;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.common.types.VehicleType;
@@ -40,6 +41,14 @@ class MuzzleMeasurementCacheTest
         return aaGun;
     }
 
+    private static GunType deployedGun()
+    {
+        GunType gun = new GunType();
+        gun.load(new TypeFile("cacheDeployedGun", EnumType.GUN, PACK,
+            List.of("ShortName cacheDeployedGun", "Deployable True")));
+        return gun;
+    }
+
     @Test
     void storedResultsReplayOntoFreshlyReadTypes()
     {
@@ -47,12 +56,15 @@ class MuzzleMeasurementCacheTest
         MuzzleMeasurementCache.recordMove(results, vehicle(), new MuzzleMeasurementCache.Move(false, false, 0, 30F, 22F, -4F));
         MuzzleMeasurementCache.recordBarrels(results, aaGun(),
             new Vec3[] { new Vec3(1, 2, 3), new Vec3(1, 2, -3) }, new Vec3[] { new Vec3(20, 2, 3), new Vec3(20, 2, -3) });
+        MuzzleMeasurementCache.recordDeployedGunMuzzle(results, deployedGun(),
+            new Vec3(0, 6, 0), new Vec3(0, 6, 20));
 
         MuzzleMeasurementCache.Results restored = MuzzleMeasurementCache.fromJson(
             MuzzleMeasurementCache.toJson("key", results), "key");
         VehicleType vehicle = vehicle();
         AAGunType aaGun = aaGun();
-        int moved = MuzzleMeasurementCache.apply(restored, List.<InfoType>of(vehicle, aaGun));
+        GunType deployedGun = deployedGun();
+        int moved = MuzzleMeasurementCache.apply(restored, List.<InfoType>of(vehicle, aaGun, deployedGun));
 
         assertEquals(1, moved);
         ShootPoint point = vehicle.shootPoints(false).get(0);
@@ -61,6 +73,8 @@ class MuzzleMeasurementCacheTest
         assertEquals(-4F, (root.z + point.getOffPos().z) * 16F, 1.0E-4F);
         assertTrue(aaGun.hasMeasuredBarrels());
         assertEquals(new Vec3(20, 2, -3), aaGun.getMeasuredBarrelMuzzles()[1]);
+        assertTrue(deployedGun.hasMeasuredDeployableMuzzle());
+        assertEquals(new Vec3(0, 6, 20), deployedGun.getMeasuredDeployableMuzzle());
     }
 
     @Test

@@ -17,8 +17,8 @@ Mode FullAuto
 Recoil 1
 ReloadTime 100
 TopViewLimit 30
-BottomViewLimit 10
-SideViewLimit 45
+BottomViewLimit 20
+SideViewLimit 40
 PivotHeight 0.75
 StandBackDistance 1.2
 RoundsPerMin 1200.0

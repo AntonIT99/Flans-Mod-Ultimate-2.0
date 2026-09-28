@@ -2,12 +2,14 @@ package com.flansmodultimate.common.driveables;
 
 import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelDriveable;
+import com.flansmod.client.model.ModelMG;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.client.model.MuzzleMeasurements;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.util.FileUtils;
@@ -28,7 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Measures the muzzles of driveable and AA gun models while the content is
+ * Measures the muzzles of driveable, AA-gun and deployable-gun models while the content is
  * loading, on a dedicated server as on a client, so the server fires from the
  * model's barrels on its own authority.
  *
@@ -45,7 +47,9 @@ import java.util.Optional;
  * plain point and each seat gun the model registers, and its AA guns fire from
  * the measured muzzles. Either way the measured barrels take the place of the
  * ones a client used to report, and a twin or quad mount fired from one point
- * takes its model's barrels in turn, spread round that point.</p>
+ * takes its model's barrels in turn, spread round that point. Deployable guns
+ * always use a measurable model muzzle, with {@code PivotHeight} retained as
+ * their compatibility fallback.</p>
  *
  * <p>Model classes are resolved with the client's default settings, whatever the
  * client configuration says, so a server and its clients measure the same class.</p>
@@ -82,8 +86,8 @@ public final class ModelMuzzleMeasurement
         if (cached != null)
         {
             int moved = MuzzleMeasurementCache.apply(cached, types);
-            FlansMod.log.info("Applied the muzzles measured on {} model(s) in {} ms, since no content pack changed: {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s). Delete {} to measure them again.",
-                cached.models, System.currentTimeMillis() - startTime, cached.aaGuns.size(), moved,
+            FlansMod.log.info("Applied the muzzles measured on {} model(s) in {} ms, since no content pack changed: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s). Delete {} to measure them again.",
+                cached.models, System.currentTimeMillis() - startTime, cached.deployedGuns.size(), cached.aaGuns.size(), moved,
                 cached.driveables.size(), cached.mountCount(), MuzzleMeasurementCache.file());
             return;
         }
@@ -101,14 +105,15 @@ public final class ModelMuzzleMeasurement
         tally.results.models = (int) models.values().stream().filter(Optional::isPresent).count();
         tally.results.failed = tally.failed;
         MuzzleMeasurementCache.save(key, tally.results);
-        FlansMod.log.info("Measured {} model(s) in {} ms: {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s), {} type(s) could not be measured.",
+        FlansMod.log.info("Measured {} model(s) in {} ms: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s), {} type(s) could not be measured.",
             tally.results.models, System.currentTimeMillis() - startTime,
-            tally.aaGuns, tally.points, tally.driveables, tally.mounts, tally.failed);
+            tally.deployedGuns, tally.aaGuns, tally.points, tally.driveables, tally.mounts, tally.failed);
     }
 
     private static final class Tally
     {
         private final MuzzleMeasurementCache.Results results = new MuzzleMeasurementCache.Results();
+        private int deployedGuns;
         private int aaGuns;
         private int driveables;
         private int points;
@@ -124,10 +129,12 @@ public final class ModelMuzzleMeasurement
         // elevates a trusted line, and the muzzle fills a barrel that has none.
         // Driveables are too: a trusted point keeps its place, but a twin or quad
         // mount still spreads its shots over the barrels the model draws.
-        if (!(type instanceof AAGunType) && !(type instanceof DriveableType))
+        if (!(type instanceof AAGunType) && !(type instanceof DriveableType)
+            && !(type instanceof GunType gunType && gunType.isDeployable()))
             return;
 
-        String className = type.resolveModelClassName();
+        String className = type instanceof GunType gunType
+            ? gunType.resolveDeployableModelClassName() : type.resolveModelClassName();
         if (StringUtils.isBlank(className))
             return;
         Object model = loadModel(type, className, models);
@@ -141,6 +148,8 @@ public final class ModelMuzzleMeasurement
         {
             if (type instanceof AAGunType aaGunType && model instanceof ModelAAGun aaGunModel)
                 tally.aaGuns += measureAAGun(aaGunType, aaGunModel, tally.results) ? 1 : 0;
+            else if (type instanceof GunType gunType && model instanceof ModelMG mgModel)
+                tally.deployedGuns += measureDeployedGun(gunType, mgModel, tally.results) ? 1 : 0;
             else if (type instanceof DriveableType driveableType && model instanceof ModelDriveable driveableModel)
             {
                 // Trusted points are only reported when they look mirrored, never moved.
@@ -211,6 +220,18 @@ public final class ModelMuzzleMeasurement
         if (!type.hasMeasuredBarrels())
             return false;
         MuzzleMeasurementCache.recordBarrels(results, type, data.pivots(), data.muzzles());
+        return true;
+    }
+
+    private static boolean measureDeployedGun(GunType type, ModelMG model, MuzzleMeasurementCache.Results results)
+    {
+        ModelMG.MuzzleOriginData data = model.getModelMuzzleOriginData();
+        if (data == null)
+            return false;
+        type.setMeasuredDeployableMuzzle(data.pivot(), data.muzzle());
+        if (!type.hasMeasuredDeployableMuzzle())
+            return false;
+        MuzzleMeasurementCache.recordDeployedGunMuzzle(results, type, data.pivot(), data.muzzle());
         return true;
     }
 

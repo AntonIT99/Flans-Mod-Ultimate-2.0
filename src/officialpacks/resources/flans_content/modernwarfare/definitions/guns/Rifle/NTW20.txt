@@ -33,7 +33,7 @@ Mode SemiAuto
 Deployable False
 CanShootUnderwater False
 MoveSpeedModifier 0.15
-RoundsPerMin 20.0
+RoundsPerMin 30.0
 
 // Ballistics
 Recoil 32

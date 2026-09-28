@@ -16,9 +16,9 @@ ReloadTime 40
 Mode FullAuto
 Deployable True
 StandBackDistance 1.5
-TopViewLimit 20
-BottomViewLimit 30
-SideViewLimit 45
+TopViewLimit 30
+BottomViewLimit 20
+SideViewLimit 40
 PivotHeight 0.375
 RoundsPerMin 1100.0
 

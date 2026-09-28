@@ -2,6 +2,7 @@ package com.flansmodultimate.common.driveables;
 
 import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelDriveable;
+import com.flansmod.client.model.ModelMG;
 import com.flansmod.client.model.ModelMecha;
 import com.flansmod.client.model.ModelPlane;
 import com.flansmod.client.model.ModelVehicle;
@@ -14,6 +15,7 @@ import com.flansmodultimate.client.model.MuzzleMeasurements;
 import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.config.ContentLoadingConfig;
@@ -62,20 +64,21 @@ import java.util.stream.Stream;
 final class MuzzleMeasurementCache
 {
     /** Raised whenever what is recorded, or how it is replayed, changes. */
-    private static final int FORMAT_VERSION = 2;
+    private static final int FORMAT_VERSION = 3;
     private static final String FILE_NAME = "muzzle-measurements.json";
     private static final Gson GSON = new GsonBuilder().create();
 
     /** The code whose changes change what a measurement returns. */
     private static final List<Class<?>> MEASURING_CODE = List.of(
         ModelMuzzleMeasurement.class, MuzzleMeasurements.class, ModelRendererTurbo.class, ModelBase.class,
-        ModelDriveable.class, ModelVehicle.class, ModelPlane.class, ModelMecha.class, ModelAAGun.class,
+        ModelDriveable.class, ModelVehicle.class, ModelPlane.class, ModelMecha.class, ModelAAGun.class, ModelMG.class,
         LegacyDriveableCoordinates.class, AAGunBarrelGeometry.class, ClassLoaderUtils.class, ModelClassResolver.class,
-        InfoType.class, DriveableType.class, AAGunType.class, TypeFile.class, ShootPoint.class, SeatInfo.class);
+        InfoType.class, DriveableType.class, AAGunType.class, GunType.class, TypeFile.class, ShootPoint.class, SeatInfo.class);
 
     /** What one measurement pass did, in the order it did it. */
     static final class Results
     {
+        final Map<String, Muzzle> deployedGuns = new TreeMap<>();
         final Map<String, Barrels> aaGuns = new TreeMap<>();
         final Map<String, List<Move>> driveables = new TreeMap<>();
         final Map<String, List<Spread>> mounts = new TreeMap<>();
@@ -90,6 +93,9 @@ final class MuzzleMeasurementCache
 
     /** Measured AA gun barrel pivots and muzzles, in model pixels. */
     record Barrels(double[][] pivots, double[][] muzzles) {}
+
+    /** Measured deployable-gun pivot and muzzle, in model pixels. */
+    record Muzzle(double[] pivot, double[] muzzle) {}
 
     /** One shoot point or {@code GunOrigin} moved onto the model, in type-file pixels. */
     record Move(boolean gunOrigin, boolean secondary, int index, float x, float y, float z) {}
@@ -122,6 +128,11 @@ final class MuzzleMeasurementCache
         results.aaGuns.put(typeKey(type), new Barrels(toArrays(pivots), toArrays(muzzles)));
     }
 
+    static void recordDeployedGunMuzzle(Results results, GunType type, Vec3 pivot, Vec3 muzzle)
+    {
+        results.deployedGuns.put(typeKey(type), new Muzzle(toArray(pivot), toArray(muzzle)));
+    }
+
     static void recordMove(Results results, DriveableType type, Move move)
     {
         results.driveables.computeIfAbsent(typeKey(type), ignored -> new ArrayList<>()).add(move);
@@ -143,7 +154,12 @@ final class MuzzleMeasurementCache
         for (InfoType type : types)
         {
             String key = typeKey(type);
-            if (type instanceof AAGunType aaGun && results.aaGuns.containsKey(key))
+            if (type instanceof GunType gun && results.deployedGuns.containsKey(key))
+            {
+                Muzzle muzzle = results.deployedGuns.get(key);
+                gun.setMeasuredDeployableMuzzle(toVector(muzzle.pivot()), toVector(muzzle.muzzle()));
+            }
+            else if (type instanceof AAGunType aaGun && results.aaGuns.containsKey(key))
             {
                 Barrels barrels = results.aaGuns.get(key);
                 aaGun.setMeasuredBarrels(toVectors(barrels.pivots()), toVectors(barrels.muzzles()));
@@ -333,11 +349,21 @@ final class MuzzleMeasurementCache
         return arrays;
     }
 
+    private static double[] toArray(Vec3 vector)
+    {
+        return new double[] { vector.x, vector.y, vector.z };
+    }
+
     private static Vec3[] toVectors(double[][] arrays)
     {
         Vec3[] vectors = new Vec3[arrays.length];
         for (int i = 0; i < arrays.length; i++)
             vectors[i] = new Vec3(arrays[i][0], arrays[i][1], arrays[i][2]);
         return vectors;
+    }
+
+    private static Vec3 toVector(double[] array)
+    {
+        return new Vec3(array[0], array[1], array[2]);
     }
 }

@@ -469,8 +469,8 @@ public class ContentManager
     }
 
     /**
-     * Measures the muzzles of the driveable and AA gun models, on a dedicated server as on a client. This runs
-     * once every pack has been read, because a model may come from another pack and a seat gun from yet another.
+     * Measures the muzzles of deployable-gun, driveable and AA-gun models, on a dedicated server as on a client.
+     * This runs once every pack has been read, because a model may come from another pack and a seat gun from yet another.
      */
     private static void applyMeasuredMuzzles()
     {

@@ -58,7 +58,7 @@ ModePrimary FullAuto
 ModeSecondary FullAuto
 ShootPointPrimary 27 21 -31 leftWing m60
 ShootPointSecondary 27 21 31 rightWing
-GunOrigin 1 20 20 42
+GunOrigin 1 27 -5 -31
 ReadWeaponsFromGunTypes true
 
 // Optics
@@ -83,7 +83,7 @@ WheelPosition 2 -156 -10 0
 HeliPropeller 0 0 48 0 blades metalPropeller
 Pilot 53 15 0
 Passengers 1
-Passenger 1 27 -5 -31 core -10 10 -10 10 stinger Stinger
+Passenger 1 28 26 0 core -10 10 -10 10 stinger Stinger
 
 // Sounds and particles
 StartSound HelicopterStart

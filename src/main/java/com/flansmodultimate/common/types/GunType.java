@@ -31,6 +31,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -547,6 +548,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected String deployableModelName = StringUtils.EMPTY;
     @Getter
     protected String deployableModelClassName = StringUtils.EMPTY;
+
+    /** Dedicated-server-safe counterpart to the client-populated model class name. */
+    public String resolveDeployableModelClassName()
+    {
+        return StringUtils.isNotBlank(deployableModelClassName)
+            ? deployableModelClassName : findModelClass(deployableModelName, contentPack);
+    }
     @Getter
     protected ResourceLocation deployableTexture;
     /**
@@ -563,9 +571,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected float bottomViewLimit = 30F;
     @Getter
-    protected float sideViewLimit = 45F;
+    protected float sideViewLimit = 40F;
     @Getter
     protected float pivotHeight = 0.375F;
+    @Nullable
+    private transient Vec3 measuredDeployableMuzzlePivot;
+    @Nullable
+    private transient Vec3 measuredDeployableMuzzle;
 
     //Default Scope Settings. Overriden by scope attachments
     //In many cases, this will simply be iron sights
@@ -801,7 +813,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         if (topViewLimit > 0F)
             topViewLimit = -topViewLimit;
         bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
-        sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
+        sideViewLimit = Math.min(40F, readValue("SideViewLimit", sideViewLimit, file));
         pivotHeight = readValue("PivotHeight", pivotHeight, file);
         itemUseAction = readValue("ItemUseAction", itemUseAction, UseAnim.class, file);
         // This is needed, because the presence of the value overrides the default value of zero.
@@ -1226,6 +1238,30 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
                 return shootableItem.getConfigType();
         }
         return null;
+    }
+
+    /** Model-space deployable muzzle data measured by the authoritative content loader. */
+    public void setMeasuredDeployableMuzzle(@Nullable Vec3 pivot, @Nullable Vec3 muzzle)
+    {
+        measuredDeployableMuzzlePivot = pivot;
+        measuredDeployableMuzzle = muzzle;
+    }
+
+    public boolean hasMeasuredDeployableMuzzle()
+    {
+        return measuredDeployableMuzzlePivot != null && measuredDeployableMuzzle != null;
+    }
+
+    @Nullable
+    public Vec3 getMeasuredDeployableMuzzlePivot()
+    {
+        return measuredDeployableMuzzlePivot;
+    }
+
+    @Nullable
+    public Vec3 getMeasuredDeployableMuzzle()
+    {
+        return measuredDeployableMuzzle;
     }
 
     /** The recoil factor of the chambered round, or 1 when the gun is empty. */
