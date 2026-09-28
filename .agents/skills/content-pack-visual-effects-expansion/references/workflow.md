@@ -10,16 +10,19 @@ Paths are relative to the repository root. `<pack>` is the resolved folder
    `attachments`, `vehicles`, `planes`, `aaguns`, `mechas`) and record, per file:
    `ShortName`, `Model`, `DeployedModel`, `ModelScale`, and every effect key already
    present (§2). Record the file's encoding and line endings before touching it.
-2. Guns: collect the pack's model packages from the `Model` values, then run the
-   muzzle report for each package, writing to the scratchpad:
+2. Guns: collect the pack's model packages from the `Model` values and, for every
+   `Deployable True` gun, from its `DeployedModel`. Then run the muzzle report for
+   each package, writing to the scratchpad:
 
    ```bash
    ./gradlew muzzleReport -PmodelSourceSet=<set> -PmodelPackage=com.flansmod.client.model.<Package> -PreportFile=<scratchpad>/<pack>-<Package>.tsv
    ```
 
-   Pass the package exactly as declared, since casing matters. Use its gun table:
-   the measured muzzle, the barrel face size, the barrel attach point and a
-   suggested flash point. It constructs each model the way the client does
+   Pass the package exactly as declared, since casing matters. Use its gun table
+   for hand-held models: the measured muzzle, the barrel face size, the barrel
+   attach point and a suggested flash point. Use its deployable table for
+   `ModelMG` models: the renderer uses that same automatic front-face measurement
+   as the flash position. The report constructs each model the way the client does
    (`translateAll`, `flipAll`). Rotated parts are left out and flagged in `notes`.
    Don't use its driveable table for placement. It measures seat guns at
    `VehicleGunModelScale` 1 and ignores `ModelScale`.
@@ -61,11 +64,11 @@ particle names are the constants in `FlanParticles` as mapped by
 
 | Owner | Key | Syntax and meaning |
 |---|---|---|
-| Gun | `FlashModel` / `FlashTexture` | Three-frame flash model drawn for 2 ticks after a shot, placed at `muzzleFlashPoint` (+ `defaultBarrelFlashPoint` without a barrel attachment) after scaling by `flashScale`. `FlashModel DefaultFlash` is the built-in, W44-derived flash and needs no texture line. |
-| Gun | `animMuzzleFlashPoint x y z` | Overrides the model's `muzzleFlashPoint`, in blocks of model space, divided by the flash scale (§3.2). |
-| Gun | `animFlashScale s` | Overrides the model's `flashScale`. Also scales the flash point. |
+| Gun | `FlashModel` / `FlashTexture` | Three-frame flash model drawn for 2 ticks after a shot. Hand-held rendering places it at `muzzleFlashPoint` (+ `defaultBarrelFlashPoint` without a barrel attachment); deployable rendering places and aims it at the measured `DeployedModel` muzzle. Both scale it by `flashScale`. `FlashModel DefaultFlash` is the built-in, W44-derived flash and needs no texture line. |
+| Gun | `animMuzzleFlashPoint x y z` | Overrides the hand-held model's `muzzleFlashPoint`, in blocks of model space, divided by the flash scale (§3.2). It does not move the automatically measured deployable flash. |
+| Gun | `animFlashScale s` | Overrides the model's `flashScale` for both hand-held and deployable flashes. Also scales the hand-held flash point. |
 | Gun | `animDefaultBarrelFlashPoint x y z` | Offset added when no barrel attachment is fitted. Rarely needed, see §3.2. |
-| Gun | `MuzzleFlashModel` | Alternative single-frame model placed at `muzzleFlashPoint`, else `barrelAttachPoint`. Do not add it when a `FlashModel` is present or added; the renderers treat them as alternatives. |
+| Gun | `MuzzleFlashModel` | Alternative single-frame model. Hand-held rendering places it at `muzzleFlashPoint`, else `barrelAttachPoint`; deployable rendering places and aims it at the measured `DeployedModel` muzzle. Do not add it when a `FlashModel` is present or added; the renderers treat them as alternatives. |
 | Gun | `ShowMuzzleFlashParticle`, `MuzzleFlashParticle*` | World particle at the shooter's hand, positioned from player offsets, not the model. Off unless the server config enables it. Only ever write `ShowMuzzleFlashParticle False`. |
 | Bullet, grenade | `TrailParticles` / `SmokeTrail` (bool), `TrailParticleType` | Particle trail while in flight. |
 | Bullet, grenade | `ExplodeParticles` / `NumExplodeParticles`, `ExplodeParticleType` | Particles on detonation. |
@@ -78,7 +81,9 @@ particle names are the constants in `FlanParticles` as mapped by
 | Attachment | `DisableMuzzleFlash` / `DisableFlash` | Suppresses both flash models and the world particle while fitted. |
 
 Engine limitations. Report these; don't work around them:
-- deployed guns (`Deployable True`, drawn by `ModelMG`) have no flash or particle path;
+- deployed guns (`Deployable True`, drawn by `ModelMG`) can draw `FlashModel` or
+  `MuzzleFlashModel` at their measured muzzle, but still have no world
+  muzzle-flash particle path;
 - vehicle passenger or seat guns get no shoot particles or flash;
 - only the primary and secondary banks of a driveable get `ShootParticles*`.
 
@@ -187,6 +192,33 @@ Put `FlashModel` (and `FlashTexture` when reusing a pack asset) next to `Model`
 and `Texture`. Put `anim*` lines together with any existing `anim*` lines, or else
 right after the flash lines. Never reorder or reformat unrelated lines. Follow
 `content-pack-definition-sync` for encoding, line endings and trailing newlines.
+
+### 3.6 Deployable guns
+
+For every realistic firearm with `Deployable True`, resolve `DeployedModel` and
+use its row in the muzzle report's deployable table. Add `FlashModel DefaultFlash`
+when the definition has neither `FlashModel` nor `MuzzleFlashModel`, but only when
+the row is `measured` and source inspection confirms the reported point is the bore
+at the correct end of the gun. An existing `MuzzleFlashModel` also renders on the
+deployable. The automatic `ModelMG` measurement follows pitch and yaw in game, so
+do not add or derive `animMuzzleFlashPoint` for the deployed view.
+
+Apply the eligibility rules in §3.1 without exception: no firearm flash for
+integrally suppressed deployables, launch tubes, recoilless weapons, air guns, or
+energy weapons unless the pack supplies a suitable effect. A deployable definition
+that also has a hand-held `Model` must satisfy both models' evidence requirements
+before one shared `FlashModel` line is added.
+
+Size the deployed flash with the §3.3 formula, using the definition's `ModelScale`.
+For tripod MMG/HMGs use the 0.70-block target; scale upward only for a verified
+larger-calibre weapon. Add or retain `animFlashScale` only after checking its
+hand-held rendering too, because the same value controls both views. A
+deployable-only definition can be sized from the deployed model alone.
+
+The deployed renderer does not spawn `ShowMuzzleFlashParticle`; leave that setting
+under the server default exactly as for hand-held guns. List ambiguous automatic
+measurements under `no reliable position` and on the suspicious list rather than
+guessing.
 
 ## 4. Attachments
 
@@ -323,11 +355,14 @@ it in additions.
 ## 8. Validation
 
 1. Every particle name used is known to `ParticleHelper`. Every `FlashModel`
-   resolves: `DefaultFlash` or a class present in the pack's model package.
+   resolves: `DefaultFlash` or a class present in the pack's model package, and
+   every existing `MuzzleFlashModel` resolves too.
    Every `FlashTexture` exists under the pack's `assets/flansmod/textures/skins`.
 2. Re-run `muzzleReport` for the touched packages when model understanding
    changed, and compare each added `animMuzzleFlashPoint × flashScale × 16` with
-   `muzzlePx` (tolerance 0.5 px). When driveables were touched, re-run
+   `muzzlePx` (tolerance 0.5 px). For every deployable flash, confirm its
+   `DeployedModel` still has a `measured` deployable row and inspect the reported
+   point against the model source. When driveables were touched, re-run
    `shootPointSync` with the pack filter and confirm `0 to update, 0 to add`, and
    that every bank that gained `ShootParticles*` is placed per §5.1.
 3. Run the pack's jar task (`manusPacksJar`, `warfare44Pack`, `officialPacksJar`,

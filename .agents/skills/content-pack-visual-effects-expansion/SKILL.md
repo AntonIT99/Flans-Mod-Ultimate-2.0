@@ -1,6 +1,6 @@
 ---
 name: content-pack-visual-effects-expansion
-description: Audit and expand the visual effects of one tracked Flan content pack (gun muzzle flashes, vehicle and aircraft shoot particles, engine exhaust and damage emitters, projectile trails and explosion particles, grenade and attachment visuals) by adding only realistic, well-placed effects to existing definitions. Takes the pack as its argument. Use for pack presentation work, not parser changes, balance, or new content.
+description: Audit and expand the visual effects of one tracked Flan content pack (hand-held and deployable-gun muzzle flashes, vehicle and aircraft shoot particles, engine exhaust and damage emitters, projectile trails and explosion particles, grenade and attachment visuals) by adding only realistic, well-placed effects to existing definitions. Takes the pack as its argument. Use for pack presentation work, not parser changes, balance, or new content.
 ---
 
 # Content Pack Visual Effects Expansion
@@ -53,9 +53,10 @@ report it.
   `gradlew shootPointSync -Pwrite` filtered to the pack, in apply mode, and never
   by hand (workflow §5.1).
 - No muzzle effect without a known position; never guess a muzzle.
-  - A gun flash requires a declared `muzzleFlashPoint`, a `muzzleReport`
+  - A hand-held gun flash requires a declared `muzzleFlashPoint`, a `muzzleReport`
     measurement that passes the workflow checks, or a verified same-model-family
-    match with a reference.
+    match with a reference. A deployable gun flash requires a `measured` deployable
+    row for its `DeployedModel` and the source-model checks in workflow §3.6.
   - A driveable's shoot particles require a shoot point that `shootPointSync`
     reports as measured and synced, or an unmeasured point that passes the
     workflow's authored-only check.
@@ -83,6 +84,8 @@ Validation is static unless the user explicitly confirms an in-game check (the
 **suspicious items**, the specific definitions most likely to look wrong in game:
 - measurements that disagree with the model's barrel attach point;
 - models with rotated barrel parts;
+- deployable models whose automatic front-face measurement may have selected a
+  sight, shield, decoration, or the wrong end instead of the bore;
 - family matches with scale differences;
 - driveable values in the `shootPointSync` report's Check first table, and banks
   placed by the authored-only check;
