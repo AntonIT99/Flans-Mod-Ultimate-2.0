@@ -48,6 +48,7 @@ import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.item.ToolItem;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
@@ -69,6 +70,7 @@ import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
+import com.flansmodultimate.network.client.PacketDriveablePassengerFired;
 import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
@@ -2980,11 +2982,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         String sound = type.shootSound(secondary);
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, 128D, sound, true);
-        List<DriveableType.ShootParticle> particles = secondary ? type.getShootParticlesSecondary() : type.getShootParticlesPrimary();
-        if (particles.isEmpty() || fired.isEmpty())
+        if (fired.isEmpty() || !type.isDefaultMuzzleFlash()
+            && (secondary ? type.getShootParticlesSecondary() : type.getShootParticlesPrimary()).isEmpty())
             return;
-        // Clients look the particles up from this driveable's type and place them from their own
-        // view of it, so one packet per shot replaces one per particle per shoot point.
+        // The same shot event drives both authored particles and the flash at each fired barrel.
         PacketHandler.sendToAllAround(new PacketDriveableBankFired(getId(), secondary,
                 fired.stream().mapToInt(FiredMuzzle::pointIndex).toArray(),
                 fired.stream().mapToInt(FiredMuzzle::barrel).toArray()),
@@ -3008,7 +3009,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             if (pointIndex < 0 || pointIndex >= points.size())
                 continue;
             ShootPoint point = points.get(pointIndex);
-            Vec3 origin = getShootOrigin(point, fired < barrels.length ? barrels[fired] : 0);
+            int barrel = fired < barrels.length ? barrels[fired] : 0;
+            Vec3 origin = getShootOrigin(point, barrel);
             EnumDriveablePart part = point.getRootPos().getPart();
             for (DriveableType.ShootParticle particle : particles)
             {
@@ -3167,6 +3169,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
+        if (initializedType().isDefaultMuzzleFlash())
+            PacketHandler.sendToAllAround(new PacketDriveablePassengerFired(getId(), index, barrel),
+                position(), 128D, level().dimension());
         reloadPassengerGun(index, gun, ammo);
         return true;
     }
@@ -3277,7 +3282,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     protected void updateLifetime()
     {
-        if (getControllingEntity() != null)
+        if (hasDriveableOccupant())
             ticksSinceUsed = 0;
         else
             ++ticksSinceUsed;
@@ -4231,7 +4236,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     /** Moves a rider to the next free, intact seat in definition order. */
     public boolean cycleSeat(@NotNull ServerPlayer player, @NotNull Seat current)
     {
-        if (current.getDriveable() != this || current.getRiddenByEntity() != player || seats.length < 2)
+        if (current.getDriveable() != this || current.getRiddenByEntity() != player || seats.length < 2
+            || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
             return false;
         int targetIndex = SeatCycle.nextAvailable(current.getSeatIndex(), seats.length, index -> {
             Seat candidate = seats[index];
@@ -4467,6 +4473,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (level().isClientSide || destroyed || driveableData == null || amount <= 0F)
             return false;
+        if (source != null && source.getEntity() instanceof Player player
+            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
+            return false;
         EnumDriveablePart target = partType == null ? EnumDriveablePart.CORE : partType;
         DriveablePart part = driveableData.getPart(target);
         if (part == null)
@@ -4506,13 +4515,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      */
     protected boolean tryPickupOnAttack(@Nullable DamageSource source)
     {
-        if (source == null || destroyed || getControllingEntity() != null || !isSupportedByGround())
+        if (source == null || destroyed || hasDriveableOccupant() || !isSupportedByGround())
             return false;
         if (!(source.getEntity() instanceof Player player) || !canPlayerAccess(player))
             return false;
         if (!player.getAbilities().instabuild && !FlansMod.teamsManager.isSurvivalCanBreakVehicles())
             return false;
-        if (!level().isClientSide)
+        if (!level().isClientSide && FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_PICKUP))
             pickupAsItem(player);
         return true;
     }
@@ -4846,7 +4855,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         });
     }
 
-    protected boolean hasDriveableOccupant()
+    public boolean hasDriveableOccupant()
     {
         if (!getPassengers().isEmpty())
             return true;
@@ -4985,7 +4994,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         ItemStack held = player.getItemInHand(hand);
         if (held.getItem() instanceof ToolItem tool && tool.getConfigType().isKey())
             return InteractionResult.sidedSuccess(level().isClientSide || bindOrCheckKey(player, held));
-        if (!canPlayerAccess(player) || player.isSpectator())
+        if (!canPlayerAccess(player) || player.isSpectator()
+            || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
             return InteractionResult.PASS;
         if (level().isClientSide)
             return InteractionResult.SUCCESS;

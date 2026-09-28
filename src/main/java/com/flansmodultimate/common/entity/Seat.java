@@ -11,6 +11,7 @@ import com.flansmodultimate.common.driveables.OpticsHud;
 import com.flansmodultimate.common.driveables.OpticsState;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.VehicleOptics;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
@@ -642,6 +643,8 @@ public class Seat extends Entity implements IControllable, ISeat
      */
     public boolean tryEnter(@NotNull Player player)
     {
+        if (!FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
+            return false;
         if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(this, player)))
             return false;
         if (player.getVehicle() != null)
@@ -652,7 +655,9 @@ public class Seat extends Entity implements IControllable, ISeat
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return getPassengers().isEmpty() && passenger instanceof LivingEntity;
+        return getPassengers().isEmpty() && passenger instanceof LivingEntity
+            && (!(passenger instanceof Player player)
+                || FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER));
     }
 
     @Override

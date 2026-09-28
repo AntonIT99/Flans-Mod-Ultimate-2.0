@@ -19,6 +19,7 @@ import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
@@ -418,6 +419,9 @@ public class Mecha extends Driveable
     @Override
     public boolean damagePart(@Nullable EnumDriveablePart partType, float amount, @Nullable net.minecraft.world.damagesource.DamageSource source)
     {
+        if (source != null && source.getEntity() instanceof Player player
+            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
+            return false;
         if (!level().isClientSide && amount > 0F && shieldEnergy > 0F)
         {
             float absorbed = Math.min(shieldEnergy, amount);

@@ -116,6 +116,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     protected EnumWeaponType primary = EnumWeaponType.NONE;
     protected EnumWeaponType secondary = EnumWeaponType.NONE;
+    /** Opt-in for the built-in three-frame flash on every fired gun or shell muzzle. */
+    protected boolean defaultMuzzleFlash;
     protected boolean alternatePrimary;
     protected boolean alternateSecondary;
     protected float shootDelayPrimary = -1F;
@@ -633,6 +635,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
         primary = EnumWeaponType.parse(readOptionalValue("Primary", primary.name(), file), primary);
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
+        defaultMuzzleFlash = "DefaultFlash".equalsIgnoreCase(readValue("FlashModel", StringUtils.EMPTY, file));
         damageMultiplierPrimary = readValue("DamageMultiplierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DamageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);

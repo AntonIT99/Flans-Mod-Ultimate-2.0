@@ -8,6 +8,7 @@ import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.BulletType;
@@ -681,6 +682,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     public boolean hurt(DamageSource source, float amount)
     {
         Entity attacker = source.getEntity();
+        if (attacker instanceof Player player
+            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ATTACK))
+            return false;
         Entity gunner = getFirstPassenger();
 
         if (attacker == gunner)
@@ -690,7 +694,8 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
 
         if (attacker instanceof Player && FlansMod.teamsManager.isCanBreakGuns())
         {
-            discard();
+            if (FlanEntityPermissions.allows((Player) attacker, FlanEntityPermissions.AA_GUN_PICKUP))
+                discard();
             return true;
         }
 
@@ -723,6 +728,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
             return InteractionResult.CONSUME;
         }
 
+        if (!type.isSentry() && !FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ENTER))
+            return InteractionResult.CONSUME;
+
         if (!type.isSentry())
         {
             if (player.getVehicle() != null)
@@ -732,6 +740,14 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
 
         reloadGun(level, player);
         return InteractionResult.CONSUME;
+    }
+
+    @Override
+    protected boolean canAddPassenger(@NotNull Entity passenger)
+    {
+        return super.canAddPassenger(passenger)
+            && (!(passenger instanceof Player player)
+                || FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ENTER));
     }
 
     @Override

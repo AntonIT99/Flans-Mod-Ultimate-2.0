@@ -6,6 +6,7 @@ import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -393,6 +394,9 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     public boolean hurt(DamageSource source, float amount)
     {
         Entity entity = source.getEntity();
+        if (entity instanceof Player player
+            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ATTACK))
+            return false;
         Entity gunner = getFirstPassenger();
 
         // If the gunner left-clicked the gun: ignore
@@ -404,7 +408,9 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
             return gunner.hurt(source, amount);
 
         // If unmounted and allowed to break guns: remove it
-        if (FlansMod.teamsManager.isCanBreakGuns())
+        if (FlansMod.teamsManager.isCanBreakGuns()
+            && (!(entity instanceof Player player)
+                || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_PICKUP)))
             discard();
 
         return true;
@@ -433,6 +439,9 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
             player.stopRiding();
             return InteractionResult.CONSUME;
         }
+
+        if (!FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ENTER))
+            return InteractionResult.CONSUME;
 
         // If this person is already mounting something else, dismount it first
         if (player.getVehicle() != null)
@@ -476,6 +485,14 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
         reloadGun(level, player);
 
         return InteractionResult.CONSUME;
+    }
+
+    @Override
+    protected boolean canAddPassenger(@NotNull Entity passenger)
+    {
+        return super.canAddPassenger(passenger)
+            && (!(passenger instanceof Player player)
+                || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ENTER));
     }
 
     @Override
@@ -685,7 +702,10 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
             return;
         }
 
-        ticksSinceUsed++;
+        if (getFirstPassenger() != null)
+            ticksSinceUsed = 0;
+        else
+            ticksSinceUsed++;
 
         // Lifetime expiry
         int mgLife = FlansMod.teamsManager.getMgLife();

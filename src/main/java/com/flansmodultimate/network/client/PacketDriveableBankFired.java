@@ -1,5 +1,6 @@
 package com.flansmodultimate.network.client;
 
+import com.flansmodultimate.client.render.entity.DriveableMuzzleFlashes;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketBuffer;
@@ -10,10 +11,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 /**
- * A driveable weapon bank fired from some of its shoot points. Clients take the particles from
- * the driveable's type and place them on their own view of it, so a shot costs one small packet
- * rather than one per particle per shoot point. A point on a twin or quad mount also names the
- * barrel the shot left from.
+ * A driveable weapon bank fired from some of its shoot points. Clients place both flashes and
+ * authored particles from their own view of the driveable, so a shot costs one small packet
+ * rather than one per effect. A point on a twin or quad mount also names the fired barrel.
  */
 @NoArgsConstructor
 public class PacketDriveableBankFired implements IClientPacket
@@ -67,6 +67,9 @@ public class PacketDriveableBankFired implements IClientPacket
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         if (level.getEntity(entityId) instanceof Driveable driveable)
+        {
+            DriveableMuzzleFlashes.bankFired(driveable, secondary, pointIndices, barrels);
             driveable.spawnBankParticles(secondary, pointIndices, barrels);
+        }
     }
 }

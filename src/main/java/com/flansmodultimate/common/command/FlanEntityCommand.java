@@ -46,15 +46,29 @@ public final class FlanEntityCommand
     private static com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> operation(
         String name, boolean remove)
     {
-        return Commands.literal(name)
+        var command = Commands.literal(name);
+        addScopes(command, remove, false);
+        if (remove)
+        {
+            var forceCommand = Commands.literal("force");
+            addScopes(forceCommand, true, true);
+            command.then(forceCommand);
+        }
+        return command;
+    }
+
+    private static void addScopes(com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> command,
+        boolean remove, boolean force)
+    {
+        command
             .then(Commands.literal("radius")
                 .then(addKinds(Commands.argument("radius", DoubleArgumentType.doubleArg(0D)),
-                    (context, kind) -> executeRadius(context, remove, kind))))
+                    (context, kind) -> executeRadius(context, remove, force, kind))))
             .then(Commands.literal("dimension")
                 .then(addKinds(Commands.argument("dimension", DimensionArgument.dimension()),
-                    (context, kind) -> executeDimension(context, remove, kind))))
+                    (context, kind) -> executeDimension(context, remove, force, kind))))
             .then(addKinds(Commands.literal("world"),
-                (context, kind) -> executeWorld(context, remove, kind)));
+                (context, kind) -> executeWorld(context, remove, force, kind)));
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> addKinds(
@@ -69,7 +83,7 @@ public final class FlanEntityCommand
         return scope;
     }
 
-    private static int executeRadius(CommandContext<CommandSourceStack> context, boolean remove,
+    private static int executeRadius(CommandContext<CommandSourceStack> context, boolean remove, boolean force,
         EntityKind kind)
     {
         double radius = DoubleArgumentType.getDouble(context, "radius");
@@ -79,28 +93,28 @@ public final class FlanEntityCommand
             .filter(entity -> entity.distanceToSqr(origin) <= radiusSquared)
             .sorted(Comparator.comparingDouble(entity -> entity.distanceToSqr(origin)))
             .toList();
-        return reportOrRemove(context.getSource(), matches, remove,
+        return reportOrRemove(context.getSource(), matches, remove, force,
             "within " + format(radius) + " blocks", kind);
     }
 
-    private static int executeDimension(CommandContext<CommandSourceStack> context, boolean remove,
+    private static int executeDimension(CommandContext<CommandSourceStack> context, boolean remove, boolean force,
         EntityKind kind) throws CommandSyntaxException
     {
         ServerLevel level = DimensionArgument.getDimension(context, "dimension");
         List<Entity> matches = findEntities(level, kind);
         matches.sort(Comparator.comparingDouble(Entity::getY));
-        return reportOrRemove(context.getSource(), matches, remove,
+        return reportOrRemove(context.getSource(), matches, remove, force,
             "in " + level.dimension().location(), kind);
     }
 
-    private static int executeWorld(CommandContext<CommandSourceStack> context, boolean remove,
+    private static int executeWorld(CommandContext<CommandSourceStack> context, boolean remove, boolean force,
         EntityKind kind)
     {
         List<Entity> matches = new ArrayList<>();
         for (ServerLevel level : context.getSource().getServer().getAllLevels())
             matches.addAll(findEntities(level, kind));
         matches.sort(Comparator.comparing(entity -> entity.level().dimension().location().toString()));
-        return reportOrRemove(context.getSource(), matches, remove, "in all loaded dimensions", kind);
+        return reportOrRemove(context.getSource(), matches, remove, force, "in all loaded dimensions", kind);
     }
 
     private static List<Entity> findEntities(ServerLevel level, EntityKind kind)
@@ -114,18 +128,23 @@ public final class FlanEntityCommand
         return matches;
     }
 
-    private static int reportOrRemove(CommandSourceStack source, List<Entity> matches, boolean remove,
+    private static int reportOrRemove(CommandSourceStack source, List<Entity> matches, boolean remove, boolean force,
         String scope, EntityKind kind)
     {
-        Counts counts = count(matches);
         if (remove)
         {
-            for (Entity entity : matches)
+            List<Entity> removable = force ? matches : matches.stream().filter(entity -> !isOccupied(entity)).toList();
+            int skipped = matches.size() - removable.size();
+            for (Entity entity : removable)
                 discardWithoutDrops(entity);
-            source.sendSuccess(() -> summary("Removed", counts, scope, kind), true);
-            return matches.size();
+            Counts removedCounts = count(removable);
+            source.sendSuccess(() -> summary("Removed", removedCounts, scope, kind), true);
+            if (skipped > 0)
+                source.sendSuccess(() -> Component.literal("Skipped " + skipped + " occupied entities."), false);
+            return removable.size();
         }
 
+        Counts counts = count(matches);
         int shown = Math.min(matches.size(), MAX_LISTED_ENTITIES);
         for (int i = 0; i < shown; i++)
         {
@@ -150,6 +169,13 @@ public final class FlanEntityCommand
             gun.discardWithoutDrops();
         else
             entity.discard();
+    }
+
+    private static boolean isOccupied(Entity entity)
+    {
+        if (entity instanceof Driveable driveable)
+            return driveable.hasDriveableOccupant();
+        return !entity.getPassengers().isEmpty();
     }
 
     private static Counts count(List<Entity> entities)

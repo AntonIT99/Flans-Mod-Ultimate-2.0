@@ -173,7 +173,10 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 !(driveable instanceof Mecha) && !locallyControlled && intact, history.usingImpostor);
             history.usingImpostor = lodResult.usingImpostor();
             if (lodResult.rendered())
+            {
+                DriveableMuzzleFlashes.render(driveable, poseStack, buffer);
                 return;
+            }
         }
 
         // Only exact geometry needs the interpolated wheel/track/turret state.
@@ -268,6 +271,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 ModelRendererTurbo.endScreenSpaceCulling();
         }
         poseStack.popPose();
+        if (!thermalMask && !preview)
+            DriveableMuzzleFlashes.render(driveable, poseStack, buffer);
     }
 
     private static double modelOriginDistance(PoseStack pose)
