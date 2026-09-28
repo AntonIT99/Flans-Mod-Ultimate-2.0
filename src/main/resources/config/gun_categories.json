@@ -348,7 +348,7 @@
     "7.92mm Wz.35 Anti-Tank Rifle": {
         "properties": {
             "MuzzleVelocity": 1275,
-            "RoundsPerMin": 8,
+            "RoundsPerMin": 30,
             "Dispersion": 0.1
         },
         "items": [
@@ -821,7 +821,7 @@
     "20mm Solothurn S-18/100": {
         "properties": {
             "MuzzleVelocity": 735,
-            "RoundsPerMin": 15,
+            "RoundsPerMin": 30,
             "Dispersion": 0.12
         },
         "items": [
@@ -832,7 +832,7 @@
     "20mm Type 97 Anti-Tank Rifle": {
         "properties": {
             "MuzzleVelocity": 790,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 30,
             "Dispersion": 0.12
         },
         "items": [
@@ -1915,7 +1915,7 @@
     ".700 WTF Rifle": {
         "properties": {
             "MuzzleVelocity": 610,
-            "RoundsPerMin": 10,
+            "RoundsPerMin": 30,
             "Dispersion": 0.1
         },
         "items": [
@@ -2072,7 +2072,7 @@
     "Arisaka Type 30 and Type 35": {
         "properties": {
             "MuzzleVelocity": 630.0,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.06
         },
         "items": [
@@ -2214,7 +2214,7 @@
     "Berdan II": {
         "properties": {
             "MuzzleVelocity": 437,
-            "RoundsPerMin": 8,
+            "RoundsPerMin": 30,
             "Dispersion": 0.1
         },
         "items": [
@@ -2292,7 +2292,7 @@
     "Berthier Mle 1907/15": {
         "properties": {
             "MuzzleVelocity": 725,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.05
         },
         "items": [
@@ -2355,7 +2355,7 @@
     "Boys Anti-Tank Rifle Mk I": {
         "properties": {
             "MuzzleVelocity": 884.0,
-            "RoundsPerMin": 10.0,
+            "RoundsPerMin": 30.0,
             "Dispersion": 0.1
         },
         "items": [
@@ -2468,7 +2468,7 @@
     "Carcano Fucile Modello 1891 (6.5x52mm M91 Ball)": {
         "properties": {
             "MuzzleVelocity": 700.0,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.06
         },
         "items": [
@@ -2479,7 +2479,7 @@
     "Carcano Modello 1938": {
         "properties": {
             "MuzzleVelocity": 630,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.07
         },
         "items": [
@@ -2770,7 +2770,7 @@
     "Denel NTW-20": {
         "properties": {
             "MuzzleVelocity": 720.0,
-            "RoundsPerMin": 20.0,
+            "RoundsPerMin": 30.0,
             "Dispersion": 0.14
         },
         "items": [
@@ -3001,7 +3001,7 @@
     "FEG 35M": {
         "properties": {
             "MuzzleVelocity": 730,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.06
         },
         "items": [
@@ -3208,7 +3208,7 @@
     "Fusil Lebel Mle 1886": {
         "properties": {
             "MuzzleVelocity": 725,
-            "RoundsPerMin": 10,
+            "RoundsPerMin": 40,
             "Dispersion": 0.05
         },
         "items": [
@@ -3254,7 +3254,7 @@
     "Gevar m/96": {
         "properties": {
             "MuzzleVelocity": 800,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 45,
             "Dispersion": 0.05
         },
         "items": [
@@ -3288,7 +3288,7 @@
     "Gewehr 98": {
         "properties": {
             "MuzzleVelocity": 870.2,
-            "RoundsPerMin": 15.0,
+            "RoundsPerMin": 40.0,
             "Dispersion": 0.05
         },
         "items": [
@@ -3355,7 +3355,7 @@
     "Hanyang 88": {
         "properties": {
             "MuzzleVelocity": 620,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.06
         },
         "items": [
@@ -3436,7 +3436,7 @@
     "Henry Rifle Model 1860": {
         "properties": {
             "MuzzleVelocity": 343.0,
-            "RoundsPerMin": 28,
+            "RoundsPerMin": 35,
             "Dispersion": 0.1
         },
         "items": [
@@ -3651,7 +3651,7 @@
     "Karabin wz.98a": {
         "properties": {
             "MuzzleVelocity": 870,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.05
         },
         "items": [
@@ -3662,7 +3662,7 @@
     "Karabinek wz.29": {
         "properties": {
             "MuzzleVelocity": 820,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.05
         },
         "items": [
@@ -3673,7 +3673,7 @@
     "Karabiner 88": {
         "properties": {
             "MuzzleVelocity": 575,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.06
         },
         "items": [
@@ -3771,7 +3771,7 @@
     "Krag-Jorgensen M1894": {
         "properties": {
             "MuzzleVelocity": 730,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 45,
             "Dispersion": 0.06
         },
         "items": [
@@ -3782,7 +3782,7 @@
     "Krag-Jorgensen M1895 Carbine": {
         "properties": {
             "MuzzleVelocity": 700,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 45,
             "Dispersion": 0.07
         },
         "items": [
@@ -4206,7 +4206,7 @@
     "M40A5": {
         "properties": {
             "MuzzleVelocity": 777,
-            "RoundsPerMin": 20,
+            "RoundsPerMin": 35,
             "Dispersion": 0.017
         },
         "items": [
@@ -4421,7 +4421,7 @@
     "MAS-36": {
         "properties": {
             "MuzzleVelocity": 823,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.06
         },
         "items": [
@@ -4723,7 +4723,7 @@
     "Mosin-Nagant M27": {
         "properties": {
             "MuzzleVelocity": 800,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.06
         },
         "items": [
@@ -4734,7 +4734,7 @@
     "Mosin-Nagant M38 Carbine": {
         "properties": {
             "MuzzleVelocity": 800,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.07
         },
         "items": [
@@ -4745,7 +4745,7 @@
     "Mosin-Nagant M91/30": {
         "properties": {
             "MuzzleVelocity": 865,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.05
         },
         "items": [
@@ -4914,7 +4914,7 @@
     "Neopup PAW-20": {
         "properties": {
             "MuzzleVelocity": 310.0,
-            "RoundsPerMin": 20.0,
+            "RoundsPerMin": 30.0,
             "Dispersion": 0.6
         },
         "items": [
@@ -5114,7 +5114,7 @@
     "Obrez": {
         "properties": {
             "MuzzleVelocity": 600,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 30,
             "Dispersion": 0.5
         },
         "items": [
@@ -5372,7 +5372,7 @@
     "PTRD-41 (14.5x114mm B-32)": {
         "properties": {
             "MuzzleVelocity": 1012.0,
-            "RoundsPerMin": 8,
+            "RoundsPerMin": 30,
             "Dispersion": 0.1
         },
         "items": [
@@ -5898,7 +5898,7 @@
     "Spencer Repeating Rifle": {
         "properties": {
             "MuzzleVelocity": 285,
-            "RoundsPerMin": 20,
+            "RoundsPerMin": 35,
             "Dispersion": 0.15
         },
         "items": [
@@ -6055,7 +6055,7 @@
     "Steyr Mannlicher M95 (8x50R M90)": {
         "properties": {
             "MuzzleVelocity": 620.0,
-            "RoundsPerMin": 30.0,
+            "RoundsPerMin": 55.0,
             "Dispersion": 0.06
         },
         "items": [
@@ -6399,7 +6399,7 @@
     "Type Chiang Kai-shek Rifle": {
         "properties": {
             "MuzzleVelocity": 810,
-            "RoundsPerMin": 12,
+            "RoundsPerMin": 40,
             "Dispersion": 0.05
         },
         "items": [
@@ -6421,7 +6421,7 @@
     "Vetterli M1869": {
         "properties": {
             "MuzzleVelocity": 435,
-            "RoundsPerMin": 15,
+            "RoundsPerMin": 40,
             "Dispersion": 0.08
         },
         "items": [
