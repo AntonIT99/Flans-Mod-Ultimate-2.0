@@ -9,6 +9,17 @@ class DriveableControlPhysicsTest
     private static final float EPSILON = 1.0E-6F;
 
     @Test
+    void passengerAircraftFallbackKeepsOnlyFlightAxes()
+    {
+        int flight = DriveableInput.FORWARD | DriveableInput.LEFT | DriveableInput.ASCEND
+            | DriveableInput.ROLL_RIGHT;
+        int forbidden = DriveableInput.PRIMARY_FIRE | DriveableInput.SECONDARY_FIRE
+            | DriveableInput.TOGGLE_ENGINE | DriveableInput.TOGGLE_GEAR | DriveableInput.MENU;
+
+        assertEquals(flight, DriveableInput.aircraftFallbackControls(flight | forbidden));
+    }
+
+    @Test
     void engineToggleIsAValidatedEdgeTriggeredIntent()
     {
         assertEquals(DriveableInput.TOGGLE_ENGINE, DriveableInput.sanitize(DriveableInput.TOGGLE_ENGINE));

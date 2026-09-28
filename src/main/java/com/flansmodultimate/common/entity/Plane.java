@@ -437,7 +437,7 @@ public class Plane extends Driveable
             clearWheelContact();
         // An aircraft on the ground with nobody flying it, or its engine off, is
         // chocked and braked rather than free to roll away from a push.
-        if (getControllingEntity() == null || !isEngineActive())
+        if (!hasRider() || !isEngineActive())
             velocity = applyMinimumGroundDeceleration(startVelocity, velocity,
                 VehiclePhysicsConstants.PARKED_GROUND_FRICTION_DECELERATION_MS2);
         moveWithCollisions(velocity);
@@ -472,6 +472,33 @@ public class Plane extends Driveable
     public boolean supportsClientPrediction()
     {
         return true;
+    }
+
+    /**
+     * The first occupied passenger seat takes the flight controls while the pilot
+     * seat is empty. Seat order makes the hand-off deterministic on both sides.
+     */
+    @Override
+    public boolean isMovementController(@Nullable Seat candidate)
+    {
+        if (super.isMovementController(candidate))
+            return true;
+        Seat driver = getDriverSeat();
+        if (candidate == null || candidate == driver || driver != null && driver.getRiddenByEntity() != null)
+            return false;
+        for (Seat seat : seats)
+        {
+            if (seat != null && seat != driver && seat.getRiddenByEntity() instanceof Player)
+                return seat == candidate;
+        }
+        return false;
+    }
+
+    @Override
+    protected int movementControlMask(@NotNull Seat seat, int mask)
+    {
+        return seat.isDriverSeat() ? super.movementControlMask(seat, mask)
+            : DriveableInput.aircraftFallbackControls(mask);
     }
 
     @Override
@@ -583,8 +610,7 @@ public class Plane extends Driveable
 
     private void updateThrottle(PlaneType type)
     {
-        boolean occupied = isUnderCommand();
-        boolean powered = occupied && isEngineActive() && hasWorkingPropeller(type);
+        boolean powered = hasRider() && isEngineActive() && hasWorkingPropeller(type);
         float throttle = getThrottle();
         // Holding the lever moves it progressively faster; a tap is still the
         // authored fine step. Released or reversed, the ramp starts over.
@@ -653,7 +679,7 @@ public class Plane extends Driveable
             velocity.y * (velocity.y < 0D && drag < 1F ? 0.999D : drag), velocity.z * drag);
         if (isWingFolded())
             velocity = velocity.multiply(0.98D, 1D, 0.98D);
-        if (getControllingEntity() == null)
+        if (!hasRider())
             velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
         if (type.isNewFlightControl())
             velocity = applyShootDownSequence(type, velocity);
@@ -974,7 +1000,7 @@ public class Plane extends Driveable
         // add drag, because neither is expressible in the real-world data.
         if (isWingFolded())
             velocity = velocity.multiply(0.98D, 1D, 0.98D);
-        if (getControllingEntity() == null)
+        if (!hasRider())
             velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
         velocity = applyShootDownSequence(type, velocity, true);
         return velocity;

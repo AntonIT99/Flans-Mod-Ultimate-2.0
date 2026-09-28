@@ -43,6 +43,7 @@ import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
+import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.PartItem;
@@ -2487,11 +2488,16 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         Vec3 origin = getShootOrigin(point, barrel);
         Vec3 direction = getShootDirection(point, secondary);
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
-        ShootingHelper.fireWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
-            ShootableItem.getRoundsFired(selection.stack()), () -> {
-                if (!creative)
-                    consumeAmmo(selection);
-            });
+        ShootingHandler handler = () -> {
+            if (!creative)
+                consumeAmmo(selection);
+        };
+        if (weapon == EnumWeaponType.BOMB)
+            ShootingHelper.dropWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
+                ShootableItem.getRoundsFired(selection.stack()), handler);
+        else
+            ShootingHelper.fireWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
+                ShootableItem.getRoundsFired(selection.stack()), handler);
         if (selection.gunType() != null)
             chargeGunBankReload(secondary, selection.gunType(), selection.stack());
         else
@@ -4018,7 +4024,19 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public boolean isControlledBy(Player player)
     {
         Seat seat = getSeat(player);
-        return seat != null && seat.isDriverSeat() && seat.getRiddenByEntity() == player;
+        return seat != null && isMovementController(seat) && seat.getRiddenByEntity() == player;
+    }
+
+    /** Whether this seat currently owns the driveable's movement controls. */
+    public boolean isMovementController(@Nullable Seat seat)
+    {
+        return seat != null && seat.isDriverSeat();
+    }
+
+    /** Limits the input copied from a movement controller into the driveable itself. */
+    protected int movementControlMask(@NotNull Seat seat, int mask)
+    {
+        return DriveableInput.sanitize(mask);
     }
 
     public void acceptInput(@NotNull ServerPlayer player, int mask, float aimYaw, float aimPitch,
@@ -4030,27 +4048,30 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (seat == null || seat.getDriveable() != this || !seat.acceptInput(player, mask, aimYaw, aimPitch, sequence))
             return;
 
-        inputTimeout = 0;
         markUsed();
         if (seat.isInputRising(DriveableInput.CHANGE_SEAT))
         {
             cycleSeat(player, seat);
             return;
         }
-        if (!seat.isDriverSeat())
+        if (!seat.isDriverSeat() && seat.isInputRising(DriveableInput.MENU))
+            openPassengerGunInventoryMenu(player, seat);
+        if (!isMovementController(seat))
         {
-            if (seat.isInputRising(DriveableInput.MENU))
-                openPassengerGunInventoryMenu(player, seat);
             return;
         }
 
-        int sanitized = DriveableInput.sanitize(mask);
+        inputTimeout = 0;
+        int sanitized = movementControlMask(seat, mask);
         previousInputMask = getInputMask();
         setInputMask(sanitized);
-        setTurretAim(seat.getAimYaw(), seat.getAimPitch());
         setFlightControls(flightPitch, flightRoll, mouseControl);
-        int rising = sanitized & ~previousInputMask;
-        handleRisingInputs(seat, player, rising);
+        if (seat.isDriverSeat())
+        {
+            setTurretAim(seat.getAimYaw(), seat.getAimPitch());
+            int rising = sanitized & ~previousInputMask;
+            handleRisingInputs(seat, player, rising);
+        }
     }
 
     protected void handleRisingInputs(@NotNull Seat seat, @NotNull Player player, int rising)

@@ -133,6 +133,29 @@ public final class ShootingHelper
         handler.onShoot();
     }
 
+    /**
+     * Releases ordnance without velocity relative to its carrier. Unlike an
+     * ordinary shot, a bomb is always an entity and inherits the carrier's world
+     * velocity before its configured gravity starts changing its motion.
+     */
+    public static void dropWeapon(@NotNull Level level, @NotNull FireableGun fireableGun,
+                                  @NotNull ShootableType shootableType, int numShots, Vec3 origin,
+                                  Vec3 direction, @Nullable Entity shooter, @Nullable LivingEntity attacker,
+                                  int shot, @NotNull ShootingHandler handler)
+    {
+        numShots = Math.max(1, numShots);
+        fireableGun.applyAmmunition(shootableType);
+        Vec3 releaseVelocity = shooter == null ? Vec3.ZERO : shooter.getDeltaMovement();
+        for (int i = 0; i < numShots; i++)
+        {
+            Shootable bomb = ShootableFactory.createShootable(level, fireableGun, shootableType,
+                origin, direction, shooter, attacker, shot);
+            bomb.setDeltaMovement(releaseVelocity);
+            level.addFreshEntity(bomb);
+        }
+        handler.onShoot();
+    }
+
     /** Call this to fire bullets from a shot that is already resolved (Server side) */
     public static void fireGun(@NotNull Level level, @NotNull FiredShot firedShot, int numBullets, Vec3 shootingOrigin, Vec3 shootingDirection, @NotNull ShootingHandler handler)
     {

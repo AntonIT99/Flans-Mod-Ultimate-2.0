@@ -295,10 +295,11 @@ public final class KeyInputHandler
 
         Driveable driveable = resolveDriveable(player);
         Entity mount = player.getVehicle();
-        // Only the seat that actually steers loses the vanilla actions. A
-        // passenger's Q and E do nothing to the aircraft, so they keep theirs.
-        boolean driving = mount instanceof Seat seat ? seat.isDriverSeat() : mount instanceof Driveable;
-        if (driveable == null || !driving)
+        // Only the seat that actually steers loses the vanilla actions. In an
+        // aircraft this can be the first passenger while the pilot seat is empty.
+        boolean driving = driveable != null
+            && (mount instanceof Seat seat ? driveable.isMovementController(seat) : mount instanceof Driveable);
+        if (!driving)
             return;
 
         List<KeyMapping> claimed = driveable instanceof Plane ? AIRCRAFT_BINDS
