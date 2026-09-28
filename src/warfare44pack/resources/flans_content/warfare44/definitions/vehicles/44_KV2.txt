@@ -6,6 +6,7 @@ Description Soviet Heavy Tank__Uses : Very Large Cal. HE Tank Shell __Year Intro
 // Rendering
 Icon 44_KV2
 Model W44.KV2
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_KV2
 RotateWheels True

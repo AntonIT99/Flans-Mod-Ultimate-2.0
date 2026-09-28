@@ -6,6 +6,7 @@ Description American Light Tank__Uses : 37mm AP Tank Shell_Small Cal. HE Tank Sh
 // Rendering
 Icon 44_M5A1Stuart
 Model W44.M5A1Stuart
+FlashModel DefaultFlash
 ModelScale 0.95
 Texture Skin44_M5A1Stuart
 RotateWheels True

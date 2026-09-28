@@ -6,6 +6,7 @@ Description Soviet Light Tank Destroyer__Uses : 57mm AP Tank Shell_Small Cal. HE
 // Rendering
 Icon 44_ZiS30
 Model W44.ZiS30
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_ZiS30
 RotateWheels True

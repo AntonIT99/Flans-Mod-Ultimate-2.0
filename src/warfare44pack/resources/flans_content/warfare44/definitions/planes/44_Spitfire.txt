@@ -6,6 +6,7 @@ Description British Fighter Aircraft__Uses Browning .30 Cal Ammo / 20mm Aircraft
 // Rendering
 Icon 44_Spitfire
 Model W44.Spitfire
+FlashModel DefaultFlash
 Texture Skin44_Spitfire
 CameraDistance 10.0
 

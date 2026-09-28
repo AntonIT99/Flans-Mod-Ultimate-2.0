@@ -6,6 +6,7 @@ Description Soviet Heavy Tank__Uses : 76mm AP Tank Shell_Medium Cal. HE Tank She
 // Rendering
 Icon 44_KV1E
 Model W44.KV1E
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_KV1E
 RotateWheels True

@@ -6,6 +6,7 @@ Description German Heavy Tank__Uses : 88mm AP Tank Shell - Long_Large Cal. HE Ta
 // Rendering
 Icon 44_Tiger2H
 Model W44.Tiger2
+FlashModel DefaultFlash
 ModelScale 1.2
 Texture Skin44_Tiger2
 RotateWheels True

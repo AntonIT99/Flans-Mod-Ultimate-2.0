@@ -6,6 +6,7 @@ Description German Motorcycle
 // Item and rendering
 Icon BMWR75
 Model ww2.BMWR75
+FlashModel DefaultFlash
 Texture bmwr75
 RotateWheels true
 AddDye 5 gray

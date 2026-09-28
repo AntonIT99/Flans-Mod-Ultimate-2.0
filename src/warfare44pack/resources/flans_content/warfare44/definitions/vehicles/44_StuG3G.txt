@@ -6,6 +6,7 @@ Description German Medium Tank Destroyer__Uses : 75mm AP Tank Shell_Medium Cal. 
 // Rendering
 Icon 44_StuG3G
 Model W44.StuG3G
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_StuG3G
 RotateWheels True

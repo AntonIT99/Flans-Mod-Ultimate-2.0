@@ -177,5 +177,6 @@ public class ModelM1Garand extends ModelGun {
       this.translateAll(-8.0F, -6.0F, 0.2F);
       this.thirdPersonOffset = new Vector3f(-0.2F, -0.15F, 0.01F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(3.34375F, 0.984375F, -0.0125F);
    }
 }

@@ -6,6 +6,7 @@ Description Soviet Fighter Aircraft__Uses Berezin-UB Mg Ammo / 37mm Aircraft Amm
 // Rendering
 Icon 44_Yak9
 Model W44.Yak9
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_Yak9
 CameraDistance 10.0

@@ -6,6 +6,8 @@ ShortName MG3ZB
 Icon IconGunMG3ZB
 Colour 255 255 255
 DeployedModel manus_modern_warfare.MG3ZB
+FlashModel DefaultFlash
+animFlashScale 1.24
 DeployedTexture SkinGunMG3ZB
 
 // Recipe and Inventory

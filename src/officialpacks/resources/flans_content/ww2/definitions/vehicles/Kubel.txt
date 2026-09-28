@@ -6,6 +6,7 @@ Description German Jeep
 // Item and rendering
 Icon Kubelwagen
 Model ww2.Kubel
+FlashModel DefaultFlash
 Texture kubel
 RotateWheels true
 AddDye 5 gray

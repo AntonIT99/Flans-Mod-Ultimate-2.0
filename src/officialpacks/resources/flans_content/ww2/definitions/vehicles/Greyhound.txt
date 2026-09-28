@@ -6,6 +6,7 @@ Description American Armored Car
 // Item and rendering
 Icon GreyHound
 Model ww2.Greyhound
+FlashModel DefaultFlash
 Texture greyhound
 RotateWheels True
 AddDye 4 green
@@ -102,4 +103,10 @@ StartSoundLength 7
 EngineSound engine_lt_armoredcar
 EngineSoundLength 39
 ShootSoundPrimary shoot_37mus
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.46 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.28 0.07 0.07
+ShootParticlesPrimary largesmoke 0.26 -0.07 -0.07
 ShootSoundSecondary BrowningShoot

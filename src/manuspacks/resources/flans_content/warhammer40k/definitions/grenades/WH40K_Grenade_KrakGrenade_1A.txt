@@ -41,4 +41,6 @@ FragType THICK_CASE
 // Effects
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 2
+DebrisParticleCount 1
 SmokeTime 0

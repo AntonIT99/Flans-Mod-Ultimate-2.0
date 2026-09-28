@@ -6,6 +6,7 @@ Description German Heavy Tank
 // Item and rendering
 Icon TigerII
 Model ww2.TigerII
+FlashModel DefaultFlash
 Texture tigerii
 AddDye 18 gray
 ModelScale 1.1
@@ -92,6 +93,14 @@ StartSoundLength 41
 EngineSound engine_ht_pzvikt
 EngineSoundLength 39
 ShootSoundPrimary 88mmGun
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary MG42Shoot
 DriverTraverseSounds true
 PitchSound TurretTraverse1

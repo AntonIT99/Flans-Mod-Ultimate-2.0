@@ -6,6 +6,7 @@ Description German Attack Aircraft (Bomber)__Uses Mg17 Ammo / 250kg/500lb Bomb__
 // Rendering
 Icon 44_BF110G2
 Model W44.BF110G2
+FlashModel DefaultFlash
 Texture Skin44_BF110G2
 CameraDistance 10.0
 

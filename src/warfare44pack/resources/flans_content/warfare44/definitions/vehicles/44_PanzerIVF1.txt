@@ -6,6 +6,7 @@ Description German Medium Tank__Uses : Medium Cal. HE Tank Shell __Year Introduc
 // Rendering
 Icon 44_PanzerIVF1
 Model W44.PanzerIVF1
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_PanzerIVF2
 RotateWheels True

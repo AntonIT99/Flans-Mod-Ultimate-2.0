@@ -5,6 +5,7 @@ ShortName A10
 // Model and Rendering
 Icon IconPlaneA10
 Model manus_modern_warfare.A10
+FlashModel DefaultFlash
 Texture SkinPlaneA10
 
 // Recipe and Inventory

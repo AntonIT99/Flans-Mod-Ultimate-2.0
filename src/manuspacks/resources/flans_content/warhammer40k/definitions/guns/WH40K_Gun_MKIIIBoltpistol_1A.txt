@@ -6,6 +6,9 @@ ShortName WH40K_Gun_MKIIIBoltpistol_1A
 ModelScale 0.11
 Icon Icon_WH40K_Gun_MKIIIBoltpistol_1A
 Model Manus_WH40K.Gun.WH40K_Gun_MKIIIBoltpistol_1
+FlashModel DefaultFlash
+animFlashScale 4.04
+animMuzzleFlashPoint 1.22215 0.50278 0
 DeployedModel None
 Texture Skin_WH40K_Gun_MKIIIBoltpistol_1A
 

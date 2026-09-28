@@ -7,6 +7,9 @@ Icon Type38Sniper
 Colour 255 255 255
 DeployedModel None
 Model ww2.Type38sniper
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.82059 0.32645 0
+animFlashScale 1
 Texture Type38
 
 // Ammunition

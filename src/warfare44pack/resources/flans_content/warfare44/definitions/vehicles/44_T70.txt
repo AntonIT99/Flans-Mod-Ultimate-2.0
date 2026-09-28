@@ -6,6 +6,7 @@ Description Soviet Light Tank__Uses : 47mm AP Tank Shell_Small Cal. HE Tank Shel
 // Rendering
 Icon 44_T70
 Model W44.T70
+FlashModel DefaultFlash
 ModelScale 0.90
 Texture Skin44_T70
 RotateWheels True

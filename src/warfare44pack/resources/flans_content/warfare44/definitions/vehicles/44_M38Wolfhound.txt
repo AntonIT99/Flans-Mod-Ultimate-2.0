@@ -6,6 +6,7 @@ Description American Armored Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank
 // Rendering
 Icon 44_M38Wolfhound
 Model W44.M38Wolfhound
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_M38Wolfhound
 RotateWheels True

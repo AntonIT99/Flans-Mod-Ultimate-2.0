@@ -7,6 +7,9 @@ Icon kar98ksniper
 Colour 255 255 255
 DeployedModel None
 Model ww2.Kar98kSniper
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.53809 0.35815 -0.00659
+animFlashScale 1.42
 Texture kar98k
 Paintjob kar98ksniper_acacia kar98k_acacia orange 2
 Paintjob kar98ksniper_birch kar98k_birch black 1 yellow 1

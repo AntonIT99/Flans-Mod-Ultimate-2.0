@@ -6,6 +6,7 @@ Description American Light Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank S
 // Rendering
 Icon 44_M24Chaffee
 Model W44.M24Chaffee
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_M24Chaffee
 RotateWheels True

@@ -6,6 +6,7 @@ Description American Attack Aircraft__M2 Browning .50 Cal Ammo / 250kg/500lb Bom
 // Rendering
 Icon 44_P47D
 Model W44.P47D
+FlashModel DefaultFlash
 Texture Skin44_P47D
 CameraDistance 10.0
 

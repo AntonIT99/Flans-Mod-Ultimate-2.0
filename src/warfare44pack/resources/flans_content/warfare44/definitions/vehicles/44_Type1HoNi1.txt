@@ -6,6 +6,7 @@ Description Japanese Light Tank Destroyer__Uses : 75mm AP Tank Shell_Medium Cal.
 // Rendering
 Icon 44_Type1HoNi1
 Model W44.Type1HoNi1
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_Type1HoNi1
 RotateWheels True

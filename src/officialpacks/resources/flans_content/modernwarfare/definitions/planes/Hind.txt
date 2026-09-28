@@ -5,6 +5,7 @@ ShortName hind
 // Item and rendering
 Icon Hind
 Model mw.Hind
+FlashModel DefaultFlash
 Texture Hind
 AddDye 10 yellow
 

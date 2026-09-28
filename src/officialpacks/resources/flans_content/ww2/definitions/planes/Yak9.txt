@@ -5,6 +5,7 @@ ShortName yak9
 // Item and rendering
 Icon Yak9
 Model ww2.Yak9
+FlashModel DefaultFlash
 Texture yak9
 AddDye 6 silver
 ModelScale 1.3

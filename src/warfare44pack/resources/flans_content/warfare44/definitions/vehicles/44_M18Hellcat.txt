@@ -6,6 +6,7 @@ Description American Medium Tank Destroyer__Uses : 76mm AP Tank Shell - Long_Med
 // Rendering
 Icon 44_M18Hellcat
 Model W44.M18Hellcat
+FlashModel DefaultFlash
 ModelScale 1.25
 Texture Skin44_M18Hellcat
 RotateWheels True

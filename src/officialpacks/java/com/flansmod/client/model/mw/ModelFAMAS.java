@@ -209,5 +209,6 @@ public class ModelFAMAS extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(5.625F, 0.5F, 0F);
 	}
 }

@@ -6,6 +6,8 @@ ShortName GAU8
 Icon IconGunGAU8
 Colour 255 255 255
 DeployedModel manus_modern_warfare.M134
+FlashModel DefaultFlash
+animFlashScale 1.42
 DeployedTexture SkinGunM134
 
 // Recipe and Inventory

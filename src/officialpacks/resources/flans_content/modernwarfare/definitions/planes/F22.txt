@@ -5,6 +5,7 @@ ShortName modernwarfare_f22
 // Item and rendering
 Icon F22
 Model mw.F22
+FlashModel DefaultFlash
 Texture SkinF22
 AddDye 8 silver
 AddDye 8 gray

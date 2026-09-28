@@ -7,6 +7,9 @@ Icon MosinNagant
 Colour 255 255 255
 DeployedModel None
 Model ww2.Mosin
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.1928 0.28251 0
+animFlashScale 1
 Texture MosinNagant
 ModelScale 1.0
 

@@ -41,4 +41,6 @@ FragType STD_FRAG
 // Effects
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2
 SmokeTime 0

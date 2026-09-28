@@ -5,6 +5,7 @@ ShortName zero
 // Item and rendering
 Icon Zero
 Model ww2.Zero
+FlashModel DefaultFlash
 Texture zero
 AddDye 5 white
 AddDye 1 red

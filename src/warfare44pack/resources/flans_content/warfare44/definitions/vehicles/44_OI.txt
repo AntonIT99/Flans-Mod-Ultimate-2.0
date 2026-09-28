@@ -6,6 +6,7 @@ Description Japanese Super Heavy Tank__Uses : Very Large Cal. HE Tank Shell __Ye
 // Rendering
 Icon 44_OI
 Model W44.OI
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_OI
 RotateWheels True

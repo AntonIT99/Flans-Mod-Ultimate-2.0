@@ -6,6 +6,7 @@ Description German light half-track gun tractor
 // Item and rendering
 Icon SdkFz2
 Model ww2.SdkFz2
+FlashModel DefaultFlash
 Texture sdkfz2
 RotateWheels true
 AddDye 5 gray

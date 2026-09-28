@@ -33,3 +33,7 @@ ExplosiveMassTNTg 10.8
 FlakParticles 1
 HitSound bullet
 SmokeTrail True
+ExplodeParticles 4
+ExplodeParticleType explode
+FlareParticleCount 3
+DebrisParticleCount 2

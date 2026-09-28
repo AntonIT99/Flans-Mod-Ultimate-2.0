@@ -62,5 +62,6 @@ public class ModelSten extends ModelGun {
       this.unloadClipTime = 0.25F;
       this.loadClipTime = 0.25F;
       this.untiltGunTime = 0.25F;
+      this.muzzleFlashPoint = new Vector3f(1.3125F, 0.34375F, 0.0079375F);
    }
 }

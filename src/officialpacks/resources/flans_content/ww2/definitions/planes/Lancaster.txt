@@ -5,6 +5,7 @@ ShortName Lancaster
 // Item and rendering
 Icon Lancaster
 Model ww2.Lancaster
+FlashModel DefaultFlash
 Texture lancaster
 AddDye 10 green
 AddDye 5 yellow

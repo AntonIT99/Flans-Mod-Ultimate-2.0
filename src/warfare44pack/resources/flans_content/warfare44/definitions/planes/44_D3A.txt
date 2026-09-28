@@ -6,6 +6,7 @@ Description Japanese Torpedo Bomber Aircraft__Uses Type 99 Ammo / 250kg/500lb Bo
 // Rendering
 Icon 44_D3A
 Model W44.D3A
+FlashModel DefaultFlash
 ModelScale 1.05
 Texture Skin44_D3A
 CameraDistance 10.0

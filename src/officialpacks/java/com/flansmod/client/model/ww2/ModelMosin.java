@@ -4,6 +4,7 @@ package com.flansmod.client.model.ww2;
 import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 
 public class ModelMosin extends ModelGun {
    public ModelMosin() {
@@ -37,5 +38,6 @@ public class ModelMosin extends ModelGun {
       this.unloadClipTime = 0.0F;
       this.loadClipTime = 0.558F;
       this.untiltGunTime = 0.163F;
+      this.muzzleFlashPoint = new Vector3f(1.1875F, 0.28125F, 0F);
    }
 }

@@ -5,6 +5,7 @@ ShortName Fokker
 // Item and rendering
 Icon Fokker
 Model ww2.Fokker
+FlashModel DefaultFlash
 Texture fokker
 AddDye 4 red
 

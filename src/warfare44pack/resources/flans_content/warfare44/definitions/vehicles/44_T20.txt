@@ -6,6 +6,7 @@ Description Soviet Armored Tractor__Year Introduced : 1937
 // Rendering
 Icon 44_T20
 Model W44.T20
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_T20
 RotateWheels True

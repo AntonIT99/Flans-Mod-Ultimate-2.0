@@ -6,6 +6,7 @@ Description German Ground Attack Aircraft __Uses MG 17 / 250kg/500lb Bomb __Year
 // Rendering
 Icon 44_Ju87D3
 Model W44.Ju87D3
+FlashModel DefaultFlash
 Texture Skin44_Ju87D3
 CameraDistance 10.0
 

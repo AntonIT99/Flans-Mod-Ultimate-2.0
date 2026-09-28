@@ -171,5 +171,6 @@ public class ModelRPK extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7.875F, 1.125F, 0F);
 	}
 }

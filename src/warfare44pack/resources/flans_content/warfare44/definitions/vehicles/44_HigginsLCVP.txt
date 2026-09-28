@@ -6,6 +6,7 @@ Description American Landing Craft __Year Introduced : 1942
 // Rendering
 Icon 44_HigginsLCVP
 Model W44.HigginsLCVP
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_HigginsLCVP
 RotateWheels True

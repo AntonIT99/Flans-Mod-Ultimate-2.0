@@ -5,6 +5,7 @@ ShortName modernwarfare_a10
 // Item and rendering
 Icon A10
 Model mw.A10
+FlashModel DefaultFlash
 Texture SkinA10
 AddDye 8 silver
 AddDye 8 gray
@@ -116,4 +117,10 @@ StartSoundLength 140
 PropSound JetEngine2
 PropSoundLength 47
 ShootSoundPrimary MinigunShoot
+ShootParticlesPrimary flansmod.fmflame 0.58 0 0
+ShootParticlesPrimary flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPrimary flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPrimary smoke 0.2 0.035 -0.04
+ShootParticlesPrimary smoke 0.18 -0.03 0.045
+ShootParticlesPrimary crit 0.38 0.01 0
 ShootSoundSecondary RocketFire2

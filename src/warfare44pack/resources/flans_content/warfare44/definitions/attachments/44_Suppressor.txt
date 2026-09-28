@@ -12,6 +12,7 @@ Texture Skin44_Suppressor
 
 // Modifiers
 Silencer true
+DisableMuzzleFlash True
 DamageMultiplier 0.85
 MeleeDamageMultiplier 1.0
 SpreadMultiplier 0.9

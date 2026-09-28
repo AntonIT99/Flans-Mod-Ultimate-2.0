@@ -8,6 +8,9 @@ Icon ColtPython
 Colour 255 255 255
 DeployedModel None
 Model zombie.ColtPython
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.61719 0.59766 0
+animFlashScale 0.44
 Texture ColtPython
 Paintjob ColtPython_Black ColtPython_Black black 1
 

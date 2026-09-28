@@ -6,6 +6,7 @@ Description German Medium Tank Destroyer__Uses : 75mm AP Tank Shell_Medium Cal. 
 // Rendering
 Icon 44_StuGIV
 Model W44.StuGIV
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_StuGIV
 RotateWheels True

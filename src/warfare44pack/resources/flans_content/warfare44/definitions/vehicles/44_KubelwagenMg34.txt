@@ -6,6 +6,7 @@ Description German Jeep __Year Introduced : 1934
 // Rendering
 Icon 44_KubelwagenMg34
 Model W44.KubelwagenMg34
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_Kubel
 VehicleGunModelScale 1.3

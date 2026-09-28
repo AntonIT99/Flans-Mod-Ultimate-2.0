@@ -7,6 +7,9 @@ Icon bar
 Colour 255 255 255
 DeployedModel None
 Model ww2.BAR
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.575 0.36914 -0.00738
+animFlashScale 2.54
 Texture bar
 Paintjob bar_acacia bar_acacia orange 2
 Paintjob bar_birch bar_birch black 1 yellow 1

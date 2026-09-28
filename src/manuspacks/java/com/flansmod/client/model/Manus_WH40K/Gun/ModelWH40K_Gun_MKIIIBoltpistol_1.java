@@ -4,6 +4,7 @@ package com.flansmod.client.model.Manus_WH40K.Gun;
 import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 
 public class ModelWH40K_Gun_MKIIIBoltpistol_1 extends ModelGun {
    int textureX = 512;
@@ -301,5 +302,6 @@ public class ModelWH40K_Gun_MKIIIBoltpistol_1 extends ModelGun {
       animationType = EnumAnimationType.BOTTOM_CLIP;
       translateAll(8.0F, -20.0F, 0.0F);
       flipAll();
+      muzzleFlashPoint = new Vector3f(4.9375F, 2.03125F, 0F);
    }
 }

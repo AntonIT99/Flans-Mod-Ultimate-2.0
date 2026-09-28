@@ -6,6 +6,7 @@ Description German Jeep __Year Introduced : 1942
 // Rendering
 Icon 44_KubelwagenMg42
 Model W44.KubelwagenMg42
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_Kubel
 VehicleGunModelScale 0.75

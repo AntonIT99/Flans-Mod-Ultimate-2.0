@@ -80,5 +80,6 @@ public class ModelWebley extends ModelGun {
       this.flipAll();
       this.translateAll(0.0F, 13.0F, 0.0F);
       this.thirdPersonOffset = new Vector3f(-0.05F, -0.05F, 0.0F);
+      this.muzzleFlashPoint = new Vector3f(1.75F, 1.125F, 0F);
    }
 }

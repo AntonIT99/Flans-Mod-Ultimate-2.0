@@ -6,6 +6,7 @@ Description American Halftrack__Year Introduced : 1943
 // Rendering
 Icon 44_M3Halftrack
 Model W44.M3Halftrack
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_M3Halftrack
 RotateWheels true

@@ -7,6 +7,9 @@ Icon TT33
 Colour 255 255 255
 DeployedModel None
 Model ww2.TT33
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.05469 0.52734 0
+animFlashScale 0.44
 Texture TT33
 ModelScale 1.0
 

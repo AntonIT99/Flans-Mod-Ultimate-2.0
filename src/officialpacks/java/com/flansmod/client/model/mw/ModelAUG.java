@@ -184,5 +184,6 @@ public class ModelAUG extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(5F, 1.25F, 0F);
 	}
 }

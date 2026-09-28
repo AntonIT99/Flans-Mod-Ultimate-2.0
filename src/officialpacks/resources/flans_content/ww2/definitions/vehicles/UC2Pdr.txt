@@ -6,6 +6,7 @@ Description British Armored Vehicle
 // Item and rendering
 Icon UC
 Model ww2.UC2Pdr
+FlashModel DefaultFlash
 Texture uc
 RotateWheels True
 AddDye 4 green

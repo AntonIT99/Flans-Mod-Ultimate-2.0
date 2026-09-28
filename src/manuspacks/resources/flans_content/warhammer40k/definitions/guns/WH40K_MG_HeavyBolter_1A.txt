@@ -5,6 +5,8 @@ ShortName WH40K_MG_HeavyBolter_1A
 // Model and Rendering
 Icon Icon_WH40K_MG_HeavyBolter_1A
 DeployedModel Manus_WH40K.MG.WH40K_MG_HeavyBolter_1
+FlashModel DefaultFlash
+animFlashScale 1.42
 DeployedTexture Skin_WH40K_MG_HeavyBolter_1A
 
 // Recipe and Inventory

@@ -6,6 +6,7 @@ Description American Fighter Aircraft__Uses M2 Browning .50 Cal Ammo__Year Intro
 // Rendering
 Icon 44_P51DMustang
 Model W44.P51DMustang
+FlashModel DefaultFlash
 Texture Skin44_P51DMustang
 CameraDistance 10.0
 

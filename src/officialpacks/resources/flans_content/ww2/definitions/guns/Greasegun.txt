@@ -7,6 +7,9 @@ Icon m3a1
 Colour 255 255 255
 DeployedModel None
 Model ww2.GreaseGun
+FlashModel DefaultFlash
+animMuzzleFlashPoint 0.72573 0.46959 -0.00854
+animFlashScale 0.73
 Texture m3a1
 Paintjob m3a1_frog m3a1_frog green 1 brown 1
 Paintjob m3a1_green m3a1_green green 2

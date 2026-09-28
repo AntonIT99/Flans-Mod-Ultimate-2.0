@@ -6,6 +6,7 @@ Description American Amphibious Medium Tank__Uses : 75mm AP Tank Shell_Medium Ca
 // Rendering
 Icon 44_M4A1ShermanDD
 Model W44.M4A1ShermanDD
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_M4A1Sherman
 RotateWheels True

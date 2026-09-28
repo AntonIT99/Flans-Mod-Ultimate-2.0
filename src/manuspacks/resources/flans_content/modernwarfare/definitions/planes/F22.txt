@@ -5,6 +5,7 @@ ShortName F22
 // Model and Rendering
 Icon IconPlaneF22
 Model manus_modern_warfare.F22
+FlashModel DefaultFlash
 Texture SkinPlaneF22
 
 // Recipe and Inventory

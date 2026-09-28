@@ -45,4 +45,6 @@ FireRadius 0.0
 // Effects
 TrailParticles false
 ExplodeParticles 2
+FlareParticleCount 2
+DebrisParticleCount 1
 SmokeTime 0

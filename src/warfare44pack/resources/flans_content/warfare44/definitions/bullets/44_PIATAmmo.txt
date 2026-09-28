@@ -34,6 +34,9 @@ Fuse 0
 // Effects
 SmokeTrail True
 FlakParticles 0
+ExplodeParticles 6
+FlareParticleCount 4
+DebrisParticleCount 2
 
 // Sounds
 HitSound bullet

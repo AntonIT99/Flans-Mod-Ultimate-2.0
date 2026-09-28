@@ -292,5 +292,6 @@ public class ModelWH40K_Gun_MKVbBoltgun_1 extends ModelGun {
       gunSlideDistance = 3.0F;
       animationType = EnumAnimationType.BOTTOM_CLIP;
       flipAll();
+      muzzleFlashPoint = new Vector3f(7.8125F, 1.8125F, 0F);
    }
 }

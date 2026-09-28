@@ -42,4 +42,6 @@ FragType HE_SHELL
 // Effects
 TrailParticles False
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2
 SmokeTime 0

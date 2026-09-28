@@ -246,5 +246,6 @@ public class ModelFg42 extends ModelGun {
       this.flipAll();
       this.translateAll(0.0F, 1.6F, -0.11F);
       this.thirdPersonOffset = new Vector3f(-0.15F, -0.13F, 0.01F);
+      this.muzzleFlashPoint = new Vector3f(1.521875F, 0.35F, -0.00625F);
    }
 }

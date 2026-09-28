@@ -6,6 +6,7 @@ Description American Heavy Tank__Uses : 90mm AP Tank Shell_Large Cal. HE Tank Sh
 // Rendering
 Icon 44_M26
 Model W44.M26
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_M26
 RotateWheels True

@@ -8,6 +8,9 @@ Icon hk45
 Colour 255 255 255
 DeployedModel None
 Model zombie.Glock17
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.0125 0.55547 0
+animFlashScale 0.44
 Texture Glock17
 ModelScale 1
 

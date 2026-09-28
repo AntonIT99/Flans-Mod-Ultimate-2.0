@@ -6,6 +6,9 @@ ShortName MG42Hand
 Icon MG42
 Colour 255 255 255
 Model ww2.MG42Hand
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.33594 0.19687 0
+animFlashScale 0.89
 Texture SkinMG42Gun
 
 // Ammunition

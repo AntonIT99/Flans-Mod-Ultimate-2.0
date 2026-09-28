@@ -146,6 +146,7 @@ public class ModelDesertEagle extends ModelGun
 		scopeIsOnSlide = false;
 		
 		gunSlideDistance = 0.25F;
+		muzzleFlashPoint = new Vector3f(0.75F, 0.2875F, 0F);
 		animationType = EnumAnimationType.PISTOL_CLIP;
 	}
 }

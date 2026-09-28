@@ -48,4 +48,6 @@ FireRadius 0.0
 TrailParticles true
 TrailParticleType smoke
 ExplodeParticles 3
+FlareParticleCount 3
+DebrisParticleCount 2
 SmokeTime 0

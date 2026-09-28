@@ -5,6 +5,7 @@ ShortName SU25
 // Item and rendering
 Icon SU25
 Model mw.SU25
+FlashModel DefaultFlash
 Texture SU25
 ModelScale 1.0
 AddDye 8 red

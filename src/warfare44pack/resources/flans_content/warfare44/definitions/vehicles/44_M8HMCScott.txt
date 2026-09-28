@@ -6,6 +6,7 @@ Description American SPG Light Tank__Uses : Medium Cal. HE Tank Shell __Year Int
 // Rendering
 Icon 44_M8HMCScott
 Model W44.M8HMCScott
+FlashModel DefaultFlash
 ModelScale 0.95
 Texture Skin44_M8
 RotateWheels True

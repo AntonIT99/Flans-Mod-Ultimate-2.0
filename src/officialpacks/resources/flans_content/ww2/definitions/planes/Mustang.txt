@@ -5,6 +5,7 @@ ShortName Mustang
 // Item and rendering
 Icon Mustang
 Model ww2.Mustang
+FlashModel DefaultFlash
 Texture p51
 AddDye 6 lightBlue
 AddDye 2 yellow

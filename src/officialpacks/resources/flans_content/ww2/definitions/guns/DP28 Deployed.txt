@@ -6,6 +6,8 @@ ShortName dp28
 Icon DP28
 Colour 255 255 255
 DeployedModel ww2.DP28
+FlashModel DefaultFlash
+animFlashScale 1.24
 DeployedTexture DP28
 
 // Ammunition

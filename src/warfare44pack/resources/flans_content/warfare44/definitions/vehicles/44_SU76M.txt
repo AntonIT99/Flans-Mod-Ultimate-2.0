@@ -6,6 +6,7 @@ Description Soviet Light Tank Destroyer__Uses : 76mm AP Tank Shell_Medium Cal. H
 // Rendering
 Icon 44_SU76M
 Model W44.SU76M
+FlashModel DefaultFlash
 ModelScale 0.90
 Texture Skin44_SU76M
 RotateWheels True

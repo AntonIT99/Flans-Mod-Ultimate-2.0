@@ -266,5 +266,6 @@ public class ModelMG34 extends ModelGun {
       this.translateAll(0.0F, -1.2F, 0.07F);
       this.thirdPersonOffset = new Vector3f(-0.08F, -0.18F, 0.01F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(1.03125F, 0.209375F, -0.004375F);
    }
 }

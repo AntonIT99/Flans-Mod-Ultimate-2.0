@@ -6,6 +6,7 @@ Description American Armored Car__Uses : 57mm AP Tank Shell_Small Cal. HE Tank S
 // Rendering
 Icon 44_M8Greyhound
 Model W44.M8Greyhound
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_M8Greyhound
 RotateWheels True

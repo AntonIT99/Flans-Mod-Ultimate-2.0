@@ -6,6 +6,7 @@ Description Japanese Amphibious Light Tank__Uses : 37mm AP Tank Shell_Small Cal.
 // Rendering
 Icon 44_Type2KaMi
 Model W44.Type2KaMi
+FlashModel DefaultFlash
 ModelScale 1.4
 Texture Skin44_Type2KaMi
 RotateWheels True

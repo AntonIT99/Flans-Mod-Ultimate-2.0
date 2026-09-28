@@ -181,5 +181,6 @@ public class ModelMTAR extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(5F, 1.4375F, 0F);
 	}
 }

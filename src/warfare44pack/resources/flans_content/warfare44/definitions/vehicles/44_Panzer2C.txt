@@ -6,6 +6,7 @@ Description German Light Tank__Uses 20mm Ammo__Year Introduced : 1936
 // Rendering
 Icon 44_Panzer2C
 Model W44.Panzer2C
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_Panzer2C
 RotateWheels True

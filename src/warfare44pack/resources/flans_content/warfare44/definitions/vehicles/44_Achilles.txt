@@ -6,6 +6,7 @@ Description British Tank Destroyer__Uses : 76mm AP Tank Shell - Long_Medium Cal.
 // Rendering
 Icon 44_Achilles
 Model W44.Achilles
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_Achilles
 RotateWheels True

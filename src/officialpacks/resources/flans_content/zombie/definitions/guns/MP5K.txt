@@ -8,6 +8,9 @@ Icon MP5K
 Colour 255 255 255
 DeployedModel None
 Model zombie.MP5K
+FlashModel DefaultFlash
+animMuzzleFlashPoint 0.95424 0.45201 0
+animFlashScale 0.62
 Texture MP5K
 Paintjob MP5K_Green MP5K_Green lime 1
 Paintjob MP5K_Red MP5K_Red red 1

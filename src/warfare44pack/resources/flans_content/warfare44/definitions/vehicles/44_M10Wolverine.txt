@@ -6,6 +6,7 @@ Description American Tank Destroyer__Uses : 76mm AP Tank Shell - Long_Medium Cal
 // Rendering
 Icon 44_M10Wolverine
 Model W44.M10Wolverine
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_M10Wolverine
 RotateWheels True

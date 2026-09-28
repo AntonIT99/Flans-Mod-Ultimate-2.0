@@ -4,6 +4,7 @@ ShortName WW2_Plane_A6M_1C
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_A6M_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Plane_A6M_1C
 Texture Skin_WW2_Plane_A6M_1C
 

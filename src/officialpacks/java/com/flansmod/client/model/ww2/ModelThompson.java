@@ -92,5 +92,6 @@ public class ModelThompson extends ModelGun {
       this.translateAll(0.0F, -6.2F, 0.3F);
       this.thirdPersonOffset = new Vector3f(-0.2F, -0.1F, 0.02F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(2.875F, 1.1375F, -0.01875F);
    }
 }

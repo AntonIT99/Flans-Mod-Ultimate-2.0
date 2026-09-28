@@ -209,5 +209,6 @@ public class ModelAK74 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7.25F, 1.34375F, 0F);
 	}
 }

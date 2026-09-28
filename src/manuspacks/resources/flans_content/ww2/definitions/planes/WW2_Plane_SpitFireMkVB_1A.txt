@@ -4,6 +4,7 @@ ShortName WW2_Plane_SpitFireMkVB_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_SpitFireMkVB_1
+FlashModel DefaultFlash
 ModelScale 1
 Icon Icon_WW2_Plane_SpitFireMkVB_1A
 Texture Skin_WW2_Plane_SpitFireMkVB_1A

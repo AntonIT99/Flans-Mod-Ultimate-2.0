@@ -230,5 +230,6 @@ public class ModelAN94 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7F, 1.15625F, 0F);
 	}
 }

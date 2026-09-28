@@ -6,6 +6,7 @@ Description American SPG Light Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Ta
 // Rendering
 Icon 44_M8A1GMC
 Model W44.M8A1GMC
+FlashModel DefaultFlash
 ModelScale 0.95
 Texture Skin44_M8
 RotateWheels True

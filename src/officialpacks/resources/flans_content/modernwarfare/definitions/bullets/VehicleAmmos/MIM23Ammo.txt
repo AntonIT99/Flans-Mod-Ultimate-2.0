@@ -47,3 +47,8 @@ ExplosiveMassTNTKg 50
 FlakParticles 0
 HitSound bullet
 SmokeTrail True
+TrailParticleType flansmod.rocketexhaust
+ExplodeParticles 10
+ExplodeParticleType explode
+FlareParticleCount 8
+DebrisParticleCount 6

@@ -6,6 +6,7 @@ Description German Light Tank__Uses 20mm Ammo__Year Introduced : 1944
 // Rendering
 Icon 44_SdKfz1401
 Model W44.SdKfz1401
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_SdKfz1401
 RotateWheels True

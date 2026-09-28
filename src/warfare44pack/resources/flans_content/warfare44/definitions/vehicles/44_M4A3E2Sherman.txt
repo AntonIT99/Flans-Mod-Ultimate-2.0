@@ -6,6 +6,7 @@ Description American Assault Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank
 // Rendering
 Icon 44_M4A3E2Sherman
 Model W44.M4A3E2Sherman
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_M4A3E2Sherman
 RotateWheels True

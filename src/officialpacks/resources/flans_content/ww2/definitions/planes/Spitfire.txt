@@ -5,6 +5,7 @@ ShortName Spitfire
 // Item and rendering
 Icon Spitfire
 Model ww2.Spitfire
+FlashModel DefaultFlash
 Texture spitfire
 AddDye 6 green
 

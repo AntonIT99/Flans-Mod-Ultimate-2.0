@@ -6,6 +6,7 @@ Description German Light Tank__Uses : 37mm AP Tank Shell_Small Cal. HE Tank Shel
 // Rendering
 Icon 44_Panzer38t
 Model W44.Panzer38t
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_Panzer38t
 RotateWheels True

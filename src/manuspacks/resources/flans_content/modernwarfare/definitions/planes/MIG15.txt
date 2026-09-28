@@ -5,6 +5,7 @@ ShortName MIG15
 // Model and Rendering
 Icon IconPlaneMIG15
 Model manus_modern_warfare.MIG15
+FlashModel DefaultFlash
 Texture SkinPlaneMIG15
 
 // Recipe and Inventory

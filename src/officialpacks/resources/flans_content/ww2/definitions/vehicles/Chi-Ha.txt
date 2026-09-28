@@ -6,6 +6,7 @@ Description Japanese Light Tank
 // Item and rendering
 Icon ChiHa
 Model ww2.ChiHa
+FlashModel DefaultFlash
 Texture chiha
 AddDye 8 green
 
@@ -90,4 +91,10 @@ StartSoundLength 41
 EngineSound engine_mt_chinu
 EngineSoundLength 39
 ShootSoundPrimary shoot_57mm
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.46 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.28 0.07 0.07
+ShootParticlesPrimary largesmoke 0.26 -0.07 -0.07
 ShootSoundSecondary BrenShoot

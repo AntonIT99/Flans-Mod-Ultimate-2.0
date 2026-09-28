@@ -6,6 +6,7 @@ Description German Heavy Tank from the Movie "Fury"
 // Item and rendering
 Icon Tiger131
 Model ww2.Tiger131
+FlashModel DefaultFlash
 Texture 131
 AddDye 15 yellow
 ModelScale 1.2
@@ -91,6 +92,14 @@ StartSoundLength 41
 EngineSound engine_ht_pzvi
 EngineSoundLength 39
 ShootSoundPrimary shoot_88mmde
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary MG42Shoot
 AddEmitter smoke 1 [-60,25,7] [1,1,1] [0,0.5,0] -1 1 0 1 core
 AddEmitter smoke 1 [-60,25,-7] [1,1,1] [0,0.5,0] -1 1 0 1 core

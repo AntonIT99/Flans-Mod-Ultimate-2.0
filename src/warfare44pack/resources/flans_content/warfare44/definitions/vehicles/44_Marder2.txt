@@ -6,6 +6,7 @@ Description German Light Tank Destroyer__Uses : 75mm AP Tank Shell_Medium Cal. H
 // Rendering
 Icon 44_Marder2
 Model W44.Marder2
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_Marder2
 RotateWheels True

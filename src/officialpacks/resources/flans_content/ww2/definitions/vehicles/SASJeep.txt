@@ -6,6 +6,7 @@ Description American Jeep
 // Item and rendering
 Icon SASJeep
 Model ww2.SASJeep
+FlashModel DefaultFlash
 Texture sasjeep
 RotateWheels true
 AddDye 3 green

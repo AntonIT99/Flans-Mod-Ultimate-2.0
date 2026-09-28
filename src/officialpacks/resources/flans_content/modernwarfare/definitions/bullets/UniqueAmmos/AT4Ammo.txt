@@ -44,4 +44,8 @@ FlakParticles 12
 FlakParticleType flame
 HitSound bullet
 SmokeTrail True
+ExplodeParticles 8
+ExplodeParticleType explode
+FlareParticleCount 5
+DebrisParticleCount 4
 TrailParticleType flame

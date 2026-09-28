@@ -6,6 +6,7 @@ Description Japanese Jeep __Year Introduced : 1936
 // Rendering
 Icon 44_Kurogane
 Model W44.Kurogane
+FlashModel DefaultFlash
 Texture Skin44_Kurogane
 RotateWheels true
 CameraDistance 5.0

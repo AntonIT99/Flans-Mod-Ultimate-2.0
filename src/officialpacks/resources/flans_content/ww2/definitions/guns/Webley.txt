@@ -7,6 +7,9 @@ Icon webley
 Colour 255 255 255
 DeployedModel None
 Model ww2.Webley
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.575 1.0125 0
+animFlashScale 1.11
 Texture webley
 ModelScale 0.4
 

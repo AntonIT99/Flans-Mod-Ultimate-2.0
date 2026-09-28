@@ -171,5 +171,6 @@ public class ModelACR extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(4.5F, 1.5F, 0F);
 	}
 }

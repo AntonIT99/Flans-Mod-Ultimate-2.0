@@ -7,6 +7,9 @@ Icon m1carbine
 Colour 255 255 255
 DeployedModel None
 Model ww2.M1Carbine
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.47949 0.47974 -0.00586
+animFlashScale 2.13
 Texture m1carbine
 Paintjob m1carbine_acacia m1carbine_acacia orange 2
 Paintjob m1carbine_birch m1carbine_birch black 1 yellow 1

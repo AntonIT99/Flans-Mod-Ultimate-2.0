@@ -6,6 +6,7 @@ Description Japanese Medium Tank__Uses : 57mm AP Tank Shell_Small Cal. HE Tank S
 // Rendering
 Icon 44_ChiHaKai
 Model W44.ChiHaKai
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_ChiHaKai
 RotateWheels True

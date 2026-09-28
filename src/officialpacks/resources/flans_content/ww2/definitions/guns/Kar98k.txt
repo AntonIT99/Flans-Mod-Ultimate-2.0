@@ -7,6 +7,9 @@ Icon kar98k
 Colour 255 255 255
 DeployedModel None
 Model ww2.Kar98k
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.31836 0.35125 -0.00565
+animFlashScale 1.66
 Texture kar98k
 Paintjob kar98k_acacia kar98k_acacia orange 2
 Paintjob kar98k_birch kar98k_birch black 1 yellow 1

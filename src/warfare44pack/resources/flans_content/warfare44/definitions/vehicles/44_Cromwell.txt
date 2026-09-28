@@ -6,6 +6,7 @@ Description British Medium Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank S
 // Rendering
 Icon 44_Cromwell
 Model W44.Cromwell
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_Cromwell
 RotateWheels True

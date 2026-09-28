@@ -63,6 +63,7 @@ public class ModelWinchesterModel70 extends ModelGun
 
 		
 		translateAll(0, 2.5F, 0);
+		muzzleFlashPoint = new Vector3f(1.0625F, 0.28125F, 0F);
 		
 		gunSlideDistance = 0.5F;
 		animationType = EnumAnimationType.RIFLE;

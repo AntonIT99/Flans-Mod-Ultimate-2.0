@@ -6,6 +6,7 @@ Description German Armored Car__Uses : 50mm AP Tank Shell_Small Cal. HE Tank She
 // Rendering
 Icon 44_Puma
 Model W44.Puma
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_Puma
 RotateWheels True

@@ -5,6 +5,7 @@ ShortName Do17Bomber
 // Item and rendering
 Icon do17
 Model ww2.Lancaster
+FlashModel DefaultFlash
 Texture do17
 AddDye 10 green
 AddDye 5 yellow

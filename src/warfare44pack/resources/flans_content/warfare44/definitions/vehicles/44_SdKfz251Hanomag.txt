@@ -6,6 +6,7 @@ Description German Halftrack__Year Introduced : 1939
 // Rendering
 Icon 44_SdKfz251Hanomag
 Model W44.SdKfz251Hanomag
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_SdKfz251Hanomag
 RotateWheels true

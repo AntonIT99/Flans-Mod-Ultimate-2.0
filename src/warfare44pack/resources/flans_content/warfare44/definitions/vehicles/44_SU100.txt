@@ -6,6 +6,7 @@ Description Soviet Medium Tank Destroyer__Uses : 100mm AP Tank Shell_Large Cal. 
 // Rendering
 Icon 44_SU100
 Model W44.SU100
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_SU
 RotateWheels True

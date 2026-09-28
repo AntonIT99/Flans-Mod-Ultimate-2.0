@@ -6,6 +6,7 @@ Description German Ground Attack Aircraft __Uses 37mm AP Tank Shell __Year Intro
 // Rendering
 Icon 44_Ju87G1
 Model W44.Ju87G1
+FlashModel DefaultFlash
 Texture Skin44_Ju87G1
 CameraDistance 10.0
 

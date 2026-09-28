@@ -6,6 +6,7 @@ Description German Fighter Aircraft__Uses Mg131 Ammo / 20mm Aircraft Ammo__Year 
 // Rendering
 Icon 44_BF109G10
 Model W44.BF109G10
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_BF109G10
 CameraDistance 10.0

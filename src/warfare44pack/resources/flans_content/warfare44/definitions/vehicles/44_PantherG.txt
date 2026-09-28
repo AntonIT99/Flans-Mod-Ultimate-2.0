@@ -6,6 +6,7 @@ Description German Medium Tank__Uses : 75mm AP Tank Shell - Long_Medium Cal. HE 
 // Rendering
 Icon 44_PantherG
 Model W44.PantherG
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_PantherG
 RotateWheels True

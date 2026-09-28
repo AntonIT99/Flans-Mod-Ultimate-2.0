@@ -6,6 +6,7 @@ Description American Jeep __Year Introduced : 1941
 // Rendering
 Icon 44_Willys30Cal
 Model W44.Willys30Cal
+FlashModel DefaultFlash
 ModelScale 0.9
 Texture Skin44_Willys
 RotateWheels true

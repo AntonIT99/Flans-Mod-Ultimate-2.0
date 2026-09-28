@@ -6,6 +6,7 @@ Description American Medium Tank
 // Item and rendering
 Icon Sherman
 Model ww2.Sherman
+FlashModel DefaultFlash
 Texture sherman
 RotateWheels true
 AddDye 10 green
@@ -93,6 +94,14 @@ StartSoundLength 41
 EngineSound engine_mt_m4
 EngineSoundLength 39
 ShootSoundPrimary 75mmGun
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary BrowningShoot
 AddEmitter explode 8 [-60,12,-8] [5,5,5] [0,1,0] 0.33 0.66 0 1 core
 AddEmitter explode 8 [-60,12,8] [5,5,5] [0,1,0] 0.33 0.66 0 1 core

@@ -6,6 +6,7 @@ Description US Marines Jeep
 // Item and rendering
 Icon Humvee
 Model mw.Humvee
+FlashModel DefaultFlash
 Texture SkinHumvee
 RotateWheels true
 AddDye 3 brown

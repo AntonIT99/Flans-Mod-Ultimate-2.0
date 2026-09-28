@@ -6,6 +6,7 @@ Description Japanese Fighter Aircraft__Uses Type 99 Ammo / 20mm Aircraft Ammo__Y
 // Rendering
 Icon 44_A6M5Zero
 Model W44.A6M5Zero
+FlashModel DefaultFlash
 ModelScale 1.05
 Texture Skin44_A6M5Zero
 CameraDistance 10.0

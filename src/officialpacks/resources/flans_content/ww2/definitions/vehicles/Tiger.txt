@@ -7,6 +7,7 @@ Description German Heavy Tank
 // Item and rendering
 Icon Tiger
 Model ww2.Tiger
+FlashModel DefaultFlash
 Texture tiger
 AddDye 15 gray
 ModelScale 1.2
@@ -94,6 +95,14 @@ StartSoundLength 41
 EngineSound engine_ht_pzvi
 EngineSoundLength 39
 ShootSoundPrimary 88mmGun
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary MG42Shoot
 AddEmitter smoke 1 [-60,25,7] [1,1,1] [0,0.5,0] -1 1 0 1 core
 AddEmitter smoke 1 [-60,25,-7] [1,1,1] [0,0.5,0] -1 1 0 1 core

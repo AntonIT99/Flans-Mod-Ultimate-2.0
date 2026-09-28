@@ -5,6 +5,7 @@ ShortName cobra
 // Item and rendering
 Icon Cobra
 Model mw.Cobra
+FlashModel DefaultFlash
 Texture Cobra
 AddDye 6 green
 

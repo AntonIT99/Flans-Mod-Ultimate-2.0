@@ -175,5 +175,6 @@ public class ModelAA12 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(6.25F, 1.53125F, 0F);
 	}
 }

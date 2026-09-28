@@ -5,6 +5,7 @@ ShortName BF109
 // Item and rendering
 Icon BF109
 Model ww2.BF109
+FlashModel DefaultFlash
 Texture bf109
 AddDye 5 silver
 AddDye 3 green

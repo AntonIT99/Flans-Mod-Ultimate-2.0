@@ -6,6 +6,7 @@ Description American Medium Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank 
 // Rendering
 Icon 44_M4Sherman
 Model W44.M4Sherman
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_M4Sherman
 RotateWheels True

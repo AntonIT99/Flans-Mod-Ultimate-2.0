@@ -228,5 +228,6 @@ public class ModelGalil extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7.25F, 1.40625F, 0F);
 	}
 }

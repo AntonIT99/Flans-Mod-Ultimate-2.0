@@ -6,6 +6,7 @@ Description German Medium Tank Destroyer
 // Item and rendering
 Icon StuG
 Model ww2.StuG
+FlashModel DefaultFlash
 Texture stug
 RotateWheels True
 AddDye 10 gray
@@ -88,4 +89,12 @@ StartSoundLength 41
 EngineSound engine_mt_pziii
 EngineSoundLength 39
 ShootSoundPrimary shoot_75mmde
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary MG42Shoot

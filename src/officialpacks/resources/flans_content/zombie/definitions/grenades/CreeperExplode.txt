@@ -48,4 +48,6 @@ SmokeTime 0
 // Sounds and particles
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2
 ThrowSound CreeperExplode

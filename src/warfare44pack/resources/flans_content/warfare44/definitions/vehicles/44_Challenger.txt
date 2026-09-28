@@ -6,6 +6,7 @@ Description British Cruiser Tank__Uses : 76mm AP Tank Shell - Long_Medium Cal. H
 // Rendering
 Icon 44_Challenger
 Model W44.Challenger
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_Challenger
 RotateWheels True

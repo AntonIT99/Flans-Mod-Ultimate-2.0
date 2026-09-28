@@ -6,6 +6,7 @@ Description Soviet Medium Tank Destroyer__Uses : 85mm AP Tank Shell_Medium Cal. 
 // Rendering
 Icon 44_SU85
 Model W44.SU85
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_SU
 RotateWheels True

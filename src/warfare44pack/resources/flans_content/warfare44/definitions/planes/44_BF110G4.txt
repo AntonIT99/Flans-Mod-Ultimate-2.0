@@ -6,6 +6,7 @@ Description German Attack Aircraft (Night Fighter)__Uses Mg17 Ammo / 20mm Aircra
 // Rendering
 Icon 44_BF110G4
 Model W44.BF110G4
+FlashModel DefaultFlash
 Texture Skin44_BF110G4
 CameraDistance 10.0
 

@@ -6,6 +6,7 @@ Description Soviet Heavy Tank
 // Item and rendering
 Icon IS2
 Model ww2.IS2
+FlashModel DefaultFlash
 Texture is2
 RotateWheels true
 AddDye 15 green
@@ -92,6 +93,14 @@ StartSoundLength 41
 EngineSound engine_ht_is
 EngineSoundLength 39
 ShootSoundPrimary shoot_122mmussr
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.4 0 0
+ShootParticlesPrimary flansmod.fmflame 1.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.9 0.08 0.12
+ShootParticlesPrimary flansmod.fmflame 0.85 -0.08 -0.12
+ShootParticlesPrimary largesmoke 0.5 0.1 0.12
+ShootParticlesPrimary largesmoke 0.48 -0.1 -0.12
+ShootParticlesPrimary cloud 0.08 0 0
 ShootSoundSecondary MG42Shoot
 AddEmitter explode 8 [-60,30,-8] [5,5,5] [0,1,0] 0.33 0.66 0 1 core
 AddEmitter explode 8 [-60,30,8] [5,5,5] [0,1,0] 0.33 0.66 0 1 core

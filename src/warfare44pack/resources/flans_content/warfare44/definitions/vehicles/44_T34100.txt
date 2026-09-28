@@ -6,6 +6,7 @@ Description Soviet Medium Tank__Uses : 100mm AP Tank Shell_Large Cal. HE Tank Sh
 // Rendering
 Icon 44_T34100
 Model W44.T34100
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_T34100
 RotateWheels True

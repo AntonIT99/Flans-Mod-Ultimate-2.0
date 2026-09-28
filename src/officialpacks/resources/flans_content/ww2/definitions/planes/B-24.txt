@@ -5,6 +5,7 @@ ShortName B24Bomber
 // Item and rendering
 Icon B-24
 Model ww2.Lancaster
+FlashModel DefaultFlash
 Texture B-24
 AddDye 10 green
 AddDye 5 yellow

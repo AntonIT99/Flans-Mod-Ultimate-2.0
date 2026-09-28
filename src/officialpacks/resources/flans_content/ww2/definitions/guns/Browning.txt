@@ -6,6 +6,9 @@ ShortName BrowningHand
 Icon Browning
 Colour 255 255 255
 Model ww2.BrowningHand
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.19531 0.16172 0
+animFlashScale 0.89
 Texture SkinBrowningHand
 
 // Ammunition

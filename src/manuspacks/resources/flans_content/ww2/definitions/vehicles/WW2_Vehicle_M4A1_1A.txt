@@ -4,6 +4,7 @@ ShortName WW2_Vehicle_M4A1_1A
 
 // Model and Rendering
 Model Manus_WW2.Vehicle.WW2_Vehicle_M4A1_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Vehicle_M4A1_1A
 Texture Skin_WW2_Vehicle_M4A1_1A
 RotateWheels True
@@ -41,6 +42,14 @@ RealMaxReverseSpeedKmh 5
 // Weapons
 AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A
 BarrelPosition 52 35 0
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.58 0.07 0.05
+ShootParticlesPrimary flansmod.fmflame 0.54 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.3 0.07 0.06
+ShootParticlesPrimary largesmoke 0.28 -0.06 -0.07
+ShootParticlesPrimary smoke 0.22 0.04 -0.08
+ShootParticlesPrimary crit 0.48 0 0
 ShellDelay 110
 ShootDelay 5
 GunOrigin 1 50 -4.1 9.5

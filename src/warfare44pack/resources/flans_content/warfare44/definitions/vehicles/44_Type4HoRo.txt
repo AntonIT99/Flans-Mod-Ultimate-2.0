@@ -6,6 +6,7 @@ Description Japanese Light Tank Destroyer__Uses : Very Large Cal. HE Tank Shell 
 // Rendering
 Icon 44_Type4HoRo
 Model W44.Type4HoRo
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_Type4HoRo
 RotateWheels True

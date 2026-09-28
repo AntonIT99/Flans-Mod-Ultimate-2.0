@@ -6,6 +6,7 @@ Description German Medium Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank Sh
 // Rendering
 Icon 44_PanzerIVH
 Model W44.PanzerIVH
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_PanzerIVH
 RotateWheels True
