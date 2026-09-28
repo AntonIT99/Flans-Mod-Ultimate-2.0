@@ -42,10 +42,12 @@ Paths are relative to the repository root. `<pack>` is the resolved folder
    (`unchanged`, `update`, `add`, `skipped`), the authored and measured points in
    type-file pixels, and a **Check first** table of values scored 15 or more.
    Those are the values where the measurement itself may be wrong, or where the
-   tool could not place the point. §5.1 turns this into placement decisions.
+   tool could not place the point. §5.1, §5.2 and §5.5 turn this into placement
+   decisions.
 4. Note which flash asset the pack already uses (`FlashModel`/`FlashTexture` pairs,
-   `MuzzleFlashModel`), and the pack's particle conventions: shoot-particle sets,
-   emitter sets, trail types.
+   `MuzzleFlashModel`), which driveables already opt into `FlashModel DefaultFlash`,
+   and the pack's particle conventions: shoot-particle sets, emitter sets, trail
+   types.
 5. Identify reference families (§3.4). Warfare 44 sources live in
    `src/warfare44pack`. Decompile Tyrants and Plebeians models through the
    `mod-class-decompilation` skill (slug `tap-hero-shooter-september`, mappings
@@ -75,16 +77,25 @@ particle names are the constants in `FlanParticles` as mapped by
 | Bullet, grenade | `FlareParticleCount`, `DebrisParticleCount` | Explosion flare and debris counts. The engine multiplies them by charge intensity (`ExplosionVisuals`). |
 | Bullet | `FlakParticles n`, `FlakParticleType` | Airburst cloud, for flak and proximity rounds only. |
 | Bullet | `BoostParticle` | Rocket and missile boost-phase particle. |
-| Driveable | `ShootParticlesPrimary` / `ShootParticlesSecondary name x y z` | Spawned once per fired shoot point at that point's shoot origin (root plus offset), the same point the projectile leaves from. The particles are therefore exactly as well placed as the shoot point (§5.1). `x y z` is a direction and speed in the model basis: +x forward, y up. |
+| Driveable | `FlashModel DefaultFlash` | Type-wide muzzle-flash opt-in. Each successful `GUN` or `SHELL` bank shot flashes only its fired shoot point/barrel; passenger guns flash only their fired `GunOrigin` barrel. Several muzzles can flash together. A mounted gun's own `FlashModel` or `MuzzleFlashModel` replaces the default at that muzzle. Driveables accept only `DefaultFlash`, with no `FlashTexture` or `anim*` placement lines. |
+| Driveable | `ShootParticlesPrimary` / `ShootParticlesSecondary name x y z` | Spawned once per fired shoot point at that point's shoot origin (root plus offset), the same point the projectile leaves from. The particles are therefore exactly as well placed as the shoot point (§5.2). `x y z` is a direction and speed in the model basis: +x forward, y up. |
 | Driveable | `AddEmitter` / `AddParticle name rate [ox,oy,oz] [ex,ey,ez] [vx,vy,vz] minThrottle maxThrottle minHealth maxHealth part` | Continuous emitter. The origin, extents and velocity are in type-file pixels. It emits every `rate` ticks while throttle and part-health fraction are inside the bounds. It runs only while the engine is on (vehicles and planes) and within the local emitter range. Turret and barrel parts follow the turret. |
 | Driveable | `EmittersRequireOccupant` | Emitters only while occupied. |
+| AA gun | `Barrel index x y z` | Projectile origin in type-file pixels for that barrel. `shootPointSync` compares and can synchronize these lines with the measured `ModelAAGun` muzzles. This is placement data, not a visual-effect key. |
+| AA gun | no muzzle-effect key | `AAGunType` currently parses neither `FlashModel` nor `ShootParticles*`, and `AAGunRenderer` draws neither. Audit its barrels and ammunition visuals, then report a muzzle-effect proposal under the engine limitation (§5.5). |
 | Attachment | `DisableMuzzleFlash` / `DisableFlash` | Suppresses both flash models and the world particle while fitted. |
 
 Engine limitations. Report these; don't work around them:
 - deployed guns (`Deployable True`, drawn by `ModelMG`) can draw `FlashModel` or
   `MuzzleFlashModel` at their measured muzzle, but still have no world
   muzzle-flash particle path;
-- vehicle passenger or seat guns get no shoot particles or flash;
+- driveable passenger guns can draw a flash at `GunOrigin`, but still get no
+  `ShootParticles*` path;
+- `FlashModel DefaultFlash` is one driveable-wide switch, not a per-bank or
+  per-seat setting; it cannot safely represent mixed eligible and ineligible
+  gun/shell muzzles;
+- AA guns still have no flash-model or `ShootParticles*` parser/render path; adding
+  either key to an AA-gun definition would be inert;
 - only the primary and secondary banks of a driveable get `ShootParticles*`.
 
 ## 3. Hand-held guns
@@ -105,6 +116,11 @@ A gun whose definition already has `FlashModel` or `MuzzleFlashModel` needs no n
 flash. Check that its position agrees with the measurement and report
 disagreements as suspicious; don't change it. The model field `hasFlash` does not
 drive rendering, so it is not evidence either way.
+
+Apply this table to every `GunType` regardless of where it is used. A pilot gun,
+passenger gun or deployable gun does not stop being an eligible small arm merely
+because the player is not holding it. Evaluate each supported rendering context
+independently when one definition supplies more than one model.
 
 ### 3.2 Position
 
@@ -227,13 +243,60 @@ guessing.
 - Flash hiders, compensators and muzzle brakes: no key change. Report ones whose
   attachment model visibly extends the muzzle as suspicious for flash position.
 
-## 5. Driveables
+## 5. Driveables and AA guns
 
-### 5.1 Shoot particles
+### 5.1 Muzzle flashes
 
-Shoot particles are drawn at the shoot point, so place them only on a point
-whose position is known. Never measure or estimate a driveable muzzle by hand.
-Decide per bank from the `shootPointSync` report (§1.3):
+Small-arms flash coverage is exhaustive. Resolve every driveable's primary and
+secondary weapon types, every gun named by `ShootPointPrimary`,
+`ShootPointSecondary`, `AddGun` or `PilotGun`, and every passenger gun. Cross-check
+the referenced `GunType` definitions under §3 so the same eligible weapon also
+gets a flash when hand-held or deployed.
+
+Add `FlashModel DefaultFlash` beside the driveable's `Model` and `Texture` when all
+of these hold:
+
+- the driveable has at least one eligible small arm in a `GUN` bank, pilot mount,
+  or passenger seat;
+- every `GUN` or `SHELL` bank and passenger gun that the type-wide switch will
+  render is eligible for a front muzzle flash; missile, bomb and mine banks are
+  unaffected and do not block it;
+- every affected shoot point and passenger `GunOrigin` has reliable position
+  evidence as described below.
+
+This is one switch for the complete driveable. If an ordinary machine gun shares
+the driveable with an integrally suppressed gun, launch tube, or another muzzle
+that must not show a front flash, skip the line and report `mixed flash eligibility`.
+Do not invent a per-bank key or try to suppress one mount with
+`ShowMuzzleFlashParticle False`; that key controls the optional world particle,
+not the flash model.
+
+Use the `shootPointSync` report and the §5.2 decision table for position evidence.
+Primary and secondary banks flash at the exact fired `ShootPoint` and measured
+multi-barrel offset. Passenger guns flash at their fired `GunOrigin` barrel. A
+synced, low-risk measured row is acceptable. An unmeasured primary/secondary point
+or passenger origin must pass the same authored-only model check as shoot
+particles and goes on the suspicious list. Pending `update` or `add` rows must be
+synced in apply mode before adding the flash line. A Check first, skipped or failed
+row without independently verified authored placement is `no reliable position`.
+
+A referenced mounted gun's own `FlashModel`/`FlashTexture` or
+`MuzzleFlashModel` is used at that muzzle; otherwise the driveable's built-in
+default is used. Still add or preserve the gun definition's own eligible flash per
+§3 for its hand-held and deployable contexts. Do not add `FlashTexture`,
+`animMuzzleFlashPoint` or `animFlashScale` to a driveable: those are gun-only keys.
+AA-gun definitions are outside this flash path and must not receive the driveable
+key. Audit them separately under §5.5.
+
+### 5.2 Shoot particles
+
+Vehicle-cannon coverage is exhaustive: audit every primary and secondary bank
+that fires an autocannon, tank gun, anti-tank gun, howitzer or other conventional
+cannon. Each supported bank should have a calibre-appropriate layered muzzle blast,
+either already present or added here. A small-arms bank may also receive the lighter
+sets below when appropriate. Shoot particles are drawn at the shoot point, so place
+them only on a point whose position is known. Never measure or estimate a driveable
+muzzle by hand. Decide per bank from the `shootPointSync` report (§1.3):
 
 | Report state for the bank | Position evidence | Shoot particles |
 |---|---|---|
@@ -259,28 +322,59 @@ usually not modelled, so this check is their normal path. Anything placed this w
 goes on the suspicious list, and `/flandebug shootpoint list` can confirm it in game.
 
 Seat guns (`GunOrigin`) are synced by the same task, but the engine gives them no
-shoot particles or flash (§2 limitations). Their rows matter here only as a check
-on the model: a gun that measures far from its gunner seat, or across the hull,
-points to a model or seat problem worth reporting.
+`ShootParticles*` path (§2 limitations); their flashes are handled by §5.1. Their
+rows matter here only as a check on the model: a gun that measures far from its
+gunner seat, or across the hull, points to a model or seat problem worth reporting.
 
-Add sets only to banks without any `ShootParticles*` line. Use the pack's own set
-for the same weapon class when it exists. Otherwise use these. Rows marked W44 are
-Warfare 44's own sets; the others are proposals derived from them, to scale with
-care:
+Classify existing cannon particles into three visual layers:
+
+- **pressure flash**: `largeexplode` or `explode` at the muzzle;
+- **hot gas and flame**: `flansmod.fmflame`, normally pushed along the bore or
+  sideways through a muzzle brake;
+- **smoke and dust**: `largesmoke`, `smoke` or a restrained `cloud` ring.
+
+A cannon set is complete when it has a short bright core and a smoke body suited to
+its calibre; large guns should also communicate blast pressure. Preserve complete
+sets. When a set is sparse, retain every authored line and add only its missing
+layer or layers. Do not paste a second full preset on top of existing particles,
+and do not add near-duplicate lines merely to increase density. Record the original
+and supplemented layers in the report.
+
+Treat the table as a palette and scale reference, not a set of mandatory recipes.
+Creative combinations are welcome: mix a pressure flash, staggered flame jets,
+sparks (`crit`), smoke and dust (`cloud`) when the weapon supports that look. Give
+each particle a job and shape its velocity into a coherent blast: a narrow forward
+cone for an unbraked barrel, paired side jets for a muzzle brake, a wider cloud for
+a short howitzer, and a lighter, faster-clearing effect for rapid fire. Alternate
+slightly asymmetric vectors to avoid a flat ring while keeping the overall blast
+centred on the bore. Use only names verified in `ParticleHelper`, keep the total no
+denser than a comparable complete set already in the pack, and avoid explosion
+particles on every autocannon round when flame and smoke communicate the shot more
+cleanly.
+
+For the extensive source analysis, supported particle palette, geometry rules and
+ready-to-adapt configurations from rifle-calibre MGs through siege guns, read
+[muzzle-blast-proposals.md](muzzle-blast-proposals.md). Use its fan-out calculation
+for every multi-point or multi-barrel bank before applying the budget.
+
+Use the pack's own complete set for the same weapon class when one exists.
+Otherwise build from these examples. Rows marked W44 are Warfare 44's own sets;
+the others are proposals derived from them, to scale with care:
 
 | Weapon class | Set per shot point (direction = forward +x) | Source |
 |---|---|---|
 | Rifle-calibre MG, aircraft MG | ring of 5 `crit 0.4 ±0.1` + 1 `flansmod.fmflame 0 0 0` | W44 planes |
-| HMG / 20–40 mm autocannon | `flansmod.fmflame 0.5 0 0` + `flansmod.fmflame 0.25 0 0`, optionally 2 `smoke 0.3 ±0.05` | W44 (flames), proposed (smoke) |
-| Tank or AT gun, 76 mm and up; howitzer | `largeexplode 0 0 0` + `explode 1.5 0 0` + ring of 8 `largesmoke 0.5 ±0.1` + ring of 8 `cloud 0.05 ±0.2` | W44 tanks |
-| Tank or AT gun, 37–75 mm | the heavy set without the `cloud` ring, and 4–6 `largesmoke` | proposed |
+| HMG / 20–40 mm autocannon | 2 `flansmod.fmflame` along the bore (`0.5` and `0.25`) + 2–4 `smoke 0.3` spread narrowly around it | W44 (flames), proposed (smoke) |
+| Tank or AT gun, 76 mm and up; howitzer | `largeexplode 0 0 0` + `explode 1.5 0 0` + a 6–8 particle `flansmod.fmflame` burst + ring of 6–8 `largesmoke 0.5`; add a restrained `cloud 0.05` ring only where the pack uses it for heavy blast | W44 tanks |
+| Tank or AT gun, 37–75 mm | `largeexplode 0 0 0` or `explode 1.0 0 0` + 4–6 `flansmod.fmflame` + 4–6 `largesmoke`; omit the heavy `cloud` ring | proposed from W44 |
 | Muzzle-braked guns | bias the ring sideways (larger ±z) rather than forward | proposed |
 | Recoilless or rocket primary | launch plume `flansmod.rocketexhaust` or `explode -1.5 0 0` backwards; never a forward flash | proposed |
 
 Mirror the direction (`-x`) only when the pack's model faces backwards (see
-existing reversed sets in the pack before assuming).
+existing reversed sets in the pack before assuming). Recoilless rifles and rocket
+launchers use the launch-plume row rather than the conventional cannon requirement.
 
-### 5.2 Engine exhaust
+### 5.3 Engine exhaust
 
 Add an exhaust emitter only when the exhaust location is known from the model
 source (a part commented or grouped as exhaust, or clearly shaped as pipes or
@@ -297,7 +391,7 @@ Diesel engines (most Soviet and Japanese tanks, late trucks) get one more
 `flansmod.afterburn` at high throttle only where the pack has afterburners.
 Exhaust on a part the engine isn't in (a turret, say) is a bug.
 
-### 5.3 Damage smoke and fire
+### 5.4 Damage smoke and fire
 
 For each vehicle or plane lacking damage emitters, add the Warfare 44 ladder over
 the engine compartment:
@@ -318,6 +412,55 @@ Exhaust does not.
 
 Remember emitters only run with the engine on. Don't add emitters to towed guns or
 static emplacements without an engine.
+
+### 5.5 AA guns
+
+Audit every file under `definitions/aaguns`, including manned mounts, sentries,
+anti-aircraft autocannons, heavy dual-purpose guns, missile launchers and fictional
+turrets. Record `Model`, `NumBarrels`, every `Barrel`, `FireAlternately`, cadence,
+ammo entries and ammo groups.
+
+**Placement.** Use the AA-gun rows from `shootPointSync`. In apply mode, synchronize
+pending `Barrel` updates or additions with `-Pwrite`, then rerun read-only and
+require `0 to update, 0 to add`. Never edit a `Barrel` line by hand. Put every
+Check first, skipped or failed row on the suspicious list. Also report a barrel
+count that does not match usable model geometry; the parser clamps `NumBarrels` to
+at least one, so an authored zero is not a visual exemption.
+
+**Current muzzle limitation.** `AAGunType` and `AAGunRenderer` have no supported
+flash-model or shoot-particle path. Do not add `FlashModel`, `MuzzleFlashModel`,
+`ShootParticlesPrimary`, `ShootParticlesSecondary` or invented AA equivalents to
+an AA-gun definition. Instead, select or compose the effect the weapon should use
+from [muzzle-blast-proposals.md](muzzle-blast-proposals.md) and include it in the
+report as an `engine limitation` proposal. State its intended layers, per-barrel
+line count, and worst-case volley count.
+
+`FireAlternately True` fires one barrel from the rotating index per volley.
+`FireAlternately False` can fire every loaded barrel in the same volley. Use that
+fan-out when selecting the future proposal: a quad 20 mm mount needs a much smaller
+per-barrel effect than a single 40 mm gun even when their individual calibres are
+similar.
+
+**Actionable ammunition visuals.** Resolve every direct `Ammo` entry and every
+round admitted through `UseAmmoGroup`, then audit those `BulletType` definitions
+under §6:
+
+- ordinary ball or AP receives no invented impact explosion;
+- historically or fictionally appropriate tracer belts may use the pack's tracer
+  colour, with `flansmod.fmtracer` as the neutral fallback;
+- autocannon HE gets a restrained trail and small impact effect consistent with
+  its filler;
+- timed, proximity or dedicated flak rounds may receive `FlakParticles` and a
+  smoke trail;
+- guided AA missiles use rocket exhaust or smoke and `BoostParticle` where their
+  motor has a boost phase;
+- fictional turrets follow the pack's established energy palette rather than a
+  conventional firearm effect.
+
+Do not add every eligible effect to a shared round merely because one AA gun uses
+it. First inventory every gun, vehicle and aircraft that accepts that ammunition;
+the projectile visual follows the round in all contexts. Report shared-ammo impact
+as suspicious when the new visual may be inappropriate for another weapon.
 
 ## 6. Projectiles and grenades
 
@@ -350,7 +493,10 @@ Per event, over all its lines:
 - a projectile trail of one particle type.
 
 When the pack's existing style exceeds these, keep it and report it; never exceed
-it in additions.
+it in additions. For shoot particles, multiply the configured line count by the
+number of shoot points that fire together. The resulting worst-case particles per
+trigger, rather than the lines written once in the definition, is the budgeted
+quantity.
 
 ## 8. Validation
 
@@ -362,9 +508,12 @@ it in additions.
    changed, and compare each added `animMuzzleFlashPoint × flashScale × 16` with
    `muzzlePx` (tolerance 0.5 px). For every deployable flash, confirm its
    `DeployedModel` still has a `measured` deployable row and inspect the reported
-   point against the model source. When driveables were touched, re-run
+   point against the model source. When driveables or AA guns were touched, re-run
    `shootPointSync` with the pack filter and confirm `0 to update, 0 to add`, and
-   that every bank that gained `ShootParticles*` is placed per §5.1.
+   that every driveable that gained `FlashModel DefaultFlash` satisfies §5.1 and
+   every bank that gained `ShootParticles*` is placed per §5.2. Confirm every
+   audited AA gun satisfies §5.5, its ammo visuals resolve, and no unsupported
+   muzzle-effect key was added to its definition.
 3. Run the pack's jar task (`manusPacksJar`, `warfare44Pack`, `officialPacksJar`,
    ... from `src/<set>/fmu-module.gradle`), plus `packsManagerJar` if its inputs
    changed.
@@ -379,10 +528,14 @@ Use these sections in the final message (audit mode: proposals; apply mode: done
 
 1. **Added**: per definition, the lines added and the evidence (report row,
    declared point, family match, or model part).
-   **Synced shoot points** (apply mode, when §5.1 ran the sync): the definitions and
+   **Synced shoot points** (apply mode, when §5.1 or §5.2 ran the sync): the definitions and
    values `shootPointSync -Pwrite` changed, listed apart from the effects.
 2. **Skipped, with reason**: `no reliable position`, `not realistic`,
-   `engine limitation`, `already has effect`, `gameplay key (out of scope)`.
+   `mixed flash eligibility`, `engine limitation`, `already has effect`,
+   `gameplay key (out of scope)`.
+   For each AA gun, include the proposed muzzle-effect silhouette and template
+   under `engine limitation`, followed separately by any ammunition effects that
+   were actually added.
 3. **Suspicious (in-game check candidates)**: the short, concrete list.
 4. **Existing issues found**: broken names, mispositioned existing flashes,
    budget-breaking styles, for the user to decide.

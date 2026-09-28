@@ -1,0 +1,4 @@
+interface:
+  display_name: "Content Pack Muzzle Flash Points"
+  short_description: "Place plausible muzzle points on Flan gun models"
+  default_prompt: "Use $content-pack-muzzle-flash-points on <pack> to add defensible muzzleFlashPoint coordinates to its eligible existing gun models."
