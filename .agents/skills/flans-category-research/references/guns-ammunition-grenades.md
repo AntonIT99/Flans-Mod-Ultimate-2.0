@@ -54,6 +54,34 @@ cycle faster than it really does. How often that wait arrives is set by the
 ammunition's `RoundsPerItem`: a weapon whose round is a single item reloads after
 every shot, which is how launchers and break-action weapons should behave.
 
+### Arcade rifle cadence floor
+
+Treat historical practical rate as the starting point, then enforce a playable
+minimum for ordinary shoulder-fired rifles. Bolt-action rifles use these balance
+bands:
+
+| Action | `RoundsPerMin` |
+| --- | --- |
+| Heavy or slow bolt action | 30–35 |
+| Standard military bolt action | 35–45 |
+| Fast or smooth bolt action | 45–50 |
+| Straight-pull or exceptionally fast action | 50–60 |
+
+Do not author an ordinary bolt-action or semiautomatic rifle below 30 RPM. Select
+within a bolt-action band from the weapon's size, handling, action geometry and
+intended role; do not present the resulting floor as a historically measured rate.
+Apply the 30 RPM floor to heavy anti-materiel and anti-tank rifles as the bottom of
+the heavy/slow band, and to low-rate semiautomatic rifles. Ordinary lever-action
+and other repeating shoulder rifles also need an explicit mechanical or gameplay
+reason to fall below 30 RPM.
+
+This floor does not apply to artillery, vehicle or naval guns, launchers, bows,
+thrown weapons, muzzle-loaders, single-shot black-powder arms, signal/utility
+devices, or a deliberately exotic mechanism such as a charged fictional weapon.
+For any rifle-like special weapon kept below 30 RPM, verify that its mechanism—not
+merely its name, calibre or sniper role—requires the slow cadence and state the
+reason in the completion report.
+
 When reliable research and configuration-compatible game sources cannot establish
 either mandatory value, author a gameplay-coherent fallback rather than omitting
 it. Base it on the weapon type, action, calibre, era, barrel length, and comparable
