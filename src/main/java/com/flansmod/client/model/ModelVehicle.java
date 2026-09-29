@@ -438,7 +438,11 @@ public class ModelVehicle extends ModelDriveable
         {
             renderLegs(state, poseStack, vertexConsumer, packedLight, packedOverlay,
                 red, green, blue, alpha, scale, renderPass);
-            renderWithRotation(steeringWheelModel, steering * 3F, 0F, 0F, poseStack, vertexConsumer,
+            boolean hugeBoat = driveable.getConfigType() instanceof VehicleType type
+                && type.isFloatOnWater() && type.getWheelStepHeight() == 0F;
+            float steeringWheelAngle = state.steeringAngle() * 3F * Mth.DEG_TO_RAD
+                * (hugeBoat ? -1F : 1F);
+            renderSteeringWheel(steeringWheelAngle, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
         if (driveable.isPartIntact(EnumDriveablePart.TRAILER))
@@ -971,6 +975,22 @@ public class ModelVehicle extends ModelDriveable
             part.rotateAngleX = oldX;
             part.rotateAngleY = oldY;
             part.rotateAngleZ = oldZ;
+        }
+    }
+
+    private void renderSteeringWheel(float angle, PoseStack poseStack, VertexConsumer vertexConsumer,
+                                     int packedLight, int packedOverlay, float red, float green, float blue,
+                                     float alpha, float scale, EnumRenderPass renderPass)
+    {
+        for (ModelRendererTurbo part : steeringWheelModel)
+        {
+            if (part == null)
+                continue;
+            float oldX = part.rotateAngleX;
+            part.rotateAngleX = angle;
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass, oldRotateOrder);
+            part.rotateAngleX = oldX;
         }
     }
 
