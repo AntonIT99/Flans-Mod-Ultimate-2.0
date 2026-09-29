@@ -782,6 +782,15 @@ public final class ShootingHelper
         float penetrationModifier = (type.getBlockPenetrationModifier() > 0F ? (1F / type.getBlockPenetrationModifier()) : 1F);
         PenetrableBlock penetrableBlock = PenetrableBlock.get(blockstate);
         float hardness = ((penetrableBlock != null) ? (float) penetrableBlock.hardness() : blockstate.getDestroySpeed(level, pos));
+        return blockPenetrationCost(hardness, penetrationModifier);
+    }
+
+    static float blockPenetrationCost(float hardness, float penetrationModifier)
+    {
+        // Negative destroy speed means an unbreakable block. It must stop the trace,
+        // rather than adding penetration and allowing unbounded recursive hits.
+        if (hardness < 0F)
+            return Float.POSITIVE_INFINITY;
         return 2F * hardness * penetrationModifier;
     }
 }
