@@ -3448,7 +3448,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return;
 
         boolean engineActive = isEngineActive();
-        boolean active = engineActive && getControllingEntity() != null;
+        // The server already requires a rider (or autonomous command) to keep the engine active.
+        // Remote clients may not have resolved the driver seat yet, so use the synced engine flag.
+        boolean active = engineActive;
         boolean loaded = isEngineLoadedWithoutThrottle();
         boolean throttled = active && (Math.abs(getThrottle()) > 0.001F || loaded);
 

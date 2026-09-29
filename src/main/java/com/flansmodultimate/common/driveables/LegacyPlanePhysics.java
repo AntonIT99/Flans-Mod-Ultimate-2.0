@@ -11,6 +11,8 @@ public final class LegacyPlanePhysics
     public static final float MAX_FLAP_ANGLE = 20F;
     /** Blocks per tick at which legacy fixed-wing aircraft gain full control authority. */
     public static final float FULL_CONTROL_AUTHORITY_SPEED = 0.2F;
+    /** Rudder authority for fixed-wing aircraft, relative to their previous control rate. */
+    public static final float FIXED_WING_YAW_AUTHORITY_SCALE = 0.8F;
     /** Maximum pitch or roll recovery on the landing roll, in degrees per tick. */
     public static final float LANDING_ATTITUDE_RECOVERY_DEG_PER_TICK = 0.25F;
     /** Maximum passive airborne roll correction for a reference aircraft, in degrees per tick. */
@@ -109,7 +111,7 @@ public final class LegacyPlanePhysics
                 ? Math.max(sensitivity, 2.5F * safeSpeed / divisor) : sensitivity;
         }
         sensitivity *= 0.125F;
-        yawSensitivity *= 0.125F;
+        yawSensitivity *= 0.125F * (mode == EnumPlaneMode.PLANE ? FIXED_WING_YAW_AUTHORITY_SCALE : 1F);
         return new ControlRates(
             finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight)) * yawSensitivity,
             finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown)) * sensitivity,
@@ -141,7 +143,8 @@ public final class LegacyPlanePhysics
         float sensitivity = Mth.clamp(finite(authority), 0F, 1F) * 0.125F;
         return new ControlRates(
             finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight))
-                * sensitivity * VehiclePhysicsConstants.DERIVED_YAW_AUTHORITY_SCALE,
+                * sensitivity * VehiclePhysicsConstants.DERIVED_YAW_AUTHORITY_SCALE
+                * FIXED_WING_YAW_AUTHORITY_SCALE,
             finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown))
                 * sensitivity * VehiclePhysicsConstants.DERIVED_PITCH_AUTHORITY_SCALE,
             finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight))

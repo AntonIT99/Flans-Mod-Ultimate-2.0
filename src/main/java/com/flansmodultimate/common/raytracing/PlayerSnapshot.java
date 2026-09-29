@@ -1,5 +1,8 @@
 package com.flansmodultimate.common.raytracing;
 
+import com.flansmodultimate.common.driveables.PlaneRiderRotation;
+import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -257,6 +260,9 @@ public class PlayerSnapshot
             if (p.isVisuallySwimming())
                 root.translate(0F, -1F, 0.3F);
         }
+
+        if (p.getVehicle() instanceof Seat seat && seat.getDriveable() instanceof Plane plane)
+            root.rotate(PlaneRiderRotation.at(plane, partialTick, bodyYaw));
 
         return root.scale(-MODEL_SCALE, -MODEL_SCALE, MODEL_SCALE).translate(0F, -1.501F, 0F);
     }
