@@ -425,12 +425,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                 return;
             handleDetonationConditions(level);
             updateStuckState(level);
+            Vec3 impactMotion = getDeltaMovement();
             handlePhysicsAndMotion(level);
             updateStickToThrower();
             handleStickToEntity(level);
             handleStickToDriveable(level);
             handleStickToEntityAfter(level);
-            handleImpactDamage(level);
+            handleImpactDamage(level, impactMotion);
             applyDragAndGravity();
 
             // Fire glitch fix
@@ -738,12 +739,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         }
     }
 
-    protected void handleImpactDamage(Level level)
+    protected void handleImpactDamage(Level level, Vec3 impactMotion)
     {
-        if (stuck || (configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
+        if (stuck || (!configType.useKineticDamageSystem()
+            && configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
             return;
 
-        double speedSq = velocity.lengthSqr();
+        double speedSq = impactMotion.lengthSqr();
         if (speedSq < 0.01)
             return;
 
@@ -753,7 +755,10 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             if (living == thrower && tickCount < 10)
                 continue;
 
-            living.hurt(getDamageSource(), ShootingHelper.getDamage(living, this, null));
+            float damage = configType.useKineticDamageSystem()
+                ? ShootingHelper.getKineticDamage(configType.getMass(), impactMotion.length())
+                : ShootingHelper.getDamage(living, this, null);
+            living.hurt(getDamageSource(), damage);
         }
     }
 

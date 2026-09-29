@@ -3,6 +3,8 @@ package com.flansmodultimate.client.sound;
 import com.flansmodultimate.client.SoundHelper;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.config.ModClientConfig;
 
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
@@ -20,14 +22,14 @@ import net.minecraft.world.entity.Entity;
 public class EntitySoundInstance extends AbstractTickableSoundInstance
 {
     private final Entity source;
-    private float pitchRange;
+    private boolean varyPitch;
     private boolean stopRequested;
 
-    public EntitySoundInstance(SoundEvent soundEvent, Entity source, float range, boolean looping, float pitchRange)
+    public EntitySoundInstance(SoundEvent soundEvent, Entity source, float range, boolean looping, boolean varyPitch)
     {
         super(soundEvent, SoundSource.PLAYERS, RandomSource.create());
         this.source = source;
-        this.pitchRange = pitchRange;
+        this.varyPitch = varyPitch;
         this.looping = looping;
         delay = 0;
         volume = SoundHelper.getVolumeFromRange(range, false);
@@ -53,9 +55,9 @@ public class EntitySoundInstance extends AbstractTickableSoundInstance
         return getLocation().getPath().equals(sound);
     }
 
-    public void setPitchRange(float pitchRange)
+    public void setVaryPitch(boolean varyPitch)
     {
-        this.pitchRange = pitchRange;
+        this.varyPitch = varyPitch;
     }
 
     @Override
@@ -68,9 +70,13 @@ public class EntitySoundInstance extends AbstractTickableSoundInstance
         }
 
         followSource();
-        if (source instanceof Driveable driveable)
-            pitch = DriveableControlPhysics.engineSoundPitch(driveable.getThrottle(), pitchRange,
+        if (varyPitch && source instanceof Driveable driveable && driveable.getConfigType() != null)
+            pitch = DriveableControlPhysics.engineSoundPitch(driveable.getThrottle(),
+                driveable.getConfigType().getEngineSoundPitchCurve(driveable.getConfigType() instanceof PlaneType
+                    ? ModClientConfig.defaultPlaneEnginePitch() : ModClientConfig.defaultVehicleEnginePitch()),
                 driveable.getEngineSoundReverseSpeedRatio());
+        else
+            pitch = 1F;
     }
 
     private void followSource()

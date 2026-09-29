@@ -1,6 +1,7 @@
 // Identity
 Name Dynamite
 ShortName 44_Dynamite
+Mass 250
 
 // Rendering
 Icon 44_Dynamite

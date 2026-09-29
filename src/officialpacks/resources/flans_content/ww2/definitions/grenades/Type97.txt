@@ -1,6 +1,7 @@
 // Identity
 Name Type 97 Grenade
 ShortName type97
+Mass 450
 
 // Item and rendering
 Icon Type97

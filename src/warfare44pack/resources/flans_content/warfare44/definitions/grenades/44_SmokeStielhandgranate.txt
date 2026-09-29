@@ -1,6 +1,7 @@
 // Identity
 Name Nebelhandgranate39
 ShortName 44_Smokestielhandgranate
+Mass 800
 Description German Smoke Grenade
 
 // Rendering

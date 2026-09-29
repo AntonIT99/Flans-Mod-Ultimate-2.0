@@ -28,18 +28,16 @@ public final class DriveableControlPhysics
         return Math.round(clamp(throttle, -1F, 1F) * 100F);
     }
 
-    /**
-     * Centres an engine's authored pitch span on normal pitch and moves across it with throttle.
-     * Reverse uses the fraction of forward top speed that the driveable can attain in reverse.
-     */
-    public static float engineSoundPitch(float throttle, float pitchRange, float reverseSpeedRatio)
+    /** Interpolates the authored forward curve; reverse traverses it by its speed ratio. */
+    public static float engineSoundPitch(float throttle, EngineSoundPitch curve, float reverseSpeedRatio)
     {
-        float safeRange = Float.isFinite(pitchRange) ? Math.max(0F, pitchRange) : 0F;
         float magnitude = Float.isFinite(throttle) ? clamp(Math.abs(throttle), 0F, 1F) : 0F;
-        float directionalRange = throttle < 0F
-            ? safeRange * (Float.isFinite(reverseSpeedRatio) ? Math.max(0F, reverseSpeedRatio) : 0F)
-            : safeRange;
-        return clamp(1F - safeRange * 0.5F + magnitude * directionalRange, 0.01F, 2F);
+        if (throttle < 0F)
+            magnitude = clamp(magnitude * (Float.isFinite(reverseSpeedRatio) ? Math.max(0F, reverseSpeedRatio) : 0F), 0F, 1F);
+        float pitch = magnitude <= 0.5F
+            ? curve.base() + (curve.half() - curve.base()) * (magnitude * 2F)
+            : curve.half() + (curve.full() - curve.half()) * ((magnitude - 0.5F) * 2F);
+        return Float.isFinite(pitch) ? Math.max(0.01F, pitch) : 0.01F;
     }
 
     /** Moves a brake-held throttle lever toward neutral without snapping it there. */

@@ -1,6 +1,7 @@
 // Identity
 Name C4 Plastic Explosive
 ShortName c4
+Mass 1000
 
 // Item and rendering
 Icon C4

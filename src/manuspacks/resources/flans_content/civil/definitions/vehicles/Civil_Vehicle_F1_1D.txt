@@ -65,3 +65,4 @@ StartSound enginestart
 StartSoundLength 20
 EngineSound modernengine
 EngineSoundLength 20
+EngineSoundPitchRange 2.0

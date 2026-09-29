@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.DriveableCollisionProfile;
 import com.flansmodultimate.common.driveables.DriveableExplosion;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
+import com.flansmodultimate.common.driveables.EngineSoundPitch;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.ParticleEmitter;
@@ -74,8 +75,6 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected VehicleOptics optics = new VehicleOptics();
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
-    /** Slightly narrower than the former hard-coded 0.5-to-1.5 engine pitch sweep. */
-    public static final float DEFAULT_ENGINE_SOUND_PITCH_RANGE = 0.8F;
     private static final float DEFAULT_WHEEL_GROUND_CLEARANCE = 0.375F;
 
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
@@ -248,7 +247,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected int engineSoundRange = 50;
     protected String engineSound = StringUtils.EMPTY;
     protected int engineSoundLength;
-    protected float engineSoundPitchRange = DEFAULT_ENGINE_SOUND_PITCH_RANGE;
+    protected float engineSoundPitchRange = Float.NaN;
+    protected float engineSoundPitchBase = Float.NaN;
+    protected float engineSoundPitchAt50 = Float.NaN;
+    protected float engineSoundPitchAt100 = Float.NaN;
     protected int backSoundRange = 50;
     protected String exitSound = StringUtils.EMPTY;
     protected int exitSoundLength = 50;
@@ -797,7 +799,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         engineSoundRange = readValue("EngineSoundRange", engineSoundRange, file);
         engineSoundLength = readSoundLength("EngineSoundLength", engineSoundLength, file);
         float configuredPitchRange = readValue("EngineSoundPitchRange", engineSoundPitchRange, file);
-        engineSoundPitchRange = Float.isFinite(configuredPitchRange) ? Math.max(0F, configuredPitchRange) : 0F;
+        engineSoundPitchRange = Float.isFinite(configuredPitchRange) ? Math.max(0F, configuredPitchRange) : Float.NaN;
+        float configuredPitchBase = readValue("EngineSoundPitchBase", engineSoundPitchBase, file);
+        engineSoundPitchBase = Float.isFinite(configuredPitchBase) ? Math.max(0F, configuredPitchBase) : Float.NaN;
+        engineSoundPitchAt50 = readValue("EngineSoundPitchAt50", engineSoundPitchAt50, file);
+        engineSoundPitchAt100 = readValue("EngineSoundPitchAt100", engineSoundPitchAt100, file);
         idleSoundLength = readSoundLength("IdleSoundLength", idleSoundLength, file);
         idleSoundLength = readSoundLength("IdleEngineSoundLength", idleSoundLength, file);
         exitSoundLength = readSoundLength("ExitSoundLength", exitSoundLength, file);
@@ -2029,6 +2035,22 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public float getEngineIdleLoopPitchRange()
     {
         return 0F;
+    }
+
+    public boolean usesEngineSoundAsIdleLoop()
+    {
+        return false;
+    }
+
+    public EngineSoundPitch getEngineSoundPitchCurve(EngineSoundPitch defaults)
+    {
+        float base = Float.isFinite(engineSoundPitchBase) ? engineSoundPitchBase : defaults.base();
+        float full = Float.isFinite(engineSoundPitchAt100) ? Math.max(0F, engineSoundPitchAt100)
+            : Float.isFinite(engineSoundPitchRange) ? base + engineSoundPitchRange : defaults.full();
+        float half = Float.isFinite(engineSoundPitchAt50) ? Math.max(0F, engineSoundPitchAt50)
+            : Float.isFinite(engineSoundPitchRange) ? base + engineSoundPitchRange * 0.5F
+            : Float.isFinite(engineSoundPitchAt100) ? (base + full) * 0.5F : defaults.half();
+        return new EngineSoundPitch(base, half, full);
     }
 
     @FunctionalInterface private interface SeatVectorSetter { void set(SeatInfo seat, Vector3f value); }

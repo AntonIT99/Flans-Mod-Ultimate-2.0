@@ -1,6 +1,7 @@
 ﻿// Identity
 Name Impact Grenade for Mk5 Grenade Launcher
 ShortName WH40K_Grenade_MkVGrenadeLauncher
+Mass 230
 
 // Model and Rendering
 Model Manus_WH40K.Misc.WH40K_Misc_GunGrenade_1

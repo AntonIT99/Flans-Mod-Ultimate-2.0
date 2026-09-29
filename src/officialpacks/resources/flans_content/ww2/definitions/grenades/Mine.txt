@@ -1,6 +1,7 @@
 // Identity
 Name Anti-Tank Mine
 ShortName ww2Mine
+Mass 9000
 
 // Item and rendering
 Icon WW2Mine

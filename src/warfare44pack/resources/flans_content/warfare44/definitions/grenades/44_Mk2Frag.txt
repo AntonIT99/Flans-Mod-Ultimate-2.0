@@ -1,6 +1,7 @@
 // Identity
 Name Mk2Frag
 ShortName 44_Mk2Frag
+Mass 595
 Description American Grenade
 
 // Rendering

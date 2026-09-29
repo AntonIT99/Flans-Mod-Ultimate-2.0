@@ -1,6 +1,7 @@
 // Identity
 Name Mills Bomb
 ShortName millsBomb
+Mass 765
 
 // Item and rendering
 Icon MillsBomb

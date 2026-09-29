@@ -18,9 +18,9 @@ public class ClientSoundHooksImpl implements IClientSoundHooks
         SoundHelper.playSound(sound, pos, range, distort, silenced, cancellable, instanceUUID, player != null && player == Minecraft.getInstance().player);
     }
 
-    public void setLoopingEntitySound(Entity source, String channel, @Nullable String sound, float range, float pitchRange)
+    public void setLoopingEntitySound(Entity source, String channel, @Nullable String sound, float range, boolean varyPitch)
     {
-        SoundHelper.setLoopingEntitySound(source, channel, sound, range, pitchRange);
+        SoundHelper.setLoopingEntitySound(source, channel, sound, range, varyPitch);
     }
 
     public void playEntitySound(Entity source, @Nullable String sound, float range)

@@ -1,6 +1,7 @@
 // Identity
 Name Molotov Cocktail
 ShortName molotovCocktail
+Mass 750
 
 // Item and rendering
 Icon Molotov

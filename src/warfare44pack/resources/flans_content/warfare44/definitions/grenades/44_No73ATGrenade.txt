@@ -1,6 +1,7 @@
 // Identity
 Name No. 73 AT-Grenade
 ShortName 44_No73ATGrenade
+Mass 2000
 Description German AT-Grenade
 
 // Rendering

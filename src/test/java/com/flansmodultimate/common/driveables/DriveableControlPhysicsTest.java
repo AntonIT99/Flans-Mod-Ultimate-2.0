@@ -51,12 +51,16 @@ class DriveableControlPhysicsTest
     @Test
     void enginePitchUsesThrottleMagnitudeAcrossTheConfiguredRange()
     {
-        assertEquals(0.6F, DriveableControlPhysics.engineSoundPitch(0F, 0.8F, 0.4F), EPSILON);
-        assertEquals(1F, DriveableControlPhysics.engineSoundPitch(0.5F, 0.8F, 0.4F), EPSILON);
-        assertEquals(1.4F, DriveableControlPhysics.engineSoundPitch(1F, 0.8F, 0.4F), EPSILON);
-        assertEquals(0.92F, DriveableControlPhysics.engineSoundPitch(-1F, 0.8F, 0.4F), EPSILON);
-        assertEquals(0.76F, DriveableControlPhysics.engineSoundPitch(-0.5F, 0.8F, 0.4F), EPSILON);
-        assertEquals(1F, DriveableControlPhysics.engineSoundPitch(1F, 0F, 0.4F), EPSILON);
+        EngineSoundPitch vehicle = new EngineSoundPitch(0.5F, 0.8F, 1.2F);
+        assertEquals(0.5F, DriveableControlPhysics.engineSoundPitch(0F, vehicle, 0.4F), EPSILON);
+        assertEquals(0.8F, DriveableControlPhysics.engineSoundPitch(0.5F, vehicle, 0.4F), EPSILON);
+        assertEquals(1.2F, DriveableControlPhysics.engineSoundPitch(1F, vehicle, 0.4F), EPSILON);
+        assertEquals(0.74F, DriveableControlPhysics.engineSoundPitch(-1F, vehicle, 0.4F), EPSILON);
+        assertEquals(0.62F, DriveableControlPhysics.engineSoundPitch(-0.5F, vehicle, 0.4F), EPSILON);
+        EngineSoundPitch plane = new EngineSoundPitch(0.5F, 1F, 1.5F);
+        assertEquals(1F, DriveableControlPhysics.engineSoundPitch(0.5F, plane, 0.4F), EPSILON);
+        EngineSoundPitch highPitch = new EngineSoundPitch(0.5F, 1.5F, 2.5F);
+        assertEquals(2.5F, DriveableControlPhysics.engineSoundPitch(1F, highPitch, 0.4F), EPSILON);
     }
 
     @Test

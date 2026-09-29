@@ -1,6 +1,7 @@
 // Identity
 Name M18 Claymore
 ShortName claymore
+Mass 1600
 
 // Item and rendering
 Icon Claymore

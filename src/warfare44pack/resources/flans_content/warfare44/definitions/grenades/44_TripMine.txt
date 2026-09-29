@@ -1,6 +1,7 @@
 // Identity
 Name TripMine
 ShortName 44_TripMine
+Mass 1000
 
 // Rendering
 Icon 44_TripMine

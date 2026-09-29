@@ -1,6 +1,7 @@
 // Identity
 Name S-Mine
 ShortName 44_SMine
+Mass 4000
 
 // Rendering
 Icon 44_SMine

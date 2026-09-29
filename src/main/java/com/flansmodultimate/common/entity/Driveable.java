@@ -3470,25 +3470,26 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // The engine and idle loops share a channel because they never play together, so switching
         // between them replaces the running loop instead of layering a second one on top.
         String engineLoop = null;
-        float pitchRange = 0F;
+        boolean varyPitch = false;
         if (throttled)
         {
             engineLoop = configType.getEngineSound();
-            pitchRange = configType.getEngineSoundPitchRange();
+            varyPitch = true;
         }
         else if (active)
         {
             engineLoop = configType.getEngineIdleLoopSound();
-            pitchRange = configType.getEngineIdleLoopPitchRange();
+            if (configType.usesEngineSoundAsIdleLoop())
+                varyPitch = true;
         }
         if (startSoundTicks > 0)
             engineLoop = null;
         ClientHooks.SOUND.setLoopingEntitySound(this, SOUND_CHANNEL_ENGINE, engineLoop,
-            Math.max(1, configType.getEngineSoundRange()), pitchRange);
+            Math.max(1, configType.getEngineSoundRange()), varyPitch);
 
         String reverseLoop = active && getThrottle() < -0.05F ? configType.getBackSound() : null;
         ClientHooks.SOUND.setLoopingEntitySound(this, SOUND_CHANNEL_REVERSE, reverseLoop,
-            Math.max(1, configType.getBackSoundRange()), 0F);
+            Math.max(1, configType.getBackSoundRange()), false);
     }
 
     /**

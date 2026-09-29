@@ -1,6 +1,7 @@
 // Identity
 Name M24 Stielhandgranate
 ShortName 44_stielhandgranate
+Mass 595
 Description German Grenade
 
 // Rendering

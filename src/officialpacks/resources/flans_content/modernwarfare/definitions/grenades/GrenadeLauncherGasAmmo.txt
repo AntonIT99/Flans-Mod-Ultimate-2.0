@@ -1,6 +1,7 @@
 // Identity
 Name Gas Grenade
 ShortName grenadeLauncherGasAmmo
+Mass 230
 Description Ammo Type : Grenade
 
 // Item and rendering

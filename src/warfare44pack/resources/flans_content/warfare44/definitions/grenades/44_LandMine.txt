@@ -1,6 +1,7 @@
 // Identity
 Name LandMine
 ShortName 44_LandMine
+Mass 1000
 
 // Rendering
 Icon 44_LandMine

@@ -125,6 +125,12 @@ public final class ModClientConfig
     public static final ForgeConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     public static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
     public static final ForgeConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_VERTICAL_SPEED_UNIT;
+    public static final ForgeConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_BASE;
+    public static final ForgeConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_AT_50;
+    public static final ForgeConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_AT_100;
+    public static final ForgeConfigSpec.DoubleValue PLANE_ENGINE_PITCH_BASE;
+    public static final ForgeConfigSpec.DoubleValue PLANE_ENGINE_PITCH_AT_50;
+    public static final ForgeConfigSpec.DoubleValue PLANE_ENGINE_PITCH_AT_100;
     public static final ForgeConfigSpec.IntValue VEHICLE_HUD_LEFT_X;
     public static final ForgeConfigSpec.IntValue VEHICLE_HUD_LEFT_Y;
     public static final ForgeConfigSpec.IntValue VEHICLE_HUD_RIGHT_X;
@@ -267,6 +273,20 @@ public final class ModClientConfig
         DRIVEABLE_VERTICAL_SPEED_UNIT = builder
                 .comment("Unit used for plane vertical speed on the HUD")
                 .defineEnum("driveableVerticalSpeedUnit", EnumSpeedUnit.METERS_PER_SECOND);
+        builder.push("Engine Sound Pitch Defaults");
+        VEHICLE_ENGINE_PITCH_BASE = builder.comment("Vehicle engine pitch at zero throttle")
+                .defineInRange("vehiclePitchBase", 0.5D, 0D, Float.MAX_VALUE);
+        VEHICLE_ENGINE_PITCH_AT_50 = builder.comment("Vehicle engine pitch at 50% throttle")
+                .defineInRange("vehiclePitchAt50", 0.8D, 0D, Float.MAX_VALUE);
+        VEHICLE_ENGINE_PITCH_AT_100 = builder.comment("Vehicle engine pitch at 100% throttle")
+                .defineInRange("vehiclePitchAt100", 1.2D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_BASE = builder.comment("Plane engine pitch at zero throttle")
+                .defineInRange("planePitchBase", 0.5D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_AT_50 = builder.comment("Plane engine pitch at 50% throttle")
+                .defineInRange("planePitchAt50", 1D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_AT_100 = builder.comment("Plane engine pitch at 100% throttle")
+                .defineInRange("planePitchAt100", 1.5D, 0D, Float.MAX_VALUE);
+        builder.pop();
         HIT_MARKER_STYLE = builder
                 .comment("""
                     Visual style of the hit marker.
@@ -491,6 +511,20 @@ public final class ModClientConfig
         builder.pop();
 
         configSpec = builder.build();
+    }
+
+    public static com.flansmodultimate.common.driveables.EngineSoundPitch defaultVehicleEnginePitch()
+    {
+        return new com.flansmodultimate.common.driveables.EngineSoundPitch(
+            VEHICLE_ENGINE_PITCH_BASE.get().floatValue(), VEHICLE_ENGINE_PITCH_AT_50.get().floatValue(),
+            VEHICLE_ENGINE_PITCH_AT_100.get().floatValue());
+    }
+
+    public static com.flansmodultimate.common.driveables.EngineSoundPitch defaultPlaneEnginePitch()
+    {
+        return new com.flansmodultimate.common.driveables.EngineSoundPitch(
+            PLANE_ENGINE_PITCH_BASE.get().floatValue(), PLANE_ENGINE_PITCH_AT_50.get().floatValue(),
+            PLANE_ENGINE_PITCH_AT_100.get().floatValue());
     }
 
     private ModClientConfig()

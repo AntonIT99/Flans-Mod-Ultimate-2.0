@@ -442,6 +442,14 @@ public final class ShootingHelper
         if (type == null)
             return 0F;
 
+        if (shootable instanceof Grenade && type.getMass() > 0F)
+            return getKineticDamage(type.getMass(), shootable.getDeltaMovement().length());
+
+        if (shootable instanceof Bullet && type instanceof BulletType bulletType
+            && bulletType.getWeaponType() == com.flansmodultimate.common.driveables.EnumWeaponType.BOMB
+            && projectileMass > 0F)
+            return getKineticDamage(projectileMass, shootable.getDeltaMovement().length());
+
         if (projectileMass > 0F)
         {
             // Use the authored firing velocity rather than mutable entity motion. This also keeps

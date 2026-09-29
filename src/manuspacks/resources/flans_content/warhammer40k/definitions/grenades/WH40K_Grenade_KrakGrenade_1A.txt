@@ -1,6 +1,7 @@
 // Identity
 Name Krak Grenade
 ShortName WH40K_Grenade_KrakGrenade_1A
+Mass 1200
 
 // Model and Rendering
 Icon Icon_WH40K_Grenade_KrakGrenade_1A

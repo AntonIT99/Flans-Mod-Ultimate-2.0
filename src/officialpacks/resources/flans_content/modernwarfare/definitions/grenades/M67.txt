@@ -1,6 +1,7 @@
 // Identity
 Name M67 Grenade
 ShortName m67
+Mass 400
 
 // Item and rendering
 Icon M67

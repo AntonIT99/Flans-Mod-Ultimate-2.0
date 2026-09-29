@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Reads the optional {@code Real*} and {@code DriveType} keys out of a legacy
- * type file.
+ * Reads the optional {@code Real*} keys and their unprefixed, unit-specific
+ * aliases, plus {@code DriveType}, out of a legacy type file.
  *
  * <p>Two properties matter here. First, the reader touches no key that already
  * existed, so legacy parsing is bit-for-bit unchanged. Second, it never logs
@@ -241,13 +241,18 @@ public final class RealWorldSpecReader
 
     /**
      * Returns the first whitespace-separated token of the last non-blank line
-     * declared for {@code key}, or {@code null} when the key is absent or present
+     * declared for {@code key}, or its unprefixed alias when the key is absent.
+     * Returns {@code null} when the selected key is absent or present
      * without a value. Legacy files commonly leave optional keys present and
      * empty, and that must mean "not specified", never "specified as zero".
      */
     @Nullable
     private static String firstToken(TypeFile file, String key)
     {
+        // The Real spelling wins if both are present. These unit-specific aliases
+        // do not overlap existing driveable or AA-gun parameters.
+        if (key.startsWith("Real") && !file.hasConfigLine(key))
+            key = key.substring("Real".length());
         if (!file.hasConfigLine(key))
             return null;
         List<String> lines = file.getConfigLines(key);

@@ -89,7 +89,7 @@ public final class SoundHelper
      * @param sound   the sound to loop, or {@code null} or blank to stop whatever is playing
      * @param range   how far the sound carries
      */
-    public static void setLoopingEntitySound(Entity source, String channel, @Nullable String sound, float range, float pitchRange)
+    public static void setLoopingEntitySound(Entity source, String channel, @Nullable String sound, float range, boolean varyPitch)
     {
         String key = source.getId() + ":" + channel;
         EntitySoundInstance playing = loopingEntitySounds.get(key);
@@ -107,7 +107,7 @@ public final class SoundHelper
 
         if (playing != null && playing.isSound(sound) && !playing.isStopped())
         {
-            playing.setPitchRange(pitchRange);
+            playing.setVaryPitch(varyPitch);
             return;
         }
 
@@ -118,20 +118,20 @@ public final class SoundHelper
             loopingEntitySounds.remove(key);
         }
 
-        playEntitySound(source, sound, range, true, pitchRange).ifPresent(soundInstance -> loopingEntitySounds.put(key, soundInstance));
+        playEntitySound(source, sound, range, true, varyPitch).ifPresent(soundInstance -> loopingEntitySounds.put(key, soundInstance));
     }
 
     /** Plays a sound once, following the entity that emits it rather than staying where it started. */
     public static void playEntitySound(Entity source, @Nullable String sound, float range)
     {
-        playEntitySound(source, sound, range, false, 0F);
+        playEntitySound(source, sound, range, false, false);
     }
 
     private static Optional<EntitySoundInstance> playEntitySound(Entity source, @Nullable String sound, float range,
-                                                                  boolean looping, float pitchRange)
+                                                                  boolean looping, boolean varyPitch)
     {
         return getSoundEvent(sound).map(soundEvent -> {
-            EntitySoundInstance soundInstance = new EntitySoundInstance(soundEvent, source, range, looping, pitchRange);
+            EntitySoundInstance soundInstance = new EntitySoundInstance(soundEvent, source, range, looping, varyPitch);
             Minecraft.getInstance().getSoundManager().play(soundInstance);
             return soundInstance;
         });

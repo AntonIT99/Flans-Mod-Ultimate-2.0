@@ -1,6 +1,7 @@
 // Identity
 Name Stielhandgranate
 ShortName stielhandgranate
+Mass 595
 
 // Item and rendering
 Icon Stielhandgranate

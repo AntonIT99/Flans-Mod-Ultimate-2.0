@@ -1,6 +1,7 @@
 // Identity
 Name Frag Grenade
 ShortName WH40K_Grenade_FragGrenade_1A
+Mass 500
 
 // Model and Rendering
 Icon Icon_WH40K_Grenade_FragGrenade_1A

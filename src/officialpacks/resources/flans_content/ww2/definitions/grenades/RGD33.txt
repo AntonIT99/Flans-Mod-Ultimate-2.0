@@ -1,6 +1,7 @@
 // Identity
 Name RGD-33 Stick Grenade
 ShortName rgd33
+Mass 500
 
 // Item and rendering
 Icon RGD33

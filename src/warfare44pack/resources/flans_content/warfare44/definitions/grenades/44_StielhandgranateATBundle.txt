@@ -1,6 +1,7 @@
 // Identity
 Name M24 Stielhandgranate AT-Bundle
 ShortName 44_stielhandgranateATBundle
+Mass 2000
 Description German AT-Grenade
 
 // Rendering

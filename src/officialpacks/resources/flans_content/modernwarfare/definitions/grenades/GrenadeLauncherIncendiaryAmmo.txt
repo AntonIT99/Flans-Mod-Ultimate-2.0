@@ -1,6 +1,7 @@
 // Identity
 Name Incendiary Grenade
 ShortName grenadeLauncherIncendiaryAmmo
+Mass 230
 Description Ammo Type : Grenade
 
 // Item and rendering

@@ -1,6 +1,7 @@
 // Identity
 Name Satchel Charge
 ShortName 44_SatchelCharge
+Mass 5000
 
 // Rendering
 Icon 44_SatchelCharge

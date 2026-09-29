@@ -1,6 +1,7 @@
 // Identity
 Name Bouncing Grenade
 ShortName grenadeLauncherBouncyAmmo
+Mass 230
 Description Ammo Type : Grenade
 
 // Item and rendering

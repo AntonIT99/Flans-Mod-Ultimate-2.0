@@ -1,6 +1,7 @@
 // Identity
 Name Mk. 2 Frag Grenade
 ShortName mk2Frag
+Mass 595
 
 // Item and rendering
 Icon Mk2Grenade

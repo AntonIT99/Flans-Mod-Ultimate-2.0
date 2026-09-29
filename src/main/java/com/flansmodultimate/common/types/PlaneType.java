@@ -53,7 +53,13 @@ public class PlaneType extends DriveableType
     @Override
     public float getEngineIdleLoopPitchRange()
     {
-        return StringUtils.isBlank(idleSound) ? engineSoundPitchRange : 0F;
+        return StringUtils.isBlank(idleSound) ? (Float.isFinite(engineSoundPitchRange) ? engineSoundPitchRange : 1F) : 0F;
+    }
+
+    @Override
+    public boolean usesEngineSoundAsIdleLoop()
+    {
+        return StringUtils.isBlank(idleSound);
     }
 
     protected EnumPlaneMode mode = EnumPlaneMode.PLANE;
