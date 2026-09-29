@@ -56,6 +56,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -562,6 +563,16 @@ public final class ShootingHelper
     {
         if (level.isClientSide)
             return;
+
+        // A bounding mine bursts above the floor. Use the raised point for every explosion
+        // effect and ray; a ceiling prevents the jump, so cover remains physically meaningful.
+        if (shootable instanceof Grenade && type.getFragBurstHeight() > 0F)
+        {
+            Vec3 raised = position.add(0D, type.getFragBurstHeight(), 0D);
+            if (level.clip(new ClipContext(position, raised, ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE, shootable)).getType() == HitResult.Type.MISS)
+                position = raised;
+        }
 
         playDetonateSound(level, type, position, shootable);
         doExplosion(level, type, position, shootable, causingEntity);

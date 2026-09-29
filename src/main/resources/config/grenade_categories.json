@@ -270,7 +270,9 @@
     "M18A1 Claymore Mine": {
         "properties": {
             "ExplosiveMassTNTg": "934",
-            "FragType": "HIGH_FRAG"
+            "FragType": "PREFORMED",
+            "FragPattern": "FORWARD_FAN",
+            "FragCount": 700
         },
         "items": [
             "claymore"
@@ -418,7 +420,9 @@
     "S-Mine 35": {
         "properties": {
             "ExplosiveMassTNTg": "182",
-            "FragType": "AIRBURST_AP"
+            "FragType": "PREFORMED",
+            "FragPattern": "HORIZONTAL_BAND",
+            "FragBurstHeight": 1
         },
         "items": [
             "smine35",

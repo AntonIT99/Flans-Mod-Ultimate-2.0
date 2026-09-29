@@ -7,6 +7,9 @@ import net.minecraft.util.Mth;
 /** Pure separation of blast and fragmentation channels for one resolved vehicle part. */
 public final class ExplosionVehicleDamageResolver
 {
+    private static final double STRUCTURAL_BLAST_KNEE_KG = 5D;
+    private static final double MAX_STRUCTURAL_BLAST_GAIN = 5D;
+
     private ExplosionVehicleDamageResolver() {}
 
     public record DamageChannels(float blastDamage, float fragmentationDamage,
@@ -18,18 +21,34 @@ public final class ExplosionVehicleDamageResolver
         }
     }
 
-    public static DamageChannels resolve(float nominalArmorMm, Float explosiveMassKg,
-                                         double actualDistanceMeters, float existingBlastDamage,
-                                         float existingFragmentationDamage,
-                                         double resistanceKPaPerMm, double minimumDistanceMeters)
+    /**
+     * Extra structural damage from a large charge bursting close to an exposed vehicle part.
+     * The gain fades to one at the blast radius; small charges retain their existing damage.
+     * This is applied only to vehicle blast HP damage, before the armour pressure gate.
+     */
+    public static float structuralBlastMultiplier(float explosiveMassKg, double distanceMeters,
+                                                  double blastRadiusMeters)
+    {
+        if (!Float.isFinite(explosiveMassKg) || explosiveMassKg <= STRUCTURAL_BLAST_KNEE_KG
+            || !Double.isFinite(distanceMeters) || !Double.isFinite(blastRadiusMeters)
+            || blastRadiusMeters <= 0D)
+            return 1F;
+
+        double chargeGain = Mth.clamp(Math.sqrt(explosiveMassKg / STRUCTURAL_BLAST_KNEE_KG),
+            1D, MAX_STRUCTURAL_BLAST_GAIN);
+        double proximity = Mth.clamp(1D - Math.max(0D, distanceMeters) / blastRadiusMeters, 0D, 1D);
+        double proximitySquared = proximity * proximity;
+        return (float) (1D + (chargeGain - 1D) * proximitySquared * proximitySquared);
+    }
+
+    public static DamageChannels resolve(float nominalArmorMm, Float explosiveMassKg, double actualDistanceMeters, float existingBlastDamage, float existingFragmentationDamage, double resistanceKPaPerMm, double minimumDistanceMeters)
     {
         float blast = finiteNonNegative(existingBlastDamage);
         float fragmentation = finiteNonNegative(existingFragmentationDamage);
-        if (!(nominalArmorMm > 0F) || !Float.isFinite(nominalArmorMm))
+        if (nominalArmorMm <= 0F || !Float.isFinite(nominalArmorMm))
             return new DamageChannels(blast, fragmentation, 0D, blast > 0F ? 1F : 0F);
 
         // Any nominal armour blocks the simple fragmentation channel.
-        fragmentation = 0F;
         if (explosiveMassKg == null || !Float.isFinite(explosiveMassKg) || explosiveMassKg <= 0F)
             return new DamageChannels(0F, 0F, 0D, 0F);
 

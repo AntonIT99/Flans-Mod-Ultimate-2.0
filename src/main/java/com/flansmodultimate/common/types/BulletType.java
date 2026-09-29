@@ -310,9 +310,8 @@ public class BulletType extends ShootableType
         if (roundsPerItem > 1)
         {
             // AddRound [name] [count] [mass in g] [explosive mass in kg TNT equivalent] [muzzle velocity in m/s]
-            readValuesInLines("AddRound", file, 3).ifPresent(rounds -> rounds.forEach(round -> {
-                period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), readRoundStats(round, file)));
-            }));
+            readValuesInLines("AddRound", file, 3).ifPresent(rounds ->
+                rounds.forEach(round -> period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), readRoundStats(round, file)))));
             periodLength = period.stream().mapToInt(RoundEntry::count).sum();
         }
 
@@ -498,7 +497,10 @@ public class BulletType extends ShootableType
             {
                 float explosiveCharge = shot != null ? shot.getExplosiveMass()
                     : statsForShot(0).explosiveMass();
-                return explosionStatsForCharge(explosiveCharge);
+                float roundMass = shot != null ? shot.getProjectileMass() : statsForShot(0).mass();
+                double roundSpeed = shot != null ? shot.getMuzzleVelocity(false) * 20D
+                    : getBulletSpeed(false) * 20D;
+                return explosionStatsForCharge(explosiveCharge, roundMass, roundSpeed);
             }
         }
         return super.getExplosionStats(explosiveEntity);
@@ -511,12 +513,14 @@ public class BulletType extends ShootableType
     public FlanExplosion.Stats getExplosionStatsForShot(FiredShot shot)
     {
         if (!shot.getAmmoOverride().isEmpty() || hasDifferentRounds())
-            return explosionStatsForCharge(shot.getExplosiveMass());
+            return explosionStatsForCharge(shot.getExplosiveMass(), shot.getProjectileMass(),
+                shot.getMuzzleVelocity(false) * 20D);
         return super.getExplosionStats(null);
     }
 
     /** Derives the whole explosion profile from one bursting charge in kg TNT equivalent. */
-    private FlanExplosion.Stats explosionStatsForCharge(float explosiveCharge)
+    private FlanExplosion.Stats explosionStatsForCharge(float explosiveCharge, float projectileMassGrams,
+                                                       double projectileSpeedMps)
     {
         float explosionRadius = ExplosionScaling.craterRadius(ModCommonConfig.get().newDamageSystemExplosiveRadiusReference(), explosiveCharge);
         float explosionPower = (float) (ModCommonConfig.get().newDamageSystemExplosivePowerReference() * Math.cbrt(explosiveCharge));
@@ -524,21 +528,24 @@ public class BulletType extends ShootableType
         DamageStats explosionBlastDamage = new DamageStats();
         explosionBlastDamage.setDamage(ExplosionScaling.blastDamage(ModCommonConfig.get().newDamageSystemExplosiveDamageReference(), explosiveCharge));
         explosionBlastDamage.calculate();
-        // The frag envelope has to come from this round's own charge too, not the type's parsed
-        // fragRadius and fragment damage, which were derived from the type-level explosive mass
-        // and are wrong for a belt whose rounds carry different charges.
-        float roundFragRadius = fragType != EnumFragType.DEFAULT
-            ? ExplosionScaling.fragRadius(fragType.kFragRadius, explosiveCharge) : fragRadius;
-        DamageStats roundFragDamage = explosionFragDamage;
-        if (fragType != EnumFragType.DEFAULT)
-        {
-            roundFragDamage = new DamageStats();
-            roundFragDamage.setDamage(ExplosionScaling.fragDamage(fragType.kFragDamage, explosiveCharge));
-            roundFragDamage.calculate();
-        }
+        com.flansmodultimate.common.explosions.FragmentationModel.Burst fragments =
+            com.flansmodultimate.common.explosions.FragmentationModel.create(fragType, explosiveCharge,
+                projectileMassGrams, fragMetalMassGrams, fragCount, fragPattern, projectileSpeedMps)
+                .withPeak(explosionFragDamage.getDamage());
         return new FlanExplosion.Stats(explosionRadius, explosionPower, explosionBlastRadius,
-            explosionBlastDamage, roundFragRadius, fragIntensity, roundFragDamage,
-            Float.isFinite(explosiveCharge) && explosiveCharge > 0F ? explosiveCharge : 0F);
+            explosionBlastDamage, (float) fragments.queryRadius(),
+            (float) Math.min(4D, fragments.fragmentCount() / 300D), explosionFragDamage,
+            Float.isFinite(explosiveCharge) && explosiveCharge > 0F ? explosiveCharge : 0F,
+            fragments);
+    }
+
+    @Override
+    protected com.flansmodultimate.common.explosions.FragmentationModel.Burst fragmentationFor(
+        float chargeKg, float totalMassGrams)
+    {
+        return com.flansmodultimate.common.explosions.FragmentationModel.create(fragType, chargeKg,
+            totalMassGrams, fragMetalMassGrams, fragCount, fragPattern, getBulletSpeed(false) * 20D)
+            .withPeak(explosionFragDamage.getDamage());
     }
 
     public boolean hasDifferentRounds()

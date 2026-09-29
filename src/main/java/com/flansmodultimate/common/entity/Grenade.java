@@ -77,6 +77,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     /** Yeah, I want my grenades to have fancy physics */
     @Getter
     protected RotatedAxes axes = new RotatedAxes();
+
+    /** Model-forward axis retained when a placed grenade has no travel velocity. */
+    public Vec3 getFragmentDirection()
+    {
+        var axis = axes.getXAxis();
+        return new Vec3(axis.x, axis.y, axis.z);
+    }
     protected Vec3 angularVelocity = new Vec3(0, 0, 0);
     @Getter
     protected float prevRotationRoll;

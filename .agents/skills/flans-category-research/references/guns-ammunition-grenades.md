@@ -530,7 +530,9 @@ Research and define:
 | Property | Unit | Guidance |
 | --- | --- | --- |
 | `ExplosiveMassTNTg` / `ExplosiveMassTNTKg` | grams / kilograms TNT equivalent | Mandatory for every grenade with an explosive charge. Use an exact TNT-equivalent figure when available; otherwise derive it from documented filler mass and composition using a defensible TNT-equivalence factor. Omit only when the grenade has no explosive charge. |
-| `FragType` | enum | Choose from casing/design and intended fragmentation: `LOW_FRAG`, `STD_FRAG`, `SLEEVE_FRAG`, `HIGH_FRAG`, `IED_SHRAPNEL`, `HE_SHELL`, `GP_BOMB`, `THICK_CASE`, or `AIRBURST_AP`; `DEFAULT` opts out of a preset. |
+| `FragType` | enum | Choose from casing/design and intended fragmentation: `LOW_FRAG`, `STD_FRAG`, `SLEEVE_FRAG`, `HIGH_FRAG`, `IED_SHRAPNEL`, `HE_SHELL`, `HE_GRENADE`, `GP_BOMB`, `THICK_CASE`, `AIRBURST_AP`, or `PREFORMED`; `DEFAULT` opts out of fragments. Casing construction, rather than charge alone, sets effective fragment count and injury. |
+| `FragPattern` | enum | Author only when distribution is specifically non-radial: `HORIZONTAL_BAND` for bounding mines, `FORWARD_FAN` for directional mines, or `FORWARD_CONE` for forward airburst subprojectiles. |
+| `FragCount` / `FragMetalMassg` | effective fragments / grams | Use documented preformed count or casing metal mass when the preset or projectile-mass estimate is inappropriate. These are physical inputs, not per-item damage-radius targets. |
 | `Fuse` | ticks | Use nominal timed delay multiplied by 20. Omit for impact, proximity, mine, or other non-timed behavior and when timing cannot be established defensibly. |
 
 Distinguish nominal fuse delay from tolerance range. A fragmentation sleeve changes

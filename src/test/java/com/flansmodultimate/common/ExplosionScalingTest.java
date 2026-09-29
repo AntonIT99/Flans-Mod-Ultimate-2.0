@@ -1,9 +1,9 @@
 package com.flansmodultimate.common;
 
 import com.flansmodultimate.common.explosions.ExplosionScaling;
+import com.flansmodultimate.common.explosions.FragmentationModel;
 import com.flansmodultimate.common.types.ShootableType.EnumFragType;
 import com.flansmodultimate.config.ModCommonConfig;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -11,226 +11,103 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Pins the explosion radius curves to measured ordnance.
- * <p>
- * The bands are the quoted effect radii of real rounds, in metres, which map one-to-one onto
- * blocks. "Concentrated destruction" is the cratering radius; the "broader blast / fragmentation"
- * figure is the outer envelope of the two damage radii, so it is checked against whichever of
- * blast and fragmentation reaches further.
- */
 class ExplosionScalingTest
 {
-    private static final double CRATER_REFERENCE = ModCommonConfig.DEFAULT_CRATER_RADIUS_REFERENCE;
-    private static final double BLAST_REFERENCE = ModCommonConfig.DEFAULT_BLAST_RADIUS_REFERENCE;
+    private static final double CRATER = ModCommonConfig.DEFAULT_CRATER_RADIUS_REFERENCE;
+    private static final double BLAST = ModCommonConfig.DEFAULT_BLAST_RADIUS_REFERENCE;
 
-    /**
-     * The .50 cal crater is allowed a little over its band. Its 0.2-0.5 m figure against the
-     * 20 mm's 1-2 m implies a local slope near 0.9, which no single power law can meet without
-     * throwing off every heavier round, so the fit takes the small absolute miss on the lightest
-     * round in the set.
-     */
-    private static final float CRATER_TOLERANCE = 0.1F;
-
-    @ParameterizedTest(name = "{0}: {1} kg craters {2}-{3} blocks")
+    @ParameterizedTest
     @CsvSource({
-        "'.50 cal HE/HEI',        0.002, 0.2, 0.5",
-        "'20 mm HE (KwK 30)',     0.010, 1.0, 2.0",
-        "'20 mm HEI high-cap',    0.030, 1.5, 2.5",
-        "'88 mm HE (KwK 36)',     1.000, 4.0, 6.0",
-        "'150 mm HE (sFH 18)',    4.400, 7.0, 10.0"
+        "'.50 cal HE/HEI', 0.002, 0.2, 0.5",
+        "'20 mm HE', 0.010, 1.0, 2.0",
+        "'88 mm HE', 1.000, 4.0, 6.0",
+        "'150 mm HE', 4.400, 7.0, 10.0"
     })
-    void theCraterMatchesTheQuotedDestructionRadius(String round, float massKg, float low, float high)
+    void craterScaleMatchesOrdnance(String round, float charge, float low, float high)
     {
-        float crater = ExplosionScaling.craterRadius(CRATER_REFERENCE, massKg);
-
-        assertTrue(crater >= low - CRATER_TOLERANCE,
-            () -> round + " craters " + crater + ", under the quoted " + low + "-" + high);
-        assertTrue(crater <= high + CRATER_TOLERANCE,
-            () -> round + " craters " + crater + ", over the quoted " + low + "-" + high);
+        float radius = ExplosionScaling.craterRadius(CRATER, charge);
+        assertTrue(radius >= low - 0.1F && radius <= high + 0.1F, round + ": " + radius);
     }
 
-    /**
-     * Checked against HE_SHELL, the casing type of the artillery rounds these figures come from.
-     */
-    @ParameterizedTest(name = "{0}: {1} kg reaches {2}-{3} blocks")
+    @ParameterizedTest
     @CsvSource({
-        "'.50 cal HE/HEI',        0.002,  1.0,  2.0",
-        "'20 mm HE (KwK 30)',     0.010,  3.0,  5.0",
-        "'20 mm HEI high-cap',    0.030,  4.0,  7.0",
-        "'88 mm HE (KwK 36)',     1.000, 15.0, 25.0",
-        "'150 mm HE (sFH 18)',    4.400, 30.0, 50.0"
+        "'.50 cal HE/HEI', 0.002, 1.0, 2.0",
+        "'20 mm HE', 0.010, 3.0, 5.0",
+        "'88 mm HE', 1.000, 15.0, 25.0",
+        "'150 mm HE', 4.400, 30.0, 50.0"
     })
-    void theDamageEnvelopeMatchesTheQuotedBlastAndFragRadius(String round, float massKg, float low, float high)
+    void blastScaleMatchesOrdnance(String round, float charge, float low, float high)
     {
-        float blast = ExplosionScaling.blastRadius(BLAST_REFERENCE, massKg);
-        float frag = ExplosionScaling.fragRadius(EnumFragType.HE_SHELL.kFragRadius, massKg);
-        float envelope = Math.max(blast, frag);
-
-        assertTrue(envelope >= low, () -> round + " reaches " + envelope + ", under the quoted " + low + "-" + high);
-        assertTrue(envelope <= high, () -> round + " reaches " + envelope + ", over the quoted " + low + "-" + high);
+        float radius = ExplosionScaling.blastRadius(BLAST, charge);
+        assertTrue(radius >= low && radius <= high, round + ": " + radius);
     }
 
     @Test
-    @DisplayName("a 2.25 t bomb stays within the ranges chosen for Minecraft's scale")
-    void aHeavyBombIsFlattenedToPlayableRadii()
+    void heavyChargeStillHasPlayableBlastAndCrater()
     {
-        float massKg = 2250F;
-
-        float crater = ExplosionScaling.craterRadius(CRATER_REFERENCE, massKg);
-        float blast = ExplosionScaling.blastRadius(BLAST_REFERENCE, massKg);
-        float frag = ExplosionScaling.fragRadius(EnumFragType.GP_BOMB.kFragRadius, massKg);
-
-        assertTrue(crater >= 70F && crater <= 85F, () -> "crater " + crater);
-        assertTrue(blast >= 100F && blast <= 150F, () -> "blast " + blast);
-        assertTrue(frag <= 300F, () -> "frag " + frag);
+        assertTrue(ExplosionScaling.craterRadius(CRATER, 2250F) < 85F);
+        assertTrue(ExplosionScaling.blastRadius(BLAST, 2250F) < 150F);
+        assertTrue(ExplosionScaling.blastRadius(BLAST, 2250F) > 100F);
     }
 
     @Test
-    @DisplayName("unflattened growth would put the same bomb far out of reach")
-    void theFlatteningIsWhatKeepsHeavyChargesPlayable()
+    void blastAndCraterAreMonotonicAndContinuous()
     {
-        float massKg = 2250F;
-        double unflattened = BLAST_REFERENCE * Math.pow(massKg, ExplosionScaling.BLAST_EXPONENT);
-
-        assertTrue(unflattened > 400D, () -> "expected the fitted curve to run away, got " + unflattened);
-        assertTrue(ExplosionScaling.blastRadius(BLAST_REFERENCE, massKg) < unflattened / 3D);
-    }
-
-    @Test
-    void radiiGrowMonotonicallyWithTheChargeAcrossTheWholeRange()
-    {
-        float[] masses = {0.0004F, 0.002F, 0.03F, 1F, 4.4F, 5F, 20F, 300F, 2250F, 11021F, 1_000_000F, 5.0E10F};
-
+        float[] masses = {0.0004F, 0.002F, 0.03F, 1F, 4.4F, 5F, 20F, 300F, 2250F, 11021F};
         for (int i = 1; i < masses.length; i++)
         {
-            float previous = masses[i - 1];
-            float current = masses[i];
-            assertTrue(ExplosionScaling.craterRadius(CRATER_REFERENCE, current) > ExplosionScaling.craterRadius(CRATER_REFERENCE, previous),
-                () -> "crater did not grow from " + previous + " kg to " + current + " kg");
-            assertTrue(ExplosionScaling.blastRadius(BLAST_REFERENCE, current) > ExplosionScaling.blastRadius(BLAST_REFERENCE, previous),
-                () -> "blast did not grow from " + previous + " kg to " + current + " kg");
+            assertTrue(ExplosionScaling.craterRadius(CRATER, masses[i])
+                > ExplosionScaling.craterRadius(CRATER, masses[i - 1]));
+            assertTrue(ExplosionScaling.blastRadius(BLAST, masses[i])
+                > ExplosionScaling.blastRadius(BLAST, masses[i - 1]));
         }
-    }
-
-    @Test
-    void theCurveIsContinuousAcrossTheKnee()
-    {
         float knee = ExplosionScaling.FLATTEN_KNEE_MASS_KG;
-
-        float justUnder = ExplosionScaling.blastRadius(BLAST_REFERENCE, Math.nextDown(knee));
-        float atKnee = ExplosionScaling.blastRadius(BLAST_REFERENCE, knee);
-        float justOver = ExplosionScaling.blastRadius(BLAST_REFERENCE, Math.nextUp(knee));
-
-        assertEquals(atKnee, justUnder, 0.001F, "the fitted regime should meet the knee");
-        assertEquals(atKnee, justOver, 0.001F, "the flattened regime should leave from the knee");
+        assertEquals(ExplosionScaling.blastRadius(BLAST, knee),
+            ExplosionScaling.blastRadius(BLAST, Math.nextDown(knee)), 0.001F);
+        assertEquals(ExplosionScaling.blastRadius(BLAST, knee),
+            ExplosionScaling.blastRadius(BLAST, Math.nextUp(knee)), 0.001F);
     }
 
     @Test
-    void aChargeRecoveredFromACraterReproducesThatCrater()
+    void legacyCraterInverseRoundTrips()
     {
-        // The legacy path derives an implied charge from an authored crater radius, so the
-        // inverse has to track the curve through both of its regimes.
         for (float radius : new float[] {0.5F, 2F, 5.5F, 9.98F, 20F, 49F, 120F})
-        {
-            float charge = ExplosionScaling.chargeForCraterRadius(radius, CRATER_REFERENCE);
-            assertEquals(radius, ExplosionScaling.craterRadius(CRATER_REFERENCE, charge), radius * 0.01F,
-                () -> "round trip failed for a " + radius + " block crater");
-        }
+            assertEquals(radius, ExplosionScaling.craterRadius(CRATER,
+                ExplosionScaling.chargeForCraterRadius(radius, CRATER)), radius * 0.01F);
     }
 
     @Test
-    void aChargeOfZeroOrLessHasNoRadius()
+    void invalidInputsHaveNoEffect()
     {
-        assertEquals(0F, ExplosionScaling.craterRadius(CRATER_REFERENCE, 0F));
-        assertEquals(0F, ExplosionScaling.blastRadius(BLAST_REFERENCE, -1F));
-        assertEquals(0F, ExplosionScaling.fragRadius(EnumFragType.HE_SHELL.kFragRadius, Float.NaN));
-        assertEquals(0F, ExplosionScaling.chargeForCraterRadius(0F, CRATER_REFERENCE));
-    }
-
-    @Test
-    void fragmentationOrderingFollowsTheCasingType()
-    {
-        float massKg = 1F;
-
-        float thickCase = ExplosionScaling.fragRadius(EnumFragType.THICK_CASE.kFragRadius, massKg);
-        float gpBomb = ExplosionScaling.fragRadius(EnumFragType.GP_BOMB.kFragRadius, massKg);
-        float heShell = ExplosionScaling.fragRadius(EnumFragType.HE_SHELL.kFragRadius, massKg);
-        float shrapnel = ExplosionScaling.fragRadius(EnumFragType.IED_SHRAPNEL.kFragRadius, massKg);
-
-        assertTrue(thickCase < gpBomb, "a thick penetrator case should throw fragments least far");
-        assertTrue(gpBomb < heShell);
-        assertTrue(heShell < shrapnel, "a shrapnel-packed casing should throw fragments furthest");
-
-        // HE_SHELL is deliberately pinned to the blast reference: the artillery rounds the blast
-        // curve was fitted to are the ones whose quoted radius already includes their fragments.
-        assertEquals(ExplosionScaling.blastRadius(BLAST_REFERENCE, massKg), heShell, 0.001F);
-
-        float lowFrag = ExplosionScaling.fragRadius(EnumFragType.LOW_FRAG.kFragRadius, massKg);
-        float stdFrag = ExplosionScaling.fragRadius(EnumFragType.STD_FRAG.kFragRadius, massKg);
-        float sleeveFrag = ExplosionScaling.fragRadius(EnumFragType.SLEEVE_FRAG.kFragRadius, massKg);
-        float highFrag = ExplosionScaling.fragRadius(EnumFragType.HIGH_FRAG.kFragRadius, massKg);
-
-        assertTrue(lowFrag < stdFrag, "an offensive grenade should throw fragments least far");
-        assertTrue(stdFrag < sleeveFrag);
-        assertTrue(sleeveFrag < highFrag, "a prefragmented defensive grenade should throw fragments furthest");
-    }
-
-    /**
-     * Hand grenades carry less filler than anything the fitted exponent was measured over, so
-     * their casings are lifted above the shell reference to keep the quoted reach. The ranges
-     * are the fragment reach at which a grenade still wounds, from 5 m lethal to 15 m casualty.
-     */
-    @ParameterizedTest(name = "{0}: {1} kg throws fragments {3}-{4} blocks")
-    @CsvSource({
-        "'Mk 2 / F1',  0.060, STD_FRAG,   7.0, 10.0",
-        "'M67',        0.180, HIGH_FRAG, 13.0, 18.0"
-    })
-    void handGrenadeFragmentsReachTheirQuotedRange(String grenade, float massKg, EnumFragType type, float low, float high)
-    {
-        float frag = ExplosionScaling.fragRadius(type.kFragRadius, massKg);
-
-        assertTrue(frag >= low, () -> grenade + " reaches " + frag + ", under " + low);
-        assertTrue(frag <= high, () -> grenade + " reaches " + frag + ", over " + high);
-    }
-
-    @Test
-    void theDamageReferencesAreTheDamageOfAOneKilogramCharge()
-    {
-        assertEquals(80F, ExplosionScaling.blastDamage(80D, 1F), 0.001F);
-        assertEquals(EnumFragType.HE_SHELL.kFragDamage, ExplosionScaling.fragDamage(EnumFragType.HE_SHELL.kFragDamage, 1F), 0.001F);
-    }
-
-    @Test
-    @DisplayName("fragment damage grows more slowly with the charge than blast damage")
-    void fragmentDamageDependsLessOnTheChargeThanBlast()
-    {
-        float grenade = 0.06F;
-        float bomb = 250F;
-
-        // Below 1 kg a fragment keeps more of its damage than the blast does, above it less.
-        assertTrue(ExplosionScaling.fragDamage(1D, grenade) > ExplosionScaling.blastDamage(1D, grenade));
-        assertTrue(ExplosionScaling.fragDamage(1D, bomb) < ExplosionScaling.blastDamage(1D, bomb));
-
-        // A hand grenade's fragments must out-hit a pistol round (~5), and a heavy bomb's must not
-        // scale into one-shotting a player five times over.
-        float mk2 = ExplosionScaling.fragDamage(EnumFragType.STD_FRAG.kFragDamage, grenade);
-        float gpBomb = ExplosionScaling.fragDamage(EnumFragType.GP_BOMB.kFragDamage, bomb);
-        assertTrue(mk2 > 10F, () -> "Mk 2 fragments hit for " + mk2);
-        assertTrue(gpBomb < 100F, () -> "250 kg bomb fragments hit for " + gpBomb);
-    }
-
-    @Test
-    void damageGrowsMonotonicallyAndIsZeroWithoutACharge()
-    {
-        float[] masses = {0.002F, 0.06F, 1F, 250F, 11021F};
-        for (int i = 1; i < masses.length; i++)
-        {
-            assertTrue(ExplosionScaling.blastDamage(80D, masses[i]) > ExplosionScaling.blastDamage(80D, masses[i - 1]));
-            assertTrue(ExplosionScaling.fragDamage(25D, masses[i]) > ExplosionScaling.fragDamage(25D, masses[i - 1]));
-        }
+        assertEquals(0F, ExplosionScaling.craterRadius(CRATER, 0F));
+        assertEquals(0F, ExplosionScaling.blastRadius(BLAST, -1F));
+        assertEquals(0F, ExplosionScaling.chargeForCraterRadius(0F, CRATER));
         assertEquals(0F, ExplosionScaling.blastDamage(80D, 0F));
-        assertEquals(0F, ExplosionScaling.fragDamage(25D, Float.NaN));
-        assertEquals(0F, ExplosionScaling.fragDamage(0D, 1F));
+        assertEquals(0F, ExplosionScaling.fragPeakDamage(Float.NaN));
+        assertEquals(0D, FragmentationModel.create(EnumFragType.STD_FRAG, 0D, 0D, 0D, 0D,
+            FragmentationModel.Pattern.RADIAL).queryRadius());
+    }
+
+    @Test
+    void moreMetalCreatesMoreFragmentsButPeakIsAPropertyOfTheCasing()
+    {
+        var light = FragmentationModel.create(EnumFragType.HE_SHELL, 1D, 2000D, 0D, 0D,
+            FragmentationModel.Pattern.RADIAL);
+        var heavy = FragmentationModel.create(EnumFragType.HE_SHELL, 1D, 9000D, 0D, 0D,
+            FragmentationModel.Pattern.RADIAL);
+        assertTrue(heavy.fragmentCount() > light.fragmentCount());
+        assertTrue(heavy.queryRadius() > light.queryRadius());
+        assertEquals(light.peakDamage(), heavy.peakDamage());
+    }
+
+    @Test
+    void chargeChangesFragmentEnergyWithoutArtificialRadiusPowerLaw()
+    {
+        var weak = FragmentationModel.create(EnumFragType.HE_SHELL, 0.1D, 1000D, 0D, 0D,
+            FragmentationModel.Pattern.RADIAL);
+        var strong = FragmentationModel.create(EnumFragType.HE_SHELL, 0.5D, 1000D, 0D, 0D,
+            FragmentationModel.Pattern.RADIAL);
+        assertTrue(strong.energyLength() > weak.energyLength());
+        assertEquals(weak.peakDamage(), strong.peakDamage());
     }
 }

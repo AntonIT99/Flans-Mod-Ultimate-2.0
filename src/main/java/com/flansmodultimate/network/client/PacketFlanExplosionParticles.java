@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
+import com.flansmodultimate.common.explosions.FragmentationModel;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketBuffer;
@@ -63,11 +64,14 @@ public class PacketFlanExplosionParticles implements IClientPacket
     private float explosionRadius;
     private float fragRadius;
     private float fragIntensity;
+    private FragmentationModel.Pattern fragPattern = FragmentationModel.Pattern.RADIAL;
+    private Vec3 fragForward = Vec3.ZERO;
     /** Drawn as a fire explosion: the fireball burns orange throughout rather than cooling to grey. */
     private boolean fiery;
 
     public PacketFlanExplosionParticles(Vec3 position, int numSmoke, int numDebris, float blastRadius,
-                                        float explosionRadius, float fragRadius, float fragIntensity, boolean fiery)
+                                        float explosionRadius, float fragRadius, float fragIntensity,
+                                        FragmentationModel.Pattern fragPattern, Vec3 fragForward, boolean fiery)
     {
         this.position = position;
         this.numSmoke = numSmoke;
@@ -76,6 +80,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
         this.explosionRadius = explosionRadius;
         this.fragRadius = fragRadius;
         this.fragIntensity = fragIntensity;
+        this.fragPattern = fragPattern;
+        this.fragForward = fragForward;
         this.fiery = fiery;
     }
 
@@ -91,6 +97,10 @@ public class PacketFlanExplosionParticles implements IClientPacket
         data.writeFloat(explosionRadius);
         data.writeFloat(fragRadius);
         data.writeFloat(fragIntensity);
+        data.writeInt(fragPattern.ordinal());
+        data.writeDouble(fragForward.x);
+        data.writeDouble(fragForward.y);
+        data.writeDouble(fragForward.z);
         data.writeBoolean(fiery);
     }
 
@@ -104,6 +114,10 @@ public class PacketFlanExplosionParticles implements IClientPacket
         explosionRadius = data.readFloat();
         fragRadius = data.readFloat();
         fragIntensity = data.readFloat();
+        int patternId = data.readInt();
+        fragPattern = patternId >= 0 && patternId < FragmentationModel.Pattern.values().length
+            ? FragmentationModel.Pattern.values()[patternId] : FragmentationModel.Pattern.RADIAL;
+        fragForward = new Vec3(data.readDouble(), data.readDouble(), data.readDouble());
         fiery = data.readBoolean();
     }
 
@@ -320,20 +334,56 @@ public class PacketFlanExplosionParticles implements IClientPacket
 
         for (int i = 0; i < count; i++)
         {
-            // Thrown over a sphere biased upwards, and entirely upwards off the ground: fragments
-            // aimed into the dirt are spent on sparks that are never drawn.
-            double angle = random.nextDouble() * Mth.TWO_PI;
-            double vertical = (random.nextDouble() * 2.0D - 1.0D) * (1.0D - FRAG_UPWARD_BIAS) + FRAG_UPWARD_BIAS;
-            if (groundBurst)
-                vertical = Math.abs(vertical);
-            double horizontal = Math.sqrt(Math.max(0.0D, 1.0D - vertical * vertical));
+            Vec3 direction = fragmentSparkDirection(random, groundBurst);
             double jitter = 0.5D + random.nextDouble();
 
             ClientHooks.RENDER.spawnParticle(FlanParticles.FIREWORKS_SPARK,
                 position.x, position.y, position.z,
-                Math.cos(angle) * horizontal * speed * jitter, vertical * speed * jitter,
-                Math.sin(angle) * horizontal * speed * jitter, 1.0F, lifetimeScale);
+                direction.x * speed * jitter, direction.y * speed * jitter,
+                direction.z * speed * jitter, 1.0F, lifetimeScale);
         }
+    }
+
+    private Vec3 fragmentSparkDirection(RandomSource random, boolean groundBurst)
+    {
+        double angle = random.nextDouble() * Mth.TWO_PI;
+        if (fragPattern == FragmentationModel.Pattern.RADIAL)
+        {
+            double vertical = (random.nextDouble() * 2D - 1D) * (1D - FRAG_UPWARD_BIAS) + FRAG_UPWARD_BIAS;
+            if (groundBurst)
+                vertical = Math.abs(vertical);
+            double horizontal = Math.sqrt(Math.max(0D, 1D - vertical * vertical));
+            return new Vec3(Math.cos(angle) * horizontal, vertical, Math.sin(angle) * horizontal);
+        }
+        if (fragPattern == FragmentationModel.Pattern.HORIZONTAL_BAND)
+        {
+            double elevation = Math.toRadians((random.nextDouble() * 2D - 1D) * 8D);
+            return new Vec3(Math.cos(angle) * Math.cos(elevation), Math.sin(elevation),
+                Math.sin(angle) * Math.cos(elevation));
+        }
+        Vec3 forward = fragForward.lengthSqr() > 1.0E-9D ? fragForward.normalize() : new Vec3(0D, 0D, 1D);
+        if (fragPattern == FragmentationModel.Pattern.FORWARD_FAN)
+        {
+            Vec3 horizontalForward = new Vec3(forward.x, 0D, forward.z);
+            horizontalForward = horizontalForward.lengthSqr() > 1.0E-9D
+                ? horizontalForward.normalize() : new Vec3(0D, 0D, 1D);
+            double yaw = Math.toRadians((random.nextDouble() * 2D - 1D) * 30D);
+            double elevation = Math.toRadians((random.nextDouble() * 2D - 1D) * 8D);
+            Vec3 right = new Vec3(-horizontalForward.z, 0D, horizontalForward.x);
+            return horizontalForward.scale(Math.cos(yaw) * Math.cos(elevation))
+                .add(right.scale(Math.sin(yaw) * Math.cos(elevation)))
+                .add(0D, Math.sin(elevation), 0D);
+        }
+        Vec3 right = forward.cross(new Vec3(0D, 1D, 0D));
+        if (right.lengthSqr() < 1.0E-9D)
+            right = new Vec3(1D, 0D, 0D);
+        right = right.normalize();
+        Vec3 up = forward.cross(right).normalize();
+        double cosTheta = Math.cos(Math.toRadians(5D))
+            + random.nextDouble() * (1D - Math.cos(Math.toRadians(5D)));
+        double sinTheta = Math.sqrt(1D - cosTheta * cosTheta);
+        return forward.scale(cosTheta).add(right.scale(Math.cos(angle) * sinTheta))
+            .add(up.scale(Math.sin(angle) * sinTheta));
     }
 
     /**

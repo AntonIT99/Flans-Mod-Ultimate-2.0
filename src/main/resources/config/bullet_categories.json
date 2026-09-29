@@ -1838,7 +1838,10 @@
             "MuzzleVelocity": 1050,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 1,
-            "FragType": "AIRBURST_AP",
+            "FragType": "PREFORMED",
+            "FragPattern": "FORWARD_CONE",
+            "FragCount": 152,
+            "FragMetalMassg": 500,
             "AddToAmmoGroup": "35mm Oerlikon KDG"
         },
         "items": [
@@ -2118,7 +2121,7 @@
             "MuzzleVelocity": 241,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 43,
-            "FragType": "HE_SHELL"
+            "FragType": "HE_GRENADE"
         },
         "items": [
             "ammonato40mm",
@@ -8127,8 +8130,7 @@
         "properties": {
             "Mass": 7250000,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTKg": 15000000,
-            "FragType": "THICK_CASE"
+            "ExplosiveMassTNTKg": 15000000
         },
         "items": [
             "perfidiousalbion"
@@ -8901,8 +8903,7 @@
         "properties": {
             "Mass": 4400000,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTKg": 15000000,
-            "FragType": "THICK_CASE"
+            "ExplosiveMassTNTKg": 15000000
         },
         "items": [
             "littleboy"
@@ -9278,8 +9279,7 @@
         "properties": {
             "Mass": 27000000.0,
             "FallSpeed": 1.0,
-            "ExplosiveMassTNTKg": 50000000000,
-            "FragType": "THICK_CASE"
+            "ExplosiveMassTNTKg": 50000000000
         },
         "items": [
             "bombussrrds200"

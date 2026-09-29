@@ -33,7 +33,7 @@ public final class TooltipKeys
     public static final String EXPLOSION_BLAST_DAMAGE = "tooltip.flansmodultimate.explosion_blast_damage";
     public static final String EXPLOSION_BLAST_RADIUS = "tooltip.flansmodultimate.explosion_blast_radius";
     public static final String EXPLOSION_FRAG_DAMAGE = "tooltip.flansmodultimate.explosion_frag_damage";
-    public static final String EXPLOSION_FRAG_INTENSITY = "tooltip.flansmodultimate.explosion_frag_intensity";
+    public static final String EXPLOSION_FRAG_COUNT = "tooltip.flansmodultimate.explosion_frag_count";
     public static final String EXPLOSION_FRAG_RADIUS = "tooltip.flansmodultimate.explosion_frag_radius";
     public static final String EXPLOSION_POWER = "tooltip.flansmodultimate.explosion_power";
     public static final String EXPLOSION_RADIUS = "tooltip.flansmodultimate.explosion_radius";
