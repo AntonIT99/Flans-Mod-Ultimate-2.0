@@ -14,7 +14,7 @@ StackSize 16
 
 // Behaviour
 FallSpeed 1.0
-ThrowSpeed 3.0
+ThrowSpeedMs 12
 HitBoxSize 0.5
 BreaksGlass True
 Fuse 40

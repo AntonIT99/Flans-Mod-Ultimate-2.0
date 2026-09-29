@@ -15,7 +15,7 @@ StackSize 3
 // Throwing
 ThrowDelay 10
 Bounciness 0.0
-ThrowSpeed 0.0
+ThrowSpeedMs 0
 Sticky false
 DespawnTime 0
 

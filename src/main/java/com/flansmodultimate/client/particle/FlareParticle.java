@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.particle;
+
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.physics.ModPhysics;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -44,13 +46,13 @@ public class FlareParticle extends ParticleBase
         if (age++ >= lifetime)
             remove();
         
-        yd -= 0.04D * gravity;
+        yd -= ModPhysics.gravity(0.04D * gravity);
         
         move(xd, yd, zd);
         
-        xd *= 0.99D;
-        yd *= 0.99D;
-        zd *= 0.99D;
+        xd *= ModPhysics.dragRetention(0.99D);
+        yd *= ModPhysics.dragRetention(0.99D);
+        zd *= ModPhysics.dragRetention(0.99D);
         
         if (y < 0.0D)
             remove();

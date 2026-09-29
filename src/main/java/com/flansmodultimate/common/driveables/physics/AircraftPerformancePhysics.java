@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.driveables.physics;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 /**
  * Derived fixed-wing performance for aircraft running the real-world profile.
  *
@@ -199,7 +201,7 @@ public final class AircraftPerformancePhysics
             return 0D;
         double speed = Double.isFinite(airspeedMs) ? Math.max(0D, Math.abs(airspeedMs)) : 0D;
         double thrust = Double.isFinite(thrustNewtons) ? Math.max(0D, thrustNewtons) : 0D;
-        double drag = dragNewtons(speed, massKg, wingSpanM, terminalSpeedMs, referenceThrustNewtons, loadFactor);
+        double drag = ModPhysics.dragForce(dragNewtons(speed, massKg, wingSpanM, terminalSpeedMs, referenceThrustNewtons, loadFactor));
         double acceleration = (thrust - drag) / massKg;
         if (!Double.isFinite(acceleration))
             return 0D;
@@ -212,7 +214,7 @@ public final class AircraftPerformancePhysics
             double ramp = Math.min(1D, speed / Math.max(VehiclePhysicsConstants.MIN_LAUNCH_SPEED_MS,
                 terminalSpeedMs * VehiclePhysicsConstants.COAST_DECELERATION_RAMP_FRACTION));
             acceleration = Math.min(acceleration,
-                -VehiclePhysicsConstants.MIN_AIRCRAFT_COAST_DECELERATION_MS2 * ramp);
+                -ModPhysics.dragForce(VehiclePhysicsConstants.MIN_AIRCRAFT_COAST_DECELERATION_MS2 * ramp));
         }
         return Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
             Math.min(acceleration, VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2));
@@ -441,7 +443,7 @@ public final class AircraftPerformancePhysics
     {
         if (!finitePositive(massKg))
             return 0D;
-        double deceleration = airBrakeDragNewtons(airspeedMs, airBrakeAreaM2) / massKg;
+        double deceleration = ModPhysics.dragForce(airBrakeDragNewtons(airspeedMs, airBrakeAreaM2)) / massKg;
         if (!Double.isFinite(deceleration) || deceleration <= 0D)
             return 0D;
         return Math.min(deceleration, VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2);

@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,6 +44,14 @@ public final class LegacyItemParticle extends TextureSheetParticle
         xd = xd * 0.1D + vx;
         yd = yd * 0.1D + vy;
         zd = zd * 0.1D + vz;
+    }
+
+    @Override
+    public void tick()
+    {
+        gravity = (float) ModPhysics.gravity(1D);
+        friction = (float) ModPhysics.dragRetention(0.98D);
+        super.tick();
     }
 
     @Override

@@ -16,7 +16,7 @@ StackSize 4
 // Throwing
 ThrowDelay 10
 Bounciness 0.0
-ThrowSpeed 1.0
+ThrowSpeedMs 12
 Sticky true
 DespawnTime 12000
 

@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -58,9 +60,9 @@ public final class LegacyExplodeParticle extends TextureSheetParticle
         yd += 0.004D;
         move(xd, yd, zd);
 
-        xd *= 0.8999999761581421D;
-        yd *= 0.8999999761581421D;
-        zd *= 0.8999999761581421D;
+        xd *= ModPhysics.dragRetention(0.8999999761581421D);
+        yd *= ModPhysics.dragRetention(0.8999999761581421D);
+        zd *= ModPhysics.dragRetention(0.8999999761581421D);
 
         if (onGround)
         {

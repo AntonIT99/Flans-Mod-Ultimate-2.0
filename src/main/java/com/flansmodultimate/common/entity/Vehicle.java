@@ -15,6 +15,7 @@ import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.driveables.physics.WheelAnimationPhysics;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
@@ -248,7 +249,7 @@ public class Vehicle extends Driveable
         double descent = velocity.y;
         velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater(), verticalGravity(type));
         double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(derivedPhysics || pushed, type.getDrag());
-        velocity = velocity.multiply(horizontalDrag, 1D, horizontalDrag);
+        velocity = velocity.multiply(ModPhysics.dragRetention(horizontalDrag), 1D, ModPhysics.dragRetention(horizontalDrag));
 
         if (!ModCommonConfig.forceLegacyVehiclePhysics())
             velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
@@ -517,7 +518,7 @@ public class Vehicle extends Driveable
     private double verticalGravity(VehicleType type)
     {
         return type.isFloatOnWater() && isInWater()
-            ? 0D : Math.max(0.005D, Math.min(0.08D, type.getGravity() * 0.08D));
+            ? 0D : ModPhysics.gravity(Math.max(0.005D, Math.min(0.08D, type.getGravity() * 0.08D)));
     }
 
     private Vec3 applyVehicleVerticalPhysics(Vec3 velocity, VehicleType type)

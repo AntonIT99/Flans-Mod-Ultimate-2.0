@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.driveables.physics;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 /**
  * Derived longitudinal acceleration for ground vehicles running the real-world
  * profile.
@@ -51,7 +53,7 @@ public final class GroundPropulsionPhysics
         tractionForce = Math.min(tractionForce, launchLimit);
 
         double resistanceCoefficient = powerW / (terminalSpeedMs * terminalSpeedMs * terminalSpeedMs);
-        double resistance = resistanceCoefficient * speed * speed;
+        double resistance = ModPhysics.dragForce(resistanceCoefficient * speed * speed);
 
         double acceleration = (tractionForce - resistance) / massKg;
         if (!Double.isFinite(acceleration))
@@ -106,6 +108,7 @@ public final class GroundPropulsionPhysics
             resistance = Math.max(resistance, coefficient * speedMs * speedMs / massKg);
         }
         double brake = Double.isFinite(brakeFraction) ? Math.max(0D, Math.min(1D, brakeFraction)) : 0D;
+        resistance = ModPhysics.dragForce(resistance);
         resistance += brake * VehiclePhysicsConstants.BRAKING_DECELERATION_MS2;
         resistance = Math.min(resistance, VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2
             + VehiclePhysicsConstants.BRAKING_DECELERATION_MS2);

@@ -984,6 +984,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         if (readFieldWithOptionalValue("UseCustomMelee", false, file) && primaryFunction != EnumFunction.CUSTOM_MELEE)
             secondaryFunction = EnumFunction.CUSTOM_MELEE;
         secondaryFunction = EnumFunction.get(readValue("SecondaryFunction", secondaryFunction.toString(), file));
+        if (secondaryFunction == EnumFunction.THROW && hasValueForConfigField("ThrowSpeedMs", file))
+            bulletSpeed = readValue("ThrowSpeedMs", bulletSpeed * 20F, file) / 20F;
         // Throwing is driven by the vanilla use key, which only the secondary function is bound to.
         if (primaryFunction == EnumFunction.THROW)
         {

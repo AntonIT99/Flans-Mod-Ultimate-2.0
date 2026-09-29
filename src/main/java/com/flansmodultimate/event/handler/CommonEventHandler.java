@@ -18,6 +18,7 @@ import com.flansmodultimate.common.command.TryClassCommand;
 import com.flansmodultimate.common.command.TryTeamCommand;
 import com.flansmodultimate.common.command.VehicleCollisionDebugCommand;
 import com.flansmodultimate.common.command.VehiclePhysicsCommand;
+import com.flansmodultimate.common.command.WorldPhysicsCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
@@ -149,6 +150,7 @@ public final class CommonEventHandler
         TryTeamCommand.register(event.getDispatcher());
         VehicleCollisionDebugCommand.register(event.getDispatcher());
         VehiclePhysicsCommand.register(event.getDispatcher());
+        WorldPhysicsCommand.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 

@@ -356,6 +356,8 @@ public abstract class ShootableType extends InfoType
         fallSpeed = readValue("FallSpeed", fallSpeed, file);
         throwSpeed = readValue("ThrowSpeed", throwSpeed, file);
         throwSpeed = readValue("ShootSpeed", throwSpeed, file);
+        if (hasValueForConfigField("ThrowSpeedMs", file))
+            throwSpeed = readValue("ThrowSpeedMs", throwSpeed * 10F, file) / 10F;
         hitBoxSize = readValue("HitBoxSize", hitBoxSize, file);
         mass = readValue("Mass", mass, file);
         // MassKg is the same stat authored at a kilogram scale, so it is converted into the grams

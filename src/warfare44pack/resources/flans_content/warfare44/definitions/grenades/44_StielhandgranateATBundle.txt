@@ -14,9 +14,8 @@ Colour 255 255 255
 StackSize 4
 
 // Throwing and physics
-ThrowSpeed 1.85
+ThrowSpeedMs 6
 ThrowDelay 10
-FallSpeed 1.25
 Bounciness 0.6
 HitBoxSize 0.5
 SpinWhenThrown true

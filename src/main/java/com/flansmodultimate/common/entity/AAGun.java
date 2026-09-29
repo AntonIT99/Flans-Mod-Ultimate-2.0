@@ -9,6 +9,7 @@ import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.BulletType;
@@ -1220,13 +1221,14 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     {
         Vec3 motion = getDeltaMovement();
         if (!onGround())
-            motion = motion.add(0D, -9.8D / 400D, 0D);
+            motion = motion.add(0D, -ModPhysics.gravity(9.8D / 400D), 0D);
 
         move(MoverType.SELF, motion);
         if (onGround())
             setDeltaMovement(motion.x * 0.5D, 0D, motion.z * 0.5D);
         else
-            setDeltaMovement(motion.multiply(0.5D, 0.98D, 0.5D));
+            setDeltaMovement(motion.multiply(ModPhysics.dragRetention(0.5D),
+                ModPhysics.dragRetention(0.98D), ModPhysics.dragRetention(0.5D)));
     }
 
     private int ammoSlotForBarrel(int barrel)

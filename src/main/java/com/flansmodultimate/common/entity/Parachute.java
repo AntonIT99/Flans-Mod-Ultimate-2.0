@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.network.PacketBuffer;
@@ -172,9 +173,9 @@ public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<To
             setYRot(living.getYRot());
         }
 
-        motionX *= HORIZONTAL_DRAG;
-        motionZ *= HORIZONTAL_DRAG;
-        setDeltaMovement(motionX, DESCENT_SPEED, motionZ);
+        motionX *= ModPhysics.dragRetention(HORIZONTAL_DRAG);
+        motionZ *= ModPhysics.dragRetention(HORIZONTAL_DRAG);
+        setDeltaMovement(motionX, ModPhysics.gravity(DESCENT_SPEED), motionZ);
         move(MoverType.SELF, getDeltaMovement());
 
         if (!level().isClientSide && (onGround() || isInWater()))

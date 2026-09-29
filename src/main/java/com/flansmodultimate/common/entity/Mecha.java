@@ -20,6 +20,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
@@ -218,7 +219,8 @@ public class Mecha extends Driveable
             else if (!onGround() && rocket != null && hasFuelForAddon(10F * rocketPower))
             {
                 rocketThrust = true;
-                velocity = velocity.multiply(1D, 0.95D, 1D).add(0D, 0.07D * rocketPower, 0D);
+                velocity = velocity.multiply(1D, ModPhysics.dragRetention(0.95D), 1D)
+                    .add(0D, 0.07D * rocketPower, 0D);
                 fallDistance = 0F;
                 consumeAddonFuel(10F * rocketPower);
                 if (toolCooldown[0] <= 0 && StringUtils.isNotBlank(rocket.getSoundEffect()))
@@ -238,9 +240,9 @@ public class Mecha extends Driveable
         velocity = new Vec3(desired.x, velocity.y, desired.z);
 
         if (!rocketThrust && isInWater() && shouldFloat())
-            velocity = velocity.multiply(0.89D, 0.89D, 0.89D).add(0D, 0.06D, 0D);
+            velocity = velocity.scale(ModPhysics.dragRetention(0.89D)).add(0D, 0.06D, 0D);
         else
-            velocity = applyGravityAndBuoyancy(velocity, 0.04D);
+            velocity = applyGravityAndBuoyancy(velocity, ModPhysics.gravity(0.04D));
         double descent = velocity.y;
         moveWithCollisions(velocity);
         if (verticalCollision && descent < -0.55D)

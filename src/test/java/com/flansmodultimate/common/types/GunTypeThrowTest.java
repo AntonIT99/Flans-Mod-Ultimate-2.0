@@ -60,6 +60,16 @@ class GunTypeThrowTest
     }
 
     @Test
+    void metresPerSecondOverridesLegacyGunVelocityOnlyForThrownWeapons()
+    {
+        GunType thrown = read("ShortName testJavelin", "SecondaryFunction Throw", "MuzzleVelocity 45", "ThrowSpeedMs 16");
+        GunType firearm = read("ShortName testGun", "MuzzleVelocity 45", "ThrowSpeedMs 16");
+
+        assertEquals(0.8F, thrown.getBulletSpeed(null), EPSILON);
+        assertEquals(2.25F, firearm.getBulletSpeed(null), EPSILON);
+    }
+
+    @Test
     void throwDamageIsRoundedToHalfPoints()
     {
         // 700 g at 25 m/s is 6.83 kinetically

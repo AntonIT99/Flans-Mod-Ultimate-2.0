@@ -28,6 +28,7 @@ import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
 import com.flansmodultimate.common.driveables.physics.RotorStrikePhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -643,7 +644,7 @@ public class Plane extends Driveable
             return derivedFixedWingPhysics(type, type.getResolvedPhysics(), current);
         applyLegacyControls(type, current);
         if (type.getPropellers().isEmpty())
-            return current.add(0D, -LegacyPlanePhysics.GRAVITY, 0D);
+            return current.add(0D, -ModPhysics.gravity(LegacyPlanePhysics.GRAVITY), 0D);
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
         float thrust = LegacyPlanePhysics.thrust(throttle, type.getMaxThrottle(), type.getMaxNegativeThrottle(),
@@ -671,16 +672,19 @@ public class Plane extends Driveable
             ? type.getLift() * wingAirspeed * wingAirspeed * 0.5D * type.getWingArea() * intactWings * 0.5D
             : wingAirspeed * wingAirspeed * intactWings * 0.5D;
         lift *= Math.abs(flightUpVector().y);
+        double gravity = ModPhysics.gravity(LegacyPlanePhysics.GRAVITY);
         lift = Math.min(lift, LegacyPlanePhysics.GRAVITY);
-        velocity = velocity.add(0D, lift - LegacyPlanePhysics.GRAVITY, 0D);
+        velocity = velocity.add(0D, lift - gravity, 0D);
         if (onGround() && velocity.y <= 0D)
             velocity = new Vec3(velocity.x, -0.01D, velocity.z);
-        velocity = new Vec3(velocity.x * drag,
-            velocity.y * (velocity.y < 0D && drag < 1F ? 0.999D : drag), velocity.z * drag);
+        velocity = new Vec3(velocity.x * ModPhysics.dragRetention(drag),
+            velocity.y * ModPhysics.dragRetention(velocity.y < 0D && drag < 1F ? 0.999D : drag),
+            velocity.z * ModPhysics.dragRetention(drag));
         if (isWingFolded())
-            velocity = velocity.multiply(0.98D, 1D, 0.98D);
+            velocity = velocity.multiply(ModPhysics.dragRetention(0.98D), 1D, ModPhysics.dragRetention(0.98D));
         if (!hasRider())
-            velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
+            velocity = velocity.multiply(ModPhysics.dragRetention(emptyDrag(type)), ModPhysics.dragRetention(0.98D),
+                ModPhysics.dragRetention(emptyDrag(type)));
         if (type.isNewFlightControl())
             velocity = applyShootDownSequence(type, velocity);
         applyLegacyTurbulence(type.isNewFlightControl() ? speed : velocity.length(), type.isNewFlightControl());
@@ -786,7 +790,7 @@ public class Plane extends Driveable
         spawnShootDownEffects();
         if (derivedModel)
             return velocity;
-        return velocity.add(0D, -LegacyPlanePhysics.GRAVITY * lostSurfaces, 0D);
+        return velocity.add(0D, -ModPhysics.gravity(LegacyPlanePhysics.GRAVITY * lostSurfaces), 0D);
     }
 
     /** A lost tail or wing: count towards the end, capped as in 1.7.10, and wear the core. */
@@ -869,7 +873,7 @@ public class Plane extends Driveable
         applyDerivedControls(type, physics, current, terminalBlocksPerTick);
 
         if (type.getPropellers().isEmpty())
-            return current.add(0D, -VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2, 0D);
+            return current.add(0D, -ModPhysics.gravity(VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2), 0D);
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? Math.max(0F, getThrottle()) : 0F;
         // On the wheels the aircraft rolls along its nose and neither gravity
@@ -926,8 +930,8 @@ public class Plane extends Driveable
             airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
             throttleDemand * propellerFraction, loadFactor);
         accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
-            accelerationMs2 - AircraftPerformancePhysics.maneuverDecelerationMs2(airspeedMs,
-                angularYaw, angularPitch, angularRoll));
+            accelerationMs2 - ModPhysics.dragForce(AircraftPerformancePhysics.maneuverDecelerationMs2(airspeedMs,
+                angularYaw, angularPitch, angularRoll)));
         if (rolling)
             accelerationMs2 -= AircraftPerformancePhysics.groundDecelerationMs2(throttleDemand);
         // Deployed air brakes are a real extra drag force, so they bite hardest
@@ -980,8 +984,9 @@ public class Plane extends Driveable
 
         // The wing supplies what it is asked for, up to what it can actually
         // make, and only the vertical share survives a bank or a steep attitude.
-        double gravity = VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2;
-        double lift = Math.min(loadFactor, liftFraction) * gravity * Math.abs(flightUpVector().y);
+        double gravity = ModPhysics.gravity(VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2);
+        double lift = Math.min(loadFactor, liftFraction)
+            * VehiclePhysicsConstants.DERIVED_FLIGHT_GRAVITY_BLOCKS_PER_TICK2 * Math.abs(flightUpVector().y);
         velocity = velocity.add(0D, lift - gravity, 0D);
         // Applying lift on the world vertical leaks a component along the flight
         // path. A real wing has none: lift is perpendicular to the relative wind
@@ -999,9 +1004,10 @@ public class Plane extends Driveable
         // Retained legacy trims: folded wings and an unoccupied airframe still
         // add drag, because neither is expressible in the real-world data.
         if (isWingFolded())
-            velocity = velocity.multiply(0.98D, 1D, 0.98D);
+            velocity = velocity.multiply(ModPhysics.dragRetention(0.98D), 1D, ModPhysics.dragRetention(0.98D));
         if (!hasRider())
-            velocity = velocity.multiply(emptyDrag(type), 0.98D, emptyDrag(type));
+            velocity = velocity.multiply(ModPhysics.dragRetention(emptyDrag(type)), ModPhysics.dragRetention(0.98D),
+                ModPhysics.dragRetention(emptyDrag(type)));
         velocity = applyShootDownSequence(type, velocity, true);
         return velocity;
     }
@@ -1073,9 +1079,9 @@ public class Plane extends Driveable
                 ModCommonConfig.realisticAircraftReferenceSpeedScale()),
             axes.getPitch());
         setOrientation(axes.getYaw(), pitch, axes.getRoll());
-        angularYaw *= 0.99F;
-        angularPitch *= 0.99F;
-        angularRoll *= 0.99F;
+        angularYaw *= (float) ModPhysics.dragRetention(0.99D);
+        angularPitch *= (float) ModPhysics.dragRetention(0.99D);
+        angularRoll *= (float) ModPhysics.dragRetention(0.99D);
     }
 
     public float getRotorRenderAngle(float partialTick, float speedRatio)
@@ -1133,9 +1139,9 @@ public class Plane extends Driveable
         axes.rotateLocalPitch(angularPitch);
         axes.rotateLocalRoll(-angularRoll);
         setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
-        angularYaw *= 0.95F;
-        angularPitch *= 0.95F;
-        angularRoll *= 0.95F;
+        angularYaw *= (float) ModPhysics.dragRetention(0.95D);
+        angularPitch *= (float) ModPhysics.dragRetention(0.95D);
+        angularRoll *= (float) ModPhysics.dragRetention(0.95D);
     }
 
     /**
@@ -1308,9 +1314,9 @@ public class Plane extends Driveable
         axes.rotateLocalPitch(angularPitch);
         axes.rotateLocalRoll(-angularRoll);
         setOrientation(axes.getYaw(), axes.getPitch(), axes.getRoll());
-        angularYaw *= 0.99F;
-        angularPitch *= 0.99F;
-        angularRoll *= 0.99F;
+        angularYaw *= (float) ModPhysics.dragRetention(0.99D);
+        angularPitch *= (float) ModPhysics.dragRetention(0.99D);
+        angularRoll *= (float) ModPhysics.dragRetention(0.99D);
     }
 
     /**
@@ -1367,7 +1373,7 @@ public class Plane extends Driveable
         double maximum = Math.max(0.2D, type.getMaxSpeed() * (type.isSupersonic() ? 1.5D : 1D));
         if (velocity.length() > maximum)
             velocity = velocity.normalize().scale(maximum);
-        return velocity.scale(factor);
+        return velocity.scale(ModPhysics.dragRetention(factor));
     }
 
     private float rotorEfficiency(PlaneType type)

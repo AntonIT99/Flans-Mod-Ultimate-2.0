@@ -17,7 +17,7 @@ SpinWhenThrown true
 ThrowDelay 10
 DetonateOnImpact false
 Bounciness 0.8
-ThrowSpeed 2.0
+ThrowSpeedMs 12
 FallSpeed 1.0
 BreaksGlass true
 PenetratesBlocks false

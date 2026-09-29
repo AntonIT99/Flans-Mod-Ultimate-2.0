@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,6 +62,14 @@ public final class LegacyBlockParticle extends TextureSheetParticle
         if (state.isAir() || state.getRenderShape() == RenderShape.INVISIBLE)
             return null;
         return new LegacyBlockParticle(level, state, sourcePos, variant, x, y, z, vx, vy, vz);
+    }
+
+    @Override
+    public void tick()
+    {
+        gravity = (float) ModPhysics.gravity(1D);
+        friction = (float) ModPhysics.dragRetention(0.98D);
+        super.tick();
     }
 
     private TextureAtlasSprite selectLegacySprite(BlockState state, BlockPos sourcePos)

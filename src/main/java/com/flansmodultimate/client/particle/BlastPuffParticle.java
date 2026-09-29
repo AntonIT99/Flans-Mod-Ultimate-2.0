@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -97,9 +99,9 @@ public class BlastPuffParticle extends TextureSheetParticle
 
         yd += look.buoyancy();
         move(xd, yd, zd);
-        xd *= friction;
-        yd *= friction;
-        zd *= friction;
+        xd *= ModPhysics.dragRetention(friction);
+        yd *= ModPhysics.dragRetention(friction);
+        zd *= ModPhysics.dragRetention(friction);
         roll += spin;
 
         updateLook();

@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,8 @@ import java.util.function.Supplier;
 public final class ModCommonConfig
 {
     public static final ForgeConfigSpec configSpec;
+    public static final double DEFAULT_GRAVITY_FACTOR = 1D;
+    public static final double DEFAULT_DRAG_FACTOR = 1D;
 
     /** Arcade lift scaling keeps fixed-wing takeoff runs practical in Minecraft worlds. */
     public static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.25D;
@@ -203,6 +206,8 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DIGITAL_AMMO_SUPPLY_AMOUNT;
 
     private static final Supplier<Boolean> FORCE_LEGACY_PLANE_PHYSICS;
+    private static final ForgeConfigSpec.DoubleValue GRAVITY_FACTOR;
+    private static final ForgeConfigSpec.DoubleValue DRAG_FACTOR;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
@@ -542,6 +547,17 @@ public final class ModCommonConfig
             .defineInRange("digitalAmmoSupplyAmount", 100, 1, Integer.MAX_VALUE);
         builder.pop();
 
+        builder.push("World Physics Settings");
+        GRAVITY_FACTOR = builder
+            .comment("Multiplier for gravity applied by Flan's projectiles, thrown weapons, AA guns, parachutes, mechas, driveables and particles.",
+                "0 disables their gravity; 1 preserves authored gravity. Does not change vanilla entities.")
+            .defineInRange("gravityFactor", DEFAULT_GRAVITY_FACTOR, 0D, 10D);
+        DRAG_FACTOR = builder
+            .comment("Multiplier for drag applied by Flan's projectiles, AA guns, parachutes, driveables and particles.",
+                "0 removes drag; 1 preserves authored drag. Does not change vanilla entities.")
+            .defineInRange("dragFactor", DEFAULT_DRAG_FACTOR, 0D, 10D);
+        builder.pop();
+
         builder.push("Vehicle Physics Settings");
         FORCE_LEGACY_PLANE_PHYSICS = builder
             .comment("Force all planes to use their legacy movement physics, even when Real* aircraft parameters are present.",
@@ -785,6 +801,8 @@ public final class ModCommonConfig
             List.copyOf(DIGITAL_AMMO_SUPPLY_BLOCKS.get()),
             DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
 
+            GRAVITY_FACTOR.get(),
+            DRAG_FACTOR.get(),
             FORCE_LEGACY_PLANE_PHYSICS.get(),
             FORCE_LEGACY_VEHICLE_PHYSICS.get(),
             ENABLE_AIRCRAFT_ROLL_SELF_LEVELING.get(),
@@ -814,8 +832,35 @@ public final class ModCommonConfig
 
     public static CommonConfigSnapshot get()
     {
+        var server = PlatformEnvironment.currentServer();
+        if (server != null && server.isSameThread())
+            return instance.get();
         CommonConfigSnapshot override = serverOverride.get();
         return override != null ? override : instance.get();
+    }
+
+    public static double gravityFactor()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_GRAVITY_FACTOR : config.gravityFactor();
+    }
+
+    public static double dragFactor()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_DRAG_FACTOR : config.dragFactor();
+    }
+
+    /** Server-side persisted change, with the same validation and client sync as the options screen. */
+    public static boolean setGravityFactor(double value)
+    {
+        return Double.isFinite(value) && setRuntimeValue(GRAVITY_FACTOR.getPath(), value);
+    }
+
+    /** Server-side persisted change, with the same validation and client sync as the options screen. */
+    public static boolean setDragFactor(double value)
+    {
+        return Double.isFinite(value) && setRuntimeValue(DRAG_FACTOR.getPath(), value);
     }
 
     public static boolean addGunpowderRecipe()

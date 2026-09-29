@@ -18,7 +18,7 @@ StackSize 16
 CanThrow False
 ThrowDelay 10
 Bounciness 0.8
-ThrowSpeed 3.0
+ThrowSpeedMs 12
 Sticky false
 
 // Ballistics

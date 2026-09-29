@@ -50,6 +50,7 @@ import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
@@ -5469,10 +5470,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 {
                     double corrected = MarineDraftPhysics.verticalVelocity(velocity.y,
                         getBoundingBox().minY, surface, draft, ceiling);
-                    return new Vec3(velocity.x, corrected, velocity.z).multiply(0.92D, 1D, 0.92D);
+                    double drag = ModPhysics.dragRetention(0.92D);
+                    return new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag);
                 }
             }
-            return velocity.add(0D, ceiling, 0D).multiply(0.92D, 0.8D, 0.92D);
+            return velocity.add(0D, ceiling, 0D).multiply(ModPhysics.dragRetention(0.92D),
+                ModPhysics.dragRetention(0.8D), ModPhysics.dragRetention(0.92D));
         }
         return velocity.add(0D, -Math.max(0D, gravity), 0D);
     }

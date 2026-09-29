@@ -3366,7 +3366,7 @@
     "Hasta Velitaris": {
         "properties": {
             "MeleeDamage": 9,
-            "MuzzleVelocity": 45.0,
+            "ThrowSpeedMs": 35.0,
             "RoundsPerMin": 30.0,
             "Dispersion": 2.0,
             "ThrowMass": 700
@@ -5227,7 +5227,7 @@
     "Pilum": {
         "properties": {
             "MeleeDamage": 9,
-            "MuzzleVelocity": 35.0,
+            "ThrowSpeedMs": 25.0,
             "RoundsPerMin": 20.0,
             "Dispersion": 2.0,
             "ThrowMass": 2500
