@@ -51,6 +51,9 @@ public class PacketFlanExplosionParticles implements IClientPacket
     private static final float FRAG_SPEED_PER_RADIUS = 0.09F;
     /** Fragments are thrown slightly upwards on average rather than purely sideways. */
     private static final float FRAG_UPWARD_BIAS = 0.35F;
+    /** Start clear of the brightest part of the fireball, without jumping far into the damage envelope. */
+    private static final float FRAG_START_CRATER_SHARE = 0.65F;
+    private static final float FRAG_START_RADIUS_SHARE = 0.2F;
 
     /** How fast the smoke column climbs, per block of crater radius. Gravity arcs it over. */
     private static final float COLUMN_RISE_PER_RADIUS = 0.08F;
@@ -331,14 +334,21 @@ public class PacketFlanExplosionParticles implements IClientPacket
         RandomSource random = level.random;
         float lifetimeScale = ExplosionVisuals.fragLifetimeScale(explosionRadius);
         double speed = fragRadius * FRAG_SPEED_PER_RADIUS;
+        double start = Math.min(Math.max(0.35F, explosionRadius * FRAG_START_CRATER_SHARE),
+            fragRadius * FRAG_START_RADIUS_SHARE);
 
         for (int i = 0; i < count; i++)
         {
             Vec3 direction = fragmentSparkDirection(random, groundBurst);
             double jitter = 0.5D + random.nextDouble();
+            Vec3 origin = position.add(direction.scale(start));
+            if (isBuried(level, origin))
+                origin = position.add(0D, Math.max(0.5D, start), 0D);
+            if (isBuried(level, origin))
+                continue;
 
             ClientHooks.RENDER.spawnParticle(FlanParticles.FIREWORKS_SPARK,
-                position.x, position.y, position.z,
+                origin.x, origin.y, origin.z,
                 direction.x * speed * jitter, direction.y * speed * jitter,
                 direction.z * speed * jitter, 1.0F, lifetimeScale);
         }

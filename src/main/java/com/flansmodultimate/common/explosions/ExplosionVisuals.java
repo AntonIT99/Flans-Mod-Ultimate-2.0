@@ -49,7 +49,7 @@ public final class ExplosionVisuals
      * Fragments arrive all at once, so their sparks are shorter-lived than the rest of the
      * explosion however big the charge is.
      */
-    private static final float FRAG_LIFETIME_SHARE = 0.45F;
+    private static final float FRAG_LIFETIME_SHARE = 0.65F;
 
     /** Fireball quad size per block of crater radius - the linear term. */
     private static final float FIREBALL_SCALE_PER_RADIUS = 0.5F;
@@ -104,10 +104,10 @@ public final class ExplosionVisuals
     private static final int MAX_SHOCKWAVE_PARTICLES = 48;
 
     /**
-     * Below this fragmentation radius the spray would be lost inside the fireball. Set above the
-     * ~3.5 block fragmentation radius of a 20 mm round for the same reason as the shockwave.
+     * Below this fragmentation radius the spray would be lost inside the fireball. Set just above
+     * the ~3.5 block fragmentation radius of a 20 mm round; grenades can still show their spray.
      */
-    public static final float MIN_FRAG_SPRAY_RADIUS = 6.0F;
+    public static final float MIN_FRAG_SPRAY_RADIUS = 4.0F;
     /** Sparks per block of fragmentation radius, before the intensity term. */
     private static final float SPARKS_PER_FRAG_RADIUS = 0.8F;
     private static final int MAX_FRAG_SPARKS = 64;

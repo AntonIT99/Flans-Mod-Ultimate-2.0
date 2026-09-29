@@ -124,6 +124,10 @@ class ExplosionVisualsTest
             "a frag shell should spray more than a blast charge reaching the same distance");
         assertEquals(0, ExplosionVisuals.fragSparkCount(2F, 4F),
             "a spray inside the fireball would not be visible");
+        assertTrue(ExplosionVisuals.fragSparkCount(4F, 1F) > 0,
+            "a grenade-sized fragmentation envelope should have a visible spray");
+        assertTrue(ExplosionVisuals.fragSparkCount(1000F, 4F) <= 64,
+            "even an extreme burst must stay within the particle cap");
     }
 
     @Test
