@@ -123,6 +123,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -5815,6 +5816,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         AABB impactBox = getBoundingBox().inflate(Math.min(1.5D, horizontalSpeed + 0.25D), 0.25D, Math.min(1.5D, horizontalSpeed + 0.25D));
         for (Entity entity : level().getEntities(this, impactBox, candidate -> candidate.isAlive() && !isPartOfThis(candidate)))
         {
+            // Projectiles use their own hit tracing, not the driveable's coarse entity push.
+            // Pushing a newly dropped bomb here reverses its inherited aircraft velocity.
+            if (entity instanceof Shootable || entity instanceof Projectile)
+                continue;
             if (DriveableCollisionBypass.isEnabled(entity))
                 continue;
             // Shaped collision resolves these entities against actual hull
