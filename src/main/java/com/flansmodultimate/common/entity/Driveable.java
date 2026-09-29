@@ -4502,7 +4502,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return false;
         EnumDriveablePart target = partType == null ? EnumDriveablePart.CORE : partType;
         DriveablePart part = driveableData.getPart(target);
-        if (part == null)
+        if (part == null || part.isDestroyed())
             return false;
         if (source != null)
             lastAtkEntity = source.getEntity();
@@ -4561,28 +4561,46 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             .map(DriveablePart::getType);
     }
 
-    /** Selects one nearest damageable collision surface so proxy entities cannot multiply explosion damage. */
+    /** Selects the nearest damageable collision surface. */
     public Optional<VehicleExplosionTarget> resolveExplosionTarget(@NotNull Vec3 worldPoint)
     {
+        return resolveExplosionTargets(worldPoint).stream().findFirst();
+    }
+
+    /** One target per active part, ordered by distance from the detonation. */
+    public List<VehicleExplosionTarget> resolveExplosionTargets(@NotNull Vec3 worldPoint)
+    {
         if (driveableData == null || configType == null)
-            return Optional.empty();
+            return List.of();
         Vec3 hullLocalPoint = worldToModelLocal(worldPoint);
         Vec3 turretPivot = getCollisionTurretPivot();
         Vec3 turretOffset = getCollisionTurretOffset();
-        VehicleExplosionTarget best = null;
+        List<VehicleExplosionTarget> targets = new ArrayList<>();
         for (DriveablePart part : driveableData.getParts().values())
         {
-            if (part == null || part.getBox() == null || part.getMaxHealth() <= 0F || part.isDestroyed()
-                || !canHitPart(part.getType()))
+            if (part == null || !part.canReceiveExplosionDamage() || !canHitPart(part.getType()))
                 continue;
+            AABB box = partBoxModelLocal(part.getBox());
             DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(
-                partBoxModelLocal(part.getBox()), hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
+                box, hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
                 turretPivot, turretOffset);
-            if (best == null || surface.distance() < best.distanceMeters())
-                best = new VehicleExplosionTarget(part.getType(),
-                    EnumArmorFacing.fromOutwardNormal(partFrameToModelLocal(surface.outwardNormal())), surface.distance());
+            Vec3 hullSurface = DriveableProjectileCollision.partPointToHullLocal(
+                surface.position(), part.getType(), getTurretYaw(), getTurretPitch(), turretPivot, turretOffset);
+            Vec3 worldSurface = modelLocalToWorld(hullSurface);
+            List<Vec3> samples = new ArrayList<>();
+            for (Vec3 sample : DriveableProjectileCollision.explosionSurfaceSamples(box, surface))
+            {
+                Vec3 hullSample = DriveableProjectileCollision.partPointToHullLocal(
+                    sample, part.getType(), getTurretYaw(), getTurretPitch(), turretPivot, turretOffset);
+                samples.add(modelLocalToWorld(hullSample));
+            }
+            targets.add(new VehicleExplosionTarget(part.getType(),
+                EnumArmorFacing.fromOutwardNormal(partFrameToModelLocal(surface.outwardNormal())),
+                worldSurface, worldPoint.distanceTo(worldSurface), samples));
         }
-        return Optional.ofNullable(best);
+        targets.sort(Comparator.comparingDouble(VehicleExplosionTarget::distanceMeters)
+            .thenComparing(target -> target.part().ordinal()));
+        return targets;
     }
 
     public boolean repairFromTool(@NotNull Player player, int amount)

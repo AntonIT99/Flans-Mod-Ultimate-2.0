@@ -38,6 +38,12 @@ public final class DriveablePart
         return dead || maxHealth > 0F && health <= 0F;
     }
 
+    /** A destroyed part no longer absorbs a blast or shields another part from selection. */
+    public boolean canReceiveExplosionDamage()
+    {
+        return box != null && maxHealth > 0F && !isDestroyed();
+    }
+
     public void tick()
     {
         if (fireTime > 0)

@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.ExplosionVehicleDamageResolver;
+import com.flansmodultimate.common.driveables.armor.VehicleExplosionDamageBudget;
 import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
@@ -37,6 +38,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.EntityBasedExplosionDamageCalculator;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -47,6 +49,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -407,20 +410,10 @@ public class FlanExplosion extends Explosion
     {
         if (driveable == null || driveable.getConfigType() == null)
             return;
-        VehicleExplosionTarget target = driveable.resolveExplosionTarget(center).orElse(null);
-        if (target == null)
+        List<VehicleExplosionTarget> targets = driveable.resolveExplosionTargets(center);
+        if (targets.isEmpty())
             return;
 
-        double distance = driveable.getEyePosition().distanceTo(center);
-        double seen = Explosion.getSeenPercent(center, driveable);
-        double blastFalloff = getBlastFalloff(distance, stats.blastRadius());
-        float existingBlast = distance <= stats.blastRadius()
-            ? (float) getBlastDamage(driveable, seen, blastFalloff) : 0F;
-        float existingFragmentation = distance <= stats.fragRadius()
-            ? (float) getFragDamage(driveable, seen, distance, stats.fragRadius(), stats.fragIntensity()) : 0F;
-
-        ArmorPlate plate = driveable.getConfigType().getResolvedArmor()
-            .plate(target.part(), target.facing()).authored();
         // A legacy explosive declares no explosive mass, so the pressure model has no charge to
         // work from and the vehicle would take nothing at all. Recover an equivalent charge from
         // the legacy crater radius and power so those definitions still threaten armour.
@@ -429,16 +422,86 @@ public class FlanExplosion extends Explosion
                 stats.explosionRadius(), stats.explosionPower(),
                 ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
         Float explosiveMass = charge > 0F ? charge : null;
-        ExplosionVehicleDamageResolver.DamageChannels channels = ExplosionVehicleDamageResolver.resolve(
-            plate.thicknessMm(), explosiveMass, target.distanceMeters(), existingBlast, existingFragmentation,
-            ModCommonConfig.armoredBlastResistanceKPaPerMm(), ModCommonConfig.minimumBlastDistanceMeters());
+        List<VehicleExplosionTarget> affectedParts = new ArrayList<>();
+        List<Float> rawDamage = new ArrayList<>();
+        double knockbackExposure = 0D;
+        double knockbackSeen = 0D;
+        double knockbackFalloff = 0D;
+        for (VehicleExplosionTarget target : targets)
+        {
+            double distance = target.distanceMeters();
+            if (distance > stats.blastRadius() && distance > stats.fragRadius())
+                continue;
 
+            // Measure cover on the selected part rather than the driveable's small entity box.
+            double seen = vehicleExposure(driveable, target);
+            double blastFalloff = getBlastFalloff(distance, stats.blastRadius());
+            float blast = distance <= stats.blastRadius()
+                ? (float) getBlastDamage(driveable, seen, blastFalloff) : 0F;
+            float fragmentation = distance <= stats.fragRadius()
+                ? (float) getFragDamage(driveable, seen, distance, stats.fragRadius(), stats.fragIntensity()) : 0F;
+            ArmorPlate plate = driveable.getConfigType().getResolvedArmor()
+                .plate(target.part(), target.facing()).authored();
+            ExplosionVehicleDamageResolver.DamageChannels channels = ExplosionVehicleDamageResolver.resolve(
+                plate.thicknessMm(), explosiveMass, distance, blast, fragmentation,
+                ModCommonConfig.armoredBlastResistanceKPaPerMm(), ModCommonConfig.minimumBlastDistanceMeters());
+            affectedParts.add(target);
+            rawDamage.add(channels.totalDamage());
+            if (seen * blastFalloff > knockbackExposure)
+            {
+                knockbackExposure = seen * blastFalloff;
+                knockbackSeen = seen;
+                knockbackFalloff = blastFalloff;
+            }
+        }
+
+        double damageBudget = VehicleExplosionDamageBudget.maximumTotal(rawDamage);
+        double committedDamage = 0D;
         DamageSource source = FlanDamageSources.createDamageSource(
             level, explosive, causingEntity, FlanDamageSources.EXPLOSION);
-        boolean hurt = driveable.damagePart(target.part(), channels.totalDamage(), source);
+        boolean hurt = false;
+        for (int index = 0; index < affectedParts.size(); index++)
+        {
+            VehicleExplosionTarget target = affectedParts.get(index);
+            if (!driveable.isPartIntact(target.part()))
+                continue;
+            float amount;
+            if (index == 0)
+                amount = rawDamage.get(0);
+            else
+            {
+                List<Float> remainingRaw = new ArrayList<>();
+                for (int remaining = index; remaining < affectedParts.size(); remaining++)
+                {
+                    if (driveable.isPartIntact(affectedParts.get(remaining).part()))
+                        remainingRaw.add(rawDamage.get(remaining));
+                }
+                amount = VehicleExplosionDamageBudget.allocateSecondaries(
+                    remainingRaw, damageBudget - committedDamage).get(0);
+            }
+            if (driveable.damagePart(target.part(), amount, source))
+            {
+                committedDamage += amount;
+                hurt = true;
+            }
+        }
         if (hurt && causingEntity instanceof ServerPlayer player)
             PacketHandler.sendTo(new PacketHitMarker(false, 1.0F, true), player);
-        applyKnockback(driveable, seen, blastFalloff);
+        applyKnockback(driveable, knockbackSeen, knockbackFalloff);
+    }
+
+    /** Fraction of short rays from the detonation that reach the exposed face of one part. */
+    private double vehicleExposure(Driveable driveable, VehicleExplosionTarget target)
+    {
+        int clear = 0;
+        for (Vec3 sample : target.exposureSamples())
+        {
+            if (center.distanceToSqr(sample) < 1.0E-12D || level.clip(new ClipContext(center,
+                sample, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
+                driveable)).getType() == HitResult.Type.MISS)
+                clear++;
+        }
+        return target.exposureSamples().isEmpty() ? 0D : (double) clear / target.exposureSamples().size();
     }
 
     @Nullable
