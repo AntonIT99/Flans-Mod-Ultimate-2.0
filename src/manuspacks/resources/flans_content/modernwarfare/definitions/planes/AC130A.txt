@@ -5,6 +5,7 @@ ShortName AC130A
 // Model and Rendering
 Icon IconPlaneAC130A
 Model manus_modern_warfare.AC130A
+FlashModel DefaultFlash
 Texture SkinPlaneAC130A
 HasDoor True
 ModelScale 1
