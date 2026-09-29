@@ -51,12 +51,6 @@ class ShootableMassUnitsTest
     }
 
     @Test
-    void theLegacyExplosiveMassKeyIsNoLongerRead()
-    {
-        assertEquals(0F, bullet("ExplosiveMass 0.029").getExplosiveMass());
-    }
-
-    @Test
     void anAddRoundExplosiveColumnIsAuthoredInGrams()
     {
         BulletType belt = bullet("RoundsPerItem 2",

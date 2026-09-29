@@ -56,7 +56,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -65,6 +64,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -565,13 +565,12 @@ public final class ShootingHelper
             return;
 
         // A bounding mine bursts above the floor. Use the raised point for every explosion
-        // effect and ray; a ceiling prevents the jump, so cover remains physically meaningful.
+        // effect and ray. The entity can rest slightly inside the floor block, so checking a
+        // clip from its exact origin would report that same block as a ceiling and suppress the
+        // burst. Ignore only the block containing the mine and check every block above it.
         if (shootable instanceof Grenade && type.getFragBurstHeight() > 0F)
         {
-            Vec3 raised = position.add(0D, type.getFragBurstHeight(), 0D);
-            if (level.clip(new ClipContext(position, raised, ClipContext.Block.COLLIDER,
-                ClipContext.Fluid.NONE, shootable)).getType() == HitResult.Type.MISS)
-                position = raised;
+            position = raisedBurstPosition(level, position, type.getFragBurstHeight());
         }
 
         playDetonateSound(level, type, position, shootable);
@@ -579,6 +578,28 @@ public final class ShootingHelper
         spreadFire(level, type, position, true);
         spawnExplosionParticles(level, type, position);
         dropItemsOnDetonate(level, type.getDropItemOnDetonate(), type.getContentPack(), position, shootable);
+    }
+
+    static Vec3 raisedBurstPosition(Level level, Vec3 position, float height)
+    {
+        if (level == null || position == null || !Float.isFinite(height) || height <= 0F)
+            return position;
+
+        Vec3 raised = position.add(0D, height, 0D);
+        BlockPos originBlock = BlockPos.containing(position);
+        int steps = Math.max(1, Mth.ceil(height * 16F));
+        for (int step = 1; step <= steps; step++)
+        {
+            double progress = step / (double) steps;
+            BlockPos sample = BlockPos.containing(position.x, position.y + height * progress, position.z);
+            if (sample.equals(originBlock))
+                continue;
+
+            BlockState state = level.getBlockState(sample);
+            if (!state.getCollisionShape(level, sample, CollisionContext.empty()).isEmpty())
+                return position;
+        }
+        return raised;
     }
 
     public static void onBulletDeath(Level level, BulletType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
