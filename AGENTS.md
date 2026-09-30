@@ -60,9 +60,9 @@ checking. They are read-only references: never edit them unless explicitly asked
 - `../FlansMod` - the original 1.12.2 project. **Secondary** reference; use when 1.7.10 is
   ambiguous or the question concerns newer-loader concerns. If the two disagree, 1.7.10
   wins unless the user says otherwise.
-- `../Flan's Mod Aryan Indian Edition Krishna Mk6C` - a heavily modified 1.7.10 fork, used
-  occasionally as an extra reference for alternative implementations. Treat it as
-  inspiration, not authority.
+- `../flans-mod-labjac-edition-ganesha-mk1a-1.7.10` - the newer Labjac Edition
+  Ganesha Mk1A 1.7.10 fork, used occasionally as an extra reference for alternative
+  implementations. Treat it as inspiration, not authority.
 
 ## Build and Validation
 
