@@ -49,6 +49,12 @@ schema. Confirm a behavior against the implementation if a future branch differs
   authored HP stays zero. Without that opt-in and valid mass, HP is absolute.
   A split changes shares and may change how quickly each component disappears;
   compute before/after shares and compare them with the represented structure.
+  The hull `core` usually carries most of the vehicle's mass. A narrow nose
+  region should not receive the entire frontal armor's implied mass or extra HP
+  simply because its armor plate is thick: armor values already govern shot
+  resistance. Use turret mass references as approximate share checks, allowing
+  for differences in gun, fittings, and modeled scope rather than applying one
+  fixed percentage to every tank.
 - For aircraft and mechas, use their actual part hierarchy and motion instead
   of a ground-vehicle hull/turret template. For an angled hull, use a sensible
   axis-aligned box plus the armor slope fields where applicable; a box does not

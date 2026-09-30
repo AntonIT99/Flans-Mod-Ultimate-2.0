@@ -63,11 +63,11 @@ ArmorBottomMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 300 -52 4 -18 116 40 36
-SetupPart SetupPart frontRightWheel 75 39 -10 13 20 19 6
-SetupPart frontLeftWheel 75 39 -10 -19 20 19 6
-SetupPart backRightWheel 75 -33 -10 9 20 19 10
-SetupPart backLeftWheel 75 -33 -10 -19 20 19 10
+SetupPart core 8400 -52 4 -18 116 40 36
+SetupPart frontRightWheel 400 39 -10 13 20 19 6
+SetupPart frontLeftWheel 400 39 -10 -19 20 19 6
+SetupPart backRightWheel 400 -33 -10 9 20 19 10
+SetupPart backLeftWheel 400 -33 -10 -19 20 19 10
 
 // Seats
 Driver 23 12 -7

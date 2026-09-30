@@ -76,7 +76,7 @@ ArmorBottomMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 300 -59 0 -30 250 10 60
+SetupPart core 300 -76 -10 -37 251 42 74
 
 // Seats
 Driver 0 16 -20 -360 360 -89 89

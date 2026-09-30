@@ -74,9 +74,15 @@ simplify a box adjustment.
    part HP controls shares of the mass-derived total. Keep total mass and the
    health mode unchanged. For legacy-health definitions, authored HP is absolute;
    keep overall durability near the prior scale unless the user requested a
-   balance change. Give critical bodywork substantial share, smaller exposed
-   modules a plausible share, and compare sister vehicles within the same pack.
-   Check the gameplay effect of destroying each added or resized part.
+   balance change. Treat the `core` as the main hull and normally the largest
+   individual HP share; a separate `frontalArmor` box represents only its own
+   forward structure, not the mass or armor strength of the entire vehicle.
+   Give a rotating turret a meaningful share based on vehicle-specific mass
+   evidence where available, with its gun and modeled fittings considered.
+   Allocate tracks, wheels, skirts, and other exposed modules by their represented
+   structure and compare sister vehicles within the same pack. Do not equate
+   armor thickness, box volume, or an existing HP value with mass. Check the
+   gameplay effect of destroying each added or resized part.
 
 ## Finish
 

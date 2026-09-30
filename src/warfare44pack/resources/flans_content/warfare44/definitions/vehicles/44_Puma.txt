@@ -15,8 +15,10 @@ CameraDistance 7.5
 // Recipe and inventory
 AddRecipeParts turret 1 44_Light_Tank_Turret 1 44_Vehicle_Seat
 AddRecipeParts core 1 44_Car_Chassis 1 44_Vehicle_Seat 5 ingotIron
-AddRecipeParts leftTrack 4 44_Car_Wheel
-AddRecipeParts rightTrack 4 44_Car_Wheel
+AddRecipeParts backRightWheel 2 44_Car_Wheel
+AddRecipeParts backLeftWheel 2 44_Car_Wheel
+AddRecipeParts frontRightWheel 2 44_Car_Wheel
+AddRecipeParts frontLeftWheel 2 44_Car_Wheel
 CargoSlots 20
 ShellSlots 3
 FuelTankSize 2000
@@ -129,11 +131,12 @@ ArmorBottomMm 10
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 950 -79 4 -15 124 35 31
-SetupPart backRightWheel 25 -66 -10 -22 21 21 9
-SetupPart backRightWheel 25 -38 -10 -22 21 21 9
-SetupPart frontRightWheel 25 -12 -10 -22 21 21 9
-SetupPart frontRightWheel 25 15 -10 -22 21 21 9
+SetupPart core 7000 -79 4 -15 124 24 31
+SetupPart turret 1400 -26 28 -19 45 12 38
+SetupPart backRightWheel 400 -66 -10 -22 49 21 9
+SetupPart backLeftWheel 400 -66 -10 13 49 21 9
+SetupPart frontRightWheel 400 -12 -10 -22 48 21 9
+SetupPart frontLeftWheel 400 -12 -10 13 48 21 9
 
 // Seats
 Driver 0 32 0 -360 360 -8 15

@@ -148,9 +148,9 @@ ArmorBottomMm 5
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1000 -67 -10 -22 98 20 6
-SetupPart leftTrack 300 -67 0 -22 98 37 44
-SetupPart rightTrack 300 -67 -10 16 98 19 6
+SetupPart core 8800 -67 -2 -22 98 39 44
+SetupPart leftTrack 600 -67 -10 -22 98 19 6
+SetupPart rightTrack 600 -67 -10 16 98 19 6
 
 // Seats
 Driver -18 20 -10 -12 12 -8 10

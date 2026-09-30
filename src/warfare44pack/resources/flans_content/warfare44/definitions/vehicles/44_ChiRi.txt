@@ -162,10 +162,11 @@ TurretArmorTopMm 12
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1750 -74 0 -26 100 48 54
-SetupPart frontalArmor 2000 26 0 -26 39 43 54
-SetupPart leftTrack 300 -75 -10 -28 142 26 10
-SetupPart rightTrack 300 -75 -10 22 142 26 10
+SetupPart core 6200 -74 0 -26 100 27 54
+SetupPart turret 1600 -43 27 -19 64 21 42
+SetupPart frontalArmor 1000 26 0 -26 39 27 54
+SetupPart leftTrack 600 -75 -10 -28 142 26 10
+SetupPart rightTrack 600 -75 -10 22 142 26 10
 
 // Seats
 Driver 0 43 0 -360 360 -10 20

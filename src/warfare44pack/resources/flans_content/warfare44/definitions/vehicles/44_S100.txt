@@ -88,7 +88,7 @@ ArmorConningTowerMm 12
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart trailer 300 48 52 -35 202 17 70
+SetupPart trailer 300 -56 52 -35 100 14 70
 SetupPart core 800 -245 11 -35 495 41 70
 
 // Seats
