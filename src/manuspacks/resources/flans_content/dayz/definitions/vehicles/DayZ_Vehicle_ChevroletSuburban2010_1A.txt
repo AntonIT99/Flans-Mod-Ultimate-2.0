@@ -6,6 +6,8 @@ ShortName DayZ_Vehicle_ChevroletSuburban2010_1A
 Model Manus_DayZ.Vehicle.DayZ_Vehicle_ChevroletSuburban2010_1
 Icon Icon_DayZ_Vehicle_ChevroletSuburban2010_1A
 Texture Skin_DayZ_Vehicle_ChevroletSuburban2010_1A
+// Paintjobs
+Paintjob Icon_DayZ_Vehicle_ChevroletSuburban2010_1B Skin_DayZ_Vehicle_ChevroletSuburban2010_1B white 8
 RotateWheels True
 
 // Recipe and Inventory

@@ -188,5 +188,6 @@ public class ModelGAU19 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(13.125F, 0.953125F, -0.0625F);
 	}
 }

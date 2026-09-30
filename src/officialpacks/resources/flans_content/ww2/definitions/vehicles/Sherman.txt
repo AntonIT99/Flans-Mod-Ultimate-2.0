@@ -65,7 +65,7 @@ SetupPart turret 10520 -25 25 -25 50 18 50
 SetupPart leftTrack 8000 -61 -10 -28 112 17 13
 SetupPart rightTrack 8000 -61 -10 15 112 17 13
 BulletDetection 7
-ArmorFrontMm 50
+ArmorFrontMm 50 56
 ArmorSideMm 38
 ArmorRearMm 38
 ArmorTopMm 19

@@ -6,6 +6,8 @@ ShortName DayZ_Vehicle_UAZ469_1A
 Model Manus_DayZ.Vehicle.DayZ_Vehicle_UAZ469_1
 Icon Icon_DayZ_Vehicle_UAZ469_1A
 Texture Skin_DayZ_Vehicle_UAZ469_1A
+// Paintjobs
+Paintjob Icon_DayZ_Vehicle_UAZ469_1B Skin_DayZ_Vehicle_UAZ469_1B yellow 8
 RotateWheels True
 
 // Recipe and Inventory

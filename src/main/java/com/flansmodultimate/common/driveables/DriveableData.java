@@ -57,7 +57,8 @@ public final class DriveableData implements Container
     @Getter private final int numMissileSlots;
     @Getter private final int numCargoSlots;
     @Getter private final int numMechaSlots;
-    @Getter private final Map<EnumDriveablePart, DriveablePart> parts;
+    private final Map<EnumDriveablePart, DriveablePart> parts;
+    private long debugHitboxRevision;
     @Getter private final NonNullList<ItemStack> inventory;
     @Getter private float fuelInTank;
     @Getter private int paintjobID;
@@ -82,6 +83,7 @@ public final class DriveableData implements Container
         for (EnumDriveablePart part : EnumDriveablePart.values())
             mutableParts.put(part, new DriveablePart(part, driveableType.getHealth().get(part)));
         parts = Collections.unmodifiableMap(mutableParts);
+        debugHitboxRevision = driveableType.getDebugHitboxRevision();
 
         PartType defaultEngine = PartType.getDefaultEngine(driveableType.getType(), driveableType.getContentPack(),
             driveableType.getEngine());
@@ -109,7 +111,17 @@ public final class DriveableData implements Container
     @Nullable
     public DriveablePart getPart(EnumDriveablePart part)
     {
-        return parts.get(part);
+        return getParts().get(part);
+    }
+
+    public Map<EnumDriveablePart, DriveablePart> getParts()
+    {
+        if (debugHitboxRevision != driveableType.getDebugHitboxRevision())
+        {
+            parts.forEach((part, state) -> state.updateDebugBox(driveableType.getHealth().get(part)));
+            debugHitboxRevision = driveableType.getDebugHitboxRevision();
+        }
+        return parts;
     }
 
     public void setEngineShortName(@Nullable String engineShortName)

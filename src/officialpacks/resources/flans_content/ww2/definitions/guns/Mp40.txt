@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.Mp40
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.28571 0.49721 0
 animFlashScale 0.62
 Texture mp40

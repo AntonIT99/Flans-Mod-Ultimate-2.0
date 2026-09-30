@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.Kar98kSniper
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.53809 0.35815 -0.00659
 animFlashScale 1.42
 Texture kar98k

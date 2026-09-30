@@ -78,6 +78,44 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     private static final float DEFAULT_WHEEL_GROUND_CLEARANCE = 0.375F;
 
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
+    /** Runtime baseline kept separately from authored HP weights and shoot-point overrides. */
+    private Map<EnumDriveablePart, CollisionBox> debugHitboxBaseline;
+    @Getter private long debugHitboxRevision;
+
+    public void setDebugHitboxes(Map<EnumDriveablePart, CollisionBox> boxes)
+    {
+        if (debugHitboxBaseline == null)
+            debugHitboxBaseline = new EnumMap<>(health);
+        health.clear();
+        health.putAll(boxes);
+        debugHitboxRevision++;
+    }
+
+    public void resetDebugHitboxes()
+    {
+        if (debugHitboxBaseline == null)
+            return;
+        health.clear();
+        health.putAll(debugHitboxBaseline);
+        debugHitboxBaseline = null;
+        debugHitboxRevision++;
+    }
+
+    /** Inverse of SetupPart parsing, including plane facing. */
+    public float[] debugHitboxPixels(CollisionBox runtime)
+    {
+        CollisionBox box = this instanceof PlaneType ? applyPlaneModelFacing(runtime) : runtime;
+        return new float[] {-(box.getZ() + box.getDepth()) * 16F, box.getY() * 16F,
+            box.getX() * 16F, box.getDepth() * 16F, box.getHeight() * 16F, box.getWidth() * 16F};
+    }
+
+    public CollisionBox debugHitboxFromPixels(float hp, float[] geometry, float resistance, float crew)
+    {
+        CollisionBox box = new CollisionBox(hp, geometry[0], geometry[1], geometry[2], geometry[3],
+            geometry[4], geometry[5], resistance, crew);
+        return this instanceof PlaneType ? applyPlaneModelFacing(box) : box;
+    }
+
     /** Original, unscaled definitions retained so repeated finalization is idempotent. */
     private final Map<EnumDriveablePart, CollisionBox> authoredHealth = new EnumMap<>(EnumDriveablePart.class);
     protected final Map<EnumDriveablePart, DriveableExplosion> partDeathExplosions = new EnumMap<>(EnumDriveablePart.class);
@@ -239,19 +277,19 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     private static volatile float maxBulletDetectionRadius = 8F;
     protected int animFrames = 2;
 
-    protected int startSoundRange = 50;
+    protected int startSoundRange = -1;
     protected String startSound = StringUtils.EMPTY;
     protected int startSoundLength;
     protected String startEngineSound = StringUtils.EMPTY;
     protected int startEngineSoundLength = 20;
-    protected int engineSoundRange = 50;
+    protected int engineSoundRange = -1;
     protected String engineSound = StringUtils.EMPTY;
     protected int engineSoundLength;
     protected float engineSoundPitchRange = Float.NaN;
     protected float engineSoundPitchBase = Float.NaN;
     protected float engineSoundPitchAt50 = Float.NaN;
     protected float engineSoundPitchAt100 = Float.NaN;
-    protected int backSoundRange = 50;
+    protected int backSoundRange = -1;
     protected String exitSound = StringUtils.EMPTY;
     protected int exitSoundLength = 50;
     protected String idleSound = StringUtils.EMPTY;
@@ -283,8 +321,29 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected int lockOnSoundTime = 60;
     protected String lockOnSound = StringUtils.EMPTY;
     protected int maxRangeLockOn = 500;
-    protected int lockedOnSoundRange = 5;
+    protected int lockedOnSoundRange = -1;
     public String lockingOnSound = StringUtils.EMPTY;
+
+    public float getStartSoundRange()
+    {
+        return startSoundRange > 0 ? startSoundRange : ModCommonConfig.get().vehicleSoundRange();
+    }
+
+    public float getEngineSoundRange()
+    {
+        return engineSoundRange > 0 ? engineSoundRange : ModCommonConfig.get().vehicleSoundRange();
+    }
+
+    public float getBackSoundRange()
+    {
+        return backSoundRange > 0 ? backSoundRange : ModCommonConfig.get().vehicleSoundRange();
+    }
+
+    public float getLockedOnSoundRange()
+    {
+        return lockedOnSoundRange > 0 ? lockedOnSoundRange : ModCommonConfig.get().vehicleLockedOnSoundRange();
+    }
+
     protected boolean lockOnToPlanes;
     protected boolean lockOnToVehicles;
     protected boolean lockOnToMechas;

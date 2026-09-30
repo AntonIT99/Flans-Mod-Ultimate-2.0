@@ -4,15 +4,14 @@ import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.GunAnimations;
 import com.flansmod.client.model.ModelAttachment;
 import com.flansmod.client.model.ModelCasing;
-import com.flansmod.client.model.ModelFlash;
 import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.MuzzleFlashRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
@@ -36,7 +35,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
@@ -161,7 +159,6 @@ public final class GunItemRenderer
             }
         }
         poseStack.scale(modelScale, modelScale, modelScale);
-        renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(model.getType());
         boolean cull = useCulling(model.getType(), poseStack);
         var renderPasses = ModelCache.getRenderPasses(model);
@@ -185,7 +182,7 @@ public final class GunItemRenderer
         renderCasingEjection(model, animations, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
 
-        renderMuzzleFlash(model, stack, animations, poseStack, buffer, packedOverlay);
+        renderFlash(model, stack, animations, poseStack, buffer, packedOverlay);
         renderCustomAttachments(model, stack, animations, poseStack, buffer, packedLight, packedOverlay);
     }
 
@@ -1037,32 +1034,24 @@ public final class GunItemRenderer
 
     private static void renderFlash(ModelGun model, ItemStack item, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
     {
-        ModelFlash flash = ModelCache.getOrLoadFlashModel(model.getType());
         AttachmentType barrelAttachment = model.getType().getBarrel(item);
-        boolean isFlashEnabled = flash != null && (barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash());
+        if (animations.getMuzzleFlashTime() <= 0 || model.getType().getSecondaryFire(item)
+            || barrelAttachment != null && barrelAttachment.isDisableMuzzleFlash())
+            return;
 
-        if (isFlashEnabled && animations.getMuzzleFlashTime() > 0 && !model.getType().getSecondaryFire(item))
-        {
-            poseStack.pushPose();
-            poseStack.scale(model.getFlashScale(), model.getFlashScale(), model.getFlashScale());
-
-            Vector3f base = Objects.requireNonNullElse(model.getMuzzleFlashPoint(), Vector3f.Zero);
-
-            if (barrelAttachment != null && ModelCache.getOrLoadTypeModel(barrelAttachment) instanceof ModelAttachment barrelModel)
-            {
-                Vector3f muzzleFlashPoint = barrelModel.getMuzzleFlashPoint(base, model.getBarrelAttachPoint());
-                poseStack.translate(muzzleFlashPoint.x, muzzleFlashPoint.y, muzzleFlashPoint.z);
-            }
-            else
-            {
-                Vector3f defaultOffset = Objects.requireNonNullElse(model.getDefaultBarrelFlashPoint(), Vector3f.Zero);
-                poseStack.translate(base.x + defaultOffset.x, base.y + defaultOffset.y, base.z + defaultOffset.z);
-            }
-
-            ResourceLocation flashTexture = model.getType().getFlashTexture();
-            flash.renderFlash(animations.getFlashInt(), poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(flashTexture)), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F, 1F);
-            poseStack.popPose();
-        }
+        ModelBase flash = MuzzleFlashRenderer.select(model.getType(), false);
+        if (flash == null)
+            return;
+        ModelAttachment barrelModel = barrelAttachment != null
+            && ModelCache.getOrLoadTypeModel(barrelAttachment) instanceof ModelAttachment attachment ? attachment : null;
+        boolean flashCoordinates = StringUtils.isNotBlank(model.getType().getFlashModelClassName());
+        Vector3f point = MuzzleFlashRenderer.muzzlePosition(model, barrelModel, flashCoordinates);
+        float modelScale = model.getType().getModelScale();
+        poseStack.pushPose();
+        poseStack.translate(point.x * modelScale, point.y * modelScale, point.z * modelScale);
+        MuzzleFlashRenderer.render(flash, model.getType(), animations.getFlashInt(),
+            modelScale * model.getFlashScale(), poseStack, buffer, packedOverlay);
+        poseStack.popPose();
     }
 
     private static void renderAttachmentAmmo(ModelGun model, ItemStack stack, GunAnimations animations, int numRounds, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
@@ -1113,39 +1102,6 @@ public final class GunItemRenderer
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(casing))
                 casing.renderCasing(poseStack, buffer.getBuffer(renderPass.getRenderType(casingTexture, translucent, cull)), packedLight, packedOverlay, 1F, 1F, 1F, 1F, 1F, renderPass);
             poseStack.popPose();
-        }
-    }
-
-    private static void renderMuzzleFlash(ModelGun model, ItemStack stack, GunAnimations animations, PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
-    {
-        AttachmentType barrelAttachment = model.getType().getBarrel(stack);
-        boolean isMuzzleFlashEnabled = StringUtils.isBlank(model.getType().getFlashModelClassName())
-                && (barrelAttachment == null || !barrelAttachment.isDisableMuzzleFlash())
-                && (StringUtils.isNotBlank(model.getType().getMuzzleFlashModelClassName()));
-
-        if (isMuzzleFlashEnabled && animations.getMuzzleFlashTime() > 0 && !model.getType().getSecondaryFire(stack))
-        {
-            ModelMuzzleFlash muzzleFlash = ModelCache.getOrLoadMuzzleFlashModel(model.getType());
-            if (muzzleFlash != null)
-            {
-                Vector3f mfPoint = Objects.requireNonNullElse(model.getMuzzleFlashPoint(), Objects.requireNonNullElse(model.getBarrelAttachPoint(), Vector3f.Zero));
-                if (mfPoint.equals(ModelGun.getInvalid()))
-                    mfPoint = model.getBarrelAttachPoint();
-
-                if (barrelAttachment != null && ModelCache.getOrLoadTypeModel(barrelAttachment) instanceof ModelAttachment barrelModel)
-                {
-                    mfPoint = barrelModel.getMuzzleFlashPoint(mfPoint, model.getBarrelAttachPoint());
-                }
-                else if (model.getDefaultBarrelFlashPoint() != null)
-                {
-                    mfPoint = Vector3f.add(model.getMuzzleFlashPoint(), model.getDefaultBarrelFlashPoint(), null);
-                }
-
-                poseStack.pushPose();
-                poseStack.translate(mfPoint.x * model.getType().getModelScale(), mfPoint.y * model.getType().getModelScale(), mfPoint.z * model.getType().getModelScale());
-                muzzleFlash.renderToBuffer(poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(muzzleFlash.getTexture())), LightTexture.FULL_BRIGHT, packedOverlay, 1F, 1F, 1F, 1F);
-                poseStack.popPose();
-            }
         }
     }
 

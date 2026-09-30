@@ -186,6 +186,11 @@ public final class ModCommonConfig
     private static final Supplier<Double> SOUND_RANGE;
     private static final Supplier<Double> GUN_FIRE_SOUND_RANGE;
     private static final Supplier<Double> EXPLOSION_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_UTILITY_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_FLARE_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_LOCK_ON_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_LOCKED_ON_SOUND_RANGE;
 
     private static final Supplier<Boolean> USE_NEW_PENETRATION_SYSTEM;
     private static final Supplier<Boolean> ENABLE_BLOCK_PENETRATION;
@@ -504,6 +509,21 @@ public final class ModCommonConfig
         EXPLOSION_SOUND_RANGE = builder
             .comment("Maximum range in blocks at which explosions are heard. Each explosion is heard at 6 blocks per block of blast radius (at least 48), up to this cap.")
             .defineInRange("explosionSoundRange", 1024.0, 1.0, 4096.0);
+        VEHICLE_SOUND_RANGE = builder
+            .comment("Default range in blocks for vehicle engines, movement, seats and mecha footsteps. Content-pack sound ranges override this default.")
+            .defineInRange("vehicleSoundRange", 50.0, 1.0, 4096.0);
+        VEHICLE_UTILITY_SOUND_RANGE = builder
+            .comment("Range in blocks for mecha tools and rocket packs.")
+            .defineInRange("vehicleUtilitySoundRange", 64.0, 1.0, 4096.0);
+        VEHICLE_FLARE_SOUND_RANGE = builder
+            .comment("Range in blocks for vehicle flare sounds.")
+            .defineInRange("vehicleFlareSoundRange", 96.0, 1.0, 4096.0);
+        VEHICLE_LOCK_ON_SOUND_RANGE = builder
+            .comment("Range in blocks for the lock-on sound heard by the vehicle operator.")
+            .defineInRange("vehicleLockOnSoundRange", 10.0, 1.0, 4096.0);
+        VEHICLE_LOCKED_ON_SOUND_RANGE = builder
+            .comment("Default range in blocks for a vehicle's incoming lock warning. LockedOnSoundRange in a content pack overrides this default.")
+            .defineInRange("vehicleLockedOnSoundRange", 5.0, 1.0, 4096.0);
         builder.pop();
 
         builder.push("Penetration System Settings");
@@ -794,6 +814,11 @@ public final class ModCommonConfig
             SOUND_RANGE.get().floatValue(),
             GUN_FIRE_SOUND_RANGE.get().floatValue(),
             EXPLOSION_SOUND_RANGE.get().floatValue(),
+            VEHICLE_SOUND_RANGE.get().floatValue(),
+            VEHICLE_UTILITY_SOUND_RANGE.get().floatValue(),
+            VEHICLE_FLARE_SOUND_RANGE.get().floatValue(),
+            VEHICLE_LOCK_ON_SOUND_RANGE.get().floatValue(),
+            VEHICLE_LOCKED_ON_SOUND_RANGE.get().floatValue(),
 
             USE_NEW_PENETRATION_SYSTEM.get(),
             ENABLE_BLOCK_PENETRATION.get(),

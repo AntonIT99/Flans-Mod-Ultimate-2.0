@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.Springfield
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.37329 0.30212 -0.00769
 animFlashScale 2.84
 Texture springfield

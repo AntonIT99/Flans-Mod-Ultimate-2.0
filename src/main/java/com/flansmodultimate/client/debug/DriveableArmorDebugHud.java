@@ -1,9 +1,11 @@
 package com.flansmodultimate.client.debug;
 
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.ResolvedVehicleArmor;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
+import com.flansmodultimate.config.ModCommonConfig;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -46,11 +48,21 @@ public final class DriveableArmorDebugHud
         ResolvedVehicleArmor armor = closest.getDriveable().getConfigType().getResolvedArmor();
         if (!armor.isPlateConfigured(closest.getPart(), closest.getFacing()))
             return;
-        float thickness = armor.plate(closest.getPart(), closest.getFacing()).authored().thicknessMm();
+        ArmorPlate plate = armor.plate(closest.getPart(), closest.getFacing()).authored();
         String label = String.format(Locale.ROOT, "%s %s: %.1f mm",
             closest.getPart().getShortName(), closest.getFacing().name().toLowerCase(Locale.ROOT),
-            thickness);
+            plate.thicknessMm());
         graphics.drawString(mc.font, label, (screenWidth - mc.font.width(label)) / 2,
             screenHeight / 2 + 14, 0xFFD700, true);
+        if (plate.slopeDeg() > 0F)
+        {
+            float effective = armor.resolveHit(closest.getPart(), closest.getFacing(),
+                closest.getFacing().outwardNormal().scale(-1D),
+                ModCommonConfig.maxArmorImpactAngleDeg()).effectiveArmorMm();
+            String slope = String.format(Locale.ROOT, "Slope %.1f° | Head-on effective %.1f mm",
+                plate.slopeDeg(), effective);
+            graphics.drawString(mc.font, slope, (screenWidth - mc.font.width(slope)) / 2,
+                screenHeight / 2 + 24, 0xFFD700, true);
+        }
     }
 }

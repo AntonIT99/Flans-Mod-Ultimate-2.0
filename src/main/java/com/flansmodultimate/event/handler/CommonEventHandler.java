@@ -11,6 +11,7 @@ import com.flansmodultimate.common.command.DigitalAmmoCommand;
 import com.flansmodultimate.common.command.FMParticleCommand;
 import com.flansmodultimate.common.command.FlanEntityCommand;
 import com.flansmodultimate.common.command.GunAttachmentsCommand;
+import com.flansmodultimate.common.command.HitboxDebugCommand;
 import com.flansmodultimate.common.command.RearmCommand;
 import com.flansmodultimate.common.command.ShootPointDebugCommand;
 import com.flansmodultimate.common.command.TeamsCommand;
@@ -145,6 +146,7 @@ public final class CommonEventHandler
         GunAttachmentsCommand.register(event.getDispatcher());
         RearmCommand.register(event.getDispatcher());
         ShootPointDebugCommand.register(event.getDispatcher());
+        HitboxDebugCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());
         TryClassCommand.register(event.getDispatcher());
         TryTeamCommand.register(event.getDispatcher());
@@ -207,6 +209,7 @@ public final class CommonEventHandler
     public static void onServerStopping(ServerStoppingEvent event)
     {
         FlansMod.teamsManager.detachServer();
+        HitboxDebugCommand.clearSession();
         CraterCarver.clear();
         DriveableCollisionBypass.reset();
         contentReferencesValidated = false;
@@ -286,6 +289,7 @@ public final class CommonEventHandler
             PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
             ModCommonConfigSync.syncClientIfServer(sp);
             VehicleCollisionDebugCommand.syncOnLogin(sp);
+            HitboxDebugCommand.syncOnLogin(sp);
             FlansMod.teamsManager.playerLoggedIn(sp);
         }
     }
@@ -294,8 +298,12 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event)
     {
-        if (event.getTarget() instanceof ServerPlayer target && event.getEntity() instanceof ServerPlayer tracker)
+        if (!(event.getEntity() instanceof ServerPlayer tracker))
+            return;
+        if (event.getTarget() instanceof ServerPlayer target)
             GunArmPoses.sendPlayerState(target, tracker);
+        else if (event.getTarget() instanceof Driveable driveable)
+            driveable.sendPartStateTo(tracker);
     }
 
     @SubscribeEvent

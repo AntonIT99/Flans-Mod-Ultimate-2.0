@@ -1,12 +1,9 @@
 package com.flansmodultimate.client.render.entity;
 
-import com.flansmod.client.model.ModelDefaultFlash;
-import com.flansmod.client.model.ModelFlash;
 import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.ModelMuzzleFlash;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.render.CustomRenderType;
+import com.flansmodultimate.client.render.MuzzleFlashRenderer;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.PilotGun;
 import com.flansmodultimate.common.driveables.SeatInfo;
@@ -20,10 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -34,7 +29,6 @@ import java.util.WeakHashMap;
 /** Client-only, short-lived shot visuals. Positions and aim are read again at render time. */
 public final class DriveableMuzzleFlashes
 {
-    private static final ModelFlash DEFAULT_MODEL = new ModelDefaultFlash();
     private static final Map<Driveable, List<Flash>> ACTIVE = new WeakHashMap<>();
     private static final int FLASH_TICKS = 2;
 
@@ -68,7 +62,9 @@ public final class DriveableMuzzleFlashes
     {
         DriveableType type = driveable.getConfigType();
         SeatInfo info = type == null ? null : type.getSeat(seat);
-        if (type == null || !type.isDefaultMuzzleFlash() || info == null || info.getGunType() == null
+        GunType gun = info == null ? null : info.getGunType();
+        if (type == null || info == null || gun == null
+            || (!type.isDefaultMuzzleFlash() && !gun.hasMuzzleFlashModel())
             || barrel < 0 || barrel >= info.getGunBarrelCount())
             return;
         Vec3 origin = driveable.getPassengerShootOrigin(seat, barrel);
@@ -142,30 +138,14 @@ public final class DriveableMuzzleFlashes
             poseStack.translate(origin.x - driveable.getX(), origin.y - driveable.getY(), origin.z - driveable.getZ());
             poseStack.mulPose(new Quaternionf().rotationTo(1F, 0F, 0F,
                 (float)direction.x, (float)direction.y, (float)direction.z));
-            if (gun != null)
-                poseStack.scale(gun.getModelScale(), gun.getModelScale(), gun.getModelScale());
-            if (gun == null || StringUtils.isNotBlank(gun.getFlashModelClassName())
-                || StringUtils.isBlank(gun.getMuzzleFlashModelClassName()))
+            ModelBase model = MuzzleFlashRenderer.select(gun, type.isDefaultMuzzleFlash());
+            if (model != null)
             {
-                ModelFlash flashModel = gun != null && StringUtils.isNotBlank(gun.getFlashModelClassName())
-                    ? ModelCache.getOrLoadFlashModel(gun) : DEFAULT_MODEL;
-                ResourceLocation texture = gun != null && StringUtils.isNotBlank(gun.getFlashModelClassName())
-                    ? gun.getFlashTexture() : FlansMod.TEXTURE_DEFAULTFLASH;
-                if (flashModel != null && texture != null)
-                {
-                    if (gun != null && ModelCache.getOrLoadTypeModel(gun) instanceof ModelGun gunModel)
-                        poseStack.scale(gunModel.getFlashScale(), gunModel.getFlashScale(), gunModel.getFlashScale());
-                    flashModel.renderFlash(Math.max(0, Math.min(2, FLASH_TICKS - flash.expiresAt + driveable.tickCount)),
-                        poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(texture)),
-                        LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F, 1F);
-                }
-            }
-            else
-            {
-                ModelMuzzleFlash model = ModelCache.getOrLoadMuzzleFlashModel(gun);
-                if (model != null)
-                    model.renderToBuffer(poseStack, buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(model.getTexture())),
-                        LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+                float flashScale = gun == null ? 1F : gun.getModelScale();
+                if (gun != null && ModelCache.getOrLoadTypeModel(gun) instanceof ModelGun gunModel)
+                    flashScale *= gunModel.getFlashScale();
+                MuzzleFlashRenderer.render(model, gun, FLASH_TICKS - flash.expiresAt + driveable.tickCount,
+                    flashScale, poseStack, buffer, OverlayTexture.NO_OVERLAY);
             }
             poseStack.popPose();
         }

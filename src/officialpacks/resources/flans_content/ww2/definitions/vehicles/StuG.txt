@@ -64,7 +64,7 @@ SetupPart core 9800 -47 -3 -13 92 33 36
 SetupPart rightTrack 7000 -55 -12 -21 101 21 8
 SetupPart leftTrack 7000 -55 -12 23 101 21 7
 BulletDetection 7
-ArmorFrontMm 80
+ArmorFrontMm 80 21
 ArmorSideMm 30
 ArmorRearMm 30
 ArmorTopMm 10

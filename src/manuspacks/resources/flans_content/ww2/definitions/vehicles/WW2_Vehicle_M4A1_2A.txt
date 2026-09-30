@@ -6,6 +6,7 @@ ShortName WW2_Vehicle_M4A1_2A
 Model Manus_WW2.Vehicle.WW2_Vehicle_M4A1_2
 Icon Icon_WW2_Vehicle_M4A1_2A
 Texture Skin_WW2_Vehicle_M4A1_2A
+FlashModel DefaultFlash
 RotateWheels True
 
 // Recipe and Inventory
@@ -62,7 +63,7 @@ ReadWeaponsFromGunTypes true
 GunOrigin 1 50 -2.1 9.5
 
 // Protection
-ArmorFrontMm 50
+ArmorFrontMm 50 56
 ArmorSideMm 38
 ArmorRearMm 38
 ArmorTopMm 19

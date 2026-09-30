@@ -1104,6 +1104,18 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     }
 
     /**
+     * Whether this gun has a muzzle flash model configured. This is
+     * deliberately based on the raw definition names so common code can decide
+     * whether to dispatch a passenger flash without resolving client-only model
+     * classes.
+     */
+    public boolean hasMuzzleFlashModel()
+    {
+        return !isBlankModelName(flashModelName)
+            || !isBlankModelName(muzzleFlashModelName);
+    }
+
+    /**
      * False when a flash model already draws in the shooter's view. Reads the raw names, since the
      * server asks and only clients resolve model classes; the built-in flash needs no texture line.
      */

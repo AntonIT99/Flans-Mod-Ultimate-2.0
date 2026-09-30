@@ -1,5 +1,5 @@
 ﻿// Identity
-Name Yakovlev Yak-3 - 303. FAD
+Name Yakovlev Yak-3
 ShortName WW2_Plane_YAK3_1Aneu
 
 // Model and Rendering
@@ -7,6 +7,11 @@ Model Manus_WW2.Plane.WW2_Plane_YAK3_1neu
 ModelScale 1
 Icon Icon_WW2_Plane_YAK3_1Aneu
 Texture Skin_WW2_Plane_YAK3_1Aneu
+
+// Paintjobs
+AdvPaintJob 303FAD Icon_WW2_Plane_YAK3_1Aneu Skin_WW2_Plane_YAK3_1Aneu
+AdvPaintJob 402IAP Icon_WW2_Plane_YAK3_1B Skin_WW2_Plane_YAK3_1B gray 6
+AdvPaintJob 940IAP Icon_WW2_Plane_YAK3_1C Skin_WW2_Plane_YAK3_1C gray 6
 
 // Recipe and Inventory
 AllowAllAmmo False

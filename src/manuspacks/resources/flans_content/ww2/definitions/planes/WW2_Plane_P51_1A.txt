@@ -1,5 +1,5 @@
 ﻿// Identity
-Name North American P-51 Mustang - CR-Y
+Name North American P-51 Mustang
 ShortName WW2_Plane_P51_1A
 
 // Model and Rendering
@@ -8,6 +8,11 @@ FlashModel DefaultFlash
 ModelScale 1
 Icon Icon_WW2_Plane_P51_1A
 Texture Skin_WW2_Plane_P51_1A
+
+// Paintjobs
+AdvPaintJob CR-Y Icon_WW2_Plane_P51_1A Skin_WW2_Plane_P51_1A
+AdvPaintJob VF-B Icon_WW2_Plane_P51_1C Skin_WW2_Plane_P51_1C gray 6
+AdvPaintJob B7-H Icon_WW2_Plane_P51_1B Skin_WW2_Plane_P51_1B green 6
 
 // Recipe and Inventory
 AllowAllAmmo False

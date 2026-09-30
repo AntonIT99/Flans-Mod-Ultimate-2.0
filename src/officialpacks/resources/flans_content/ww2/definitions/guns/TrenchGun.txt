@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.Trenchgun
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.2085 0.36804 -0.00659
 animFlashScale 2.84
 Texture trenchgun

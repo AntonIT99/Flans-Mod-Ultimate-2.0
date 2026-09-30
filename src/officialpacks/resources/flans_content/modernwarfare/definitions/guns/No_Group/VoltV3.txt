@@ -10,6 +10,9 @@ DeployedModel None
 Model mw.VoltV3
 Texture VoltV3
 ModelScale 0.18
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.67991 0.23483 0
+animFlashScale 3.46
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

@@ -532,12 +532,12 @@ public class Seat extends Entity implements IControllable, ISeat
         boolean playPitch = pitchMoving && !(seatInfo.isYawBeforePitch() && yawMoving);
         if (yawMoving && yawSoundDelay == 0 && StringUtils.isNotBlank(seatInfo.getYawSound()))
         {
-            PacketPlaySound.sendSoundPacket(this, 50D, seatInfo.getYawSound(), false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), seatInfo.getYawSound(), false);
             yawSoundDelay = seatInfo.getYawSoundLength();
         }
         if (playPitch && pitchSoundDelay == 0 && StringUtils.isNotBlank(seatInfo.getPitchSound()))
         {
-            PacketPlaySound.sendSoundPacket(this, 50D, seatInfo.getPitchSound(), false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), seatInfo.getPitchSound(), false);
             pitchSoundDelay = seatInfo.getPitchSoundLength();
         }
     }

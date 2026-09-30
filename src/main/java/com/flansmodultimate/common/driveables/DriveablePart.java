@@ -13,8 +13,8 @@ public final class DriveablePart
     private static final int DEFAULT_FIRE_TICKS = 20;
 
     private final EnumDriveablePart type;
-    @Nullable private final CollisionBox box;
-    private final float maxHealth;
+    @Nullable private CollisionBox box;
+    private float maxHealth;
     private float health;
     private int fireTime;
     private boolean onFire;
@@ -26,6 +26,18 @@ public final class DriveablePart
         this.box = box;
         maxHealth = box == null ? 0F : box.getHealth();
         health = maxHealth;
+    }
+
+    /** Debug edits preserve damage fractions and do not destroy removed structural parts. */
+    public void updateDebugBox(@Nullable CollisionBox next)
+    {
+        float fraction = maxHealth > 0F ? health / maxHealth : 1F;
+        box = next;
+        if (next != null)
+        {
+            maxHealth = next.getHealth();
+            health = maxHealth * fraction;
+        }
     }
 
     public float getPenetrationResistance()

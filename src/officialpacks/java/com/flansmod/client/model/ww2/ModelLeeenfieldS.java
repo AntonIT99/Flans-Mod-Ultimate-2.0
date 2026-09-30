@@ -86,5 +86,6 @@ public class ModelLeeenfieldS extends ModelGun {
       this.animationType = EnumAnimationType.BOTTOM_CLIP;
       this.flipAll();
       this.translateAll(0.0F, 6.0F, 0.0F);
+      this.muzzleFlashPoint = new Vector3f(2F, 0.375F, 0F);
    }
 }

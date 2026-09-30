@@ -9,6 +9,7 @@ Colour 255 255 255
 DeployedModel None
 Model zombie.MP5K
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 0.95424 0.45201 0
 animFlashScale 0.62
 Texture MP5K

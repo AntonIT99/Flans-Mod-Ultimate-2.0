@@ -206,6 +206,21 @@
       "size": 10676,
       "ticks": 12
     },
+    "helicopter1.ogg": {
+      "key": "helicopter1",
+      "size": 36965,
+      "ticks": 92
+    },
+    "helicopter2.ogg": {
+      "key": "helicopter2",
+      "size": 40398,
+      "ticks": 78
+    },
+    "helicopterstart.ogg": {
+      "key": "helicopterstart",
+      "size": 43822,
+      "ticks": 113
+    },
     "helo.ogg": {
       "key": "helo",
       "size": 12358,

@@ -950,33 +950,18 @@
 
     "Focke-Wulf Fw 190 A-4": {
         "properties": {
-            "RealMassKg": 3590,
+            "RealMassKg": 4000,
             "RealEnginePowerPS": 1700,
-            "RealMaxSpeedKmh": 603,
+            "RealMaxSpeedKmh": 650,
             "RealWingSpanM": 10.506,
             "RealWingAreaM2": 18.3,
-            "RealClimbRateMs": 10.7,
+            "RealClimbRateMs": 15.0,
             "ReadWeaponsFromGunTypes": "true",
             "UseRealisticVehicleHealth": "true"
         },
         "items": [
             "ww2_plane_fw190_1a",
-            "ww2_plane_fw190_1b"
-        ]
-    },
-
-    "Focke-Wulf Fw 190 A-5": {
-        "properties": {
-            "RealMassKg": 3600,
-            "RealEnginePowerPS": 1700,
-            "RealMaxSpeedKmh": 620,
-            "RealWingSpanM": 10.506,
-            "RealWingAreaM2": 18.3,
-            "RealClimbRateMs": 10.7,
-            "ReadWeaponsFromGunTypes": "true",
-            "UseRealisticVehicleHealth": "true"
-        },
-        "items": [
+            "ww2_plane_fw190_1b",
             "ww2_plane_fw190_1c"
         ]
     },
@@ -3111,22 +3096,6 @@
         ]
     },
 
-    "Supermarine Spitfire Mk I": {
-        "properties": {
-            "RealMassKg": 2692,
-            "RealEnginePowerHp": 1030,
-            "RealMaxSpeedKmh": 582,
-            "RealWingSpanM": 11.23,
-            "RealWingAreaM2": 22.5,
-            "RealClimbRateMs": 10.8,
-            "ReadWeaponsFromGunTypes": "true",
-            "UseRealisticVehicleHealth": "true"
-        },
-        "items": [
-            "ww2_plane_spitfire_1b"
-        ]
-    },
-
     "Supermarine Spitfire Mk Vb": {
         "properties": {
             "RealMassKg": 3004,
@@ -3143,6 +3112,7 @@
             "ww2_plane_spitfiremkvb_1b",
             "ww2_plane_spitfiremkvb_1c",
             "ww2_plane_spitfire_1a",
+            "ww2_plane_spitfire_1b",
             "spitfire"
         ]
     },

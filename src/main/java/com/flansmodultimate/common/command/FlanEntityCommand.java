@@ -13,20 +13,29 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /** Administrative commands for finding and removing Flan entities. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -60,15 +69,24 @@ public final class FlanEntityCommand
     private static void addScopes(com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> command,
         boolean remove, boolean force)
     {
-        command
-            .then(Commands.literal("radius")
-                .then(addKinds(Commands.argument("radius", DoubleArgumentType.doubleArg(0D)),
-                    (context, kind) -> executeRadius(context, remove, force, kind))))
-            .then(Commands.literal("dimension")
-                .then(addKinds(Commands.argument("dimension", DimensionArgument.dimension()),
-                    (context, kind) -> executeDimension(context, remove, force, kind))))
-            .then(addKinds(Commands.literal("world"),
-                (context, kind) -> executeWorld(context, remove, force, kind)));
+        var radius = Commands.argument("radius", DoubleArgumentType.doubleArg(0D));
+        addKinds(radius, (context, kind) -> executeRadius(context, remove, force, kind));
+        var dimension = Commands.argument("dimension", DimensionArgument.dimension());
+        addKinds(dimension, (context, kind) -> executeDimension(context, remove, force, kind));
+        var world = Commands.literal("world");
+        addKinds(world, (context, kind) -> executeWorld(context, remove, force, kind));
+        if (!remove)
+        {
+            radius.then(addKinds(Commands.literal("include_unloaded"),
+                FlanEntityCommand::executeSavedRadius));
+            dimension.then(addKinds(Commands.literal("include_unloaded"),
+                FlanEntityCommand::executeSavedDimension));
+            world.then(addKinds(Commands.literal("include_unloaded"),
+                FlanEntityCommand::executeSavedWorld));
+        }
+        command.then(Commands.literal("radius").then(radius))
+            .then(Commands.literal("dimension").then(dimension))
+            .then(world);
     }
 
     private static ArgumentBuilder<CommandSourceStack, ?> addKinds(
@@ -115,6 +133,113 @@ public final class FlanEntityCommand
             matches.addAll(findEntities(level, kind));
         matches.sort(Comparator.comparing(entity -> entity.level().dimension().location().toString()));
         return reportOrRemove(context.getSource(), matches, remove, force, "in all loaded dimensions", kind);
+    }
+
+    private static int executeSavedRadius(CommandContext<CommandSourceStack> context, EntityKind kind)
+    {
+        double radius = DoubleArgumentType.getDouble(context, "radius");
+        return executeSaved(context.getSource(), context.getSource().getLevel(), context.getSource().getPosition(),
+            radius, kind, "within " + format(radius) + " blocks, including unloaded chunks");
+    }
+
+    private static int executeSavedDimension(CommandContext<CommandSourceStack> context, EntityKind kind)
+        throws CommandSyntaxException
+    {
+        ServerLevel level = DimensionArgument.getDimension(context, "dimension");
+        return executeSaved(context.getSource(), level, null, 0D, kind,
+            "in " + level.dimension().location() + ", including unloaded chunks");
+    }
+
+    private static int executeSavedWorld(CommandContext<CommandSourceStack> context, EntityKind kind)
+    {
+        return executeSaved(context.getSource(), null, null, 0D, kind,
+            "in all dimensions, including unloaded chunks");
+    }
+
+    private static int executeSaved(CommandSourceStack source, @Nullable ServerLevel onlyLevel,
+        @Nullable Vec3 origin, double radius, EntityKind kind, String scope)
+    {
+        MinecraftServer server = source.getServer();
+        Path worldRoot = server.getWorldPath(LevelResource.ROOT);
+        List<SavedFlanEntityScanner.Source> directories = new ArrayList<>();
+        for (ServerLevel level : server.getAllLevels())
+        {
+            if (onlyLevel == null || onlyLevel == level)
+                directories.add(new SavedFlanEntityScanner.Source(level.dimension().location(),
+                    DimensionType.getStorageFolder(level.dimension(), worldRoot).resolve("entities")));
+        }
+        source.sendSuccess(() -> Component.literal("Scanning saved Flan entities in the background..."), false);
+        CompletableFuture.supplyAsync(() -> SavedFlanEntityScanner.scan(directories))
+            .whenComplete((result, error) -> server.execute(() -> {
+                if (error != null)
+                {
+                    source.sendFailure(Component.literal("Could not scan saved entity regions: " + error.getMessage()));
+                    return;
+                }
+                reportSaved(source, result, onlyLevel, origin, radius, kind, scope);
+            }));
+        return 1;
+    }
+
+    private static void reportSaved(CommandSourceStack source, SavedFlanEntityScanner.Result result,
+        @Nullable ServerLevel onlyLevel, @Nullable Vec3 origin, double radius, EntityKind kind, String scope)
+    {
+        Map<ResourceLocation, ServerLevel> levels = new HashMap<>();
+        for (ServerLevel level : source.getServer().getAllLevels())
+            levels.put(level.dimension().location(), level);
+        double radiusSquared = radius * radius;
+        List<Entity> loaded = new ArrayList<>();
+        for (ServerLevel level : levels.values())
+        {
+            if (onlyLevel != null && onlyLevel != level)
+                continue;
+            for (Entity entity : findEntities(level, kind))
+            {
+                if (origin == null || entity.distanceToSqr(origin) <= radiusSquared)
+                    loaded.add(entity);
+            }
+        }
+        loaded.sort(origin == null
+            ? Comparator.comparing((Entity entity) -> entity.level().dimension().location().toString())
+                .thenComparingDouble(Entity::getX).thenComparingDouble(Entity::getZ)
+            : Comparator.comparingDouble(entity -> entity.distanceToSqr(origin)));
+        List<SavedFlanEntityScanner.Entry> unloaded = result.entries().stream()
+            .filter(entry -> kind.matchesSaved(entry.id()))
+            .filter(entry -> onlyLevel == null || entry.dimension().equals(onlyLevel.dimension().location()))
+            .filter(entry -> origin == null || distanceSquared(entry, origin) <= radiusSquared)
+            .filter(entry -> {
+                ServerLevel level = levels.get(entry.dimension());
+                return level != null && !level.getChunkSource().hasChunk(entry.chunkX(), entry.chunkZ());
+            })
+            .sorted(origin == null
+                ? Comparator.comparing((SavedFlanEntityScanner.Entry entry) -> entry.dimension().toString())
+                    .thenComparingDouble(SavedFlanEntityScanner.Entry::x)
+                    .thenComparingDouble(SavedFlanEntityScanner.Entry::z)
+                : Comparator.comparingDouble(entry -> distanceSquared(entry, origin)))
+            .toList();
+        int shown = Math.min(loaded.size() + unloaded.size(), MAX_LISTED_ENTITIES);
+        for (int index = 0; index < shown; index++)
+        {
+            Component description = index < loaded.size()
+                ? describe(loaded.get(index)) : describeSaved(unloaded.get(index - loaded.size()));
+            source.sendSuccess(() -> description, false);
+        }
+        if (shown < loaded.size() + unloaded.size())
+            source.sendSuccess(() -> Component.literal("... and " + (loaded.size() + unloaded.size() - shown)
+                + " more (details limited to " + MAX_LISTED_ENTITIES + ")").withStyle(ChatFormatting.GRAY), false);
+        Counts counts = count(loaded).plus(countSaved(unloaded));
+        source.sendSuccess(() -> summary("Found", counts, scope, kind), false);
+        if (result.failedChunks() > 0)
+            source.sendFailure(Component.literal("Could not read " + result.failedChunks()
+                + " saved region/chunk files; the unloaded count may be incomplete."));
+    }
+
+    private static double distanceSquared(SavedFlanEntityScanner.Entry entry, Vec3 origin)
+    {
+        double x = entry.x() - origin.x;
+        double y = entry.y() - origin.y;
+        double z = entry.z() - origin.z;
+        return x * x + y * y + z * z;
     }
 
     private static List<Entity> findEntities(ServerLevel level, EntityKind kind)
@@ -204,6 +329,28 @@ public final class FlanEntityCommand
         return new Counts(vehicles, planes, mechas, otherDriveables, deployedGuns, aaGuns);
     }
 
+    private static Counts countSaved(List<SavedFlanEntityScanner.Entry> entries)
+    {
+        int vehicles = 0;
+        int planes = 0;
+        int mechas = 0;
+        int deployedGuns = 0;
+        int aaGuns = 0;
+        for (SavedFlanEntityScanner.Entry entry : entries)
+        {
+            switch (entry.id())
+            {
+                case "flansmodultimate:vehicle" -> vehicles++;
+                case "flansmodultimate:plane" -> planes++;
+                case "flansmodultimate:mecha" -> mechas++;
+                case "flansmodultimate:deployed_gun" -> deployedGuns++;
+                case "flansmodultimate:aa_gun" -> aaGuns++;
+                default -> { }
+            }
+        }
+        return new Counts(vehicles, planes, mechas, 0, deployedGuns, aaGuns);
+    }
+
     private static Component summary(String verb, Counts counts, String scope, EntityKind kind)
     {
         return Component.literal(verb + " " + counts.total() + " " + kind.label() + " " + scope + ": "
@@ -251,6 +398,22 @@ public final class FlanEntityCommand
         return Component.literal(kind + " " + type + " #" + entity.getId() + " at "
             + format(entity.getX()) + " " + format(entity.getY()) + " " + format(entity.getZ())
             + " in " + dimension).withStyle(ChatFormatting.GRAY);
+    }
+
+    private static Component describeSaved(SavedFlanEntityScanner.Entry entry)
+    {
+        String kind = switch (entry.id())
+        {
+            case "flansmodultimate:vehicle" -> "vehicle";
+            case "flansmodultimate:plane" -> "plane";
+            case "flansmodultimate:mecha" -> "mecha";
+            case "flansmodultimate:deployed_gun" -> "deployable gun";
+            case "flansmodultimate:aa_gun" -> "AA gun";
+            default -> "entity";
+        };
+        return Component.literal(kind + " " + entry.type() + " at " + format(entry.x()) + " "
+            + format(entry.y()) + " " + format(entry.z()) + " in " + entry.dimension()
+            + " (saved in unloaded chunk)").withStyle(ChatFormatting.GRAY);
     }
 
     private static String format(double value)
@@ -306,11 +469,32 @@ public final class FlanEntityCommand
                 case DEPLOYED_GUNS -> entity instanceof DeployedGun;
             };
         }
+
+        private boolean matchesSaved(String id)
+        {
+            return switch (this)
+            {
+                case ALL -> true;
+                case DRIVEABLES -> id.equals("flansmodultimate:vehicle")
+                    || id.equals("flansmodultimate:plane") || id.equals("flansmodultimate:mecha");
+                case VEHICLES -> id.equals("flansmodultimate:vehicle");
+                case PLANES -> id.equals("flansmodultimate:plane");
+                case MECHAS -> id.equals("flansmodultimate:mecha");
+                case AA_GUNS -> id.equals("flansmodultimate:aa_gun");
+                case DEPLOYED_GUNS -> id.equals("flansmodultimate:deployed_gun");
+            };
+        }
     }
 
     private record Counts(int vehicles, int planes, int mechas, int otherDriveables,
         int deployedGuns, int aaGuns)
     {
+        private Counts plus(Counts other)
+        {
+            return new Counts(vehicles + other.vehicles, planes + other.planes, mechas + other.mechas,
+                otherDriveables + other.otherDriveables, deployedGuns + other.deployedGuns, aaGuns + other.aaGuns);
+        }
+
         private int total()
         {
             return vehicles + planes + mechas + otherDriveables + deployedGuns + aaGuns;

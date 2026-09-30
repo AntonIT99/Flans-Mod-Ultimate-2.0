@@ -14,6 +14,9 @@ Paintjob ash12_stoic_blue ash12_stoic_blue blue 3
 Paintjob ash12_stoic_green ash12_stoic_green green 3
 Paintjob ash12_stoic_red ash12_stoic_red red 3
 Paintjob ash12_stoic_orange ash12_stoic_orange orange 3
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.05422 0.18072 0
+animFlashScale 4.15
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

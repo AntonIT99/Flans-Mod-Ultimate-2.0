@@ -142,7 +142,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 28
+ArmorFrontMm 28 48
 ArmorSideMm 28
 ArmorRearMm 25
 ArmorTopMm 13

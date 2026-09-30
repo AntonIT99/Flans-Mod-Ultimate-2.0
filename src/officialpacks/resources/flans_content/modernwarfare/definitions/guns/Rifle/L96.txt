@@ -14,6 +14,9 @@ Paintjob l96_stoic_blue l96_stoic_blue blue 3
 Paintjob l96_stoic_green l96_stoic_green green 3
 Paintjob l96_stoic_red l96_stoic_red red 3
 Paintjob l96_stoic_orange l96_stoic_orange orange 3
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.86483 0.29385 0
+animFlashScale 5.53
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

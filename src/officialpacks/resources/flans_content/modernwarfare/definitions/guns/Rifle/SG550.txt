@@ -14,6 +14,9 @@ Paintjob sg550_stoic_blue sg550_stoic_blue blue 3
 Paintjob sg550_stoic_green sg550_stoic_green green 3
 Paintjob sg550_stoic_red sg550_stoic_red red 3
 Paintjob sg550_stoic_orange sg550_stoic_orange orange 3
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.35624 0.24299 0
+animFlashScale 5.53
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

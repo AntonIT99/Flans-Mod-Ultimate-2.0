@@ -594,7 +594,7 @@ public class Vehicle extends Driveable
     private void playWalkerStomp(String sound, boolean crossed)
     {
         if (crossed && StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, 50D, sound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), sound, false);
     }
 
     private static boolean crossedLegZero(float previousPhase, float currentPhase, float phaseOffset)

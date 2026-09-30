@@ -91,6 +91,7 @@ public final class ModClientConfig
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
     public final boolean showCasingEjections;
+    public final EnumMuzzleFlashStyle muzzleFlashStyle;
 
     public final boolean enableFastTranslucentRendering;
     public final boolean alwaysEnableArmorTranslucentRenderingByDefault;
@@ -188,6 +189,7 @@ public final class ModClientConfig
     private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
     private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
     private static final Supplier<Boolean> SHOW_CASING_EJECTIONS;
+    public static final ForgeConfigSpec.EnumValue<EnumMuzzleFlashStyle> MUZZLE_FLASH_STYLE;
 
     private static final Supplier<Boolean> ENABLE_FAST_TRANSLUCENT_RENDERING;
     private static final Supplier<Boolean> ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
@@ -491,6 +493,14 @@ public final class ModClientConfig
         SHOW_CASING_EJECTIONS = builder
             .comment("Render animated casing ejections for guns that provide a casing model")
             .define("showCasingEjections", true);
+        MUZZLE_FLASH_STYLE = builder
+            .comment("""
+                Preferred muzzle flash model: FMU_1_7_10 uses FlashModel (FMU 1.7.10 Style),
+                MC_1_12_2 uses MuzzleFlashModel (1.12.2 Style).
+                Falls back to the available model when a pack supplies only one style.
+                Applies immediately to held, deployed and mounted guns on this client.
+                """)
+            .defineEnum("muzzleFlashStyle", EnumMuzzleFlashStyle.FMU_1_7_10);
         builder.pop();
 
         builder.push("Translucent Rendering Defaults");
@@ -600,6 +610,7 @@ public final class ModClientConfig
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
         showCasingEjections = SHOW_CASING_EJECTIONS.get();
+        muzzleFlashStyle = MUZZLE_FLASH_STYLE.get();
 
         enableFastTranslucentRendering = ENABLE_FAST_TRANSLUCENT_RENDERING.get();
         alwaysEnableArmorTranslucentRenderingByDefault = ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT.get();

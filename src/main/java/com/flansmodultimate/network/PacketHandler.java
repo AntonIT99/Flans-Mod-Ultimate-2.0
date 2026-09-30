@@ -10,6 +10,7 @@ import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketCommonConfigValues;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
+import com.flansmodultimate.network.client.PacketDebugHitboxes;
 import com.flansmodultimate.network.client.PacketDebugShootPoint;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableCollisionBypass;
@@ -121,7 +122,7 @@ public final class PacketHandler
             PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class,
             PacketBlockHitEffect.class, PacketBulletTrail.class, PacketCancelGunReloadClient.class,
             PacketCancelSound.class, PacketCommonConfigValues.class, PacketContentFingerprint.class,
-            PacketDebugShootPoint.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
+            PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
             PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveablePassengerFired.class,
             PacketDriveablePrediction.class,
             PacketDriveableRenderState.class,

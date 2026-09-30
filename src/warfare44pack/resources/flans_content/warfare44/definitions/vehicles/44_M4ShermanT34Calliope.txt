@@ -202,7 +202,7 @@ ShootParticlesSecondary flansmod.fmflame 0.1 0.4 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 50
+ArmorFrontMm 50 56
 ArmorSideMm 38
 ArmorRearMm 38
 ArmorTopMm 19

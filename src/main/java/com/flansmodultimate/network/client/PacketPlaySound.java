@@ -2,6 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.SoundNameCodec;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -108,8 +108,8 @@ public class PacketPlaySound implements IClientPacket
 
     public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Player player)
     {
-        // Minimum Range of 16
-        PacketHandler.sendToAllAround(new PacketPlaySound(position, Math.max(16, range), sound, distort, silenced, cancellable, instanceUUID, player), position, Math.max(16, range), dimension);
+        double audibleRange = Math.max(1D, range);
+        PacketHandler.sendToAllAround(new PacketPlaySound(position, audibleRange, sound, distort, silenced, cancellable, instanceUUID, player), position, audibleRange, dimension);
     }
 
     public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced, @Nullable Player player)

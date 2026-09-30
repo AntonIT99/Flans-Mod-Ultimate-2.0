@@ -7,6 +7,7 @@ Icon Bren
 Colour 255 255 255
 DeployedModel ww2.Bren
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animFlashScale 1.24
 DeployedTexture bren
 

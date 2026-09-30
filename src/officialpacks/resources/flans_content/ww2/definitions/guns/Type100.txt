@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.Type100
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.56948 0.29506 0
 animFlashScale 2.49
 Texture type100

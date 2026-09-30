@@ -7,6 +7,10 @@ Icon leeenfield
 Colour 255 255 255
 DeployedModel None
 Model ww2.Leeenfield
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.49648 0.3081 0
+animFlashScale 1.42
 Texture leeenfield
 ModelScale 0.7
 

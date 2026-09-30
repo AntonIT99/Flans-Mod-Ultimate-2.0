@@ -1,5 +1,5 @@
 ﻿// Identity
-Name Ilyushin Il-2 - 174. ShAP - Guns and Missiles
+Name Ilyushin Il-2 - Guns and Missiles
 ShortName WW2_Plane_IL2_1A
 
 // Model and Rendering
@@ -8,6 +8,11 @@ FlashModel DefaultFlash
 ModelScale 1
 Icon Icon_WW2_Plane_IL2_1A
 Texture Skin_WW2_Plane_IL2_1A
+
+// Paintjobs
+AdvPaintJob 174ShAP Icon_WW2_Plane_IL2_1A Skin_WW2_Plane_IL2_1A
+AdvPaintJob 505ShAP Icon_WW2_Plane_IL2_1B Skin_WW2_Plane_IL2_1B gray 6
+AdvPaintJob 74ShAP Icon_WW2_Plane_IL2_1C Skin_WW2_Plane_IL2_1C gray 6
 
 // Recipe and Inventory
 AllowAllAmmo False

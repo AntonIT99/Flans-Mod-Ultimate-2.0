@@ -1,5 +1,5 @@
 ﻿// Identity
-Name P-38 Lightning - Metal Color
+Name P-38 Lightning
 ShortName WW2_Plane_P38_1A
 
 // Model and Rendering
@@ -7,6 +7,9 @@ Model Manus_WW2.Plane.WW2_Plane_P38_1
 FlashModel DefaultFlash
 Icon Icon_WW2_Plane_P38_1A
 Texture Skin_WW2_Plane_P38_1A
+
+// Paintjobs
+Paintjob Icon_WW2_Plane_P38_1B Skin_WW2_Plane_P38_1B white 7
 
 // Recipe and Inventory
 FuelTankSize 6000

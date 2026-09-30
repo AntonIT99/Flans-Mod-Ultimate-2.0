@@ -28,6 +28,7 @@ import com.flansmodultimate.common.types.MechaItemType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
@@ -225,7 +226,7 @@ public class Mecha extends Driveable
                 consumeAddonFuel(10F * rocketPower);
                 if (toolCooldown[0] <= 0 && StringUtils.isNotBlank(rocket.getSoundEffect()))
                 {
-                    PacketPlaySound.sendSoundPacket(this, 64D, rocket.getSoundEffect(), false);
+                    PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleUtilitySoundRange(), rocket.getSoundEffect(), false);
                     toolCooldown[0] = Math.max(1, Mth.ceil(rocket.getSoundTime()));
                 }
             }
@@ -350,7 +351,7 @@ public class Mecha extends Driveable
             && StringUtils.isNotBlank(type.getStompSound()))
         {
             if (!level().isClientSide)
-                PacketPlaySound.sendSoundPacket(this, 50D, type.getStompSound(), false);
+                PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), type.getStompSound(), false);
             stompDelay = Math.max(1, type.getStompSoundLength());
         }
     }
@@ -882,7 +883,7 @@ public class Mecha extends Driveable
         {
             if (pos.distSqr(centre) <= radius * radius && level().getBlockState(pos).is(Blocks.DIAMOND_ORE))
             {
-                PacketPlaySound.sendSoundPacket(this, 48D, detector.getDetectSound(), false);
+                PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), detector.getDetectSound(), false);
                 return;
             }
         }
@@ -891,7 +892,7 @@ public class Mecha extends Driveable
     private void playToolSound(MechaItemType tool)
     {
         if (StringUtils.isNotBlank(tool.getSoundEffect()))
-            PacketPlaySound.sendSoundPacket(this, 64D, tool.getSoundEffect(), false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleUtilitySoundRange(), tool.getSoundEffect(), false);
     }
 
     private Vec3 aimDirection()

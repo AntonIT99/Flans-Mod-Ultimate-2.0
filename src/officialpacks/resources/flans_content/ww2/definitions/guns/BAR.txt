@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.BAR
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.575 0.36914 -0.00738
 animFlashScale 2.54
 Texture bar

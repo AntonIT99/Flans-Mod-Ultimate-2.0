@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.G43
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.35603 0.35972 -0.00188
 animFlashScale 1.66
 Texture g43

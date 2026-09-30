@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.M1Garand
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.17554 0.34607 -0.00439
 animFlashScale 2.84
 Texture m1garand

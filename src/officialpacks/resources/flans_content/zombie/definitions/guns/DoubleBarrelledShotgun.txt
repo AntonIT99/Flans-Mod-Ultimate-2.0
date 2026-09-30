@@ -8,6 +8,8 @@ Icon DoubleBarrelledShotgun
 Colour 255 255 255
 DeployedModel None
 Model zombie.DoubleBarrelledShotgun
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 Texture DoubleBarrelledShotgun
 
 // Ammunition

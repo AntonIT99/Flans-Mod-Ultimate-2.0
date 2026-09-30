@@ -1,11 +1,15 @@
 ﻿// Identity
-Name Messerschmidt Me 262A Schwalbe, KG(J)54
+Name Messerschmidt Me 262A Schwalbe
 ShortName WW2_Plane_ME262A_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_ME262A_1
 Icon Icon_WW2_Plane_ME262A_1A
 Texture Skin_WW2_Plane_ME262A_1A
+
+// Paintjobs
+AdvPaintJob KG(J)54 Icon_WW2_Plane_ME262A_1A Skin_WW2_Plane_ME262A_1A
+AdvPaintJob EJG2 Icon_WW2_Plane_ME262A_1B Skin_WW2_Plane_ME262A_1B green 5
 
 // Recipe and Inventory
 FuelTankSize 6000

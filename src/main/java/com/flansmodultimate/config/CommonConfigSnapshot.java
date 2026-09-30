@@ -84,6 +84,11 @@ public record CommonConfigSnapshot(
     float soundRange,
     float gunFireSoundRange,
     float explosionSoundRange,
+    float vehicleSoundRange,
+    float vehicleUtilitySoundRange,
+    float vehicleFlareSoundRange,
+    float vehicleLockOnSoundRange,
+    float vehicleLockedOnSoundRange,
 
     boolean useNewPenetrationSystem,
     boolean enableBlockPenetration,
@@ -127,7 +132,7 @@ public record CommonConfigSnapshot(
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 35;
+    public static final int CURRENT_VERSION = 36;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -209,6 +214,11 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.soundRange);
         buf.writeFloat(s.gunFireSoundRange);
         buf.writeFloat(s.explosionSoundRange);
+        buf.writeFloat(s.vehicleSoundRange);
+        buf.writeFloat(s.vehicleUtilitySoundRange);
+        buf.writeFloat(s.vehicleFlareSoundRange);
+        buf.writeFloat(s.vehicleLockOnSoundRange);
+        buf.writeFloat(s.vehicleLockedOnSoundRange);
 
         buf.writeBoolean(s.useNewPenetrationSystem);
         buf.writeBoolean(s.enableBlockPenetration);
@@ -340,6 +350,11 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readDouble(),
 
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),

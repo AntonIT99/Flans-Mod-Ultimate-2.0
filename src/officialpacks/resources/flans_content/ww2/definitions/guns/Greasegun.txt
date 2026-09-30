@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.GreaseGun
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 0.72573 0.46959 -0.00854
 animFlashScale 0.73
 Texture m3a1

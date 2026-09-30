@@ -6,6 +6,12 @@ ShortName Civil_Vehicle_F1_1A
 Model Manus_Civil.Vehicle.Civil_Vehicle_F1_1
 Icon Icon_Civil_Vehicle_F1_1A
 Texture Skin_Civil_Vehicle_F1_1A
+// Paintjobs
+Paintjob Icon_Civil_Vehicle_F1_1B Skin_Civil_Vehicle_F1_1B blue 5
+Paintjob Icon_Civil_Vehicle_F1_1C Skin_Civil_Vehicle_F1_1C lime 5
+Paintjob Icon_Civil_Vehicle_F1_1D Skin_Civil_Vehicle_F1_1D yellow 5
+Paintjob Icon_Civil_Vehicle_F1_1E Skin_Civil_Vehicle_F1_1E orange 5
+Paintjob Icon_Civil_Vehicle_F1_1F Skin_Civil_Vehicle_F1_1F white 5
 RotateWheels True
 
 // Recipe and Inventory

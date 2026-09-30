@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.Thompson
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.38616 0.54844 -0.00904
 animFlashScale 2.07
 Texture thompson

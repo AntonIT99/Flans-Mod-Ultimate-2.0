@@ -712,10 +712,10 @@ public class ModelVehicle extends ModelDriveable
         return drawn != null && boxes != null && drawn * boxes < 0F;
     }
 
-    /** Link points retain their authored lateral sign, unlike flipped meshes. */
+    /** Link points are translated directly; compare their lateral sign with the part boxes. */
     static boolean pathSidesSwapped(@Nullable Float drawn, @Nullable Float boxes)
     {
-        return drawn != null && boxes != null && drawn * boxes > 0F;
+        return sidesSwapped(drawn, boxes);
     }
 
     static EnumDriveablePart trackPart(boolean leftSide, boolean swapped)

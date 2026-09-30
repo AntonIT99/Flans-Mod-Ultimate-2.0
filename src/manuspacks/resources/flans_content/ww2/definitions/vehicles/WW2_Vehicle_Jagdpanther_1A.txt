@@ -64,7 +64,7 @@ PlaceTimePrimary 80
 ReloadTimeSecondary 100
 
 // Protection
-ArmorFrontMm 80 60
+ArmorFrontMm 80 55
 ArmorSideMm 50 30
 ArmorRearMm 40 35
 ArmorTopMm 25

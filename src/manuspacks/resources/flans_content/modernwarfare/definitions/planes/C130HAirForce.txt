@@ -6,6 +6,8 @@ ShortName C130HAirForce
 Icon IconPlaneC130HAirForce
 Model manus_modern_warfare.C130H
 Texture SkinPlaneC130HAirForce
+// Paintjobs
+AdvPaintJob USN IconPlaneC130HNavy SkinPlaneC130HNavy white 15 gray 10
 HasDoor True
 ModelScale 1
 

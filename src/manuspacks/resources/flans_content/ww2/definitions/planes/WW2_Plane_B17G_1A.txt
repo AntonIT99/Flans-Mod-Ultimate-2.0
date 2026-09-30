@@ -1,5 +1,5 @@
 ﻿// Identity
-Name Boeing B-17G - Sally B
+Name Boeing B-17G
 ShortName WW2_WW2_Plane_B17G_1A
 
 // Model and Rendering
@@ -7,6 +7,12 @@ Model Manus_WW2.Plane.WW2_Plane_B17G_1
 FlashModel DefaultFlash
 Icon Icon_WW2_Plane_B17G_1A
 Texture Skin_WW2_Plane_B17G_1A
+
+// Paintjobs
+AdvPaintJob SallyB Icon_WW2_Plane_B17G_1A Skin_WW2_Plane_B17G_1A
+AdvPaintJob MemphisBell Icon_WW2_Plane_B17G_1B Skin_WW2_Plane_B17G_1B green 20
+AdvPaintJob CalamityJane Icon_WW2_Plane_B17G_1C Skin_WW2_Plane_B17G_1C green 20
+AdvPaintJob ShooShooBaby Icon_WW2_Plane_B17G_1D Skin_WW2_Plane_B17G_1D green 20
 
 // Recipe and Inventory
 FuelTankSize 32000

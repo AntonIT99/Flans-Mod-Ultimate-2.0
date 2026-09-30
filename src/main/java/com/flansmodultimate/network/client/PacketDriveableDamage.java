@@ -4,18 +4,27 @@ import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
-import org.jetbrains.annotations.NotNull;
-
 import com.flansmodultimate.network.PacketBuffer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /** Compact authoritative snapshot of the driveable parts that changed this tick. */
 public final class PacketDriveableDamage implements IClientPacket
 {
+    private static final Map<Integer, PendingDamage> PENDING = new HashMap<>();
+    private static Level pendingLevel;
+
+    private record PendingDamage(PacketDriveableDamage packet, long expiresAt) {}
+
     private int driveableId;
     private int[] partOrdinals = new int[0];
     private float[] health = new float[0];
@@ -79,8 +88,44 @@ public final class PacketDriveableDamage implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
+        if (pendingLevel != level)
+        {
+            PENDING.clear();
+            pendingLevel = level;
+        }
         Entity entity = level.getEntity(driveableId);
         if (entity instanceof Driveable driveable)
+        {
+            PENDING.remove(driveableId);
             driveable.applyPartNetworkState(partOrdinals, health, fireTicks, flags);
+        }
+        else if (entity == null)
+            // A tracking snapshot may reach the client before its entity spawn is installed.
+            PENDING.put(driveableId, new PendingDamage(this, level.getGameTime() + 100));
+    }
+
+    /** Applies early tracking snapshots once their driveables exist on the client. */
+    public static void applyPending(@Nullable Level level)
+    {
+        if (pendingLevel != level)
+        {
+            PENDING.clear();
+            pendingLevel = level;
+        }
+        if (level == null)
+            return;
+        for (Iterator<Map.Entry<Integer, PendingDamage>> it = PENDING.entrySet().iterator(); it.hasNext(); )
+        {
+            Map.Entry<Integer, PendingDamage> entry = it.next();
+            Entity entity = level.getEntity(entry.getKey());
+            if (entity instanceof Driveable driveable)
+            {
+                PacketDriveableDamage packet = entry.getValue().packet();
+                driveable.applyPartNetworkState(packet.partOrdinals, packet.health, packet.fireTicks, packet.flags);
+                it.remove();
+            }
+            else if (entity != null || level.getGameTime() >= entry.getValue().expiresAt())
+                it.remove();
+        }
     }
 }

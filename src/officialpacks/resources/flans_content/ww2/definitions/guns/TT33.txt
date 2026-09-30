@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.TT33
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.05469 0.52734 0
 animFlashScale 0.44
 Texture TT33

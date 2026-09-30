@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.Sten
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.47656 0.38672 0.00893
 animFlashScale 0.89
 Texture Sten

@@ -52,7 +52,7 @@ ReloadTimePrimary 51
 ReloadRoundsPrimary 80
 
 // Protection
-ArmorFrontMm 80
+ArmorFrontMm 80 10
 ArmorSideMm 30
 ArmorRearMm 30
 ArmorTopMm 20

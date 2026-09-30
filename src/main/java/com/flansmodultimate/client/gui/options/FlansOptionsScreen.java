@@ -71,7 +71,8 @@ public class FlansOptionsScreen extends Screen
             ModClientConfig.HIT_MARKER_STYLE,
             ModClientConfig.FANCY_HIT_MARKER)),
         new QuickSection("rendering", List.of(
-            ModClientConfig.ENABLE_GPU_MODEL_CACHE)),
+            ModClientConfig.ENABLE_GPU_MODEL_CACHE,
+            ModClientConfig.MUZZLE_FLASH_STYLE)),
         new QuickSection("gameplay", List.of(
             ModClientConfig.AIM_TYPE,
             ModClientConfig.AIM_POSE,

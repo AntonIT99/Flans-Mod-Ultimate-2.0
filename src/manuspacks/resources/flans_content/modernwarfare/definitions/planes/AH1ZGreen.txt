@@ -1,5 +1,5 @@
 // Identity
-Name AH-1Z Super Cobra - Green
+Name AH-1Z Viper
 ShortName AH1ZGreen
 
 // Model and Rendering
@@ -8,6 +8,9 @@ Model manus_modern_warfare.AH1Z
 Texture SkinPlaneAH1ZGreen
 HasDoor True
 ModelScale 1
+
+// Paintjobs
+Paintjob IconPlaneAH1ZGrey SkinPlaneAH1ZGrey white 10
 
 // Recipe and Inventory
 FuelTankSize 4000
@@ -22,18 +25,19 @@ AddRecipeParts coreWheel 10 Mat_Plate_Steel
 AddDye 10 green
 
 // Movement and Physics
+Mode Heli
 MaxThrottle 2.0
 MaxNegativeThrottle 0.0
-TurnLeftSpeed 10
-TurnRightSpeed 10
-LookUpSpeed 1
-LookDownSpeed 1
-RollLeftSpeed 1
-RollRightSpeed 1
+TurnLeftSpeed 2
+TurnRightSpeed 2
+LookUpSpeed 2
+LookDownSpeed 2
+RollLeftSpeed 2
+RollRightSpeed 2
 Drag 0.98
 Lift 3.2
 RestingPitch 0.0
-HasGear True
+HasGear False
 RealMassKg 8391
 RealEnginePowerHp 2680
 RealMaxSpeedKmh 296
@@ -53,14 +57,19 @@ UseRealisticVehicleHealth true
 
 // Parts and Seats
 CameraDistance 5.0
-Propeller 0 0 0 0 core Part_Propeller_RotorHeli
-Propeller 1 0 0 0 tail Part_Propeller_RotorHeli
+WheelPosition 0 18 -8 -19 coreWheel
+WheelPosition 1 18 -8 19 coreWheel
+WheelPosition 2 -16 -8 -19 coreWheel
+WheelPosition 3 -16 -8 19 coreWheel
+HeliPropeller 0 0 41 0 blades SMP_Part_Propeller_RotorHeli
+HeliTailPropeller 0 -111 33 3 tail SMP_Part_Propeller_RotorHeli
 Pilot 13 7 0
 Passengers 1
 Passenger 1 32 2 0 nose -100 100 -50 10 M134 TURRET
 GunOrigin 1 27 -22.1 2.5
 SetupPart nose 100 46 -3 -9 20 20 18
 SetupPart core 400 -26 -3 -10 72 34 20
+SetupPart blades 150 -90 39 -90 180 4 180
 SetupPart tail 300 -104 -3 -9 78 23 18
 SetupPart leftWing 300 -14 -2 10 26 12 21
 SetupPart coreWheel 100 -24 -10 -20 51 10 40
@@ -68,9 +77,9 @@ SetupPart rightWing 300 -14 -2 -31 26 12 21
 BulletDetection 25
 
 // Sounds
-StartSound propStart
-StartSoundLength 20
-PropSound LancasterProp
-PropSoundLength 49
+StartSound HelicopterStart
+StartSoundLength 100
+PropSound Helicopter1
+PropSoundLength 93
 ShootSound gatling
 BombSound bomb

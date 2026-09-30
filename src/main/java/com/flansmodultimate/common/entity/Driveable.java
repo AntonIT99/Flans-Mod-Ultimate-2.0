@@ -2994,8 +2994,19 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         DriveableType type = initializedType();
         String sound = type.shootSound(secondary);
+        double soundRange = ModCommonConfig.get().gunFireSoundRange();
+        if (type.isReadWeaponsFromGunTypes() && isGunBank(secondary))
+        {
+            AmmoSelection selection = gunBankSelection(secondary);
+            GunType gun = selection == null ? type.getPilotGunType(secondary) : selection.gunType();
+            if (gun != null)
+            {
+                sound = gun.getShootSound(null, false);
+                soundRange = gun.getGunSoundRange();
+            }
+        }
         if (StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, 128D, sound, true);
+            PacketPlaySound.sendSoundPacket(this, soundRange, sound, true);
         if (fired.isEmpty() || !type.isDefaultMuzzleFlash()
             && (secondary ? type.getShootParticlesSecondary() : type.getShootParticlesPrimary()).isEmpty())
             return;
@@ -3183,7 +3194,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
-        if (initializedType().isDefaultMuzzleFlash())
+        if (initializedType().isDefaultMuzzleFlash() || gun.hasMuzzleFlashModel())
             PacketHandler.sendToAllAround(new PacketDriveablePassengerFired(getId(), index, barrel),
                 position(), 128D, level().dimension());
         reloadPassengerGun(index, gun, ammo);
@@ -3417,6 +3428,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             PacketHandler.sendToTracking(new PacketDriveableDamage(getId(), changed), this);
     }
 
+    /** Send the saved server state to a newly tracking player, even if no part changed this tick. */
+    public void sendPartStateTo(@NotNull ServerPlayer player)
+    {
+        if (!level().isClientSide && driveableData != null)
+            PacketHandler.sendTo(new PacketDriveableDamage(getId(), new ArrayList<>(driveableData.getParts().values())), player);
+    }
+
     /** Applies a validated server snapshot without running destructive gameplay effects on the client. */
     public void applyPartNetworkState(int[] ordinals, float[] health, int[] fireTicks, byte[] flags)
     {
@@ -3627,7 +3645,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (best != null && lockOnSoundDelay <= 0)
         {
             if (StringUtils.isNotBlank(configType.getLockOnSound()))
-                PacketPlaySound.sendSoundPacket(controller, 10D, configType.getLockOnSound(), false);
+                PacketPlaySound.sendSoundPacket(controller, ModCommonConfig.get().vehicleLockOnSoundRange(), configType.getLockOnSound(), false);
             if (best instanceof Driveable target && target.getConfigType() != null
                 && StringUtils.isNotBlank(target.getConfigType().getLockingOnSound()))
                 PacketPlaySound.sendSoundPacket(target, Math.max(1, target.getConfigType().getLockedOnSoundRange()),
@@ -4174,7 +4192,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         setFlag(FLAG_FLARE, true);
         setFlag(FLAG_COUNTERMEASURE_RELOADING, true);
         if (StringUtils.isNotBlank(configType.getFlareSound()))
-            PacketPlaySound.sendSoundPacket(this, 96D, configType.getFlareSound(), false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleFlareSoundRange(), configType.getFlareSound(), false);
     }
 
     protected void updateFlares()

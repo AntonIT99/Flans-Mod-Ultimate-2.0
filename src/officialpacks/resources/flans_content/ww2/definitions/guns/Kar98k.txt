@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.Kar98k
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.31836 0.35125 -0.00565
 animFlashScale 1.66
 Texture kar98k

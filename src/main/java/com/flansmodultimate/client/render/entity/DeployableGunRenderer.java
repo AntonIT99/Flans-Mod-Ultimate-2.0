@@ -1,24 +1,21 @@
 package com.flansmodultimate.client.render.entity;
 
-import com.flansmod.client.model.ModelFlash;
 import com.flansmod.client.model.ModelMG;
-import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
+import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.MuzzleFlashRenderer;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.DeployedGunMuzzleGeometry;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -110,22 +107,11 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         // the hand-held gun convention and point down local X.
         poseStack.mulPose(Axis.XP.rotationDegrees(-aimPitch));
         poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
-        ModelFlash flash = ModelCache.getOrLoadFlashModel(gun.getConfigType());
+        ModelBase flash = MuzzleFlashRenderer.select(gun.getConfigType(), false);
         if (flash != null)
         {
-            flash.renderFlash(gun.getMuzzleFlashFrame(), poseStack,
-                buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(gun.getConfigType().getFlashTexture())),
-                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F,
-                modelScale * flashScale);
-        }
-        else if (StringUtils.isBlank(gun.getConfigType().getFlashModelClassName())
-            && StringUtils.isNotBlank(gun.getConfigType().getMuzzleFlashModelClassName()))
-        {
-            ModelMuzzleFlash muzzleFlash = ModelCache.getOrLoadMuzzleFlashModel(gun.getConfigType());
-            if (muzzleFlash != null)
-                muzzleFlash.renderToBuffer(poseStack,
-                    buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(muzzleFlash.getTexture())),
-                    LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+            MuzzleFlashRenderer.render(flash, gun.getConfigType(), gun.getMuzzleFlashFrame(), modelScale * flashScale,
+                poseStack, buffer, OverlayTexture.NO_OVERLAY);
         }
         poseStack.popPose();
     }

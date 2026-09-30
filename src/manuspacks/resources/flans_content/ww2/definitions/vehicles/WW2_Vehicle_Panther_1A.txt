@@ -63,7 +63,7 @@ ReadWeaponsFromGunTypes true
 
 // Protection
 IsExplosionWhenDestroyed true
-ArmorFrontMm 80
+ArmorFrontMm 80 55
 ArmorSideMm 50
 ArmorRearMm 40
 ArmorTopMm 16

@@ -9,6 +9,7 @@ Colour 255 255 255
 DeployedModel None
 Model zombie.Glock17
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.0125 0.55547 0
 animFlashScale 0.44
 Texture Glock17

@@ -14,6 +14,9 @@ Paintjob g36_stoic_blue g36_stoic_blue blue 3
 Paintjob g36_stoic_green g36_stoic_green green 3
 Paintjob g36_stoic_red g36_stoic_red red 3
 Paintjob g36_stoic_orange g36_stoic_orange orange 3
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.08434 0.2259 0
+animFlashScale 4.15
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

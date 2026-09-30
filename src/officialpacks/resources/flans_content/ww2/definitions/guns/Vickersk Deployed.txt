@@ -7,6 +7,7 @@ Icon vickersk
 Colour 255 255 255
 DeployedModel ww2.vickersk
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animFlashScale 1.24
 DeployedTexture vickersk
 

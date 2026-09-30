@@ -13,6 +13,9 @@ Paintjob p90_stoic_blue p90_stoic_blue blue 3
 Paintjob p90_stoic_green p90_stoic_green green 3
 Paintjob p90_stoic_red p90_stoic_red red 3
 Paintjob p90_stoic_orange p90_stoic_orange orange 3
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.22832 -0.03613 0
+animFlashScale 3.46
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

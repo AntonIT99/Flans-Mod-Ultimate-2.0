@@ -8,6 +8,7 @@ Colour 255 255 255
 DeployedModel None
 Model ww2.C96
 FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 animMuzzleFlashPoint 1.06523 0.80156 -0.00633
 animFlashScale 2.96
 Texture SkinC96

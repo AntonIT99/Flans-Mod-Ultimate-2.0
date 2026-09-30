@@ -1,5 +1,5 @@
 // Identity
-Name Light Saber - Red
+Name Light Saber
 ShortName LightSaber_A
 
 // Model and Rendering
@@ -9,6 +9,10 @@ DeployedModel None
 Model manus_sifi.LightSaber_A
 Texture SkinGunLightSaber_A
 ModelScale 0.11
+
+// Paintjobs
+Paintjob IconGunLightSaber_B SkinGunLightSaber_B
+Paintjob IconGunLightSaber_C SkinGunLightSaber_C
 
 // Recipe and Inventory
 AllowAllAttachments false

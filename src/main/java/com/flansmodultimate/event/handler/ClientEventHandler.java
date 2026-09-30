@@ -38,6 +38,7 @@ import com.flansmodultimate.config.EnumGunBlockInteraction;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
@@ -170,6 +171,7 @@ public final class ClientEventHandler
     /** Runs at the end of every client tick. */
     public static void onClientTick()
     {
+        PacketDriveableDamage.applyPending(Minecraft.getInstance().level);
         GunInputState.tick();
         ModClient.tick();
         ParticleHelper.tick();
@@ -467,6 +469,7 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
+        com.flansmodultimate.network.client.PacketDebugHitboxes.clearSession();
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();

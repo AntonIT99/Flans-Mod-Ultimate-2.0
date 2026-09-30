@@ -35,10 +35,14 @@ class ModelVehicleTrackSideTest
     }
 
     @Test
-    void proceduralLinkPointsUseTheUnflippedLateralSign()
+    void proceduralLinkPointsResolveAgainstTheirPhysicalSide()
     {
-        assertFalse(ModelVehicle.pathSidesSwapped(50F, -3.125F));
-        assertTrue(ModelVehicle.pathSidesSwapped(50F, 3.125F));
+        // Tiger: LeftLinkPoint z=25, RightLinkPoint z=-25; left/right box centres are -30/+30 pixels.
+        boolean swapped = ModelVehicle.pathSidesSwapped(50F, -60F / 16F);
+        assertTrue(swapped);
+        assertEquals(EnumDriveablePart.RIGHT_TRACK, ModelVehicle.trackPart(true, swapped));
+        assertEquals(EnumDriveablePart.LEFT_TRACK, ModelVehicle.trackPart(false, swapped));
+        assertFalse(ModelVehicle.pathSidesSwapped(50F, 3.125F));
         assertFalse(ModelVehicle.pathSidesSwapped(null, 3.125F));
     }
 

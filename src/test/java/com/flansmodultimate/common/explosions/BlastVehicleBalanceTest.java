@@ -100,7 +100,8 @@ class BlastVehicleBalanceTest
             survives("75mm M48 HE", STUART, 0.5),
             survives("155mm M107 HE Shell", SHERMAN, 3D),
             survives("SC 10 Fragmentation Bomb", JEEP, 0.5),
-            destroys("SC 10 Fragmentation Bomb", FW190, 0.5),
+            // The loaded 4,000 kg A-4 profile gives its core 180 HP, above this blast's damage.
+            survives("SC 10 Fragmentation Bomb", FW190, 0.5),
             survives("SC 10 Fragmentation Bomb", B17, 0.5),
 
             destroys("AN-M30 100 lb General-Purpose Bomb", JEEP, 0.5),
