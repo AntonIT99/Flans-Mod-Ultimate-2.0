@@ -6261,7 +6261,6 @@
             "TurretArmorRearMm": 50,
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
-            "UseAmmoGroup": "75mm M3",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },

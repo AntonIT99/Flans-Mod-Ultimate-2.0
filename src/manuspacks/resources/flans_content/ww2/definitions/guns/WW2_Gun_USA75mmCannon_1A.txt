@@ -1,0 +1,36 @@
+// Identity
+Name M4A1 Sherman 75mm Cannon
+ShortName WW2_Gun_USA75mmCannon_1A
+Description 75mm tank cannon - vehicle part
+
+// Model and Rendering
+Icon WW2_Gun_USA75mmCannon_1A
+
+// Ammunition
+Ammo WW2_Shell_USA75mmAP
+Ammo WW2_Shell_USA75mmHE
+
+// Handling
+Mode SemiAuto
+Deployable False
+UsableByPlayers False
+UsableByMechas False
+Scope None
+
+// Fire rate and reload
+RoundsPerMin 20
+ReloadTime 110
+
+// Ballistics
+MuzzleVelocity 618
+Dispersion 0.2
+
+// Damage
+Damage 1
+
+// Recoil
+Recoil 1
+
+// Sounds
+ShootSound shoot_75mmus
+DistortSound True
