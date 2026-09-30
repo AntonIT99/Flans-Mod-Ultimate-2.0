@@ -690,9 +690,9 @@ public class ModelVehicle extends ModelDriveable
      * authored sides against each other settles it per model instead of trusting
      * either name, so destroying a track always hides the track that was hit.</p>
      *
-     * <p>Meshes carry the lateral mirror {@code flipAll()} applies and link
-     * points are translated unmirrored, so in both cases a drawn track and the
-     * part box covering it hold lateral coordinates of opposite sign.</p>
+     * <p>Static meshes have already been mirrored by {@code flipAll()}, so their
+     * lateral signs match their part boxes. Procedural link points have not been
+     * mirrored, so their signs are opposite those of the part boxes.</p>
      */
     private EnumDriveablePart trackPartForDrawnSide(@Nullable DriveableType type, boolean leftSide, boolean meshes)
     {
@@ -701,13 +701,19 @@ public class ModelVehicle extends ModelDriveable
             trackSideType = type;
             Float boxes = boxLateralDelta(type);
             trackMeshSidesSwapped = sidesSwapped(meshLateralDelta(), boxes);
-            trackPathSidesSwapped = sidesSwapped(pathLateralDelta(type), boxes);
+            trackPathSidesSwapped = pathSidesSwapped(pathLateralDelta(type), boxes);
         }
         return trackPart(leftSide, meshes ? trackMeshSidesSwapped : trackPathSidesSwapped);
     }
 
-    /** Drawn geometry and its part box mirror each other, so matching signs mean the names are swapped. */
+    /** Matching lateral signs mean the authored track and part names agree. */
     static boolean sidesSwapped(@Nullable Float drawn, @Nullable Float boxes)
+    {
+        return drawn != null && boxes != null && drawn * boxes < 0F;
+    }
+
+    /** Link points retain their authored lateral sign, unlike flipped meshes. */
+    static boolean pathSidesSwapped(@Nullable Float drawn, @Nullable Float boxes)
     {
         return drawn != null && boxes != null && drawn * boxes > 0F;
     }

@@ -9,8 +9,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class VehicleArmorResolverTest
 {
@@ -51,6 +50,8 @@ class VehicleArmorResolverTest
             new VehicleArmorSpec(hull, Map.of(), Map.of()), List.of(EnumDriveablePart.CORE));
         assertEquals(0F, armor.plate(EnumDriveablePart.CORE, EnumArmorFacing.TOP).authored().thicknessMm());
         assertEquals(0F, armor.plate(EnumDriveablePart.CORE, EnumArmorFacing.FRONT).authored().thicknessMm());
+        assertTrue(armor.isPlateConfigured(EnumDriveablePart.CORE, EnumArmorFacing.TOP));
+        assertFalse(armor.isPlateConfigured(EnumDriveablePart.CORE, EnumArmorFacing.FRONT));
     }
 
     @Test
@@ -65,6 +66,9 @@ class VehicleArmorResolverTest
         assertEquals(40F, armor.plate(EnumDriveablePart.CORE, EnumArmorFacing.FRONT).authored().thicknessMm());
         assertEquals(100F, armor.plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT).authored().thicknessMm());
         assertEquals(15F, armor.plate(EnumDriveablePart.LEFT_TRACK, EnumArmorFacing.FRONT).authored().thicknessMm());
+        assertTrue(armor.isPlateConfigured(EnumDriveablePart.LEFT_TRACK, EnumArmorFacing.REAR));
+        assertTrue(armor.isPlateConfigured(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT));
+        assertFalse(armor.isPlateConfigured(EnumDriveablePart.TURRET, EnumArmorFacing.REAR));
     }
 
     @Test

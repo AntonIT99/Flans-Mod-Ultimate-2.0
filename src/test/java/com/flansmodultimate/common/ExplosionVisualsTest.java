@@ -118,16 +118,32 @@ class ExplosionVisualsTest
     void fragmentationSprayRespectsIntensity()
     {
         float radius = 30F;
-        assertEquals(0, ExplosionVisuals.fragSparkCount(radius, 0F),
+        assertEquals(0, ExplosionVisuals.fragSparkCount(radius, 0F, 5000D, 0.25D, 2048),
             "a charge that throws no fragments should spray none");
-        assertTrue(ExplosionVisuals.fragSparkCount(radius, 4F) > ExplosionVisuals.fragSparkCount(radius, 0.8F),
+        assertTrue(ExplosionVisuals.fragSparkCount(radius, 4F, 5000D, 0.25D, 2048)
+            > ExplosionVisuals.fragSparkCount(radius, 0.8F, 5000D, 0.25D, 2048),
             "a frag shell should spray more than a blast charge reaching the same distance");
-        assertEquals(0, ExplosionVisuals.fragSparkCount(2F, 4F),
+        assertEquals(0, ExplosionVisuals.fragSparkCount(2F, 4F, 5000D, 0.25D, 2048),
             "a spray inside the fireball would not be visible");
-        assertTrue(ExplosionVisuals.fragSparkCount(4F, 1F) > 0,
+        assertTrue(ExplosionVisuals.fragSparkCount(4F, 1F, 5000D, 0.25D, 2048) > 0,
             "a grenade-sized fragmentation envelope should have a visible spray");
-        assertTrue(ExplosionVisuals.fragSparkCount(1000F, 4F) <= 64,
+        assertEquals(ExplosionVisuals.DEFAULT_MAX_FRAG_SPARKS,
+            ExplosionVisuals.fragSparkCount(1000F, 4F, 5000D, 0.25D, ExplosionVisuals.DEFAULT_MAX_FRAG_SPARKS),
             "even an extreme burst must stay within the particle cap");
+        assertEquals(450, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 2048),
+            "the larger fragmentation envelope should produce a dense spray");
+        assertEquals(120, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 120),
+            "the client cap should limit an individual explosion");
+        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 0),
+            "the client should be able to disable fragmentation sparks");
+        assertEquals(11, ExplosionVisuals.fragSparkCount(30F, 4F, 42.9D, 0.25D, 2048),
+            "the multiplier applies after limiting sparks to effective fragments");
+        assertEquals(42, ExplosionVisuals.fragSparkCount(30F, 4F, 42.9D, 4D, 2048),
+            "sparks must never exceed the integer number of effective fragments");
+        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 0.9D, 0.25D, 2048),
+            "fewer than one effective fragment cannot produce a spark");
+        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0D, 2048),
+            "zero multiplier disables fragmentation sparks");
     }
 
     @Test
