@@ -47,14 +47,17 @@ schema. Confirm a behavior against the implementation if a future branch differs
 - With valid `RealMassKg` and `UseRealisticVehicleHealth true`, total HP comes
   from mass; positive authored HP values are only relative weights. Nonpositive
   authored HP stays zero. Without that opt-in and valid mass, HP is absolute.
-  A split changes shares and may change how quickly each component disappears;
-  compute before/after shares and compare them with the represented structure.
-  The hull `core` usually carries most of the vehicle's mass. A narrow nose
-  region should not receive the entire frontal armor's implied mass or extra HP
-  simply because its armor plate is thick: armor values already govern shot
-  resistance. Use turret mass references as approximate share checks, allowing
-  for differences in gun, fittings, and modeled scope rather than applying one
-  fixed percentage to every tank.
+  For each damageable part, estimate its share of `RealMassKg` from the physical
+  structure it represents, then choose authored weights in the same ratio. The
+  resulting allocation is `totalHP * partWeight / sum(positivePartWeights)`;
+  the numeric sum of authored weights need not equal total HP or mass. Avoid
+  counting a component in both the `core` and a separate part. Compute each
+  resulting allocation and compare it with the mass estimate and plausible
+  damage behavior. A narrow nose region should not receive the entire frontal
+  armor's implied mass or extra HP simply because its armor plate is thick:
+  armor values already govern shot resistance. Use turret mass references as
+  approximate share checks, allowing for differences in gun, fittings, and
+  modeled scope rather than applying one fixed percentage to every tank.
 - For aircraft and mechas, use their actual part hierarchy and motion instead
   of a ground-vehicle hull/turret template. For an angled hull, use a sensible
   axis-aligned box plus the armor slope fields where applicable; a box does not
@@ -71,8 +74,9 @@ geometry, mark the proposed measurement as uncertain and do not silently fill
 the gap with a neighboring model's numbers.
 
 For each edited vehicle, record a concise before/after inventory: part names,
-box bounds, percentage of total authored HP, armor source, and the physical
-feature represented. Inspect overlaps and gaps from at least front, side, and
-top, and check moving parts at more than one pose. Validate the source pack's
+box bounds, estimated mass contribution and percentage, resulting HP and
+percentage, armor source, and the physical feature represented. Inspect overlaps
+and gaps from at least front, side, and top, and check moving parts at more than
+one pose. Validate the source pack's
 packaging task and perform an in-game hit check for high-risk cases when
 available; report what could not be verified.

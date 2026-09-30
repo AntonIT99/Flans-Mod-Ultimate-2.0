@@ -57,11 +57,11 @@ Driver -7 0 -9
 Passengers 2
 Passenger 1 -7 0 9 core
 Passenger 2 -21 11 0 core -50 50 -10 30 WW2_MG_BrowningM2_1A M2
-SetupPart core 200 -30 -2 -15 55 13 30
-SetupPart frontRightWheel 100 13 -10 -16 14 14 4
-SetupPart frontLeftWheel 100 13 -10 12 14 14 4
-SetupPart backRightWheel 100 -27 -10 -16 14 14 4
-SetupPart backLeftWheel 100 -27 -10 12 14 14 4
+SetupPart core 1335 -30 -2 -15 55 13 30
+SetupPart frontRightWheel 35 13 -10 -16 14 14 4
+SetupPart frontLeftWheel 35 13 -10 12 14 14 4
+SetupPart backRightWheel 35 -27 -10 -16 14 14 4
+SetupPart backLeftWheel 35 -27 -10 12 14 14 4
 BulletDetection 5
 CameraDistance 5
 

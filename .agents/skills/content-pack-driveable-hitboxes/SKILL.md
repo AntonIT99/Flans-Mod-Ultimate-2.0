@@ -69,20 +69,27 @@ simplify a box adjustment.
    armor-facing frame. When the available part/armor semantics cannot express
    the desired directional upper armor, report the limitation rather than
    inventing a false turret.
-5. Rebalance HP as approximate weights for normalized-health definitions
-   (`UseRealisticVehicleHealth true` with valid `RealMassKg`): positive authored
-   part HP controls shares of the mass-derived total. Keep total mass and the
-   health mode unchanged. For legacy-health definitions, authored HP is absolute;
+5. For normalized-health definitions (`UseRealisticVehicleHealth true` with
+   valid `RealMassKg`), estimate how much of the vehicle's total physical mass
+   each represented part accounts for, including the structure assigned to the
+   `core`. Make each positive authored HP weight proportional to that estimated
+   mass share: the runtime allocates the mass-derived total HP by these weights.
+   Account for all damageable parts without counting shared structure twice;
+   record the estimate and its basis for each part. Calculate the resulting HP
+   shares before accepting the weights, and reject implausible allocations even
+   when they match a neighboring definition or an earlier value. Keep total
+   `RealMassKg` and the health mode unchanged. The `core` normally represents
+   the largest share of the main hull/fuselage, but must not absorb mass assigned
+   to wheels, tracks, a turret, or other separate parts. A `frontalArmor` box
+   represents only its own forward structure; armor thickness alone does not
+   increase its mass share. Include a rotating turret's gun and fittings in its
+   estimate when represented by that part. Do not infer mass directly from box
+   volume, armor thickness, or existing HP. If a credible split cannot be
+   estimated, preserve the existing weights and report the uncertainty rather
+   than inventing ratios. For legacy-health definitions, authored HP is absolute;
    keep overall durability near the prior scale unless the user requested a
-   balance change. Treat the `core` as the main hull and normally the largest
-   individual HP share; a separate `frontalArmor` box represents only its own
-   forward structure, not the mass or armor strength of the entire vehicle.
-   Give a rotating turret a meaningful share based on vehicle-specific mass
-   evidence where available, with its gun and modeled fittings considered.
-   Allocate tracks, wheels, skirts, and other exposed modules by their represented
-   structure and compare sister vehicles within the same pack. Do not equate
-   armor thickness, box volume, or an existing HP value with mass. Check the
-   gameplay effect of destroying each added or resized part.
+   balance change. Check the gameplay effect of destroying each added or resized
+   part.
 
 ## Finish
 
@@ -94,7 +101,8 @@ result in game at neutral and moved poses, checking front/side/top hits, turret
 yaw, part destruction, seats, and ground contact. Static checks alone cannot
 prove visual fit; identify any in-game checks that remain.
 
-Report changed and deferred definitions, the main geometry and HP decisions,
-armor treatment of turreted and fixed-hull designs, validation performed, and
+Report changed and deferred definitions, the main geometry and estimated mass
+shares with their resulting HP allocations, armor treatment of turreted and
+fixed-hull designs, validation performed, and
 whether the wiki needed an update. Preserve unrelated work in a mixed worktree;
 stage explicit paths only if staging was requested.

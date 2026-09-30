@@ -60,11 +60,11 @@ Passenger 4 -28 7 -10 core 60 160 -45 45
 Passenger 5 -28 7 10 core -160 -60 -45 45
 Passenger 6 -44 7 -10 core 60 160 -45 45
 Passenger 7 -44 7 10 core -160 -60 -45 45
-SetupPart core 300 -53 2 -18 95 21 36
-SetupPart backRightWheel 100 -37 -10 -15 12 12 5
-SetupPart frontRightWheel 100 25 -10 -15 12 12 5
-SetupPart frontLeftWheel 100 25 -10 10 12 12 5
-SetupPart backLeftWheel 100 -37 -10 10 12 12 5
+SetupPart core 2360 -53 2 -18 95 21 36
+SetupPart backRightWheel 35 -37 -10 -15 12 12 5
+SetupPart frontRightWheel 35 25 -10 -15 12 12 5
+SetupPart frontLeftWheel 35 25 -10 10 12 12 5
+SetupPart backLeftWheel 35 -37 -10 10 12 12 5
 BulletDetection 5
 CameraDistance 5
 

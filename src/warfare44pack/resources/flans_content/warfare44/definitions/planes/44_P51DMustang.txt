@@ -84,9 +84,9 @@ CollisionDamageThrottle 0.21
 CollisionDamageTimes 45
 
 // Parts and collision
-SetupPart core 450 -150 9 -17 220 48 34
-SetupPart rightWing 275 -45 17 17 58 22 105
-SetupPart leftWing 275 -45 17 -123 58 22 105
+SetupPart core 2915 -150 9 -17 220 48 34
+SetupPart rightWing 630 -45 17 17 58 22 105
+SetupPart leftWing 630 -45 17 -123 58 22 105
 CollisionPoint 45 36 0 core
 CollisionPoint -9 31 111 core
 CollisionPoint -9 31 -111 core

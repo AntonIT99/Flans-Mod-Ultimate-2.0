@@ -56,11 +56,11 @@ Passenger 2 -12 1 -9 core -80 80 -45 45
 Passenger 3 -12 1 9 core -80 80 -45 45
 Passenger 4 0 15 0 core -50 50 -10 30 M134 M134
 GunOrigin 4 25 6.4 0
-SetupPart frontLeftWheel 100 19 -10 14 14 14 5
-SetupPart backLeftWheel 100 -36 -10 14 14 14 5
-SetupPart frontRightWheel 100 19 -10 -19 14 14 5
-SetupPart backRightWheel 100 -36 -10 -19 14 14 5
-SetupPart core 300 -43 -2 -18 80 24 36
+SetupPart frontLeftWheel 60 19 -10 14 14 14 5
+SetupPart backLeftWheel 60 -36 -10 14 14 14 5
+SetupPart frontRightWheel 60 19 -10 -19 14 14 5
+SetupPart backRightWheel 60 -36 -10 -19 14 14 5
+SetupPart core 3254 -43 -2 -18 80 24 36
 BulletDetection 5
 WheelPosition 0 -29 -8 -18
 WheelPosition 1 -29 -8 18
