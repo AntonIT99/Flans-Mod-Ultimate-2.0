@@ -19,11 +19,15 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -206,8 +210,8 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DIGITAL_AMMO_SUPPLY_AMOUNT;
 
     private static final Supplier<Boolean> FORCE_LEGACY_PLANE_PHYSICS;
-    private static final ForgeConfigSpec.DoubleValue GRAVITY_FACTOR;
-    private static final ForgeConfigSpec.DoubleValue DRAG_FACTOR;
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSION_GRAVITY_FACTORS;
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
@@ -233,6 +237,10 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
     private static final AtomicReference<CommonConfigSnapshot> serverOverride = new AtomicReference<>();
+    private static volatile Map<ResourceLocation, Double> localGravityFactors = Map.of();
+    private static volatile Map<ResourceLocation, Double> localDragFactors = Map.of();
+    private static volatile Map<ResourceLocation, Double> serverGravityFactors = Map.of();
+    private static volatile Map<ResourceLocation, Double> serverDragFactors = Map.of();
     private static final AtomicReference<EntityTrackingRanges> earlyEntityTrackingRanges = new AtomicReference<>();
 
     static
@@ -548,14 +556,14 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("World Physics Settings");
-        GRAVITY_FACTOR = builder
-            .comment("Multiplier for gravity applied by Flan's projectiles, thrown weapons, AA guns, parachutes, mechas, driveables and particles.",
-                "0 disables their gravity; 1 preserves authored gravity. Does not change vanilla entities.")
-            .defineInRange("gravityFactor", DEFAULT_GRAVITY_FACTOR, 0D, 10D);
-        DRAG_FACTOR = builder
-            .comment("Multiplier for drag applied by Flan's projectiles, AA guns, parachutes, driveables and particles.",
-                "0 removes drag; 1 preserves authored drag. Does not change vanilla entities.")
-            .defineInRange("dragFactor", DEFAULT_DRAG_FACTOR, 0D, 10D);
+        DIMENSION_GRAVITY_FACTORS = builder
+            .comment("Gravity overrides for Flan's physics, formatted as namespace:dimension=factor (0 to 10).",
+                "Unlisted dimensions, including all vanilla dimensions, use 1.")
+            .defineList("dimensionGravityFactors", Collections.emptyList(), ModCommonConfig::validDimensionFactorLine);
+        DIMENSION_DRAG_FACTORS = builder
+            .comment("Drag overrides for Flan's physics, formatted as namespace:dimension=factor (0 to 10).",
+                "Unlisted dimensions, including all vanilla dimensions, use 1.")
+            .defineList("dimensionDragFactors", Collections.emptyList(), ModCommonConfig::validDimensionFactorLine);
         builder.pop();
 
         builder.push("Vehicle Physics Settings");
@@ -801,8 +809,8 @@ public final class ModCommonConfig
             List.copyOf(DIGITAL_AMMO_SUPPLY_BLOCKS.get()),
             DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
 
-            GRAVITY_FACTOR.get(),
-            DRAG_FACTOR.get(),
+            List.copyOf(DIMENSION_GRAVITY_FACTORS.get()),
+            List.copyOf(DIMENSION_DRAG_FACTORS.get()),
             FORCE_LEGACY_PLANE_PHYSICS.get(),
             FORCE_LEGACY_VEHICLE_PHYSICS.get(),
             ENABLE_AIRCRAFT_ROLL_SELF_LEVELING.get(),
@@ -839,28 +847,94 @@ public final class ModCommonConfig
         return override != null ? override : instance.get();
     }
 
-    public static double gravityFactor()
+    public static double gravityFactor(Level level)
     {
-        CommonConfigSnapshot config = get();
-        return config == null ? DEFAULT_GRAVITY_FACTOR : config.gravityFactor();
+        return currentFactors(true).getOrDefault(level.dimension().location(), DEFAULT_GRAVITY_FACTOR);
     }
 
-    public static double dragFactor()
+    public static double dragFactor(Level level)
     {
-        CommonConfigSnapshot config = get();
-        return config == null ? DEFAULT_DRAG_FACTOR : config.dragFactor();
+        return currentFactors(false).getOrDefault(level.dimension().location(), DEFAULT_DRAG_FACTOR);
     }
 
-    /** Server-side persisted change, with the same validation and client sync as the options screen. */
-    public static boolean setGravityFactor(double value)
+    private static Map<ResourceLocation, Double> currentFactors(boolean gravity)
     {
-        return Double.isFinite(value) && setRuntimeValue(GRAVITY_FACTOR.getPath(), value);
+        var server = PlatformEnvironment.currentServer();
+        if (server != null && server.isSameThread())
+            return gravity ? localGravityFactors : localDragFactors;
+        if (serverOverride.get() != null)
+            return gravity ? serverGravityFactors : serverDragFactors;
+        return gravity ? localGravityFactors : localDragFactors;
     }
 
-    /** Server-side persisted change, with the same validation and client sync as the options screen. */
-    public static boolean setDragFactor(double value)
+    /** Persist a dimension override and synchronize it to connected clients. Server thread only. */
+    public static boolean setDimensionFactor(ResourceLocation dimension, boolean gravity, double factor)
     {
-        return Double.isFinite(value) && setRuntimeValue(DRAG_FACTOR.getPath(), value);
+        if (dimension == null || !Double.isFinite(factor) || factor < 0D || factor > 10D)
+            return false;
+        var setting = gravity ? DIMENSION_GRAVITY_FACTORS : DIMENSION_DRAG_FACTORS;
+        List<String> lines = new ArrayList<>(setting.get());
+        lines.removeIf(line -> hasDimension(line, dimension));
+        lines.add(dimension + "=" + factor);
+        return setRuntimeValue(setting.getPath(), lines);
+    }
+
+    /** Remove a dimension override so the authored factor of one applies again. */
+    public static boolean clearDimensionFactor(ResourceLocation dimension, boolean gravity)
+    {
+        if (dimension == null)
+            return false;
+        var setting = gravity ? DIMENSION_GRAVITY_FACTORS : DIMENSION_DRAG_FACTORS;
+        List<String> lines = new ArrayList<>(setting.get());
+        if (!lines.removeIf(line -> hasDimension(line, dimension)))
+            return false;
+        return setRuntimeValue(setting.getPath(), lines);
+    }
+
+    private static boolean hasDimension(String line, ResourceLocation dimension)
+    {
+        var entry = parseDimensionFactor(line);
+        return entry != null && entry.getKey().equals(dimension);
+    }
+
+    static boolean validDimensionFactorLine(Object value)
+    {
+        return value instanceof String line && parseDimensionFactor(line) != null;
+    }
+
+    private static Map.Entry<ResourceLocation, Double> parseDimensionFactor(String line)
+    {
+        int separator = line.indexOf('=');
+        if (separator <= 0 || separator == line.length() - 1 || line.indexOf(':') >= separator)
+            return null;
+        String dimensionId = line.substring(0, separator);
+        if (!dimensionId.contains(":"))
+            return null;
+        ResourceLocation id = ResourceLocation.tryParse(dimensionId);
+        if (id == null)
+            return null;
+        try
+        {
+            double factor = Double.parseDouble(line.substring(separator + 1));
+            return Double.isFinite(factor) && factor >= 0D && factor <= 10D
+                ? Map.entry(id, factor) : null;
+        }
+        catch (NumberFormatException ignored)
+        {
+            return null;
+        }
+    }
+
+    static Map<ResourceLocation, Double> parseDimensionFactors(List<String> lines)
+    {
+        Map<ResourceLocation, Double> factors = new HashMap<>();
+        for (String line : lines)
+        {
+            var entry = parseDimensionFactor(line);
+            if (entry != null)
+                factors.put(entry.getKey(), entry.getValue());
+        }
+        return Map.copyOf(factors);
     }
 
     public static boolean addGunpowderRecipe()
@@ -1238,6 +1312,8 @@ public final class ModCommonConfig
     public static void applyServerSnapshot(CommonConfigSnapshot config)
     {
         serverOverride.set(config);
+        serverGravityFactors = parseDimensionFactors(config.dimensionGravityFactors());
+        serverDragFactors = parseDimensionFactors(config.dimensionDragFactors());
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
         FluidFuel.rebuild(config.fluidFuelLines());
     }
@@ -1297,6 +1373,8 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = readConfig();
         instance.set(config);
+        localGravityFactors = parseDimensionFactors(config.dimensionGravityFactors());
+        localDragFactors = parseDimensionFactors(config.dimensionDragFactors());
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
         FluidFuel.rebuild(config.fluidFuelLines());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();

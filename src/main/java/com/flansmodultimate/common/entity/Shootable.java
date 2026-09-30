@@ -272,7 +272,7 @@ public abstract class Shootable extends Entity implements SpawnDataEntity
 
     protected void applyDragAndGravity()
     {
-        double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * getConfigType().getFallSpeed());
+        double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * getConfigType().getFallSpeed(), level());
         float drag = ProjectileDrag.factor(this, ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG);
         velocity = velocity.scale(drag).add(0, -gravity, 0);
         setDeltaMovement(velocity);

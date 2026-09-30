@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
@@ -426,48 +427,58 @@ public final class ShootingHelper
 
     public static float getDamage(Entity entity, @Nullable Shootable shootable, @Nullable FiredShot firedShot)
     {
-        ShootableType type = null;
-        float projectileMass = 0F;
-
-        if (shootable != null)
-            type = shootable.getConfigType();
+        ShootableType type;
         if (firedShot != null)
+            type = firedShot.getBulletType();
+        else
         {
-            BulletType bulletType = firedShot.getBulletType();
-            type = bulletType;
-            // Resolved through the shot so a per-weapon AmmoMass override is honoured.
-            projectileMass = firedShot.getProjectileMass();
+            if (shootable != null)
+                type = shootable.getConfigType();
+            else
+                type = null;
         }
 
         if (type == null)
             return 0F;
 
+        float projectileMass = firedShot != null ? firedShot.getProjectileMass() : 0F;
+
+        // Grenades use their actual entity velocity.
         if (shootable instanceof Grenade && type.getMass() > 0F)
             return getKineticDamage(type.getMass(), shootable.getDeltaMovement().length());
 
-        if (shootable instanceof Bullet && type instanceof BulletType bulletType
-            && bulletType.getWeaponType() == com.flansmodultimate.common.driveables.EnumWeaponType.BOMB
+        // Bombs use their actual entity velocity.
+        if (shootable instanceof Bullet
+            && type instanceof BulletType bulletType
+            && bulletType.getWeaponType() == EnumWeaponType.BOMB
             && projectileMass > 0F)
+        {
             return getKineticDamage(projectileMass, shootable.getDeltaMovement().length());
+        }
 
+        // Regular projectiles use their authored muzzle velocity so entity bullets
+        // and raytraced shots remain on the same kinetic-damage scale.
         if (projectileMass > 0F)
-        {
-            // Use the authored firing velocity rather than mutable entity motion. This also keeps
-            // entity bullets and raytraced shots on the same kinetic-damage scale.
             return getKineticDamage(projectileMass, firedShot.getMuzzleVelocity());
-        }
-        else
+
+        float baseDamage = type.getDamage().getDamageAgainstEntity(entity);
+
+        if (shootable instanceof Grenade)
+            return (float) (baseDamage * shootable.getDeltaMovement().lengthSqr() * 3.0);
+
+        if (firedShot == null)
+            return baseDamage;
+
+        FireableGun fireableGun = firedShot.getFireableGun();
+        if (fireableGun == null)
+            return baseDamage;
+
+        if (shootable instanceof Bullet bullet)
         {
-            float baseDamage = type.getDamage().getDamageAgainstEntity(entity);
-            if (shootable instanceof Grenade)
-                return (float) (baseDamage * shootable.getDeltaMovement().lengthSqr() * 3.0);
-            else if (shootable instanceof Bullet bullet && firedShot != null)
-                return baseDamage * ShootingHelper.getDamageAffectedByPenetration(firedShot.getFireableGun().getDamage(), bullet.getConfigType(), bullet);
-            else if (firedShot != null)
-                return baseDamage * ShootingHelper.getDamageAffectedByPenetration(firedShot.getFireableGun().getDamage(), firedShot.getBulletType(), null);
-            else
-                return baseDamage;
+            return baseDamage * ShootingHelper.getDamageAffectedByPenetration(fireableGun.getDamage(), bullet.getConfigType(), bullet);
         }
+
+        return baseDamage * ShootingHelper.getDamageAffectedByPenetration(fireableGun.getDamage(), firedShot.getBulletType(), null);
     }
 
     /**
@@ -590,7 +601,7 @@ public final class ShootingHelper
 
     static Vec3 raisedBurstPosition(Level level, Vec3 position, float height)
     {
-        if (level == null || position == null || !Float.isFinite(height) || height <= 0F)
+        if (level == null || !Float.isFinite(height) || height <= 0F)
             return position;
 
         Vec3 raised = position.add(0D, height, 0D);

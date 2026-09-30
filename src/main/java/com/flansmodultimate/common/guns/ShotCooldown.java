@@ -59,7 +59,9 @@ public final class ShotCooldown
     {
         if (roundsPerMin != 0F)
             return clampDelay(1200F / roundsPerMin);
-        return shootDelay > 0F ? clampDelay(shootDelay) : clampDelay(fallback);
+        if (shootDelay > 0F)
+            return clampDelay(shootDelay);
+        return clampDelay(fallback);
     }
 
     /** Advances a cooldown by one game tick. */

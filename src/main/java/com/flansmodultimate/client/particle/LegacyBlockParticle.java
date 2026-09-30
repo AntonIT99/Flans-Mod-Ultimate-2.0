@@ -67,8 +67,8 @@ public final class LegacyBlockParticle extends TextureSheetParticle
     @Override
     public void tick()
     {
-        gravity = (float) ModPhysics.gravity(1D);
-        friction = (float) ModPhysics.dragRetention(0.98D);
+        gravity = (float) ModPhysics.gravity(1D, level);
+        friction = (float) ModPhysics.dragRetention(0.98D, level);
         super.tick();
     }
 
@@ -102,9 +102,9 @@ public final class LegacyBlockParticle extends TextureSheetParticle
         int color = Minecraft.getInstance().getBlockColors().getColor(state, level, sourcePos);
         if (color != -1)
         {
-            rCol *= (float)(color >> 16 & 255) / 255.0F;
-            gCol *= (float)(color >> 8 & 255) / 255.0F;
-            bCol *= (float)(color & 255) / 255.0F;
+            rCol *=(color >> 16 & 255) / 255.0F;
+            gCol *= (color >> 8 & 255) / 255.0F;
+            bCol *= (color & 255) / 255.0F;
         }
     }
 

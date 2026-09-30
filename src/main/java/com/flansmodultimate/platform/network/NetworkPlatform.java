@@ -28,7 +28,7 @@ import java.util.List;
 /** Forge transport for the loader-neutral packets listed by {@link PacketHandler}. */
 public final class NetworkPlatform
 {
-    public static final String PROTOCOL = "16";
+    public static final String PROTOCOL = "17";
     private static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
     private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(CHANNEL_ID)
@@ -66,7 +66,7 @@ public final class NetworkPlatform
     {
         CHANNEL.messageBuilder(type, id, direction)
             .encoder((packet, buf) -> packet.encodeInto(new PacketBuffer(buf)))
-            .decoder(buf -> PacketHandler.<T>decode(type, new PacketBuffer(buf)))
+            .decoder(buf -> PacketHandler.decode(type, new PacketBuffer(buf)))
             .consumerMainThread((msg, ctxSup) -> {
                 NetworkEvent.Context ctx = ctxSup.get();
                 ctx.enqueueWork(() -> {

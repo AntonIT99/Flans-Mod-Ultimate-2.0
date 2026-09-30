@@ -99,8 +99,8 @@ public record CommonConfigSnapshot(
     List<String> digitalAmmoSupplyBlocks,
     int digitalAmmoSupplyAmount,
 
-    double gravityFactor,
-    double dragFactor,
+    List<String> dimensionGravityFactors,
+    List<String> dimensionDragFactors,
     boolean forceLegacyPlanePhysics,
     boolean forceLegacyVehiclePhysics,
     boolean enableAircraftRollSelfLeveling,
@@ -127,7 +127,7 @@ public record CommonConfigSnapshot(
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 34;
+    public static final int CURRENT_VERSION = 35;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -228,8 +228,12 @@ public record CommonConfigSnapshot(
             buf.writeUtf(block, 32767);
         buf.writeVarInt(s.digitalAmmoSupplyAmount);
 
-        buf.writeDouble(s.gravityFactor);
-        buf.writeDouble(s.dragFactor);
+        buf.writeVarInt(s.dimensionGravityFactors.size());
+        for (String line : s.dimensionGravityFactors)
+            buf.writeUtf(line, 32767);
+        buf.writeVarInt(s.dimensionDragFactors.size());
+        for (String line : s.dimensionDragFactors)
+            buf.writeUtf(line, 32767);
         buf.writeBoolean(s.forceLegacyPlanePhysics);
         buf.writeBoolean(s.forceLegacyVehiclePhysics);
         buf.writeBoolean(s.enableAircraftRollSelfLeveling);
@@ -354,8 +358,8 @@ public record CommonConfigSnapshot(
             List.copyOf(readLines(buf)),
             buf.readVarInt(),
 
-            buf.readDouble(),
-            buf.readDouble(),
+            List.copyOf(readLines(buf)),
+            List.copyOf(readLines(buf)),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),

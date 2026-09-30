@@ -1221,14 +1221,14 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     {
         Vec3 motion = getDeltaMovement();
         if (!onGround())
-            motion = motion.add(0D, -ModPhysics.gravity(9.8D / 400D), 0D);
+            motion = motion.add(0D, -ModPhysics.gravity(9.8D / 400D, level()), 0D);
 
         move(MoverType.SELF, motion);
         if (onGround())
             setDeltaMovement(motion.x * 0.5D, 0D, motion.z * 0.5D);
         else
-            setDeltaMovement(motion.multiply(ModPhysics.dragRetention(0.5D),
-                ModPhysics.dragRetention(0.98D), ModPhysics.dragRetention(0.5D)));
+            setDeltaMovement(motion.multiply(ModPhysics.dragRetention(0.5D, level()),
+                ModPhysics.dragRetention(0.98D, level()), ModPhysics.dragRetention(0.5D, level())));
     }
 
     private int ammoSlotForBarrel(int barrel)

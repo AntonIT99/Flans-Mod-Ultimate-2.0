@@ -60,9 +60,9 @@ public final class LegacyExplodeParticle extends TextureSheetParticle
         yd += 0.004D;
         move(xd, yd, zd);
 
-        xd *= ModPhysics.dragRetention(0.8999999761581421D);
-        yd *= ModPhysics.dragRetention(0.8999999761581421D);
-        zd *= ModPhysics.dragRetention(0.8999999761581421D);
+        xd *= ModPhysics.dragRetention(0.8999999761581421D, level);
+        yd *= ModPhysics.dragRetention(0.8999999761581421D, level);
+        zd *= ModPhysics.dragRetention(0.8999999761581421D, level);
 
         if (onGround)
         {

@@ -351,8 +351,6 @@
   "options.flansmodultimate.maxExplosionRadius": "Max Explosion Radius",
   "options.flansmodultimate.maxFlansParticlesPerTick": "Max Particles Per Tick",
   "options.flansmodultimate.maxPlaneSpeedKmh": "Max Plane Speed Kmh",
-  "options.flansmodultimate.gravityFactor": "Gravity Factor",
-  "options.flansmodultimate.dragFactor": "Drag Factor",
   "options.flansmodultimate.maxVehicleSpeedKmh": "Max Vehicle Speed Kmh",
   "options.flansmodultimate.maximumDriveableLodPartPixelSize": "Maximum LOD Part Pixel Size",
   "options.flansmodultimate.minimumBlastDistanceMeters": "Minimum Blast Distance Meters",

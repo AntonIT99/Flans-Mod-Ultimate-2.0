@@ -5470,12 +5470,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 {
                     double corrected = MarineDraftPhysics.verticalVelocity(velocity.y,
                         getBoundingBox().minY, surface, draft, ceiling);
-                    double drag = ModPhysics.dragRetention(0.92D);
+                    double drag = ModPhysics.dragRetention(0.92D, level());
                     return new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag);
                 }
             }
-            return velocity.add(0D, ceiling, 0D).multiply(ModPhysics.dragRetention(0.92D),
-                ModPhysics.dragRetention(0.8D), ModPhysics.dragRetention(0.92D));
+            return velocity.add(0D, ceiling, 0D).multiply(ModPhysics.dragRetention(0.92D, level()),
+                ModPhysics.dragRetention(0.8D, level()), ModPhysics.dragRetention(0.92D, level()));
         }
         return velocity.add(0D, -Math.max(0D, gravity), 0D);
     }

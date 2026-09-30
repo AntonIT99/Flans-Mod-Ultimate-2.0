@@ -13,9 +13,9 @@ public final class ProjectileDrag
     public static float factor(Entity entity, float air, float water)
     {
         if (entity.isInWater())
-            return (float) ModPhysics.dragRetention(water);
+            return (float) ModPhysics.dragRetention(water, entity.level());
         if (entity.isInLava())
-            return (float) ModPhysics.dragRetention(ShootableType.LAVA_DEFAULT_DRAG);
-        return (float) ModPhysics.dragRetention(air);
+            return (float) ModPhysics.dragRetention(ShootableType.LAVA_DEFAULT_DRAG, entity.level());
+        return (float) ModPhysics.dragRetention(air, entity.level());
     }
 }

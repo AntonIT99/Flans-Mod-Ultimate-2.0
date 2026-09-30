@@ -173,9 +173,9 @@ public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<To
             setYRot(living.getYRot());
         }
 
-        motionX *= ModPhysics.dragRetention(HORIZONTAL_DRAG);
-        motionZ *= ModPhysics.dragRetention(HORIZONTAL_DRAG);
-        setDeltaMovement(motionX, ModPhysics.gravity(DESCENT_SPEED), motionZ);
+        motionX *= ModPhysics.dragRetention(HORIZONTAL_DRAG, level());
+        motionZ *= ModPhysics.dragRetention(HORIZONTAL_DRAG, level());
+        setDeltaMovement(motionX, ModPhysics.gravity(DESCENT_SPEED, level()), motionZ);
         move(MoverType.SELF, getDeltaMovement());
 
         if (!level().isClientSide && (onGround() || isInWater()))

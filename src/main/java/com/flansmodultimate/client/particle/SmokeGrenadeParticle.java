@@ -48,13 +48,13 @@ public class SmokeGrenadeParticle extends ParticleBase
         if (age++ >= lifetime)
             remove();
         
-        yd -= ModPhysics.gravity(0.04D * gravity);
+        yd -= ModPhysics.gravity(0.04D * gravity, level);
         
         move(xd, yd, zd);
         
-        xd *= ModPhysics.dragRetention(0.99D);
-        yd *= ModPhysics.dragRetention(0.99D);
-        zd *= ModPhysics.dragRetention(0.99D);
+        xd *= ModPhysics.dragRetention(0.99D, level);
+        yd *= ModPhysics.dragRetention(0.99D, level);
+        zd *= ModPhysics.dragRetention(0.99D, level);
         
         if (isInLiquid())
             yd = 1.0D;
@@ -97,6 +97,7 @@ public class SmokeGrenadeParticle extends ParticleBase
     }
 
     @Override
+    @NotNull
     public Particle scale(float factor)
     {
         return applyScale(factor);

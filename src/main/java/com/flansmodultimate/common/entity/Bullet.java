@@ -800,7 +800,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         if (configType.isTorpedo())
             return;
 
-        double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed());
+        double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed(), level());
         float drag = ProjectileDrag.factor(this, configType.getDragInAir(), configType.getDragInWater());
         velocity = velocity.scale(drag).add(0, -gravity, 0);
         setDeltaMovement(velocity);
@@ -818,7 +818,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         }
         else
         {
-            double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed());
+            double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed(), level());
             velocity = velocity.add(0, -gravity, 0);
         }
         setDeltaMovement(velocity);

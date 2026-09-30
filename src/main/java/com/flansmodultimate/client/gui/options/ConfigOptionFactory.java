@@ -152,16 +152,14 @@ public final class ConfigOptionFactory
             return null;
 
         double min = range.getMin();
-        String key = value.getPath().get(value.getPath().size() - 1);
-        boolean physicsFactor = key.equals("gravityFactor") || key.equals("dragFactor");
-        int stepsCount = physicsFactor ? 10000 : DOUBLE_SLIDER_STEPS;
+        int stepsCount = DOUBLE_SLIDER_STEPS;
         double step = (range.getMax() - min) / stepsCount;
         if (step <= 0)
             return null;
 
         return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
             (caption, number) -> Options.genericValueLabel(caption,
-                Component.literal(String.format(Locale.ROOT, physicsFactor ? "%.3f" : "%.2f", number))),
+                Component.literal(String.format(Locale.ROOT, "%.2f", number))),
             new OptionInstance.IntRange(0, stepsCount).xmap(
                 steps -> min + steps * step,
                 number -> (int) Math.round((number - min) / step)),

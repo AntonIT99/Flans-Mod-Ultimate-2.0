@@ -249,7 +249,7 @@ public class Vehicle extends Driveable
         double descent = velocity.y;
         velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater(), verticalGravity(type));
         double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(derivedPhysics || pushed, type.getDrag());
-        velocity = velocity.multiply(ModPhysics.dragRetention(horizontalDrag), 1D, ModPhysics.dragRetention(horizontalDrag));
+        velocity = velocity.multiply(ModPhysics.dragRetention(horizontalDrag, level()), 1D, ModPhysics.dragRetention(horizontalDrag, level()));
 
         if (!ModCommonConfig.forceLegacyVehiclePhysics())
             velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
@@ -461,9 +461,11 @@ public class Vehicle extends Driveable
         double tractionFactor = physics.driveType().tractionFactor()
             * (isInWater() ? 0.35D : 1D) * Math.max(0F, traction);
         double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(
-            forwardSpeed, power, physics.massKg(), terminal, tractionFactor) * transmission;
+            forwardSpeed, power, physics.massKg(), terminal, tractionFactor,
+            ModCommonConfig.dragFactor(level())) * transmission;
         double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(
-            forwardSpeed, power, physics.massKg(), terminal, brakeFraction);
+            forwardSpeed, power, physics.massKg(), terminal, brakeFraction,
+            ModCommonConfig.dragFactor(level()));
         double newForwardSpeed = GroundPropulsionPhysics.approach(forwardSpeed, targetSpeed,
             acceleration, deceleration);
         newForwardSpeed = GroundPropulsionPhysics.applyTurningLoss(newForwardSpeed, yawDelta);
@@ -518,7 +520,7 @@ public class Vehicle extends Driveable
     private double verticalGravity(VehicleType type)
     {
         return type.isFloatOnWater() && isInWater()
-            ? 0D : ModPhysics.gravity(Math.max(0.005D, Math.min(0.08D, type.getGravity() * 0.08D)));
+            ? 0D : ModPhysics.gravity(Math.max(0.005D, Math.min(0.08D, type.getGravity() * 0.08D)), level());
     }
 
     private Vec3 applyVehicleVerticalPhysics(Vec3 velocity, VehicleType type)

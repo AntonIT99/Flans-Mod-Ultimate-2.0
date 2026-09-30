@@ -99,9 +99,9 @@ public class BlastPuffParticle extends TextureSheetParticle
 
         yd += look.buoyancy();
         move(xd, yd, zd);
-        xd *= ModPhysics.dragRetention(friction);
-        yd *= ModPhysics.dragRetention(friction);
-        zd *= ModPhysics.dragRetention(friction);
+        xd *= ModPhysics.dragRetention(friction, level);
+        yd *= ModPhysics.dragRetention(friction, level);
+        zd *= ModPhysics.dragRetention(friction, level);
         roll += spin;
 
         updateLook();

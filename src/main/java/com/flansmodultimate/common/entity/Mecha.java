@@ -219,7 +219,7 @@ public class Mecha extends Driveable
             else if (!onGround() && rocket != null && hasFuelForAddon(10F * rocketPower))
             {
                 rocketThrust = true;
-                velocity = velocity.multiply(1D, ModPhysics.dragRetention(0.95D), 1D)
+                velocity = velocity.multiply(1D, ModPhysics.dragRetention(0.95D, level()), 1D)
                     .add(0D, 0.07D * rocketPower, 0D);
                 fallDistance = 0F;
                 consumeAddonFuel(10F * rocketPower);
@@ -240,9 +240,9 @@ public class Mecha extends Driveable
         velocity = new Vec3(desired.x, velocity.y, desired.z);
 
         if (!rocketThrust && isInWater() && shouldFloat())
-            velocity = velocity.scale(ModPhysics.dragRetention(0.89D)).add(0D, 0.06D, 0D);
+            velocity = velocity.scale(ModPhysics.dragRetention(0.89D, level())).add(0D, 0.06D, 0D);
         else
-            velocity = applyGravityAndBuoyancy(velocity, ModPhysics.gravity(0.04D));
+            velocity = applyGravityAndBuoyancy(velocity, ModPhysics.gravity(0.04D, level()));
         double descent = velocity.y;
         moveWithCollisions(velocity);
         if (verticalCollision && descent < -0.55D)

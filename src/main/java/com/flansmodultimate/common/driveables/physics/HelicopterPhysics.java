@@ -87,7 +87,14 @@ public final class HelicopterPhysics
     public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance,
                             float collective, float rotorSpeed, float intactFraction)
     {
-        double gravity = ModPhysics.gravity(GRAVITY);
+        return step(velocity, up, performance, collective, rotorSpeed, intactFraction, 1D, 1D);
+    }
+
+    public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance,
+                            float collective, float rotorSpeed, float intactFraction,
+                            double gravityFactor, double dragFactor)
+    {
+        double gravity = ModPhysics.gravity(GRAVITY, gravityFactor);
         double lift = lift(performance, collective, rotorSpeed, intactFraction);
         // Collective limits translation as well as lift, for fine low-speed handling.
         double lever = horizontalSpeedFraction(collective);
@@ -114,8 +121,8 @@ public final class HelicopterPhysics
         // Increase the response rate of slow climb calibrations without changing
         // their equilibrium speed. Apply the same gain to net force and drag.
         double verticalResponse = Math.max(1D, 0.1D / verticalDrag);
-        horizontalDrag = ModPhysics.dragForce(horizontalDrag);
-        verticalDrag = ModPhysics.dragForce(verticalDrag);
+        horizontalDrag = ModPhysics.dragForce(horizontalDrag, dragFactor);
+        verticalDrag = ModPhysics.dragForce(verticalDrag, dragFactor);
         Vec3 result = new Vec3(accelerated.x / (1D + horizontalDrag),
             (velocity.y + (up.y * lift - gravity) * verticalResponse)
                 / (1D + verticalDrag * verticalResponse), accelerated.z / (1D + horizontalDrag));

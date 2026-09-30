@@ -108,7 +108,7 @@ public class ThrownGun extends AbstractArrow
                 ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG)
                 / ShootableType.AIR_DEFAULT_DRAG;
             Vec3 motion = getDeltaMovement().add(0D, vanillaGravity, 0D).scale(ratio)
-                .add(0D, -ModPhysics.gravity(vanillaGravity), 0D);
+                .add(0D, -ModPhysics.gravity(vanillaGravity, level()), 0D);
             setDeltaMovement(motion);
         }
     }
