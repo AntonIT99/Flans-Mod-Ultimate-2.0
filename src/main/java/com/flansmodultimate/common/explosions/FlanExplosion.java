@@ -286,7 +286,7 @@ public class FlanExplosion extends Explosion
             PacketHandler.sendToAllAround(new PacketFlanExplosionBlockParticles(center, stats.explosionRadius, sampleBlockBurstPositions(affectedBlockPositions)), center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.explosionRadius), level.dimension());
             PacketHandler.sendToAllAround(new PacketFlanExplosionParticles(center, smokeCount, debrisCount,
                 stats.blastRadius, stats.explosionRadius, stats.fragRadius, stats.fragIntensity,
-                stats.fragmentation().pattern(), fragmentDirection(), fieryVisuals),
+                stats.fragmentation().fragmentCount(), stats.fragmentation().pattern(), fragmentDirection(), fieryVisuals),
                 center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius), level.dimension());
         }
     }

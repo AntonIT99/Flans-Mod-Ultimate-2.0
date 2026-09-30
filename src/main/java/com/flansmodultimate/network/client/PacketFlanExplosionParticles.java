@@ -3,6 +3,7 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import com.flansmodultimate.common.explosions.FragmentationModel;
+import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketBuffer;
@@ -54,6 +55,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
     /** Start clear of the brightest part of the fireball, without jumping far into the damage envelope. */
     private static final float FRAG_START_CRATER_SHARE = 0.65F;
     private static final float FRAG_START_RADIUS_SHARE = 0.2F;
+    /** Keep the denser fragment spray fine-grained instead of firework-sized. */
+    private static final float FRAG_SPARK_SCALE = 0.5F;
 
     /** How fast the smoke column climbs, per block of crater radius. Gravity arcs it over. */
     private static final float COLUMN_RISE_PER_RADIUS = 0.08F;
@@ -67,6 +70,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
     private float explosionRadius;
     private float fragRadius;
     private float fragIntensity;
+    private double effectiveFragments;
     private FragmentationModel.Pattern fragPattern = FragmentationModel.Pattern.RADIAL;
     private Vec3 fragForward = Vec3.ZERO;
     /** Drawn as a fire explosion: the fireball burns orange throughout rather than cooling to grey. */
@@ -74,7 +78,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
 
     public PacketFlanExplosionParticles(Vec3 position, int numSmoke, int numDebris, float blastRadius,
                                         float explosionRadius, float fragRadius, float fragIntensity,
-                                        FragmentationModel.Pattern fragPattern, Vec3 fragForward, boolean fiery)
+                                        double effectiveFragments, FragmentationModel.Pattern fragPattern,
+                                        Vec3 fragForward, boolean fiery)
     {
         this.position = position;
         this.numSmoke = numSmoke;
@@ -83,6 +88,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
         this.explosionRadius = explosionRadius;
         this.fragRadius = fragRadius;
         this.fragIntensity = fragIntensity;
+        this.effectiveFragments = effectiveFragments;
         this.fragPattern = fragPattern;
         this.fragForward = fragForward;
         this.fiery = fiery;
@@ -100,6 +106,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
         data.writeFloat(explosionRadius);
         data.writeFloat(fragRadius);
         data.writeFloat(fragIntensity);
+        data.writeDouble(effectiveFragments);
         data.writeInt(fragPattern.ordinal());
         data.writeDouble(fragForward.x);
         data.writeDouble(fragForward.y);
@@ -117,6 +124,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
         explosionRadius = data.readFloat();
         fragRadius = data.readFloat();
         fragIntensity = data.readFloat();
+        effectiveFragments = data.readDouble();
         int patternId = data.readInt();
         fragPattern = patternId >= 0 && patternId < FragmentationModel.Pattern.values().length
             ? FragmentationModel.Pattern.values()[patternId] : FragmentationModel.Pattern.RADIAL;
@@ -327,7 +335,8 @@ public class PacketFlanExplosionParticles implements IClientPacket
      */
     private void spawnFragmentation(Level level, boolean groundBurst)
     {
-        int count = ExplosionVisuals.fragSparkCount(fragRadius, fragIntensity);
+        int count = ExplosionVisuals.fragSparkCount(fragRadius, fragIntensity,
+            effectiveFragments, ModClientConfig.get().fragSparkMultiplier, ModClientConfig.get().maxFragSparks);
         if (count <= 0)
             return;
 
@@ -350,7 +359,7 @@ public class PacketFlanExplosionParticles implements IClientPacket
             ClientHooks.RENDER.spawnParticle(FlanParticles.FIREWORKS_SPARK,
                 origin.x, origin.y, origin.z,
                 direction.x * speed * jitter, direction.y * speed * jitter,
-                direction.z * speed * jitter, 1.0F, lifetimeScale);
+                direction.z * speed * jitter, FRAG_SPARK_SCALE, lifetimeScale);
         }
     }
 

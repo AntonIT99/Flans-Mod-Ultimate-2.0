@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
+import com.flansmodultimate.client.debug.DriveableArmorDebugHud;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.teams.TeamsClientState;
@@ -118,6 +119,7 @@ public final class ClientHudOverlays
         registrar.aboveCameraOverlays("flash_bang", FLASH_BANG);
         registrar.aboveArmorLevel("damage_absorption", DAMAGE_ABSORPTION);
         registrar.aboveHotbar("hud", HUD);
+        registrar.aboveHotbar("debug_armor", (g, partialTick, sw, sh) -> DriveableArmorDebugHud.render(g, sw, sh));
     }
 
     public static final HudOverlayPlatform.HudLayer SCOPE = (g, partialTick, sw, sh) -> {

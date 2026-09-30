@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.driveables.armor;
 
+import com.flansmodultimate.common.driveables.DriveableCollisionProfile;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 
 import net.minecraft.util.Mth;
@@ -39,6 +40,16 @@ public final class ResolvedVehicleArmor
     public boolean isConfigured()
     {
         return !source.isEmpty();
+    }
+
+    /** Whether this face inherits an authored plate, including an explicit zero-thickness plate. */
+    public boolean isPlateConfigured(EnumDriveablePart part, EnumArmorFacing facing)
+    {
+        if (part == null || facing == null || !plates.containsKey(part))
+            return false;
+        return source.partOverrides().containsKey(part)
+            || DriveableCollisionProfile.isTurretMountedPart(part) && source.turret().containsKey(facing)
+            || source.hull().containsKey(facing);
     }
 
     public ResolvedArmorPlate plate(EnumDriveablePart part, EnumArmorFacing facing)

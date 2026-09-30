@@ -108,9 +108,9 @@ public final class ExplosionVisuals
      * the ~3.5 block fragmentation radius of a 20 mm round; grenades can still show their spray.
      */
     public static final float MIN_FRAG_SPRAY_RADIUS = 4.0F;
-    /** Sparks per block of fragmentation radius, before the intensity term. */
-    private static final float SPARKS_PER_FRAG_RADIUS = 0.8F;
-    private static final int MAX_FRAG_SPARKS = 64;
+    /** Visible sparks per square block of fragmentation reach, before intensity. */
+    private static final float SPARKS_PER_FRAG_AREA = 1.0F;
+    public static final int DEFAULT_MAX_FRAG_SPARKS = 512;
 
     /**
      * Below this crater radius nothing is thrown high enough to leave a column standing. Set above
@@ -223,14 +223,19 @@ public final class ExplosionVisuals
      * as well as the radius, so a thin-walled blast charge sprays far less than a frag shell
      * reaching the same distance.
      */
-    public static int fragSparkCount(float fragRadius, float fragIntensity)
+    public static int fragSparkCount(float fragRadius, float fragIntensity, double effectiveFragments,
+                                     double sparkMultiplier, int maxFragSparks)
     {
         if (!Float.isFinite(fragRadius) || fragRadius < MIN_FRAG_SPRAY_RADIUS
-            || !Float.isFinite(fragIntensity) || fragIntensity <= 0F)
+            || !Float.isFinite(fragIntensity) || fragIntensity <= 0F
+            || !Double.isFinite(effectiveFragments) || effectiveFragments < 1D
+            || !Double.isFinite(sparkMultiplier) || sparkMultiplier <= 0D || maxFragSparks <= 0)
             return 0;
 
-        float sparks = fragRadius * SPARKS_PER_FRAG_RADIUS * Mth.sqrt(fragIntensity);
-        return Mth.clamp(Mth.ceil(sparks), 1, MAX_FRAG_SPARKS);
+        double sparks = (double) fragRadius * fragRadius * SPARKS_PER_FRAG_AREA * Math.sqrt(fragIntensity);
+        double availableFragments = Math.floor(effectiveFragments);
+        double scaledSparks = Math.ceil(Math.min(Math.ceil(sparks), availableFragments) * sparkMultiplier);
+        return (int) Math.min(Math.min(scaledSparks, availableFragments), maxFragSparks);
     }
 
     /** Sources of the rising smoke column, or zero when the crater is too small to raise one. */

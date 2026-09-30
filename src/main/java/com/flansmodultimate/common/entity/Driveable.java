@@ -957,6 +957,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             ? ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
         initialize(type, savedSource);
         driveableData = new DriveableData(type, tag, level().registryAccess());
+        destroyedParts.clear();
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            if (part.isDestroyed())
+                destroyedParts.add(part.getType());
+        }
         if (!level().isClientSide)
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
         weaponInventoryFingerprint = computeWeaponInventoryFingerprint();

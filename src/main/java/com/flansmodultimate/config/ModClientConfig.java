@@ -72,6 +72,8 @@ public final class ModClientConfig
     public final double fullParticleDensityShare;
     public final double distantParticleDensity;
     public final int maxFlansParticlesPerTick;
+    public final int maxFragSparks;
+    public final double fragSparkMultiplier;
 
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
@@ -167,6 +169,8 @@ public final class ModClientConfig
     private static final Supplier<Double> FULL_PARTICLE_DENSITY_SHARE;
     private static final Supplier<Double> DISTANT_PARTICLE_DENSITY;
     private static final Supplier<Integer> MAX_FLANS_PARTICLES_PER_TICK;
+    private static final Supplier<Integer> MAX_FRAG_SPARKS;
+    private static final Supplier<Double> FRAG_SPARK_MULTIPLIER;
 
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -411,7 +415,13 @@ public final class ModClientConfig
             .defineInRange("distantParticleDensity", 0.25D, 0D, 1D);
         MAX_FLANS_PARTICLES_PER_TICK = builder
             .comment("Maximum particles Flan's Mod may create in one client tick. Nearby particles are considered first by normal packet and entity processing order.")
-            .defineInRange("maxFlansParticlesPerTick", 512, 16, 100000);
+            .defineInRange("maxFlansParticlesPerTick", 2048, 16, 100000);
+        MAX_FRAG_SPARKS = builder
+            .comment("Maximum fragmentation sparks from one explosion. The overall maxFlansParticlesPerTick budget can limit the visible result further.")
+            .defineInRange("maxFragSparks", 512, 0, 100000);
+        FRAG_SPARK_MULTIPLIER = builder
+            .comment("Multiplier applied to the fragmentation spark count after limiting it to the burst's effective fragments. The result still cannot exceed the effective fragment count or maxFragSparks.")
+            .defineInRange("fragSparkMultiplier", 0.25D, 0D, 4D);
         builder.pop();
 
         builder.push("Input Settings");
@@ -571,6 +581,8 @@ public final class ModClientConfig
         fullParticleDensityShare = FULL_PARTICLE_DENSITY_SHARE.get();
         distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();
         maxFlansParticlesPerTick = MAX_FLANS_PARTICLES_PER_TICK.get();
+        maxFragSparks = MAX_FRAG_SPARKS.get();
+        fragSparkMultiplier = FRAG_SPARK_MULTIPLIER.get();
 
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();
