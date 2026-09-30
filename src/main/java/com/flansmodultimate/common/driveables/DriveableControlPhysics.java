@@ -8,6 +8,13 @@ public final class DriveableControlPhysics
 
     private DriveableControlPhysics() {}
 
+    /** Steering follows rolling direction, even with a neutral throttle or an inactive engine. */
+    public static double wheeledSteeringVelocityScale(double signedSpeed)
+    {
+        // Match the legacy full-throttle steering scale at its nominal 0.32 speed factor.
+        return Double.isFinite(signedSpeed) ? signedSpeed * (0.1D / 0.32D) : 0D;
+    }
+
     /**
      * Legacy throttle is a normalized control value. MaxThrottle and
      * MaxNegativeThrottle describe propulsion, not the range of this value.

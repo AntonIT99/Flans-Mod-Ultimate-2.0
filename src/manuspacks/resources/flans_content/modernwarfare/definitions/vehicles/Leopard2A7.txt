@@ -92,8 +92,8 @@ thermalSight true
 ThermalGuis 3 4
 
 // Sounds
-StartSound leodieselstart
-StartSoundLength 80
+StartEngineSound leodieselstart
+StartEngineSoundLength 80
 EngineSound leodieselenginestronk
 EngineSoundLength 24
 ShootSoundPrimary shoot_tnk_120mm

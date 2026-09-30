@@ -6514,13 +6514,18 @@
 
     "MIM-23 HAWK Launcher": {
         "properties": {
-            "RealMassKg": 5600,
+            "RealMassKg": 12900,
+            "RealEnginePowerHp": 202,
+            "RealMaxSpeedKmh": 64,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 16,
             "ShootDelayPrimarySeconds": 5,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
+            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },

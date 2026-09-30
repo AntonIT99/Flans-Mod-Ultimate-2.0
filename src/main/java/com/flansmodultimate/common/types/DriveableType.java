@@ -2087,10 +2087,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Continuous sound used by a running engine while the throttle is neutral. */
     public String getEngineIdleLoopSound()
     {
-        return StringUtils.firstNonBlank(idleSound, startSound);
+        return StringUtils.firstNonBlank(idleSound, startSound, engineSound);
     }
 
-    /** Pitch range for the neutral-throttle loop. Vehicles keep their idle loop at normal pitch. */
+    /** Legacy pitch range for dedicated idle sounds; engine fallbacks use the engine pitch curve. */
     public float getEngineIdleLoopPitchRange()
     {
         return 0F;
@@ -2098,7 +2098,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     public boolean usesEngineSoundAsIdleLoop()
     {
-        return false;
+        return StringUtils.isBlank(idleSound) && StringUtils.isBlank(startSound);
     }
 
     public EngineSoundPitch getEngineSoundPitchCurve(EngineSoundPitch defaults)

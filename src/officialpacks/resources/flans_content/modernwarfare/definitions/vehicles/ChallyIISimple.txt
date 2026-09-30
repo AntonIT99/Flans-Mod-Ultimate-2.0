@@ -93,8 +93,8 @@ Passenger 1 0 33 0 turret -360 360 -15 40 m60 PassengerGun1
 RotatedPassengerOffset 1 -13 0 -7
 
 // Sounds and particles
-StartSound ChallengerIdle
-StartSoundLength 40
+StartEngineSound ChallengerIdle
+StartEngineSound 40
 EngineSound ChallengerRun
 EngineSoundLength 40
 ShootSoundPrimary 90mm

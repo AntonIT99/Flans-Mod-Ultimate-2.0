@@ -22,6 +22,27 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class DriveableTypeRealWorldPhysicsTest
 {
+    @Test
+    void officialMim23HasAnOperableTrackedGroundProfile() throws java.io.IOException
+    {
+        // Isolate driving directives: crafting and sound registration require Minecraft bootstrap.
+        VehicleType type = vehicle(java.nio.file.Files.readAllLines(java.nio.file.Path.of(
+            "src/officialpacks/resources/flans_content/modernwarfare/definitions/vehicles/MIM23.txt"))
+            .stream().filter(line -> line.matches(
+                "^(Real\\w+|DriveType|MaxThrottle|MaxNegativeThrottle|TurnLeftSpeed|TurnRightSpeed|Tank|Driver) .+"))
+            .toArray(String[]::new));
+
+        assertTrue(type.getResolvedPhysics().hasGroundPropulsion());
+        assertTrue(type.isTank());
+        assertEquals(12900F, type.getRealWorldSpec().massKg());
+        assertEquals(64D / 72D, type.getResolvedPhysics().maxSpeedBlocksPerTick(1D), 1.0E-9D);
+        assertEquals(16D / 72D, type.getResolvedPhysics().reverseSpeedBlocksPerTick(1D), 1.0E-9D);
+        assertTrue(type.getMaxThrottle() > 0F);
+        assertTrue(type.getMaxNegativeThrottle() > 0F);
+        assertTrue(type.getTurnLeftModifier() > 0F);
+        assertTrue(type.getTurnRightModifier() > 0F);
+    }
+
     // ------------------------------------------------------------- legacy
 
     @Test

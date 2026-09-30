@@ -9,6 +9,16 @@ class DriveableControlPhysicsTest
     private static final float EPSILON = 1.0E-6F;
 
     @Test
+    void rollingWheelsSteerInTheirTravelDirectionWithoutPropulsion()
+    {
+        assertEquals(0.1D, DriveableControlPhysics.wheeledSteeringVelocityScale(0.32D), EPSILON);
+        assertEquals(-0.1D, DriveableControlPhysics.wheeledSteeringVelocityScale(-0.32D), EPSILON);
+        assertTrue(DriveableControlPhysics.wheeledSteeringVelocityScale(0.001D) > 0D);
+        assertEquals(0D, DriveableControlPhysics.wheeledSteeringVelocityScale(0D));
+        assertEquals(0D, DriveableControlPhysics.wheeledSteeringVelocityScale(Double.NaN));
+    }
+
+    @Test
     void passengerAircraftFallbackKeepsOnlyFlightAxes()
     {
         int flight = DriveableInput.FORWARD | DriveableInput.LEFT | DriveableInput.ASCEND

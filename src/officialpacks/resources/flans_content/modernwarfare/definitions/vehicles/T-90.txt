@@ -96,8 +96,8 @@ RotatedPassengerOffset 1 2 0 -14
 // Sounds and particles
 StartSound ChallengerIdle
 StartSoundLength 40
-EngineSound ChallengerRun
-EngineSoundLength 40
+StartEngineSound ChallengerRun
+StartEngineSound 40
 ShootSoundPrimary 90mm
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.4 0 0

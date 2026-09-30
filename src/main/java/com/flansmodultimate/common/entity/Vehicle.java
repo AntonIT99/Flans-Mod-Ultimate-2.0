@@ -191,11 +191,16 @@ public class Vehicle extends Driveable
             directionalThrottle = type.getMaxNegativeThrottle();
         }
 
-        double throttleModifier = tracked ? 1D : legacyThrottleCurve(effectiveThrottle);
-        double velocityScale = pushed ? 0.03D * Math.abs(effectiveThrottle)
-            : (tracked ? 0.04D : 0.1D) * throttleModifier * Math.max(0F, directionalThrottle) * getEngineSpeed();
+        Vec3 steeringForward = localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
+        double forwardLength = Math.hypot(steeringForward.x, steeringForward.z);
+        Vec3 steeringVelocity = getDeltaMovement();
+        double signedSpeed = forwardLength > 1.0E-8D
+            ? (steeringVelocity.x * steeringForward.x + steeringVelocity.z * steeringForward.z) / forwardLength : 0D;
+        double velocityScale = tracked
+            ? (isEngineActive() ? 0.04D * Math.max(0F, directionalThrottle) * getEngineSpeed() : 0D)
+            : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
         double steeringScale = 0.1D * Math.max(0F, steeringModifier);
-        float yawDelta = isEngineActive() || pushed ? (float) Math.toDegrees(turnControl * steeringScale * velocityScale) : 0F;
+        float yawDelta = (float) Math.toDegrees(turnControl * steeringScale * velocityScale);
         if (!isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
         boolean supported = onGround() || hasWheelContact();
@@ -673,13 +678,6 @@ public class Vehicle extends Driveable
     private static float axis(int mask, int positive, int negative)
     {
         return (DriveableInput.isDown(mask, positive) ? 1F : 0F) - (DriveableInput.isDown(mask, negative) ? 1F : 0F);
-    }
-
-    private static double legacyThrottleCurve(float throttle)
-    {
-        double absolute = Math.abs(throttle);
-        return (2.4D * absolute - 2.5D * throttle * throttle + 0.5D * absolute * absolute * absolute)
-            * Math.signum(throttle);
     }
 
     private static float approach(float value, float target, float amount)

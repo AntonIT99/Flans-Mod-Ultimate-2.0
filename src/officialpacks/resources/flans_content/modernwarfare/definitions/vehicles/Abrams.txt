@@ -102,8 +102,8 @@ YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2
 PitchSoundLength 20
-StartSound M1A2Start
-StartSoundLength 300
+StartEngineSound M1A2Start
+StartEngineSound 300
 EngineSound M1A2_Run
 EngineSoundLength 40
 ShootSoundPrimary 90mm

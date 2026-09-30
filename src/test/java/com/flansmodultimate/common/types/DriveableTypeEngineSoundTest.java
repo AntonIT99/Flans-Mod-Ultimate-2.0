@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DriveableTypeEngineSoundTest
 {
@@ -75,10 +75,12 @@ class DriveableTypeEngineSoundTest
         type.startEngineSound = "ignition";
         type.startEngineSoundLength = 17;
         type.idleSound = "proper_idle";
+        type.engineSound = "running";
 
         assertEquals("ignition", type.getEngineStartupSound());
         assertEquals(17, type.getEngineStartupSoundLength());
         assertEquals("proper_idle", type.getEngineIdleLoopSound());
+        assertFalse(type.usesEngineSoundAsIdleLoop());
         assertEquals(0F, type.getEngineIdleLoopPitchRange());
     }
 
@@ -87,8 +89,27 @@ class DriveableTypeEngineSoundTest
     {
         VehicleType type = new VehicleType();
         type.startSound = "legacy_idle";
+        type.engineSound = "running";
 
         assertEquals("legacy_idle", type.getEngineIdleLoopSound());
+        assertFalse(type.usesEngineSoundAsIdleLoop());
+    }
+
+    @Test
+    void vehicleWithOnlyStartupAndEngineSoundsLoopsEngineAtBasePitchWhileIdle()
+    {
+        VehicleType type = new VehicleType();
+        type.startEngineSound = "ignition";
+        type.engineSound = "running";
+        type.startSound = " ";
+        type.idleSound = "";
+        type.engineSoundPitchBase = 0.65F;
+
+        assertEquals("ignition", type.getEngineStartupSound());
+        assertEquals("running", type.getEngineIdleLoopSound());
+        assertTrue(type.usesEngineSoundAsIdleLoop());
+        assertEquals(0.65F, com.flansmodultimate.common.driveables.DriveableControlPhysics.engineSoundPitch(
+            0F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS), 1F));
     }
 
     @Test
