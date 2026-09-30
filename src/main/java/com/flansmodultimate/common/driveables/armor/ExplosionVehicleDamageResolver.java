@@ -8,6 +8,7 @@ import net.minecraft.util.Mth;
 public final class ExplosionVehicleDamageResolver
 {
     private static final double STRUCTURAL_BLAST_KNEE_KG = 5D;
+    private static final double STRUCTURAL_BLAST_GAIN_EXPONENT = 0.75D;
     private static final double MAX_STRUCTURAL_BLAST_GAIN = 5D;
 
     private ExplosionVehicleDamageResolver() {}
@@ -34,8 +35,7 @@ public final class ExplosionVehicleDamageResolver
             || blastRadiusMeters <= 0D)
             return 1F;
 
-        double chargeGain = Mth.clamp(Math.sqrt(explosiveMassKg / STRUCTURAL_BLAST_KNEE_KG),
-            1D, MAX_STRUCTURAL_BLAST_GAIN);
+        double chargeGain = Mth.clamp(Math.pow(explosiveMassKg / STRUCTURAL_BLAST_KNEE_KG, STRUCTURAL_BLAST_GAIN_EXPONENT), 1D, MAX_STRUCTURAL_BLAST_GAIN);
         double proximity = Mth.clamp(1D - Math.max(0D, distanceMeters) / blastRadiusMeters, 0D, 1D);
         double proximitySquared = proximity * proximity;
         return (float) (1D + (chargeGain - 1D) * proximitySquared * proximitySquared);
