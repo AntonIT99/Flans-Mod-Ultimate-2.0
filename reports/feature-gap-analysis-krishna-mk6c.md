@@ -2,6 +2,11 @@
 
 Date: 2026-09-10. Direction is strictly reference → target. Target-only functionality, refactors and modernisations are out of scope and are not reported.
 
+Historical source notice: this report analyzes the now-superseded Krishna Mk6C fork.
+Its findings remain tied to that source and have not been revalidated against the newer
+`C:\Users\alpha\Documents\Minecraft-Development\flans-mod-labjac-edition-ganesha-mk1a-1.7.10`
+(Labjac Edition Ganesha Mk1A).
+
 - Reference: `C:/Users/alpha/Documents/Minecraft-Development/Flan's Mod Aryan Indian Edition Krishna Mk6C` — an extracted/decompiled 1.7.10 mod jar (`mcmod.info`: modid `flansmod`, "Flan's LabCat Mod ... fuzed with clowder and HBM NTM"). 2107 `.java` files.
 - Target: `C:/Users/alpha/Documents/Minecraft-Development/Flans-Mod-Ultimate-2.0`, branch `master`, working tree at commit `08494f8a` (Fix hitmarkers). 525 `.java` files under `../src/main/java/com/flansmodultimate`.
 - Result: **36 MISSING, 8 PARTIAL, 3 UNCERTAIN**. These counts describe the findings below; they are not a measure of port completeness.
