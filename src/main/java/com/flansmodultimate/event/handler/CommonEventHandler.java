@@ -36,6 +36,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.types.AttachmentType;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModApocalypseConfig;
@@ -44,6 +45,7 @@ import com.flansmodultimate.config.ModCommonConfigSync;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketKillMessage;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.world.LootTablePlatform;
 import lombok.AccessLevel;
@@ -63,6 +65,7 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
@@ -420,7 +423,27 @@ public final class CommonEventHandler
             return false;
 
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1F, 0.8F + player.getRandom().nextFloat() * 0.4F);
+        playMeleeImpactSound(source, true);
         return true;
+    }
+
+    /**
+     * Plays the attacking weapon's {@code MeleeHitSound} when its melee swing lands, or its {@code ShieldHitSound}
+     * when a shield stops it. Covers vanilla swings and custom melee paths alike.
+     */
+    public static void playMeleeImpactSound(DamageSource source, boolean blocked)
+    {
+        if (!isMeleeDamage(source) || !(source.getEntity() instanceof LivingEntity attacker) || source.getDirectEntity() != attacker)
+            return;
+
+        ItemStack stack = attacker.getMainHandItem();
+        if (!(stack.getItem() instanceof GunItem gunItem) || gunItem.getConfigType().isPoweredOff(stack))
+            return;
+
+        GunType type = gunItem.getConfigType();
+        String sound = blocked ? type.getShieldHitSound() : type.getMeleeHitSound();
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(attacker, type.getMeleeSoundRange(), sound, true);
     }
 
     /**
@@ -464,6 +487,7 @@ public final class CommonEventHandler
         if (entity.level().isClientSide)
             return;
 
+        playMeleeImpactSound(source, false);
         EnchantmentModule.applyOffHandWeaponDamage(damage);
         EnchantmentModule.applyJuggernaut(damage);
 

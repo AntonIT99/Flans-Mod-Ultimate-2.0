@@ -27,6 +27,7 @@ import com.flansmodultimate.network.server.PacketDriveableInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunSecondaryMode;
+import com.flansmodultimate.network.server.PacketGunToggle;
 import com.flansmodultimate.network.server.PacketGunVariableZoom;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.flansmodultimate.network.server.PacketTeamsAction;
@@ -71,6 +72,7 @@ public final class KeyInputHandler
     private static final KeyMapping lookAtGunKey = key("look_at_gun", InputConstants.KEY_M, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping preferredAmmoKey = key("preferred_ammo", InputConstants.KEY_LBRACKET, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping secondaryModeKey = key("secondary_mode", InputConstants.KEY_K, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping toggleKey = key("toggle", InputConstants.KEY_G, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping increaseZoomKey = key("increase_zoom", InputConstants.KEY_UP, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping decreaseZoomKey = key("decrease_zoom", InputConstants.KEY_DOWN, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
     private static final KeyMapping debugKey = new KeyMapping("key." + FlansMod.MOD_ID + ".debug", KeyConflictContext.UNIVERSAL, InputConstants.Type.KEYSYM, InputConstants.KEY_F10, CATEGORY_GENERAL);
@@ -129,7 +131,7 @@ public final class KeyInputHandler
      * a driveable bind without either losing anything.
      */
     private static final List<KeyMapping> ON_FOOT_BINDS = List.of(reloadKey, fireModeKey, lookAtGunKey,
-        preferredAmmoKey, secondaryModeKey, increaseZoomKey, decreaseZoomKey);
+        preferredAmmoKey, secondaryModeKey, toggleKey, increaseZoomKey, decreaseZoomKey);
 
     private static final List<KeyMapping> DRIVEABLE_BINDS = List.of(driveableInventoryKey, driveablePlayerInventoryKey,
         primaryKey, primaryAlternativeKey, secondaryKey, secondaryAlternativeKey, changeSeatKey, doorKey, engineKey, flareKey,
@@ -192,6 +194,7 @@ public final class KeyInputHandler
         event.register(lookAtGunKey);
         event.register(preferredAmmoKey);
         event.register(secondaryModeKey);
+        event.register(toggleKey);
         event.register(increaseZoomKey);
         event.register(decreaseZoomKey);
         event.register(debugKey);
@@ -386,6 +389,11 @@ public final class KeyInputHandler
                 if (secondaryModeKey.consumeClick())
                 {
                     doToggleSecondaryMode();
+                    return;
+                }
+                if (toggleKey.consumeClick())
+                {
+                    doToggle();
                     return;
                 }
                 if (increaseZoomKey.consumeClick())
@@ -689,6 +697,15 @@ public final class KeyInputHandler
             (gunItem, stack) -> gunItem.getConfigType().canToggleSecondaryFire(stack));
         if (hand != null && PlayerData.getInstance(player).getShootTime(hand) <= 0F)
             PacketHandler.sendToServer(new PacketGunSecondaryMode(hand));
+    }
+
+    private static void doToggle()
+    {
+        LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
+        InteractionHand hand = findGunHand(player,
+            (gunItem, stack) -> gunItem.getConfigType().canToggle(stack));
+        if (hand != null && PlayerData.getInstance(player).getShootTime(hand) <= 0F)
+            PacketHandler.sendToServer(new PacketGunToggle(hand));
     }
 
     private static void doChangeVariableZoom(boolean increase)

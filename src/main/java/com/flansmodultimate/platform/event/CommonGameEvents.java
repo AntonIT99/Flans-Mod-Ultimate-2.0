@@ -8,6 +8,7 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
+import net.minecraftforge.event.entity.living.ShieldBlockEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -63,6 +64,14 @@ public final class CommonGameEvents
     {
         if (CommonEventHandler.shouldCancelIncomingDamage(event.getEntity(), event.getSource(), event.getAmount()))
             event.setCanceled(true);
+    }
+
+    /** A vanilla shield stopped a hit: lets a Flan's melee weapon play its ShieldHitSound */
+    @SubscribeEvent
+    public static void onShieldBlock(ShieldBlockEvent event)
+    {
+        if (!event.getEntity().level().isClientSide)
+            CommonEventHandler.playMeleeImpactSound(event.getDamageSource(), true);
     }
 
     /** Forge fires this after shields and attack cooldown, before armor; 1.21.1 uses a mixin at that point. */

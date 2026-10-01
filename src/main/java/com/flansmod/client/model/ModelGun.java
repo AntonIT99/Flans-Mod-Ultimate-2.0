@@ -29,6 +29,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** Static models with no animation */
     protected ModelRendererTurbo[] gunModel = new ModelRendererTurbo[0];
     protected ModelRendererTurbo[] backpackModel = new ModelRendererTurbo[0]; //For flamethrowers and such like. Rendered on the player's back
+    /** Static parts only rendered while the weapon is switched on, such as a lightsaber blade or an integrated laser */
+    protected ModelRendererTurbo[] toggleModel = new ModelRendererTurbo[0];
 
     /** These models appear when no attachment exists */
     protected ModelRendererTurbo[] defaultBarrelModel = new ModelRendererTurbo[0];
@@ -400,6 +402,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     {
         flip(gunModel);
         flip(backpackModel);
+        flip(toggleModel);
         flip(defaultBarrelModel);
         flip(defaultScopeModel);
         flip(defaultStockModel);
@@ -443,6 +446,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     {
         translate(gunModel, x, y, z);
         translate(backpackModel, x, y, z);
+        translate(toggleModel, x, y, z);
         translate(defaultBarrelModel, x, y, z);
         translate(defaultScopeModel, x, y, z);
         translate(defaultStockModel, x, y, z);

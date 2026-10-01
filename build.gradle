@@ -171,6 +171,15 @@ ext.registerFmuModule = { Map module ->
         }
     }
 
+    // Pack classes may call Minecraft code directly, so ship every module in SRG names like the mod jar.
+    String jarTaskName = module.jarTask.toString()
+    reobf.create(jarTaskName) {
+        libraries.from(source.compileClasspath)
+    }
+    tasks.named(jarTaskName) { finalizedBy "reobf${jarTaskName.capitalize()}" }
+    // MixinGradle would otherwise stamp the main mod's MixinConfigs onto every reobfuscated jar.
+    tasks.matching { it.name == "addMixinsTo${jarTaskName.capitalize()}" }.configureEach { enabled = false }
+
     if (module.javaCompileJvmArgs) {
         tasks.named(source.compileJavaTaskName, JavaCompile) {
             options.fork = true

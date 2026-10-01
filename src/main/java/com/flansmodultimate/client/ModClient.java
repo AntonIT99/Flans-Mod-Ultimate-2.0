@@ -565,7 +565,7 @@ public class ModClient
 
         GunType gunType = itemGun.getConfigType();
         AttachmentType grip = gunType.getGrip(stack);
-        if (grip != null && grip.isFlashlight())
+        if (grip != null && grip.isFlashlight() && gunType.isAttachmentActive(stack, grip))
             return grip;
 
         return null;

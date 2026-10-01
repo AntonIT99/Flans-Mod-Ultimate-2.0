@@ -68,6 +68,8 @@ public final class TooltipKeys
     public static final String MOVE_SPEED = "tooltip.flansmodultimate.move_speed";
     public static final String MUZZLE_VELOCITY = "tooltip.flansmodultimate.muzzle_velocity";
     public static final String THROW_SPEED = "tooltip.flansmodultimate.throw_speed";
+    public static final String TOGGLED_OFF = "tooltip.flansmodultimate.toggled_off";
+    public static final String TOGGLED_ON = "tooltip.flansmodultimate.toggled_on";
     public static final String OPERATOR_STICK_CHANGE_MODE = "tooltip.flansmodultimate.operator_stick.change_mode";
     public static final String OPERATOR_STICK_MODE = "tooltip.flansmodultimate.operator_stick.mode";
     public static final String OPERATOR_STICK_MODE_CONNECT = "tooltip.flansmodultimate.operator_stick.mode.connect";

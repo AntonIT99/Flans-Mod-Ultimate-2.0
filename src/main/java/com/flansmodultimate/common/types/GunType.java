@@ -448,6 +448,17 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected String idleSound;
+    /**
+     * If true, the toggle key powers the weapon itself on and off (lightsabers, powered tools).
+     * While powered off it cannot shoot or melee and its idle sound stops
+     */
+    @Getter
+    protected boolean toggleable;
+    /**
+     * Sounds played when the toggle key switches the weapon or its attachments on or off
+     */
+    protected String toggleOnSound;
+    protected String toggleOffSound;
 
     //Sound Modifiers
     /**
@@ -519,6 +530,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected String meleeSound;
+    /**
+     * The sound to play when a melee swing with this weapon damages its target
+     */
+    @Getter
+    protected String meleeHitSound;
+    /**
+     * The sound to play when a melee swing with this weapon is stopped by a shield or a held item
+     */
+    @Getter
+    protected String shieldHitSound;
     /**
      * The time delay between custom melee attacks
      */
@@ -807,6 +828,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         forceAimPose = readValue("ForceAimPose", forceAimPose, file);
         mirrorInLeftHand = readValue("MirrorInLeftHand", mirrorInLeftHand, file);
         usableByPlayers = readValue("UsableByPlayers", usableByPlayers, file);
+        toggleable = readValue("Toggleable", toggleable, file);
         usableByMechas = readValue("UsableByMechas", usableByMechas, file);
         standBackDist = readValue("StandBackDistance", standBackDist, file);
         topViewLimit = readValue("TopViewLimit", topViewLimit, file);
@@ -869,7 +891,11 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         clickSoundOnEmptyRepeated = readSound("EmptyClickSoundRepeated", clickSoundOnEmptyRepeated, file);
         modeSwitchSound = readSound("ModeSwitchSound", modeSwitchSound, file);
         idleSound = readSound("IdleSound", idleSound, file);
+        toggleOnSound = readSound("ToggleOnSound", toggleOnSound, file);
+        toggleOffSound = readSound("ToggleOffSound", toggleOffSound, file);
         meleeSound = readSound("MeleeSound", meleeSound, file);
+        meleeHitSound = readSound("MeleeHitSound", meleeHitSound, file);
+        shieldHitSound = readSound("ShieldHitSound", shieldHitSound, file);
 
         //Looping sounds
         warmupSound = readSound("WarmupSound", warmupSound, file);
@@ -1495,6 +1521,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public float getMeleeDamage(ItemStack stack, boolean driveable)
     {
+        if (isPoweredOff(stack))
+            return 0F;
+
         float stackMeleeDamage = meleeDamage;
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
@@ -1907,6 +1936,73 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     {
         AttachmentType grip = getGrip(stack);
         return grip != null ? grip.toggleSound : null;
+    }
+
+    /**
+     * Whether the toggle key does anything for this stack: the weapon itself or one of its attachments is toggleable
+     */
+    public boolean canToggle(ItemStack stack)
+    {
+        if (toggleable)
+            return true;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if (attachment.isToggleable())
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Toggle state shared by the weapon and all its toggleable attachments. Stacks without the tag are on
+     */
+    public boolean isToggledOn(@Nullable ItemStack stack)
+    {
+        return stack == null || !ItemStackData.copy(stack).getBoolean(GunItem.NBT_TOGGLED_OFF);
+    }
+
+    public void setToggledOn(ItemStack stack, boolean on)
+    {
+        ItemStackData.update(stack, tag -> {
+            if (on)
+                tag.remove(GunItem.NBT_TOGGLED_OFF);
+            else
+                tag.putBoolean(GunItem.NBT_TOGGLED_OFF, true);
+        });
+    }
+
+    /**
+     * True when the weapon itself is toggleable and switched off, which disables shooting, melee and its idle sound
+     */
+    public boolean isPoweredOff(@Nullable ItemStack stack)
+    {
+        return toggleable && !isToggledOn(stack);
+    }
+
+    /**
+     * Whether a toggleable attachment on this stack is currently switched on
+     */
+    public boolean isAttachmentActive(ItemStack stack, @Nullable AttachmentType attachment)
+    {
+        return attachment != null && (!attachment.isToggleable() || isToggledOn(stack));
+    }
+
+    public String getToggleSound(ItemStack stack, boolean on)
+    {
+        String sound = on ? toggleOnSound : toggleOffSound;
+        if (StringUtils.isNotBlank(sound))
+            return sound;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if (!attachment.isToggleable())
+                continue;
+            sound = on ? attachment.getToggleOnSound() : attachment.getToggleOffSound();
+            if (StringUtils.isNotBlank(sound))
+                return sound;
+        }
+        return FlansMod.SOUND_SWITCH_FIRING_MODE;
     }
 
     /**

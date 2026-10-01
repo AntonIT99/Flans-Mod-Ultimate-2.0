@@ -564,6 +564,8 @@ public final class GunItemRenderer
 
         model.render(model.getGunModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         model.render(model.getBackpackModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        if (model.getType().isToggledOn(stack))
+            model.render(model.getToggleModel(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         model.renderCustom(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, animations, renderPass);
 
         // Render the guns default parts if no attachment is installed
@@ -1119,6 +1121,7 @@ public final class GunItemRenderer
         ItemStack accessoryItemStack = model.getType().getAccessoryItemStack(item);
 
         List<AttachmentType> attachments = model.getType().getCurrentAttachments(item);
+        boolean toggledOn = model.getType().isToggledOn(item);
         // Get all the attachments that we may need to render
         for (AttachmentType attachment : attachments)
         {
@@ -1136,41 +1139,41 @@ public final class GunItemRenderer
                     }
                     if (model.isScopeIsOnSlide())
                         poseStack.translate(-(animations.getLastGunSlide() + (animations.getGunSlide() - animations.getLastGunSlide()) * smoothing) * model.getGunSlideDistance(), 0F, 0F);
-                    renderAttachment(attachment, scopeItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    renderAttachment(attachment, scopeItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
                     break;
                 case GRIP:
                     preRenderAttachment(attachment, model.getGripAttachPoint(), poseStack, model.getType().getModelScale());
                     if (model.isGripIsOnPump())
                         poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * smoothing)) * model.getPumpHandleDistance(), 0F, 0F);
-                    renderAttachment(attachment, gripItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    renderAttachment(attachment, gripItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
                     break;
                 case BARREL:
                     preRenderAttachment(attachment, model.getBarrelAttachPoint(), poseStack, model.getType().getModelScale());
-                    renderAttachment(attachment, barrelItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    renderAttachment(attachment, barrelItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
                     break;
                 case STOCK:
                     preRenderAttachment(attachment, model.getStockAttachPoint(), poseStack, model.getType().getModelScale());
-                    renderAttachment(attachment, stockItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    renderAttachment(attachment, stockItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
                     break;
                 case SLIDE:
                     preRenderAttachment(attachment, model.getSlideAttachPoint(), poseStack, model.getType().getModelScale());
                     poseStack.translate(-(animations.getLastGunSlide() + (animations.getGunSlide() - animations.getLastGunSlide()) * smoothing) * model.getGunSlideDistance(), 0F, 0F);
-                    renderAttachment(attachment, slideItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    renderAttachment(attachment, slideItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
                     break;
                 case GADGET:
                     preRenderAttachment(attachment, model.getGadgetAttachPoint(), poseStack, model.getType().getModelScale());
                     if (model.isGadgetIsOnPump())
                         poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * smoothing)) * model.getPumpHandleDistance(), 0F, 0F);
-                    renderAttachment(attachment, gadgetItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    renderAttachment(attachment, gadgetItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
                     break;
                 case ACCESSORY:
                     preRenderAttachment(attachment, model.getAccessoryAttachPoint(), poseStack, model.getType().getModelScale());
-                    renderAttachment(attachment, accessoryItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    renderAttachment(attachment, accessoryItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
                     break;
                 case PUMP:
                     preRenderAttachment(attachment, model.getPumpAttachPoint(), poseStack, model.getType().getModelScale());
                     poseStack.translate(-(1 - Math.abs(animations.getLastPumped() + (animations.getPumped() - animations.getLastPumped()) * smoothing)) * model.getPumpHandleDistance(), 0F, 0F);
-                    renderAttachment(attachment, pumpItemStack, poseStack, buffer, packedLight, packedOverlay);
+                    renderAttachment(attachment, pumpItemStack, poseStack, buffer, packedLight, packedOverlay, toggledOn);
                     break;
                 default:
                     break;
@@ -1188,6 +1191,12 @@ public final class GunItemRenderer
 
     public static void renderAttachment(AttachmentType attachment, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
+        renderAttachment(attachment, stack, poseStack, buffer, packedLight, packedOverlay, true);
+    }
+
+    /** {@code toggledOn} is the gun's toggle state; it hides the attachment's toggle parts while switched off */
+    public static void renderAttachment(AttachmentType attachment, ItemStack stack, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean toggledOn)
+    {
         if (ModelCache.getOrLoadTypeModel(attachment) instanceof ModelAttachment modelAttachment)
         {
             int color = attachment.getColour();
@@ -1198,7 +1207,7 @@ public final class GunItemRenderer
             boolean translucent = ModClientConfig.get().useTranslucentRendering(modelAttachment.getType());
             boolean cull = useCulling(modelAttachment.getType(), poseStack);
             for (EnumRenderPass renderPass : ModelCache.getRenderPasses(modelAttachment))
-                modelAttachment.renderAttachment(poseStack, buffer.getBuffer(renderPass.getRenderType(attachmentTexture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass);
+                modelAttachment.renderAttachment(poseStack, buffer.getBuffer(renderPass.getRenderType(attachmentTexture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, 1F, renderPass, toggledOn);
         }
     }
 

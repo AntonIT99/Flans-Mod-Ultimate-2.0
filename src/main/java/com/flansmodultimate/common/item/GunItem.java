@@ -83,6 +83,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public static final String NBT_ACCESSORY = "accessory";
     public static final String NBT_SECONDARY_FIRE = "secondary_fire";
     public static final String NBT_GUN_MODE = "gun_mode";
+    public static final String NBT_TOGGLED_OFF = "toggled_off";
     public static final String NBT_CURRENT_ZOOM = "current_zoom";
     public static final String NBT_KNOCKBACK_RESISTANCE_UUID = "knockback_resistance_uuid";
     public static final String NBT_MOVEMENT_SPEED_UUID = "movement_speed_uuid";
@@ -198,6 +199,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (configType.isDeployable())
             tooltipComponents.add(Component.translatable(TooltipKeys.DEPLOYABLE).withStyle(ChatFormatting.YELLOW));
+
+        if (configType.canToggle(stack))
+        {
+            boolean on = configType.isToggledOn(stack);
+            tooltipComponents.add(Component.translatable(on ? TooltipKeys.TOGGLED_ON : TooltipKeys.TOGGLED_OFF)
+                .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+        }
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
@@ -579,7 +587,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
     {
-        if (StringUtils.isNotBlank(configType.getMeleeSound()))
+        if (StringUtils.isNotBlank(configType.getMeleeSound()) && !configType.isPoweredOff(stack))
             PacketPlaySound.sendSoundPacket(entity, configType.getMeleeSoundRange(), configType.getMeleeSound(), true);
         return false;
     }
@@ -655,7 +663,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.getSecondaryFunction() == EnumFunction.CUSTOM_MELEE && data.isSecondaryFunctionKeyPressed())
             gunItemHandler.doCustomMelee(level, player, data, hand);
 
-        if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()))
+        if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()) && !configType.isPoweredOff(gunStack))
         {
             PacketPlaySound.sendSoundPacket(player, configType.getIdleSoundRange(), configType.getIdleSound(), false);
             soundDelay = configType.getIdleSoundLength();

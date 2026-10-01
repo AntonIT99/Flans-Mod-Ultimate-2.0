@@ -155,7 +155,7 @@ public class GunItemHandler
         else
             actionRequested = shootEdgePressed;
 
-        if (!actionRequested)
+        if (!actionRequested || type.isPoweredOff(gunStack))
             return EnumFireDecision.NO_ACTION;
         // Stops the player shooting immediately after picking a gun up from the ground
         if (data.getShootClickDelay() > 0)
@@ -182,6 +182,8 @@ public class GunItemHandler
     public void doCustomMelee(Level level, ServerPlayer player, PlayerData data, InteractionHand hand)
     {
         if (item.configType.isDeployable() || !gunCanBeHandled(player) || data.getMeleeLength() > 0)
+            return;
+        if (item.configType.isPoweredOff(player.getItemInHand(hand)))
             return;
         if ((!item.configType.isUsableByPlayers() && (!player.getAbilities().instabuild || !ModCommonConfig.get().gunsAlwaysUsableByPlayersInCreativeMode())))
             return;
@@ -567,7 +569,7 @@ public class GunItemHandler
         if (!shouldProcessMelee(player, data, itemstack))
             return;
 
-        for (int pointIdx = 0; pointIdx < item.configType.getMeleeDamagePoints().size(); pointIdx++)
+        for (int pointIdx = 0; pointIdx < item.configType.getMeleeDamagePoints().size() && data.getMeleeLength() > 0; pointIdx++)
             processDamagePoint(level, player, data, itemstack, pointIdx);
 
         advanceAndResetIfDone(data);
@@ -709,6 +711,16 @@ public class GunItemHandler
         {
             if (doesHitBlock(segment.end, attacker))
                 continue;
+
+            // A held shield is met before anything behind it: the swing stops there, as in the Ganesha fork
+            if (hit instanceof PlayerBulletHit ph && (ph.getHitbox().type == EnumHitboxType.LEFTITEM || ph.getHitbox().type == EnumHitboxType.RIGHTITEM))
+            {
+                if (!level.isClientSide && StringUtils.isNotBlank(item.configType.getShieldHitSound()))
+                    PacketPlaySound.sendSoundPacket(attacker, item.configType.getMeleeSoundRange(), item.configType.getShieldHitSound(), true);
+                attackerData.setMeleeProgress(0);
+                attackerData.setMeleeLength(0);
+                return;
+            }
 
             if (hit instanceof PlayerBulletHit ph)
                 applyPlayerHit(level, attacker, attackerData, itemstack, swingDistance, ph, pointIdx, dPos);
