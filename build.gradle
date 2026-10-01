@@ -384,13 +384,15 @@ def apiJavadocJarTask = tasks.register('apiJavadocJar', Jar) { Jar jar ->
     jar.from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
 }
 
+// Captured as a local so the configuration cache can serialize the closures that use it.
+String packsManagerVersion = packs_manager_version
+
 tasks.named(sourceSets.packsmanager.processResourcesTaskName, ProcessResources) {
-    inputs.property('packsManagerVersion', packs_manager_version)
-    filesMatching(modsTomlPath) { expand(module_version: packs_manager_version) }
+    inputs.property('packsManagerVersion', packsManagerVersion)
+    filesMatching(modsTomlPath) { expand(module_version: packsManagerVersion) }
 }
 
 // Bundles the development run/flan packs for extraction by the Packs Manager.
-String packsManagerVersion = packs_manager_version
 String packsManagerBaseName = "[$minecraft_version] $packs_manager_name"
 def packsManagerJar = tasks.register('packsManagerJar', Jar) { Jar jar ->
     jar.archiveBaseName.set(packsManagerBaseName)
