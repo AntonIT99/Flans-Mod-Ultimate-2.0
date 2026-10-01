@@ -23,12 +23,12 @@ class ModelPlaneRotorRenderingTest
         flap.rotateAngleZ = (float)Math.PI;
 
         model.renderWithRotation(new ModelRendererTurbo[] {flap}, ModelPlane.RotationAxis.Y, 0.2F,
-            new PoseStack(), null, 0, 0, 1F, 1F, 1F, 1F, 1F, EnumRenderPass.DEFAULT);
+            new PoseStack(), NoOpVertexConsumer.INSTANCE, 0, 0, 1F, 1F, 1F, 1F, 1F, EnumRenderPass.DEFAULT);
         assertEquals(0.2F, flap.yawAtRender);
         assertEquals((float)Math.PI, flap.rotateAngleY);
 
         model.renderWithRotation(new ModelRendererTurbo[] {flap}, ModelPlane.RotationAxis.Z, -0.1F,
-            new PoseStack(), null, 0, 0, 1F, 1F, 1F, 1F, 1F, EnumRenderPass.DEFAULT);
+            new PoseStack(), NoOpVertexConsumer.INSTANCE, 0, 0, 1F, 1F, 1F, 1F, 1F, EnumRenderPass.DEFAULT);
         assertEquals(-0.1F, flap.pitchAtRender);
         assertEquals((float)Math.PI, flap.rotateAngleZ);
     }
@@ -50,7 +50,7 @@ class ModelPlaneRotorRenderingTest
                     stack.translate(3D, 4D, 5D);
                     Matrix4f before = new Matrix4f(stack.last().pose());
                     model.renderAround(new ModelRendererTurbo[] {rotor, null}, origin, axis, 90F,
-                        stack, null, 0, 0, 1F, 1F, 1F, 1F, scale, pass);
+                        stack, NoOpVertexConsumer.INSTANCE, 0, 0, 1F, 1F, 1F, 1F, scale, pass);
                     org.joml.Vector3f hub = new org.joml.Vector3f(origin.x * scale, origin.y * scale, origin.z * scale);
                     assertTrue(before.transformPosition(new org.joml.Vector3f(hub))
                         .equals(rotor.pose.transformPosition(new org.joml.Vector3f(hub)), 1E-5F));
