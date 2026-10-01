@@ -450,9 +450,9 @@ publishing {
 }
 
 tasks.withType(PublishToMavenRepository).configureEach { PublishToMavenRepository task ->
-    task.onlyIf('only the API is published to GitHub Pages') {
-        task.repository.name != 'apiPages' || task.publication.name == 'api'
-    }
+    // Decided at configuration time: the configuration cache discards task.repository.
+    boolean publishable = task.repository.name != 'apiPages' || task.publication.name == 'api'
+    task.onlyIf('only the API is published to GitHub Pages') { publishable }
     if (task.name == 'publishApiPublicationToApiPagesRepository') {
         File published = new File(file(task.repository.url), "com/flansmodultimate/$apiArtifactId/$apiArchiveVersion")
         task.doFirst {
