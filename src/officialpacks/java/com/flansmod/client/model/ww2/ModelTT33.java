@@ -31,5 +31,6 @@ public class ModelTT33 extends ModelGun {
       this.scopeIsOnSlide = true;
       this.gunSlideDistance = 0.25F;
       this.animationType = EnumAnimationType.PISTOL_CLIP;
+      this.muzzleFlashPoint = new Vector3f(0.46875F, 0.234375F, 0F);
    }
 }

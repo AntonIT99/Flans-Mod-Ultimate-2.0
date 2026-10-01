@@ -6,6 +6,7 @@ Description American Light Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank S
 // Rendering
 Icon 44_M24Chaffee
 Model W44.M24Chaffee
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_M24Chaffee
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.4762
 ClutchBrake 0.0285
 TurnLeftSpeed 0.57
 TurnRightSpeed 0.57
+RealTurnRateDegPerSec 30
 CanRoll true
 
 // Wheels and tracks
@@ -86,8 +88,8 @@ AddAmmo 44_MediumHEShell
 AddAmmo 44_75APCBCShell
 AddGun 20 28 6 turret 44_30Cal
 AddGun -4 43 6 turret 44_50Cal
-GunOrigin 1 42 -12 15
-BarrelPosition 50 26 0
+GunOrigin 1 48.8 -10.1 15
+BarrelPosition 54 27 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -142,7 +144,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 25
+ArmorFrontMm 25 60
 ArmorSideMm 25
 ArmorRearMm 19
 ArmorTopMm 13
@@ -154,9 +156,10 @@ TurretArmorTopMm 13
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 2500 -56 -1 -22 101 36 44
-SetupPart leftTrack 300 -50 -10 -28 94 19 7
-SetupPart rightTrack 300 -50 -10 21 94 19 7
+SetupPart core 7400 -56 -1 -22 101 23 44
+SetupPart turret 1400 -35 22 -20 50 15 40
+SetupPart leftTrack 600 -50 -10 -28 94 19 7
+SetupPart rightTrack 600 -50 -10 21 94 19 7
 
 // Seats
 Driver 0 28 0 -360 360 -8 15

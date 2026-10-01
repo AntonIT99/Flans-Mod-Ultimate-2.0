@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.common.physics.ModPhysics;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
@@ -7,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -18,8 +18,7 @@ public final class LegacyItemParticle extends TextureSheetParticle
     private final float uo;
     private final float vo;
 
-    public LegacyItemParticle(ClientLevel level, ItemStack stack,
-                              double x, double y, double z, double vx, double vy, double vz)
+    public LegacyItemParticle(ClientLevel level, ItemStack stack, double x, double y, double z, double vx, double vy, double vz)
     {
         // EntityBreakingFX first constructed an EntityFX with zero requested
         // velocity, retained ten percent of its randomized velocity, and then
@@ -27,9 +26,10 @@ public final class LegacyItemParticle extends TextureSheetParticle
         super(level, x, y, z, 0.0D, 0.0D, 0.0D);
 
         Minecraft minecraft = Minecraft.getInstance();
-        var model = minecraft.getItemRenderer().getModel(stack, level, (LivingEntity)null, 0);
+        var model = minecraft.getItemRenderer().getModel(stack, level, null, 0);
         model = model.getOverrides().resolve(model, stack, level, null, 0);
-        setSprite(model.getParticleIcon(ModelData.EMPTY));
+        if (model != null)
+            setSprite(model.getParticleIcon(ModelData.EMPTY));
 
         gravity = 1.0F;
         rCol = 1.0F;
@@ -42,6 +42,14 @@ public final class LegacyItemParticle extends TextureSheetParticle
         xd = xd * 0.1D + vx;
         yd = yd * 0.1D + vy;
         zd = zd * 0.1D + vz;
+    }
+
+    @Override
+    public void tick()
+    {
+        gravity = (float) ModPhysics.gravity(1D, level);
+        friction = (float) ModPhysics.dragRetention(0.98D, level);
+        super.tick();
     }
 
     @Override

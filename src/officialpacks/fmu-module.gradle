@@ -3,6 +3,6 @@ registerFmuModule(
     modId: 'flansmodultimate_officialpacks',
     jarTask: 'officialPacksJar',
     archiveBaseName: "[$minecraft_version] Flan's Mod Ultimate Classic Packs",
-    archiveVersion: '1.0',
+    archiveVersion: '1.1',
     implementationTitle: 'officialpacks'
 )

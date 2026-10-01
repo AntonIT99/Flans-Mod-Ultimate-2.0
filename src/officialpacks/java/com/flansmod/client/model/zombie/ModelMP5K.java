@@ -58,6 +58,7 @@ public class ModelMP5K extends ModelGun
 		scopeAttachPoint = new Vector3f(2F / 16F, 5F / 16F, 0F);
 		
 		gunSlideDistance = 0.25F;
+		muzzleFlashPoint = new Vector3f(0.59375F, 0.28125F, 0F);
 		animationType = EnumAnimationType.PISTOL_CLIP;
 	}
 }

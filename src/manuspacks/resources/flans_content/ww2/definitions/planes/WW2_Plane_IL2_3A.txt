@@ -1,12 +1,18 @@
 ﻿// Identity
-Name Ilyushin Il-2 - 174. ShAP - Guns and Bombs
+Name Ilyushin Il-2 - Guns and Bombs
 ShortName WW2_Plane_IL2_3A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_IL2_3
+FlashModel DefaultFlash
 ModelScale 1
 Icon Icon_WW2_Plane_IL2_3A
 Texture Skin_WW2_Plane_IL2_3A
+
+// Paintjobs
+AdvPaintJob 174ShAP Icon_WW2_Plane_IL2_3A Skin_WW2_Plane_IL2_3A
+AdvPaintJob 505ShAP Icon_WW2_Plane_IL2_3B Skin_WW2_Plane_IL2_3B gray 6
+AdvPaintJob 74ShAP Icon_WW2_Plane_IL2_3C Skin_WW2_Plane_IL2_3C gray 6
 
 // Recipe and Inventory
 AllowAllAmmo False
@@ -41,6 +47,7 @@ RestingPitch 10.0
 RealMassKg 6360
 RealEnginePowerPS 1720
 RealMaxSpeedKmh 410
+RealTurnRateDegPerSec 21.8
 RealWingSpanM 14.6
 RealWingAreaM2 38.5
 RealClimbRateMs 6.1

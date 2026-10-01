@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.driveables.physics;
 
 import com.flansmodultimate.common.driveables.LegacyPlanePhysics;
+import com.flansmodultimate.common.physics.ModPhysics;
+
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -85,18 +87,26 @@ public final class HelicopterPhysics
     public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance,
                             float collective, float rotorSpeed, float intactFraction)
     {
+        return step(velocity, up, performance, collective, rotorSpeed, intactFraction, 1D, 1D);
+    }
+
+    public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance,
+                            float collective, float rotorSpeed, float intactFraction,
+                            double gravityFactor, double dragFactor)
+    {
+        double gravity = ModPhysics.gravity(GRAVITY, gravityFactor);
         double lift = lift(performance, collective, rotorSpeed, intactFraction);
         // Collective limits translation as well as lift, for fine low-speed handling.
         double lever = horizontalSpeedFraction(collective);
         Vec3 accelerated = velocity.add(up.x * lift * lever * lever,
-            up.y * lift - GRAVITY, up.z * lift * lever * lever);
+            up.y * lift - gravity, up.z * lift * lever * lever);
         double horizontalDrag = performance.horizontalDrag();
         if (performance.terminalSpeed() > 0D)
         {
             // At the published speed, drag balances the available horizontal
             // force while the remaining component supports the helicopter.
             double levelThrust = Math.sqrt(Math.max(0D,
-                performance.maximumLift() * performance.maximumLift() - GRAVITY * GRAVITY));
+                performance.maximumLift() * performance.maximumLift() - gravity * gravity));
             horizontalDrag = Math.max(0.001D, levelThrust / performance.terminalSpeed())
                 * velocity.horizontalDistance() / performance.terminalSpeed();
         }
@@ -106,13 +116,15 @@ public final class HelicopterPhysics
         horizontalDrag = Math.max(horizontalDrag, levelBraking);
         double verticalDrag = Math.max(0.1D, performance.verticalDrag());
         if (performance.climbSpeed() > 0D)
-            verticalDrag = Math.max(0.001D, (up.y * lift < GRAVITY
-                ? GRAVITY : Math.max(0D, performance.maximumLift() - GRAVITY)) / performance.climbSpeed());
+            verticalDrag = Math.max(0.001D, (up.y * lift < gravity
+                ? gravity : Math.max(0D, performance.maximumLift() - gravity)) / performance.climbSpeed());
         // Increase the response rate of slow climb calibrations without changing
         // their equilibrium speed. Apply the same gain to net force and drag.
         double verticalResponse = Math.max(1D, 0.1D / verticalDrag);
+        horizontalDrag = ModPhysics.dragForce(horizontalDrag, dragFactor);
+        verticalDrag = ModPhysics.dragForce(verticalDrag, dragFactor);
         Vec3 result = new Vec3(accelerated.x / (1D + horizontalDrag),
-            (velocity.y + (up.y * lift - GRAVITY) * verticalResponse)
+            (velocity.y + (up.y * lift - gravity) * verticalResponse)
                 / (1D + verticalDrag * verticalResponse), accelerated.z / (1D + horizontalDrag));
         double fullSpeed = performance.terminalSpeed() > 0D ? performance.terminalSpeed()
             : performance.maximumLift() / Math.max(0.001D, performance.horizontalDrag());

@@ -6,6 +6,7 @@ Description German Medium Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank Sh
 // Rendering
 Icon 44_PanzerIVF2
 Model W44.PanzerIVF2
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_PanzerIVF2
 RotateWheels True
@@ -41,6 +42,7 @@ MaxNegativeThrottle 0.4805
 ClutchBrake 0.02125
 TurnLeftSpeed 0.425
 TurnRightSpeed 0.425
+RealTurnRateDegPerSec 12
 CanRoll true
 SquashMobs True
 
@@ -92,8 +94,8 @@ AddAmmo 44_MediumHEShell
 AddAmmo 44_75APCRShell
 AddAmmo 44_75HEATShellB
 AddGun 25 29 6 turret 44_Mg34
-GunOrigin 1 36 -7 11
-BarrelPosition 70 29 0
+GunOrigin 1 48.2 -4.6 11
+BarrelPosition 70 28.5 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -148,7 +150,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 80
+ArmorFrontMm 80 10
 ArmorSideMm 30
 ArmorRearMm 20
 ArmorTopMm 11
@@ -160,10 +162,11 @@ TurretArmorTopMm 10
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1500 -47 -2 -20 85 38 40
-SetupPart frontalArmor 1500 38 -2 -27 15 33 54
-SetupPart leftTrack 300 -47 -10 -27 99 22 10
-SetupPart rightTrack 300 -47 -10 17 99 22 10
+SetupPart core 6300 -47 -2 -20 85 25 40
+SetupPart turret 1500 -23 23 -16 43 14 32
+SetupPart frontalArmor 1000 38 -2 -27 15 25 54
+SetupPart leftTrack 600 -47 -10 -27 99 22 10
+SetupPart rightTrack 600 -47 -10 17 99 22 10
 
 // Seats
 Driver 0 30 0 -360 360 -10 20

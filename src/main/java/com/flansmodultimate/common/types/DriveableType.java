@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.DriveableCollisionProfile;
 import com.flansmodultimate.common.driveables.DriveableExplosion;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
+import com.flansmodultimate.common.driveables.EngineSoundPitch;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.ParticleEmitter;
@@ -74,11 +75,47 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected VehicleOptics optics = new VehicleOptics();
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
-    /** Slightly narrower than the former hard-coded 0.5-to-1.5 engine pitch sweep. */
-    public static final float DEFAULT_ENGINE_SOUND_PITCH_RANGE = 0.8F;
     private static final float DEFAULT_WHEEL_GROUND_CLEARANCE = 0.375F;
 
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
+    /** Runtime baseline kept separately from authored HP weights and shoot-point overrides. */
+    private Map<EnumDriveablePart, CollisionBox> debugHitboxBaseline;
+    @Getter private long debugHitboxRevision;
+
+    public void setDebugHitboxes(Map<EnumDriveablePart, CollisionBox> boxes)
+    {
+        if (debugHitboxBaseline == null)
+            debugHitboxBaseline = new EnumMap<>(health);
+        health.clear();
+        health.putAll(boxes);
+        debugHitboxRevision++;
+    }
+
+    public void resetDebugHitboxes()
+    {
+        if (debugHitboxBaseline == null)
+            return;
+        health.clear();
+        health.putAll(debugHitboxBaseline);
+        debugHitboxBaseline = null;
+        debugHitboxRevision++;
+    }
+
+    /** Inverse of SetupPart parsing, including plane facing. */
+    public float[] debugHitboxPixels(CollisionBox runtime)
+    {
+        CollisionBox box = this instanceof PlaneType ? applyPlaneModelFacing(runtime) : runtime;
+        return new float[] {-(box.getZ() + box.getDepth()) * 16F, box.getY() * 16F,
+            box.getX() * 16F, box.getDepth() * 16F, box.getHeight() * 16F, box.getWidth() * 16F};
+    }
+
+    public CollisionBox debugHitboxFromPixels(float hp, float[] geometry, float resistance, float crew)
+    {
+        CollisionBox box = new CollisionBox(hp, geometry[0], geometry[1], geometry[2], geometry[3],
+            geometry[4], geometry[5], resistance, crew);
+        return this instanceof PlaneType ? applyPlaneModelFacing(box) : box;
+    }
+
     /** Original, unscaled definitions retained so repeated finalization is idempotent. */
     private final Map<EnumDriveablePart, CollisionBox> authoredHealth = new EnumMap<>(EnumDriveablePart.class);
     protected final Map<EnumDriveablePart, DriveableExplosion> partDeathExplosions = new EnumMap<>(EnumDriveablePart.class);
@@ -116,6 +153,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     protected EnumWeaponType primary = EnumWeaponType.NONE;
     protected EnumWeaponType secondary = EnumWeaponType.NONE;
+    /** Opt-in for the built-in three-frame flash on every fired gun or shell muzzle. */
+    protected boolean defaultMuzzleFlash;
     protected boolean alternatePrimary;
     protected boolean alternateSecondary;
     protected float shootDelayPrimary = -1F;
@@ -192,6 +231,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public record ShootParticle(String name, float x, float y, float z) {}
     protected final List<ShootParticle> shootParticlesPrimary = new ArrayList<>();
     protected final List<ShootParticle> shootParticlesSecondary = new ArrayList<>();
+    private final Map<Integer, List<ShootParticle>> shootParticlesPassenger = new HashMap<>();
 
     protected int numCargoSlots;
     protected int numBombSlots;
@@ -238,16 +278,19 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     private static volatile float maxBulletDetectionRadius = 8F;
     protected int animFrames = 2;
 
-    protected int startSoundRange = 50;
+    protected int startSoundRange = -1;
     protected String startSound = StringUtils.EMPTY;
     protected int startSoundLength;
     protected String startEngineSound = StringUtils.EMPTY;
     protected int startEngineSoundLength = 20;
-    protected int engineSoundRange = 50;
+    protected int engineSoundRange = -1;
     protected String engineSound = StringUtils.EMPTY;
     protected int engineSoundLength;
-    protected float engineSoundPitchRange = DEFAULT_ENGINE_SOUND_PITCH_RANGE;
-    protected int backSoundRange = 50;
+    protected float engineSoundPitchRange = Float.NaN;
+    protected float engineSoundPitchBase = Float.NaN;
+    protected float engineSoundPitchAt50 = Float.NaN;
+    protected float engineSoundPitchAt100 = Float.NaN;
+    protected int backSoundRange = -1;
     protected String exitSound = StringUtils.EMPTY;
     protected int exitSoundLength = 50;
     protected String idleSound = StringUtils.EMPTY;
@@ -279,8 +322,29 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected int lockOnSoundTime = 60;
     protected String lockOnSound = StringUtils.EMPTY;
     protected int maxRangeLockOn = 500;
-    protected int lockedOnSoundRange = 5;
+    protected int lockedOnSoundRange = -1;
     public String lockingOnSound = StringUtils.EMPTY;
+
+    public float getStartSoundRange()
+    {
+        return startSoundRange > 0 ? startSoundRange : ModCommonConfig.get().vehicleSoundRange();
+    }
+
+    public float getEngineSoundRange()
+    {
+        return engineSoundRange > 0 ? engineSoundRange : ModCommonConfig.get().vehicleSoundRange();
+    }
+
+    public float getBackSoundRange()
+    {
+        return backSoundRange > 0 ? backSoundRange : ModCommonConfig.get().vehicleSoundRange();
+    }
+
+    public float getLockedOnSoundRange()
+    {
+        return lockedOnSoundRange > 0 ? lockedOnSoundRange : ModCommonConfig.get().vehicleLockedOnSoundRange();
+    }
+
     protected boolean lockOnToPlanes;
     protected boolean lockOnToVehicles;
     protected boolean lockOnToMechas;
@@ -633,6 +697,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
         primary = EnumWeaponType.parse(readOptionalValue("Primary", primary.name(), file), primary);
         secondary = EnumWeaponType.parse(readOptionalValue("Secondary", secondary.name(), file), secondary);
+        defaultMuzzleFlash = "DefaultFlash".equalsIgnoreCase(readValue("FlashModel", StringUtils.EMPTY, file));
         damageMultiplierPrimary = readValue("DamageMultiplierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DamageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
@@ -673,6 +738,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readShootParticles("ShootParticlesPrimary", shootParticlesPrimary, file);
         readShootParticles("ShootParticlesSecondary", shootParticlesSecondary, file);
         readShootParticles("ShootParticleSecondary", shootParticlesSecondary, file);
+        forEachLine("ShootParticlesPassenger", file, 5, values -> {
+            int seat = Integer.parseInt(values[0]);
+            if (seat > 0 && getSeat(seat) != null)
+                shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>()).add(
+                    new ShootParticle(values[1], Float.parseFloat(values[2]),
+                        Float.parseFloat(values[3]), Float.parseFloat(values[4])));
+        });
         readLegacyGuns(file);
         readLegacyWeaponPosition("BombPosition", EnumDriveablePart.CORE, EnumWeaponType.BOMB, file);
         readLegacyWeaponPosition("BarrelPosition", EnumDriveablePart.TURRET, EnumWeaponType.SHELL, file);
@@ -794,7 +866,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         engineSoundRange = readValue("EngineSoundRange", engineSoundRange, file);
         engineSoundLength = readSoundLength("EngineSoundLength", engineSoundLength, file);
         float configuredPitchRange = readValue("EngineSoundPitchRange", engineSoundPitchRange, file);
-        engineSoundPitchRange = Float.isFinite(configuredPitchRange) ? Math.max(0F, configuredPitchRange) : 0F;
+        engineSoundPitchRange = Float.isFinite(configuredPitchRange) ? Math.max(0F, configuredPitchRange) : Float.NaN;
+        float configuredPitchBase = readValue("EngineSoundPitchBase", engineSoundPitchBase, file);
+        engineSoundPitchBase = Float.isFinite(configuredPitchBase) ? Math.max(0F, configuredPitchBase) : Float.NaN;
+        engineSoundPitchAt50 = readValue("EngineSoundPitchAt50", engineSoundPitchAt50, file);
+        engineSoundPitchAt100 = readValue("EngineSoundPitchAt100", engineSoundPitchAt100, file);
         idleSoundLength = readSoundLength("IdleSoundLength", idleSoundLength, file);
         idleSoundLength = readSoundLength("IdleEngineSoundLength", idleSoundLength, file);
         exitSoundLength = readSoundLength("ExitSoundLength", exitSoundLength, file);
@@ -1213,13 +1289,91 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         if (index < 0 || index >= points.size())
             return false;
         rememberAuthoredShootPoints(secondaryWeapon);
+        moveShootPoint(points, index, modelPixels, true);
+        return true;
+    }
 
-        DriveablePosition root = points.get(index).getRootPos();
+    /**
+     * Moves one shoot point onto a muzzle measured off the model while the content
+     * is loading. Unlike the debug overrides this becomes the type's baseline, so
+     * {@code /flandebug shootpoint reset} keeps it.
+     *
+     * @param modelPixels the measured muzzle, in the units and convention of a type file
+     * @return false when this weapon bank has no point at {@code index}
+     */
+    public boolean applyMeasuredShootPoint(boolean secondaryWeapon, int index, Vector3f modelPixels)
+    {
+        List<ShootPoint> points = secondaryWeapon ? shootPointsSecondary : shootPointsPrimary;
+        if (index < 0 || index >= points.size())
+            return false;
+        moveShootPoint(points, index, modelPixels, false);
+        return true;
+    }
+
+    /**
+     * Moves one seat's {@code GunOrigin} onto the muzzle measured off the model
+     * while the content is loading, as the new baseline of the type.
+     *
+     * @return false when the seat does not exist or mounts no gun
+     */
+    public boolean applyMeasuredGunOrigin(int seatIndex, Vector3f modelPixels)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        if (seat == null || seat.getGunType() == null)
+            return false;
+        seat.setGunOrigin(new Vector3f(modelPixels.x / 16F, modelPixels.y / 16F, modelPixels.z / 16F));
+        return true;
+    }
+
+    /**
+     * Gives one shoot point the barrels of a twin or quad mount measured off the
+     * model, so it fires from each of them in turn.
+     *
+     * @param offsetPixels each barrel's muzzle relative to the point's, in type-file pixels
+     * @return false when this weapon bank has no point at {@code index}
+     */
+    public boolean applyMeasuredBarrels(boolean secondaryWeapon, int index, List<Vector3f> offsetPixels)
+    {
+        List<ShootPoint> points = secondaryWeapon ? shootPointsSecondary : shootPointsPrimary;
+        if (index < 0 || index >= points.size())
+            return false;
+        points.set(index, points.get(index).withBarrels(toBlocks(offsetPixels)));
+        return true;
+    }
+
+    /**
+     * Gives one seat's gun the barrels of a twin or quad mount measured off the model.
+     *
+     * @param offsetPixels each barrel's muzzle relative to the seat's {@code GunOrigin}, in type-file pixels
+     * @return false when the seat does not exist or mounts no gun
+     */
+    public boolean applyMeasuredGunBarrels(int seatIndex, List<Vector3f> offsetPixels)
+    {
+        SeatInfo seat = getSeat(seatIndex);
+        if (seat == null || seat.getGunType() == null)
+            return false;
+        seat.setGunBarrels(toBlocks(offsetPixels));
+        return true;
+    }
+
+    private static List<Vector3f> toBlocks(List<Vector3f> pixels)
+    {
+        return pixels.stream().map(offset -> new Vector3f(offset.x / 16F, offset.y / 16F, offset.z / 16F)).toList();
+    }
+
+    /**
+     * Rewrites a point's offset rather than its root, so the mount keeps its
+     * identity while the firing path, which reads root plus offset, lands on
+     * {@code modelPixels}. Its barrels move with it.
+     */
+    private static void moveShootPoint(List<ShootPoint> points, int index, Vector3f modelPixels, boolean debugOverride)
+    {
+        ShootPoint point = points.get(index);
+        DriveablePosition root = point.getRootPos();
         Vector3f offset = new Vector3f(modelPixels.x / 16F - root.getPosition().x,
             modelPixels.y / 16F - root.getPosition().y,
             modelPixels.z / 16F - root.getPosition().z);
-        points.set(index, new ShootPoint(root, offset, true));
-        return true;
+        points.set(index, new ShootPoint(root, offset, debugOverride, point.getBarrels()));
     }
 
     /**
@@ -1546,6 +1700,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 logError("Could not parse AddGun", file, ex);
             }
         }
+    }
+
+    /** Explicit particles for one passenger gun; absent seats preserve legacy visuals. */
+    public List<ShootParticle> getShootParticlesPassenger(int seat)
+    {
+        return Collections.unmodifiableList(shootParticlesPassenger.getOrDefault(seat, List.of()));
     }
 
     private void readShootParticles(String key, List<ShootParticle> destination, TypeFile file)
@@ -1941,13 +2101,29 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Continuous sound used by a running engine while the throttle is neutral. */
     public String getEngineIdleLoopSound()
     {
-        return StringUtils.firstNonBlank(idleSound, startSound);
+        return StringUtils.firstNonBlank(idleSound, startSound, engineSound);
     }
 
-    /** Pitch range for the neutral-throttle loop. Vehicles keep their idle loop at normal pitch. */
+    /** Legacy pitch range for dedicated idle sounds; engine fallbacks use the engine pitch curve. */
     public float getEngineIdleLoopPitchRange()
     {
         return 0F;
+    }
+
+    public boolean usesEngineSoundAsIdleLoop()
+    {
+        return StringUtils.isBlank(idleSound) && StringUtils.isBlank(startSound);
+    }
+
+    public EngineSoundPitch getEngineSoundPitchCurve(EngineSoundPitch defaults)
+    {
+        float base = Float.isFinite(engineSoundPitchBase) ? engineSoundPitchBase : defaults.base();
+        float full = Float.isFinite(engineSoundPitchAt100) ? Math.max(0F, engineSoundPitchAt100)
+            : Float.isFinite(engineSoundPitchRange) ? base + engineSoundPitchRange : defaults.full();
+        float half = Float.isFinite(engineSoundPitchAt50) ? Math.max(0F, engineSoundPitchAt50)
+            : Float.isFinite(engineSoundPitchRange) ? base + engineSoundPitchRange * 0.5F
+            : Float.isFinite(engineSoundPitchAt100) ? (base + full) * 0.5F : defaults.half();
+        return new EngineSoundPitch(base, half, full);
     }
 
     @FunctionalInterface private interface SeatVectorSetter { void set(SeatInfo seat, Vector3f value); }

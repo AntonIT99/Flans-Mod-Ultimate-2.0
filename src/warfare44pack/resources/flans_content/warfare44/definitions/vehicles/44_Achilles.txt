@@ -6,6 +6,7 @@ Description British Tank Destroyer__Uses : 76mm AP Tank Shell - Long_Medium Cal.
 // Rendering
 Icon 44_Achilles
 Model W44.Achilles
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_Achilles
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.4739
 ClutchBrake 0.2075
 TurnLeftSpeed 0.415
 TurnRightSpeed 0.415
+RealTurnRateDegPerSec 20
 CanRoll true
 
 // Wheels and tracks
@@ -89,7 +91,7 @@ AddAmmo 44_17PdrAPDSShell
 AddAmmo 44_17PdrAPCBCShell
 AddAmmo 44_17PdrHEShell
 AddGun 2 45 0 turret 44_50Cal
-BarrelPosition 75 30 0
+BarrelPosition 75.6 30.5 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -144,7 +146,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 51
+ArmorFrontMm 51 55
 ArmorSideMm 25
 ArmorRearMm 25
 ArmorTopMm 19
@@ -156,10 +158,11 @@ TurretArmorTopMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1000 -57 -1 -25 79 44 50
-SetupPart frontalArmor 1000 22 -1 -25 34 40 50
-SetupPart rightTrack 300 -57 -10 -25 115 22 9
-SetupPart leftTrack 300 -57 -10 16 115 22 9
+SetupPart core 6400 -57 -1 -25 79 24 50
+SetupPart turret 1400 -36 23 -23 61 14 46
+SetupPart frontalArmor 1000 22 -1 -25 34 24 50
+SetupPart rightTrack 600 -57 -10 -25 115 22 9
+SetupPart leftTrack 600 -57 -10 16 115 22 9
 
 // Seats
 Driver 0 22 0 -360 360 -8 15

@@ -35,15 +35,16 @@ MaxThrottle 0.55
 MaxNegativeThrottle 0.5
 TurnLeftSpeed 0.5
 TurnRightSpeed 0.5
+RealTurnRateDegPerSec 20
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-GunOrigin 1 32 -9 8
-BarrelPosition 0 34 0
-AddGun 8 20 0 turret mg42
+GunOrigin 1 44 -10.6 11
+BarrelPosition 35.2 30.8 3.3
+AddGun 21.5 30.8 -2.2 turret mg42
 ShootDelay 1
 ShellDelay 75
 TurretRotationSpeed 0.08
@@ -63,7 +64,7 @@ SetupPart turret 950 -30 26 -30 60 18 60
 SetupPart leftTrack 750 -60 -10 -37 120 22 14
 SetupPart rightTrack 750 -60 -10 23 120 22 14
 BulletDetection 5
-ArmorFrontMm 60
+ArmorFrontMm 60 45
 ArmorSideMm 55
 ArmorRearMm 50
 ArmorTopMm 25

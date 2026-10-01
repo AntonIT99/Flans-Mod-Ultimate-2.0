@@ -75,6 +75,18 @@ class LegacyPlanePhysicsTest
     }
 
     @Test
+    void fixedWingRudderIsWeakerWithoutChangingHelicopterYaw()
+    {
+        var plane = LegacyPlanePhysics.controlRates(EnumPlaneMode.PLANE,
+            1F, 1F, 1F, 10F, 10F, 10F, 1F, 1F, 1F, 1F, 1F, 1F);
+        var helicopter = LegacyPlanePhysics.controlRates(EnumPlaneMode.HELI,
+            1F, 1F, 1F, 10F, 10F, 10F, 1F, 1F, 1F, 1F, 1F, 1F);
+        assertEquals(1F, plane.yaw(), EPSILON);
+        assertEquals(1.25F, plane.pitch(), EPSILON);
+        assertEquals(0.625F, helicopter.yaw(), EPSILON);
+    }
+
+    @Test
     void legacyPowerIsConvertedToPerTickThrustOnce()
     {
         assertEquals(0.09F, LegacyPlanePhysics.thrust(1F, 8F, 0F, 0F, 1F, false), EPSILON);
@@ -186,6 +198,7 @@ class LegacyPlanePhysicsTest
             1F, deflection, deflection, deflection, 1F, 1F, 1F, 1F, 1F, 1F);
         assertTrue(rates.roll() > rates.pitch(), "a real aircraft rolls faster than it pitches");
         assertTrue(rates.pitch() > rates.yaw(), "and yaws slowest of all, on the smallest surface");
+        assertEquals(2.4F, rates.yaw(), 1.0E-4F);
         // Five degrees per tick is 100 degrees per second, which is where a
         // wartime fighter actually sits; the unscaled model gave half of it.
         assertEquals(5F, rates.roll(), 1.0E-4F);

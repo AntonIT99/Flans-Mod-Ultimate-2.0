@@ -6,6 +6,7 @@ Description German Light Tank Destroyer__Uses : 75mm AP Tank Shell_Medium Cal. H
 // Rendering
 Icon 44_Marder2
 Model W44.Marder2
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_Marder2
 RotateWheels True
@@ -37,6 +38,7 @@ FourWheelDrive true
 MaxNegativeThrottle 0.431
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 26
 CanRoll true
 
 // Wheels and tracks
@@ -84,8 +86,8 @@ AddAmmo 44_75APShell
 AddAmmo 44_MediumHEShell
 AddAmmo 44_75APCRShell
 AddAmmo 44_75HEATShellB
-GunOrigin 1 5 29 15
-BarrelPosition 48 31 0
+GunOrigin 1 10.1 16.9 15.4
+BarrelPosition 49.5 31.4 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -147,9 +149,9 @@ ArmorBottomMm 5
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1000 -67 -10 -22 98 20 6
-SetupPart leftTrack 300 -67 0 -22 98 37 44
-SetupPart rightTrack 300 -67 -10 16 98 19 6
+SetupPart core 8800 -67 -2 -22 98 39 44
+SetupPart leftTrack 600 -67 -10 -22 98 19 6
+SetupPart rightTrack 600 -67 -10 16 98 19 6
 
 // Seats
 Driver -18 20 -10 -12 12 -8 10

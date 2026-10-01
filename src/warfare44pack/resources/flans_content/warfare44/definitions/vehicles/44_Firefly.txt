@@ -6,6 +6,7 @@ Description British Medium Tank__Uses : 76mm AP Tank Shell - Long_Medium Cal. HE
 // Rendering
 Icon 44_Firefly
 Model W44.Firefly
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_Firefly
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.24541
 ClutchBrake 0.01925
 TurnLeftSpeed 0.385
 TurnRightSpeed 0.385
+RealTurnRateDegPerSec 18
 CanRoll true
 
 // Wheels and tracks
@@ -88,7 +90,7 @@ AddAmmo 44_17PdrAPDSShell
 AddAmmo 44_17PdrAPCBCShell
 AddAmmo 44_17PdrHEShell
 AddGun 21 33 -5 turret 44_30Cal
-BarrelPosition 77 33 0
+BarrelPosition 78.8 32.8 -0.6
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -143,7 +145,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 51
+ArmorFrontMm 51 56
 ArmorSideMm 38
 ArmorRearMm 38
 ArmorTopMm 19
@@ -155,10 +157,11 @@ TurretArmorTopMm 25
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1000 -59 0 -24 89 40 48
-SetupPart frontalArmor 1500 30 0 -24 23 37 48
-SetupPart leftTrack 300 -59 -10 -24 114 23 8
-SetupPart rightTrack 300 -59 -10 16 114 23 8
+SetupPart core 6300 -59 0 -24 89 28 48
+SetupPart turret 1500 -34 28 -20 52 13 40
+SetupPart frontalArmor 1000 30 0 -24 23 28 48
+SetupPart leftTrack 600 -59 -10 -24 114 23 8
+SetupPart rightTrack 600 -59 -10 16 114 23 8
 
 // Seats
 Driver 0 35 0 -360 360 -8 15

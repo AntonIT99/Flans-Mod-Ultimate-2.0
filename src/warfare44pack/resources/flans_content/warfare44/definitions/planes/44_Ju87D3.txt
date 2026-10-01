@@ -6,6 +6,7 @@ Description German Ground Attack Aircraft __Uses MG 17 / 250kg/500lb Bomb __Year
 // Rendering
 Icon 44_Ju87D3
 Model W44.Ju87D3
+FlashModel DefaultFlash
 Texture Skin44_Ju87D3
 CameraDistance 10.0
 
@@ -36,6 +37,7 @@ MaxThrottle 2.5
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 1.0
 TurnRightSpeed 1.0
+RealTurnRateDegPerSec 23.06
 LookUpSpeed 1.5
 LookDownSpeed 1.5
 RollLeftSpeed 1.75
@@ -70,7 +72,7 @@ AddAmmo 44_250kg500lbBomb
 ShootPointPrimary 5 26 43 core 44_Mg17
 ShootPointPrimary 5 26 -43 core 44_Mg17
 ShootPointSecondary 25 -5 0 core
-GunOrigin 1 -51 26 0
+GunOrigin 1 -68 24.7 0
 ShootParticlesPrimary flansmod.fmflame 0 0 0
 ShootParticlesPrimary flansmod.fmflame 0 0 0
 ShootParticlesPrimary flansmod.fmflame 0 0 0
@@ -85,9 +87,9 @@ CollisionDamageThrottle 0.21
 CollisionDamageTimes 20
 
 // Parts and collision
-SetupPart core 500 -175 9 -17 230 48 34
-SetupPart rightWing 300 -69 20 9 74 25 140
-SetupPart leftWing 300 -69 20 -149 74 25 140
+SetupPart core 4480 -175 9 -17 230 48 34
+SetupPart rightWing 1060 -69 20 9 74 25 140
+SetupPart leftWing 1060 -69 20 -149 74 25 140
 CollisionPoint 45 36 0 core
 CollisionPoint -9 31 111 core
 CollisionPoint -9 31 -111 core

@@ -34,6 +34,7 @@ MaxThrottle 0.45
 MaxNegativeThrottle 0.25
 TurnLeftSpeed 0.25
 TurnRightSpeed 0.25
+RealTurnRateDegPerSec 13.11
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
@@ -49,10 +50,10 @@ Buoyancy 0.08
 BarrelPosition 250 0 -20
 BarrelPosition 250 0 20
 GunOrigin 1 -22 30 0
-GunOrigin 1 -22 30 4
+GunOrigin 1 10 25.9 -1
 GunOrigin 2 -195 25 1
-GunOrigin 2 -195 25 1
-GunOrigin 3 250 30 0
+GunOrigin 2 -150.5 26.7 11
+GunOrigin 3 281 23.4 7
 ShootDelay 1
 ShellDelay 70
 ShootDelayPrimarySeconds 5
@@ -89,3 +90,22 @@ EngineSound ptboatmove
 EngineSoundLength 10
 ShootSoundPrimary rocketfire1
 ShootSoundSecondary BrenShoot
+
+ShootParticlesPassenger 1 flansmod.fmflame 0.58 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPassenger 1 flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPassenger 1 smoke 0.2 0.035 -0.04
+ShootParticlesPassenger 1 smoke 0.18 -0.03 0.045
+ShootParticlesPassenger 1 crit 0.38 0.01 0
+ShootParticlesPassenger 2 explode 0.55 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.72 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.38 0.06 0.04
+ShootParticlesPassenger 2 flansmod.fmflame 0.34 -0.05 -0.05
+ShootParticlesPassenger 2 smoke 0.24 0.05 -0.06
+ShootParticlesPassenger 2 smoke 0.21 -0.045 0.06
+ShootParticlesPassenger 3 flansmod.fmflame 0.58 0 0
+ShootParticlesPassenger 3 flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPassenger 3 flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPassenger 3 smoke 0.2 0.035 -0.04
+ShootParticlesPassenger 3 smoke 0.18 -0.03 0.045
+ShootParticlesPassenger 3 crit 0.38 0.01 0

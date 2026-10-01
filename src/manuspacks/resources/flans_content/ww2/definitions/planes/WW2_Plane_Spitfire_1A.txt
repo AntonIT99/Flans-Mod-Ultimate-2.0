@@ -1,11 +1,15 @@
 ﻿// Identity
-Name Supermarine Spitfire - Grey Carmo
+Name Supermarine Spitfire Mk Vb
 ShortName WW2_Plane_Spitfire_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_Spitfire_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Plane_Spitfire_1A
 Texture Skin_WW2_Plane_Spitfire_1A
+
+// Paintjobs
+Paintjob Icon_WW2_Plane_Spitfire_1B Skin_WW2_Plane_Spitfire_1B gray 5
 
 // Recipe and Inventory
 FuelTankSize 6000
@@ -40,6 +44,7 @@ RestingPitch 5.0
 RealMassKg 3004
 RealEnginePowerHp 1470
 RealMaxSpeedKmh 595
+RealTurnRateDegPerSec 28.35
 RealWingSpanM 11.227
 RealWingAreaM2 22.49
 RealClimbRateMs 13.2

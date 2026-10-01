@@ -73,6 +73,7 @@ public class ModelM4Carbine extends ModelGun
 		ammoModel[1].addBox(4F, -2F, -1F, 3, 2, 2);
 		
 		gunSlideDistance = 0.5F;
+		muzzleFlashPoint = new Vector3f(1F, 0.25F, 0F);
 		animationType = EnumAnimationType.BOTTOM_CLIP;
 	}
 }

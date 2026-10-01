@@ -188,5 +188,6 @@ public class ModelRPD extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7.875F, 1.375F, 0F);
 	}
 }

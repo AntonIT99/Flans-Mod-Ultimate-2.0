@@ -20,7 +20,7 @@ Deployable False
 StandBackDistance 0.8
 TopViewLimit 30
 BottomViewLimit 30
-SideViewLimit 45
+SideViewLimit 40
 PivotHeight 0.75
 RoundsPerMin 2
 Dispersion 0.5

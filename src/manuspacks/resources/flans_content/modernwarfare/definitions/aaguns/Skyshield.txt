@@ -17,16 +17,19 @@ MMM
 
 // Movement and Physics
 RealMassKg 3200.0
+HitBoxWidth 3.0
+HitBoxHeight 2.0
 
 // Weapons
 NumBarrels 1
-Barrel 0 100 0 0
+Barrel 0 39.89 24 5.78
 FireAlternately True
 ReloadTime 60
 Recoil 4
 Damage 1
 GunnerPos 6 30 -9
 TopViewLimit 80
+TraverseSpeed 270
 BottomViewLimit 0
 RoundsPerMin 1000.0
 Dispersion 0.1

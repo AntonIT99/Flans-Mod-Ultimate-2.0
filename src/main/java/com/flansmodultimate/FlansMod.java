@@ -120,6 +120,7 @@ public class FlansMod
     // Sounds and Textures
     public static final String SOUND_EMPTY_CLICK = "emptyclick";
     public static final String SOUND_DEFAULT_SHELL_INSERT = "defaultshellinsert";
+    public static final String SOUND_SWITCH_FIRING_MODE = "switchfiringmode";
     public static final String SOUND_IMPACT_DIRT = "impact_dirt";
     public static final String SOUND_IMPACT_METAL = "impact_metal";
     public static final String SOUND_IMPACT_BRICKS = "impact_bricks";
@@ -539,6 +540,7 @@ public class FlansMod
     {
         registerSound(SOUND_EMPTY_CLICK, null);
         registerSound(SOUND_DEFAULT_SHELL_INSERT, null);
+        registerSound(SOUND_SWITCH_FIRING_MODE, null);
         registerSound(SOUND_IMPACT_DIRT, null);
         registerSound(SOUND_IMPACT_METAL, null);
         registerSound(SOUND_IMPACT_BRICKS, null);

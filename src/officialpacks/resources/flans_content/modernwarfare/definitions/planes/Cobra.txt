@@ -5,6 +5,7 @@ ShortName cobra
 // Item and rendering
 Icon Cobra
 Model mw.Cobra
+FlashModel DefaultFlash
 Texture Cobra
 AddDye 6 green
 
@@ -37,6 +38,7 @@ MaxThrottle 3.5
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 2
 TurnRightSpeed 2
+RealTurnRateDegPerSec 23.74
 LookUpSpeed 2
 LookDownSpeed 2
 RollLeftSpeed 2
@@ -57,7 +59,7 @@ ModePrimary FullAuto
 ModeSecondary FullAuto
 ShootPointPrimary 12 -4 -29 rightWing
 ShootPointPrimary 12 -4 29 leftWing
-GunOrigin 1 64 -28 0
+GunOrigin 1 42 -29.6 0
 ReadWeaponsFromGunTypes true
 
 // Health and armour

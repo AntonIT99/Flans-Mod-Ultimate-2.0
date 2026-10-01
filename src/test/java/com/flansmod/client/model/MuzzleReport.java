@@ -30,9 +30,9 @@ import java.util.stream.Stream;
  * instead of guessed.
  *
  * <p>Run through {@code gradlew muzzleReport -PmodelSourceSet=<set> -PmodelPackage=<package>}.
- * Every gun and driveable model class under the package is constructed, which applies
+ * Every gun, deployable-gun and driveable model class under the package is constructed, which applies
  * its constructor-time {@code translateAll} and {@code flipAll}, then measured with
- * {@link ModelDriveable#measureMuzzle}. Output is two tab-separated tables.</p>
+ * {@link ModelDriveable#measureMuzzle}. Output is three tab-separated tables.</p>
  *
  * <p>Gun columns are in model pixels, Y up, as the renderer sees them. The suggested
  * {@code animMuzzleFlashPoint} is for a flash centred on its own origin, such as
@@ -46,7 +46,7 @@ public final class MuzzleReport
     /** A measured muzzle further than this from the barrel attach point is flagged. */
     private static final double ATTACH_POINT_TOLERANCE = 2D;
     /** Matches the depth {@link ModelDriveable#measureMuzzle} centres the muzzle over. */
-    private static final double MUZZLE_FACE_DEPTH = 3D;
+    private static final double MUZZLE_FACE_DEPTH = 1.5D;
 
     private MuzzleReport() {}
 
@@ -59,6 +59,7 @@ public final class MuzzleReport
 
         PrintStream out = args.length > 1 ? new PrintStream(Files.newOutputStream(Paths.get(args[1])), true, StandardCharsets.UTF_8) : System.out;
         List<String> gunRows = new ArrayList<>();
+        List<String> deployableRows = new ArrayList<>();
         List<String> driveableRows = new ArrayList<>();
         List<String> otherRows = new ArrayList<>();
         for (String className : classNames)
@@ -68,7 +69,8 @@ public final class MuzzleReport
             {
                 Class<?> type = Class.forName(className);
                 if (Modifier.isAbstract(type.getModifiers())
-                    || !(ModelGun.class.isAssignableFrom(type) || ModelDriveable.class.isAssignableFrom(type)))
+                    || !(ModelGun.class.isAssignableFrom(type) || ModelMG.class.isAssignableFrom(type)
+                    || ModelDriveable.class.isAssignableFrom(type)))
                     continue;
                 model = type.getConstructor().newInstance();
             }
@@ -79,6 +81,8 @@ public final class MuzzleReport
             }
             if (model instanceof ModelGun gun)
                 gunRows.add(measureGun(className, gun));
+            else if (model instanceof ModelMG deployable)
+                deployableRows.add(measureDeployable(className, deployable));
             else
                 driveableRows.addAll(measureDriveable(className, (ModelDriveable) model));
         }
@@ -87,6 +91,9 @@ public final class MuzzleReport
             "muzzleFacePx", "barrelAttachPx", "attachDeltaPx", "declaredMuzzleFlashPoint",
             "declaredDefaultBarrelFlashPoint", "flashScale", "hasFlash", "suggestedAnimMuzzleFlashPoint", "notes"));
         gunRows.forEach(out::println);
+        out.println();
+        out.println(String.join("\t", "deployableModel", "status", "muzzleModelPx", "notes"));
+        deployableRows.forEach(out::println);
         out.println();
         out.println(String.join("\t", "driveableModel", "weapon", "muzzleModelPx", "muzzleTypeFileCoords", "notes"));
         driveableRows.forEach(out::println);
@@ -97,8 +104,16 @@ public final class MuzzleReport
         }
         if (out != System.out)
             out.close();
-        System.err.println("Measured " + gunRows.size() + " gun and " + driveableRows.size() + " driveable weapon muzzles among "
+        System.err.println("Measured " + gunRows.size() + " gun, " + deployableRows.size() + " deployable-gun and "
+            + driveableRows.size() + " driveable weapon muzzles among "
             + classNames.size() + " classes under " + packageName + "; " + otherRows.size() + " failed to construct");
+    }
+
+    private static String measureDeployable(String className, ModelMG model)
+    {
+        Vec3 muzzle = model.getModelMuzzle(0F);
+        return String.join("\t", className, muzzle == null ? "no-geometry" : "measured",
+            px(muzzle), muzzle == null ? "gunModel has no measurable geometry" : "automatic ModelMG front-face measurement");
     }
 
     /**

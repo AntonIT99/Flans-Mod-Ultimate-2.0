@@ -6,6 +6,7 @@ Description American Jeep __Year Introduced : 1941
 // Rendering
 Icon 44_Willys30Cal
 Model W44.Willys30Cal
+FlashModel DefaultFlash
 ModelScale 0.9
 Texture Skin44_Willys
 RotateWheels true
@@ -37,6 +38,7 @@ MaxThrottle 1.15
 MaxNegativeThrottle 0.4
 TurnLeftSpeed 0.5
 TurnRightSpeed 0.5
+RealTurnRateDegPerSec 240
 CanRoll false
 Drag 1.0
 
@@ -55,7 +57,7 @@ ShootDelay 3
 ReloadTimeSecondary 100
 PlaceTimePrimary 60
 BulletDetection 5
-GunOrigin 2 -10 5 0
+GunOrigin 2 -2.9 6.2 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
@@ -67,11 +69,11 @@ ArmorBottomMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 50 -31 -3 -14 63 20 30
-SetupPart frontRightWheel 15 14 -10 11 17 16 5
-SetupPart frontLeftWheel 15 14 -10 -14 17 16 5
-SetupPart backLeftWheel 15 -24 -10 -14 17 16 5
-SetupPart backRightWheel 15 -23 -10 9 17 16 5
+SetupPart core 1395 -31 -3 -14 63 20 30
+SetupPart frontRightWheel 20 14 -10 11 17 16 5
+SetupPart frontLeftWheel 20 14 -10 -14 17 16 5
+SetupPart backLeftWheel 20 -24 -10 -14 17 16 5
+SetupPart backRightWheel 20 -23 -10 9 17 16 5
 
 // Seats
 Driver -4 5 -7

@@ -6,6 +6,7 @@ Description Soviet Light Tank Destroyer__Uses : 76mm AP Tank Shell_Medium Cal. H
 // Rendering
 Icon 44_SU76M
 Model W44.SU76M
+FlashModel DefaultFlash
 ModelScale 0.90
 Texture Skin44_SU76M
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.4475
 ClutchBrake 0.01875
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 27.69
 CanRoll true
 
 // Wheels and tracks
@@ -83,8 +85,8 @@ AddAmmo 44_76APShell
 AddAmmo 44_MediumHEShell
 AddAmmo 44_76APCRShell
 AddAmmo 44_76HEATShell
-GunOrigin 1 9 10 10
-BarrelPosition 48 24 -1
+GunOrigin 1 5.8 9.9 9.9
+BarrelPosition 49.5 23.6 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -139,7 +141,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 35
+ArmorFrontMm 35 60
 ArmorSideMm 15
 ArmorRearMm 15
 ArmorTopMm 0
@@ -147,9 +149,9 @@ ArmorBottomMm 7
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1250 -33 0 -15 84 29 35
-SetupPart leftTrack 300 -33 -10 -20 84 18 5
-SetupPart rightTrack 300 -33 -10 20 84 18 5
+SetupPart core 8800 -33 0 -15 84 29 35
+SetupPart leftTrack 600 -33 -10 -20 84 18 5
+SetupPart rightTrack 600 -33 -10 20 84 18 5
 
 // Seats
 Driver -22 15 -5 -12 12 -10 20

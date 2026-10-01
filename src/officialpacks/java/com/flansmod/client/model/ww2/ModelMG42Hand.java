@@ -4,6 +4,7 @@ package com.flansmod.client.model.ww2;
 import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 
 public class ModelMG42Hand extends ModelGun {
    int textureX = 64;
@@ -77,5 +78,6 @@ public class ModelMG42Hand extends ModelGun {
       this.animationType = EnumAnimationType.SIDE_CLIP;
       this.translateAll(0.0F, 0.0F, 0.0F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(1.1875F, 0.175F, 0F);
    }
 }

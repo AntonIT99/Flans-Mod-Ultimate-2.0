@@ -37,9 +37,23 @@ RealEnginePowerPS 500
 RealMaxSpeedKmh 48
 DriveType TRACKED
 RealMaxReverseSpeedKmh 8
+RealTurnRateDegPerSec 24
 
 // Weapons
-BarrelPosition 0 22 0
+BarrelPosition 116 22 5
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.4 0 0
+ShootParticlesPrimary flansmod.fmflame 1.7 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0.1 0.08
+ShootParticlesPrimary flansmod.fmflame 1.18 -0.09 -0.09
+ShootParticlesPrimary flansmod.fmflame 0.88 0.08 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.82 -0.07 0.14
+ShootParticlesPrimary largesmoke 0.52 0.12 0.1
+ShootParticlesPrimary largesmoke 0.5 -0.11 -0.11
+ShootParticlesPrimary largesmoke 0.44 0.08 -0.16
+ShootParticlesPrimary largesmoke 0.42 -0.08 0.17
+ShootParticlesPrimary cloud 0.09 0.13 0.18
+ShootParticlesPrimary cloud 0.09 -0.12 -0.19
 ShellDelay 110
 ShootDelay 5
 ShootDelayPrimarySeconds 8
@@ -47,7 +61,7 @@ ReadWeaponsFromGunTypes true
 
 // Protection
 IsExplosionWhenDestroyed true
-ArmorFrontMm 75
+ArmorFrontMm 75 50
 ArmorSideMm 45
 ArmorRearMm 45
 ArmorTopMm 20

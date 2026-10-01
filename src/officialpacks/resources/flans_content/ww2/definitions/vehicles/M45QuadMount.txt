@@ -31,6 +31,7 @@ MaxThrottle 0
 MaxNegativeThrottle 0
 TurnLeftSpeed 0
 TurnRightSpeed 0
+RealTurnRateDegPerSec 0
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
@@ -45,10 +46,10 @@ AlternatePrimary True
 AlternateSecondary False
 ModePrimary FullAuto
 ModeSecondary FullAuto
-ShootPointPrimary -16 17 14 turret 50Cal
-ShootPointPrimary -12 12 16 turret 50Cal
-ShootPointPrimary -16 17 -15 turret 50Cal
-ShootPointPrimary -12 12 -17 turret 50Cal
+ShootPointPrimary 17 17.2 -14 turret 50Cal
+ShootPointPrimary 13 12.2 -16 turret 50Cal
+ShootPointPrimary 17 17.2 15 turret 50Cal
+ShootPointPrimary 13 12.2 17 turret 50Cal
 TurretRotationSpeed 0.08
 RoundsPerMinPrimary 2300
 ReadWeaponsFromGunTypes true

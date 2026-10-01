@@ -6,6 +6,7 @@ Description Japanese Torpedo Bomber Aircraft__Uses Type 99 Ammo / 250kg/500lb Bo
 // Rendering
 Icon 44_D3A
 Model W44.D3A
+FlashModel DefaultFlash
 ModelScale 1.05
 Texture Skin44_D3A
 CameraDistance 10.0
@@ -36,6 +37,7 @@ MaxThrottle 2
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 1.25
 TurnRightSpeed 1.25
+RealTurnRateDegPerSec 22.16
 LookUpSpeed 2.22
 LookDownSpeed 2.22
 RollLeftSpeed 2
@@ -68,7 +70,7 @@ AddAmmo 44_Torpedo
 ShootPointPrimary 33 36 4 core 44_Type99
 ShootPointPrimary 33 36 -4 core 44_Type99
 ShootPointSecondary 5 -8 0 core
-GunOrigin 1 -49 18 0
+GunOrigin 1 -69.3 19.5 0
 ShootParticlesPrimary crit 0.4 0 0
 ShootParticlesPrimary crit 0.4 -0.1 0
 ShootParticlesPrimary crit 0.4 0.1 0
@@ -84,9 +86,9 @@ CollisionDamageThrottle 0.21
 CollisionDamageTimes 20
 
 // Parts and collision
-SetupPart core 400 -150 9 -17 180 48 34
-SetupPart rightWing 225 -45 17 17 58 22 105
-SetupPart leftWing 225 -45 17 -123 58 22 105
+SetupPart core 2660 -150 9 -17 180 48 34
+SetupPart rightWing 570 -45 17 17 58 22 105
+SetupPart leftWing 570 -45 17 -123 58 22 105
 CollisionPoint 45 36 0 core
 CollisionPoint -9 31 111 core
 CollisionPoint -9 31 -111 core

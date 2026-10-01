@@ -7,6 +7,10 @@ Icon m1garand
 Colour 255 255 255
 DeployedModel None
 Model ww2.M1Garand
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.17554 0.34607 -0.00439
+animFlashScale 2.84
 Texture m1garand
 Paintjob m1garand_acacia m1garand_acacia orange 2
 Paintjob m1garand_birch m1garand_birch black 1 yellow 1

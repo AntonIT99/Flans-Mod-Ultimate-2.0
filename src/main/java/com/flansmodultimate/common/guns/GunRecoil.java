@@ -36,6 +36,8 @@ public class GunRecoil
         this.increase = increase;
         this.sneak = sneak;
         this.speed = speed;
+        sprayLength = 0F;
+        antiRecoil = 0F;
     }
 
     /** Empty recoil */

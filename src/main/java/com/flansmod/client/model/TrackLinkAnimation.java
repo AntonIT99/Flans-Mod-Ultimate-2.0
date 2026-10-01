@@ -24,10 +24,8 @@ public final class TrackLinkAnimation
 {
     /** Fraction of the remaining angle a link closes each tick away from the fix segment. */
     private static final float EASE = 0.5F;
-    /** Legacy per-tick link travel, in model pixels per unit of throttle. */
-    private static final float THROTTLE_SPEED = 1.5F;
-    /** Legacy per-tick link travel contributed by steering, in model pixels per degree. */
-    private static final float STEERING_SPEED = 1F / 12F;
+    /** Matches the shared loop phase's differential steering contribution. */
+    private static final float STEERING_SPEED = 0.0025F;
     /** Legacy links started a hundredth of a pixel along the loop rather than exactly on a vertex. */
     private static final float START_OFFSET = 0.01F;
     private static final int MAX_LINKS = 512;
@@ -65,12 +63,12 @@ public final class TrackLinkAnimation
         if (!configure(type))
             return;
 
-        // Legacy link travel is measured in model pixels per tick, while the
-        // shared scroll offset is normalised, so convert through the loop length.
-        float throttle = vehicle.getThrottle();
+        // Only the sign is needed for reverse-running corner fixes. Match the
+        // shared motion-derived phase, including coasting with zero throttle.
+        float travel = vehicle.getTrackTravelStep();
         float steering = vehicle.getWheelYaw();
-        float leftSpeed = throttle * THROTTLE_SPEED - steering * STEERING_SPEED;
-        float rightSpeed = throttle * THROTTLE_SPEED + steering * STEERING_SPEED;
+        float leftSpeed = travel - steering * STEERING_SPEED;
+        float rightSpeed = travel + steering * STEERING_SPEED;
         int ticks = Mth.clamp(elapsed, 1, 5);
 
         for (int tick = 0; tick < ticks; tick++)

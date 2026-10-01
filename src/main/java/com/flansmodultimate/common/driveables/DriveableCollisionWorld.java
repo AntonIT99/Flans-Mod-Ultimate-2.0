@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
@@ -53,8 +54,10 @@ public final class DriveableCollisionWorld
     /** Whether an entity's movement treats driveable hulls as solid at all. */
     public static boolean collidesWithHulls(@Nullable Entity entity)
     {
-        return entity != null && !entity.noPhysics && !entity.isSpectator() && !entity.isPassenger()
-            && !(entity instanceof Driveable) && !(entity instanceof Seat) && !(entity instanceof Wheel)
+        return entity != null && !DriveableCollisionBypass.isEnabled(entity)
+            && !entity.noPhysics && !entity.isSpectator() && !entity.isPassenger()
+            && !(entity instanceof Driveable) && !(entity instanceof AAGun)
+            && !(entity instanceof Seat) && !(entity instanceof Wheel)
             && !(entity instanceof Shootable) && !(entity instanceof Projectile)
             && !(entity instanceof AbstractMinecart) && !(entity instanceof HangingEntity)
             && !(entity instanceof FallingBlockEntity);
@@ -109,6 +112,13 @@ public final class DriveableCollisionWorld
     {
         LevelHulls hulls = hulls(level);
         return hulls != null && !hulls.isEmpty() && hulls.intersects(null, box);
+    }
+
+    /** Cheap broad check before replacing vanilla ray selection near an AA gun. */
+    public static boolean hasAAGunHull(@NotNull Level level, @NotNull AABB box)
+    {
+        LevelHulls hulls = hulls(level);
+        return hulls != null && hulls.hasAAGun(box);
     }
 
     /** Whether the entity stands on a hull, by the same probe the server's floating check uses for blocks. */
@@ -226,10 +236,11 @@ public final class DriveableCollisionWorld
     public static final class LevelHulls
     {
         private final List<DriveableCollisionHelper> helpers = new ArrayList<>();
+        private final List<AAGunCollisionHelper> aaGuns = new ArrayList<>();
 
         boolean isEmpty()
         {
-            return helpers.isEmpty();
+            return helpers.isEmpty() && aaGuns.isEmpty();
         }
 
         void add(DriveableCollisionHelper helper)
@@ -243,9 +254,31 @@ public final class DriveableCollisionWorld
             helpers.remove(helper);
         }
 
+        void add(AAGunCollisionHelper helper)
+        {
+            if (!aaGuns.contains(helper))
+                aaGuns.add(helper);
+        }
+
+        void remove(AAGunCollisionHelper helper)
+        {
+            aaGuns.remove(helper);
+        }
+
         private List<DriveableHullGeometry> collect(Entity entity, AABB reach)
         {
             List<DriveableHullGeometry> nearby = List.of();
+            for (int index = aaGuns.size() - 1; index >= 0; index--)
+            {
+                AAGunCollisionHelper helper = liveAAGun(index);
+                if (helper == null || helper.owner().isPassengerOfSameVehicle(entity)
+                    || !helper.geometry().mayTouch(reach.minX, reach.minY, reach.minZ, reach.maxX,
+                        reach.maxY, reach.maxZ))
+                    continue;
+                if (nearby.isEmpty())
+                    nearby = new ArrayList<>(2);
+                nearby.add(helper.geometry());
+            }
             for (int index = helpers.size() - 1; index >= 0; index--)
             {
                 DriveableCollisionHelper helper = liveHelper(index);
@@ -262,6 +295,13 @@ public final class DriveableCollisionWorld
 
         private boolean intersects(@Nullable Entity entity, AABB box)
         {
+            for (int index = aaGuns.size() - 1; index >= 0; index--)
+            {
+                AAGunCollisionHelper helper = liveAAGun(index);
+                if (helper != null && (entity == null || !helper.owner().isPassengerOfSameVehicle(entity))
+                    && helper.geometry().intersects(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ))
+                    return true;
+            }
             for (int index = helpers.size() - 1; index >= 0; index--)
             {
                 DriveableCollisionHelper helper = liveHelper(index);
@@ -283,6 +323,29 @@ public final class DriveableCollisionWorld
             helpers.remove(index);
             helper.forgetRegistry();
             return null;
+        }
+
+        @Nullable
+        private AAGunCollisionHelper liveAAGun(int index)
+        {
+            AAGunCollisionHelper helper = aaGuns.get(index);
+            if (!helper.owner().isRemoved())
+                return helper;
+            aaGuns.remove(index);
+            helper.forgetRegistry();
+            return null;
+        }
+
+        private boolean hasAAGun(AABB box)
+        {
+            for (int index = aaGuns.size() - 1; index >= 0; index--)
+            {
+                AAGunCollisionHelper helper = liveAAGun(index);
+                if (helper != null && helper.geometry().mayTouch(box.minX, box.minY, box.minZ,
+                    box.maxX, box.maxY, box.maxZ))
+                    return true;
+            }
+            return false;
         }
     }
 }

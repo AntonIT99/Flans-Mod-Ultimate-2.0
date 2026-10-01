@@ -361,7 +361,7 @@ in `gun_categories.json`:
 
 | Class | Dispersion deg | Typical RPM |
 | --- | --- | --- |
-| Precision / sniper rifle | 0.09 – 0.15 | 20 – 60 |
+| Precision / sniper rifle | 0.09 – 0.15 | 30 – 60 |
 | Semiautomatic rifle, DMR | 0.14 – 0.22 | 220 – 320 |
 | Assault rifle, automatic carbine | 0.18 – 0.26 | 550 – 850 |
 | Light and medium machine gun | 0.25 – 0.35 | 450 – 1150 |

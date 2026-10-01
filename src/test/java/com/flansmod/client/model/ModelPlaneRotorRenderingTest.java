@@ -15,6 +15,25 @@ import static org.junit.jupiter.api.Assertions.*;
 class ModelPlaneRotorRenderingTest
 {
     @Test
+    void controlSurfacesReplaceAuthoredAnglesForTheDrawAndRestoreThemAfterwards()
+    {
+        ModelPlane model = new ModelPlane();
+        CapturedRotor flap = new CapturedRotor(model);
+        flap.rotateAngleY = (float)Math.PI;
+        flap.rotateAngleZ = (float)Math.PI;
+
+        model.renderWithRotation(new ModelRendererTurbo[] {flap}, ModelPlane.RotationAxis.Y, 0.2F,
+            new PoseStack(), NoOpVertexConsumer.INSTANCE, 0, 0, 1F, 1F, 1F, 1F, 1F, EnumRenderPass.DEFAULT);
+        assertEquals(0.2F, flap.yawAtRender);
+        assertEquals((float)Math.PI, flap.rotateAngleY);
+
+        model.renderWithRotation(new ModelRendererTurbo[] {flap}, ModelPlane.RotationAxis.Z, -0.1F,
+            new PoseStack(), NoOpVertexConsumer.INSTANCE, 0, 0, 1F, 1F, 1F, 1F, 1F, EnumRenderPass.DEFAULT);
+        assertEquals(-0.1F, flap.pitchAtRender);
+        assertEquals((float)Math.PI, flap.rotateAngleZ);
+    }
+
+    @Test
     void mainAndTailRotorsRotateAboutTheirAuthoredHubAtEveryScaleAndPass()
     {
         ModelPlane model = new ModelPlane();
@@ -31,7 +50,7 @@ class ModelPlaneRotorRenderingTest
                     stack.translate(3D, 4D, 5D);
                     Matrix4f before = new Matrix4f(stack.last().pose());
                     model.renderAround(new ModelRendererTurbo[] {rotor, null}, origin, axis, 90F,
-                        stack, null, 0, 0, 1F, 1F, 1F, 1F, scale, pass);
+                        stack, NoOpVertexConsumer.INSTANCE, 0, 0, 1F, 1F, 1F, 1F, scale, pass);
                     org.joml.Vector3f hub = new org.joml.Vector3f(origin.x * scale, origin.y * scale, origin.z * scale);
                     assertTrue(before.transformPosition(new org.joml.Vector3f(hub))
                         .equals(rotor.pose.transformPosition(new org.joml.Vector3f(hub)), 1E-5F));
@@ -54,6 +73,8 @@ class ModelPlaneRotorRenderingTest
         private Matrix4f pose;
         private boolean oldOrder;
         private EnumRenderPass pass;
+        private float yawAtRender;
+        private float pitchAtRender;
 
         private CapturedRotor(ModelPlane model)
         {
@@ -66,6 +87,8 @@ class ModelPlaneRotorRenderingTest
             pose = new Matrix4f(stack.last().pose());
             oldOrder = oldRotateOrder;
             pass = renderPass;
+            yawAtRender = rotateAngleY;
+            pitchAtRender = rotateAngleZ;
         }
     }
 }

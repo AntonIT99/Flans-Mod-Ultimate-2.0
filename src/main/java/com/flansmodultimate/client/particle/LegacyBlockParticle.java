@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,6 +64,14 @@ public final class LegacyBlockParticle extends TextureSheetParticle
         return new LegacyBlockParticle(level, state, sourcePos, variant, x, y, z, vx, vy, vz);
     }
 
+    @Override
+    public void tick()
+    {
+        gravity = (float) ModPhysics.gravity(1D, level);
+        friction = (float) ModPhysics.dragRetention(0.98D, level);
+        super.tick();
+    }
+
     private TextureAtlasSprite selectLegacySprite(BlockState state, BlockPos sourcePos)
     {
         Minecraft minecraft = Minecraft.getInstance();
@@ -92,9 +102,9 @@ public final class LegacyBlockParticle extends TextureSheetParticle
         int color = Minecraft.getInstance().getBlockColors().getColor(state, level, sourcePos);
         if (color != -1)
         {
-            rCol *= (float)(color >> 16 & 255) / 255.0F;
-            gCol *= (float)(color >> 8 & 255) / 255.0F;
-            bCol *= (float)(color & 255) / 255.0F;
+            rCol *=(color >> 16 & 255) / 255.0F;
+            gCol *= (color >> 8 & 255) / 255.0F;
+            bCol *= (color & 255) / 255.0F;
         }
     }
 

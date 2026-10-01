@@ -21,6 +21,7 @@ Penetrates False
 Mass 2200
 MuzzleVelocity 294
 PenetrationAt100m 260
+HEAT True
 
 // Damage and detonation
 DamageVsLiving 20
@@ -36,4 +37,8 @@ ExplosiveMassTNTg 370
 FlakParticles 0
 HitSound bullet
 SmokeTrail True
+ExplodeParticles 8
+ExplodeParticleType explode
+FlareParticleCount 5
+DebrisParticleCount 4
 TrailParticleType flame

@@ -14,6 +14,9 @@ Paintjob makarov_stoic_blue makarov_stoic_blue blue 2
 Paintjob makarov_stoic_green makarov_stoic_green green 2
 Paintjob makarov_stoic_red makarov_stoic_red red 2
 Paintjob makarov_stoic_orange makarov_stoic_orange orange 2
+FlashModel DefaultFlash
+animMuzzleFlashPoint 0.96154 0.7085 0
+animFlashScale 2.47
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

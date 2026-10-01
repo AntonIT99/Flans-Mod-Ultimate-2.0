@@ -1,6 +1,7 @@
 // Identity
 Name M24 Stielhandgranate
 ShortName 44_stielhandgranate
+Mass 595
 Description German Grenade
 
 // Rendering
@@ -13,7 +14,7 @@ Colour 255 255 255
 StackSize 4
 
 // Throwing and physics
-ThrowSpeed 2.0
+ThrowSpeedMs 12
 ThrowDelay 10
 FallSpeed 1.0
 Bounciness 0.7
@@ -47,4 +48,6 @@ FireRadius 0.0
 // Effects
 TrailParticles false
 ExplodeParticles 3
+FlareParticleCount 2
+DebrisParticleCount 1
 SmokeTime 0

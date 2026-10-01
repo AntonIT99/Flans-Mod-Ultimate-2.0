@@ -14,6 +14,9 @@ Paintjob krissvector_stoic_blue krissvector_stoic_blue blue 3
 Paintjob krissvector_stoic_green krissvector_stoic_green green 3
 Paintjob krissvector_stoic_red krissvector_stoic_red red 3
 Paintjob krissvector_stoic_orange krissvector_stoic_orange orange 3
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.08382 0.23483 0
+animFlashScale 3.46
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

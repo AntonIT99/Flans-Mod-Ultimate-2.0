@@ -6,6 +6,7 @@ Description American SPG Light Tank__Uses : Medium Cal. HE Tank Shell __Year Int
 // Rendering
 Icon 44_M8HMCScott
 Model W44.M8HMCScott
+FlashModel DefaultFlash
 ModelScale 0.95
 Texture Skin44_M8
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.6092
 ClutchBrake 0.031
 TurnLeftSpeed 0.62
 TurnRightSpeed 0.62
+RealTurnRateDegPerSec 20
 CanRoll true
 
 // Wheels and tracks
@@ -84,7 +86,7 @@ AllowAllAmmo false
 AddAmmo 44_MediumHEShell
 AddAmmo 44_75HEATShellShort
 AddGun 15 42 7 turret 44_50Cal
-BarrelPosition 34 31 0
+BarrelPosition 30.9 30.4 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -147,9 +149,10 @@ ArmorBottomMm 10
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1500 -48 -2 -24 96 42 48
-SetupPart leftTrack 300 -42 -10 -24 87 19 9
-SetupPart rightTrack 300 -42 -10 15 87 19 9
+SetupPart core 7400 -48 -2 -24 96 28 48
+SetupPart turret 1400 -10 26 -13 29 12 41
+SetupPart leftTrack 600 -42 -10 -24 87 19 9
+SetupPart rightTrack 600 -42 -10 15 87 19 9
 
 // Seats
 Driver 0 30 0 -360 360 -10 25

@@ -166,5 +166,6 @@ public class ModelR870 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(8.125F, 1.40625F, 0F);
 	}
 }

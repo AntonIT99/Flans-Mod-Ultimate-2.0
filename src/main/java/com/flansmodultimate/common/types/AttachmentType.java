@@ -41,6 +41,14 @@ public class AttachmentType extends PaintableType implements IScope
     /** Flashlight strength between 0 and 15 */
     @Getter
     protected int flashlightStrength = 12;
+    /** If true, the gun's toggle key switches this attachment on and off. Flashlights are toggleable by default */
+    @Getter
+    protected boolean toggleable;
+    /** Sounds played when the gun's toggle key switches this attachment on or off */
+    @Getter
+    protected String toggleOnSound;
+    @Getter
+    protected String toggleOffSound;
     /** If true, disable the muzzle flash model */
     @Getter
     protected boolean disableMuzzleFlash;
@@ -139,6 +147,11 @@ public class AttachmentType extends PaintableType implements IScope
         flashlight = readValue("Flashlight", flashlight, file);
         flashlightRange = readValue("FlashlightRange", flashlightRange, file);
         flashlightStrength = readValue("FlashlightStrength", flashlightStrength, file);
+
+        //Toggle settings
+        toggleable = readValue("Toggleable", flashlight, file);
+        toggleOnSound = readSound("ToggleOnSound", toggleOnSound, file);
+        toggleOffSound = readSound("ToggleOffSound", toggleOffSound, file);
 
         //Mode override
         modeOverrideString = readValue("ModeOverride", modeOverrideString, file);

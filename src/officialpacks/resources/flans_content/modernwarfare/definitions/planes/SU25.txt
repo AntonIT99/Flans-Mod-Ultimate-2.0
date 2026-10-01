@@ -5,6 +5,7 @@ ShortName SU25
 // Item and rendering
 Icon SU25
 Model mw.SU25
+FlashModel DefaultFlash
 Texture SU25
 ModelScale 1.0
 AddDye 8 red
@@ -43,6 +44,7 @@ MaxThrottle 8.0
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 4
 TurnRightSpeed 4
+RealTurnRateDegPerSec 22.17
 LookUpSpeed 4
 LookDownSpeed 4
 RollLeftSpeed 4

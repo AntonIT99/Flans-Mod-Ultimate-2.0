@@ -1,12 +1,63 @@
 package com.flansmodultimate.common.driveables;
 
-/** Pure legacy control calculations shared by driveable simulations. */
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+
+/** Pure control calculations shared by driveable simulations. */
 public final class DriveableControlPhysics
 {
     private static final float CONTROL_RETENTION = 0.9F;
     private static final float MAX_CONTROL_ANGLE = 20F;
+    private static final float HELD_CONTROL_ANGLE = CONTROL_RETENTION / (1F - CONTROL_RETENTION);
+    /** Aircraft taxi steering is measured at walking/slow taxi speed, not maximum flight speed. */
+    public static final double PLANE_GROUND_STEERING_REFERENCE_KMH = 10D;
 
     private DriveableControlPhysics() {}
+
+    /**
+     * Authored hull yaw rate, independent of engine speed and legacy steering modifiers.
+     * The held-key recurrence tends to 9, not MAX_CONTROL_ANGLE. Single-track control
+     * already carries its half-authority factor. Rolling vehicles reverse steering
+     * with their travel direction and cannot pivot while stationary.
+     */
+    public static float realSteeringYawDelta(float rateDegPerSec, float control, boolean tracked,
+                                             boolean engineActive, double signedSpeed, double referenceSpeed)
+    {
+        if (!Float.isFinite(rateDegPerSec) || rateDegPerSec <= 0F || !Float.isFinite(control))
+            return 0F;
+        double speedFactor;
+        if (tracked)
+            speedFactor = engineActive ? 1D : 0D;
+        else
+            speedFactor = Double.isFinite(signedSpeed) && Double.isFinite(referenceSpeed) && referenceSpeed > 0D
+                ? Math.max(-1D, Math.min(1D, signedSpeed / referenceSpeed)) : 0D;
+        return (float) (rateDegPerSec / VehiclePhysicsUnits.TICKS_PER_SECOND
+            * clamp(control / HELD_CONTROL_ANGLE, -1F, 1F) * speedFactor);
+    }
+
+    /** The automatic broken-track turn uses the held-input range in the real-rate model. */
+    public static float realSingleTrackTurnControl(float throttle, float steeringControl, boolean steeringHeld,
+                                                   boolean leftTrackIntact, boolean rightTrackIntact)
+    {
+        float control = singleTrackTurnControl(throttle, steeringControl, steeringHeld, leftTrackIntact, rightTrackIntact);
+        return steeringHeld ? control : control * HELD_CONTROL_ANGLE / MAX_CONTROL_ANGLE;
+    }
+
+    /** Replaces only wheel-supported aircraft yaw; an airborne or forced-legacy plane keeps flight yaw. */
+    public static float planeGroundSteeringYawDelta(float flightYaw, float rate, float control,
+                                                   double signedSpeed, boolean wheelSupported, boolean forceLegacy)
+    {
+        if (forceLegacy || !wheelSupported || !Float.isFinite(rate) || rate <= 0F)
+            return flightYaw;
+        return realSteeringYawDelta(rate, control, false, false, signedSpeed,
+            VehiclePhysicsUnits.kmhToBlocksPerTick(PLANE_GROUND_STEERING_REFERENCE_KMH));
+    }
+
+    /** Steering follows rolling direction, even with a neutral throttle or an inactive engine. */
+    public static double wheeledSteeringVelocityScale(double signedSpeed)
+    {
+        // Match the legacy full-throttle steering scale at its nominal 0.32 speed factor.
+        return Double.isFinite(signedSpeed) ? signedSpeed * (0.1D / 0.32D) : 0D;
+    }
 
     /**
      * Legacy throttle is a normalized control value. MaxThrottle and
@@ -28,18 +79,16 @@ public final class DriveableControlPhysics
         return Math.round(clamp(throttle, -1F, 1F) * 100F);
     }
 
-    /**
-     * Centres an engine's authored pitch span on normal pitch and moves across it with throttle.
-     * Reverse uses the fraction of forward top speed that the driveable can attain in reverse.
-     */
-    public static float engineSoundPitch(float throttle, float pitchRange, float reverseSpeedRatio)
+    /** Interpolates the authored forward curve; reverse traverses it by its speed ratio. */
+    public static float engineSoundPitch(float throttle, EngineSoundPitch curve, float reverseSpeedRatio)
     {
-        float safeRange = Float.isFinite(pitchRange) ? Math.max(0F, pitchRange) : 0F;
         float magnitude = Float.isFinite(throttle) ? clamp(Math.abs(throttle), 0F, 1F) : 0F;
-        float directionalRange = throttle < 0F
-            ? safeRange * (Float.isFinite(reverseSpeedRatio) ? Math.max(0F, reverseSpeedRatio) : 0F)
-            : safeRange;
-        return clamp(1F - safeRange * 0.5F + magnitude * directionalRange, 0.01F, 2F);
+        if (throttle < 0F)
+            magnitude = clamp(magnitude * (Float.isFinite(reverseSpeedRatio) ? Math.max(0F, reverseSpeedRatio) : 0F), 0F, 1F);
+        float pitch = magnitude <= 0.5F
+            ? curve.base() + (curve.half() - curve.base()) * (magnitude * 2F)
+            : curve.half() + (curve.full() - curve.half()) * ((magnitude - 0.5F) * 2F);
+        return Float.isFinite(pitch) ? Math.max(0.01F, pitch) : 0.01F;
     }
 
     /** Moves a brake-held throttle lever toward neutral without snapping it there. */

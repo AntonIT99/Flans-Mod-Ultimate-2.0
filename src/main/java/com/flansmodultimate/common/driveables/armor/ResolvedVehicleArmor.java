@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.driveables.armor;
 
+import com.flansmodultimate.common.driveables.DriveableCollisionProfile;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 
 import net.minecraft.util.Mth;
@@ -41,6 +42,16 @@ public final class ResolvedVehicleArmor
         return !source.isEmpty();
     }
 
+    /** Whether this face inherits an authored plate, including an explicit zero-thickness plate. */
+    public boolean isPlateConfigured(EnumDriveablePart part, EnumArmorFacing facing)
+    {
+        if (part == null || facing == null || !plates.containsKey(part))
+            return false;
+        return source.partOverrides().containsKey(part)
+            || DriveableCollisionProfile.isTurretMountedPart(part) && source.turret().containsKey(facing)
+            || source.hull().containsKey(facing);
+    }
+
     public ResolvedArmorPlate plate(EnumDriveablePart part, EnumArmorFacing facing)
     {
         EnumArmorFacing safeFacing = facing == null ? EnumArmorFacing.FRONT : facing;
@@ -53,10 +64,18 @@ public final class ResolvedVehicleArmor
     public ResolvedArmorHit resolveHit(EnumDriveablePart part, EnumArmorFacing facing,
                                        Vec3 projectileDirection, double maxImpactAngleDeg)
     {
+        return resolveHit(part, facing, projectileDirection, maxImpactAngleDeg, false);
+    }
+
+    /** @param shapedCharge resolve against the face's protection against HEAT instead of its kinetic value */
+    public ResolvedArmorHit resolveHit(EnumDriveablePart part, EnumArmorFacing facing,
+                                       Vec3 projectileDirection, double maxImpactAngleDeg, boolean shapedCharge)
+    {
         EnumArmorFacing safeFacing = facing == null ? EnumArmorFacing.FRONT : facing;
         ResolvedArmorPlate plate = plate(part, safeFacing);
         ArmorPlate authored = plate.authored();
-        if (!authored.isArmoured())
+        float thickness = authored.thicknessAgainst(shapedCharge);
+        if (!Float.isFinite(thickness) || thickness <= 0F)
             return new ResolvedArmorHit(part, safeFacing, authored, plate.virtualNormal(), 0F, 0F);
 
         double safeMaxAngle = Double.isFinite(maxImpactAngleDeg)
@@ -65,9 +84,9 @@ public final class ResolvedVehicleArmor
         Vec3 direction = projectileDirection == null ? Vec3.ZERO : projectileDirection.normalize();
         double rawCosine = -direction.dot(plate.virtualNormal());
         double cosine = Mth.clamp(rawCosine, minimumCosine, 1D);
-        double effective = authored.thicknessMm() / cosine;
+        double effective = thickness / cosine;
         if (!Double.isFinite(effective))
-            effective = authored.thicknessMm() / minimumCosine;
+            effective = thickness / minimumCosine;
         float impactAngle = (float) Math.toDegrees(Math.acos(Mth.clamp(cosine, -1D, 1D)));
         return new ResolvedArmorHit(part, safeFacing, authored, plate.virtualNormal(), impactAngle,
             (float) effective);

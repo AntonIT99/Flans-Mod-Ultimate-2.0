@@ -61,7 +61,7 @@ class ModelPlaneValkyrieRenderingTest
             model.valkyrie[i] = new ModelRendererTurbo[] {joints[i]};
         }
         PoseStack stack = new PoseStack();
-        model.renderValkyriePart(null, ModelDriveable.RenderState.ITEM, animation.getCore(), null, stack, null,
+        model.renderValkyriePart(null, ModelDriveable.RenderState.ITEM, animation.getCore(), null, stack, NoOpVertexConsumer.INSTANCE,
             0, 0, 1F, 1F, 1F, 1F, 1F, EnumRenderPass.values()[0]);
         assertTrue(stack.clear(), "The skeleton must leave the pose stack balanced");
         return joints;

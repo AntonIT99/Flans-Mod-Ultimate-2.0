@@ -20,6 +20,12 @@ Nested `AGENTS.md` files add rules for their directories.
 - For auditing or expanding the visual effects (muzzle flashes, shoot particles,
   emitters, trails, explosion particles) of a selected source content pack, read
   `.agents/skills/content-pack-visual-effects-expansion/SKILL.md` before editing.
+- For adding plausible `muzzleFlashPoint` coordinates to existing Java gun models
+  in a selected source content pack, read
+  `.agents/skills/content-pack-muzzle-flash-points/SKILL.md` before editing.
+- For auditing or reshaping driveable part hitboxes and their HP distribution in
+  a selected source content pack, read
+  `.agents/skills/content-pack-driveable-hitboxes/SKILL.md` before editing.
 - For decompiling reference classes that exist only as bytecode, read
   `.agents/skills/mod-class-decompilation/SKILL.md`; output goes to the gitignored
   `decompiled/` cache.
@@ -54,9 +60,9 @@ checking. They are read-only references: never edit them unless explicitly asked
 - `../FlansMod` - the original 1.12.2 project. **Secondary** reference; use when 1.7.10 is
   ambiguous or the question concerns newer-loader concerns. If the two disagree, 1.7.10
   wins unless the user says otherwise.
-- `../Flan's Mod Aryan Indian Edition Krishna Mk6C` - a heavily modified 1.7.10 fork, used
-  occasionally as an extra reference for alternative implementations. Treat it as
-  inspiration, not authority.
+- `../flans-mod-labjac-edition-ganesha-mk1a-1.7.10` - the newer Labjac Edition
+  Ganesha Mk1A 1.7.10 fork, used occasionally as an extra reference for alternative
+  implementations. Treat it as inspiration, not authority.
 
 ## Build and Validation
 

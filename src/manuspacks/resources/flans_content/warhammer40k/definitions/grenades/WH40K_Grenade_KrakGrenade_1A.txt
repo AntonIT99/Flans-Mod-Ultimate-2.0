@@ -1,6 +1,7 @@
 // Identity
 Name Krak Grenade
 ShortName WH40K_Grenade_KrakGrenade_1A
+Mass 1200
 
 // Model and Rendering
 Icon Icon_WH40K_Grenade_KrakGrenade_1A
@@ -16,7 +17,7 @@ SpinWhenThrown true
 ThrowDelay 10
 DetonateOnImpact false
 Bounciness 0.8
-ThrowSpeed 2.0
+ThrowSpeedMs 12
 FallSpeed 1.0
 BreaksGlass true
 PenetratesBlocks false
@@ -41,4 +42,6 @@ FragType THICK_CASE
 // Effects
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 2
+DebrisParticleCount 1
 SmokeTime 0

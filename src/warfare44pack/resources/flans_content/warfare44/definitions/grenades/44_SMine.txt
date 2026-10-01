@@ -1,6 +1,7 @@
 // Identity
 Name S-Mine
 ShortName 44_SMine
+Mass 4000
 
 // Rendering
 Icon 44_SMine
@@ -13,7 +14,7 @@ Colour 255 255 255
 StackSize 1
 
 // Throwing and physics
-ThrowSpeed 0.5
+ThrowSpeedMs 6
 ThrowDelay 20
 FallSpeed 1
 Bounciness 0
@@ -45,4 +46,6 @@ FireRadius 0.0
 // Effects
 TrailParticles false
 ExplodeParticles 2
+FlareParticleCount 2
+DebrisParticleCount 1
 SmokeTime 0

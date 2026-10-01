@@ -6,6 +6,7 @@ Description German Light Tank__Uses : 37mm AP Tank Shell_Small Cal. HE Tank Shel
 // Rendering
 Icon 44_Panzer38t
 Model W44.Panzer38t
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_Panzer38t
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.4805
 ClutchBrake 0.02125
 TurnLeftSpeed 0.425
 TurnRightSpeed 0.425
+RealTurnRateDegPerSec 26
 CanRoll true
 SquashMobs True
 
@@ -88,8 +90,8 @@ AddAmmo 44_37APShell
 AddAmmo 44_SmallHEShell
 AddAmmo 44_37APCRShell
 AddGun 27 29 8 turret 44_Mg26t
-GunOrigin 1 40 -5 4
-BarrelPosition 45 28 0
+GunOrigin 1 38 -4 -4.4
+BarrelPosition 43.2 28.2 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -156,9 +158,10 @@ TurretArmorTopMm 8
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1500 -48 -2 -24 96 42 48
-SetupPart leftTrack 300 -42 -10 -24 87 19 9
-SetupPart rightTrack 300 -42 -10 15 87 19 9
+SetupPart core 7400 -48 -2 -24 96 27 48
+SetupPart turret 1400 -18 25 -16 35 14 32
+SetupPart leftTrack 600 -42 -10 -24 87 19 9
+SetupPart rightTrack 600 -42 -10 15 87 19 9
 
 // Seats
 Driver 0 26 0 -360 360 -10 20

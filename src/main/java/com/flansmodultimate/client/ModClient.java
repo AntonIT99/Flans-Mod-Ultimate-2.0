@@ -79,6 +79,8 @@ public class ModClient
 
     public static final HumanoidModel.ArmPose bothArmsAim = ArmPosePlatform.bothArmsAim();
     public static final HumanoidModel.ArmPose oneArmAim = ArmPosePlatform.oneArmAim();
+    public static final HumanoidModel.ArmPose oneArmThrow = ArmPosePlatform.oneArmThrow();
+    public static final HumanoidModel.ArmPose bowSupport = ArmPosePlatform.bowSupport();
 
     /**
      * Arm transform of {@link #bothArmsAim}: both arms straight forward, independent of head pitch.
@@ -103,6 +105,39 @@ public class ModClient
         ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
         float side = arm == HumanoidArm.RIGHT ? 1F : -1F;
         part.yRot = -side * 0.1F + model.head.yRot;
+        part.xRot = -Mth.PI / 2F + model.head.xRot;
+    }
+
+    /**
+     * Arm transform of {@link #oneArmThrow}: the vanilla spear charge of the throwing arm. Vanilla poses only
+     * the arm of an item in use, so this also applies the gun pose of the other arm, which would otherwise
+     * drop. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.THROW} mirrors it.
+     */
+    public static void poseOneArmThrow(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
+    {
+        ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
+        float swing = part.xRot;
+        HumanoidArm otherArm = arm.getOpposite();
+        HumanoidModel.ArmPose otherPose = otherArm == HumanoidArm.RIGHT ? model.rightArmPose : model.leftArmPose;
+        if (otherPose == oneArmAim)
+            poseOneArmAim(model, entity, otherArm);
+        else if (otherPose == bothArmsAim)
+            poseBothArmsAim(model, entity, otherArm);
+        else if (otherPose == bowSupport)
+            poseBowSupport(model, entity, otherArm);
+        part.xRot = swing * 0.5F - Mth.PI;
+        part.yRot = 0F;
+    }
+
+    /**
+     * Arm transform of {@link #bowSupport}: the free arm of the vanilla bow pose, reaching across towards
+     * where the head looks. The server-side hitbox pose {@code PlayerSnapshot.ArmPose.SUPPORT} mirrors it.
+     */
+    public static void poseBowSupport(HumanoidModel<?> model, LivingEntity entity, HumanoidArm arm)
+    {
+        ModelPart part = arm == HumanoidArm.RIGHT ? model.rightArm : model.leftArm;
+        float side = arm == HumanoidArm.RIGHT ? 1F : -1F;
+        part.yRot = -side * 0.5F + model.head.yRot;
         part.xRot = -Mth.PI / 2F + model.head.xRot;
     }
 
@@ -157,6 +192,8 @@ public class ModClient
     /** The scope that is currently being looked down */
     @Getter
     private static IScope currentScope;
+    /** The hand of the gun being looked down, kept after unscoping so that gun also plays the transition out */
+    private static InteractionHand scopeHand = InteractionHand.MAIN_HAND;
     /** The transition variable for zooming in / out with a smoother. 0 = unscoped, 1 = scoped */
     @Getter
     private static float zoomProgress;
@@ -304,7 +341,7 @@ public class ModClient
         return Objects.requireNonNullElse(animations, new GunAnimations());
     }
 
-    public static void updateScope(@Nullable IScope desiredScope, ItemStack gunStack, GunItem gunItem)
+    public static void updateScope(@Nullable IScope desiredScope, ItemStack gunStack, GunItem gunItem, InteractionHand hand)
     {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
@@ -313,13 +350,14 @@ public class ModClient
         if (scopeTime > 0 || player == null || mc.screen != null || currentScope == desiredScope)
             return;
 
-        if (!canUseScope(player))
+        if (!canUseScope(player, hand))
             return;
 
         if (currentScope == null && desiredScope != null)
         {
             // entering scope
             currentScope = desiredScope;
+            scopeHand = hand;
             lastZoomLevel = gunItem.hasVariableZoom(gunStack)
                 ? gunItem.getCurrentVariableZoom(gunStack) : desiredScope.getZoomFactor();
             lastFOVZoomLevel = desiredScope.getFovFactor();
@@ -527,7 +565,7 @@ public class ModClient
 
         GunType gunType = itemGun.getConfigType();
         AttachmentType grip = gunType.getGrip(stack);
-        if (grip != null && grip.isFlashlight())
+        if (grip != null && grip.isFlashlight() && gunType.isAttachmentActive(stack, grip))
             return grip;
 
         return null;
@@ -756,13 +794,13 @@ public class ModClient
     {
         if (currentScope != null)
         {
-            if (!canUseScope(player))
+            if (!canUseScope(player, scopeHand))
             {
                 exitScope(mc);
                 return;
             }
 
-            ItemStack stackInHand = player.getMainHandItem();
+            ItemStack stackInHand = player.getItemInHand(scopeHand);
             Item itemInHand = stackInHand.getItem();
 
             // If the currently held item is not a gun or is the wrong gun, unscope
@@ -806,16 +844,39 @@ public class ModClient
         PacketHandler.sendToServer(new PacketGunScopedState(false));
     }
 
-    private static boolean canUseScope(Player player)
+    private static boolean canUseScope(Player player, InteractionHand hand)
     {
-        ItemStack stack = player.getMainHandItem();
-        if (player.getVehicle() instanceof Seat || player.isSprinting() || !(stack.getItem() instanceof GunItem))
+        if (player.getVehicle() instanceof Seat || player.isSprinting() || getScopingHand(player) != hand)
             return false;
 
         GunAnimations mainAnims = getGunAnimations(player, InteractionHand.MAIN_HAND);
         GunAnimations offAnims = getGunAnimations(player, InteractionHand.OFF_HAND);
 
         return !mainAnims.isReloading() && !offAnims.isReloading();
+    }
+
+    /**
+     * The hand whose gun can be looked down: the main hand's gun, or an off-hand gun held alone. A gun
+     * in each hand is fired from the hip only.
+     */
+    @Nullable
+    public static InteractionHand getScopingHand(Player player)
+    {
+        if (player.getMainHandItem().getItem() instanceof GunItem)
+            return InteractionHand.MAIN_HAND;
+        if (player.getMainHandItem().isEmpty() && player.getOffhandItem().getItem() instanceof GunItem)
+            return InteractionHand.OFF_HAND;
+        return null;
+    }
+
+    /** Whether the first-person gun in this arm is the one being looked down, or the last one that was. */
+    public static boolean isScopeArm(HumanoidArm arm)
+    {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null)
+            return arm == HumanoidArm.RIGHT;
+        HumanoidArm mainArm = player.getMainArm();
+        return arm == (scopeHand == InteractionHand.MAIN_HAND ? mainArm : mainArm.getOpposite());
     }
 
     private static void updateZoom()

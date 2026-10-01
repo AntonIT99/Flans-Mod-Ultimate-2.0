@@ -6,6 +6,7 @@ Description American Armored Car
 // Item and rendering
 Icon GreyHound
 Model ww2.Greyhound
+FlashModel DefaultFlash
 Texture greyhound
 RotateWheels True
 AddDye 4 green
@@ -41,15 +42,16 @@ MaxThrottle 0.65
 MaxNegativeThrottle 0.45
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 177.06
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank false
 
 // Weaponry
-GunOrigin 1 50 -1 10
-AddGun 8 20 10 turret browning
-BarrelPosition 40 28 0
+GunOrigin 1 49.5 -2.4 9
+AddGun 20.3 27 3.6 turret browning
+BarrelPosition 46.8 26.5 0
 ShootDelay 1
 ShellDelay 70
 TurretRotationSpeed 0.035
@@ -102,4 +104,10 @@ StartSoundLength 7
 EngineSound engine_lt_armoredcar
 EngineSoundLength 39
 ShootSoundPrimary shoot_37mus
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.46 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.28 0.07 0.07
+ShootParticlesPrimary largesmoke 0.26 -0.07 -0.07
 ShootSoundSecondary BrowningShoot

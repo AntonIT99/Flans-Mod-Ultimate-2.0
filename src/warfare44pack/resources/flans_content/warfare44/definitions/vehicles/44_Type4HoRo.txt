@@ -6,6 +6,7 @@ Description Japanese Light Tank Destroyer__Uses : Very Large Cal. HE Tank Shell 
 // Rendering
 Icon 44_Type4HoRo
 Model W44.Type4HoRo
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_Type4HoRo
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.4442
 ClutchBrake 0.0185
 TurnLeftSpeed 0.37
 TurnRightSpeed 0.37
+RealTurnRateDegPerSec 20
 CanRoll true
 SquashMobs True
 
@@ -92,8 +94,8 @@ BulletSpeed 5
 BulletDetection 5
 AllowAllAmmo false
 AddAmmo 44_VeryLargeHEShell
-GunOrigin 1 -9 49 -120
-BarrelPosition 35 34 0
+GunOrigin 1 2.3 27.4 -12
+BarrelPosition 32 34.5 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -156,9 +158,9 @@ ArmorBottomMm 8
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 825 -74 -2 -24 116 42 48
-SetupPart leftTrack 300 -74 -10 -24 112 19 9
-SetupPart rightTrack 300 -74 -10 15 112 19 9
+SetupPart core 8800 -74 -2 -24 116 42 48
+SetupPart leftTrack 600 -74 -10 -24 112 19 9
+SetupPart rightTrack 600 -74 -10 15 112 19 9
 
 // Seats
 Driver -7 20 12 -3 3 -10 20

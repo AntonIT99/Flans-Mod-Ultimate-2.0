@@ -6,6 +6,7 @@ Description British Cruiser Tank__Uses : 76mm AP Tank Shell - Long_Medium Cal. H
 // Rendering
 Icon 44_Challenger
 Model W44.Challenger
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_Challenger
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.5333
 ClutchBrake 0.02525
 TurnLeftSpeed 0.505
 TurnRightSpeed 0.505
+RealTurnRateDegPerSec 20
 CanRoll true
 
 // Wheels and tracks
@@ -88,7 +90,7 @@ AddAmmo 44_17PdrAPDSShell
 AddAmmo 44_17PdrAPCBCShell
 AddAmmo 44_17PdrHEShell
 AddGun 20 34 6 turret 44_Bren
-BarrelPosition 86 32 0
+BarrelPosition 89.5 32.3 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -151,10 +153,11 @@ ArmorBottomMm 14
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 800 -59 0 -24 89 45 48
-SetupPart frontalArmor 1250 30 0 -24 26 22 48
-SetupPart leftTrack 300 -73 -10 -30 133 20 12
-SetupPart rightTrack 300 -73 -10 18 133 20 12
+SetupPart core 6400 -59 0 -24 89 24 48
+SetupPart turret 1400 -25 24 -20 45 21 40
+SetupPart frontalArmor 1000 30 0 -24 26 22 48
+SetupPart leftTrack 600 -73 -10 -30 133 20 12
+SetupPart rightTrack 600 -73 -10 18 133 20 12
 
 // Seats
 Driver 0 36 0 -360 360 -10 20

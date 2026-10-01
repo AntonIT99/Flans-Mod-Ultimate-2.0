@@ -2,6 +2,7 @@
 
     "20x28mm HE Airburst Grenade": {
         "properties": {
+            "Mass": 110,
             "ExplosiveMassTNTg": 20,
             "FragType": "AIRBURST_AP"
         },
@@ -12,6 +13,7 @@
 
     "20x28mm High-Explosive Grenade": {
         "properties": {
+            "Mass": 110,
             "ExplosiveMassTNTg": 20,
             "FragType": "HE_SHELL"
         },
@@ -22,6 +24,7 @@
 
     "20x85mm HE Airburst Grenade": {
         "properties": {
+            "Mass": 200,
             "ExplosiveMassTNTg": 40,
             "FragType": "AIRBURST_AP"
         },
@@ -32,6 +35,7 @@
 
     "20x85mm High-Explosive Grenade": {
         "properties": {
+            "Mass": 200,
             "ExplosiveMassTNTg": 40,
             "FragType": "HE_SHELL"
         },
@@ -42,6 +46,7 @@
 
     "25mm HE Airburst Grenade": {
         "properties": {
+            "Mass": 200,
             "ExplosiveMassTNTg": 30,
             "FragType": "AIRBURST_AP"
         },
@@ -52,6 +57,8 @@
 
     "40mm Launched Chemical Grenade (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 230,
             "FragType": "DEFAULT",
             "Fuse": 20
         },
@@ -62,6 +69,8 @@
 
     "40mm Launched HE Grenade (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 230,
             "ExplosiveMassTNTg": "32",
             "FragType": "HE_SHELL"
         },
@@ -73,6 +82,8 @@
 
     "40mm Launched Incendiary Grenade (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 230,
             "FragType": "DEFAULT",
             "Fuse": 40
         },
@@ -83,6 +94,8 @@
 
     "Anti-Tank Mine (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 0,
+            "Mass": 9000,
             "ExplosiveMassTNTKg": 5.5,
             "FragType": "THICK_CASE"
         },
@@ -93,6 +106,7 @@
 
     "Black-Powder Hand Bomb (Generic)": {
         "properties": {
+            "Mass": 500,
             "ExplosiveMassTNTg": 190,
             "FragType": "THICK_CASE"
         },
@@ -103,6 +117,8 @@
 
     "C4 Plastic Explosive": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 1000,
             "ExplosiveMassTNTg": 760,
             "FragType": "DEFAULT"
         },
@@ -113,6 +129,7 @@
 
     "Chemical Gas Grenade (Generic)": {
         "properties": {
+            "Mass": 500,
             "FragType": "DEFAULT"
         },
         "items": [
@@ -122,6 +139,7 @@
 
     "Creeper Charge (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
             "ExplosiveMassTNTKg": "3",
             "FragType": "DEFAULT",
             "Fuse": 30
@@ -133,6 +151,8 @@
 
     "Dynamite Stick": {
         "properties": {
+            "ThrowSpeedMs": 8,
+            "Mass": 250,
             "ExplosiveMassTNTg": 230,
             "FragType": "DEFAULT"
         },
@@ -143,6 +163,7 @@
 
     "F1 Fragmentation Grenade": {
         "properties": {
+            "Mass": 600,
             "ExplosiveMassTNTg": "60",
             "FragType": "STD_FRAG",
             "Fuse": 80
@@ -163,6 +184,8 @@
 
     "Frag Grenade, Imperial (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 500,
             "ExplosiveMassTNTg": "75",
             "FragType": "STD_FRAG",
             "Fuse": 80
@@ -174,6 +197,8 @@
 
     "Gas Mine (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 6,
+            "Mass": 1000,
             "FragType": "DEFAULT"
         },
         "items": [
@@ -183,6 +208,8 @@
 
     "GBU-43/B MOAB": {
         "properties": {
+            "ThrowSpeedMs": 6,
+            "Mass": 9800000,
             "ExplosiveMassTNTKg": 11021,
             "FragType": "LOW_FRAG"
         },
@@ -194,6 +221,8 @@
 
     "Geballte Ladung 3kg": {
         "properties": {
+            "ThrowSpeedMs": 0,
+            "Mass": 3000,
             "ExplosiveMassTNTKg": "3",
             "FragType": "DEFAULT",
             "Fuse": 100
@@ -206,6 +235,7 @@
 
     "Inert Thrown Object (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 12,
             "FragType": "DEFAULT"
         },
         "items": [
@@ -216,6 +246,8 @@
 
     "Krak Grenade (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 1200,
             "ExplosiveMassTNTg": "850",
             "FragType": "THICK_CASE",
             "Fuse": 80
@@ -227,6 +259,7 @@
 
     "Kugelrohrhandgranate": {
         "properties": {
+            "Mass": 500,
             "ExplosiveMassTNTg": "60",
             "FragType": "STD_FRAG",
             "Fuse": 140
@@ -238,6 +271,8 @@
 
     "Land Mine (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 6,
+            "Mass": 1000,
             "ExplosiveMassTNTg": 200,
             "FragType": "LOW_FRAG"
         },
@@ -249,6 +284,8 @@
 
     "Launched Impact Grenade (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 230,
             "ExplosiveMassTNTg": "32",
             "FragType": "HE_SHELL"
         },
@@ -259,6 +296,8 @@
 
     "M8 HC Smoke Grenade": {
         "properties": {
+            "ThrowSpeedMs": 10,
+            "Mass": 540,
             "FragType": "DEFAULT",
             "Fuse": 100
         },
@@ -269,8 +308,12 @@
 
     "M18A1 Claymore Mine": {
         "properties": {
+            "ThrowSpeedMs": 0,
+            "Mass": 1600,
             "ExplosiveMassTNTg": "934",
-            "FragType": "HIGH_FRAG"
+            "FragType": "PREFORMED",
+            "FragPattern": "FORWARD_FAN",
+            "FragCount": 700
         },
         "items": [
             "claymore"
@@ -279,6 +322,8 @@
 
     "M67 Fragmentation Hand Grenade": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 400,
             "ExplosiveMassTNTg": "205",
             "FragType": "HIGH_FRAG"
         },
@@ -298,6 +343,8 @@
 
     "Mills Bomb": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 765,
             "ExplosiveMassTNTg": "75",
             "FragType": "STD_FRAG",
             "Fuse": 80
@@ -309,6 +356,8 @@
 
     "Mk 2 Pineapple Grenade": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 595,
             "ExplosiveMassTNTg": "85",
             "FragType": "STD_FRAG",
             "Fuse": 80
@@ -321,6 +370,8 @@
 
     "Molotov Cocktail": {
         "properties": {
+            "ThrowSpeedMs": 10,
+            "Mass": 750,
             "FragType": "LOW_FRAG",
             "Fuse": 80
         },
@@ -331,6 +382,8 @@
 
     "Nebelhandgranate 39": {
         "properties": {
+            "ThrowSpeedMs": 10,
+            "Mass": 800,
             "FragType": "DEFAULT",
             "Fuse": 100
         },
@@ -341,6 +394,7 @@
 
     "No.27 White Phosphorus Grenade": {
         "properties": {
+            "Mass": 440,
             "FragType": "DEFAULT"
         },
         "items": [
@@ -350,6 +404,8 @@
 
     "No. 73 Mk I Anti-Tank Grenade": {
         "properties": {
+            "ThrowSpeedMs": 6,
+            "Mass": 2000,
             "ExplosiveMassTNTKg": "1.179",
             "FragType": "DEFAULT"
         },
@@ -386,6 +442,8 @@
 
     "Proximity Blast Mine (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 6,
+            "Mass": 1500,
             "ExplosiveMassTNTg": "900",
             "FragType": "LOW_FRAG"
         },
@@ -397,6 +455,7 @@
 
     "RDG-2 Smoke Grenade": {
         "properties": {
+            "Mass": 500,
             "FragType": "DEFAULT"
         },
         "items": [
@@ -406,6 +465,8 @@
 
     "RGD-33 Grenade": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 500,
             "ExplosiveMassTNTg": "85",
             "FragType": "SLEEVE_FRAG",
             "Fuse": 70
@@ -417,8 +478,13 @@
 
     "S-Mine 35": {
         "properties": {
+            "Mass": 4000,
             "ExplosiveMassTNTg": "182",
-            "FragType": "AIRBURST_AP"
+            "FragType": "PREFORMED",
+            "FragCount": 360,
+            "FragMetalMassg": 1800,
+            "FragPattern": "HORIZONTAL_BAND",
+            "FragBurstHeight": 1
         },
         "items": [
             "smine35",
@@ -428,6 +494,8 @@
 
     "Satchel": {
         "properties": {
+            "ThrowSpeedMs": 6,
+            "Mass": 5000,
             "ExplosiveMassTNTKg": "3",
             "FragType": "DEFAULT"
         },
@@ -438,6 +506,7 @@
 
     "Semtex Adhesive Grenade": {
         "properties": {
+            "Mass": 500,
             "ExplosiveMassTNTg": 400,
             "FragType": "LOW_FRAG"
         },
@@ -448,6 +517,7 @@
 
     "Smart Fragmentation Grenade (Fictional)": {
         "properties": {
+            "Mass": 500,
             "ExplosiveMassTNTg": 180,
             "FragType": "HIGH_FRAG"
         },
@@ -458,6 +528,8 @@
 
     "Smoke And Gas Detonator (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 500,
             "FragType": "DEFAULT",
             "Fuse": 80
         },
@@ -469,6 +541,8 @@
 
     "Stielhandgranate 24": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 595,
             "ExplosiveMassTNTg": "165",
             "FragType": "LOW_FRAG",
             "Fuse": 80
@@ -482,6 +556,8 @@
 
     "Stielhandgranate 43": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 600,
             "ExplosiveMassTNTg": "165",
             "FragType": "SLEEVE_FRAG",
             "Fuse": 80
@@ -493,6 +569,7 @@
 
     "Stielhandgranate Geballte Ladung": {
         "properties": {
+            "Mass": 2000,
             "ExplosiveMassTNTKg": "1.2",
             "FragType": "LOW_FRAG",
             "Fuse": 80
@@ -506,6 +583,7 @@
 
     "Support And Effect Grenade (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
             "Damage": 0,
             "Explosion": 0
         },
@@ -517,6 +595,8 @@
 
     "Thermal Detonator (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 500,
             "ExplosiveMassTNTKg": "1",
             "FragType": "LOW_FRAG",
             "Fuse": 80
@@ -530,6 +610,8 @@
 
     "Thermal Detonator Class A (Fictional)": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 1500,
             "ExplosiveMassTNTKg": "3",
             "FragType": "LOW_FRAG",
             "Fuse": 80
@@ -541,6 +623,8 @@
 
     "Trip Mine (Generic)": {
         "properties": {
+            "ThrowSpeedMs": 6,
+            "Mass": 1000,
             "ExplosiveMassTNTg": 180,
             "FragType": "STD_FRAG"
         },
@@ -551,6 +635,8 @@
 
     "Type 97 Grenade": {
         "properties": {
+            "ThrowSpeedMs": 12,
+            "Mass": 450,
             "ExplosiveMassTNTg": "65",
             "FragType": "STD_FRAG",
             "Fuse": 80

@@ -43,6 +43,7 @@ public final class ModClientConfig
     public final boolean showAmmoHud;
     public final EnumAmmoHudLayout ammoHudLayout;
     public final EnumSpeedUnit driveableSpeedUnit;
+    public final EnumSpeedUnit driveableVerticalSpeedUnit;
     public final EnumHitMarkerStyle hitMarkerStyle;
     public final boolean hdHitMarker;
     public final boolean fancyHitMarker;
@@ -71,6 +72,8 @@ public final class ModClientConfig
     public final double fullParticleDensityShare;
     public final double distantParticleDensity;
     public final int maxFlansParticlesPerTick;
+    public final int maxFragSparks;
+    public final double fragSparkMultiplier;
 
     public final EnumMouseButton shootButton;
     public final EnumMouseButton shootButtonOffhand;
@@ -88,6 +91,7 @@ public final class ModClientConfig
     public final boolean enableWeaponSprintStance;
     public final boolean enableRandomSprintStance;
     public final boolean showCasingEjections;
+    public final EnumMuzzleFlashStyle muzzleFlashStyle;
 
     public final boolean enableFastTranslucentRendering;
     public final boolean alwaysEnableArmorTranslucentRenderingByDefault;
@@ -123,6 +127,13 @@ public final class ModClientConfig
     public static final ModConfigSpec.BooleanValue SHOW_AMMO_HUD;
     public static final ModConfigSpec.EnumValue<EnumAmmoHudLayout> AMMO_HUD_LAYOUT;
     public static final ModConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_SPEED_UNIT;
+    public static final ModConfigSpec.EnumValue<EnumSpeedUnit> DRIVEABLE_VERTICAL_SPEED_UNIT;
+    public static final ModConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_BASE;
+    public static final ModConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_AT_50;
+    public static final ModConfigSpec.DoubleValue VEHICLE_ENGINE_PITCH_AT_100;
+    public static final ModConfigSpec.DoubleValue PLANE_ENGINE_PITCH_BASE;
+    public static final ModConfigSpec.DoubleValue PLANE_ENGINE_PITCH_AT_50;
+    public static final ModConfigSpec.DoubleValue PLANE_ENGINE_PITCH_AT_100;
     public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_X;
     public static final ModConfigSpec.IntValue VEHICLE_HUD_LEFT_Y;
     public static final ModConfigSpec.IntValue VEHICLE_HUD_RIGHT_X;
@@ -159,6 +170,8 @@ public final class ModClientConfig
     private static final Supplier<Double> FULL_PARTICLE_DENSITY_SHARE;
     private static final Supplier<Double> DISTANT_PARTICLE_DENSITY;
     private static final Supplier<Integer> MAX_FLANS_PARTICLES_PER_TICK;
+    private static final Supplier<Integer> MAX_FRAG_SPARKS;
+    private static final Supplier<Double> FRAG_SPARK_MULTIPLIER;
 
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON;
     private static final Supplier<EnumMouseButton> SHOOT_BUTTON_OFFHAND;
@@ -176,6 +189,7 @@ public final class ModClientConfig
     private static final Supplier<Boolean> ENABLE_WEAPON_SPRINT_STANCE;
     private static final Supplier<Boolean> ENABLE_RANDOM_SPRINT_STANCE;
     private static final Supplier<Boolean> SHOW_CASING_EJECTIONS;
+    public static final ModConfigSpec.EnumValue<EnumMuzzleFlashStyle> MUZZLE_FLASH_STYLE;
 
     private static final Supplier<Boolean> ENABLE_FAST_TRANSLUCENT_RENDERING;
     private static final Supplier<Boolean> ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT;
@@ -262,6 +276,23 @@ public final class ModClientConfig
         DRIVEABLE_SPEED_UNIT = builder
                 .comment("Unit used for vehicle and plane speed on the HUD")
                 .defineEnum("driveableSpeedUnit", EnumSpeedUnit.KMH);
+        DRIVEABLE_VERTICAL_SPEED_UNIT = builder
+                .comment("Unit used for plane vertical speed on the HUD")
+                .defineEnum("driveableVerticalSpeedUnit", EnumSpeedUnit.METERS_PER_SECOND);
+        builder.push("Engine Sound Pitch Defaults");
+        VEHICLE_ENGINE_PITCH_BASE = builder.comment("Vehicle engine pitch at zero throttle")
+                .defineInRange("vehiclePitchBase", 0.5D, 0D, Float.MAX_VALUE);
+        VEHICLE_ENGINE_PITCH_AT_50 = builder.comment("Vehicle engine pitch at 50% throttle")
+                .defineInRange("vehiclePitchAt50", 0.8D, 0D, Float.MAX_VALUE);
+        VEHICLE_ENGINE_PITCH_AT_100 = builder.comment("Vehicle engine pitch at 100% throttle")
+                .defineInRange("vehiclePitchAt100", 1.2D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_BASE = builder.comment("Plane engine pitch at zero throttle")
+                .defineInRange("planePitchBase", 0.5D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_AT_50 = builder.comment("Plane engine pitch at 50% throttle")
+                .defineInRange("planePitchAt50", 1D, 0D, Float.MAX_VALUE);
+        PLANE_ENGINE_PITCH_AT_100 = builder.comment("Plane engine pitch at 100% throttle")
+                .defineInRange("planePitchAt100", 1.5D, 0D, Float.MAX_VALUE);
+        builder.pop();
         HIT_MARKER_STYLE = builder
                 .comment("""
                     Visual style of the hit marker.
@@ -386,7 +417,13 @@ public final class ModClientConfig
             .defineInRange("distantParticleDensity", 0.25D, 0D, 1D);
         MAX_FLANS_PARTICLES_PER_TICK = builder
             .comment("Maximum particles Flan's Mod may create in one client tick. Nearby particles are considered first by normal packet and entity processing order.")
-            .defineInRange("maxFlansParticlesPerTick", 512, 16, 100000);
+            .defineInRange("maxFlansParticlesPerTick", 2048, 16, 100000);
+        MAX_FRAG_SPARKS = builder
+            .comment("Maximum fragmentation sparks from one explosion. The overall maxFlansParticlesPerTick budget can limit the visible result further.")
+            .defineInRange("maxFragSparks", 512, 0, 100000);
+        FRAG_SPARK_MULTIPLIER = builder
+            .comment("Multiplier applied to the fragmentation spark count after limiting it to the burst's effective fragments. The result still cannot exceed the effective fragment count or maxFragSparks.")
+            .defineInRange("fragSparkMultiplier", 0.25D, 0D, 4D);
         builder.pop();
 
         builder.push("Input Settings");
@@ -456,6 +493,14 @@ public final class ModClientConfig
         SHOW_CASING_EJECTIONS = builder
             .comment("Render animated casing ejections for guns that provide a casing model")
             .define("showCasingEjections", true);
+        MUZZLE_FLASH_STYLE = builder
+            .comment("""
+                Preferred muzzle flash model: FMU_1_7_10 uses FlashModel (FMU 1.7.10 Style),
+                MC_1_12_2 uses MuzzleFlashModel (1.12.2 Style).
+                Falls back to the available model when a pack supplies only one style.
+                Applies immediately to held, deployed and mounted guns on this client.
+                """)
+            .defineEnum("muzzleFlashStyle", EnumMuzzleFlashStyle.FMU_1_7_10);
         builder.pop();
 
         builder.push("Translucent Rendering Defaults");
@@ -488,6 +533,20 @@ public final class ModClientConfig
         configSpec = builder.build();
     }
 
+    public static com.flansmodultimate.common.driveables.EngineSoundPitch defaultVehicleEnginePitch()
+    {
+        return new com.flansmodultimate.common.driveables.EngineSoundPitch(
+            VEHICLE_ENGINE_PITCH_BASE.get().floatValue(), VEHICLE_ENGINE_PITCH_AT_50.get().floatValue(),
+            VEHICLE_ENGINE_PITCH_AT_100.get().floatValue());
+    }
+
+    public static com.flansmodultimate.common.driveables.EngineSoundPitch defaultPlaneEnginePitch()
+    {
+        return new com.flansmodultimate.common.driveables.EngineSoundPitch(
+            PLANE_ENGINE_PITCH_BASE.get().floatValue(), PLANE_ENGINE_PITCH_AT_50.get().floatValue(),
+            PLANE_ENGINE_PITCH_AT_100.get().floatValue());
+    }
+
     private ModClientConfig()
     {
         showPackNameInItemDescriptions = SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS.get();
@@ -503,6 +562,7 @@ public final class ModClientConfig
         showAmmoHud = SHOW_AMMO_HUD.get();
         ammoHudLayout = AMMO_HUD_LAYOUT.get();
         driveableSpeedUnit = DRIVEABLE_SPEED_UNIT.get();
+        driveableVerticalSpeedUnit = DRIVEABLE_VERTICAL_SPEED_UNIT.get();
         hitMarkerStyle = HIT_MARKER_STYLE.get();
         hdHitMarker = HD_HIT_MARKER.get();
         fancyHitMarker = FANCY_HIT_MARKER.get();
@@ -531,6 +591,8 @@ public final class ModClientConfig
         fullParticleDensityShare = FULL_PARTICLE_DENSITY_SHARE.get();
         distantParticleDensity = DISTANT_PARTICLE_DENSITY.get();
         maxFlansParticlesPerTick = MAX_FLANS_PARTICLES_PER_TICK.get();
+        maxFragSparks = MAX_FRAG_SPARKS.get();
+        fragSparkMultiplier = FRAG_SPARK_MULTIPLIER.get();
 
         shootButton = SHOOT_BUTTON.get();
         shootButtonOffhand = SHOOT_BUTTON_OFFHAND.get();
@@ -548,6 +610,7 @@ public final class ModClientConfig
         enableWeaponSprintStance = ENABLE_WEAPON_SPRINT_STANCE.get();
         enableRandomSprintStance = ENABLE_RANDOM_SPRINT_STANCE.get();
         showCasingEjections = SHOW_CASING_EJECTIONS.get();
+        muzzleFlashStyle = MUZZLE_FLASH_STYLE.get();
 
         enableFastTranslucentRendering = ENABLE_FAST_TRANSLUCENT_RENDERING.get();
         alwaysEnableArmorTranslucentRenderingByDefault = ALWAYS_ENABLE_ARMOR_TRANSLUCENT_RENDERING_BY_DEFAULT.get();

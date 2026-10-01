@@ -3,6 +3,10 @@
     "category": "player",
     "sounds": ["flansmod:emptyclick"]
   },
+  "switchfiringmode": {
+    "category": "player",
+    "sounds": ["flansmod:switchfiringmode"]
+  },
   "defaultshellinsert": {
     "category": "player",
     "sounds": ["flansmod:defaultshellinsert"]

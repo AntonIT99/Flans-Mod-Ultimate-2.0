@@ -130,5 +130,6 @@ public class ModelKar98k extends ModelGun {
       this.flipAll();
       this.translateAll(0.0F, 3.0F, -0.15F);
       this.thirdPersonOffset = new Vector3f(-0.2F, -0.2F, 0.01F);
+      this.muzzleFlashPoint = new Vector3f(2.1875F, 0.5828125F, -0.009375F);
    }
 }

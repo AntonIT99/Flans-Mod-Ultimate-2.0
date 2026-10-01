@@ -233,5 +233,6 @@ public class ModelHCAR extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7.375F, 1.46875F, 0F);
 	}
 }

@@ -6,6 +6,7 @@ Description Russian Main Battle Tank
 // Item and rendering
 Icon T-90
 Model mw.T90
+FlashModel DefaultFlash
 Texture SkinT90
 AddDye 6 green
 AddDye 3 gray
@@ -37,8 +38,9 @@ RealMaxReverseSpeedKmh 5
 // Movement
 MaxThrottle 0.6
 MaxNegativeThrottle 0.4
-TurnLeftSpeed 0.3
-TurnRightSpeed 0.3
+TurnLeftSpeed 0.8
+TurnRightSpeed 0.8
+RealTurnRateDegPerSec 28
 Drag 10.0
 WheelRadius 1.5
 WheelSpringStrength 0.5
@@ -46,8 +48,8 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-GunOrigin 1 -10 16 -12
-BarrelPosition 110 20 0
+GunOrigin 1 1 15.9 -10
+BarrelPosition 122 21 0
 AddGun 8 34 8 turret rpd
 ShootDelay 1
 ShellDelay 70
@@ -93,9 +95,17 @@ Passenger 1 0 15 0 turret -360 360 -15 40 rpd PassengerGun1
 RotatedPassengerOffset 1 2 0 -14
 
 // Sounds and particles
-StartSound ChallengerIdle
-StartSoundLength 40
+StartEngineSound ChallengerIdle
+StartEngineSoundLength 40
 EngineSound ChallengerRun
-EngineSoundLength 40
+EngineSound 40
 ShootSoundPrimary 90mm
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.4 0 0
+ShootParticlesPrimary flansmod.fmflame 1.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.9 0.08 0.12
+ShootParticlesPrimary flansmod.fmflame 0.85 -0.08 -0.12
+ShootParticlesPrimary largesmoke 0.5 0.1 0.12
+ShootParticlesPrimary largesmoke 0.48 -0.1 -0.12
+ShootParticlesPrimary cloud 0.08 0 0
 ShootSoundSecondary RPDShoot

@@ -6,6 +6,7 @@ Description American Halftrack__Year Introduced : 1943
 // Rendering
 Icon 44_M3Halftrack
 Model W44.M3Halftrack
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_M3Halftrack
 RotateWheels true
@@ -37,6 +38,7 @@ MaxThrottle 0.75
 MaxNegativeThrottle 0.45
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 18
 
 // Wheels and tracks
 WheelRadius 1.0
@@ -74,8 +76,8 @@ ShootDelay 999
 ReloadTimeSecondary 100
 PlaceTimePrimary 80
 BulletDetection 5
-GunOrigin 4 9 15 8
-GunOrigin 5 -54 10 -7
+GunOrigin 4 28.6 16.9 8.3
+GunOrigin 5 -48.6 10.9 -7.7
 
 // Armour and damage
 UseRealisticVehicleHealth true
@@ -87,11 +89,11 @@ ArmorBottomMm 6
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 750 -61 1 -20 110 28 40
-SetupPart frontRightWheel 75 32 -10 11 17 17 8
-SetupPart frontLeftWheel 75 32 -10 -19 17 17 8
-SetupPart rightTrack 300 -61 -10 9 60 19 8
-SetupPart leftTrack 300 -61 -10 -17 60 19 8
+SetupPart core 7316 -61 1 -20 110 28 40
+SetupPart frontRightWheel 60 32 -10 11 17 17 8
+SetupPart frontLeftWheel 60 32 -10 -19 17 17 8
+SetupPart rightTrack 817 -61 -10 9 60 19 8
+SetupPart leftTrack 817 -61 -10 -17 60 19 8
 
 // Seats
 Driver 6 5 -7

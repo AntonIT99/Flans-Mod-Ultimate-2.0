@@ -5,6 +5,7 @@ ShortName Camel
 // Item and rendering
 Icon Camel
 Model ww2.Camel
+FlashModel DefaultFlash
 Texture camel
 AddDye 4 yellow
 
@@ -42,6 +43,7 @@ MaxThrottle 0.4
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 1
 TurnRightSpeed 3
+RealTurnRateDegPerSec 37.3
 LookUpSpeed 1
 LookDownSpeed 1
 RollLeftSpeed 1

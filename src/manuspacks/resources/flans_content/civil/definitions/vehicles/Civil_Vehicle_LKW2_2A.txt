@@ -6,6 +6,8 @@ ShortName Civil_Vehicle_LKW2_2A
 Model Manus_Civil.Vehicle.Civil_Vehicle_LKW2_2
 Icon Icon_Civil_Vehicle_LKW2_2A
 Texture Skin_Civil_Vehicle_LKW2_2A
+// Paintjobs
+AdvPaintJob Military Icon_Civil_Vehicle_LKW2_2B Skin_Civil_Vehicle_LKW2_2B green 8
 RotateWheels True
 
 // Recipe and Inventory
@@ -33,6 +35,7 @@ RealEnginePowerHp 440
 RealMaxSpeedKmh 90
 DriveType RWD
 RealMaxReverseSpeedKmh 15
+RealTurnRateDegPerSec 143.24
 
 // Weapons
 ReadWeaponsFromGunTypes true

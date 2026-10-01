@@ -46,11 +46,12 @@ public class AAGunRenderer extends FlanEntityRenderer<AAGun>
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
             model.renderBase(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
-        float yaw = Mth.rotLerp(partialTicks, aaGun.getPrevGunYaw(), aaGun.getGunYaw());
+        float yaw = Mth.rotLerp(partialTicks, aaGun.getPrevGunYaw(), aaGun.getRenderGunYaw());
+        float pitch = Mth.lerp(partialTicks, aaGun.getPrevGunPitch(), aaGun.getRenderGunPitch());
         poseStack.mulPose(Axis.YP.rotationDegrees(270F - yaw));
 
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderGun(aaGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderGun(aaGun, pitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
 
         poseStack.popPose();
     }

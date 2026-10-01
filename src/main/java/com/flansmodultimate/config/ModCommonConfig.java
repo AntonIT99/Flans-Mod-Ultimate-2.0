@@ -9,6 +9,7 @@ import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.types.EnumType;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,11 +19,15 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -30,6 +35,8 @@ import java.util.function.Supplier;
 public final class ModCommonConfig
 {
     public static final ModConfigSpec configSpec;
+    public static final double DEFAULT_GRAVITY_FACTOR = 1D;
+    public static final double DEFAULT_DRAG_FACTOR = 1D;
 
     /** Arcade lift scaling keeps fixed-wing takeoff runs practical in Minecraft worlds. */
     public static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.25D;
@@ -58,6 +65,15 @@ public final class ModCommonConfig
     public static final double DEFAULT_KINETIC_PENETRATION_REFERENCE = 0.087D;
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
+    /**
+     * Damage behind the plate from a 1 kg TNT shaped charge that fully defeats it, on a vehicle using realistic
+     * health. Calibrated so a Panzerfaust 60 (0.95 kg) takes about nine tenths of a Panzer IV hull per penetration,
+     * a near-certain disable that still leaves heavy tanks needing two or three hits.
+     * See {@code WorldWarTwoAntiTankBalanceTest}.
+     */
+    public static final double DEFAULT_HEAT_DAMAGE_REFERENCE = 1100.0D;
+    /** Damage dealt to each occupant of a part a HEAT jet has penetrated. Half a player's health. */
+    public static final double DEFAULT_HEAT_CREW_SPALL_DAMAGE = 10.0D;
     /**
      * Hard ceiling on the CRATER radius, in blocks. ExplosionCrater's ray pass costs about the
      * same at any radius, and a crater too big for one tick is carved over the following ticks
@@ -179,6 +195,11 @@ public final class ModCommonConfig
     private static final Supplier<Double> SOUND_RANGE;
     private static final Supplier<Double> GUN_FIRE_SOUND_RANGE;
     private static final Supplier<Double> EXPLOSION_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_UTILITY_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_FLARE_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_LOCK_ON_SOUND_RANGE;
+    private static final Supplier<Double> VEHICLE_LOCKED_ON_SOUND_RANGE;
 
     private static final Supplier<Boolean> USE_NEW_PENETRATION_SYSTEM;
     private static final Supplier<Boolean> ENABLE_BLOCK_PENETRATION;
@@ -203,6 +224,8 @@ public final class ModCommonConfig
     private static final Supplier<Integer> DIGITAL_AMMO_SUPPLY_AMOUNT;
 
     private static final Supplier<Boolean> FORCE_LEGACY_PLANE_PHYSICS;
+    private static final ModConfigSpec.ConfigValue<List<? extends String>> DIMENSION_GRAVITY_FACTORS;
+    private static final ModConfigSpec.ConfigValue<List<? extends String>> DIMENSION_DRAG_FACTORS;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_PHYSICS;
     private static final Supplier<Boolean> ENABLE_AIRCRAFT_ROLL_SELF_LEVELING;
     private static final Supplier<Double> REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE;
@@ -222,12 +245,18 @@ public final class ModCommonConfig
     private static final Supplier<Double> MINIMUM_BLAST_DISTANCE_METERS;
     private static final Supplier<Double> MAX_EXPLOSION_RADIUS;
     private static final Supplier<Double> MAX_BLAST_RADIUS;
+    private static final Supplier<Double> HEAT_DAMAGE_REFERENCE;
+    private static final Supplier<Double> HEAT_CREW_SPALL_DAMAGE;
 
     private static final Supplier<Boolean> ENCHANTMENT_MODULE_ENABLED;
 
     private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
     private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
     private static final AtomicReference<CommonConfigSnapshot> serverOverride = new AtomicReference<>();
+    private static volatile Map<ResourceLocation, Double> localGravityFactors = Map.of();
+    private static volatile Map<ResourceLocation, Double> localDragFactors = Map.of();
+    private static volatile Map<ResourceLocation, Double> serverGravityFactors = Map.of();
+    private static volatile Map<ResourceLocation, Double> serverDragFactors = Map.of();
     private static final AtomicReference<EntityTrackingRanges> earlyEntityTrackingRanges = new AtomicReference<>();
 
     static
@@ -491,6 +520,21 @@ public final class ModCommonConfig
         EXPLOSION_SOUND_RANGE = builder
             .comment("Maximum range in blocks at which explosions are heard. Each explosion is heard at 6 blocks per block of blast radius (at least 48), up to this cap.")
             .defineInRange("explosionSoundRange", 1024.0, 1.0, 4096.0);
+        VEHICLE_SOUND_RANGE = builder
+            .comment("Default range in blocks for vehicle engines, movement, seats and mecha footsteps. Content-pack sound ranges override this default.")
+            .defineInRange("vehicleSoundRange", 50.0, 1.0, 4096.0);
+        VEHICLE_UTILITY_SOUND_RANGE = builder
+            .comment("Range in blocks for mecha tools and rocket packs.")
+            .defineInRange("vehicleUtilitySoundRange", 64.0, 1.0, 4096.0);
+        VEHICLE_FLARE_SOUND_RANGE = builder
+            .comment("Range in blocks for vehicle flare sounds.")
+            .defineInRange("vehicleFlareSoundRange", 96.0, 1.0, 4096.0);
+        VEHICLE_LOCK_ON_SOUND_RANGE = builder
+            .comment("Range in blocks for the lock-on sound heard by the vehicle operator.")
+            .defineInRange("vehicleLockOnSoundRange", 10.0, 1.0, 4096.0);
+        VEHICLE_LOCKED_ON_SOUND_RANGE = builder
+            .comment("Default range in blocks for a vehicle's incoming lock warning. LockedOnSoundRange in a content pack overrides this default.")
+            .defineInRange("vehicleLockedOnSoundRange", 5.0, 1.0, 4096.0);
         builder.pop();
 
         builder.push("Penetration System Settings");
@@ -540,6 +584,17 @@ public final class ModCommonConfig
         DIGITAL_AMMO_SUPPLY_AMOUNT = builder
             .comment("Amount of ammo to restore for each type when using supply blocks")
             .defineInRange("digitalAmmoSupplyAmount", 100, 1, Integer.MAX_VALUE);
+        builder.pop();
+
+        builder.push("World Physics Settings");
+        DIMENSION_GRAVITY_FACTORS = builder
+            .comment("Gravity overrides for Flan's physics, formatted as namespace:dimension=factor (0 to 10).",
+                "Unlisted dimensions, including all vanilla dimensions, use 1.")
+            .defineListAllowEmpty("dimensionGravityFactors", Collections.emptyList(), () -> "minecraft:overworld=1", ModCommonConfig::validDimensionFactorLine);
+        DIMENSION_DRAG_FACTORS = builder
+            .comment("Drag overrides for Flan's physics, formatted as namespace:dimension=factor (0 to 10).",
+                "Unlisted dimensions, including all vanilla dimensions, use 1.")
+            .defineListAllowEmpty("dimensionDragFactors", Collections.emptyList(), () -> "minecraft:overworld=1", ModCommonConfig::validDimensionFactorLine);
         builder.pop();
 
         builder.push("Vehicle Physics Settings");
@@ -677,6 +732,15 @@ public final class ModCommonConfig
                 "Most ordnance is far below this: a 250 kg bomb reaches about 85 blocks, the largest conventional bomb shipped about 167.",
                 "At the default only nuclear-scale charges clamp; every conventional charge keeps its full damage reach.")
             .defineInRange("maxBlastRadius", DEFAULT_MAX_BLAST_RADIUS, 1D, 8192D);
+        HEAT_DAMAGE_REFERENCE = builder
+            .comment("Damage a HEAT (shaped-charge) round deals behind armour it penetrates, for a 1 kg TNT charge, on vehicles using UseRealisticVehicleHealth.",
+                "Damage grows with the square root of the charge and does not depend on the round's speed. A jet that barely penetrates delivers 60% of it.",
+                "The default makes a Panzerfaust 60 take about nine tenths of a Panzer IV hull per penetrating hit. Kinetic damage still applies when it is higher.")
+            .defineInRange("heatDamageReference", DEFAULT_HEAT_DAMAGE_REFERENCE, 0D, 100000D);
+        HEAT_CREW_SPALL_DAMAGE = builder
+            .comment("Damage dealt to each occupant of a vehicle part that a HEAT jet penetrates, on vehicles using UseRealisticVehicleHealth.",
+                "Scaled down like the vehicle damage when the jet barely penetrates. Set to 0 to disable crew spall.")
+            .defineInRange("heatCrewSpallDamage", DEFAULT_HEAT_CREW_SPALL_DAMAGE, 0D, 1000D);
         builder.pop();
 
         builder.push("Enchantment Module");
@@ -770,6 +834,11 @@ public final class ModCommonConfig
             SOUND_RANGE.get().floatValue(),
             GUN_FIRE_SOUND_RANGE.get().floatValue(),
             EXPLOSION_SOUND_RANGE.get().floatValue(),
+            VEHICLE_SOUND_RANGE.get().floatValue(),
+            VEHICLE_UTILITY_SOUND_RANGE.get().floatValue(),
+            VEHICLE_FLARE_SOUND_RANGE.get().floatValue(),
+            VEHICLE_LOCK_ON_SOUND_RANGE.get().floatValue(),
+            VEHICLE_LOCKED_ON_SOUND_RANGE.get().floatValue(),
 
             USE_NEW_PENETRATION_SYSTEM.get(),
             ENABLE_BLOCK_PENETRATION.get(),
@@ -785,6 +854,8 @@ public final class ModCommonConfig
             List.copyOf(DIGITAL_AMMO_SUPPLY_BLOCKS.get()),
             DIGITAL_AMMO_SUPPLY_AMOUNT.get(),
 
+            List.copyOf(DIMENSION_GRAVITY_FACTORS.get()),
+            List.copyOf(DIMENSION_DRAG_FACTORS.get()),
             FORCE_LEGACY_PLANE_PHYSICS.get(),
             FORCE_LEGACY_VEHICLE_PHYSICS.get(),
             ENABLE_AIRCRAFT_ROLL_SELF_LEVELING.get(),
@@ -805,6 +876,8 @@ public final class ModCommonConfig
             MINIMUM_BLAST_DISTANCE_METERS.get(),
             MAX_EXPLOSION_RADIUS.get(),
             MAX_BLAST_RADIUS.get(),
+            HEAT_DAMAGE_REFERENCE.get(),
+            HEAT_CREW_SPALL_DAMAGE.get(),
 
             ENCHANTMENT_MODULE_ENABLED.get(),
 
@@ -814,8 +887,101 @@ public final class ModCommonConfig
 
     public static CommonConfigSnapshot get()
     {
+        var server = PlatformEnvironment.currentServer();
+        if (server != null && server.isSameThread())
+            return instance.get();
         CommonConfigSnapshot override = serverOverride.get();
         return override != null ? override : instance.get();
+    }
+
+    public static double gravityFactor(Level level)
+    {
+        return currentFactors(true).getOrDefault(level.dimension().location(), DEFAULT_GRAVITY_FACTOR);
+    }
+
+    public static double dragFactor(Level level)
+    {
+        return currentFactors(false).getOrDefault(level.dimension().location(), DEFAULT_DRAG_FACTOR);
+    }
+
+    private static Map<ResourceLocation, Double> currentFactors(boolean gravity)
+    {
+        var server = PlatformEnvironment.currentServer();
+        if (server != null && server.isSameThread())
+            return gravity ? localGravityFactors : localDragFactors;
+        if (serverOverride.get() != null)
+            return gravity ? serverGravityFactors : serverDragFactors;
+        return gravity ? localGravityFactors : localDragFactors;
+    }
+
+    /** Persist a dimension override and synchronize it to connected clients. Server thread only. */
+    public static boolean setDimensionFactor(ResourceLocation dimension, boolean gravity, double factor)
+    {
+        if (dimension == null || !Double.isFinite(factor) || factor < 0D || factor > 10D)
+            return false;
+        var setting = gravity ? DIMENSION_GRAVITY_FACTORS : DIMENSION_DRAG_FACTORS;
+        List<String> lines = new ArrayList<>(setting.get());
+        lines.removeIf(line -> hasDimension(line, dimension));
+        lines.add(dimension + "=" + factor);
+        return setRuntimeValue(setting.getPath(), lines);
+    }
+
+    /** Remove a dimension override so the authored factor of one applies again. */
+    public static boolean clearDimensionFactor(ResourceLocation dimension, boolean gravity)
+    {
+        if (dimension == null)
+            return false;
+        var setting = gravity ? DIMENSION_GRAVITY_FACTORS : DIMENSION_DRAG_FACTORS;
+        List<String> lines = new ArrayList<>(setting.get());
+        if (!lines.removeIf(line -> hasDimension(line, dimension)))
+            return false;
+        return setRuntimeValue(setting.getPath(), lines);
+    }
+
+    private static boolean hasDimension(String line, ResourceLocation dimension)
+    {
+        var entry = parseDimensionFactor(line);
+        return entry != null && entry.getKey().equals(dimension);
+    }
+
+    static boolean validDimensionFactorLine(Object value)
+    {
+        return value instanceof String line && parseDimensionFactor(line) != null;
+    }
+
+    private static Map.Entry<ResourceLocation, Double> parseDimensionFactor(String line)
+    {
+        int separator = line.indexOf('=');
+        if (separator <= 0 || separator == line.length() - 1 || line.indexOf(':') >= separator)
+            return null;
+        String dimensionId = line.substring(0, separator);
+        if (!dimensionId.contains(":"))
+            return null;
+        ResourceLocation id = ResourceLocation.tryParse(dimensionId);
+        if (id == null)
+            return null;
+        try
+        {
+            double factor = Double.parseDouble(line.substring(separator + 1));
+            return Double.isFinite(factor) && factor >= 0D && factor <= 10D
+                ? Map.entry(id, factor) : null;
+        }
+        catch (NumberFormatException ignored)
+        {
+            return null;
+        }
+    }
+
+    static Map<ResourceLocation, Double> parseDimensionFactors(List<String> lines)
+    {
+        Map<ResourceLocation, Double> factors = new HashMap<>();
+        for (String line : lines)
+        {
+            var entry = parseDimensionFactor(line);
+            if (entry != null)
+                factors.put(entry.getKey(), entry.getValue());
+        }
+        return Map.copyOf(factors);
     }
 
     public static boolean addGunpowderRecipe()
@@ -1012,6 +1178,18 @@ public final class ModCommonConfig
         return config == null ? DEFAULT_MAX_BLAST_RADIUS : config.maxBlastRadius();
     }
 
+    public static double heatDamageReference()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_HEAT_DAMAGE_REFERENCE : config.heatDamageReference();
+    }
+
+    public static double heatCrewSpallDamage()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_HEAT_CREW_SPALL_DAMAGE : config.heatCrewSpallDamage();
+    }
+
     public static double kineticPenetrationReference()
     {
         CommonConfigSnapshot config = get();
@@ -1193,6 +1371,8 @@ public final class ModCommonConfig
     public static void applyServerSnapshot(CommonConfigSnapshot config)
     {
         serverOverride.set(config);
+        serverGravityFactors = parseDimensionFactors(config.dimensionGravityFactors());
+        serverDragFactors = parseDimensionFactors(config.dimensionDragFactors());
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
         FluidFuel.rebuild(config.fluidFuelLines());
     }
@@ -1252,6 +1432,8 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = readConfig();
         instance.set(config);
+        localGravityFactors = parseDimensionFactors(config.dimensionGravityFactors());
+        localDragFactors = parseDimensionFactors(config.dimensionDragFactors());
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
         FluidFuel.rebuild(config.fluidFuelLines());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();

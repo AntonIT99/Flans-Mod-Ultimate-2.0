@@ -5,6 +5,7 @@ ShortName hind
 // Item and rendering
 Icon Hind
 Model mw.Hind
+FlashModel DefaultFlash
 Texture Hind
 AddDye 10 yellow
 
@@ -37,6 +38,7 @@ MaxThrottle 3.5
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 2
 TurnRightSpeed 2
+RealTurnRateDegPerSec 18.4
 LookUpSpeed 2
 LookDownSpeed 2
 RollLeftSpeed 2
@@ -56,7 +58,7 @@ ModePrimary FullAuto
 ModeSecondary FullAuto
 ShootPointPrimary -13 7 -53 rightWing
 ShootPointPrimary -13 7 53 leftWing
-GunOrigin 1 64 -28 0
+GunOrigin 1 68 -29.1 0
 ReadWeaponsFromGunTypes true
 
 // Health and armour

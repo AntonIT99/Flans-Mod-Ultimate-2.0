@@ -6,6 +6,7 @@ Description German Main Battle Tank
 // Item and rendering
 Icon Leo2
 Model mw.Leopard2A6
+FlashModel DefaultFlash
 Texture Leopard2A6
 AddDye 4 gray
 AddDye 5 green
@@ -40,8 +41,9 @@ RealMaxReverseSpeedKmh 31
 // Movement
 MaxThrottle 0.6
 MaxNegativeThrottle 0.4
-TurnLeftSpeed 0.3
-TurnRightSpeed 0.3
+TurnLeftSpeed 0.75
+TurnRightSpeed 0.75
+RealTurnRateDegPerSec 32
 Drag 10.0
 WheelRadius 1.5
 WheelSpringStrength 0.5
@@ -49,9 +51,9 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-GunOrigin 1 -5 47 -15
-BarrelPosition 101 26 1
-AddGun 52 28 -2 turret m60
+GunOrigin 1 -5.4 20.4 11.5
+BarrelPosition 105.5 26.9 -0.4
+AddGun 52 28 2 turret m60
 ShootDelay 1
 ShellDelay 70
 DammageModifierPrimary 100
@@ -107,11 +109,19 @@ YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2
 PitchSoundLength 20
-StartSound ChallengerIdle
-StartSoundLength 40
+StartEngineSound ChallengerIdle
+StartEngineSound 40
 EngineSound ChallengerRun
 EngineSoundLength 40
 ShootSoundPrimary 90mm
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.4 0 0
+ShootParticlesPrimary flansmod.fmflame 1.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.9 0.08 0.12
+ShootParticlesPrimary flansmod.fmflame 0.85 -0.08 -0.12
+ShootParticlesPrimary largesmoke 0.5 0.1 0.12
+ShootParticlesPrimary largesmoke 0.48 -0.1 -0.12
+ShootParticlesPrimary cloud 0.08 0 0
 ShootSoundSecondary M60Shoot
 AddEmitter smoke 1 [-71,10,-16] [1,1,1] [-0.5,0,0] -1 1 0 1 core
 AddEmitter smoke 1 [-71,10,16] [1,1,1] [-0.5,0,0] -1 1 0 1 core

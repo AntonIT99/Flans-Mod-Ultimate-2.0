@@ -311,7 +311,8 @@ public abstract class ShootableItem extends Item
             {
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_RADIUS), IFlanItem.formatFloat(stats.fragRadius(), 1)));
                 IFlanItem.appendDamageStats(tooltipComponents, stats.fragDamage(), TooltipKeys.EXPLOSION_FRAG_DAMAGE);
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_INTENSITY), IFlanItem.formatFloat(stats.fragIntensity(), 1)));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_COUNT),
+                    IFlanItem.formatFloat((float) stats.fragmentation().fragmentCount(), 0)));
             }
         }
 
@@ -323,9 +324,19 @@ public abstract class ShootableItem extends Item
         if (configType.getFallSpeed() > 1F || configType.getFallSpeed() < 1F)
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.GRAVITY_FACTOR), IFlanItem.formatFloat(configType.getFallSpeed())));
 
-        float dispersion = context != null && bulletType != null
-            ? Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * context.shot(bulletType, 0).getSpread()
-            : configType.getBulletSpread() > 0F ? configType.getDispersionForDisplay() : 0F;
+        float dispersion;
+        if (context != null && bulletType != null)
+        {
+            dispersion = Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * context.shot(bulletType, 0).getSpread();
+        }
+        else
+        {
+            if (configType.getBulletSpread() > 0F)
+                dispersion = configType.getDispersionForDisplay();
+            else
+                dispersion = 0F;
+        }
+
         if (dispersion > 0F && (context == null || context.showLaunchStats()))
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DISPERSION), IFlanItem.formatFloat(dispersion) + "°"));
     }
@@ -335,8 +346,19 @@ public abstract class ShootableItem extends Item
 
     protected static List<RoundView> roundViews(BulletType type, @Nullable AmmoStatContext context)
     {
-        List<BulletType.RoundEntry> entries = context != null ? context.rounds(type)
-            : type.hasDifferentRounds() ? type.getPeriod() : List.of();
+        List<BulletType.RoundEntry> entries;
+        if (context != null)
+        {
+            entries = context.rounds(type);
+        }
+        else
+        {
+            if (type.hasDifferentRounds())
+                entries = type.getPeriod();
+            else
+                entries = List.of();
+        }
+
         List<RoundView> views = new ArrayList<>(entries.size());
         int shot = 0;
         for (BulletType.RoundEntry entry : entries)

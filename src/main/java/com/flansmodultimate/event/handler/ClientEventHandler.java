@@ -25,6 +25,7 @@ import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.teams.TeamsClientState;
+import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;
@@ -36,6 +37,7 @@ import com.flansmodultimate.config.EnumGunBlockInteraction;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.server.PacketRequestDismount;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
@@ -168,6 +170,7 @@ public final class ClientEventHandler
     /** Runs at the end of every client tick. */
     public static void onClientTick()
     {
+        PacketDriveableDamage.applyPending(Minecraft.getInstance().level);
         GunInputState.tick();
         ModClient.tick();
         ParticleHelper.tick();
@@ -328,6 +331,8 @@ public final class ClientEventHandler
             case ONE_ARM -> ModClient.oneArmAim;
             case BOW -> HumanoidModel.ArmPose.BOW_AND_ARROW;
             case BOTH -> ModClient.bothArmsAim;
+            case THROW -> ModClient.oneArmThrow;
+            case SUPPORT -> ModClient.bowSupport;
         };
     }
 
@@ -373,7 +378,12 @@ public final class ClientEventHandler
             return;
         }
 
-        if (player.getItemInHand(event.getHand()).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
+        // An off-hand gun held alone may aim with the free main hand's button, whose attack is reported for the main hand
+        boolean mainHandEmpty = player.getMainHandItem().isEmpty();
+        InteractionHand hand = event.isAttack() && mainHandEmpty && player.getOffhandItem().getItem() instanceof GunItem
+            ? InteractionHand.OFF_HAND : event.getHand();
+
+        if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
         {
             // Aiming is a right-click, so a player lining up a shot at a chest opens it instead.
             // This suppresses the block, not the aim, which is read from the key itself.
@@ -384,18 +394,24 @@ public final class ClientEventHandler
                 return;
             }
 
-            EnumMouseButton primaryButton = event.getHand() == InteractionHand.OFF_HAND ? ModClientConfig.get().shootButtonOffhand : ModClientConfig.get().shootButton;
-            EnumMouseButton secondaryButton = ModClientConfig.get().aimButton;
+            EnumMouseButton primaryButton = hand == InteractionHand.OFF_HAND ? ModClientConfig.get().shootButtonOffhand : ModClientConfig.get().shootButton;
+            EnumMouseButton secondaryButton = GunInputState.getSecondaryButton(hand, mainHandEmpty);
 
             boolean isPrimaryButton = event.getKeyMapping().getKey().getValue() == primaryButton.toGlfw();
             boolean isSecondaryButton = event.getKeyMapping().getKey().getValue() == secondaryButton.toGlfw();
             EnumFunction primaryFunction = gunItem.getConfigType().getPrimaryFunction();
             EnumFunction secondaryFunction = gunItem.getConfigType().getSecondaryFunction();
 
-            // A throw is charged through the vanilla use action, so it must reach the item
+            // A throw is charged through the vanilla use action, so it must reach the item. Canceling the
+            // main hand's use also stops vanilla before it tries the off hand, so an off-hand throwable
+            // behind a main-hand gun or shield must let the use through as well.
+            if (event.isUseItem() && hand == InteractionHand.MAIN_HAND && isThrowable(player.getOffhandItem()))
+                return;
+
             if (isSecondaryButton && secondaryFunction != EnumFunction.MELEE && secondaryFunction != EnumFunction.THROW)
             {
-                if (mc.hitResult == null || mc.hitResult.getType() == HitResult.Type.MISS)
+                // Aiming with the attack button must not break the block or hit the entity under the crosshair
+                if (mc.hitResult == null || mc.hitResult.getType() == HitResult.Type.MISS || event.isAttack())
                 {
                     event.setCanceled(true);
                     event.setSwingHand(false);
@@ -407,6 +423,11 @@ public final class ClientEventHandler
                 event.setSwingHand(false);
             }
         }
+    }
+
+    private static boolean isThrowable(ItemStack stack)
+    {
+        return stack.getItem() instanceof GunItem gunItem && gunItem.getConfigType().isThrowable();
     }
 
     /**
@@ -447,6 +468,8 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
+        com.flansmodultimate.network.client.PacketDebugHitboxes.clearSession();
+        DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
         ModClient.clearTransientLighting();

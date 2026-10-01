@@ -6,6 +6,7 @@ Description German Light Tank
 // Item and rendering
 Icon Luchs
 Model ww2.Luchs
+FlashModel DefaultFlash
 Texture luchs
 RotateWheels True
 AddDye 8 gray
@@ -36,14 +37,15 @@ MaxThrottle 0.75
 MaxNegativeThrottle 0.65
 TurnLeftSpeed 0.55
 TurnRightSpeed 0.55
+RealTurnRateDegPerSec 30
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 5 25 0
-AddGun 8 20 0 turret mg42
+BarrelPosition 47.3 25.3 0
+AddGun 19.8 25.3 -6.6 turret mg42
 ShootDelay 1
 ShellDelay 12
 TurretRotationSpeed 0.03
@@ -90,4 +92,10 @@ StartSoundLength 41
 EngineSound engine_lt_pzii
 EngineSoundLength 39
 ShootSoundPrimary Flak1Shoot
+ShootParticlesPrimary flansmod.fmflame 0.58 0 0
+ShootParticlesPrimary flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPrimary flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPrimary smoke 0.2 0.035 -0.04
+ShootParticlesPrimary smoke 0.18 -0.03 0.045
+ShootParticlesPrimary crit 0.38 0.01 0
 ShootSoundSecondary MG42Shoot

@@ -171,5 +171,6 @@ public class ModelM40A3 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(9.125F, 1.625F, 0F);
 	}
 }

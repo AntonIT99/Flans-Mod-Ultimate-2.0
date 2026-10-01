@@ -6,6 +6,7 @@ Description American Armored Car__Uses : 57mm AP Tank Shell_Small Cal. HE Tank S
 // Rendering
 Icon 44_M8Greyhound
 Model W44.M8Greyhound
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_M8Greyhound
 RotateWheels True
@@ -38,6 +39,7 @@ MaxThrottle 1.0
 MaxNegativeThrottle 0.6
 TurnLeftSpeed 0.65
 TurnRightSpeed 0.65
+RealTurnRateDegPerSec 177.06
 CanRoll true
 SquashMobs True
 
@@ -62,7 +64,7 @@ AddAmmo 44_37APShell
 AddAmmo 44_SmallHEShell
 AddGun 19 29 5 turret 44_30Cal
 AddGun 28 47 4 turret 44_50Cal
-BarrelPosition 50 30 0
+BarrelPosition 52.5 29.5 -0.5
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -129,11 +131,12 @@ TurretArmorTopMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 950 -52 -3 -22 102 44 44
-SetupPart frontLeftWheel 25 23 -10 17 19 19 8
-SetupPart frontRightWheel 25 23 -10 -25 19 19 8
-SetupPart backLeftWheel 25 -46 -10 17 43 19 8
-SetupPart backRightWheel 25 -46 -10 -26 43 19 8
+SetupPart core 6080 -52 -3 -22 102 28 44
+SetupPart turret 1000 -17 25 -20 34 9 41
+SetupPart frontLeftWheel 60 23 -10 17 19 19 8
+SetupPart frontRightWheel 60 23 -10 -25 19 19 8
+SetupPart backLeftWheel 120 -46 -10 17 43 19 8
+SetupPart backRightWheel 120 -46 -10 -26 43 19 8
 
 // Seats
 Driver 0 28 0 -360 360 -8 15

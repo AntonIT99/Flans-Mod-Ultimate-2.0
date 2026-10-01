@@ -2,12 +2,14 @@ package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.ContentPack;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.common.guns.FiredShot;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The two authoring scales of the same stored stat. Projectile mass is stored in grams and
@@ -49,12 +51,6 @@ class ShootableMassUnitsTest
     }
 
     @Test
-    void theLegacyExplosiveMassKeyIsNoLongerRead()
-    {
-        assertEquals(0F, bullet("ExplosiveMass 0.029").getExplosiveMass());
-    }
-
-    @Test
     void anAddRoundExplosiveColumnIsAuthoredInGrams()
     {
         BulletType belt = bullet("RoundsPerItem 2",
@@ -63,6 +59,57 @@ class ShootableMassUnitsTest
 
         assertEquals(0F, belt.statsForShot(0).explosiveMass());
         assertEquals(0.016F, belt.statsForShot(1).explosiveMass(), 1.0E-6F);
+    }
+
+    @Test
+    void casingPeakIsIndependentOfChargeMass()
+    {
+        BulletType small = bullet("ExplosiveMassTNTg 60", "FragType STD_FRAG");
+        BulletType large = bullet("ExplosiveMassTNTKg 5", "FragType STD_FRAG");
+
+        assertEquals(25F, small.explosionFragDamage.getDamage(), 1.0E-3F);
+        assertEquals(25F, large.explosionFragDamage.getDamage(), 1.0E-3F);
+        assertTrue(large.fragRadius > small.fragRadius);
+    }
+
+    @Test
+    void aBeltCasingKeepsItsPeakWhenChargeIsSuppliedByIndividualRounds()
+    {
+        BulletType belt = bullet("RoundsPerItem 2", "FragType HE_SHELL",
+            "AddRound AP 1 162 0 800 45", "AddRound HE 1 135 16 835 0");
+
+        assertEquals(32.5F, belt.explosionFragDamage.getDamage(), 1.0E-3F);
+        assertEquals(0F, belt.fragRadius);
+    }
+
+    @Test
+    void mixedBeltUsesEachRoundsOwnMetalMass()
+    {
+        BulletType belt = bullet("RoundsPerItem 2", "FragType HE_SHELL",
+            "AddRound LightHE 1 135 16 835 0", "AddRound HeavyHE 1 250 16 835 0");
+        FiredShot lightShot = new FiredShot(null, belt, null, null, 0);
+        FiredShot heavyShot = new FiredShot(null, belt, null, null, 1);
+        var light = belt.fragmentationFor(lightShot.getExplosiveMass(), lightShot.getProjectileMass());
+        var heavy = belt.fragmentationFor(heavyShot.getExplosiveMass(), heavyShot.getProjectileMass());
+        assertTrue(heavy.fragmentCount() > light.fragmentCount());
+        assertEquals(light.peakDamage(), heavy.peakDamage());
+    }
+
+    @Test
+    void fragmentConstructionAndDamageCanBeAuthored()
+    {
+        BulletType mine = bullet("ExplosiveMassTNTg 182", "FragType PREFORMED",
+            "FragPattern HORIZONTAL_BAND", "FragCount 350", "FragMetalMassg 350",
+            "FragBurstHeight 1", "FragDamage 29",
+            "FragDamageVsPlayer 31");
+        assertTrue(mine.fragRadius > 30F);
+        assertEquals(1F, mine.getFragBurstHeight(), 1.0E-3F);
+        var fragments = mine.fragmentationFor(mine.getExplosiveMass(), mine.getMass());
+        assertEquals(350D, fragments.fragmentCount(), 1.0E-3D);
+        assertEquals(com.flansmodultimate.common.explosions.FragmentationModel.Pattern.HORIZONTAL_BAND,
+            fragments.pattern());
+        assertEquals(29F, mine.explosionFragDamage.getDamage(), 1.0E-3F);
+        assertEquals(31F, mine.explosionFragDamage.getDamageVsPlayer(), 1.0E-3F);
     }
 
     private static BulletType bullet(String... lines)

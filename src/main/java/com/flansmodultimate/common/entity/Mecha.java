@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -18,6 +19,8 @@ import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
@@ -25,6 +28,7 @@ import com.flansmodultimate.common.types.MechaItemType;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
@@ -155,7 +159,9 @@ public class Mecha extends Driveable
         return getConfigType() instanceof MechaType type ? type : null;
     }
 
+    // Forge's getStepHeight() reads this, and vanilla and other mods still call it directly.
     @Override
+    @SuppressWarnings("deprecation")
     public float maxUpStep()
     {
         MechaType type = getMechaType();
@@ -214,12 +220,13 @@ public class Mecha extends Driveable
             else if (!onGround() && rocket != null && hasFuelForAddon(10F * rocketPower))
             {
                 rocketThrust = true;
-                velocity = velocity.multiply(1D, 0.95D, 1D).add(0D, 0.07D * rocketPower, 0D);
+                velocity = velocity.multiply(1D, ModPhysics.dragRetention(0.95D, level()), 1D)
+                    .add(0D, 0.07D * rocketPower, 0D);
                 fallDistance = 0F;
                 consumeAddonFuel(10F * rocketPower);
                 if (toolCooldown[0] <= 0 && StringUtils.isNotBlank(rocket.getSoundEffect()))
                 {
-                    PacketPlaySound.sendSoundPacket(this, 64D, rocket.getSoundEffect(), false);
+                    PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleUtilitySoundRange(), rocket.getSoundEffect(), false);
                     toolCooldown[0] = Math.max(1, Mth.ceil(rocket.getSoundTime()));
                 }
             }
@@ -234,9 +241,9 @@ public class Mecha extends Driveable
         velocity = new Vec3(desired.x, velocity.y, desired.z);
 
         if (!rocketThrust && isInWater() && shouldFloat())
-            velocity = velocity.multiply(0.89D, 0.89D, 0.89D).add(0D, 0.06D, 0D);
+            velocity = velocity.scale(ModPhysics.dragRetention(0.89D, level())).add(0D, 0.06D, 0D);
         else
-            velocity = applyGravityAndBuoyancy(velocity, 0.04D);
+            velocity = applyGravityAndBuoyancy(velocity, ModPhysics.gravity(0.04D, level()));
         double descent = velocity.y;
         moveWithCollisions(velocity);
         if (verticalCollision && descent < -0.55D)
@@ -344,7 +351,7 @@ public class Mecha extends Driveable
             && StringUtils.isNotBlank(type.getStompSound()))
         {
             if (!level().isClientSide)
-                PacketPlaySound.sendSoundPacket(this, 50D, type.getStompSound(), false);
+                PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), type.getStompSound(), false);
             stompDelay = Math.max(1, type.getStompSoundLength());
         }
     }
@@ -415,6 +422,9 @@ public class Mecha extends Driveable
     @Override
     public boolean damagePart(@Nullable EnumDriveablePart partType, float amount, @Nullable net.minecraft.world.damagesource.DamageSource source)
     {
+        if (source != null && source.getEntity() instanceof Player player
+            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
+            return false;
         if (!level().isClientSide && amount > 0F && shieldEnergy > 0F)
         {
             float absorbed = Math.min(shieldEnergy, amount);
@@ -466,7 +476,7 @@ public class Mecha extends Driveable
         if (gunType.getSecondaryFire(gunStack))
         {
             gunType.setSecondaryFire(gunStack, false);
-            driveableData.setMechaAddon(slot, gunStack);
+            initializedData().setMechaAddon(slot, gunStack);
             acknowledgeInternalWeaponInventoryChange();
         }
         EnumFireMode mode = gunType.getFireMode(gunStack);
@@ -538,7 +548,7 @@ public class Mecha extends Driveable
                     gunItem.setBulletItemStack(gunStack, loaded.stack(), loaded.slot(), level().registryAccess());
                     if (StringUtils.isNotBlank(loaded.bulletType().getDropItemOnShoot()))
                         ModUtils.dropItem(level(), this, loaded.bulletType().getDropItemOnShoot(), loaded.bulletType().getContentPack());
-                    driveableData.setMechaAddon(slot, gunStack);
+                    initializedData().setMechaAddon(slot, gunStack);
                     acknowledgeInternalWeaponInventoryChange();
                 }
             });
@@ -586,20 +596,20 @@ public class Mecha extends Driveable
             int sourceSlot = findBestReloadSource(gunType, preferred);
             if (sourceSlot < 0)
                 break;
-            ItemStack source = driveableData.getItem(sourceSlot);
+            ItemStack source = initializedData().getItem(sourceSlot);
             ItemStack loaded = source.copy();
             loaded.setCount(1);
             gunItem.setBulletItemStack(gunStack, loaded, internalSlot, level().registryAccess());
             if (!preserveSource)
             {
                 source.shrink(1);
-                driveableData.setItem(sourceSlot, source.isEmpty() ? ItemStack.EMPTY : source);
+                initializedData().setItem(sourceSlot, source.isEmpty() ? ItemStack.EMPTY : source);
             }
             reloaded = true;
         }
         if (reloaded)
         {
-            driveableData.setMechaAddon(handSlot, gunStack);
+            initializedData().setMechaAddon(handSlot, gunStack);
             acknowledgeInternalWeaponInventoryChange();
         }
         return reloaded;
@@ -611,9 +621,10 @@ public class Mecha extends Driveable
         int bestRounds = 0;
         boolean bestPreferred = false;
         List<ShootableType> allowed = gunType.getAmmoTypes();
-        for (int slot = 0; slot < driveableData.getContainerSize(); slot++)
+        DriveableData data = initializedData();
+        for (int slot = 0; slot < data.getContainerSize(); slot++)
         {
-            ItemStack candidate = driveableData.getItem(slot);
+            ItemStack candidate = data.getItem(slot);
             if (!(candidate.getItem() instanceof ShootableItem shootableItem)
                 || !allowed.contains(shootableItem.getConfigType()) || !ShootableItem.hasRoundsLeft(candidate))
                 continue;
@@ -640,8 +651,16 @@ public class Mecha extends Driveable
 
     private ItemStack oppositeHandStack(boolean left)
     {
-        return driveableData == null ? ItemStack.EMPTY
-            : driveableData.getMechaAddon(left ? EnumMechaSlotType.RIGHT_TOOL : EnumMechaSlotType.LEFT_TOOL);
+        if (driveableData == null)
+        {
+            return ItemStack.EMPTY;
+        }
+        else
+        {
+            if (left)
+                return driveableData.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL);
+            return driveableData.getMechaAddon(EnumMechaSlotType.LEFT_TOOL);
+        }
     }
 
     private Vec3 handGunOrigin(MechaType type, boolean left)
@@ -758,7 +777,7 @@ public class Mecha extends Driveable
     private void addEffectiveToolSpeed(EnumMechaSlotType slot, EnumDriveablePart arm, BlockState state, float hardness,
                                        List<Float> speeds)
     {
-        if (isPartIntact(arm) && driveableData.getMechaAddon(slot).getItem() instanceof MechaAddonItem addon)
+        if (isPartIntact(arm) && initializedData().getMechaAddon(slot).getItem() instanceof MechaAddonItem addon)
         {
             MechaItemType tool = addon.getConfigType();
             if (effectiveAgainst(tool.getFunction(), state) && tool.getToolHardness() + 0.001F >= hardness)
@@ -798,11 +817,35 @@ public class Mecha extends Driveable
         }
         if (wasteCompact() && (stack.is(Items.COBBLESTONE) || stack.is(Items.DIRT) || stack.is(Items.SAND)))
             return ItemStack.EMPTY;
-        float multiplier = stack.is(Items.DIAMOND) ? diamondMultiplier()
-            : stack.is(Items.REDSTONE) ? redstoneMultiplier()
-            : stack.is(Items.COAL) ? coalMultiplier()
-            : stack.is(Items.EMERALD) ? emeraldMultiplier()
-            : stack.is(Items.IRON_INGOT) ? ironMultiplier() : 1F;
+        float multiplier;
+        if (stack.is(Items.DIAMOND))
+        {
+            multiplier = diamondMultiplier();
+        }
+        else if (stack.is(Items.REDSTONE))
+        {
+            multiplier = redstoneMultiplier();
+        }
+        else if (stack.is(Items.COAL))
+        {
+
+            multiplier = coalMultiplier();
+        }
+        else if (stack.is(Items.EMERALD))
+        {
+
+            multiplier = emeraldMultiplier();
+
+        }
+        else if (stack.is(Items.IRON_INGOT))
+        {
+            multiplier = ironMultiplier();
+        }
+        else
+        {
+            multiplier = 1F;
+        }
+
         if (multiplier > 1F)
         {
             int whole = Mth.floor(multiplier);
@@ -840,7 +883,7 @@ public class Mecha extends Driveable
         {
             if (pos.distSqr(centre) <= radius * radius && level().getBlockState(pos).is(Blocks.DIAMOND_ORE))
             {
-                PacketPlaySound.sendSoundPacket(this, 48D, detector.getDetectSound(), false);
+                PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), detector.getDetectSound(), false);
                 return;
             }
         }
@@ -849,7 +892,7 @@ public class Mecha extends Driveable
     private void playToolSound(MechaItemType tool)
     {
         if (StringUtils.isNotBlank(tool.getSoundEffect()))
-            PacketPlaySound.sendSoundPacket(this, 64D, tool.getSoundEffect(), false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleUtilitySoundRange(), tool.getSoundEffect(), false);
     }
 
     private Vec3 aimDirection()
@@ -897,6 +940,7 @@ public class Mecha extends Driveable
     }
 
     @Override
+    @NotNull
     public EntityDimensions getDimensions(@NotNull Pose pose)
     {
         MechaType type = getMechaType();

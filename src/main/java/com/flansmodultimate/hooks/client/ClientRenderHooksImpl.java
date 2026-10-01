@@ -1,14 +1,15 @@
 package com.flansmodultimate.hooks.client;
 
+import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelAttachment;
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.ModelVehicle;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.model.MuzzleMeasurements;
 import com.flansmodultimate.client.particle.ExplosionSpectacle;
 import com.flansmodultimate.client.particle.ParticleHelper;
 import com.flansmodultimate.client.render.InstantBulletRenderer;
@@ -18,11 +19,10 @@ import com.flansmodultimate.client.render.KillMessageFeed;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.item.CustomBewlr;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.SeatInfo;
-import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.GunType;
@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 public final class ClientRenderHooksImpl implements IClientRenderHooks
 {
     @Override
@@ -239,33 +240,46 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
         if (!(loaded instanceof ModelDriveable model))
             return List.of();
+        return MuzzleMeasurements.deriveMuzzles(model, driveableInputs(type));
+    }
 
-        boolean planeFacing = type instanceof PlaneType;
-        List<DerivedMuzzle> derived = new ArrayList<>();
-        if (model instanceof ModelVehicle vehicleModel)
-        {
-            Vec3 barrel = vehicleModel.getPrimaryBarrelMuzzle();
-            if (barrel != null)
-                derived.add(new DerivedMuzzle(-1, "barrel",
-                    LegacyDriveableCoordinates.modelPixelsToTypeFile(barrel, planeFacing)));
-        }
+    @Override
+    public List<DerivedMuzzle> derivePrimaryBarrels(DriveableType type)
+    {
+        if (type == null)
+            return List.of();
+        // As deriveMuzzles: off the render thread, only take what is already loaded.
+        Object loaded = Minecraft.getInstance().isSameThread()
+            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        if (!(loaded instanceof ModelDriveable model))
+            return List.of();
+        return MuzzleMeasurements.derivePrimaryBarrels(model, driveableInputs(type));
+    }
 
+    private static MuzzleMeasurements.DriveableInputs driveableInputs(DriveableType type)
+    {
+        List<MuzzleMeasurements.SeatGun> seatGuns = new ArrayList<>();
         for (int seat = 1; seat <= type.getNumPassengers(); seat++)
         {
             SeatInfo info = type.getSeat(seat);
-            if (info == null || info.getGunType() == null)
-                continue;
-            Vec3 muzzle = model.getRegisteredGunMuzzle(info.getGunName());
-            if (muzzle == null)
-                continue;
-            // GunOrigin is not the muzzle: the firing path lifts it by the legacy
-            // mounted-gunner offset before spawning the round. Subtracting that here
-            // makes the suggested value land the shot on the measured barrel tip.
-            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(muzzle, planeFacing);
-            position.y -= (float) (Driveable.PASSENGER_GUN_MOUNTED_OFFSET * 16D);
-            derived.add(new DerivedMuzzle(seat, "seat " + seat + " (" + info.getGunName() + ")", position));
+            if (info != null && info.getGunType() != null && info.getGunName() != null)
+                seatGuns.add(new MuzzleMeasurements.SeatGun(seat, info.getGunName()));
         }
-        return List.copyOf(derived);
+        return new MuzzleMeasurements.DriveableInputs(type instanceof PlaneType, type.getModelScale(),
+            type.getVehicleGunModelScale(), seatGuns);
+    }
+
+    @Override
+    public List<Vec3> deriveAAGunBarrelOffsets(AAGunType type)
+    {
+        if (type == null)
+            return List.of();
+        // As deriveMuzzles: off the render thread, only take what is already loaded.
+        Object loaded = Minecraft.getInstance().isSameThread()
+            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        if (!(loaded instanceof ModelAAGun model))
+            return List.of();
+        return MuzzleMeasurements.deriveAAGunBarrelOffsets(model, type.getNumBarrels());
     }
 
     @Override

@@ -6,6 +6,7 @@ Description American Tank Destroyer
 // Item and rendering
 Icon Hellcat
 Model ww2.Hellcat
+FlashModel DefaultFlash
 Texture hellcat
 RotateWheels True
 AddDye 10 green
@@ -38,14 +39,15 @@ MaxThrottle 0.8
 MaxNegativeThrottle 0.65
 TurnLeftSpeed 0.25
 TurnRightSpeed 0.25
+RealTurnRateDegPerSec 36
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-GunOrigin 1 6 18 -11
-BarrelPosition 75 28 0
+GunOrigin 1 22 17.4 -11
+BarrelPosition 77 26.5 0
 ShootDelay 1
 ShellDelay 100
 TurretRotationSpeed 0.025
@@ -96,6 +98,14 @@ StartSoundLength 41
 EngineSound engine_td_m18
 EngineSoundLength 39
 ShootSoundPrimary shoot_76mmus
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary BrowningShoot
 DriverTraverseSounds true
 PitchSound TurretTraverse1

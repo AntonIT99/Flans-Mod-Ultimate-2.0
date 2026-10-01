@@ -6,6 +6,7 @@ ShortName WW2_Vehicle_M4A1_2A
 Model Manus_WW2.Vehicle.WW2_Vehicle_M4A1_2
 Icon Icon_WW2_Vehicle_M4A1_2A
 Texture Skin_WW2_Vehicle_M4A1_2A
+FlashModel DefaultFlash
 RotateWheels True
 
 // Recipe and Inventory
@@ -19,8 +20,6 @@ AddRecipeParts rightTrack 1 SMP_Part_Wheel_Tanktrack
 AddDye 10 green
 AllowAllAmmo False
 AddAmmo WW2_Shell_USA114mmRocketHE
-AddAmmo WW2_Shell_USA75mmAP
-AddAmmo WW2_Shell_USA75mmHE
 
 // Movement and Physics
 MaxThrottle 0.6
@@ -36,20 +35,36 @@ WheelSpringStrength 0.5
 FourWheelDrive true
 TurnLeftSpeed 1
 TurnRightSpeed 1
+RealTurnRateDegPerSec 18
 SquashMobs True
 Tank true
 
 // Weapons
-AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A
-BarrelPosition 0 62 0
-ShellDelay 110
-ShootDelay 5
+Primary Shell
+Secondary Gun
+ShootPointPrimary 31 69 -14.4 barrel
+ShootPointPrimary 31 69 14.4 barrel
+ShootPointPrimary 31 66 -14.4 barrel
+ShootPointPrimary 31 66 14.4 barrel
+ShootPointPrimary 31 62 -14.4 barrel
+ShootPointPrimary 31 62 14.4 barrel
+ShootPointPrimary 31 59 -14.4 barrel
+ShootPointPrimary 31 59 14.4 barrel
+AddGun 52 37 0 turret WW2_Gun_USA75mmCannon_1A
 ShootDelayPrimarySeconds 0.5
+AlternatePrimary True
+ShootParticlesPrimary flansmod.rocketexhaust -0.6 0 0
+ShootParticlesPrimary smoke -0.25 0 0
+ShootParticlesSecondary explode 0.7 0 0
+ShootParticlesSecondary flansmod.fmflame 0.9 0 0
+ShootParticlesSecondary flansmod.fmflame 0.5 0.06 -0.05
+ShootParticlesSecondary largesmoke 0.3 0.07 0.06
+ShootParticlesSecondary largesmoke 0.3 -0.07 -0.06
 ReadWeaponsFromGunTypes true
-GunOrigin 1 49 18 10
+GunOrigin 1 50 -2.1 9.5
 
 // Protection
-ArmorFrontMm 50
+ArmorFrontMm 50 56
 ArmorSideMm 38
 ArmorRearMm 38
 ArmorTopMm 19
@@ -87,5 +102,5 @@ StartSound tankidle2
 StartSoundLength 41
 EngineSound engine_mt_m4
 EngineSoundLength 39
-ShootSoundPrimary shoot_75mmus
-ShootSoundSecondary 30calshoot
+ShootSoundPrimary RocketFire2
+ShootSoundSecondary shoot_75mmus

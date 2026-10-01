@@ -214,5 +214,6 @@ public class ModelFNSCAR extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(6.875F, 1.3125F, 0F);
 	}
 }

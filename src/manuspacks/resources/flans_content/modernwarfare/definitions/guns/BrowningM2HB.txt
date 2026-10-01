@@ -6,6 +6,8 @@ ShortName BrowningM2HB
 Icon IconGunBrowningM2HB
 Colour 255 255 255
 DeployedModel manus_modern_warfare.BrowningM2HB
+FlashModel DefaultFlash
+animFlashScale 1.24
 DeployedTexture SkinGunBrowningM2HB
 
 // Recipe and Inventory
@@ -18,9 +20,9 @@ Mode FullAuto
 Scope None
 Deployable True
 StandBackDistance 1.0
-TopViewLimit 20
+TopViewLimit 30
 BottomViewLimit 20
-SideViewLimit 45
+SideViewLimit 40
 PivotHeight 0.75
 RoundsPerMin 500.0
 Dispersion 0.35

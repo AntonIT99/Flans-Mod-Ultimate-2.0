@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -46,13 +48,13 @@ public final class Debris1Particle extends TextureSheetParticle
         if (age++ >= lifetime)
             remove();
 
-        yd -= 0.04D * gravity;
+        yd -= ModPhysics.gravity(0.04D * gravity, level);
 
         move(xd, yd, zd);
 
-        xd *= 0.99D;
-        yd *= 0.99D;
-        zd *= 0.99D;
+        xd *= ModPhysics.dragRetention(0.99D, level);
+        yd *= ModPhysics.dragRetention(0.99D, level);
+        zd *= ModPhysics.dragRetention(0.99D, level);
 
         if (y < 0.0D)
             remove();

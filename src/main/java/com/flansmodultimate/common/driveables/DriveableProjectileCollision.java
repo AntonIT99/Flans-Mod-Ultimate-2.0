@@ -7,6 +7,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Pure collision-space transforms and slab tracing for hull, turret and barrel part boxes. */
 public final class DriveableProjectileCollision
 {
@@ -107,6 +110,36 @@ public final class DriveableProjectileCollision
             outward = dominantNormal(outward);
         return new ClosestSurface(closest, outward, EnumArmorFacing.fromOutwardNormal(outward),
             point.distanceTo(closest));
+    }
+
+    /** Up to five nearby points on the selected face, clamped to the part rather than the entity box. */
+    public static List<Vec3> explosionSurfaceSamples(AABB box, ClosestSurface surface)
+    {
+        Vec3 normal = surface.outwardNormal();
+        Vec3 point = surface.position();
+        int normalAxis = normal.x != 0D ? 0 : normal.y != 0D ? 1 : 2;
+        double[] minima = {box.minX, box.minY, box.minZ};
+        double[] maxima = {box.maxX, box.maxY, box.maxZ};
+        double[] base = {point.x, point.y, point.z};
+        base[normalAxis] = (normalAxis == 0 ? normal.x : normalAxis == 1 ? normal.y : normal.z) > 0D
+            ? maxima[normalAxis] : minima[normalAxis];
+
+        List<Vec3> samples = new ArrayList<>(5);
+        samples.add(new Vec3(base[0], base[1], base[2]));
+        for (int axis = 0; axis < 3; axis++)
+        {
+            if (axis == normalAxis)
+                continue;
+            for (double offset : new double[]{-0.75D, 0.75D})
+            {
+                double[] sample = base.clone();
+                sample[axis] = Mth.clamp(base[axis] + offset, minima[axis], maxima[axis]);
+                Vec3 position = new Vec3(sample[0], sample[1], sample[2]);
+                if (!samples.contains(position))
+                    samples.add(position);
+            }
+        }
+        return List.copyOf(samples);
     }
 
     /** Maps a point of a part box into hull-local space, the inverse of the transform {@link #trace} applies to rays. */

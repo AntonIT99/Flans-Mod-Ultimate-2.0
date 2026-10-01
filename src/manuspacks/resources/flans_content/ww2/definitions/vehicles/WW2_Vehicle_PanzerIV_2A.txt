@@ -4,6 +4,7 @@ ShortName WW2_Vehicle_PanzerIV_2A
 
 // Model and Rendering
 Model Manus_WW2.Vehicle.WW2_Vehicle_PanzerIV_2
+FlashModel DefaultFlash
 Icon Icon_WW2_Vehicle_PanzerIV_2A
 Texture Skin_WW2_Vehicle_PanzerIV_2A
 RotateWheels True
@@ -38,13 +39,24 @@ RealEnginePowerPS 265
 RealMaxSpeedKmh 38
 DriveType TRACKED
 RealMaxReverseSpeedKmh 7
+RealTurnRateDegPerSec 12
 
 // Weapons
 AddGun 28 32 8 turret WW2_MG_MG42ZB_1A
-BarrelPosition 0 31 0
+BarrelPosition 81 32 0
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 0.75 0 0
+ShootParticlesPrimary flansmod.fmflame 0.28 0 0.82
+ShootParticlesPrimary flansmod.fmflame 0.28 0 -0.82
+ShootParticlesPrimary flansmod.fmflame 0.24 0.12 0.68
+ShootParticlesPrimary flansmod.fmflame 0.24 -0.1 -0.68
+ShootParticlesPrimary largesmoke 0.18 0.03 0.46
+ShootParticlesPrimary largesmoke 0.18 0.03 -0.46
+ShootParticlesPrimary largesmoke 0.16 0.1 0.38
+ShootParticlesPrimary largesmoke 0.16 -0.08 -0.38
 ShellDelay 110
 ShootDelay 5
-GunOrigin 1 48 18 12
+GunOrigin 1 47.5 -2.1 11.5
 PlaceTimePrimary 80
 ReloadTimeSecondary 100
 ShootDelayPrimarySeconds 6
@@ -52,7 +64,7 @@ ReadWeaponsFromGunTypes true
 
 // Protection
 IsExplosionWhenDestroyed true
-ArmorFrontMm 80
+ArmorFrontMm 80 10
 ArmorSideMm 30
 ArmorRearMm 20
 ArmorTopMm 11

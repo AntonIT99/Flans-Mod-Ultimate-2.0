@@ -117,5 +117,6 @@ public class ModelGreaseGun extends ModelGun {
       this.translateAll(-6.0F, -2.2F, 0.1F);
       this.thirdPersonOffset = new Vector3f(0.0F, -0.1F, 0.01F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(0.53125F, 0.34375F, -0.00625F);
    }
 }

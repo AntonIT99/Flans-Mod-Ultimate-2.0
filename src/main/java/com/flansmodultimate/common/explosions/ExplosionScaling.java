@@ -11,12 +11,8 @@ import lombok.NoArgsConstructor;
  * continues from there at a much smaller exponent. The two regimes answer different questions.
  * <p>
  * Below the knee the exponents are fitted to measured ordnance, from a 1 g .50 cal HE filler up to
- * a 4.4 kg 150 mm shell. Textbook Hopkinson-Cranz scaling would make every radius a pure cube root
- * of the charge, but the quoted effect radii of real rounds do not behave that way across that
- * range: the scaled distance itself creeps up with the charge, because what is quoted is a
- * casualty or destruction radius rather than one fixed overpressure. A least-squares fit in
- * log-log space over those rounds gives ~0.37 for cratering and ~0.40 for the broader blast and
- * fragmentation envelope, which lands every one of them inside its quoted band.
+ * a 4.4 kg 150 mm shell. The radius curves govern cratering and blast only. Casing fragments use
+ * {@link FragmentationModel}, which computes a practical range from count, spread and energy.
  * <p>
  * Above the knee - beyond anything in that reference set - the curve is deliberately flattened for
  * playability. Continuing the fitted growth would give a 2.25 t bomb a blast radius over 400
@@ -46,39 +42,31 @@ public final class ExplosionScaling
     /** Blast growth past the knee. Tuned so a 2.25 t bomb reaches ~126 blocks. */
     public static final float BLAST_FLATTEN_EXPONENT = 0.18F;
 
-    /** Fragmentation follows the same fitted growth as blast below the knee. */
-    public static final float FRAG_EXPONENT = 0.40F;
-    /**
-     * Fragments flatten more gently than blast, so a heavy charge throws them past its own
-     * overpressure envelope the way real HE does, reaching ~161 blocks on a 2.25 t bomb.
-     */
-    public static final float FRAG_FLATTEN_EXPONENT = 0.22F;
-
     /**
      * Growth of the peak blast damage with the charge. Peak overpressure at a fixed scaled
      * distance follows Hopkinson-Cranz, so this is the textbook cube root.
      */
     public static final double BLAST_DAMAGE_EXPONENT = 1D / 3D;
-    /**
-     * Growth of the peak fragment damage with the charge. A single fragment is about as lethal
-     * whatever threw it; a bigger charge mostly throws more fragments further, which the frag
-     * radius and hit chance already account for. Scaling fragment damage with the cube root as
-     * well counted the charge twice, leaving grenade fragments weaker than a pistol round while a
-     * 250 kg bomb's fragments hit for ten times a player's health. Anchored at 1 kg like the other
-     * laws, so the casing's {@code kFragDamage} is still the damage of a 1 kg charge.
-     */
-    public static final double FRAG_DAMAGE_EXPONENT = 0.2D;
-
     /** Peak blast damage for a charge in kg TNT equivalent; {@code reference} is that of 1 kg. */
     public static float blastDamage(double reference, float massKg)
     {
         return damage(reference, massKg, BLAST_DAMAGE_EXPONENT);
     }
 
-    /** Peak fragment damage for a charge in kg TNT equivalent; {@code reference} is that of 1 kg. */
-    public static float fragDamage(double reference, float massKg)
+    /** Pure distance falloff shared by the explosion simulation and balance scenarios. */
+    public static double blastFalloff(double distanceMeters, double radiusMeters, double sharpness)
     {
-        return damage(reference, massKg, FRAG_DAMAGE_EXPONENT);
+        double normalizedDistance = distanceMeters / Math.max(0.001D, radiusMeters);
+        double falloff = 1D / (1D + Math.pow(normalizedDistance * sharpness, 3D));
+        double edge = Math.max(1D - normalizedDistance, 0D);
+        return falloff * edge * edge;
+    }
+
+    /** Peak damage is a property of the fragments/casing, not the explosive charge mass. */
+    public static float fragPeakDamage(double casingDamage)
+    {
+        return Double.isFinite(casingDamage) && casingDamage > 0D
+            ? (float) Math.min(casingDamage, Float.MAX_VALUE) : 0F;
     }
 
     /** Cratering radius in blocks for a charge in kg TNT equivalent. */
@@ -91,12 +79,6 @@ public final class ExplosionScaling
     public static float blastRadius(double reference, float massKg)
     {
         return radius(reference, massKg, BLAST_EXPONENT, BLAST_FLATTEN_EXPONENT);
-    }
-
-    /** Fragmentation radius in blocks for a charge in kg TNT equivalent. */
-    public static float fragRadius(double reference, float massKg)
-    {
-        return radius(reference, massKg, FRAG_EXPONENT, FRAG_FLATTEN_EXPONENT);
     }
 
     /**

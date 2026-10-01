@@ -11,14 +11,17 @@ import com.flansmodultimate.common.driveables.OpticsHud;
 import com.flansmodultimate.common.driveables.OpticsState;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.VehicleOptics;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,9 +41,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -68,18 +74,32 @@ public class Seat extends Entity implements IControllable, ISeat
             ? driveable.getConfigType().getOptics() : seatInfo.getOptics();
     }
 
-    public boolean isScoped() { return entityData.get(DATA_SCOPED); }
-    public int getCurrentSight() { return entityData.get(DATA_SIGHT); }
-    public boolean isThermalScoped() { return isScoped() && entityData.get(DATA_THERMAL); }
+    public boolean isScoped()
+    {
+        return entityData.get(DATA_SCOPED);
+    }
+
+    public int getCurrentSight()
+    {
+        return entityData.get(DATA_SIGHT);
+    }
+
+    public boolean isThermalScoped()
+    {
+        return isScoped() && entityData.get(DATA_THERMAL);
+    }
+
     public boolean isNightSightActive()
     {
-        return isScoped() && getOptics() != null && (getOptics().isNightSight()
-            || driveable.getConfigType().getOptics().isNightSight());
+        return isScoped() && getOptics() != null
+            && (getOptics().isNightSight() || Optional.ofNullable(driveable).map(Driveable::getConfigType).map(d -> d.getOptics().isNightSight()).orElse(false));
     }
     public float getScopeZoom()
     {
         VehicleOptics optics = getOptics();
-        return !isScoped() || optics == null ? 1F : optics.available() ? optics.zoom(getCurrentSight()) : 7F;
+        if (!isScoped() || optics == null)
+            return 1F;
+        return optics.available() ? optics.zoom(getCurrentSight()) : 7F;
     }
 
     @Nullable
@@ -170,6 +190,10 @@ public class Seat extends Entity implements IControllable, ISeat
     private float clientViewWorldYaw;
 
     private int orphanTicks;
+    private int yawSoundDelay;
+    private int pitchSoundDelay;
+    private float lastTraverseYaw;
+    private float lastTraversePitch;
     private int localInputMask;
     private int previousInputMask;
     private int lastInputSequence;
@@ -191,6 +215,15 @@ public class Seat extends Entity implements IControllable, ISeat
         super(FlansMod.seatEntity.get(), level);
         noPhysics = true;
         bind(parent, seatIndex, info);
+        // Legacy EntitySeat starts looking down the middle of its traverse and
+        // keeps whatever aim its last gunner left. Starting at 0 instead drew a
+        // gun whose traverse excludes 0, such as a rear gunner's, outside it.
+        // The driver's aim drives the saved turret, so it is left alone.
+        if (info != null && seatIndex > 0)
+        {
+            entityData.set(DATA_AIM_YAW, info.getYawCentre());
+            prevAimYaw = info.getYawCentre();
+        }
     }
 
     public void bind(@NotNull Driveable parent, int seatIndex, @Nullable SeatInfo info)
@@ -252,7 +285,7 @@ public class Seat extends Entity implements IControllable, ISeat
         // reintroduced the same one-tick sawtooth on top of an otherwise perfectly smooth,
         // continuously mouse-driven view whenever the torso was actually turning.
         if (usesAbsoluteViewYaw())
-            return Mth.wrapDegrees(clientViewWorldYaw - Mth.rotLerp(partialTick, driveable.getPrevYaw(), driveable.getYaw()));
+            return Mth.wrapDegrees(clientViewWorldYaw - Mth.rotLerp(partialTick, Objects.requireNonNull(driveable).getPrevYaw(), driveable.getYaw()));
         return clientViewAimYaw;
     }
 
@@ -466,7 +499,47 @@ public class Seat extends Entity implements IControllable, ISeat
             receivedInputSequence = false;
         }
         if (!level().isClientSide)
+        {
             updateOptics(false, false);
+            updateTraverseSounds(passenger);
+        }
+    }
+
+    /** Plays the seat's yaw and pitch traverse sounds while its occupant is turning it. */
+    private void updateTraverseSounds(@Nullable Entity passenger)
+    {
+        if (yawSoundDelay > 0)
+            yawSoundDelay--;
+        if (pitchSoundDelay > 0)
+            pitchSoundDelay--;
+
+        float yaw = getAimYaw();
+        float pitch = getAimPitch();
+        boolean yawMoving = Math.abs(Mth.wrapDegrees(yaw - lastTraverseYaw)) > 1.0E-3F;
+        boolean pitchMoving = Math.abs(pitch - lastTraversePitch) > 1.0E-3F;
+        lastTraverseYaw = yaw;
+        lastTraversePitch = pitch;
+
+        if (!(passenger instanceof Player) || seatInfo == null || !seatInfo.isTraverseSounds() || driveable == null
+            || (driveable.isUnderWater() && driveable.getConfigType() != null && !driveable.getConfigType().isWorksUnderWater()))
+        {
+            yawSoundDelay = 0;
+            pitchSoundDelay = 0;
+            return;
+        }
+
+        // Legacy YawBeforePitch holds the pitch sound until the yaw traverse has finished.
+        boolean playPitch = pitchMoving && !(seatInfo.isYawBeforePitch() && yawMoving);
+        if (yawMoving && yawSoundDelay == 0 && StringUtils.isNotBlank(seatInfo.getYawSound()))
+        {
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), seatInfo.getYawSound(), false);
+            yawSoundDelay = seatInfo.getYawSoundLength();
+        }
+        if (playPitch && pitchSoundDelay == 0 && StringUtils.isNotBlank(seatInfo.getPitchSound()))
+        {
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), seatInfo.getPitchSound(), false);
+            pitchSoundDelay = seatInfo.getPitchSoundLength();
+        }
     }
 
     private boolean resolveParent()
@@ -525,6 +598,12 @@ public class Seat extends Entity implements IControllable, ISeat
     }
 
     @Override
+    public ItemStack getPickedResult(HitResult target)
+    {
+        return driveable == null ? ItemStack.EMPTY : driveable.getPickedResult(target);
+    }
+
+    @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
         if (driveable == null)
@@ -564,6 +643,8 @@ public class Seat extends Entity implements IControllable, ISeat
      */
     public boolean tryEnter(@NotNull Player player)
     {
+        if (!FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
+            return false;
         if (PlatformEvents.postCancellable(new PlayerEnterSeatEvent(this, player)))
             return false;
         if (player.getVehicle() != null)
@@ -574,7 +655,9 @@ public class Seat extends Entity implements IControllable, ISeat
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return getPassengers().isEmpty() && passenger instanceof LivingEntity;
+        return getPassengers().isEmpty() && passenger instanceof LivingEntity
+            && (!(passenger instanceof Player player)
+                || FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER));
     }
 
     @Override
@@ -706,6 +789,23 @@ public class Seat extends Entity implements IControllable, ISeat
         }
         clientViewAimYaw = yaw;
         clientViewAimPitch = Mth.clamp(pitch, -89.9F, 89.9F);
+    }
+
+    /**
+     * Puts back the aim its driveable saved, since seats themselves are not
+     * saved, kept within this seat's limits.
+     */
+    public void restoreAim(float yaw, float pitch)
+    {
+        if (!Float.isFinite(yaw) || !Float.isFinite(pitch))
+            return;
+        SeatInfo info = seatInfo;
+        yaw = info == null ? Mth.wrapDegrees(yaw) : info.clampYaw(yaw);
+        pitch = info == null ? Mth.clamp(pitch, -89.9F, 89.9F) : info.clampPitch(pitch);
+        entityData.set(DATA_AIM_YAW, yaw);
+        entityData.set(DATA_AIM_PITCH, pitch);
+        prevAimYaw = yaw;
+        prevAimPitch = pitch;
     }
 
     public void synchronizeClientViewWithAim()

@@ -6,6 +6,7 @@ Description German Fighter Aircraft__Uses Mg131 Ammo / 20mm Aircraft Ammo__Year 
 // Rendering
 Icon 44_BF109G10
 Model W44.BF109G10
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_BF109G10
 CameraDistance 10.0
@@ -39,6 +40,7 @@ MaxThrottle 2.5
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 1.5
 TurnRightSpeed 1.5
+RealTurnRateDegPerSec 31.93
 LookUpSpeed 2
 LookDownSpeed 2
 RollLeftSpeed 2
@@ -92,9 +94,9 @@ CollisionDamageThrottle 2.0
 CollisionDamageTimes 145
 
 // Parts and collision
-SetupPart core 450 -150 9 -17 220 48 34
-SetupPart rightWing 275 -45 17 17 58 22 105
-SetupPart leftWing 275 -45 17 -123 58 22 105
+SetupPart core 2360 -150 9 -17 220 48 34
+SetupPart rightWing 460 -45 17 17 58 22 105
+SetupPart leftWing 460 -45 17 -123 58 22 105
 CollisionPoint 45 36 0 core
 CollisionPoint -9 31 111 core
 CollisionPoint -9 31 -111 core

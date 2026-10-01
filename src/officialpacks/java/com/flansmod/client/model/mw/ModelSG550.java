@@ -206,5 +206,6 @@ public class ModelSG550 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7.5F, 1.34375F, 0F);
 	}
 }

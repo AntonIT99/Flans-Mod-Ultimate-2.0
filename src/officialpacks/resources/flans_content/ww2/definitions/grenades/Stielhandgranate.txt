@@ -1,6 +1,7 @@
 // Identity
 Name Stielhandgranate
 ShortName stielhandgranate
+Mass 595
 
 // Item and rendering
 Icon Stielhandgranate
@@ -15,7 +16,7 @@ StackSize 4
 // Throwing
 ThrowDelay 10
 Bounciness 0.8
-ThrowSpeed 2.0
+ThrowSpeedMs 12
 Sticky false
 
 // Ballistics
@@ -46,3 +47,5 @@ SmokeTime 0
 // Sounds and particles
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2

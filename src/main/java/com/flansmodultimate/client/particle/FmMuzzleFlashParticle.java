@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.particle;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -43,9 +45,9 @@ public class FmMuzzleFlashParticle extends ParticleBase
         
         move(xd, yd, zd);
         
-        xd *= 0.5D;
-        yd *= 0.1D;
-        zd *= 0.5D;
+        xd *= ModPhysics.dragRetention(0.5D, level);
+        yd *= ModPhysics.dragRetention(0.1D, level);
+        zd *= ModPhysics.dragRetention(0.5D, level);
 
         if (onGround || age++ >= lifetime)
         {
@@ -76,6 +78,7 @@ public class FmMuzzleFlashParticle extends ParticleBase
     }
 
     @Override
+    @NotNull
     public Particle scale(float factor)
     {
         // ClientProxy applied multipleParticleScaleBy once in the muzzle-flash

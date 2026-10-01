@@ -6,6 +6,7 @@ Description British AA Gun
 // Item and rendering
 Icon Bofors
 Model ww2.Bofors
+FlashModel DefaultFlash
 Texture bofors
 AddDye 4 green
 ModelScale 1.1
@@ -34,6 +35,7 @@ MaxThrottle 0
 MaxNegativeThrottle 0
 TurnLeftSpeed 0
 TurnRightSpeed 0
+RealTurnRateDegPerSec 0
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
@@ -48,7 +50,7 @@ AlternatePrimary True
 AlternateSecondary False
 ModePrimary FullAuto
 ModeSecondary FullAuto
-BarrelPosition 14 14 0
+BarrelPosition 46.2 13.8 0
 TurretRotationSpeed 0.03
 RoundsPerMinPrimary 120
 ReloadTimePrimary 20
@@ -86,3 +88,9 @@ StartSoundLength 0
 EngineSound None
 EngineSoundLength 0
 ShootSoundPrimary aagun_40mm_boforsfire
+ShootParticlesPrimary flansmod.fmflame 0.58 0 0
+ShootParticlesPrimary flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPrimary flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPrimary smoke 0.2 0.035 -0.04
+ShootParticlesPrimary smoke 0.18 -0.03 0.045
+ShootParticlesPrimary crit 0.38 0.01 0

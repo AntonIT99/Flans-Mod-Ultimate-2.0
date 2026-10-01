@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.CollisionBox;
+import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
 import com.flansmodultimate.common.driveables.DriveableCollisionWorld;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
@@ -25,6 +26,8 @@ import com.flansmodultimate.common.driveables.SeatCycle;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.driveables.SuspensionPhysics;
+import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
+import com.flansmodultimate.common.driveables.armor.ExplosionVehicleDamageResolver;
 import com.flansmodultimate.common.driveables.armor.ResolvedArmorHit;
 import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
 import com.flansmodultimate.common.driveables.armor.VehicleProjectileDamageResolver;
@@ -41,11 +44,14 @@ import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
+import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.item.ToolItem;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
@@ -67,11 +73,13 @@ import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
+import com.flansmodultimate.network.client.PacketDriveablePassengerFired;
 import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.fluid.FluidPlatform;
@@ -80,6 +88,7 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import net.neoforged.neoforge.energy.IEnergyStorage;
@@ -117,6 +126,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -145,6 +155,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 /**
  * Server-authoritative common runtime for planes, vehicles and mechas.
@@ -153,6 +164,7 @@ import java.util.UUID;
  * transforms, fuel, inventory, weapon delays and damage are owned by the
  * server and replicated through normal entity data/position tracking.</p>
  */
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public abstract class Driveable extends Entity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
 {
     public static final String NBT_TYPE = "driveable_type";
@@ -162,6 +174,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public static final String NBT_THROTTLE = "driveable_throttle";
     public static final String NBT_TURRET_YAW = "turret_yaw";
     public static final String NBT_TURRET_PITCH = "turret_pitch";
+    public static final String NBT_SEAT_AIMS = "seat_aims";
     public static final String NBT_FLAGS = "driveable_flags";
     public static final String NBT_MODE = "driveable_mode";
     public static final String NBT_OWNER = "driveable_owner";
@@ -255,7 +268,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     @Getter
     protected Seat[] seats = new Seat[0];
-    @Getter
+    /**
+     * Seat aims read from a save, as a yaw and a pitch per seat index, held until
+     * the seats are created again: seats are not saved themselves. NaN marks a
+     * seat with no saved aim.
+     */
+    private float[] savedSeatAims = new float[0];
     /**
      * Height of a passenger gun's muzzle above its authored GunOrigin, in blocks.
      *
@@ -305,10 +323,19 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     private DriveablePrediction prediction;
     /** The throttle a prediction simulates with; the synced one is a round trip old. */
     private float predictedThrottle;
-    /** Pitch pivot read from the loaded vehicle model and converted to the driveable-local basis. */
+    /** Pitch pivot read from the loaded vehicle model, as the model reports it: blocks, before ModelScale. */
     @Nullable
     private Vec3 modelBarrelPitchPivot;
-    /** Per-seat gun pivots read from registered model gun rows. */
+    /**
+     * Per shoot point, primary then secondary bank, the pivot of the barrel
+     * section the point is built on, in the same units; {@code null} entries
+     * pitch round {@link #modelBarrelPitchPivot}. Supplied by the driver's client.
+     */
+    private final Vec3[][] modelShootPointPitchPivots = { new Vec3[0], new Vec3[0] };
+    /**
+     * Per-seat gun pivots read from registered model gun rows, as the model
+     * reports them: blocks, before ModelScale. Each gunner's client supplies its own.
+     */
     private Vec3[] modelPassengerGunAimPivots = new Vec3[0];
 
     protected int localInputMask;
@@ -318,6 +345,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     protected float secondaryShootDelay;
     protected int primaryShootPointIndex;
     protected int secondaryShootPointIndex;
+    /** The barrel each shoot point of a multi-barrel mount fires from next, by bank then point. */
+    protected int[][] shootPointBarrelIndices = { new int[0], new int[0] };
     protected int primaryBurstRemaining;
     protected int secondaryBurstRemaining;
     protected int primaryHeldTicks;
@@ -366,6 +395,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     protected float[] passengerShootDelay = new float[0];
     protected int[] passengerBurstRemaining = new int[0];
     protected int[] passengerHeldTicks = new int[0];
+    /** The barrel each seat's twin or quad gun fires from next. */
+    protected int[] passengerBarrelIndices = new int[0];
     protected int weaponInventoryFingerprint;
     protected boolean weaponInventoryFingerprintInitialized;
     protected int renderInventoryFingerprint;
@@ -410,6 +441,14 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     protected UUID ownerId;
     @Setter @Nullable
     protected Entity lastAtkEntity;
+    /** Where a HEAT jet went through this tick, until the warhead's own explosion reads it. */
+    @Nullable
+    private ShapedChargeImpact shapedChargeImpact;
+
+    private record ShapedChargeImpact(EnumDriveablePart part, Vec3 point, long gameTime) {}
+
+    /** How far the detonation may sit from the recorded impact and still be that warhead's own. */
+    private static final double SHAPED_CHARGE_IMPACT_MATCH_DISTANCE_SQR = 4D;
 
     protected Driveable(EntityType<?> entityType, Level level)
     {
@@ -467,9 +506,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             driveableData.removeSerializedState(sourceData);
             ItemStackData.set(sourceStack, sourceData);
         }
-        weaponInventoryFingerprint = weaponInventoryFingerprint();
+        weaponInventoryFingerprint = computeWeaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
-        renderInventoryFingerprint = renderInventoryFingerprint();
+        renderInventoryFingerprint = computeRenderInventoryFingerprint();
         renderInventoryFingerprintInitialized = true;
         driveableData.setInventoryChanged(false);
         resizeProxyArrays();
@@ -507,9 +546,27 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             passengerAmmoTracked = false;
             passengerBurstRemaining = Arrays.copyOf(passengerBurstRemaining, seatCount);
             passengerHeldTicks = Arrays.copyOf(passengerHeldTicks, seatCount);
+            passengerBarrelIndices = Arrays.copyOf(passengerBarrelIndices, seatCount);
         }
         if (modelPassengerGunAimPivots.length != seatCount)
             modelPassengerGunAimPivots = Arrays.copyOf(modelPassengerGunAimPivots, seatCount);
+    }
+
+    /**
+     * The type of an initialized driveable, for the weapon, inventory and fuel
+     * helpers that only run once {@link #tick()} or their own entry point has
+     * checked it. A failure names the broken invariant instead of surfacing as a
+     * bare NullPointerException further in.
+     */
+    protected DriveableType initializedType()
+    {
+        return Objects.requireNonNull(configType, "Driveable type used before initialization");
+    }
+
+    /** The inventory and part state of an initialized driveable; see {@link #initializedType()}. */
+    protected DriveableData initializedData()
+    {
+        return Objects.requireNonNull(driveableData, "Driveable data used before initialization");
     }
 
     @Override
@@ -574,8 +631,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (configType == null)
             return 0F;
         ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
-        if (physics != null && physics.hasReverseSpeedOverride() && physics.maxSpeedKmh() > 0F)
-            return Math.max(0F, physics.maxReverseSpeedKmh() / physics.maxSpeedKmh());
+        Float reverseSpeed = physics == null ? null : physics.maxReverseSpeedKmh();
+        if (reverseSpeed != null && physics.maxSpeedKmh() > 0F)
+            return Math.max(0F, reverseSpeed / physics.maxSpeedKmh());
         float forwardPower = configType.getMaxThrottle();
         return Float.isFinite(forwardPower) && forwardPower > 0F
             ? Math.max(0F, configType.getMaxNegativeThrottle()) / forwardPower : 0F;
@@ -891,8 +949,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        String typeName = tag.contains(NBT_TYPE, Tag.TAG_STRING) ? tag.getString(NBT_TYPE) : tag.getString("Type");
+        String typeName;
+        if (tag.contains(NBT_TYPE, Tag.TAG_STRING))
+            typeName = tag.getString(NBT_TYPE);
+        else
+            typeName = tag.getString("Type");
         setShortName(typeName);
+
         if (!(InfoType.getInfoType(typeName) instanceof DriveableType type))
         {
             FlansMod.log.warn("Unknown driveable type {}, discarding entity", typeName);
@@ -904,11 +967,17 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             ? ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
         initialize(type, savedSource);
         driveableData = new DriveableData(type, tag, level().registryAccess());
+        destroyedParts.clear();
+        for (DriveablePart part : driveableData.getParts().values())
+        {
+            if (part.isDestroyed())
+                destroyedParts.add(part.getType());
+        }
         if (!level().isClientSide)
             entityData.set(DATA_PAINTJOB_ID, driveableData.getPaintjobID());
-        weaponInventoryFingerprint = weaponInventoryFingerprint();
+        weaponInventoryFingerprint = computeWeaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
-        renderInventoryFingerprint = renderInventoryFingerprint();
+        renderInventoryFingerprint = computeRenderInventoryFingerprint();
         renderInventoryFingerprintInitialized = true;
         driveableData.setInventoryChanged(false);
         setFuel(driveableData.getFuelInTank());
@@ -950,6 +1019,62 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // Loading an existing entity (including client spawn data) must not replay placement effects.
         placementEffectsPending = false;
         resizeProxyArrays();
+        savedSeatAims = tag.contains(NBT_SEAT_AIMS, Tag.TAG_INT_ARRAY)
+            ? decodeSeatAims(tag.getIntArray(NBT_SEAT_AIMS)) : new float[0];
+    }
+
+    /**
+     * Every seat's aim, as float bits in yaw and pitch pairs by seat index. The
+     * turret follows the driver's aim, and a turret gun is drawn relative to it,
+     * so a seat that came back aiming straight ahead split the turret and its guns
+     * from where they fire.
+     */
+    private int[] encodeSeatAims()
+    {
+        int count = Math.max(seats.length, savedSeatAims.length / 2);
+        int[] bits = new int[count * 2];
+        for (int index = 0; index < count; index++)
+        {
+            Seat seat = index < seats.length ? seats[index] : null;
+            boolean live = seat != null && seat.isAlive();
+            float yaw = live ? seat.getAimYaw() : savedSeatAim(index, 0);
+            float pitch = live ? seat.getAimPitch() : savedSeatAim(index, 1);
+            bits[index * 2] = Float.floatToIntBits(yaw);
+            bits[index * 2 + 1] = Float.floatToIntBits(pitch);
+        }
+        return bits;
+    }
+
+    private static float[] decodeSeatAims(int[] bits)
+    {
+        float[] aims = new float[bits.length];
+        for (int index = 0; index < bits.length; index++)
+            aims[index] = Float.intBitsToFloat(bits[index]);
+        return aims;
+    }
+
+    private float savedSeatAim(int seatIndex, int axis)
+    {
+        int index = seatIndex * 2 + axis;
+        return index < savedSeatAims.length ? savedSeatAims[index] : Float.NaN;
+    }
+
+    /**
+     * Gives a recreated seat the aim it was saved with. A save from before seat
+     * aims were kept gives the driver the saved turret aim, which is what the
+     * driver's aim drives, so the turret does not swing back to the front.
+     */
+    private void restoreSeatAim(Seat seat, int seatIndex)
+    {
+        float yaw = savedSeatAim(seatIndex, 0);
+        float pitch = savedSeatAim(seatIndex, 1);
+        if (Float.isFinite(yaw) && Float.isFinite(pitch))
+            seat.restoreAim(yaw, pitch);
+        else if (seatIndex == 0)
+            seat.restoreAim(getTurretYaw(), getTurretPitch());
+        // Used once: a seat recreated later in the session keeps its fresh aim.
+        for (int axis = 0; axis < 2 && seatIndex * 2 + axis < savedSeatAims.length; axis++)
+            savedSeatAims[seatIndex * 2 + axis] = Float.NaN;
     }
 
     @Override
@@ -959,6 +1084,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (type == null || driveableData == null)
             return;
         writeRuntimeState(tag);
+        tag.putIntArray(NBT_SEAT_AIMS, encodeSeatAims());
         if (!sourceStack.isEmpty())
         {
             CompoundTag sourceTag = new CompoundTag();
@@ -1130,7 +1256,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (level().isClientSide)
         {
             tickEngineSounds();
-            if (prediction != null && tickPredictedMovement())
+            if (prediction != null && tickPredictedMovement(prediction))
                 tickPredictedClientDriveable();
             else
                 tickClientDriveable();
@@ -1251,7 +1377,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 setOrientation(state.yaw(), state.pitch(), state.roll());
                 setThrottle(state.throttle());
             }
-            default -> { }
+            default ->
+            {
+                // UNMATCHED and AGREED leave the prediction running as it is.
+            }
         }
     }
 
@@ -1280,25 +1409,25 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      * Simulates the local driver's next input step with the same movement code the
      * server runs. False once the driver has stopped sending input.
      */
-    private boolean tickPredictedMovement()
+    private boolean tickPredictedMovement(@NotNull DriveablePrediction active)
     {
-        DriveablePrediction.Frame frame = prediction.nextFrame();
+        DriveablePrediction.Frame frame = active.nextFrame();
         if (frame == null)
         {
             endPrediction();
             return false;
         }
-        DriveablePrediction.Blend blend = prediction.drainBlend();
+        DriveablePrediction.Blend blend = active.drainBlend();
         if (blend != DriveablePrediction.Blend.NONE)
         {
             setPos(getX() + blend.x(), getY() + blend.y(), getZ() + blend.z());
             setOrientation(getYaw() + blend.yaw(), getPitch() + blend.pitch(), getRoll() + blend.roll());
         }
         // The one rising control that moves the driveable at once on the server.
-        if (DriveableInput.isDown(prediction.risingInputs(), DriveableInput.TRIM))
+        if (DriveableInput.isDown(active.risingInputs(), DriveableInput.TRIM))
             setOrientation(getYaw(), 0F, 0F);
         tickDriveable();
-        prediction.record(frame.sequence(), predictionState());
+        active.record(frame.sequence(), predictionState());
         return true;
     }
 
@@ -1674,11 +1803,14 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             }
             case 8 -> {
                 Seat driver = getSeat(0);
-                SeatInfo info = configType.getSeat(0);
+                SeatInfo info = initializedType().getSeat(0);
                 float speed = info == null ? 2F : Math.max(0.1F, Math.abs(info.getAimingSpeed().y));
                 rail = Mth.approach(rail, driver == null ? -getTurretPitch() : -driver.getAimPitch(), speed);
                 if (!hasLoadedIT1Missile())
                     beginIT1Reload();
+            }
+            default -> {
+                // No-op
             }
         }
         setIT1Angles(door, arm, rail, false);
@@ -1686,9 +1818,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private boolean hasLoadedIT1Missile()
     {
-        for (int slot = 0; slot < driveableData.getNumMissileSlots(); slot++)
+        DriveableData data = initializedData();
+        for (int slot = 0; slot < data.getNumMissileSlots(); slot++)
         {
-            if (validAmmo(driveableData.getMissile(slot), EnumWeaponType.MISSILE))
+            if (validAmmo(data.getMissile(slot), EnumWeaponType.MISSILE))
                 return true;
         }
         return false;
@@ -1707,6 +1840,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         entityData.set(DATA_IT1_RAIL_ANGLE, safeRail);
     }
 
+    @Override
     public boolean isUnderWater()
     {
         if (configType == null)
@@ -1718,15 +1852,22 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // fluid states directly preserves that behavior without allocating a
         // stream or forcing unloaded chunks to load.
         AABB probe = getBoundingBox().move(0D, Mth.clamp(configType.getMaxDepth(), 0, 64), 0D);
-        int minX = Mth.floor(probe.minX);
-        int minY = Mth.floor(probe.minY);
-        int minZ = Mth.floor(probe.minZ);
-        int maxX = Mth.floor(probe.maxX - 1.0E-7D);
-        int maxY = Mth.floor(probe.maxY - 1.0E-7D);
-        int maxZ = Mth.floor(probe.maxZ - 1.0E-7D);
+        boolean liquid = containsLoadedFluid(probe);
+        underWaterCheckTick = tickCount;
+        underWaterCached = liquid;
+        return liquid;
+    }
+
+    /** Whether any loaded block inside the box holds a fluid. */
+    private boolean containsLoadedFluid(@NotNull AABB box)
+    {
+        int minX = Mth.floor(box.minX);
+        int minY = Mth.floor(box.minY);
+        int minZ = Mth.floor(box.minZ);
+        int maxX = Mth.floor(box.maxX - 1.0E-7D);
+        int maxY = Mth.floor(box.maxY - 1.0E-7D);
+        int maxZ = Mth.floor(box.maxZ - 1.0E-7D);
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        boolean liquid = false;
-        outer:
         for (int blockY = minY; blockY <= maxY; blockY++)
         {
             for (int blockX = minX; blockX <= maxX; blockX++)
@@ -1734,17 +1875,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 for (int blockZ = minZ; blockZ <= maxZ; blockZ++)
                 {
                     cursor.set(blockX, blockY, blockZ);
-                    if (level().hasChunkAt(cursor) && !level().getFluidState(cursor).isEmpty())
-                    {
-                        liquid = true;
-                        break outer;
-                    }
+                    if (level().isLoaded(cursor) && !level().getFluidState(cursor).isEmpty())
+                        return true;
                 }
             }
         }
-        underWaterCheckTick = tickCount;
-        underWaterCached = liquid;
-        return liquid;
+        return false;
     }
 
     /** Compatibility flag used by carrier / vehicle-seat integrations. */
@@ -1755,13 +1891,14 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     protected void handleInventoryReloadState()
     {
-        if (!driveableData.isInventoryChanged())
+        DriveableData data = initializedData();
+        if (!data.isInventoryChanged())
             return;
-        int fingerprint = weaponInventoryFingerprint();
+        int fingerprint = computeWeaponInventoryFingerprint();
         boolean ammunitionChanged = !weaponInventoryFingerprintInitialized || fingerprint != weaponInventoryFingerprint;
         weaponInventoryFingerprint = fingerprint;
         weaponInventoryFingerprintInitialized = true;
-        driveableData.setInventoryChanged(false);
+        data.setInventoryChanged(false);
         if (!ammunitionChanged)
             return;
         // Restocking a bank that feeds mounted guns holds the crew up for a
@@ -1789,7 +1926,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (ammo.getItem() == gunBankAmmoItem[index]
             && ShootableItem.getTotalRounds(ammo) <= gunBankAmmoRounds[index])
             return;
-        beginBankReload(secondary, configType.reloadTime(secondary) * loadedReloadTimeMultiplier());
+        beginBankReload(secondary, initializedType().reloadTime(secondary) * loadedReloadTimeMultiplier());
         GunType gunType = selection.gunType();
         String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
@@ -1806,15 +1943,16 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     @Nullable
     private String gunBankReloadSound(boolean secondary, @Nullable GunType gunType)
     {
+        DriveableType type = initializedType();
         return StringUtils.firstNonBlank(gunType == null ? null : gunType.getReloadSound(null),
-            secondary ? configType.getReloadSoundSecondary() : configType.getReloadSoundPrimary());
+            secondary ? type.getReloadSoundSecondary() : type.getReloadSoundPrimary());
     }
 
     /** The ammunition a gun bank is currently feeding from, or null when it has none. */
     @Nullable
     private AmmoSelection gunBankSelection(boolean secondary)
     {
-        for (ShootPoint point : configType.shootPoints(secondary))
+        for (ShootPoint point : initializedType().shootPoints(secondary))
         {
             AmmoSelection selection = selectAmmo(point, EnumWeaponType.GUN, secondary);
             if (selection != null && !selection.stack().isEmpty())
@@ -1907,7 +2045,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     /** Everything the ammunition slot feeding a bank's mounted guns still holds. */
     private int gunBankRounds(boolean secondary)
     {
-        for (ShootPoint point : configType.shootPoints(secondary))
+        for (ShootPoint point : initializedType().shootPoints(secondary))
         {
             AmmoSelection selection = selectAmmo(point, EnumWeaponType.GUN, secondary);
             if (selection != null && !selection.stack().isEmpty())
@@ -1992,13 +2130,14 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private int ordnanceSlotCount(AmmoBank bank)
     {
-        return bank == AmmoBank.BOMB ? driveableData.getNumBombSlots() : driveableData.getNumMissileSlots();
+        DriveableData data = initializedData();
+        return bank == AmmoBank.BOMB ? data.getNumBombSlots() : data.getNumMissileSlots();
     }
 
     /** Whether the given slot of a bank's magazine holds something that bank could chamber. */
     private boolean canChamber(boolean secondary, int slot)
     {
-        EnumWeaponType weapon = configType.weaponType(secondary);
+        EnumWeaponType weapon = initializedType().weaponType(secondary);
         AmmoBank bank = ordnanceBankFor(weapon);
         return slot >= 0 && slot < ordnanceSlotCount(bank) && validAmmo(getWeaponSlot(bank, slot), weapon);
     }
@@ -2010,12 +2149,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      */
     private void trackWeaponSlotLoadOrder()
     {
-        int slots = driveableData.getCargoInventoryStart();
+        DriveableData data = initializedData();
+        int slots = data.getCargoInventoryStart();
         if (weaponSlotLoadOrder.length != slots)
             weaponSlotLoadOrder = Arrays.copyOf(weaponSlotLoadOrder, slots);
         for (int slot = 0; slot < slots; slot++)
         {
-            if (driveableData.getItem(slot).isEmpty())
+            if (data.getItem(slot).isEmpty())
                 weaponSlotLoadOrder[slot] = 0;
             else if (weaponSlotLoadOrder[slot] == 0)
                 weaponSlotLoadOrder[slot] = ++weaponSlotLoadSequence;
@@ -2024,14 +2164,15 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private int loadOrderOf(AmmoBank bank, int slot)
     {
-        int absolute = (bank == AmmoBank.BOMB ? driveableData.getBombInventoryStart() : driveableData.getMissileInventoryStart()) + slot;
+        DriveableData data = initializedData();
+        int absolute = (bank == AmmoBank.BOMB ? data.getBombInventoryStart() : data.getMissileInventoryStart()) + slot;
         return absolute >= 0 && absolute < weaponSlotLoadOrder.length ? weaponSlotLoadOrder[absolute] : 0;
     }
 
     /** The round this bank should chamber next: the one that went aboard first. */
     private int oldestChamberableSlot(boolean secondary)
     {
-        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        AmmoBank bank = ordnanceBankFor(initializedType().weaponType(secondary));
         int best = -1;
         int bestOrder = Integer.MAX_VALUE;
         for (int slot = 0; slot < ordnanceSlotCount(bank); slot++)
@@ -2053,7 +2194,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     /** The next round the crew can swap to, walking the magazine in slot order. */
     private int nextChamberableSlot(boolean secondary, int from)
     {
-        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        AmmoBank bank = ordnanceBankFor(initializedType().weaponType(secondary));
         int count = ordnanceSlotCount(bank);
         for (int step = 1; step <= count; step++)
         {
@@ -2081,13 +2222,14 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      */
     private void loadOrdnance(boolean secondary, int slot)
     {
+        DriveableType type = initializedType();
         chamberOrdnance(secondary, slot);
         if (slot < 0)
             return;
 
-        beginBankReload(secondary, configType.reloadTime(secondary));
+        beginBankReload(secondary, type.reloadTime(secondary));
 
-        String sound = configType.reloadSound(secondary);
+        String sound = type.reloadSound(secondary);
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), sound, false);
     }
@@ -2140,12 +2282,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      */
     private void countOrdnanceRound(boolean secondary)
     {
+        DriveableType type = initializedType();
         if (!isOrdnanceBank(secondary))
             return;
         int index = secondary ? 1 : 0;
-        AmmoBank bank = ordnanceBankFor(configType.weaponType(secondary));
+        AmmoBank bank = ordnanceBankFor(type.weaponType(secondary));
         ItemStack chambered = loadedOrdnanceSlot[index] < 0 ? ItemStack.EMPTY : getWeaponSlot(bank, loadedOrdnanceSlot[index]);
-        int size = magazineSize(chambered, configType.reloadRounds(secondary));
+        int size = magazineSize(chambered, type.reloadRounds(secondary));
         if (!magazineSpent(++bankRoundsFired[index], size, chambered))
             return;
         loadOrdnance(secondary, oldestChamberableSlot(secondary));
@@ -2193,7 +2336,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return factor;
     }
 
-    protected int weaponInventoryFingerprint()
+    protected int computeWeaponInventoryFingerprint()
     {
         if (driveableData == null)
             return 0;
@@ -2210,7 +2353,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return result;
     }
 
-    protected int renderInventoryFingerprint()
+    protected int computeRenderInventoryFingerprint()
     {
         if (driveableData == null)
             return 0;
@@ -2241,7 +2384,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (entityData.get(DATA_PAINTJOB_ID) != paintjobId)
             entityData.set(DATA_PAINTJOB_ID, paintjobId);
 
-        int fingerprint = renderInventoryFingerprint();
+        int fingerprint = computeRenderInventoryFingerprint();
         if (renderInventoryFingerprintInitialized && fingerprint == renderInventoryFingerprint)
             return;
         renderInventoryFingerprint = fingerprint;
@@ -2258,65 +2401,80 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         entityData.set(DATA_PAINTJOB_ID, paintjobId);
         for (int index = 0; index < slots.length; index++)
             driveableData.applyRenderSlot(slots[index], stacks[index]);
-        renderInventoryFingerprint = renderInventoryFingerprint();
+        renderInventoryFingerprint = computeRenderInventoryFingerprint();
         renderInventoryFingerprintInitialized = true;
     }
 
     protected void acknowledgeInternalWeaponInventoryChange()
     {
-        weaponInventoryFingerprint = weaponInventoryFingerprint();
+        weaponInventoryFingerprint = computeWeaponInventoryFingerprint();
         weaponInventoryFingerprintInitialized = true;
-        driveableData.setInventoryChanged(false);
+        initializedData().setInventoryChanged(false);
     }
 
     protected boolean fireWeaponBank(boolean secondary)
     {
         if (!canFireWeaponBank(secondary) || getControllingEntity() == null)
             return false;
-        EnumWeaponType weapon = configType.weaponType(secondary);
+        DriveableType type = initializedType();
+        EnumWeaponType weapon = type.weaponType(secondary);
         if (weapon == EnumWeaponType.NONE || !weaponEnabled(weapon))
             return false;
 
-        List<ShootPoint> points = configType.shootPoints(secondary);
+        List<ShootPoint> points = type.shootPoints(secondary);
         if (points.isEmpty())
             return false;
         if (PlatformEvents.postCancellable(new GunFiredEvent(this)))
             return false;
-        List<ShootPoint> selected;
-        if (configType.alternate(secondary))
+        int[] selected;
+        if (type.alternate(secondary))
         {
             int index = secondary ? secondaryShootPointIndex : primaryShootPointIndex;
-            ShootPoint point = points.get(Math.floorMod(index, points.size()));
-            selected = List.of(point);
+            selected = new int[] { Math.floorMod(index, points.size()) };
             if (secondary)
                 secondaryShootPointIndex = (index + 1) % points.size();
             else
                 primaryShootPointIndex = (index + 1) % points.size();
         }
         else
-            selected = points;
+            selected = IntStream.range(0, points.size()).toArray();
 
-        boolean fired = false;
-        List<ShootPoint> firedPoints = new ArrayList<>();
-        for (ShootPoint point : selected)
+        List<FiredMuzzle> fired = new ArrayList<>();
+        for (int index : selected)
         {
+            ShootPoint point = points.get(index);
             if (point == null || !isPartIntact(point.getRootPos().getPart()))
                 continue;
-            boolean pointFired = fireFromPoint(point, weapon, secondary,
-                getControllingEntity() instanceof LivingEntity living ? living : null);
-            fired |= pointFired;
-            if (pointFired)
-                firedPoints.add(point);
+            // A twin or quad mount fired from one point takes its barrels in turn.
+            int barrel = nextBarrel(secondary, index, point.getBarrelCount());
+            if (fireFromPoint(point, barrel, weapon, secondary,
+                getControllingEntity() instanceof LivingEntity living ? living : null))
+            {
+                shootPointBarrelIndices[secondary ? 1 : 0][index] = (barrel + 1) % point.getBarrelCount();
+                fired.add(new FiredMuzzle(index, barrel));
+            }
         }
-        if (fired)
+        if (!fired.isEmpty())
         {
-            playBankEffects(secondary, firedPoints);
+            playBankEffects(secondary, fired);
             if (weapon == EnumWeaponType.SHELL)
                 beginRecoil();
-            if (configType.isIt1() && weapon == EnumWeaponType.MISSILE)
+            if (type.isIt1() && weapon == EnumWeaponType.MISSILE)
                 beginIT1Reload();
         }
-        return fired;
+        return !fired.isEmpty();
+    }
+
+    /** One shoot point of a bank, and the barrel of it, that a shot left from. */
+    protected record FiredMuzzle(int pointIndex, int barrel) {}
+
+    /** The barrel a bank's point fires from next, growing the bank's record of them as needed. */
+    private int nextBarrel(boolean secondary, int pointIndex, int barrelCount)
+    {
+        int bank = secondary ? 1 : 0;
+        if (pointIndex >= shootPointBarrelIndices[bank].length)
+            shootPointBarrelIndices[bank] = Arrays.copyOf(shootPointBarrelIndices[bank], pointIndex + 1);
+        return Math.floorMod(shootPointBarrelIndices[bank][pointIndex], barrelCount);
     }
 
     protected boolean weaponEnabled(EnumWeaponType weapon)
@@ -2330,7 +2488,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         };
     }
 
-    protected boolean fireFromPoint(ShootPoint point, EnumWeaponType weapon, boolean secondary, @Nullable LivingEntity attacker)
+    protected boolean fireFromPoint(ShootPoint point, int barrel, EnumWeaponType weapon, boolean secondary,
+                                    @Nullable LivingEntity attacker)
     {
         AmmoSelection selection = selectAmmo(point, weapon, secondary);
         if (selection == null || !ShootableItem.hasRoundsLeft(selection.stack()))
@@ -2344,14 +2503,19 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             ? selection.gunType().getNumBullets(null, shootableType)
             : shootableType.getNumBullets();
 
-        Vec3 origin = getShootOrigin(point);
+        Vec3 origin = getShootOrigin(point, barrel);
         Vec3 direction = getShootDirection(point, secondary);
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
-        ShootingHelper.fireWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
-            ShootableItem.getRoundsFired(selection.stack()), () -> {
-                if (!creative)
-                    consumeAmmo(selection);
-            });
+        ShootingHandler handler = () -> {
+            if (!creative)
+                consumeAmmo(selection);
+        };
+        if (weapon == EnumWeaponType.BOMB)
+            ShootingHelper.dropWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
+                ShootableItem.getRoundsFired(selection.stack()), handler);
+        else
+            ShootingHelper.fireWeapon(level(), fireable, shootableType, numShots, origin, direction, this, attacker,
+                ShootableItem.getRoundsFired(selection.stack()), handler);
         if (selection.gunType() != null)
             chargeGunBankReload(secondary, selection.gunType(), selection.stack());
         else
@@ -2367,12 +2531,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      */
     private void chargeGunBankReload(boolean secondary, GunType gunType, ItemStack fired)
     {
+        DriveableType type = initializedType();
         int index = secondary ? 1 : 0;
-        int size = magazineSize(fired, configType.reloadRounds(secondary));
+        int size = magazineSize(fired, type.reloadRounds(secondary));
         if (!magazineSpent(++bankRoundsFired[index], size, fired))
             return;
         bankRoundsFired[index] = 0;
-        beginBankReload(secondary, configType.reloadTime(secondary));
+        beginBankReload(secondary, type.reloadTime(secondary));
 
         String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
@@ -2423,48 +2588,59 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     public EnumFireMode getWeaponBankFireMode(boolean secondary)
     {
-        return secondary ? configType.getModeSecondary() : configType.getModePrimary();
+        DriveableType type = initializedType();
+        return secondary ? type.getModeSecondary() : type.getModePrimary();
     }
 
     protected FireableGun resolveFireableGun(@Nullable GunType gunType, boolean secondary)
     {
-        float damageMultiplier = secondary ? configType.getDamageMultiplierSecondary() : configType.getDamageMultiplierPrimary();
-        boolean pureGunType = configType.isReadWeaponsFromGunTypes();
+        DriveableType type = initializedType();
+        float damageMultiplier = secondary ? type.getDamageMultiplierSecondary() : type.getDamageMultiplierPrimary();
+        boolean pureGunType = type.isReadWeaponsFromGunTypes();
 
         if (gunType == null)
         {
             // Shells and other bank-fired ordnance: the vehicle is the weapon. Its BulletSpeed is a
             // fallback only, and the default keeps such rounds flying as projectiles rather than hitscan.
-            float speed = configType.getBulletSpeed() > 0F ? configType.getBulletSpeed() : BulletType.DEFAULT_BULLET_SPEED;
-            return new FireableGun(configType, Math.max(0F, damageMultiplier),
-                Math.max(0F, configType.getBulletSpread()), speed, EnumSpreadPattern.CIRCLE);
+            float speed = type.getBulletSpeed() > 0F ? type.getBulletSpeed() : BulletType.DEFAULT_BULLET_SPEED;
+            return new FireableGun(type, Math.max(0F, damageMultiplier),
+                Math.max(0F, type.getBulletSpread()), speed, EnumSpreadPattern.CIRCLE);
         }
 
-        FireableGun fireable = new FireableGun(gunType);
-
-        // A ranging gun spots for the main armament, so it borrows the vehicle's ballistics instead of
-        // the mounted gun's - still only as the fallback the ammunition may override.
-        if (!pureGunType && configType.isRangingGun() && configType.getBulletSpeed() > 0F)
-            fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(),
-                configType.getBulletSpeed(), fireable.getBulletSpeedMultiplier(), fireable.getSpreadPattern());
+        FireableGun fireable = createFireableGun(gunType, pureGunType, type);
         if (!pureGunType)
             fireable.multiplyDamage(damageMultiplier);
 
         return fireable;
     }
 
+    @NotNull
+    private static FireableGun createFireableGun(@NotNull GunType gunType, boolean pureGunType, DriveableType type)
+    {
+        FireableGun fireable = new FireableGun(gunType);
+
+        // A ranging gun spots for the main armament, so it borrows the vehicle's ballistics instead of
+        // the mounted gun's - still only as the fallback the ammunition may override.
+        if (!pureGunType && type.isRangingGun() && type.getBulletSpeed() > 0F)
+            fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(),
+                type.getBulletSpeed(), fireable.getBulletSpeedMultiplier(), fireable.getSpreadPattern());
+        return fireable;
+    }
+
     @Nullable
     protected AmmoSelection selectAmmo(ShootPoint point, EnumWeaponType weapon, boolean secondary)
     {
+        DriveableType type = initializedType();
+        DriveableData data = initializedData();
         if (point.getRootPos() instanceof PilotGun pilotGun)
         {
-            int pilotIndex = configType.getPilotGuns().indexOf(pilotGun);
+            int pilotIndex = type.getPilotGuns().indexOf(pilotGun);
             if (pilotIndex < 0)
                 return null;
-            int slot = configType.getNumPassengerGunners() + pilotIndex;
-            if (slot < 0 || slot >= driveableData.getNumAmmoSlots())
+            int slot = type.getNumPassengerGunners() + pilotIndex;
+            if (slot < 0 || slot >= data.getNumAmmoSlots())
                 return null;
-            ItemStack stack = driveableData.getAmmo(slot);
+            ItemStack stack = data.getAmmo(slot);
             GunType gunType = pilotGun.getType();
             if (!validGunAmmo(stack, gunType))
                 return null;
@@ -2473,11 +2649,11 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
         if (weapon == EnumWeaponType.GUN)
         {
-            int firstPilotSlot = configType.getNumPassengerGunners();
-            for (int slot = firstPilotSlot; slot < firstPilotSlot + configType.getPilotGuns().size(); slot++)
+            int firstPilotSlot = type.getNumPassengerGunners();
+            for (int slot = firstPilotSlot; slot < firstPilotSlot + type.getPilotGuns().size(); slot++)
             {
-                ItemStack stack = driveableData.getAmmo(slot);
-                GunType gunType = configType.getGunTypeForAmmoSlot(slot);
+                ItemStack stack = data.getAmmo(slot);
+                GunType gunType = type.getGunTypeForAmmoSlot(slot);
                 if (validGunAmmo(stack, gunType))
                     return new AmmoSelection(AmmoBank.AMMO, slot, stack, gunType);
             }
@@ -2502,7 +2678,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (stack.isEmpty() || !(stack.getItem() instanceof ShootableItem item) || !(item.getConfigType() instanceof BulletType bulletType))
             return false;
-        return ShootableItem.hasRoundsLeft(stack) && configType.isValidAmmo(bulletType)
+        return ShootableItem.hasRoundsLeft(stack) && initializedType().isValidAmmo(bulletType)
             && (bulletType.getWeaponType() == requested || requested == EnumWeaponType.GUN && bulletType.getWeaponType() == EnumWeaponType.NONE);
     }
 
@@ -2554,21 +2730,23 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private ItemStack getWeaponSlot(AmmoBank bank, int slot)
     {
+        DriveableData data = initializedData();
         return switch (bank)
         {
-            case AMMO -> driveableData.getAmmo(slot);
-            case BOMB -> driveableData.getBomb(slot);
-            case MISSILE -> driveableData.getMissile(slot);
+            case AMMO -> data.getAmmo(slot);
+            case BOMB -> data.getBomb(slot);
+            case MISSILE -> data.getMissile(slot);
         };
     }
 
     private void setWeaponSlot(AmmoBank bank, int slot, ItemStack stack)
     {
+        DriveableData data = initializedData();
         switch (bank)
         {
-            case AMMO -> driveableData.setAmmo(slot, stack);
-            case BOMB -> driveableData.setBomb(slot, stack);
-            case MISSILE -> driveableData.setMissile(slot, stack);
+            case AMMO -> data.setAmmo(slot, stack);
+            case BOMB -> data.setBomb(slot, stack);
+            case MISSILE -> data.setMissile(slot, stack);
         }
     }
 
@@ -2587,10 +2765,22 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return ItemStack.EMPTY;
     }
 
+    /** Where a shoot point's muzzle is now: the middle of a multi-barrel mount's barrels. */
     protected Vec3 getShootOrigin(ShootPoint point)
     {
+        return getShootOrigin(point, point.getOffPos());
+    }
+
+    /** Where one barrel of a shoot point ends now; a single-barrel point has only barrel zero. */
+    protected Vec3 getShootOrigin(ShootPoint point, int barrel)
+    {
+        return getShootOrigin(point, point.getBarrelOffPos(barrel));
+    }
+
+    private Vec3 getShootOrigin(ShootPoint point, com.flansmod.common.vector.Vector3f offPos)
+    {
         Vec3 root = attachmentModelLocal(point.getRootPos().getPosition());
-        Vec3 offset = attachmentModelLocal(point.getOffPos());
+        Vec3 offset = attachmentModelLocal(offPos);
         EnumDriveablePart part = point.getRootPos().getPart();
         if (!isTurretMountedPart(part))
             return modelLocalToWorld(root.add(offset));
@@ -2599,13 +2789,50 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // only the offset leaves the root yaw-only and makes the projectile
         // origin detach from the barrel as its pitch changes.
         Vec3 muzzle = root.add(offset);
-        return turretPointToWorld(muzzle, getTurretYaw(), getTurretPitch());
+        return modelLocalToWorld(turretPointToLocal(muzzle, getTurretYaw(), getTurretPitch(),
+            shootPointPitchPivotLocal(point)));
+    }
+
+    /**
+     * The point a turret shoot point pitches round: the barrel section it is
+     * built on, which for a roof machine gun is not the main gun's trunnion.
+     */
+    @Nullable
+    private Vec3 shootPointPitchPivotLocal(@NotNull ShootPoint point)
+    {
+        Vec3 raw = rawShootPointPitchPivot(point);
+        return raw == null ? null : modelPivotToLocal(raw);
+    }
+
+    /** The client-reported pivot for one shoot point, as the model gives it. */
+    @Nullable
+    private Vec3 rawShootPointPitchPivot(@NotNull ShootPoint point)
+    {
+        if (configType == null)
+            return null;
+        for (int bank = 0; bank < 2; bank++)
+        {
+            List<ShootPoint> points = configType.shootPoints(bank == 1);
+            Vec3[] pivots = modelShootPointPitchPivots[bank];
+            for (int index = 0; index < points.size() && index < pivots.length; index++)
+            {
+                if (points.get(index) == point)
+                    return pivots[index];
+            }
+        }
+        return null;
     }
 
     /** Returns the model-aligned muzzle position for client-side diagnostics. */
     public Vec3 getDebugShootOrigin(@NotNull ShootPoint point)
     {
         return getShootOrigin(point);
+    }
+
+    /** As {@link #getDebugShootOrigin(ShootPoint)}, for one barrel of a multi-barrel point. */
+    public Vec3 getDebugShootOrigin(@NotNull ShootPoint point, int barrel)
+    {
+        return getShootOrigin(point, barrel);
     }
 
     /** Returns the direction paired with a diagnostic muzzle position. */
@@ -2616,8 +2843,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     protected Vec3 getShootDirection(ShootPoint point, boolean secondary)
     {
-        boolean fixed = secondary ? configType.isFixedSecondaryFire() : configType.isFixedPrimaryFire();
-        com.flansmod.common.vector.Vector3f fixedAngle = secondary ? configType.getSecondaryFireAngle() : configType.getPrimaryFireAngle();
+        DriveableType type = initializedType();
+        boolean fixed = secondary ? type.isFixedSecondaryFire() : type.isFixedPrimaryFire();
+        com.flansmod.common.vector.Vector3f fixedAngle = secondary ? type.getSecondaryFireAngle() : type.getPrimaryFireAngle();
         EnumDriveablePart part = point.getRootPos().getPart();
         if (fixed)
         {
@@ -2667,10 +2895,17 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private Vec3 turretPointToLocal(@NotNull Vec3 point, float yaw, float pitch)
     {
+        return turretPointToLocal(point, yaw, pitch, null);
+    }
+
+    /** As above, pitching round {@code partPivot} when the point's own barrel section is known. */
+    private Vec3 turretPointToLocal(@NotNull Vec3 point, float yaw, float pitch, @Nullable Vec3 partPivot)
+    {
         if (configType == null)
             return point;
         Vec3 turretPivot = configuredModelLocal(configType.getTurretOrigin());
-        Vec3 pitchPivot = modelBarrelPitchPivot == null ? turretPivot : modelBarrelPitchPivot;
+        Vec3 barrelPivot = modelBarrelPitchPivot == null ? null : modelPivotToLocal(modelBarrelPitchPivot);
+        Vec3 pitchPivot = partPivot != null ? partPivot : barrelPivot != null ? barrelPivot : turretPivot;
 
         // The renderer pitches each barrel around its own model pivot first,
         // then yaws the complete turret around TurretOrigin.
@@ -2682,21 +2917,28 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     }
 
     /**
-     * Supplies the pitch pivot extracted from the client-side vehicle model.
-     * The value is model-authored legacy xyz in blocks, matching shoot-point data.
+     * Supplies the pitch pivot extracted from the client-side vehicle model:
+     * blocks, as the model reports it, before ModelScale.
      */
     public void setModelBarrelPitchPivot(@Nullable Vec3 legacyPivot)
     {
-        if (legacyPivot == null)
+        if (legacyPivot == null || isPlausibleModelPivot(legacyPivot))
+            modelBarrelPitchPivot = legacyPivot;
+    }
+
+    /**
+     * Supplies, for each point of one weapon bank in bank order, the pivot of
+     * the barrel section the point is built on, or {@code null} for the main gun's.
+     */
+    public void setModelShootPointPitchPivots(boolean secondary, @Nullable Vec3[] legacyPivots)
+    {
+        Vec3[] pivots = legacyPivots == null ? new Vec3[0] : legacyPivots.clone();
+        for (int index = 0; index < pivots.length; index++)
         {
-            modelBarrelPitchPivot = null;
-            return;
+            if (pivots[index] != null && !isPlausibleModelPivot(pivots[index]))
+                pivots[index] = null;
         }
-        if (!Double.isFinite(legacyPivot.x) || !Double.isFinite(legacyPivot.y)
-            || !Double.isFinite(legacyPivot.z) || Math.abs(legacyPivot.x) > 32D
-            || Math.abs(legacyPivot.y) > 32D || Math.abs(legacyPivot.z) > 32D)
-            return;
-        modelBarrelPitchPivot = LegacyDriveableCoordinates.toLocal(legacyPivot);
+        modelShootPointPitchPivots[secondary ? 1 : 0] = pivots;
     }
 
     /** Supplies the registered gun-model pivot for one passenger seat. */
@@ -2704,66 +2946,106 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (seatIndex <= 0 || seatIndex >= modelPassengerGunAimPivots.length)
             return;
-        if (legacyPivot == null)
-        {
-            modelPassengerGunAimPivots[seatIndex] = null;
-            return;
-        }
-        if (!Double.isFinite(legacyPivot.x) || !Double.isFinite(legacyPivot.y)
-            || !Double.isFinite(legacyPivot.z) || Math.abs(legacyPivot.x) > 32D
-            || Math.abs(legacyPivot.y) > 32D || Math.abs(legacyPivot.z) > 32D)
-            return;
-        modelPassengerGunAimPivots[seatIndex] = LegacyDriveableCoordinates.toLocal(legacyPivot);
+        if (legacyPivot == null || isPlausibleModelPivot(legacyPivot))
+            modelPassengerGunAimPivots[seatIndex] = legacyPivot;
+    }
+
+    /** Pivots arrive from clients, so anything not a point on a model is ignored. */
+    private static boolean isPlausibleModelPivot(@NotNull Vec3 pivot)
+    {
+        return Double.isFinite(pivot.x) && Double.isFinite(pivot.y) && Double.isFinite(pivot.z)
+            && Math.abs(pivot.x) <= 32D && Math.abs(pivot.y) <= 32D && Math.abs(pivot.z) <= 32D;
+    }
+
+    /**
+     * A seat gun's pivot in the same model-local frame as its mounted GunOrigin,
+     * or {@code null} while no client has reported one for this seat.
+     */
+    @Nullable
+    private Vec3 passengerGunPivotLocal(int seatIndex)
+    {
+        Vec3 pivot = seatIndex > 0 && seatIndex < modelPassengerGunAimPivots.length
+            ? modelPassengerGunAimPivots[seatIndex] : null;
+        return pivot == null ? null : modelPivotToLocal(pivot);
+    }
+
+    /**
+     * A pivot read off the model, in the same model-local frame as the attachment
+     * points turning round it. The renderer draws the model scaled by ModelScale
+     * while type-file points are authored at that size, so the pivot is scaled alike.
+     */
+    private Vec3 modelPivotToLocal(@NotNull Vec3 legacyPivot)
+    {
+        float modelScale = configType == null ? 1F : Math.max(1.0E-4F, configType.getModelScale());
+        return attachmentModelLocal(LegacyDriveableCoordinates.modelPixelsToTypeFile(
+            legacyPivot.scale(modelScale), this instanceof Plane));
     }
 
     protected Vec3 aimedDirection(float yaw, float pitch)
     {
         Vec3 legacyForward = configuredModelLocal(new Vec3(1D, 0D, 0D));
-        return modelLocalDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, pitch)).normalize();
+        return modelLocalDirectionToWorld(rotateTurretLocalDirection(legacyForward, yaw, localAimPitch(pitch)))
+            .normalize();
     }
 
-    protected void playBankEffects(boolean secondary, List<ShootPoint> firedPoints)
+    /**
+     * An aim pitch as the local pitch rotation needs it. Aim pitch is positive
+     * downwards, and the rotation turns a ground vehicle's forward down for a
+     * positive angle. An aircraft's forward is the opposite local direction,
+     * which the same rotation turns up, so its sense is flipped
+     * (as {@link LegacyDriveableCoordinates#renderedForwardPitch} does for the view).
+     */
+    protected float localAimPitch(float pitch)
     {
-        String sound = configType.shootSound(secondary);
-        if (StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, 128D, sound, true);
-        List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();
-        if (particles.isEmpty() || firedPoints.isEmpty())
-            return;
-        // Clients look the particles up from this driveable's type and place them from their own
-        // view of it, so one packet per shot replaces one per particle per shoot point.
-        List<ShootPoint> points = configType.shootPoints(secondary);
-        int[] indices = new int[firedPoints.size()];
-        int count = 0;
-        for (ShootPoint fired : firedPoints)
+        return this instanceof Plane ? -pitch : pitch;
+    }
+
+    protected void playBankEffects(boolean secondary, List<FiredMuzzle> fired)
+    {
+        DriveableType type = initializedType();
+        String sound = type.shootSound(secondary);
+        double soundRange = ModCommonConfig.get().gunFireSoundRange();
+        if (type.isReadWeaponsFromGunTypes() && isGunBank(secondary))
         {
-            for (int index = 0; index < points.size(); index++)
+            AmmoSelection selection = gunBankSelection(secondary);
+            GunType gun = selection == null ? type.getPilotGunType(secondary) : selection.gunType();
+            if (gun != null)
             {
-                if (points.get(index) == fired)
-                {
-                    indices[count++] = index;
-                    break;
-                }
+                sound = gun.getShootSound(null, false);
+                soundRange = gun.getGunSoundRange();
             }
         }
-        if (count > 0)
-            PacketHandler.sendToAllAround(new PacketDriveableBankFired(getId(), secondary, Arrays.copyOf(indices, count)),
-                position(), 128D, level().dimension());
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(this, soundRange, sound, true);
+        if (fired.isEmpty() || !type.isDefaultMuzzleFlash()
+            && (secondary ? type.getShootParticlesSecondary() : type.getShootParticlesPrimary()).isEmpty())
+            return;
+        // The same shot event drives both authored particles and the flash at each fired barrel.
+        PacketHandler.sendToAllAround(new PacketDriveableBankFired(getId(), secondary,
+                fired.stream().mapToInt(FiredMuzzle::pointIndex).toArray(),
+                fired.stream().mapToInt(FiredMuzzle::barrel).toArray()),
+            position(), 128D, level().dimension());
     }
 
-    /** Draws the particles of a weapon bank that fired from the given shoot points, on this client. */
-    public void spawnBankParticles(boolean secondary, int[] pointIndices)
+    /**
+     * Draws the particles of a weapon bank that fired from the given shoot points, on this client.
+     *
+     * @param barrels the barrel of each point that fired, index for index; missing entries are barrel zero
+     */
+    public void spawnBankParticles(boolean secondary, int[] pointIndices, int[] barrels)
     {
         if (!level().isClientSide || configType == null)
             return;
         List<DriveableType.ShootParticle> particles = secondary ? configType.getShootParticlesSecondary() : configType.getShootParticlesPrimary();
         List<ShootPoint> points = configType.shootPoints(secondary);
-        for (int pointIndex : pointIndices)
+        for (int fired = 0; fired < pointIndices.length; fired++)
         {
+            int pointIndex = pointIndices[fired];
             if (pointIndex < 0 || pointIndex >= points.size())
                 continue;
             ShootPoint point = points.get(pointIndex);
-            Vec3 origin = getShootOrigin(point);
+            int barrel = fired < barrels.length ? barrels[fired] : 0;
+            Vec3 origin = getShootOrigin(point, barrel);
             EnumDriveablePart part = point.getRootPos().getPart();
             for (DriveableType.ShootParticle particle : particles)
             {
@@ -2775,6 +3057,27 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z,
                     direction.x, direction.y, direction.z, 1F);
             }
+        }
+    }
+
+    /** Client visuals at the same fired barrel and aim used by the passenger projectile. */
+    public void spawnPassengerParticles(int seatIndex, int barrel)
+    {
+        if (!level().isClientSide || configType == null)
+            return;
+        Seat seat = getSeat(seatIndex);
+        SeatInfo info = configType.getSeat(seatIndex);
+        if (seat == null || info == null || info.getGunType() == null
+            || barrel < 0 || barrel >= info.getGunBarrelCount())
+            return;
+        Vec3 origin = getPassengerShootOrigin(seat, info, barrel);
+        for (DriveableType.ShootParticle particle : configType.getShootParticlesPassenger(seatIndex))
+        {
+            Vec3 localDirection = configuredModelLocal(new Vec3(particle.x(), particle.y(), particle.z()));
+            Vec3 direction = modelLocalDirectionToWorld(rotateTurretLocalDirection(localDirection,
+                seat.getAimYaw(), localAimPitch(seat.getAimPitch())));
+            ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z,
+                direction.x, direction.y, direction.z, 1F);
         }
     }
 
@@ -2808,7 +3111,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     private ItemStack passengerGunAmmo(@Nullable SeatInfo info, @Nullable GunType gun)
     {
         int ammoSlot = info == null ? -1 : info.getGunnerID();
-        return gun == null || ammoSlot < 0 ? ItemStack.EMPTY : driveableData.getAmmo(ammoSlot);
+        return gun == null || ammoSlot < 0 ? ItemStack.EMPTY : initializedData().getAmmo(ammoSlot);
     }
 
     /**
@@ -2885,10 +3188,11 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     /** One shot from a seat gun. Returns false when the seat had nothing to fire. */
     private boolean firePassengerGun(Seat seat, SeatInfo info, GunType gun, int index)
     {
+        DriveableData data = initializedData();
         int ammoSlot = info.getGunnerID();
         if (ammoSlot < 0)
             return false;
-        ItemStack ammo = driveableData.getAmmo(ammoSlot);
+        ItemStack ammo = data.getAmmo(ammoSlot);
         if (!validGunAmmo(ammo, gun) || !(ammo.getItem() instanceof ShootableItem shootable))
             return false;
         if (PlatformEvents.postCancellable(new GunFiredEvent(this)))
@@ -2897,7 +3201,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         ShootableType shootableType = shootable.getConfigType();
         FireableGun fireable = new FireableGun(gun);
         LivingEntity attacker = seat.getRiddenByEntity() instanceof LivingEntity living ? living : null;
-        Vec3 origin = getPassengerShootOrigin(info);
+        // A twin or quad seat gun takes its barrels in turn, keeping the gun's own cadence.
+        int barrel = index < passengerBarrelIndices.length
+            ? Math.floorMod(passengerBarrelIndices[index], info.getGunBarrelCount()) : 0;
+        if (index < passengerBarrelIndices.length)
+            passengerBarrelIndices[index] = (barrel + 1) % info.getGunBarrelCount();
+        Vec3 origin = getPassengerShootOrigin(seat, info, barrel);
         Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
         ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType),
@@ -2907,7 +3216,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                     Item ammoItem = ammo.getItem();
                     ShootableItem.consumeRound(ammo);
                     boolean depleted = !ShootableItem.hasRoundsLeft(ammo);
-                    driveableData.setAmmo(ammoSlot, depleted ? ItemStack.EMPTY : ammo);
+                    data.setAmmo(ammoSlot, depleted ? ItemStack.EMPTY : ammo);
                     if (depleted)
                         refillWeaponSlot(AmmoBank.AMMO, ammoSlot, ammoItem);
                     acknowledgeInternalWeaponInventoryChange();
@@ -2916,6 +3225,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
+        if (initializedType().isDefaultMuzzleFlash() || gun.hasMuzzleFlashModel()
+            || !initializedType().getShootParticlesPassenger(index).isEmpty())
+            PacketHandler.sendToAllAround(new PacketDriveablePassengerFired(getId(), index, barrel),
+                position(), 128D, level().dimension());
         reloadPassengerGun(index, gun, ammo);
         return true;
     }
@@ -2946,14 +3259,17 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             PacketPlaySound.sendSoundPacket(this, gun.getReloadSoundRange(), reloadSound, false);
     }
 
-    /** Current passenger muzzle position, shared by firing and debug rendering. */
+    /**
+     * Current muzzle position of one barrel of a passenger's gun, shared by
+     * firing and debug rendering; a single gun has only barrel zero.
+     */
     @Nullable
-    public Vec3 getPassengerShootOrigin(int seatIndex)
+    public Vec3 getPassengerShootOrigin(int seatIndex, int barrel)
     {
         Seat seat = getSeat(seatIndex);
         SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
         return seat == null || info == null || info.getGunType() == null
-            ? null : getPassengerShootOrigin(info);
+            ? null : getPassengerShootOrigin(seat, info, barrel);
     }
 
     /** Current passenger firing direction for client-side diagnostics. */
@@ -2973,20 +3289,49 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      * to, so it takes the same basis conversion. Skipping the lateral mirror
      * put every passenger gun on the wrong side of the hull, which is the
      * long-standing "GunOrigin is not positioned correctly" fault.</p>
+     *
+     * <p>GunOrigin is where the muzzle sits with the gun at rest. Once the
+     * model's pivot for the gun is known, the muzzle is carried round that
+     * pivot by the seat's aim, exactly as the drawn gun is, so a GunOrigin
+     * placed on the pivot itself still fires from one fixed point. Without a
+     * pivot the point stays fixed, which is the legacy behaviour.</p>
+     *
+     * <p>Each barrel of a twin or quad gun sits at its own offset from GunOrigin
+     * and turns round the same pivot, so the barrels keep their places as the gun aims.</p>
      */
-    private Vec3 getPassengerShootOrigin(@NotNull SeatInfo info)
+    private Vec3 getPassengerShootOrigin(@NotNull Seat seat, @NotNull SeatInfo info, int barrel)
     {
-        return getGunOriginWorldPosition(info.getGunOrigin());
+        Vec3 muzzle = gunOriginModelLocal(info.getGunOrigin(barrel));
+        Vec3 pivot = passengerGunPivotLocal(seat.getSeatIndex());
+        if (pivot == null)
+            return modelLocalToWorld(muzzle);
+
+        // Aircraft draw seat guns turned half round from their rest pose
+        // (ModelDriveable.registeredGunAngles), so an aircraft gun rests aiming aft.
+        float restYaw = this instanceof Plane ? 180F : 0F;
+        Vec3 offset = LegacyDriveableCoordinates.aimAroundPivot(muzzle, pivot, restYaw,
+            seat.getAimYaw(), localAimPitch(seat.getAimPitch())).subtract(pivot);
+        // A vehicle draws the guns on its turret inside the turret transform.
+        // The aim is already absolute, so only the pivot rides the turret round.
+        if (this instanceof Vehicle && info.getPart() == EnumDriveablePart.TURRET)
+            pivot = turretPointToLocal(pivot, getTurretYaw(), 0F);
+        return modelLocalToWorld(pivot.add(offset));
     }
 
     /**
-     * World position an authored {@code GunOrigin} resolves to. Exposed so
-     * diagnostics can place a marker on a candidate value that no seat holds yet.
+     * World position an authored {@code GunOrigin} resolves to with the gun at
+     * rest. Exposed so diagnostics can place a marker on a candidate value that
+     * no seat holds yet.
      */
     public Vec3 getGunOriginWorldPosition(@NotNull com.flansmod.common.vector.Vector3f gunOrigin)
     {
-        Vec3 local = attachmentModelLocal(gunOrigin).add(0D, PASSENGER_GUN_MOUNTED_OFFSET, 0D);
-        return position().add(modelLocalDirectionToWorld(local));
+        return modelLocalToWorld(gunOriginModelLocal(gunOrigin));
+    }
+
+    /** A GunOrigin in the model-local frame, lifted by the legacy mounted-gunner offset. */
+    private Vec3 gunOriginModelLocal(@NotNull com.flansmod.common.vector.Vector3f gunOrigin)
+    {
+        return attachmentModelLocal(gunOrigin).add(0D, PASSENGER_GUN_MOUNTED_OFFSET, 0D);
     }
 
     protected enum AmmoBank { AMMO, BOMB, MISSILE }
@@ -2994,7 +3339,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     protected void updateLifetime()
     {
-        if (getControllingEntity() != null)
+        if (hasDriveableOccupant())
             ticksSinceUsed = 0;
         else
             ++ticksSinceUsed;
@@ -3039,7 +3384,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         CollisionBox box = part.getBox();
         if (box == null)
             return;
-        Vec3 centre = localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+        Vec3 centre = partFrameToWorld(boxCentre(box));
         BlockPos position = BlockPos.containing(centre);
         if (part.isOnFire())
         {
@@ -3078,10 +3423,16 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private Vec3 randomPointInPart(CollisionBox box)
     {
-        return localToWorld(
+        return partFrameToWorld(new Vec3(
             box.getX() + random.nextFloat() * box.getWidth(),
             box.getY() + random.nextFloat() * box.getHeight(),
-            box.getZ() + random.nextFloat() * box.getDepth());
+            box.getZ() + random.nextFloat() * box.getDepth()));
+    }
+
+    protected static Vec3 boxCentre(CollisionBox box)
+    {
+        com.flansmod.common.vector.Vector3f centre = box.getCentre();
+        return new Vec3(centre.x, centre.y, centre.z);
     }
 
     protected void syncChangedPartState()
@@ -3107,6 +3458,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             // Everyone who can see the driveable, not just those within 192 blocks: a client that
             // missed a change would keep stale part health and draw the wrong fire and smoke.
             PacketHandler.sendToTracking(new PacketDriveableDamage(getId(), changed), this);
+    }
+
+    /** Send the saved server state to a newly tracking player, even if no part changed this tick. */
+    public void sendPartStateTo(@NotNull ServerPlayer player)
+    {
+        if (!level().isClientSide && driveableData != null)
+            PacketHandler.sendTo(new PacketDriveableDamage(getId(), new ArrayList<>(driveableData.getParts().values())), player);
     }
 
     /** Applies a validated server snapshot without running destructive gameplay effects on the client. */
@@ -3148,8 +3506,11 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return;
 
         boolean engineActive = isEngineActive();
-        boolean active = engineActive && getControllingEntity() != null;
-        boolean throttled = active && Math.abs(getThrottle()) > 0.001F;
+        // The server already requires a rider (or autonomous command) to keep the engine active.
+        // Remote clients may not have resolved the driver seat yet, so use the synced engine flag.
+        boolean active = engineActive;
+        boolean loaded = isEngineLoadedWithoutThrottle();
+        boolean throttled = active && (Math.abs(getThrottle()) > 0.001F || loaded);
 
         if (startSoundTicks > 0)
             --startSoundTicks;
@@ -3166,18 +3527,35 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // The engine and idle loops share a channel because they never play together, so switching
         // between them replaces the running loop instead of layering a second one on top.
         String engineLoop = null;
-        if (startSoundTicks <= 0)
-            engineLoop = throttled ? configType.getEngineSound()
-                : (active ? configType.getEngineIdleLoopSound() : null);
-
-        float pitchRange = throttled ? configType.getEngineSoundPitchRange()
-            : (active ? configType.getEngineIdleLoopPitchRange() : 0F);
+        boolean varyPitch = false;
+        if (throttled)
+        {
+            engineLoop = configType.getEngineSound();
+            varyPitch = true;
+        }
+        else if (active)
+        {
+            engineLoop = configType.getEngineIdleLoopSound();
+            if (configType.usesEngineSoundAsIdleLoop())
+                varyPitch = true;
+        }
+        if (startSoundTicks > 0)
+            engineLoop = null;
         ClientHooks.SOUND.setLoopingEntitySound(this, SOUND_CHANNEL_ENGINE, engineLoop,
-            Math.max(1, configType.getEngineSoundRange()), pitchRange);
+            Math.max(1, configType.getEngineSoundRange()), varyPitch);
 
         String reverseLoop = active && getThrottle() < -0.05F ? configType.getBackSound() : null;
         ClientHooks.SOUND.setLoopingEntitySound(this, SOUND_CHANNEL_REVERSE, reverseLoop,
-            Math.max(1, configType.getBackSoundRange()), 0F);
+            Math.max(1, configType.getBackSoundRange()), false);
+    }
+
+    /**
+     * Whether the engine is working although the throttle is closed, such as a tracked vehicle
+     * pivoting on the spot, so the driving loop plays instead of the idle loop. Client side only.
+     */
+    protected boolean isEngineLoadedWithoutThrottle()
+    {
+        return false;
     }
 
     protected void updateRiderVisibility()
@@ -3299,7 +3677,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (best != null && lockOnSoundDelay <= 0)
         {
             if (StringUtils.isNotBlank(configType.getLockOnSound()))
-                PacketPlaySound.sendSoundPacket(controller, 10D, configType.getLockOnSound(), false);
+                PacketPlaySound.sendSoundPacket(controller, ModCommonConfig.get().vehicleLockOnSoundRange(), configType.getLockOnSound(), false);
             if (best instanceof Driveable target && target.getConfigType() != null
                 && StringUtils.isNotBlank(target.getConfigType().getLockingOnSound()))
                 PacketPlaySound.sendSoundPacket(target, Math.max(1, target.getConfigType().getLockedOnSoundRange()),
@@ -3343,8 +3721,6 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     protected Vec3 getDriverAimDirection()
     {
-        Seat driver = getDriverSeat();
-        SeatInfo info = driver == null ? null : driver.getSeatInfo();
         return aimedDirection(getTurretYaw(), getTurretPitch());
     }
 
@@ -3418,6 +3794,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             if (info == null)
                 continue;
             seat = new Seat(level(), this, index, info);
+            restoreSeatAim(seat, index);
             seats[index] = seat;
             level().addFreshEntity(seat);
         }
@@ -3503,8 +3880,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public Vec3 getInterpolatedSeatWorldPosition(int index, float partialTick)
     {
         float partial = Mth.clamp(partialTick, 0F, 1F);
-        Vec3 root = new Vec3(Mth.lerp((double) partial, xo, getX()),
-            Mth.lerp((double) partial, yo, getY()), Mth.lerp((double) partial, zo, getZ()));
+        Vec3 root = new Vec3(Mth.lerp(partial, xo, getX()),
+            Mth.lerp(partial, yo, getY()), Mth.lerp(partial, zo, getZ()));
         SeatInfo info = configType == null ? null : configType.getSeat(index);
         if (info == null)
             return root.add(0D, getBbHeight() * 0.5D, 0D);
@@ -3536,8 +3913,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (optics == null || !optics.isHasCamera())
             return getInterpolatedRiderWorldPosition(seat.getSeatIndex(), 1.12D, partialTick);
         float partial = Mth.clamp(partialTick, 0F, 1F);
-        Vec3 root = new Vec3(Mth.lerp((double) partial, xo, getX()),
-            Mth.lerp((double) partial, yo, getY()), Mth.lerp((double) partial, zo, getZ()));
+        Vec3 root = new Vec3(Mth.lerp(partial, xo, getX()),
+            Mth.lerp(partial, yo, getY()), Mth.lerp(partial, zo, getZ()));
         Vec3 local = attachmentModelLocal(optics.getCamera());
         if (optics.isDriverDefinition())
             local = turretPointToLocal(local, Mth.rotLerp(partial, prevTurretYaw, getTurretYaw()), 0F);
@@ -3708,7 +4085,19 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public boolean isControlledBy(Player player)
     {
         Seat seat = getSeat(player);
-        return seat != null && seat.isDriverSeat() && seat.getRiddenByEntity() == player;
+        return seat != null && isMovementController(seat) && seat.getRiddenByEntity() == player;
+    }
+
+    /** Whether this seat currently owns the driveable's movement controls. */
+    public boolean isMovementController(@Nullable Seat seat)
+    {
+        return seat != null && seat.isDriverSeat();
+    }
+
+    /** Limits the input copied from a movement controller into the driveable itself. */
+    protected int movementControlMask(@NotNull Seat seat, int mask)
+    {
+        return DriveableInput.sanitize(mask);
     }
 
     public void acceptInput(@NotNull ServerPlayer player, int mask, float aimYaw, float aimPitch,
@@ -3720,27 +4109,30 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (seat == null || seat.getDriveable() != this || !seat.acceptInput(player, mask, aimYaw, aimPitch, sequence))
             return;
 
-        inputTimeout = 0;
         markUsed();
         if (seat.isInputRising(DriveableInput.CHANGE_SEAT))
         {
             cycleSeat(player, seat);
             return;
         }
-        if (!seat.isDriverSeat())
+        if (!seat.isDriverSeat() && seat.isInputRising(DriveableInput.MENU))
+            openPassengerGunInventoryMenu(player, seat);
+        if (!isMovementController(seat))
         {
-            if (seat.isInputRising(DriveableInput.MENU))
-                openPassengerGunInventoryMenu(player, seat);
             return;
         }
 
-        int sanitized = DriveableInput.sanitize(mask);
+        inputTimeout = 0;
+        int sanitized = movementControlMask(seat, mask);
         previousInputMask = getInputMask();
         setInputMask(sanitized);
-        setTurretAim(seat.getAimYaw(), seat.getAimPitch());
         setFlightControls(flightPitch, flightRoll, mouseControl);
-        int rising = sanitized & ~previousInputMask;
-        handleRisingInputs(seat, player, rising);
+        if (seat.isDriverSeat())
+        {
+            setTurretAim(seat.getAimYaw(), seat.getAimPitch());
+            int rising = sanitized & ~previousInputMask;
+            handleRisingInputs(seat, player, rising);
+        }
     }
 
     protected void handleRisingInputs(@NotNull Seat seat, @NotNull Player player, int rising)
@@ -3827,12 +4219,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return;
         // TimeFlareUsing was specified in seconds by legacy content packs,
         // while FlareDelay is already expressed in ticks.
-        ticksFlareUsing = (int) Math.min(Integer.MAX_VALUE, Math.max(1L, (long) configType.getTimeFlareUsing() * 20L));
+        ticksFlareUsing = (int) Math.min(Integer.MAX_VALUE, Math.max(1L, configType.getTimeFlareUsing() * 20L));
         flareDelay = Math.max(ticksFlareUsing, configType.getFlareDelay());
         setFlag(FLAG_FLARE, true);
         setFlag(FLAG_COUNTERMEASURE_RELOADING, true);
         if (StringUtils.isNotBlank(configType.getFlareSound()))
-            PacketPlaySound.sendSoundPacket(this, 96D, configType.getFlareSound(), false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleFlareSoundRange(), configType.getFlareSound(), false);
     }
 
     protected void updateFlares()
@@ -3926,7 +4318,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     /** Moves a rider to the next free, intact seat in definition order. */
     public boolean cycleSeat(@NotNull ServerPlayer player, @NotNull Seat current)
     {
-        if (current.getDriveable() != this || current.getRiddenByEntity() != player || seats.length < 2)
+        if (current.getDriveable() != this || current.getRiddenByEntity() != player || seats.length < 2
+            || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
             return false;
         int targetIndex = SeatCycle.nextAvailable(current.getSeatIndex(), seats.length, index -> {
             Seat candidate = seats[index];
@@ -4039,23 +4432,24 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
     private float destroyedPartFraction(@NotNull List<EnumDriveablePart> parts)
     {
+        DriveableData data = initializedData();
         int defined = 0;
-        int destroyed = 0;
+        int destroyedCount = 0;
         for (EnumDriveablePart part : parts)
         {
-            DriveablePart state = driveableData.getPart(part);
+            DriveablePart state = data.getPart(part);
             if (state == null || state.getMaxHealth() <= 0F)
                 continue;
             ++defined;
             if (state.isDestroyed())
-                ++destroyed;
+                ++destroyedCount;
         }
-        return defined == 0 ? 0F : (float) destroyed / defined;
+        return defined == 0 ? 0F : (float) destroyedCount / defined;
     }
 
     private boolean isDefinedAndDestroyed(@NotNull EnumDriveablePart part)
     {
-        DriveablePart state = driveableData.getPart(part);
+        DriveablePart state = initializedData().getPart(part);
         return state != null && state.getMaxHealth() > 0F && state.isDestroyed();
     }
 
@@ -4074,8 +4468,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         float remainingPower = Math.max(0F, previousPower - resistance);
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
         int shotIndex = shot == null ? 0 : shot.getShot();
+        boolean heat = bulletType.isHeat();
         ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(),
-            hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg());
+            hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat);
         float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
         boolean normalizedHealth = configType.getResolvedHealth().enabled();
         float selectedFixedDamage = normalizedHealth ? authoredFixedDamage
@@ -4089,7 +4484,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(
             normalizedHealth, projectileMass, selectedFixedDamage,
             muzzleVelocity, armorHit,
-            p100 > 0F && Float.isFinite(p100) ? p100 : null);
+            p100 > 0F && Float.isFinite(p100) ? p100 : null,
+            heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired()
             && !resolvedDamage.penetration().penetrated();
         if (!level().isClientSide)
@@ -4104,10 +4500,66 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                     resolvedDamage.penetration().effectiveArmorMm());
             else
                 DriveableDamageDebug.reportDamage(debugPlayer, this, hit.getPart(), appliedDamage);
+            if (resolvedDamage.shapedCharge())
+            {
+                // The jet has already done the warhead's work on this part; its blast is left to the others.
+                shapedChargeImpact = new ShapedChargeImpact(hit.getPart(), hit.getHitPosition(), level().getGameTime());
+                applyHeatSpall(shot, hit.getPart(), resolvedDamage.penetration().overmatch());
+            }
             if (part.isDestroyed())
                 onPartDestroyed(part.getType());
         }
+        // A shaped charge fires its jet at the first surface it strikes. Whatever it hits first - a skirt, an ERA
+        // block, a track - takes the jet in place of the hull behind, so it never carries on into the next part.
+        if (heat)
+            return new ShootingHelper.HitData(0F, armourBlocked ? 0F : penetrationRatio, false);
         return new ShootingHelper.HitData(remainingPower, armourBlocked ? 0F : penetrationRatio, false);
+    }
+
+    /** Charge of a HEAT round in kg TNT, recovered from its legacy explosion when it declares no explosive mass. */
+    private static float shapedChargeKg(@Nullable FiredShot shot, BulletType bulletType)
+    {
+        float charge = shot != null ? shot.getExplosiveMass() : bulletType.getExplosiveMass();
+        if (charge > 0F && Float.isFinite(charge))
+            return charge;
+        FlanExplosion.Stats stats = shot != null ? bulletType.getExplosionStatsForShot(shot)
+            : bulletType.getExplosionStats(null);
+        return ExplosionVehicleDamageResolver.legacyTntEquivalentKg(stats.explosionRadius(), stats.explosionPower(),
+            ModCommonConfig.get() == null ? ModCommonConfig.DEFAULT_CRATER_RADIUS_REFERENCE
+                : ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
+    }
+
+    /** Spall from a HEAT jet hurts whoever sits in the part it went through. */
+    private void applyHeatSpall(@Nullable FiredShot shot, EnumDriveablePart penetratedPart, float overmatch)
+    {
+        float spall = (float) ModCommonConfig.heatCrewSpallDamage()
+            * VehicleProjectileDamageResolver.shapedChargeResidual(overmatch);
+        if (spall <= 0F || !Float.isFinite(spall))
+            return;
+        DamageSource source = shot != null ? shot.getDamageSource(level(), null)
+            : level().damageSources().explosion(null, null);
+        for (Seat seat : seats)
+        {
+            if (seat == null || seat.getSeatInfo() == null || seat.getSeatInfo().getPart() != penetratedPart)
+                continue;
+            if (seat.getRiddenByEntity() instanceof LivingEntity occupant)
+                occupant.hurt(source, spall);
+        }
+    }
+
+    /**
+     * Reports which part a HEAT jet went through at this detonation, once, so the warhead's blast skips the part
+     * the jet has already damaged.
+     */
+    @Nullable
+    public EnumDriveablePart consumeShapedChargeImpact(Vec3 detonation)
+    {
+        ShapedChargeImpact impact = shapedChargeImpact;
+        shapedChargeImpact = null;
+        if (impact == null || impact.gameTime() != level().getGameTime()
+            || impact.point().distanceToSqr(detonation) > SHAPED_CHARGE_IMPACT_MATCH_DISTANCE_SQR)
+            return null;
+        return impact.part();
     }
 
     /** Precise ray trace against every configured local part box. */
@@ -4128,8 +4580,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (driveableData == null || motion.lengthSqr() < 1.0E-12D)
             return Collections.emptyList();
-        Vec3 localOrigin = worldToLocal(origin);
-        Vec3 localMotion = worldDirectionToLocal(motion);
+        // Traced in the model-local frame so boxes sit where the model is drawn;
+        // the hit is handed back in the box frame, the one armour facings use.
+        Vec3 localOrigin = worldToModelLocal(origin);
+        Vec3 localMotion = worldDirectionToModelLocal(motion);
         Vec3 turretPivot = getCollisionTurretPivot();
         Vec3 turretOffset = getCollisionTurretOffset();
         List<BulletHit> hits = new ArrayList<>();
@@ -4140,14 +4594,16 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 || !includeDestroyedParts && !isPartHitboxActive(part))
                 continue;
             DriveableProjectileCollision.LocalHit intersection = DriveableProjectileCollision.trace(
-                box.asAabb(), localOrigin, localMotion, part.getType(), getTurretYaw(), getTurretPitch(),
+                partBoxModelLocal(box), localOrigin, localMotion, part.getType(), getTurretYaw(), getTurretPitch(),
                 turretPivot, turretOffset);
             if (intersection == null)
                 continue;
             Vec3 worldHit = origin.add(motion.scale(intersection.fraction()));
+            Vec3 normal = partFrameToModelLocal(intersection.outwardNormal());
             hits.add(new DriveableHit(this, part.getType(), intersection.fraction(), worldHit,
-                intersection.position(), intersection.projectileDirection(), intersection.outwardNormal(),
-                intersection.facing()));
+                partFrameToModelLocal(intersection.position()),
+                partFrameToModelLocal(intersection.projectileDirection()), normal,
+                EnumArmorFacing.fromOutwardNormal(normal)));
         }
         hits.sort(Comparator.naturalOrder());
         return hits;
@@ -4157,9 +4613,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (level().isClientSide || destroyed || driveableData == null || amount <= 0F)
             return false;
+        if (source != null && source.getEntity() instanceof Player player
+            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
+            return false;
         EnumDriveablePart target = partType == null ? EnumDriveablePart.CORE : partType;
         DriveablePart part = driveableData.getPart(target);
-        if (part == null)
+        if (part == null || part.isDestroyed())
             return false;
         if (source != null)
             lastAtkEntity = source.getEntity();
@@ -4196,13 +4655,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      */
     protected boolean tryPickupOnAttack(@Nullable DamageSource source)
     {
-        if (source == null || destroyed || getControllingEntity() != null || !isSupportedByGround())
+        if (source == null || destroyed || hasDriveableOccupant() || !isSupportedByGround())
             return false;
         if (!(source.getEntity() instanceof Player player) || !canPlayerAccess(player))
             return false;
         if (!player.getAbilities().instabuild && !FlansMod.teamsManager.isSurvivalCanBreakVehicles())
             return false;
-        if (!level().isClientSide)
+        if (!level().isClientSide && FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_PICKUP))
             pickupAsItem(player);
         return true;
     }
@@ -4211,34 +4670,53 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (driveableData == null)
             return Optional.empty();
-        Vec3 local = worldToLocal(worldPoint);
+        Vec3 local = partFrameToModelLocal(worldToModelLocal(worldPoint));
         return driveableData.getParts().values().stream()
             .filter(part -> part.getBox() != null)
             .min(Comparator.comparingDouble(part -> distanceSquaredToBox(local, part.getBox().asAabb())))
             .map(DriveablePart::getType);
     }
 
-    /** Selects one nearest damageable collision surface so proxy entities cannot multiply explosion damage. */
+    /** Selects the nearest damageable collision surface. */
     public Optional<VehicleExplosionTarget> resolveExplosionTarget(@NotNull Vec3 worldPoint)
     {
+        return resolveExplosionTargets(worldPoint).stream().findFirst();
+    }
+
+    /** One target per active part, ordered by distance from the detonation. */
+    public List<VehicleExplosionTarget> resolveExplosionTargets(@NotNull Vec3 worldPoint)
+    {
         if (driveableData == null || configType == null)
-            return Optional.empty();
-        Vec3 hullLocalPoint = worldToLocal(worldPoint);
+            return List.of();
+        Vec3 hullLocalPoint = worldToModelLocal(worldPoint);
         Vec3 turretPivot = getCollisionTurretPivot();
         Vec3 turretOffset = getCollisionTurretOffset();
-        VehicleExplosionTarget best = null;
+        List<VehicleExplosionTarget> targets = new ArrayList<>();
         for (DriveablePart part : driveableData.getParts().values())
         {
-            if (part == null || part.getBox() == null || part.getMaxHealth() <= 0F || part.isDestroyed()
-                || !canHitPart(part.getType()))
+            if (part == null || !part.canReceiveExplosionDamage() || !canHitPart(part.getType()))
                 continue;
+            AABB box = partBoxModelLocal(part.getBox());
             DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(
-                part.getBox().asAabb(), hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
+                box, hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
                 turretPivot, turretOffset);
-            if (best == null || surface.distance() < best.distanceMeters())
-                best = new VehicleExplosionTarget(part.getType(), surface.facing(), surface.distance());
+            Vec3 hullSurface = DriveableProjectileCollision.partPointToHullLocal(
+                surface.position(), part.getType(), getTurretYaw(), getTurretPitch(), turretPivot, turretOffset);
+            Vec3 worldSurface = modelLocalToWorld(hullSurface);
+            List<Vec3> samples = new ArrayList<>();
+            for (Vec3 sample : DriveableProjectileCollision.explosionSurfaceSamples(box, surface))
+            {
+                Vec3 hullSample = DriveableProjectileCollision.partPointToHullLocal(
+                    sample, part.getType(), getTurretYaw(), getTurretPitch(), turretPivot, turretOffset);
+                samples.add(modelLocalToWorld(hullSample));
+            }
+            targets.add(new VehicleExplosionTarget(part.getType(),
+                EnumArmorFacing.fromOutwardNormal(partFrameToModelLocal(surface.outwardNormal())),
+                worldSurface, worldPoint.distanceTo(worldSurface), samples));
         }
-        return Optional.ofNullable(best);
+        targets.sort(Comparator.comparingDouble(VehicleExplosionTarget::distanceMeters)
+            .thenComparing(target -> target.part().ordinal()));
+        return targets;
     }
 
     public boolean repairFromTool(@NotNull Player player, int amount)
@@ -4267,7 +4745,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             .filter(part -> canRepairPart(part.getType()))
             .min(Comparator.comparingDouble(part -> {
                 CollisionBox box = part.getBox();
-                Vec3 centre = box == null ? position() : localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+                Vec3 centre = box == null ? position() : partFrameToWorld(boxCentre(box));
                 return centre.distanceToSqr(origin);
             })).map(DriveablePart::getType);
     }
@@ -4292,7 +4770,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (level().isClientSide || amount <= 0F || !Float.isFinite(amount) || !canRepairPart(part))
             return false;
-        DriveablePart state = driveableData.getPart(part);
+        DriveablePart state = initializedData().getPart(part);
         if (state == null || state.repair(amount) <= 0F)
             return false;
         state.extinguish();
@@ -4378,7 +4856,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      */
     private boolean refuelFromFluidContainer(int slot)
     {
-        ItemStack stack = driveableData.getItem(slot);
+        DriveableData data = initializedData();
+        ItemStack stack = data.getItem(slot);
         IFluidHandlerItem handler = FluidFuel.handlerFor(stack);
         if (handler == null)
             return false;
@@ -4390,7 +4869,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
         int drawn = Math.min(held.getAmount(), FluidFuel.BUCKET);
         float gain = drawn * fuelPerBucket / (float) FluidFuel.BUCKET;
-        if (getFuel() + gain > configType.getFuelTankSize())
+        if (getFuel() + gain > initializedType().getFuelTankSize())
             return false;
 
         // Named explicitly so a multi-tank container cannot hand back a different liquid.
@@ -4400,7 +4879,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
 
         setFuel(getFuel() + drained.getAmount() * fuelPerBucket / (float) FluidFuel.BUCKET);
         returnEmptiedContainer(slot, stack, handler.getContainer());
-        driveableData.setChanged();
+        data.setChanged();
         return true;
     }
 
@@ -4413,52 +4892,55 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      */
     private void returnEmptiedContainer(int slot, ItemStack original, ItemStack emptied)
     {
+        DriveableData data = initializedData();
         if (original.getCount() <= 1)
         {
-            driveableData.setItem(slot, emptied);
+            data.setItem(slot, emptied);
             return;
         }
 
         original.shrink(1);
-        driveableData.setItem(slot, original);
+        data.setItem(slot, original);
         if (emptied.isEmpty())
             return;
-        if (!InventoryHelper.addItemStackToContainer(driveableData, emptied, false, true, false, driveableData.getContainerSize()))
+        if (!InventoryHelper.addItemStackToContainer(driveableData, emptied, false, true, false, data.getContainerSize()))
             spawnAtLocation(emptied);
     }
 
     /** Transfers fuel from one inventory slot, preserving partial-can damage and stack state. */
     private boolean refuelFromFuelSlot(int slot)
     {
-        ItemStack stack = driveableData.getItem(slot);
+        DriveableData data = initializedData();
+        ItemStack stack = data.getItem(slot);
         if (!(stack.getItem() instanceof PartItem partItem) || partItem.getConfigType().getCategory() != PartType.Category.FUEL)
             return false;
         int capacity = Math.max(0, partItem.getConfigType().getFuel());
-        if (capacity <= 0)
+        if (capacity == 0)
             return false;
         int stored = Math.max(0, capacity - stack.getDamageValue());
-        if (stored <= 0)
+        if (stored == 0)
         {
             stack.shrink(1);
-            driveableData.setItem(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
+            data.setItem(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
             return false;
         }
-        int transfer = Math.min(stored, Math.max(1, Mth.ceil(configType.getFuelTankSize() - getFuel())));
+        int transfer = Math.min(stored, Math.max(1, Mth.ceil(initializedType().getFuelTankSize() - getFuel())));
         setFuel(getFuel() + transfer);
         stack.setDamageValue(stack.getDamageValue() + transfer);
         if (stack.getDamageValue() >= capacity)
             stack.shrink(1);
-        driveableData.setItem(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
+        data.setItem(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
         return true;
     }
 
     private void refuelFromEnergyItems(@NotNull PartType engine)
     {
+        DriveableData data = initializedData();
         int drawRate = Math.max(1, engine.getRfDrawRate());
-        float tankCapacity = Math.max(0F, configType.getFuelTankSize());
-        for (int slot = 0; slot < driveableData.getContainerSize() && getFuel() < tankCapacity; slot++)
+        float tankCapacity = Math.max(0F, initializedType().getFuelTankSize());
+        for (int slot = 0; slot < data.getContainerSize() && getFuel() < tankCapacity; slot++)
         {
-            ItemStack stack = driveableData.getItem(slot);
+            ItemStack stack = data.getItem(slot);
             if (stack.isEmpty())
                 continue;
             IEnergyStorage energy = ItemCapabilities.energy(stack);
@@ -4470,10 +4952,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             if (roomLimitedDraw <= 0)
                 break;
             int extracted = Math.max(0, energy.extractEnergy(roomLimitedDraw, false));
-            if (extracted <= 0)
+            if (extracted == 0)
                 continue;
             setFuel((float) Math.min(tankCapacity, getFuel() + 2D * extracted / drawRate));
-            driveableData.setChanged();
+            data.setChanged();
         }
     }
 
@@ -4531,7 +5013,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         });
     }
 
-    protected boolean hasDriveableOccupant()
+    public boolean hasDriveableOccupant()
     {
         if (!getPassengers().isEmpty())
             return true;
@@ -4609,10 +5091,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         if (!player.isAlive() || player.distanceToSqr(this) > 64D || !canPlayerAccess(player))
             return false;
-        if (configType instanceof PlaneType plane && !plane.isInvInflight()
-            && (!onGround() || Math.abs(getThrottle()) >= 0.1F))
-            return false;
-        return true;
+        // An aircraft without in-flight inventory access only opens parked on the ground.
+        return !(configType instanceof PlaneType plane && !plane.isInvInflight()
+            && (!onGround() || Math.abs(getThrottle()) >= 0.1F));
     }
 
     public Container getDriveableInventory()
@@ -4671,7 +5152,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         ItemStack held = player.getItemInHand(hand);
         if (held.getItem() instanceof ToolItem tool && tool.getConfigType().isKey())
             return InteractionResult.sidedSuccess(level().isClientSide || bindOrCheckKey(player, held));
-        if (!canPlayerAccess(player) || player.isSpectator())
+        if (!canPlayerAccess(player) || player.isSpectator()
+            || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
             return InteractionResult.PASS;
         if (level().isClientSide)
             return InteractionResult.SUCCESS;
@@ -4748,7 +5230,17 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     @Override
     public ItemStack getPickedResult(HitResult target)
     {
-        return createDropStack();
+        if (configType == null)
+            return ItemStack.EMPTY;
+        ItemStack result = ModUtils.getItemStack(configType).orElse(ItemStack.EMPTY);
+        if (!result.isEmpty() && getPaintjobId() != 0)
+            configType.applyPaintjobToStack(result, configType.getPaintjob(getPaintjobId()));
+        if (result.isEmpty())
+            return result;
+        // Match the creative-tab stack so vanilla Pick Item finds the painted variant.
+        DriveableData creativeData = DriveableData.fromStack(configType, result, level().registryAccess());
+        creativeData.setFuelInTank(configType.getFuelTankSize());
+        return creativeData.copyToStack(result);
     }
 
     public ItemStack createDropStack()
@@ -4765,11 +5257,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     protected void pickupAsItem(Player player)
     {
         ItemStack stack = createDropStack();
-        if (!stack.isEmpty())
-        {
-            if (!player.getInventory().add(stack))
-                spawnAtLocation(stack, 0.25F);
-        }
+        if (!stack.isEmpty() && !player.getInventory().add(stack))
+            spawnAtLocation(stack, 0.25F);
         suppressDrops = true;
         discard();
     }
@@ -4822,13 +5311,31 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         DriveablePart part = driveableData == null ? null : driveableData.getPart(partType);
         CollisionBox box = part == null ? null : part.getBox();
-        return box == null ? position() : localToWorld(box.getCentre().x, box.getCentre().y, box.getCentre().z);
+        return box == null ? position() : partFrameToWorld(boxCentre(box));
     }
 
     protected void createExplosion(DriveableExplosion settings, Vec3 centre)
     {
         if (level().isClientSide || settings.explosionRadius() <= 0F)
             return;
+
+        DamageStats blast = createBlastDamageStats(settings);
+        DamageStats fragments = new DamageStats();
+        fragments.setDamage(0F);
+        fragments.calculate();
+
+        float power = configType == null ? 1F : Math.max(0F, configType.getDeathExplosionPower());
+        FlanExplosion.Stats stats = new FlanExplosion.Stats(settings.explosionRadius(), power, settings.explosionRadius() * 1.5F, blast, settings.explosionRadius(), 0F, fragments);
+        // Drawn as a fire explosion whatever the type's fire radius: fuel and ammunition going up
+        // burn, even when the wreck is not configured to set anything alight.
+        new FlanExplosion(level(), this, lastAtkEntity instanceof LivingEntity living ? living : null,
+            centre.x, centre.y, centre.z, stats, settings.fireRadius() > 0F, true,
+            settings.breaksBlocks() && FlansMod.teamsManager.isDriveablesBreakBlocks(), 8, 4, false);
+    }
+
+    @NotNull
+    private static DamageStats createBlastDamageStats(DriveableExplosion settings)
+    {
         DamageStats blast = new DamageStats();
         blast.setDamage(settings.damageVsVehicle());
         blast.setDamageVsLiving(settings.damageVsLiving());
@@ -4841,17 +5348,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         blast.setReadDamageVsVehicles(true);
         blast.setReadDamageVsPlanes(true);
         blast.calculate();
-        DamageStats fragments = new DamageStats();
-        fragments.setDamage(0F);
-        fragments.calculate();
-        float power = configType == null ? 1F : Math.max(0F, configType.getDeathExplosionPower());
-        FlanExplosion.Stats stats = new FlanExplosion.Stats(settings.explosionRadius(), power,
-            settings.explosionRadius() * 1.5F, blast, settings.explosionRadius(), 0F, fragments);
-        // Drawn as a fire explosion whatever the type's fire radius: fuel and ammunition going up
-        // burn, even when the wreck is not configured to set anything alight.
-        new FlanExplosion(level(), this, lastAtkEntity instanceof LivingEntity living ? living : null,
-            centre.x, centre.y, centre.z, stats, settings.fireRadius() > 0F, true,
-            settings.breaksBlocks() && FlansMod.teamsManager.isDriveablesBreakBlocks(), 8, 4, false);
+        return blast;
     }
 
     protected void dropContents()
@@ -4907,18 +5404,69 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         return up.scale(Math.cos(roll)).subtract(horizontalRight.scale(Math.sin(roll))).normalize();
     }
 
-    /** Hull-local pivot that turret-mounted part boxes rotate around during projectile collision. */
+    /**
+     * Model-local pivot that turret-mounted part boxes rotate around, the same
+     * one {@link #turretPointToLocal} turns shoot points round.
+     */
     public Vec3 getCollisionTurretPivot()
     {
         return configType == null || configType.getTurretOrigin() == null ? Vec3.ZERO
-            : LegacyDriveableCoordinates.toLocal(configType.getTurretOrigin());
+            : configuredModelLocal(configType.getTurretOrigin());
     }
 
-    /** Hull-local offset that turret-mounted part boxes carry, yawed with the turret, during projectile collision. */
+    /** Model-local offset that turret-mounted part boxes carry, yawed with the turret. */
     public Vec3 getCollisionTurretOffset()
     {
         return configType == null || configType.getTurretOriginOffset() == null ? Vec3.ZERO
-            : LegacyDriveableCoordinates.toLocal(configType.getTurretOriginOffset());
+            : configuredModelLocal(configType.getTurretOriginOffset());
+    }
+
+    /**
+     * Converts between the frame part boxes are stored in and the model-local
+     * frame the model is drawn from; the conversion is its own inverse.
+     *
+     * <p>Boxes are stored as {@link LegacyDriveableCoordinates#toLocal} of the
+     * type file, the frame armour facings are named in, and are authored in the
+     * model's own geometry coordinates on every driveable. Geometry coordinates
+     * land on the drawn model after the lateral mirror alone: unlike shoot
+     * points, an aircraft's boxes are not written in its flight-facing basis
+     * ({@link LegacyDriveableCoordinates#modelPixelsToTypeFile}), so they take no
+     * half-turn. Posing boxes with the movement basis instead left them mirrored
+     * on ground vehicles and, on aircraft, tilting round the wrong axis as the
+     * airframe pitched and rolled.</p>
+     */
+    public Vec3 partFrameToModelLocal(@NotNull Vec3 vector)
+    {
+        return mirrorAroundLocalZAxis(vector);
+    }
+
+    /** A part box in the model-local frame; see {@link #partFrameToModelLocal}. */
+    public AABB partBoxModelLocal(@NotNull CollisionBox box)
+    {
+        AABB bounds = box.asAabb();
+        Vec3 min = partFrameToModelLocal(new Vec3(bounds.minX, bounds.minY, bounds.minZ));
+        Vec3 max = partFrameToModelLocal(new Vec3(bounds.maxX, bounds.maxY, bounds.maxZ));
+        return new AABB(min, max);
+    }
+
+    /** World position of a point in the part-box frame, where the drawn model has it. */
+    public Vec3 partFrameToWorld(@NotNull Vec3 partPoint)
+    {
+        return modelLocalToWorld(partFrameToModelLocal(partPoint));
+    }
+
+    /** Inverse of {@link #modelLocalToWorld}. */
+    public Vec3 worldToModelLocal(@NotNull Vec3 world)
+    {
+        return worldDirectionToModelLocal(world.subtract(position()));
+    }
+
+    /** Inverse of {@link #modelLocalDirectionToWorld}, which is orthogonal, so its transpose. */
+    public Vec3 worldDirectionToModelLocal(@NotNull Vec3 worldDirection)
+    {
+        return new Vec3(worldDirection.dot(modelLocalDirectionToWorld(new Vec3(1D, 0D, 0D))),
+            worldDirection.dot(modelLocalDirectionToWorld(new Vec3(0D, 1D, 0D))),
+            worldDirection.dot(modelLocalDirectionToWorld(new Vec3(0D, 0D, 1D))));
     }
 
     public Vec3 localToWorld(double x, double y, double z)
@@ -5008,7 +5556,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // wheel probes alone lift the hull by the average of all wheels, so a
         // ledge met by a single wheel at an angle stalled it. Wheels on the
         // ground are what lets the body step; move() recomputes onGround.
-        if (!onGround() && maxUpStep() > 0F && hasWheelContact() && stepsOnWheelContact())
+        if (!onGround() && EntityPlatform.stepHeight(this) > 0F && hasWheelContact() && stepsOnWheelContact())
             setOnGround(true);
         move(MoverType.SELF, velocity);
         sweepCollisionPointImpacts(velocity);
@@ -5025,7 +5573,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         {
             double ceiling = Mth.clamp(configType.getBuoyancy(), 0F, 0.25F);
             ResolvedVehiclePhysics physics = configType.getResolvedPhysics();
-            if (!ModCommonConfig.forceLegacyMovement(physics.category()) && physics.hasDraft())
+            Float draft = physics.draftM();
+            if (draft != null && !ModCommonConfig.forceLegacyMovement(physics.category()))
             {
                 // A declared draft turns flotation into a restoring response that
                 // settles the hull at its real waterline. Without one the legacy
@@ -5034,11 +5583,13 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                 if (Double.isFinite(surface))
                 {
                     double corrected = MarineDraftPhysics.verticalVelocity(velocity.y,
-                        getBoundingBox().minY, surface, physics.draftM(), ceiling);
-                    return new Vec3(velocity.x, corrected, velocity.z).multiply(0.92D, 1D, 0.92D);
+                        getBoundingBox().minY, surface, draft, ceiling);
+                    double drag = ModPhysics.dragRetention(0.92D, level());
+                    return new Vec3(velocity.x, corrected, velocity.z).multiply(drag, 1D, drag);
                 }
             }
-            return velocity.add(0D, ceiling, 0D).multiply(0.92D, 0.8D, 0.92D);
+            return velocity.add(0D, ceiling, 0D).multiply(ModPhysics.dragRetention(0.92D, level()),
+                ModPhysics.dragRetention(0.8D, level()), ModPhysics.dragRetention(0.92D, level()));
         }
         return velocity.add(0D, -Math.max(0D, gravity), 0D);
     }
@@ -5056,12 +5607,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         for (int offset = 0; offset <= VehiclePhysicsConstants.DRAFT_SURFACE_PROBE_BLOCKS; offset++)
         {
             cursor.set(getBlockX(), startY + offset, getBlockZ());
-            if (!level().hasChunkAt(cursor))
+            if (!level().isLoaded(cursor))
                 break;
             FluidState fluid = level().getFluidState(cursor);
             if (fluid.isEmpty())
                 break;
-            surface = startY + offset + fluid.getHeight(level(), cursor);
+            surface = (double) startY + offset + fluid.getHeight(level(), cursor);
         }
         return surface;
     }
@@ -5111,10 +5662,22 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // behaviour while another wheel is supporting the driveable.
         double poseProbeDroop = suspensionDroop + mountHeightRange + step + 0.45D;
         double supportError = 0D;
-        double frontHeight = 0D, backHeight = 0D, leftHeight = 0D, rightHeight = 0D;
-        double frontMountHeight = 0D, backMountHeight = 0D, leftMountHeight = 0D, rightMountHeight = 0D;
-        int frontCount = 0, backCount = 0, leftCount = 0, rightCount = 0;
-        double frontX = 0D, backX = 0D, leftZ = 0D, rightZ = 0D;
+        double frontHeight = 0D;
+        double backHeight = 0D;
+        double leftHeight = 0D;
+        double rightHeight = 0D;
+        double frontMountHeight = 0D;
+        double backMountHeight = 0D;
+        double leftMountHeight = 0D;
+        double rightMountHeight = 0D;
+        int frontCount = 0;
+        int backCount = 0;
+        int leftCount = 0;
+        int rightCount = 0;
+        double frontX = 0D;
+        double backX = 0D;
+        double leftZ = 0D;
+        double rightZ = 0D;
 
         // The historical 1.5 block look-ahead is correct only up to about
         // 108 km/h. A type on the real-world profile probes as far as it can
@@ -5336,13 +5899,14 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         Vec3 velocity = getDeltaMovement();
         double horizontalSpeed = velocity.horizontalDistance();
-        if (!(horizontalSpeed >= VehiclePhysicsConstants.MIN_DRIVEABLE_CONTACT_SPEED_BLOCKS_PER_TICK))
+
+        if (horizontalSpeed < VehiclePhysicsConstants.MIN_DRIVEABLE_CONTACT_SPEED_BLOCKS_PER_TICK)
             return;
+
         double reach = Math.min(1.5D, horizontalSpeed + 0.25D);
         AABB contactBox = getBoundingBox().inflate(reach, 0.25D, reach);
         double selfMass = getImpulseMassKg();
-        for (Entity entity : level().getEntities(this, contactBox,
-            candidate -> candidate instanceof IMassiveEntity && candidate.isAlive() && !isPartOfThis(candidate)))
+        for (Entity entity : level().getEntities(this, contactBox, candidate -> candidate instanceof IMassiveEntity && candidate.isAlive() && !isPartOfThis(candidate)))
         {
             Vec3 normal = new Vec3(entity.getX() - getX(), 0D, entity.getZ() - getZ());
             if (normal.lengthSqr() < 1.0E-6D)
@@ -5388,6 +5952,12 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         AABB impactBox = getBoundingBox().inflate(Math.min(1.5D, horizontalSpeed + 0.25D), 0.25D, Math.min(1.5D, horizontalSpeed + 0.25D));
         for (Entity entity : level().getEntities(this, impactBox, candidate -> candidate.isAlive() && !isPartOfThis(candidate)))
         {
+            // Projectiles use their own hit tracing, not the driveable's coarse entity push.
+            // Pushing a newly dropped bomb here reverses its inherited aircraft velocity.
+            if (entity instanceof Shootable || entity instanceof Projectile)
+                continue;
+            if (DriveableCollisionBypass.isEnabled(entity))
+                continue;
             // Shaped collision resolves these entities against actual hull
             // surfaces. Applying this old coarse AABB push as well dislodges
             // anything already supported by a deck, even while parked.
@@ -5588,6 +6158,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     }
 
     @Override
+    @NotNull
     public EntityDimensions getDimensions(@NotNull Pose pose)
     {
         DriveablePart core = driveableData == null ? null : driveableData.getPart(EnumDriveablePart.CORE);
@@ -5606,6 +6177,21 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     public AABB getBoundingBoxForCulling()
     {
         float radius = configType == null ? 8F : Mth.clamp(configType.getBulletDetectionRadius() + 2F, 4F, 64F);
+        if (configType != null)
+        {
+            // Include all authored part boxes, even when a part is destroyed or
+            // the client has not received its mutable state yet. Rotation can put
+            // either horizontal corner on the far side of a large model.
+            AABB bounds = configType.getBounds().orElse(null);
+            if (bounds != null)
+            {
+                double scale = Math.abs(configType.getModelScale());
+                double farX = Math.max(Math.abs(bounds.minX), Math.abs(bounds.maxX)) * scale;
+                double farZ = Math.max(Math.abs(bounds.minZ), Math.abs(bounds.maxZ)) * scale;
+                double farY = Math.max(Math.abs(bounds.minY), Math.abs(bounds.maxY)) * scale;
+                radius = (float) Math.max(radius, Math.max(Math.hypot(farX, farZ), farY) + 4D);
+            }
+        }
         return new AABB(getX() - radius, getY() - radius, getZ() - radius, getX() + radius, getY() + radius, getZ() + radius);
     }
 

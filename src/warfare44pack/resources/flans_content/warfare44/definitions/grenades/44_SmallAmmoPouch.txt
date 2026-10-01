@@ -16,7 +16,7 @@ DeployableBag True
 DespawnTime 12000
 
 // Throwing and physics
-ThrowSpeed 0.75
+ThrowSpeedMs 5
 ThrowDelay 10
 FallSpeed 1
 Bounciness 0.0

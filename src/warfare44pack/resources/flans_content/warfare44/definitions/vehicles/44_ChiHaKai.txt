@@ -6,6 +6,7 @@ Description Japanese Medium Tank__Uses : 57mm AP Tank Shell_Small Cal. HE Tank S
 // Rendering
 Icon 44_ChiHaKai
 Model W44.ChiHaKai
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_ChiHaKai
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.4541
 ClutchBrake 0.01925
 TurnLeftSpeed 0.385
 TurnRightSpeed 0.385
+RealTurnRateDegPerSec 20
 CanRoll true
 SquashMobs True
 
@@ -93,8 +95,8 @@ BulletDetection 5
 AllowAllAmmo false
 AddAmmo 44_47APShell
 AddAmmo 44_SmallHEShell
-GunOrigin 1 30 -2 -12
-BarrelPosition 46 29 2.5
+GunOrigin 1 32.3 -3.6 -12
+BarrelPosition 47.5 28.5 2.5
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -149,7 +151,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 25
+ArmorFrontMm 25 30
 ArmorSideMm 25
 ArmorRearMm 20
 ArmorTopMm 12
@@ -161,9 +163,10 @@ TurretArmorTopMm 12
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1550 -62 0 -24 110 35 38
-SetupPart leftTrack 300 -62 -10 -30 113 25 8
-SetupPart rightTrack 300 -62 -10 12 113 25 8
+SetupPart core 7400 -62 0 -24 110 23 38
+SetupPart turret 1400 -18 23 -12 34 14 25
+SetupPart leftTrack 600 -62 -10 -30 113 25 8
+SetupPart rightTrack 600 -62 -10 12 113 25 8
 
 // Seats
 Driver 0 28 0 -360 360 -15 20

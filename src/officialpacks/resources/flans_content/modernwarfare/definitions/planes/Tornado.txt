@@ -5,6 +5,7 @@ ShortName tornado
 // Item and rendering
 Icon Tornado
 Model mw.Tornado
+FlashModel DefaultFlash
 Texture Tornado
 ModelScale 1.2
 AddDye 8 silver
@@ -43,6 +44,7 @@ MaxThrottle 8.0
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 4
 TurnRightSpeed 4
+RealTurnRateDegPerSec 22.88
 LookUpSpeed 4
 LookDownSpeed 4
 RollLeftSpeed 4

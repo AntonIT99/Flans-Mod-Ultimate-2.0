@@ -6,6 +6,8 @@ ShortName C130HAirForce
 Icon IconPlaneC130HAirForce
 Model manus_modern_warfare.C130H
 Texture SkinPlaneC130HAirForce
+// Paintjobs
+AdvPaintJob USN IconPlaneC130HNavy SkinPlaneC130HNavy white 15 gray 10
 HasDoor True
 ModelScale 1
 
@@ -39,6 +41,7 @@ HasGear True
 RealMassKg 70307
 RealEnginePowerHp 18360
 RealMaxSpeedKmh 592
+RealTurnRateDegPerSec 7.88
 RealWingSpanM 40.411
 RealWingAreaM2 162.12
 RealClimbRateMs 9.3

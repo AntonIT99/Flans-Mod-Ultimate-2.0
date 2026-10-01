@@ -18,12 +18,14 @@ public final class ModCommonConfigSync
 {
     public static void resyncAllClientsIfServer()
     {
-        if (PlatformEnvironment.isClient())
-            return;
-
         MinecraftServer server = PlatformEnvironment.currentServer();
         if (server == null)
             return;
+        if (!server.isSameThread())
+        {
+            server.execute(ModCommonConfigSync::resyncAllClientsIfServer);
+            return;
+        }
 
         PacketSyncCommonConfig packet = createSyncPacket();
         if (packet != null)
@@ -46,6 +48,11 @@ public final class ModCommonConfigSync
         MinecraftServer server = PlatformEnvironment.currentServer();
         if (server == null)
             return;
+        if (!server.isSameThread())
+        {
+            server.execute(ModCommonConfigSync::resyncCommonConfigValuesIfServer);
+            return;
+        }
 
         Map<String, Object> values = ConfigSpecValues.collect(ModCommonConfig.configSpec);
         for (ServerPlayer player : server.getPlayerList().getPlayers())

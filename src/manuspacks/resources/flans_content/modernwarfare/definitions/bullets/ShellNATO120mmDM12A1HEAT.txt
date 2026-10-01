@@ -32,6 +32,7 @@ Mass 14100
 MuzzleVelocity 1140
 ExplosiveMassTNTKg 1.62
 PenetrationAt100m 480
+HEAT True
 FragType HE_SHELL
 Damage 350
 DamageVsVehicles 480
@@ -45,5 +46,9 @@ HitSound bomb
 FlakParticles 16
 FlakParticleType hugeexplosion
 SmokeTrail True
+ExplodeParticles 8
+ExplodeParticleType explode
+FlareParticleCount 6
+DebrisParticleCount 4
 TrailParticleType flame
 HasLight True

@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Grenade;
@@ -64,6 +65,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -130,6 +132,29 @@ public final class ShootingHelper
                     shootingOrigin, shootingDirection, shooter, attacker, shot));
         }
 
+        handler.onShoot();
+    }
+
+    /**
+     * Releases ordnance without velocity relative to its carrier. Unlike an
+     * ordinary shot, a bomb is always an entity and inherits the carrier's world
+     * velocity before its configured gravity starts changing its motion.
+     */
+    public static void dropWeapon(@NotNull Level level, @NotNull FireableGun fireableGun,
+                                  @NotNull ShootableType shootableType, int numShots, Vec3 origin,
+                                  Vec3 direction, @Nullable Entity shooter, @Nullable LivingEntity attacker,
+                                  int shot, @NotNull ShootingHandler handler)
+    {
+        numShots = Math.max(1, numShots);
+        fireableGun.applyAmmunition(shootableType);
+        Vec3 releaseVelocity = shooter == null ? Vec3.ZERO : shooter.getDeltaMovement();
+        for (int i = 0; i < numShots; i++)
+        {
+            Shootable bomb = ShootableFactory.createShootable(level, fireableGun, shootableType,
+                origin, direction, shooter, attacker, shot);
+            bomb.setDeltaMovement(releaseVelocity);
+            level.addFreshEntity(bomb);
+        }
         handler.onShoot();
     }
 
@@ -402,40 +427,58 @@ public final class ShootingHelper
 
     public static float getDamage(Entity entity, @Nullable Shootable shootable, @Nullable FiredShot firedShot)
     {
-        ShootableType type = null;
-        float projectileMass = 0F;
-
-        if (shootable != null)
-            type = shootable.getConfigType();
+        ShootableType type;
         if (firedShot != null)
+            type = firedShot.getBulletType();
+        else
         {
-            BulletType bulletType = firedShot.getBulletType();
-            type = bulletType;
-            // Resolved through the shot so a per-weapon AmmoMass override is honoured.
-            projectileMass = firedShot.getProjectileMass();
+            if (shootable != null)
+                type = shootable.getConfigType();
+            else
+                type = null;
         }
 
         if (type == null)
             return 0F;
 
+        float projectileMass = firedShot != null ? firedShot.getProjectileMass() : 0F;
+
+        // Grenades use their actual entity velocity.
+        if (shootable instanceof Grenade && type.getMass() > 0F)
+            return getKineticDamage(type.getMass(), shootable.getDeltaMovement().length());
+
+        // Bombs use their actual entity velocity.
+        if (shootable instanceof Bullet
+            && type instanceof BulletType bulletType
+            && bulletType.getWeaponType() == EnumWeaponType.BOMB
+            && projectileMass > 0F)
+        {
+            return getKineticDamage(projectileMass, shootable.getDeltaMovement().length());
+        }
+
+        // Regular projectiles use their authored muzzle velocity so entity bullets
+        // and raytraced shots remain on the same kinetic-damage scale.
         if (projectileMass > 0F)
-        {
-            // Use the authored firing velocity rather than mutable entity motion. This also keeps
-            // entity bullets and raytraced shots on the same kinetic-damage scale.
             return getKineticDamage(projectileMass, firedShot.getMuzzleVelocity());
-        }
-        else
+
+        float baseDamage = type.getDamage().getDamageAgainstEntity(entity);
+
+        if (shootable instanceof Grenade)
+            return (float) (baseDamage * shootable.getDeltaMovement().lengthSqr() * 3.0);
+
+        if (firedShot == null)
+            return baseDamage;
+
+        FireableGun fireableGun = firedShot.getFireableGun();
+        if (fireableGun == null)
+            return baseDamage;
+
+        if (shootable instanceof Bullet bullet)
         {
-            float baseDamage = type.getDamage().getDamageAgainstEntity(entity);
-            if (shootable instanceof Grenade)
-                return (float) (baseDamage * shootable.getDeltaMovement().lengthSqr() * 3.0);
-            else if (shootable instanceof Bullet bullet && firedShot != null)
-                return baseDamage * ShootingHelper.getDamageAffectedByPenetration(firedShot.getFireableGun().getDamage(), bullet.getConfigType(), bullet);
-            else if (firedShot != null)
-                return baseDamage * ShootingHelper.getDamageAffectedByPenetration(firedShot.getFireableGun().getDamage(), firedShot.getBulletType(), null);
-            else
-                return baseDamage;
+            return baseDamage * ShootingHelper.getDamageAffectedByPenetration(fireableGun.getDamage(), bullet.getConfigType(), bullet);
         }
+
+        return baseDamage * ShootingHelper.getDamageAffectedByPenetration(fireableGun.getDamage(), firedShot.getBulletType(), null);
     }
 
     /**
@@ -540,11 +583,42 @@ public final class ShootingHelper
         if (level.isClientSide)
             return;
 
+        // A bounding mine bursts above the floor. Use the raised point for every explosion
+        // effect and ray. The entity can rest slightly inside the floor block, so checking a
+        // clip from its exact origin would report that same block as a ceiling and suppress the
+        // burst. Ignore only the block containing the mine and check every block above it.
+        if (shootable instanceof Grenade && type.getFragBurstHeight() > 0F)
+        {
+            position = raisedBurstPosition(level, position, type.getFragBurstHeight());
+        }
+
         playDetonateSound(level, type, position, shootable);
         doExplosion(level, type, position, shootable, causingEntity);
         spreadFire(level, type, position, true);
         spawnExplosionParticles(level, type, position);
         dropItemsOnDetonate(level, type.getDropItemOnDetonate(), type.getContentPack(), position, shootable);
+    }
+
+    static Vec3 raisedBurstPosition(Level level, Vec3 position, float height)
+    {
+        if (level == null || !Float.isFinite(height) || height <= 0F)
+            return position;
+
+        Vec3 raised = position.add(0D, height, 0D);
+        BlockPos originBlock = BlockPos.containing(position);
+        int steps = Math.max(1, Mth.ceil(height * 16F));
+        for (int step = 1; step <= steps; step++)
+        {
+            double progress = step / (double) steps;
+            BlockPos sample = BlockPos.containing(position.x, position.y + height * progress, position.z);
+            if (sample.equals(originBlock))
+                continue;
+
+            BlockState state = level.getBlockState(sample);
+            if (!state.getCollisionShape(level, sample, CollisionContext.empty()).isEmpty())
+                return position;
+        }
+        return raised;
     }
 
     public static void onBulletDeath(Level level, BulletType type, Vec3 position, @Nullable Shootable shootable, @Nullable LivingEntity causingEntity)
@@ -759,6 +833,15 @@ public final class ShootingHelper
         float penetrationModifier = (type.getBlockPenetrationModifier() > 0F ? (1F / type.getBlockPenetrationModifier()) : 1F);
         PenetrableBlock penetrableBlock = PenetrableBlock.get(blockstate);
         float hardness = ((penetrableBlock != null) ? (float) penetrableBlock.hardness() : blockstate.getDestroySpeed(level, pos));
+        return blockPenetrationCost(hardness, penetrationModifier);
+    }
+
+    static float blockPenetrationCost(float hardness, float penetrationModifier)
+    {
+        // Negative destroy speed means an unbreakable block. It must stop the trace,
+        // rather than adding penetration and allowing unbounded recursive hits.
+        if (hardness < 0F)
+            return Float.POSITIVE_INFINITY;
         return 2F * hardness * penetrationModifier;
     }
 }

@@ -6,6 +6,7 @@ Description American Anti-Tank Gun
 // Item and rendering
 Icon M157MM
 Model ww2.M157MM
+FlashModel DefaultFlash
 Texture m157mmgun
 AddDye 5 green
 ModelScale 1.1
@@ -32,13 +33,14 @@ MaxThrottle 0
 MaxNegativeThrottle 0
 TurnLeftSpeed 0
 TurnRightSpeed 0
+RealTurnRateDegPerSec 0
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 0 20 0
+BarrelPosition 49 6.6 0
 ShootDelay 1
 ShellDelay 98
 TurretRotationSpeed 0.03
@@ -81,6 +83,12 @@ StartSoundLength 0
 EngineSound
 EngineSoundLength 0
 ShootSoundPrimary 57mmGun
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.46 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.28 0.07 0.07
+ShootParticlesPrimary largesmoke 0.26 -0.07 -0.07
 DriverTraverseSounds true
 PitchSound TurretTraverse1
 PitchSoundLength 61

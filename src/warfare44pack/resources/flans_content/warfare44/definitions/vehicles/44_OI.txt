@@ -6,6 +6,7 @@ Description Japanese Super Heavy Tank__Uses : Very Large Cal. HE Tank Shell __Ye
 // Rendering
 Icon 44_OI
 Model W44.OI
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_OI
 RotateWheels True
@@ -41,6 +42,7 @@ MaxThrottle 0.37
 MaxNegativeThrottle 0.18
 TurnLeftSpeed 0.25
 TurnRightSpeed 0.25
+RealTurnRateDegPerSec 8
 CanRoll true
 
 // Wheels and tracks
@@ -87,9 +89,9 @@ BulletSpeed 6
 BulletDetection 5
 AllowAllAmmo false
 AddAmmo 44_VeryLargeHEShell
-GunOrigin 1 60 12 -18
-GunOrigin 2 60 12 18
-GunOrigin 3 -72 14 0
+GunOrigin 1 91 10.9 -18
+GunOrigin 2 91 10.9 18
+GunOrigin 3 -54 12.9 0
 BarrelPosition 76 55 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
@@ -157,12 +159,13 @@ TurretArmorTopMm 30
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 4000 -99 0 -32 135 61 64
-SetupPart frontalArmor 5000 36 0 -48 61 55 96
-SetupPart rightsideArmor 1500 -99 0 32 135 39 16
-SetupPart leftsideArmor 1500 -99 0 -48 135 39 16
-SetupPart leftTrack 300 -94 -10 -47 192 29 21
-SetupPart rightTrack 300 -94 -10 26 192 29 21
+SetupPart core 5100 -99 0 -32 135 40 64
+SetupPart turret 1900 -26 40 -25 53 21 50
+SetupPart frontalArmor 1000 36 0 -48 61 40 96
+SetupPart rightsideArmor 400 -99 0 32 135 39 16
+SetupPart leftsideArmor 400 -99 0 -48 135 39 16
+SetupPart leftTrack 600 -94 -10 -47 192 29 21
+SetupPart rightTrack 600 -94 -10 26 192 29 21
 
 // Seats
 Driver 0 55 0 -360 360 -8 20
@@ -235,3 +238,24 @@ AddEmitter largesmoke 1 [-100,25,37] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
 AddEmitter largesmoke 1 [-100,25,-37] [1,1,1] [0,5,0] 0.7 0.77 0 1 core
 AddEmitter flame 1 [-100,25,37] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
 AddEmitter flame 1 [-100,25,-37] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+ShootParticlesPassenger 1 explode 0.7 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.95 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.58 0.07 0.05
+ShootParticlesPassenger 1 flansmod.fmflame 0.54 -0.06 -0.06
+ShootParticlesPassenger 1 flansmod.fmflame 0.42 0.04 -0.08
+ShootParticlesPassenger 1 largesmoke 0.3 0.07 0.06
+ShootParticlesPassenger 1 largesmoke 0.28 -0.06 -0.07
+ShootParticlesPassenger 1 largesmoke 0.24 0.04 -0.09
+ShootParticlesPassenger 1 largesmoke 0.22 -0.04 0.09
+ShootParticlesPassenger 1 crit 0.48 0 0
+ShootParticlesPassenger 2 explode 0.7 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.95 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.58 0.07 0.05
+ShootParticlesPassenger 2 flansmod.fmflame 0.54 -0.06 -0.06
+ShootParticlesPassenger 2 flansmod.fmflame 0.42 0.04 -0.08
+ShootParticlesPassenger 2 largesmoke 0.3 0.07 0.06
+ShootParticlesPassenger 2 largesmoke 0.28 -0.06 -0.07
+ShootParticlesPassenger 2 largesmoke 0.24 0.04 -0.09
+ShootParticlesPassenger 2 largesmoke 0.22 -0.04 0.09
+ShootParticlesPassenger 2 crit 0.48 0 0

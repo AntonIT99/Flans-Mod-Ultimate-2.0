@@ -15,6 +15,9 @@ Paintjob mp5_stoic_green mp5_stoic_green green 3
 Paintjob mp5_stoic_red mp5_stoic_red red 3
 Paintjob mp5_stoic_orange mp5_stoic_orange orange 3
 Paintjob mp5_lionheart mp5_lionheart yellow 5 red 5 rainbow 1
+FlashModel DefaultFlash
+animMuzzleFlashPoint 0.9935 0.25289 0
+animFlashScale 3.46
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

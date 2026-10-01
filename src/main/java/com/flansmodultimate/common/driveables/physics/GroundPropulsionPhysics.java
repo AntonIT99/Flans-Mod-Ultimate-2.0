@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.driveables.physics;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 /**
  * Derived longitudinal acceleration for ground vehicles running the real-world
  * profile.
@@ -37,6 +39,12 @@ public final class GroundPropulsionPhysics
     public static double accelerationMs2(double speedMs, double powerW, double massKg,
                                          double terminalSpeedMs, double tractionFactor)
     {
+        return accelerationMs2(speedMs, powerW, massKg, terminalSpeedMs, tractionFactor, 1D);
+    }
+
+    public static double accelerationMs2(double speedMs, double powerW, double massKg,
+                                         double terminalSpeedMs, double tractionFactor, double dragFactor)
+    {
         if (!finitePositive(powerW) || !finitePositive(massKg) || !finitePositive(terminalSpeedMs))
             return 0D;
         double speed = Double.isFinite(speedMs) ? Math.max(0D, Math.abs(speedMs)) : 0D;
@@ -51,7 +59,7 @@ public final class GroundPropulsionPhysics
         tractionForce = Math.min(tractionForce, launchLimit);
 
         double resistanceCoefficient = powerW / (terminalSpeedMs * terminalSpeedMs * terminalSpeedMs);
-        double resistance = resistanceCoefficient * speed * speed;
+        double resistance = ModPhysics.dragForce(resistanceCoefficient * speed * speed, dragFactor);
 
         double acceleration = (tractionForce - resistance) / massKg;
         if (!Double.isFinite(acceleration))
@@ -66,9 +74,17 @@ public final class GroundPropulsionPhysics
     public static double accelerationBlocksPerTickSquared(double speedBlocksPerTick, double powerW, double massKg,
                                                           double terminalSpeedBlocksPerTick, double tractionFactor)
     {
+        return accelerationBlocksPerTickSquared(speedBlocksPerTick, powerW, massKg,
+            terminalSpeedBlocksPerTick, tractionFactor, 1D);
+    }
+
+    public static double accelerationBlocksPerTickSquared(double speedBlocksPerTick, double powerW, double massKg,
+                                                          double terminalSpeedBlocksPerTick, double tractionFactor,
+                                                          double dragFactor)
+    {
         double speedMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(speedBlocksPerTick);
         double terminalMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(terminalSpeedBlocksPerTick);
-        double accelerationMs2 = accelerationMs2(speedMs, powerW, massKg, terminalMs, tractionFactor);
+        double accelerationMs2 = accelerationMs2(speedMs, powerW, massKg, terminalMs, tractionFactor, dragFactor);
         return Math.max(0D, VehiclePhysicsUnits.metresPerSecondSquaredToBlocksPerTickSquared(accelerationMs2));
     }
 
@@ -84,6 +100,14 @@ public final class GroundPropulsionPhysics
             braking ? 1D : 0D);
     }
 
+    public static double decelerationBlocksPerTickSquared(double speedBlocksPerTick, double powerW, double massKg,
+                                                          double terminalSpeedBlocksPerTick, boolean braking,
+                                                          double dragFactor)
+    {
+        return decelerationBlocksPerTickSquared(speedBlocksPerTick, powerW, massKg, terminalSpeedBlocksPerTick,
+            braking ? 1D : 0D, dragFactor);
+    }
+
     /**
      * As above, with the brake applied only in part.
      *
@@ -97,6 +121,14 @@ public final class GroundPropulsionPhysics
     public static double decelerationBlocksPerTickSquared(double speedBlocksPerTick, double powerW, double massKg,
                                                           double terminalSpeedBlocksPerTick, double brakeFraction)
     {
+        return decelerationBlocksPerTickSquared(speedBlocksPerTick, powerW, massKg,
+            terminalSpeedBlocksPerTick, brakeFraction, 1D);
+    }
+
+    public static double decelerationBlocksPerTickSquared(double speedBlocksPerTick, double powerW, double massKg,
+                                                          double terminalSpeedBlocksPerTick, double brakeFraction,
+                                                          double dragFactor)
+    {
         double resistance = VehiclePhysicsConstants.MIN_DERIVED_DECELERATION_MS2;
         double speedMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(speedBlocksPerTick);
         double terminalMs = VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(terminalSpeedBlocksPerTick);
@@ -106,6 +138,7 @@ public final class GroundPropulsionPhysics
             resistance = Math.max(resistance, coefficient * speedMs * speedMs / massKg);
         }
         double brake = Double.isFinite(brakeFraction) ? Math.max(0D, Math.min(1D, brakeFraction)) : 0D;
+        resistance = ModPhysics.dragForce(resistance, dragFactor);
         resistance += brake * VehiclePhysicsConstants.BRAKING_DECELERATION_MS2;
         resistance = Math.min(resistance, VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2
             + VehiclePhysicsConstants.BRAKING_DECELERATION_MS2);

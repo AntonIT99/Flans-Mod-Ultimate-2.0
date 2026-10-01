@@ -120,12 +120,10 @@ public final class LegacyDriveableCoordinates
      * that resolve back to it, so a value read from geometry can be compared with
      * an authored one or written into a type file unchanged.
      *
-     * <p>Model pixels map to the driveable-local basis the same way a type-file
-     * vector does, which is what lets the barrel pitch pivot be read straight off
-     * a model part. Attachment points additionally take the lateral mirror, and
-     * aircraft the model-facing half-turn, so undoing those is the whole of the
-     * conversion: inverting {@code (-z, y, -x)} for a driveable and
-     * {@code (-z, y, x)} for a plane.</p>
+     * <p>The renderer draws the flipped model geometry mirrored on the lateral
+     * axis ({@link #modelLocalToWorldDirection}), and attachment points take
+     * that same lateral mirror, so a rendered vertex and an attachment point
+     * agree on lateral sign and only the aircraft half-turn needs undoing.</p>
      *
      * @param modelPixels  the measured point, in model pixels as the renderer draws it
      * @param planeModelFacing whether the owning type is authored in the plane flight basis
@@ -133,7 +131,7 @@ public final class LegacyDriveableCoordinates
     public static Vector3f modelPixelsToTypeFile(@NotNull Vec3 modelPixels, boolean planeModelFacing)
     {
         return new Vector3f((float) (planeModelFacing ? -modelPixels.x : modelPixels.x),
-            (float) modelPixels.y, (float) -modelPixels.z);
+            (float) modelPixels.y, (float) modelPixels.z);
     }
 
     /** Legacy model Z pitch becomes rotation around local X after basis conversion. */
@@ -160,6 +158,21 @@ public final class LegacyDriveableCoordinates
     public static Vec3 rotateTurretLocal(@NotNull Vec3 vector, float yawDegrees, float pitchDegrees)
     {
         return rotateTurretYawLocal(rotateBarrelPitchLocal(vector, pitchDegrees), yawDegrees);
+    }
+
+    /**
+     * Carries a point fixed to a mounted gun round the gun's pivot as the gun aims.
+     *
+     * <p>The point is given where it sits with the gun in its model rest pose,
+     * which faces the aim yaw {@code restYawDegrees} at zero pitch. The result is
+     * turned by the same rotation that takes the rest facing to the aim, so a
+     * muzzle on the bore stays on the bore whatever the gun is pointed at.</p>
+     */
+    public static Vec3 aimAroundPivot(@NotNull Vec3 point, @NotNull Vec3 pivot, float restYawDegrees,
+                                      float yawDegrees, float pitchDegrees)
+    {
+        Vec3 forwardAtRest = rotateTurretYawLocal(point.subtract(pivot), -restYawDegrees);
+        return pivot.add(rotateTurretLocal(forwardAtRest, yawDegrees, pitchDegrees));
     }
 
     /**

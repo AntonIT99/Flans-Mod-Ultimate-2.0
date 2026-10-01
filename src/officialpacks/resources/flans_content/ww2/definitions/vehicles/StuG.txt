@@ -6,6 +6,7 @@ Description German Medium Tank Destroyer
 // Item and rendering
 Icon StuG
 Model ww2.StuG
+FlashModel DefaultFlash
 Texture stug
 RotateWheels True
 AddDye 10 gray
@@ -38,14 +39,15 @@ MaxThrottle 0.55
 MaxNegativeThrottle 0.45
 TurnLeftSpeed 0.3
 TurnRightSpeed 0.3
+RealTurnRateDegPerSec 12
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-GunOrigin 1 -5 12 15
-BarrelPosition 20 25 5
+GunOrigin 1 6 10.3 17
+BarrelPosition 62.1 19.1 6.8
 ShootDelay 1
 ShellDelay 90
 TurretRotationSpeed 0.03
@@ -63,7 +65,7 @@ SetupPart core 9800 -47 -3 -13 92 33 36
 SetupPart rightTrack 7000 -55 -12 -21 101 21 8
 SetupPart leftTrack 7000 -55 -12 23 101 21 7
 BulletDetection 7
-ArmorFrontMm 80
+ArmorFrontMm 80 21
 ArmorSideMm 30
 ArmorRearMm 30
 ArmorTopMm 10
@@ -88,4 +90,12 @@ StartSoundLength 41
 EngineSound engine_mt_pziii
 EngineSoundLength 39
 ShootSoundPrimary shoot_75mmde
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary MG42Shoot

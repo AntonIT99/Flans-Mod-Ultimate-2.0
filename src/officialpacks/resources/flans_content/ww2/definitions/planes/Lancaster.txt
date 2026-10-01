@@ -5,6 +5,7 @@ ShortName Lancaster
 // Item and rendering
 Icon Lancaster
 Model ww2.Lancaster
+FlashModel DefaultFlash
 Texture lancaster
 AddDye 10 green
 AddDye 5 yellow
@@ -43,6 +44,7 @@ MaxThrottle 2.0
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 1
 TurnRightSpeed 1
+RealTurnRateDegPerSec 10.24
 LookUpSpeed 1
 LookDownSpeed 1
 RollLeftSpeed 1
@@ -61,9 +63,9 @@ AlternateSecondary False
 ModePrimary FullAuto
 ModeSecondary FullAuto
 ShootPointSecondary 0 -32 0
-GunOrigin 1 148 -2 0
-GunOrigin 4 -48 32 0
-GunOrigin 5 -128 16 0
+GunOrigin 1 116 -3.6 0
+GunOrigin 4 -80 30.4 0
+GunOrigin 5 -160 14.4 0
 ReadWeaponsFromGunTypes true
 
 // Optics

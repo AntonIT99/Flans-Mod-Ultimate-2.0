@@ -1,11 +1,15 @@
 ﻿// Identity
-Name P-38 Lightning - Metal Color
+Name P-38 Lightning
 ShortName WW2_Plane_P38_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_P38_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Plane_P38_1A
 Texture Skin_WW2_Plane_P38_1A
+
+// Paintjobs
+Paintjob Icon_WW2_Plane_P38_1B Skin_WW2_Plane_P38_1B white 7
 
 // Recipe and Inventory
 FuelTankSize 6000
@@ -40,6 +44,7 @@ RestingPitch 5.0
 RealMassKg 7938
 RealEnginePowerHp 3200
 RealMaxSpeedKmh 666
+RealTurnRateDegPerSec 20.08
 RealWingSpanM 15.85
 RealWingAreaM2 30.43
 RealClimbRateMs 24.1

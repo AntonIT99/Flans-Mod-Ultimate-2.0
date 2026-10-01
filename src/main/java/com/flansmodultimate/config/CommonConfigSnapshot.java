@@ -84,6 +84,11 @@ public record CommonConfigSnapshot(
     float soundRange,
     float gunFireSoundRange,
     float explosionSoundRange,
+    float vehicleSoundRange,
+    float vehicleUtilitySoundRange,
+    float vehicleFlareSoundRange,
+    float vehicleLockOnSoundRange,
+    float vehicleLockedOnSoundRange,
 
     boolean useNewPenetrationSystem,
     boolean enableBlockPenetration,
@@ -99,6 +104,8 @@ public record CommonConfigSnapshot(
     List<String> digitalAmmoSupplyBlocks,
     int digitalAmmoSupplyAmount,
 
+    List<String> dimensionGravityFactors,
+    List<String> dimensionDragFactors,
     boolean forceLegacyPlanePhysics,
     boolean forceLegacyVehiclePhysics,
     boolean enableAircraftRollSelfLeveling,
@@ -119,13 +126,15 @@ public record CommonConfigSnapshot(
     double minimumBlastDistanceMeters,
     double maxExplosionRadius,
     double maxBlastRadius,
+    double heatDamageReference,
+    double heatCrewSpallDamage,
 
     boolean enchantmentModuleEnabled,
 
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 33;
+    public static final int CURRENT_VERSION = 37;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -207,6 +216,11 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.soundRange);
         buf.writeFloat(s.gunFireSoundRange);
         buf.writeFloat(s.explosionSoundRange);
+        buf.writeFloat(s.vehicleSoundRange);
+        buf.writeFloat(s.vehicleUtilitySoundRange);
+        buf.writeFloat(s.vehicleFlareSoundRange);
+        buf.writeFloat(s.vehicleLockOnSoundRange);
+        buf.writeFloat(s.vehicleLockedOnSoundRange);
 
         buf.writeBoolean(s.useNewPenetrationSystem);
         buf.writeBoolean(s.enableBlockPenetration);
@@ -226,6 +240,12 @@ public record CommonConfigSnapshot(
             buf.writeUtf(block, 32767);
         buf.writeVarInt(s.digitalAmmoSupplyAmount);
 
+        buf.writeVarInt(s.dimensionGravityFactors.size());
+        for (String line : s.dimensionGravityFactors)
+            buf.writeUtf(line, 32767);
+        buf.writeVarInt(s.dimensionDragFactors.size());
+        for (String line : s.dimensionDragFactors)
+            buf.writeUtf(line, 32767);
         buf.writeBoolean(s.forceLegacyPlanePhysics);
         buf.writeBoolean(s.forceLegacyVehiclePhysics);
         buf.writeBoolean(s.enableAircraftRollSelfLeveling);
@@ -246,6 +266,8 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.minimumBlastDistanceMeters);
         buf.writeDouble(s.maxExplosionRadius);
         buf.writeDouble(s.maxBlastRadius);
+        buf.writeDouble(s.heatDamageReference);
+        buf.writeDouble(s.heatCrewSpallDamage);
 
         buf.writeBoolean(s.enchantmentModuleEnabled);
 
@@ -335,6 +357,11 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
 
             buf.readBoolean(),
             buf.readBoolean(),
@@ -350,6 +377,8 @@ public record CommonConfigSnapshot(
             List.copyOf(readLines(buf)),
             buf.readVarInt(),
 
+            List.copyOf(readLines(buf)),
+            List.copyOf(readLines(buf)),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
@@ -360,6 +389,8 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readDouble(),
             buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),

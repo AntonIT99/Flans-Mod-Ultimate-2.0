@@ -17,6 +17,7 @@ FallSpeed 1.0
 HitBoxSize 0.1
 Penetrates False
 PenetrationAt100m 100
+HEAT True
 BreaksGlass True
 
 // Damage
@@ -34,6 +35,9 @@ Fuse 0
 // Effects
 SmokeTrail True
 FlakParticles 0
+ExplodeParticles 6
+FlareParticleCount 4
+DebrisParticleCount 2
 
 // Sounds
 HitSound bullet

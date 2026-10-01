@@ -199,5 +199,6 @@ public class ModelG3 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7.5F, 1.3125F, 0F);
 	}
 }

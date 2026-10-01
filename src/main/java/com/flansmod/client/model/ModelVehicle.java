@@ -6,6 +6,9 @@ import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.physics.TrackAnimationPhysics;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
@@ -17,7 +20,10 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 /** Extensible, pass-aware model base for legacy ground vehicles. */
 @SuppressWarnings({"unused", "java:S1104"})
@@ -160,8 +166,99 @@ public class ModelVehicle extends ModelDriveable
                 bestPart.rotationPointZ / 16D);
         else if ((barrelSpecModel != null && barrelSpecModel.length > 0)
             || (animBarrelModel != null && animBarrelModel.length > 0))
-            primaryBarrelPitchPivot = new Vec3(barrelAttach.x, barrelAttach.y, barrelAttach.z);
+            // Same model-point convention as the rotation points above: the
+            // renderer applies barrelAttach with its Z negated (translateToModelPoint).
+            primaryBarrelPitchPivot = new Vec3(barrelAttach.x, barrelAttach.y, -barrelAttach.z);
         return primaryBarrelPitchPivot;
+    }
+
+    /**
+     * How far, in model pixels, a shoot point may lie from a barrel section's
+     * geometry and still be taken as built on it. A mounted gun's point is
+     * normally placed on or just in front of its own boxes.
+     */
+    private static final double SHOOT_POINT_PART_TOLERANCE = 3D;
+
+    /** Rendered bounds of each barrel section, [part][minX minY minZ maxX maxY maxZ]; filled on first use. */
+    private transient double[][] barrelPartBounds;
+
+    /**
+     * Pitch pivot of the barrel section a point is built on, in the units of
+     * {@link #getPrimaryBarrelPitchPivot}. The renderer pitches every barrel
+     * section around its own rotation point, so a machine gun modelled on the
+     * turret roof tilts in place rather than round the main gun's trunnion.
+     *
+     * @param modelPixels the point in model pixels, before ModelScale
+     * @return the section's pivot, or {@code null} when no barrel section lies near the point
+     */
+    @Nullable
+    public Vec3 getBarrelPitchPivotNear(Vec3 modelPixels)
+    {
+        if (barrelModel == null)
+            return null;
+        if (barrelPartBounds == null)
+        {
+            double[][] bounds = new double[barrelModel.length][];
+            for (int index = 0; index < barrelModel.length; index++)
+            {
+                ModelRendererTurbo part = barrelModel[index];
+                double[] box = new double[] {
+                    Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+                };
+                if (part != null && part.appendFaceBounds(box))
+                    bounds[index] = new double[] {
+                        part.rotationPointX + box[0], part.rotationPointY + box[1], part.rotationPointZ + box[2],
+                        part.rotationPointX + box[3], part.rotationPointY + box[4], part.rotationPointZ + box[5]
+                    };
+            }
+            barrelPartBounds = bounds;
+        }
+
+        ModelRendererTurbo nearest = null;
+        double nearestDistance = SHOOT_POINT_PART_TOLERANCE;
+        for (int index = 0; index < barrelModel.length; index++)
+        {
+            double[] box = barrelPartBounds[index];
+            if (box == null)
+                continue;
+            double dx = Math.max(0D, Math.max(box[0] - modelPixels.x, modelPixels.x - box[3]));
+            double dy = Math.max(0D, Math.max(box[1] - modelPixels.y, modelPixels.y - box[4]));
+            double dz = Math.max(0D, Math.max(box[2] - modelPixels.z, modelPixels.z - box[5]));
+            double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (distance <= nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = barrelModel[index];
+            }
+        }
+        return nearest == null ? null
+            : new Vec3(nearest.rotationPointX / 16D, nearest.rotationPointY / 16D, nearest.rotationPointZ / 16D);
+    }
+
+    /**
+     * {@link #getBarrelPitchPivotNear} for each point of one weapon bank, in bank
+     * order, or {@code null} for a point not on the turret or not near a barrel section.
+     */
+    public Vec3[] getShootPointPitchPivots(DriveableType type, boolean secondary)
+    {
+        List<ShootPoint> points = type.shootPoints(secondary);
+        Vec3[] pivots = new Vec3[points.size()];
+        double modelScale = Math.max(1.0E-4D, type.getModelScale());
+        for (int index = 0; index < pivots.length; index++)
+        {
+            ShootPoint point = points.get(index);
+            if (!EnumDriveablePart.isTurretMounted(point.getRootPos().getPart()))
+                continue;
+            Vector3f position = point.getRootPos().getPosition();
+            Vector3f offset = point.getOffPos();
+            // A ground vehicle's type-file point and its geometry share one frame
+            // (LegacyDriveableCoordinates.modelPixelsToTypeFile), but the points are
+            // authored at rendered size and the geometry is before ModelScale.
+            pivots[index] = getBarrelPitchPivotNear(new Vec3(position.x + offset.x, position.y + offset.y,
+                position.z + offset.z).scale(16D / modelScale));
+        }
+        return pivots;
     }
 
     /**
@@ -182,14 +279,124 @@ public class ModelVehicle extends ModelDriveable
             return primaryBarrelMuzzle;
         barrelMuzzleResolved = true;
 
-        primaryBarrelMuzzle = measureMuzzle(1F, barrelModel);
-        if (primaryBarrelMuzzle != null)
-            return primaryBarrelMuzzle;
-
+        // Many packs split the gun: a mantlet in barrelModel and the recoiling
+        // tube in animBarrelModel. Whichever group reaches further is the muzzle.
+        Vec3 fixed = measureMuzzle(1F, barrelModel);
         Vec3 attached = measureMuzzle(1F, barrelSpecModel, animBarrelModel);
         if (attached != null)
-            primaryBarrelMuzzle = attached.add(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
+            attached = attached.add(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
+        primaryBarrelMuzzle = fixed == null || (attached != null && attached.x > fixed.x) ? attached : fixed;
         return primaryBarrelMuzzle;
+    }
+
+    /**
+     * {@link #getPrimaryBarrelMuzzle()} measured on the one barrel nearest
+     * {@code lateralHint} when the main armament ends in several tubes side by
+     * side, so the muzzle of a twin mount lands on a barrel, not between them.
+     *
+     * @param lateralHint lateral position of the wanted barrel, in model pixels
+     * @return the muzzle in model pixels, or {@code null} when this model has no barrel
+     */
+    @Nullable
+    public Vec3 getPrimaryBarrelMuzzleNear(Vec3 hint)
+    {
+        Vec3 fixed = measureMuzzle(1F, hint, barrelModel);
+        // The attached groups are drawn shifted by barrelAttach, so the hint is moved into their frame.
+        Vec3 attached = measureMuzzle(1F, hint.subtract(barrelAttachPixels()), barrelSpecModel, animBarrelModel);
+        if (attached != null)
+            attached = attached.add(barrelAttachPixels());
+        return fixed == null || (attached != null && attached.x > fixed.x) ? attached : fixed;
+    }
+
+    /**
+     * The muzzle of every tube of the main armament, in model pixels: one for a
+     * single gun, four for a quad mount. Taken from whichever barrel group reaches
+     * further, as {@link #getPrimaryBarrelMuzzle()} does.
+     */
+    public List<Vec3> getPrimaryBarrelMuzzles()
+    {
+        List<Vec3> fixed = measureMuzzles(1F, barrelModel);
+        List<Vec3> attached = measureMuzzles(1F, barrelSpecModel, animBarrelModel).stream()
+            .map(muzzle -> muzzle.add(barrelAttachPixels())).toList();
+        if (fixed.isEmpty() || (!attached.isEmpty() && attached.get(0).x > fixed.get(0).x))
+            return attached;
+        return fixed;
+    }
+
+    private Vec3 barrelAttachPixels()
+    {
+        return new Vec3(barrelAttach.x * 16D, barrelAttach.y * 16D, -barrelAttach.z * 16D);
+    }
+
+    /** Turret parts, drawn at rest scaled by {@code turretScale} and shifted by {@code turretTrans}. */
+    private transient Set<ModelRendererTurbo> turretParts;
+
+    @Override
+    protected double[] toRestPose(ModelRendererTurbo part, double[] bounds)
+    {
+        if (turretParts == null)
+        {
+            Set<ModelRendererTurbo> parts = Collections.newSetFromMap(new IdentityHashMap<>());
+            addAll(parts, turretModel);
+            addAll(parts, barrelModel);
+            for (ModelRendererTurbo[] row : ammoModel)
+                addAll(parts, row);
+            turretParts = parts;
+        }
+        boolean attached = contains(barrelSpecModel, part) || contains(animBarrelModel, part);
+        if (!attached && !turretParts.contains(part))
+            return bounds;
+
+        // renderTurret scales, then translates by turretTrans; the attached groups are drawn at barrelAttach.
+        Vec3 shift = new Vec3(turretTrans.x * 16D, turretTrans.y * 16D, turretTrans.z * 16D);
+        if (attached)
+            shift = shift.add(barrelAttachPixels());
+        double[] scale = { turretScale.x, turretScale.y, turretScale.z };
+        double[] offset = { shift.x, shift.y, shift.z };
+        double[] posed = new double[6];
+        for (int axis = 0; axis < 3; axis++)
+        {
+            double a = (bounds[axis] + offset[axis]) * scale[axis];
+            double b = (bounds[axis + 3] + offset[axis]) * scale[axis];
+            posed[axis] = Math.min(a, b);
+            posed[axis + 3] = Math.max(a, b);
+        }
+        return posed;
+    }
+
+    private static void addAll(Set<ModelRendererTurbo> set, @Nullable ModelRendererTurbo[] parts)
+    {
+        if (parts != null)
+            Collections.addAll(set, parts);
+    }
+
+    private static boolean contains(@Nullable ModelRendererTurbo[] parts, ModelRendererTurbo part)
+    {
+        if (parts == null)
+            return false;
+        for (ModelRendererTurbo candidate : parts)
+        {
+            if (candidate == part)
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean isTurretMountedGun(SeatInfo seatInfo)
+    {
+        return seatInfo.getPart() == EnumDriveablePart.TURRET;
+    }
+
+    /** The point transform {@link #renderTurret} applies before drawing turret-mounted guns. */
+    @Override
+    protected Vec3 toTurretPose(Driveable driveable, Vec3 modelPixels, float turretYaw)
+    {
+        Vec3 point = new Vec3(modelPixels.x * turretScale.x, modelPixels.y * turretScale.y,
+            modelPixels.z * turretScale.z).add(turretTrans.x * 16D, turretTrans.y * 16D, turretTrans.z * 16D);
+        Vector3f origin = driveable.getConfigType() == null ? null : driveable.getConfigType().getTurretOrigin();
+        Vec3 pivot = origin == null ? Vec3.ZERO : new Vec3(origin.x * 16D, origin.y * 16D, -origin.z * 16D);
+        return rotateY(point.subtract(pivot), -turretYaw * Mth.DEG_TO_RAD).add(pivot);
     }
 
     @Override
@@ -232,7 +439,11 @@ public class ModelVehicle extends ModelDriveable
         {
             renderLegs(state, poseStack, vertexConsumer, packedLight, packedOverlay,
                 red, green, blue, alpha, scale, renderPass);
-            renderWithRotation(steeringWheelModel, steering * 3F, 0F, 0F, poseStack, vertexConsumer,
+            boolean hugeBoat = driveable.getConfigType() instanceof VehicleType type
+                && type.isFloatOnWater() && type.getWheelStepHeight() == 0F;
+            float steeringWheelAngle = state.steeringAngle() * 3F * Mth.DEG_TO_RAD
+                * (hugeBoat ? -1F : 1F);
+            renderSteeringWheel(steeringWheelAngle, poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
         if (driveable.isPartIntact(EnumDriveablePart.TRAILER))
@@ -480,9 +691,9 @@ public class ModelVehicle extends ModelDriveable
      * authored sides against each other settles it per model instead of trusting
      * either name, so destroying a track always hides the track that was hit.</p>
      *
-     * <p>Meshes carry the lateral mirror {@code flipAll()} applies and link
-     * points are translated unmirrored, so in both cases a drawn track and the
-     * part box covering it hold lateral coordinates of opposite sign.</p>
+     * <p>Static meshes have already been mirrored by {@code flipAll()}, so their
+     * lateral signs match their part boxes. Procedural link points have not been
+     * mirrored, so their signs are opposite those of the part boxes.</p>
      */
     private EnumDriveablePart trackPartForDrawnSide(@Nullable DriveableType type, boolean leftSide, boolean meshes)
     {
@@ -491,15 +702,21 @@ public class ModelVehicle extends ModelDriveable
             trackSideType = type;
             Float boxes = boxLateralDelta(type);
             trackMeshSidesSwapped = sidesSwapped(meshLateralDelta(), boxes);
-            trackPathSidesSwapped = sidesSwapped(pathLateralDelta(type), boxes);
+            trackPathSidesSwapped = pathSidesSwapped(pathLateralDelta(type), boxes);
         }
         return trackPart(leftSide, meshes ? trackMeshSidesSwapped : trackPathSidesSwapped);
     }
 
-    /** Drawn geometry and its part box mirror each other, so matching signs mean the names are swapped. */
+    /** Matching lateral signs mean the authored track and part names agree. */
     static boolean sidesSwapped(@Nullable Float drawn, @Nullable Float boxes)
     {
-        return drawn != null && boxes != null && drawn * boxes > 0F;
+        return drawn != null && boxes != null && drawn * boxes < 0F;
+    }
+
+    /** Link points are translated directly; compare their lateral sign with the part boxes. */
+    static boolean pathSidesSwapped(@Nullable Float drawn, @Nullable Float boxes)
+    {
+        return sidesSwapped(drawn, boxes);
     }
 
     static EnumDriveablePart trackPart(boolean leftSide, boolean swapped)
@@ -578,8 +795,10 @@ public class ModelVehicle extends ModelDriveable
     {
         int configuredFrames = driveable.getConfigType() == null ? Integer.MAX_VALUE
             : driveable.getConfigType().getAnimFrames() + 1;
-        int leftFrame = frameIndex(leftAnimTrackModel.length, configuredFrames, state.leftTrackProgress());
-        int rightFrame = frameIndex(rightAnimTrackModel.length, configuredFrames, state.rightTrackProgress());
+        float leftPhase = TrackAnimationPhysics.framePhase(state.leftTrackProgress());
+        float rightPhase = TrackAnimationPhysics.framePhase(state.rightTrackProgress());
+        int leftFrame = frameIndex(leftAnimTrackModel.length, configuredFrames, leftPhase);
+        int rightFrame = frameIndex(rightAnimTrackModel.length, configuredFrames, rightPhase);
         animFrameLeft = leftFrame;
         animFrameRight = rightFrame;
         DriveableType type = driveable.getConfigType();
@@ -588,8 +807,8 @@ public class ModelVehicle extends ModelDriveable
         if (rightFrame >= 0 && driveable.isPartIntact(trackPartForDrawnSide(type, false, true)))
             renderPart(rightAnimTrackModel[rightFrame], poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        int legacyFrameLeft = Mth.clamp((int) Math.floor(state.leftTrackProgress() * 3F), 0, 2);
-        int legacyFrameRight = Mth.clamp((int) Math.floor(state.rightTrackProgress() * 3F), 0, 2);
+        int legacyFrameLeft = Mth.clamp((int) Math.floor(leftPhase * 3F), 0, 2);
+        int legacyFrameRight = Mth.clamp((int) Math.floor(rightPhase * 3F), 0, 2);
         if (driveable.isPartIntact(trackPartForDrawnSide(type, true, true)))
             renderPart(selectFrame(legacyFrameLeft, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3),
                 poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -765,6 +984,22 @@ public class ModelVehicle extends ModelDriveable
             part.rotateAngleX = oldX;
             part.rotateAngleY = oldY;
             part.rotateAngleZ = oldZ;
+        }
+    }
+
+    private void renderSteeringWheel(float angle, PoseStack poseStack, VertexConsumer vertexConsumer,
+                                     int packedLight, int packedOverlay, float red, float green, float blue,
+                                     float alpha, float scale, EnumRenderPass renderPass)
+    {
+        for (ModelRendererTurbo part : steeringWheelModel)
+        {
+            if (part == null)
+                continue;
+            float oldX = part.rotateAngleX;
+            part.rotateAngleX = angle;
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
+                red, green, blue, alpha, scale, renderPass, oldRotateOrder);
+            part.rotateAngleX = oldX;
         }
     }
 

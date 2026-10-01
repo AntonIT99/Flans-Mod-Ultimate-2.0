@@ -8,6 +8,10 @@ Icon M4Carbine
 Colour 255 255 255
 DeployedModel None
 Model zombie.M4Carbine
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.33929 0.33482 0
+animFlashScale 0.75
 Texture M4Carbine
 
 // Ammunition

@@ -42,6 +42,7 @@ RealEnginePowerPS 132000
 RealMaxSpeedKn 32
 DriveType MARINE
 RealMaxReverseSpeedKn 13
+RealTurnRateDegPerSec 1.77
 RealDraftM 7.2
 
 // Weapons
@@ -54,29 +55,29 @@ Secondary Bomb
 ModeSecondary FullAuto
 AlternateSecondary False
 ShootDelaySecondary 100
-GunOrigin 1 -1231 -179 0
-GunOrigin 2 -997 -235 0
-GunOrigin 3 1079 -235 0
-GunOrigin 4 1315 -179 0
-GunOrigin 5 -599 -222 -178
-GunOrigin 6 -599 -222 178
-GunOrigin 7 326 -172 -164
-GunOrigin 8 326 -172 164
-GunOrigin 9 703 -222 -177
-GunOrigin 10 703 -222 177
-GunOrigin 11 -874 -212 -102
-GunOrigin 12 -874 -212 102
-GunOrigin 13 -710 -253 -112
-GunOrigin 14 -710 -253 112
-GunOrigin 15 -490 -335 0
-GunOrigin 16 -320 -546 -65
-GunOrigin 17 -320 -546 65
-GunOrigin 18 -138 -294 -86
-GunOrigin 19 -138 -294 86
-GunOrigin 20 618 -259 90
-GunOrigin 21 618 -259 -90
-GunOrigin 22 884 -259 -77
-GunOrigin 23 884 -259 77
+GunOrigin 1 944 117.4 0
+GunOrigin 2 710 173.4 0
+GunOrigin 3 -1366 173.4 0
+GunOrigin 4 -1602 117.4 0
+GunOrigin 5 490 167.4 178
+GunOrigin 6 490 167.4 -178
+GunOrigin 7 -435 117.4 164
+GunOrigin 8 -435 117.4 -164
+GunOrigin 9 -812 167.4 177
+GunOrigin 10 -812 167.4 -177
+GunOrigin 11 843.5 150.4 102
+GunOrigin 12 843.5 150.4 -102
+GunOrigin 13 678.5 191.4 112
+GunOrigin 14 678.5 191.4 -112
+GunOrigin 15 459.5 273.4 0
+GunOrigin 16 288.5 484.4 65
+GunOrigin 17 288.5 484.4 -65
+GunOrigin 18 106.5 232.4 86
+GunOrigin 19 106.5 232.4 -86
+GunOrigin 20 -649.5 197.4 -90
+GunOrigin 21 -649.5 197.4 90
+GunOrigin 22 -915.5 197.4 77
+GunOrigin 23 -915.5 197.4 -77
 ReadWeaponsFromGunTypes true
 
 // Protection
@@ -154,3 +155,10 @@ ShootSoundPrimary PlaneShoot
 ShootSoundSecondary bomb
 PropSound propSound
 PropSoundLength 30
+
+ShootParticlesPassenger 15 flansmod.fmflame 0.58 0 0
+ShootParticlesPassenger 15 flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPassenger 15 flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPassenger 15 smoke 0.2 0.035 -0.04
+ShootParticlesPassenger 15 smoke 0.18 -0.03 0.045
+ShootParticlesPassenger 15 crit 0.38 0.01 0

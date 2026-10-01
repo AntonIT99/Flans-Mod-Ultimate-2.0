@@ -489,7 +489,7 @@ public final class ParticleHelper
 
     private static boolean takeFromBudget(ClientLevel level, @Nullable ModClientConfig config)
     {
-        int tickBudget = config == null ? 512 : config.maxFlansParticlesPerTick;
+        int tickBudget = config == null ? 2048 : config.maxFlansParticlesPerTick;
         long gameTime = level.getGameTime();
         if (particleBudgetTick != gameTime)
         {

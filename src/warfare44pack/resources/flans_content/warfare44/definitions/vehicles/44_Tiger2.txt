@@ -6,6 +6,7 @@ Description German Heavy Tank__Uses : 88mm AP Tank Shell - Long_Large Cal. HE Ta
 // Rendering
 Icon 44_Tiger2H
 Model W44.Tiger2
+FlashModel DefaultFlash
 ModelScale 1.2
 Texture Skin44_Tiger2
 RotateWheels True
@@ -41,6 +42,7 @@ MaxThrottle 0.66
 MaxNegativeThrottle 0.4178
 TurnLeftSpeed 0.33
 TurnRightSpeed 0.33
+RealTurnRateDegPerSec 12
 CanRoll true
 
 // Wheels and tracks
@@ -92,7 +94,7 @@ AddAmmo 44_88APShellLong
 AddAmmo 44_LargeHEShell
 AddAmmo 44_88APCRShellLong
 AddGun 28 35 -6 turret 44_Mg34
-BarrelPosition 120 35 0
+BarrelPosition 123.6 35.4 0.6
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -159,13 +161,14 @@ TurretArmorTopMm 40
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 3500 -67 0 -20 101 49 40
-SetupPart frontalArmor 4500 34 0 -30 40 46 60
-SetupPart trailer 600 -61 12 -36 133 9 72
-SetupPart rightsideArmor 2000 -67 12 -30 101 17 10
-SetupPart leftsideArmor 2000 -67 12 20 101 17 10
-SetupPart leftTrack 300 -59 -10 -34 132 18 14
-SetupPart rightTrack 300 -59 -10 20 132 18 14
+SetupPart core 5400 -67 0 -20 101 29 40
+SetupPart turret 1600 -35 29 -18 67 19 36
+SetupPart frontalArmor 1000 34 0 -30 40 29 60
+SetupPart trailer 400 -61 12 -36 133 9 72
+SetupPart rightsideArmor 300 -67 12 -30 101 17 10
+SetupPart leftsideArmor 300 -67 12 20 101 17 10
+SetupPart leftTrack 500 -59 -10 -34 132 18 14
+SetupPart rightTrack 500 -59 -10 20 132 18 14
 
 // Seats
 Driver 0 42 0 -360 360 -8 15

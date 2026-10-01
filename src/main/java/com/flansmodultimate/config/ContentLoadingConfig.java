@@ -23,6 +23,8 @@ public final class ContentLoadingConfig
     private static boolean useDefaultCategories = true;
     @Getter
     private static boolean overrideConfiguredSoundLengths = true;
+    @Getter
+    private static boolean overrideConfiguredShootPoints = true;
 
     private static final int CONTENT_LOADING_SYSTEM_VERSION = 6;
     private static final String FILE_NAME = FlansMod.MOD_ID + "-content-loading.toml";
@@ -48,6 +50,7 @@ public final class ContentLoadingConfig
             int lastContentLoadingSystemVersion = readInt(config, "contentLoadingSystemVersion", CONTENT_LOADING_SYSTEM_VERSION);
             useDefaultCategories = readBoolean(config, "useDefaultCategories", useDefaultCategories);
             overrideConfiguredSoundLengths = readBoolean(config, "overrideConfiguredSoundLengths", overrideConfiguredSoundLengths);
+            overrideConfiguredShootPoints = readBoolean(config, "overrideConfiguredShootPoints", overrideConfiguredShootPoints);
 
             save(config);
 
@@ -105,6 +108,19 @@ public final class ContentLoadingConfig
             By default these values are replaced with the real length of the sound file, measured while loading the pack.
             Set this option to false if you want the values configured in the content packs to be used as they are.
             Sound lengths that are disabled with None, or that are not set at all, are never filled in automatically.""");
+
+        config.set("overrideConfiguredShootPoints", overrideConfiguredShootPoints);
+        config.setComment("overrideConfiguredShootPoints", """
+            Content packs often place the muzzles of their vehicles, planes, mechas and AA guns away from the barrels of their models,
+            so shots and muzzle flashes appear beside, behind or inside the gun.
+            By default the muzzles of the content packs in the flan folder are moved onto the barrels measured off their models
+            while the packs are loading: a primary weapon with a single shoot point, every passenger gun the model draws,
+            and every AA gun barrel.
+            Content packs installed as mods in the mods folder match their models and are always used as they are configured.
+            Set this option to false if you want the values configured in the flan folder packs to be used as they are too.
+            Either way, a twin or quad mount fired from one point fires from each barrel its model draws in turn,
+            around that point, at the same rate of fire.
+            Server and clients should use the same value.""");
 
         config.save();
     }

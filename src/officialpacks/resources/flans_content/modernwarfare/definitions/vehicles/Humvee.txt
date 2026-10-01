@@ -6,6 +6,7 @@ Description US Marines Jeep
 // Item and rendering
 Icon Humvee
 Model mw.Humvee
+FlashModel DefaultFlash
 Texture SkinHumvee
 RotateWheels true
 AddDye 3 brown
@@ -35,15 +36,16 @@ RealMaxReverseSpeedKmh 20
 // Movement
 MaxThrottle 0.7
 MaxNegativeThrottle 0.5
-TurnLeftSpeed 0.3
-TurnRightSpeed 0.3
+TurnLeftSpeed 1.0
+TurnRightSpeed 1.0
+RealTurnRateDegPerSec 183.8
 Drag 1.0
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 
 // Weaponry
-GunOrigin 4 13 16 0
+GunOrigin 4 23 16.4 0
 ShootDelay 999
 ShellDelay 999
 ReadWeaponsFromGunTypes true

@@ -4,6 +4,7 @@ ShortName WW2_Plane_YAK3_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_YAK3_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Plane_YAK3_1A
 Texture Skin_WW2_Plane_YAK3_1A
 
@@ -40,6 +41,7 @@ RestingPitch 5.0
 RealMassKg 2697
 RealEnginePowerPS 1290
 RealMaxSpeedKmh 646
+RealTurnRateDegPerSec 34.6
 RealWingSpanM 9.2
 RealWingAreaM2 14.85
 RealClimbRateMs 17.9

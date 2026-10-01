@@ -159,5 +159,6 @@ public class ModelBizon extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(5.6875F, 1.21875F, 0F);
 	}
 }

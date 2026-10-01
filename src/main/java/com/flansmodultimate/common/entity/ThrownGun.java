@@ -3,8 +3,11 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.GunType;
+import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +32,7 @@ import net.minecraft.world.phys.Vec3;
  * sticks like a trident, hits once, and carries the thrown stack so picking it up returns the very
  * same weapon.
  */
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class ThrownGun extends AbstractArrow
 {
     /** Ticks a recoverable weapon stays stuck before despawning, the lifespan of a dropped item */
@@ -121,6 +125,24 @@ public class ThrownGun extends AbstractArrow
             dealtDamage = true;
 
         super.tick();
+        // AbstractArrow applies fixed air drag and gravity internally. Replace
+        // their result with this mod's factors; water uses getWaterInertia below.
+        if (!inGround)
+        {
+            double vanillaGravity = isNoGravity() ? 0D : 0.05D;
+            double ratio = isInWater() ? 1D : ProjectileDrag.factor(this,
+                ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG)
+                / ShootableType.AIR_DEFAULT_DRAG;
+            Vec3 motion = getDeltaMovement().add(0D, vanillaGravity, 0D).scale(ratio)
+                .add(0D, -ModPhysics.gravity(vanillaGravity, level()), 0D);
+            setDeltaMovement(motion);
+        }
+    }
+
+    @Override
+    protected float getWaterInertia()
+    {
+        return ProjectileDrag.factor(this, ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG);
     }
 
     @Override

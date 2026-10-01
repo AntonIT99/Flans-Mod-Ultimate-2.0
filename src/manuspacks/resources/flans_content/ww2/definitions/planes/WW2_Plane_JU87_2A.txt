@@ -4,6 +4,7 @@ ShortName WW2_Plane_JU87_2A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_JU87_2
+FlashModel DefaultFlash
 Icon Icon_WW2_Plane_JU87_2A
 Texture Skin_WW2_Plane_JU87_2A
 
@@ -40,6 +41,7 @@ RestingPitch 5.0
 RealMassKg 6600
 RealEnginePowerPS 1400
 RealMaxSpeedKmh 410
+RealTurnRateDegPerSec 23.06
 RealWingSpanM 13.805
 RealWingAreaM2 31.9
 RealClimbRateMs 8.6
@@ -57,7 +59,7 @@ AlternateSecondary False
 ShootPointSecondary 60 13 -38 leftWing WW2_MG_BordkanoneBK37_1A
 ShootPointSecondary 60 13 38 rightWing WW2_MG_BordkanoneBK37_1A
 ShootDelaySecondary 100
-GunOrigin 1 -30 43 0
+GunOrigin 1 -35 21.4 0
 ReadWeaponsFromGunTypes true
 
 // Protection

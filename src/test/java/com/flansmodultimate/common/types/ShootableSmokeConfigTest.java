@@ -25,6 +25,15 @@ class ShootableSmokeConfigTest
         assertSmokeConfiguration(load(new GrenadeType(), EnumType.GRENADE));
     }
 
+    @Test
+    void grenadeThrowSpeedInMetresPerSecondOverridesLegacyAliases()
+    {
+        GrenadeType type = new GrenadeType();
+        type.load(new TypeFile("syntheticGrenade", EnumType.GRENADE, PACK, List.of(
+            "ThrowSpeed 2", "ShootSpeed 3", "ThrowSpeedMs 12")));
+        assertEquals(1.2F, type.getThrowSpeed());
+    }
+
     private static ShootableType load(ShootableType type, EnumType enumType)
     {
         type.load(new TypeFile("syntheticSmoke", enumType, PACK, List.of(

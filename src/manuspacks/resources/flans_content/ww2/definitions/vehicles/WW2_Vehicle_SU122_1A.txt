@@ -37,9 +37,23 @@ RealEnginePowerHp 500
 RealMaxSpeedKmh 55
 DriveType TRACKED
 RealMaxReverseSpeedKmh 8
+RealTurnRateDegPerSec 24
 
 // Weapons
-BarrelPosition 0 22 0
+BarrelPosition 68 18 4
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 0.9 0 0
+ShootParticlesPrimary flansmod.fmflame 1.05 0 0
+ShootParticlesPrimary flansmod.fmflame 0.58 0.14 0.12
+ShootParticlesPrimary flansmod.fmflame 0.55 -0.12 -0.13
+ShootParticlesPrimary largesmoke 0.3 0.18 0.12
+ShootParticlesPrimary largesmoke 0.3 0.18 -0.12
+ShootParticlesPrimary largesmoke 0.28 -0.16 0.14
+ShootParticlesPrimary largesmoke 0.28 -0.16 -0.14
+ShootParticlesPrimary cloud 0.05 0.16 0.2
+ShootParticlesPrimary cloud 0.05 0.16 -0.2
+ShootParticlesPrimary cloud 0.05 -0.14 0.22
+ShootParticlesPrimary cloud 0.05 -0.14 -0.22
 ShellDelay 110
 ShootDelay 5
 ShootDelayPrimarySeconds 15

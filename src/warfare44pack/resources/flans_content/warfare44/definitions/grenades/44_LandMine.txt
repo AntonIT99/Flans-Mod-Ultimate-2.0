@@ -1,6 +1,7 @@
 // Identity
 Name LandMine
 ShortName 44_LandMine
+Mass 1000
 
 // Rendering
 Icon 44_LandMine
@@ -13,7 +14,7 @@ Colour 255 255 255
 StackSize 1
 
 // Throwing and physics
-ThrowSpeed 0.5
+ThrowSpeedMs 6
 ThrowDelay 20
 FallSpeed 1
 Bounciness 0
@@ -45,4 +46,6 @@ FireRadius 0.0
 // Effects
 TrailParticles false
 ExplodeParticles 5
+FlareParticleCount 3
+DebrisParticleCount 2
 SmokeTime 0

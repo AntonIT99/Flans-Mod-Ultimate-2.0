@@ -675,6 +675,8 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
                         formatStat(lineOfSightArmor(plate)))
                     : Component.translatable("gui.flansmodultimate.driveable.armor_plate",
                         facingName, formatStat(plate.thicknessMm()));
+                if (plate.hasDistinctHeatProtection())
+                    line = line.copy().append(" | HEAT " + formatStat(plate.heatThicknessMm()) + " mm");
                 plates.add(Component.literal("  ").append(line).withStyle(ChatFormatting.GRAY));
             }
             if (!plates.isEmpty())

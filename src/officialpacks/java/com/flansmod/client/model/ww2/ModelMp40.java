@@ -187,5 +187,6 @@ public class ModelMp40 extends ModelGun {
       this.animationType = EnumAnimationType.PISTOL_CLIP;
       this.translateAll(0.0F, -1.2F, 0.0F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(0.8F, 0.309375F, 0F);
    }
 }

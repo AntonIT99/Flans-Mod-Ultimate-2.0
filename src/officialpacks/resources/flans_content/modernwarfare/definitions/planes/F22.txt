@@ -5,6 +5,7 @@ ShortName modernwarfare_f22
 // Item and rendering
 Icon F22
 Model mw.F22
+FlashModel DefaultFlash
 Texture SkinF22
 AddDye 8 silver
 AddDye 8 gray
@@ -43,6 +44,7 @@ MaxThrottle 8.0
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 2.5
 TurnRightSpeed 2.5
+RealTurnRateDegPerSec 23.47
 LookUpSpeed 3
 LookDownSpeed 3
 RollLeftSpeed 3.2

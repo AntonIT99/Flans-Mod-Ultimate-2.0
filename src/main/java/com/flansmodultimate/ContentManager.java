@@ -1,6 +1,7 @@
 package com.flansmodultimate;
 
 import com.flansmodultimate.common.block.BlockFactory;
+import com.flansmodultimate.common.driveables.ModelMuzzleMeasurement;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.recipe.RecipeDataCompatibility;
@@ -403,6 +404,7 @@ public class ContentManager
 
         applyMeasuredSoundLengths();
         resolveDeferredContentReferences();
+        applyMeasuredMuzzles();
 
         FileUtils.deleteDirectoryIfEmpty(tempRoot);
     }
@@ -464,6 +466,22 @@ public class ContentManager
         FlansMod.log.info("Replaced {} configured sound length(s) with the measured length of the sound file in {} ms. "
             + "Enable debug logging to see them, or set overrideConfiguredSoundLengths to false to keep the configured values.",
             resolved, System.currentTimeMillis() - startTime);
+    }
+
+    /**
+     * Measures the muzzles of deployable-gun, driveable and AA-gun models, on a dedicated server as on a client.
+     * This runs once every pack has been read, because a model may come from another pack and a seat gun from yet another.
+     */
+    private static void applyMeasuredMuzzles()
+    {
+        List<InfoType> types = new ArrayList<>();
+        for (IContentProvider provider : contentPacks)
+            types.addAll(configs.getOrDefault(provider, new ArrayList<>()));
+
+        boolean overrideConfiguredShootPoints = ContentLoadingConfig.isOverrideConfiguredShootPoints();
+        ModelMuzzleMeasurement.measure(types, contentPacks, overrideConfiguredShootPoints);
+        if (!overrideConfiguredShootPoints)
+            FlansMod.log.info("Keeping the shoot points and AA gun barrels configured in the flan folder packs because overrideConfiguredShootPoints is disabled.");
     }
 
     private static void loadSoundLengthIndex(IContentProvider provider)

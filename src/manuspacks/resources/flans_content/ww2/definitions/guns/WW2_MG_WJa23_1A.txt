@@ -6,6 +6,8 @@ ShortName WW2_MG_WJa23_1A
 Icon Icon_WW2_MG_WJa23_1A
 Colour 255 255 255
 DeployedModel Manus_WW2.MG.WW2_MG_GunPlaneGeneric_1
+FlashModel DefaultFlash
+animFlashScale 1.24
 DeployedTexture Skin_WW2_MG_GunPlaneGeneric_1A
 
 // Recipe and Inventory

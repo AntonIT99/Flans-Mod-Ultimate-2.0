@@ -9,6 +9,7 @@ import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.BulletType;
@@ -375,19 +376,25 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
         if (gun != null)
         {
-            CompoundTag gunTag = new CompoundTag();
-
-            gunTag.putString(NBT_FIREABLE_GUN_TYPE_NAME, gun.getType().getShortName());
-            gunTag.putFloat(NBT_FIREABLE_GUN_SPREAD, gun.getSpread());
-            gunTag.putFloat(NBT_FIREABLE_GUN_SPEED, gun.getBulletSpeed());
-            gunTag.putFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER, gun.getBulletSpeedMultiplier());
-            gunTag.putFloat(NBT_FIREABLE_GUN_DAMAGE, gun.getDamage());
-            gunTag.putString(NBT_FIREABLE_GUN_SPREAD_PATTERN, gun.getSpreadPattern().name());
+            CompoundTag gunTag = createGunTag(gun);
             tag.put(NBT_FIREABLE_GUN, gunTag);
             tag.putInt(NBT_SHOT, firedShot.getShot());
             firedShot.getAttacker().ifPresent(livingEntity -> tag.putUUID(NBT_ATTACKER, livingEntity.getUUID()));
             firedShot.getCausingEntity().ifPresent(entity -> tag.putUUID(NBT_SHOOTER, entity.getUUID()));
         }
+    }
+
+    @NotNull
+    private static CompoundTag createGunTag(FireableGun gun)
+    {
+        CompoundTag gunTag = new CompoundTag();
+        gunTag.putString(NBT_FIREABLE_GUN_TYPE_NAME, gun.getType().getShortName());
+        gunTag.putFloat(NBT_FIREABLE_GUN_SPREAD, gun.getSpread());
+        gunTag.putFloat(NBT_FIREABLE_GUN_SPEED, gun.getBulletSpeed());
+        gunTag.putFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER, gun.getBulletSpeedMultiplier());
+        gunTag.putFloat(NBT_FIREABLE_GUN_DAMAGE, gun.getDamage());
+        gunTag.putString(NBT_FIREABLE_GUN_SPREAD_PATTERN, gun.getSpreadPattern().name());
+        return gunTag;
     }
 
     @Override
@@ -793,14 +800,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         if (configType.isTorpedo())
             return;
 
-        double gravity = ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed();
-        float drag = configType.getDragInAir();
-
-        if (isInWater())
-            drag = configType.getDragInWater();
-        else if (isInLava())
-            drag = ShootableType.LAVA_DEFAULT_DRAG;
-
+        double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed(), level());
+        float drag = ProjectileDrag.factor(this, configType.getDragInAir(), configType.getDragInWater());
         velocity = velocity.scale(drag).add(0, -gravity, 0);
         setDeltaMovement(velocity);
     }
@@ -817,7 +818,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         }
         else
         {
-            double gravity = ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed();
+            double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * configType.getFallSpeed(), level());
             velocity = velocity.add(0, -gravity, 0);
         }
         setDeltaMovement(velocity);

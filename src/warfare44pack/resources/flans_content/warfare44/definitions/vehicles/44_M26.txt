@@ -6,6 +6,7 @@ Description American Heavy Tank__Uses : 90mm AP Tank Shell_Large Cal. HE Tank Sh
 // Rendering
 Icon 44_M26
 Model W44.M26
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_M26
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.4475
 ClutchBrake 0.01875
 TurnLeftSpeed 0.375
 TurnRightSpeed 0.375
+RealTurnRateDegPerSec 14
 CanRoll true
 
 // Wheels and tracks
@@ -87,10 +89,10 @@ AddAmmo 44_90APShell
 AddAmmo 44_LargeHEShell
 AddAmmo 44_90HVAPShell
 AddAmmo 44_90APCBCShell
-AddGun 28 32 -7 turret 44_30Cal
+AddGun 28 32 7 turret 44_30Cal
 AddGun 9 47 -11 turret 44_50Cal
-GunOrigin 1 43 -8 12
-BarrelPosition 85 31 0
+GunOrigin 1 47.8 -8.1 12
+BarrelPosition 84 30.8 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -145,7 +147,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 101
+ArmorFrontMm 101 46
 ArmorSideMm 76
 ArmorRearMm 51
 ArmorTopMm 22
@@ -157,12 +159,13 @@ TurretArmorTopMm 25
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 3000 -74 0 -20 100 40 40
-SetupPart frontalArmor 3500 26 1 -20 18 36 40
-SetupPart leftsideArmor 1000 -74 0 20 100 23 8
-SetupPart rightsideArmor 1000 -74 0 -28 100 23 8
-SetupPart leftTrack 300 -69 -9 -33 113 21 11
-SetupPart rightTrack 300 -69 -9 22 113 21 11
+SetupPart core 5400 -74 0 -20 100 24 40
+SetupPart turret 1600 -34 24 -21 55 18 45
+SetupPart frontalArmor 1000 26 1 -20 18 23 40
+SetupPart leftsideArmor 400 -74 0 20 100 23 8
+SetupPart rightsideArmor 400 -74 0 -28 100 23 8
+SetupPart leftTrack 600 -69 -9 -33 113 21 11
+SetupPart rightTrack 600 -69 -9 22 113 21 11
 
 // Seats
 Driver 0 36 0 -360 360 -10 20

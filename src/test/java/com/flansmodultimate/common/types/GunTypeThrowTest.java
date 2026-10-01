@@ -37,12 +37,36 @@ class GunTypeThrowTest
     }
 
     @Test
+    void forceAimPoseDefaultsOffAndCanBeEnabledPerGun()
+    {
+        assertFalse(read("ShortName ordinaryGun").isForceAimPose());
+        assertTrue(read("ShortName flamethrower", "ForceAimPose True").isForceAimPose());
+    }
+
+    @Test
+    void mirrorInLeftHandDefaultsOffAndCanBeEnabledPerGun()
+    {
+        assertFalse(read("ShortName ordinaryGun").isMirrorInLeftHand());
+        assertTrue(read("ShortName flamethrower", "MirrorInLeftHand True").isMirrorInLeftHand());
+    }
+
+    @Test
     void throwMassMakesTheHitDamageKinetic()
     {
         GunType type = read("ShortName testPilum", "SecondaryFunction Throw", "ThrowMass 2000", "MuzzleVelocity 20.0");
 
         assertEquals(Math.round(ShootingHelper.getKineticDamage(2000F, 1F) * 2F) / 2F, type.getThrowDamage(null), EPSILON,
             "20 m/s is one block per tick, the speed the thrown weapon leaves the hand with");
+    }
+
+    @Test
+    void metresPerSecondOverridesLegacyGunVelocityOnlyForThrownWeapons()
+    {
+        GunType thrown = read("ShortName testJavelin", "SecondaryFunction Throw", "MuzzleVelocity 45", "ThrowSpeedMs 16");
+        GunType firearm = read("ShortName testGun", "MuzzleVelocity 45", "ThrowSpeedMs 16");
+
+        assertEquals(0.8F, thrown.getBulletSpeed(null), EPSILON);
+        assertEquals(2.25F, firearm.getBulletSpeed(null), EPSILON);
     }
 
     @Test

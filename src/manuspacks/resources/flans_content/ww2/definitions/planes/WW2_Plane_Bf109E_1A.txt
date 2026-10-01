@@ -1,12 +1,18 @@
 ﻿// Identity
-Name Messerschmidt Bf-109 E-3, 3./JG 27
+Name Messerschmitt Bf 109 E-3
 ShortName WW2_Plane_Bf109E_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_Bf109E_1
+FlashModel DefaultFlash
 ModelScale 1
 Icon Icon_WW2_Plane_Bf109E_1A
 Texture Skin_WW2_Plane_Bf109E_1A
+
+// Paintjobs
+AdvPaintJob 3./JG27 Icon_WW2_Plane_Bf109E_1A Skin_WW2_Plane_Bf109E_1A
+AdvPaintJob StarOfAfrica Icon_WW2_Plane_Bf109E_1B Skin_WW2_Plane_Bf109E_1B yellow 5
+AdvPaintJob JG26 Icon_WW2_Plane_Bf109E_1C Skin_WW2_Plane_Bf109E_1C blue 5
 
 // Recipe and Inventory
 AllowAllAmmo False
@@ -37,10 +43,11 @@ LookUpSpeed 2
 LookDownSpeed 2
 RollLeftSpeed 2
 RollRightSpeed 2
-RestingPitch 5.0
+RestingPitch 13.0
 RealMassKg 2340
 RealEnginePowerPS 1175
 RealMaxSpeedKmh 536
+RealTurnRateDegPerSec 32.25
 RealWingSpanM 9.87
 RealWingAreaM2 16.4
 RealClimbRateMs 14.7
@@ -54,8 +61,8 @@ AlternatePrimary False
 AlternateSecondary False
 ModePrimary FullAuto
 ModeSecondary FullAuto
-ShootPointPrimary 47 31 3 core WW2_MG_MGFF_1A
-ShootPointPrimary 47 31 -3 core WW2_MG_MGFF_1A
+ShootPointPrimary 47 31 3 core WW2_MG_MG17_1A
+ShootPointPrimary 47 31 -3 core WW2_MG_MG17_1A
 ShootPointPrimary 16 19 -43 leftWing WW2_MG_MGFF_1A
 ShootPointPrimary 16 19 43 rightWing WW2_MG_MGFF_1A
 ShootPointSecondary -5 0 0 core
@@ -96,7 +103,7 @@ CollisionPoint -2 21 58 rightWing
 CollisionPoint -2 22 73 rightWing
 CollisionPoint -2 24 90 rightWing
 BulletDetection 10
-CameraDistance 13.0
+CameraDistance 10.0
 Propeller 0 0 0 0 nose SMP_Part_Propeller_RotorPlane
 
 // Sounds

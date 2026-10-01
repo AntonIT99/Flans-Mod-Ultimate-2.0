@@ -35,9 +35,16 @@ RealEnginePowerHp 711
 RealMaxSpeedKmh 103
 DriveType AWD
 RealMaxReverseSpeedKmh 15
+RealTurnRateDegPerSec 163.93
 
 // Weapons
-BarrelPosition 0 44 0
+BarrelPosition 48 39.5 8
+ShootParticlesPrimary flansmod.fmflame 0.58 0 0
+ShootParticlesPrimary flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPrimary flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPrimary smoke 0.2 0.035 -0.04
+ShootParticlesPrimary smoke 0.18 -0.03 0.045
+ShootParticlesPrimary crit 0.38 0.01 0
 ShootDelay 5
 ShellDelay 110
 ReadWeaponsFromGunTypes true

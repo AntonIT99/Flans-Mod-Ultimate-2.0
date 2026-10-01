@@ -5,6 +5,7 @@ ShortName A10
 // Model and Rendering
 Icon IconPlaneA10
 Model manus_modern_warfare.A10
+FlashModel DefaultFlash
 Texture SkinPlaneA10
 
 // Recipe and Inventory
@@ -37,6 +38,7 @@ HasGear True
 RealMassKg 13782
 RealEngineThrustKn 80.64
 RealMaxSpeedKmh 706
+RealTurnRateDegPerSec 18.16
 RealWingSpanM 17.53
 RealWingAreaM2 47
 RealClimbRateMs 30
@@ -74,3 +76,7 @@ PropSound viper
 PropSoundLength 30
 ShootSound gatling
 BombSound bomb
+
+ShootParticlesSecondary flansmod.fmflame 0.58 0 0
+ShootParticlesSecondary smoke 0.18 0.025 -0.025
+ShootParticlesSecondary crit 0.38 0.01 0

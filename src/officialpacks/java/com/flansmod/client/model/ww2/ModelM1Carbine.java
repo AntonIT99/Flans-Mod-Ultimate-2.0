@@ -161,5 +161,6 @@ public class ModelM1Carbine extends ModelGun {
       this.translateAll(-8.0F, -5.0F, 0.2F);
       this.thirdPersonOffset = new Vector3f(-0.1F, -0.12, 0.015F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(3.15625F, 1.0234375F, -0.0125F);
    }
 }

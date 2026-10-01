@@ -55,5 +55,6 @@ public class ModelDoubleBarrelledShotgun extends ModelGun
 		
 		gunSlideDistance = 0.25F;
 		animationType = EnumAnimationType.BREAK_ACTION;
+		muzzleFlashPoint = new Vector3f(0.8125F, 0.28125F, 0F);
 	}
 }

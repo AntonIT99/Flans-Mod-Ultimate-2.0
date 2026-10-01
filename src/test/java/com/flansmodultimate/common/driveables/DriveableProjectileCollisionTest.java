@@ -83,6 +83,36 @@ class DriveableProjectileCollisionTest
     }
 
     @Test
+    void explosionSamplesStayOnTheNearestPartFace()
+    {
+        AABB wing = new AABB(8D, -1D, -1D, 12D, 1D, 1D);
+        DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(
+            wing, new Vec3(13D, 0D, 0D), EnumDriveablePart.RIGHT_WING,
+            0F, 0F, Vec3.ZERO, Vec3.ZERO);
+
+        List<Vec3> samples = DriveableProjectileCollision.explosionSurfaceSamples(wing, surface);
+        assertEquals(5, samples.size());
+        assertEquals(new Vec3(12D, 0D, 0D), samples.get(0));
+        assertTrue(samples.stream().allMatch(point -> point.x == 12D
+            && point.y >= wing.minY && point.y <= wing.maxY
+            && point.z >= wing.minZ && point.z <= wing.maxZ));
+    }
+
+    @Test
+    void explosionSamplesProjectAnInternalDetonationOntoThePartSurface()
+    {
+        AABB hull = new AABB(-1D, -1D, -1D, 1D, 1D, 1D);
+        DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(
+            hull, Vec3.ZERO, EnumDriveablePart.CORE, 0F, 0F, Vec3.ZERO, Vec3.ZERO);
+
+        List<Vec3> samples = DriveableProjectileCollision.explosionSurfaceSamples(hull, surface);
+        assertFalse(samples.isEmpty());
+        assertTrue(samples.stream().allMatch(point -> point.x == -1D
+            && point.y >= hull.minY && point.y <= hull.maxY
+            && point.z >= hull.minZ && point.z <= hull.maxZ));
+    }
+
+    @Test
     void fractionsRemainComparableAcrossHullAndTurretTransforms()
     {
         AABB hull = new AABB(-1D, -1D, -6D, 1D, 1D, -5D);

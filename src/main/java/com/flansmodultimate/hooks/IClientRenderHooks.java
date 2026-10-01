@@ -2,6 +2,7 @@ package com.flansmodultimate.hooks;
 
 import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
@@ -64,6 +65,20 @@ public interface IClientRenderHooks
      * loaded models through this hook.</p>
      */
     List<DerivedMuzzle> deriveMuzzles(DriveableType type);
+
+    /**
+     * The muzzle of every tube of the primary armament of {@code type}'s loaded
+     * model, in type-file units and convention: one for a single gun, four for a
+     * quad mount. Empty when no model is loaded, as on a dedicated server.
+     */
+    List<DerivedMuzzle> derivePrimaryBarrels(DriveableType type);
+
+    /**
+     * Where each barrel muzzle of an AA gun's loaded model sits with the gun at
+     * rest, in blocks from the gun's position, in barrel order. Empty when no
+     * model is loaded, as on a dedicated server.
+     */
+    List<Vec3> deriveAAGunBarrelOffsets(AAGunType type);
 
     boolean isDebugMode();
 

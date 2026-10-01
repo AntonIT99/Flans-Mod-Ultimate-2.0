@@ -1,6 +1,7 @@
 // Identity
 Name M24 Stielhandgranate AT-Bundle
 ShortName 44_stielhandgranateATBundle
+Mass 2000
 Description German AT-Grenade
 
 // Rendering
@@ -13,9 +14,8 @@ Colour 255 255 255
 StackSize 4
 
 // Throwing and physics
-ThrowSpeed 1.85
+ThrowSpeedMs 6
 ThrowDelay 10
-FallSpeed 1.25
 Bounciness 0.6
 HitBoxSize 0.5
 SpinWhenThrown true
@@ -48,4 +48,6 @@ FireRadius 0.0
 TrailParticles true
 TrailParticleType smoke
 ExplodeParticles 3
+FlareParticleCount 3
+DebrisParticleCount 2
 SmokeTime 0

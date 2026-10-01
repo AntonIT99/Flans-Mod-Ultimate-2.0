@@ -12,9 +12,11 @@ import com.flansmodultimate.common.driveables.physics.DriveDirectionInterlock;
 import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
 import com.flansmodultimate.common.driveables.physics.GroundSlopePhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.TrackAnimationPhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.driveables.physics.WheelAnimationPhysics;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
@@ -24,6 +26,7 @@ import com.flansmodultimate.network.client.PacketSmokeShell;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
@@ -49,6 +52,9 @@ public class Vehicle extends Driveable
     private final ThrottleLeverRamp throttleRamp = new ThrottleLeverRamp();
     /** Real-world gearbox direction state. Transient and server-side. */
     private final DriveDirectionInterlock drivetrain = new DriveDirectionInterlock();
+    /** Hull yaw seen by the previous engine-sound tick, and the ticks left before a pivot turn counts as stopped. Client side. */
+    private float engineSoundYaw = Float.NaN;
+    private int pivotSoundTicks;
 
     public Vehicle(EntityType<?> entityType, Level level)
     {
@@ -65,6 +71,28 @@ public class Vehicle extends Driveable
     public VehicleType getVehicleType()
     {
         return getConfigType() instanceof VehicleType type ? type : null;
+    }
+
+    /**
+     * A tracked vehicle rotating on the spot drives its tracks with a closed throttle, so it keeps
+     * the driving loop. The hull yaw is compared against the previous sound tick, which covers both
+     * the predicted driver and interpolated observers, and a short grace period stops the loops
+     * flickering between ticks where the yaw update lands late.
+     */
+    @Override
+    protected boolean isEngineLoadedWithoutThrottle()
+    {
+        VehicleType type = getVehicleType();
+        float yaw = getYaw();
+        boolean rotating = !Float.isNaN(engineSoundYaw) && Math.abs(Mth.wrapDegrees(yaw - engineSoundYaw)) > 0.05F;
+        engineSoundYaw = yaw;
+        if (type == null || !type.isTank())
+            return false;
+        if (rotating)
+            pivotSoundTicks = 4;
+        else if (pivotSoundTicks > 0)
+            --pivotSoundTicks;
+        return pivotSoundTicks > 0;
     }
 
     @Override
@@ -89,8 +117,9 @@ public class Vehicle extends Driveable
         tickWalkerStompSounds(type, previousLeftPhase, previousRightPhase);
         updateThrottleAndSteering(type);
 
+        boolean pushed = type.getPushSpeedKmh() > 0F;
         float traction = traction();
-        boolean tracked = type.isTank();
+        boolean tracked = type.isTank() && !pushed;
         boolean leftTrackIntact = isPartIntact(EnumDriveablePart.LEFT_TRACK);
         boolean rightTrackIntact = isPartIntact(EnumDriveablePart.RIGHT_TRACK);
         boolean singleTrackDrive = tracked && leftTrackIntact != rightTrackIntact;
@@ -106,15 +135,19 @@ public class Vehicle extends Driveable
 
         float throttleLimit = DriveableControlPhysics.damagedThrottleLimit(getThrottleDamageNerf());
         float effectiveThrottle = Mth.clamp(getThrottle(), -throttleLimit, throttleLimit);
-        if (!isEngineActive())
+        if (pushed ? getControllingEntity() == null : !isEngineActive())
             effectiveThrottle = 0F;
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
-        boolean derivedPhysics = !ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion();
+        boolean derivedPhysics = !pushed && !ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion();
         double speedScale = ModCommonConfig.realisticSpeedScale(physics.category());
         float normalizedThrottle = DriveableControlPhysics.normalizedThrottle(effectiveThrottle,
             type.getMaxNegativeThrottle());
         double targetSpeed;
-        if (derivedPhysics)
+        if (pushed)
+        {
+            targetSpeed = normalizedThrottle * VehiclePhysicsUnits.kmhToBlocksPerTick(type.getPushSpeedKmh()) * traction;
+        }
+        else if (derivedPhysics)
         {
             // The real-world profile owns terminal speed outright. Throttle is
             // reduced to the driver demand fraction, so MaxThrottle and the
@@ -137,7 +170,7 @@ public class Vehicle extends Driveable
         }
         // A complete real-world ground profile derives a forgiving uphill response
         // from power-to-weight and drive layout; legacy propulsion stays unchanged.
-        if (!ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion())
+        if (derivedPhysics)
             targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(),
                 Math.signum(normalizedThrottle), physics.powerToWeightKwPerKg(), physics.driveType());
         boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING)
@@ -147,21 +180,54 @@ public class Vehicle extends Driveable
                 leftTrackIntact, rightTrackIntact)
             : wheelYaw;
         float steeringModifier = turnControl > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
-        float directionalThrottle = effectiveThrottle > 0F
-            ? (isInWater() ? type.getMaxThrottleInWater() : type.getMaxThrottle())
-            : type.getMaxNegativeThrottle();
-        double throttleModifier = tracked ? 1D : legacyThrottleCurve(effectiveThrottle);
-        double velocityScale = (tracked ? 0.04D : 0.1D) * throttleModifier
-            * Math.max(0F, directionalThrottle) * getEngineSpeed();
+
+        float directionalThrottle;
+        if (effectiveThrottle > 0F)
+        {
+            if (isInWater()) directionalThrottle = type.getMaxThrottleInWater();
+            else directionalThrottle = type.getMaxThrottle();
+        }
+        else
+        {
+            directionalThrottle = type.getMaxNegativeThrottle();
+        }
+
+        Vec3 steeringForward = localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
+        double forwardLength = Math.hypot(steeringForward.x, steeringForward.z);
+        Vec3 steeringVelocity = getDeltaMovement();
+        double signedSpeed = forwardLength > 1.0E-8D
+            ? (steeringVelocity.x * steeringForward.x + steeringVelocity.z * steeringForward.z) / forwardLength : 0D;
+        double velocityScale = tracked
+            ? (isEngineActive() ? 0.04D * Math.max(0F, directionalThrottle) * getEngineSpeed() : 0D)
+            : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
         double steeringScale = 0.1D * Math.max(0F, steeringModifier);
-        float yawDelta = isEngineActive()
-            ? (float) Math.toDegrees(turnControl * steeringScale * velocityScale) : 0F;
+        float yawDelta = (float) Math.toDegrees(turnControl * steeringScale * velocityScale);
+        if (type.usesRealTurnRate(ModCommonConfig.forceLegacyVehiclePhysics(), pushed, tracked))
+        {
+            double referenceSpeed = tracked ? 0D : VehiclePhysicsUnits.kmhToBlocksPerTick(type.getRealWorldSpec().maxSpeedKmh())
+                * speedScale;
+            float realTurnControl = singleTrackDrive
+                ? DriveableControlPhysics.realSingleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld,
+                    leftTrackIntact, rightTrackIntact) : wheelYaw;
+            yawDelta = DriveableControlPhysics.realSteeringYawDelta(type.getRealTurnRateDegPerSec(),
+                realTurnControl, tracked, isEngineActive(), signedSpeed, referenceSpeed);
+        }
         if (!isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
         boolean supported = onGround() || hasWheelContact();
+
         float pitch = supported ? getPitch() : approach(getPitch(), 0F, 0.8F);
-        float roll = type.isCanRoll()
-            ? (supported ? getRoll() : approach(getRoll(), 0F, 1F)) : 0F;
+        float roll;
+        if (type.isCanRoll())
+        {
+            if (supported) roll = getRoll();
+            else roll = approach(getRoll(), 0F, 1F);
+        }
+        else
+        {
+            roll = 0F;
+        }
+
         setOrientation(getYaw() + yawDelta, pitch, roll);
 
         Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
@@ -170,8 +236,19 @@ public class Vehicle extends Driveable
         if (forward.lengthSqr() > 1.0E-8D)
             forward = forward.normalize();
         Vec3 current = getDeltaMovement();
-        double grip = isInWater() ? 0.08D : (onGround() || hasWheelContact() ? 0.22D : 0.035D);
+
+        double grip;
+        if (isInWater())
+        {
+            grip = 0.08D;
+        }
+        else
+        {
+            if (onGround() || hasWheelContact()) grip = 0.22D;
+            else grip = 0.035D;
+        }
         boolean braking = DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE | DriveableInput.ASCEND);
+
         Vec3 velocity;
         if (derivedPhysics)
         {
@@ -183,18 +260,20 @@ public class Vehicle extends Driveable
             Vec3 desired = forward.scale(targetSpeed);
             velocity = new Vec3(Mth.lerp(grip, current.x, desired.x), current.y, Mth.lerp(grip, current.z, desired.z));
         }
+
         velocity = applyVehicleVerticalPhysics(velocity, type);
         double descent = velocity.y;
-        velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater(),
-            verticalGravity(type));
-        double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(
-            derivedPhysics, type.getDrag());
-        velocity = velocity.multiply(horizontalDrag, 1D, horizontalDrag);
+        velocity = applyWheelContactPhysics(velocity, !type.isFloatOnWater() || !isInWater(), verticalGravity(type));
+        double horizontalDrag = GroundPropulsionPhysics.postIntegrationHorizontalDrag(derivedPhysics || pushed, type.getDrag());
+        velocity = velocity.multiply(ModPhysics.dragRetention(horizontalDrag, level()), 1D, ModPhysics.dragRetention(horizontalDrag, level()));
+
         if (!ModCommonConfig.forceLegacyVehiclePhysics())
             velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
-        velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked,
+
+        velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked, pushed,
             derivedPhysics && drivetrain.isShifting() ? Math.abs(normalizedThrottle) : 0F);
         moveWithCollisions(velocity);
+
         if (tickCount > 20 && verticalCollision && descent < -0.65D && !isInWater())
         {
             float damage = (float) ((-descent - 0.45D) * 30D * Math.max(0F, type.getFallDamageFactor()));
@@ -208,11 +287,13 @@ public class Vehicle extends Driveable
         }
 
         harvestConfiguredBlocks();
-        if (isEngineActive())
+        if (isEngineActive() && !pushed)
             consumeFuel(DriveableControlPhysics.vehicleFuelLoad(effectiveThrottle, type.getWheelPositions().size()));
     }
 
+    // Forge's getStepHeight() reads this, and vanilla and other mods still call it directly.
     @Override
+    @SuppressWarnings("deprecation")
     public float maxUpStep()
     {
         VehicleType type = getVehicleType();
@@ -241,7 +322,7 @@ public class Vehicle extends Driveable
     }
 
     @Override
-    protected void handleRisingInputs(Seat seat, Player player, int rising)
+    protected void handleRisingInputs(@NotNull Seat seat, @NotNull Player player, int rising)
     {
         boolean deploySmoke = DriveableInput.isDown(rising, DriveableInput.FLARE);
         boolean smokeWasReady = !isVarFlare() && !isCountermeasureReloading();
@@ -275,22 +356,31 @@ public class Vehicle extends Driveable
     {
         int input = getInputMask();
         float throttle = getThrottle();
-        boolean canControl = getControllingEntity() != null && isEngineActive();
+        boolean canControl = getControllingEntity() != null && (isEngineActive() || type.getPushSpeedKmh() > 0F);
         boolean braking = DriveableInput.isDown(input, DriveableInput.BRAKE | DriveableInput.ASCEND);
         boolean pedalInput = DriveableInput.isDown(input, DriveableInput.FORWARD | DriveableInput.BACKWARD);
         fixedThrottle = DriveableControlPhysics.fixedVehicleThrottle(fixedThrottle, canControl, braking, input);
         // Advanced every tick, including the ones where nothing is held, so the
         // ramp is counting an uninterrupted hold and nothing else.
-        int leverDirection = canControl && braking && throttle != 0F ? (throttle > 0F ? -1 : 1)
-            : canControl && !pedalInput ? ThrottleLeverRamp.direction(input,
-                DriveableInput.THROTTLE_INCREASE, DriveableInput.THROTTLE_DECREASE) : 0;
+        int leverDirection;
+        if (canControl && braking && throttle != 0F)
+        {
+            leverDirection = (throttle > 0F ? -1 : 1);
+        }
+        else
+        {
+            if (canControl && !pedalInput) leverDirection = ThrottleLeverRamp.direction(input,
+                DriveableInput.THROTTLE_INCREASE, DriveableInput.THROTTLE_DECREASE);
+            else leverDirection = 0;
+        }
+
         float leverMultiplier = throttleRamp.advance(leverDirection, ThrottleLeverRamp.VEHICLE_MAX_STEP_MULTIPLIER);
         if (canControl)
         {
             float damageMultiplier = DriveableControlPhysics.damagedAccelerationMultiplier(getThrottleDamageNerf());
             // Precedence: a complete real-world profile beats the legacy
-            // UseRealisticAcceleration experiment, which beats the fixed legacy
-            // rate. Under the profile this is only how fast the pedal travels;
+            // UseRealisticAcceleration experiment, which beats the fixed legacy rate.
+            // Under the profile this is only how fast the pedal travels,
             // how fast the vehicle actually accelerates comes from the power
             // model, not from a per-pack number.
             float acceleration;
@@ -387,9 +477,11 @@ public class Vehicle extends Driveable
         double tractionFactor = physics.driveType().tractionFactor()
             * (isInWater() ? 0.35D : 1D) * Math.max(0F, traction);
         double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(
-            forwardSpeed, power, physics.massKg(), terminal, tractionFactor) * transmission;
+            forwardSpeed, power, physics.massKg(), terminal, tractionFactor,
+            ModCommonConfig.dragFactor(level())) * transmission;
         double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(
-            forwardSpeed, power, physics.massKg(), terminal, brakeFraction);
+            forwardSpeed, power, physics.massKg(), terminal, brakeFraction,
+            ModCommonConfig.dragFactor(level()));
         double newForwardSpeed = GroundPropulsionPhysics.approach(forwardSpeed, targetSpeed,
             acceleration, deceleration);
         newForwardSpeed = GroundPropulsionPhysics.applyTurningLoss(newForwardSpeed, yawDelta);
@@ -425,10 +517,10 @@ public class Vehicle extends Driveable
      * standing on, so a full reversal of demand stops like the brake control.
      */
     private Vec3 applyGroundFriction(Vec3 before, Vec3 after, float effectiveThrottle, boolean braking, boolean tracked,
-                                     float neutralBrakeDemand)
+                                     boolean pushed, float neutralBrakeDemand)
     {
         double deceleration;
-        if (getControllingEntity() == null || !isEngineActive() || braking)
+        if (getControllingEntity() == null || !isEngineActive() && !pushed || braking)
             deceleration = VehiclePhysicsConstants.PARKED_GROUND_FRICTION_DECELERATION_MS2;
         else if (neutralBrakeDemand > 0F || Math.abs(effectiveThrottle) < 1.0E-3F
             && !DriveableInput.isDown(getInputMask(), DriveableInput.FORWARD | DriveableInput.BACKWARD))
@@ -444,7 +536,7 @@ public class Vehicle extends Driveable
     private double verticalGravity(VehicleType type)
     {
         return type.isFloatOnWater() && isInWater()
-            ? 0D : Math.max(0.005D, Math.min(0.08D, type.getGravity() * 0.08D));
+            ? 0D : ModPhysics.gravity(Math.max(0.005D, Math.min(0.08D, type.getGravity() * 0.08D)), level());
     }
 
     private Vec3 applyVehicleVerticalPhysics(Vec3 velocity, VehicleType type)
@@ -471,17 +563,25 @@ public class Vehicle extends Driveable
             wheelAngle = Mth.wrapDegrees(wheelAngle + WheelAnimationPhysics.angularStepDegrees(
                 velocity.x, velocity.z, forward.x, forward.z));
         }
-        float leftTrackStep = getThrottle() * 0.075F - wheelYaw * 0.0025F;
-        float rightTrackStep = getThrottle() * 0.075F + wheelYaw * 0.0025F;
+        float travelStep = type.isTank() ? getTrackTravelStep() : getThrottle() * 0.075F;
+        float leftTrackStep = travelStep - wheelYaw * 0.0025F;
+        float rightTrackStep = travelStep + wheelYaw * 0.0025F;
         boolean leftTrackIntact = isPartIntact(EnumDriveablePart.LEFT_TRACK);
         boolean rightTrackIntact = isPartIntact(EnumDriveablePart.RIGHT_TRACK);
         if (type.isTank() && leftTrackIntact != rightTrackIntact)
         {
-            boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING)
-                && axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) != 0F;
-            float survivingTrackStep = steeringHeld
-                ? wheelYaw * 0.0025F * (rightTrackIntact ? 1F : -1F)
-                : getThrottle() * 0.075F;
+            boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING) && axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) != 0F;
+            float survivingTrackStep;
+            if (steeringHeld)
+            {
+                if (rightTrackIntact) survivingTrackStep = wheelYaw * 0.0025F * 1F;
+                else survivingTrackStep = wheelYaw * 0.0025F * -1F;
+            }
+            else
+            {
+                survivingTrackStep = travelStep;
+            }
+
             if (leftTrackIntact)
                 leftTrackProgress += survivingTrackStep;
             else
@@ -498,6 +598,14 @@ public class Vehicle extends Driveable
         rightTrackProgress -= Mth.floor(rightTrackProgress);
     }
 
+    /** Motion-derived loop travel, also used by fancy links to resolve reverse-running corners. */
+    public float getTrackTravelStep()
+    {
+        Vec3 forward = localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
+        Vec3 velocity = getDeltaMovement();
+        return TrackAnimationPhysics.travelStep(velocity.x, velocity.z, forward.x, forward.z);
+    }
+
     private void tickWalkerStompSounds(VehicleType type, float previousLeftPhase, float previousRightPhase)
     {
         if (level().isClientSide || !isEngineActive() || Math.abs(getThrottle()) <= 0.01F)
@@ -511,7 +619,7 @@ public class Vehicle extends Driveable
     private void playWalkerStomp(String sound, boolean crossed)
     {
         if (crossed && StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, 50D, sound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), sound, false);
     }
 
     private static boolean crossedLegZero(float previousPhase, float currentPhase, float phaseOffset)
@@ -592,16 +700,8 @@ public class Vehicle extends Driveable
         return (DriveableInput.isDown(mask, positive) ? 1F : 0F) - (DriveableInput.isDown(mask, negative) ? 1F : 0F);
     }
 
-    private static double legacyThrottleCurve(float throttle)
-    {
-        double absolute = Math.abs(throttle);
-        return (2.4D * absolute - 2.5D * throttle * throttle + 0.5D * absolute * absolute * absolute)
-            * Math.signum(throttle);
-    }
-
     private static float approach(float value, float target, float amount)
     {
         return value < target ? Math.min(target, value + amount) : Math.max(target, value - amount);
     }
-
 }

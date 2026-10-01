@@ -25,5 +25,6 @@ DamageMultiplier 0.8
 RecoilMultiplier 1.0
 MeleeDamageMultiplier 1.0
 Silencer True
+DisableMuzzleFlash True
 BulletSpeedMultiplier 0.9
 ReloadTimeMultiplier 1.0

@@ -1,11 +1,19 @@
 ﻿// Identity
-Name Boeing 707 - Lufthansa
+Name Boeing 707
 ShortName Civil_Plane_Boeing707_1A
 
 // Model and Rendering
 Model Manus_Civil.Plane.Civil_Plane_Boeing707_1
 Icon Icon_Civil_Plane_Boeing707_1A
 Texture Skin_Civil_Plane_Boeing707_1A
+
+// Paintjobs
+AdvPaintJob Lufthansa Icon_Civil_Plane_Boeing707_1A Skin_Civil_Plane_Boeing707_1A
+AdvPaintJob PanAm Icon_Civil_Plane_Boeing707_1F Skin_Civil_Plane_Boeing707_1F white 20 blue 10
+AdvPaintJob SwissAir Icon_Civil_Plane_Boeing707_1B Skin_Civil_Plane_Boeing707_1B white 20 red 10
+AdvPaintJob SahaAir Icon_Civil_Plane_Boeing707_1C Skin_Civil_Plane_Boeing707_1C white 25
+AdvPaintJob TUIFly Icon_Civil_Plane_Boeing707_1D Skin_Civil_Plane_Boeing707_1D yellow 25
+AdvPaintJob FlyHellas Icon_Civil_Plane_Boeing707_1E Skin_Civil_Plane_Boeing707_1E orange 20 blue 10
 
 // Recipe and Inventory
 FuelTankSize 32000
@@ -40,6 +48,7 @@ RestingPitch 5.0
 RealMassKg 151315
 RealEngineThrustKn 320.4
 RealMaxSpeedKmh 1009
+RealTurnRateDegPerSec 7.17
 RealWingSpanM 44.42
 RealWingAreaM2 283.4
 RealClimbRateMs 20.3

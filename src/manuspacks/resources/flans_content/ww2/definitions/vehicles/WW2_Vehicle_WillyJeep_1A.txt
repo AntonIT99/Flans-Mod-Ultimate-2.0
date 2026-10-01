@@ -4,6 +4,7 @@ ShortName WW2_Vehicle_WillyJeep_1A
 
 // Model and Rendering
 Model Manus_WW2.Vehicle.WW2_Vehicle_WillyJeep_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Vehicle_WillyJeep_1A
 Texture Skin_WW2_Vehicle_WillyJeep_1A
 RotateWheels True
@@ -33,9 +34,10 @@ RealEnginePowerHp 54
 RealMaxSpeedKmh 105
 DriveType AWD
 RealMaxReverseSpeedKmh 29
+RealTurnRateDegPerSec 240
 
 // Weapons
-GunOrigin 2 -25 22 0
+GunOrigin 2 7.5 1.4 0
 ReadWeaponsFromGunTypes true
 
 // Protection
@@ -56,11 +58,11 @@ Driver -7 0 -9
 Passengers 2
 Passenger 1 -7 0 9 core
 Passenger 2 -21 11 0 core -50 50 -10 30 WW2_MG_BrowningM2_1A M2
-SetupPart core 200 -30 -2 -15 55 13 30
-SetupPart frontRightWheel 100 13 -10 -16 14 14 4
-SetupPart frontLeftWheel 100 13 -10 12 14 14 4
-SetupPart backRightWheel 100 -27 -10 -16 14 14 4
-SetupPart backLeftWheel 100 -27 -10 12 14 14 4
+SetupPart core 1335 -30 -2 -15 55 13 30
+SetupPart frontRightWheel 35 13 -10 -16 14 14 4
+SetupPart frontLeftWheel 35 13 -10 12 14 14 4
+SetupPart backRightWheel 35 -27 -10 -16 14 14 4
+SetupPart backLeftWheel 35 -27 -10 12 14 14 4
 BulletDetection 5
 CameraDistance 5
 

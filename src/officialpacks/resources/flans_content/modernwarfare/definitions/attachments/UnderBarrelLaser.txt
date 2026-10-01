@@ -2,6 +2,7 @@
 Name Under Barrel Laser
 ShortName flanMWUnderBarrelLaser
 AttachmentType grip
+Toggleable True
 Description Under Barrel Attatchment: Under Barrel Laser.
 
 // Item and rendering

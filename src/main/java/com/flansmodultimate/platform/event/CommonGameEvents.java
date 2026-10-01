@@ -2,11 +2,13 @@ package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.event.handler.CommonEventHandler;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -62,5 +64,17 @@ public final class CommonGameEvents
     {
         if (CommonEventHandler.shouldCancelIncomingDamage(event.getEntity(), event.getSource(), event.getAmount()))
             event.setCanceled(true);
+    }
+
+    /**
+     * A vanilla shield stopped a hit: lets a Flan's melee weapon play its ShieldHitSound. NeoForge posts this
+     * event for every hit and decides the block from {@code getBlocked()} once all listeners ran, so this
+     * listens last, including after a cancel, where Forge's {@code ShieldBlockEvent} fires only for a block.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+    public static void onShieldBlock(LivingShieldBlockEvent event)
+    {
+        if (event.getBlocked() && !event.getEntity().level().isClientSide)
+            CommonEventHandler.playMeleeImpactSound(event.getDamageSource(), true);
     }
 }

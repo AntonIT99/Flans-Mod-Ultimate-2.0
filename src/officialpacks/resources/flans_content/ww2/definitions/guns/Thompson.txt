@@ -7,6 +7,10 @@ Icon thompson
 Colour 255 255 255
 DeployedModel None
 Model ww2.Thompson
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.38616 0.54844 -0.00904
+animFlashScale 2.07
 Texture thompson
 Paintjob thompson_acacia thompson_acacia orange 2
 Paintjob thompson_birch thompson_birch black 1 yellow 1

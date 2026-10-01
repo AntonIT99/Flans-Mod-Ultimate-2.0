@@ -1,6 +1,7 @@
 // Identity
 Name C4 Plastic Explosive
 ShortName c4
+Mass 1000
 
 // Item and rendering
 Icon C4
@@ -15,7 +16,7 @@ StackSize 4
 // Throwing
 ThrowDelay 10
 Bounciness 0.0
-ThrowSpeed 1.0
+ThrowSpeedMs 12
 Sticky true
 DespawnTime 12000
 
@@ -47,3 +48,5 @@ SmokeTime 0
 // Sounds and particles
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2

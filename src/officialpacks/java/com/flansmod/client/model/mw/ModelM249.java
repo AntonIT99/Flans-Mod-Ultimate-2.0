@@ -219,5 +219,6 @@ public class ModelM249 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(7.625F, 1.375F, 0F);
 	}
 }

@@ -6,6 +6,7 @@ Description American Jeep
 // Item and rendering
 Icon SASJeep
 Model ww2.SASJeep
+FlashModel DefaultFlash
 Texture sasjeep
 RotateWheels true
 AddDye 3 green
@@ -36,25 +37,26 @@ MaxThrottle 0.65
 MaxNegativeThrottle 0.4
 TurnLeftSpeed 0.2
 TurnRightSpeed 0.2
+RealTurnRateDegPerSec 240
 Drag 1.0
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 
 // Weaponry
-GunOrigin 1 11 -21 -7
-GunOrigin 2 -12 -30 -13
-GunOrigin 3 -33 -31 0
+GunOrigin 1 24.7 -1.2 6.7
+GunOrigin 2 -3.8 8.1 12.3
+GunOrigin 3 -17.1 8.3 0
 ShootDelay 999
 ShellDelay 999
 ReadWeaponsFromGunTypes true
 
 // Health and armour
-SetupPart core 2000 -24 -6 -16 48 12 32
-SetupPart backLeftWheel 1500 -20 -10 -16 8 8 2
-SetupPart backRightWheel 1500 -20 -10 14 8 8 2
-SetupPart frontLeftWheel 1500 12 -10 -16 8 8 2
-SetupPart frontRightWheel 1500 12 -10 14 8 8 2
+SetupPart core 1335 -24 -6 -16 48 12 32
+SetupPart backLeftWheel 35 -20 -10 -16 8 8 2
+SetupPart backRightWheel 35 -20 -10 14 8 8 2
+SetupPart frontLeftWheel 35 12 -10 -16 8 8 2
+SetupPart frontRightWheel 35 12 -10 14 8 8 2
 BulletDetection 5
 ArmorFrontMm 0
 ArmorSideMm 0

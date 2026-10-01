@@ -33,7 +33,7 @@ public final class TooltipKeys
     public static final String EXPLOSION_BLAST_DAMAGE = "tooltip.flansmodultimate.explosion_blast_damage";
     public static final String EXPLOSION_BLAST_RADIUS = "tooltip.flansmodultimate.explosion_blast_radius";
     public static final String EXPLOSION_FRAG_DAMAGE = "tooltip.flansmodultimate.explosion_frag_damage";
-    public static final String EXPLOSION_FRAG_INTENSITY = "tooltip.flansmodultimate.explosion_frag_intensity";
+    public static final String EXPLOSION_FRAG_COUNT = "tooltip.flansmodultimate.explosion_frag_count";
     public static final String EXPLOSION_FRAG_RADIUS = "tooltip.flansmodultimate.explosion_frag_radius";
     public static final String EXPLOSION_POWER = "tooltip.flansmodultimate.explosion_power";
     public static final String EXPLOSION_RADIUS = "tooltip.flansmodultimate.explosion_radius";
@@ -67,6 +67,9 @@ public final class TooltipKeys
     public static final String MODE = "tooltip.flansmodultimate.mode";
     public static final String MOVE_SPEED = "tooltip.flansmodultimate.move_speed";
     public static final String MUZZLE_VELOCITY = "tooltip.flansmodultimate.muzzle_velocity";
+    public static final String THROW_SPEED = "tooltip.flansmodultimate.throw_speed";
+    public static final String TOGGLED_OFF = "tooltip.flansmodultimate.toggled_off";
+    public static final String TOGGLED_ON = "tooltip.flansmodultimate.toggled_on";
     public static final String OPERATOR_STICK_CHANGE_MODE = "tooltip.flansmodultimate.operator_stick.change_mode";
     public static final String OPERATOR_STICK_MODE = "tooltip.flansmodultimate.operator_stick.mode";
     public static final String OPERATOR_STICK_MODE_CONNECT = "tooltip.flansmodultimate.operator_stick.mode.connect";

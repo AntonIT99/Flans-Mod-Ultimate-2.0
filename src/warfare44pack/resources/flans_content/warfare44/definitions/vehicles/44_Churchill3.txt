@@ -41,6 +41,7 @@ MaxNegativeThrottle 0.2584
 ClutchBrake 0.012
 TurnLeftSpeed 0.24
 TurnRightSpeed 0.24
+RealTurnRateDegPerSec 14
 CanRoll true
 
 // Wheels and tracks
@@ -91,8 +92,8 @@ AddAmmo 44_SmallHEShell
 AddAmmo 44_6PdrAPCRShell
 AddAmmo 44_6PdrAPDSShell
 AddGun 28 33 -4 turret 44_Bren
-GunOrigin 1 120 -1 -8
-BarrelPosition 58 31 0
+GunOrigin 1 52 -1.9 -7.5
+BarrelPosition 56 31 0.5
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -159,12 +160,13 @@ TurretArmorTopMm 20
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 2500 -72 2 -12 90 38 24
-SetupPart frontalArmor 2000 18 2 -17 39 35 34
-SetupPart rightsideArmor 1000 -72 2 -17 90 26 5
-SetupPart leftsideArmor 1000 -72 2 12 90 26 5
-SetupPart leftTrack 300 -72 -10 -28 141 38 11
-SetupPart rightTrack 300 -72 -10 17 141 38 11
+SetupPart core 5900 -72 2 -12 90 23 24
+SetupPart turret 1100 -31 25 -20 51 14 38
+SetupPart frontalArmor 1000 18 2 -17 39 23 34
+SetupPart rightsideArmor 400 -72 2 -17 90 23 5
+SetupPart leftsideArmor 400 -72 2 12 90 23 5
+SetupPart leftTrack 600 -72 -10 -28 141 38 11
+SetupPart rightTrack 600 -72 -10 17 141 38 11
 
 // Seats
 Driver 0 32 0 -360 360 -6 12

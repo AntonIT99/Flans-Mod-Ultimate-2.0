@@ -1,6 +1,7 @@
 {
     "1.1-inch/75 Mark 2 Quadruple Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 4900,
             "RoundsPerMinPrimary": 600,
             "ReloadTimePrimary": 32,
@@ -21,6 +22,7 @@
 
     "2 cm Flak 30/38": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 450,
             "RealEnginePowerHp": 2,
             "RealMaxSpeedKmh": 6,
@@ -45,6 +47,7 @@
 
     "2 cm Flakvierling 38": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1514,
             "RoundsPerMinPrimary": 1400,
             "ReloadTimePrimary": 51,
@@ -65,13 +68,14 @@
 
     "3 inch Gun Motor Carriage M10": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 29600,
             "RealEnginePowerHp": 375,
             "RealMaxSpeedKmh": 48,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 5,
-            "ArmorFrontMm": 51,
+            "ArmorFrontMm": "51 55",
             "ArmorSideMm": 25,
             "ArmorRearMm": 25,
             "ArmorTopMm": 19,
@@ -116,6 +120,7 @@
 
     "3.7 cm FlaK 36/37": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1544,
             "RoundsPerMinPrimary": 160,
             "ReloadTimePrimary": 45,
@@ -136,6 +141,7 @@
 
     "3.7 cm Pak 36": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 328,
             "RealEnginePowerHp": 2,
             "RealMaxSpeedKmh": 6,
@@ -157,6 +163,7 @@
 
     "5-inch/25 Single Pedestal Mount Mark 19": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 9700,
             "TurretArmorFrontMm": 6,
             "TurretArmorSideMm": 6,
@@ -173,6 +180,7 @@
 
     "5-inch/38 Twin Mount Mark 28 Mod 2": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 47900,
             "TurretArmorFrontMm": 51,
             "TurretArmorSideMm": 51,
@@ -189,6 +197,7 @@
 
     "7TP": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9900,
             "RealEnginePowerPS": 110,
             "RealMaxSpeedKmh": 37,
@@ -214,6 +223,7 @@
 
     "7.5 cm PaK 40": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1425,
             "ShootDelayPrimarySeconds": 5,
             "ArmorFrontMm": 4,
@@ -257,6 +267,7 @@
 
     "8-inch/55 Mark 9 Twin Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 205000,
             "TurretArmorFrontMm": 203,
             "TurretArmorSideMm": 76,
@@ -273,6 +284,7 @@
 
     "8.8 cm FlaK 37": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 5150,
             "ShootDelayPrimarySeconds": 6,
             "ArmorFrontMm": 0,
@@ -316,6 +328,7 @@
 
     "8.8 cm Pak 43/41": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 4380,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -338,6 +351,7 @@
 
     "10-pounder Parrott Rifle Model 1861": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1000,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -359,6 +373,7 @@
 
     "12.8 cm Flakzwilling 40/2": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 27000,
             "RealEnginePowerHp": 4,
             "RealMaxSpeedKmh": 5,
@@ -380,6 +395,7 @@
 
     "13-inch Seacoast Mortar M1861": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 9980,
             "RealEnginePowerHp": 1,
             "RealMaxSpeedKmh": 2,
@@ -401,6 +417,7 @@
 
     "14-inch/45 Mark 12 Triple Turret": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 624000,
             "TurretArmorFrontMm": 457,
             "TurretArmorSideMm": 254,
@@ -417,6 +434,7 @@
 
     "15 cm Panzerwerfer 42": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 8500,
             "RealEnginePowerPS": 100,
             "RealMaxSpeedKmh": 40,
@@ -438,6 +456,7 @@
 
     "15 cm schwere Feldhaubitze 18": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 5512,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -459,6 +478,7 @@
 
     "16-inch/50 Mark 2 Six-Gun Turret": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1500000,
             "TurretArmorFrontMm": 457,
             "TurretArmorSideMm": 254,
@@ -475,13 +495,14 @@
 
     "17-pdr SP Achilles": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 29600,
             "RealEnginePowerHp": 375,
             "RealMaxSpeedKmh": 48,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 5,
-            "ArmorFrontMm": 51,
+            "ArmorFrontMm": "51 55",
             "ArmorSideMm": 25,
             "ArmorRearMm": 25,
             "ArmorTopMm": 19,
@@ -518,6 +539,7 @@
 
     "21 cm Nebelwerfer 42": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1100,
             "RealEnginePowerHp": 4,
             "RealMaxSpeedKmh": 8,
@@ -539,6 +561,7 @@
 
     "28.3 cm SK C/34 Triple Turret": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 750000,
             "TurretArmorFrontMm": 360,
             "TurretArmorSideMm": 200,
@@ -555,6 +578,7 @@
 
     "39M Csaba": {
         "properties": {
+            "RealTurnRateDegPerSec": 172.42,
             "RealMassKg": 5950,
             "RealEnginePowerPS": 90,
             "RealMaxSpeedKmh": 65,
@@ -579,6 +603,7 @@
 
     "40M Turan I": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 18200,
             "RealEnginePowerPS": 260,
             "RealMaxSpeedKmh": 47,
@@ -604,6 +629,7 @@
 
     "41M Turan II": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19200,
             "RealEnginePowerPS": 260,
             "RealMaxSpeedKmh": 47,
@@ -629,6 +655,7 @@
 
     "43M Turan III": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 23000,
             "RealEnginePowerPS": 260,
             "RealMaxSpeedKmh": 43,
@@ -654,6 +681,7 @@
 
     "44M Zrinyi I": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 21600,
             "RealEnginePowerPS": 260,
             "RealMaxSpeedKmh": 43,
@@ -675,6 +703,7 @@
 
     "44TP Habicha": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 25000,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 45,
@@ -700,6 +729,7 @@
 
     "51 cm Type 98 Twin Turret": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 2780000,
             "TurretArmorFrontMm": 650,
             "TurretArmorSideMm": 250,
@@ -716,6 +746,7 @@
 
     "53TP Markowskiego": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 25000,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 50,
@@ -741,6 +772,7 @@
 
     "57mm Gun M1": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1225,
             "ShootDelayPrimarySeconds": 4,
             "ArmorFrontMm": 6,
@@ -776,6 +808,7 @@
 
     "75mm Gun Motor Carriage M3": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 9070,
             "RealEnginePowerHp": 147,
             "RealMaxSpeedKmh": 72,
@@ -798,6 +831,7 @@
 
     "75mm Howitzer Motor Carriage M8 Scott": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15700,
             "RealEnginePowerHp": 220,
             "RealMaxSpeedKmh": 58,
@@ -825,6 +859,7 @@
 
     "75mm leichtes Infanteriegeschutz 18": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 400,
             "RealEnginePowerHp": 2,
             "RealMaxSpeedKmh": 6,
@@ -846,6 +881,7 @@
 
     "80 cm L/56 Twin Mount (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 3000000,
             "TurretArmorFrontMm": 650,
             "TurretArmorSideMm": 300,
@@ -862,6 +898,7 @@
 
     "81mm Mortar Battery (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 190,
             "RealEnginePowerHp": 0.5,
             "RealMaxSpeedKmh": 4,
@@ -883,6 +920,7 @@
 
     "81mm Mortar M1 (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 62,
             "RealEnginePowerHp": 0.5,
             "RealMaxSpeedKmh": 4,
@@ -904,6 +942,7 @@
 
     "90mm Gun M1": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 8618,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -926,6 +965,7 @@
 
     "105mm Gun Motor Carriage T95": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 86300,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKmh": 13,
@@ -951,6 +991,7 @@
 
     "105mm Howitzer Motor Carriage M7 Priest": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22970,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 39,
@@ -972,6 +1013,7 @@
 
     "105mm Feldhaubitze M.12": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1420,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -993,6 +1035,7 @@
 
     "105mm leFH 18": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.29,
             "RealMassKg": 1985,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -1014,6 +1057,7 @@
 
     "127mm/40 Type 89 Twin Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 29000,
             "ShootDelayPrimarySeconds": 4,
             "TurretArmorFrontMm": 0,
@@ -1030,6 +1074,7 @@
 
     "150mm SK C/36 Single Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 16000,
             "ShootDelayPrimarySeconds": 10,
             "TurretArmorFrontMm": 30,
@@ -1046,6 +1091,7 @@
 
     "155mm Type 3 Triple Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 175000,
             "ShootDelayPrimarySeconds": 12,
             "TurretArmorFrontMm": 25,
@@ -1062,6 +1108,7 @@
 
     "203mm Howitzer M1931 B-4": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17700,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 5,
@@ -1083,6 +1130,7 @@
 
     "A22D Churchill 3 inch Gun Carrier": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 39600,
             "RealEnginePowerHp": 350,
             "RealMaxSpeedKmh": 24.6,
@@ -1125,6 +1173,7 @@
 
     "A39 Tortoise Heavy Assault Tank": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 79250,
             "RealEnginePowerHp": 650,
             "RealMaxSpeedKmh": 19,
@@ -1146,6 +1195,7 @@
 
     "Admiral Hipper-class Heavy Cruiser": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.77,
             "RealDisplacementT": 19050,
             "RealEnginePowerPS": 132000,
             "RealMaxSpeedKn": 32,
@@ -1174,6 +1224,7 @@
 
     "Allied Destroyer (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.74,
             "RealDisplacementLongTons": 2924,
             "RealEnginePowerHp": 60000,
             "RealMaxSpeedKn": 36.5,
@@ -1205,6 +1256,7 @@
 
     "Allied Light Cruiser (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.23,
             "RealDisplacementLongTons": 9740,
             "RealEnginePowerHp": 72000,
             "RealMaxSpeedKn": 32.5,
@@ -1236,6 +1288,7 @@
 
     "Ambulance Van (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 3500,
             "RealEnginePowerHp": 163,
             "RealMaxSpeedKmh": 160,
@@ -1256,6 +1309,7 @@
 
     "AMX M4": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 55000,
             "RealEnginePowerHp": 700,
             "RealMaxSpeedKmh": 40,
@@ -1281,6 +1335,7 @@
 
     "AMX-50 Surbaisse": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 59200,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKmh": 51,
@@ -1306,6 +1361,7 @@
 
     "ARA Santisima Trinidad D-2": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.6,
             "RealDisplacementLongTons": 4820,
             "RealEnginePowerHp": 50000,
             "RealMaxSpeedKn": 30,
@@ -1332,11 +1388,12 @@
 
     "ARL 44": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 48000,
             "RealEnginePowerPS": 575,
             "RealMaxSpeedKmh": 37.2,
             "DriveType": "TRACKED",
-            "ArmorFrontMm": 120,
+            "ArmorFrontMm": "120 45",
             "ArmorSideMm": 80,
             "RealMaxReverseSpeedKmh": 8,
             "ArmorRearMm": 50,
@@ -1357,6 +1414,7 @@
 
     "Armoured Bank Truck (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 198.94,
             "RealMassKg": 7490,
             "RealEnginePowerHp": 177,
             "RealMaxSpeedKmh": 100,
@@ -1377,6 +1435,7 @@
 
     "Arpeggio Haruna (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.33,
             "RealDisplacementT": 36600,
             "RealEnginePowerHp": 136000,
             "RealMaxSpeedKn": 30,
@@ -1407,13 +1466,14 @@
 
     "Assault Tank M4A3E2 Jumbo": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 38000,
             "RealEnginePowerHp": 450,
             "RealMaxSpeedKmh": 35,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 101,
+            "ArmorFrontMm": "101 47",
             "ArmorSideMm": 76,
             "ArmorRearMm": 38,
             "ArmorTopMm": 19,
@@ -1450,6 +1510,7 @@
 
     "Axis Destroyer (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.52,
             "RealDisplacementT": 3415,
             "RealEnginePowerHp": 70000,
             "RealMaxSpeedKn": 36,
@@ -1481,6 +1542,7 @@
 
     "Axis Light Cruiser (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.39,
             "RealDisplacementT": 7700,
             "RealEnginePowerHp": 68000,
             "RealMaxSpeedKn": 32,
@@ -1512,6 +1574,7 @@
 
     "Baneblade (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 316000,
             "RealEnginePowerHp": 2000,
             "RealMaxSpeedKmh": 25,
@@ -1541,6 +1604,7 @@
 
     "Battleship (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.99,
             "RealDisplacementLongTons": 30000,
             "RealEnginePowerHp": 26500,
             "RealMaxSpeedKn": 21,
@@ -1571,6 +1635,7 @@
 
     "Bicycle": {
         "properties": {
+            "RealTurnRateDegPerSec": 132.63,
             "RealMassKg": 15,
             "RealEnginePowerHp": 0.3,
             "RealMaxSpeedKmh": 25,
@@ -1591,6 +1656,7 @@
 
     "Bishop 25-pdr SP": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 17500,
             "RealEnginePowerHp": 131,
             "RealMaxSpeedKmh": 24,
@@ -1617,6 +1683,7 @@
 
     "BK-1124 Armoured River Gunboat": {
         "properties": {
+            "RealTurnRateDegPerSec": 8.24,
             "RealDisplacementLongTons": 52.2,
             "RealEnginePowerHp": 1000,
             "RealMaxSpeedKn": 21,
@@ -1648,6 +1715,7 @@
 
     "BL 5.5-inch Medium Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 6190,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -1669,6 +1737,7 @@
 
     "BL 15-inch/42 Twin Turret Mark I": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 750000,
             "TurretArmorFrontMm": 330,
             "TurretArmorSideMm": 280,
@@ -1685,6 +1754,7 @@
 
     "BM-13 Katyusha (ZiS-6)": {
         "properties": {
+            "RealTurnRateDegPerSec": 109.42,
             "RealMassKg": 7200,
             "RealEnginePowerHp": 73,
             "RealMaxSpeedKmh": 55,
@@ -1706,6 +1776,7 @@
 
     "BMW R75": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 420,
             "RealEnginePowerPS": 26,
             "RealMaxSpeedKmh": 92,
@@ -1726,6 +1797,7 @@
 
     "Bofors 37mm Anti-Tank Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 380,
             "RealEnginePowerHp": 2,
             "RealMaxSpeedKmh": 6,
@@ -1747,6 +1819,7 @@
 
     "Bofors 40mm L/60 Towed Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1981,
             "RoundsPerMinPrimary": 120,
             "ReloadTimePrimary": 20,
@@ -1767,6 +1840,7 @@
 
     "Bofors 40mm Mark 4 Quadruple Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 10600,
             "TurretArmorFrontMm": 0,
             "TurretArmorSideMm": 0,
@@ -1785,6 +1859,7 @@
 
     "Bofors 57mm SAK Mark 3": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 14000,
             "TurretArmorFrontMm": 0,
             "TurretArmorSideMm": 0,
@@ -1801,6 +1876,7 @@
 
     "Brooklyn-class Light Cruiser": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.07,
             "RealDisplacementLongTons": 12207,
             "RealEnginePowerHp": 100000,
             "RealMaxSpeedKn": 32.5,
@@ -1832,6 +1908,7 @@
 
     "BT-7 mod. 1937": {
         "properties": {
+            "RealTurnRateDegPerSec": 30,
             "RealMassKg": 13900,
             "RealEnginePowerPS": 450,
             "RealMaxSpeedKmh": 52,
@@ -1857,6 +1934,7 @@
 
     "BT-42": {
         "properties": {
+            "RealTurnRateDegPerSec": 30,
             "RealMassKg": 15000,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 53,
@@ -1882,6 +1960,7 @@
 
     "Bundeswehr Cargo Truck (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 140.06,
             "RealMassKg": 15000,
             "RealEnginePowerHp": 320,
             "RealMaxSpeedKmh": 88,
@@ -1902,6 +1981,7 @@
 
     "Canon de 47mm SA mle 1937": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.29,
             "RealMassKg": 1070,
             "RealEnginePowerHp": 4,
             "RealMaxSpeedKmh": 8,
@@ -1923,6 +2003,7 @@
 
     "Canon de 75 modele 1897": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.29,
             "RealMassKg": 1544,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -1944,6 +2025,7 @@
 
     "Cargo Ship (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.03,
             "RealDisplacementT": 10000,
             "RealEnginePowerHp": 6000,
             "RealMaxSpeedKn": 15,
@@ -1971,6 +2053,7 @@
 
     "Carro Armato M11/39": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11175,
             "RealEnginePowerPS": 105,
             "RealMaxSpeedKmh": 32.2,
@@ -1996,6 +2079,7 @@
 
     "Carro Armato M13/40": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 14000,
             "RealEnginePowerPS": 125,
             "RealMaxSpeedKmh": 31.8,
@@ -2021,6 +2105,7 @@
 
     "Carro Armato M15/42": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15500,
             "RealEnginePowerPS": 192,
             "RealMaxSpeedKmh": 38,
@@ -2046,6 +2131,7 @@
 
     "Carro Armato P26/40": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 26000,
             "RealEnginePowerPS": 330,
             "RealMaxSpeedKmh": 40,
@@ -2071,6 +2157,7 @@
 
     "Carro Armato P.43": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 30000,
             "RealEnginePowerHp": 420,
             "RealMaxSpeedKmh": 40,
@@ -2096,6 +2183,7 @@
 
     "Carro Veloce L3/35": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 3200,
             "RealEnginePowerPS": 43,
             "RealMaxSpeedKmh": 42,
@@ -2117,6 +2205,7 @@
 
     "CATTB Abrams Test Bed": {
         "properties": {
+            "RealTurnRateDegPerSec": 36,
             "RealMassKg": 55000,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 72,
@@ -2146,12 +2235,13 @@
 
     "Centurion Mk 3": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 50800,
             "RealEnginePowerHp": 650,
             "RealMaxSpeedKmh": 34.6,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 12,
-            "ArmorFrontMm": 76,
+            "ArmorFrontMm": "76 58",
             "ArmorSideMm": 51,
             "ArmorRearMm": 38,
             "ArmorTopMm": 29,
@@ -2171,6 +2261,7 @@
 
     "Char 2C": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 69000,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 15,
@@ -2196,13 +2287,14 @@
 
     "Char B1 bis": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 28000,
             "RealEnginePowerPS": 272,
             "RealMaxSpeedKmh": 28,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 3,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 60,
+            "ArmorFrontMm": "60 45",
             "ArmorSideMm": 55,
             "ArmorRearMm": 50,
             "ArmorTopMm": 25,
@@ -2223,6 +2315,7 @@
 
     "Char de Bataille B40": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 40000,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 30,
@@ -2248,6 +2341,7 @@
 
     "Char leger modele 1935 H modifie 39": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 12100,
             "RealEnginePowerHp": 120,
             "RealMaxSpeedKmh": 36,
@@ -2273,6 +2367,7 @@
 
     "Chevrolet Suburban (2010)": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2676,
             "RealEnginePowerHp": 320,
             "RealMaxSpeedKmh": 180,
@@ -2296,6 +2391,7 @@
 
     "Chinese Junk": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealDisplacementT": 200,
             "RealDraftM": 1.5,
             "ArmorBeltMm": 0,
@@ -2310,6 +2406,7 @@
 
     "Churchill Mk III AVRE": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 40000,
             "RealEnginePowerHp": 350,
             "RealMaxSpeedKmh": 24.6,
@@ -2341,6 +2438,7 @@
 
     "Citroen Type 23U": {
         "properties": {
+            "RealTurnRateDegPerSec": 185.68,
             "RealMassKg": 3500,
             "RealEnginePowerHp": 43,
             "RealMaxSpeedKmh": 70,
@@ -2361,6 +2459,7 @@
 
     "Coastal Gun (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 12000,
             "RealEnginePowerHp": 1,
             "RealMaxSpeedKmh": 2,
@@ -2382,6 +2481,7 @@
 
     "Cottonclad Warship (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.32,
             "RealDisplacementLongTons": 1000,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKn": 9,
@@ -2403,6 +2503,7 @@
 
     "Cruise Liner (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.08,
             "RealDisplacementLongTons": 20000,
             "RealEnginePowerHp": 20000,
             "RealMaxSpeedKn": 20,
@@ -2429,6 +2530,7 @@
 
     "Cruiser Tank A27M Cromwell Mk V": {
         "properties": {
+            "RealTurnRateDegPerSec": 30,
             "RealMassKg": 27900,
             "RealEnginePowerHp": 600,
             "RealMaxSpeedKmh": 64,
@@ -2480,6 +2582,7 @@
 
     "Cruiser Tank A30 Challenger": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 33000,
             "RealEnginePowerHp": 600,
             "RealMaxSpeedKmh": 51.5,
@@ -2518,6 +2621,7 @@
 
     "Cruiser Tank Mk VI Crusader Mk III": {
         "properties": {
+            "RealTurnRateDegPerSec": 30,
             "RealMassKg": 20000,
             "RealEnginePowerHp": 340,
             "RealMaxSpeedKmh": 43,
@@ -2570,6 +2674,7 @@
 
     "CSS Hunley": {
         "properties": {
+            "RealTurnRateDegPerSec": 3,
             "RealDisplacementLongTons": 7.5,
             "RealEnginePowerHp": 1,
             "RealMaxSpeedKn": 4,
@@ -2592,6 +2697,7 @@
 
     "CSS Virginia": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.55,
             "RealDisplacementLongTons": 4000,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKn": 6,
@@ -2599,7 +2705,7 @@
             "RealMaxReverseSpeedKn": 2,
             "RealDraftM": 6.7,
             "ShootDelayPrimarySeconds": 60,
-            "ArmorFrontMm": "102 36",
+            "ArmorFrontMm": "102 54",
             "ArmorSideMm": "102 36",
             "ArmorRearMm": "102 36",
             "ArmorTopMm": 25,
@@ -2614,6 +2720,7 @@
 
     "Design A-150 Battleship": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.92,
             "RealDisplacementLongTons": 79000,
             "RealEnginePowerHp": 200000,
             "RealMaxSpeedKn": 27,
@@ -2645,6 +2752,7 @@
 
     "Dicker Max": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22000,
             "RealEnginePowerPS": 300,
             "RealMaxSpeedKmh": 27,
@@ -2666,6 +2774,7 @@
 
     "DKM Admiral Graf Spee (1939)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.67,
             "RealDisplacementT": 16020,
             "RealEnginePowerHp": 54000,
             "RealMaxSpeedKn": 28.5,
@@ -2697,6 +2806,7 @@
 
     "DKM Bismarck (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.23,
             "RealDisplacementT": 50300,
             "RealEnginePowerHp": 150170,
             "RealMaxSpeedKn": 30.8,
@@ -2727,6 +2837,7 @@
 
     "DKM Gneisenau (1944)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.35,
             "RealDisplacementLongTons": 38100,
             "RealEnginePowerHp": 160000,
             "RealMaxSpeedKn": 31,
@@ -2757,6 +2868,7 @@
 
     "DKM Scharnhorst (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.35,
             "RealDisplacementLongTons": 38100,
             "RealEnginePowerHp": 160000,
             "RealMaxSpeedKn": 31,
@@ -2787,6 +2899,7 @@
 
     "DKM Tirpitz (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.21,
             "RealDisplacementT": 52600,
             "RealEnginePowerHp": 150170,
             "RealMaxSpeedKn": 30.8,
@@ -2817,6 +2930,7 @@
 
     "DKM U-14 (Type IIB)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.78,
             "RealDisplacementT": 328,
             "RealEnginePowerHp": 700,
             "RealMaxSpeedKn": 13,
@@ -2843,6 +2957,7 @@
 
     "DKM U-88 (Type VIIC)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.73,
             "RealDisplacementT": 871,
             "RealEnginePowerHp": 3200,
             "RealMaxSpeedKn": 17.7,
@@ -2869,6 +2984,7 @@
 
     "DKM U-505 (Type IXC)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.6,
             "RealDisplacementT": 1120,
             "RealEnginePowerHp": 4400,
             "RealMaxSpeedKn": 18.3,
@@ -2895,6 +3011,7 @@
 
     "DKM U-2540 (Type XXI)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.88,
             "RealDisplacementT": 1819,
             "RealEnginePowerHp": 4000,
             "RealMaxSpeedKn": 15.6,
@@ -2921,6 +3038,7 @@
 
     "DKM Z1 Leberecht Maass": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.82,
             "RealDisplacementT": 3156,
             "RealEnginePowerHp": 70000,
             "RealMaxSpeedKn": 38,
@@ -2951,6 +3069,7 @@
 
     "DKM Z29": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.48,
             "RealDisplacementT": 3543,
             "RealEnginePowerHp": 70000,
             "RealMaxSpeedKn": 36,
@@ -2982,6 +3101,7 @@
 
     "DKM Z39 (1945)": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.41,
             "RealDisplacementLongTons": 3691,
             "RealEnginePowerHp": 70000,
             "RealMaxSpeedKn": 36,
@@ -3012,6 +3132,7 @@
 
     "Dodge Ram Pickup": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2400,
             "RealEnginePowerHp": 345,
             "RealMaxSpeedKmh": 190,
@@ -3032,6 +3153,7 @@
 
     "Fiat 626": {
         "properties": {
+            "RealTurnRateDegPerSec": 123.35,
             "RealMassKg": 6500,
             "RealEnginePowerHp": 70,
             "RealMaxSpeedKmh": 62,
@@ -3052,6 +3174,7 @@
 
     "FIAT Ansaldo P.143 (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 100000,
             "RealEnginePowerHp": 800,
             "RealMaxSpeedKmh": 25,
@@ -3077,6 +3200,7 @@
 
     "Fire Appliance (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 16000,
             "RealEnginePowerHp": 299,
             "RealMaxSpeedKmh": 100,
@@ -3098,11 +3222,12 @@
 
     "Flakpanzer IV Ostwind": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25000,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 10",
             "ArmorSideMm": 30,
             "ArmorRearMm": 30,
             "ArmorTopMm": 20,
@@ -3123,6 +3248,7 @@
 
     "Flakpanzer IV Wirbelwind": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 22000,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 38,
@@ -3130,7 +3256,7 @@
             "RoundsPerMinPrimary": 1400,
             "ReloadTimePrimary": 51,
             "ReloadRoundsPrimary": 80,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 10",
             "ArmorSideMm": 30,
             "ArmorRearMm": 30,
             "ArmorTopMm": 20,
@@ -3152,6 +3278,7 @@
 
     "Flugzeugtrager Graf Zeppelin (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.54,
             "RealDisplacementT": 33550,
             "RealEnginePowerHp": 200000,
             "RealMaxSpeedKn": 33.8,
@@ -3183,6 +3310,7 @@
 
     "Ford Model T": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 540,
             "RealEnginePowerHp": 20,
             "RealMaxSpeedKmh": 72,
@@ -3203,6 +3331,7 @@
 
     "Formula One Racing Car (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 743,
             "RealEnginePowerHp": 950,
             "RealMaxSpeedKmh": 340,
@@ -3228,6 +3357,7 @@
 
     "Full-Size Sedan (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1850,
             "RealEnginePowerHp": 250,
             "RealMaxSpeedKmh": 200,
@@ -3251,6 +3381,7 @@
 
     "FV4034 Challenger 2": {
         "properties": {
+            "RealTurnRateDegPerSec": 28,
             "RealMassKg": 62500,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKmh": 59,
@@ -3299,6 +3430,7 @@
 
     "GAZ-24 Volga": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1420,
             "RealEnginePowerHp": 95,
             "RealMaxSpeedKmh": 145,
@@ -3320,6 +3452,7 @@
 
     "GAZ-67": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1320,
             "RealEnginePowerHp": 54,
             "RealMaxSpeedKmh": 90,
@@ -3340,6 +3473,7 @@
 
     "GAZ-MM": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1810,
             "RealEnginePowerPS": 50,
             "RealMaxSpeedKmh": 70,
@@ -3361,6 +3495,7 @@
 
     "GMC CCKW 353": {
         "properties": {
+            "RealTurnRateDegPerSec": 190.99,
             "RealMassKg": 5420,
             "RealEnginePowerHp": 91.5,
             "RealMaxSpeedKmh": 72,
@@ -3383,6 +3518,7 @@
 
     "GMC CCKW 353 with T27 Xylophone": {
         "properties": {
+            "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 9300,
             "RealEnginePowerHp": 91.5,
             "RealMaxSpeedKmh": 72,
@@ -3408,6 +3544,7 @@
 
     "GMC Vandura Panel Van": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2300,
             "RealEnginePowerHp": 160,
             "RealMaxSpeedKmh": 150,
@@ -3428,6 +3565,7 @@
 
     "Golf Cart (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 127.32,
             "RealMassKg": 400,
             "RealEnginePowerHp": 5,
             "RealMaxSpeedKmh": 24,
@@ -3448,6 +3586,7 @@
 
     "GTK Boxer": {
         "properties": {
+            "RealTurnRateDegPerSec": 163.93,
             "RealMassKg": 36500,
             "RealEnginePowerHp": 711,
             "RealMaxSpeedKmh": 103,
@@ -3472,7 +3611,13 @@
 
     "GTK Boxer 20mm Cannon Armament": {
         "properties": {
+            "RealTurnRateDegPerSec": 163.93,
             "UseAmmoGroup": "20mm Rh 202"
+        },
+        "exceptions": {
+            "RealTurnRateDegPerSec": [
+                "boxer4"
+            ]
         },
         "items": [
             "boxer4"
@@ -3481,7 +3626,13 @@
 
     "GTK Boxer Skyranger 35 Armament": {
         "properties": {
+            "RealTurnRateDegPerSec": 163.93,
             "UseAmmoGroup": "35mm Oerlikon KDG"
+        },
+        "exceptions": {
+            "RealTurnRateDegPerSec": [
+                "boxer5"
+            ]
         },
         "items": [
             "boxer5"
@@ -3490,6 +3641,7 @@
 
     "Half-track Car M3": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 9070,
             "RealEnginePowerHp": 148,
             "RealMaxSpeedKmh": 72,
@@ -3512,6 +3664,7 @@
 
     "Heavy Cruiser (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.9,
             "RealDisplacementLongTons": 15000,
             "RealEnginePowerHp": 110000,
             "RealMaxSpeedKn": 32,
@@ -3542,6 +3695,7 @@
 
     "Heavy Goods Truck (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 18000,
             "RealEnginePowerHp": 440,
             "RealMaxSpeedKmh": 90,
@@ -3565,6 +3719,7 @@
 
     "HMAS Canberra D33": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.94,
             "RealDisplacementLongTons": 13450,
             "RealEnginePowerHp": 80000,
             "RealMaxSpeedKn": 31.5,
@@ -3595,6 +3750,7 @@
 
     "HMS Abercrombie (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.86,
             "RealDisplacementT": 9717,
             "RealEnginePowerHp": 4800,
             "RealMaxSpeedKn": 12.5,
@@ -3625,6 +3781,7 @@
 
     "HMS Ajax (22)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.23,
             "RealDisplacementLongTons": 9740,
             "RealEnginePowerHp": 72000,
             "RealMaxSpeedKn": 32.5,
@@ -3656,6 +3813,7 @@
 
     "HMS Ardent F184": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.17,
             "RealDisplacementLongTons": 3250,
             "RealEnginePowerHp": 50000,
             "RealMaxSpeedKn": 32,
@@ -3682,6 +3840,7 @@
 
     "HMS Ark Royal (91)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.51,
             "RealDisplacementT": 27720,
             "RealEnginePowerHp": 102000,
             "RealMaxSpeedKn": 31,
@@ -3709,6 +3868,7 @@
 
     "HMS Cockchafer": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.38,
             "RealDisplacementLongTons": 645,
             "RealEnginePowerHp": 2000,
             "RealMaxSpeedKn": 14,
@@ -3739,6 +3899,7 @@
 
     "HMS Cossack L03": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.88,
             "RealDisplacementLongTons": 2519,
             "RealEnginePowerHp": 44000,
             "RealMaxSpeedKn": 36,
@@ -3769,6 +3930,7 @@
 
     "HMS Coventry D118": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.6,
             "RealDisplacementLongTons": 4820,
             "RealEnginePowerHp": 50000,
             "RealMaxSpeedKn": 30,
@@ -3795,6 +3957,7 @@
 
     "HMS Erebus (1916)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.87,
             "RealDisplacementT": 8450,
             "RealEnginePowerHp": 6000,
             "RealMaxSpeedKn": 12,
@@ -3825,6 +3988,7 @@
 
     "HMS Jervis G00": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.72,
             "RealDisplacementLongTons": 2850,
             "RealEnginePowerHp": 40000,
             "RealMaxSpeedKn": 36,
@@ -3855,6 +4019,7 @@
 
     "HMS Liverpool C11 (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.07,
             "RealDisplacementLongTons": 11650,
             "RealEnginePowerHp": 82500,
             "RealMaxSpeedKn": 32,
@@ -3885,6 +4050,7 @@
 
     "HMS Prince of Wales (53)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.16,
             "RealDisplacementLongTons": 43786,
             "RealEnginePowerHp": 110000,
             "RealMaxSpeedKn": 28,
@@ -3916,6 +4082,7 @@
 
     "HMS Repulse (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.24,
             "RealDisplacementLongTons": 38300,
             "RealEnginePowerHp": 112000,
             "RealMaxSpeedKn": 28.4,
@@ -3946,6 +4113,7 @@
 
     "HMS Roberts F40 (1944)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.84,
             "RealDisplacementLongTons": 9150,
             "RealEnginePowerHp": 4800,
             "RealMaxSpeedKn": 12,
@@ -3976,6 +4144,7 @@
 
     "HMS Rodney (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1,
             "RealDisplacementLongTons": 38000,
             "RealEnginePowerHp": 45000,
             "RealMaxSpeedKn": 23,
@@ -4006,6 +4175,7 @@
 
     "HMS Royal Oak (1939)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1,
             "RealDisplacementLongTons": 33500,
             "RealEnginePowerHp": 40000,
             "RealMaxSpeedKn": 22,
@@ -4036,6 +4206,7 @@
 
     "HMS Skate": {
         "properties": {
+            "RealTurnRateDegPerSec": 5.17,
             "RealDisplacementLongTons": 1065,
             "RealEnginePowerHp": 27000,
             "RealMaxSpeedKn": 36,
@@ -4062,6 +4233,7 @@
 
     "HMS Triumph N18": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.92,
             "RealDisplacementLongTons": 1571,
             "RealEnginePowerHp": 2500,
             "RealMaxSpeedKn": 15.25,
@@ -4088,6 +4260,7 @@
 
     "HMS Trump P333": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.92,
             "RealDisplacementLongTons": 1571,
             "RealEnginePowerHp": 2500,
             "RealMaxSpeedKn": 15.25,
@@ -4114,6 +4287,7 @@
 
     "HMS Vanguard (23)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.18,
             "RealDisplacementLongTons": 51420,
             "RealEnginePowerHp": 130000,
             "RealMaxSpeedKn": 30,
@@ -4145,6 +4319,7 @@
 
     "HMS Warspite (1915)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.09,
             "RealDisplacementLongTons": 33410,
             "RealEnginePowerHp": 75000,
             "RealMaxSpeedKn": 24,
@@ -4175,6 +4350,7 @@
 
     "HMS Warspite (1937)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.06,
             "RealDisplacementLongTons": 36450,
             "RealEnginePowerHp": 80000,
             "RealMaxSpeedKn": 24,
@@ -4205,6 +4381,7 @@
 
     "Hot Air Observation Balloon": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 500,
             "ShootDelayPrimarySeconds": 3,
             "ArmorFrontMm": 0,
@@ -4222,6 +4399,7 @@
 
     "Hotchkiss Mle 1914 Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 50,
             "RoundsPerMinPrimary": 450,
             "ArmorFrontMm": 0,
@@ -4239,6 +4417,7 @@
 
     "HSwMS Gotland (1938)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.28,
             "RealDisplacementLongTons": 5550,
             "RealEnginePowerHp": 33000,
             "RealMaxSpeedKn": 27.5,
@@ -4269,6 +4448,7 @@
 
     "Hummel (Sd.Kfz. 165)": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 23000,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 40,
@@ -4296,6 +4476,7 @@
 
     "IJN Akatsuki": {
         "properties": {
+            "RealTurnRateDegPerSec": 4.39,
             "RealDisplacementLongTons": 2050,
             "RealEnginePowerHp": 50000,
             "RealMaxSpeedKn": 38,
@@ -4326,6 +4507,7 @@
 
     "IJN Hashidate (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.87,
             "RealDisplacementT": 1000,
             "RealEnginePowerHp": 4600,
             "RealMaxSpeedKn": 19.5,
@@ -4352,6 +4534,7 @@
 
     "IJN I-19 (Type B1)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.26,
             "RealDisplacementT": 3654,
             "RealEnginePowerHp": 12400,
             "RealMaxSpeedKn": 23.6,
@@ -4378,6 +4561,7 @@
 
     "IJN Ikazuchi (1932)": {
         "properties": {
+            "RealTurnRateDegPerSec": 4.41,
             "RealDisplacementT": 2050,
             "RealEnginePowerHp": 50000,
             "RealMaxSpeedKn": 38,
@@ -4408,6 +4592,7 @@
 
     "IJN Kaga (1928)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.2,
             "RealDisplacementT": 38200,
             "RealEnginePowerHp": 91000,
             "RealMaxSpeedKn": 27.5,
@@ -4439,6 +4624,7 @@
 
     "IJN Kirishima (1915)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.27,
             "RealDisplacementT": 32200,
             "RealEnginePowerHp": 64000,
             "RealMaxSpeedKn": 27.5,
@@ -4469,6 +4655,7 @@
 
     "IJN Kirishima (1942)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.33,
             "RealDisplacementT": 36600,
             "RealEnginePowerHp": 136000,
             "RealMaxSpeedKn": 30,
@@ -4499,6 +4686,7 @@
 
     "IJN Kumano (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.08,
             "RealDisplacementLongTons": 15057,
             "RealEnginePowerHp": 152000,
             "RealMaxSpeedKn": 35,
@@ -4529,6 +4717,7 @@
 
     "IJN Mikuma (1935)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.28,
             "RealDisplacementT": 13668,
             "RealEnginePowerHp": 152000,
             "RealMaxSpeedKn": 37,
@@ -4559,6 +4748,7 @@
 
     "IJN Musashi (1944)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.95,
             "RealDisplacementT": 72800,
             "RealEnginePowerHp": 150000,
             "RealMaxSpeedKn": 27,
@@ -4589,6 +4779,7 @@
 
     "IJN Nagato (1932)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.05,
             "RealDisplacementT": 42850,
             "RealEnginePowerHp": 82000,
             "RealMaxSpeedKn": 25,
@@ -4619,6 +4810,7 @@
 
     "IJN RO-500 (Type IXC)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.6,
             "RealDisplacementT": 1120,
             "RealEnginePowerHp": 4400,
             "RealMaxSpeedKn": 18.3,
@@ -4645,6 +4837,7 @@
 
     "IJN Takao (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.01,
             "RealDisplacementT": 15875,
             "RealEnginePowerHp": 130000,
             "RealMaxSpeedKn": 34.2,
@@ -4675,6 +4868,7 @@
 
     "IJN Yamato (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.95,
             "RealDisplacementT": 72800,
             "RealEnginePowerHp": 150000,
             "RealMaxSpeedKn": 27,
@@ -4706,6 +4900,7 @@
 
     "IJN Yoizuki (1944)": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.14,
             "RealDisplacementT": 3700,
             "RealEnginePowerHp": 52000,
             "RealMaxSpeedKn": 33,
@@ -4737,6 +4932,7 @@
 
     "Ikarus 60": {
         "properties": {
+            "RealTurnRateDegPerSec": 95.49,
             "RealMassKg": 11600,
             "RealEnginePowerHp": 125,
             "RealMaxSpeedKmh": 60,
@@ -4757,6 +4953,7 @@
 
     "Ikarus 260": {
         "properties": {
+            "RealTurnRateDegPerSec": 127.32,
             "RealMassKg": 15600,
             "RealEnginePowerHp": 192,
             "RealMaxSpeedKmh": 80,
@@ -4777,6 +4974,7 @@
 
     "Infantry Tank A22F Churchill Mk VII": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 40600,
             "RealEnginePowerHp": 350,
             "RealMaxSpeedKmh": 21.7,
@@ -4821,6 +5019,7 @@
 
     "Infantry Tank Mk II Matilda II": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25400,
             "RealEnginePowerHp": 190,
             "RealMaxSpeedKmh": 24,
@@ -4846,6 +5045,7 @@
 
     "Infantry Tank Mk III Valentine Mk II": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 16257,
             "RealEnginePowerHp": 131,
             "RealMaxSpeedKmh": 24,
@@ -4889,6 +5089,7 @@
 
     "Infantry Tank Mk IV A22 Churchill Mk III": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 39600,
             "RealEnginePowerHp": 350,
             "RealMaxSpeedKmh": 24.6,
@@ -4932,6 +5133,7 @@
 
     "IS-2 mod. 1944": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 46000,
             "RealEnginePowerPS": 520,
             "RealMaxSpeedKmh": 37,
@@ -4987,6 +5189,7 @@
 
     "IS-3": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 45800,
             "RealEnginePowerPS": 520,
             "RealMaxSpeedKmh": 37,
@@ -5013,6 +5216,7 @@
 
     "IS-7": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 68000,
             "RealEnginePowerPS": 1050,
             "RealMaxSpeedKmh": 60,
@@ -5038,6 +5242,7 @@
 
     "ISU-152": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 47300,
             "RealEnginePowerPS": 520,
             "RealMaxSpeedKmh": 37,
@@ -5059,6 +5264,7 @@
 
     "Isuzu Type 94": {
         "properties": {
+            "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 3600,
             "RealEnginePowerHp": 68,
             "RealMaxSpeedKmh": 60,
@@ -5079,12 +5285,13 @@
 
     "Jagdpanther": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 46000,
             "RealEnginePowerPS": 700,
             "RealMaxSpeedKmh": 30,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 9,
-            "ArmorFrontMm": "80 60",
+            "ArmorFrontMm": "80 55",
             "ArmorSideMm": "50 30",
             "ArmorRearMm": "40 35",
             "ArmorTopMm": 25,
@@ -5122,11 +5329,12 @@
 
     "Jagdpanzer 38(t) Hetzer": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 16000,
             "RealEnginePowerPS": 150,
             "RealMaxSpeedKmh": 40,
             "DriveType": "TRACKED",
-            "ArmorFrontMm": 60,
+            "ArmorFrontMm": "60 60",
             "ArmorSideMm": 20,
             "ArmorRearMm": 20,
             "ArmorTopMm": 8,
@@ -5144,6 +5352,7 @@
 
     "Jagdtiger": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 75200,
             "RealEnginePowerPS": 600,
             "RealMaxSpeedKmh": 34.6,
@@ -5171,6 +5380,7 @@
 
     "K2 Black Panther PIP": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 55000,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 70,
@@ -5200,6 +5410,7 @@
 
     "Karl-Gerat 040": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 124000,
             "RealEnginePowerPS": 580,
             "RealMaxSpeedKmh": 10,
@@ -5221,6 +5432,7 @@
 
     "Komsomolets T-20": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 3500,
             "RealEnginePowerPS": 71,
             "RealMaxSpeedKmh": 50,
@@ -5243,13 +5455,14 @@
 
     "KV-1E mod. 1941": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 47500,
             "RealEnginePowerPS": 600,
             "RealMaxSpeedKmh": 34,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 6,
             "ShootDelayPrimarySeconds": 5,
-            "ArmorFrontMm": 100,
+            "ArmorFrontMm": "100 30",
             "ArmorSideMm": 75,
             "ArmorRearMm": 70,
             "ArmorTopMm": 30,
@@ -5295,6 +5508,7 @@
 
     "KV-2 mod. 1940": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 53800,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 25,
@@ -5327,6 +5541,7 @@
 
     "Lafette 42 Tripod": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 20,
             "RoundsPerMinPrimary": 1200,
             "ArmorFrontMm": 0,
@@ -5345,6 +5560,7 @@
 
     "Land Rover Defender": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 3050,
             "RealEnginePowerHp": 122,
             "RealMaxSpeedKmh": 145,
@@ -5368,6 +5584,7 @@
 
     "Landkreuzer P.1000 Ratte": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 1000000,
             "RealEnginePowerHp": 16000,
             "RealMaxSpeedKmh": 40,
@@ -5394,6 +5611,7 @@
 
     "LCVP Landing Craft": {
         "properties": {
+            "RealTurnRateDegPerSec": 7.72,
             "RealDisplacementT": 12,
             "RealEnginePowerHp": 225,
             "RealMaxSpeedKn": 12,
@@ -5416,6 +5634,7 @@
 
     "Leman Russ Battle Tank (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 60000,
             "RealEnginePowerHp": 800,
             "RealMaxSpeedKmh": 35,
@@ -5445,6 +5664,7 @@
 
     "Leopard 2A4": {
         "properties": {
+            "RealTurnRateDegPerSec": 32,
             "RealMassKg": 55150,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 72,
@@ -5474,6 +5694,7 @@
 
     "Leopard 2A6": {
         "properties": {
+            "RealTurnRateDegPerSec": 32,
             "RealMassKg": 62300,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 72,
@@ -5519,6 +5740,7 @@
 
     "Leopard 2A7+ PSO": {
         "properties": {
+            "RealTurnRateDegPerSec": 32,
             "RealMassKg": 67500,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 68,
@@ -5549,6 +5771,7 @@
 
     "Light Armored Car M8 Greyhound": {
         "properties": {
+            "RealTurnRateDegPerSec": 177.06,
             "RealMassKg": 7440,
             "RealEnginePowerHp": 110,
             "RealMaxSpeedKmh": 89,
@@ -5600,6 +5823,7 @@
 
     "Light Panel Truck (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 218.84,
             "RealMassKg": 7490,
             "RealEnginePowerHp": 180,
             "RealMaxSpeedKmh": 110,
@@ -5622,6 +5846,7 @@
 
     "Light Tank M3 Stuart": {
         "properties": {
+            "RealTurnRateDegPerSec": 30,
             "RealMassKg": 12700,
             "RealEnginePowerHp": 250,
             "RealMaxSpeedKmh": 58,
@@ -5648,13 +5873,14 @@
 
     "Light Tank M5A1 Stuart": {
         "properties": {
+            "RealTurnRateDegPerSec": 30,
             "RealMassKg": 15200,
             "RealEnginePowerHp": 220,
             "RealMaxSpeedKmh": 58,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 15,
             "ShootDelayPrimarySeconds": 3,
-            "ArmorFrontMm": 28,
+            "ArmorFrontMm": "28 48",
             "ArmorSideMm": 28,
             "ArmorRearMm": 25,
             "ArmorTopMm": 13,
@@ -5691,13 +5917,14 @@
 
     "Light Tank M24 Chaffee": {
         "properties": {
+            "RealTurnRateDegPerSec": 30,
             "RealMassKg": 18370,
             "RealEnginePowerHp": 220,
             "RealMaxSpeedKmh": 56,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 23,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 25,
+            "ArmorFrontMm": "25 60",
             "ArmorSideMm": 25,
             "ArmorRearMm": 19,
             "ArmorTopMm": 13,
@@ -5742,6 +5969,7 @@
 
     "M1 Abrams": {
         "properties": {
+            "RealTurnRateDegPerSec": 36,
             "RealMassKg": 57154,
             "RealEnginePowerHp": 1500,
             "RealMaxSpeedKmh": 67,
@@ -5790,6 +6018,7 @@
 
     "M2 Browning on M3 Tripod": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 58,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
@@ -5806,6 +6035,7 @@
 
     "M8A1 75mm Gun Motor Carriage": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15600,
             "RealEnginePowerHp": 296,
             "RealMaxSpeedKmh": 64,
@@ -5848,6 +6078,7 @@
 
     "M18 Hellcat": {
         "properties": {
+            "RealTurnRateDegPerSec": 36,
             "RealMassKg": 17036,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": "89",
@@ -5900,6 +6131,7 @@
 
     "M20 Armored Utility Car": {
         "properties": {
+            "RealTurnRateDegPerSec": 236.08,
             "RealMassKg": 5850,
             "RealEnginePowerHp": 110,
             "RealMaxSpeedKmh": 89,
@@ -5921,6 +6153,7 @@
 
     "M45 Quadmount .50 Cal": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1087,
             "RoundsPerMinPrimary": 2300,
             "ArmorFrontMm": 6.35,
@@ -5939,6 +6172,7 @@
 
     "M109A6 Paladin": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 28800,
             "RealEnginePowerHp": 440,
             "RealMaxSpeedKmh": 61,
@@ -5968,6 +6202,7 @@
 
     "M998 HMMWV": {
         "properties": {
+            "RealTurnRateDegPerSec": 183.8,
             "RealMassKg": 3494,
             "RealEnginePowerHp": 150,
             "RealMaxSpeedKmh": 88,
@@ -5992,6 +6227,7 @@
 
     "M1857 12-pounder Napoleon": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1109,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -6013,6 +6249,7 @@
 
     "M1862 Gatling Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 500,
             "RealEnginePowerHp": 2,
             "RealMaxSpeedKmh": 8,
@@ -6034,6 +6271,7 @@
 
     "M1937 53-K 45mm Anti-Tank Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 560,
             "RealEnginePowerHp": 2,
             "RealMaxSpeedKmh": 6,
@@ -6053,8 +6291,55 @@
         ]
     },
 
+    "Man-pushed Anti-Tank Guns": {
+        "properties": {
+            "RealTurnRateDegPerSec": 0,
+            "PushSpeedKmh": 4,
+            "MaxNegativeThrottle": 1,
+            "TurnLeftSpeed": 1,
+            "TurnRightSpeed": 1,
+            "Tank": "false",
+            "RotateWheels": "true"
+        },
+        "exceptions": {
+            "RealTurnRateDegPerSec": [
+                "2pdrat",
+                "44_pak40",
+                "44_qf2pdr",
+                "44_zis2",
+                "53k",
+                "bofors37mm",
+                "pak36",
+                "pak40",
+                "pak43",
+                "qf6pdr",
+                "qf17pdr",
+                "type_1_47mm_at",
+                "type_94_at",
+                "zis2"
+            ]
+        },
+        "items": [
+            "2pdrat",
+            "44_pak40",
+            "44_qf2pdr",
+            "44_zis2",
+            "53k",
+            "bofors37mm",
+            "pak36",
+            "pak40",
+            "pak43",
+            "qf6pdr",
+            "qf17pdr",
+            "type_1_47mm_at",
+            "type_94_at",
+            "zis2"
+        ]
+    },
+
     "Marder II (Sd.Kfz. 131)": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11000,
             "RealEnginePowerPS": 140,
             "RealMaxSpeedKmh": 40,
@@ -6095,6 +6380,7 @@
 
     "Mark 13 Guided Missile Launching System": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 60000,
             "ShootDelayPrimarySeconds": 8,
             "UseRealisticVehicleHealth": "true",
@@ -6107,6 +6393,7 @@
 
     "Maschinengewehr 08 Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 62,
             "RoundsPerMinPrimary": 500,
             "ArmorFrontMm": 0,
@@ -6124,12 +6411,13 @@
 
     "Medium Tank M3 Lee": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 27200,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 42,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 3,
-            "ArmorFrontMm": 51,
+            "ArmorFrontMm": "51 45",
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
             "TurretArmorFrontMm": 51,
@@ -6165,13 +6453,14 @@
 
     "Medium Tank M4 Sherman (75mm)": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30300,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 39,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 50,
+            "ArmorFrontMm": "50 56",
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
             "ArmorTopMm": 19,
@@ -6218,13 +6507,14 @@
 
     "Medium Tank M4 Sherman with T34 Calliope": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 31400,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 39,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 0.5,
-            "ArmorFrontMm": 50,
+            "ArmorFrontMm": "50 56",
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
             "ArmorTopMm": 19,
@@ -6234,7 +6524,6 @@
             "TurretArmorRearMm": 50,
             "TurretArmorTopMm": 25,
             "PartArmorMm": ["leftTrack 15", "rightTrack 15"],
-            "UseAmmoGroup": "75mm M3",
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -6247,13 +6536,14 @@
 
     "Medium Tank M4A1 Sherman (75mm)": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30300,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 39,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 51,
+            "ArmorFrontMm": "51 47",
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
             "ArmorTopMm": 19,
@@ -6275,13 +6565,14 @@
 
     "Medium Tank M4A1 Sherman DD": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30600,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 39,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 50,
+            "ArmorFrontMm": "50 47",
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
             "ArmorTopMm": 19,
@@ -6321,13 +6612,14 @@
 
     "Medium Tank M4A3 (76) W HVSS": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 33650,
             "RealEnginePowerHp": 450,
             "RealMaxSpeedKmh": 42,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 5,
-            "ArmorFrontMm": 63,
+            "ArmorFrontMm": "63 47",
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
             "ArmorTopMm": 19,
@@ -6373,6 +6665,7 @@
 
     "Medium Tank M4A3 (76) W With T34 Calliope": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 33600,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKmh": 42,
@@ -6402,13 +6695,14 @@
 
     "Medium Tank M4A3 Sherman (76mm)": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30300,
             "RealEnginePowerHp": 450,
             "RealMaxSpeedKmh": 42,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 51,
+            "ArmorFrontMm": "51 47",
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
             "ArmorTopMm": 19,
@@ -6429,13 +6723,14 @@
 
     "Medium Tank M26 Pershing": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 41892,
             "RealEnginePowerHp": 450,
             "RealMaxSpeedKmh": 40,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 14,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 101,
+            "ArmorFrontMm": "101 46",
             "ArmorSideMm": 76,
             "ArmorRearMm": 51,
             "ArmorTopMm": 22,
@@ -6472,6 +6767,7 @@
 
     "MG 34 on Lafette 34": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 36,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
@@ -6488,13 +6784,19 @@
 
     "MIM-23 HAWK Launcher": {
         "properties": {
-            "RealMassKg": 5600,
+            "RealTurnRateDegPerSec": 26,
+            "RealMassKg": 12900,
+            "RealEnginePowerHp": 202,
+            "RealMaxSpeedKmh": 64,
+            "DriveType": "TRACKED",
+            "RealMaxReverseSpeedKmh": 16,
             "ShootDelayPrimarySeconds": 5,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
             "ArmorRearMm": 0,
             "ArmorTopMm": 0,
             "ArmorBottomMm": 0,
+            "PartArmorMm": ["leftTrack 10", "rightTrack 10"],
             "UseRealisticVehicleHealth": "true",
             "ReadWeaponsFromGunTypes": "true"
         },
@@ -6505,6 +6807,7 @@
 
     "MK-15 Barrack Buster Battery": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.18,
             "RealMassKg": 6000,
             "RealEnginePowerHp": 1,
             "RealMaxSpeedKmh": 2,
@@ -6526,6 +6829,7 @@
 
     "MK-15 Barrack Buster Mortar": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 500,
             "RealEnginePowerHp": 1,
             "RealMaxSpeedKmh": 2,
@@ -6547,6 +6851,7 @@
 
     "ML-20 152mm Howitzer": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 7270,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -6568,6 +6873,7 @@
 
     "MN Algerie (1934)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.9,
             "RealDisplacementT": 13900,
             "RealEnginePowerHp": 84000,
             "RealMaxSpeedKn": 31,
@@ -6598,6 +6904,7 @@
 
     "MN Bearn": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.04,
             "RealDisplacementT": 28400,
             "RealEnginePowerHp": 37200,
             "RealMaxSpeedKn": 21.5,
@@ -6625,6 +6932,7 @@
 
     "MN Bouclier (1914)": {
         "properties": {
+            "RealTurnRateDegPerSec": 4.82,
             "RealDisplacementT": 850,
             "RealEnginePowerHp": 22500,
             "RealMaxSpeedKn": 31,
@@ -6651,6 +6959,7 @@
 
     "MN Bretagne (1914)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.02,
             "RealDisplacementT": 23936,
             "RealEnginePowerHp": 29000,
             "RealMaxSpeedKn": 20,
@@ -6681,6 +6990,7 @@
 
     "MN Jean Bart (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.29,
             "RealDisplacementT": 48950,
             "RealEnginePowerHp": 150000,
             "RealMaxSpeedKn": 32,
@@ -6711,6 +7021,7 @@
 
     "MN Ocean (1911)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.06,
             "RealDisplacementT": 25000,
             "RealEnginePowerHp": 28000,
             "RealMaxSpeedKn": 21,
@@ -6742,6 +7053,7 @@
 
     "MN Provence (1934)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.03,
             "RealDisplacementT": 28500,
             "RealEnginePowerHp": 43000,
             "RealMaxSpeedKn": 21.4,
@@ -6772,6 +7084,7 @@
 
     "MN Surcouf (1934)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.67,
             "RealDisplacementT": 4373,
             "RealEnginePowerHp": 7600,
             "RealMaxSpeedKn": 18.5,
@@ -6802,6 +7115,7 @@
 
     "Nimbus Type C With 20mm Madsen": {
         "properties": {
+            "RealTurnRateDegPerSec": 135.28,
             "RealMassKg": 300,
             "RealEnginePowerHp": 18,
             "RealMaxSpeedKmh": 85,
@@ -6825,6 +7139,7 @@
 
     "Nusret (1913)": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.09,
             "RealDisplacementT": 365,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKn": 15,
@@ -6851,6 +7166,7 @@
 
     "O-I Super-Heavy Tank": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 150000,
             "RealEnginePowerPS": 1100,
             "RealMaxSpeedKmh": 25,
@@ -6885,6 +7201,7 @@
 
     "Obice da 149/19 modello 37": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.22,
             "RealMassKg": 5500,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -6906,6 +7223,7 @@
 
     "Oliver Hazard Perry-class Frigate": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.66,
             "RealDisplacementLongTons": 4100,
             "RealEnginePowerHp": 41000,
             "RealMaxSpeedKn": 29,
@@ -6933,6 +7251,7 @@
 
     "Onager": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 2000,
             "RealEnginePowerHp": 1,
             "RealMaxSpeedKmh": 3,
@@ -6954,6 +7273,7 @@
 
     "Opel Blitz 3,6-36S": {
         "properties": {
+            "RealTurnRateDegPerSec": 212.21,
             "RealMassKg": 2500,
             "RealEnginePowerPS": 68,
             "RealMaxSpeedKmh": 80,
@@ -6976,6 +7296,7 @@
 
     "Ordnance QF 2-pdr Anti-Tank Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 814,
             "ShootDelayPrimarySeconds": 3,
             "ArmorFrontMm": 10,
@@ -6998,6 +7319,7 @@
 
     "Ordnance QF 6-pounder": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.29,
             "RealMassKg": 1140,
             "RealEnginePowerHp": 4,
             "RealMaxSpeedKmh": 8,
@@ -7020,6 +7342,7 @@
 
     "Ordnance QF 17-pounder": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.22,
             "RealMassKg": 2923,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -7042,6 +7365,7 @@
 
     "Ordnance QF 18-pounder": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.29,
             "RealMassKg": 1282,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -7063,6 +7387,7 @@
 
     "ORP Jastrzab (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.14,
             "RealDisplacementLongTons": 985,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKn": 14.5,
@@ -7089,6 +7414,7 @@
 
     "ORP Piorun (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.87,
             "RealDisplacementLongTons": 2530,
             "RealEnginePowerHp": 40000,
             "RealMaxSpeedKn": 36,
@@ -7119,6 +7445,7 @@
 
     "Panhard 178 AMD 35": {
         "properties": {
+            "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 8200,
             "RealEnginePowerPS": 105,
             "RealMaxSpeedKmh": 72,
@@ -7143,12 +7470,13 @@
 
     "Panzer IV/70 (V)": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25500,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 35,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 50",
             "ArmorTopMm": 20,
             "ArmorBottomMm": 20,
             "RealMaxReverseSpeedKmh": 7,
@@ -7170,6 +7498,7 @@
 
     "Panzerkampfwagen 38(t) Ausf. A": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9730,
             "RealEnginePowerPS": 125,
             "RealMaxSpeedKmh": 42,
@@ -7214,6 +7543,7 @@
 
     "Panzerkampfwagen II Ausf. C": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 8900,
             "RealEnginePowerPS": 140,
             "RealMaxSpeedKmh": 40,
@@ -7247,6 +7577,7 @@
 
     "Panzerkampfwagen II Ausf. L Luchs": {
         "properties": {
+            "RealTurnRateDegPerSec": 30,
             "RealMassKg": 11800,
             "RealEnginePowerPS": 180,
             "RealMaxSpeedKmh": 60,
@@ -7275,6 +7606,7 @@
 
     "Panzerkampfwagen III Ausf. F": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 19500,
             "RealEnginePowerPS": 285,
             "RealMaxSpeedKmh": 40,
@@ -7319,6 +7651,7 @@
 
     "Panzerkampfwagen III Ausf. J": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 21600,
             "RealEnginePowerPS": 285,
             "RealMaxSpeedKmh": 40,
@@ -7344,6 +7677,7 @@
 
     "Panzerkampfwagen III Ausf. L": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 22500,
             "RealEnginePowerPS": 285,
             "RealMaxSpeedKmh": 40,
@@ -7388,12 +7722,13 @@
 
     "Panzerkampfwagen IV Ausf. D": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 20000,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 42,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 8,
-            "ArmorFrontMm": 30,
+            "ArmorFrontMm": "30 10",
             "ArmorSideMm": 20,
             "ArmorRearMm": 20,
             "ArmorTopMm": 10,
@@ -7414,12 +7749,13 @@
 
     "Panzerkampfwagen IV Ausf. F1": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 22300,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 50,
+            "ArmorFrontMm": "50 10",
             "ArmorTopMm": 10,
             "ArmorBottomMm": 10,
             "TurretArmorFrontMm": 50,
@@ -7445,13 +7781,14 @@
 
     "Panzerkampfwagen IV Ausf. F2/G": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 23600,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 7,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 10",
             "ArmorSideMm": 30,
             "ArmorRearMm": 20,
             "ArmorTopMm": 11,
@@ -7490,12 +7827,13 @@
 
     "Panzerkampfwagen IV Ausf. H": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25000,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 10",
             "ArmorSideMm": 30,
             "ArmorRearMm": 20,
             "ArmorTopMm": 11,
@@ -7545,12 +7883,13 @@
 
     "Panzerkampfwagen IV Ausf. J": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25000,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 7,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 10",
             "ArmorSideMm": 30,
             "ArmorRearMm": 20,
             "ArmorTopMm": 11,
@@ -7572,6 +7911,7 @@
 
     "Panzerkampfwagen Tiger Ausf. B": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 69800,
             "RealEnginePowerPS": 600,
             "RealMaxSpeedKmh": 35,
@@ -7626,12 +7966,13 @@
 
     "Panzerkampfwagen V Panther Ausf. D": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 45500,
             "RealEnginePowerPS": 650,
             "RealMaxSpeedKmh": 46,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 3.5,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 55",
             "ArmorSideMm": 40,
             "ArmorRearMm": 40,
             "ArmorTopMm": 16,
@@ -7652,13 +7993,14 @@
 
     "Panzerkampfwagen V Panther Ausf. G": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 45500,
             "RealEnginePowerPS": 600,
             "RealMaxSpeedKmh": 46,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 3.5,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 55",
             "ArmorSideMm": 50,
             "ArmorRearMm": 40,
             "ArmorTopMm": 16,
@@ -7701,6 +8043,7 @@
 
     "Panzerkampfwagen VI (P) Tiger (P)": {
         "properties": {
+            "RealTurnRateDegPerSec": 16,
             "RealMassKg": 60000,
             "RealEnginePowerPS": 620,
             "RealMaxSpeedKmh": 35,
@@ -7743,6 +8086,7 @@
 
     "Panzerkampfwagen VI Ausf. E Tiger": {
         "properties": {
+            "RealTurnRateDegPerSec": 16,
             "RealMassKg": 57000,
             "RealEnginePowerPS": 700,
             "RealMaxSpeedKmh": 45,
@@ -7786,6 +8130,7 @@
 
     "Panzerkampfwagen VI Ausf. H1 Tiger": {
         "properties": {
+            "RealTurnRateDegPerSec": 16,
             "RealMassKg": 57250,
             "RealEnginePowerPS": 650,
             "RealMaxSpeedKmh": "45.4",
@@ -7843,6 +8188,7 @@
 
     "Panzerkampfwagen VIII Maus": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 188000,
             "RealEnginePowerPS": 1540,
             "RealMaxSpeedKmh": 20,
@@ -7869,6 +8215,7 @@
 
     "PBR Mark II": {
         "properties": {
+            "RealTurnRateDegPerSec": 16.98,
             "RealDisplacementLongTons": 8.9,
             "RealEnginePowerHp": 430,
             "RealMaxSpeedKn": 24,
@@ -7895,6 +8242,7 @@
 
     "Pillbox (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 50000,
             "ArmorFrontMm": 600,
             "ArmorSideMm": 600,
@@ -7912,6 +8260,7 @@
 
     "PM M1910 Wheeled Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 65,
             "RoundsPerMinPrimary": 600,
             "ArmorFrontMm": 0,
@@ -7929,6 +8278,7 @@
 
     "Police Truck (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 218.84,
             "RealMassKg": 7490,
             "RealEnginePowerHp": 177,
             "RealMaxSpeedKmh": 110,
@@ -7950,6 +8300,7 @@
 
     "Polybolos": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 150,
             "RealEnginePowerHp": 0.5,
             "RealMaxSpeedKmh": 3,
@@ -7971,6 +8322,7 @@
 
     "Post-Apocalyptic Buggy (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 800,
             "RealEnginePowerHp": 200,
             "RealMaxSpeedKmh": 130,
@@ -7991,6 +8343,7 @@
 
     "PZInz 140 (4TP)": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 4330,
             "RealEnginePowerHp": 95,
             "RealMaxSpeedKmh": 55,
@@ -8018,6 +8371,7 @@
 
     "Radar Truck (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 119.37,
             "RealMassKg": 7000,
             "RealEnginePowerHp": 90,
             "RealMaxSpeedKmh": 60,
@@ -8038,6 +8392,7 @@
 
     "Raft (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 5.57,
             "RealDisplacementT": 0.5,
             "RealEnginePowerHp": 0.1,
             "RealMaxSpeedKn": 3,
@@ -8059,6 +8414,7 @@
 
     "Renault AMC 35": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 14500,
             "RealEnginePowerPS": 180,
             "RealMaxSpeedKmh": 42,
@@ -8084,6 +8440,7 @@
 
     "Renault FT": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 6500,
             "RealEnginePowerPS": 39,
             "RealMaxSpeedKmh": 7,
@@ -8112,6 +8469,7 @@
 
     "RHN Kilkis": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.06,
             "RealDisplacementLongTons": 13000,
             "RealEnginePowerHp": 10000,
             "RealMaxSpeedKn": 17,
@@ -8143,6 +8501,7 @@
 
     "RHNS Lemnos": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.02,
             "RealDisplacementLongTons": 14465,
             "RealEnginePowerHp": 10000,
             "RealMaxSpeedKn": 17,
@@ -8173,6 +8532,7 @@
 
     "RHNS Salamis (1916)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.25,
             "RealDisplacementLongTons": 19500,
             "RealEnginePowerHp": 40000,
             "RealMaxSpeedKn": 23,
@@ -8203,6 +8563,7 @@
 
     "RIM-2 Terrier Launcher": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 90000,
             "ShootDelayPrimarySeconds": 15,
             "UseRealisticVehicleHealth": "true",
@@ -8215,6 +8576,7 @@
 
     "RIM-8 Talos Launcher": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 100000,
             "ShootDelayPrimarySeconds": 30,
             "UseRealisticVehicleHealth": "true",
@@ -8227,6 +8589,7 @@
 
     "River Paddle Steamer (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.85,
             "RealDisplacementLongTons": 500,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKn": 10,
@@ -8248,6 +8611,7 @@
 
     "RM Carlo Mirabello (1917)": {
         "properties": {
+            "RealTurnRateDegPerSec": 4.11,
             "RealDisplacementT": 1972,
             "RealEnginePowerHp": 44000,
             "RealMaxSpeedKn": 35,
@@ -8274,6 +8638,7 @@
 
     "RM Giulio Cesare (1914)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.08,
             "RealDisplacementT": 25086,
             "RealEnginePowerHp": 31000,
             "RealMaxSpeedKn": 21.5,
@@ -8304,6 +8669,7 @@
 
     "RM Giulio Cesare (1937)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.34,
             "RealDisplacementT": 29100,
             "RealEnginePowerHp": 93000,
             "RealMaxSpeedKn": 28,
@@ -8334,6 +8700,7 @@
 
     "RM Littorio (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.24,
             "RealDisplacementT": 45485,
             "RealEnginePowerHp": 130000,
             "RealMaxSpeedKn": 30,
@@ -8364,6 +8731,7 @@
 
     "RM Roma (1942)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.24,
             "RealDisplacementT": 45485,
             "RealEnginePowerHp": 130000,
             "RealMaxSpeedKn": 30,
@@ -8394,6 +8762,7 @@
 
     "RM Taranto (1920)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.29,
             "RealDisplacementT": 5281,
             "RealEnginePowerHp": 33000,
             "RealMaxSpeedKn": 27,
@@ -8424,6 +8793,7 @@
 
     "RM Torricelli (1939)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.36,
             "RealDisplacementT": 1266,
             "RealEnginePowerHp": 3400,
             "RealMaxSpeedKn": 17.3,
@@ -8450,6 +8820,7 @@
 
     "RM Zara (1931)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.94,
             "RealDisplacementT": 14300,
             "RealEnginePowerHp": 95000,
             "RealMaxSpeedKn": 32,
@@ -8481,6 +8852,7 @@
 
     "Roman Field Ballista": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 350,
             "RealEnginePowerHp": 1,
             "RealMaxSpeedKmh": 5,
@@ -8502,6 +8874,7 @@
 
     "Rowing Boat (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 6.57,
             "RealDisplacementLongTons": 0.3,
             "RealEnginePowerHp": 0.05,
             "RealMaxSpeedKn": 3,
@@ -8528,6 +8901,7 @@
 
     "S-100 Schnellboot": {
         "properties": {
+            "RealTurnRateDegPerSec": 13.11,
             "RealDisplacementT": 117,
             "RealEnginePowerPS": 7500,
             "RealMaxSpeedKn": 43.5,
@@ -8552,6 +8926,7 @@
 
     "Samsung K9 Thunder": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 47000,
             "RealEnginePowerHp": 1000,
             "RealMaxSpeedKmh": 67,
@@ -8581,6 +8956,7 @@
 
     "Sanic Mobile (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 300,
             "RealEnginePowerHp": 800,
             "RealMaxSpeedKmh": 400,
@@ -8601,6 +8977,7 @@
 
     "Schneider M1917 155mm Howitzer": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 3300,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -8622,6 +8999,7 @@
 
     "Schwerer Gustav 800mm Railway Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1350000,
             "RealEnginePowerHp": 940,
             "RealMaxSpeedKmh": 3,
@@ -8643,6 +9021,7 @@
 
     "Scorpio": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 100,
             "RealEnginePowerHp": 0.5,
             "RealMaxSpeedKmh": 3,
@@ -8664,6 +9043,7 @@
 
     "Sd.Kfz. 2 Kettenkrad HK 101": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 1560,
             "RealEnginePowerPS": 36,
             "RealMaxSpeedKmh": 70,
@@ -8685,6 +9065,7 @@
 
     "Sd.Kfz. 140/1 Aufklarungspanzer 38(t)": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11000,
             "RealEnginePowerPS": 152,
             "RealMaxSpeedKmh": 58,
@@ -8716,6 +9097,7 @@
 
     "Sd.Kfz. 222 leichter Panzerspähwagen Ausf. A": {
         "properties": {
+            "RealTurnRateDegPerSec": 225.47,
             "RealMassKg": 4800,
             "RealEnginePowerPS": 75,
             "RealMaxSpeedKmh": 85,
@@ -8743,6 +9125,7 @@
 
     "Sd.Kfz. 234/2 Puma": {
         "properties": {
+            "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 11740,
             "RealEnginePowerPS": 220,
             "RealMaxSpeedKmh": 80,
@@ -8782,6 +9165,7 @@
 
     "Sd.Kfz. 251/1 mittlerer schützenpanzerwagen": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 7000,
             "RealEnginePowerPS": 100,
             "RealMaxSpeedKmh": 52.5,
@@ -8813,6 +9197,7 @@
 
     "Semovente da 75/18": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 13100,
             "RealEnginePowerPS": 125,
             "RealMaxSpeedKmh": 31.8,
@@ -8834,6 +9219,7 @@
 
     "Semovente da 75/34": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15000,
             "RealEnginePowerPS": 192,
             "RealMaxSpeedKmh": 32,
@@ -8855,6 +9241,7 @@
 
     "Semovente da 90/53": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17000,
             "RealEnginePowerPS": 145,
             "RealMaxSpeedKmh": 25,
@@ -8880,13 +9267,14 @@
 
     "Sherman VC Firefly": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 35300,
             "RealEnginePowerHp": 425,
             "RealMaxSpeedKmh": 40,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 5,
-            "ArmorFrontMm": 51,
+            "ArmorFrontMm": "51 56",
             "ArmorSideMm": 38,
             "ArmorRearMm": 38,
             "ArmorTopMm": 19,
@@ -8923,6 +9311,7 @@
 
     "SMS Leitha": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.83,
             "RealDisplacementT": 310,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKn": 13,
@@ -8953,6 +9342,7 @@
 
     "SOMUA S35": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19500,
             "RealEnginePowerPS": 190,
             "RealMaxSpeedKmh": 40,
@@ -8978,6 +9368,7 @@
 
     "Stridsvagn m/42": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 22500,
             "RealEnginePowerPS": 324,
             "RealMaxSpeedKmh": 45,
@@ -9003,6 +9394,7 @@
 
     "Studebaker BM-13N Katyusha": {
         "properties": {
+            "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 7200,
             "RealEnginePowerHp": 87,
             "RealMaxSpeedKmh": 72,
@@ -9028,6 +9420,7 @@
 
     "Studebaker US6": {
         "properties": {
+            "RealTurnRateDegPerSec": 143.24,
             "RealMassKg": 9300,
             "RealEnginePowerHp": 87,
             "RealMaxSpeedKmh": 72,
@@ -9048,12 +9441,13 @@
 
     "Sturmgeschütz III Ausf. G": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 23900,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 40,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 21",
             "ArmorSideMm": 30,
             "ArmorRearMm": 30,
             "ArmorTopMm": 10,
@@ -9088,12 +9482,13 @@
 
     "Sturmgeschütz IV": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 25900,
             "RealEnginePowerPS": 265,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 80,
+            "ArmorFrontMm": "80 21",
             "ArmorSideMm": 30,
             "ArmorRearMm": 30,
             "ArmorTopMm": 10,
@@ -9136,6 +9531,7 @@
 
     "Sturmmörserwagen 606/4 mit 38 cm RW 61": {
         "properties": {
+            "RealTurnRateDegPerSec": 12,
             "RealMassKg": 65000,
             "RealEnginePowerPS": 650,
             "RealMaxSpeedKmh": 37.5,
@@ -9162,6 +9558,7 @@
 
     "SU-1-12": {
         "properties": {
+            "RealTurnRateDegPerSec": 159.15,
             "RealMassKg": 3700,
             "RealEnginePowerHp": 50,
             "RealMaxSpeedKmh": 60,
@@ -9183,12 +9580,13 @@
 
     "SU-76M": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.69,
             "RealMassKg": 10500,
             "RealEnginePowerPS": 140,
             "RealMaxSpeedKmh": 45,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 5,
-            "ArmorFrontMm": 35,
+            "ArmorFrontMm": "35 60",
             "ArmorSideMm": 15,
             "ArmorRearMm": 15,
             "RealMaxReverseSpeedKmh": 5,
@@ -9224,6 +9622,7 @@
 
     "SU-85": {
         "properties": {
+            "RealTurnRateDegPerSec": 24,
             "RealMassKg": 29600,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 55,
@@ -9269,12 +9668,13 @@
 
     "SU-100": {
         "properties": {
+            "RealTurnRateDegPerSec": 24,
             "RealMassKg": 31600,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 48,
             "DriveType": "TRACKED",
             "ShootDelayPrimarySeconds": 8,
-            "ArmorFrontMm": 75,
+            "ArmorFrontMm": "75 50",
             "ArmorSideMm": 45,
             "ArmorRearMm": 45,
             "ArmorTopMm": 20,
@@ -9315,6 +9715,7 @@
 
     "SU-122": {
         "properties": {
+            "RealTurnRateDegPerSec": 24,
             "RealMassKg": 30900,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKmh": 55,
@@ -9345,6 +9746,7 @@
 
     "Submarine (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.73,
             "RealDisplacementT": 871,
             "RealEnginePowerHp": 3200,
             "RealMaxSpeedKn": 17.7,
@@ -9371,6 +9773,7 @@
 
     "Sumida M.2593": {
         "properties": {
+            "RealTurnRateDegPerSec": 119.37,
             "RealMassKg": 7700,
             "RealEnginePowerHp": 45,
             "RealMaxSpeedKmh": 60,
@@ -9395,6 +9798,7 @@
 
     "T26E1-1 Super Pershing": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 49900,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKmh": 40,
@@ -9441,6 +9845,7 @@
 
     "T27 Wolfhound Armoured Car": {
         "properties": {
+            "RealTurnRateDegPerSec": 192.98,
             "RealMassKg": 6900,
             "RealEnginePowerHp": 148,
             "RealMaxSpeedKmh": 97,
@@ -9483,6 +9888,7 @@
 
     "T-26 mod. 1933": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9600,
             "RealEnginePowerPS": 90,
             "RealMaxSpeedKmh": 31,
@@ -9508,6 +9914,7 @@
 
     "T-34-76 mod. 1940": {
         "properties": {
+            "RealTurnRateDegPerSec": 24,
             "RealMassKg": 26500,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 55,
@@ -9552,6 +9959,7 @@
 
     "T-34-76 mod. 1942": {
         "properties": {
+            "RealTurnRateDegPerSec": 24,
             "RealMassKg": 30900,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 55,
@@ -9597,6 +10005,7 @@
 
     "T-34-85 mod. 1944": {
         "properties": {
+            "RealTurnRateDegPerSec": 24,
             "RealMassKg": 32000,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 55,
@@ -9651,6 +10060,7 @@
 
     "T-34-100": {
         "properties": {
+            "RealTurnRateDegPerSec": 24,
             "RealMassKg": 33000,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKmh": 48,
@@ -9700,6 +10110,7 @@
 
     "T-35A": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 45000,
             "RealEnginePowerPS": 500,
             "RealMaxSpeedKmh": 30,
@@ -9725,13 +10136,14 @@
 
     "T-44-100": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 31800,
             "RealEnginePowerHp": 520,
             "RealMaxSpeedKmh": 51,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 10,
             "ShootDelayPrimarySeconds": 8,
-            "ArmorFrontMm": 90,
+            "ArmorFrontMm": "90 60",
             "ArmorSideMm": 75,
             "ArmorRearMm": 45,
             "ArmorTopMm": 20,
@@ -9751,12 +10163,13 @@
 
     "T-60": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 5800,
             "RealEnginePowerPS": 70,
             "RealMaxSpeedKmh": 44,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 6,
-            "ArmorFrontMm": 35,
+            "ArmorFrontMm": "35 62",
             "ArmorSideMm": 15,
             "ArmorRearMm": 25,
             "ArmorTopMm": 13,
@@ -9775,13 +10188,14 @@
 
     "T-70": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 9200,
             "RealEnginePowerPS": 140,
             "RealMaxSpeedKmh": 45,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 5,
             "ShootDelayPrimarySeconds": 3,
-            "ArmorFrontMm": 35,
+            "ArmorFrontMm": "35 60",
             "ArmorSideMm": 15,
             "ArmorRearMm": 25,
             "ArmorTopMm": 15,
@@ -9819,6 +10233,7 @@
 
     "T-90MS": {
         "properties": {
+            "RealTurnRateDegPerSec": 28,
             "RealMassKg": 48000,
             "RealEnginePowerHp": 1130,
             "RealMaxSpeedKmh": 60,
@@ -9867,6 +10282,7 @@
 
     "Taczanka": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 600,
             "RealEnginePowerHp": 4,
             "RealMaxSpeedKmh": 20,
@@ -9888,6 +10304,7 @@
 
     "TCG Resadiye (1914)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.05,
             "RealDisplacementLongTons": 25250,
             "RealEnginePowerHp": 26500,
             "RealMaxSpeedKn": 21,
@@ -9918,6 +10335,7 @@
 
     "Tillman IV Maximum Battleship": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.9,
             "RealDisplacementLongTons": 80000,
             "RealEnginePowerHp": 90000,
             "RealMaxSpeedKn": 26.5,
@@ -9949,6 +10367,7 @@
 
     "Tillman V Maximum Battleship": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.83,
             "RealDisplacementLongTons": 85000,
             "RealEnginePowerHp": 90000,
             "RealMaxSpeedKn": 25,
@@ -9979,6 +10398,7 @@
 
     "TKS": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 2650,
             "RealEnginePowerPS": 46,
             "RealMaxSpeedKmh": 40,
@@ -10000,6 +10420,7 @@
 
     "TOG II*": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 81300,
             "RealEnginePowerHp": 600,
             "RealMaxSpeedKmh": 13.7,
@@ -10026,6 +10447,7 @@
 
     "Torpedo Boat (Generic, 1907)": {
         "properties": {
+            "RealTurnRateDegPerSec": 4.83,
             "RealDisplacementT": 765,
             "RealEnginePowerHp": 11000,
             "RealMaxSpeedKn": 30,
@@ -10052,6 +10474,7 @@
 
     "Transport Wagon (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1000,
             "RealEnginePowerHp": 4,
             "RealMaxSpeedKmh": 10,
@@ -10072,6 +10495,7 @@
 
     "Troll Sherman (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 30300,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 39,
@@ -10101,6 +10525,7 @@
 
     "Tsar Tank": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.06,
             "RealMassKg": 60000,
             "RealEnginePowerHp": 500,
             "RealMaxSpeedKmh": 17,
@@ -10126,6 +10551,7 @@
 
     "Tunnelling Machine (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 120000,
             "RealEnginePowerHp": 400,
             "RealMaxSpeedKmh": 10,
@@ -10150,6 +10576,7 @@
 
     "Type 1 47mm Anti-Tank Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 754,
             "ShootDelayPrimarySeconds": 5,
             "ArmorFrontMm": 4,
@@ -10168,6 +10595,7 @@
 
     "Type 1 Chi-He": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17200,
             "RealEnginePowerPS": 240,
             "RealMaxSpeedKmh": 44,
@@ -10206,6 +10634,7 @@
 
     "Type 1 Ho-Ni I": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15400,
             "RealEnginePowerPS": 170,
             "RealMaxSpeedKmh": 38,
@@ -10246,6 +10675,7 @@
 
     "Type 2 Ho-I": {
         "properties": {
+            "RealTurnRateDegPerSec": 8,
             "RealMassKg": 16100,
             "RealEnginePowerPS": 240,
             "RealMaxSpeedKmh": 44,
@@ -10273,6 +10703,7 @@
 
     "Type 2 Ka-Mi": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 12300,
             "RealEnginePowerPS": 115,
             "RealMaxSpeedKmh": 37,
@@ -10311,13 +10742,14 @@
 
     "Type 3 Chi-Nu": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19000,
             "RealEnginePowerPS": 240,
             "RealMaxSpeedKmh": 39,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 7,
             "ShootDelayPrimarySeconds": 6,
-            "ArmorFrontMm": 50,
+            "ArmorFrontMm": "50 15",
             "ArmorSideMm": 25,
             "ArmorRearMm": 20,
             "ArmorTopMm": 12,
@@ -10363,13 +10795,14 @@
 
     "Type 3 Chi-Nu II": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 19800,
             "RealEnginePowerPS": 243,
             "RealMaxSpeedKmh": 39,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 7,
             "ShootDelayPrimarySeconds": 5,
-            "ArmorFrontMm": "50 10",
+            "ArmorFrontMm": "50 15",
             "ArmorSideMm": 25,
             "ArmorRearMm": 20,
             "ArmorTopMm": 12,
@@ -10409,6 +10842,7 @@
 
     "Type 3 Ho-Ni III": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 17000,
             "RealEnginePowerPS": 170,
             "RealMaxSpeedKmh": 38,
@@ -10447,6 +10881,7 @@
 
     "Type 4 Ho-Ro": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 16300,
             "RealEnginePowerPS": 170,
             "RealMaxSpeedKmh": 38,
@@ -10487,6 +10922,7 @@
 
     "Type 5 Chi-Ri": {
         "properties": {
+            "RealTurnRateDegPerSec": 14,
             "RealMassKg": 37600,
             "RealEnginePowerPS": 550,
             "RealMaxSpeedKmh": 45,
@@ -10530,6 +10966,7 @@
 
     "Type 033 Patrol Submarine": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.87,
             "RealDisplacementT": 1712,
             "RealEnginePowerHp": 4000,
             "RealMaxSpeedKn": 15.2,
@@ -10556,6 +10993,7 @@
 
     "Type 89 I-Go Ko": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 12790,
             "RealEnginePowerPS": 120,
             "RealMaxSpeedKmh": 26,
@@ -10595,6 +11033,7 @@
 
     "Type 92 Heavy Machine Gun on Tripod": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 83,
             "ArmorFrontMm": 0,
             "ArmorSideMm": 0,
@@ -10611,6 +11050,7 @@
 
     "Type 94 37mm Anti-Tank Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 324,
             "RealEnginePowerHp": 2,
             "RealMaxSpeedKmh": 6,
@@ -10632,6 +11072,7 @@
 
     "Type 95 Ha-Go": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 7400,
             "RealEnginePowerPS": 120,
             "RealMaxSpeedKmh": 45,
@@ -10675,6 +11116,7 @@
 
     "Type 95 Kurogane": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1100,
             "RealEnginePowerPS": 33,
             "RealMaxSpeedKmh": 75,
@@ -10696,6 +11138,7 @@
 
     "Type 96 25mm Triple Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1800,
             "TurretArmorFrontMm": 0,
             "TurretArmorSideMm": 0,
@@ -10716,6 +11159,7 @@
 
     "Type 96 150mm Howitzer": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 4140,
             "RealEnginePowerHp": 6,
             "RealMaxSpeedKmh": 8,
@@ -10737,13 +11181,14 @@
 
     "Type 97 Chi-Ha": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15000,
             "RealEnginePowerPS": 170,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 12,
             "ShootDelayPrimarySeconds": 4,
-            "ArmorFrontMm": 25,
+            "ArmorFrontMm": "25 30",
             "ArmorSideMm": 25,
             "ArmorRearMm": 20,
             "ArmorTopMm": 12,
@@ -10789,13 +11234,14 @@
 
     "Type 97 Chi-Ha Kai": {
         "properties": {
+            "RealTurnRateDegPerSec": 20,
             "RealMassKg": 15800,
             "RealEnginePowerPS": 170,
             "RealMaxSpeedKmh": 38,
             "DriveType": "TRACKED",
             "RealMaxReverseSpeedKmh": 12,
             "ShootDelayPrimarySeconds": 3,
-            "ArmorFrontMm": 25,
+            "ArmorFrontMm": "25 30",
             "ArmorSideMm": 25,
             "ArmorRearMm": 20,
             "ArmorTopMm": 12,
@@ -10833,6 +11279,7 @@
 
     "Type 98 20mm AA Machine Cannon": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 373,
             "RoundsPerMinPrimary": 300,
             "ReloadTimePrimary": 120,
@@ -10853,6 +11300,7 @@
 
     "Type 99 88mm AA Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 6500,
             "RealEnginePowerHp": 4,
             "RealMaxSpeedKmh": 6,
@@ -10874,6 +11322,7 @@
 
     "Type 1934-class Destroyer": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.62,
             "RealDisplacementT": 3156,
             "RealEnginePowerHp": 70000,
             "RealMaxSpeedKn": 36,
@@ -10904,6 +11353,7 @@
 
     "U-511 (Type IXC)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.58,
             "RealDisplacementLongTons": 1120,
             "RealEnginePowerHp": 4400,
             "RealMaxSpeedKn": 18.3,
@@ -10930,6 +11380,7 @@
 
     "UAZ-469": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2400,
             "RealEnginePowerHp": 75,
             "RealMaxSpeedKmh": 100,
@@ -10953,6 +11404,7 @@
 
     "Universal Carrier": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 3800,
             "RealEnginePowerHp": 85,
             "RealMaxSpeedKmh": 48,
@@ -10975,6 +11427,7 @@
 
     "USS Alabama BB-60 (1945)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.14,
             "RealDisplacementLongTons": 44519,
             "RealEnginePowerHp": 130000,
             "RealMaxSpeedKn": 27.5,
@@ -11005,6 +11458,7 @@
 
     "USS Arizona BB-39 (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.92,
             "RealDisplacementLongTons": 37654,
             "RealEnginePowerHp": 34000,
             "RealMaxSpeedKn": 21,
@@ -11035,6 +11489,7 @@
 
     "USS Astoria CA-34": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.07,
             "RealDisplacementLongTons": 12463,
             "RealEnginePowerHp": 107000,
             "RealMaxSpeedKn": 32.7,
@@ -11065,6 +11520,7 @@
 
     "USS Atlanta CL-51 (1942)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.35,
             "RealDisplacementLongTons": 8340,
             "RealEnginePowerHp": 75000,
             "RealMaxSpeedKn": 32.5,
@@ -11096,6 +11552,7 @@
 
     "USS Baltimore CA-68 (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.88,
             "RealDisplacementLongTons": 17030,
             "RealEnginePowerHp": 120000,
             "RealMaxSpeedKn": 33,
@@ -11126,6 +11583,7 @@
 
     "USS Barb SS-220 (1945)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.3,
             "RealDisplacementLongTons": 2410,
             "RealEnginePowerHp": 5400,
             "RealMaxSpeedKn": 21,
@@ -11152,6 +11610,7 @@
 
     "USS Boston CAG-1 (1961)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.86,
             "RealDisplacementLongTons": 17500,
             "RealEnginePowerHp": 120000,
             "RealMaxSpeedKn": 33,
@@ -11182,6 +11641,7 @@
 
     "USS Brooke FFG-1": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.63,
             "RealDisplacementLongTons": 3426,
             "RealEnginePowerHp": 35000,
             "RealMaxSpeedKn": 27,
@@ -11208,6 +11668,7 @@
 
     "USS California BB-44 (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.89,
             "RealDisplacementLongTons": 40900,
             "RealEnginePowerHp": 30908,
             "RealMaxSpeedKn": 21,
@@ -11238,6 +11699,7 @@
 
     "USS Des Moines CA-134": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.74,
             "RealDisplacementLongTons": 21500,
             "RealEnginePowerHp": 120000,
             "RealMaxSpeedKn": 33,
@@ -11270,6 +11732,7 @@
 
     "USS Enterprise CV-6 (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.62,
             "RealDisplacementLongTons": 25500,
             "RealEnginePowerHp": 120000,
             "RealMaxSpeedKn": 32.5,
@@ -11297,6 +11760,7 @@
 
     "USS Essex": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.81,
             "RealDisplacementLongTons": 1000,
             "RealEnginePowerHp": 200,
             "RealMaxSpeedKn": 5.5,
@@ -11319,6 +11783,7 @@
 
     "USS Essex CV-9 (1956)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.22,
             "RealDisplacementLongTons": 47000,
             "RealEnginePowerHp": 150000,
             "RealMaxSpeedKn": 30,
@@ -11346,6 +11811,7 @@
 
     "USS Evarts DE-5": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.73,
             "RealDisplacementLongTons": 1430,
             "RealEnginePowerHp": 6000,
             "RealMaxSpeedKn": 21,
@@ -11372,6 +11838,7 @@
 
     "USS Florida BB-30 (1912)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.07,
             "RealDisplacementLongTons": 23033,
             "RealEnginePowerHp": 28000,
             "RealMaxSpeedKn": 20.75,
@@ -11402,6 +11869,7 @@
 
     "USS Helena CL-50 (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.07,
             "RealDisplacementLongTons": 12207,
             "RealEnginePowerHp": 100000,
             "RealMaxSpeedKn": 32.5,
@@ -11432,6 +11900,7 @@
 
     "USS Houston CA-30 (1942)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.13,
             "RealDisplacementLongTons": 11420,
             "RealEnginePowerHp": 107000,
             "RealMaxSpeedKn": 32.7,
@@ -11463,6 +11932,7 @@
 
     "USS Iowa BB-61 (1944)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.25,
             "RealDisplacementLongTons": 57540,
             "RealEnginePowerHp": 212000,
             "RealMaxSpeedKn": 33,
@@ -11494,6 +11964,7 @@
 
     "USS Liberty AGTR-5 (1967)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.2,
             "RealDisplacementLongTons": 10680,
             "RealEnginePowerHp": 5500,
             "RealMaxSpeedKn": 18,
@@ -11520,6 +11991,7 @@
 
     "USS Long Beach CGN-9 (1964)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.69,
             "RealDisplacementLongTons": 17525,
             "RealEnginePowerHp": 80000,
             "RealMaxSpeedKn": 30,
@@ -11546,6 +12018,7 @@
 
     "USS Maryland BB-46 (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.95,
             "RealDisplacementLongTons": 33590,
             "RealEnginePowerHp": 28900,
             "RealMaxSpeedKn": 21,
@@ -11576,6 +12049,7 @@
 
     "USS Missouri BB-63 (1986)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.25,
             "RealDisplacementLongTons": 57500,
             "RealEnginePowerHp": 212000,
             "RealMaxSpeedKn": 33,
@@ -11606,6 +12080,7 @@
 
     "USS Monitor": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.18,
             "RealDisplacementLongTons": 987,
             "RealEnginePowerHp": 320,
             "RealMaxSpeedKn": 8,
@@ -11633,6 +12108,7 @@
 
     "USS Nebraska SSBN-739": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.43,
             "RealDisplacementLongTons": 16764,
             "RealEnginePowerHp": 60000,
             "RealMaxSpeedKn": 25,
@@ -11659,6 +12135,7 @@
 
     "USS Nevada BB-36 (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.96,
             "RealDisplacementLongTons": 30500,
             "RealEnginePowerHp": 26500,
             "RealMaxSpeedKn": 20.5,
@@ -11689,6 +12166,7 @@
 
     "USS New Mexico BB-40 (1944)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.93,
             "RealDisplacementLongTons": 36157,
             "RealEnginePowerHp": 40000,
             "RealMaxSpeedKn": 21,
@@ -11719,6 +12197,7 @@
 
     "USS Oklahoma BB-37 (1917)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1,
             "RealDisplacementLongTons": 27500,
             "RealEnginePowerHp": 24800,
             "RealMaxSpeedKn": 20.5,
@@ -11749,6 +12228,7 @@
 
     "USS Raleigh CL-7 (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.42,
             "RealDisplacementLongTons": 9508,
             "RealEnginePowerHp": 90000,
             "RealMaxSpeedKn": 35,
@@ -11779,6 +12259,7 @@
 
     "USS S-44 SS-155": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.2,
             "RealDisplacementLongTons": 903,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKn": 14.5,
@@ -11805,6 +12286,7 @@
 
     "USS Saint Paul CA-73 (1968)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.88,
             "RealDisplacementLongTons": 17000,
             "RealEnginePowerHp": 120000,
             "RealMaxSpeedKn": 33,
@@ -11835,6 +12317,7 @@
 
     "USS Shangri-La CV-17 (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.46,
             "RealDisplacementLongTons": 36380,
             "RealEnginePowerHp": 150000,
             "RealMaxSpeedKn": 33,
@@ -11862,6 +12345,7 @@
 
     "USS Tambor SS-198": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.24,
             "RealDisplacementLongTons": 2370,
             "RealEnginePowerHp": 5400,
             "RealMaxSpeedKn": 20.4,
@@ -11888,6 +12372,7 @@
 
     "USS Tang SS-306": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.21,
             "RealDisplacementLongTons": 2424,
             "RealEnginePowerHp": 5400,
             "RealMaxSpeedKn": 20.25,
@@ -11914,6 +12399,7 @@
 
     "USS Torsk SS-423": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.21,
             "RealDisplacementLongTons": 2414,
             "RealEnginePowerHp": 5400,
             "RealMaxSpeedKn": 20.25,
@@ -11940,6 +12426,7 @@
 
     "USS Utah AG-16 (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.07,
             "RealDisplacementLongTons": 23033,
             "RealEnginePowerHp": 28000,
             "RealMaxSpeedKn": 20.75,
@@ -11970,6 +12457,7 @@
 
     "USS Wahoo SS-238 (1943)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.3,
             "RealDisplacementLongTons": 2410,
             "RealEnginePowerHp": 5400,
             "RealMaxSpeedKn": 21,
@@ -11996,6 +12484,7 @@
 
     "USS Ward DD-139": {
         "properties": {
+            "RealTurnRateDegPerSec": 4.77,
             "RealDisplacementLongTons": 1247,
             "RealEnginePowerHp": 27000,
             "RealMaxSpeedKn": 35,
@@ -12026,6 +12515,7 @@
 
     "USS Warrington DD-383": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.86,
             "RealDisplacementLongTons": 2767,
             "RealEnginePowerHp": 52000,
             "RealMaxSpeedKn": 37,
@@ -12056,6 +12546,7 @@
 
     "USS Washington BB-56 (1941)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.16,
             "RealDisplacementLongTons": 44800,
             "RealEnginePowerHp": 121000,
             "RealMaxSpeedKn": 28,
@@ -12086,6 +12577,7 @@
 
     "USS West Virginia BB-48 (1944)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.89,
             "RealDisplacementLongTons": 40950,
             "RealEnginePowerHp": 28900,
             "RealMaxSpeedKn": 21,
@@ -12116,6 +12608,7 @@
 
     "USS William D. Porter DD-579": {
         "properties": {
+            "RealTurnRateDegPerSec": 3.74,
             "RealDisplacementLongTons": 2924,
             "RealEnginePowerHp": 60000,
             "RealMaxSpeedKn": 36.5,
@@ -12148,6 +12641,7 @@
 
     "USS Wisconsin BB-64 (1995)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.25,
             "RealDisplacementLongTons": 57500,
             "RealEnginePowerHp": 212000,
             "RealMaxSpeedKn": 33,
@@ -12178,6 +12672,7 @@
 
     "USS Zumwalt DDG-1000": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.77,
             "RealDisplacementLongTons": 15907,
             "RealEnginePowerHp": 78000,
             "RealMaxSpeedKn": 30.3,
@@ -12204,6 +12699,7 @@
 
     "Utility Crane (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 15000,
             "RealEnginePowerHp": 100,
             "RealMaxSpeedKmh": 20,
@@ -12224,6 +12720,7 @@
 
     "Vickers .303 Mount": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 50,
             "RoundsPerMinPrimary": 500,
             "ArmorFrontMm": 0,
@@ -12241,6 +12738,7 @@
 
     "VMRF Arkhangelsk": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.95,
             "RealDisplacementLongTons": 33500,
             "RealEnginePowerHp": 40000,
             "RealMaxSpeedKn": 21,
@@ -12271,6 +12769,7 @@
 
     "VMRF Aurora (1903)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.48,
             "RealDisplacementT": 6731,
             "RealEnginePowerHp": 11610,
             "RealMaxSpeedKn": 19,
@@ -12301,6 +12800,7 @@
 
     "VMRF Chapayev (1944)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.97,
             "RealDisplacementT": 15000,
             "RealEnginePowerHp": 130000,
             "RealMaxSpeedKn": 33,
@@ -12331,6 +12831,7 @@
 
     "VMRF Derzky (1914)": {
         "properties": {
+            "RealTurnRateDegPerSec": 4.42,
             "RealDisplacementT": 1460,
             "RealEnginePowerHp": 25500,
             "RealMaxSpeedKn": 34,
@@ -12357,6 +12858,7 @@
 
     "VMRF Gnevny": {
         "properties": {
+            "RealTurnRateDegPerSec": 4.18,
             "RealDisplacementT": 2402,
             "RealEnginePowerHp": 48000,
             "RealMaxSpeedKn": 38,
@@ -12388,6 +12890,7 @@
 
     "VMRF Murmansk": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.28,
             "RealDisplacementLongTons": 9508,
             "RealEnginePowerHp": 90000,
             "RealMaxSpeedKn": 33,
@@ -12418,6 +12921,7 @@
 
     "VMRF Novorossiysk (1938)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.34,
             "RealDisplacementT": 29100,
             "RealEnginePowerHp": 93000,
             "RealMaxSpeedKn": 28,
@@ -12448,6 +12952,7 @@
 
     "VMRF Oktyabrskaya Revolutsiya (1915)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.15,
             "RealDisplacementT": 25464,
             "RealEnginePowerHp": 61000,
             "RealMaxSpeedKn": 23,
@@ -12478,6 +12983,7 @@
 
     "VMRF Sverdlov (1952)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.88,
             "RealDisplacementT": 16640,
             "RealEnginePowerHp": 130000,
             "RealMaxSpeedKn": 32.5,
@@ -12508,6 +13014,7 @@
 
     "Volkswagen Passat B2": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1050,
             "RealEnginePowerHp": 90,
             "RealMaxSpeedKmh": 180,
@@ -12529,6 +13036,7 @@
 
     "Volkswagen Typ 82 Kubelwagen": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 715,
             "RealEnginePowerPS": 25,
             "RealMaxSpeedKmh": 80,
@@ -12553,6 +13061,7 @@
 
     "Wespe (Sd.Kfz. 124)": {
         "properties": {
+            "RealTurnRateDegPerSec": 26,
             "RealMassKg": 11000,
             "RealEnginePowerPS": 140,
             "RealMaxSpeedKmh": 40,
@@ -12580,6 +13089,7 @@
 
     "Williams Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 500,
             "RealEnginePowerHp": 2,
             "RealMaxSpeedKmh": 8,
@@ -12601,6 +13111,7 @@
 
     "Willys MB Jeep": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 1475,
             "RealEnginePowerHp": 54,
             "RealMaxSpeedKmh": 105,
@@ -12627,6 +13138,7 @@
 
     "Willys MB With M45 Quadmount": {
         "properties": {
+            "RealTurnRateDegPerSec": 240,
             "RealMassKg": 2200,
             "RealEnginePowerHp": 60,
             "RealMaxSpeedKmh": 105,
@@ -12648,6 +13160,7 @@
 
     "Wooden Steam Frigate (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0.78,
             "RealDisplacementLongTons": 4636,
             "RealEnginePowerHp": 869,
             "RealMaxSpeedKn": 8.9,
@@ -12670,6 +13183,7 @@
 
     "Wurfrahmen 40 auf Sd.Kfz. 251": {
         "properties": {
+            "RealTurnRateDegPerSec": 18,
             "RealMassKg": 8500,
             "RealEnginePowerPS": 100,
             "RealMaxSpeedKmh": 52.5,
@@ -12691,6 +13205,7 @@
 
     "YaG-10 29-K": {
         "properties": {
+            "RealTurnRateDegPerSec": 83.56,
             "RealMassKg": 8500,
             "RealEnginePowerHp": 93,
             "RealMaxSpeedKmh": 42,
@@ -12712,6 +13227,7 @@
 
     "Yavuz Sultan Selim (1914)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.28,
             "RealDisplacementT": 25400,
             "RealEnginePowerHp": 52000,
             "RealMaxSpeedKn": 25.5,
@@ -12743,6 +13259,7 @@
 
     "YNS Jugoslavija (1918)": {
         "properties": {
+            "RealTurnRateDegPerSec": 2.31,
             "RealDisplacementT": 2400,
             "RealEnginePowerHp": 8000,
             "RealMaxSpeedKn": 21,
@@ -12773,6 +13290,7 @@
 
     "YNS Jugoslavija (1940)": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.72,
             "RealDisplacementT": 5000,
             "RealEnginePowerHp": 20000,
             "RealMaxSpeedKn": 20,
@@ -12800,6 +13318,7 @@
 
     "ZiS-2 57mm Anti-Tank Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1250,
             "ShootDelayPrimarySeconds": 4,
             "ArmorFrontMm": 6,
@@ -12822,6 +13341,7 @@
 
     "ZiS-3 76mm Divisional Gun": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 1116,
             "ShootDelayPrimarySeconds": 5,
             "ArmorFrontMm": 5,
@@ -12846,6 +13366,7 @@
 
     "ZiS-30": {
         "properties": {
+            "RealTurnRateDegPerSec": 36,
             "RealMassKg": 4000,
             "RealEnginePowerPS": 50,
             "RealMaxSpeedKmh": 40,

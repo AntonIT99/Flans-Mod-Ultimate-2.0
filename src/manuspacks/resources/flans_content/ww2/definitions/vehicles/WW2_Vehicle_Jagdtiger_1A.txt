@@ -4,6 +4,7 @@ ShortName WW2_Vehicle_Jagdtiger_1A
 
 // Model and Rendering
 Model Manus_WW2.Vehicle.WW2_Vehicle_Jagdtiger_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Vehicle_Jagdtiger_1A
 Texture Skin_WW2_Vehicle_Jagdtiger_1A
 RotateWheels True
@@ -35,16 +36,30 @@ WheelSpringStrength 0.5
 FourWheelDrive true
 TurnLeftSpeed 1
 TurnRightSpeed 1
+RealTurnRateDegPerSec 12
 SquashMobs True
 Tank true
 
 // Weapons
-BarrelPosition 0 34 0
+BarrelPosition 124 36 0
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.4 0 0
+ShootParticlesPrimary flansmod.fmflame 1.7 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0.1 0.08
+ShootParticlesPrimary flansmod.fmflame 1.18 -0.09 -0.09
+ShootParticlesPrimary flansmod.fmflame 0.88 0.08 -0.13
+ShootParticlesPrimary flansmod.fmflame 0.82 -0.07 0.14
+ShootParticlesPrimary largesmoke 0.52 0.12 0.1
+ShootParticlesPrimary largesmoke 0.5 -0.11 -0.11
+ShootParticlesPrimary largesmoke 0.44 0.08 -0.16
+ShootParticlesPrimary largesmoke 0.42 -0.08 0.17
+ShootParticlesPrimary cloud 0.09 0.13 0.18
+ShootParticlesPrimary cloud 0.09 -0.12 -0.19
 ShellDelay 210
 ShootDelay 5
 ShootDelayPrimarySeconds 15
 ReadWeaponsFromGunTypes true
-GunOrigin 1 65 20 14
+GunOrigin 1 64 -1.1 14.5
 PlaceTimePrimary 80
 ReloadTimeSecondary 100
 

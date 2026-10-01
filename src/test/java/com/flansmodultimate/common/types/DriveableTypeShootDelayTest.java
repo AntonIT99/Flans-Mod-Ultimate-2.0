@@ -22,6 +22,13 @@ class DriveableTypeShootDelayTest
     }
 
     @Test
+    void defaultFlashIsOptInForDriveables()
+    {
+        assertFalse(read("Driver 0 0 0").isDefaultMuzzleFlash());
+        assertTrue(read("Driver 0 0 0", "FlashModel DefaultFlash").isDefaultMuzzleFlash());
+    }
+
+    @Test
     void rateAboveTwelveHundredRoundsPerMinuteSurvivesAsAFraction()
     {
         VehicleType type = read("Driver 0 0 0", "Primary gun", "RoundsPerMinPrimary 3000");

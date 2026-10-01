@@ -76,6 +76,44 @@ class RealWorldSpecReaderTest
     }
 
     @Test
+    void unprefixedAliasesReadEveryRealParameter()
+    {
+        RealWorldVehicleSpec spec = read(
+            "MassKg 1000", "MaxSpeedKmh 100", "EnginePowerKw 200",
+            "EngineThrustKn 30", "WingSpanM 10", "WingAreaM2 20",
+            "ClimbRateMs 5", "AirBrakeAreaM2 2", "RotorDiameterM 8",
+            "RotorCount 2", "MaxReverseSpeedKmh 12", "DraftM 1").spec();
+        assertEquals(1000F, spec.massKg());
+        assertEquals(100F, spec.maxSpeedKmh());
+        assertEquals(200F, spec.enginePowerKw());
+        assertEquals(30F, spec.engineThrustKn());
+        assertEquals(10F, spec.aircraft().wingSpanM());
+        assertEquals(20F, spec.aircraft().wingAreaM2());
+        assertEquals(5F, spec.aircraft().climbRateMs());
+        assertEquals(2F, spec.aircraft().airBrakeAreaM2());
+        assertEquals(8F, spec.aircraft().rotorDiameterM());
+        assertEquals(2, spec.aircraft().rotorCount());
+        assertEquals(12F, spec.ground().maxReverseSpeedKmh());
+        assertEquals(1F, spec.marine().draftM());
+
+        assertEquals((float) VehiclePhysicsUnits.hpToKw(100), read("EnginePowerHp 100").spec().enginePowerKw());
+        assertEquals((float) VehiclePhysicsUnits.psToKw(100), read("EnginePowerPS 100").spec().enginePowerKw());
+        assertEquals(2000F, read("DisplacementT 2").spec().massKg());
+        assertEquals((float) VehiclePhysicsUnits.longTonsToKg(2),
+            read("DisplacementLongTons 2").spec().massKg());
+        assertEquals((float) VehiclePhysicsUnits.knotsToKmh(10), read("MaxSpeedKn 10").spec().maxSpeedKmh());
+        assertEquals((float) VehiclePhysicsUnits.knotsToKmh(10),
+            read("MaxReverseSpeedKn 10").spec().ground().maxReverseSpeedKmh());
+    }
+
+    @Test
+    void realSpellingTakesPriorityOverItsUnprefixedAlias()
+    {
+        assertEquals(2000F, read("RealMassKg 2000", "MassKg 1000").spec().massKg());
+        assertNull(read("RealMassKg", "MassKg 1000").spec().massKg());
+    }
+
+    @Test
     void enginePowerHpIsConvertedToKilowatts()
     {
         // 993 kW is the Spitfire's rating; roughly 1332 hp is the horsepower

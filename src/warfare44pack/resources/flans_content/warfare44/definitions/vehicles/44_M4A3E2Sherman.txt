@@ -6,6 +6,7 @@ Description American Assault Tank__Uses : 75mm AP Tank Shell_Medium Cal. HE Tank
 // Rendering
 Icon 44_M4A3E2Sherman
 Model W44.M4A3E2Sherman
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_M4A3E2Sherman
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.4178
 ClutchBrake 0.0165
 TurnLeftSpeed 0.33
 TurnRightSpeed 0.33
+RealTurnRateDegPerSec 18
 CanRoll true
 SquashMobs True
 
@@ -89,8 +91,8 @@ AddAmmo 44_MediumHEShell
 AddAmmo 44_75APCBCShell
 AddGun 20 33 -5 turret 44_30Cal
 AddGun 26 47 -11 turret 44_50Cal
-GunOrigin 1 35 -5 9
-BarrelPosition 48 33 0
+GunOrigin 1 43.5 -1.4 10.3
+BarrelPosition 51.5 32.8 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -145,7 +147,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 101
+ArmorFrontMm 101 47
 ArmorSideMm 76
 ArmorRearMm 38
 ArmorTopMm 19
@@ -157,10 +159,11 @@ TurretArmorTopMm 25
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1000 -59 0 -24 89 40 48
-SetupPart frontalArmor 3000 30 0 -24 23 37 48
-SetupPart leftTrack 300 -59 -10 -24 114 23 8
-SetupPart rightTrack 300 -59 -10 16 114 23 8
+SetupPart core 6500 -59 0 -24 89 28 48
+SetupPart turret 1300 -26 28 -20 43 13 40
+SetupPart frontalArmor 1000 30 0 -24 23 28 48
+SetupPart leftTrack 600 -59 -10 -24 114 23 8
+SetupPart rightTrack 600 -59 -10 16 114 23 8
 
 // Seats
 Driver 0 32 0 -360 360 -10 25

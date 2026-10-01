@@ -6,6 +6,8 @@ ShortName DayZ_Vehicle_ChevroletSuburban2010_1A
 Model Manus_DayZ.Vehicle.DayZ_Vehicle_ChevroletSuburban2010_1
 Icon Icon_DayZ_Vehicle_ChevroletSuburban2010_1A
 Texture Skin_DayZ_Vehicle_ChevroletSuburban2010_1A
+// Paintjobs
+Paintjob Icon_DayZ_Vehicle_ChevroletSuburban2010_1B Skin_DayZ_Vehicle_ChevroletSuburban2010_1B white 8
 RotateWheels True
 
 // Recipe and Inventory
@@ -33,6 +35,7 @@ RealEnginePowerHp 320
 RealMaxSpeedKmh 180
 DriveType AWD
 RealMaxReverseSpeedKmh 30
+RealTurnRateDegPerSec 240
 
 // Weapons
 ReadWeaponsFromGunTypes true
@@ -57,11 +60,11 @@ Passenger 2 -15 5 -9 core -80 80 -45 45
 Passenger 3 -15 5 9 core -80 80 -45 45
 Passenger 4 -35 5 -8 core -80 80 -45 45
 Passenger 5 -35 5 8 core -80 80 -45 45
-SetupPart core 250 -47 -1 -14 87 30 28
-SetupPart frontRightWheel 110 20 -10 -16 16 16 5
-SetupPart frontLeftWheel 110 20 -10 11 16 16 5
-SetupPart backLeftWheel 110 -36 -10 11 16 16 5
-SetupPart backRightWheel 110 -36 -10 -16 16 16 5
+SetupPart core 2536 -47 -1 -14 87 30 28
+SetupPart frontRightWheel 35 20 -10 -16 16 16 5
+SetupPart frontLeftWheel 35 20 -10 11 16 16 5
+SetupPart backLeftWheel 35 -36 -10 11 16 16 5
+SetupPart backRightWheel 35 -36 -10 -16 16 16 5
 BulletDetection 5
 CameraDistance 5
 

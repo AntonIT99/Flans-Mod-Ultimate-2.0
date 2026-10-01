@@ -33,6 +33,7 @@ Fire 0
 Mass 9000.0
 MuzzleVelocity 400
 PenetrationAt100m 600
+HEAT True
 ExplosiveMassTNTKg 8
 
 // Sounds
@@ -41,3 +42,8 @@ HitSound bullet
 // Effects
 FlakParticles 0
 SmokeTrail True
+TrailParticleType flansmod.rocketexhaust
+ExplodeParticles 8
+ExplodeParticleType explode
+FlareParticleCount 6
+DebrisParticleCount 4

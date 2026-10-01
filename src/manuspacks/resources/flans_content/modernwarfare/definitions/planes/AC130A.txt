@@ -5,6 +5,7 @@ ShortName AC130A
 // Model and Rendering
 Icon IconPlaneAC130A
 Model manus_modern_warfare.AC130A
+FlashModel DefaultFlash
 Texture SkinPlaneAC130A
 HasDoor True
 ModelScale 1
@@ -39,6 +40,7 @@ HasGear True
 RealMassKg 70307
 RealEnginePowerHp 17200
 RealMaxSpeedKmh 669
+RealTurnRateDegPerSec 7.88
 RealWingSpanM 40.411
 RealWingAreaM2 162.16
 RealClimbRateMs 9.3
@@ -62,11 +64,17 @@ Pilot 146 24 -9
 Passengers 7
 Passenger 1 146 24 9 core
 Passenger 2 -84 9 17 core 60 120 -40 10 HKGMG HKGMG1
+GunOrigin 2 -96 -4.6 -31
 Passenger 3 -84 9 -17 core -120 -60 -40 10 HKGMG HKGMG2
+GunOrigin 3 -96 -4.6 31
 Passenger 4 58 9 17 core 60 120 -40 10 M134 M134a
+GunOrigin 4 45 -3.6 -31
 Passenger 5 58 9 -17 core -120 -60 -40 10 M134 M134b
+GunOrigin 5 45 -3.6 31
 Passenger 6 94 9 17 core 60 120 -40 10 M134 M134c
+GunOrigin 6 81 -3.6 -31
 Passenger 7 94 9 -17 core -120 -60 -40 10 M134 M134d
+GunOrigin 7 81 -3.6 31
 SetupPart nose 200 170 8 -12 24 24 24
 SetupPart core 600 -94 -2 -31 264 64 62
 SetupPart coreWheel 100 114 -10 -6 16 16 12

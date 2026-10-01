@@ -15,6 +15,9 @@ Paintjob DesertEagle_Venom DesertEagle_Venom lime 2
 Paintjob DesertEagle_CoralSnake DesertEagle_CoralSnake red 1 yellow 1
 Paintjob DesertEagle_Gold DesertEagle_Gold yellow 8 gray 1
 Paintjob DesertEagle_Messenger DesertEagle_Messenger orange 16 yellow 16 gray 16 rainbow 1
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.33929 0.51339 0
+animFlashScale 0.56
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

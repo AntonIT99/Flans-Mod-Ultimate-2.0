@@ -1,6 +1,7 @@
 // Identity
 Name Frag Grenade
 ShortName WH40K_Grenade_FragGrenade_1A
+Mass 500
 
 // Model and Rendering
 Icon Icon_WH40K_Grenade_FragGrenade_1A
@@ -16,7 +17,7 @@ SpinWhenThrown true
 ThrowDelay 10
 DetonateOnImpact false
 Bounciness 0.8
-ThrowSpeed 2.0
+ThrowSpeedMs 12
 FallSpeed 1.0
 BreaksGlass true
 PenetratesBlocks false
@@ -41,4 +42,6 @@ FragType STD_FRAG
 // Effects
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2
 SmokeTime 0

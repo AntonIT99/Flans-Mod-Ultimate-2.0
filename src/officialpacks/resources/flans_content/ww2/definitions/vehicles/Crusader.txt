@@ -6,6 +6,7 @@ Description British Light Tank
 // Item and rendering
 Icon Crusader
 Model ww2.Crusader
+FlashModel DefaultFlash
 Texture crusader
 AddDye 8 green
 ModelScale 1
@@ -38,14 +39,15 @@ MaxThrottle 0.60
 MaxNegativeThrottle 0.35
 TurnLeftSpeed 0.3
 TurnRightSpeed 0.3
+RealTurnRateDegPerSec 30
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 5 25 2
-AddGun 8 20 0 turret bren
+BarrelPosition 46 21 2
+AddGun 24 21.5 -2.5 turret bren
 ShootDelay 1
 ShellDelay 70
 TurretRotationSpeed 0.04
@@ -92,4 +94,10 @@ StartSoundLength 41
 EngineSound engine_lt_lvt
 EngineSoundLength 39
 ShootSoundPrimary shoot_57mmuk
+ShootParticlesPrimary explode 0.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.95 0 0
+ShootParticlesPrimary flansmod.fmflame 0.5 0.06 0.06
+ShootParticlesPrimary flansmod.fmflame 0.46 -0.06 -0.06
+ShootParticlesPrimary largesmoke 0.28 0.07 0.07
+ShootParticlesPrimary largesmoke 0.26 -0.07 -0.07
 ShootSoundSecondary BrenShoot

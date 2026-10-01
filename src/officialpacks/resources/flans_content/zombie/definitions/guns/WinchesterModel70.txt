@@ -8,6 +8,10 @@ Icon WinchesterModel70
 Colour 255 255 255
 DeployedModel None
 Model zombie.WinchesterModel70
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.06724 0.28251 0
+animFlashScale 1
 Texture WinchesterModel70
 Paintjob WinchesterModel70_Black WinchesterModel70_Black black 1
 

@@ -5,6 +5,7 @@ import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.explosions.FlanExplosion;
+import com.flansmodultimate.common.explosions.FragmentationModel;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import lombok.AccessLevel;
@@ -82,56 +83,47 @@ public abstract class ShootableType extends InfoType
         }
     }
 
-    /**
-     * {@code kFragRadius} is the fragmentation radius of a 1 kg charge in blocks, on the same
-     * footing as {@code newDamageSystemBlastRadiusReference} so the two envelopes are directly
-     * comparable. HE_SHELL sits exactly on the blast reference, because the artillery rounds the
-     * blast curve was fitted to are the ones whose quoted casualty radius includes their
-     * fragments; thinner casings reach less far and shrapnel-packed ones further.
-     * <p>
-     * The hand-grenade casings (STD_FRAG, SLEEVE_FRAG, HIGH_FRAG) sit above that reference on
-     * purpose. Their tens of grams of filler fall below the range the fitted exponent was
-     * measured over, and taking the curve literally left a Mk 2 with a 5 block fragment reach
-     * against a ~15 m real casualty radius. They are only used by grenades, so the boost does
-     * not leak into shells or bombs. LOW_FRAG is shared with blast bombs and mines and keeps
-     * its short reach.
-     * <p>
-     * {@code kFragDamage} is the peak fragment damage of a 1 kg charge. It is tuned so that
-     * fragments, not overpressure, carry most of a grenade's lethality, as they do in reality.
-     * Armour on a vehicle part blocks the fragment channel entirely, so this does not change
-     * damage against armoured vehicles.
-     */
+    /** Casing construction supplies typical metal, fragment size, efficiency and injury severity. */
     public enum EnumFragType
     {
-        DEFAULT(0.0f, 0.0f, 0.0f),
+        DEFAULT(0, 0, 0, 0, 0),
         /** Thin casing / offensive or concussion style (e.g., Stielhandgranate 24). */
-        LOW_FRAG(9.5f, 15.0f, 0.9f),
+        LOW_FRAG(100, 1.5F, 0.45F, 15, 75),
         /** Typical fragmentation grenade (e.g., Mills bomb, Mk 2, many “standard” frags). */
-        STD_FRAG(25.0f, 25.0f, 2.2f),
+        STD_FRAG(450, 0.9F, 0.8F, 25, 90),
         /** Defensive sleeve / fragmentation jacket fitted to a grenade body. */
-        SLEEVE_FRAG(29.5f, 27.5f, 2.8f),
+        SLEEVE_FRAG(500, 0.8F, 0.9F, 27.5F, 95),
         /** Defensive / prefragmented / scored casing with a larger casualty radius. */
-        HIGH_FRAG(32.0f, 30.0f, 3.0f),
+        HIGH_FRAG(250, 0.3F, 0.8F, 30, 110),
         /** Shrapnel-packed / IED-style (nails, ball bearings, pipe bomb). */
-        IED_SHRAPNEL(26.5f, 35.0f, 4.0f),
+        IED_SHRAPNEL(600, 1, 0.8F, 35, 140),
         /** Artillery / mortar / HE rocket type casing fragments. */
-        HE_SHELL(22.0f, 32.5f, 3.8f),
+        HE_SHELL(200, 2, 0.8F, 32.5F, 120),
+        /** Thin, fragment-optimized 40 mm high explosive grenade. */
+        HE_GRENADE(200, 0.3F, 0.9F, 32.5F, 95),
         /** General-purpose aerial bomb fragments (blast dominates, fragments still dangerous). */
-        GP_BOMB(17.5f, 32.5f, 2.6f),
+        GP_BOMB(300, 1.2F, 0.9F, 32.5F, 120),
         /** Thick-case / penetrator / “earthquake” style (less long-range frag emphasis). */
-        THICK_CASE(12.5f, 25.0f, 1.4f),
+        THICK_CASE(500, 10, 0.25F, 25, 100),
         /** Airburst / proximity-fused anti-personnel (optimized fragment distribution). */
-        AIRBURST_AP(24.0f, 30.0f, 3.2f);
+        AIRBURST_AP(80, 0.6F, 0.8F, 30, 100),
+        /** Uniform balls or cubes deliberately packed in a mine or airburst round. */
+        PREFORMED(350, 1, 1, 36, 150);
 
-        public final float kFragRadius;
+        public final float defaultMetalGrams;
+        public final float fragmentMassGrams;
+        public final float effectiveFraction;
         public final float kFragDamage;
-        public final float fragIntensity;
+        public final float dragLength;
 
-        EnumFragType(float kFragRadius, float kFragDamage, float fragIntensity)
+        EnumFragType(float defaultMetalGrams, float fragmentMassGrams, float effectiveFraction,
+                     float kFragDamage, float dragLength)
         {
-            this.kFragRadius = kFragRadius;
+            this.defaultMetalGrams = defaultMetalGrams;
+            this.fragmentMassGrams = fragmentMassGrams;
+            this.effectiveFraction = effectiveFraction;
             this.kFragDamage = kFragDamage;
-            this.fragIntensity = fragIntensity;
+            this.dragLength = dragLength;
         }
     }
 
@@ -261,6 +253,11 @@ public abstract class ShootableType extends InfoType
     /** The explosion frag radius upon detonation */
     @Getter
     protected float fragRadius;
+    protected float fragMetalMassGrams;
+    protected float fragCount;
+    @Getter
+    protected float fragBurstHeight;
+    protected FragmentationModel.Pattern fragPattern = FragmentationModel.Pattern.RADIAL;
     /** Power of explosion. Multiplier, 1 = vanilla behaviour */
     protected float explosionPower = 1F;
     /** Whether the explosion can destroy blocks */
@@ -271,8 +268,6 @@ public abstract class ShootableType extends InfoType
     /** Explosion frag damage vs various classes of entities */
     @Getter
     protected DamageStats explosionFragDamage = new DamageStats();
-    @Getter
-    protected float fragIntensity;
     protected EnumFragType fragType = EnumFragType.DEFAULT;
     /** The name of the item to drop upon detonating */
     @Getter
@@ -361,6 +356,8 @@ public abstract class ShootableType extends InfoType
         fallSpeed = readValue("FallSpeed", fallSpeed, file);
         throwSpeed = readValue("ThrowSpeed", throwSpeed, file);
         throwSpeed = readValue("ShootSpeed", throwSpeed, file);
+        if (hasValueForConfigField("ThrowSpeedMs", file))
+            throwSpeed = readValue("ThrowSpeedMs", throwSpeed * 10F, file) / 10F;
         hitBoxSize = readValue("HitBoxSize", hitBoxSize, file);
         mass = readValue("Mass", mass, file);
         // MassKg is the same stat authored at a kilogram scale, so it is converted into the grams
@@ -451,11 +448,26 @@ public abstract class ShootableType extends InfoType
         explosionBlastDamage.setReadDamageVsPlanes(file.hasConfigLine("ExplosionDamageVsPlane") || file.hasConfigLine("ExplosionDamageVsPlanes"));
 
         blastRadius = readValue("BlastRadius", blastRadius, file);
-        fragRadius = readValue("FragRadius", fragRadius, file);
-        fragIntensity = readValue("FragIntensity", fragIntensity, file);
+        fragType = readValue("FragType", fragType, EnumFragType.class, file);
+        if (fragType != EnumFragType.DEFAULT)
+            explosionFragDamage.setDamage(ExplosionScaling.fragPeakDamage(fragType.kFragDamage));
+        fragPattern = readValue("FragPattern", fragPattern, FragmentationModel.Pattern.class, file);
+        fragMetalMassGrams = readValue("FragMetalMassg", fragMetalMassGrams, file);
+        fragCount = readValue("FragCount", fragCount, file);
+        fragBurstHeight = readValue("FragBurstHeight", fragBurstHeight, file);
+        if (!Float.isFinite(fragMetalMassGrams) || fragMetalMassGrams < 0F
+            || !Float.isFinite(fragCount) || fragCount < 0F
+            || !Float.isFinite(fragBurstHeight) || fragBurstHeight < 0F)
+        {
+            logError("FragMetalMassg, FragCount and FragBurstHeight must be finite non-negative values", file);
+            fragMetalMassGrams = Math.max(0F, Float.isFinite(fragMetalMassGrams) ? fragMetalMassGrams : 0F);
+            fragCount = Math.max(0F, Float.isFinite(fragCount) ? fragCount : 0F);
+            fragBurstHeight = Math.max(0F, Float.isFinite(fragBurstHeight) ? fragBurstHeight : 0F);
+        }
         explosionFragDamage.setDamage(readValue("FragDamage", explosionFragDamage.getDamage(), file));
         explosionFragDamage.setDamage(readValue("FragDamageVsEntity", explosionFragDamage.getDamage(), file));
-        explosionFragDamage.setReadDamage(file.hasConfigLine("FragDamage") || file.hasConfigLine("FragDamageVsEntity"));
+        explosionFragDamage.setReadDamage(fragType != EnumFragType.DEFAULT
+            || file.hasConfigLine("FragDamage") || file.hasConfigLine("FragDamageVsEntity"));
         explosionFragDamage.setDamageVsLiving(readValue("FragDamageVsLiving", explosionFragDamage.getDamageVsLiving(), file));
         explosionFragDamage.setReadDamageVsLiving(file.hasConfigLine("FragDamageVsLiving"));
         explosionFragDamage.setDamageVsPlayer(readValue("FragDamageVsPlayer", explosionFragDamage.getDamageVsPlayer(), file));
@@ -470,22 +482,12 @@ public abstract class ShootableType extends InfoType
         explosionFragDamage.setDamageVsPlanes(readValue("FragDamageVsPlanes", explosionFragDamage.getDamageVsPlanes(), file));
         explosionFragDamage.setReadDamageVsPlanes(file.hasConfigLine("FragDamageVsPlane") || file.hasConfigLine("FragDamageVsPlanes"));
 
-        fragType = readValue("FragType", fragType, EnumFragType.class, file);
-        if (fragType != EnumFragType.DEFAULT)
-        {
-            if (explosiveMass > 0F)
-            {
-                explosionFragDamage = new DamageStats();
-                explosionFragDamage.setDamage(ExplosionScaling.fragDamage(fragType.kFragDamage, explosiveMass));
-                fragRadius = ExplosionScaling.fragRadius(fragType.kFragRadius, explosiveMass);
-            }
-            fragIntensity = fragType.fragIntensity;
-        }
-
         damage.calculate();
         explosionFragDamage.calculate();
         explosionBlastDamage.scale(8F * explosionRadius + 1F);
         explosionBlastDamage.calculate();
+        FragmentationModel.Burst fragments = fragmentationFor(explosiveMass, mass);
+        fragRadius = (float) fragments.queryRadius();
 
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readSound("DetonateSound", detonateSound, file);
@@ -570,9 +572,17 @@ public abstract class ShootableType extends InfoType
     @SuppressWarnings("java:S1172")
     public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
+        FragmentationModel.Burst fragments = fragmentationFor(getExplosiveMass(), getMass());
         return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(),
-            getExplosionBlastDamage(), fragRadius, fragIntensity, explosionFragDamage,
-            useNewExplosionSystem() ? getExplosiveMass() : 0F);
+            getExplosionBlastDamage(), (float) fragments.queryRadius(),
+            (float) Math.min(4D, fragments.fragmentCount() / 300D), explosionFragDamage,
+            useNewExplosionSystem() ? getExplosiveMass() : 0F, fragments);
+    }
+
+    protected FragmentationModel.Burst fragmentationFor(float chargeKg, float totalMassGrams)
+    {
+        return FragmentationModel.create(fragType, chargeKg, totalMassGrams,
+            fragMetalMassGrams, fragCount, fragPattern).withPeak(explosionFragDamage.getDamage());
     }
 
     public float getDispersionForDisplay() {
@@ -593,8 +603,13 @@ public abstract class ShootableType extends InfoType
         if (!group.members.contains(this))
         {
             group.members.add(this);
-            ammoGroupRevision++;
+            incrementAmmoGroupRevision();
         }
+    }
+
+    private static void incrementAmmoGroupRevision()
+    {
+        ammoGroupRevision++;
     }
 
     /**

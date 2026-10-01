@@ -6,6 +6,7 @@ Description British Medium Tank
 // Item and rendering
 Icon Cromwell
 Model ww2.Cromwell
+FlashModel DefaultFlash
 Texture cromwell
 AddDye 10 green
 ModelScale 1
@@ -38,14 +39,15 @@ MaxThrottle 0.7
 MaxNegativeThrottle 0.5
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 30
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 5 25 2
-AddGun 8 34 8 turret bren
+BarrelPosition 48 28 2
+AddGun 25 27.5 -1.5 turret bren
 ShootDelay 1
 ShellDelay 85
 TurretRotationSpeed 0.08
@@ -92,4 +94,12 @@ StartSoundLength 41
 EngineSound engine_mt_comet
 EngineSoundLength 39
 ShootSoundPrimary 75mmGun
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary BrenShoot

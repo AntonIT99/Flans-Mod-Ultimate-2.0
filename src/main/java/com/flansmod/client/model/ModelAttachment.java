@@ -20,6 +20,8 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
 
     protected ModelRendererTurbo[] attachmentModel = new ModelRendererTurbo[0];
     protected ModelRendererTurbo[] ammoModel = new ModelRendererTurbo[0];
+    /** Parts only rendered while the attachment is switched on, such as a laser beam or a flashlight cone */
+    protected ModelRendererTurbo[] toggleModel = new ModelRendererTurbo[0];
 
     protected EnumAnimationType secondaryAnimType = EnumAnimationType.NONE;
     protected float tiltGunTime = 0.15F;
@@ -57,7 +59,19 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
 
     public void renderAttachment(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
+        renderAttachment(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass, true);
+    }
+
+    public void renderAttachment(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass, boolean toggledOn)
+    {
         for (ModelRendererTurbo model : attachmentModel)
+            if (model != null)
+                model.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+
+        if (!toggledOn)
+            return;
+
+        for (ModelRendererTurbo model : toggleModel)
             if (model != null)
                 model.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
@@ -82,11 +96,17 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
             anAmmoModel.doMirror(false, true, true);
             anAmmoModel.setRotationPoint(anAmmoModel.rotationPointX, -anAmmoModel.rotationPointY, -anAmmoModel.rotationPointZ);
         }
+
+        for (ModelRendererTurbo aToggleModel : toggleModel)
+        {
+            aToggleModel.doMirror(false, true, true);
+            aToggleModel.setRotationPoint(aToggleModel.rotationPointX, -aToggleModel.rotationPointY, -aToggleModel.rotationPointZ);
+        }
     }
 
     protected void translate(ModelRendererTurbo[] model, float x, float y, float z)
     {
-        for(ModelRendererTurbo anAttachmentModel : attachmentModel)
+        for(ModelRendererTurbo anAttachmentModel : model)
         {
             anAttachmentModel.rotationPointX += x;
             anAttachmentModel.rotationPointY += y;
@@ -97,5 +117,6 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
     public void translateAll(float x, float y, float z)
     {
         translate(attachmentModel, x, y, z);
+        translate(toggleModel, x, y, z);
     }
 }

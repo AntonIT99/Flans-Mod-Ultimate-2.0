@@ -24,7 +24,6 @@ import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -32,6 +31,7 @@ import org.joml.Vector3f;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -77,6 +77,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
     /** Yeah, I want my grenades to have fancy physics */
     @Getter
     protected RotatedAxes axes = new RotatedAxes();
+
+    /** Model-forward axis retained when a placed grenade has no travel velocity. */
+    public Vec3 getFragmentDirection()
+    {
+        var axis = axes.getXAxis();
+        return new Vec3(axis.x, axis.y, axis.z);
+    }
     protected Vec3 angularVelocity = new Vec3(0, 0, 0);
     @Getter
     protected float prevRotationRoll;
@@ -346,7 +353,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     gunItem = gi;
                 }
 
-                if (gunStack != null && gunItem != null)
+                if (gunStack != null)
                 {
                     GunType gunType = gunItem.getConfigType();
                     List<ShootableType> ammoTypes = gunType.getAmmoTypes();
@@ -355,7 +362,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                     {
                         ShootableType bulletToGive = ammoTypes.get(0);
                         Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, bulletToGive.getShortName()));
-                        if (item != null && item != Items.AIR)
+                        if (item != Items.AIR)
                         {
                             int totalToGive = configType.getNumClips() * gunType.getNumAmmoItemsInGun(gunStack);
                             while (totalToGive > 0)
@@ -418,12 +425,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                 return;
             handleDetonationConditions(level);
             updateStuckState(level);
+            Vec3 impactMotion = getDeltaMovement();
             handlePhysicsAndMotion(level);
             updateStickToThrower();
             handleStickToEntity(level);
             handleStickToDriveable(level);
             handleStickToEntityAfter(level);
-            handleImpactDamage(level);
+            handleImpactDamage(level, impactMotion);
             applyDragAndGravity();
 
             // Fire glitch fix
@@ -731,12 +739,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         }
     }
 
-    protected void handleImpactDamage(Level level)
+    protected void handleImpactDamage(Level level, Vec3 impactMotion)
     {
-        if (stuck || (configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
+        if (stuck || (!configType.useKineticDamageSystem()
+            && configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
             return;
 
-        double speedSq = velocity.lengthSqr();
+        double speedSq = impactMotion.lengthSqr();
         if (speedSq < 0.01)
             return;
 
@@ -746,7 +755,10 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             if (living == thrower && tickCount < 10)
                 continue;
 
-            living.hurt(getDamageSource(), ShootingHelper.getDamage(living, this, null));
+            float damage = configType.useKineticDamageSystem()
+                ? ShootingHelper.getKineticDamage(configType.getMass(), impactMotion.length())
+                : ShootingHelper.getDamage(living, this, null);
+            living.hurt(getDamageSource(), damage);
         }
     }
 

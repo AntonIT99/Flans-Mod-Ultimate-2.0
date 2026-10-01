@@ -18,6 +18,7 @@ BreaksGlass True
 HitBoxSize 0.1
 Penetrates True
 Mass 33
+PenetrationAt100m 16
 
 // Damage and detonation
 Damage 1

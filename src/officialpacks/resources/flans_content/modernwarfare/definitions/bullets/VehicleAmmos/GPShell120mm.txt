@@ -20,6 +20,7 @@ Mass 14100
 MuzzleVelocity 1140
 FallSpeed 1
 PenetrationAt100m 480
+HEAT True
 BreaksGlass True
 HitBoxSize 1.0
 Penetrates False
@@ -37,5 +38,9 @@ Fire 0
 
 // Sounds and particles
 SmokeTrail True
+ExplodeParticles 10
+ExplodeParticleType explode
+FlareParticleCount 8
+DebrisParticleCount 6
 TrailParticleType flansmod.fmflame
 FlakParticles 10

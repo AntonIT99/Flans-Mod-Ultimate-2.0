@@ -36,6 +36,7 @@ MaxThrottle 1.0
 MaxNegativeThrottle 0.5
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 190.99
 CanRoll false
 Drag 1.0
 
@@ -63,11 +64,14 @@ ArmorBottomMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 350 -52 4 -18 116 40 36
-SetupPart frontRightWheel 75 43 -10 13 19 19 6
-SetupPart frontLeftWheel 75 43 -10 -19 19 19 6
-SetupPart backRightWheel 75 -44 -10 9 42 19 11
-SetupPart backLeftWheel 75 -44 -10 -20 42 19 11
+// Mass-share HP weights: ~60 kg per wheel (7.50-20 tire ~27 kg, similar 6.0-20 rim ~34 kg).
+// Front parts cover one wheel each; rear parts cover four wheels each.
+// Core gets the remaining 4820 kg of RealMassKg.
+SetupPart core 4820 -52 4 -18 116 40 36
+SetupPart frontRightWheel 60 43 -10 13 19 19 6
+SetupPart frontLeftWheel 60 43 -10 -19 19 19 6
+SetupPart backRightWheel 240 -44 -10 9 42 19 11
+SetupPart backLeftWheel 240 -44 -10 -20 42 19 11
 
 // Seats
 Driver 23 12 -7

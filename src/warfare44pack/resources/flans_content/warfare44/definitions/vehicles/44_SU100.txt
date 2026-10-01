@@ -6,6 +6,7 @@ Description Soviet Medium Tank Destroyer__Uses : 100mm AP Tank Shell_Large Cal. 
 // Rendering
 Icon 44_SU100
 Model W44.SU100
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_SU
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.5465
 ClutchBrake 0.01
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 24
 CanRoll true
 
 // Wheels and tracks
@@ -86,8 +88,8 @@ AllowAllAmmo false
 AddAmmo 44_100APShell
 AddAmmo 44_LargeHEShell
 AddAmmo 44_100APCBCShell
-GunOrigin 1 10 14 -12
-BarrelPosition 82 23 0
+GunOrigin 1 6.1 16.9 -13.2
+BarrelPosition 85.3 22.6 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -142,22 +144,18 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 75
+ArmorFrontMm 75 50
 ArmorSideMm 45
 ArmorRearMm 45
 ArmorTopMm 20
 ArmorBottomMm 20
-TurretArmorFrontMm 75
-TurretArmorSideMm 45
-TurretArmorRearMm 45
-TurretArmorTopMm 20
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1750 -102 -1 -30 90 36 51
-SetupPart frontalArmor 1750 -12 -1 -30 38 34 51
-SetupPart leftTrack 300 -103 -10 -36 128 20 10
-SetupPart rightTrack 300 -103 -10 18 128 20 10
+SetupPart core 7800 -102 -1 -30 90 36 51
+SetupPart frontalArmor 1000 -12 -1 -30 38 34 51
+SetupPart leftTrack 600 -103 -10 -36 128 20 10
+SetupPart rightTrack 600 -103 -10 18 128 20 10
 
 // Seats
 Driver -21 30 12 -12 12 -3 20

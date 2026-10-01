@@ -6,6 +6,7 @@ Description American Tank Destroyer__Uses : 76mm AP Tank Shell - Long_Medium Cal
 // Rendering
 Icon 44_M10Wolverine
 Model W44.M10Wolverine
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_M10Wolverine
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.4541
 ClutchBrake 0.01925
 TurnLeftSpeed 0.385
 TurnRightSpeed 0.385
+RealTurnRateDegPerSec 20
 CanRoll true
 
 // Wheels and tracks
@@ -87,7 +89,7 @@ AddAmmo 44_MediumHEShell
 AddAmmo 44_3inAPCBCShell
 AddAmmo 44_3inHVAPShell
 AddGun 2 45 0 turret 44_50Cal
-BarrelPosition 70 30 0
+BarrelPosition 73.6 30.5 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -142,7 +144,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 51
+ArmorFrontMm 51 55
 ArmorSideMm 25
 ArmorRearMm 25
 ArmorTopMm 19
@@ -154,10 +156,11 @@ TurretArmorTopMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1000 -57 -1 -25 79 44 50
-SetupPart frontalArmor 1000 22 -1 -25 34 40 50
-SetupPart rightTrack 300 -57 -10 -25 115 22 9
-SetupPart leftTrack 300 -57 -10 16 115 22 9
+SetupPart core 6400 -57 -1 -25 79 24 50
+SetupPart turret 1400 -36 23 -23 61 14 46
+SetupPart frontalArmor 1000 22 -1 -25 34 24 50
+SetupPart rightTrack 600 -57 -10 -25 115 22 9
+SetupPart leftTrack 600 -57 -10 16 115 22 9
 
 // Seats
 Driver 0 22 0 -360 360 -8 15

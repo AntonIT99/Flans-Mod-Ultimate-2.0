@@ -6,6 +6,7 @@ Description Japanese Jeep __Year Introduced : 1936
 // Rendering
 Icon 44_Kurogane
 Model W44.Kurogane
+FlashModel DefaultFlash
 Texture Skin44_Kurogane
 RotateWheels true
 CameraDistance 5.0
@@ -36,6 +37,7 @@ MaxThrottle 1.15
 MaxNegativeThrottle 0.5
 TurnLeftSpeed 0.5
 TurnRightSpeed 0.5
+RealTurnRateDegPerSec 240
 CanRoll false
 Drag 1.0
 
@@ -53,7 +55,7 @@ ShellDelay 999
 ShootDelay 999
 ReloadTimeSecondary 10
 BulletDetection 5
-GunOrigin 1 16 -5 -6
+GunOrigin 1 22.3 -6.6 -6
 
 // Armour and damage
 UseRealisticVehicleHealth true
@@ -65,11 +67,11 @@ ArmorBottomMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 50 -34 -4 -15 70 27 30
-SetupPart frontLeftWheel 15 19 -10 9 13 13 4
-SetupPart frontRightWheel 15 19 -10 -13 13 13 4
-SetupPart backLeftWheel 15 -24 -10 9 13 13 4
-SetupPart backRightWheel 15 -25 -10 -13 13 13 4
+SetupPart core 1020 -34 -4 -15 70 27 30
+SetupPart frontLeftWheel 20 19 -10 9 13 13 4
+SetupPart frontRightWheel 20 19 -10 -13 13 13 4
+SetupPart backLeftWheel 20 -24 -10 9 13 13 4
+SetupPart backRightWheel 20 -25 -10 -13 13 13 4
 
 // Seats
 Driver -3 0 7

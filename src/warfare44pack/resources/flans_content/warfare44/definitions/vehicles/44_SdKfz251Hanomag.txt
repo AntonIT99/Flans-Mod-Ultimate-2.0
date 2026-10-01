@@ -6,6 +6,7 @@ Description German Halftrack__Year Introduced : 1939
 // Rendering
 Icon 44_SdKfz251Hanomag
 Model W44.SdKfz251Hanomag
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_SdKfz251Hanomag
 RotateWheels true
@@ -38,6 +39,7 @@ MaxThrottle 0.75
 MaxNegativeThrottle 0.45
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 18
 
 // Wheels and tracks
 WheelRadius 1.0
@@ -77,8 +79,8 @@ ShootDelay 999
 ReloadTimeSecondary 100
 PlaceTimePrimary 80
 BulletDetection 5
-GunOrigin 2 -4 14 0
-GunOrigin 5 -67 14 0
+GunOrigin 2 8 13.3 0
+GunOrigin 5 -54.8 15.4 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
@@ -87,18 +89,14 @@ ArmorSideMm 8
 ArmorRearMm 8
 ArmorTopMm 0
 ArmorBottomMm 5.5
-TurretArmorFrontMm 14.5
-TurretArmorSideMm 8
-TurretArmorRearMm 8
-TurretArmorTopMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 750 -70 1 -18 125 30 36
-SetupPart frontLeftWheel 75 37 -10 14 17 17 6
-SetupPart frontRightWheel 75 37 -10 -20 17 17 6
-SetupPart rightTrack 300 -55 -10 14 76 17 8
-SetupPart leftTrack 300 -55 -10 -22 76 17 8
+SetupPart core 5620 -70 1 -18 125 30 36
+SetupPart frontLeftWheel 60 37 -10 14 17 17 6
+SetupPart frontRightWheel 60 37 -10 -20 17 17 6
+SetupPart rightTrack 630 -55 -10 14 76 17 8
+SetupPart leftTrack 630 -55 -10 -22 76 17 8
 
 // Seats
 Driver -7 9 -8

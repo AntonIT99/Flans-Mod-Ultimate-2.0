@@ -6,6 +6,7 @@ Description American Light Tank
 // Item and rendering
 Icon Chaffee
 Model ww2.Chaffee
+FlashModel DefaultFlash
 Texture chaffee
 RotateWheels True
 AddDye 8 green
@@ -39,14 +40,15 @@ MaxThrottle 0.8
 MaxNegativeThrottle 0.6
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 30
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 5 25 2
-AddGun 8 34 8 turret browning
+BarrelPosition 53 26.5 0
+AddGun 22 27.5 5.5 turret browning
 ShootDelay 1
 ShellDelay 85
 TurretRotationSpeed 0.02
@@ -65,7 +67,7 @@ SetupPart turret 8800 -36 22 -28 56 22 56
 SetupPart rightTrack 6000 -50 -10 -28 94 19 7
 SetupPart leftTrack 6000 -50 -10 21 94 19 7
 BulletDetection 7
-ArmorFrontMm 25
+ArmorFrontMm 25 60
 ArmorSideMm 25
 ArmorRearMm 19
 ArmorTopMm 13
@@ -92,4 +94,12 @@ StartSoundLength 41
 EngineSound engine_mt_m4a3
 EngineSoundLength 39
 ShootSoundPrimary shoot_75mmus
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary BrenShoot

@@ -3,6 +3,7 @@ package com.flansmod.client.model.ww2;
 
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.tmt.ModelRendererTurbo;
+import com.flansmod.common.vector.Vector3f;
 
 public class ModelType100 extends ModelGun {
    int textureX = 128;
@@ -122,5 +123,6 @@ public class ModelType100 extends ModelGun {
       this.pumpModel[1].rotateAngleX = -0.5934119F;
       this.translateAll(0.0F, 0.0F, 0.0F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(3.90625F, 0.734375F, 0F);
    }
 }

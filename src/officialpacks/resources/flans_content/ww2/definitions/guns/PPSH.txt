@@ -7,6 +7,10 @@ Icon PPSH
 Colour 255 255 255
 DeployedModel None
 Model ww2.PPSH
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 2.00893 0.4721 0
+animFlashScale 0.62
 Texture PPSH
 ModelScale 1
 

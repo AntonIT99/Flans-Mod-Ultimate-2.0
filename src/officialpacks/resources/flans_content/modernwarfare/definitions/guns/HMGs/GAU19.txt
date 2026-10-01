@@ -7,6 +7,10 @@ Description Ammo Type : HMG
 Icon GAU19
 Colour 255 255 255
 Model mw.GAU19
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.89942 0.13793 -0.00904
+animFlashScale 6.91
 Texture GAU19
 ModelScale 0.18
 Paintjob gau19_stoic_blue gau19_stoic_blue blue 5

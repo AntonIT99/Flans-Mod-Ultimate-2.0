@@ -7,6 +7,10 @@ Icon Mp34
 Colour 255 255 255
 DeployedModel None
 Model ww2.Mp34
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.48116 0.57363 0
+animFlashScale 0.73
 Texture SkinMp34
 ModelScale 0.85
 Paintjob Mp34_Acacia Mp34_Acacia orange 2

@@ -66,5 +66,6 @@ public class ModelOlympia extends ModelGun
 		
 		gunSlideDistance = 0.25F;
 		animationType = EnumAnimationType.BREAK_ACTION;
+		muzzleFlashPoint = new Vector3f(1.0625F, 0.246875F, 0F);
 	}
 }

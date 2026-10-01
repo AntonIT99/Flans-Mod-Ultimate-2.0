@@ -19,6 +19,7 @@ Penetrates False
 Mass 3300
 MuzzleVelocity 110
 PenetrationAt100m 210
+HEAT True
 
 // Damage and detonation
 DamageVsLiving 6500
@@ -33,3 +34,4 @@ ExplosiveMassTNTg 860
 FlakParticles 0
 HitSound bullet
 SmokeTrail True
+TrailParticleType flansmod.rocketexhaust

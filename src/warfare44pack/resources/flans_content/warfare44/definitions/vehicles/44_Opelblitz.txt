@@ -36,6 +36,7 @@ MaxThrottle 0.95
 MaxNegativeThrottle 0.5
 TurnLeftSpeed 0.55
 TurnRightSpeed 0.55
+RealTurnRateDegPerSec 212.21
 CanRoll false
 Drag 1.0
 
@@ -63,11 +64,11 @@ ArmorBottomMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 300 -52 4 -18 116 40 36
-SetupPart SetupPart frontRightWheel 75 39 -10 13 20 19 6
-SetupPart frontLeftWheel 75 39 -10 -19 20 19 6
-SetupPart backRightWheel 75 -33 -10 9 20 19 10
-SetupPart backLeftWheel 75 -33 -10 -19 20 19 10
+SetupPart core 2260 -52 4 -18 116 40 36
+SetupPart frontRightWheel 40 39 -10 13 20 19 6
+SetupPart frontLeftWheel 40 39 -10 -19 20 19 6
+SetupPart backRightWheel 80 -33 -10 9 20 19 10
+SetupPart backLeftWheel 80 -33 -10 -19 20 19 10
 
 // Seats
 Driver 23 12 -7

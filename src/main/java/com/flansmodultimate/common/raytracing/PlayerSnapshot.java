@@ -1,5 +1,8 @@
 package com.flansmodultimate.common.raytracing;
 
+import com.flansmodultimate.common.driveables.PlaneRiderRotation;
+import com.flansmodultimate.common.entity.Plane;
+import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -258,6 +261,9 @@ public class PlayerSnapshot
                 root.translate(0F, -1F, 0.3F);
         }
 
+        if (p.getVehicle() instanceof Seat seat && seat.getDriveable() instanceof Plane plane)
+            root.rotate(PlaneRiderRotation.at(plane, partialTick, bodyYaw));
+
         return root.scale(-MODEL_SCALE, -MODEL_SCALE, MODEL_SCALE).translate(0F, -1.501F, 0F);
     }
 
@@ -281,6 +287,8 @@ public class PlayerSnapshot
             case ONE_ARM -> ArmPose.ONE_AIM;
             case BOW -> ArmPose.AIM;
             case BOTH -> ArmPose.BOTH_AIM;
+            case THROW -> ArmPose.THROW;
+            case SUPPORT -> ArmPose.SUPPORT;
         };
     }
 
@@ -326,9 +334,9 @@ public class PlayerSnapshot
         if (p.isUsingItem())
         {
             if ((p.getUsedItemHand() == InteractionHand.MAIN_HAND) == rightHanded)
-                poseArm(p, rightPose, head, rightArm, leftArm, 1F);
+                poseUsingArm(p, rightPose, leftPose, head, rightArm, leftArm, 1F);
             else
-                poseArm(p, leftPose, head, leftArm, rightArm, -1F);
+                poseUsingArm(p, leftPose, rightPose, head, leftArm, rightArm, -1F);
         }
         else if (rightHanded != (rightHanded ? leftPose.twoHanded : rightPose.twoHanded))
         {
@@ -340,6 +348,21 @@ public class PlayerSnapshot
             poseArm(p, rightPose, head, rightArm, leftArm, 1F);
             poseArm(p, leftPose, head, leftArm, rightArm, -1F);
         }
+    }
+
+    /**
+     * Vanilla poses only the arm of an item in use. ModClient.oneArmThrow also applies the gun pose of the
+     * other arm, before drawing the throwing arm back from where it swung.
+     */
+    private static void poseUsingArm(Player p, ArmPose pose, ArmPose otherPose, Part head, Part arm, Part otherArm, float side)
+    {
+        if (pose == ArmPose.THROW && (otherPose == ArmPose.ONE_AIM || otherPose == ArmPose.BOTH_AIM || otherPose == ArmPose.SUPPORT))
+        {
+            float swing = arm.xRot;
+            poseArm(p, otherPose, head, otherArm, arm, -side);
+            arm.xRot = swing;
+        }
+        poseArm(p, pose, head, arm, otherArm, side);
     }
 
     /**
@@ -385,7 +408,13 @@ public class PlayerSnapshot
                 otherArm.yRot = side * 0.05F;
                 otherArm.zRot = 0F;
             }
-            case THROW_SPEAR ->
+            case SUPPORT ->
+            {
+                // ModClient.bowSupport: the free arm of the bow pose alone
+                arm.yRot = -side * 0.5F + head.yRot;
+                arm.xRot = -Mth.PI / 2F + head.xRot;
+            }
+            case THROW_SPEAR, THROW ->
             {
                 arm.xRot = arm.xRot * 0.5F - Mth.PI;
                 arm.yRot = 0F;
@@ -606,6 +635,7 @@ public class PlayerSnapshot
     private enum ArmPose
     {
         EMPTY(false), ITEM(false), BLOCK(false), AIM(true), ONE_AIM(false), BOTH_AIM(true), THROW_SPEAR(false),
+        THROW(false), SUPPORT(false),
         CROSSBOW_CHARGE(true), CROSSBOW_HOLD(true), SPYGLASS(false), TOOT_HORN(false), BRUSH(false);
 
         private final boolean twoHanded;

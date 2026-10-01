@@ -35,5 +35,9 @@ HitSound bullet
 
 // Effects
 SmokeTrail False
+ExplodeParticles 6
+ExplodeParticleType explode
+FlareParticleCount 4
+DebrisParticleCount 3
 HasLight True
 FlakParticles 0

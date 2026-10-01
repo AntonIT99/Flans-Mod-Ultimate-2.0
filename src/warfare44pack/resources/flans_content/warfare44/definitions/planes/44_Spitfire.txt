@@ -6,6 +6,7 @@ Description British Fighter Aircraft__Uses Browning .30 Cal Ammo / 20mm Aircraft
 // Rendering
 Icon 44_Spitfire
 Model W44.Spitfire
+FlashModel DefaultFlash
 Texture Skin44_Spitfire
 CameraDistance 10.0
 
@@ -39,6 +40,7 @@ MaxThrottle 2.15
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 1.5
 TurnRightSpeed 1.5
+RealTurnRateDegPerSec 28.34
 LookUpSpeed 2.5
 LookDownSpeed 2.5
 RollLeftSpeed 2.5
@@ -89,9 +91,9 @@ CollisionDamageThrottle 0.21
 CollisionDamageTimes 20
 
 // Parts and collision
-SetupPart core 450 -150 9 -17 220 48 34
-SetupPart rightWing 275 -45 17 17 58 22 105
-SetupPart leftWing 275 -45 17 -123 58 22 105
+SetupPart core 2350 -150 9 -17 220 48 34
+SetupPart rightWing 510 -45 17 17 58 22 105
+SetupPart leftWing 510 -45 17 -123 58 22 105
 CollisionPoint 45 36 0 core
 CollisionPoint -9 31 111 core
 CollisionPoint -9 31 -111 core

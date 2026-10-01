@@ -31,6 +31,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -271,7 +272,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /**
      * If true, then this gun can be dual wielded
      */
-    protected boolean oneHanded;
+    protected boolean oneHanded = true;
+    /** Keeps this gun's holding arm raised even when the holder uses the dynamic aim pose. */
+    @Getter
+    protected boolean forceAimPose;
+    /** Mirrors the held model across its side axis when rendered in the left hand. */
+    @Getter
+    protected boolean mirrorInLeftHand;
     /**
      * For one shot items like a panzerfaust
      */
@@ -432,10 +439,26 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     protected String clickSoundOnEmptyRepeated;
     /**
+     * The sound to play when switching between firing modes. Defaults to the built-in firing mode switch sound
+     */
+    @Getter
+    protected String modeSwitchSound = FlansMod.SOUND_SWITCH_FIRING_MODE;
+    /**
      * The sound to play while holding the weapon in the hand
      */
     @Getter
     protected String idleSound;
+    /**
+     * If true, the toggle key powers the weapon itself on and off (lightsabers, powered tools).
+     * While powered off it cannot shoot or melee and its idle sound stops
+     */
+    @Getter
+    protected boolean toggleable;
+    /**
+     * Sounds played when the toggle key switches the weapon or its attachments on or off
+     */
+    protected String toggleOnSound;
+    protected String toggleOffSound;
 
     //Sound Modifiers
     /**
@@ -508,6 +531,16 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected String meleeSound;
     /**
+     * The sound to play when a melee swing with this weapon damages its target
+     */
+    @Getter
+    protected String meleeHitSound;
+    /**
+     * The sound to play when a melee swing with this weapon is stopped by a shield or a held item
+     */
+    @Getter
+    protected String shieldHitSound;
+    /**
      * The time delay between custom melee attacks
      */
     @Getter
@@ -536,6 +569,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected String deployableModelName = StringUtils.EMPTY;
     @Getter
     protected String deployableModelClassName = StringUtils.EMPTY;
+
+    /** Dedicated-server-safe counterpart to the client-populated model class name. */
+    public String resolveDeployableModelClassName()
+    {
+        return StringUtils.isNotBlank(deployableModelClassName)
+            ? deployableModelClassName : findModelClass(deployableModelName, contentPack);
+    }
     @Getter
     protected ResourceLocation deployableTexture;
     /**
@@ -552,9 +592,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected float bottomViewLimit = 30F;
     @Getter
-    protected float sideViewLimit = 45F;
+    protected float sideViewLimit = 40F;
     @Getter
     protected float pivotHeight = 0.375F;
+    @Nullable
+    private transient Vec3 measuredDeployableMuzzlePivot;
+    @Nullable
+    private transient Vec3 measuredDeployableMuzzle;
 
     //Default Scope Settings. Overriden by scope attachments
     //In many cases, this will simply be iron sights
@@ -781,14 +825,17 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         canShootUnderwater = readValue("CanShootUnderwater", canShootUnderwater, file);
         canSetPosition = readValue("CanSetPosition", canSetPosition, file);
         oneHanded = readValue("OneHanded", oneHanded, file);
+        forceAimPose = readValue("ForceAimPose", forceAimPose, file);
+        mirrorInLeftHand = readValue("MirrorInLeftHand", mirrorInLeftHand, file);
         usableByPlayers = readValue("UsableByPlayers", usableByPlayers, file);
+        toggleable = readValue("Toggleable", toggleable, file);
         usableByMechas = readValue("UsableByMechas", usableByMechas, file);
         standBackDist = readValue("StandBackDistance", standBackDist, file);
         topViewLimit = readValue("TopViewLimit", topViewLimit, file);
         if (topViewLimit > 0F)
             topViewLimit = -topViewLimit;
         bottomViewLimit = readValue("BottomViewLimit", bottomViewLimit, file);
-        sideViewLimit = readValue("SideViewLimit", sideViewLimit, file);
+        sideViewLimit = Math.min(40F, readValue("SideViewLimit", sideViewLimit, file));
         pivotHeight = readValue("PivotHeight", pivotHeight, file);
         itemUseAction = readValue("ItemUseAction", itemUseAction, UseAnim.class, file);
         // This is needed, because the presence of the value overrides the default value of zero.
@@ -842,8 +889,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         reloadSoundOnEmpty = readSound("EmptyReloadSound", reloadSoundOnEmpty, file);
         clickSoundOnEmpty = readSound("EmptyClickSound", clickSoundOnEmpty, file);
         clickSoundOnEmptyRepeated = readSound("EmptyClickSoundRepeated", clickSoundOnEmptyRepeated, file);
+        modeSwitchSound = readSound("ModeSwitchSound", modeSwitchSound, file);
         idleSound = readSound("IdleSound", idleSound, file);
+        toggleOnSound = readSound("ToggleOnSound", toggleOnSound, file);
+        toggleOffSound = readSound("ToggleOffSound", toggleOffSound, file);
         meleeSound = readSound("MeleeSound", meleeSound, file);
+        meleeHitSound = readSound("MeleeHitSound", meleeHitSound, file);
+        shieldHitSound = readSound("ShieldHitSound", shieldHitSound, file);
 
         //Looping sounds
         warmupSound = readSound("WarmupSound", warmupSound, file);
@@ -958,6 +1010,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         if (readFieldWithOptionalValue("UseCustomMelee", false, file) && primaryFunction != EnumFunction.CUSTOM_MELEE)
             secondaryFunction = EnumFunction.CUSTOM_MELEE;
         secondaryFunction = EnumFunction.get(readValue("SecondaryFunction", secondaryFunction.toString(), file));
+        if (secondaryFunction == EnumFunction.THROW && hasValueForConfigField("ThrowSpeedMs", file))
+            bulletSpeed = readValue("ThrowSpeedMs", bulletSpeed * 20F, file) / 20F;
         // Throwing is driven by the vanilla use key, which only the secondary function is bound to.
         if (primaryFunction == EnumFunction.THROW)
         {
@@ -1073,6 +1127,18 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     {
         CommonConfigSnapshot config = ModCommonConfig.get();
         return useMuzzleFlashDefaults ? config == null || config.muzzleFlashParticlesDefault() : showMuzzleFlashParticles;
+    }
+
+    /**
+     * Whether this gun has a muzzle flash model configured. This is
+     * deliberately based on the raw definition names so common code can decide
+     * whether to dispatch a passenger flash without resolving client-only model
+     * classes.
+     */
+    public boolean hasMuzzleFlashModel()
+    {
+        return !isBlankModelName(flashModelName)
+            || !isBlankModelName(muzzleFlashModelName);
     }
 
     /**
@@ -1212,6 +1278,30 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
                 return shootableItem.getConfigType();
         }
         return null;
+    }
+
+    /** Model-space deployable muzzle data measured by the authoritative content loader. */
+    public void setMeasuredDeployableMuzzle(@Nullable Vec3 pivot, @Nullable Vec3 muzzle)
+    {
+        measuredDeployableMuzzlePivot = pivot;
+        measuredDeployableMuzzle = muzzle;
+    }
+
+    public boolean hasMeasuredDeployableMuzzle()
+    {
+        return measuredDeployableMuzzlePivot != null && measuredDeployableMuzzle != null;
+    }
+
+    @Nullable
+    public Vec3 getMeasuredDeployableMuzzlePivot()
+    {
+        return measuredDeployableMuzzlePivot;
+    }
+
+    @Nullable
+    public Vec3 getMeasuredDeployableMuzzle()
+    {
+        return measuredDeployableMuzzle;
     }
 
     /** The recoil factor of the chambered round, or 1 when the gun is empty. */
@@ -1431,6 +1521,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public float getMeleeDamage(ItemStack stack, boolean driveable)
     {
+        if (isPoweredOff(stack))
+            return 0F;
+
         float stackMeleeDamage = meleeDamage;
 
         for (AttachmentType attachment : getCurrentAttachments(stack))
@@ -1843,6 +1936,73 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     {
         AttachmentType grip = getGrip(stack);
         return grip != null ? grip.toggleSound : null;
+    }
+
+    /**
+     * Whether the toggle key does anything for this stack: the weapon itself or one of its attachments is toggleable
+     */
+    public boolean canToggle(ItemStack stack)
+    {
+        if (toggleable)
+            return true;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if (attachment.isToggleable())
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Toggle state shared by the weapon and all its toggleable attachments. Stacks without the tag are on
+     */
+    public boolean isToggledOn(@Nullable ItemStack stack)
+    {
+        return stack == null || !ItemStackData.copy(stack).getBoolean(GunItem.NBT_TOGGLED_OFF);
+    }
+
+    public void setToggledOn(ItemStack stack, boolean on)
+    {
+        ItemStackData.update(stack, tag -> {
+            if (on)
+                tag.remove(GunItem.NBT_TOGGLED_OFF);
+            else
+                tag.putBoolean(GunItem.NBT_TOGGLED_OFF, true);
+        });
+    }
+
+    /**
+     * True when the weapon itself is toggleable and switched off, which disables shooting, melee and its idle sound
+     */
+    public boolean isPoweredOff(@Nullable ItemStack stack)
+    {
+        return toggleable && !isToggledOn(stack);
+    }
+
+    /**
+     * Whether a toggleable attachment on this stack is currently switched on
+     */
+    public boolean isAttachmentActive(ItemStack stack, @Nullable AttachmentType attachment)
+    {
+        return attachment != null && (!attachment.isToggleable() || isToggledOn(stack));
+    }
+
+    public String getToggleSound(ItemStack stack, boolean on)
+    {
+        String sound = on ? toggleOnSound : toggleOffSound;
+        if (StringUtils.isNotBlank(sound))
+            return sound;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if (!attachment.isToggleable())
+                continue;
+            sound = on ? attachment.getToggleOnSound() : attachment.getToggleOffSound();
+            if (StringUtils.isNotBlank(sound))
+                return sound;
+        }
+        return FlansMod.SOUND_SWITCH_FIRING_MODE;
     }
 
     /**

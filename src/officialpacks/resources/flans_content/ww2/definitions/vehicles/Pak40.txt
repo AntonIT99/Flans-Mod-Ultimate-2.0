@@ -6,6 +6,7 @@ Description German Anti-Tank Gun
 // Item and rendering
 Icon Pak40
 Model ww2.Pak40
+FlashModel DefaultFlash
 Texture pak40
 AddDye 5 gray
 ModelScale 1.1
@@ -32,13 +33,14 @@ MaxThrottle 0
 MaxNegativeThrottle 0
 TurnLeftSpeed 0
 TurnRightSpeed 0
+RealTurnRateDegPerSec 0
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 0 9 0
+BarrelPosition 52.8 6.6 0
 ShootDelay 1
 ShellDelay 110
 TurretRotationSpeed 0.02
@@ -53,8 +55,8 @@ gunsightZoom 4.5
 
 // Health and armour
 SetupPart core 1500 -40 -8 -18 60 24 36
-SetupPart leftTrack 1200 -12 -8 -26 16 16 4
-SetupPart rightTrack 1200 -12 -8 22 16 16 4
+SetupPart leftTrack 1200 1.1 -9.9 -12.1 15.4 15.4 3.3
+SetupPart rightTrack 1200 1.1 -9.9 13.2 15.4 15.4 3.3
 BulletDetection 7
 ArmorFrontMm 4
 ArmorSideMm 0
@@ -79,3 +81,11 @@ StartSoundLength 0
 EngineSound
 EngineSoundLength 0
 ShootSoundPrimary shoot_75mmde
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0

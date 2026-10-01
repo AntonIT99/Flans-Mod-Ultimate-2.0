@@ -14,6 +14,9 @@ Paintjob ak74_stoic_blue ak74_stoic_blue blue 3
 Paintjob ak74_stoic_green ak74_stoic_green green 3
 Paintjob ak74_stoic_red ak74_stoic_red red 3
 Paintjob ak74_stoic_orange ak74_stoic_orange orange 3
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.74699 0.3238 0
+animFlashScale 4.15
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

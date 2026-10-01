@@ -14,6 +14,9 @@ Paintjob spas_stoic_blue spas_stoic_blue blue 3
 Paintjob spas_stoic_green spas_stoic_green green 3
 Paintjob spas_stoic_red spas_stoic_red red 3
 Paintjob spas_stoic_orange spas_stoic_orange orange 3
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.44665 0.29385 0
+animFlashScale 5.53
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

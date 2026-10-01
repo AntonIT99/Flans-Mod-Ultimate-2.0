@@ -5,6 +5,7 @@ ShortName Spitfire
 // Item and rendering
 Icon Spitfire
 Model ww2.Spitfire
+FlashModel DefaultFlash
 Texture spitfire
 AddDye 6 green
 
@@ -42,6 +43,7 @@ MaxThrottle 4.0
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 1.8
 TurnRightSpeed 1.8
+RealTurnRateDegPerSec 28.35
 LookUpSpeed 1.8
 LookDownSpeed 1.2
 RollLeftSpeed 1.7

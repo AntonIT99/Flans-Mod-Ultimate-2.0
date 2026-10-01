@@ -227,6 +227,31 @@ tasks.register('muzzleReport', JavaExec) {
             (findProperty('reportFile') ? [file(findProperty('reportFile')).absolutePath] : [])
 }
 
+// Developer tooling: writes model-measured muzzles into the tracked type files, as
+// /flandebug shootpoint apply does for one session, and reports the values to check by hand.
+// gradlew shootPointSync [-Pwrite] [-Pfilter=<text>] [-PreportFile=<path>]
+tasks.register('shootPointSync', JavaExec) {
+    group = 'flans tooling'
+    description = 'Syncs ShootPointPrimary, BarrelPosition, GunOrigin and AA gun Barrel lines to the measured models.'
+    def packSets = sourceSets.findAll { SourceSet set ->
+        set.resources.srcDirs.any { new File(it, 'flans_content').isDirectory() }
+    }.sort { it.name }
+    dependsOn packSets.collect { it.classesTaskName }, sourceSets.test.classesTaskName
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.flansmodultimate.tooling.shootpoints.ShootPointSync'
+    // Reports what it could not do instead of failing.
+    ignoreExitValue = true
+    args packSets.collectMany { SourceSet set ->
+        File resources = set.resources.srcDirs.find { new File(it, 'flans_content').isDirectory() }
+        ['--pack-set', set.name, resources.absolutePath, set.output.classesDirs.files*.absolutePath.join(File.pathSeparator)]
+    }
+    if (findProperty('write') != null)
+        args '--write'
+    if (findProperty('filter'))
+        args '--filter', findProperty('filter').toString()
+    args '--report', file(findProperty('reportFile') ?: layout.buildDirectory.file('reports/shootPointSync/shoot-point-sync.md').get().asFile).absolutePath
+}
+
 def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     def replaceProperties = [
             minecraft_version      : minecraft_version,

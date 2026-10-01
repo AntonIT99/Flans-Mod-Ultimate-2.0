@@ -17,6 +17,24 @@
                 "class": "com/flansmodultimate/platform/client/ArmPosePlatform",
                 "field": "ONE_ARM_AIM"
             }
+        },
+        {
+            "enum": "net/minecraft/client/model/HumanoidModel$ArmPose",
+            "name": "FLANSMODULTIMATE_ONE_ARM_THROW",
+            "constructor": "(ZLnet/neoforged/neoforge/client/IArmPoseTransformer;)V",
+            "parameters": {
+                "class": "com/flansmodultimate/platform/client/ArmPosePlatform",
+                "field": "ONE_ARM_THROW"
+            }
+        },
+        {
+            "enum": "net/minecraft/client/model/HumanoidModel$ArmPose",
+            "name": "FLANSMODULTIMATE_BOW_SUPPORT",
+            "constructor": "(ZLnet/neoforged/neoforge/client/IArmPoseTransformer;)V",
+            "parameters": {
+                "class": "com/flansmodultimate/platform/client/ArmPosePlatform",
+                "field": "BOW_SUPPORT"
+            }
         }
     ]
 }

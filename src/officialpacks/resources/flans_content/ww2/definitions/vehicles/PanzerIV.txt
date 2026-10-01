@@ -6,6 +6,7 @@ Description German Medium Tank
 // Item and rendering
 Icon Panzer
 Model ww2.Panzer
+FlashModel DefaultFlash
 Texture panzer
 RotateWheels true
 AddDye 10 gray
@@ -39,14 +40,15 @@ MaxThrottle 0.6
 MaxNegativeThrottle 0.4
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 12
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 20 34 0
-AddGun 8 34 8 turret mg42
+BarrelPosition 73.8 28.3 -0.9
+AddGun 27.9 27.5 5.9 turret mg42
 ShootDelay 1
 ShellDelay 95
 TurretRotationSpeed 0.02
@@ -65,7 +67,7 @@ SetupPart turret 10570 -28 20 -25 50 12 49
 SetupPart rightTrack 8270 -48 -10 -25 102 19 7
 SetupPart leftTrack 8270 -48 -10 18 102 19 7
 BulletDetection 7
-ArmorFrontMm 80
+ArmorFrontMm 80 10
 ArmorSideMm 30
 ArmorRearMm 20
 ArmorTopMm 11
@@ -92,4 +94,12 @@ StartSoundLength 41
 EngineSound engine_mt_pziv
 EngineSoundLength 39
 ShootSoundPrimary shoot_75mmde
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary MG42Shoot

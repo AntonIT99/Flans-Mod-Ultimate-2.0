@@ -1,7 +1,7 @@
 // Identity
 Name MIM-23
 ShortName mim23
-Description Russian AA Rocket Emplacement
+Description American M727 tracked HAWK missile carrier
 
 // Item and rendering
 Icon MIM23
@@ -24,13 +24,18 @@ AddAmmo mim23Ammo
 FuelTankSize 2000
 
 // Real-world physics
-RealMassKg 5600
+RealMassKg 12900
+RealEnginePowerHp 202
+RealMaxSpeedKmh 64
+DriveType TRACKED
+RealMaxReverseSpeedKmh 16
 
 // Movement
-MaxThrottle 0
-MaxNegativeThrottle 0
-TurnLeftSpeed 0
-TurnRightSpeed 0
+MaxThrottle 1
+MaxNegativeThrottle 0.25
+TurnLeftSpeed 0.5
+TurnRightSpeed 0.5
+RealTurnRateDegPerSec 26
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
@@ -70,6 +75,8 @@ ArmorSideMm 0
 ArmorRearMm 0
 ArmorTopMm 0
 ArmorBottomMm 0
+PartArmorMm leftTrack 10
+PartArmorMm rightTrack 10
 UseRealisticVehicleHealth true
 
 // Seats and geometry
@@ -83,8 +90,8 @@ RotatedDriverOffset 8 0 0
 Passengers 0
 
 // Sounds and particles
-StartSound ural4320start
-StartSoundLength 40
+StartEngineSound ural4320start
+StartEngineSoundLength 40
 EngineSound kamazenginerun
 EngineSoundLength 101
 ShootSoundPrimary RocketFire2

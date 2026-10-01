@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.driveables.physics;
 
+import com.flansmodultimate.common.physics.ModPhysics;
+
 /**
  * Derived fixed-wing performance for aircraft running the real-world profile.
  *
@@ -122,9 +124,7 @@ public final class AircraftPerformancePhysics
      *
      * @param loadFactor lift as a multiple of weight; one is level flight
      */
-    public static double dragNewtons(double airspeedMs, double massKg, double wingSpanM,
-                                     double terminalSpeedMs, double referenceThrustNewtons,
-                                     double loadFactor)
+    public static double dragNewtons(double airspeedMs, double massKg, double wingSpanM, double terminalSpeedMs, double referenceThrustNewtons, double loadFactor)
     {
         if (!finitePositive(terminalSpeedMs) || !finitePositive(referenceThrustNewtons))
             return 0D;
@@ -145,10 +145,10 @@ public final class AircraftPerformancePhysics
             // Below the knee the 1/v² term diverges; hold it flat and fade it
             // out toward standstill instead. That is also where a real wing has
             // departed into stall and is no longer making the lift being paid for.
-            double kneeSpeed = Math.max(VehiclePhysicsConstants.MIN_LAUNCH_SPEED_MS,
-                terminalSpeedMs * VehiclePhysicsConstants.INDUCED_DRAG_KNEE_FRACTION);
+            double kneeSpeed = Math.max(VehiclePhysicsConstants.MIN_LAUNCH_SPEED_MS, terminalSpeedMs * VehiclePhysicsConstants.INDUCED_DRAG_KNEE_FRACTION);
             double effective = Math.max(kneeSpeed, speed);
-            drag += induced / (effective * effective) * Math.min(1D, speed / kneeSpeed);
+            if (effective != 0D)
+                drag += induced / (effective * effective) * Math.min(1D, speed / kneeSpeed);
         }
         return drag;
     }
@@ -157,8 +157,7 @@ public final class AircraftPerformancePhysics
      * Longitudinal acceleration in m/s² for a caller with no span data and no
      * throttle position: the pure {@code v²} drag model, with no coasting floor.
      */
-    public static double accelerationMs2(double thrustNewtons, double massKg, double airspeedMs,
-                                         double terminalSpeedMs, double referenceThrustNewtons)
+    public static double accelerationMs2(double thrustNewtons, double massKg, double airspeedMs, double terminalSpeedMs, double referenceThrustNewtons)
     {
         return accelerationMs2(thrustNewtons, massKg, airspeedMs, terminalSpeedMs, referenceThrustNewtons, 0D, 1D);
     }
@@ -195,11 +194,20 @@ public final class AircraftPerformancePhysics
                                          double terminalSpeedMs, double referenceThrustNewtons,
                                          double wingSpanM, double throttleDemand, double loadFactor)
     {
+        return accelerationMs2(thrustNewtons, massKg, airspeedMs, terminalSpeedMs, referenceThrustNewtons,
+            wingSpanM, throttleDemand, loadFactor, 1D);
+    }
+
+    public static double accelerationMs2(double thrustNewtons, double massKg, double airspeedMs,
+                                         double terminalSpeedMs, double referenceThrustNewtons,
+                                         double wingSpanM, double throttleDemand, double loadFactor,
+                                         double dragFactor)
+    {
         if (!finitePositive(massKg) || !finitePositive(terminalSpeedMs) || !finitePositive(referenceThrustNewtons))
             return 0D;
         double speed = Double.isFinite(airspeedMs) ? Math.max(0D, Math.abs(airspeedMs)) : 0D;
         double thrust = Double.isFinite(thrustNewtons) ? Math.max(0D, thrustNewtons) : 0D;
-        double drag = dragNewtons(speed, massKg, wingSpanM, terminalSpeedMs, referenceThrustNewtons, loadFactor);
+        double drag = ModPhysics.dragForce(dragNewtons(speed, massKg, wingSpanM, terminalSpeedMs, referenceThrustNewtons, loadFactor), dragFactor);
         double acceleration = (thrust - drag) / massKg;
         if (!Double.isFinite(acceleration))
             return 0D;
@@ -212,7 +220,7 @@ public final class AircraftPerformancePhysics
             double ramp = Math.min(1D, speed / Math.max(VehiclePhysicsConstants.MIN_LAUNCH_SPEED_MS,
                 terminalSpeedMs * VehiclePhysicsConstants.COAST_DECELERATION_RAMP_FRACTION));
             acceleration = Math.min(acceleration,
-                -VehiclePhysicsConstants.MIN_AIRCRAFT_COAST_DECELERATION_MS2 * ramp);
+                -ModPhysics.dragForce(VehiclePhysicsConstants.MIN_AIRCRAFT_COAST_DECELERATION_MS2 * ramp, dragFactor));
         }
         return Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
             Math.min(acceleration, VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2));
@@ -439,9 +447,15 @@ public final class AircraftPerformancePhysics
      */
     public static double airBrakeDecelerationMs2(double airspeedMs, double airBrakeAreaM2, double massKg)
     {
+        return airBrakeDecelerationMs2(airspeedMs, airBrakeAreaM2, massKg, 1D);
+    }
+
+    public static double airBrakeDecelerationMs2(double airspeedMs, double airBrakeAreaM2, double massKg,
+                                                  double dragFactor)
+    {
         if (!finitePositive(massKg))
             return 0D;
-        double deceleration = airBrakeDragNewtons(airspeedMs, airBrakeAreaM2) / massKg;
+        double deceleration = ModPhysics.dragForce(airBrakeDragNewtons(airspeedMs, airBrakeAreaM2), dragFactor) / massKg;
         if (!Double.isFinite(deceleration) || deceleration <= 0D)
             return 0D;
         return Math.min(deceleration, VehiclePhysicsConstants.AIR_BRAKE_MAX_DECELERATION_MS2);

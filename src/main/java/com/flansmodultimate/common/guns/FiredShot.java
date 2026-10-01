@@ -33,7 +33,7 @@ public class FiredShot
 {
     /** counter of fired shots from the magazine */
     @Getter
-    private int shot;
+    private final int shot;
     /** The weapon used to fire the shot. Null on the client spawn-data path, where the gun is not transmitted. */
     @Getter @Nullable
     private final FireableGun fireableGun;
@@ -62,7 +62,7 @@ public class FiredShot
     }
 
     /** General Constructor */
-    public FiredShot(FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot)
+    public FiredShot(@Nullable FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot)
     {
         this.fireableGun = fireableGun;
         this.bulletType = bulletType;

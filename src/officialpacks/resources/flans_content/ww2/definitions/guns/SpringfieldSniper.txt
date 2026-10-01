@@ -7,6 +7,10 @@ Icon springfieldsniper
 Colour 255 255 255
 DeployedModel None
 Model ww2.SpringfieldSniper
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.37329 0.39001 0
+animFlashScale 2.84
 Texture springfield
 Paintjob springfieldsniper_acacia springfield_acacia orange 2
 Paintjob springfieldsniper_birch springfield_birch black 1 yellow 1

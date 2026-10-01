@@ -6,6 +6,7 @@ Description American Medium Tank__Uses : 76mm AP Tank Shell - Long_Medium Cal. H
 // Rendering
 Icon 44_M4A3E8Sherman
 Model W44.M4A3E8Sherman
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_M4A3E8Sherman
 RotateWheels True
@@ -40,6 +41,7 @@ MaxNegativeThrottle 0.5673
 ClutchBrake 0.02025
 TurnLeftSpeed 0.405
 TurnRightSpeed 0.405
+RealTurnRateDegPerSec 20
 CanRoll true
 
 // Wheels and tracks
@@ -90,8 +92,8 @@ AddAmmo 44_76APCBCShell
 AddGun 18 33 -5 turret 44_30Cal
 AddGun 8 46 -2 turret 44_30Cal
 AddGun 4 48 -9 turret 44_50Cal
-GunOrigin 1 35 -5 9
-BarrelPosition 70 33 0
+GunOrigin 1 45.8 -2.6 10.3
+BarrelPosition 69 32.2 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -146,7 +148,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 63
+ArmorFrontMm 63 47
 ArmorSideMm 38
 ArmorRearMm 38
 ArmorTopMm 19
@@ -158,11 +160,12 @@ TurretArmorTopMm 25
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1500 -59 0 -24 89 40 48
-SetupPart frontalArmor 1500 30 0 -24 23 37 48
-SetupPart trailer 250 37 -2 -16 18 23 32
-SetupPart leftTrack 300 -59 -10 -24 114 23 8
-SetupPart rightTrack 300 -59 -10 16 114 23 8
+SetupPart core 5900 -59 0 -24 89 26 48
+SetupPart turret 1300 -26 26 -20 43 14 40
+SetupPart frontalArmor 1000 30 0 -24 23 26 48
+SetupPart trailer 600 37 -2 -16 18 23 32
+SetupPart leftTrack 600 -59 -10 -24 114 23 8
+SetupPart rightTrack 600 -59 -10 16 114 23 8
 
 // Seats
 Driver 0 35 0 -360 360 -8 15

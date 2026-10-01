@@ -197,5 +197,6 @@ public class ModelASH12 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(4.375F, 0.75F, 0F);
 	}
 }

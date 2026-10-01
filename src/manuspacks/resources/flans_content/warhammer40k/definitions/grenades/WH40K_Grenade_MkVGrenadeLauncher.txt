@@ -1,6 +1,7 @@
 ﻿// Identity
 Name Impact Grenade for Mk5 Grenade Launcher
 ShortName WH40K_Grenade_MkVGrenadeLauncher
+Mass 230
 
 // Model and Rendering
 Model Manus_WH40K.Misc.WH40K_Misc_GunGrenade_1
@@ -13,7 +14,7 @@ StackSize 16
 
 // Behaviour
 FallSpeed 1.0
-ThrowSpeed 3.0
+ThrowSpeedMs 12
 HitBoxSize 0.5
 BreaksGlass True
 Fuse 40
@@ -42,4 +43,6 @@ FragType HE_SHELL
 // Effects
 TrailParticles False
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2
 SmokeTime 0

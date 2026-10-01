@@ -1,11 +1,17 @@
 ﻿// Identity
-Name Focke-Wulf Fw 190 A-4, I./JG 2
+Name Focke-Wulf Fw 190 A-4
 ShortName WW2_Plane_Fw190_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_Fw190_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Plane_Fw190_1A
 Texture Skin_WW2_Plane_Fw190_1A
+
+// Paintjobs
+AdvPaintJob I./JG2 Icon_WW2_Plane_Fw190_1A Skin_WW2_Plane_Fw190_1A
+AdvPaintJob II./JG11 Icon_WW2_Plane_Fw190_1B Skin_WW2_Plane_Fw190_1B white 5
+AdvPaintJob II./SG2 Icon_WW2_Plane_Fw190_1C Skin_WW2_Plane_Fw190_1C white 5
 
 // Recipe and Inventory
 FuelTankSize 6000
@@ -37,12 +43,13 @@ RollRightSpeed 2
 TurnLeftSpeed 2
 TurnRightSpeed 2
 RestingPitch 15.0
-RealMassKg 3590
+RealMassKg 4000
 RealEnginePowerPS 1700
-RealMaxSpeedKmh 603
+RealMaxSpeedKmh 650
+RealTurnRateDegPerSec 30.3
 RealWingSpanM 10.506
 RealWingAreaM2 18.3
-RealClimbRateMs 10.7
+RealClimbRateMs 15.0
 
 // Weapons
 Primary Gun

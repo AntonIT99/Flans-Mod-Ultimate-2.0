@@ -3,6 +3,7 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -270,14 +271,8 @@ public abstract class Shootable extends Entity implements SpawnDataEntity
 
     protected void applyDragAndGravity()
     {
-        double gravity = ShootableType.FALL_SPEED_COEFFICIENT * getConfigType().getFallSpeed();
-        float drag = ShootableType.AIR_DEFAULT_DRAG;
-
-        if (isInWater())
-            drag = ShootableType.WATER_DEFAULT_DRAG;
-        else if (isInLava())
-            drag = ShootableType.LAVA_DEFAULT_DRAG;
-
+        double gravity = ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT * getConfigType().getFallSpeed(), level());
+        float drag = ProjectileDrag.factor(this, ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG);
         velocity = velocity.scale(drag).add(0, -gravity, 0);
         setDeltaMovement(velocity);
     }
@@ -328,7 +323,7 @@ public abstract class Shootable extends Entity implements SpawnDataEntity
                     if (currentRound.isPresent()
                         && owner instanceof ServerPlayer attacker
                         && entity instanceof ServerPlayer victim
-                        && !currentRound.get().getGametype().canPlayerBeAttacked(victim, attacker))
+                        && !Optional.ofNullable(currentRound.get().getGametype()).map(g -> g.canPlayerBeAttacked(victim, attacker)).orElse(false))
                         continue;
                 }
 

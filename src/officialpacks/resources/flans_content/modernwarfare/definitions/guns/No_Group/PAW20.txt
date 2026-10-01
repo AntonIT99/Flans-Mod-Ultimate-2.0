@@ -21,7 +21,7 @@ UsableByMechas false
 Deployable False
 MoveSpeedModifier 0.8
 KnockbackModifier 0
-RoundsPerMin 20.0
+RoundsPerMin 30.0
 
 // Ballistics
 Recoil 12

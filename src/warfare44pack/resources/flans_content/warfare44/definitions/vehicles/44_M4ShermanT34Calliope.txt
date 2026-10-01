@@ -39,6 +39,7 @@ MaxNegativeThrottle 0.431
 ClutchBrake 0.0175
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 18
 CanRoll true
 SquashMobs True
 
@@ -101,7 +102,7 @@ ShootPointPrimary -25 63 7 turret
 ShootPointPrimary -25 63 -7 turret
 ShootPointPrimary -25 63 16 turret
 ShootPointPrimary -25 63 -16 turret
-GunOrigin 1 35 -5 9
+GunOrigin 1 45.8 -1.4 10.3
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode -1.5 0 0
 ShootParticlesPrimary largesmoke -0.5 0 0.1
@@ -202,7 +203,7 @@ ShootParticlesSecondary flansmod.fmflame 0.1 0.4 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 50
+ArmorFrontMm 50 56
 ArmorSideMm 38
 ArmorRearMm 38
 ArmorTopMm 19
@@ -214,10 +215,11 @@ TurretArmorTopMm 25
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1000 -59 0 -24 89 80 48
-SetupPart frontalArmor 1250 30 0 -24 23 37 48
-SetupPart leftTrack 300 -59 -10 -24 114 23 8
-SetupPart rightTrack 300 -59 -10 16 114 23 8
+SetupPart core 6500 -59 0 -24 89 28 48
+SetupPart turret 1300 -26 28 -20 44 13 40
+SetupPart frontalArmor 1000 30 0 -24 23 28 48
+SetupPart leftTrack 600 -59 -10 -24 114 23 8
+SetupPart rightTrack 600 -59 -10 16 114 23 8
 
 // Seats
 Driver 0 35 0 -360 360 -2 20

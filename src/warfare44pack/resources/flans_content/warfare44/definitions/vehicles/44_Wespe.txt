@@ -37,6 +37,7 @@ FourWheelDrive true
 MaxNegativeThrottle 0.4
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 26
 CanRoll true
 
 // Wheels and tracks
@@ -81,7 +82,7 @@ BulletSpeed 3
 BulletDetection 5
 AllowAllAmmo false
 AddAmmo 44_MediumArtilleryHEShell
-BarrelPosition 43 33 0
+BarrelPosition 48.5 26.6 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -144,9 +145,9 @@ ArmorBottomMm 10
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1750 -66 -1 -18 109 48 36
-SetupPart rightTrack 300 -68 -10 18 112 21 9
-SetupPart leftTrack 300 -68 -10 -27 112 21 9
+SetupPart core 8800 -66 -1 -18 109 48 36
+SetupPart rightTrack 600 -68 -10 18 112 21 9
+SetupPart leftTrack 600 -68 -10 -27 112 21 9
 
 // Seats
 Driver -15 17 8 -11 11 -5 42

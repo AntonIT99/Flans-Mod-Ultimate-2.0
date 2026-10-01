@@ -28,6 +28,7 @@ MaxLockOnAngle 20.0
 Mass 45700
 MuzzleVelocity 425
 PenetrationAt100m 1000
+HEAT True
 
 // Damage and detonation
 DamageVsLiving 4000
@@ -42,4 +43,8 @@ ExplosiveMassTNTKg 11
 FlakParticles 0
 HitSound bullet
 SmokeTrail True
+ExplodeParticles 10
+ExplodeParticleType explode
+FlareParticleCount 8
+DebrisParticleCount 6
 TrailParticleType explode

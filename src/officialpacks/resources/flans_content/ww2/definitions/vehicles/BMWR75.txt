@@ -6,6 +6,7 @@ Description German Motorcycle
 // Item and rendering
 Icon BMWR75
 Model ww2.BMWR75
+FlashModel DefaultFlash
 Texture bmwr75
 RotateWheels true
 AddDye 5 gray
@@ -34,13 +35,14 @@ MaxThrottle 0.6
 MaxNegativeThrottle 0.4
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 240
 Drag 1.0
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive false
 
 // Weaponry
-GunOrigin 2 8 -10 23
+GunOrigin 2 26 -10.4 23
 ShootDelay 999
 ShellDelay 999
 ReadWeaponsFromGunTypes true

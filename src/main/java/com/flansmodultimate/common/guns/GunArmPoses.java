@@ -9,6 +9,7 @@ import com.flansmodultimate.network.client.PacketAimPoseState;
 import com.flansmodultimate.network.client.PacketGunShotPose;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -30,9 +31,13 @@ import java.util.WeakHashMap;
  * anything else, a shield included, raises only its own arm.</p>
  *
  * <p>In the enforced aim pose every held gun is raised. In the dynamic aim pose a gun is raised only
- * while it is fired or aimed. Players choose the pose unless the
+ * while it is fired or aimed, unless its definition forces the aiming pose. Players choose the pose unless the
  * server decides it for them; mobs follow the server alone and, having no aim control, raise a gun only
  * when they fire it.</p>
+ *
+ * <p>Charging a throw draws only the throwing arm back over the shoulder. The other arm keeps the pose it
+ * had while the throwable was merely held, so a shield stays up and a free arm that supported the raised
+ * throwable keeps pointing ahead.</p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GunArmPoses
@@ -60,7 +65,11 @@ public final class GunArmPoses
         /** The bow pose: this arm is raised and the free other arm reaches across to support it. */
         BOW,
         /** Both arms aim straight ahead, one gun in each hand. */
-        BOTH
+        BOTH,
+        /** This arm draws a throw back over the shoulder while the other arm keeps its own pose. */
+        THROW,
+        /** The free arm keeps reaching across as in the bow pose while the other arm charges a throw. */
+        SUPPORT
     }
 
     public record Result(Arm mainHand, Arm offHand)
@@ -85,6 +94,18 @@ public final class GunArmPoses
         boolean mainRaised = isRaised(main, dynamic, mainActive);
         boolean offRaised = isRaised(off, dynamic, offActive);
         return new Result(arm(main, mainRaised, off, offRaised), arm(off, offRaised, main, mainRaised));
+    }
+
+    /**
+     * The arm poses while a throw is charged in the given hand, from those the hands had while the
+     * throwable was merely held.
+     */
+    public static Result charging(Result held, InteractionHand throwingHand)
+    {
+        InteractionHand otherHand = throwingHand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+        // The bow pose of the throwing arm is what raised the free arm, so that arm keeps it on its own
+        Arm other = held.get(throwingHand) == Arm.BOW ? Arm.SUPPORT : held.get(otherHand);
+        return throwingHand == InteractionHand.MAIN_HAND ? new Result(Arm.THROW, other) : new Result(other, Arm.THROW);
     }
 
     private static Arm arm(HandItem held, boolean raised, HandItem other, boolean otherRaised)
@@ -113,23 +134,45 @@ public final class GunArmPoses
     /** The arm poses of an entity, read on the side the entity lives on. */
     public static Result resolve(LivingEntity entity)
     {
-        HandItem main = classify(entity, entity.getMainHandItem());
-        HandItem off = classify(entity, entity.getOffhandItem());
+        ItemStack mainStack = entity.getMainHandItem();
+        ItemStack offStack = entity.getOffhandItem();
+        HandItem main = classify(mainStack);
+        HandItem off = classify(offStack);
         if (!isGunOrShield(main) && !isGunOrShield(off))
             return Result.NONE;
 
         boolean aiming = isAiming(entity);
-        return resolve(main, off, isDynamic(entity),
-            aiming || isFiring(entity, InteractionHand.MAIN_HAND),
-            aiming || isFiring(entity, InteractionHand.OFF_HAND));
+        Result held = resolve(main, off, isDynamic(entity),
+            aiming || isFiring(entity, InteractionHand.MAIN_HAND) || forcesAimPose(main, mainStack),
+            aiming || isFiring(entity, InteractionHand.OFF_HAND) || forcesAimPose(off, offStack));
+        InteractionHand throwingHand = chargingThrowHand(entity);
+        return throwingHand == null ? held : charging(held, throwingHand);
     }
 
-    /** A throw being charged keeps the vanilla spear pose, so that gun does not count as one here. */
-    public static HandItem classify(LivingEntity holder, ItemStack stack)
+    /** The hand in which the entity charges a throw, or {@code null} when it charges none. */
+    @Nullable
+    public static InteractionHand chargingThrowHand(LivingEntity entity)
+    {
+        if (!entity.isUsingItem())
+            return null;
+
+        // The hand rather than the use stack, which a stack update from the server replaces until the next tick
+        InteractionHand hand = entity.getUsedItemHand();
+        return entity.getItemInHand(hand).getItem() instanceof GunItem gunItem && gunItem.getConfigType().isThrowable() ? hand : null;
+    }
+
+    private static boolean forcesAimPose(HandItem handItem, ItemStack stack)
+    {
+        return handItem == HandItem.GUN && stack.getItem() instanceof GunItem gunItem
+            && gunItem.getConfigType().isForceAimPose();
+    }
+
+    /** A throwable being charged still counts as a gun, so that the other arm keeps the pose it had. */
+    public static HandItem classify(ItemStack stack)
     {
         if (stack.isEmpty())
             return HandItem.EMPTY;
-        if (stack.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation() && !gunItem.isChargingThrow(holder, stack))
+        if (stack.getItem() instanceof GunItem gunItem && gunItem.useAimingAnimation())
             return gunItem.getConfigType().isShield() ? HandItem.SHIELD : HandItem.GUN;
         return HandItem.OTHER;
     }

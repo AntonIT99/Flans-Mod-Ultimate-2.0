@@ -10,10 +10,13 @@ import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
 import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketCommonConfigValues;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
+import com.flansmodultimate.network.client.PacketDebugHitboxes;
 import com.flansmodultimate.network.client.PacketDebugShootPoint;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
+import com.flansmodultimate.network.client.PacketDriveableCollisionBypass;
 import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
+import com.flansmodultimate.network.client.PacketDriveablePassengerFired;
 import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
@@ -29,6 +32,7 @@ import com.flansmodultimate.network.client.PacketGunReloadClient;
 import com.flansmodultimate.network.client.PacketGunSecondaryModeClient;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketGunShotPose;
+import com.flansmodultimate.network.client.PacketGunToggleClient;
 import com.flansmodultimate.network.client.PacketGunVariableZoomClient;
 import com.flansmodultimate.network.client.PacketHitMarker;
 import com.flansmodultimate.network.client.PacketKillMessage;
@@ -55,6 +59,7 @@ import com.flansmodultimate.network.server.PacketGunReload;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.network.server.PacketGunSecondaryMode;
 import com.flansmodultimate.network.server.PacketGunSwitchDelay;
+import com.flansmodultimate.network.server.PacketGunToggle;
 import com.flansmodultimate.network.server.PacketGunVariableZoom;
 import com.flansmodultimate.network.server.PacketLoadoutAction;
 import com.flansmodultimate.network.server.PacketManualGuidance;
@@ -119,13 +124,16 @@ public final class PacketHandler
             PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class,
             PacketBlockHitEffect.class, PacketBulletTrail.class, PacketCancelGunReloadClient.class,
             PacketCancelSound.class, PacketCommonConfigValues.class, PacketContentFingerprint.class,
-            PacketDebugShootPoint.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
-            PacketDriveableDamage.class, PacketDriveablePrediction.class, PacketDriveableRenderState.class,
+            PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
+            PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveablePassengerFired.class,
+            PacketDriveablePrediction.class,
+            PacketDriveableRenderState.class,
             PacketExplodeParticles.class, PacketFlak.class,
             PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class,
             PacketGunFireModeClient.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class,
             PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class,
-            PacketGunShootClient.class, PacketGunShotPose.class, PacketGunVariableZoomClient.class, PacketHitMarker.class,
+            PacketGunShootClient.class, PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class,
+            PacketHitMarker.class,
             PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class, PacketParticles.class,
             PacketPlayerClassSkins.class, PacketPlaySound.class, PacketSmokeShell.class,
             PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketTeamsState.class
@@ -134,7 +142,7 @@ public final class PacketHandler
             PacketAAGunModelBarrelOrigins.class, PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class,
             PacketDeployedGunInput.class, PacketDriveableInput.class, PacketBuyWeapon.class, PacketGunFireMode.class,
             PacketGunInput.class, PacketGunPreferredAmmo.class, PacketGunReload.class, PacketGunScopedState.class,
-            PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunVariableZoom.class,
+            PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunToggle.class, PacketGunVariableZoom.class,
             PacketManualGuidance.class, PacketReloadPreferences.class, PacketRequestCommonConfig.class,
             PacketRequestDebug.class, PacketRequestDismount.class, PacketSelectPaintjob.class,
             PacketSetCommonConfigValue.class, PacketTeamsAction.class, PacketLoadoutAction.class

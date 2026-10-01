@@ -6,6 +6,8 @@ ShortName GAU8
 Icon IconGunGAU8
 Colour 255 255 255
 DeployedModel manus_modern_warfare.M134
+FlashModel DefaultFlash
+animFlashScale 1.42
 DeployedTexture SkinGunM134
 
 // Recipe and Inventory
@@ -18,9 +20,9 @@ Mode FullAuto
 Scope None
 Deployable True
 StandBackDistance 1.0
-TopViewLimit 10
-BottomViewLimit 10
-SideViewLimit 45
+TopViewLimit 30
+BottomViewLimit 20
+SideViewLimit 40
 PivotHeight 0.75
 RoundsPerMin 1200.0
 Dispersion 0.15

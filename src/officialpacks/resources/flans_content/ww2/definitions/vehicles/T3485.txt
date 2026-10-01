@@ -6,6 +6,7 @@ Description Soviet Medium Tank
 // Item and rendering
 Icon T3485
 Model ww2.T3485
+FlashModel DefaultFlash
 Texture t3485
 RotateWheels True
 AddDye 10 green
@@ -39,13 +40,14 @@ MaxThrottle 0.55
 MaxNegativeThrottle 0.35
 TurnLeftSpeed 0.3
 TurnRightSpeed 0.3
+RealTurnRateDegPerSec 24
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-BarrelPosition 0 30 0
+BarrelPosition 80.9 29.2 0
 AddGun 8 34 8 turret dp28
 ShootDelay 1
 ShellDelay 90
@@ -92,6 +94,14 @@ StartSoundLength 41
 EngineSound engine_mt_t34
 EngineSoundLength 39
 ShootSoundPrimary shoot_85mmussr
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary MG42Shoot
 DriverTraverseSounds true
 PitchSound TurretTraverse1

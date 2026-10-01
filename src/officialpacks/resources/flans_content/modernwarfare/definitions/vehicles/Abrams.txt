@@ -6,6 +6,7 @@ Description American Main Battle Tank
 // Item and rendering
 Icon Abrams
 Model mw.Abrams
+FlashModel DefaultFlash
 Texture M1A2
 AddDye 4 brown
 AddDye 5 yellow
@@ -37,8 +38,9 @@ RealMaxReverseSpeedKmh 30
 // Movement
 MaxThrottle 0.5
 MaxNegativeThrottle 0.35
-TurnLeftSpeed 0.3
-TurnRightSpeed 0.3
+TurnLeftSpeed 0.9
+TurnRightSpeed 0.9
+RealTurnRateDegPerSec 36
 Drag 10.0
 WheelRadius 1.5
 WheelSpringStrength 0.5
@@ -46,9 +48,9 @@ FourWheelDrive true
 Tank true
 
 // Weaponry
-GunOrigin 1 12 30 1
-BarrelPosition 110 30 0
-AddGun 46 31 4 turret m60
+GunOrigin 1 21 31.4 -1.5
+BarrelPosition 110 30.5 0
+AddGun 46 31 -4 turret m60
 ShootDelay 1
 ShellDelay 70
 TurretRotationSpeed 0.06
@@ -101,11 +103,19 @@ YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2
 PitchSoundLength 20
-StartSound M1A2Start
-StartSoundLength 300
+StartEngineSound M1A2Start
+StartEngineSound 300
 EngineSound M1A2_Run
 EngineSoundLength 40
 ShootSoundPrimary 90mm
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.4 0 0
+ShootParticlesPrimary flansmod.fmflame 1.7 0 0
+ShootParticlesPrimary flansmod.fmflame 0.9 0.08 0.12
+ShootParticlesPrimary flansmod.fmflame 0.85 -0.08 -0.12
+ShootParticlesPrimary largesmoke 0.5 0.1 0.12
+ShootParticlesPrimary largesmoke 0.48 -0.1 -0.12
+ShootParticlesPrimary cloud 0.08 0 0
 ShootSoundSecondary M60Shoot
 AddEmitter smoke 1 [-80,19,0] [1,5,5] [-0.5,0,0] -2 2 0 1 core
 AddEmitter smoke 1 [-50,53,0] [1,5,5] [0,0.5,0] -2 2 0 1 turret

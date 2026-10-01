@@ -10,13 +10,17 @@ import com.flansmodultimate.common.command.DigitalAmmoCommand;
 import com.flansmodultimate.common.command.FMParticleCommand;
 import com.flansmodultimate.common.command.FlanEntityCommand;
 import com.flansmodultimate.common.command.GunAttachmentsCommand;
+import com.flansmodultimate.common.command.HitboxDebugCommand;
 import com.flansmodultimate.common.command.RearmCommand;
 import com.flansmodultimate.common.command.ShootPointDebugCommand;
 import com.flansmodultimate.common.command.TeamsCommand;
 import com.flansmodultimate.common.command.TryClassCommand;
 import com.flansmodultimate.common.command.TryTeamCommand;
+import com.flansmodultimate.common.command.VehicleCollisionDebugCommand;
 import com.flansmodultimate.common.command.VehiclePhysicsCommand;
+import com.flansmodultimate.common.command.WorldPhysicsCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
+import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
@@ -31,6 +35,7 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.types.AttachmentType;
+import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModApocalypseConfig;
@@ -39,6 +44,7 @@ import com.flansmodultimate.config.ModCommonConfigSync;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketKillMessage;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.world.LootTablePlatform;
 import lombok.AccessLevel;
@@ -58,6 +64,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
@@ -141,10 +148,13 @@ public final class CommonEventHandler
         GunAttachmentsCommand.register(event.getDispatcher());
         RearmCommand.register(event.getDispatcher());
         ShootPointDebugCommand.register(event.getDispatcher());
+        HitboxDebugCommand.register(event.getDispatcher());
         TeamsCommand.register(event.getDispatcher());
         TryClassCommand.register(event.getDispatcher());
         TryTeamCommand.register(event.getDispatcher());
+        VehicleCollisionDebugCommand.register(event.getDispatcher());
         VehiclePhysicsCommand.register(event.getDispatcher());
+        WorldPhysicsCommand.register(event.getDispatcher());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();
     }
 
@@ -201,7 +211,9 @@ public final class CommonEventHandler
     public static void onServerStopping(ServerStoppingEvent event)
     {
         FlansMod.teamsManager.detachServer();
+        HitboxDebugCommand.clearSession();
         CraterCarver.clear();
+        DriveableCollisionBypass.reset();
         contentReferencesValidated = false;
     }
 
@@ -278,6 +290,8 @@ public final class CommonEventHandler
             GunArmPoses.syncPlayer(sp);
             PacketHandler.sendTo(new PacketContentFingerprint(ContentFingerprint.get()), sp);
             ModCommonConfigSync.syncClientIfServer(sp);
+            VehicleCollisionDebugCommand.syncOnLogin(sp);
+            HitboxDebugCommand.syncOnLogin(sp);
             FlansMod.teamsManager.playerLoggedIn(sp);
         }
     }
@@ -286,8 +300,12 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event)
     {
-        if (event.getTarget() instanceof ServerPlayer target && event.getEntity() instanceof ServerPlayer tracker)
+        if (!(event.getEntity() instanceof ServerPlayer tracker))
+            return;
+        if (event.getTarget() instanceof ServerPlayer target)
             GunArmPoses.sendPlayerState(target, tracker);
+        else if (event.getTarget() instanceof Driveable driveable)
+            driveable.sendPartStateTo(tracker);
     }
 
     @SubscribeEvent
@@ -295,6 +313,7 @@ public final class CommonEventHandler
     {
         ModCommonConfig.clearServerOverride();
         ModApocalypseConfig.clearServerOverride();
+        DriveableCollisionBypass.clear(event.getEntity());
         regenTimers.remove(event.getEntity().getUUID());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);
@@ -403,7 +422,27 @@ public final class CommonEventHandler
             return false;
 
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1F, 0.8F + player.getRandom().nextFloat() * 0.4F);
+        playMeleeImpactSound(source, true);
         return true;
+    }
+
+    /**
+     * Plays the attacking weapon's {@code MeleeHitSound} when its melee swing lands, or its {@code ShieldHitSound}
+     * when a shield stops it. Covers vanilla swings and custom melee paths alike.
+     */
+    public static void playMeleeImpactSound(DamageSource source, boolean blocked)
+    {
+        if (!isMeleeDamage(source) || !(source.getEntity() instanceof LivingEntity attacker) || source.getDirectEntity() != attacker)
+            return;
+
+        ItemStack stack = attacker.getMainHandItem();
+        if (!(stack.getItem() instanceof GunItem gunItem) || gunItem.getConfigType().isPoweredOff(stack))
+            return;
+
+        GunType type = gunItem.getConfigType();
+        String sound = blocked ? type.getShieldHitSound() : type.getMeleeHitSound();
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(attacker, type.getMeleeSoundRange(), sound, true);
     }
 
     /**
@@ -447,6 +486,7 @@ public final class CommonEventHandler
         if (entity.level().isClientSide)
             return;
 
+        playMeleeImpactSound(source, false);
         EnchantmentModule.applyOffHandWeaponDamage(damage);
         EnchantmentModule.applyJuggernaut(damage);
 

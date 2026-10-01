@@ -6,6 +6,7 @@ Description German light half-track gun tractor
 // Item and rendering
 Icon SdkFz2
 Model ww2.SdkFz2
+FlashModel DefaultFlash
 Texture sdkfz2
 RotateWheels true
 AddDye 5 gray
@@ -34,6 +35,7 @@ MaxThrottle 0.5
 MaxNegativeThrottle 0.4
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 18
 Drag 1.0
 WheelRadius 1.0
 WheelSpringStrength 0.5
@@ -41,7 +43,7 @@ FourWheelDrive false
 Tank true
 
 // Weaponry
-GunOrigin 1 -45 0 0
+GunOrigin 1 -27 -5.4 0
 ShootDelay 999
 ShellDelay 999
 ReadWeaponsFromGunTypes true

@@ -6,6 +6,7 @@ Description American Medium Tank
 // Item and rendering
 Icon Sherman
 Model ww2.Sherman
+FlashModel DefaultFlash
 Texture sherman
 RotateWheels true
 AddDye 10 green
@@ -39,14 +40,15 @@ MaxThrottle 0.65
 MaxNegativeThrottle 0.45
 TurnLeftSpeed 0.3
 TurnRightSpeed 0.3
+RealTurnRateDegPerSec 18
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank true
 
 // Weaponry
-AddGun 8 30 -8 turret browning
-BarrelPosition 55 30 0
+AddGun 8 35.6 -8 turret browning
+BarrelPosition 78.8 37.4 0
 ShootDelay 2
 ShellDelay 110
 DamageModifierPrimary 44
@@ -64,7 +66,7 @@ SetupPart turret 10520 -25 25 -25 50 18 50
 SetupPart leftTrack 8000 -61 -10 -28 112 17 13
 SetupPart rightTrack 8000 -61 -10 15 112 17 13
 BulletDetection 7
-ArmorFrontMm 50
+ArmorFrontMm 50 56
 ArmorSideMm 38
 ArmorRearMm 38
 ArmorTopMm 19
@@ -93,6 +95,14 @@ StartSoundLength 41
 EngineSound engine_mt_m4
 EngineSoundLength 39
 ShootSoundPrimary 75mmGun
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.25 0 0
+ShootParticlesPrimary flansmod.fmflame 0.68 0.07 0.09
+ShootParticlesPrimary flansmod.fmflame 0.64 -0.07 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.08 0.1
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.1
+ShootParticlesPrimary cloud 0.06 0 0
 ShootSoundSecondary BrowningShoot
 AddEmitter explode 8 [-60,12,-8] [5,5,5] [0,1,0] 0.33 0.66 0 1 core
 AddEmitter explode 8 [-60,12,8] [5,5,5] [0,1,0] 0.33 0.66 0 1 core

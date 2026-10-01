@@ -1,6 +1,7 @@
 // Identity
 Name Bouncing Grenade
 ShortName grenadeLauncherBouncyAmmo
+Mass 230
 Description Ammo Type : Grenade
 
 // Item and rendering
@@ -17,7 +18,7 @@ StackSize 16
 CanThrow False
 ThrowDelay 10
 Bounciness 0.8
-ThrowSpeed 3.0
+ThrowSpeedMs 12
 Sticky false
 
 // Ballistics
@@ -48,3 +49,5 @@ SmokeTime 0
 // Sounds and particles
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2

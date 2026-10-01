@@ -78,6 +78,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public static final String NBT_ACCESSORY = "accessory";
     public static final String NBT_SECONDARY_FIRE = "secondary_fire";
     public static final String NBT_GUN_MODE = "gun_mode";
+    public static final String NBT_TOGGLED_OFF = "toggled_off";
     public static final String NBT_CURRENT_ZOOM = "current_zoom";
     public static final String NBT_KNOCKBACK_RESISTANCE_UUID = "knockback_resistance_uuid";
     public static final String NBT_MOVEMENT_SPEED_UUID = "movement_speed_uuid";
@@ -151,8 +152,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     }
 
     /**
-     * Whether the holder is charging a throw of this stack, during which the vanilla spear pose
-     * replaces the gun aiming pose.
+     * Whether the holder is charging a throw of this stack, during which the throwing arm is drawn back
+     * over the shoulder (see {@code GunArmPoses}).
      */
     public boolean isChargingThrow(LivingEntity holder, ItemStack stack)
     {
@@ -187,6 +188,13 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (configType.isDeployable())
             tooltipComponents.add(Component.translatable(TooltipKeys.DEPLOYABLE).withStyle(ChatFormatting.YELLOW));
+
+        if (configType.canToggle(stack))
+        {
+            boolean on = configType.isToggledOn(stack);
+            tooltipComponents.add(Component.translatable(on ? TooltipKeys.TOGGLED_ON : TooltipKeys.TOGGLED_OFF)
+                .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+        }
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
@@ -380,9 +388,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (configType.isShowReloadTime())
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.RELOAD_TIME), IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + " s"));
 
-            if (configType.isShowBulletSpeed()) {
+            if (configType.isThrowable() || configType.isShowBulletSpeed()) {
                 float bulletSpeed = configType.getBulletSpeed(stack);
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MUZZLE_VELOCITY), (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " m/s") : "∞"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(configType.isThrowable() ? TooltipKeys.THROW_SPEED : TooltipKeys.MUZZLE_VELOCITY), (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " m/s") : "∞"));
             }
 
             if (configType.isShowShootDelay())
@@ -567,7 +575,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand)
     {
-        if (StringUtils.isNotBlank(configType.getMeleeSound()))
+        if (StringUtils.isNotBlank(configType.getMeleeSound()) && !configType.isPoweredOff(stack))
             PacketPlaySound.sendSoundPacket(entity, configType.getMeleeSoundRange(), configType.getMeleeSound(), true);
         return false;
     }
@@ -643,7 +651,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.getSecondaryFunction() == EnumFunction.CUSTOM_MELEE && data.isSecondaryFunctionKeyPressed())
             gunItemHandler.doCustomMelee(level, player, data, hand);
 
-        if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()))
+        if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()) && !configType.isPoweredOff(gunStack))
         {
             PacketPlaySound.sendSoundPacket(player, configType.getIdleSoundRange(), configType.getIdleSound(), false);
             soundDelay = configType.getIdleSoundLength();

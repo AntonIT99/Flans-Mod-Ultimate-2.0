@@ -7,6 +7,10 @@ Icon g43
 Colour 255 255 255
 DeployedModel None
 Model ww2.G43
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.35603 0.35972 -0.00188
+animFlashScale 1.66
 Texture g43
 Paintjob g43_acacia g43_acacia orange 2
 Paintjob g43_birch g43_birch black 1 yellow 1

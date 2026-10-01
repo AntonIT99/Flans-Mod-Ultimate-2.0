@@ -16,6 +16,8 @@ MMM
 
 // Movement and Physics
 RealMassKg 400
+HitBoxWidth 1.75
+HitBoxHeight 2.5
 
 // Weapons
 NumBarrels 0
@@ -25,6 +27,7 @@ Recoil 0
 Damage 0
 GunnerPos 0 29 0
 TopViewLimit 80
+TraverseSpeed 360
 BottomViewLimit 0
 RoundsPerMin 120.0
 Dispersion 0.1

@@ -20,7 +20,7 @@ DropItemOnDetonate rock
 // Throwing
 ThrowDelay 10
 Bounciness 1.0
-ThrowSpeed 1.0
+ThrowSpeedMs 12
 Sticky false
 
 // Ballistics

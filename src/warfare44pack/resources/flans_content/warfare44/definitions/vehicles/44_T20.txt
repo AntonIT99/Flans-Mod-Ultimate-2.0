@@ -6,6 +6,7 @@ Description Soviet Armored Tractor__Year Introduced : 1937
 // Rendering
 Icon 44_T20
 Model W44.T20
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_T20
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.4805
 ClutchBrake 0.02125
 TurnLeftSpeed 0.425
 TurnRightSpeed 0.425
+RealTurnRateDegPerSec 26
 CanRoll true
 
 // Wheels and tracks
@@ -90,7 +92,7 @@ BulletSpeed 7
 BulletDetection 5
 AllowAllAmmo false
 AddAmmo None
-GunOrigin 1 20 -7 14
+GunOrigin 1 25.2 -7.9 8.5
 
 // Armour and damage
 UseRealisticVehicleHealth true
@@ -102,9 +104,9 @@ ArmorBottomMm 6
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 700 -45 0 -14 68 18 28
-SetupPart leftTrack 300 -43 -10 -18 65 17 4
-SetupPart rightTrack 300 -43 -10 14 65 17 4
+SetupPart core 8800 -45 0 -14 68 18 28
+SetupPart leftTrack 600 -43 -10 -18 65 17 4
+SetupPart rightTrack 600 -43 -10 14 65 17 4
 
 // Seats
 Driver 0 -3 -6 -360 360 -89 89

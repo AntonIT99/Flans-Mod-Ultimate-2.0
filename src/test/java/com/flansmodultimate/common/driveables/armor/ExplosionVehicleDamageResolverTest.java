@@ -8,6 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExplosionVehicleDamageResolverTest
 {
     @Test
+    void structuralBlastGainRequiresLargeChargeAndNearbyVehiclePart()
+    {
+        assertEquals(1F, ExplosionVehicleDamageResolver.structuralBlastMultiplier(5F, 0D, 50D));
+        assertEquals(1F, ExplosionVehicleDamageResolver.structuralBlastMultiplier(275F, 50D, 50D));
+        float near = ExplosionVehicleDamageResolver.structuralBlastMultiplier(275F, 0.5D, 50D);
+        float farther = ExplosionVehicleDamageResolver.structuralBlastMultiplier(275F, 25D, 50D);
+        assertTrue(near > farther && farther > 1F);
+        assertTrue(near <= 5F);
+    }
+
+    @Test
     void grenadeKeepsFullChannelsForSoftTargetsButCannotDamageArmour()
     {
         ExplosionVehicleDamageResolver.DamageChannels soft = resolve(0F, 0.06F, 0.5D, 50F, 20F);

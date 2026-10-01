@@ -278,5 +278,6 @@ public class ModelADAR15 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(8F, 1.40625F, 0F);
 	}
 }

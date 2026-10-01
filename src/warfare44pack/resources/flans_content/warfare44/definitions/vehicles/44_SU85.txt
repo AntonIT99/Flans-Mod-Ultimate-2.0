@@ -6,6 +6,7 @@ Description Soviet Medium Tank Destroyer__Uses : 85mm AP Tank Shell_Medium Cal. 
 // Rendering
 Icon 44_SU85
 Model W44.SU85
+FlashModel DefaultFlash
 ModelScale 1.1
 Texture Skin44_SU
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.5465
 ClutchBrake 0.01
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 24
 CanRoll true
 
 // Wheels and tracks
@@ -87,8 +89,8 @@ AddAmmo 44_85APShell
 AddAmmo 44_MediumHEShell
 AddAmmo 44_85APCRShell
 AddAmmo 44_85APHEShell
-GunOrigin 1 10 14 -12
-BarrelPosition 69 23 0
+GunOrigin 1 7.2 18 -13.2
+BarrelPosition 72.1 22.6 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -148,17 +150,13 @@ ArmorSideMm 45
 ArmorRearMm 45
 ArmorTopMm 20
 ArmorBottomMm 20
-TurretArmorFrontMm 45
-TurretArmorSideMm 45
-TurretArmorRearMm 45
-TurretArmorTopMm 45
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1500 -102 -1 -30 90 36 51
-SetupPart frontalArmor 1500 -12 -1 -30 38 34 51
-SetupPart leftTrack 300 -103 -10 -36 128 20 10
-SetupPart rightTrack 300 -103 -10 18 128 20 10
+SetupPart core 7800 -102 -1 -30 90 36 51
+SetupPart frontalArmor 1000 -12 -1 -30 38 34 51
+SetupPart leftTrack 600 -103 -10 -36 128 20 10
+SetupPart rightTrack 600 -103 -10 18 128 20 10
 
 // Seats
 Driver -21 30 8 -15 15 -5 25

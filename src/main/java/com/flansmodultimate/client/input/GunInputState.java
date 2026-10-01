@@ -4,7 +4,6 @@ import org.lwjgl.glfw.GLFW;
 
 import com.flansmodultimate.config.ModClientConfig;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.Minecraft;
@@ -17,7 +16,6 @@ public final class GunInputState
 
     private static ButtonState primaryFunctionState = new ButtonState(false, false);
     private static ButtonState offhandPrimaryFunctionState = new ButtonState(false, false);
-    @Getter
     private static ButtonState secondaryFunctionState = new ButtonState(false, false);
 
     public static void tick()
@@ -54,5 +52,24 @@ public final class GunInputState
     public static ButtonState getPrimaryFunctionState(InteractionHand hand)
     {
         return (hand == InteractionHand.OFF_HAND) ? offhandPrimaryFunctionState : primaryFunctionState;
+    }
+
+    /**
+     * The button of a gun's secondary function, such as aiming. An off-hand gun held alone fires with the
+     * off-hand button, so when that is also the aim button it takes the free main hand's button instead, as
+     * in 1.12.2.
+     */
+    public static EnumMouseButton getSecondaryButton(InteractionHand hand, boolean mainHandEmpty)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (hand == InteractionHand.OFF_HAND && mainHandEmpty && config.aimButton == config.shootButtonOffhand)
+            return config.shootButton;
+        return config.aimButton;
+    }
+
+    public static ButtonState getSecondaryFunctionState(InteractionHand hand, boolean mainHandEmpty)
+    {
+        return getSecondaryButton(hand, mainHandEmpty) == ModClientConfig.get().aimButton
+            ? secondaryFunctionState : primaryFunctionState;
     }
 }

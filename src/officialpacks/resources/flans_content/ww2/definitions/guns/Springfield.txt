@@ -7,6 +7,10 @@ Icon springfield
 Colour 255 255 255
 DeployedModel None
 Model ww2.Springfield
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.37329 0.30212 -0.00769
+animFlashScale 2.84
 Texture springfield
 Paintjob springfield_acacia springfield_acacia orange 2
 Paintjob springfield_birch springfield_birch black 1 yellow 1

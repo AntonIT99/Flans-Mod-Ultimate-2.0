@@ -7,6 +7,10 @@ Icon fg42
 Colour 255 255 255
 DeployedModel None
 Model ww2.Fg42
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.71211 0.39375 -0.00703
+animFlashScale 0.89
 Texture fg42
 Paintjob fg42_acacia fg42_acacia orange 2
 Paintjob fg42_birch fg42_birch black 1 yellow 1

@@ -4,6 +4,7 @@ ShortName WW2_Vehicle_Jagdpanther_1A
 
 // Model and Rendering
 Model Manus_WW2.Vehicle.WW2_Vehicle_Jagdpanther_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Vehicle_Jagdpanther_1A
 Texture Skin_WW2_Vehicle_Jagdpanther_1A
 RotateWheels True
@@ -38,22 +39,33 @@ WheelSpringStrength 0.5
 FourWheelDrive true
 TurnLeftSpeed 1
 TurnRightSpeed 1
+RealTurnRateDegPerSec 18
 SquashMobs True
 Tank true
 
 // Weapons
 AddGun 58 24 14 core WW2_MG_MG42ZB_1A
-BarrelPosition 0 34 0
+BarrelPosition 125 34 0
+ShootParticlesPrimary largeexplode 0 0 0
+ShootParticlesPrimary explode 1.0 0 0
+ShootParticlesPrimary flansmod.fmflame 1.3 0 0
+ShootParticlesPrimary flansmod.fmflame 0.9 0.08 0.05
+ShootParticlesPrimary flansmod.fmflame 0.85 -0.07 -0.06
+ShootParticlesPrimary flansmod.fmflame 0.62 0.04 -0.09
+ShootParticlesPrimary largesmoke 0.4 0.09 0.07
+ShootParticlesPrimary largesmoke 0.38 -0.08 -0.08
+ShootParticlesPrimary largesmoke 0.3 0.05 -0.11
+ShootParticlesPrimary largesmoke 0.28 -0.05 0.12
 ShellDelay 110
 ShootDelay 5
 ShootDelayPrimarySeconds 9
 ReadWeaponsFromGunTypes true
-GunOrigin 1 19 49 6
+GunOrigin 1 25.5 27.9 6
 PlaceTimePrimary 80
 ReloadTimeSecondary 100
 
 // Protection
-ArmorFrontMm 80 60
+ArmorFrontMm 80 55
 ArmorSideMm 50 30
 ArmorRearMm 40 35
 ArmorTopMm 25

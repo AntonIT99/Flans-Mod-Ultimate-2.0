@@ -1,11 +1,17 @@
 ﻿// Identity
-Name A6M Zero - Grey Red Color
+Name A6M Zero
 ShortName WW2_Plane_A6M_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_A6M_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Plane_A6M_1A
 Texture Skin_WW2_Plane_A6M_1A
+
+// Paintjobs
+Paintjob Icon_WW2_Plane_A6M_1B Skin_WW2_Plane_A6M_1B white 5
+Paintjob Icon_WW2_Plane_A6M_1C Skin_WW2_Plane_A6M_1C green 5
+Paintjob Icon_WW2_Plane_A6M_1D Skin_WW2_Plane_A6M_1D green 5
 
 // Recipe and Inventory
 FuelTankSize 6000
@@ -40,6 +46,7 @@ RestingPitch 9.0
 RealMassKg 2796
 RealEnginePowerPS 940
 RealMaxSpeedKmh 533
+RealTurnRateDegPerSec 26.53
 RealWingSpanM 12
 RealWingAreaM2 22.44
 RealClimbRateMs 15.7

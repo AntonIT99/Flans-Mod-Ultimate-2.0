@@ -39,6 +39,7 @@ MaxThrottle 1.25
 MaxNegativeThrottle 0.5
 TurnLeftSpeed 0.18
 TurnRightSpeed 0.18
+RealTurnRateDegPerSec 13.11
 CanRoll false
 SquashMobs True
 WheelStepHeight 0
@@ -71,11 +72,11 @@ AllowAllAmmo false
 AddAmmo 44_Torpedo
 ShootPointPrimary 85 32 30 core
 ShootPointPrimary 85 32 -30 core
-GunOrigin 1 184 46 0
-GunOrigin 2 -24 53 0
-GunOrigin 3 -142 49 0
-GunOrigin 4 69 61 -18
-GunOrigin 5 69 61 18
+GunOrigin 1 231 51 8.3
+GunOrigin 2 -6.1 58.7 0
+GunOrigin 3 -123.8 54.3 0
+GunOrigin 4 85.8 68.4 -19.8
+GunOrigin 5 85.8 68.4 19.8
 
 // Armour and damage
 UseRealisticVehicleHealth true
@@ -88,7 +89,7 @@ ArmorConningTowerMm 12
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart trailer 300 48 52 -35 202 17 70
+SetupPart trailer 300 -56 52 -35 100 14 70
 SetupPart core 800 -245 11 -35 495 41 70
 
 // Seats
@@ -126,3 +127,22 @@ AddEmitter largesmoke 1 [-34,26,23.25] [7,1,7] [0,1.5,0] -1 1 0 0.25 core
 AddEmitter flame 1 [-34,26,-23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
 AddEmitter flame 1 [-34,26,23.25] [5,1,5] [0,1,0] -1 1 0 0.25 core
 AddEmitter largesmoke 1 [5,43,14] [3,1,3] [0,1,0] -1 1 0 0.5 turret
+
+ShootParticlesPassenger 1 flansmod.fmflame 0.58 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPassenger 1 flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPassenger 1 smoke 0.2 0.035 -0.04
+ShootParticlesPassenger 1 smoke 0.18 -0.03 0.045
+ShootParticlesPassenger 1 crit 0.38 0.01 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.58 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPassenger 2 flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPassenger 2 smoke 0.2 0.035 -0.04
+ShootParticlesPassenger 2 smoke 0.18 -0.03 0.045
+ShootParticlesPassenger 2 crit 0.38 0.01 0
+ShootParticlesPassenger 3 explode 0.55 0 0
+ShootParticlesPassenger 3 flansmod.fmflame 0.72 0 0
+ShootParticlesPassenger 3 flansmod.fmflame 0.38 0.06 0.04
+ShootParticlesPassenger 3 flansmod.fmflame 0.34 -0.05 -0.05
+ShootParticlesPassenger 3 smoke 0.24 0.05 -0.06
+ShootParticlesPassenger 3 smoke 0.21 -0.045 0.06

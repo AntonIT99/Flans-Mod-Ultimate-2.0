@@ -1,5 +1,10 @@
 # InfoType Parameter Gap Analysis
 
+Historical source notice: this report analyzes the now-superseded Krishna Mk6C fork.
+Its findings remain tied to that source and have not been revalidated against the newer
+`C:\Users\alpha\Documents\Minecraft-Development\flans-mod-labjac-edition-ganesha-mk1a-1.7.10`
+(Labjac Edition Ganesha Mk1A).
+
 | | |
 |---|---|
 | **Target** | `C:\Users\alpha\Documents\Minecraft-Development\Flans-Mod-Ultimate-2.0` (Flan's Mod Ultimate 2.0, `com.flansmodultimate`) |

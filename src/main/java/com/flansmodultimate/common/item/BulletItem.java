@@ -73,7 +73,9 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
 
         appendPerRound(tooltipComponents, TooltipKeys.PENETRATION_AT_100M, rounds, shot -> {
             float penetration = penetrationAt100m(configType, shot, context);
-            return penetration > 0F ? IFlanItem.formatFloat(penetration) + "mm" : null;
+            // HEAT is shown as the internationally used ammunition abbreviation, like the unit beside it.
+            return penetration > 0F ? IFlanItem.formatFloat(penetration) + "mm" + (configType.isHeat() ? " HEAT" : "")
+                : null;
         });
 
         // Kinetic penetrating power cannot be stated meaningfully until both mass and launch velocity are known.

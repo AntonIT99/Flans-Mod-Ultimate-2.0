@@ -35,23 +35,24 @@ MaxThrottle 0.7
 MaxNegativeThrottle 0.45
 TurnLeftSpeed 0.25
 TurnRightSpeed 0.25
+RealTurnRateDegPerSec 240
 Drag 1.0
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 
 // Weaponry
-GunOrigin 2 -15 9 0
+GunOrigin 2 -3.8 8.1 0
 ShootDelay 999
 ShellDelay 999
 ReadWeaponsFromGunTypes true
 
 // Health and armour
-SetupPart core 3000 -24 -6 -16 48 12 32
-SetupPart backLeftWheel 1500 -20 -10 -16 8 8 2
-SetupPart backRightWheel 1500 -20 -10 14 8 8 2
-SetupPart frontLeftWheel 1500 12 -10 -16 8 8 2
-SetupPart frontRightWheel 1500 12 -10 14 8 8 2
+SetupPart core 1335 -24 -6 -16 48 12 32
+SetupPart backLeftWheel 35 -20 -10 -16 8 8 2
+SetupPart backRightWheel 35 -20 -10 14 8 8 2
+SetupPart frontLeftWheel 35 12 -10 -16 8 8 2
+SetupPart frontRightWheel 35 12 -10 14 8 8 2
 BulletDetection 5
 ArmorFrontMm 0
 ArmorSideMm 0

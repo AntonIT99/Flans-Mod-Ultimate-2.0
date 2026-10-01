@@ -16,7 +16,9 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /** Non-persistent hit and suspension proxy owned by a {@link Driveable}. */
@@ -78,11 +80,13 @@ public class Wheel extends Entity
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
+        // No-op
     }
 
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
+        // No-op
     }
 
     @Override
@@ -155,6 +159,12 @@ public class Wheel extends Entity
     public boolean isPickable()
     {
         return isAlive() && (driveable == null || driveable.isPartIntact(getPart()));
+    }
+
+    @Override
+    public ItemStack getPickedResult(HitResult target)
+    {
+        return driveable == null ? ItemStack.EMPTY : driveable.getPickedResult(target);
     }
 
     private EnumDriveablePart getPart()

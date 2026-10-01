@@ -109,5 +109,6 @@ public class ModelColt extends ModelGun {
       this.animationType = EnumAnimationType.PISTOL_CLIP;
       this.translateAll(0.0F, 0.0F, 0.0F);
       this.flipAll();
+      this.muzzleFlashPoint = new Vector3f(1.53125F, 1.5625F, -0.01875F);
    }
 }

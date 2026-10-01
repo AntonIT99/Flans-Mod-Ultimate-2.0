@@ -6,6 +6,7 @@ Description British Armored Vehicle
 // Item and rendering
 Icon UC
 Model ww2.UC2Pdr
+FlashModel DefaultFlash
 Texture uc
 RotateWheels True
 AddDye 4 green
@@ -33,14 +34,15 @@ MaxThrottle 0.65
 MaxNegativeThrottle 0.5
 TurnLeftSpeed 0.4
 TurnRightSpeed 0.4
+RealTurnRateDegPerSec 26
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true
 Tank false
 
 // Weaponry
-GunOrigin 1 27 -5 -7
-GunOrigin 2 0 10 0
+GunOrigin 1 40 -7.1 -6.5
+GunOrigin 2 26.5 5.2 0
 ShootDelay 1
 ShellDelay 70
 ReadWeaponsFromGunTypes true
@@ -81,3 +83,14 @@ EngineSound engine_lt_bt
 EngineSoundLength 39
 ShootSoundPrimary 40uk
 ShootSoundSecondary BrenShoot
+
+ShootParticlesPassenger 2 explode 0.7 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.95 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.58 0.07 0.05
+ShootParticlesPassenger 2 flansmod.fmflame 0.54 -0.06 -0.06
+ShootParticlesPassenger 2 flansmod.fmflame 0.42 0.04 -0.08
+ShootParticlesPassenger 2 largesmoke 0.3 0.07 0.06
+ShootParticlesPassenger 2 largesmoke 0.28 -0.06 -0.07
+ShootParticlesPassenger 2 largesmoke 0.24 0.04 -0.09
+ShootParticlesPassenger 2 largesmoke 0.22 -0.04 0.09
+ShootParticlesPassenger 2 crit 0.48 0 0

@@ -37,6 +37,7 @@ MaxThrottle 1.0
 MaxNegativeThrottle 0.65
 TurnLeftSpeed 0.65
 TurnRightSpeed 0.65
+RealTurnRateDegPerSec 236.08
 CanRoll true
 SquashMobs True
 
@@ -57,7 +58,7 @@ BulletSpeed 15
 BulletDetection 5
 AllowAllAmmo false
 AddAmmo 44_50CalAmmo
-BarrelPosition 35 39 0
+BarrelPosition 33 39.5 0
 ShootParticlesPrimary flansmod.fmflame 0.5 0 0
 ShootParticlesPrimary flansmod.fmflame 0.25 0 0
 ShootParticlesSecondary crit 0.5 0 0
@@ -72,11 +73,11 @@ ArmorBottomMm 6.35
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 800 -42 -3 -22 102 44 44
-SetupPart frontLeftWheel 35 23 -10 17 19 19 8
-SetupPart frontRightWheel 35 23 -10 -25 19 19 8
-SetupPart backLeftWheel 35 -46 -10 17 43 19 8
-SetupPart backRightWheel 35 -46 -10 -26 43 19 8
+SetupPart core 5490 -42 -3 -22 102 44 44
+SetupPart frontLeftWheel 60 23 -10 17 19 19 8
+SetupPart frontRightWheel 60 23 -10 -25 19 19 8
+SetupPart backLeftWheel 120 -46 -10 17 43 19 8
+SetupPart backRightWheel 120 -46 -10 -26 43 19 8
 
 // Seats
 Driver 0 27 0 -360 360 -25 45

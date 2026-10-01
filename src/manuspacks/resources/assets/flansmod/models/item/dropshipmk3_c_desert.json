@@ -3,5 +3,30 @@
   "textures": {
     "layer0": "flansmod:item/iconplanedropshipmk3_c_desert"
   },
-  "overrides": []
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/iconplanedropshipmk3_c_grass"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 2
+      },
+      "model": "flansmod:item/iconplanedropshipmk3_c_grey"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 3
+      },
+      "model": "flansmod:item/iconplanedropshipmk3_c_ice"
+    },
+    {
+      "predicate": {
+        "flansmod:paintjob": 4
+      },
+      "model": "flansmod:item/iconplanedropshipmk3_c_jungle"
+    }
+  ]
 }

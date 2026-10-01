@@ -53,7 +53,13 @@ public class PlaneType extends DriveableType
     @Override
     public float getEngineIdleLoopPitchRange()
     {
-        return StringUtils.isBlank(idleSound) ? engineSoundPitchRange : 0F;
+        return StringUtils.isBlank(idleSound) ? (Float.isFinite(engineSoundPitchRange) ? engineSoundPitchRange : 1F) : 0F;
+    }
+
+    @Override
+    public boolean usesEngineSoundAsIdleLoop()
+    {
+        return StringUtils.isBlank(idleSound);
     }
 
     protected EnumPlaneMode mode = EnumPlaneMode.PLANE;
@@ -63,6 +69,8 @@ public class PlaneType extends DriveableType
     protected float rollRightModifier = 1F;
     protected float turnLeftModifier = 1F;
     protected float turnRightModifier = 1F;
+    /** Full ground-steering yaw rate at 10 km/h; does not affect flight controls. */
+    protected float realTurnRateDegPerSec;
     protected float restingPitch;
     protected boolean spinWithoutTail;
     protected boolean heliThrottlePull = true;
@@ -151,6 +159,10 @@ public class PlaneType extends DriveableType
         newFlightControl = readValue("NewFlightControl", newFlightControl, file);
         turnLeftModifier = readOptionalValue("TurnLeftSpeed", turnLeftModifier, file);
         turnRightModifier = readValue("TurnRightSpeed", turnRightModifier, file);
+        String groundTurnKey = file.hasConfigLine("RealTurnRateDegPerSec")
+            ? "RealTurnRateDegPerSec" : "TurnRateDegPerSec";
+        float groundTurnRate = readValue(groundTurnKey, 0F, file);
+        realTurnRateDegPerSec = Float.isFinite(groundTurnRate) && groundTurnRate > 0F ? groundTurnRate : 0F;
         lookUpModifier = readValue("LookUpSpeed", lookUpModifier, file);
         lookDownModifier = readValue("LookDownSpeed", lookDownModifier, file);
         rollLeftModifier = readValue("RollLeftSpeed", rollLeftModifier, file);

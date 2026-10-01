@@ -1,12 +1,18 @@
 ﻿// Identity
-Name Supermarine Spitfire Mk VB - 603 Squadron
+Name Supermarine Spitfire Mk VB
 ShortName WW2_Plane_SpitFireMkVB_1A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_SpitFireMkVB_1
+FlashModel DefaultFlash
 ModelScale 1
 Icon Icon_WW2_Plane_SpitFireMkVB_1A
 Texture Skin_WW2_Plane_SpitFireMkVB_1A
+
+// Paintjobs
+AdvPaintJob 603Squadron Icon_WW2_Plane_SpitFireMkVB_1A Skin_WW2_Plane_SpitFireMkVB_1A
+AdvPaintJob 412Squadron Icon_WW2_Plane_SpitFireMkVB_1B Skin_WW2_Plane_SpitFireMkVB_1B brown 6
+AdvPaintJob 145Squadron Icon_WW2_Plane_SpitFireMkVB_1C Skin_WW2_Plane_SpitFireMkVB_1C brown 6
 
 // Recipe and Inventory
 AllowAllAmmo False
@@ -41,6 +47,7 @@ RestingPitch 5.0
 RealMassKg 3004
 RealEnginePowerHp 1470
 RealMaxSpeedKmh 595
+RealTurnRateDegPerSec 28.35
 RealWingSpanM 11.227
 RealWingAreaM2 22.49
 RealClimbRateMs 13.2

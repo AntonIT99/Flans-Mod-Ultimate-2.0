@@ -6,6 +6,7 @@ Description German Armored Car__Uses : 50mm AP Tank Shell_Small Cal. HE Tank She
 // Rendering
 Icon 44_Puma
 Model W44.Puma
+FlashModel DefaultFlash
 ModelScale 1.15
 Texture Skin44_Puma
 RotateWheels True
@@ -14,8 +15,10 @@ CameraDistance 7.5
 // Recipe and inventory
 AddRecipeParts turret 1 44_Light_Tank_Turret 1 44_Vehicle_Seat
 AddRecipeParts core 1 44_Car_Chassis 1 44_Vehicle_Seat 5 ingotIron
-AddRecipeParts leftTrack 4 44_Car_Wheel
-AddRecipeParts rightTrack 4 44_Car_Wheel
+AddRecipeParts backRightWheel 2 44_Car_Wheel
+AddRecipeParts backLeftWheel 2 44_Car_Wheel
+AddRecipeParts frontRightWheel 2 44_Car_Wheel
+AddRecipeParts frontLeftWheel 2 44_Car_Wheel
 CargoSlots 20
 ShellSlots 3
 FuelTankSize 2000
@@ -38,6 +41,7 @@ MaxThrottle 1.0
 MaxNegativeThrottle 0.6
 TurnLeftSpeed 0.675
 TurnRightSpeed 0.675
+RealTurnRateDegPerSec 159.15
 CanRoll true
 SquashMobs True
 
@@ -65,7 +69,7 @@ AddAmmo 44_SmallHEShell
 AddAmmo 44_50APCRShellLong
 AddAmmo 44_50APCRHeavyShell
 AddGun 21 34 3 turret 44_Mg42
-BarrelPosition 55 33 0
+BarrelPosition 57.5 33.3 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -128,11 +132,12 @@ ArmorBottomMm 10
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 950 -79 4 -15 124 35 31
-SetupPart backRightWheel 25 -66 -10 -22 21 21 9
-SetupPart backRightWheel 25 -38 -10 -22 21 21 9
-SetupPart frontRightWheel 25 -12 -10 -22 21 21 9
-SetupPart frontRightWheel 25 15 -10 -22 21 21 9
+SetupPart core 9500 -79 4 -15 124 24 31
+SetupPart turret 1600 -26 28 -19 45 12 38
+SetupPart backRightWheel 160 -66 -10 -22 49 21 9
+SetupPart backLeftWheel 160 -66 -10 13 49 21 9
+SetupPart frontRightWheel 160 -12 -10 -22 48 21 9
+SetupPart frontLeftWheel 160 -12 -10 13 48 21 9
 
 // Seats
 Driver 0 32 0 -360 360 -8 15

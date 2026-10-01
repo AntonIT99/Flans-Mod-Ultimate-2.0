@@ -6,6 +6,9 @@ ShortName 50Cal
 Icon 50Cal
 Colour 255 255 255
 DeployedModel ww2.50Cal
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animFlashScale 1.24
 DeployedTexture 50Cal
 
 // Ammunition
@@ -16,9 +19,9 @@ ReloadTime 100
 Mode FullAuto
 Deployable True
 StandBackDistance 1.2
-TopViewLimit 20
-BottomViewLimit 30
-SideViewLimit 45
+TopViewLimit 30
+BottomViewLimit 20
+SideViewLimit 40
 PivotHeight 0.375
 RoundsPerMin 500.0
 

@@ -4,6 +4,7 @@ ShortName WW2_Plane_IL2M_6A
 
 // Model and Rendering
 Model Manus_WW2.Plane.WW2_Plane_IL2M_6
+FlashModel DefaultFlash
 ModelScale 1
 Icon Icon_WW2_Plane_IL2M_6A
 Texture Skin_WW2_Plane_IL2M_6A
@@ -41,6 +42,7 @@ RestingPitch 10.0
 RealMassKg 6360
 RealEnginePowerPS 1720
 RealMaxSpeedKmh 410
+RealTurnRateDegPerSec 21.8
 RealWingSpanM 14.6
 RealWingAreaM2 38.5
 RealClimbRateMs 6.1
@@ -59,7 +61,7 @@ ShootPointPrimary 40 28 -55 leftWing WW2_MG_ShKAS_1A
 ShootPointPrimary 58 21 55 rightWing WW2_MG_WJa23_1A
 ShootPointPrimary 58 21 -55 leftWing WW2_MG_WJa23_1A
 ShootPointSecondary 6 0 0 core
-GunOrigin 1 46 -45 0
+GunOrigin 1 -63 23.4 0
 ReadWeaponsFromGunTypes true
 
 // Protection

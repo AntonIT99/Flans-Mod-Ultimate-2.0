@@ -19,6 +19,7 @@ FFF
 
 // Modifiers
 Silencer true
+DisableMuzzleFlash True
 MeleeDamageMultiplier 1.0
 DamageMultiplier 0.8
 SpreadMultiplier 1.2

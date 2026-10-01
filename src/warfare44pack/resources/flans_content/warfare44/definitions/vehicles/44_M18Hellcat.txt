@@ -6,6 +6,7 @@ Description American Medium Tank Destroyer__Uses : 76mm AP Tank Shell - Long_Med
 // Rendering
 Icon 44_M18Hellcat
 Model W44.M18Hellcat
+FlashModel DefaultFlash
 ModelScale 1.25
 Texture Skin44_M18Hellcat
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.745
 ClutchBrake 0.0365
 TurnLeftSpeed 0.4818
 TurnRightSpeed 0.4818
+RealTurnRateDegPerSec 36
 CanRoll true
 SquashMobs True
 
@@ -89,7 +91,7 @@ AddAmmo 44_MediumHEShell
 AddAmmo 44_76HVAPShell
 AddAmmo 44_76APCBCShell
 AddGun 29 41 -12 turret 44_50Cal
-BarrelPosition 68 29 0
+BarrelPosition 71.9 28.3 0.6
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -156,9 +158,10 @@ TurretArmorTopMm 0
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1650 -54 -2 -25 104 36 50
-SetupPart leftTrack 300 -49 -10 -27 98 21 9
-SetupPart rightTrack 300 -49 -10 18 98 21 9
+SetupPart core 7400 -54 -2 -25 104 24 50
+SetupPart turret 1400 -34 22 -18 64 13 36
+SetupPart leftTrack 600 -49 -10 -27 98 21 9
+SetupPart rightTrack 600 -49 -10 18 98 21 9
 
 // Seats
 Driver 0 28 0 -360 360 -8 15

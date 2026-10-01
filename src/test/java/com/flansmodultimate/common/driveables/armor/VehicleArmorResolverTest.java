@@ -9,8 +9,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class VehicleArmorResolverTest
 {
@@ -24,6 +23,28 @@ class VehicleArmorResolverTest
         ResolvedArmorHit hit = hit(glacis, new Vec3(0D, 0D, 1D));
         assertEquals(139.47F, hit.effectiveArmorMm(), 0.02F);
         assertEquals(55F, hit.impactAngleDeg(), 1.0E-3F);
+    }
+
+    @Test
+    void heatHitsUseTheFaceProtectionAgainstHeatThroughTheSameSlope()
+    {
+        ResolvedVehicleArmor glacis = resolved(new ArmorPlate(80F, 55F, 160F));
+        Vec3 headOn = new Vec3(0D, 0D, 1D);
+        assertEquals(139.47F, glacis.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, headOn, 80D, false)
+            .effectiveArmorMm(), 0.02F);
+        assertEquals(278.95F, glacis.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, headOn, 80D, true)
+            .effectiveArmorMm(), 0.05F);
+    }
+
+    @Test
+    void aFaceWithNoProtectionAgainstHeatIsUnarmouredForAHeatHit()
+    {
+        ResolvedVehicleArmor armor = resolved(new ArmorPlate(20F, 0F, 0F));
+        ResolvedArmorHit heat = armor.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT,
+            new Vec3(0D, 0D, 1D), 80D, true);
+        assertFalse(heat.isArmoured());
+        assertEquals(0F, heat.effectiveArmorMm());
+        assertTrue(hit(armor, new Vec3(0D, 0D, 1D)).isArmoured());
     }
 
     @Test
@@ -51,6 +72,8 @@ class VehicleArmorResolverTest
             new VehicleArmorSpec(hull, Map.of(), Map.of()), List.of(EnumDriveablePart.CORE));
         assertEquals(0F, armor.plate(EnumDriveablePart.CORE, EnumArmorFacing.TOP).authored().thicknessMm());
         assertEquals(0F, armor.plate(EnumDriveablePart.CORE, EnumArmorFacing.FRONT).authored().thicknessMm());
+        assertTrue(armor.isPlateConfigured(EnumDriveablePart.CORE, EnumArmorFacing.TOP));
+        assertFalse(armor.isPlateConfigured(EnumDriveablePart.CORE, EnumArmorFacing.FRONT));
     }
 
     @Test
@@ -65,6 +88,9 @@ class VehicleArmorResolverTest
         assertEquals(40F, armor.plate(EnumDriveablePart.CORE, EnumArmorFacing.FRONT).authored().thicknessMm());
         assertEquals(100F, armor.plate(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT).authored().thicknessMm());
         assertEquals(15F, armor.plate(EnumDriveablePart.LEFT_TRACK, EnumArmorFacing.FRONT).authored().thicknessMm());
+        assertTrue(armor.isPlateConfigured(EnumDriveablePart.LEFT_TRACK, EnumArmorFacing.REAR));
+        assertTrue(armor.isPlateConfigured(EnumDriveablePart.TURRET, EnumArmorFacing.FRONT));
+        assertFalse(armor.isPlateConfigured(EnumDriveablePart.TURRET, EnumArmorFacing.REAR));
     }
 
     @Test

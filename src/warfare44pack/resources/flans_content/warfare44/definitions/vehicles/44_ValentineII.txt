@@ -6,6 +6,7 @@ Description British Infantry Tank__Uses : 37mm AP Tank Shell_Small Cal. HE Tank 
 // Rendering
 Icon 44_ValentineII
 Model W44.ValentineII
+FlashModel DefaultFlash
 ModelScale 0.95
 Texture Skin44_ValentineII
 RotateWheels True
@@ -38,6 +39,7 @@ MaxNegativeThrottle 0.3617
 ClutchBrake 0.01225
 TurnLeftSpeed 0.4
 TurnRightSpeed 0.4
+RealTurnRateDegPerSec 12
 CanRoll true
 
 // Wheels and tracks
@@ -83,7 +85,7 @@ AddAmmo 44_37APShell
 AddAmmo 44_SmallHEShell
 AddAmmo 44_40APCBCShell
 AddGun 17 25 5 turret 44_Bren
-BarrelPosition 47 24 0
+BarrelPosition 43.7 24.6 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -150,9 +152,10 @@ TurretArmorTopMm 10
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1750 -66 -1 -18 109 34 36
-SetupPart rightTrack 300 -68 -10 18 112 21 9
-SetupPart leftTrack 300 -68 -10 -27 112 21 9
+SetupPart core 7700 -66 -1 -18 109 21 36
+SetupPart turret 1100 -19 20 -15 30 12 30
+SetupPart rightTrack 600 -68 -10 18 112 21 9
+SetupPart leftTrack 600 -68 -10 -27 112 21 9
 
 // Seats
 Driver 0 23 0 -360 360 -6 25

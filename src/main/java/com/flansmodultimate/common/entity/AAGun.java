@@ -1,12 +1,15 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.driveables.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.BulletType;
@@ -15,11 +18,11 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
-import com.flansmodultimate.platform.network.PacketIO;
-import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -40,9 +43,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -62,10 +67,11 @@ import java.util.UUID;
 public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity
 {
     private boolean suppressRemovalDrops;
+    @Nullable
+    private AAGunCollisionHelper collisionHelper;
     public static final int RENDER_DISTANCE = 128;
     public static final float DEFAULT_HITBOX_SIZE = 2F;
 
-    private static final double SENTRY_ORIGIN_Y_OFFSET = 1.5D;
     private static final double LEGACY_PLAYER_EYE_HEIGHT = 1.62D;
     private static final int TARGET_ACQUIRE_INTERVAL = 10;
 
@@ -103,6 +109,12 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     protected float prevGunYaw;
     @Getter
     protected float prevGunPitch;
+    private boolean clientAimInitialized;
+    private float clientVisualGunYaw;
+    private float clientVisualGunPitch;
+    private float clientTargetGunYaw;
+    private float clientTargetGunPitch;
+    private int clientAimLerpSteps;
     @Getter
     protected float[] barrelRecoil = new float[0];
     protected ItemStack[] ammo = new ItemStack[0];
@@ -166,12 +178,42 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         System.arraycopy(previousAmmo, 0, ammo, 0, Math.min(previousAmmo.length, ammo.length));
 
         updateAmmoMask();
+        refreshDimensions();
+        if (collisionHelper != null)
+            collisionHelper.unregister();
+        collisionHelper = new AAGunCollisionHelper(this, configType.getHitBoxWidth(), configType.getHitBoxHeight());
+    }
+
+    @Override
+    @NotNull
+    public EntityDimensions getDimensions(@NotNull Pose pose)
+    {
+        AAGunType type = configType;
+        if (type == null)
+            return super.getDimensions(pose);
+        // Enclose every yaw of the square hull for broad entity queries.
+        return EntityDimensions.scalable(type.getHitBoxWidth() * Mth.SQRT_OF_TWO, type.getHitBoxHeight());
+    }
+
+    @Nullable
+    public Vec3 clipCollisionBox(Vec3 start, Vec3 end, double inflation)
+    {
+        return collisionHelper == null ? null : collisionHelper.clipSegment(start, end, inflation);
+    }
+
+    @Nullable
+    public double[] getCollisionBoxWorldVertices()
+    {
+        return collisionHelper == null ? null : collisionHelper.copyWorldVertices();
     }
 
     public void setModelBarrelOriginData(Vec3[] pivots, Vec3[] muzzles)
     {
         AAGunType type = getConfigType();
         if (type == null || pivots == null || muzzles == null || pivots.length != type.getNumBarrels() || muzzles.length != type.getNumBarrels())
+            return;
+        // The type's own measurement already places the muzzles; no client report replaces it.
+        if (type.hasMeasuredBarrels())
             return;
 
         Vec3[] safePivots = new Vec3[type.getNumBarrels()];
@@ -226,9 +268,58 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         return entityData.get(DATA_GUN_PITCH);
     }
 
+    /** Client-only visual aim; gameplay and shooting continue to use the synced angles. */
+    public float getRenderGunYaw()
+    {
+        initializeClientAim();
+        return level().isClientSide ? clientVisualGunYaw : getGunYaw();
+    }
+
+    public float getRenderGunPitch()
+    {
+        initializeClientAim();
+        return level().isClientSide ? clientVisualGunPitch : getGunPitch();
+    }
+
     public void setGunPitch(float pitch)
     {
         entityData.set(DATA_GUN_PITCH, clampPitch(pitch));
+    }
+
+    @Override
+    public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> key)
+    {
+        super.onSyncedDataUpdated(key);
+        if (level().isClientSide && (DATA_GUN_YAW.equals(key) || DATA_GUN_PITCH.equals(key)))
+        {
+            initializeClientAim();
+            clientTargetGunYaw = getGunYaw();
+            clientTargetGunPitch = getGunPitch();
+            clientAimLerpSteps = Math.max(clientAimLerpSteps, 2);
+        }
+    }
+
+    private void initializeClientAim()
+    {
+        if (!level().isClientSide || clientAimInitialized)
+            return;
+        clientAimInitialized = true;
+        clientVisualGunYaw = clientTargetGunYaw = getGunYaw();
+        clientVisualGunPitch = clientTargetGunPitch = getGunPitch();
+        prevGunYaw = clientVisualGunYaw;
+        prevGunPitch = clientVisualGunPitch;
+        clientAimLerpSteps = 0;
+    }
+
+    private void tickClientAimInterpolation()
+    {
+        if (clientAimLerpSteps <= 0)
+            return;
+        float divisor = clientAimLerpSteps;
+        clientVisualGunYaw = Mth.wrapDegrees(clientVisualGunYaw
+            + Mth.wrapDegrees(clientTargetGunYaw - clientVisualGunYaw) / divisor);
+        clientVisualGunPitch += (clientTargetGunPitch - clientVisualGunPitch) / divisor;
+        --clientAimLerpSteps;
     }
 
     public int getReloadTimer()
@@ -378,6 +469,13 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         return isAlive();
     }
 
+    /** Physical collision is provided by the yaw-rotated hull. */
+    @Override
+    public boolean canBeCollidedWith()
+    {
+        return false;
+    }
+
     @Override
     public boolean shouldRenderAtSqrDistance(double distSq)
     {
@@ -464,6 +562,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
             entityData.set(DATA_CURRENT_AMMO_NAME, PacketIO.readComponent(buf));
             entityData.set(DATA_MAGAZINE_LEFT, buf.readInt());
             entityData.set(DATA_MAGAZINE_SIZE, buf.readInt());
+            // Spawn data gives both angles together; begin at that pose.
+            clientAimInitialized = false;
+            initializeClientAim();
         }
         catch (Exception e)
         {
@@ -545,6 +646,8 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     @Override
     public void remove(@NotNull RemovalReason reason)
     {
+        if (collisionHelper != null)
+            collisionHelper.unregister();
         try
         {
             Level level = level();
@@ -580,6 +683,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     public boolean hurt(DamageSource source, float amount)
     {
         Entity attacker = source.getEntity();
+        if (attacker instanceof Player player
+            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ATTACK))
+            return false;
         Entity gunner = getFirstPassenger();
 
         if (attacker == gunner)
@@ -589,7 +695,8 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
 
         if (attacker instanceof Player && FlansMod.teamsManager.isCanBreakGuns())
         {
-            discard();
+            if (FlanEntityPermissions.allows((Player) attacker, FlanEntityPermissions.AA_GUN_PICKUP))
+                discard();
             return true;
         }
 
@@ -622,6 +729,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
             return InteractionResult.CONSUME;
         }
 
+        if (!type.isSentry() && !FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ENTER))
+            return InteractionResult.CONSUME;
+
         if (!type.isSentry())
         {
             if (player.getVehicle() != null)
@@ -634,14 +744,25 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     }
 
     @Override
+    protected boolean canAddPassenger(@NotNull Entity passenger)
+    {
+        return super.canAddPassenger(passenger)
+            && (!(passenger instanceof Player player)
+                || FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ENTER));
+    }
+
+    @Override
     protected void positionRider(@NotNull Entity passenger, @NotNull MoveFunction move)
     {
         AAGunType type = getConfigType();
-        if (!(passenger instanceof Player) || type == null)
+        if (!(passenger instanceof Player player) || type == null)
             return;
 
-        Vec3 gunnerSeatPosition = getGunnerSeatPosition();
-        move.accept(passenger, gunnerSeatPosition.x, gunnerSeatPosition.y, gunnerSeatPosition.z);
+        Vec3 riderPosition = getGunnerRiderPosition();
+        move.accept(passenger, riderPosition.x, riderPosition.y, riderPosition.z);
+        // Keep the torso with the traversing seat when the view turns faster
+        // than this mount can follow.
+        player.yBodyRot += Mth.wrapDegrees(getGunYaw() - player.yBodyRot);
         passenger.setDeltaMovement(Vec3.ZERO);
         passenger.fallDistance = 0F;
     }
@@ -651,7 +772,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     public Vec3 getDismountLocationForPassenger(@NotNull LivingEntity passenger)
     {
         float yawRad = getGunYaw() * Mth.DEG_TO_RAD;
-        Vec3 preferred = position().add(1.5D * Mth.sin(yawRad), 0D, -1.5D * Mth.cos(yawRad));
+        // Clear of the gun's own box, which is solid once the gunner is off, whatever the yaw.
+        double distance = Math.max(1.5D, (getBbWidth() + passenger.getBbWidth()) * 0.5D + 0.1D);
+        Vec3 preferred = position().add(distance * Mth.sin(yawRad), 0D, -distance * Mth.cos(yawRad));
         AABB movedBB = passenger.getBoundingBox().move(preferred.subtract(passenger.position()));
         if (level().noCollision(passenger, movedBB))
             return preferred;
@@ -670,12 +793,30 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
             return;
         }
 
-        prevGunYaw = getGunYaw();
-        prevGunPitch = getGunPitch();
+        if (level().isClientSide)
+        {
+            initializeClientAim();
+            prevGunYaw = clientVisualGunYaw;
+            prevGunPitch = clientVisualGunPitch;
+            tickClientAimInterpolation();
+        }
+        else
+        {
+            prevGunYaw = getGunYaw();
+            prevGunPitch = getGunPitch();
+        }
 
         Entity passenger = getFirstPassenger();
         if (passenger instanceof LivingEntity living)
+        {
             updateAimFromPassenger(living);
+            if (level().isClientSide)
+            {
+                clientVisualGunYaw = clientTargetGunYaw = getGunYaw();
+                clientVisualGunPitch = clientTargetGunPitch = getGunPitch();
+                clientAimLerpSteps = 0;
+            }
+        }
 
         for (int i = 0; i < barrelRecoil.length; i++)
             barrelRecoil[i] *= 0.9F;
@@ -683,10 +824,14 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         if (level().isClientSide)
         {
             ClientHooks.GUN.tickAAGun(this);
+            if (collisionHelper != null)
+                collisionHelper.tick();
             return;
         }
 
         serverTick(level());
+        if (collisionHelper != null)
+            collisionHelper.tick();
     }
 
     private void serverTick(Level level)
@@ -717,7 +862,7 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
 
         clearSpentAmmo();
 
-        if (type.isSentry())
+        if (getFirstPassenger() == null && type.isSentry())
             updateSentryTarget(level);
         else
             target = null;
@@ -768,8 +913,9 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
 
     private void updateAimFromPassenger(LivingEntity passenger)
     {
-        setGunYaw(passenger.getYRot());
-        setGunPitch(passenger.getXRot());
+        float speed = configType == null ? 0F : configType.getTraverseSpeed();
+        setGunYaw(AAGunTraverse.yaw(getGunYaw(), passenger.getYRot(), speed));
+        setGunPitch(AAGunTraverse.pitch(getGunPitch(), clampPitch(passenger.getXRot()), speed));
         setYRot(getGunYaw());
         setXRot(getGunPitch());
     }
@@ -823,16 +969,14 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         float targetYaw = ModUtils.getYawFromDirection(direction);
         float targetPitch = ModUtils.getPitchFromDirection(direction);
 
-        if (getConfigType().isCanShootHomingMissile())
+        if (!getConfigType().isCanShootHomingMissile())
         {
-            setGunYaw(targetYaw);
-            setGunPitch(targetPitch);
+            targetYaw = Mth.rotLerp(0.25F, getGunYaw(), targetYaw);
+            targetPitch = Mth.lerp(0.25F, getGunPitch(), targetPitch);
         }
-        else
-        {
-            setGunYaw(Mth.rotLerp(0.25F, getGunYaw(), targetYaw));
-            setGunPitch(Mth.lerp(0.25F, getGunPitch(), targetPitch));
-        }
+        float speed = getConfigType().getTraverseSpeed();
+        setGunYaw(AAGunTraverse.yaw(getGunYaw(), targetYaw, speed));
+        setGunPitch(AAGunTraverse.pitch(getGunPitch(), clampPitch(targetPitch), speed));
         setYRot(getGunYaw());
         setXRot(getGunPitch());
     }
@@ -1077,13 +1221,14 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     {
         Vec3 motion = getDeltaMovement();
         if (!onGround())
-            motion = motion.add(0D, -9.8D / 400D, 0D);
+            motion = motion.add(0D, -ModPhysics.gravity(9.8D / 400D, level()), 0D);
 
         move(MoverType.SELF, motion);
         if (onGround())
             setDeltaMovement(motion.x * 0.5D, 0D, motion.z * 0.5D);
         else
-            setDeltaMovement(motion.multiply(0.5D, 0.98D, 0.5D));
+            setDeltaMovement(motion.multiply(ModPhysics.dragRetention(0.5D, level()),
+                ModPhysics.dragRetention(0.98D, level()), ModPhysics.dragRetention(0.5D, level())));
     }
 
     private int ammoSlotForBarrel(int barrel)
@@ -1101,7 +1246,18 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         return barrelCount <= 0 ? 0 : Math.floorMod(entityData.get(DATA_CURRENT_BARREL), barrelCount);
     }
 
+    /**
+     * The gunner's seat, where a seated rider's hips rest: the same anchor a
+     * driveable seat marks, {@link Seat#LEGACY_PLAYER_RIDING_OFFSET} above the
+     * rider's feet.
+     */
     public Vec3 getGunnerSeatPosition()
+    {
+        return getGunnerRiderPosition().subtract(0D, Seat.LEGACY_PLAYER_RIDING_OFFSET, 0D);
+    }
+
+    /** Where the gunner's feet are placed. */
+    public Vec3 getGunnerRiderPosition()
     {
         AAGunType type = getConfigType();
         if (type == null)
@@ -1128,62 +1284,49 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
         if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
             return position();
 
-        if (barrel < modelBarrelPivots.length && barrel < modelBarrelMuzzles.length)
-            return position().add(transformModelBarrelOffset(modelBarrelPivots[barrel], modelBarrelMuzzles[barrel]));
-
-        Vec3 origin = position().add(transformLegacyConfigBarrelOffset(type, barrel));
-        return sentryShot && type.isSentry() ? origin.add(0D, SENTRY_ORIGIN_Y_OFFSET, 0D) : origin;
+        // Barrels the server measured itself win; a client's report is only the
+        // fallback for a model the server could not load.
+        Vec3[] pivots = type.hasMeasuredBarrels() ? type.getMeasuredBarrelPivots() : modelBarrelPivots;
+        Vec3[] muzzles = type.hasMeasuredBarrels() ? type.getMeasuredBarrelMuzzles() : modelBarrelMuzzles;
+        if (type.firesFromBarrelLine(barrel))
+        {
+            // A trusted line fires as written, elevating round the model's pivot like the barrel drawn on it.
+            Vec3 pivot = type.hasMeasuredBarrels() && barrel < pivots.length ? pivots[barrel] : null;
+            return position().add(authoredBarrelOffset(type, barrel, sentryShot, pivot, getGunYaw(), getGunPitch()));
+        }
+        if (barrel < pivots.length && barrel < muzzles.length)
+            return position().add(AAGunBarrelGeometry.modelBarrelOffset(pivots[barrel], muzzles[barrel],
+                getGunYaw(), getGunPitch()));
+        return position().add(authoredBarrelOffset(type, barrel, sentryShot, null, getGunYaw(), getGunPitch()));
     }
 
-    private Vec3 transformModelBarrelOffset(Vec3 pivot, Vec3 muzzle)
+    /**
+     * Where a type-file {@code Barrel} line puts the round. Without a model
+     * this is what fires until a client has reported the model's barrels; with
+     * the model's barrel pivot it elevates round that pivot, as the model's
+     * muzzles do, so the line can be compared with them at any aim.
+     */
+    public Vec3 getAuthoredBarrelOrigin(int barrel, boolean sentryShot, @Nullable Vec3 modelPivot)
     {
-        double pitch = -getGunPitch() * Mth.DEG_TO_RAD;
-        double cosPitch = Math.cos(pitch);
-        double sinPitch = Math.sin(pitch);
-
-        double modelX = pivot.x + muzzle.x * cosPitch - muzzle.y * sinPitch;
-        double modelY = pivot.y + muzzle.x * sinPitch + muzzle.y * cosPitch;
-        double modelZ = pivot.z + muzzle.z;
-
-        double yaw = (270D - getGunYaw()) * Mth.DEG_TO_RAD;
-        double cosYaw = Math.cos(yaw);
-        double sinYaw = Math.sin(yaw);
-
-        double x = modelX * cosYaw + modelZ * sinYaw;
-        double z = -modelX * sinYaw + modelZ * cosYaw;
-
-        return new Vec3(x / 16D, modelY / 16D, z / 16D);
+        AAGunType type = getConfigType();
+        if (type == null || barrel < 0 || barrel >= type.getNumBarrels())
+            return position();
+        return position().add(authoredBarrelOffset(type, barrel, sentryShot, modelPivot, getGunYaw(), getGunPitch()));
     }
 
-    private Vec3 transformLegacyConfigBarrelOffset(AAGunType type, int barrel)
+    private static Vec3 authoredBarrelOffset(AAGunType type, int barrel, boolean sentryShot,
+                                             @Nullable Vec3 modelPivot, float gunYaw, float gunPitch)
     {
-        // Map legacy position to actual position
-        double barrelX = type.getBarrelZ()[barrel];
-        double barrelY = type.getBarrelY()[barrel];
-        double barrelZ = -type.getBarrelX()[barrel];
-
-        double x = (barrelX - barrelZ) / 16D;
-        double y = barrelY / 16D;
-        double z = (barrelX + barrelZ) / 16D;
-
-        return rotate(x, y, z, getGunPitch(), getGunYaw());
-    }
-
-    public Vec3 rotate(double x, double y, double z, double gunPitch, double gunYaw)
-    {
-        double yaw = 180D - gunYaw * Mth.DEG_TO_RAD;
-        double pitch = gunPitch * Mth.DEG_TO_RAD;
-
-        double cosYaw = Math.cos(yaw);
-        double sinYaw = Math.sin(yaw);
-        double cosPitch = Math.cos(pitch);
-        double sinPitch = Math.sin(pitch);
-
-        double newX = x * cosYaw + (y * sinPitch + z * cosPitch) * sinYaw;
-        double newY = y * cosPitch - z * sinPitch;
-        double newZ = -x * sinYaw + (y * sinPitch + z * cosPitch) * cosYaw;
-
-        return new Vec3(newX, newY, newZ);
+        Vec3 lift = sentryShot && type.isSentry()
+            ? new Vec3(0D, AAGunBarrelGeometry.SENTRY_ORIGIN_Y_OFFSET, 0D) : Vec3.ZERO;
+        if (modelPivot != null)
+        {
+            Vec3 rest = AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
+                type.getBarrelZ()[barrel], gunYaw, 0F).add(lift);
+            return AAGunBarrelGeometry.pitchAboutModelPivot(rest, modelPivot, gunYaw, gunPitch);
+        }
+        return AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
+            type.getBarrelZ()[barrel], gunYaw, gunPitch).add(lift);
     }
 
     public Vec3 getShootingDirection()

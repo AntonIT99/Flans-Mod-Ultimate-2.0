@@ -51,6 +51,30 @@ class CategoryManagerTest
         assertNull(bullet.getConfigLines("Mass"));
     }
 
+    @Test
+    void builtInPushCategoryOverridesStationaryPak40Controls() throws IOException
+    {
+        Path defaults = Files.createDirectory(config.resolve("default"));
+        CategoryManager.loadCategories(config, defaults, true);
+        for (String shortName : List.of("pak40", "44_pak40"))
+        {
+            TypeFile gun = new TypeFile("Pak40", EnumType.VEHICLE,
+                new ContentPack("test", config), List.of(
+                    "ShortName " + shortName,
+                    "MaxThrottle 0",
+                    "MaxNegativeThrottle 0",
+                    "TurnLeftSpeed 0",
+                    "TurnRightSpeed 0",
+                    "Tank true"));
+            CategoryManager.applyCategoriesToFile(gun);
+            assertEquals(List.of("4"), gun.getConfigLines("PushSpeedKmh"));
+            assertEquals(List.of("0", "1"), gun.getConfigLines("MaxNegativeThrottle"));
+            assertEquals(List.of("0", "1"), gun.getConfigLines("TurnLeftSpeed"));
+            assertEquals(List.of("0", "1"), gun.getConfigLines("TurnRightSpeed"));
+            assertEquals(List.of("true", "false"), gun.getConfigLines("Tank"));
+        }
+    }
+
     private TypeFile file(EnumType type)
     {
         return new TypeFile("shared", type, new ContentPack("test", config), List.of("ShortName shared"));

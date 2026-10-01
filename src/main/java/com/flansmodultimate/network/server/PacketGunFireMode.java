@@ -5,12 +5,14 @@ import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunFireModeClient;
+import com.flansmodultimate.network.client.PacketPlaySound;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -55,5 +57,9 @@ public class PacketGunFireMode implements IServerPacket
         player.getInventory().setChanged();
         player.containerMenu.broadcastChanges();
         PacketHandler.sendTo(new PacketGunFireModeClient(hand, nextMode), player);
+
+        String sound = gunType.getModeSwitchSound();
+        if (StringUtils.isNotBlank(sound))
+            PacketPlaySound.sendSoundPacket(player, gunType.getReloadSoundRange(), sound, true);
     }
 }

@@ -8,6 +8,8 @@ Icon Olympia
 Colour 255 255 255
 DeployedModel None
 Model zombie.Olympia
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
 Texture Olympia
 
 // Ammunition

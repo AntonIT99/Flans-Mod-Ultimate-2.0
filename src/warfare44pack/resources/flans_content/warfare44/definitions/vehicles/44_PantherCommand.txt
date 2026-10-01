@@ -6,6 +6,7 @@ Description German Medium Tank__Uses : 75mm AP Tank Shell - Medium Cal. HE Tank 
 // Rendering
 Icon 44_PantherCommand
 Model W44.PantherCommand
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_PantherCommand
 RotateWheels True
@@ -38,6 +39,7 @@ MaxThrottle 0.96
 MaxNegativeThrottle 0.5168
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 18
 CanRoll true
 SquashMobs True
 
@@ -88,7 +90,7 @@ AddAmmo 44_MediumHEShell
 AddAmmo 44_75APCRShellLong
 AddGun 25 33 6 turret 44_Mg34
 GunOrigin 1 54 2 11
-BarrelPosition 70 32 0
+BarrelPosition 71 32.5 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -143,7 +145,7 @@ ShootParticlesSecondary crit 0.5 0 0
 
 // Armour and damage
 UseRealisticVehicleHealth true
-ArmorFrontMm 80
+ArmorFrontMm 80 55
 ArmorSideMm 50
 ArmorRearMm 40
 ArmorTopMm 16
@@ -155,10 +157,11 @@ TurretArmorTopMm 16
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1800 -62 0 -30 91 41 60
-SetupPart frontalArmor 2500 29 0 -30 38 38 60
-SetupPart leftTrack 300 -51 -10 -30 118 23 10
-SetupPart rightTrack 300 -51 -10 20 118 23 10
+SetupPart core 6500 -62 0 -30 91 27 60
+SetupPart turret 1300 -23 27 -16 43 14 32
+SetupPart frontalArmor 1000 29 0 -30 38 27 60
+SetupPart leftTrack 600 -51 -10 -30 118 23 10
+SetupPart rightTrack 600 -51 -10 20 118 23 10
 
 // Seats
 Driver 0 34 0 -360 360 -10 18

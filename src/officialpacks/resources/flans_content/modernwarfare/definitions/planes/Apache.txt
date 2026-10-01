@@ -39,6 +39,7 @@ MaxThrottle 3.5
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 2
 TurnRightSpeed 2
+RealTurnRateDegPerSec 21.76
 LookUpSpeed 2
 LookDownSpeed 2
 RollLeftSpeed 2
@@ -61,7 +62,7 @@ ShootPointSecondary 45 22 55 rightWing
 ShootPointSecondary 45 22 -55 rightWing
 ShootPointPrimary 45 22 37 rightWing Hydra70
 ShootPointPrimary 45 22 -37 rightWing Hydra70
-GunOrigin 1 73 6 0
+GunOrigin 1 41 -16.6 0
 ReadWeaponsFromGunTypes true
 
 // Health and armour

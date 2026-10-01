@@ -54,6 +54,34 @@ cycle faster than it really does. How often that wait arrives is set by the
 ammunition's `RoundsPerItem`: a weapon whose round is a single item reloads after
 every shot, which is how launchers and break-action weapons should behave.
 
+### Arcade rifle cadence floor
+
+Treat historical practical rate as the starting point, then enforce a playable
+minimum for ordinary shoulder-fired rifles. Bolt-action rifles use these balance
+bands:
+
+| Action | `RoundsPerMin` |
+| --- | --- |
+| Heavy or slow bolt action | 30–35 |
+| Standard military bolt action | 35–45 |
+| Fast or smooth bolt action | 45–50 |
+| Straight-pull or exceptionally fast action | 50–60 |
+
+Do not author an ordinary bolt-action or semiautomatic rifle below 30 RPM. Select
+within a bolt-action band from the weapon's size, handling, action geometry and
+intended role; do not present the resulting floor as a historically measured rate.
+Apply the 30 RPM floor to heavy anti-materiel and anti-tank rifles as the bottom of
+the heavy/slow band, and to low-rate semiautomatic rifles. Ordinary lever-action
+and other repeating shoulder rifles also need an explicit mechanical or gameplay
+reason to fall below 30 RPM.
+
+This floor does not apply to artillery, vehicle or naval guns, launchers, bows,
+thrown weapons, muzzle-loaders, single-shot black-powder arms, signal/utility
+devices, or a deliberately exotic mechanism such as a charged fictional weapon.
+For any rifle-like special weapon kept below 30 RPM, verify that its mechanism—not
+merely its name, calibre or sniper role—requires the slow cadence and state the
+reason in the completion report.
+
 When reliable research and configuration-compatible game sources cannot establish
 either mandatory value, author a gameplay-coherent fallback rather than omitting
 it. Base it on the weapon type, action, calibre, era, barrel length, and comparable
@@ -502,7 +530,9 @@ Research and define:
 | Property | Unit | Guidance |
 | --- | --- | --- |
 | `ExplosiveMassTNTg` / `ExplosiveMassTNTKg` | grams / kilograms TNT equivalent | Mandatory for every grenade with an explosive charge. Use an exact TNT-equivalent figure when available; otherwise derive it from documented filler mass and composition using a defensible TNT-equivalence factor. Omit only when the grenade has no explosive charge. |
-| `FragType` | enum | Choose from casing/design and intended fragmentation: `LOW_FRAG`, `STD_FRAG`, `SLEEVE_FRAG`, `HIGH_FRAG`, `IED_SHRAPNEL`, `HE_SHELL`, `GP_BOMB`, `THICK_CASE`, or `AIRBURST_AP`; `DEFAULT` opts out of a preset. |
+| `FragType` | enum | Choose from casing/design and intended fragmentation: `LOW_FRAG`, `STD_FRAG`, `SLEEVE_FRAG`, `HIGH_FRAG`, `IED_SHRAPNEL`, `HE_SHELL`, `HE_GRENADE`, `GP_BOMB`, `THICK_CASE`, `AIRBURST_AP`, or `PREFORMED`; `DEFAULT` opts out of fragments. Casing construction, rather than charge alone, sets effective fragment count and injury. |
+| `FragPattern` | enum | Author only when distribution is specifically non-radial: `HORIZONTAL_BAND` for bounding mines, `FORWARD_FAN` for directional mines, or `FORWARD_CONE` for forward airburst subprojectiles. |
+| `FragCount` / `FragMetalMassg` | effective fragments / grams | Use documented preformed count or casing metal mass when the preset or projectile-mass estimate is inappropriate. These are physical inputs, not per-item damage-radius targets. |
 | `Fuse` | ticks | Use nominal timed delay multiplied by 20. Omit for impact, proximity, mine, or other non-timed behavior and when timing cannot be established defensibly. |
 
 Distinguish nominal fuse delay from tolerance range. A fragmentation sleeve changes

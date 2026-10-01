@@ -42,3 +42,7 @@ HitSound bomb
 // Effects
 FlakParticles 5
 SmokeTrail True
+ExplodeParticles 8
+ExplodeParticleType explode
+FlareParticleCount 6
+DebrisParticleCount 4

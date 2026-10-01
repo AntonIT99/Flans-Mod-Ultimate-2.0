@@ -55,9 +55,21 @@ public final class DriveableInput
         | THROTTLE_INCREASE | THROTTLE_DECREASE;
     public static final int EDGE_TRIGGERED_MASK = VALID_MASK & ~CONTINUOUS_MASK;
 
+    /**
+     * Flight controls a passenger may inherit while an aircraft has no pilot.
+     * Weapon and auxiliary controls deliberately stay with their authored seat.
+     */
+    public static final int AIRCRAFT_FALLBACK_CONTROL_MASK = FORWARD | BACKWARD | LEFT | RIGHT
+        | ASCEND | DESCEND | ROLL_LEFT | ROLL_RIGHT;
+
     public static int sanitize(int mask)
     {
         return mask & VALID_MASK;
+    }
+
+    public static int aircraftFallbackControls(int mask)
+    {
+        return sanitize(mask) & AIRCRAFT_FALLBACK_CONTROL_MASK;
     }
 
     public static boolean isDown(int mask, int input)

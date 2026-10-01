@@ -7,6 +7,10 @@ Icon leeenfieldsniper
 Colour 255 255 255
 DeployedModel None
 Model ww2.LeeenfieldS
+FlashModel DefaultFlash
+MuzzleFlashModel DefaultMuzzleFlash
+animMuzzleFlashPoint 1.40845 0.26408 0
+animFlashScale 1.42
 Texture leeenfield
 ModelScale 0.7
 

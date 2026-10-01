@@ -12,6 +12,9 @@ Texture M1887
 Paintjob M1887_Black M1887_Black black 2
 Paintjob M1887_Jungle M1887_Jungle green 1 brown 1
 Paintjob M1887_Birch M1887_Birch white 1 yellow 1
+FlashModel DefaultFlash
+animMuzzleFlashPoint 1.125 0.25 0
+animFlashScale 1
 MuzzleFlashModel DefaultMuzzleFlash
 
 // Ammunition

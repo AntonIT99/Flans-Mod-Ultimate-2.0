@@ -4,6 +4,7 @@ ShortName WW2_Vehicle_HigginsBoat_1A
 
 // Model and Rendering
 Model Manus_WW2.Vehicle.WW2_Vehicle_HigginsBoat_1
+FlashModel DefaultFlash
 Icon Icon_WW2_Vehicle_HigginsBoat_1A
 Texture Skin_WW2_Vehicle_HigginsBoat_1A
 RotateWheels True
@@ -34,11 +35,12 @@ RealEnginePowerHp 225
 RealMaxSpeedKn 12
 DriveType MARINE
 RealMaxReverseSpeedKn 5
+RealTurnRateDegPerSec 7.72
 RealDraftM 0.9
 
 // Weapons
-GunOrigin 1 -87 32 -23
-GunOrigin 2 -87 32 23
+GunOrigin 1 -83 7.9 -22
+GunOrigin 2 -83 7.9 22
 ReadWeaponsFromGunTypes true
 
 // Protection

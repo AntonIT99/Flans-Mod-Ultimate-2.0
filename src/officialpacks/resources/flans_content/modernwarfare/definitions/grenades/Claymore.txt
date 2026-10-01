@@ -1,6 +1,7 @@
 // Identity
 Name M18 Claymore
 ShortName claymore
+Mass 1600
 
 // Item and rendering
 Icon Claymore
@@ -15,7 +16,7 @@ StackSize 3
 // Throwing
 ThrowDelay 10
 Bounciness 0.0
-ThrowSpeed 0.0
+ThrowSpeedMs 0
 Sticky false
 DespawnTime 12000
 
@@ -47,3 +48,5 @@ SmokeTime 0
 // Sounds and particles
 TrailParticles false
 ExplodeParticles 0
+FlareParticleCount 3
+DebrisParticleCount 2

@@ -6,6 +6,7 @@ Description Japanese Heavy Tank__Uses : 75mm AP Tank Shell - Long_Medium Cal. HE
 // Rendering
 Icon 44_ChiRi
 Model W44.ChiRi
+FlashModel DefaultFlash
 ModelScale 1
 Texture Skin44_ChiRi
 RotateWheels True
@@ -39,6 +40,7 @@ MaxNegativeThrottle 0.4805
 ClutchBrake 0.02125
 TurnLeftSpeed 0.425
 TurnRightSpeed 0.425
+RealTurnRateDegPerSec 14
 CanRoll true
 SquashMobs True
 
@@ -93,8 +95,8 @@ AllowAllAmmo false
 AddAmmo 44_75APShellLong
 AddAmmo 44_MediumHEShell
 AddGun 14 56 -8 turret 44_Type99
-GunOrigin 1 48 -2 -9
-BarrelPosition 88 34 0
+GunOrigin 1 61 -0.1 -7.3
+BarrelPosition 85.5 33.5 0
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.5 0 0
 ShootParticlesPrimary largesmoke 0.5 0 0.1
@@ -161,10 +163,11 @@ TurretArmorTopMm 12
 IsExplosionWhenDestroyed true
 
 // Parts and collision
-SetupPart core 1750 -74 0 -26 100 48 54
-SetupPart frontalArmor 2000 26 0 -26 39 43 54
-SetupPart leftTrack 300 -75 -10 -28 142 26 10
-SetupPart rightTrack 300 -75 -10 22 142 26 10
+SetupPart core 6200 -74 0 -26 100 27 54
+SetupPart turret 1600 -43 27 -19 64 21 42
+SetupPart frontalArmor 1000 26 0 -26 39 27 54
+SetupPart leftTrack 600 -75 -10 -28 142 26 10
+SetupPart rightTrack 600 -75 -10 22 142 26 10
 
 // Seats
 Driver 0 43 0 -360 360 -10 20
@@ -222,3 +225,14 @@ AddEmitter explode 1 [-82,25,1] [1,1,1] [0,0.7,0] 0.5 2 0 1 core
 AddEmitter largesmoke 3 [-82,25,1] [1,1,1] [0,0.5,0] 0.8 2 0 1 core
 AddEmitter largesmoke 1 [-82,25,1] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
 AddEmitter flame 1 [-82,25,1] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+ShootParticlesPassenger 1 explode 0.7 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.95 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.58 0.07 0.05
+ShootParticlesPassenger 1 flansmod.fmflame 0.54 -0.06 -0.06
+ShootParticlesPassenger 1 flansmod.fmflame 0.42 0.04 -0.08
+ShootParticlesPassenger 1 largesmoke 0.3 0.07 0.06
+ShootParticlesPassenger 1 largesmoke 0.28 -0.06 -0.07
+ShootParticlesPassenger 1 largesmoke 0.24 0.04 -0.09
+ShootParticlesPassenger 1 largesmoke 0.22 -0.04 0.09
+ShootParticlesPassenger 1 crit 0.48 0 0

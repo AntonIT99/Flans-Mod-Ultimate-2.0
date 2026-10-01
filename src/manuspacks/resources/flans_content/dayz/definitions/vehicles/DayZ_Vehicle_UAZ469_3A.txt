@@ -33,6 +33,7 @@ RealEnginePowerHp 75
 RealMaxSpeedKmh 100
 DriveType AWD
 RealMaxReverseSpeedKmh 25
+RealTurnRateDegPerSec 240
 
 // Weapons
 ReadWeaponsFromGunTypes true
@@ -55,11 +56,11 @@ Passengers 3
 Passenger 1 -2 2 6 core -80 80 -45 45
 Passenger 2 -17 2 -6 core -80 80 -45 45
 Passenger 3 -17 2 6 core -80 80 -45 45
-SetupPart backRightWheel 100 -27 -10 -15 13 13 4
-SetupPart backLeftWheel 100 -27 -10 11 13 13 4
-SetupPart frontLeftWheel 100 14 -10 11 13 13 4
-SetupPart core 200 -34 -1 -14 64 26 28
-SetupPart frontRightWheel 100 14 -10 -15 13 13 4
+SetupPart backRightWheel 35 -27 -10 -15 13 13 4
+SetupPart backLeftWheel 35 -27 -10 11 13 13 4
+SetupPart frontLeftWheel 35 14 -10 11 13 13 4
+SetupPart core 2260 -34 -1 -14 64 26 28
+SetupPart frontRightWheel 35 14 -10 -15 13 13 4
 BulletDetection 5
 CameraDistance 5
 

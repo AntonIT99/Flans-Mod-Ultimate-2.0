@@ -48,6 +48,9 @@ MaxLockOnAngle 37.0
 SmokeTrail True
 TrailParticleType flansmod.fmsmoke
 FlakParticles 0
+ExplodeParticles 4
+FlareParticleCount 2
+DebrisParticleCount 1
 
 // Sounds
 HitSound bullet

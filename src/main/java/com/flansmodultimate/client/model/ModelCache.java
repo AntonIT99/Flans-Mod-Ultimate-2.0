@@ -10,9 +10,7 @@ import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMG;
 import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
@@ -20,8 +18,9 @@ import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.util.ClassLoaderUtils;
 import com.flansmodultimate.util.LogUtils;
+import com.flansmodultimate.util.ModelClassResolver;
+import com.flansmodultimate.util.ModelClassResolver.ModelClassLocation;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -31,25 +30,15 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.NoSuchFileException;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelCache
 {
-    /**
-     * @param className     name of the model class inside {@code contentPack}, which is the declared model
-     *                      class name unless a legacy pack ships it below its own package
-     * @param ownClassFile  true when the class file is shipped by the content pack the type belongs to, which
-     *                      makes it take precedence over a model class of the same name compiled into the mod
-     */
-    private record ModelClassLocation(IContentProvider contentPack, String className, boolean ownClassFile) {}
-
     /**
      * @param contentPackName the content pack the model is loaded for, because the same model class name may
      *                        resolve to a different class file in every content pack
@@ -252,14 +241,13 @@ public final class ModelCache
                 model = new ModelDefaultArmor(armorType.getArmorItemType());
             else
             {
-                ModelClassLocation modelLocation = findModelClass(type.getContentPack(), modelClassName);
-                // A model class file shipped by the type's own content pack overrides a model class of the
-                // same name compiled into the mod, unless that override is disabled in the client config.
-                boolean preferContentPackClass = modelLocation.ownClassFile() && !ModClientConfig.get().preferBuiltInModelClasses;
+                ModelClassLocation modelLocation = ModelClassResolver.find(type.getContentPack(), modelClassName,
+                    ModClientConfig.get().searchModelsInOtherContentPacks);
                 try
                 {
-                    model = (IModelBase) ClassLoaderUtils.loadModelClass(modelLocation.contentPack(), modelLocation.className(), preferContentPackClass)
-                        .getConstructor().newInstance();
+                    // A model class file shipped by the type's own content pack overrides a model class of the
+                    // same name compiled into the mod, unless that override is disabled in the client config.
+                    model = (IModelBase) ModelClassResolver.instantiate(modelLocation, ModClientConfig.get().preferBuiltInModelClasses);
                     if (!modelLocation.contentPack().equals(type.getContentPack()))
                         FlansMod.log.debug("Loaded model class {} for {} from fallback content pack [{}].", modelLocation.className(), type, modelLocation.contentPack().getName());
                 }
@@ -296,38 +284,6 @@ public final class ModelCache
         return model;
     }
 
-    private static ModelClassLocation findModelClass(IContentProvider preferredContentPack, String modelClassName)
-    {
-        if (ClassLoaderUtils.hasClassFile(preferredContentPack, modelClassName))
-            return new ModelClassLocation(preferredContentPack, modelClassName, true);
-
-        if (!ModClientConfig.get().searchModelsInOtherContentPacks)
-            return new ModelClassLocation(preferredContentPack, modelClassName, false);
-
-        String legacyClassName = getLegacyClassName(modelClassName);
-
-        return ContentManager.getContentPacks().stream()
-            .filter(contentPack -> !contentPack.equals(preferredContentPack))
-            .sorted(Comparator.comparing(IContentProvider::getName, String.CASE_INSENSITIVE_ORDER))
-            .map(contentPack -> findClassFile(contentPack, modelClassName, legacyClassName))
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(new ModelClassLocation(preferredContentPack, modelClassName, false));
-    }
-
-    /** Legacy content packs may ship the same model below their own package instead of the common one. */
-    @Nullable
-    private static ModelClassLocation findClassFile(IContentProvider contentPack, String modelClassName, @Nullable String legacyClassName)
-    {
-        if (ClassLoaderUtils.hasClassFile(contentPack, modelClassName))
-            return new ModelClassLocation(contentPack, modelClassName, false);
-
-        if (legacyClassName != null && ClassLoaderUtils.hasClassFile(contentPack, legacyClassName))
-            return new ModelClassLocation(contentPack, legacyClassName, false);
-
-        return null;
-    }
-
     @Nullable
     private static NoSuchFileException findMissingFile(Throwable throwable)
     {
@@ -337,21 +293,5 @@ public final class ModelCache
                 return noSuchFileException;
         }
         return null;
-    }
-
-    @Nullable
-    private static String getLegacyClassName(String modelClassName)
-    {
-        String prefix = "com.flansmod.client.model.";
-        if (!modelClassName.startsWith(prefix))
-            return null;
-
-        int packageEnd = modelClassName.indexOf('.', prefix.length());
-        if (packageEnd < 0)
-            return null;
-
-        String packPackage = modelClassName.substring(prefix.length(), packageEnd);
-        String simpleClassName = modelClassName.substring(packageEnd + 1);
-        return "com.flansmod." + packPackage + ".client.model." + simpleClassName;
     }
 }

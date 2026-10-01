@@ -3,5 +3,12 @@
   "textures": {
     "layer0": "flansmod:item/iconplanec130hairforce"
   },
-  "overrides": []
+  "overrides": [
+    {
+      "predicate": {
+        "flansmod:paintjob": 1
+      },
+      "model": "flansmod:item/iconplanec130hnavy"
+    }
+  ]
 }

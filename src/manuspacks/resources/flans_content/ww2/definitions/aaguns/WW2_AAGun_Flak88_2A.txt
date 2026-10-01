@@ -18,13 +18,16 @@ Ammo WW2_Shell_German88mmKwK36HE
 
 // Movement and Physics
 RealMassKg 4980.0
+HitBoxWidth 2.0
+HitBoxHeight 2.2
 
 // Weapons
 GunnerPos 3 30 -16
 BottomViewLimit 0
 TopViewLimit 75
+TraverseSpeed 75
 NumBarrels 1
-Barrel 0 88 40 0
+Barrel 0 51.09 28 7.4
 Damage 1
 FireAlternately True
 Recoil 5

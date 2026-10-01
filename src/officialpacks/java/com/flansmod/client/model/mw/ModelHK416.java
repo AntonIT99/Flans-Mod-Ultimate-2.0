@@ -227,5 +227,6 @@ public class ModelHK416 extends ModelGun //Same as Filename
 
 
 		flipAll();
+		muzzleFlashPoint = new Vector3f(5.375F, 1.25F, 0F);
 	}
 }

@@ -17,10 +17,10 @@ IBI
 // Weaponry
 Ammo minigunAmmo
 NumBarrels 4
-Barrel 0 40 6 6
-Barrel 1 40 6 6
-Barrel 2 40 6 6
-Barrel 3 40 6 6
+Barrel 0 13.89 2 2.73
+Barrel 1 14.1 2 1.33
+Barrel 2 14.1 0 1.33
+Barrel 3 13.89 0 2.73
 FireAlternately False
 ReloadTime 100
 Recoil 5
@@ -28,6 +28,7 @@ Damage 2
 ShareAmmo true
 GunnerPos 8 28 8
 TopViewLimit 75
+TraverseSpeed 420
 BottomViewLimit 0
 RoundsPerMin 1000.0
 Dispersion 0.45
@@ -43,6 +44,8 @@ TargetRange 40
 // Health and physics
 Health 100
 RealMassKg 120
+HitBoxWidth 1.0
+HitBoxHeight 1.7
 UseRealisticVehicleHealth true
 
 // Sounds
