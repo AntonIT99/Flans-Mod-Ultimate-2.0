@@ -39,6 +39,7 @@ RealEnginePowerPS 600
 RealMaxSpeedKmh 35
 DriveType TRACKED
 RealMaxReverseSpeedKmh 9
+RealTurnRateDegPerSec 12
 
 // Weapons
 AddGun 32 35 -9 turret WW2_MG_MG42ZB_1A

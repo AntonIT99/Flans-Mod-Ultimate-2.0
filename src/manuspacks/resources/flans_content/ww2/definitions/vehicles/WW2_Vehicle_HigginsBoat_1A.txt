@@ -35,6 +35,7 @@ RealEnginePowerHp 225
 RealMaxSpeedKn 12
 DriveType MARINE
 RealMaxReverseSpeedKn 5
+RealTurnRateDegPerSec 7.72
 RealDraftM 0.9
 
 // Weapons

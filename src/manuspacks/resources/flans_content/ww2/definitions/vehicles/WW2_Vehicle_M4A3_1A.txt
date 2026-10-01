@@ -39,6 +39,7 @@ RealEnginePowerHp 450
 RealMaxSpeedKmh 42
 DriveType TRACKED
 RealMaxReverseSpeedKmh 5
+RealTurnRateDegPerSec 18
 
 // Weapons
 AddGun 19 35 8 turret WW2_MG_BrowningM1919_1A

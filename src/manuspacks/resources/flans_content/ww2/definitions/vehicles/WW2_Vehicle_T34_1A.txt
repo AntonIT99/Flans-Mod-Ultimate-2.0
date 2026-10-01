@@ -37,6 +37,7 @@ RealEnginePowerPS 500
 RealMaxSpeedKmh 55
 DriveType TRACKED
 RealMaxReverseSpeedKmh 7
+RealTurnRateDegPerSec 24
 
 // Weapons
 AddGun 30 33 -5 turret WW2_MG_DP28_1A

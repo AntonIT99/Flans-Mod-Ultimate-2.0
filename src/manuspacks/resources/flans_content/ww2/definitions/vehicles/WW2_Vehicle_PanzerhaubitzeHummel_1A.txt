@@ -37,6 +37,7 @@ RealEnginePowerPS 265
 RealMaxSpeedKmh 40
 DriveType TRACKED
 RealMaxReverseSpeedKmh 7
+RealTurnRateDegPerSec 20
 
 // Weapons
 BarrelPosition 80 35.5 0

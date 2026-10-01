@@ -290,8 +290,32 @@ Every aircraft category requires:
 | `RealWingAreaM2` | m², finite and > 0 | Planform/reference area, not span squared or legacy `WingArea`. |
 | exactly one of `RealEnginePowerKw`, `RealEnginePowerHp`, `RealEnginePowerPS`, or `RealEngineThrustKn` | source unit, finite and > 0 | Use shaft power for piston/turboprop craft and kN thrust for jets. Do not confuse kN, N, and kgf. |
 | `RealClimbRateMs` | m/s, finite and > 0 | Sustained climb corresponding as closely as practical to selected mass and engine setting; not zoom climb. |
+| `RealTurnRateDegPerSec` | ground heading degrees/second, finite and > 0 | Full-input taxi turn rate at 10 km/h. It overrides ground yaw only, not flight rudder, banked-turn performance or rotor hover yaw. |
 
 Aircraft categories do not use the ground-vehicle armour keys.
+
+### Aircraft ground steering
+
+Research low-speed taxi steering, not an airborne turn time or turret traverse.
+The aircraft runtime measures the authored rate at **10 km/h**, scales with signed
+ground speed up to that rate, and applies it only with deployed gear and actual
+ground support. It needs no complete flight profile and does not use maximum
+flight speed or installed-engine speed. Forced legacy plane physics bypasses it.
+
+Prefer a documented centre-path taxi radius or angle/time measurement with taxi
+speed stated. `rate = degrees((10 / 3.6) / centreRadiusM)` converts a radius;
+`measuredRate * 10 / measuredTaxiSpeedKmh` converts a timed moving turn. Airport
+planning nose-, wingtip-, and outside-tire radii describe different paths: do not
+silently use them as the aircraft-centre radius. Manufacturer ground-manoeuvring
+manuals are useful anchors. Where unavailable, estimate a centre-path radius from
+a comparable landing-gear layout and aircraft size, report the radius and label
+the result as an estimate. Do not substitute `360 / War Thunder flight turn time`.
+
+A requested exhaustive numeric inventory may record `0` for fixed installations,
+balloons or non-taxiing craft. It means no researched steering override (the
+existing control path remains), not a researched positive rate or a new immobilization
+feature. Plane-filed marine hulls retain the corresponding vehicle category's
+marine rate for compatibility, but this ground-only override does not steer them afloat.
 
 Optional, and researched only where a source actually states it:
 

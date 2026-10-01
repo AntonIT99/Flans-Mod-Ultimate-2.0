@@ -32,6 +32,7 @@ RealEnginePowerHp 150
 RealMaxSpeedKmh 88
 DriveType AWD
 RealMaxReverseSpeedKmh 20
+RealTurnRateDegPerSec 183.8
 
 // Weapons
 ShootDelay 999

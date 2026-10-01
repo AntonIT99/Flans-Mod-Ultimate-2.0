@@ -42,6 +42,7 @@ MaxThrottle 0.37
 MaxNegativeThrottle 0.18
 TurnLeftSpeed 0.25
 TurnRightSpeed 0.25
+RealTurnRateDegPerSec 8
 CanRoll true
 
 // Wheels and tracks

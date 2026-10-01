@@ -48,6 +48,7 @@ RestingPitch 5.0
 RealMassKg 151315
 RealEngineThrustKn 320.4
 RealMaxSpeedKmh 1009
+RealTurnRateDegPerSec 7.17
 RealWingSpanM 44.42
 RealWingAreaM2 283.4
 RealClimbRateMs 20.3

@@ -36,6 +36,7 @@ MaxThrottle 0.95
 MaxNegativeThrottle 0.5
 TurnLeftSpeed 0.55
 TurnRightSpeed 0.55
+RealTurnRateDegPerSec 212.21
 CanRoll false
 Drag 1.0
 

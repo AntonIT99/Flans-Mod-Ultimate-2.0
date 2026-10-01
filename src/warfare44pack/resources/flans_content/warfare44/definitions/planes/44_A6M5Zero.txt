@@ -36,6 +36,7 @@ MaxThrottle 2.125
 MaxNegativeThrottle 0.0
 TurnLeftSpeed 1.75
 TurnRightSpeed 1.75
+RealTurnRateDegPerSec 28.94
 LookUpSpeed 2.75
 LookDownSpeed 2.75
 RollLeftSpeed 2.8

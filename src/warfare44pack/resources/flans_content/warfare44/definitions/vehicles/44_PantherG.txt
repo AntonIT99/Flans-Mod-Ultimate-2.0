@@ -43,6 +43,7 @@ MaxThrottle 0.90
 MaxNegativeThrottle 0.497
 TurnLeftSpeed 0.45
 TurnRightSpeed 0.45
+RealTurnRateDegPerSec 18
 CanRoll true
 SquashMobs True
 

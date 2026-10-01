@@ -29,6 +29,7 @@ MaxThrottle 0
 MaxNegativeThrottle 0
 TurnLeftSpeed 0
 TurnRightSpeed 0
+RealTurnRateDegPerSec 0
 
 // Wheels and tracks
 WheelRadius 1.0

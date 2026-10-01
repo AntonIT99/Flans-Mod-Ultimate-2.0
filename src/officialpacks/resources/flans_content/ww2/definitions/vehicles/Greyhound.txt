@@ -42,6 +42,7 @@ MaxThrottle 0.65
 MaxNegativeThrottle 0.45
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 177.06
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true

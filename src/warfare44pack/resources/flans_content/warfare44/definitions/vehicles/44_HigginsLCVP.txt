@@ -38,6 +38,7 @@ MaxThrottle 0.8
 MaxNegativeThrottle 0.35
 TurnLeftSpeed 0.13
 TurnRightSpeed 0.13
+RealTurnRateDegPerSec 7.72
 CanRoll false
 SquashMobs True
 WheelStepHeight 0

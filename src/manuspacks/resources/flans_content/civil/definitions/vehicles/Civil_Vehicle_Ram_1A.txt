@@ -33,6 +33,7 @@ RealEnginePowerHp 345
 RealMaxSpeedKmh 190
 DriveType RWD
 RealMaxReverseSpeedKmh 30
+RealTurnRateDegPerSec 240
 
 // Weapons
 ReadWeaponsFromGunTypes true

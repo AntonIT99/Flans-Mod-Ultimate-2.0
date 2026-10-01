@@ -41,6 +41,7 @@ HasGear False
 RealMassKg 8391
 RealEnginePowerHp 2680
 RealMaxSpeedKmh 296
+RealTurnRateDegPerSec 21.76
 RealRotorDiameterM 14.63
 RealClimbRateMs 14.2
 

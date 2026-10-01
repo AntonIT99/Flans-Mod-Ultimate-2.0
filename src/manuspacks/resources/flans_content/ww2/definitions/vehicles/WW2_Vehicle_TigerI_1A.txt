@@ -39,6 +39,7 @@ WheelSpringStrength 0.5
 FourWheelDrive true
 TurnLeftSpeed 1
 TurnRightSpeed 1
+RealTurnRateDegPerSec 16
 SquashMobs True
 Tank true
 

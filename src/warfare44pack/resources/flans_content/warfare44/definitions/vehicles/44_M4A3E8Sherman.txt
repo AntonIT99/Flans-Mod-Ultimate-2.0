@@ -41,6 +41,7 @@ MaxNegativeThrottle 0.5673
 ClutchBrake 0.02025
 TurnLeftSpeed 0.405
 TurnRightSpeed 0.405
+RealTurnRateDegPerSec 20
 CanRoll true
 
 // Wheels and tracks

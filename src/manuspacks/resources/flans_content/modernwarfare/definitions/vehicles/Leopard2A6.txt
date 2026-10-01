@@ -36,6 +36,7 @@ RealEnginePowerHp 1500
 RealMaxSpeedKmh 72
 DriveType TRACKED
 RealMaxReverseSpeedKmh 31
+RealTurnRateDegPerSec 32
 
 // Weapons
 BarrelPosition 104 25 0

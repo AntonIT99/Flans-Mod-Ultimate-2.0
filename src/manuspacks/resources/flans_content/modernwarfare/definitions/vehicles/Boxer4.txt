@@ -35,6 +35,7 @@ RealEnginePowerHp 711
 RealMaxSpeedKmh 103
 DriveType AWD
 RealMaxReverseSpeedKmh 15
+RealTurnRateDegPerSec 163.93
 
 // Weapons
 BarrelPosition 48 39.5 8

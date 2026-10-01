@@ -34,6 +34,7 @@ RealEnginePowerHp 54
 RealMaxSpeedKmh 105
 DriveType AWD
 RealMaxReverseSpeedKmh 29
+RealTurnRateDegPerSec 240
 
 // Weapons
 GunOrigin 2 7.5 1.4 0

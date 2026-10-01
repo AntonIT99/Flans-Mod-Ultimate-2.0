@@ -1,6 +1,7 @@
 {
     "Admiral Hipper-class Heavy Cruiser": {
         "properties": {
+            "RealTurnRateDegPerSec": 1.77,
             "RealDisplacementT": 19050,
             "RealEnginePowerPS": 132000,
             "RealMaxSpeedKn": 32,
@@ -28,6 +29,7 @@
 
     "AH-1Z Viper": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.76,
             "RealMassKg": 8391,
             "RealEnginePowerHp": 2680,
             "RealMaxSpeedKmh": 296,
@@ -45,6 +47,7 @@
 
     "AH-64D Apache Longbow": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.76,
             "RealMassKg": 10433,
             "RealEnginePowerHp": 3780,
             "RealMaxSpeedKmh": 265,
@@ -60,6 +63,7 @@
 
     "Aichi B7A2 Ryusei": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.1,
             "RealMassKg": 5625,
             "RealEnginePowerPS": 1825,
             "RealMaxSpeedKmh": 567,
@@ -76,6 +80,7 @@
 
     "Aichi D3A2 Model 22": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.16,
             "RealMassKg": 3800,
             "RealEnginePowerPS": 1300,
             "RealMaxSpeedKmh": 430,
@@ -93,6 +98,7 @@
 
     "Aichi M6A1 Seiran": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.96,
             "RealMassKg": 4040,
             "RealEnginePowerPS": 1400,
             "RealMaxSpeedKmh": 474,
@@ -109,6 +115,7 @@
 
     "Arado Ar 196 A-5": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.67,
             "RealMassKg": 3720,
             "RealEnginePowerKw": 782,
             "RealMaxSpeedKmh": 332,
@@ -126,6 +133,7 @@
 
     "Arado Ar 234 B-2 Blitz": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.09,
             "RealMassKg": 9800,
             "RealEngineThrustKn": 17.66,
             "RealMaxSpeedKmh": 742,
@@ -142,6 +150,7 @@
 
     "Arsenal VB 10": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.55,
             "RealMassKg": 9523,
             "RealEnginePowerPS": 2300,
             "RealMaxSpeedKmh": 700,
@@ -158,6 +167,7 @@
 
     "Avro Lancaster B Mk I": {
         "properties": {
+            "RealTurnRateDegPerSec": 10.24,
             "RealMassKg": 24948,
             "RealEnginePowerHp": 5120,
             "RealMaxSpeedKmh": 454,
@@ -174,6 +184,7 @@
 
     "Bell AH-1 Cobra": {
         "properties": {
+            "RealTurnRateDegPerSec": 23.74,
             "RealMassKg": 4309,
             "RealEnginePowerHp": 1400,
             "RealMaxSpeedKmh": 277,
@@ -189,6 +200,7 @@
 
     "Bell P-39N Airacobra": {
         "properties": {
+            "RealTurnRateDegPerSec": 30.72,
             "RealMassKg": 3010,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKmh": 592,
@@ -205,6 +217,7 @@
 
     "Bell P-59A Airacomet": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.95,
             "RealMassKg": 3950,
             "RealEngineThrustKn": 17.8,
             "RealMaxSpeedKmh": 638,
@@ -221,6 +234,7 @@
 
     "Blohm & Voss BV 238 A-02": {
         "properties": {
+            "RealTurnRateDegPerSec": 5.31,
             "RealMassKg": 90000,
             "RealEnginePowerKw": 8502,
             "RealMaxSpeedKmh": 350,
@@ -237,6 +251,7 @@
 
     "Boeing 707": {
         "properties": {
+            "RealTurnRateDegPerSec": 7.17,
             "RealMassKg": 151315,
             "RealEngineThrustKn": 320.4,
             "RealMaxSpeedKmh": 1009,
@@ -258,6 +273,7 @@
 
     "Boeing B-17G Flying Fortress": {
         "properties": {
+            "RealTurnRateDegPerSec": 10.07,
             "RealMassKg": 24500,
             "RealEnginePowerKw": 3580,
             "RealMaxSpeedKmh": 472,
@@ -278,6 +294,7 @@
 
     "Boeing B-29 Superfortress": {
         "properties": {
+            "RealTurnRateDegPerSec": 7.39,
             "RealMassKg": 54431,
             "RealEnginePowerHp": 8800,
             "RealMaxSpeedKmh": 575,
@@ -294,6 +311,7 @@
 
     "Boeing B-52H Stratofortress": {
         "properties": {
+            "RealTurnRateDegPerSec": 5.64,
             "RealMassKg": 120000,
             "RealEngineThrustKn": 604.96,
             "RealMaxSpeedKmh": 1046,
@@ -310,6 +328,7 @@
 
     "Boeing E-3 Sentry": {
         "properties": {
+            "RealTurnRateDegPerSec": 7.17,
             "RealMassKg": 156036,
             "RealEngineThrustKn": 382.56,
             "RealMaxSpeedKmh": 855,
@@ -326,6 +345,7 @@
 
     "Boeing P-26A Peashooter": {
         "properties": {
+            "RealTurnRateDegPerSec": 37.3,
             "RealMassKg": 1524,
             "RealEnginePowerHp": 600,
             "RealMaxSpeedKmh": 377,
@@ -342,6 +362,7 @@
 
     "Breda Ba.88 Lince": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.4,
             "RealMassKg": 6750,
             "RealEnginePowerKw": 1492,
             "RealMaxSpeedKmh": 490,
@@ -358,6 +379,7 @@
 
     "Bristol Beaufighter TF Mk X": {
         "properties": {
+            "RealTurnRateDegPerSec": 18.06,
             "RealMassKg": 11521,
             "RealEnginePowerHp": 3200,
             "RealMaxSpeedKmh": 515,
@@ -374,6 +396,7 @@
 
     "Caproni Campini N.1": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.08,
             "RealMassKg": 4195,
             "RealEngineThrustKn": 6.9,
             "RealMaxSpeedKmh": 375,
@@ -390,6 +413,7 @@
 
     "CH-47 Chinook": {
         "properties": {
+            "RealTurnRateDegPerSec": 17.4,
             "RealMassKg": 22680,
             "RealEnginePowerHp": 9466,
             "RealMaxSpeedKmh": 302,
@@ -406,6 +430,7 @@
 
     "CMASA ICR.42": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.82,
             "RealMassKg": 2500,
             "RealEnginePowerKw": 627,
             "RealMaxSpeedKmh": 400,
@@ -422,6 +447,7 @@
 
     "Colonial Viper Mk II (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 39.79,
             "RealMassKg": 9000,
             "RealEngineThrustKn": 150,
             "RealMaxSpeedKmh": 2400,
@@ -438,6 +464,7 @@
 
     "Consolidated B-24J Liberator": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.49,
             "RealMassKg": 24948,
             "RealEnginePowerHp": 4800,
             "RealMaxSpeedKmh": 478,
@@ -455,6 +482,7 @@
 
     "Consolidated PB2Y-5 Coronado": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.09,
             "RealMassKg": 30000,
             "RealEnginePowerKw": 3600,
             "RealMaxSpeedKmh": 310,
@@ -471,6 +499,7 @@
 
     "Consolidated PBY-5A Catalina": {
         "properties": {
+            "RealTurnRateDegPerSec": 10.04,
             "RealMassKg": 16066,
             "RealEnginePowerHp": 2400,
             "RealMaxSpeedKmh": 315,
@@ -487,6 +516,7 @@
 
     "Convair B-36J Peacemaker": {
         "properties": {
+            "RealTurnRateDegPerSec": 5.31,
             "RealMassKg": 185973,
             "RealEnginePowerHp": 22800,
             "RealMaxSpeedKmh": 700,
@@ -503,6 +533,7 @@
 
     "Curtiss P-40E Warhawk": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.97,
             "RealMassKg": 4128,
             "RealEnginePowerHp": 1150,
             "RealMaxSpeedKmh": 583,
@@ -519,6 +550,7 @@
 
     "Curtiss SB2C-4 Helldiver": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.99,
             "RealMassKg": 7537,
             "RealEnginePowerHp": 1900,
             "RealMaxSpeedKmh": 475,
@@ -535,6 +567,7 @@
 
     "Curtiss SOC-1 Seagull": {
         "properties": {
+            "RealTurnRateDegPerSec": 29.01,
             "RealMassKg": 2466,
             "RealEnginePowerHp": 600,
             "RealMaxSpeedKmh": 266,
@@ -551,6 +584,7 @@
 
     "Dassault M.D.450B Ouragan": {
         "properties": {
+            "RealTurnRateDegPerSec": 24.19,
             "RealMassKg": 7404,
             "RealEngineThrustKn": 22.2,
             "RealMaxSpeedKmh": 940,
@@ -567,6 +601,7 @@
 
     "de Havilland Mosquito FB Mk VI": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.28,
             "RealMassKg": 7290,
             "RealEnginePowerHp": 3270,
             "RealMaxSpeedKmh": 562,
@@ -583,6 +618,7 @@
 
     "de Havilland Mosquito FB Mk XVIII": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.28,
             "RealMassKg": 8180,
             "RealEnginePowerHp": 3270,
             "RealMaxSpeedKmh": 540,
@@ -600,6 +636,7 @@
 
     "Dewoitine D.520 C.1": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.21,
             "RealMassKg": 2677,
             "RealEnginePowerPS": 950,
             "RealMaxSpeedKmh": 560,
@@ -616,6 +653,7 @@
 
     "Dornier Do 17 Z-2": {
         "properties": {
+            "RealTurnRateDegPerSec": 17.68,
             "RealMassKg": 8837,
             "RealEnginePowerPS": 2000,
             "RealMaxSpeedKmh": 350,
@@ -632,6 +670,7 @@
 
     "Dornier Do 24 T-1": {
         "properties": {
+            "RealTurnRateDegPerSec": 11.79,
             "RealMassKg": 13700,
             "RealEnginePowerKw": 2112,
             "RealMaxSpeedKmh": 330,
@@ -648,6 +687,7 @@
 
     "Dornier Do 335 A-1 Pfeil": {
         "properties": {
+            "RealTurnRateDegPerSec": 23.07,
             "RealMassKg": 9600,
             "RealEnginePowerKw": 2684,
             "RealMaxSpeedKmh": 770,
@@ -664,6 +704,7 @@
 
     "Douglas A-1H Skyraider": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.88,
             "RealMassKg": 8213,
             "RealEnginePowerHp": 2700,
             "RealMaxSpeedKmh": 518,
@@ -680,6 +721,7 @@
 
     "Douglas A-20G Havoc": {
         "properties": {
+            "RealTurnRateDegPerSec": 17.04,
             "RealMassKg": 10944,
             "RealEnginePowerHp": 3200,
             "RealMaxSpeedKmh": 510,
@@ -696,6 +738,7 @@
 
     "Douglas B-18A Bolo": {
         "properties": {
+            "RealTurnRateDegPerSec": 11.67,
             "RealMassKg": 10886,
             "RealEnginePowerHp": 2000,
             "RealMaxSpeedKmh": 348,
@@ -712,6 +755,7 @@
 
     "Douglas C-47B Skytrain": {
         "properties": {
+            "RealTurnRateDegPerSec": 10.94,
             "RealMassKg": 11793,
             "RealEnginePowerHp": 2400,
             "RealMaxSpeedKmh": 360,
@@ -728,6 +772,7 @@
 
     "Douglas SBD-5 Dauntless": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.14,
             "RealMassKg": 4245,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKmh": 410,
@@ -744,6 +789,7 @@
 
     "Douglas TBD-1 Devastator": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.89,
             "RealMassKg": 4213,
             "RealEnginePowerHp": 900,
             "RealMaxSpeedKmh": 332,
@@ -760,6 +806,7 @@
 
     "Douglas XB-43 Jetmaster": {
         "properties": {
+            "RealTurnRateDegPerSec": 14.67,
             "RealMassKg": 16783,
             "RealEngineThrustKn": 33.36,
             "RealMaxSpeedKmh": 829,
@@ -776,6 +823,7 @@
 
     "Dropship Mk.3 (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 17.68,
             "RealMassKg": 20000,
             "RealEngineThrustKn": 110,
             "RealMaxSpeedKmh": 900,
@@ -806,6 +854,7 @@
 
     "Eurocopter EC665 Tiger": {
         "properties": {
+            "RealTurnRateDegPerSec": 24.49,
             "RealMassKg": 6600,
             "RealEnginePowerHp": 2606,
             "RealMaxSpeedKmh": 290,
@@ -821,6 +870,7 @@
 
     "Fairchild Republic A-10C Thunderbolt II": {
         "properties": {
+            "RealTurnRateDegPerSec": 18.16,
             "RealMassKg": 13782,
             "RealEngineThrustKn": 80.64,
             "RealMaxSpeedKmh": 706,
@@ -838,6 +888,7 @@
 
     "Fairey Swordfish Mk I": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.95,
             "RealMassKg": 3438,
             "RealEnginePowerHp": 690,
             "RealMaxSpeedKmh": 230,
@@ -854,6 +905,7 @@
 
     "Farman F.222/2": {
         "properties": {
+            "RealTurnRateDegPerSec": 8.93,
             "RealMassKg": 18700,
             "RealEnginePowerPS": 3680,
             "RealMaxSpeedKmh": 360,
@@ -870,6 +922,7 @@
 
     "Fiat CR.32bis": {
         "properties": {
+            "RealTurnRateDegPerSec": 33.51,
             "RealMassKg": 1720,
             "RealEnginePowerPS": 600,
             "RealMaxSpeedKmh": 321,
@@ -886,6 +939,7 @@
 
     "Fiat G.55/I Centauro": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.86,
             "RealMassKg": 3520,
             "RealEnginePowerKw": 1085,
             "RealMaxSpeedKmh": 623,
@@ -902,6 +956,7 @@
 
     "Fiat G.55/S Centauro": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.86,
             "RealMassKg": 3210,
             "RealEnginePowerKw": 1085,
             "RealMaxSpeedKmh": 595,
@@ -918,6 +973,7 @@
 
     "Fieseler Fi 156 C-2 Storch": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.34,
             "RealMassKg": 1324,
             "RealEnginePowerKw": 180,
             "RealMaxSpeedKmh": 175,
@@ -934,6 +990,7 @@
 
     "Focke-Achgelis Fa 223 Drache": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 4315,
             "RealEnginePowerPS": 1000,
             "RealMaxSpeedKmh": 176,
@@ -950,6 +1007,7 @@
 
     "Focke-Wulf Fw 190 A-4": {
         "properties": {
+            "RealTurnRateDegPerSec": 30.3,
             "RealMassKg": 4000,
             "RealEnginePowerPS": 1700,
             "RealMaxSpeedKmh": 650,
@@ -968,6 +1026,7 @@
 
     "Focke-Wulf Fw 190 A-8": {
         "properties": {
+            "RealTurnRateDegPerSec": 30.3,
             "RealMassKg": 4417,
             "RealEnginePowerPS": 1700,
             "RealMaxSpeedKmh": 652,
@@ -984,6 +1043,7 @@
 
     "Focke-Wulf Fw 200 C-3/U4 Condor": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.69,
             "RealMassKg": 22714,
             "RealEnginePowerKw": 3236,
             "RealMaxSpeedKmh": 380,
@@ -1000,6 +1060,7 @@
 
     "Fokker D.XXI (Mercury)": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 1970,
             "RealEnginePowerPS": 830,
             "RealMaxSpeedKmh": 460,
@@ -1016,6 +1077,7 @@
 
     "Fokker Dr.I": {
         "properties": {
+            "RealTurnRateDegPerSec": 44.27,
             "RealMassKg": 586,
             "RealEnginePowerPS": 110,
             "RealMaxSpeedKmh": 180,
@@ -1032,6 +1094,7 @@
 
     "Gloster Gladiator Mk I": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.38,
             "RealMassKg": 2084,
             "RealEnginePowerHp": 830,
             "RealMaxSpeedKmh": 407,
@@ -1048,6 +1111,7 @@
 
     "Gloster Meteor F Mk 3": {
         "properties": {
+            "RealTurnRateDegPerSec": 24.28,
             "RealMassKg": 4540,
             "RealEngineThrustKn": 17.8,
             "RealMaxSpeedKmh": 692,
@@ -1064,6 +1128,7 @@
 
     "Gloster Meteor F.8": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.1,
             "RealMassKg": 7121,
             "RealEngineThrustKn": 32.02,
             "RealMaxSpeedKmh": 966,
@@ -1080,6 +1145,7 @@
 
     "Grumman F4F-3 Wildcat": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.48,
             "RealMassKg": 3367,
             "RealEnginePowerHp": 1200,
             "RealMaxSpeedKmh": 533,
@@ -1096,6 +1162,7 @@
 
     "Grumman F6F-5 Hellcat": {
         "properties": {
+            "RealTurnRateDegPerSec": 24.38,
             "RealMassKg": 5714,
             "RealEnginePowerHp": 2200,
             "RealMaxSpeedKmh": 629,
@@ -1113,6 +1180,7 @@
 
     "Grumman F7F-4N Tigercat": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.28,
             "RealMassKg": 11666,
             "RealEnginePowerHp": 4200,
             "RealMaxSpeedKmh": 740,
@@ -1129,6 +1197,7 @@
 
     "Grumman F8F-1 Bearcat": {
         "properties": {
+            "RealTurnRateDegPerSec": 29.14,
             "RealMassKg": 3960,
             "RealEnginePowerHp": 2100,
             "RealMaxSpeedKmh": 650,
@@ -1145,6 +1214,7 @@
 
     "Grumman F9F-2 Panther": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.48,
             "RealMassKg": 4990,
             "RealEngineThrustKn": 22.2,
             "RealMaxSpeedKmh": 904,
@@ -1161,6 +1231,7 @@
 
     "Grumman TBF Avenger": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.28,
             "RealMassKg": 7047,
             "RealEnginePowerHp": 1700,
             "RealMaxSpeedKmh": 447,
@@ -1178,6 +1249,7 @@
 
     "Hawker Hurricane Mk I": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.11,
             "RealMassKg": 2830,
             "RealEnginePowerHp": 1030,
             "RealMaxSpeedKmh": 486,
@@ -1194,6 +1266,7 @@
 
     "Hawker Hurricane Mk IIC": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.11,
             "RealMassKg": 3479,
             "RealEnginePowerHp": 1185,
             "RealMaxSpeedKmh": 547,
@@ -1211,6 +1284,7 @@
 
     "Hawker Hurricane Mk IV": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.11,
             "RealMassKg": 3090,
             "RealEnginePowerHp": 1185,
             "RealMaxSpeedKmh": 465,
@@ -1227,6 +1301,7 @@
 
     "Hawker Osprey (Swedish S9)": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 2245,
             "RealEnginePowerHp": 600,
             "RealMaxSpeedKmh": 283,
@@ -1244,6 +1319,7 @@
 
     "Hawker Tempest Mk V": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.47,
             "RealMassKg": 5171,
             "RealEnginePowerHp": 2420,
             "RealMaxSpeedKmh": 700,
@@ -1260,6 +1336,7 @@
 
     "Heinkel He 51 B-1": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 1900,
             "RealEnginePowerKw": 559,
             "RealMaxSpeedKmh": 330,
@@ -1276,6 +1353,7 @@
 
     "Heinkel He 111 H-16": {
         "properties": {
+            "RealTurnRateDegPerSec": 14.08,
             "RealMassKg": 12030,
             "RealEnginePowerPS": 2600,
             "RealMaxSpeedKmh": 440,
@@ -1293,6 +1371,7 @@
 
     "Heinkel He 112 A-0 V4": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.68,
             "RealMassKg": 2230,
             "RealEnginePowerKw": 514,
             "RealMaxSpeedKmh": 488,
@@ -1309,6 +1388,7 @@
 
     "Heinkel He 177 A-5/R2 Greif": {
         "properties": {
+            "RealTurnRateDegPerSec": 10.12,
             "RealMassKg": 32000,
             "RealEnginePowerPS": 5950,
             "RealMaxSpeedKmh": 488,
@@ -1325,6 +1405,7 @@
 
     "Henschel Hs 129 B-3": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.42,
             "RealMassKg": 4820,
             "RealEnginePowerKw": 1030,
             "RealMaxSpeedKmh": 404,
@@ -1342,6 +1423,7 @@
 
     "IAR 81C": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 3030,
             "RealEnginePowerPS": 1000,
             "RealMaxSpeedKmh": 510,
@@ -1358,6 +1440,7 @@
 
     "Ikarus 451M": {
         "properties": {
+            "RealTurnRateDegPerSec": 46.95,
             "RealMassKg": 1350,
             "RealEngineThrustKn": 2.94,
             "RealMaxSpeedKmh": 470,
@@ -1374,6 +1457,7 @@
 
     "Ikarus S-49C": {
         "properties": {
+            "RealTurnRateDegPerSec": 30.9,
             "RealMassKg": 3568,
             "RealEnginePowerKw": 1104,
             "RealMaxSpeedKmh": 628,
@@ -1390,6 +1474,7 @@
 
     "Ikarus S-451M Zolja": {
         "properties": {
+            "RealTurnRateDegPerSec": 48.23,
             "RealMassKg": 1650,
             "RealEngineThrustKn": 7.8,
             "RealMaxSpeedKmh": 750,
@@ -1406,6 +1491,7 @@
 
     "Ilyushin Il-2M3": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.8,
             "RealMassKg": 6360,
             "RealEnginePowerPS": 1720,
             "RealMaxSpeedKmh": 410,
@@ -1436,6 +1522,7 @@
 
     "Ilyushin Il-28": {
         "properties": {
+            "RealTurnRateDegPerSec": 14.84,
             "RealMassKg": 18400,
             "RealEngineThrustKn": 53,
             "RealMaxSpeedKmh": 902,
@@ -1452,6 +1539,7 @@
 
     "Junkers Ju 52/3m g3e": {
         "properties": {
+            "RealTurnRateDegPerSec": 10.88,
             "RealMassKg": 9500,
             "RealEnginePowerKw": 1530,
             "RealMaxSpeedKmh": 265.5,
@@ -1468,6 +1556,7 @@
 
     "Junkers Ju 87 B-2": {
         "properties": {
+            "RealTurnRateDegPerSec": 23.06,
             "RealMassKg": 3250,
             "RealEnginePowerPS": 1200,
             "RealMaxSpeedKmh": 353,
@@ -1485,6 +1574,7 @@
 
     "Junkers Ju 87 D-1": {
         "properties": {
+            "RealTurnRateDegPerSec": 23.06,
             "RealMassKg": 6600,
             "RealEnginePowerPS": 1400,
             "RealMaxSpeedKmh": 410,
@@ -1503,6 +1593,7 @@
 
     "Junkers Ju 87 G-1": {
         "properties": {
+            "RealTurnRateDegPerSec": 23.06,
             "RealMassKg": 5530,
             "RealEnginePowerPS": 1400,
             "RealMaxSpeedKmh": 348,
@@ -1520,6 +1611,7 @@
 
     "Junkers Ju 88 A-4": {
         "properties": {
+            "RealTurnRateDegPerSec": 15.92,
             "RealMassKg": 12105,
             "RealEnginePowerPS": 2680,
             "RealMaxSpeedKmh": 470,
@@ -1536,6 +1628,7 @@
 
     "Kawanishi H6K4 Model 22": {
         "properties": {
+            "RealTurnRateDegPerSec": 7.96,
             "RealMassKg": 17000,
             "RealEnginePowerPS": 4000,
             "RealMaxSpeedKmh": 340,
@@ -1552,6 +1645,7 @@
 
     "Kawanishi H8K2": {
         "properties": {
+            "RealTurnRateDegPerSec": 8.38,
             "RealMassKg": 24500,
             "RealEnginePowerPS": 7400,
             "RealMaxSpeedKmh": 467,
@@ -1568,6 +1662,7 @@
 
     "Kawanishi N1K1-J Shiden": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 3900,
             "RealEnginePowerPS": 1975,
             "RealMaxSpeedKmh": 571,
@@ -1584,6 +1679,7 @@
 
     "Kawasaki Ki-10-II": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.77,
             "RealMassKg": 1740,
             "RealEnginePowerKw": 634,
             "RealMaxSpeedKmh": 400,
@@ -1600,6 +1696,7 @@
 
     "Kawasaki Ki-32": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.22,
             "RealMassKg": 2990,
             "RealEnginePowerPS": 850,
             "RealMaxSpeedKmh": 397,
@@ -1616,6 +1713,7 @@
 
     "Kawasaki Ki-45 Kai Hei": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.19,
             "RealMassKg": 4440,
             "RealEnginePowerKw": 1566,
             "RealMaxSpeedKmh": 533,
@@ -1632,6 +1730,7 @@
 
     "Kawasaki Ki-56": {
         "properties": {
+            "RealTurnRateDegPerSec": 15.95,
             "RealMassKg": 8024,
             "RealEnginePowerPS": 1980,
             "RealMaxSpeedKmh": 400,
@@ -1648,6 +1747,7 @@
 
     "Kawasaki Ki-61-I KAIc Hien": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 3470,
             "RealEnginePowerKw": 864,
             "RealMaxSpeedKmh": 580,
@@ -1664,6 +1764,7 @@
 
     "Kawasaki Ki-102b": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.44,
             "RealMassKg": 7300,
             "RealEnginePowerKw": 2240,
             "RealMaxSpeedKmh": 580,
@@ -1680,6 +1781,7 @@
 
     "Kirov Airship (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 240000,
             "RealEnginePowerHp": 4800,
             "RealMaxSpeedKmh": 135,
@@ -1694,6 +1796,7 @@
 
     "Kyushu J7W1 Shinden": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.64,
             "RealMassKg": 4928,
             "RealEnginePowerPS": 2130,
             "RealMaxSpeedKmh": 750,
@@ -1710,6 +1813,7 @@
 
     "Lavochkin La-5FN": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.48,
             "RealMassKg": 3110,
             "RealEnginePowerPS": 1850,
             "RealMaxSpeedKmh": 575,
@@ -1726,6 +1830,7 @@
 
     "Learjet 28": {
         "properties": {
+            "RealTurnRateDegPerSec": 23.84,
             "RealMassKg": 6804,
             "RealEngineThrustKn": 26.2,
             "RealMaxSpeedKmh": 872,
@@ -1742,6 +1847,7 @@
 
     "Lockheed AC-130A Spectre": {
         "properties": {
+            "RealTurnRateDegPerSec": 7.88,
             "RealMassKg": 70307,
             "RealEnginePowerHp": 17200,
             "RealMaxSpeedKmh": 669,
@@ -1758,6 +1864,7 @@
 
     "Lockheed C-130H Hercules": {
         "properties": {
+            "RealTurnRateDegPerSec": 7.88,
             "RealMassKg": 70307,
             "RealEnginePowerHp": 18360,
             "RealMaxSpeedKmh": 592,
@@ -1775,6 +1882,7 @@
 
     "Lockheed Martin F-22A Raptor": {
         "properties": {
+            "RealTurnRateDegPerSec": 23.47,
             "RealMassKg": 29410,
             "RealEngineThrustKn": 231.3,
             "RealMaxSpeedKmh": 2414,
@@ -1793,6 +1901,7 @@
 
     "Lockheed P-38E Lightning": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.08,
             "RealMassKg": 6290,
             "RealEnginePowerHp": 2300,
             "RealMaxSpeedKmh": 595,
@@ -1809,6 +1918,7 @@
 
     "Lockheed P-38L Lightning": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.08,
             "RealMassKg": 7938,
             "RealEnginePowerHp": 3200,
             "RealMaxSpeedKmh": 666,
@@ -1826,6 +1936,7 @@
 
     "Lockheed P-80C Shooting Star": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.95,
             "RealMassKg": 5534,
             "RealEngineThrustKn": 20.46,
             "RealMaxSpeedKmh": 956,
@@ -1842,6 +1953,7 @@
 
     "Macchi C.200 Saetta (early series)": {
         "properties": {
+            "RealTurnRateDegPerSec": 30.09,
             "RealMassKg": 2200,
             "RealEnginePowerPS": 870,
             "RealMaxSpeedKmh": 504,
@@ -1858,6 +1970,7 @@
 
     "Martin B-10B": {
         "properties": {
+            "RealTurnRateDegPerSec": 14.81,
             "RealMassKg": 6668,
             "RealEnginePowerHp": 1550,
             "RealMaxSpeedKmh": 343,
@@ -1874,6 +1987,7 @@
 
     "Martin PBM-1 Mariner": {
         "properties": {
+            "RealTurnRateDegPerSec": 8.84,
             "RealMassKg": 25425,
             "RealEnginePowerHp": 3400,
             "RealMaxSpeedKmh": 330,
@@ -1890,6 +2004,7 @@
 
     "McDonnell XF-85 Goblin": {
         "properties": {
+            "RealTurnRateDegPerSec": 49.43,
             "RealMassKg": 2050,
             "RealEngineThrustKn": 13.1,
             "RealMaxSpeedKmh": 1069,
@@ -1906,6 +2021,7 @@
 
     "Messerschmitt Bf 109 E-3": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.25,
             "RealMassKg": 2340,
             "RealEnginePowerPS": 1175,
             "RealMaxSpeedKmh": 536,
@@ -1925,6 +2041,7 @@
 
     "Messerschmitt Bf 109 F-4/trop": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.07,
             "RealMassKg": 2660,
             "RealEnginePowerPS": 1350,
             "RealMaxSpeedKmh": 618,
@@ -1941,6 +2058,7 @@
 
     "Messerschmitt Bf 109 G-6": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.07,
             "RealMassKg": 3100,
             "RealEnginePowerPS": 1475,
             "RealMaxSpeedKmh": 630,
@@ -1958,6 +2076,7 @@
 
     "Messerschmitt Bf 109 G-10": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.93,
             "RealMassKg": 3280,
             "RealEnginePowerPS": 1800,
             "RealMaxSpeedKmh": 685,
@@ -1975,6 +2094,7 @@
 
     "Messerschmitt Bf 109 T": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.73,
             "RealMassKg": 2800,
             "RealEnginePowerPS": 1175,
             "RealMaxSpeedKmh": 570,
@@ -1991,6 +2111,7 @@
 
     "Messerschmitt Bf 109 T-1": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.73,
             "RealMassKg": 2800,
             "RealEnginePowerPS": 1175,
             "RealMaxSpeedKmh": 568,
@@ -2007,6 +2128,7 @@
 
     "Messerschmitt Bf 110 C-1/C-2": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.59,
             "RealMassKg": 6028,
             "RealEnginePowerPS": 2100,
             "RealMaxSpeedKmh": 475,
@@ -2023,6 +2145,7 @@
 
     "Messerschmitt Bf 110 G-2": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.59,
             "RealMassKg": 6930,
             "RealEnginePowerPS": 2950,
             "RealMaxSpeedKmh": 555,
@@ -2039,6 +2162,7 @@
 
     "Messerschmitt Bf 110 G-4": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.59,
             "RealMassKg": 6930,
             "RealEnginePowerPS": 2950,
             "RealMaxSpeedKmh": 555,
@@ -2056,6 +2180,7 @@
 
     "Messerschmitt Me 163 B Komet": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 4309,
             "RealEngineThrustKn": 14.71,
             "RealMaxSpeedKmh": 933,
@@ -2072,6 +2197,7 @@
 
     "Messerschmitt Me 262 A-1a": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.26,
             "RealMassKg": 6473,
             "RealEngineThrustKn": 17.62,
             "RealMaxSpeedKmh": 900,
@@ -2089,6 +2215,7 @@
 
     "Messerschmitt Me 262 A-1a/U4": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.26,
             "RealMassKg": 4540,
             "RealEngineThrustKn": 17.62,
             "RealMaxSpeedKmh": 798,
@@ -2106,6 +2233,7 @@
 
     "MH-6 Little Bird": {
         "properties": {
+            "RealTurnRateDegPerSec": 38.21,
             "RealMassKg": 1610,
             "RealEnginePowerHp": 425,
             "RealMaxSpeedKmh": 282,
@@ -2121,6 +2249,7 @@
 
     "MiG I-225": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 4182,
             "RealEnginePowerHp": 2200,
             "RealMaxSpeedKmh": 720,
@@ -2137,6 +2266,7 @@
 
     "Mikoyan-Gurevich I-225": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 3530,
             "RealEnginePowerPS": 2200,
             "RealMaxSpeedKmh": 678,
@@ -2154,6 +2284,7 @@
 
     "Mikoyan-Gurevich MiG-9": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 4860,
             "RealEngineThrustKn": 15.6,
             "RealMaxSpeedKmh": 864,
@@ -2170,6 +2301,7 @@
 
     "Mikoyan-Gurevich MiG-15bis": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.56,
             "RealMassKg": 5044,
             "RealEngineThrustKn": 26.47,
             "RealMaxSpeedKmh": 1076,
@@ -2186,6 +2318,7 @@
 
     "Mil Mi-24 Hind": {
         "properties": {
+            "RealTurnRateDegPerSec": 18.4,
             "RealMassKg": 12000,
             "RealEnginePowerHp": 4400,
             "RealMaxSpeedKmh": 335,
@@ -2201,6 +2334,7 @@
 
     "Mitsubishi A5M4": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 1671,
             "RealEnginePowerPS": 710,
             "RealMaxSpeedKmh": 435,
@@ -2217,6 +2351,7 @@
 
     "Mitsubishi A6M2 Type 0 Model 21": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 2796,
             "RealEnginePowerPS": 940,
             "RealMaxSpeedKmh": 533,
@@ -2239,6 +2374,7 @@
 
     "Mitsubishi A6M3 Model 22": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 2544,
             "RealEnginePowerHp": 1130,
             "RealMaxSpeedKmh": 540,
@@ -2255,6 +2391,7 @@
 
     "Mitsubishi A6M3 Type 0 Model 22": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 2290,
             "RealEnginePowerPS": 1130,
             "RealMaxSpeedKmh": 508,
@@ -2271,6 +2408,7 @@
 
     "Mitsubishi A6M5 Model 52": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 2733,
             "RealEnginePowerHp": 1130,
             "RealMaxSpeedKmh": 565,
@@ -2287,6 +2425,7 @@
 
     "Mitsubishi A6M5 Type 0 Model 52": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 2300,
             "RealEnginePowerPS": 1130,
             "RealMaxSpeedKmh": 528,
@@ -2304,6 +2443,7 @@
 
     "Mitsubishi A7M2 Reppu": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.74,
             "RealMassKg": 4720,
             "RealEnginePowerPS": 2200,
             "RealMaxSpeedKmh": 628,
@@ -2320,6 +2460,7 @@
 
     "Mitsubishi A7M3-J Reppu Kai": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.74,
             "RealMassKg": 5700,
             "RealEnginePowerHp": 2200,
             "RealMaxSpeedKmh": 648,
@@ -2336,6 +2477,7 @@
 
     "Mitsubishi F1M2": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 2550,
             "RealEnginePowerPS": 875,
             "RealMaxSpeedKmh": 370,
@@ -2352,6 +2494,7 @@
 
     "Mitsubishi G3M2 Model 21": {
         "properties": {
+            "RealTurnRateDegPerSec": 12.73,
             "RealMassKg": 8000,
             "RealEnginePowerKw": 1582,
             "RealMaxSpeedKmh": 375,
@@ -2368,6 +2511,7 @@
 
     "Mitsubishi G4M1 Model 11": {
         "properties": {
+            "RealTurnRateDegPerSec": 12.79,
             "RealMassKg": 9500,
             "RealEnginePowerPS": 3060,
             "RealMaxSpeedKmh": 428,
@@ -2384,6 +2528,7 @@
 
     "Mitsubishi G4M2 Model 22": {
         "properties": {
+            "RealTurnRateDegPerSec": 12.79,
             "RealMassKg": 12500,
             "RealEnginePowerPS": 3700,
             "RealMaxSpeedKmh": 438,
@@ -2400,6 +2545,7 @@
 
     "Mitsubishi J8M1 Shusui": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 3885,
             "RealEngineThrustKn": 14.7,
             "RealMaxSpeedKmh": 900,
@@ -2416,6 +2562,7 @@
 
     "Mitsubishi Ki-21-IIb": {
         "properties": {
+            "RealTurnRateDegPerSec": 14.15,
             "RealMassKg": 10600,
             "RealEnginePowerPS": 3000,
             "RealMaxSpeedKmh": 485,
@@ -2432,6 +2579,7 @@
 
     "Nakajima A6M2-N": {
         "properties": {
+            "RealTurnRateDegPerSec": 26.53,
             "RealMassKg": 2030,
             "RealEnginePowerPS": 940,
             "RealMaxSpeedKmh": 408,
@@ -2448,6 +2596,7 @@
 
     "Nakajima B5N2": {
         "properties": {
+            "RealTurnRateDegPerSec": 20.51,
             "RealMassKg": 3800,
             "RealEnginePowerPS": 1000,
             "RealMaxSpeedKmh": 378,
@@ -2464,6 +2613,7 @@
 
     "Nakajima G8N1 Renzan": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.78,
             "RealMassKg": 26800,
             "RealEnginePowerPS": 8000,
             "RealMaxSpeedKmh": 593,
@@ -2480,6 +2630,7 @@
 
     "Nakajima Ki-27b": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.14,
             "RealMassKg": 1790,
             "RealEnginePowerPS": 710,
             "RealMaxSpeedKmh": 470,
@@ -2496,6 +2647,7 @@
 
     "Nakajima Ki-43-IIb Hayabusa": {
         "properties": {
+            "RealTurnRateDegPerSec": 29.36,
             "RealMassKg": 2590,
             "RealEnginePowerPS": 1300,
             "RealMaxSpeedKmh": 530,
@@ -2512,6 +2664,7 @@
 
     "Nakajima Ki-84-Ia Hayate": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.32,
             "RealMassKg": 3601.5,
             "RealEnginePowerKw": 1522,
             "RealMaxSpeedKmh": 687,
@@ -2528,6 +2681,7 @@
 
     "Nakajima Ki-84-II Hei": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.32,
             "RealMassKg": 3240,
             "RealEnginePowerKw": 1522,
             "RealMaxSpeedKmh": 651,
@@ -2544,6 +2698,7 @@
 
     "Nakajima Kikka": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 3550,
             "RealEngineThrustKn": 9.32,
             "RealMaxSpeedKmh": 696,
@@ -2560,6 +2715,7 @@
 
     "North American A-36A Apache": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 4535,
             "RealEnginePowerHp": 1325,
             "RealMaxSpeedKmh": 590,
@@ -2576,6 +2732,7 @@
 
     "North American B-25H Mitchell": {
         "properties": {
+            "RealTurnRateDegPerSec": 15.45,
             "RealMassKg": 15876,
             "RealEnginePowerHp": 3400,
             "RealMaxSpeedKmh": 438,
@@ -2593,6 +2750,7 @@
 
     "North American B-25J Mitchell": {
         "properties": {
+            "RealTurnRateDegPerSec": 15.45,
             "RealMassKg": 11430,
             "RealEnginePowerHp": 3400,
             "RealMaxSpeedKmh": 410,
@@ -2610,6 +2768,7 @@
 
     "North American Mustang Mk IA": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 3550,
             "RealEnginePowerHp": 1150,
             "RealMaxSpeedKmh": 578,
@@ -2627,6 +2786,7 @@
 
     "North American P-51B Mustang": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 3550,
             "RealEnginePowerHp": 1380,
             "RealMaxSpeedKmh": 578,
@@ -2643,6 +2803,7 @@
 
     "North American P-51D Mustang": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 4175,
             "RealEnginePowerHp": 1490,
             "RealMaxSpeedKmh": "703",
@@ -2664,6 +2825,7 @@
 
     "North American P-51H Mustang": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.22,
             "RealMassKg": 3670,
             "RealEnginePowerHp": 1380,
             "RealMaxSpeedKmh": 712,
@@ -2680,6 +2842,7 @@
 
     "Panavia Tornado GR4": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.88,
             "RealMassKg": 20410,
             "RealEngineThrustKn": 87.6,
             "RealMaxSpeedKmh": 2400,
@@ -2696,6 +2859,7 @@
 
     "Petlyakov Pe-2 (early production)": {
         "properties": {
+            "RealTurnRateDegPerSec": 18.55,
             "RealMassKg": 7536,
             "RealEnginePowerPS": 2200,
             "RealMaxSpeedKmh": 540,
@@ -2712,6 +2876,7 @@
 
     "Petlyakov Pe-8 (AM-35A)": {
         "properties": {
+            "RealTurnRateDegPerSec": 8.13,
             "RealMassKg": 27000,
             "RealEnginePowerKw": 3996,
             "RealMaxSpeedKmh": 443,
@@ -2728,6 +2893,7 @@
 
     "Piaggio P.108A Artigliere": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.95,
             "RealMassKg": 21120,
             "RealEnginePowerKw": 4480,
             "RealMaxSpeedKmh": 412,
@@ -2744,6 +2910,7 @@
 
     "Piaggio P.108B": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.95,
             "RealMassKg": 29885,
             "RealEnginePowerKw": 4480,
             "RealMaxSpeedKmh": 475,
@@ -2760,6 +2927,7 @@
 
     "Piper J-3C-65 Cub": {
         "properties": {
+            "RealTurnRateDegPerSec": 29.64,
             "RealMassKg": 550,
             "RealEnginePowerHp": 65,
             "RealMaxSpeedKmh": 140,
@@ -2776,6 +2944,7 @@
 
     "Polikarpov I-16 Type 24": {
         "properties": {
+            "RealTurnRateDegPerSec": 35.37,
             "RealMassKg": 1941,
             "RealEnginePowerPS": 1100,
             "RealMaxSpeedKmh": 489,
@@ -2792,6 +2961,7 @@
 
     "Polikarpov I-153 (M-62)": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 1960,
             "RealEnginePowerKw": 597,
             "RealMaxSpeedKmh": 444,
@@ -2808,6 +2978,7 @@
 
     "Polikarpov Po-2": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.92,
             "RealMassKg": 1030,
             "RealEnginePowerKw": 93,
             "RealMaxSpeedKmh": 152,
@@ -2824,6 +2995,7 @@
 
     "Porckhechop Mk.2 (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 31.83,
             "RealMassKg": 1000,
             "RealEnginePowerHp": 300,
             "RealMaxSpeedKmh": 300,
@@ -2840,6 +3012,7 @@
 
     "Potez 630": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.89,
             "RealMassKg": 3520,
             "RealEnginePowerKw": 1044,
             "RealMaxSpeedKmh": 394,
@@ -2856,6 +3029,7 @@
 
     "PZL P.11c": {
         "properties": {
+            "RealTurnRateDegPerSec": 29.7,
             "RealMassKg": 1630,
             "RealEnginePowerPS": 560,
             "RealMaxSpeedKmh": 390,
@@ -2872,6 +3046,7 @@
 
     "Reggiane Re.2005 Sagittario": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 3610,
             "RealEnginePowerKw": 1085,
             "RealMaxSpeedKmh": 628,
@@ -2888,6 +3063,7 @@
 
     "Republic P-47D Thunderbolt": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.63,
             "RealMassKg": 7938,
             "RealEnginePowerHp": 2430,
             "RealMaxSpeedKmh": 697,
@@ -2906,6 +3082,7 @@
 
     "SAAB J 21A-1": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.44,
             "RealMassKg": 3810,
             "RealEnginePowerKw": 1085,
             "RealMaxSpeedKmh": 597,
@@ -2922,6 +3099,7 @@
 
     "SAAB J 21RA": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.44,
             "RealMassKg": 3660,
             "RealEngineThrustKn": 14.5,
             "RealMaxSpeedKmh": 742,
@@ -2938,6 +3116,7 @@
 
     "Savoia-Marchetti SM.79-III Sparviero": {
         "properties": {
+            "RealTurnRateDegPerSec": 15.76,
             "RealMassKg": 10050,
             "RealEnginePowerKw": 1926,
             "RealMaxSpeedKmh": 460,
@@ -2954,6 +3133,7 @@
 
     "Short Sunderland Mk III": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.26,
             "RealMassKg": 26308,
             "RealEnginePowerHp": 4260,
             "RealMaxSpeedKmh": 338,
@@ -2970,6 +3150,7 @@
 
     "Sikorsky R-5 Dragonfly": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.76,
             "RealMassKg": 2190,
             "RealEnginePowerHp": 450,
             "RealMaxSpeedKmh": 171,
@@ -2985,6 +3166,7 @@
 
     "Single-Engine Monoplane (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 1500,
             "RealEnginePowerHp": 450,
             "RealMaxSpeedKmh": 350,
@@ -3001,6 +3183,7 @@
 
     "Single-Seat Biplane (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 37.32,
             "RealMassKg": 659,
             "RealEnginePowerHp": 130,
             "RealMaxSpeedKmh": 185,
@@ -3017,6 +3200,7 @@
 
     "Sopwith Camel F.1": {
         "properties": {
+            "RealTurnRateDegPerSec": 37.3,
             "RealMassKg": 659,
             "RealEnginePowerHp": 130,
             "RealMaxSpeedKmh": 182,
@@ -3033,6 +3217,7 @@
 
     "Spitfire F Mk IX": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.34,
             "RealMassKg": 3370,
             "RealEnginePowerHp": 1565,
             "RealMaxSpeedKmh": "650",
@@ -3050,6 +3235,7 @@
 
     "Sukhoi Su-25": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.17,
             "RealMassKg": 14600,
             "RealEngineThrustKn": 88.36,
             "RealMaxSpeedKmh": 975,
@@ -3066,6 +3252,7 @@
 
     "Sukhoi Su-57": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.58,
             "RealMassKg": 26700,
             "RealEngineThrustKn": 176.6,
             "RealMaxSpeedKmh": 2135,
@@ -3082,6 +3269,7 @@
 
     "Supermarine Spitfire F Mk XIVe": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.34,
             "RealMassKg": 3889,
             "RealEnginePowerHp": 2050,
             "RealMaxSpeedKmh": 722,
@@ -3098,6 +3286,7 @@
 
     "Supermarine Spitfire Mk Vb": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.35,
             "RealMassKg": 3004,
             "RealEnginePowerHp": 1470,
             "RealMaxSpeedKmh": 595,
@@ -3119,6 +3308,7 @@
 
     "TIE Fighter (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 8000,
             "RealEngineThrustKn": 120,
             "RealMaxSpeedKmh": 2200,
@@ -3135,6 +3325,7 @@
 
     "TIE Interceptor (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 7500,
             "RealEngineThrustKn": 140,
             "RealMaxSpeedKmh": 2400,
@@ -3151,6 +3342,7 @@
 
     "Tupolev Tu-4": {
         "properties": {
+            "RealTurnRateDegPerSec": 7.39,
             "RealMassKg": 47850,
             "RealEnginePowerKw": 7160,
             "RealMaxSpeedKmh": 558,
@@ -3167,6 +3359,7 @@
 
     "Tupolev Tu-22M3": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.29,
             "RealMassKg": 112000,
             "RealEngineThrustKn": 490,
             "RealMaxSpeedKmh": 1997,
@@ -3183,6 +3376,7 @@
 
     "Two-Seat Biplane (Generic)": {
         "properties": {
+            "RealTurnRateDegPerSec": 29.02,
             "RealMassKg": 830,
             "RealEnginePowerHp": 110,
             "RealMaxSpeedKmh": 145,
@@ -3199,6 +3393,7 @@
 
     "UH-60 Black Hawk": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.46,
             "RealMassKg": 10660,
             "RealEnginePowerHp": 3880,
             "RealMaxSpeedKmh": 294,
@@ -3214,6 +3409,7 @@
 
     "Valkyrie Dropship (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 19.89,
             "RealMassKg": 25000,
             "RealEngineThrustKn": 120,
             "RealMaxSpeedKmh": 600,
@@ -3231,6 +3427,7 @@
 
     "Vickers Valiant B.1": {
         "properties": {
+            "RealTurnRateDegPerSec": 9.13,
             "RealMassKg": 63503,
             "RealEngineThrustKn": 177.92,
             "RealMaxSpeedKmh": 912,
@@ -3247,6 +3444,7 @@
 
     "Vickers Wellington Mk IC": {
         "properties": {
+            "RealTurnRateDegPerSec": 12.12,
             "RealMassKg": 12927,
             "RealEnginePowerHp": 2100,
             "RealMaxSpeedKmh": 378,
@@ -3263,6 +3461,7 @@
 
     "VL Myrsky II": {
         "properties": {
+            "RealTurnRateDegPerSec": 28.94,
             "RealMassKg": 2947,
             "RealEnginePowerHp": 1065,
             "RealMaxSpeedKmh": 529.5,
@@ -3279,6 +3478,7 @@
 
     "Vought F4U-1A Corsair": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.47,
             "RealMassKg": 4890,
             "RealEnginePowerHp": 2000,
             "RealMaxSpeedKmh": 633,
@@ -3295,6 +3495,7 @@
 
     "Vought F4U-4 Corsair": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.47,
             "RealMassKg": 6654,
             "RealEnginePowerHp": 2380,
             "RealMaxSpeedKmh": 717,
@@ -3313,6 +3514,7 @@
 
     "Vought F4U-7 Corsair": {
         "properties": {
+            "RealTurnRateDegPerSec": 25.47,
             "RealMassKg": 5330,
             "RealEnginePowerHp": 2100,
             "RealMaxSpeedKmh": 651,
@@ -3329,6 +3531,7 @@
 
     "Vought OS2U-3 Kingfisher": {
         "properties": {
+            "RealTurnRateDegPerSec": 29.1,
             "RealMassKg": 2259,
             "RealEnginePowerHp": 450,
             "RealMaxSpeedKmh": 275,
@@ -3345,6 +3548,7 @@
 
     "Vought XF5U-1 Flying Flapjack": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.12,
             "RealMassKg": 7600,
             "RealEnginePowerHp": 2700,
             "RealMaxSpeedKmh": 727,
@@ -3361,6 +3565,7 @@
 
     "Vulture Gunship (Fictional)": {
         "properties": {
+            "RealTurnRateDegPerSec": 21.22,
             "RealMassKg": 22000,
             "RealEngineThrustKn": 130,
             "RealMaxSpeedKmh": 650,
@@ -3378,6 +3583,7 @@
 
     "Westland Wyvern S.4": {
         "properties": {
+            "RealTurnRateDegPerSec": 23.73,
             "RealMassKg": 7880,
             "RealEnginePowerHp": 3670,
             "RealMaxSpeedKmh": 619,
@@ -3394,6 +3600,7 @@
 
     "Yakovlev Yak-3": {
         "properties": {
+            "RealTurnRateDegPerSec": 34.6,
             "RealMassKg": 2697,
             "RealEnginePowerPS": 1290,
             "RealMaxSpeedKmh": 646,
@@ -3413,6 +3620,7 @@
 
     "Yakovlev Yak-9": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.68,
             "RealMassKg": 2870,
             "RealEnginePowerHp": 1180,
             "RealMaxSpeedKmh": 599,
@@ -3430,6 +3638,7 @@
 
     "Yakovlev Yak-9P": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.68,
             "RealMassKg": 3100,
             "RealEnginePowerPS": 1650,
             "RealMaxSpeedKmh": 620,
@@ -3446,6 +3655,7 @@
 
     "Yakovlev Yak-9T": {
         "properties": {
+            "RealTurnRateDegPerSec": 32.68,
             "RealMassKg": 2760,
             "RealEnginePowerPS": 1180,
             "RealMaxSpeedKmh": 558,
@@ -3463,6 +3673,7 @@
 
     "Yakovlev Yak-15": {
         "properties": {
+            "RealTurnRateDegPerSec": 34.6,
             "RealMassKg": 2638,
             "RealEngineThrustKn": 8.8,
             "RealMaxSpeedKmh": 786,
@@ -3479,6 +3690,7 @@
 
     "Yokosuka D4Y2 Suisei": {
         "properties": {
+            "RealTurnRateDegPerSec": 27.68,
             "RealMassKg": 4250,
             "RealEnginePowerPS": 1400,
             "RealMaxSpeedKmh": 550,
@@ -3495,6 +3707,7 @@
 
     "Yokosuka MXY-7 Ohka Model 11": {
         "properties": {
+            "RealTurnRateDegPerSec": 0,
             "RealMassKg": 2140,
             "RealEngineThrustKn": 7.86,
             "RealMaxSpeedKmh": 648,
@@ -3511,6 +3724,7 @@
 
     "Yokosuka P1Y1a Ginga": {
         "properties": {
+            "RealTurnRateDegPerSec": 15.92,
             "RealMassKg": 10500,
             "RealEnginePowerKw": 2722,
             "RealMaxSpeedKmh": 547,
@@ -3527,6 +3741,7 @@
 
     "Yokosuka R2Y2 Keiun Kai": {
         "properties": {
+            "RealTurnRateDegPerSec": 22.74,
             "RealMassKg": 5720,
             "RealEngineThrustKn": 26.5,
             "RealMaxSpeedKmh": 810,

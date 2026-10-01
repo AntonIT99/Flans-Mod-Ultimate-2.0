@@ -1065,6 +1065,7 @@ public class Plane extends Driveable
         angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yawRate, response);
         angularPitch = LegacyPlanePhysics.approachMomentum(angularPitch, pitchRate, response);
         angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, rollRate, response);
+        angularYaw = groundSteeringYaw(type, velocity, angularYaw);
         axes.rotateLocalYaw(angularYaw);
         axes.rotateLocalPitch(angularPitch);
         axes.rotateLocalRoll(-angularRoll);
@@ -1136,6 +1137,7 @@ public class Plane extends Driveable
         angularPitch = getThrottle() <= 0F && isSupportedByGround() ? 0F
             : LegacyPlanePhysics.approachMomentum(angularPitch, rates.pitch() * authority, response);
         angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, roll, response);
+        angularYaw = groundSteeringYaw(type, getDeltaMovement(), angularYaw);
         axes.rotateLocalYaw(angularYaw);
         axes.rotateLocalPitch(angularPitch);
         axes.rotateLocalRoll(-angularRoll);
@@ -1311,6 +1313,7 @@ public class Plane extends Driveable
         angularYaw = LegacyPlanePhysics.approachMomentum(angularYaw, yawRate);
         angularPitch = LegacyPlanePhysics.approachMomentum(angularPitch, pitchRate);
         angularRoll = LegacyPlanePhysics.approachMomentum(angularRoll, rollRate);
+        angularYaw = groundSteeringYaw(type, velocity, angularYaw);
         axes.rotateLocalYaw(angularYaw);
         axes.rotateLocalPitch(angularPitch);
         axes.rotateLocalRoll(-angularRoll);
@@ -1318,6 +1321,19 @@ public class Plane extends Driveable
         angularYaw *= (float) ModPhysics.dragRetention(0.99D, level());
         angularPitch *= (float) ModPhysics.dragRetention(0.99D, level());
         angularRoll *= (float) ModPhysics.dragRetention(0.99D, level());
+    }
+
+    /** Ground controls use rolling direction, including an engine-off coast, independently of flight yaw. */
+    private float groundSteeringYaw(PlaneType type, Vec3 velocity, float flightYaw)
+    {
+        Vec3 forward = flightForwardVector();
+        double length = Math.hypot(forward.x, forward.z);
+        double signedSpeed = length > 1.0E-8D
+            ? (velocity.x * forward.x + velocity.z * forward.z) / length : 0D;
+        boolean supported = isSupportedByGround() && isGearDeployed() && !type.getWheelPositions().isEmpty();
+        float control = isPartIntact(EnumDriveablePart.STEERING) ? flapYaw : 0F;
+        return DriveableControlPhysics.planeGroundSteeringYawDelta(flightYaw,
+            type.getRealTurnRateDegPerSec(), control, signedSpeed, supported, ModCommonConfig.forceLegacyPlanePhysics());
     }
 
     /**

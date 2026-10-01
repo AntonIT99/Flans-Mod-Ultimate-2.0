@@ -33,6 +33,7 @@ RealEnginePowerHp 2000
 RealMaxSpeedKmh 25
 DriveType TRACKED
 RealMaxReverseSpeedKmh 6
+RealTurnRateDegPerSec 8
 
 // Weapons
 ShootPointPrimary -79 89 -11 turret

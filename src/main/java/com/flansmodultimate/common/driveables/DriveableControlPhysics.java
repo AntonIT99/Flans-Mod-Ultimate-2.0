@@ -8,6 +8,8 @@ public final class DriveableControlPhysics
     private static final float CONTROL_RETENTION = 0.9F;
     private static final float MAX_CONTROL_ANGLE = 20F;
     private static final float HELD_CONTROL_ANGLE = CONTROL_RETENTION / (1F - CONTROL_RETENTION);
+    /** Aircraft taxi steering is measured at walking/slow taxi speed, not maximum flight speed. */
+    public static final double PLANE_GROUND_STEERING_REFERENCE_KMH = 10D;
 
     private DriveableControlPhysics() {}
 
@@ -38,6 +40,16 @@ public final class DriveableControlPhysics
     {
         float control = singleTrackTurnControl(throttle, steeringControl, steeringHeld, leftTrackIntact, rightTrackIntact);
         return steeringHeld ? control : control * HELD_CONTROL_ANGLE / MAX_CONTROL_ANGLE;
+    }
+
+    /** Replaces only wheel-supported aircraft yaw; an airborne or forced-legacy plane keeps flight yaw. */
+    public static float planeGroundSteeringYawDelta(float flightYaw, float rate, float control,
+                                                   double signedSpeed, boolean wheelSupported, boolean forceLegacy)
+    {
+        if (forceLegacy || !wheelSupported || !Float.isFinite(rate) || rate <= 0F)
+            return flightYaw;
+        return realSteeringYawDelta(rate, control, false, false, signedSpeed,
+            VehiclePhysicsUnits.kmhToBlocksPerTick(PLANE_GROUND_STEERING_REFERENCE_KMH));
     }
 
     /** Steering follows rolling direction, even with a neutral throttle or an inactive engine. */

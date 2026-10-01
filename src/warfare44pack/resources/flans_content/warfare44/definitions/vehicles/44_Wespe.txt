@@ -37,6 +37,7 @@ FourWheelDrive true
 MaxNegativeThrottle 0.4
 TurnLeftSpeed 0.35
 TurnRightSpeed 0.35
+RealTurnRateDegPerSec 26
 CanRoll true
 
 // Wheels and tracks

@@ -9,6 +9,24 @@ class DriveableControlPhysicsTest
     private static final float EPSILON = 1.0E-6F;
 
     @Test
+    void aircraftTaxiOverrideLeavesFlightAndForcedLegacyYawUntouched()
+    {
+        double taxiSpeed = com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits.kmhToBlocksPerTick(10D);
+        assertEquals(0.6F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
+            taxiSpeed, true, false), EPSILON);
+        assertEquals(0F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
+            0D, true, false), "a parked plane clears residual flight yaw");
+        assertEquals(-0.3F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
+            -taxiSpeed * 0.5D, true, false), EPSILON);
+        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
+            taxiSpeed, false, false), "airborne rudder controls retain their old yaw");
+        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
+            taxiSpeed, true, true));
+        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 0F, 9F,
+            taxiSpeed, true, false));
+    }
+
+    @Test
     void researchedHullRateReachesAuthoredRateWithHeldInput()
     {
         float control = 0F;

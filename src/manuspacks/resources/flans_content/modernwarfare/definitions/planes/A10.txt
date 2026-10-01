@@ -38,6 +38,7 @@ HasGear True
 RealMassKg 13782
 RealEngineThrustKn 80.64
 RealMaxSpeedKmh 706
+RealTurnRateDegPerSec 18.16
 RealWingSpanM 17.53
 RealWingAreaM2 47
 RealClimbRateMs 30

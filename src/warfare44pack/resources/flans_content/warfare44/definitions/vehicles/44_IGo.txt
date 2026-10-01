@@ -38,6 +38,7 @@ MaxNegativeThrottle 0.3749
 ClutchBrake 0.01325
 TurnLeftSpeed 0.265
 TurnRightSpeed 0.265
+RealTurnRateDegPerSec 26
 CanRoll true
 SquashMobs True
 

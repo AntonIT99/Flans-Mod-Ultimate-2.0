@@ -35,6 +35,7 @@ RealEnginePowerHp 800
 RealMaxSpeedKmh 35
 DriveType TRACKED
 RealMaxReverseSpeedKmh 8
+RealTurnRateDegPerSec 14
 
 // Weapons
 AddGun 33 39 12 turret WH40K_MG_HeavyBolter_1A
