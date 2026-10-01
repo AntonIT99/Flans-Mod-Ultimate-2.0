@@ -32,6 +32,7 @@ public class ModelUnderBarrelLaser extends ModelAttachment //Same as Filename
 		toggleModel[0].addBox(0F, -17F, 0F, 1, 2000, 1, 0F); // Import Box0
 		toggleModel[0].setRotationPoint(15.5F, 2.5F, -0.5F);
 		toggleModel[0].rotateAngleZ = 1.57079633F;
+        toggleModel[0].glowAdditive = true;
 
 		attachmentModel[1].addBox(0F, -17F, 0F, 5, 5, 3, 0F); // Import Box0
 		attachmentModel[1].setRotationPoint(14.5F, 3.5F, -1.5F);

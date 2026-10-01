@@ -28,6 +28,7 @@ MaxLockOnAngle 200.0
 Mass 1800
 MuzzleVelocity 285
 PenetrationAt100m 420
+HEAT True
 
 // Damage and detonation
 DamageVsLiving 20

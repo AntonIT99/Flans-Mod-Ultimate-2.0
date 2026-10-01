@@ -66,6 +66,15 @@ public final class ModCommonConfig
     public static final double DEFAULT_ARMORED_BLAST_RESISTANCE_KPA_PER_MM = 150.0D;
     public static final double DEFAULT_MINIMUM_BLAST_DISTANCE_METERS = 0.5D;
     /**
+     * Damage behind the plate from a 1 kg TNT shaped charge that fully defeats it, on a vehicle using realistic
+     * health. Calibrated so a Panzerfaust 60 (0.95 kg) takes about nine tenths of a Panzer IV hull per penetration,
+     * a near-certain disable that still leaves heavy tanks needing two or three hits.
+     * See {@code WorldWarTwoAntiTankBalanceTest}.
+     */
+    public static final double DEFAULT_HEAT_DAMAGE_REFERENCE = 1100.0D;
+    /** Damage dealt to each occupant of a part a HEAT jet has penetrated. Half a player's health. */
+    public static final double DEFAULT_HEAT_CREW_SPALL_DAMAGE = 10.0D;
+    /**
      * Hard ceiling on the CRATER radius, in blocks. ExplosionCrater's ray pass costs about the
      * same at any radius, and a crater too big for one tick is carved over the following ticks
      * by CraterCarver, so a larger value mainly means a larger hole that takes longer to carve.
@@ -236,6 +245,8 @@ public final class ModCommonConfig
     private static final Supplier<Double> MINIMUM_BLAST_DISTANCE_METERS;
     private static final Supplier<Double> MAX_EXPLOSION_RADIUS;
     private static final Supplier<Double> MAX_BLAST_RADIUS;
+    private static final Supplier<Double> HEAT_DAMAGE_REFERENCE;
+    private static final Supplier<Double> HEAT_CREW_SPALL_DAMAGE;
 
     private static final Supplier<Boolean> ENCHANTMENT_MODULE_ENABLED;
 
@@ -721,6 +732,15 @@ public final class ModCommonConfig
                 "Most ordnance is far below this: a 250 kg bomb reaches about 85 blocks, the largest conventional bomb shipped about 167.",
                 "At the default only nuclear-scale charges clamp; every conventional charge keeps its full damage reach.")
             .defineInRange("maxBlastRadius", DEFAULT_MAX_BLAST_RADIUS, 1D, 8192D);
+        HEAT_DAMAGE_REFERENCE = builder
+            .comment("Damage a HEAT (shaped-charge) round deals behind armour it penetrates, for a 1 kg TNT charge, on vehicles using UseRealisticVehicleHealth.",
+                "Damage grows with the square root of the charge and does not depend on the round's speed. A jet that barely penetrates delivers 60% of it.",
+                "The default makes a Panzerfaust 60 take about nine tenths of a Panzer IV hull per penetrating hit. Kinetic damage still applies when it is higher.")
+            .defineInRange("heatDamageReference", DEFAULT_HEAT_DAMAGE_REFERENCE, 0D, 100000D);
+        HEAT_CREW_SPALL_DAMAGE = builder
+            .comment("Damage dealt to each occupant of a vehicle part that a HEAT jet penetrates, on vehicles using UseRealisticVehicleHealth.",
+                "Scaled down like the vehicle damage when the jet barely penetrates. Set to 0 to disable crew spall.")
+            .defineInRange("heatCrewSpallDamage", DEFAULT_HEAT_CREW_SPALL_DAMAGE, 0D, 1000D);
         builder.pop();
 
         builder.push("Enchantment Module");
@@ -856,6 +876,8 @@ public final class ModCommonConfig
             MINIMUM_BLAST_DISTANCE_METERS.get(),
             MAX_EXPLOSION_RADIUS.get(),
             MAX_BLAST_RADIUS.get(),
+            HEAT_DAMAGE_REFERENCE.get(),
+            HEAT_CREW_SPALL_DAMAGE.get(),
 
             ENCHANTMENT_MODULE_ENABLED.get(),
 
@@ -1154,6 +1176,18 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_MAX_BLAST_RADIUS : config.maxBlastRadius();
+    }
+
+    public static double heatDamageReference()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_HEAT_DAMAGE_REFERENCE : config.heatDamageReference();
+    }
+
+    public static double heatCrewSpallDamage()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_HEAT_CREW_SPALL_DAMAGE : config.heatCrewSpallDamage();
     }
 
     public static double kineticPenetrationReference()

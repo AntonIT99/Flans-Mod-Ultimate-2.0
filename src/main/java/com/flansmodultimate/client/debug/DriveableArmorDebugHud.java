@@ -51,7 +51,9 @@ public final class DriveableArmorDebugHud
         ArmorPlate plate = armor.plate(closest.getPart(), closest.getFacing()).authored();
         String label = String.format(Locale.ROOT, "%s %s: %.1f mm",
             closest.getPart().getShortName(), closest.getFacing().name().toLowerCase(Locale.ROOT),
-            plate.thicknessMm());
+            plate.thicknessMm())
+            + (plate.hasDistinctHeatProtection()
+                ? String.format(Locale.ROOT, " | vs HEAT %.1f mm", plate.heatThicknessMm()) : "");
         graphics.drawString(mc.font, label, (screenWidth - mc.font.width(label)) / 2,
             screenHeight / 2 + 14, 0xFFD700, true);
         if (plate.slopeDeg() > 0F)

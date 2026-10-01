@@ -553,6 +553,7 @@
         "properties": {
             "Mass": 14.58,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 30,
             "FlakParticles": 0
         },
         "items": [
@@ -969,6 +970,7 @@
         "properties": {
             "Mass": 33,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 16,
             "FlakParticles": 0
         },
         "items": [
@@ -980,6 +982,7 @@
         "properties": {
             "Mass": 37,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 8,
             "FlakParticles": 0
         },
         "items": [
@@ -1101,6 +1104,7 @@
         "properties": {
             "Mass": 47.6,
             "FallSpeed": 1.0,
+            "PenetrationAt100m": 22,
             "FlakParticles": 0
         },
         "items": [
@@ -2641,7 +2645,8 @@
             "MuzzleVelocity": 380,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 303,
-            "PenetrationAt100m": 55
+            "PenetrationAt100m": 55,
+            "HEAT": "true"
         },
         "items": [
             "chiahaheat",
@@ -2696,6 +2701,7 @@
             "Mass": 1590,
             "MuzzleVelocity": 82,
             "PenetrationAt100m": 100,
+            "HEAT": "true",
             "ExplosiveMassTNTg": 420
         },
         "items": [
@@ -2710,6 +2716,7 @@
             "Mass": 1800.0,
             "MuzzleVelocity": 145,
             "PenetrationAt100m": 300,
+            "HEAT": "true",
             "ExplosiveMassTNTg": 337
         },
         "items": [
@@ -2783,7 +2790,8 @@
             "MuzzleVelocity": 400,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 500,
-            "PenetrationAt100m": 100
+            "PenetrationAt100m": 100,
+            "HEAT": "true"
         },
         "items": [
             "75mmheatitaly"
@@ -2836,7 +2844,8 @@
             "MuzzleVelocity": 450,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 872,
-            "PenetrationAt100m": 80
+            "PenetrationAt100m": 80,
+            "HEAT": "true"
         },
         "items": [
             "44_75heatshellb"
@@ -2850,7 +2859,8 @@
             "MuzzleVelocity": 450,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 530,
-            "PenetrationAt100m": 100
+            "PenetrationAt100m": 100,
+            "HEAT": "true"
         },
         "items": [
             "75mmheatgermany",
@@ -2956,7 +2966,8 @@
             "MuzzleVelocity": 304,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 548,
-            "PenetrationAt100m": 89
+            "PenetrationAt100m": 89,
+            "HEAT": "true"
         },
         "items": [
             "44_75heatshellshort"
@@ -3183,7 +3194,8 @@
             "MuzzleVelocity": 350,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 640,
-            "PenetrationAt100m": 90
+            "PenetrationAt100m": 90,
+            "HEAT": "true"
         },
         "items": [
             "44_75heatshelltype2"
@@ -3225,7 +3237,8 @@
             "MuzzleVelocity": 680,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 630,
-            "PenetrationAt100m": 120
+            "PenetrationAt100m": 120,
+            "HEAT": "true"
         },
         "items": [
             "76mmheatfs"
@@ -3239,7 +3252,8 @@
             "MuzzleVelocity": 355,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 600,
-            "PenetrationAt100m": 80
+            "PenetrationAt100m": 80,
+            "HEAT": "true"
         },
         "items": [
             "44_76heatshell"
@@ -3607,7 +3621,8 @@
         "properties": {
             "Mass": 27200,
             "MuzzleVelocity": 440,
-            "ExplosiveMassTNTKg": 4.5
+            "ExplosiveMassTNTKg": 4.5,
+            "PenetrationAt100m": 40
         },
         "items": [
             "rp3"
@@ -3742,7 +3757,7 @@
         ]
     },
 
-    "82mm RBS-82 HEAT Rocket": {
+    "82mm RBS-82 AP Rocket": {
         "properties": {
             "Mass": 6800,
             "MuzzleVelocity": 340,
@@ -3782,7 +3797,8 @@
             "MuzzleVelocity": 285,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTg": 550,
-            "PenetrationAt100m": 420
+            "PenetrationAt100m": 420,
+            "HEAT": "true"
         },
         "items": [
             "at4ammo"
@@ -3883,7 +3899,8 @@
             "Mass": 2200,
             "MuzzleVelocity": 294,
             "ExplosiveMassTNTg": 370,
-            "PenetrationAt100m": 260
+            "PenetrationAt100m": 260,
+            "HEAT": "true"
         },
         "items": [
             "rpgammo"
@@ -3897,7 +3914,8 @@
             "MuzzleVelocity": 600,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 1.1,
-            "PenetrationAt100m": 110
+            "PenetrationAt100m": 110,
+            "HEAT": "true"
         },
         "items": [
             "wolffgermany_shell_german88mmkwk36heat",
@@ -3998,6 +4016,7 @@
             "Mass": 3300,
             "MuzzleVelocity": 110,
             "PenetrationAt100m": 210,
+            "HEAT": "true",
             "ExplosiveMassTNTg": 860
         },
         "items": [
@@ -4060,6 +4079,7 @@
             "MuzzleVelocity": 76,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 100,
+            "HEAT": "true",
             "ExplosiveMassTNTg": 400
         },
         "items": [
@@ -4129,7 +4149,8 @@
             "MuzzleVelocity": 1219,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 1,
-            "PenetrationAt100m": 320
+            "PenetrationAt100m": 320,
+            "HEAT": "true"
         },
         "items": [
             "90mmheat"
@@ -4219,7 +4240,8 @@
             "MuzzleVelocity": 900,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 1,
-            "PenetrationAt100m": 400
+            "PenetrationAt100m": 400,
+            "HEAT": "true"
         },
         "items": [
             "100mmheat"
@@ -4504,7 +4526,8 @@
             "MuzzleVelocity": 152,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 1,
-            "PenetrationAt100m": 700
+            "PenetrationAt100m": 700,
+            "HEAT": "true"
         },
         "items": [
             "panzerfaust3ammo"
@@ -4529,7 +4552,8 @@
             "MuzzleVelocity": 750,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 2,
-            "PenetrationAt100m": 300
+            "PenetrationAt100m": 300,
+            "HEAT": "true"
         },
         "items": [
             "114mm"
@@ -4664,6 +4688,7 @@
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 1.62,
             "PenetrationAt100m": 480,
+            "HEAT": "true",
             "FragType": "HE_SHELL"
         },
         "items": [
@@ -4719,7 +4744,8 @@
             "MuzzleVelocity": 400,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 3,
-            "PenetrationAt100m": 800
+            "PenetrationAt100m": 800,
+            "HEAT": "true"
         },
         "items": [
             "120mmlockonshell"
@@ -4814,6 +4840,7 @@
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 1.4,
             "PenetrationAt100m": 350,
+            "HEAT": "true",
             "FragType": "HE_SHELL"
         },
         "items": [
@@ -4949,6 +4976,7 @@
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 2.18,
             "PenetrationAt100m": 160,
+            "HEAT": "true",
             "FragType": "HE_SHELL"
         },
         "items": [
@@ -5037,6 +5065,7 @@
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 2.8,
             "PenetrationAt100m": 550,
+            "HEAT": "true",
             "FragType": "HE_SHELL"
         },
         "items": [
@@ -5115,7 +5144,8 @@
             "Mass": 62600,
             "MuzzleVelocity": 396,
             "ExplosiveMassTNTKg": 2.5,
-            "PenetrationAt100m": 250
+            "PenetrationAt100m": 250,
+            "HEAT": "true"
         },
         "items": [
             "hvarheat",
@@ -5499,7 +5529,8 @@
             "MuzzleVelocity": 1140,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 5,
-            "PenetrationAt100m": 800
+            "PenetrationAt100m": 800,
+            "HEAT": "true"
         },
         "items": [
             "140mmheatshell"
@@ -5551,6 +5582,7 @@
             "MuzzleVelocity": 45,
             "FallSpeed": 1.0,
             "PenetrationAt100m": 200,
+            "HEAT": "true",
             "ExplosiveMassTNTg": 950
         },
         "items": [
@@ -6499,7 +6531,8 @@
         "properties": {
             "Mass": 517000,
             "MuzzleVelocity": 250,
-            "ExplosiveMassTNTKg": 66
+            "ExplosiveMassTNTKg": 66,
+            "PenetrationAt100m": 60
         },
         "items": [
             "tinytim"
@@ -6912,7 +6945,8 @@
             "MuzzleVelocity": 250,
             "FallSpeed": 1.0,
             "ExplosiveMassTNTKg": 50,
-            "PenetrationAt100m": 700
+            "PenetrationAt100m": 700,
+            "HEAT": "true"
         },
         "items": [
             "38cmrocketheat"
@@ -7876,7 +7910,8 @@
             "Mass": 45700,
             "MuzzleVelocity": 425,
             "ExplosiveMassTNTKg": 11,
-            "PenetrationAt100m": 1000
+            "PenetrationAt100m": 1000,
+            "HEAT": "true"
         },
         "items": [
             "hellfire"
@@ -8361,7 +8396,8 @@
         "properties": {
             "Mass": 735000,
             "MuzzleVelocity": 315,
-            "ExplosiveMassTNTKg": 200
+            "ExplosiveMassTNTKg": 200,
+            "PenetrationAt100m": 40
         },
         "items": [
             "exocetmm38"
@@ -8469,6 +8505,7 @@
             "MuzzleVelocity": 290,
             "ExplosiveMassTNTKg": 6,
             "PenetrationAt100m": 750,
+            "HEAT": "true",
             "FragType": "HE_SHELL"
         },
         "items": [
@@ -8571,6 +8608,7 @@
             "Mass": 9000.0,
             "MuzzleVelocity": 400,
             "PenetrationAt100m": 600,
+            "HEAT": "true",
             "ExplosiveMassTNTKg": 8
         },
         "items": [
@@ -9290,7 +9328,8 @@
         "properties": {
             "Mass": 407000,
             "MuzzleVelocity": 300,
-            "ExplosiveMassTNTKg": 140
+            "ExplosiveMassTNTKg": 140,
+            "PenetrationAt100m": 40
         },
         "items": [
             "rgm184nsm"
@@ -9746,7 +9785,8 @@
             "Mass": 49000,
             "MuzzleVelocity": 290,
             "ExplosiveMassTNTKg": 5,
-            "PenetrationAt100m": 900
+            "PenetrationAt100m": 900,
+            "HEAT": "true"
         },
         "items": [
             "trigat"

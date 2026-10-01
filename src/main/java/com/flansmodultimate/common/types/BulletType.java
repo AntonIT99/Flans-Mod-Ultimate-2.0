@@ -43,6 +43,12 @@ public class BulletType extends ShootableType
     /** Penetration @ 0° Angle of Attack (mm) at 100m */
     @Getter
     protected float penetrationAt100m;
+    /**
+     * Shaped-charge (HEAT) warhead. Its {@code PenetrationAt100m} is tested against a face's protection against
+     * HEAT, and once through armour its explosive charge, not its speed, sets the damage inside.
+     */
+    @Getter
+    protected boolean heat;
     @Getter
     protected float speedMultiplier = 1F;
     /** The number of flak particles to spawn upon exploding */
@@ -203,6 +209,8 @@ public class BulletType extends ShootableType
             logError("PenetrationAt100m must be a finite non-negative value in millimetres; ignoring it", file);
             penetrationAt100m = 0F;
         }
+        // Same key the Labjac edition uses, so its packs arrive with their HEAT rounds already marked.
+        heat = readValue("HEAT", heat, file);
 
         flak = readValue("FlakParticles", flak, file);
         flakParticles = readValue("FlakParticleType", flakParticles, file);

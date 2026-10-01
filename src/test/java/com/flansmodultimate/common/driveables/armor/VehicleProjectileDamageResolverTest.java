@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.driveables.armor;
 
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.config.ModCommonConfig;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.phys.Vec3;
@@ -89,6 +90,88 @@ class VehicleProjectileDamageResolverTest
         assertHits(1, 1, armoured(30F), partHp(11_800F, 8_720F, 29_240F)); // official Luchs
         assertHits(1, 1, armoured(30F), partHp(11_740F, 950F, 950F));      // Warfare44 Puma
         assertHits(1, 1, armoured(28F), partHp(15_200F, 1_500F, 2_100F)); // Warfare44 M5A1
+    }
+
+    @Test
+    void slowShapedChargeIsCreditedWithItsChargeNotItsSpeed()
+    {
+        // Panzerfaust 60: 2.9 kg warhead at 45 m/s, 0.95 kg charge, 200 mm penetration.
+        VehicleProjectileDamageResolver.Result kinetic = resolve(true, 2_900F, 4_500F, 45D, armoured(80F), 200F);
+        VehicleProjectileDamageResolver.Result heat = panzerfaust(armoured(80F));
+        assertTrue(kinetic.damage() < 100F, "kinetic damage alone was " + kinetic.damage());
+        assertTrue(heat.shapedCharge());
+        assertFalse(heat.kineticDamage());
+        assertEquals(HEAT_REFERENCE * Math.sqrt(0.95D), heat.damage(), 0.5D);
+    }
+
+    @Test
+    void panzerfaustNeedsTwoPenetratingHitsOnAPanzerIvHull()
+    {
+        float hullHp = partHp(25_000F, 10_720F, 37_830F); // official Panzer IV core
+        assertEquals(2, (int) Math.ceil(hullHp / panzerfaust(armoured(80F)).damage()));
+        assertEquals(2, (int) Math.ceil(hullHp / panzerfaust(armoured(30F)).damage()));
+    }
+
+    @Test
+    void aJetThatBarelyPenetratesDeliversLessThanOneWithAMargin()
+    {
+        // 60 mm Bazooka: 420 g charge, 100 mm penetration, against a frontal and a side plate.
+        float frontal = resolveHeat(1_590F, 82D, armoured(80F), 100F, 0.42F).damage();
+        float side = resolveHeat(1_590F, 82D, armoured(30F), 100F, 0.42F).damage();
+        assertTrue(frontal < side);
+        assertEquals(VehicleProjectileDamageResolver.MIN_SHAPED_CHARGE_RESIDUAL,
+            VehicleProjectileDamageResolver.shapedChargeResidual(1F));
+        assertEquals(1F, VehicleProjectileDamageResolver.shapedChargeResidual(2F));
+        assertEquals(1F, VehicleProjectileDamageResolver.shapedChargeResidual(9F));
+    }
+
+    @Test
+    void shapedChargeStoppedByArmourDoesNothingThroughTheJet()
+    {
+        VehicleProjectileDamageResolver.Result blocked = resolveHeat(1_590F, 82D, armoured(120F), 100F, 0.42F);
+        assertEquals(0F, blocked.damage());
+        assertFalse(blocked.shapedCharge());
+    }
+
+    @Test
+    void shapedChargeChannelIsLimitedToArmouredTargetsOnRealisticHealth()
+    {
+        // A soft target is left to the kinetic hit and the ungated blast.
+        VehicleProjectileDamageResolver.Result soft = panzerfaust(unarmoured());
+        assertFalse(soft.shapedCharge());
+        assertTrue(soft.damage() < 100F);
+
+        // Legacy health keeps the authored damage, which already stands for the whole warhead.
+        VehicleProjectileDamageResolver.Result legacy = VehicleProjectileDamageResolver.resolve(false, 2_900F,
+            4_500F, 45D / 20D, armoured(80F), 200F, 0.95F, HEAT_REFERENCE);
+        assertEquals(4_500F, legacy.damage());
+        assertFalse(legacy.shapedCharge());
+    }
+
+    @Test
+    void fastHeatShellKeepsItsKineticDamageWhenThatIsHigher()
+    {
+        // 114 mm HEAT shell: 20 kg at 750 m/s with a 2 kg charge.
+        VehicleProjectileDamageResolver.Result plain = resolve(true, 20_000F, 100F, 750D, armoured(100F), 300F);
+        VehicleProjectileDamageResolver.Result heat = resolveHeat(20_000F, 750D, armoured(100F), 300F, 2F);
+        assertEquals(plain.damage(), heat.damage());
+        assertTrue(heat.kineticDamage());
+        assertTrue(heat.shapedCharge());
+    }
+
+    private static final double HEAT_REFERENCE = ModCommonConfig.DEFAULT_HEAT_DAMAGE_REFERENCE;
+
+    private static VehicleProjectileDamageResolver.Result panzerfaust(ResolvedArmorHit armor)
+    {
+        return resolveHeat(2_900F, 45D, armor, 200F, 0.95F);
+    }
+
+    private static VehicleProjectileDamageResolver.Result resolveHeat(float mass, double velocityMs,
+                                                                        ResolvedArmorHit armor, float p100,
+                                                                        float chargeKg)
+    {
+        return VehicleProjectileDamageResolver.resolve(true, mass, 100F, velocityMs / 20D, armor, p100,
+            chargeKg, HEAT_REFERENCE);
     }
 
     private static void assertHits(int minimum, int maximum, ResolvedArmorHit armor, float... layerHp)

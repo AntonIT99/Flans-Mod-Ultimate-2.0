@@ -19,6 +19,7 @@ Penetrates False
 Mass 2900
 MuzzleVelocity 45
 PenetrationAt100m 200
+HEAT True
 
 // Damage and detonation
 DamageVsLiving 6500

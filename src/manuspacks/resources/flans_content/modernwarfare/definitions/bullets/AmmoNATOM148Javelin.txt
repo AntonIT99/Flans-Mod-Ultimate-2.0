@@ -35,6 +35,7 @@ Mass 22300
 MuzzleVelocity 290
 ExplosiveMassTNTKg 6
 PenetrationAt100m 750
+HEAT True
 FragType HE_SHELL
 Damage 300
 DamageVsVehicles 300

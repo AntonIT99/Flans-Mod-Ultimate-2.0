@@ -279,7 +279,8 @@ public final class VehiclePhysicsCommand
     private static String plate(ArmorPlate plate)
     {
         return format(plate.thicknessMm()) + " mm"
-            + (plate.slopeDeg() == 0F ? "" : " @ " + format(plate.slopeDeg()) + " deg");
+            + (plate.slopeDeg() == 0F ? "" : " @ " + format(plate.slopeDeg()) + " deg")
+            + (plate.hasDistinctHeatProtection() ? ", vs HEAT " + format(plate.heatThicknessMm()) + " mm" : "");
     }
 
     @Nullable

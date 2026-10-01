@@ -34,6 +34,7 @@ Mass 13340
 MuzzleVelocity 329
 ExplosiveMassTNTKg 2.18
 PenetrationAt100m 160
+HEAT True
 FragType HE_SHELL
 Explosion 5
 Fire 0

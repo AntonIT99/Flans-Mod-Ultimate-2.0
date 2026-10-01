@@ -26,6 +26,12 @@ public final class VehicleArmorSpecReader
     public static final String TURRET_ARMOR_BOTTOM = "TurretArmorBottomMm";
     public static final String PART_ARMOR = "PartArmorMm";
 
+    // Protection against shaped-charge (HEAT) jets for the face of the same name.
+    // Each key refines a plate authored at the same level, so it shares that
+    // plate's slope; a face without one resists HEAT with its kinetic value.
+    public static final String HEAT_SUFFIX = "VsHeatMm";
+    public static final String PART_ARMOR_VS_HEAT = "PartArmorVsHeatMm";
+
     // Naval semantic keys. Warship armour is published per structure - belt,
     // deck, citadel, conning tower, bulkhead - and one structure is spread over
     // several parts in a definition, so each key covers a family of parts rather
@@ -116,7 +122,88 @@ public final class VehicleArmorSpecReader
                     parts.put(part, new ArmorPlate(thickness, 0F));
             }
         }
+        readHeatProtection(file, hull, turret, parts, warnings);
         return new Result(new VehicleArmorSpec(hull, turret, parts), warnings);
+    }
+
+    /** The HEAT key refining a semantic facing key, e.g. {@code ArmorFrontMm} -> {@code ArmorFrontVsHeatMm}. */
+    public static String heatKey(String facingKey)
+    {
+        return facingKey.substring(0, facingKey.length() - "Mm".length()) + HEAT_SUFFIX;
+    }
+
+    private static void readHeatProtection(TypeFile file, EnumMap<EnumArmorFacing, ArmorPlate> hull,
+                                           EnumMap<EnumArmorFacing, ArmorPlate> turret,
+                                           EnumMap<EnumDriveablePart, ArmorPlate> parts, List<String> warnings)
+    {
+        readHeatFacing(file, ARMOR_FRONT, hull, List.of(EnumArmorFacing.FRONT), warnings);
+        readHeatFacing(file, ARMOR_REAR, hull, List.of(EnumArmorFacing.REAR), warnings);
+        readHeatFacing(file, ARMOR_SIDE, hull, List.of(EnumArmorFacing.LEFT, EnumArmorFacing.RIGHT), warnings);
+        readHeatFacing(file, ARMOR_TOP, hull, List.of(EnumArmorFacing.TOP), warnings);
+        readHeatFacing(file, ARMOR_BOTTOM, hull, List.of(EnumArmorFacing.BOTTOM), warnings);
+        readHeatFacing(file, TURRET_ARMOR_FRONT, turret, List.of(EnumArmorFacing.FRONT), warnings);
+        readHeatFacing(file, TURRET_ARMOR_REAR, turret, List.of(EnumArmorFacing.REAR), warnings);
+        readHeatFacing(file, TURRET_ARMOR_SIDE, turret, List.of(EnumArmorFacing.LEFT, EnumArmorFacing.RIGHT),
+            warnings);
+        readHeatFacing(file, TURRET_ARMOR_TOP, turret, List.of(EnumArmorFacing.TOP), warnings);
+        readHeatFacing(file, TURRET_ARMOR_BOTTOM, turret, List.of(EnumArmorFacing.BOTTOM), warnings);
+
+        List<String> lines = file.getConfigLines(PART_ARMOR_VS_HEAT);
+        if (lines == null)
+            return;
+        for (String line : lines)
+        {
+            String[] values = tokens(line);
+            if (values.length == 0)
+                continue;
+            if (values.length < 2)
+            {
+                warnings.add(PART_ARMOR_VS_HEAT + " requires <part> <millimetres>; ignoring '" + clean(line) + "'");
+                continue;
+            }
+            EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
+            if (part == null)
+            {
+                warnings.add(PART_ARMOR_VS_HEAT + " names unknown part '" + values[0] + "'; ignoring it");
+                continue;
+            }
+            ArmorPlate plate = parts.get(part);
+            if (plate == null)
+            {
+                warnings.add(PART_ARMOR_VS_HEAT + " " + values[0] + " needs a " + PART_ARMOR
+                    + " or naval armour line for the same part; ignoring it");
+                continue;
+            }
+            Float thickness = parseThickness(values[1], PART_ARMOR_VS_HEAT + " " + values[0], warnings);
+            if (thickness != null)
+                parts.put(part, plate.withHeatThickness(thickness));
+        }
+    }
+
+    private static void readHeatFacing(TypeFile file, String facingKey, EnumMap<EnumArmorFacing, ArmorPlate> target,
+                                       List<EnumArmorFacing> facings, List<String> warnings)
+    {
+        String key = heatKey(facingKey);
+        List<String> lines = file.getConfigLines(key);
+        if (lines == null)
+            return;
+        for (int index = lines.size() - 1; index >= 0; index--)
+        {
+            String[] values = tokens(lines.get(index));
+            if (values.length == 0)
+                continue;
+            Float thickness = parseThickness(values[0], key, warnings);
+            if (thickness == null)
+                return;
+            if (!target.containsKey(facings.get(0)))
+            {
+                warnings.add(key + " needs a " + facingKey + " line to refine; ignoring it");
+                return;
+            }
+            for (EnumArmorFacing facing : facings)
+                target.put(facing, target.get(facing).withHeatThickness(thickness));
+            return;
+        }
     }
 
     private static void readSides(TypeFile file, String key, EnumMap<EnumArmorFacing, ArmorPlate> target,

@@ -27,6 +27,7 @@ import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
 import com.flansmodultimate.common.driveables.SuspensionPhysics;
 import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
+import com.flansmodultimate.common.driveables.armor.ExplosionVehicleDamageResolver;
 import com.flansmodultimate.common.driveables.armor.ResolvedArmorHit;
 import com.flansmodultimate.common.driveables.armor.VehicleExplosionTarget;
 import com.flansmodultimate.common.driveables.armor.VehicleProjectileDamageResolver;
@@ -439,6 +440,14 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     protected UUID ownerId;
     @Setter @Nullable
     protected Entity lastAtkEntity;
+    /** Where a HEAT jet went through this tick, until the warhead's own explosion reads it. */
+    @Nullable
+    private ShapedChargeImpact shapedChargeImpact;
+
+    private record ShapedChargeImpact(EnumDriveablePart part, Vec3 point, long gameTime) {}
+
+    /** How far the detonation may sit from the recorded impact and still be that warhead's own. */
+    private static final double SHAPED_CHARGE_IMPACT_MATCH_DISTANCE_SQR = 4D;
 
     protected Driveable(EntityType<?> entityType, Level level)
     {
@@ -4458,8 +4467,9 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         float remainingPower = Math.max(0F, previousPower - resistance);
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
         int shotIndex = shot == null ? 0 : shot.getShot();
+        boolean heat = bulletType.isHeat();
         ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(),
-            hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg());
+            hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat);
         float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
         boolean normalizedHealth = configType.getResolvedHealth().enabled();
         float selectedFixedDamage = normalizedHealth ? authoredFixedDamage
@@ -4473,7 +4483,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(
             normalizedHealth, projectileMass, selectedFixedDamage,
             muzzleVelocity, armorHit,
-            p100 > 0F && Float.isFinite(p100) ? p100 : null);
+            p100 > 0F && Float.isFinite(p100) ? p100 : null,
+            heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired()
             && !resolvedDamage.penetration().penetrated();
         if (!level().isClientSide)
@@ -4488,10 +4499,66 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
                     resolvedDamage.penetration().effectiveArmorMm());
             else
                 DriveableDamageDebug.reportDamage(debugPlayer, this, hit.getPart(), appliedDamage);
+            if (resolvedDamage.shapedCharge())
+            {
+                // The jet has already done the warhead's work on this part; its blast is left to the others.
+                shapedChargeImpact = new ShapedChargeImpact(hit.getPart(), hit.getHitPosition(), level().getGameTime());
+                applyHeatSpall(shot, hit.getPart(), resolvedDamage.penetration().overmatch());
+            }
             if (part.isDestroyed())
                 onPartDestroyed(part.getType());
         }
+        // A shaped charge fires its jet at the first surface it strikes. Whatever it hits first - a skirt, an ERA
+        // block, a track - takes the jet in place of the hull behind, so it never carries on into the next part.
+        if (heat)
+            return new ShootingHelper.HitData(0F, armourBlocked ? 0F : penetrationRatio, false);
         return new ShootingHelper.HitData(remainingPower, armourBlocked ? 0F : penetrationRatio, false);
+    }
+
+    /** Charge of a HEAT round in kg TNT, recovered from its legacy explosion when it declares no explosive mass. */
+    private static float shapedChargeKg(@Nullable FiredShot shot, BulletType bulletType)
+    {
+        float charge = shot != null ? shot.getExplosiveMass() : bulletType.getExplosiveMass();
+        if (charge > 0F && Float.isFinite(charge))
+            return charge;
+        FlanExplosion.Stats stats = shot != null ? bulletType.getExplosionStatsForShot(shot)
+            : bulletType.getExplosionStats(null);
+        return ExplosionVehicleDamageResolver.legacyTntEquivalentKg(stats.explosionRadius(), stats.explosionPower(),
+            ModCommonConfig.get() == null ? ModCommonConfig.DEFAULT_CRATER_RADIUS_REFERENCE
+                : ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
+    }
+
+    /** Spall from a HEAT jet hurts whoever sits in the part it went through. */
+    private void applyHeatSpall(@Nullable FiredShot shot, EnumDriveablePart penetratedPart, float overmatch)
+    {
+        float spall = (float) ModCommonConfig.heatCrewSpallDamage()
+            * VehicleProjectileDamageResolver.shapedChargeResidual(overmatch);
+        if (spall <= 0F || !Float.isFinite(spall))
+            return;
+        DamageSource source = shot != null ? shot.getDamageSource(level(), null)
+            : level().damageSources().explosion(null, null);
+        for (Seat seat : seats)
+        {
+            if (seat == null || seat.getSeatInfo() == null || seat.getSeatInfo().getPart() != penetratedPart)
+                continue;
+            if (seat.getRiddenByEntity() instanceof LivingEntity occupant)
+                occupant.hurt(source, spall);
+        }
+    }
+
+    /**
+     * Reports which part a HEAT jet went through at this detonation, once, so the warhead's blast skips the part
+     * the jet has already damaged.
+     */
+    @Nullable
+    public EnumDriveablePart consumeShapedChargeImpact(Vec3 detonation)
+    {
+        ShapedChargeImpact impact = shapedChargeImpact;
+        shapedChargeImpact = null;
+        if (impact == null || impact.gameTime() != level().getGameTime()
+            || impact.point().distanceToSqr(detonation) > SHAPED_CHARGE_IMPACT_MATCH_DISTANCE_SQR)
+            return null;
+        return impact.part();
     }
 
     /** Precise ray trace against every configured local part box. */

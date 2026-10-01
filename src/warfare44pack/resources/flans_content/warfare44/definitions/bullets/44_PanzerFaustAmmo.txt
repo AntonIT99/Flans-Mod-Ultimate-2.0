@@ -17,6 +17,7 @@ FallSpeed 1.0
 HitBoxSize 0.1
 Penetrates False
 PenetrationAt100m 200
+HEAT True
 BreaksGlass True
 
 // Damage

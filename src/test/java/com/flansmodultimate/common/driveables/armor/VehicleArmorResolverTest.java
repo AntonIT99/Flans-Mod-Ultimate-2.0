@@ -26,6 +26,28 @@ class VehicleArmorResolverTest
     }
 
     @Test
+    void heatHitsUseTheFaceProtectionAgainstHeatThroughTheSameSlope()
+    {
+        ResolvedVehicleArmor glacis = resolved(new ArmorPlate(80F, 55F, 160F));
+        Vec3 headOn = new Vec3(0D, 0D, 1D);
+        assertEquals(139.47F, glacis.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, headOn, 80D, false)
+            .effectiveArmorMm(), 0.02F);
+        assertEquals(278.95F, glacis.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT, headOn, 80D, true)
+            .effectiveArmorMm(), 0.05F);
+    }
+
+    @Test
+    void aFaceWithNoProtectionAgainstHeatIsUnarmouredForAHeatHit()
+    {
+        ResolvedVehicleArmor armor = resolved(new ArmorPlate(20F, 0F, 0F));
+        ResolvedArmorHit heat = armor.resolveHit(EnumDriveablePart.CORE, EnumArmorFacing.FRONT,
+            new Vec3(0D, 0D, 1D), 80D, true);
+        assertFalse(heat.isArmoured());
+        assertEquals(0F, heat.effectiveArmorMm());
+        assertTrue(hit(armor, new Vec3(0D, 0D, 1D)).isArmoured());
+    }
+
+    @Test
     void actualObliquityCombinesWithTheAuthoredNormalInOneDotProduct()
     {
         ResolvedVehicleArmor armor = resolved(new ArmorPlate(100F, 0F));

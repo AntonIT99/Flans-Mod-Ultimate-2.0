@@ -115,6 +115,39 @@ class VehicleArmorSpecReaderTest
     }
 
     @Test
+    void heatProtectionRefinesThePlateOfTheSameFaceAndKeepsItsSlope()
+    {
+        VehicleArmorSpec spec = read("ArmorFrontMm 600 0", "ArmorFrontVsHeatMm 950", "ArmorSideMm 70",
+            "TurretArmorFrontMm 650 10", "TurretArmorFrontVsHeatMm 1100", "ArmorRearMm 40").spec();
+        assertEquals(new ArmorPlate(600F, 0F, 950F), spec.hull().get(EnumArmorFacing.FRONT));
+        assertEquals(new ArmorPlate(650F, 10F, 1100F), spec.turret().get(EnumArmorFacing.FRONT));
+        // A face with no HEAT key resists HEAT with its kinetic value.
+        assertEquals(70F, spec.hull().get(EnumArmorFacing.LEFT).heatThicknessMm());
+        assertFalse(spec.hull().get(EnumArmorFacing.REAR).hasDistinctHeatProtection());
+    }
+
+    @Test
+    void sideAndPartHeatKeysCoverEveryPlateTheirArmourKeyCovers()
+    {
+        VehicleArmorSpec spec = read("ArmorSideMm 80", "ArmorSideVsHeatMm 300",
+            "PartArmorMm rightSkirt 8", "PartArmorVsHeatMm rightSkirt 0").spec();
+        assertEquals(300F, spec.hull().get(EnumArmorFacing.LEFT).heatThicknessMm());
+        assertEquals(300F, spec.hull().get(EnumArmorFacing.RIGHT).heatThicknessMm());
+        assertEquals(new ArmorPlate(8F, 0F, 0F), spec.partOverrides().get(EnumDriveablePart.RIGHT_SKIRT));
+    }
+
+    @Test
+    void heatKeysWithoutAPlateToRefineWarnAndChangeNothing()
+    {
+        VehicleArmorSpecReader.Result result = read("ArmorFrontVsHeatMm 900",
+            "PartArmorVsHeatMm leftTrack 30", "ArmorRearMm 40", "ArmorRearVsHeatMm -5");
+        assertFalse(result.spec().hull().containsKey(EnumArmorFacing.FRONT));
+        assertTrue(result.spec().partOverrides().isEmpty());
+        assertEquals(new ArmorPlate(40F, 0F), result.spec().hull().get(EnumArmorFacing.REAR));
+        assertEquals(3, result.warnings().size());
+    }
+
+    @Test
     void navalKeysAreAbsentFromADefinitionThatDoesNotUseThem()
     {
         assertTrue(read("ArmorFrontMm 80 55").spec().partOverrides().isEmpty());

@@ -126,13 +126,15 @@ public record CommonConfigSnapshot(
     double minimumBlastDistanceMeters,
     double maxExplosionRadius,
     double maxBlastRadius,
+    double heatDamageReference,
+    double heatCrewSpallDamage,
 
     boolean enchantmentModuleEnabled,
 
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 36;
+    public static final int CURRENT_VERSION = 37;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -264,6 +266,8 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.minimumBlastDistanceMeters);
         buf.writeDouble(s.maxExplosionRadius);
         buf.writeDouble(s.maxBlastRadius);
+        buf.writeDouble(s.heatDamageReference);
+        buf.writeDouble(s.heatCrewSpallDamage);
 
         buf.writeBoolean(s.enchantmentModuleEnabled);
 
@@ -385,6 +389,8 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readDouble(),
             buf.readBoolean(),
+            buf.readDouble(),
+            buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),

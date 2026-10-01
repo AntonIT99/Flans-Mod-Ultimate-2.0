@@ -2,6 +2,7 @@ package com.flansmodultimate.common.explosions;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
+import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.ExplosionVehicleDamageResolver;
 import com.flansmodultimate.common.driveables.armor.VehicleExplosionDamageBudget;
@@ -436,6 +437,8 @@ public class FlanExplosion extends Explosion
                 stats.explosionRadius(), stats.explosionPower(),
                 ModCommonConfig.get().newDamageSystemExplosiveRadiusReference());
         Float explosiveMass = charge > 0F ? charge : null;
+        // A HEAT warhead that has just penetrated a part already did its damage there through the jet.
+        EnumDriveablePart penetratedByJet = driveable.consumeShapedChargeImpact(center);
         List<VehicleExplosionTarget> affectedParts = new ArrayList<>();
         List<Float> rawDamage = new ArrayList<>();
         double knockbackExposure = 0D;
@@ -462,7 +465,7 @@ public class FlanExplosion extends Explosion
                 plate.thicknessMm(), explosiveMass, distance, blast, fragmentation,
                 ModCommonConfig.armoredBlastResistanceKPaPerMm(), ModCommonConfig.minimumBlastDistanceMeters());
             affectedParts.add(target);
-            rawDamage.add(channels.totalDamage());
+            rawDamage.add(target.part() == penetratedByJet ? 0F : channels.totalDamage());
             if (seen * blastFalloff > knockbackExposure)
             {
                 knockbackExposure = seen * blastFalloff;
