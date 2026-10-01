@@ -132,6 +132,43 @@ Every ground vehicle requires:
 | `DriveType` | enum | `RWD`, `FWD`, `AWD`, `TRACKED`, or `MARINE`. Mandatory. A true ground vehicle takes one of the first four; a hull that floats takes `MARINE`, which is never inferred and must be authored. |
 | `RealMaxSpeedKmh` | km/h, finite and > 0 | Governed road maximum for the represented setup, not an exceptional downhill value. |
 | `RealMaxReverseSpeedKmh` | km/h, finite and > 0 | Gearbox-limited reverse speed; use a game fallback rather than omit it. |
+| `RealTurnRateDegPerSec` | hull degrees/second, finite and > 0 | Sustained full-input hull turn rate; tracked pivot rate, or rolling rate at `RealMaxSpeedKmh` for wheeled vehicles. Research under the steering rules below. |
+
+### Hull steering research
+
+`RealTurnRateDegPerSec` measures the vehicle hull, **not turret traverse**, gun aim,
+steering-wheel rotation, steering force, or an abstract handling multiplier. A valid
+value overrides `TurnLeftSpeed`, `TurnRightSpeed`, `MaxThrottle`/`MaxNegativeThrottle`
+steering scaling and installed-engine `EngineSpeed` in normal physics. Forced
+legacy physics retains the legacy formula; omission or invalid values retain it too.
+The override is independent of a complete propulsion profile. Wheeled vehicles
+also need a positive `RealMaxSpeedKmh`; crew-pushed emplacements are excluded.
+
+- Tracked: use sustained full-input hull pivot/low-speed traverse on level firm
+  ground with the engine running. Convert a timed turn using `angleDeg / seconds`
+  (a full revolution is `360 / seconds`). Record neutral/counter-rotation versus
+  braked-track turning, gear, surface, loading, and running versus standing start.
+  The current runtime approximates all tracked steering with the same yaw-rate
+  control; do not claim that it models the distinction between steering systems.
+- Wheeled: the runtime scales yaw linearly with signed rolling speed relative to
+  `RealMaxSpeedKmh`, capped at the authored rate, and cannot pivot at rest. Convert
+  a measured steady turn at speed `v` to the top-speed reference as
+  `rateAtV * RealMaxSpeedKmh / v`. Alternatively, a known centre-of-vehicle turning
+  radius `R` in metres gives `degrees((RealMaxSpeedKmh / 3.6) / R)` per second.
+  Check whether a quoted turning circle is a diameter, kerb-to-kerb, wall-to-wall,
+  or outer-wheel path; it is not automatically a hull-centre radius. This is a
+  simple steering approximation, not a high-speed grip or rollover model.
+- Apply the normal source ladder. Published timed hull turns and exact manuals
+  take priority. War Thunder's official vehicle profiles sometimes publish hull
+  turn times (e.g. [ZiS-30](https://warthunder.com/en/news/3356--en)); its turret
+  rotation stat is unrelated. Record game version, mode, upgrades, gear and test
+  conditions when available; recompute degrees/second from an angle/time pair
+  and flag conflicting published arithmetic. Prefer realistic mode measurements
+  when using game evidence. An old article is a dated game fallback, not historical proof.
+- If no direct figure exists, use a configuration-compatible measured analogue
+  with comparable steering system and mobility, then a disclosed coherent estimate.
+  Do not convert legacy `TurnLeftSpeed` or an installed engine into researched data.
+  Keep sources, conversions and estimates in the report, outside category JSON.
 
 The realistic propulsion profile activates only when mass, maximum speed, and one
 engine-power value are valid. Never leave an accidental half-profile.
@@ -151,7 +188,7 @@ above do not apply to them:
   `ReadWeaponsFromGunTypes`, the armour faces the mounting genuinely has, the
   bank cadence keys, and the ammunition group. These are the keys that do work.
 - **Omit** `DriveType`, the engine key, `RealMaxSpeedKmh`, and
-  `RealMaxReverseSpeedKmh`. The completeness-over-omission rule never licenses
+  `RealMaxReverseSpeedKmh` and `RealTurnRateDegPerSec`. The completeness-over-omission rule never licenses
   inventing horsepower for a PaK 40 or a road speed for a pillbox: no source tier
   failed, the represented object simply has no engine. Authoring them would also
   leave exactly the accidental half-profile the section above forbids.

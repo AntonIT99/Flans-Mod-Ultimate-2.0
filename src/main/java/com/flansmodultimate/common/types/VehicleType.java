@@ -41,6 +41,8 @@ public class VehicleType extends DriveableType
 
     protected float turnLeftModifier = 1F;
     protected float turnRightModifier = 1F;
+    /** Sustained hull yaw rate at full steering, in degrees per second; zero means unspecified. */
+    protected float realTurnRateDegPerSec;
     protected boolean squashMobs;
     protected boolean fourWheelDrive;
     protected boolean rotateWheels;
@@ -83,6 +85,11 @@ public class VehicleType extends DriveableType
         applyLegacyTurretRotationSpeed(file);
         turnLeftModifier = readOptionalValue("TurnLeftSpeed", turnLeftModifier, file);
         turnRightModifier = readValue("TurnRightSpeed", turnRightModifier, file);
+        String turnRateKey = file.hasConfigLine("RealTurnRateDegPerSec")
+            ? "RealTurnRateDegPerSec" : "TurnRateDegPerSec";
+        float configuredTurnRate = readValue(turnRateKey, 0F, file);
+        realTurnRateDegPerSec = Float.isFinite(configuredTurnRate) && configuredTurnRate > 0F
+            ? configuredTurnRate : 0F;
         squashMobs = readValue("SquashMobs", squashMobs, file);
         fourWheelDrive = readValue("FourWheelDrive", fourWheelDrive, file);
         tank = readValue("Tank", tank, file);
@@ -126,6 +133,14 @@ public class VehicleType extends DriveableType
         // Re-run finalization now that Tank, FourWheelDrive and the rest are read,
         // so physics resolution sees the complete definition.
         finishDerivedValues();
+    }
+
+    /** Independent of a complete propulsion profile; rolling steering needs a reference speed. */
+    public boolean usesRealTurnRate(boolean forceLegacy, boolean pushed, boolean tracked)
+    {
+        Float referenceSpeed = getRealWorldSpec().maxSpeedKmh();
+        return !forceLegacy && !pushed && realTurnRateDegPerSec > 0F
+            && (tracked || (referenceSpeed != null && Float.isFinite(referenceSpeed) && referenceSpeed > 0F));
     }
 
     private void applyLegacyTurretRotationSpeed(TypeFile file)

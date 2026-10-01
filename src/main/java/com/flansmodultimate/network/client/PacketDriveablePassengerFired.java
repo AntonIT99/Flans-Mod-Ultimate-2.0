@@ -45,6 +45,9 @@ public class PacketDriveablePassengerFired implements IClientPacket
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         if (level.getEntity(entityId) instanceof Driveable driveable)
+        {
             DriveableMuzzleFlashes.passengerFired(driveable, seat, barrel);
+            driveable.spawnPassengerParticles(seat, barrel);
+        }
     }
 }

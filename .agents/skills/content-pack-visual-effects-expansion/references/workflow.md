@@ -79,6 +79,7 @@ particle names are the constants in `FlanParticles` as mapped by
 | Bullet | `BoostParticle` | Rocket and missile boost-phase particle. |
 | Driveable | `FlashModel DefaultFlash` | Type-wide muzzle-flash opt-in. Each successful `GUN` or `SHELL` bank shot flashes only its fired shoot point/barrel; passenger guns flash only their fired `GunOrigin` barrel. Several muzzles can flash together. A mounted gun's own `FlashModel` or `MuzzleFlashModel` replaces the default at that muzzle. Driveables accept only `DefaultFlash`, with no `FlashTexture` or `anim*` placement lines. |
 | Driveable | `ShootParticlesPrimary` / `ShootParticlesSecondary name x y z` | Spawned once per fired shoot point at that point's shoot origin (root plus offset), the same point the projectile leaves from. The particles are therefore exactly as well placed as the shoot point (§5.2). `x y z` is a direction and speed in the model basis: +x forward, y up. |
+| Driveable | `ShootParticlesPassenger seatId name x y z` | Repeatable per-seat muzzle particles on vehicles and planes. Positive passenger seat IDs only; the seat must exist. Each successful shot emits its configured set once at the fired `GunOrigin` barrel, using the same origin as the projectile. Velocity is in the legacy model basis (+x forward), transformed by current seat yaw/pitch and driveable rotation. Independent of bank particles and flash-model opt-in (§5.2). |
 | Driveable | `AddEmitter` / `AddParticle name rate [ox,oy,oz] [ex,ey,ez] [vx,vy,vz] minThrottle maxThrottle minHealth maxHealth part` | Continuous emitter. The origin, extents and velocity are in type-file pixels. It emits every `rate` ticks while throttle and part-health fraction are inside the bounds. It runs only while the engine is on (vehicles and planes) and within the local emitter range. Turret and barrel parts follow the turret. |
 | Driveable | `EmittersRequireOccupant` | Emitters only while occupied. |
 | AA gun | `Barrel index x y z` | Projectile origin in type-file pixels for that barrel. `shootPointSync` compares and can synchronize these lines with the measured `ModelAAGun` muzzles. This is placement data, not a visual-effect key. |
@@ -89,14 +90,13 @@ Engine limitations. Report these; don't work around them:
 - deployed guns (`Deployable True`, drawn by `ModelMG`) can draw `FlashModel` or
   `MuzzleFlashModel` at their measured muzzle, but still have no world
   muzzle-flash particle path;
-- driveable passenger guns can draw a flash at `GunOrigin`, but still get no
-  `ShootParticles*` path;
 - `FlashModel DefaultFlash` is one driveable-wide switch, not a per-bank or
   per-seat setting; it cannot safely represent mixed eligible and ineligible
   gun/shell muzzles;
 - AA guns still have no flash-model or `ShootParticles*` parser/render path; adding
   either key to an AA-gun definition would be inert;
-- only the primary and secondary banks of a driveable get `ShootParticles*`.
+- `ShootParticlesPassenger` targets passenger seats only; it does not configure
+  driver seat 0, bank shoot points, deployable guns or standalone AA guns.
 
 ## 3. Hand-held guns
 
@@ -291,8 +291,9 @@ key. Audit them separately under §5.5.
 ### 5.2 Shoot particles
 
 Vehicle-cannon coverage is exhaustive: audit every primary and secondary bank
-that fires an autocannon, tank gun, anti-tank gun, howitzer or other conventional
-cannon. Each supported bank should have a calibre-appropriate layered muzzle blast,
+and every passenger mount that fires an autocannon, tank gun, anti-tank gun, howitzer or other conventional
+cannon. Each supported bank or passenger mount should have a calibre-appropriate
+layered muzzle blast,
 either already present or added here. A small-arms bank may also receive the lighter
 sets below when appropriate. Shoot particles are drawn at the shoot point, so place
 them only on a point whose position is known. Never measure or estimate a driveable
@@ -303,6 +304,8 @@ muzzle by hand. Decide per bank from the `shootPointSync` report (§1.3):
 | `primary` `unchanged`, not in Check first | Measured main-gun muzzle | Add |
 | `primary` `update`, or a `GunOrigin`/`Barrel` `add` | The pack is not synced yet | Apply mode: sync first (below), then add. Audit mode: propose the sync and the particles together. |
 | `primary` `skipped` (several points, or a point that mounts its own gun) | Not measured; authored only | Add only when the authored points pass the authored-only check below. Otherwise skip: `no reliable position`. |
+| Passenger `GunOrigin` `unchanged`, not in Check first | Measured seat-gun muzzle | Add per-seat particles |
+| Passenger `GunOrigin` `update` or `add` | The seat muzzle is not synced yet | Apply mode: sync first, then add per-seat particles |
 | Secondary bank, `AddGun`, or listed under "Nothing to measure" | Not measured; the tool never moves these | Authored-only check |
 | Any row in Check first (score 15 or more) | Measurement or placement in doubt | Skip and list as suspicious |
 | Definition missing from the report, or its model `skipped`/`failed` | None | Skip: `no reliable position` |
@@ -321,10 +324,45 @@ shows. It must not sit on the turret pivot or inside the hull. Planes' wing guns
 usually not modelled, so this check is their normal path. Anything placed this way
 goes on the suspicious list, and `/flandebug shootpoint list` can confirm it in game.
 
-Seat guns (`GunOrigin`) are synced by the same task, but the engine gives them no
-`ShootParticles*` path (§2 limitations); their flashes are handled by §5.1. Their
-rows matter here only as a check on the model: a gun that measures far from its
-gunner seat, or across the hull, points to a model or seat problem worth reporting.
+**Passenger shoot particles.** Resolve each passenger's `GunType` and ammunition
+before selecting a set: a calibre alone does not distinguish a high-pressure
+autocannon from a grenade launcher or a fictional energy weapon. Use
+`ShootParticlesPassenger <seatId> <name> <x> <y> <z>` in the driveable definition,
+with the positive ID from its `Passenger` line, not its gunner inventory slot or
+barrel index. Add a separate set for each eligible seat. Preserve existing lines
+and supplement missing layers only for that seat.
+
+Use the seat's `GunOrigin` rows from `shootPointSync` and the placement gates above.
+A distant or mirrored seat/muzzle is still a Check first warning; do not assume a
+long barrel explains it without model-source verification. Any independently
+verified authored-only placement remains an in-game check candidate. Never move
+`GunOrigin` by hand. The fired-barrel offsets and current aim are applied by the
+engine; particle velocity is not a position offset and needs no manual `/16`,
+`ModelScale` conversion or world-space rotation.
+
+Passenger particles do not require `FlashModel DefaultFlash`, the gun's own flash
+model, or `ShowMuzzleFlashParticle True`. A mixed flash-eligibility driveable can
+receive particles on an eligible seat without enabling the type-wide flash.
+Primary/secondary particle sets do not supply passenger effects, and seat effects
+do not supply bank effects.
+
+Current passenger guns alternate measured barrels: each successful shot emits
+one seat's set once from its fired barrel. Budget its configured line count per
+shot rather than multiplying by all barrels or all seats. Separate gunners may
+fire independently; consider aggregate smoke and cadence when several automatic
+mounts share a ship. Verify this firing behavior if working on a branch whose
+implementation differs.
+
+Example for a rapid 20–30 mm passenger autocannon on seat 1 (six particles):
+
+```text
+ShootParticlesPassenger 1 flansmod.fmflame 0.58 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.34 0.04 0.025
+ShootParticlesPassenger 1 flansmod.fmflame 0.3 -0.035 -0.03
+ShootParticlesPassenger 1 smoke 0.2 0.035 -0.04
+ShootParticlesPassenger 1 smoke 0.18 -0.03 0.045
+ShootParticlesPassenger 1 crit 0.38 0.01 0
+```
 
 Classify existing cannon particles into three visual layers:
 
@@ -429,8 +467,8 @@ at least one, so an authored zero is not a visual exemption.
 
 **Current muzzle limitation.** `AAGunType` and `AAGunRenderer` have no supported
 flash-model or shoot-particle path. Do not add `FlashModel`, `MuzzleFlashModel`,
-`ShootParticlesPrimary`, `ShootParticlesSecondary` or invented AA equivalents to
-an AA-gun definition. Instead, select or compose the effect the weapon should use
+`ShootParticlesPrimary`, `ShootParticlesSecondary`, `ShootParticlesPassenger`
+or invented AA equivalents to an AA-gun definition. Instead, select or compose the effect the weapon should use
 from [muzzle-blast-proposals.md](muzzle-blast-proposals.md) and include it in the
 report as an `engine limitation` proposal. State its intended layers, per-barrel
 line count, and worst-case volley count.
@@ -496,7 +534,9 @@ When the pack's existing style exceeds these, keep it and report it; never excee
 it in additions. For shoot particles, multiply the configured line count by the
 number of shoot points that fire together. The resulting worst-case particles per
 trigger, rather than the lines written once in the definition, is the budgeted
-quantity.
+quantity. Passenger guns currently alternate barrels, so their per-shot budget
+is the set for the fired seat only; account for cadence and independently firing
+seats when assessing sustained visual density.
 
 ## 8. Validation
 
@@ -511,7 +551,9 @@ quantity.
    point against the model source. When driveables or AA guns were touched, re-run
    `shootPointSync` with the pack filter and confirm `0 to update, 0 to add`, and
    that every driveable that gained `FlashModel DefaultFlash` satisfies §5.1 and
-   every bank that gained `ShootParticles*` is placed per §5.2. Confirm every
+   every bank or passenger mount that gained `ShootParticles*` is placed per §5.2.
+   For passenger sets, verify a positive existing seat with a resolved gun, the
+   matching `GunOrigin` evidence, and the per-fired-barrel budget. Confirm every
    audited AA gun satisfies §5.5, its ammo visuals resolve, and no unsupported
    muzzle-effect key was added to its definition.
 3. Run the pack's jar task (`manusPacksJar`, `warfare44Pack`, `officialPacksJar`,

@@ -231,6 +231,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public record ShootParticle(String name, float x, float y, float z) {}
     protected final List<ShootParticle> shootParticlesPrimary = new ArrayList<>();
     protected final List<ShootParticle> shootParticlesSecondary = new ArrayList<>();
+    private final Map<Integer, List<ShootParticle>> shootParticlesPassenger = new HashMap<>();
 
     protected int numCargoSlots;
     protected int numBombSlots;
@@ -737,6 +738,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readShootParticles("ShootParticlesPrimary", shootParticlesPrimary, file);
         readShootParticles("ShootParticlesSecondary", shootParticlesSecondary, file);
         readShootParticles("ShootParticleSecondary", shootParticlesSecondary, file);
+        forEachLine("ShootParticlesPassenger", file, 5, values -> {
+            int seat = Integer.parseInt(values[0]);
+            if (seat > 0 && getSeat(seat) != null)
+                shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>()).add(
+                    new ShootParticle(values[1], Float.parseFloat(values[2]),
+                        Float.parseFloat(values[3]), Float.parseFloat(values[4])));
+        });
         readLegacyGuns(file);
         readLegacyWeaponPosition("BombPosition", EnumDriveablePart.CORE, EnumWeaponType.BOMB, file);
         readLegacyWeaponPosition("BarrelPosition", EnumDriveablePart.TURRET, EnumWeaponType.SHELL, file);
@@ -1692,6 +1700,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 logError("Could not parse AddGun", file, ex);
             }
         }
+    }
+
+    /** Explicit particles for one passenger gun; absent seats preserve legacy visuals. */
+    public List<ShootParticle> getShootParticlesPassenger(int seat)
+    {
+        return Collections.unmodifiableList(shootParticlesPassenger.getOrDefault(seat, List.of()));
     }
 
     private void readShootParticles(String key, List<ShootParticle> destination, TypeFile file)

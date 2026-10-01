@@ -9,6 +9,36 @@ class DriveableControlPhysicsTest
     private static final float EPSILON = 1.0E-6F;
 
     @Test
+    void researchedHullRateReachesAuthoredRateWithHeldInput()
+    {
+        float control = 0F;
+        for (int tick = 0; tick < 200; tick++)
+            control = DriveableControlPhysics.dampedControl(control, 1F, 1F);
+        float delta = DriveableControlPhysics.realSteeringYawDelta(12F, control, true, true, 0D, 0D);
+        assertEquals(12F, delta * 20F, 0.0001F);
+        assertEquals(180F, delta * 300F, 0.001F, "15 seconds for a sustained 180-degree turn");
+        assertEquals(-delta, DriveableControlPhysics.realSteeringYawDelta(12F, -control, true, true, 0D, 0D));
+        assertEquals(delta * 0.5F, DriveableControlPhysics.realSteeringYawDelta(12F,
+            DriveableControlPhysics.realSingleTrackTurnControl(0F, control, true, true, false),
+            true, true, 0D, 0D), EPSILON);
+        assertEquals(delta * 0.5F, DriveableControlPhysics.realSteeringYawDelta(12F,
+            DriveableControlPhysics.realSingleTrackTurnControl(1F, 0F, false, false, true),
+            true, true, 0D, 0D), EPSILON);
+        assertEquals(0F, DriveableControlPhysics.realSteeringYawDelta(12F, control, true, false, 1D, 1D));
+    }
+
+    @Test
+    void researchedRollingRateUsesTravelSpeedAndDirection()
+    {
+        assertEquals(0F, DriveableControlPhysics.realSteeringYawDelta(20F, 9F, false, true, 0D, 1D));
+        assertEquals(0.5F, DriveableControlPhysics.realSteeringYawDelta(20F, 9F, false, false, 0.5D, 1D), EPSILON);
+        assertEquals(-0.5F, DriveableControlPhysics.realSteeringYawDelta(20F, 9F, false, true, -0.5D, 1D), EPSILON);
+        assertEquals(1F, DriveableControlPhysics.realSteeringYawDelta(20F, 20F, false, true, 2D, 1D), EPSILON);
+        assertEquals(0F, DriveableControlPhysics.realSteeringYawDelta(20F, 9F, false, true, 1D, Double.NaN));
+        assertEquals(0F, DriveableControlPhysics.realSteeringYawDelta(Float.NaN, 9F, true, true, 0D, 0D));
+    }
+
+    @Test
     void rollingWheelsSteerInTheirTravelDirectionWithoutPropulsion()
     {
         assertEquals(0.1D, DriveableControlPhysics.wheeledSteeringVelocityScale(0.32D), EPSILON);

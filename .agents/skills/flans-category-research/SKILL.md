@@ -16,6 +16,8 @@ runtime copies. This skill owns category policy; domain references own values.
   Armor uses only **Identity and scope** and **Source ladder**, for construction.
 - Guns, AA guns, ammunition, grenades or bombs: [guns-ammunition-grenades.md](references/guns-ammunition-grenades.md).
 - Ground vehicles or aircraft: [vehicles-aircraft.md](references/vehicles-aircraft.md).
+  Ground-vehicle research includes measured hull steering via `RealTurnRateDegPerSec`;
+  follow that reference's steering conditions and conversions, rather than legacy coefficients.
 - Ships: [ships.md](references/ships.md), plus the shared driveable and weapon-bank
   rules in `vehicles-aircraft.md`; do not load its aircraft sections for ships.
 - Wearable armor: [armor.md](references/armor.md). Load its separate worked

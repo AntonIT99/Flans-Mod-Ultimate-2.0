@@ -237,3 +237,24 @@ AddEmitter largesmoke 1 [-100,25,37] [1,1,1] [0,5,0] 0.7 0.75 0 1 core
 AddEmitter largesmoke 1 [-100,25,-37] [1,1,1] [0,5,0] 0.7 0.77 0 1 core
 AddEmitter flame 1 [-100,25,37] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
 AddEmitter flame 1 [-100,25,-37] [1,1,1] [0,5,0] 0.7 0.73 0 1 core
+
+ShootParticlesPassenger 1 explode 0.7 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.95 0 0
+ShootParticlesPassenger 1 flansmod.fmflame 0.58 0.07 0.05
+ShootParticlesPassenger 1 flansmod.fmflame 0.54 -0.06 -0.06
+ShootParticlesPassenger 1 flansmod.fmflame 0.42 0.04 -0.08
+ShootParticlesPassenger 1 largesmoke 0.3 0.07 0.06
+ShootParticlesPassenger 1 largesmoke 0.28 -0.06 -0.07
+ShootParticlesPassenger 1 largesmoke 0.24 0.04 -0.09
+ShootParticlesPassenger 1 largesmoke 0.22 -0.04 0.09
+ShootParticlesPassenger 1 crit 0.48 0 0
+ShootParticlesPassenger 2 explode 0.7 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.95 0 0
+ShootParticlesPassenger 2 flansmod.fmflame 0.58 0.07 0.05
+ShootParticlesPassenger 2 flansmod.fmflame 0.54 -0.06 -0.06
+ShootParticlesPassenger 2 flansmod.fmflame 0.42 0.04 -0.08
+ShootParticlesPassenger 2 largesmoke 0.3 0.07 0.06
+ShootParticlesPassenger 2 largesmoke 0.28 -0.06 -0.07
+ShootParticlesPassenger 2 largesmoke 0.24 0.04 -0.09
+ShootParticlesPassenger 2 largesmoke 0.22 -0.04 0.09
+ShootParticlesPassenger 2 crit 0.48 0 0

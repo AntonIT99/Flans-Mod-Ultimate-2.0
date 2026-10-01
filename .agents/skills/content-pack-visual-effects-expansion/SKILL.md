@@ -25,8 +25,8 @@ passenger guns. A definition being mounted in a vehicle is never a reason to omi
 its flash.
 
 Vehicle-cannon muzzle-blast coverage is exhaustive too. Check every primary and
-secondary cannon bank and give it a calibre-appropriate combination of pressure
-flash, flame and smoke at the exact fired barrel. Preserve a good existing set;
+secondary cannon bank and every passenger cannon mount and give it a
+calibre-appropriate combination of pressure flash, flame and smoke at the exact fired barrel. Preserve a good existing set;
 supplement a visibly incomplete set without duplicating its existing layers.
 
 Include every `AAGunType` in the audit. Synchronize and verify each AA barrel,
@@ -78,11 +78,12 @@ engine limitation.
     measurement that passes the workflow checks, or a verified same-model-family
     match with a reference. A deployable gun flash requires a `measured` deployable
     row for its `DeployedModel` and the source-model checks in workflow §3.6.
-  - A driveable flash or shoot-particle set requires each affected shoot point or
-    passenger `GunOrigin` to be measured and synced by `shootPointSync`, or to pass
+  - A driveable flash or bank/passenger shoot-particle set requires each affected
+    shoot point or passenger `GunOrigin` to be measured and synced by `shootPointSync`, or to pass
     the workflow's authored-only check. The driveable flash switch covers all of
     its gun/shell banks and passenger guns together, so mixed eligible and
-    ineligible muzzles must be skipped rather than partially enabled.
+    ineligible muzzles must skip that flash switch rather than partially enable it.
+    Per-seat particle effects remain available for independently eligible guns.
   - Otherwise skip it and list it under "no reliable position".
 - Realism gates every addition: no flash on melee weapons, bows, air or gas guns,
   or suppressed weapons, and none at the front of recoilless or rocket launchers.
@@ -96,12 +97,15 @@ engine limitation.
   It is governed by the server config `muzzleFlashParticlesDefault`. Writing
   `ShowMuzzleFlashParticle False` is allowed for weapons that must never flash.
 - Every vehicle-cannon bank supported by `ShootParticlesPrimary` or
-  `ShootParticlesSecondary` must be audited for a layered muzzle blast. Preserve
+  `ShootParticlesSecondary`, and every passenger cannon supported by
+  `ShootParticlesPassenger`, must be audited for a layered muzzle blast. Preserve
   complete existing sets and add only missing flash, flame or smoke layers to
   sparse sets. Creative combinations are encouraged when every particle has a
   clear visual role. Match calibre, rate of fire, barrel layout, muzzle-brake
   geometry and the pack's established style; workflow §5.2 defines the palette,
-  example sets and placement gates.
+  example sets and placement gates. Passenger particles are per seat and do not
+  require the driveable-wide flash switch; mixed flash eligibility does not block
+  effects on independently eligible passenger guns.
 - Every AA-gun definition must be classified and audited even though it currently
   cannot render a muzzle flash or shoot-particle set. Validate its `NumBarrels`,
   synchronized `Barrel` origins, `FireAlternately` fan-out and referenced ammo;

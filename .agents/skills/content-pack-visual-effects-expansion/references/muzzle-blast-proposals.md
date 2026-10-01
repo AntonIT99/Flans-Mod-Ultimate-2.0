@@ -1,8 +1,8 @@
 # Vehicle muzzle-blast proposals
 
 Use this catalogue with `workflow.md` §5.2 and §5.5. It is a set of starting
-designs for `ShootParticlesPrimary` and `ShootParticlesSecondary`, not a reason to
-replace a pack's good existing style. The current `AAGunType` does not support
+designs for `ShootParticlesPrimary`, `ShootParticlesSecondary` and
+`ShootParticlesPassenger`, not a reason to replace a pack's good existing style. The current `AAGunType` does not support
 these keys: for an AA-gun definition, use the catalogue to write a report proposal
 only and never paste its lines into the definition. Every effect that can be
 applied still needs the position evidence, particle-name validation and budget
@@ -31,8 +31,8 @@ or vector is appropriate in the selected target pack.
 
 ## 2. Reading the vectors
 
-Each line is one particle spawned at the exact fired shoot point. The last three
-numbers are velocity in the muzzle's local basis:
+Each line is one particle spawned at the exact fired shoot point or passenger
+barrel. The last three numbers are velocity in the muzzle's local basis:
 
 - `+x`: forward along the bore;
 - `-x`: rearward, useful for a recoilless backblast or rocket exhaust;
@@ -40,7 +40,12 @@ numbers are velocity in the muzzle's local basis:
 - `+/-z`: side spread.
 
 The examples use `ShootParticlesPrimary`. Replace the key with
-`ShootParticlesSecondary` for a secondary cannon bank. Mirror x only when model or
+`ShootParticlesSecondary` for a secondary cannon bank, or with
+`ShootParticlesPassenger <seatId>` for an eligible passenger mount (for example,
+`ShootParticlesPassenger 3 flansmod.fmflame 0.58 0 0`). The seat ID belongs to
+the driveable's `Passenger` line. Passenger effects follow current aim and the
+fired barrel without manual positional offsets, and do not require a flash-model
+opt-in. Apply the seat-origin checks in workflow §5.2. Mirror x only when model or
 pack evidence shows the barrel faces the opposite way.
 
 Count the bank fan-out before choosing a set:
@@ -49,6 +54,9 @@ Count the bank fan-out before choosing a set:
 
 A twin or quad mount therefore needs a smaller per-point set than a single barrel.
 Alternating barrels use the per-barrel count; simultaneous barrels use the total.
+Current passenger guns alternate barrels and emit one set per successful shot;
+do not multiply their set by the mount's barrel count. Account for independently
+firing seats and sustained cadence when choosing smoke density.
 
 ## 3. Supported visual palette
 
@@ -451,7 +459,7 @@ sprites.
 
 ## 8. Choosing and reporting a proposal
 
-For each cannon bank, record:
+For each cannon bank or passenger mount, record:
 
 1. weapon class, approximate calibre and rate of fire;
 2. fired shoot-point count and whether barrels alternate or fire together;

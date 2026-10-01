@@ -12,6 +12,7 @@ import com.flansmodultimate.common.driveables.physics.DriveDirectionInterlock;
 import com.flansmodultimate.common.driveables.physics.GroundPropulsionPhysics;
 import com.flansmodultimate.common.driveables.physics.GroundSlopePhysics;
 import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
+import com.flansmodultimate.common.driveables.physics.TrackAnimationPhysics;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsConstants;
 import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
 import com.flansmodultimate.common.driveables.physics.WheelAnimationPhysics;
@@ -201,6 +202,16 @@ public class Vehicle extends Driveable
             : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
         double steeringScale = 0.1D * Math.max(0F, steeringModifier);
         float yawDelta = (float) Math.toDegrees(turnControl * steeringScale * velocityScale);
+        if (type.usesRealTurnRate(ModCommonConfig.forceLegacyVehiclePhysics(), pushed, tracked))
+        {
+            double referenceSpeed = tracked ? 0D : VehiclePhysicsUnits.kmhToBlocksPerTick(type.getRealWorldSpec().maxSpeedKmh())
+                * speedScale;
+            float realTurnControl = singleTrackDrive
+                ? DriveableControlPhysics.realSingleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld,
+                    leftTrackIntact, rightTrackIntact) : wheelYaw;
+            yawDelta = DriveableControlPhysics.realSteeringYawDelta(type.getRealTurnRateDegPerSec(),
+                realTurnControl, tracked, isEngineActive(), signedSpeed, referenceSpeed);
+        }
         if (!isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
         boolean supported = onGround() || hasWheelContact();
@@ -552,8 +563,9 @@ public class Vehicle extends Driveable
             wheelAngle = Mth.wrapDegrees(wheelAngle + WheelAnimationPhysics.angularStepDegrees(
                 velocity.x, velocity.z, forward.x, forward.z));
         }
-        float leftTrackStep = getThrottle() * 0.075F - wheelYaw * 0.0025F;
-        float rightTrackStep = getThrottle() * 0.075F + wheelYaw * 0.0025F;
+        float travelStep = type.isTank() ? getTrackTravelStep() : getThrottle() * 0.075F;
+        float leftTrackStep = travelStep - wheelYaw * 0.0025F;
+        float rightTrackStep = travelStep + wheelYaw * 0.0025F;
         boolean leftTrackIntact = isPartIntact(EnumDriveablePart.LEFT_TRACK);
         boolean rightTrackIntact = isPartIntact(EnumDriveablePart.RIGHT_TRACK);
         if (type.isTank() && leftTrackIntact != rightTrackIntact)
@@ -567,7 +579,7 @@ public class Vehicle extends Driveable
             }
             else
             {
-                survivingTrackStep = getThrottle() * 0.075F;
+                survivingTrackStep = travelStep;
             }
 
             if (leftTrackIntact)
@@ -584,6 +596,14 @@ public class Vehicle extends Driveable
         }
         leftTrackProgress -= Mth.floor(leftTrackProgress);
         rightTrackProgress -= Mth.floor(rightTrackProgress);
+    }
+
+    /** Motion-derived loop travel, also used by fancy links to resolve reverse-running corners. */
+    public float getTrackTravelStep()
+    {
+        Vec3 forward = localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
+        Vec3 velocity = getDeltaMovement();
+        return TrackAnimationPhysics.travelStep(velocity.x, velocity.z, forward.x, forward.z);
     }
 
     private void tickWalkerStompSounds(VehicleType type, float previousLeftPhase, float previousRightPhase)

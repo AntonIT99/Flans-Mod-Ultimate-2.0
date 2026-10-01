@@ -8,6 +8,7 @@ import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.physics.TrackAnimationPhysics;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
@@ -794,8 +795,10 @@ public class ModelVehicle extends ModelDriveable
     {
         int configuredFrames = driveable.getConfigType() == null ? Integer.MAX_VALUE
             : driveable.getConfigType().getAnimFrames() + 1;
-        int leftFrame = frameIndex(leftAnimTrackModel.length, configuredFrames, state.leftTrackProgress());
-        int rightFrame = frameIndex(rightAnimTrackModel.length, configuredFrames, state.rightTrackProgress());
+        float leftPhase = TrackAnimationPhysics.framePhase(state.leftTrackProgress());
+        float rightPhase = TrackAnimationPhysics.framePhase(state.rightTrackProgress());
+        int leftFrame = frameIndex(leftAnimTrackModel.length, configuredFrames, leftPhase);
+        int rightFrame = frameIndex(rightAnimTrackModel.length, configuredFrames, rightPhase);
         animFrameLeft = leftFrame;
         animFrameRight = rightFrame;
         DriveableType type = driveable.getConfigType();
@@ -804,8 +807,8 @@ public class ModelVehicle extends ModelDriveable
         if (rightFrame >= 0 && driveable.isPartIntact(trackPartForDrawnSide(type, false, true)))
             renderPart(rightAnimTrackModel[rightFrame], poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        int legacyFrameLeft = Mth.clamp((int) Math.floor(state.leftTrackProgress() * 3F), 0, 2);
-        int legacyFrameRight = Mth.clamp((int) Math.floor(state.rightTrackProgress() * 3F), 0, 2);
+        int legacyFrameLeft = Mth.clamp((int) Math.floor(leftPhase * 3F), 0, 2);
+        int legacyFrameRight = Mth.clamp((int) Math.floor(rightPhase * 3F), 0, 2);
         if (driveable.isPartIntact(trackPartForDrawnSide(type, true, true)))
             renderPart(selectFrame(legacyFrameLeft, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3),
                 poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);

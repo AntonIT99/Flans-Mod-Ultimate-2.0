@@ -5,6 +5,7 @@
 package com.flansmod.client.model.mw; //Path where the model is located
 
 import com.flansmod.client.model.ModelVehicle;
+import com.flansmod.client.model.TrackFrameUvAnimation;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 
 public class ModelAbrams extends ModelVehicle //Same as Filename
@@ -1797,6 +1798,7 @@ public class ModelAbrams extends ModelVehicle //Same as Filename
 		rightTrackWheelModels[89].setRotationPoint(-63F, -9F, -32F);
 		
 		
+		// Only the first tread bank is painted; scrolling phases are built after flipAll().
 		leftAnimTrackModel = new ModelRendererTurbo[3][];
 		rightAnimTrackModel = new ModelRendererTurbo[3][];
 		
@@ -1895,15 +1897,15 @@ public class ModelAbrams extends ModelVehicle //Same as Filename
 		rightAnimTrackModel[0][8].rotateAngleZ = -6.28318531F;
 		
 		leftAnimTrackModel[1] = new ModelRendererTurbo[9];
-		leftAnimTrackModel[1][0] = new ModelRendererTurbo(this, 300, 3152, textureX, textureY); // Import Box433
-		leftAnimTrackModel[1][1] = new ModelRendererTurbo(this, 300, 3168, textureX, textureY); // Import Box434
-		leftAnimTrackModel[1][2] = new ModelRendererTurbo(this, 300, 3185, textureX, textureY); // Import Box435
-		leftAnimTrackModel[1][3] = new ModelRendererTurbo(this, 300, 3203, textureX, textureY); // Import Box436
-		leftAnimTrackModel[1][4] = new ModelRendererTurbo(this, 300, 3226, textureX, textureY); // Import Box437
-		leftAnimTrackModel[1][5] = new ModelRendererTurbo(this, 300, 3243, textureX, textureY); // Import Box438
-		leftAnimTrackModel[1][6] = new ModelRendererTurbo(this, 300, 3261, textureX, textureY); // Import Box439
-		leftAnimTrackModel[1][7] = new ModelRendererTurbo(this, 300, 3278, textureX, textureY); // Import Box440
-		leftAnimTrackModel[1][8] = new ModelRendererTurbo(this, 300, 3295, textureX, textureY); // Import Box453
+		leftAnimTrackModel[1][0] = new ModelRendererTurbo(this, 0, 3152, textureX, textureY); // Import Box433
+		leftAnimTrackModel[1][1] = new ModelRendererTurbo(this, 0, 3168, textureX, textureY); // Import Box434
+		leftAnimTrackModel[1][2] = new ModelRendererTurbo(this, 0, 3185, textureX, textureY); // Import Box435
+		leftAnimTrackModel[1][3] = new ModelRendererTurbo(this, 0, 3203, textureX, textureY); // Import Box436
+		leftAnimTrackModel[1][4] = new ModelRendererTurbo(this, 0, 3226, textureX, textureY); // Import Box437
+		leftAnimTrackModel[1][5] = new ModelRendererTurbo(this, 0, 3243, textureX, textureY); // Import Box438
+		leftAnimTrackModel[1][6] = new ModelRendererTurbo(this, 0, 3261, textureX, textureY); // Import Box439
+		leftAnimTrackModel[1][7] = new ModelRendererTurbo(this, 0, 3278, textureX, textureY); // Import Box440
+		leftAnimTrackModel[1][8] = new ModelRendererTurbo(this, 0, 3295, textureX, textureY); // Import Box453
 		
 		leftAnimTrackModel[1][0].addShapeBox(0F, 0F, 0F, 7, 1, 13, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box433
 		leftAnimTrackModel[1][0].setRotationPoint(60F, -17F, 21F);
@@ -1942,15 +1944,15 @@ public class ModelAbrams extends ModelVehicle //Same as Filename
 		
 		
 		rightAnimTrackModel[1] = new ModelRendererTurbo[9];
-		rightAnimTrackModel[1][0] = new ModelRendererTurbo(this, 300, 3295, textureX, textureY); // Import Box423
-		rightAnimTrackModel[1][1] = new ModelRendererTurbo(this, 300, 3152, textureX, textureY); // Import Box425
-		rightAnimTrackModel[1][2] = new ModelRendererTurbo(this, 300, 3168, textureX, textureY); // Import Box426
-		rightAnimTrackModel[1][3] = new ModelRendererTurbo(this, 300, 3185, textureX, textureY); // Import Box427
-		rightAnimTrackModel[1][4] = new ModelRendererTurbo(this, 300, 3203, textureX, textureY); // Import Box428
-		rightAnimTrackModel[1][5] = new ModelRendererTurbo(this, 300, 3226, textureX, textureY); // Import Box429
-		rightAnimTrackModel[1][6] = new ModelRendererTurbo(this, 300, 3243, textureX, textureY); // Import Box430
-		rightAnimTrackModel[1][7] = new ModelRendererTurbo(this, 300, 3261, textureX, textureY); // Import Box431
-		rightAnimTrackModel[1][8] = new ModelRendererTurbo(this, 300, 3278, textureX, textureY); // Import Box432
+		rightAnimTrackModel[1][0] = new ModelRendererTurbo(this, 0, 3295, textureX, textureY); // Import Box423
+		rightAnimTrackModel[1][1] = new ModelRendererTurbo(this, 0, 3152, textureX, textureY); // Import Box425
+		rightAnimTrackModel[1][2] = new ModelRendererTurbo(this, 0, 3168, textureX, textureY); // Import Box426
+		rightAnimTrackModel[1][3] = new ModelRendererTurbo(this, 0, 3185, textureX, textureY); // Import Box427
+		rightAnimTrackModel[1][4] = new ModelRendererTurbo(this, 0, 3203, textureX, textureY); // Import Box428
+		rightAnimTrackModel[1][5] = new ModelRendererTurbo(this, 0, 3226, textureX, textureY); // Import Box429
+		rightAnimTrackModel[1][6] = new ModelRendererTurbo(this, 0, 3243, textureX, textureY); // Import Box430
+		rightAnimTrackModel[1][7] = new ModelRendererTurbo(this, 0, 3261, textureX, textureY); // Import Box431
+		rightAnimTrackModel[1][8] = new ModelRendererTurbo(this, 0, 3278, textureX, textureY); // Import Box432
 		
 		rightAnimTrackModel[1][0].addShapeBox(0F, 0F, 0F, 4, 1, 13, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box423
 		rightAnimTrackModel[1][0].setRotationPoint(56F, -17F, -34F);
@@ -1988,15 +1990,15 @@ public class ModelAbrams extends ModelVehicle //Same as Filename
 		rightAnimTrackModel[1][8].rotateAngleZ = -6.28318531F;
 		
 		leftAnimTrackModel[2] = new ModelRendererTurbo[9];
-		leftAnimTrackModel[2][0] = new ModelRendererTurbo(this, 600, 3152, textureX, textureY); // Import Box433
-		leftAnimTrackModel[2][1] = new ModelRendererTurbo(this, 600, 3168, textureX, textureY); // Import Box434
-		leftAnimTrackModel[2][2] = new ModelRendererTurbo(this, 600, 3185, textureX, textureY); // Import Box435
-		leftAnimTrackModel[2][3] = new ModelRendererTurbo(this, 600, 3203, textureX, textureY); // Import Box436
-		leftAnimTrackModel[2][4] = new ModelRendererTurbo(this, 600, 3226, textureX, textureY); // Import Box437
-		leftAnimTrackModel[2][5] = new ModelRendererTurbo(this, 600, 3243, textureX, textureY); // Import Box438
-		leftAnimTrackModel[2][6] = new ModelRendererTurbo(this, 600, 3261, textureX, textureY); // Import Box439
-		leftAnimTrackModel[2][7] = new ModelRendererTurbo(this, 600, 3278, textureX, textureY); // Import Box440
-		leftAnimTrackModel[2][8] = new ModelRendererTurbo(this, 600, 3295, textureX, textureY); // Import Box453
+		leftAnimTrackModel[2][0] = new ModelRendererTurbo(this, 0, 3152, textureX, textureY); // Import Box433
+		leftAnimTrackModel[2][1] = new ModelRendererTurbo(this, 0, 3168, textureX, textureY); // Import Box434
+		leftAnimTrackModel[2][2] = new ModelRendererTurbo(this, 0, 3185, textureX, textureY); // Import Box435
+		leftAnimTrackModel[2][3] = new ModelRendererTurbo(this, 0, 3203, textureX, textureY); // Import Box436
+		leftAnimTrackModel[2][4] = new ModelRendererTurbo(this, 0, 3226, textureX, textureY); // Import Box437
+		leftAnimTrackModel[2][5] = new ModelRendererTurbo(this, 0, 3243, textureX, textureY); // Import Box438
+		leftAnimTrackModel[2][6] = new ModelRendererTurbo(this, 0, 3261, textureX, textureY); // Import Box439
+		leftAnimTrackModel[2][7] = new ModelRendererTurbo(this, 0, 3278, textureX, textureY); // Import Box440
+		leftAnimTrackModel[2][8] = new ModelRendererTurbo(this, 0, 3295, textureX, textureY); // Import Box453
 		
 		leftAnimTrackModel[2][0].addShapeBox(0F, 0F, 0F, 7, 1, 13, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box433
 		leftAnimTrackModel[2][0].setRotationPoint(60F, -17F, 21F);
@@ -2035,15 +2037,15 @@ public class ModelAbrams extends ModelVehicle //Same as Filename
 		
 		
 		rightAnimTrackModel[2] = new ModelRendererTurbo[9];
-		rightAnimTrackModel[2][0] = new ModelRendererTurbo(this, 600, 3295, textureX, textureY); // Import Box423
-		rightAnimTrackModel[2][1] = new ModelRendererTurbo(this, 600, 3152, textureX, textureY); // Import Box425
-		rightAnimTrackModel[2][2] = new ModelRendererTurbo(this, 600, 3168, textureX, textureY); // Import Box426
-		rightAnimTrackModel[2][3] = new ModelRendererTurbo(this, 600, 3185, textureX, textureY); // Import Box427
-		rightAnimTrackModel[2][4] = new ModelRendererTurbo(this, 600, 3203, textureX, textureY); // Import Box428
-		rightAnimTrackModel[2][5] = new ModelRendererTurbo(this, 600, 3226, textureX, textureY); // Import Box429
-		rightAnimTrackModel[2][6] = new ModelRendererTurbo(this, 600, 3243, textureX, textureY); // Import Box430
-		rightAnimTrackModel[2][7] = new ModelRendererTurbo(this, 600, 3261, textureX, textureY); // Import Box431
-		rightAnimTrackModel[2][8] = new ModelRendererTurbo(this, 600, 3278, textureX, textureY); // Import Box432
+		rightAnimTrackModel[2][0] = new ModelRendererTurbo(this, 0, 3295, textureX, textureY); // Import Box423
+		rightAnimTrackModel[2][1] = new ModelRendererTurbo(this, 0, 3152, textureX, textureY); // Import Box425
+		rightAnimTrackModel[2][2] = new ModelRendererTurbo(this, 0, 3168, textureX, textureY); // Import Box426
+		rightAnimTrackModel[2][3] = new ModelRendererTurbo(this, 0, 3185, textureX, textureY); // Import Box427
+		rightAnimTrackModel[2][4] = new ModelRendererTurbo(this, 0, 3203, textureX, textureY); // Import Box428
+		rightAnimTrackModel[2][5] = new ModelRendererTurbo(this, 0, 3226, textureX, textureY); // Import Box429
+		rightAnimTrackModel[2][6] = new ModelRendererTurbo(this, 0, 3243, textureX, textureY); // Import Box430
+		rightAnimTrackModel[2][7] = new ModelRendererTurbo(this, 0, 3261, textureX, textureY); // Import Box431
+		rightAnimTrackModel[2][8] = new ModelRendererTurbo(this, 0, 3278, textureX, textureY); // Import Box432
 		
 		rightAnimTrackModel[2][0].addShapeBox(0F, 0F, 0F, 4, 1, 13, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box423
 		rightAnimTrackModel[2][0].setRotationPoint(56F, -17F, -34F);
@@ -2182,5 +2184,7 @@ public class ModelAbrams extends ModelVehicle //Same as Filename
 		
 		
 		flipAll();
+		TrackFrameUvAnimation.apply(leftAnimTrackModel, textureX);
+		TrackFrameUvAnimation.apply(rightAnimTrackModel, textureX);
 	}
 }

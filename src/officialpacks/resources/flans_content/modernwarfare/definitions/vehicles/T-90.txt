@@ -38,8 +38,8 @@ RealMaxReverseSpeedKmh 5
 // Movement
 MaxThrottle 0.6
 MaxNegativeThrottle 0.4
-TurnLeftSpeed 0.3
-TurnRightSpeed 0.3
+TurnLeftSpeed 0.8
+TurnRightSpeed 0.8
 Drag 10.0
 WheelRadius 1.5
 WheelSpringStrength 0.5
@@ -94,10 +94,10 @@ Passenger 1 0 15 0 turret -360 360 -15 40 rpd PassengerGun1
 RotatedPassengerOffset 1 2 0 -14
 
 // Sounds and particles
-StartSound ChallengerIdle
-StartSoundLength 40
-StartEngineSound ChallengerRun
-StartEngineSound 40
+StartEngineSound ChallengerIdle
+StartEngineSoundLength 40
+EngineSound ChallengerRun
+EngineSound 40
 ShootSoundPrimary 90mm
 ShootParticlesPrimary largeexplode 0 0 0
 ShootParticlesPrimary explode 1.4 0 0

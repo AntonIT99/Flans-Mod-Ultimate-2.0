@@ -33,8 +33,8 @@ RealMaxReverseSpeedKmh 16
 // Movement
 MaxThrottle 1
 MaxNegativeThrottle 0.25
-TurnLeftSpeed 0.3
-TurnRightSpeed 0.3
+TurnLeftSpeed 0.5
+TurnRightSpeed 0.5
 WheelRadius 1.0
 WheelSpringStrength 0.5
 FourWheelDrive true

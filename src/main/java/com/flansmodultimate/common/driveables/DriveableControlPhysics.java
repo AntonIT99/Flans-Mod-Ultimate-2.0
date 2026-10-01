@@ -1,12 +1,44 @@
 package com.flansmodultimate.common.driveables;
 
-/** Pure legacy control calculations shared by driveable simulations. */
+import com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits;
+
+/** Pure control calculations shared by driveable simulations. */
 public final class DriveableControlPhysics
 {
     private static final float CONTROL_RETENTION = 0.9F;
     private static final float MAX_CONTROL_ANGLE = 20F;
+    private static final float HELD_CONTROL_ANGLE = CONTROL_RETENTION / (1F - CONTROL_RETENTION);
 
     private DriveableControlPhysics() {}
+
+    /**
+     * Authored hull yaw rate, independent of engine speed and legacy steering modifiers.
+     * The held-key recurrence tends to 9, not MAX_CONTROL_ANGLE. Single-track control
+     * already carries its half-authority factor. Rolling vehicles reverse steering
+     * with their travel direction and cannot pivot while stationary.
+     */
+    public static float realSteeringYawDelta(float rateDegPerSec, float control, boolean tracked,
+                                             boolean engineActive, double signedSpeed, double referenceSpeed)
+    {
+        if (!Float.isFinite(rateDegPerSec) || rateDegPerSec <= 0F || !Float.isFinite(control))
+            return 0F;
+        double speedFactor;
+        if (tracked)
+            speedFactor = engineActive ? 1D : 0D;
+        else
+            speedFactor = Double.isFinite(signedSpeed) && Double.isFinite(referenceSpeed) && referenceSpeed > 0D
+                ? Math.max(-1D, Math.min(1D, signedSpeed / referenceSpeed)) : 0D;
+        return (float) (rateDegPerSec / VehiclePhysicsUnits.TICKS_PER_SECOND
+            * clamp(control / HELD_CONTROL_ANGLE, -1F, 1F) * speedFactor);
+    }
+
+    /** The automatic broken-track turn uses the held-input range in the real-rate model. */
+    public static float realSingleTrackTurnControl(float throttle, float steeringControl, boolean steeringHeld,
+                                                   boolean leftTrackIntact, boolean rightTrackIntact)
+    {
+        float control = singleTrackTurnControl(throttle, steeringControl, steeringHeld, leftTrackIntact, rightTrackIntact);
+        return steeringHeld ? control : control * HELD_CONTROL_ANGLE / MAX_CONTROL_ANGLE;
+    }
 
     /** Steering follows rolling direction, even with a neutral throttle or an inactive engine. */
     public static double wheeledSteeringVelocityScale(double signedSpeed)

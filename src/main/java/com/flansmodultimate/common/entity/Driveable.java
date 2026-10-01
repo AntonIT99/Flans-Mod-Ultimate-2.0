@@ -3050,6 +3050,27 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         }
     }
 
+    /** Client visuals at the same fired barrel and aim used by the passenger projectile. */
+    public void spawnPassengerParticles(int seatIndex, int barrel)
+    {
+        if (!level().isClientSide || configType == null)
+            return;
+        Seat seat = getSeat(seatIndex);
+        SeatInfo info = configType.getSeat(seatIndex);
+        if (seat == null || info == null || info.getGunType() == null
+            || barrel < 0 || barrel >= info.getGunBarrelCount())
+            return;
+        Vec3 origin = getPassengerShootOrigin(seat, info, barrel);
+        for (DriveableType.ShootParticle particle : configType.getShootParticlesPassenger(seatIndex))
+        {
+            Vec3 localDirection = configuredModelLocal(new Vec3(particle.x(), particle.y(), particle.z()));
+            Vec3 direction = modelLocalDirectionToWorld(rotateTurretLocalDirection(localDirection,
+                seat.getAimYaw(), localAimPitch(seat.getAimPitch())));
+            ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z,
+                direction.x, direction.y, direction.z, 1F);
+        }
+    }
+
     protected void tickPassengerGuns()
     {
         for (int index = 0; index < seats.length; index++)
@@ -3194,7 +3215,8 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
-        if (initializedType().isDefaultMuzzleFlash() || gun.hasMuzzleFlashModel())
+        if (initializedType().isDefaultMuzzleFlash() || gun.hasMuzzleFlashModel()
+            || !initializedType().getShootParticlesPassenger(index).isEmpty())
             PacketHandler.sendToAllAround(new PacketDriveablePassengerFired(getId(), index, barrel),
                 position(), 128D, level().dimension());
         reloadPassengerGun(index, gun, ammo);
