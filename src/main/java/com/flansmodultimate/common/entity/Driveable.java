@@ -2,6 +2,7 @@ package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.distant.DistantRenderRange;
 import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.driveables.DriveableCollisionHelper;
@@ -5443,9 +5444,15 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     /** A part box in the model-local frame; see {@link #partFrameToModelLocal}. */
     public AABB partBoxModelLocal(@NotNull CollisionBox box)
     {
+        return partBoxToModelLocal(box);
+    }
+
+    /** {@link #partBoxModelLocal} for a type's box when there is no entity, as for a driveable seen from afar. */
+    public static AABB partBoxToModelLocal(@NotNull CollisionBox box)
+    {
         AABB bounds = box.asAabb();
-        Vec3 min = partFrameToModelLocal(new Vec3(bounds.minX, bounds.minY, bounds.minZ));
-        Vec3 max = partFrameToModelLocal(new Vec3(bounds.maxX, bounds.maxY, bounds.maxZ));
+        Vec3 min = mirrorAroundLocalZAxis(new Vec3(bounds.minX, bounds.minY, bounds.minZ));
+        Vec3 max = mirrorAroundLocalZAxis(new Vec3(bounds.maxX, bounds.maxY, bounds.maxZ));
         return new AABB(min, max);
     }
 
@@ -6193,6 +6200,19 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             }
         }
         return new AABB(getX() - radius, getY() - radius, getZ() - radius, getX() + radius, getY() + radius, getZ() + radius);
+    }
+
+    /**
+     * Beyond the vanilla distance, a driveable stays drawn up to where a far-terrain renderer's proxy takes
+     * over (see {@link DistantRenderRange}), so it does not vanish between the two.
+     */
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distSq)
+    {
+        if (super.shouldRenderAtSqrDistance(distSq))
+            return true;
+        double distance = DistantRenderRange.driveableRenderDistance();
+        return distance > 0D && distSq < distance * distance;
     }
 
     public static Optional<Driveable> spawn(@NotNull Level level, @NotNull DriveableType type, double x, double y, double z,

@@ -74,6 +74,13 @@ public final class ModCommonConfig
     public static final double DEFAULT_HEAT_DAMAGE_REFERENCE = 1100.0D;
     /** Damage dealt to each occupant of a part a HEAT jet has penetrated. Half a player's health. */
     public static final double DEFAULT_HEAT_CREW_SPALL_DAMAGE = 10.0D;
+    /** Defaults of what is sent to players who draw far terrain with Distant Horizons. */
+    public static final boolean DEFAULT_DISTANT_CONTACTS_ENABLED = true;
+    public static final double DEFAULT_DISTANT_CONTACT_RANGE = 3072.0D;
+    public static final int DEFAULT_DISTANT_CONTACT_UPDATE_INTERVAL = 5;
+    public static final int DEFAULT_DISTANT_CONTACT_MAX_COUNT = 48;
+    public static final double DEFAULT_DISTANT_EXPLOSION_RANGE = 4096.0D;
+    public static final double DEFAULT_DISTANT_EXPLOSION_MIN_RADIUS = 1.5D;
     /**
      * Hard ceiling on the CRATER radius, in blocks. ExplosionCrater's ray pass costs about the
      * same at any radius, and a crater too big for one tick is carved over the following ticks
@@ -247,6 +254,13 @@ public final class ModCommonConfig
     private static final Supplier<Double> MAX_BLAST_RADIUS;
     private static final Supplier<Double> HEAT_DAMAGE_REFERENCE;
     private static final Supplier<Double> HEAT_CREW_SPALL_DAMAGE;
+
+    private static final Supplier<Boolean> DISTANT_CONTACTS_ENABLED;
+    private static final Supplier<Double> DISTANT_CONTACT_RANGE;
+    private static final Supplier<Integer> DISTANT_CONTACT_UPDATE_INTERVAL;
+    private static final Supplier<Integer> DISTANT_CONTACT_MAX_COUNT;
+    private static final Supplier<Double> DISTANT_EXPLOSION_RANGE;
+    private static final Supplier<Double> DISTANT_EXPLOSION_MIN_RADIUS;
 
     private static final Supplier<Boolean> ENCHANTMENT_MODULE_ENABLED;
 
@@ -743,6 +757,31 @@ public final class ModCommonConfig
             .defineInRange("heatCrewSpallDamage", DEFAULT_HEAT_CREW_SPALL_DAMAGE, 0D, 1000D);
         builder.pop();
 
+        builder.push("Distant Horizons Settings");
+        DISTANT_CONTACTS_ENABLED = builder
+            .comment("Send players who draw far terrain with Distant Horizons the driveables beyond their entity tracking range, so they can see",
+                "them as simplified shapes. Only players whose client asks for them receive them. The positions sent could be read",
+                "by a modified client as a radar, so disable this on servers where that matters.")
+            .define("distantContactsEnabled", DEFAULT_DISTANT_CONTACTS_ENABLED);
+        DISTANT_CONTACT_RANGE = builder
+            .comment("Maximum distance in blocks at which those players are sent driveables. Driveables only exist in loaded chunks, so this",
+                "mostly shows the vehicles of other players.")
+            .defineInRange("distantContactRange", DEFAULT_DISTANT_CONTACT_RANGE, 0D, 16384D);
+        DISTANT_CONTACT_UPDATE_INTERVAL = builder
+            .comment("Ticks between two updates of those distant driveables. Clients extrapolate their movement in between.")
+            .defineInRange("distantContactUpdateInterval", DEFAULT_DISTANT_CONTACT_UPDATE_INTERVAL, 1, 40);
+        DISTANT_CONTACT_MAX_COUNT = builder
+            .comment("Maximum number of distant driveables sent to one player at a time; the nearest ones are kept.")
+            .defineInRange("distantContactMaxCount", DEFAULT_DISTANT_CONTACT_MAX_COUNT, 0, 256);
+        DISTANT_EXPLOSION_RANGE = builder
+            .comment("Maximum distance in blocks at which those players see large explosions beyond the range of explosion particles,",
+                "drawn as a flash, a fireball and a smoke column on the far terrain. Set to 0 to disable.")
+            .defineInRange("distantExplosionRange", DEFAULT_DISTANT_EXPLOSION_RANGE, 0D, 16384D);
+        DISTANT_EXPLOSION_MIN_RADIUS = builder
+            .comment("Smallest explosion radius in blocks that is shown at a distance.")
+            .defineInRange("distantExplosionMinRadius", DEFAULT_DISTANT_EXPLOSION_MIN_RADIUS, 0D, 64D);
+        builder.pop();
+
         builder.push("Enchantment Module");
         ENCHANTMENT_MODULE_ENABLED = builder
             .comment("Enable the Flan's Mod enchantment module (Steady, Nimble, Lumberjack, Duelist, Sharpshooter, Juggernaut)")
@@ -878,6 +917,13 @@ public final class ModCommonConfig
             MAX_BLAST_RADIUS.get(),
             HEAT_DAMAGE_REFERENCE.get(),
             HEAT_CREW_SPALL_DAMAGE.get(),
+
+            DISTANT_CONTACTS_ENABLED.get(),
+            DISTANT_CONTACT_RANGE.get(),
+            DISTANT_CONTACT_UPDATE_INTERVAL.get(),
+            DISTANT_CONTACT_MAX_COUNT.get(),
+            DISTANT_EXPLOSION_RANGE.get(),
+            DISTANT_EXPLOSION_MIN_RADIUS.get(),
 
             ENCHANTMENT_MODULE_ENABLED.get(),
 
@@ -1188,6 +1234,42 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_HEAT_CREW_SPALL_DAMAGE : config.heatCrewSpallDamage();
+    }
+
+    public static boolean distantContactsEnabled()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_DISTANT_CONTACTS_ENABLED : config.distantContactsEnabled();
+    }
+
+    public static double distantContactRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_DISTANT_CONTACT_RANGE : config.distantContactRange();
+    }
+
+    public static int distantContactUpdateInterval()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_DISTANT_CONTACT_UPDATE_INTERVAL : config.distantContactUpdateInterval();
+    }
+
+    public static int distantContactMaxCount()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_DISTANT_CONTACT_MAX_COUNT : config.distantContactMaxCount();
+    }
+
+    public static double distantExplosionRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_DISTANT_EXPLOSION_RANGE : config.distantExplosionRange();
+    }
+
+    public static double distantExplosionMinRadius()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_DISTANT_EXPLOSION_MIN_RADIUS : config.distantExplosionMinRadius();
     }
 
     public static double kineticPenetrationReference()

@@ -196,6 +196,14 @@ file('src').listFiles()
         .sort { it.name }
         .each { apply from: new File(it, 'fmu-module.gradle') }
 
+// Distant Horizons publishes its API and mod jars on Modrinth only; ModDevGradle adds the NeoForge repositories.
+repositories {
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+}
+
 dependencies {
     annotationProcessor lombokDependency
 
@@ -206,8 +214,13 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // Optional client integration; the API jar only describes Distant Horizons and never ships.
+    compileOnly "maven.modrinth:distanthorizonsapi:$version_distant_horizons_api"
+
     // Optional mods loaded only in development runs.
     localRuntime customNpcsDependency
+    if (project.hasProperty('withDistantHorizons'))
+        localRuntime "maven.modrinth:distanthorizons:$version_distant_horizons"
 }
 
 tasks.named('test', Test) {

@@ -5,6 +5,8 @@ import com.flansmodultimate.client.CommonConfigMirror;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.ReloadPreferencesSync;
 import com.flansmodultimate.client.debug.DebugColor;
+import com.flansmodultimate.client.distant.DistantBoxRenderer;
+import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.debug.DriveableHitboxRenderer;
 import com.flansmodultimate.client.debug.PlayerHitboxRenderer;
@@ -174,6 +176,7 @@ public final class ClientEventHandler
         GunInputState.tick();
         ModClient.tick();
         ParticleHelper.tick();
+        DistantHorizonsClient.tick();
     }
 
     /** Runs once per rendered frame, after the frame. */
@@ -210,6 +213,7 @@ public final class ClientEventHandler
     public static void onRenderLevelStage(RenderLevelStageEvent event)
     {
         VehicleThermalRenderer.render(event);
+        DistantBoxRenderer.render(event);
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         float partialTick = ClientPlatform.partialTick(event);
@@ -472,6 +476,7 @@ public final class ClientEventHandler
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
+        DistantHorizonsClient.reset();
         ModClient.clearTransientLighting();
         GpuModelCache.clear();
         DebugHelper.getActiveDebugEntities().clear(); // cleanup on world/connection change

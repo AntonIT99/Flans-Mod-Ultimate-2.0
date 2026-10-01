@@ -2,6 +2,7 @@ package com.flansmodultimate.common.explosions;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
+import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.ExplosionVehicleDamageResolver;
@@ -289,6 +290,8 @@ public class FlanExplosion extends Explosion
                 stats.blastRadius, stats.explosionRadius, stats.fragRadius, stats.fragIntensity,
                 stats.fragmentation().fragmentCount(), stats.fragmentation().pattern(), fragmentDirection(), fieryVisuals),
                 center, Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius), level.dimension());
+            DistantSync.onExplosion(sl, center, stats.explosionRadius, stats.blastRadius, fieryVisuals,
+                Math.max(EXPLOSION_PARTICLE_RANGE, stats.blastRadius));
         }
     }
 

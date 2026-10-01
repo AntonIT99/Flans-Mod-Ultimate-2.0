@@ -114,6 +114,12 @@ public final class ModClientConfig
     public final boolean alwaysEnablePlaneCullingByDefault;
     public final boolean alwaysEnableMechaCullingByDefault;
 
+    public final boolean distantHorizonsIntegration;
+    public final boolean distantHorizonsRangefinder;
+    public final boolean distantHorizonsContacts;
+    public final boolean distantHorizonsExplosions;
+    public final boolean distantHorizonsDriveableRendering;
+
     private static final Supplier<Boolean> SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
     public static final ModConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
     public static final ModConfigSpec.EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
@@ -211,6 +217,12 @@ public final class ModClientConfig
     private static final Supplier<Boolean> ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT;
     private static final Supplier<Boolean> ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT;
     private static final Supplier<Boolean> ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT;
+
+    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_INTEGRATION;
+    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_RANGEFINDER;
+    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_CONTACTS;
+    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_EXPLOSIONS;
+    public static final ModConfigSpec.BooleanValue DISTANT_HORIZONS_DRIVEABLE_RENDERING;
 
     private static final ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
     private static final AtomicReference<ModClientConfig> instance = new AtomicReference<>();
@@ -530,6 +542,27 @@ public final class ModClientConfig
         ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT = defineCullingDefault("mechas", "alwaysEnableMechasCullingByDefault", true);
         builder.pop();
 
+        builder.push("Distant Horizons Integration");
+        DISTANT_HORIZONS_INTEGRATION = builder
+            .comment("Use Distant Horizons, when it is installed, to show and measure what lies beyond the vanilla render distance.",
+                "The settings below only apply while this is enabled.")
+            .define("distantHorizonsIntegration", true);
+        DISTANT_HORIZONS_RANGEFINDER = builder
+            .comment("Let vehicle rangefinders measure the far terrain beyond the loaded chunks. Such ranges are approximate and shown with a ~.")
+            .define("distantHorizonsRangefinder", true);
+        DISTANT_HORIZONS_CONTACTS = builder
+            .comment("Show driveables beyond the entity render distance as simplified shapes on the far terrain, including those the server",
+                "only reports from beyond the tracking range, when the server allows it.")
+            .define("distantHorizonsContacts", true);
+        DISTANT_HORIZONS_EXPLOSIONS = builder
+            .comment("Show large explosions beyond the particle range as a flash, a fireball and a smoke column, when the server allows it.")
+            .define("distantHorizonsExplosions", true);
+        DISTANT_HORIZONS_DRIVEABLE_RENDERING = builder
+            .comment("Keep drawing driveables as entities up to the edge of the vanilla chunks, where their far-terrain shapes take over,",
+                "instead of hiding them at the vanilla entity distance.")
+            .define("distantHorizonsDriveableRendering", true);
+        builder.pop();
+
         configSpec = builder.build();
     }
 
@@ -632,6 +665,12 @@ public final class ModClientConfig
         alwaysEnableVehicleCullingByDefault = ALWAYS_ENABLE_VEHICLE_CULLING_BY_DEFAULT.get();
         alwaysEnablePlaneCullingByDefault = ALWAYS_ENABLE_PLANE_CULLING_BY_DEFAULT.get();
         alwaysEnableMechaCullingByDefault = ALWAYS_ENABLE_MECHA_CULLING_BY_DEFAULT.get();
+
+        distantHorizonsIntegration = DISTANT_HORIZONS_INTEGRATION.get();
+        distantHorizonsRangefinder = DISTANT_HORIZONS_RANGEFINDER.get();
+        distantHorizonsContacts = DISTANT_HORIZONS_CONTACTS.get();
+        distantHorizonsExplosions = DISTANT_HORIZONS_EXPLOSIONS.get();
+        distantHorizonsDriveableRendering = DISTANT_HORIZONS_DRIVEABLE_RENDERING.get();
     }
 
     public static ModClientConfig get()

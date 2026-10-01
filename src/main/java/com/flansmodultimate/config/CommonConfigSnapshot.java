@@ -129,12 +129,19 @@ public record CommonConfigSnapshot(
     double heatDamageReference,
     double heatCrewSpallDamage,
 
+    boolean distantContactsEnabled,
+    double distantContactRange,
+    int distantContactUpdateInterval,
+    int distantContactMaxCount,
+    double distantExplosionRange,
+    double distantExplosionMinRadius,
+
     boolean enchantmentModuleEnabled,
 
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 37;
+    public static final int CURRENT_VERSION = 38;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -269,6 +276,13 @@ public record CommonConfigSnapshot(
         buf.writeDouble(s.heatDamageReference);
         buf.writeDouble(s.heatCrewSpallDamage);
 
+        buf.writeBoolean(s.distantContactsEnabled);
+        buf.writeDouble(s.distantContactRange);
+        buf.writeVarInt(s.distantContactUpdateInterval);
+        buf.writeVarInt(s.distantContactMaxCount);
+        buf.writeDouble(s.distantExplosionRange);
+        buf.writeDouble(s.distantExplosionMinRadius);
+
         buf.writeBoolean(s.enchantmentModuleEnabled);
 
         buf.writeVarInt(s.fluidFuelLines.size());
@@ -399,6 +413,13 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readDouble(),
             buf.readDouble(),
+            buf.readDouble(),
+            buf.readDouble(),
+
+            buf.readBoolean(),
+            buf.readDouble(),
+            buf.readVarInt(),
+            buf.readVarInt(),
             buf.readDouble(),
             buf.readDouble(),
 
