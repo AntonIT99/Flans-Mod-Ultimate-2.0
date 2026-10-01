@@ -12,6 +12,8 @@ import com.flansmodultimate.network.client.PacketCommonConfigValues;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketDebugHitboxes;
 import com.flansmodultimate.network.client.PacketDebugShootPoint;
+import com.flansmodultimate.network.client.PacketDistantContacts;
+import com.flansmodultimate.network.client.PacketDistantExplosion;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableCollisionBypass;
 import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
@@ -51,6 +53,7 @@ import com.flansmodultimate.network.server.PacketAimPosePreference;
 import com.flansmodultimate.network.server.PacketBaseEditAction;
 import com.flansmodultimate.network.server.PacketBuyWeapon;
 import com.flansmodultimate.network.server.PacketDeployedGunInput;
+import com.flansmodultimate.network.server.PacketDistantSubscription;
 import com.flansmodultimate.network.server.PacketDriveableInput;
 import com.flansmodultimate.network.server.PacketGunFireMode;
 import com.flansmodultimate.network.server.PacketGunInput;
@@ -124,7 +127,8 @@ public final class PacketHandler
             PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class,
             PacketBlockHitEffect.class, PacketBulletTrail.class, PacketCancelGunReloadClient.class,
             PacketCancelSound.class, PacketCommonConfigValues.class, PacketContentFingerprint.class,
-            PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
+            PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDistantContacts.class, PacketDistantExplosion.class,
+            PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
             PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveablePassengerFired.class,
             PacketDriveablePrediction.class,
             PacketDriveableRenderState.class,
@@ -140,7 +144,8 @@ public final class PacketHandler
         );
         addServerPackets(
             PacketAAGunModelBarrelOrigins.class, PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class,
-            PacketDeployedGunInput.class, PacketDriveableInput.class, PacketBuyWeapon.class, PacketGunFireMode.class,
+            PacketDeployedGunInput.class, PacketDistantSubscription.class, PacketDriveableInput.class, PacketBuyWeapon.class,
+            PacketGunFireMode.class,
             PacketGunInput.class, PacketGunPreferredAmmo.class, PacketGunReload.class, PacketGunScopedState.class,
             PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunToggle.class, PacketGunVariableZoom.class,
             PacketManualGuidance.class, PacketReloadPreferences.class, PacketRequestCommonConfig.class,

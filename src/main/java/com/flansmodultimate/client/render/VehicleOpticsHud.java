@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.render;
 
+import com.flansmodultimate.client.distant.DistantRangefinder;
 import com.flansmodultimate.client.gui.OpticsHudEditorScreen;
 import com.flansmodultimate.common.driveables.OpticsHud;
 import com.flansmodultimate.common.entity.AAGun;
@@ -26,11 +27,23 @@ public final class VehicleOpticsHud
     private static boolean rangeRequested;
     private static long lastRangeTick = Long.MIN_VALUE;
     private static boolean rangeCleared;
+    /** Whether {@link #range} was measured on the simplified far terrain, and so is approximate. */
+    private static boolean rangeApproximate;
+    /** Count of far-terrain results after which the awaited one is ready, or -1 when none is awaited. */
+    private static long awaitedFarResult = -1L;
 
     private VehicleOpticsHud() {}
 
     public static void requestRange() { rangeRequested = true; rangeCleared = false; }
-    public static void resetRange() { range = -1D; rangeRequested = false; rangeCleared = true; lastRangeTick = Long.MIN_VALUE; }
+    public static void resetRange()
+    {
+        range = -1D;
+        rangeRequested = false;
+        rangeCleared = true;
+        lastRangeTick = Long.MIN_VALUE;
+        rangeApproximate = false;
+        awaitedFarResult = -1L;
+    }
     public static void resetSession() { resetRange(); rangeCleared = false; }
     public static void openEditor()
     {
@@ -59,15 +72,30 @@ public final class VehicleOpticsHud
         long tick = seat.level().getGameTime();
         if (rangeRequested || !hud.isRequireRangeKey() && !rangeCleared && tick != lastRangeTick)
         {
-            range = measureRange(seat, hud.getMaxRange());
+            double measured = measureRange(seat, hud.getMaxRange());
+            if (measured >= 0D)
+                awaitedFarResult = -1L;
+            // While a new far-terrain measurement runs, keep showing the last one rather than blinking to no range
+            if (measured >= 0D || awaitedFarResult < 0L || !rangeApproximate)
+            {
+                range = measured;
+                rangeApproximate = false;
+            }
             rangeRequested = false;
             rangeCleared = false;
             lastRangeTick = tick;
         }
+        DistantRangefinder.poll();
+        if (awaitedFarResult >= 0L && DistantRangefinder.results() > awaitedFarResult)
+        {
+            awaitedFarResult = -1L;
+            range = DistantRangefinder.latest();
+            rangeApproximate = range >= 0D;
+        }
         float bearing = Mth.positiveModulo(mc.gameRenderer.getMainCamera().getYRot() + 180F, 360F);
         double speed = seat.getDriveable().getDeltaMovement().horizontalDistance() * 72D;
         String[] values = {
-            rangeCleared ? "0" : range < 0 ? "----" : String.format(Locale.ROOT, "%.0f", range),
+            rangeCleared ? "0" : range < 0 ? "----" : String.format(Locale.ROOT, rangeApproximate ? "~%.0f" : "%.0f", range),
             String.format(Locale.ROOT, "%.0f km/h", speed),
             String.format(Locale.ROOT, "%.0f°", Mth.wrapDegrees(seat.getViewAimYaw(partialTick))),
             String.format(Locale.ROOT, "%03.0f°", bearing),
@@ -136,6 +164,7 @@ public final class VehicleOpticsHud
         }
         Vec3 end = start.add(direction.scale(loadedRange));
         HitResult block = seat.level().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, mc.player));
+        Vec3 unloadedFrom = end;
         double nearest = block.getType() == HitResult.Type.MISS ? Double.POSITIVE_INFINITY : start.distanceTo(block.getLocation());
         for (Entity entity : seat.level().getEntities(mc.player, new AABB(start, end).inflate(1D),
             candidate -> candidate.isPickable() && !(candidate instanceof Seat) && candidate != seat.getDriveable()
@@ -146,6 +175,12 @@ public final class VehicleOpticsHud
                 : entity.getBoundingBox().clip(start, end);
             if (hit.isPresent()) nearest = Math.min(nearest, start.distanceTo(hit.get()));
         }
-        return Double.isFinite(nearest) ? nearest : -1D;
+        if (Double.isFinite(nearest))
+            return nearest;
+
+        // Nothing within the loaded chunks: measure on the far terrain instead, which takes a moment
+        if (loadedRange < maximum && DistantRangefinder.request(unloadedFrom, direction, loadedRange, maximum))
+            awaitedFarResult = DistantRangefinder.results();
+        return -1D;
     }
 }

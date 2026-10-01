@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.platform.client.ClientPlatform;
@@ -18,7 +19,6 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -32,7 +32,6 @@ public final class VehicleThermalRenderer
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final ResourceLocation EFFECT = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "shaders/post/vehicle_thermal.json");
     private static PostChain chain;
-    private static ResourceLocation whiteTexture;
     private static final MultiBufferSource.BufferSource buffers = VertexPlatform.immediateBuffers(256);
     private static boolean renderingMask;
     private static boolean failed;
@@ -83,20 +82,13 @@ public final class VehicleThermalRenderer
                 chain.resize(main.width, main.height);
                 width = main.width; height = main.height;
             }
-            if (whiteTexture == null)
-            {
-                DynamicTexture texture = new DynamicTexture(1, 1, false);
-                texture.getPixels().setPixelRGBA(0, 0, -1);
-                texture.upload();
-                whiteTexture = mc.getTextureManager().register("vehicle_thermal_white", texture);
-            }
             RenderTarget heat = chain.getTempTarget("heat");
             heat.clear(Minecraft.ON_OSX);
             heat.copyDepthFrom(main);
             heat.bindWrite(false);
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(org.lwjgl.opengl.GL11.GL_LEQUAL);
-            RenderType maskType = RenderType.entitySolid(whiteTexture);
+            RenderType maskType = RenderType.entitySolid(WhiteTexture.get());
             VertexConsumer mask = new HeatVertexConsumer(buffers.getBuffer(maskType));
             MultiBufferSource maskBuffers = ignored -> mask;
             renderingMask = true;
@@ -109,6 +101,8 @@ public final class VehicleThermalRenderer
                     || !event.getFrustum().isVisible(entity.getBoundingBox())) continue;
                 renderEntity(entity, camera, ClientPlatform.partialTick(event), event.getPoseStack(), maskBuffers);
             }
+            // Driveables too far away to be drawn as entities are just as hot
+            DistantBoxRenderer.renderHeatMask(event.getPoseStack(), mask, camera, ClientPlatform.partialTick(event));
             buffers.endBatch();
             renderingMask = false;
             main.bindWrite(false);

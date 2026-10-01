@@ -8,6 +8,7 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.command.DefaultAmmoCommand;
 import com.flansmodultimate.common.command.DigitalAmmoCommand;
+import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.command.FMParticleCommand;
 import com.flansmodultimate.common.command.FlanEntityCommand;
 import com.flansmodultimate.common.command.GunAttachmentsCommand;
@@ -215,6 +216,7 @@ public final class CommonEventHandler
         HitboxDebugCommand.clearSession();
         CraterCarver.clear();
         DriveableCollisionBypass.reset();
+        DistantSync.clear();
         contentReferencesValidated = false;
     }
 
@@ -231,6 +233,7 @@ public final class CommonEventHandler
 
         FlansMod.teamsManager.tick();
         CraterCarver.tick();
+        DistantSync.tick(server, ticker);
 
         Iterator<UUID> it = nightVisionPlayers.iterator();
         while (it.hasNext())
@@ -315,6 +318,7 @@ public final class CommonEventHandler
         ModCommonConfig.clearServerOverride();
         ModApocalypseConfig.clearServerOverride();
         DriveableCollisionBypass.clear(event.getEntity());
+        DistantSync.unsubscribe(event.getEntity().getUUID());
         regenTimers.remove(event.getEntity().getUUID());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);

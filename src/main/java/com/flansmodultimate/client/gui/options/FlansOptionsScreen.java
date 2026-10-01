@@ -1,8 +1,10 @@
 package com.flansmodultimate.client.gui.options;
 
 import com.flansmodultimate.client.CommonConfigMirror;
+import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.jetbrains.annotations.Nullable;
@@ -42,6 +44,8 @@ public class FlansOptionsScreen extends Screen
     private static final int WIDE_BUTTON_WIDTH = 200;
     private static final int BUTTON_BOTTOM_MARGIN = 27;
     private static final int NOTE_COLOUR = 0xA0A0A0;
+    /** Only shown while Distant Horizons is installed, since its settings do nothing otherwise. */
+    private static final String DISTANT_HORIZONS_SECTION = "distant_horizons";
 
     public enum Mode
     {
@@ -80,7 +84,13 @@ public class FlansOptionsScreen extends Screen
             ModClientConfig.DRIVEABLE_SPEED_UNIT,
             ModClientConfig.DRIVEABLE_VERTICAL_SPEED_UNIT,
             ModClientConfig.ENABLE_UNCENSORED_CONTENT,
-            ModClientConfig.OPTIONS_BUTTON_PLACEMENT)));
+            ModClientConfig.OPTIONS_BUTTON_PLACEMENT)),
+        new QuickSection(DISTANT_HORIZONS_SECTION, List.of(
+            ModClientConfig.DISTANT_HORIZONS_INTEGRATION,
+            ModClientConfig.DISTANT_HORIZONS_RANGEFINDER,
+            ModClientConfig.DISTANT_HORIZONS_CONTACTS,
+            ModClientConfig.DISTANT_HORIZONS_EXPLOSIONS,
+            ModClientConfig.DISTANT_HORIZONS_DRIVEABLE_RENDERING)));
 
     private record QuickSection(String name, List<ForgeConfigSpec.ConfigValue<?>> values)
     {
@@ -145,6 +155,9 @@ public class FlansOptionsScreen extends Screen
     {
         for (QuickSection section : QUICK_SECTIONS)
         {
+            if (section.name().equals(DISTANT_HORIZONS_SECTION) && !PlatformEnvironment.isModLoaded(DistantHorizonsClient.MOD_ID))
+                continue;
+
             List<OptionInstance<?>> options = new ArrayList<>();
             for (ForgeConfigSpec.ConfigValue<?> value : section.values())
             {

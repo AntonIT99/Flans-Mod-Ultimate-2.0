@@ -29,6 +29,12 @@ description='''${mod_description}'''
     versionRange="*"
     ordering="AFTER"
     side="BOTH"
+[[dependencies.${mod_id}]]
+    modId="distanthorizons"
+    mandatory=false
+    versionRange="*"
+    ordering="NONE"
+    side="CLIENT"
 
 mixins = [
     "${mod_id}.mixins.json"
