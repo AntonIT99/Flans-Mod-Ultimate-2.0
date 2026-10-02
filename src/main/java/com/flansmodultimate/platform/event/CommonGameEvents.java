@@ -49,7 +49,7 @@ public final class CommonGameEvents
     @SubscribeEvent
     public static void onItemPickup(EntityItemPickupEvent event)
     {
-        if (event.getEntity() instanceof ServerPlayer player && !CommonEventHandler.canPickUp(player, event.getItem().getItem()))
+        if (event.getEntity() instanceof ServerPlayer player && !CommonEventHandler.canPickUp(player, event.getItem()))
             event.setCanceled(true);
     }
 

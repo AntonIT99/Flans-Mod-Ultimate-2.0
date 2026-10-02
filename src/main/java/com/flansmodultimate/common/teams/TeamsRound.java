@@ -31,7 +31,7 @@ public final class TeamsRound implements Comparable<TeamsRound>
     private final String gameTypeId;
     private final List<String> teamIds;
     private final int timeLimitMinutes;
-    private final int scoreLimit;
+    private int scoreLimit;
     private final float popularity;
     private int roundsSincePlayed;
 
@@ -55,6 +55,12 @@ public final class TeamsRound implements Comparable<TeamsRound>
     public int getTimeLimitTicks()
     {
         return timeLimitMinutes * 60 * 20;
+    }
+
+    /** Operators can change the score limit of a round while it is played; it is saved with the round. */
+    public void setScoreLimit(int scoreLimit)
+    {
+        this.scoreLimit = Math.max(1, scoreLimit);
     }
 
     public void markPlayed()

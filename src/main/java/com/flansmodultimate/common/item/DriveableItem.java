@@ -145,6 +145,8 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
+        if (!IFlanItem.showDetailedDescriptions())
+            return;
         DriveableData data = DriveableData.fromStack(configType, stack, ItemStackData.builtInRegistries());
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())

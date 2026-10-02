@@ -472,7 +472,7 @@ public final class ClientHudOverlays
     /** Draw the hit marker in the style selected in the client config, with fade-out alpha. */
     public static void renderHitMarker(GuiGraphics g, float partialTick, int sw, int sh)
     {
-        if (ModClient.getHitMarkerTime() <= 0)
+        if (ModClient.getHitMarkerTime() <= 0 || !ModClientConfig.get().showHitMarker)
             return;
 
         if (ModClientConfig.get().hitMarkerStyle == EnumHitMarkerStyle.ULTIMATE)
@@ -486,7 +486,9 @@ public final class ClientHudOverlays
     {
         float alpha = Math.max((ModClient.getHitMarkerTime() - 10F + partialTick) / 10F, 0F);
 
-        drawCenteredHitMarker(g, FlansMod.TEXTURE_GUI_BASICHITMARKER, sw, sh, 1F, 1F, 1F, alpha);
+        ModClientConfig config = ModClientConfig.get();
+        drawCenteredHitMarker(g, FlansMod.TEXTURE_GUI_BASICHITMARKER, sw, sh,
+            config.hitMarkerRed, config.hitMarkerGreen, config.hitMarkerBlue, alpha * config.hitMarkerAlpha);
     }
 
     /**
@@ -495,11 +497,12 @@ public final class ClientHudOverlays
      */
     private static void renderUltimateHitMarker(GuiGraphics g, float partialTick, int sw, int sh)
     {
-        float alpha = Mth.clamp((ModClient.getHitMarkerTime() - partialTick) / HIT_MARKER_FADE_TICKS, 0F, 1F);
+        ModClientConfig config = ModClientConfig.get();
+        float alpha = Mth.clamp((ModClient.getHitMarkerTime() - partialTick) / HIT_MARKER_FADE_TICKS, 0F, 1F) * config.hitMarkerAlpha;
 
-        float red = 1F;
-        float green = 1F;
-        float blue = 1F;
+        float red = config.hitMarkerRed;
+        float green = config.hitMarkerGreen;
+        float blue = config.hitMarkerBlue;
 
         if (ModClientConfig.get().fancyHitMarker)
         {
@@ -1161,8 +1164,16 @@ public final class ClientHudOverlays
         Component altitudeText = Component.translatable("hud.flansmodultimate.driveable.altitude",
             Math.round(driveable.getY() - driveable.level().getSeaLevel()));
         Component compassText = Component.translatable("hud.flansmodultimate.driveable.compass", compassDirection(driveable.getYaw()));
+        // Vehicles marked ShootWithOpenDoor arm their weapons with the door key, which the HUD reminds of
+        Component weaponArmingText = atDriverControls && vehicleType != null && vehicleType.isShootWithOpenDoor()
+            ? Component.translatable(driveable.isDoorOpen()
+                    ? "hud.flansmodultimate.driveable.weapon.ready" : "hud.flansmodultimate.driveable.weapon.disabled",
+                KeyInputHandler.getDoorKeyName())
+            : null;
         int rightWidth = maxWidth(font, yawText, pitchText, smokeText, ammoHeading,
             rollText, altitudeText, compassText);
+        if (weaponArmingText != null)
+            rightWidth = Math.max(rightWidth, font.width(weaponArmingText));
         for (OrdnanceLine line : ordnanceLines)
             rightWidth = Math.max(rightWidth, font.width(line.text()));
         for (Component ammoName : ammoNames)
@@ -1182,6 +1193,9 @@ public final class ClientHudOverlays
             g.drawString(font, line.text(), hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, line.color(), false);
         if (hasSmoke)
             g.drawString(font, smokeText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++, smokeColor, false);
+        if (weaponArmingText != null)
+            g.drawString(font, weaponArmingText, hudRightX, rightY + LEGACY_HUD_LINE_HEIGHT * rightLine++,
+                driveable.isDoorOpen() ? HUD_GREEN : HUD_RED, false);
         if (!ammoNames.isEmpty())
         {
             // Listed in the same order as the weapon lines above.

@@ -115,7 +115,7 @@ configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
  * Optional: directory (defaults to sourceSet), implementationTitle (defaults to sourceSet),
  *           javaCompileJvmArgs.
  */
-def fmuModuleJars = []
+ext.fmuModuleJars = []
 ext.registerFmuModule = { Map module ->
     def missing = ['sourceSet', 'modId', 'jarTask', 'archiveBaseName', 'archiveVersion'].findAll { !module[it]?.toString()?.trim() }
     if (missing)
@@ -462,6 +462,10 @@ tasks.withType(PublishToMavenRepository).configureEach { PublishToMavenRepositor
         }
     }
 }
+
+// Each checkout publishes only its own Minecraft version and loader.
+ext.curseforgeModLoader = 'Forge'
+apply from: 'gradle/curseforge.gradle'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

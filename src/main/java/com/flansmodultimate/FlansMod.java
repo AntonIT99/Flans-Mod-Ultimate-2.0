@@ -21,6 +21,7 @@ import com.flansmodultimate.common.entity.Parachute;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.entity.ThrownGun;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.entity.Wheel;
@@ -294,6 +295,12 @@ public class FlansMod
         .clientTrackingRange(16)
         .updateInterval(20)
         .build("gun_item")
+    );
+    public static final Supplier<? extends EntityType<TeamItemEntity>> teamItemEntity = entityRegistry.register("team_item", () -> EntityType.Builder.<TeamItemEntity>of(TeamItemEntity::new, MobCategory.MISC)
+        .sized(0.25F, 0.25F)
+        .clientTrackingRange(6)
+        .updateInterval(20)
+        .build(ResourceLocation.fromNamespaceAndPath(MOD_ID, "team_item").toString())
     );
     public static final Supplier<? extends EntityType<AAGun>> aaGunEntity = entityRegistry.register("aa_gun", () -> EntityType.Builder.<AAGun>of(AAGun::new, MobCategory.MISC)
         .sized(AAGun.DEFAULT_HITBOX_SIZE, AAGun.DEFAULT_HITBOX_SIZE)

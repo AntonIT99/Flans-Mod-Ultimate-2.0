@@ -685,7 +685,9 @@ public class Vehicle extends Driveable
     protected boolean canFireWeaponBank(boolean secondary)
     {
         VehicleType type = getVehicleType();
-        return super.canFireWeaponBank(secondary) && (type == null || !isDoorOpen() || type.isShootWithOpenDoor());
+        // As in 1.7.10, the door only matters to vehicles marked ShootWithOpenDoor, whose weapons
+        // are armed by opening it; every other vehicle fires whatever the state of its door
+        return super.canFireWeaponBank(secondary) && (type == null || type.doorAllowsFiring(isDoorOpen()));
     }
 
     @Override

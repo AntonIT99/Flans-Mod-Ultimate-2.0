@@ -58,6 +58,10 @@ public record GunReloader(GunItem item)
         if (evt.isCanceled())
             return false;
 
+        // Development mode, or a listener that waived the ammunition: load the default ammo straight away
+        if ((ModCommonConfig.gunDevMode() || !evt.isNeedsAmmo()) && loadDefaultAmmo(level, gunStack))
+            return true;
+
         // Digital ammo system: check if enabled and try to use it
         if (ModCommonConfig.get().enableDigitalAmmoSystem())
         {
@@ -81,6 +85,17 @@ public record GunReloader(GunItem item)
         long applyAt = level.getGameTime() + ticks;
 
         return data.queuePendingReload(new PendingReload(gunStack, hand, applyAt, plans, forceReload, instabuild, combineAmmoOnReload, ammoToUpperInventory, reloadSoundUUID, false));
+    }
+
+    private boolean loadDefaultAmmo(Level level, ItemStack gunStack)
+    {
+        ItemStack ammo = item.getConfigType().getDefaultAmmo().flatMap(type -> ModUtils.getItemStack(type)).orElse(ItemStack.EMPTY);
+        if (ammo.isEmpty())
+            return false;
+        ItemStack stackToLoad = ammo.copy();
+        stackToLoad.setCount(1);
+        item.setBulletItemStack(gunStack, stackToLoad, 0, level.registryAccess());
+        return true;
     }
 
     public static void handlePendingReload(Level level, ServerPlayer player, PlayerData data)

@@ -3,6 +3,7 @@ package com.flansmodultimate.common;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.guns.reload.GunReloader;
 import com.flansmodultimate.common.guns.reload.PendingReload;
+import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.PlayerSnapshot;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.GunType;
@@ -19,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -100,6 +102,9 @@ public class PlayerData
     /** In a teams round, the first reload after respawning is instant so that players are not defenceless on spawn */
     @Getter @Setter
     private boolean reloadedAfterRespawn;
+    /** Ticks until the gun in the first hotbar slot is reloaded automatically after a Teams respawn; 0 when none is pending. */
+    @Setter
+    private int respawnReloadTicks;
     /**
      * The player's own reload inventory preferences, sent by the client on login and whenever they are changed.
      * Null means the player never announced a preference (vanilla or outdated client), in which case the
@@ -284,7 +289,10 @@ public class PlayerData
         isPrevShootKeyPressedRight = isShootKeyPressedRight;
 
         if (!player.level().isClientSide)
+        {
+            tickRespawnReload((ServerPlayer) player);
             GunReloader.handlePendingReload(player.level(), (ServerPlayer) player, this);
+        }
 
         // Snapshots exist for the server's lag-compensated hit detection, so the client keeps none:
         // a bullet there is only a visual, and both it and the melee sweep fall back to the plain
@@ -296,6 +304,16 @@ public class PlayerData
         System.arraycopy(snapshots, 0, snapshots, 1, snapshots.length - 2 + 1);
         //Take new snapshot
         snapshots[0] = new PlayerSnapshot(player);
+    }
+
+    /** Reloads the gun a player respawned holding, as 1.7.10 did five ticks after a Teams respawn. */
+    private void tickRespawnReload(ServerPlayer player)
+    {
+        if (respawnReloadTicks <= 0 || --respawnReloadTicks > 0)
+            return;
+        ItemStack stack = player.getMainHandItem();
+        if (stack.getItem() instanceof GunItem gunItem)
+            gunItem.getGunItemHandler().doPlayerReload(player.serverLevel(), player, this, stack, InteractionHand.MAIN_HAND, false);
     }
 
     public Optional<PendingReload> getPendingReload()

@@ -194,6 +194,8 @@ public final class ModClientEventHandler
         event.registerEntityRenderer(FlansMod.wheelEntity.get(), InvisibleEntityRenderer::new);
         event.registerEntityRenderer(FlansMod.flagpoleEntity.get(), TeamObjectRenderer::new);
         event.registerEntityRenderer(FlansMod.flagEntity.get(), TeamObjectRenderer::new);
+        event.registerEntityRenderer(FlansMod.gunItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
+        event.registerEntityRenderer(FlansMod.teamItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
         event.registerBlockEntityRenderer(FlansMod.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
     }
 

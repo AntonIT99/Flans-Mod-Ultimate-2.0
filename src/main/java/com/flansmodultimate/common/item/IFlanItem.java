@@ -38,7 +38,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         if (ModClientConfig.get().showPackNameInItemDescriptions && !getContentPack().isBlank())
             tooltipComponents.add(Component.literal(getContentPack()).withStyle(ChatFormatting.DARK_GRAY));
 
-        if (!ClientHooks.TOOLTIPS.isShiftDown())
+        // Holding sneak swaps the description for the detailed statistics, unless those are switched off
+        if (!ClientHooks.TOOLTIPS.isShiftDown() || !showDetailedDescriptions())
         {
             for (String line : getConfigType().getDescription().split("_"))
             {
@@ -46,6 +47,12 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
                     tooltipComponents.add(Component.literal(line).withStyle(ChatFormatting.GRAY));
             }
         }
+    }
+
+    /** Whether the player wants the detailed statistics of Flan's items in their tooltips. */
+    static boolean showDetailedDescriptions()
+    {
+        return ModClientConfig.get() == null || ModClientConfig.get().showDetailedItemDescriptions;
     }
 
     /**

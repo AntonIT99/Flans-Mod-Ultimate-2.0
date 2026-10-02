@@ -37,6 +37,8 @@ public final class ModCommonConfig
     public static final ForgeConfigSpec configSpec;
     public static final double DEFAULT_GRAVITY_FACTOR = 1D;
     public static final double DEFAULT_DRAG_FACTOR = 1D;
+    /** Vanilla player health; the maximum health setting leaves players untouched at this value. */
+    public static final double DEFAULT_MAX_PLAYER_HEALTH = 20D;
 
     /** Arcade lift scaling keeps fixed-wing takeoff runs practical in Minecraft worlds. */
     public static final double DEFAULT_REALISTIC_AIRCRAFT_REFERENCE_SPEED_SCALE = 0.25D;
@@ -142,6 +144,11 @@ public final class ModCommonConfig
     private static final Supplier<Integer> BONUS_REGEN_AMOUNT;
     private static final Supplier<Integer> BONUS_REGEN_TICK_DELAY;
     private static final Supplier<Integer> BONUS_REGEN_FOOD_LIMIT;
+    private static final Supplier<Double> MAX_PLAYER_HEALTH;
+    private static final Supplier<Boolean> ENABLE_KILL_MESSAGES;
+    private static final Supplier<Boolean> SHOW_DISTANCE_IN_KILL_MESSAGE;
+    private static final Supplier<Integer> BULLET_SNAPSHOT_MIN;
+    private static final Supplier<Integer> BULLET_SNAPSHOT_DIVISOR;
     private static final Supplier<Integer> BULLET_TRACKING_RANGE;
     private static final Supplier<Integer> GRENADE_TRACKING_RANGE;
     private static final Supplier<Integer> DEPLOYED_GUN_TRACKING_RANGE;
@@ -167,6 +174,7 @@ public final class ModCommonConfig
     private static final Supplier<Boolean> FORCE_ALLOW_ALL_ATTACHMENTS;
     private static final Supplier<Boolean> DISABLE_DUAL_WIELDING;
     private static final Supplier<Boolean> RELOAD_ON_EMPTY_FIRE;
+    private static final Supplier<Boolean> GUN_DEV_MODE;
     private static final Supplier<Double> GUN_DAMAGE_MODIFIER;
     private static final Supplier<Double> GUN_RECOIL_MODIFIER;
     private static final Supplier<Double> GUN_DISPERSION_MODIFIER;
@@ -329,6 +337,27 @@ public final class ModCommonConfig
         BONUS_REGEN_FOOD_LIMIT = builder
             .comment("Amount of food required to activate this regen, vanilla is 18")
             .defineInRange("bonusRegenFoodLimit", 18, 0, 20);
+        MAX_PLAYER_HEALTH = builder
+            .comment("Base maximum health of every player, applied when they log in or respawn (20 = 10 hearts, the vanilla value).",
+                "Best used together with the bonus regeneration settings.")
+            .defineInRange("maxPlayerHealth", DEFAULT_MAX_PLAYER_HEALTH, 0.5D, 100D);
+        ENABLE_KILL_MESSAGES = builder
+            .comment("Announce kills made with Flan's weapons in the kill feed and in a Flan's Mod death message.",
+                "When disabled, the kill feed stays empty and deaths use the plain vanilla-style death messages.")
+            .define("enableKillMessages", true);
+        SHOW_DISTANCE_IN_KILL_MESSAGE = builder
+            .comment("Include the distance between the killer and the victim in Flan's Mod death messages.")
+            .define("showDistanceInKillMessage", true);
+        builder.pop();
+
+        builder.push("Teams Settings");
+        BULLET_SNAPSHOT_MIN = builder
+            .comment("Lag compensation: number of player snapshots (ticks) every bullet rewinds its targets by, before the shooter's ping is considered.",
+                "A bullet uses the snapshot bulletSnapshotMin + ping / bulletSnapshotDivisor. Can also be changed in game with /teams admin bltss.")
+            .defineInRange("bulletSnapshotMin", 0, 0, 100);
+        BULLET_SNAPSHOT_DIVISOR = builder
+            .comment("Lag compensation: milliseconds of shooter ping per additional snapshot of rewind. 0 ignores the shooter's ping.")
+            .defineInRange("bulletSnapshotDivisor", 50, 0, 1000);
         builder.pop();
 
         builder.push(ENTITY_TRACKING_CONFIG_SECTION);
@@ -411,6 +440,10 @@ public final class ModCommonConfig
         RELOAD_ON_EMPTY_FIRE = builder
             .comment("Automatically reload an empty gun when the player attempts to fire it. Disable to require the reload key.")
             .define("reloadOnEmptyFire", true);
+        GUN_DEV_MODE = builder
+            .comment("Gun development mode: every player, in any game mode, can reload guns without carrying their ammunition.",
+                "Meant for testing content packs.")
+            .define("gunDevMode", false);
         GUN_DAMAGE_MODIFIER = builder
             .comment("All gun damage will be modified by this amount")
             .defineInRange("gunDamageModifier", 1.0, 0.0, 100.0);
@@ -813,6 +846,11 @@ public final class ModCommonConfig
             BONUS_REGEN_AMOUNT.get(),
             BONUS_REGEN_TICK_DELAY.get(),
             BONUS_REGEN_FOOD_LIMIT.get(),
+            MAX_PLAYER_HEALTH.get(),
+            ENABLE_KILL_MESSAGES.get(),
+            SHOW_DISTANCE_IN_KILL_MESSAGE.get(),
+            BULLET_SNAPSHOT_MIN.get(),
+            BULLET_SNAPSHOT_DIVISOR.get(),
             BULLET_TRACKING_RANGE.get(),
             GRENADE_TRACKING_RANGE.get(),
             DEPLOYED_GUN_TRACKING_RANGE.get(),
@@ -838,6 +876,7 @@ public final class ModCommonConfig
             FORCE_ALLOW_ALL_ATTACHMENTS.get(),
             DISABLE_DUAL_WIELDING.get(),
             RELOAD_ON_EMPTY_FIRE.get(),
+            GUN_DEV_MODE.get(),
             GUN_DAMAGE_MODIFIER.get().floatValue(),
             GUN_RECOIL_MODIFIER.get().floatValue(),
             GUN_DISPERSION_MODIFIER.get().floatValue(),
@@ -1314,6 +1353,52 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = get();
         return config == null || config.reloadOnEmptyFire();
+    }
+
+    /** Whether every player may reload guns without carrying their ammunition. */
+    public static boolean gunDevMode()
+    {
+        CommonConfigSnapshot config = get();
+        return config != null && config.gunDevMode();
+    }
+
+    public static double maxPlayerHealth()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_MAX_PLAYER_HEALTH : config.maxPlayerHealth();
+    }
+
+    public static boolean enableKillMessages()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.enableKillMessages();
+    }
+
+    public static boolean showDistanceInKillMessage()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null || config.showDistanceInKillMessage();
+    }
+
+    /** Lag compensation: snapshots every bullet rewinds by before the shooter's ping is considered. */
+    public static int bulletSnapshotMin()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? 0 : config.bulletSnapshotMin();
+    }
+
+    /** Lag compensation: milliseconds of shooter ping per additional snapshot; 0 ignores ping. */
+    public static int bulletSnapshotDivisor()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? 50 : config.bulletSnapshotDivisor();
+    }
+
+    /** Persists both lag compensation values, as {@code /teams admin bltss} does. Server thread only. */
+    public static boolean setBulletSnapshot(int min, int divisor)
+    {
+        boolean changed = setRuntimeValue(List.of("Teams Settings", "bulletSnapshotMin"), min);
+        return setRuntimeValue(List.of("Teams Settings", "bulletSnapshotDivisor"), divisor) || changed;
     }
 
     public static EnumPlayerAimPose playerAimPose()

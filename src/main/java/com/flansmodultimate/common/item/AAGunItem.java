@@ -101,6 +101,8 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        if (!IFlanItem.showDetailedDescriptions())
+            return;
         tooltipComponents.add(Component.empty());
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())

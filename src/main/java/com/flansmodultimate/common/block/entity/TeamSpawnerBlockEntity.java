@@ -2,6 +2,7 @@ package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.teams.ITeamBase;
@@ -25,7 +26,6 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -113,8 +113,9 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
             return;
 
-        for (ItemStack template : spawner.templates)
+        for (int index = 0; index < spawner.templates.size(); index++)
         {
+            ItemStack template = spawner.templates.get(index);
             if (spawner.mode == Mode.VEHICLE)
             {
                 Entity spawned = null;
@@ -132,8 +133,9 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
                 continue;
             }
 
-            ItemEntity item = new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.2D, pos.getZ() + 0.5D, template.copy());
-            item.setDefaultPickUpDelay();
+            // Spawned items circle the spawner, evenly spaced, until a player of the owning team takes them
+            TeamItemEntity item = new TeamItemEntity(level, pos, spawner.objectId, template.copy(),
+                index * Math.PI * 2D / spawner.templates.size());
             item.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
             level.addFreshEntity(item);
         }
@@ -200,18 +202,22 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     {
         if (level == null || level.isClientSide)
             return;
-        int colour = UNOWNED_COLOUR;
-        if (baseId != null)
-        {
-            ITeamBase base = TeamsManager.getInstance().getBase(baseId).orElse(null);
-            Team team = base == null ? null : TeamsManager.getInstance().getTeamForBase(base);
-            if (team != null)
-                colour = team.getTeamColour();
-        }
+        Team team = getOwningTeam();
+        int colour = team == null ? UNOWNED_COLOUR : team.getTeamColour();
         if (colour == teamColour)
             return;
         teamColour = colour;
         setChangedAndSync();
+    }
+
+    /** The team owning the base this spawner is connected to in the current round, or null when nobody owns it. */
+    @Nullable
+    public Team getOwningTeam()
+    {
+        if (baseId == null)
+            return null;
+        ITeamBase base = TeamsManager.getInstance().getBase(baseId).orElse(null);
+        return base == null ? null : TeamsManager.getInstance().getTeamForBase(base);
     }
 
     @Override
