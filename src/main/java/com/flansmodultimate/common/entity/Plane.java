@@ -449,6 +449,16 @@ public class Plane extends Driveable
                 getEngineSpeed()));
     }
 
+    /**
+     * Only an aircraft on the ground, taxiing or parked, keeps its gear and crew out of walls by stopping.
+     * In flight, terrain is struck through the collision points and the crash damage they deal.
+     */
+    @Override
+    protected boolean usesTerrainProbes()
+    {
+        return super.usesTerrainProbes() && isSupportedByGround();
+    }
+
     private void updateLandingAutomation(PlaneType type)
     {
         if (!type.isHasGear())

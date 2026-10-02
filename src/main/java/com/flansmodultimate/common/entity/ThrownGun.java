@@ -39,6 +39,8 @@ public class ThrownGun extends AbstractArrow
 {
     /** Ticks a recoverable weapon stays stuck before despawning, the lifespan of a dropped item */
     public static final int RECOVERABLE_LIFESPAN = 6000;
+    /** Gravity AbstractArrow applies on its own each tick, which this projectile replaces. */
+    private static final double VANILLA_ARROW_GRAVITY = 0.05D;
 
     protected static final String NBT_WEAPON = "weapon";
     protected static final String NBT_DAMAGE = "throw_damage";
@@ -99,16 +101,18 @@ public class ThrownGun extends AbstractArrow
             dealtDamage = true;
 
         super.tick();
-        // AbstractArrow applies fixed air drag and gravity internally. Replace
-        // their result with this mod's factors; water uses getWaterInertia below.
+        // AbstractArrow applies fixed air drag and the vanilla arrow gravity of 0.05
+        // internally. Undo that gravity and apply the gravity shared by every Flan's
+        // projectile instead, with this mod's dimension factors; water drag uses
+        // getWaterInertia below.
         if (!inGround)
         {
-            double vanillaGravity = isNoGravity() ? 0D : 0.05D;
+            boolean gravity = !isNoGravity();
             double ratio = isInWater() ? 1D : ProjectileDrag.factor(this,
                 ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG)
                 / ShootableType.AIR_DEFAULT_DRAG;
-            Vec3 motion = getDeltaMovement().add(0D, vanillaGravity, 0D).scale(ratio)
-                .add(0D, -ModPhysics.gravity(vanillaGravity, level()), 0D);
+            Vec3 motion = getDeltaMovement().add(0D, gravity ? VANILLA_ARROW_GRAVITY : 0D, 0D).scale(ratio)
+                .add(0D, gravity ? -ModPhysics.gravity(ShootableType.FALL_SPEED_COEFFICIENT, level()) : 0D, 0D);
             setDeltaMovement(motion);
         }
     }

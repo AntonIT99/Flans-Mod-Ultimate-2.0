@@ -17,6 +17,7 @@ import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.DriveablePrediction;
 import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
+import com.flansmodultimate.common.driveables.DriveableTerrainProbes;
 import com.flansmodultimate.common.driveables.DriveableVisualCache;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
@@ -5556,6 +5557,16 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             ? VehiclePhysicsConstants.LEGACY_MOVEMENT_CLAMP_BLOCKS_PER_TICK
             : movementClamp(configType.getResolvedPhysics());
         velocity = new Vec3(Mth.clamp(velocity.x, -maximum, maximum), Mth.clamp(velocity.y, -maximum, maximum), Mth.clamp(velocity.z, -maximum, maximum));
+        // Impacts are judged on the motion that was asked for, not on what the probes left of it
+        Vec3 requested = velocity;
+        boolean extremityContact = false;
+        if (usesTerrainProbes())
+        {
+            guardTurnAgainstTerrain();
+            velocity = DriveableTerrainProbes.clampHorizontal(velocity, terrainProbes(), this::probeInTerrain,
+                (probe, motion) -> Entity.collideBoundingBox(this, motion, probe, level(), List.of()));
+            extremityContact = DriveableTerrainProbes.blocked(requested, velocity);
+        }
         setDeltaMovement(velocity);
         // Vanilla only steps a collision body that rests on the ground itself,
         // which one held clear of the terrain by its suspension never does. The
@@ -5565,12 +5576,72 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (!onGround() && getStepHeight() > 0F && hasWheelContact() && stepsOnWheelContact())
             setOnGround(true);
         move(MoverType.SELF, velocity);
-        sweepCollisionPointImpacts(velocity);
-        handleCollisionConsequences(velocity);
+        // A wheel or crewed seat stopped at a wall is a collision like the body striking it
+        if (extremityContact)
+            horizontalCollision = true;
+        sweepCollisionPointImpacts(requested);
+        handleCollisionConsequences(requested);
         if (horizontalCollision)
             setDeltaMovement(getDeltaMovement().multiply(0.2D, 1D, 0.2D));
         if (verticalCollision)
             setDeltaMovement(getDeltaMovement().multiply(1D, 0.2D, 1D));
+    }
+
+    /**
+     * Whether this tick's movement keeps the wheels and occupied seats out of terrain. The body box only
+     * covers the middle of a large driveable; see {@link DriveableTerrainProbes}.
+     */
+    protected boolean usesTerrainProbes()
+    {
+        return configType != null;
+    }
+
+    /**
+     * Boxes at the intact wheels and the occupied seats, above the height the driveable can step, which
+     * must stay out of terrain.
+     */
+    protected List<AABB> terrainProbes()
+    {
+        List<AABB> probes = new ArrayList<>();
+        if (configType == null)
+            return probes;
+        double stepLift = DriveableTerrainProbes.stepLift(getStepHeight());
+        for (int index = 0; index < configType.getWheelPositions().size(); index++)
+        {
+            DriveablePosition wheel = configType.getWheelPosition(index);
+            if (wheel != null && isPartIntact(wheel.getPart()))
+                probes.add(DriveableTerrainProbes.wheelProbe(getWheelWorldPosition(index), stepLift));
+        }
+        for (int index = 0; index < seats.length; index++)
+        {
+            Seat seat = seats[index];
+            if (seat != null && seat.isAlive() && !seat.getPassengers().isEmpty())
+                probes.add(DriveableTerrainProbes.seatProbe(getSeatWorldPosition(index), getY() + stepLift));
+        }
+        return probes;
+    }
+
+    protected boolean probeInTerrain(@NotNull AABB probe)
+    {
+        return level().getBlockCollisions(this, probe).iterator().hasNext();
+    }
+
+    /**
+     * Cancels this tick's turn when it would swing a wheel or a crewed seat into terrain, as the 1.7.10
+     * wheel entities could not be turned into a wall either. A probe that was already in terrain does not
+     * prevent turning, so a driveable can always turn its way out.
+     */
+    protected void guardTurnAgainstTerrain()
+    {
+        float yaw = getYaw();
+        if (Math.abs(Mth.wrapDegrees(yaw - prevYaw)) < 1.0E-4F)
+            return;
+        int inTerrain = DriveableTerrainProbes.countInTerrain(terrainProbes(), this::probeInTerrain);
+        if (inTerrain == 0)
+            return;
+        setOrientation(prevYaw, getPitch(), getRoll());
+        if (DriveableTerrainProbes.countInTerrain(terrainProbes(), this::probeInTerrain) >= inTerrain)
+            setOrientation(yaw, getPitch(), getRoll());
     }
 
     protected Vec3 applyGravityAndBuoyancy(@NotNull Vec3 velocity, double gravity)
