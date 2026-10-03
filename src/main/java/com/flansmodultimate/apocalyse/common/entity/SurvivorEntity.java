@@ -4,6 +4,7 @@ import com.flansmodultimate.apocalyse.common.util.ApocalypseGunCombat;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseGunHelper;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.entity.FlanMonster;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +33,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.Wolf;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -47,7 +47,7 @@ import java.util.EnumSet;
  * two to five spare magazines. It never targets the Skull Boss, which in turn ignores AI gunfire.</p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class SurvivorEntity extends Monster
+public class SurvivorEntity extends FlanMonster
 {
     private static final int RESERVE_SLOTS = 5;
     /** The legacy {@code EntityAIAttackRangedGun} engagement range. */
@@ -63,7 +63,7 @@ public class SurvivorEntity extends Monster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return Monster.createMonsterAttributes()
+        return FlanMonster.createMonsterAttributes()
             .add(Attributes.MAX_HEALTH, 20.0D)
             .add(Attributes.MOVEMENT_SPEED, 0.25D)
             .add(Attributes.FOLLOW_RANGE, 80.0D)
@@ -97,10 +97,9 @@ public class SurvivorEntity extends Monster
 
     @Override
     @Nullable
-    @SuppressWarnings("deprecation") // NeoForge marks this as override-only; external callers use EventHooks.
-    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData)
+    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
     {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData);
+        SpawnGroupData result = super.finalizeEntitySpawn(level, difficulty, spawnType, spawnData, dataTag);
         equipDefault(level.getRandom());
         return result;
     }
@@ -116,9 +115,8 @@ public class SurvivorEntity extends Monster
     }
 
     @Override
-    protected void dropCustomDeathLoot(@NotNull net.minecraft.server.level.ServerLevel level, @NotNull DamageSource source, boolean recentlyHit)
+    protected void dropEntityDeathLoot(@NotNull DamageSource source, boolean recentlyHit)
     {
-        super.dropCustomDeathLoot(level, source, recentlyHit);
         if (!level().isClientSide)
         {
             gun.dropReserve();

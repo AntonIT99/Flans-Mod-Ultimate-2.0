@@ -2,6 +2,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.entity.FlanPathfinderMob;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,12 +11,10 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -38,7 +37,7 @@ import net.minecraft.world.level.Level;
  * finding, and beating, the shape you left behind.</p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class InventoryHolderEntity extends PathfinderMob
+public class InventoryHolderEntity extends FlanPathfinderMob
 {
     private static final String NBT_HELD_ITEMS = "held_items";
 
@@ -92,9 +91,8 @@ public class InventoryHolderEntity extends PathfinderMob
     }
 
     @Override
-    protected void dropCustomDeathLoot(@NotNull ServerLevel level, @NotNull DamageSource source, boolean recentlyHit)
+    protected void dropEntityDeathLoot(@NotNull DamageSource source, boolean recentlyHit)
     {
-        super.dropCustomDeathLoot(level, source, recentlyHit);
         if (level().isClientSide)
             return;
         for (ItemStack stack : heldItems)

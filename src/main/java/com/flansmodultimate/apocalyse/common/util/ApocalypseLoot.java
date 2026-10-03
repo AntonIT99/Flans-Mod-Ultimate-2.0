@@ -17,7 +17,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -31,7 +30,6 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -42,6 +40,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseLoot
@@ -67,9 +66,16 @@ public final class ApocalypseLoot
     };
 
     /** The 1.12.2 brewing-stand pool (legacy potion metadata 8193-8206). */
-    private static final List<Holder<Potion>> BREWING_STAND_POTIONS = List.of(Potions.REGENERATION, Potions.SWIFTNESS,
-        Potions.FIRE_RESISTANCE, Potions.HEALING, Potions.NIGHT_VISION, Potions.STRENGTH, Potions.LEAPING,
-        Potions.WATER_BREATHING, Potions.INVISIBILITY);
+    private static final List<Supplier<ItemStack>> BREWING_STAND_POTIONS = List.of(
+        () -> ItemStackData.potion(Items.POTION, Potions.REGENERATION),
+        () -> ItemStackData.potion(Items.POTION, Potions.SWIFTNESS),
+        () -> ItemStackData.potion(Items.POTION, Potions.FIRE_RESISTANCE),
+        () -> ItemStackData.potion(Items.POTION, Potions.HEALING),
+        () -> ItemStackData.potion(Items.POTION, Potions.NIGHT_VISION),
+        () -> ItemStackData.potion(Items.POTION, Potions.STRENGTH),
+        () -> ItemStackData.potion(Items.POTION, Potions.LEAPING),
+        () -> ItemStackData.potion(Items.POTION, Potions.WATER_BREATHING),
+        () -> ItemStackData.potion(Items.POTION, Potions.INVISIBILITY));
 
     public static ItemStack randomLoot(RandomSource random, boolean gunsOnly)
     {
@@ -199,7 +205,7 @@ public final class ApocalypseLoot
         for (int slot = 0; slot < 3 && slot < brewingStand.getContainerSize(); slot++)
         {
             if (random.nextBoolean())
-                brewingStand.setItem(slot, ItemStackData.potion(Items.POTION, BREWING_STAND_POTIONS.get(random.nextInt(BREWING_STAND_POTIONS.size()))));
+                brewingStand.setItem(slot, BREWING_STAND_POTIONS.get(random.nextInt(BREWING_STAND_POTIONS.size())).get());
         }
     }
 
