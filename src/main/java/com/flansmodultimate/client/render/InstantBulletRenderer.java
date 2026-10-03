@@ -1,13 +1,15 @@
 package com.flansmodultimate.client.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -24,33 +26,52 @@ public final class InstantBulletRenderer
         trails.add(trail);
     }
 
-    public static void renderAllTrails(PoseStack poseStack, float partialTicks, Camera camera)
+    /**
+     * Trails are full-bright emissive quads, so a shader pack draws them with its glowing-entity
+     * program. Each texture's trails share one draw.
+     */
+    public static void renderAllTrails(PoseStack poseStack, MultiBufferSource.BufferSource buffers, float partialTicks, Camera camera)
     {
         if (trails.isEmpty())
             return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null)
+        if (mc.level == null || mc.player == null)
             return;
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableCull();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-
         Vec3 cam = camera.getPosition();
+        Vec3 viewer = mc.player.getEyePosition();
         poseStack.pushPose();
         poseStack.translate(-cam.x, -cam.y, -cam.z);
+        PoseStack.Pose pose = poseStack.last();
 
-        for (InstantShotTrail t : trails)
+        for (int i = 0; i < trails.size(); i++)
         {
-            t.render(poseStack, partialTicks);
+            ResourceLocation texture = trails.get(i).getTexture();
+            if (drawnBefore(i, texture))
+                continue;
+            RenderType renderType = CustomRenderType.entityEmissiveAlpha(texture, false);
+            VertexConsumer vertices = buffers.getBuffer(renderType);
+            for (int j = i; j < trails.size(); j++)
+            {
+                InstantShotTrail trail = trails.get(j);
+                if (trail.getTexture().equals(texture))
+                    trail.render(pose, vertices, viewer, partialTicks);
+            }
+            buffers.endBatch(renderType);
         }
 
         poseStack.popPose();
+    }
 
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
+    private static boolean drawnBefore(int index, ResourceLocation texture)
+    {
+        for (int i = 0; i < index; i++)
+        {
+            if (trails.get(i).getTexture().equals(texture))
+                return true;
+        }
+        return false;
     }
 
     public static void updateAllTrails()

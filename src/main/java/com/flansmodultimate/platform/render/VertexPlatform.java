@@ -1,19 +1,15 @@
 package com.flansmodultimate.platform.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import org.joml.Matrix4f;
 
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 
-/** Version boundary for emitting vertices, immediate-mode quads and buffers, and the model-view matrix. Client-only. */
+/** Version boundary for emitting vertices, immediate buffers, and the model-view matrix. Client-only. */
 public final class VertexPlatform
 {
     private VertexPlatform() {}
@@ -52,24 +48,6 @@ public final class VertexPlatform
         consumer.addVertex(pose.pose(), x, y, z)
             .setColor(red, green, blue, alpha)
             .setNormal(pose, normalX, normalY, normalZ);
-    }
-
-    /** Position-texture vertex. */
-    public static void positionTexVertex(VertexConsumer consumer, Matrix4f pose, float x, float y, float z, float u, float v)
-    {
-        consumer.addVertex(pose, x, y, z).setUv(u, v);
-    }
-
-    /** Starts an immediate-mode quad batch on the shared tesselator. */
-    public static BufferBuilder beginQuads(VertexFormat format)
-    {
-        return Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, format);
-    }
-
-    /** Draws a batch started with {@link #beginQuads} using the current shader. */
-    public static void drawWithShader(BufferBuilder builder)
-    {
-        BufferUploader.drawWithShader(builder.buildOrThrow());
     }
 
     public static void renderModelPart(ModelPart part, PoseStack poseStack, VertexConsumer consumer, int packedLight,

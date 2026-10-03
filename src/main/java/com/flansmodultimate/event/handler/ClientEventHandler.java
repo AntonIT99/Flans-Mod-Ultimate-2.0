@@ -26,6 +26,7 @@ import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.VehicleOpticsClient;
 import com.flansmodultimate.client.render.VehicleScreenShake;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
+import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
@@ -197,6 +198,12 @@ public final class ClientEventHandler
         DistantHorizonsClient.tick();
     }
 
+    /** Runs once per rendered frame, before the frame, with the main render target bound. */
+    public static void onRenderFrameStart()
+    {
+        DriveableImpostorCache.capturePending();
+    }
+
     /** Runs once per rendered frame, after the frame. */
     public static void onRenderTick()
     {
@@ -236,22 +243,21 @@ public final class ClientEventHandler
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         float partialTick = ClientPlatform.partialTick(event);
-        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), partialTick, event.getCamera());
-        OpStickConnectionRenderer.render(event.getPoseStack(), Minecraft.getInstance().renderBuffers().bufferSource(),
-            event.getCamera(), partialTick);
+        MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
+        InstantBulletRenderer.renderAllTrails(event.getPoseStack(), buffers, partialTick, event.getCamera());
+        OpStickConnectionRenderer.render(event.getPoseStack(), buffers, event.getCamera(), partialTick);
 
         if (ModClient.isDebug())
         {
-            MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
             for (DebugColor debugEntity : DebugHelper.getActiveDebugEntities())
             {
                 if (event.getFrustum().isVisible(debugEntity.getAABB()))
-                    debugEntity.render(event.getPoseStack(), bufferSource, event.getCamera());
+                    debugEntity.render(event.getPoseStack(), buffers, event.getCamera());
             }
             // Flush now, while everything drawn so far (entities included) is already on screen to draw over
-            bufferSource.endBatch(CustomRenderType.debugFilledBoxSeeThrough());
-            DriveableHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), partialTick);
-            PlayerHitboxRenderer.renderAll(event.getPoseStack(), bufferSource, event.getCamera(), event.getFrustum(), partialTick);
+            buffers.endBatch(CustomRenderType.debugFilledBoxSeeThrough());
+            DriveableHitboxRenderer.renderAll(event.getPoseStack(), buffers, event.getCamera(), event.getFrustum(), partialTick);
+            PlayerHitboxRenderer.renderAll(event.getPoseStack(), buffers, event.getCamera(), event.getFrustum(), partialTick);
         }
     }
 

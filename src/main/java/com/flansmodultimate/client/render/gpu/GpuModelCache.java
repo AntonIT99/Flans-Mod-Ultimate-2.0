@@ -6,7 +6,7 @@ import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.mixin.BufferSourceAccessor;
-import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -52,7 +52,6 @@ public final class GpuModelCache
     private static final PoseStack.Pose IDENTITY = new PoseStack().last();
     private static ShaderInstance shader;
     private static boolean failed;
-    private static Boolean incompatibleRenderer;
     private static Uniform poseUniform;
     private static Uniform normalUniform;
     private static Uniform dataUniform;
@@ -100,7 +99,8 @@ public final class GpuModelCache
         ModClientConfig config = ModClientConfig.get();
         String state = config == null || !config.enableGpuModelCache ? "disabled"
             : shader == null ? "shader unavailable" : failed ? "failed until reload"
-            : incompatibleRenderer() ? "renderer compatibility fallback"
+            : ShaderPlatform.isOptiFineLoaded() ? "OptiFine compatibility fallback"
+            : ShaderPlatform.isShaderPackInUse() ? ShaderPlatform.shaderModName() + " shader pack fallback"
             : Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS
                 ? "Fabulous fallback" : "available for eligible passes";
         return "GPU cache " + state + "; resident " + meshes.size() + " meshes, " + meshes.bytes() / 1024 + " KiB.";
@@ -120,22 +120,14 @@ public final class GpuModelCache
         failed = false;
     }
 
+    /**
+     * A shader pack replaces vanilla programs and vertex formats and masks writes from shaders it does not know
+     * while it renders the world, including its shadow pass. Installed without an active pack, Oculus and Iris keep
+     * the vanilla pipeline, so the cache stays available.
+     */
     private static boolean incompatibleRenderer()
     {
-        if (incompatibleRenderer == null)
-        {
-            incompatibleRenderer = PlatformEnvironment.isModLoaded("oculus") || PlatformEnvironment.isModLoaded("iris");
-            try
-            {
-                Class.forName("net.optifine.Config", false, GpuModelCache.class.getClassLoader());
-                incompatibleRenderer = true;
-            }
-            catch (ClassNotFoundException ignored)
-            {
-                // Ignored
-            }
-        }
-        return incompatibleRenderer;
+        return ShaderPlatform.isOptiFineLoaded() || ShaderPlatform.isShaderPackInUse();
     }
 
     /** Compatibility wrapper; hot call sites use begin/end to avoid capturing callbacks. */

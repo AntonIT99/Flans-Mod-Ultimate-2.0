@@ -46,6 +46,12 @@ public final class ClientGameEvents
     }
 
     @SubscribeEvent
+    public static void onRenderFrameStart(RenderFrameEvent.Pre event)
+    {
+        ClientEventHandler.onRenderFrameStart();
+    }
+
+    @SubscribeEvent
     public static void onRenderTick(RenderFrameEvent.Post event)
     {
         ClientEventHandler.onRenderTick();
