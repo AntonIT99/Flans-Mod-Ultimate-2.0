@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.common.physics.ModPhysics;
-import net.minecraftforge.client.model.data.ModelData;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
@@ -29,7 +29,7 @@ public final class LegacyItemParticle extends TextureSheetParticle
         var model = minecraft.getItemRenderer().getModel(stack, level, null, 0);
         model = model.getOverrides().resolve(model, stack, level, null, 0);
         if (model != null)
-            setSprite(model.getParticleIcon(ModelData.EMPTY));
+            setSprite(ClientPlatform.particleIcon(model));
 
         gravity = 1.0F;
         rCol = 1.0F;

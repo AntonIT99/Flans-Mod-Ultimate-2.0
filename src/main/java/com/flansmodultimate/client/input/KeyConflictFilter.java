@@ -1,10 +1,9 @@
 package com.flansmodultimate.client.input;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.platform.client.KeyContexts;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.client.settings.IKeyConflictContext;
-import net.minecraftforge.client.settings.KeyConflictContext;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -16,7 +15,7 @@ import net.minecraft.client.Options;
  * <p>Two mappings only really clash if a player can reach both at the same
  * moment. Forge cannot express that on its own: {@code KeyMapping.same} ends
  * with a bare key comparison whenever two conflict contexts do not conflict, and
- * every vanilla mapping is {@link KeyConflictContext#UNIVERSAL}, which conflicts
+ * every vanilla mapping is {@link KeyContexts#UNIVERSAL}, which conflicts
  * with everything. So the flight axes on W/A/S/D would be drawn red against both
  * the ground vehicle binds and vanilla walking, neither of which a pilot can use
  * while flying.</p>
@@ -66,8 +65,8 @@ public final class KeyConflictFilter
             // Both sides declare when they are live, so believe them. This is
             // the pairing Forge's fallback gets wrong, and it is what lets the
             // flight controls and the driving controls share keys.
-            IKeyConflictContext oneContext = one.getKeyConflictContext();
-            IKeyConflictContext otherContext = other.getKeyConflictContext();
+            var oneContext = one.getKeyConflictContext();
+            var otherContext = other.getKeyConflictContext();
             return !oneContext.conflicts(otherContext) && !otherContext.conflicts(oneContext);
         }
         // checkKeys reads the gun binds only in the branch it takes when the

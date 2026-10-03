@@ -18,7 +18,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.minecraftforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +28,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
@@ -665,22 +665,22 @@ public abstract class InfoType implements IContentType
         return RecipeResolver.resolve(id, amount, damage, provider);
     }
 
-    public static void beginLootTableLoad(LootTableLoadEvent event)
+    public static void beginLootTableLoad(LootTable table)
     {
-        activeLootBuildContext.set(new LootBuildContext(event));
+        activeLootBuildContext.set(new LootBuildContext(table));
     }
 
-    public static void finishLootTableLoad(LootTableLoadEvent event)
+    public static void finishLootTableLoad(LootTable table)
     {
         LootBuildContext context = activeLootBuildContext.get();
         activeLootBuildContext.remove();
-        if (context == null || context.event != event || context.entryCount == 0)
+        if (context == null || context.table != table || context.entryCount == 0)
             return;
 
-        LootPool pool = event.getTable().getPool(LOOT_POOL_NAME);
+        LootPool pool = table.getPool(LOOT_POOL_NAME);
         if (pool == null)
         {
-            event.getTable().addPool(context.builder.build());
+            table.addPool(context.builder.build());
             return;
         }
 
@@ -695,19 +695,19 @@ public abstract class InfoType implements IContentType
 
         if (appendedPool.isPresent())
         {
-            event.getTable().removePool(LOOT_POOL_NAME);
-            event.getTable().addPool(appendedPool.get());
+            table.removePool(LOOT_POOL_NAME);
+            table.addPool(appendedPool.get());
         }
     }
 
-    public void addLoot(LootTableLoadEvent event)
+    public void addLoot(LootTable table)
     {
         if (dungeonChance <= 0 || !type.isHasItem())
             return;
 
         ModUtils.getItem(this)
             .map(item -> createDungeonLootEntry(item, FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance))
-            .ifPresent(entry -> addLootEntry(event, entry));
+            .ifPresent(entry -> addLootEntry(table, entry));
     }
 
     protected LootPoolEntryContainer createDungeonLootEntry(Item item, int weight)
@@ -718,19 +718,19 @@ public abstract class InfoType implements IContentType
             .build();
     }
 
-    protected void addLootEntry(LootTableLoadEvent event, LootPoolEntryContainer entry)
+    protected void addLootEntry(LootTable table, LootPoolEntryContainer entry)
     {
         LootBuildContext context = activeLootBuildContext.get();
-        if (context != null && context.event == event)
+        if (context != null && context.table == table)
         {
             context.add(entry);
             return;
         }
 
-        LootPool pool = event.getTable().getPool(LOOT_POOL_NAME);
+        LootPool pool = table.getPool(LOOT_POOL_NAME);
         if (pool == null)
         {
-            event.getTable().addPool(LootPool.lootPool()
+            table.addPool(LootPool.lootPool()
                 .name(LOOT_POOL_NAME)
                 .setRolls(ConstantValue.exactly(1F))
                 .setBonusRolls(ConstantValue.exactly(1F))
@@ -742,8 +742,8 @@ public abstract class InfoType implements IContentType
         Optional<LootPool> appendedPool = createAppendedPool(pool, entry);
         if (appendedPool.isPresent())
         {
-            event.getTable().removePool(LOOT_POOL_NAME);
-            event.getTable().addPool(appendedPool.get());
+            table.removePool(LOOT_POOL_NAME);
+            table.addPool(appendedPool.get());
         }
     }
 
@@ -794,7 +794,7 @@ public abstract class InfoType implements IContentType
 
     private static class LootBuildContext
     {
-        private final LootTableLoadEvent event;
+        private final LootTable table;
         private final LootPool.Builder builder = LootPool.lootPool()
             .name(LOOT_POOL_NAME)
             .setRolls(ConstantValue.exactly(1F))
@@ -802,9 +802,9 @@ public abstract class InfoType implements IContentType
         private final List<LootPoolEntryContainer> entries = new ArrayList<>();
         private int entryCount;
 
-        private LootBuildContext(LootTableLoadEvent event)
+        private LootBuildContext(LootTable table)
         {
-            this.event = event;
+            this.table = table;
         }
 
         private void add(LootPoolEntryContainer entry)

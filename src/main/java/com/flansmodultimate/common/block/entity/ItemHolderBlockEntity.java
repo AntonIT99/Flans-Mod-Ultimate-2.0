@@ -4,8 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.ItemHolderBlock;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import com.flansmodultimate.platform.item.FlanItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,14 +26,7 @@ public class ItemHolderBlockEntity extends FlanBlockEntity
 
     private ItemHolderType type;
 
-    private final ItemStackHandler items = new ItemStackHandler(1)
-    {
-        @Override
-        protected void onContentsChanged(int slot)
-        {
-            setChangedAndSync();
-        }
-    };
+    private final FlanItemStackHandler items = new FlanItemStackHandler(1, this::setChangedAndSync);
 
     public ItemHolderBlockEntity(BlockPos pos, BlockState state)
     {
@@ -45,7 +37,7 @@ public class ItemHolderBlockEntity extends FlanBlockEntity
 
     @Override
     @NotNull
-    public IItemHandler getItemHandler()
+    public FlanItemStackHandler getItemHandler()
     {
         return items;
     }

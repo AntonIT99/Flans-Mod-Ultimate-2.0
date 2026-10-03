@@ -95,6 +95,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
@@ -180,15 +181,16 @@ public final class CommonEventHandler
         if (!FLANS_LOOT_TABLES.contains(event.getName()))
             return;
 
-        InfoType.beginLootTableLoad(event);
+        LootTable table = event.getTable();
+        InfoType.beginLootTableLoad(table);
         try
         {
             for (InfoType type : InfoType.getInfoTypes().values())
-                type.addLoot(event);
+                type.addLoot(table);
         }
         finally
         {
-            InfoType.finishLootTableLoad(event);
+            InfoType.finishLootTableLoad(table);
         }
     }
 

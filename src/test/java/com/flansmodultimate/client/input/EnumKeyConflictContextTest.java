@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.input;
 
-import net.minecraftforge.client.settings.KeyConflictContext;
+import com.flansmodultimate.platform.client.KeyContexts;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,7 +19,7 @@ class EnumKeyConflictContextTest
     {
         for (EnumKeyConflictContext context : EnumKeyConflictContext.values())
         {
-            assertTrue(context.conflicts(KeyConflictContext.IN_GAME), context.name());
+            assertTrue(context.conflicts(KeyContexts.IN_GAME), context.name());
             assertTrue(context.conflicts(context), context.name());
         }
     }

@@ -15,13 +15,13 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -430,7 +430,7 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     }
 
     @Override
-    public void addLoot(LootTableLoadEvent event)
+    public void addLoot(LootTable table)
     {
         // keep AA guns out of dungeon chests.
     }

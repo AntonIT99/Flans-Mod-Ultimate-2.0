@@ -1,16 +1,13 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.common.physics.ModPhysics;
-
-import net.minecraftforge.client.model.data.ModelData;
+import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
@@ -18,8 +15,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.List;
 
 /**
  * 1.20.1 equivalent of 1.7.10's EntityDiggingFX and EntityBlockDustFX.
@@ -76,21 +71,10 @@ public final class LegacyBlockParticle extends TextureSheetParticle
     {
         Minecraft minecraft = Minecraft.getInstance();
         BakedModel model = minecraft.getBlockRenderer().getBlockModel(state);
-        ModelData modelData = level.getModelDataManager().getAt(sourcePos);
-        if (modelData == null)
-            modelData = ModelData.EMPTY;
-        modelData = model.getModelData(level, sourcePos, state, modelData);
-
         // EntityDiggingFX chose one of the six block faces at random. Modern
         // models expose face quads rather than Block.getIcon(side, metadata).
         Direction side = Direction.from3DDataValue(random.nextInt(6));
-        List<BakedQuad> quads = model.getQuads(state, side, random, modelData, (RenderType)null);
-        if (quads.isEmpty())
-            quads = model.getQuads(state, null, random, modelData, (RenderType)null);
-
-        return quads.isEmpty()
-            ? model.getParticleIcon(modelData)
-            : quads.get(random.nextInt(quads.size())).getSprite();
+        return ClientPlatform.blockFaceSprite(model, level, sourcePos, state, side, random);
     }
 
     private void applyLegacyRenderColor(BlockState state, BlockPos sourcePos)

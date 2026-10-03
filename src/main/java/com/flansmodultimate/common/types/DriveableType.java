@@ -43,12 +43,12 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
@@ -2132,7 +2132,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     @FunctionalInterface private interface SeatStringSetter { void set(SeatInfo seat, String value); }
 
     @Override
-    public void addLoot(LootTableLoadEvent event)
+    public void addLoot(LootTable table)
     {
         // Driveables are intentionally excluded from generic dungeon loot.
     }

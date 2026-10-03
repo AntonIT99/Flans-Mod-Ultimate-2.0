@@ -3,8 +3,7 @@ package com.flansmodultimate.client.input;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
-import net.minecraftforge.client.settings.IKeyConflictContext;
-import net.minecraftforge.client.settings.KeyConflictContext;
+import com.flansmodultimate.platform.client.KeyContexts;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
@@ -17,10 +16,10 @@ import net.minecraft.client.Minecraft;
  * themselves inactive on foot and in a tank. It does not silence the controls
  * screen, though. {@code KeyMapping.same} ends with a bare key comparison
  * whenever two contexts do not conflict, and every vanilla mapping is
- * {@link KeyConflictContext#UNIVERSAL}, which conflicts with everything, so a
+ * {@link KeyContexts#UNIVERSAL}, which conflicts with everything, so a
  * shared key is always drawn in red no matter what is declared here.</p>
  */
-public enum EnumKeyConflictContext implements IKeyConflictContext
+public enum EnumKeyConflictContext implements KeyContexts.ModContext
 {
     /** Live in any driveable: planes, ground vehicles and mechas. */
     DRIVEABLE
@@ -67,16 +66,16 @@ public enum EnumKeyConflictContext implements IKeyConflictContext
      * Two contexts conflict when they can be live at the same moment. A plane
      * bind and a ground bind never can, so they are free to share a key.
      *
-     * <p>The {@link KeyConflictContext#IN_GAME} case is not cosmetic. Forge
+     * <p>The {@link KeyContexts#IN_GAME} case is not cosmetic. Forge
      * reads "does not conflict with IN_GAME" as "this is a modifier context",
      * and {@code KeyModifier.NONE} then reports itself inactive while Shift,
      * Ctrl or Alt is held, which switches every binding in this context off.
      * These are all in-game contexts, so they have to say so.</p>
      */
     @Override
-    public boolean conflicts(IKeyConflictContext other)
+    public boolean conflictsWith(Object other)
     {
-        if (other == KeyConflictContext.IN_GAME || other == this)
+        if (other == KeyContexts.IN_GAME || other == this)
             return true;
         if (!(other instanceof EnumKeyConflictContext context))
             return false;

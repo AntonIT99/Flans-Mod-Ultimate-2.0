@@ -105,7 +105,7 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
-        ModClient.updateCameraZoom(event);
+        event.setFOV(ModClient.cameraFov(event.getFOV(), event.getPartialTick()));
     }
 
     /** Adds the mod's options button to the vanilla options screen and pause menu, as configured. */
@@ -214,7 +214,8 @@ public final class ClientEventHandler
     public static void onRenderLevelStage(RenderLevelStageEvent event)
     {
         VehicleThermalRenderer.render(event);
-        DistantBoxRenderer.render(event);
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES)
+            DistantBoxRenderer.render(event.getPoseStack(), event.getCamera(), ClientPlatform.partialTick(event));
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         float partialTick = ClientPlatform.partialTick(event);

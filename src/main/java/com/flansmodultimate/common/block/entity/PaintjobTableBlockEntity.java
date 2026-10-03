@@ -3,8 +3,7 @@ package com.flansmodultimate.common.block.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import com.flansmodultimate.platform.item.FlanItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,14 +28,7 @@ public class PaintjobTableBlockEntity extends FlanBlockEntity implements MenuPro
 
     private final BlockState blockState;
 
-    private final ItemStackHandler items = new ItemStackHandler(2)
-    {
-        @Override
-        protected void onContentsChanged(int slot)
-        {
-            setChanged();
-        }
-    };
+    private final FlanItemStackHandler items = new FlanItemStackHandler(2, this::setChanged);
 
     public PaintjobTableBlockEntity(BlockPos pos, BlockState state)
     {
@@ -46,7 +38,7 @@ public class PaintjobTableBlockEntity extends FlanBlockEntity implements MenuPro
 
     @Override
     @NotNull
-    public IItemHandler getItemHandler()
+    public FlanItemStackHandler getItemHandler()
     {
         return items;
     }

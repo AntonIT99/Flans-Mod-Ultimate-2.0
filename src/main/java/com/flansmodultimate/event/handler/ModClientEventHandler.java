@@ -265,7 +265,7 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event)
     {
-        KeyInputHandler.registerKeys(event);
+        KeyInputHandler.registerKeys(event::register);
     }
 
     @SubscribeEvent

@@ -1,14 +1,13 @@
 package com.flansmodultimate.client.distant;
 
 import com.flansmodultimate.client.render.WhiteTexture;
-import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
 
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -36,22 +35,21 @@ public final class DistantBoxRenderer
         void accept(IDistantBoxGroup.Origin origin, List<DistantBox> boxes, DistantBoxStyle style);
     }
 
-    public static void render(RenderLevelStageEvent event)
+    /** Draws the distant contacts and explosion cues after the entities, in the camera-relative pose. */
+    public static void render(PoseStack poseStack, Camera camera, float partialTick)
     {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES || level == null)
+        if (level == null)
             return;
 
-        float partialTick = ClientPlatform.partialTick(event);
-        Vec3 camera = event.getCamera().getPosition();
-        PoseStack poseStack = event.getPoseStack();
+        Vec3 cameraPosition = camera.getPosition();
         MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
         ShapeConsumer draw = (origin, boxes, style) -> {
             Vec3 position = origin.at(partialTick);
             int light = style == DistantBoxStyle.GLOW ? LightTexture.FULL_BRIGHT
                 : LevelRenderer.getLightColor(level, BlockPos.containing(position));
-            emit(poseStack, buffers.getBuffer(renderType(style)), position.subtract(camera), boxes, light);
+            emit(poseStack, buffers.getBuffer(renderType(style)), position.subtract(cameraPosition), boxes, light);
         };
         DistantContactsClient.forEachNear(draw);
         DistantExplosionCues.forEachNear(draw);
