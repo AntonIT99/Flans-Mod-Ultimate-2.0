@@ -2,6 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.EntityCullingCompat;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.gui.ModMenuScreens;
 import com.flansmodultimate.client.gui.options.FlansSettingsHubScreen;
@@ -106,6 +107,7 @@ public final class ModClientEventHandler
         event.enqueueWork(() -> {
             CustomItemRenderers.registerAll();
             DistantHorizonsClient.init();
+            EntityCullingCompat.init();
 
             // Paintjob registrations
             for (RegistryEntry<Item> item : FlansMod.getItems())
