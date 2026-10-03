@@ -7,6 +7,7 @@ import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -33,6 +34,13 @@ public class ThrownGunRenderer extends EntityRenderer<ThrownGun>
     {
         super(ctx);
         itemRenderer = ctx.getItemRenderer();
+    }
+
+    /** A thrown weapon's flat sprite adds nothing visible to a shader pack's shadow map. */
+    @Override
+    public boolean shouldRender(@NotNull ThrownGun entity, @NotNull Frustum frustum, double cameraX, double cameraY, double cameraZ)
+    {
+        return FlanEntityRenderer.outsideShadowPass() && super.shouldRender(entity, frustum, cameraX, cameraY, cameraZ);
     }
 
     @Override

@@ -106,6 +106,38 @@ class ModelRendererTurboRenderingTest
     }
 
     @Test
+    void fixedScaleCullingIgnoresDepthAndKeepsPartsAtTheThreshold()
+    {
+        // A one-block cube has a bounding radius of sqrt(0.75) blocks, about 0.866.
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+        part.addBox(0, 0, 0, 16, 16, 16);
+        for (float depth : new float[]{0F, 5F, 1_000F})
+        {
+            PoseStack pose = new PoseStack();
+            pose.translate(0F, 0F, -depth);
+            // At 4 pixels per block it spans 6.9 pixels, below the 8 pixel threshold.
+            assertEquals(0, renderWithFixedScaleCulling(part, pose, 8F, 4F), "depth " + depth);
+            // At 5 pixels per block it spans 8.7 pixels and stays.
+            assertEquals(24, renderWithFixedScaleCulling(part, pose, 8F, 5F), "depth " + depth);
+            // Scaling the pose scales the part's size with it.
+            pose.scale(2F, 2F, 2F);
+            assertEquals(24, renderWithFixedScaleCulling(part, pose, 8F, 4F), "depth " + depth);
+        }
+    }
+
+    private static int renderWithFixedScaleCulling(ModelRendererTurbo part, PoseStack pose, float minimumPixels, float pixelsPerBlock)
+    {
+        ModelRendererTurbo.beginFixedScaleCulling(minimumPixels, pixelsPerBlock);
+        try
+        {
+            RecordingVertexConsumer output = new RecordingVertexConsumer();
+            part.render(pose, output, 17, 23, 1, 1, 1, 1, 1);
+            return output.vertices.size();
+        }
+        finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+    }
+
+    @Test
     void customArmourRegistersPartsThroughModelContract()
     {
         ModelCustomArmour model = new ModelCustomArmour();

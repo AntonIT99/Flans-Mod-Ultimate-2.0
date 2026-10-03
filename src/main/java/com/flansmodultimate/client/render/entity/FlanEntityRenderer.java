@@ -6,9 +6,11 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
+import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
 import com.flansmodultimate.common.entity.IFlanEntity;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
@@ -26,6 +28,18 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
     public FlanEntityRenderer(EntityRendererProvider.Context ctx)
     {
         super(ctx);
+    }
+
+    /**
+     * For {@code shouldRender} of entities that add nothing visible to a shader pack's shadow map:
+     * false while it is drawn, so they are left out before any rendering work.
+     */
+    static boolean outsideShadowPass()
+    {
+        if (!ShaderPlatform.isRenderingShadowPass())
+            return true;
+        RenderDiagnostics.countShadowEntitySkipped();
+        return false;
     }
 
     @Override

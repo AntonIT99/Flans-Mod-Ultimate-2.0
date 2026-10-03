@@ -18,6 +18,7 @@ import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
+import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.DriveableData;
@@ -83,6 +84,11 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
     /** Nesting depth of {@link #renderPreview(Runnable)}. Render thread only. */
     private static int previewDepth;
+    /**
+     * The camera projection's scale in the last ordinary world pass. A shader pack's shadow pass
+     * replaces the projection with the shadow map's, which says nothing about on-screen size.
+     */
+    private static float viewProjectionPixels;
 
     /**
      * Draws a driveable through the entity dispatcher for a menu preview.
@@ -140,7 +146,14 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         float green = getGreen(type);
         float blue = getBlue(type);
         float scale = type.getModelScale();
-        float projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11()) * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
+        // A shader pack's shadow pass replaces the projection with the shadow map's.
+        float projectionPixels = viewProjectionPixels;
+        if (!shadowPass)
+        {
+            projectionPixels = Math.abs(RenderSystem.getProjectionMatrix().m11()) * Minecraft.getInstance().getWindow().getHeight() * 0.5F;
+            if (!isRenderingPreview())
+                viewProjectionPixels = projectionPixels;
+        }
         Vec3 cameraOffset = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition()
             .subtract(driveable.getPosition(partialTick));
         double cameraDistance = cameraOffset.length();
@@ -168,11 +181,13 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         DriveableImpostorCache.Result lodResult = DriveableImpostorCache.Result.notRendered();
         if (!preview && !locallyControlled)
         {
-            // A shader pack's shadow pass sees the same camera distance and projection, but must not
-            // replace the main pass's decision. A camera-facing billboard would also cast an edge-on
-            // shadow, so a driveable drawn as an impostor casts none.
+            // A shader pack's shadow pass must not replace the main pass's decision. A camera-facing
+            // billboard would also cast an edge-on shadow, so a driveable drawn as an impostor casts none.
             if (shadowPass && history.usingImpostor)
+            {
+                RenderDiagnostics.countShadowDriveable(true);
                 return;
+            }
             lodResult = DriveableImpostorCache.renderOrPrepare(
                 model, type, texture, translucent, cull, red, green, blue,
                 poseStack, buffer, packedLight, projectionPixels, cameraDistance,
@@ -186,6 +201,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 return;
             }
         }
+        if (shadowPass)
+            RenderDiagnostics.countShadowDriveable(false);
 
         // Only exact geometry needs the interpolated wheel/track/turret state.
         // Tick history above still advances while an impostor is displayed.
@@ -245,18 +262,32 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         int trackLinkGroup = 0;
         if (!preview && !locallyControlled && ModClientConfig.get().enableDriveableLod
             && model instanceof ModelVehicle vehicleModel)
-            // The shadow view's model distance is measured from the sun, not the camera.
-            // Reuse the main pass's choice so neither its hysteresis nor the shadow changes.
-            trackLinkGroup = shadowPass ? history.trackLinkGroup
-                : vehicleModel.selectTrackLinkGroup(type, projectionPixels, modelOriginDistance(poseStack), modelScaleBound(poseStack),
+        {
+            if (!shadowPass)
+                trackLinkGroup = vehicleModel.selectTrackLinkGroup(type, projectionPixels, modelOriginDistance(poseStack), modelScaleBound(poseStack),
                     (float)ModClientConfig.get().driveableTrackLinkLodPixelSize,
                     (float)ModClientConfig.get().driveableTrackLinkGroupingPixelSize, history.trackLinkGroup);
+            // The shadow view is measured from the sun, so reuse the main pass's choice without touching
+            // its hysteresis. A shadow shows only each link's outline, which its envelope keeps.
+            else if (ModClientConfig.get().driveableTrackLinkLodPixelSize > 0D && vehicleModel.hasTrackLinkEnvelopes(type))
+                trackLinkGroup = Math.max(1, history.trackLinkGroup);
+            else
+                trackLinkGroup = history.trackLinkGroup;
+        }
         if (!shadowPass)
             history.trackLinkGroup = trackLinkGroup;
         int previousTrackGroup = TrackLinkLod.activeGroup();
         TrackLinkLod.setGroup(trackLinkGroup);
-        boolean useScreenSpaceCulling = minimumPartPixels > 0F;
-        if (useScreenSpaceCulling)
+        boolean useScreenSpaceCulling = minimumPartPixels > 0F && projectionPixels > 0F;
+        if (useScreenSpaceCulling && shadowPass)
+        {
+            // Depths in the shadow view are measured from the sun. Size every part as the camera sees
+            // the model's nearest point instead, so the shadow drops no part the view keeps.
+            float radius = lodResult.modelRadius();
+            double nearest = Math.max(0.5D, Float.isFinite(radius) ? cameraDistance - radius : cameraDistance);
+            ModelRendererTurbo.beginFixedScaleCulling(minimumPartPixels, (float)(projectionPixels / nearest));
+        }
+        else if (useScreenSpaceCulling)
             ModelRendererTurbo.beginScreenSpaceCulling(minimumPartPixels, projectionPixels);
         try
         {

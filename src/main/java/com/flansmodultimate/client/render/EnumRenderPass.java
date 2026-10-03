@@ -15,6 +15,12 @@ public enum EnumRenderPass
 
     public static final List<EnumRenderPass> ORDER = List.of(GLOW_ALPHA_NO_DEPTH_WRITE, GLOW_ALPHA, GLOW_ADDITIVE, DEFAULT);
 
+    /** Additive glow and glow that writes no depth add light rather than block it, so they cast no shadow. */
+    public boolean castsShadow()
+    {
+        return this == DEFAULT || this == GLOW_ALPHA;
+    }
+
     public RenderType getRenderType(ResourceLocation texture, boolean translucent, boolean cull)
     {
         return switch(this)

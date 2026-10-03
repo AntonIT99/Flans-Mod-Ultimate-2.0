@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
 
@@ -15,6 +16,13 @@ public class BulletRenderer extends FlanEntityRenderer<Bullet>
     public BulletRenderer(EntityRendererProvider.Context ctx)
     {
         super(ctx);
+    }
+
+    /** Small, fast projectiles add nothing visible to a shader pack's shadow map. */
+    @Override
+    public boolean shouldRender(@NotNull Bullet bullet, @NotNull Frustum frustum, double cameraX, double cameraY, double cameraZ)
+    {
+        return outsideShadowPass() && super.shouldRender(bullet, frustum, cameraX, cameraY, cameraZ);
     }
 
     @Override

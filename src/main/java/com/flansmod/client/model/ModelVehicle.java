@@ -118,13 +118,29 @@ public class ModelVehicle extends ModelDriveable
     public int selectTrackLinkGroup(DriveableType type, float projectionPixels, double distance, float modelScale,
                                     float threshold, float groupingThreshold, int previousGroup)
     {
-        if (distance < 32D || threshold <= 0F || fancyTrackModel == null || fancyTrackModel.length < 2)
+        if (distance < 32D || threshold <= 0F || !ensureTrackLinkLod(type))
             return 0;
-        if (trackLinkLod == null || !trackLinkLod.matches(fancyTrackModel, oldRotateOrder, type.getTrackLinkLength()))
-            trackLinkLod = TrackLinkLod.create(fancyTrackModel, oldRotateOrder, type.getTrackLinkLength());
         ensureTrackPaths(type);
         return trackLinkLod.selectGroup(projectionPixels, distance - trackPathRadius * Math.abs(modelScale), modelScale,
             threshold, groupingThreshold, previousGroup);
+    }
+
+    /**
+     * Whether this model's fancy track links have single-link envelopes, deriving them if needed.
+     * Called before world part culling begins, so the derived mesh contains the complete link.
+     */
+    public boolean hasTrackLinkEnvelopes(DriveableType type)
+    {
+        return ensureTrackLinkLod(type) && trackLinkLod.parts() != null;
+    }
+
+    private boolean ensureTrackLinkLod(DriveableType type)
+    {
+        if (fancyTrackModel == null || fancyTrackModel.length < 2)
+            return false;
+        if (trackLinkLod == null || !trackLinkLod.matches(fancyTrackModel, oldRotateOrder, type.getTrackLinkLength()))
+            trackLinkLod = TrackLinkLod.create(fancyTrackModel, oldRotateOrder, type.getTrackLinkLength());
+        return true;
     }
 
     /**
