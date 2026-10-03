@@ -66,6 +66,7 @@ public class FlansOptionsScreen extends Screen
             ModClientConfig.SHOW_ARMOR_DAMAGE_ABSORPTION_BAR,
             ModClientConfig.SHOW_SHOOTABLE_DURABILITY_BARS,
             ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED,
+            ModClientConfig.VEHICLE_SCREEN_SHAKE,
             ModClientConfig.VEHICLE_HUD_LEFT_X,
             ModClientConfig.VEHICLE_HUD_LEFT_Y,
             ModClientConfig.VEHICLE_HUD_RIGHT_X,

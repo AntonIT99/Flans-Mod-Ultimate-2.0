@@ -21,6 +21,7 @@ import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.client.PacketDriveablePassengerFired;
 import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
+import com.flansmodultimate.network.client.PacketDriveableScreenShake;
 import com.flansmodultimate.network.client.PacketExplodeParticles;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlanExplosionBlockParticles;
@@ -131,7 +132,7 @@ public final class PacketHandler
             PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
             PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveablePassengerFired.class,
             PacketDriveablePrediction.class,
-            PacketDriveableRenderState.class,
+            PacketDriveableRenderState.class, PacketDriveableScreenShake.class,
             PacketExplodeParticles.class, PacketFlak.class,
             PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class,
             PacketGunFireModeClient.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class,

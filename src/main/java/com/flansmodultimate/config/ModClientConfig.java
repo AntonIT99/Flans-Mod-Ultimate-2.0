@@ -54,6 +54,7 @@ public final class ModClientConfig
     public final float hitMarkerBlue;
     public final float hitMarkerAlpha;
     public final boolean showFlashesWhenWounded;
+    public final boolean vehicleScreenShake;
     public final boolean enablePlayerClassSkinOverrides;
     public final int bulletRenderDistance;
     public final int grenadeRenderDistance;
@@ -164,6 +165,7 @@ public final class ModClientConfig
     private static final Supplier<Double> HIT_MARKER_BLUE;
     private static final Supplier<Double> HIT_MARKER_ALPHA;
     public static final ForgeConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
+    public static final ForgeConfigSpec.BooleanValue VEHICLE_SCREEN_SHAKE;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
     private static final Supplier<Integer> GRENADE_RENDER_DISTANCE;
@@ -355,6 +357,9 @@ public final class ModClientConfig
         SHOW_FLASHES_WHEN_WOUNDED = builder
                 .comment("Show the red blood overlay flash when the player takes damage")
                 .define("showFlashesWhenWounded", true);
+        VEHICLE_SCREEN_SHAKE = builder
+                .comment("Shake the camera when a nearby driveable that opts into FancyScreenShake fires its main or coaxial gun")
+                .define("vehicleScreenShake", true);
         ENABLE_PLAYER_CLASS_SKIN_OVERRIDES = builder
                 .comment("""
                     Let a Teams player class replace the skin of the players wearing it, when its content pack
@@ -637,6 +642,7 @@ public final class ModClientConfig
         hitMarkerBlue = HIT_MARKER_BLUE.get().floatValue();
         hitMarkerAlpha = HIT_MARKER_ALPHA.get().floatValue();
         showFlashesWhenWounded = SHOW_FLASHES_WHEN_WOUNDED.get();
+        vehicleScreenShake = VEHICLE_SCREEN_SHAKE.get();
         enablePlayerClassSkinOverrides = ENABLE_PLAYER_CLASS_SKIN_OVERRIDES.get();
         bulletRenderDistance = BULLET_RENDER_DISTANCE.get();
         grenadeRenderDistance = GRENADE_RENDER_DISTANCE.get();

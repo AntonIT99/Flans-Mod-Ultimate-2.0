@@ -156,6 +156,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
+    public void addVehicleScreenShake(float intensity, float durationSeconds)
+    {
+        /* no-op */
+    }
+
+    @Override
     public void updatePlayerClassSkins(Map<UUID, String> playerClasses)
     {
         /* no-op */

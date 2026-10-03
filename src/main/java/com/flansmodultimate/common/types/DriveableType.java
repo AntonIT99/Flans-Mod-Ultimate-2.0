@@ -356,6 +356,19 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected String flareSound = StringUtils.EMPTY;
     protected int timeFlareUsing = 1;
     protected float recoilTime = 5F;
+
+    /** A camera kick sent to the players near a firing driveable, as {@code FancyScreenShake} describes it. */
+    public record ScreenShake(float intensity, float durationSeconds) {}
+    /** Opt-in for the camera kick a firing main gun or coaxial gun sends to nearby players. */
+    protected boolean fancyScreenShake;
+    /** Whether the secondary gun bank, the coaxial machine gun, also kicks the camera. */
+    protected boolean coaxRecoil;
+    protected float fancyScreenShakePrimaryIntensity = 1F;
+    protected float fancyScreenShakePrimaryDuration = 0.18F;
+    protected float fancyScreenShakeCoaxIntensity = 0.25F;
+    protected float fancyScreenShakeCoaxDuration = 0.08F;
+    /** How far from the driveable, in blocks, players feel the kick. */
+    protected float fancyScreenShakeRange = 10F;
     protected boolean fixedPrimaryFire;
     protected Vector3f primaryFireAngle = new Vector3f();
     protected boolean fixedSecondaryFire;
@@ -732,6 +745,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         bulletSpread = readValue("BulletSpread", bulletSpread, file);
         rangingGun = readValue("RangingGun", rangingGun, file);
         recoilTime = Math.max(0F, readValue("RecoilTime", recoilTime, file));
+        fancyScreenShake = readValue("FancyScreenShake", fancyScreenShake, file);
+        coaxRecoil = readValue("CoaxRecoil", coaxRecoil, file);
+        fancyScreenShakePrimaryIntensity = Math.max(0F, readValue("FancyScreenShakePrimaryIntensity", fancyScreenShakePrimaryIntensity, file));
+        fancyScreenShakePrimaryDuration = Math.max(0F, readValue("FancyScreenShakePrimaryDuration", fancyScreenShakePrimaryDuration, file));
+        fancyScreenShakeCoaxIntensity = Math.max(0F, readValue("FancyScreenShakeCoaxIntensity", fancyScreenShakeCoaxIntensity, file));
+        fancyScreenShakeCoaxDuration = Math.max(0F, readValue("FancyScreenShakeCoaxDuration", fancyScreenShakeCoaxDuration, file));
+        fancyScreenShakeRange = Math.max(0F, readValue("FancyScreenShakeRange", fancyScreenShakeRange, file));
 
         readShootPoints("ShootPointPrimary", shootPointsPrimary, file);
         readShootPoints("ShootPointSecondary", shootPointsSecondary, file);
@@ -1552,6 +1572,27 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public EnumWeaponType weaponType(boolean secondaryWeapon)
     {
         return secondaryWeapon ? secondary : primary;
+    }
+
+    /**
+     * The camera kick a shot from the given bank sends to nearby players, or null when it sends none.
+     * Shells and missiles from either bank, and guns on the primary bank, kick like the main gun; guns
+     * on the secondary bank kick like the coaxial machine gun, and only when {@code CoaxRecoil} is set.
+     */
+    @Nullable
+    public ScreenShake screenShake(boolean secondaryWeapon)
+    {
+        if (!fancyScreenShake || fancyScreenShakeRange <= 0F)
+            return null;
+        ScreenShake shake = switch (weaponType(secondaryWeapon))
+        {
+            case SHELL, MISSILE -> new ScreenShake(fancyScreenShakePrimaryIntensity, fancyScreenShakePrimaryDuration);
+            case GUN -> !secondaryWeapon
+                ? new ScreenShake(fancyScreenShakePrimaryIntensity, fancyScreenShakePrimaryDuration)
+                : coaxRecoil ? new ScreenShake(fancyScreenShakeCoaxIntensity, fancyScreenShakeCoaxDuration) : null;
+            default -> null;
+        };
+        return shake == null || shake.intensity() <= 0F || shake.durationSeconds() <= 0F ? null : shake;
     }
 
     public int numEngines()
