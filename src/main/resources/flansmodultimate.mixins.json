@@ -18,6 +18,7 @@
       "CreateWorldScreenApocalypseMixin",
       "DriveableCameraMixin",
       "EntityNameTagRenderDistanceMixin",
+      "EntityNameTagVisibilityMixin",
       "ForceDarkLightMixin",
       "HumanoidArmorLayerMixin",
       "KeyMappingConflictMixin",
