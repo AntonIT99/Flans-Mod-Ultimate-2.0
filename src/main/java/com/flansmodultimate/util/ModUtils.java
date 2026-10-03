@@ -10,12 +10,10 @@ import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.PlatformTags;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.mojang.authlib.GameProfile;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.neoforged.neoforge.event.level.BlockEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -317,7 +315,7 @@ public final class ModUtils
 
     public static boolean isGlass(BlockState state)
     {
-        return state.is(PlatformTags.GLASS_BLOCKS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
+        return state.is(PlatformTags.GLASS_BLOCKS) || state.is(PlatformTags.GLASS_PANES) || state.is(Blocks.GLASS) || state.is(Blocks.GLASS_PANE);
     }
 
     /**
@@ -337,18 +335,15 @@ public final class ModUtils
         else
         {
             // Reuse one stable identity so protection mods can configure this
-            // actor and Forge does not allocate a fake player per broken block.
-            player = FakePlayerFactory.get(level, BLOCK_BREAK_FAKE_PLAYER);
+            // actor and the loader does not allocate a fake player per broken block.
+            player = EntityPlatform.fakePlayer(level, BLOCK_BREAK_FAKE_PLAYER);
         }
 
         BlockState state = level.getBlockState(pos);
         if (state.isAir())
             return false;
 
-        BlockEvent.BreakEvent breakEvent = new BlockEvent.BreakEvent(level, pos, state, player);
-        PlatformEvents.post(breakEvent);
-
-        if (breakEvent.isCanceled())
+        if (PlatformEvents.isBlockBreakCancelled(level, pos, state, player))
             return false;
 
         return level.destroyBlock(pos, dropBlock, cause == null ? player : cause);

@@ -177,7 +177,11 @@ public final class ClassLoaderUtils
         List<TransformOp> modelTransforms = new ArrayList<>();
         ClassWriter cw = new SafeClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classLoader);
         ClassVisitor deobfClassVisitor = new DeobfClassVisitor(cw, minecraftMethodMappings, minecraftFieldMappings);
-        ClassVisitor remapper = new ClassRemapper(deobfClassVisitor, new SimpleRemapper(Opcodes.ASM9, map));
+        // ASM 9.9 added SimpleRemapper(api, map) and deprecated this constructor (not for removal); the
+        // 1.20.1 toolchain ships ASM 9.8, so both branches keep the constructor available in each.
+        @SuppressWarnings("deprecation")
+        SimpleRemapper classNameRemapper = new SimpleRemapper(map);
+        ClassVisitor remapper = new ClassRemapper(deobfClassVisitor, classNameRemapper);
         ClassVisitor superAndOwnerFixVisitor = new SuperAndOwnerFixVisitor(Opcodes.ASM9, remapper, LEGACY_MODELBASE, NEW_MODELBASE);
         ClassVisitor transformVisitor = new TransformClassVisitor(Opcodes.ASM9, superAndOwnerFixVisitor, modelTransforms);
 

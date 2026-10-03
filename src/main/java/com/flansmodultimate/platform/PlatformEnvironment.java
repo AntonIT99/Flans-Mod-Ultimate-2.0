@@ -23,6 +23,12 @@ public final class PlatformEnvironment
         return FMLEnvironment.production;
     }
 
+    /** A class from the loader's own jar, for building compile classpaths that include the loader. */
+    public static Class<?> loaderClass()
+    {
+        return ModList.class;
+    }
+
     public static boolean isModLoaded(String modId)
     {
         return ModList.get().isLoaded(modId);
