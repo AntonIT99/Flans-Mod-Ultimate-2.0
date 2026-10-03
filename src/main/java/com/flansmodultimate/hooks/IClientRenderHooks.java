@@ -4,7 +4,7 @@ import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import com.flansmodultimate.platform.client.FlanItemExtensions;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 public interface IClientRenderHooks
 {
-    IClientItemExtensions customItemExtensions();
+    FlanItemExtensions customItemExtensions();
 
     void spawnParticle(String s, double x, double y, double z, float scale);
 

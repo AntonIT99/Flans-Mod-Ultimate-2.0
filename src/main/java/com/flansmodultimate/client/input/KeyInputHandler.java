@@ -34,6 +34,7 @@ import com.flansmodultimate.network.server.PacketGunToggle;
 import com.flansmodultimate.network.server.PacketGunVariableZoom;
 import com.flansmodultimate.network.server.PacketRequestDebug;
 import com.flansmodultimate.network.server.PacketTeamsAction;
+import com.flansmodultimate.platform.client.KeyContexts;
 import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -54,6 +55,10 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+
+import static com.flansmodultimate.platform.client.KeyContexts.key;
+import static com.flansmodultimate.platform.client.KeyContexts.mouseKey;
 
 /** Central client key router for guns, teams and server-authoritative driveables. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -68,19 +73,19 @@ public final class KeyInputHandler
     private static final float FLIGHT_CONTROL_EPSILON = 0.005F;
 
     // On foot: guns, teams and debugging.
-    private static final KeyMapping reloadKey = key("reload", InputConstants.KEY_R, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping fireModeKey = key("fire_mode", InputConstants.KEY_B, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping lookAtGunKey = key("look_at_gun", InputConstants.KEY_M, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping preferredAmmoKey = key("preferred_ammo", InputConstants.KEY_LBRACKET, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping secondaryModeKey = key("secondary_mode", InputConstants.KEY_K, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping toggleKey = key("toggle", InputConstants.KEY_G, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping increaseZoomKey = key("increase_zoom", InputConstants.KEY_UP, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping decreaseZoomKey = key("decrease_zoom", InputConstants.KEY_DOWN, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping debugKey = new KeyMapping("key." + FlansMod.MOD_ID + ".debug", KeyConflictContext.UNIVERSAL, InputConstants.Type.KEYSYM, InputConstants.KEY_F10, CATEGORY_GENERAL);
-    private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_U, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
-    private static final KeyMapping toggleAimPoseKey = key("toggle_aim_pose", InputConstants.KEY_N, KeyConflictContext.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping reloadKey = key("reload", InputConstants.KEY_R, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping fireModeKey = key("fire_mode", InputConstants.KEY_B, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping lookAtGunKey = key("look_at_gun", InputConstants.KEY_M, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping preferredAmmoKey = key("preferred_ammo", InputConstants.KEY_LBRACKET, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping secondaryModeKey = key("secondary_mode", InputConstants.KEY_K, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping toggleKey = key("toggle", InputConstants.KEY_G, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping increaseZoomKey = key("increase_zoom", InputConstants.KEY_UP, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping decreaseZoomKey = key("decrease_zoom", InputConstants.KEY_DOWN, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping debugKey = key("debug", InputConstants.KEY_F10, KeyContexts.UNIVERSAL, CATEGORY_GENERAL);
+    private static final KeyMapping teamsMenuKey = key("teams_menu", InputConstants.KEY_U, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping teamsScoresKey = key("teams_scores", InputConstants.KEY_I, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping teamsClassKey = key("teams_class", InputConstants.KEY_O, KeyContexts.IN_GAME, CATEGORY_GENERAL);
+    private static final KeyMapping toggleAimPoseKey = key("toggle_aim_pose", InputConstants.KEY_N, KeyContexts.IN_GAME, CATEGORY_GENERAL);
 
     // Every driveable: planes, ground vehicles and mechas alike.
     private static final KeyMapping driveableInventoryKey = key("driveable.inventory", InputConstants.KEY_R, EnumKeyConflictContext.DRIVEABLE, CATEGORY_DRIVEABLES);
@@ -184,65 +189,55 @@ public final class KeyInputHandler
         return doorKey.getTranslatedKeyMessage();
     }
 
-    private static KeyMapping key(String name, int keyCode, IKeyConflictContext context, String category)
+    public static void registerKeys(Consumer<KeyMapping> register)
     {
-        return new KeyMapping("key." + FlansMod.MOD_ID + "." + name, context, InputConstants.Type.KEYSYM, keyCode, category);
-    }
-
-    private static KeyMapping mouseKey(String name, int button, IKeyConflictContext context, String category)
-    {
-        return new KeyMapping("key." + FlansMod.MOD_ID + "." + name, context, InputConstants.Type.MOUSE, button, category);
-    }
-
-    public static void registerKeys(RegisterKeyMappingsEvent event)
-    {
-        event.register(reloadKey);
-        event.register(fireModeKey);
-        event.register(lookAtGunKey);
-        event.register(preferredAmmoKey);
-        event.register(secondaryModeKey);
-        event.register(toggleKey);
-        event.register(increaseZoomKey);
-        event.register(decreaseZoomKey);
-        event.register(debugKey);
-        event.register(teamsMenuKey);
-        event.register(teamsScoresKey);
-        event.register(teamsClassKey);
-        event.register(toggleAimPoseKey);
-        event.register(driveableInventoryKey);
-        event.register(primaryKey);
-        event.register(primaryAlternativeKey);
-        event.register(secondaryKey);
-        event.register(secondaryAlternativeKey);
-        event.register(changeSeatKey);
-        event.register(doorKey);
-        event.register(engineKey);
-        event.register(flareKey);
-        event.register(driveForwardKey);
-        event.register(driveBackwardKey);
-        event.register(steerLeftKey);
-        event.register(steerRightKey);
-        event.register(brakeKey);
-        event.register(decreaseVehicleThrottleKey);
-        event.register(increaseVehicleThrottleKey);
-        event.register(vehicleZoomKey);
-        event.register(cycleSightKey);
-        event.register(rangefinderKey);
-        event.register(resetRangeKey);
-        event.register(opticsEditorKey);
-        event.register(pitchDownKey);
-        event.register(pitchUpKey);
-        event.register(yawLeftKey);
-        event.register(yawRightKey);
-        event.register(rollLeftKey);
-        event.register(rollRightKey);
-        event.register(throttleUpKey);
-        event.register(throttleDownKey);
-        event.register(controlModeKey);
-        event.register(gearKey);
-        event.register(airBrakeKey);
-        event.register(modeKey);
-        event.register(driveablePlayerInventoryKey);
+        register.accept(reloadKey);
+        register.accept(fireModeKey);
+        register.accept(lookAtGunKey);
+        register.accept(preferredAmmoKey);
+        register.accept(secondaryModeKey);
+        register.accept(toggleKey);
+        register.accept(increaseZoomKey);
+        register.accept(decreaseZoomKey);
+        register.accept(debugKey);
+        register.accept(teamsMenuKey);
+        register.accept(teamsScoresKey);
+        register.accept(teamsClassKey);
+        register.accept(toggleAimPoseKey);
+        register.accept(driveableInventoryKey);
+        register.accept(primaryKey);
+        register.accept(primaryAlternativeKey);
+        register.accept(secondaryKey);
+        register.accept(secondaryAlternativeKey);
+        register.accept(changeSeatKey);
+        register.accept(doorKey);
+        register.accept(engineKey);
+        register.accept(flareKey);
+        register.accept(driveForwardKey);
+        register.accept(driveBackwardKey);
+        register.accept(steerLeftKey);
+        register.accept(steerRightKey);
+        register.accept(brakeKey);
+        register.accept(decreaseVehicleThrottleKey);
+        register.accept(increaseVehicleThrottleKey);
+        register.accept(vehicleZoomKey);
+        register.accept(cycleSightKey);
+        register.accept(rangefinderKey);
+        register.accept(resetRangeKey);
+        register.accept(opticsEditorKey);
+        register.accept(pitchDownKey);
+        register.accept(pitchUpKey);
+        register.accept(yawLeftKey);
+        register.accept(yawRightKey);
+        register.accept(rollLeftKey);
+        register.accept(rollRightKey);
+        register.accept(throttleUpKey);
+        register.accept(throttleDownKey);
+        register.accept(controlModeKey);
+        register.accept(gearKey);
+        register.accept(airBrakeKey);
+        register.accept(modeKey);
+        register.accept(driveablePlayerInventoryKey);
     }
 
     /**

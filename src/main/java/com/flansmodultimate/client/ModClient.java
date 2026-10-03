@@ -36,7 +36,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -938,28 +937,30 @@ public class ModClient
 
     }
 
-    public static void updateCameraZoom(ViewportEvent.ComputeFov event)
+    /** The field of view after the scope, sight-zoom and vehicle-optics zoom, from the frame's base field of view. */
+    public static double cameraFov(double fov, double partialTick)
     {
         // If the zoom has changed sufficiently, update it
         if (Math.abs(zoomProgress - lastZoomProgress) > 0.0001F)
         {
-            float actualZoomProgress = lastZoomProgress + (zoomProgress - lastZoomProgress) * (float) event.getPartialTick();
+            float actualZoomProgress = lastZoomProgress + (zoomProgress - lastZoomProgress) * (float) partialTick;
             float botchedZoomProgress = zoomProgress > 0.8F ? 1F : 0F;
             float zoomLevel = botchedZoomProgress * lastZoomLevel + (1 - botchedZoomProgress);
             float fovZoomLevel = actualZoomProgress * lastFOVZoomLevel + (1 - actualZoomProgress);
             if (Math.abs(zoomLevel - 1F) < 0.01F)
                 zoomLevel = 1.0F;
 
-            event.setFOV(event.getFOV() / Math.max(fovZoomLevel, zoomLevel));
+            fov /= Math.max(fovZoomLevel, zoomLevel);
         }
         else if (currentScope != null)
         {
-            event.setFOV(event.getFOV() / Math.max(lastZoomLevel, lastFOVZoomLevel));
+            fov /= Math.max(lastZoomLevel, lastFOVZoomLevel);
         }
 
         float vehicleZoom = VehicleOpticsClient.zoom();
         if (vehicleZoom > 1F)
-            event.setFOV(Math.toDegrees(2D * Math.atan(Math.tan(Math.toRadians(event.getFOV()) / 2D) / vehicleZoom)));
+            fov = Math.toDegrees(2D * Math.atan(Math.tan(Math.toRadians(fov) / 2D) / vehicleZoom));
+        return fov;
     }
 
     public static void renderTick()

@@ -11,12 +11,12 @@ import com.flansmodultimate.util.ResourceUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.event.LootTableLoadEvent;
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 
@@ -166,7 +166,7 @@ public abstract class PaintableType extends InfoType
     }
 
     @Override
-    public void addLoot(LootTableLoadEvent event)
+    public void addLoot(LootTable table)
     {
         if (dungeonChance <= 0 || !type.isHasItem() || nonLegendaryPaintjobs.isEmpty())
             return;
@@ -174,7 +174,7 @@ public abstract class PaintableType extends InfoType
         ModUtils.getItem(this).ifPresent(item -> {
             int weight = Math.max(1, (FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance) / nonLegendaryPaintjobs.size());
             for (Paintjob paintjob : nonLegendaryPaintjobs.values())
-                addLootEntry(event, createPaintjobLootEntry(item, weight, paintjob));
+                addLootEntry(table, createPaintjobLootEntry(item, weight, paintjob));
         });
     }
 

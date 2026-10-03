@@ -5,7 +5,7 @@ import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import com.flansmodultimate.platform.client.FlanItemExtensions;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -18,9 +18,9 @@ import java.util.UUID;
 public final class ClientRenderHooksNoop implements IClientRenderHooks
 {
     @Override
-    public IClientItemExtensions customItemExtensions()
+    public FlanItemExtensions customItemExtensions()
     {
-        return IClientItemExtensions.DEFAULT;
+        return FlanItemExtensions.NONE;
     }
 
     @Override

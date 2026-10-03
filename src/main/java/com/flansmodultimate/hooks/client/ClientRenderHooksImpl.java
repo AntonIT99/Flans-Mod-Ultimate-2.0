@@ -28,8 +28,8 @@ import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
+import com.flansmodultimate.platform.client.FlanItemExtensions;
 import com.flansmodultimate.util.FileUtils;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -50,9 +50,9 @@ import java.util.UUID;
 public final class ClientRenderHooksImpl implements IClientRenderHooks
 {
     @Override
-    public IClientItemExtensions customItemExtensions()
+    public FlanItemExtensions customItemExtensions()
     {
-        return new IClientItemExtensions()
+        return new FlanItemExtensions()
         {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer()
