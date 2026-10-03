@@ -3,6 +3,7 @@ package com.flansmodultimate.util;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -10,7 +11,6 @@ import com.google.gson.reflect.TypeToken;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.fml.ModList;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -308,7 +308,7 @@ public final class JavaModelCompiler
         addCodeSource(entries, ModelRendererTurbo.class);
         addCodeSource(entries, "net.minecraft.world.entity.Entity");
         addCodeSource(entries, "net.minecraft.client.Minecraft");
-        addCodeSource(entries, ModList.class);
+        addCodeSource(entries, PlatformEnvironment.loaderClass());
         addCodeSource(entries, "com.mojang.blaze3d.vertex.PoseStack");
         addCodeSource(entries, "org.lwjgl.opengl.GL11");
         addCodeSource(entries, "org.joml.Quaternionf");

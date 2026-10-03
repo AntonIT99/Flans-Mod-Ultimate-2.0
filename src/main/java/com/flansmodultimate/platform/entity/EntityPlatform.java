@@ -1,7 +1,10 @@
 package com.flansmodultimate.platform.entity;
 
+import com.mojang.authlib.GameProfile;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.ForgeEventFactory;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
@@ -71,5 +74,11 @@ public final class EntityPlatform
     public static int crossbowChargeDuration(ItemStack crossbow, LivingEntity entity)
     {
         return CrossbowItem.getChargeDuration(crossbow);
+    }
+
+    /** The loader's shared fake player for the profile, reused for every call with the same identity. */
+    public static ServerPlayer fakePlayer(ServerLevel level, GameProfile profile)
+    {
+        return FakePlayerFactory.get(level, profile);
     }
 }

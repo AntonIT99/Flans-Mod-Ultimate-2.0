@@ -4,11 +4,15 @@ import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.Event;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
@@ -44,5 +48,13 @@ public final class PlatformEvents
     public static void onExplosionDetonate(Level level, Explosion explosion, List<Entity> entities, double diameter)
     {
         ForgeEventFactory.onExplosionDetonate(level, explosion, entities, diameter);
+    }
+
+    /** Posts the loader's block-break event and returns whether a listener, such as a protection mod, cancelled it. */
+    public static boolean isBlockBreakCancelled(Level level, BlockPos pos, BlockState state, Player player)
+    {
+        BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(level, pos, state, player);
+        post(event);
+        return event.isCanceled();
     }
 }
