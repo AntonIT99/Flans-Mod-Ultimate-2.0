@@ -25,9 +25,9 @@ class LegacyGameplayConfigTest
         assertSetting(ModCommonConfig.configSpec, 0, "Teams Settings", "bulletSnapshotMin");
         assertSetting(ModCommonConfig.configSpec, 50, "Teams Settings", "bulletSnapshotDivisor");
 
-        ModConfigSpec.ValueSpec min = ModCommonConfig.configSpec.getSpec().get(List.of("Teams Settings", "bulletSnapshotMin"));
+        ModConfigSpec.ValueSpec min = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotMin"));
         assertTrue(min.test(100) && !min.test(101), "the legacy bltss command accepted 0 to 100");
-        ModConfigSpec.ValueSpec divisor = ModCommonConfig.configSpec.getSpec().get(List.of("Teams Settings", "bulletSnapshotDivisor"));
+        ModConfigSpec.ValueSpec divisor = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Teams Settings", "bulletSnapshotDivisor"));
         assertTrue(divisor.test(1000) && !divisor.test(1001), "the legacy bltss command accepted 0 to 1000");
     }
 
@@ -84,7 +84,7 @@ class LegacyGameplayConfigTest
 
     private static void assertSetting(ModConfigSpec spec, Object expectedDefault, String... path)
     {
-        ModConfigSpec.ValueSpec value = spec.getSpec().get(List.of(path));
+        ModConfigSpec.ValueSpec value = ConfigSpecValues.valueSpec(spec, List.of(path));
         assertNotNull(value, String.join(".", path) + " is missing");
         assertEquals(expectedDefault, value.getDefault(), String.join(".", path));
     }

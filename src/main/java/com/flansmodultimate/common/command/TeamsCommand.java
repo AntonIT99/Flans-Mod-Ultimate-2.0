@@ -12,6 +12,7 @@ import com.flansmodultimate.common.types.LoadoutPool;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.RewardBox;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -342,7 +343,7 @@ public final class TeamsCommand
         int count = 0;
         for (ServerPlayer player : context.getSource().getServer().getPlayerList().getPlayers())
         {
-            int ping = com.flansmodultimate.platform.entity.EntityPlatform.latency(player);
+            int ping = EntityPlatform.latency(player);
             context.getSource().sendSuccess(() -> Component.literal("[Ping] " + ping + " : " + player.getScoreboardName()), false);
             if (ping > 0)
             {

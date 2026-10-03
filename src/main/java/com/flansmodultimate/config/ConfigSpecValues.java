@@ -82,6 +82,13 @@ public final class ConfigSpecValues
         return entry instanceof ModConfigSpec.ConfigValue<?> value ? value : null;
     }
 
+    /** The type, default and range of the entry at the given path, or null when the spec has no such entry. */
+    @Nullable
+    public static ModConfigSpec.ValueSpec valueSpec(ModConfigSpec spec, List<String> path)
+    {
+        return spec.getSpec().get(path);
+    }
+
     /**
      * Writes one value into the spec after checking that the spec accepts it, so a client cannot put a
      * value the server's own config would reject into it.
@@ -91,7 +98,7 @@ public final class ConfigSpecValues
     @SuppressWarnings("unchecked")
     public static boolean apply(ModConfigSpec spec, List<String> path, Object newValue)
     {
-        ModConfigSpec.ValueSpec valueSpec = spec.getSpec().get(path);
+        ModConfigSpec.ValueSpec valueSpec = valueSpec(spec, path);
         ModConfigSpec.ConfigValue<?> value = find(spec, path);
         if (valueSpec == null || value == null || !spec.isLoaded())
         {

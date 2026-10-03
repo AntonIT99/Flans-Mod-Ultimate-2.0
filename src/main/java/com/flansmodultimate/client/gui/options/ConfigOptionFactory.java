@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui.options;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
+import com.flansmodultimate.config.ConfigSpecValues;
 import com.mojang.serialization.Codec;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -83,7 +84,7 @@ public final class ConfigOptionFactory
     @Nullable
     public static OptionInstance<?> option(ConfigTarget target, ModConfigSpec.ConfigValue<?> value)
     {
-        ModConfigSpec.ValueSpec valueSpec = target.spec().getSpec().get(value.getPath());
+        ModConfigSpec.ValueSpec valueSpec = ConfigSpecValues.valueSpec(target.spec(), value.getPath());
         if (valueSpec == null)
             return null;
 

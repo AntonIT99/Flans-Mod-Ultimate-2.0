@@ -76,7 +76,7 @@ public final class CommonConfigMirror
 
     private static Class<?> valueType(ModConfigSpec.ConfigValue<?> value)
     {
-        ModConfigSpec.ValueSpec spec = ModCommonConfig.configSpec.getSpec().get(value.getPath());
+        ModConfigSpec.ValueSpec spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, value.getPath());
         return spec == null ? Object.class : spec.getClazz();
     }
 
