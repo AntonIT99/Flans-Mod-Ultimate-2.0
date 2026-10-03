@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public final class NetworkPlatform
 {
-    public static final String PROTOCOL = "12";
+    public static final String PROTOCOL = "13";
 
     private static final Map<Class<? extends IClientPacket>, Integer> CLIENT_PACKET_IDS = new HashMap<>();
     private static final Map<Class<? extends IServerPacket>, Integer> SERVER_PACKET_IDS = new HashMap<>();

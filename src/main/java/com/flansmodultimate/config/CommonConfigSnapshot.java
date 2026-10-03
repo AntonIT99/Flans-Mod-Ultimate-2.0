@@ -33,6 +33,8 @@ public record CommonConfigSnapshot(
     int grenadeTrackingRange,
     int deployedGunTrackingRange,
     int aaGunTrackingRange,
+    int driveableTrackingRange,
+    int flanNpcTrackingRange,
 
     float headshotDamageModifier,
     float chestshotDamageModifier,
@@ -147,7 +149,7 @@ public record CommonConfigSnapshot(
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 39;
+    public static final int CURRENT_VERSION = 40;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -178,6 +180,8 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.grenadeTrackingRange);
         buf.writeVarInt(s.deployedGunTrackingRange);
         buf.writeVarInt(s.aaGunTrackingRange);
+        buf.writeVarInt(s.driveableTrackingRange);
+        buf.writeVarInt(s.flanNpcTrackingRange);
 
         buf.writeFloat(s.headshotDamageModifier);
         buf.writeFloat(s.chestshotDamageModifier);
@@ -326,6 +330,8 @@ public record CommonConfigSnapshot(
             buf.readDouble(),
             buf.readBoolean(),
             buf.readBoolean(),
+            buf.readVarInt(),
+            buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),

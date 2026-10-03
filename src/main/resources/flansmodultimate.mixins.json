@@ -4,7 +4,9 @@
   "package": "com.flansmodultimate.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+      "ChunkMapEntityTrackingMixin",
       "EntityDriveableCollisionMixin",
+      "EntityTrackingDistanceMixin",
       "LevelDriveableHullsMixin",
       "LivingEntityDamageMixin",
       "LivingEntityWaterWalkingMixin",
@@ -24,6 +26,7 @@
       "KeyMappingConflictMixin",
       "LivingEntityNameTagRangeMixin",
       "MountedRiderTurnMixin",
+      "NpcRenderDistanceMixin",
       "PlayerSkinOverrideMixin",
       "SeatedPlayerRendererMixin",
       "VehicleOpticsLightMixin",

@@ -31,6 +31,17 @@ public final class FlansModApi
     private FlansModApi() {}
 
     /**
+     * Reevaluate player tracking after an addon changes an entity's distance classification.
+     * Call on the server thread; pairings are refreshed on the next server tick.
+     * @param level the owning server level
+     */
+    public static void refreshEntityTracking(ServerLevel level)
+    {
+        if (level.getServer().isSameThread())
+            com.flansmodultimate.common.entity.EntityDistancePolicy.requestTrackingRefresh();
+    }
+
+    /**
      * @return the loaded content packs: packaged ones first, then the user's in alphabetical order
      */
     public static List<IContentPack> getContentPacks()

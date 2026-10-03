@@ -28,7 +28,7 @@ Minecraft entity/pose/buffer types and leaves GPU compatibility, detail policy,
 track envelopes and atlas generation in the main mod. The NPC adapter tags only
 the normal body consumer; outlines, invisible-body passes and extra texture layers
 retain the supplied consumer. The shared API, world renderer, pose measurements and
-tests are identical on both branches. Both expose API `0.3`; the NPC module requires
+tests are identical on both branches. Both expose API `0.4`; the NPC module requires
 main mod `2.2` or later for the new entry point.
 
 The NPC module's `NpcRenderBuffers` owns the vertex/pose adaptation: Forge 1.20.1
@@ -44,6 +44,26 @@ registers `wolffsmodnpcs.mixins.json` in the NPC module's authored `neoforge.mod
 uses Java 21 compatibility and omits the Forge refmap and MixinGradle wiring. Preserve
 these module packaging differences when merging master later.
 
+### Entity distance controls and NPC opt-in
+
+`mixin/EntityTrackingDistanceMixin` and `ChunkMapEntityTrackingMixin` hook the
+private `ChunkMap.TrackedEntity` effective range and refresh existing player
+pairings after distance changes. Both versions use block ranges before vanilla
+server scaling and retain passenger-range expansion. The hooks are shared;
+registration counts remain chunks. `CommonConfigSnapshot` version 40 adds the
+live driveable and NPC tracking ranges; Forge transport protocol 19 and NeoForge
+transport protocol 13 reject older wire layouts through their existing transports.
+
+`src/npcs/java/com/wolffsmod/npcs/platform/render/NpcDistanceMixin.java` keeps the
+saved/synchronized soldier opt-in inside the optional NPC module. Forge 1.20.1
+injects the dependency's no-argument data definition and accepts both Mojang dev
+names and SRG production names. The NeoForge 1.21.1 dependency uses Mojang names
+and `defineSynchedData(SynchedEntityData.Builder)`, so the injection receives that
+builder and defines the boolean there. Save/read/tick hooks otherwise have the
+same behavior. `NpcDistanceCommands` uses NeoForge's common event subscriber and
+command-registration event instead of Forge's annotations/events. The public
+`IFlanNpcDistance` contract and `FlansModApi.refreshEntityTracking` stay shared.
+
 ### Build, metadata, and registration
 
 | Class or location | Source API and destination adaptation |
@@ -58,7 +78,7 @@ these module packaging differences when merging master later.
 | `src/main/java/com/flansmodultimate/platform/PlatformEnvironment.java`; `src/packsmanager/java/com/flansmodultimate/packsmanager/platform/PlatformEnvironment.java` | Runtime side and production checks use a small API in each independent source set. Forge and NeoForge retain their own `FMLEnvironment` imports there; annotation values and Forge's client packet `DistExecutor` call still use their required loader APIs. In the main mod, `isModLoaded` and `currentServer()` also wrap `ModList` and `ServerLifecycleHooks`. |
 | `src/main/java/com/flansmodultimate/CreativeTabs.java` | Creative tab definitions and ordering are identical on both branches. `FlansMod` passes a registration callback so each loader keeps its own deferred registry. Driveable stack data is read with the tab display's holder provider (ignored on 1.20.1), and items sort by their `BuiltInRegistries` key. |
 | `src/main/java/com/flansmodultimate/FlansMod.java`, `apocalyse/ApocalypseContent.java`; `platform/registry/RegistryEntry.java` | Both branches create deferred registers from vanilla `Registries` keys and look entries up through `BuiltInRegistries`; only Forge/NeoForge-owned registries such as fluid types keep a loader key. Registered items, blocks and sounds are exposed as `RegistryEntry`, which wraps `RegistryObject` or `DeferredHolder` (`holder()` on 1.21.1 only). Apocalypse content fields are plain `Supplier`s. The master-only enchantment registry in `common/EnchantmentModule` keeps `RegistryObject`; its eight enchantment implementation classes are private static nested classes there. 1.21.1 retains data-driven enchantments. `EnchantmentModule` and `FlanEntityPermissions` live directly in `common` on both branches. |
-| `src/main/java/com/flansmodultimate/network/PacketHandler.java`; `platform/network/NetworkPlatform.java` | `PacketHandler` is shared: it lists every packet, sorts each direction by class name, decodes packets, and offers the send API. `NetworkPlatform` is the loader transport. Forge keeps its `SimpleChannel` (protocol `18`, one id space ordered by name then direction); NeoForge carries each direction in one payload envelope (protocol `12`, ids per direction). The new clientbound `PacketDriveableScreenShake` shifts subsequent client packet IDs, requiring the target protocol bump; its two float fields use the shared `PacketBuffer`. The two protocol strings are independent; bump the target's whenever a merge changes the packet lists or a packet's encoding. Add new packet classes only to `PacketHandler`, in the correct direction list. |
+| `src/main/java/com/flansmodultimate/network/PacketHandler.java`; `platform/network/NetworkPlatform.java` | `PacketHandler` is shared: it lists every packet, sorts each direction by class name, decodes packets, and offers the send API. `NetworkPlatform` is the loader transport. Forge keeps its `SimpleChannel` (protocol `19`, one id space ordered by name then direction); NeoForge carries each direction in one payload envelope (protocol `13`, ids per direction). `PacketDriveableScreenShake` uses two float fields through the shared `PacketBuffer`. Common snapshot version 40 adds two live tracking ranges; both transports bump their independent protocol strings to reject the older encoding. The two protocol strings are independent; bump the target's whenever a merge changes the packet lists or a packet's encoding. Add new packet classes only to `PacketHandler`, in the correct direction list. |
 | `src/main/java/com/flansmodultimate/platform/network/PacketIO.java`; `common/teams/PlayerLoadout.java`, `network/client/Packet{LoadoutState,TeamsState,DriveableRenderState}.java`, `common/entity/AAGun.java` | Item stacks and components use different stream codecs (`FriendlyByteBuf.writeItem`/`writeComponent` versus `ItemStack.OPTIONAL_STREAM_CODEC`/`ComponentSerialization.STREAM_CODEC`). Packet code writes them through `PacketIO` and writes collections as a VarInt size followed by the elements, which matches `writeCollection`. |
 | `src/main/java/com/flansmodultimate/platform/entity/SpawnDataEntity.java`; entities with extra spawn data | Entities implement `writeSpawnData(PacketBuffer)`/`readSpawnData(PacketBuffer)` through `SpawnDataEntity`, which adapts Forge `IEntityAdditionalSpawnData` (`FriendlyByteBuf`) or NeoForge `IEntityWithComplexSpawn` (`RegistryFriendlyByteBuf`). The buffer adapter lives in `platform/network/PacketBuffer`. On 1.20.1 such entities, including vanilla subclasses like `TeamItemEntity`, also override `getAddEntityPacket` with `NetworkHooks.getEntitySpawningPacket`; NeoForge appends the spawn data to the vanilla add-entity packet itself, so the target has no such override. |
 | `platform/event/ClientGameEvents.java`; `client/debug/RenderDiagnosticsCommand.java` | The existing client event subscriber handles Forge/NeoForge command registration. `RenderDiagnosticsCommand` receives the vanilla command dispatcher and is identical on both branches. |

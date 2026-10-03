@@ -16,6 +16,26 @@ import static org.junit.jupiter.api.Assertions.*;
 class LegacyGameplayConfigTest
 {
     @Test
+    void distanceSettingsHaveBoundedDefaultsAndRejectUnsupportedValues()
+    {
+        assertSetting(ModCommonConfig.configSpec, 512, "Entity Tracking Settings", "driveableTrackingRange");
+        assertSetting(ModCommonConfig.configSpec, 256, "Entity Tracking Settings", "flanNpcTrackingRange");
+        for (String key : List.of("driveableTrackingRange", "flanNpcTrackingRange"))
+        {
+            var spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Entity Tracking Settings", key));
+            assertTrue(spec.test(16) && spec.test(512));
+            assertFalse(spec.test(0) || spec.test(513) || spec.test("256"));
+        }
+        for (String key : List.of("driveableRenderDistanceMultiplier", "flanNpcRenderDistanceMultiplier"))
+        {
+            assertSetting(ModClientConfig.configSpec, 1D, "Entity Rendering Settings", key);
+            var spec = ConfigSpecValues.valueSpec(ModClientConfig.configSpec, List.of("Entity Rendering Settings", key));
+            assertTrue(spec.test(0.25D) && spec.test(4D));
+            assertFalse(spec.test(0D) || spec.test(4.1D) || spec.test(Double.NaN) || spec.test(Double.POSITIVE_INFINITY));
+        }
+    }
+
+    @Test
     void commonConfigDeclaresTheLegacySettingsWithTheirDefaults()
     {
         assertSetting(ModCommonConfig.configSpec, 20D, "General Settings", "maxPlayerHealth");

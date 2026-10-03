@@ -2,6 +2,9 @@ package com.flansmodultimate.client.gui.options;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.flansmodultimate.config.ConfigSpecValues;
+import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.platform.PlatformEnvironment;
 import com.mojang.serialization.Codec;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -9,6 +12,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.OptionInstance;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.Options;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -84,6 +88,9 @@ public final class ConfigOptionFactory
     @Nullable
     public static OptionInstance<?> option(ConfigTarget target, ModConfigSpec.ConfigValue<?> value)
     {
+        if ((value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE)
+            && !PlatformEnvironment.isModLoaded("wolffsmodnpcs"))
+            return null;
         ModConfigSpec.ValueSpec valueSpec = ConfigSpecValues.valueSpec(target.spec(), value.getPath());
         if (valueSpec == null)
             return null;
@@ -138,7 +145,9 @@ public final class ConfigOptionFactory
             return null;
 
         return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
-            (caption, number) -> Options.genericValueLabel(caption, Component.literal(String.valueOf(number))),
+            (caption, number) -> Options.genericValueLabel(caption,
+                value == ModCommonConfig.DRIVEABLE_TRACKING_RANGE || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE
+                    ? Component.translatable("options.flansmodultimate.distance.blocks", number) : Component.literal(String.valueOf(number))),
             new OptionInstance.IntRange(range.getMin(), range.getMax()),
             current,
             newValue -> target.setWhileDragging(value, newValue));
@@ -153,14 +162,16 @@ public final class ConfigOptionFactory
             return null;
 
         double min = range.getMin();
-        int stepsCount = DOUBLE_SLIDER_STEPS;
+        boolean distanceMultiplier = value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER
+            || value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
+        int stepsCount = distanceMultiplier ? 75 : DOUBLE_SLIDER_STEPS;
         double step = (range.getMax() - min) / stepsCount;
         if (step <= 0)
             return null;
 
         return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
             (caption, number) -> Options.genericValueLabel(caption,
-                Component.literal(String.format(Locale.ROOT, "%.2f", number))),
+                Component.literal(String.format(Locale.ROOT, distanceMultiplier ? "%.2f×" : "%.2f", number))),
             new OptionInstance.IntRange(0, stepsCount).xmap(
                 steps -> min + steps * step,
                 number -> (int) Math.round((number - min) / step)),
@@ -181,6 +192,11 @@ public final class ConfigOptionFactory
     private static <T> OptionInstance.TooltipSupplier<T> tooltip(ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec)
     {
         String key = captionKey(value) + ".tooltip";
+        if (value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER || value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)
+            return current -> Tooltip.create(Component.translatable(key).append("\n")
+                .append(Component.translatable("options.flansmodultimate.distance.tracking_limit",
+                    value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER
+                        ? ModCommonConfig.driveableTrackingRange() : ModCommonConfig.flanNpcTrackingRange())));
         if (I18n.exists(key))
             return OptionInstance.cachedConstantTooltip(Component.translatable(key));
 
