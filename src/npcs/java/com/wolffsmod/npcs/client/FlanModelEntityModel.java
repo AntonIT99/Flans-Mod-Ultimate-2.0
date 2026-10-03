@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
+import com.wolffsmod.npcs.platform.render.NpcRenderBuffers;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.model.EntityModel;
@@ -15,8 +16,8 @@ import net.minecraft.client.renderer.RenderType;
  * Vanilla entity model drawing the static preview of a content-pack AA gun or driveable model.
  *
  * <p>Custom NPCs renders a picked model entity by calling this model from its own NPC renderer, so
- * all drawing happens here rather than in {@link FlanModelRenderer}. Every render pass goes to the
- * single buffer Custom NPCs supplies.</p>
+ * all drawing happens here rather than in {@link FlanModelRenderer}. The platform buffer adapter
+ * opts the normal body into optimized world rendering; special layers retain the supplied buffer.</p>
  */
 public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
 {
@@ -52,7 +53,14 @@ public class FlanModelEntityModel extends EntityModel<FlanModelEntity>
         poseStack.translate(0F, LIVING_MODEL_ORIGIN, 0F);
         poseStack.scale(-1F, -1F, 1F);
         poseStack.translate(0F, entityType.getShape().modelHeight(), 0F);
-        FlansModelPreviews.render(type, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
-        poseStack.popPose();
+        try
+        {
+            if (!NpcRenderBuffers.renderWorld(entityType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha))
+                FlansModelPreviews.render(type, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        }
+        finally
+        {
+            poseStack.popPose();
+        }
     }
 }

@@ -321,21 +321,13 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
     private static double modelOriginDistance(PoseStack pose)
     {
-        var m = pose.last().pose();
-        return Math.sqrt(m.m30() * m.m30() + m.m31() * m.m31() + m.m32() * m.m32());
+        return com.flansmodultimate.client.render.WorldModelPose.originDistance(pose);
     }
 
     /** Includes constructor-time legacy scaling. Gershgorin bounds the largest singular value even with shear. */
     static float modelScaleBound(PoseStack pose)
     {
-        var m = pose.last().pose();
-        float xx = m.m00()*m.m00() + m.m01()*m.m01() + m.m02()*m.m02();
-        float yy = m.m10()*m.m10() + m.m11()*m.m11() + m.m12()*m.m12();
-        float zz = m.m20()*m.m20() + m.m21()*m.m21() + m.m22()*m.m22();
-        float xy = Math.abs(m.m00()*m.m10() + m.m01()*m.m11() + m.m02()*m.m12());
-        float xz = Math.abs(m.m00()*m.m20() + m.m01()*m.m21() + m.m02()*m.m22());
-        float yz = Math.abs(m.m10()*m.m20() + m.m11()*m.m21() + m.m12()*m.m22());
-        return Mth.sqrt(Math.max(xx + xy + xz, Math.max(yy + xy + yz, zz + xz + yz)));
+        return com.flansmodultimate.client.render.WorldModelPose.scaleBound(pose);
     }
 
     @Override

@@ -60,6 +60,7 @@ public final class ModelCache
     {
         GpuModelCache.clear();
         DriveableImpostorCache.clear();
+        com.flansmodultimate.client.render.WorldModelPreview.clear();
         ModelTextureFitter.clear();
         cache.clear();
         renderPassCache.clear();

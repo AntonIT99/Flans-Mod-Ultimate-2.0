@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.wolffsmod.npcs.platform.render",
+  "refmap": "wolffsmodnpcs.refmap.json",
+  "compatibilityLevel": "JAVA_17",
+  "client": ["NpcRenderContextMixin"],
+  "injectors": {"defaultRequire": 1}
+}

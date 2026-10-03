@@ -13,6 +13,37 @@ Recheck them against the target branch during future merges.
 
 ## Minecraft 1.20.1 / Forge → Minecraft 1.21.1 / NeoForge
 
+### NPC static world-model rendering
+
+On Forge 1.20.1, the NPC module owns its Custom NPCs integration in
+`com.wolffsmod.npcs.platform.render`. Its client-only `NpcRenderContextMixin`
+wraps the `MultiBufferSource` argument of Custom NPCs' concrete
+`RenderCustomNpc.render(EntityCustomNpc, float, float, PoseStack, MultiBufferSource, int)`.
+The method descriptor is also used by the NeoForge 1.21.1 Custom NPCs build.
+The main mod has no Custom NPCs dependency. Recheck that concrete method descriptor
+when porting to another Custom NPCs build, rather than targeting a vanilla bridge method.
+
+`FlansModelPreviews.renderWorld` is the reusable client API boundary. It accepts
+Minecraft entity/pose/buffer types and leaves GPU compatibility, detail policy,
+track envelopes and atlas generation in the main mod. The NPC adapter tags only
+the normal body consumer; outlines, invisible-body passes and extra texture layers
+retain the supplied consumer. The shared API, world renderer, pose measurements and
+tests are identical on both branches. Both expose API `0.3`; the NPC module requires
+main mod `2.2` or later for the new entry point.
+
+The NPC module's `NpcRenderBuffers` owns the vertex/pose adaptation: Forge 1.20.1
+snapshots a pose by copying its matrices into a fresh pose and forwards
+`vertex`/`color`/`uv`/`endVertex` calls. NeoForge 1.21.1 uses `Pose.copy()` and forwards
+`addVertex`/`setColor`/`setUv`/`setNormal`, while its model converts the vanilla packed
+ARGB tint to the API's float components. The main mod's `platform/render/WorldModelBoundsCollector`
+owns the matching version-specific vertex collection, so bounds and LOD policy stay shared.
+
+Forge packages the module's own mixin configuration and generated refmap through
+`npcsJar`, with dev-run mixin arguments in `src/npcs/fmu-module.gradle`. NeoForge
+registers `wolffsmodnpcs.mixins.json` in the NPC module's authored `neoforge.mods.toml`,
+uses Java 21 compatibility and omits the Forge refmap and MixinGradle wiring. Preserve
+these module packaging differences when merging master later.
+
 ### Build, metadata, and registration
 
 | Class or location | Source API and destination adaptation |

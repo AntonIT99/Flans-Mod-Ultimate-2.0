@@ -11,3 +11,16 @@ def npcsSourceSet = registerFmuModule(
 
 // Custom NPCs is a mandatory dependency of this module; the main mod already loads it in dev runs.
 dependencies.add(npcsSourceSet.compileOnlyConfigurationName, fg.deobf(customNpcsDependency))
+dependencies.add(npcsSourceSet.annotationProcessorConfigurationName, "org.spongepowered:mixin:$version_mixin:processor")
+
+// Keep the Custom NPCs hook in this optional artifact, including its own refmap.
+mixin.add(npcsSourceSet, 'wolffsmodnpcs.refmap.json')
+tasks.named('npcsJar') {
+    manifest.attributes('MixinConfigs': 'wolffsmodnpcs.mixins.json')
+    // The shared module helper disables MixinGradle's jar mutation (which adds the main config).
+    // Package this module's generated map explicitly instead.
+    from(layout.buildDirectory.file("tmp/${npcsSourceSet.compileJavaTaskName}/wolffsmodnpcs.refmap.json"))
+}
+minecraft.runs.configureEach {
+    args '--mixin', 'wolffsmodnpcs.mixins.json'
+}

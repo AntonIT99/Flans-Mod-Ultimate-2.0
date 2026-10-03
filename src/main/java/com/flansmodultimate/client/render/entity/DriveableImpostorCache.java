@@ -106,6 +106,32 @@ public final class DriveableImpostorCache
      */
     public static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue, PoseStack poseStack, MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset, float entityYaw, float entityPitch, float entityRoll, Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor)
     {
+        return renderOrPrepare(model, type, sourceTexture, translucent, cull, red, green, blue,
+            poseStack, buffer, packedLight, projectionPixels, cameraDistance, cameraOffset,
+            entityYaw, entityPitch, entityRoll, null, cameraOrientation, allowImpostor, wasUsingImpostor,
+            1F, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+    }
+
+    /** Neutral-model atlas shared with externally posed instances; tint and damage overlays stay per draw. */
+    public static Result renderPosedOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation texture,
+        boolean translucent, boolean cull, float typeRed, float typeGreen, float typeBlue,
+        PoseStack pose, MultiBufferSource buffers, int light, int overlay, float red, float green, float blue,
+        float alpha, float parentScale, float projectionPixels, double distance, Vec3 localCameraOffset,
+        Quaternionf rotation, Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor)
+    {
+        return renderOrPrepare(model, type, texture, translucent, cull, typeRed, typeGreen, typeBlue,
+            pose, buffers, light, projectionPixels, distance, localCameraOffset,
+            0F, 0F, 0F, rotation, cameraOrientation, allowImpostor, wasUsingImpostor,
+            parentScale, overlay, red, green, blue, alpha);
+    }
+
+    private static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture,
+        boolean translucent, boolean cull, float red, float green, float blue, PoseStack poseStack,
+        MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset,
+        float entityYaw, float entityPitch, float entityRoll, @Nullable Quaternionf suppliedRotation,
+        Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor, float parentScale,
+        int overlay, float drawRed, float drawGreen, float drawBlue, float alpha)
+    {
         ModClientConfig config = ModClientConfig.get();
         if (config == null || !config.enableDriveableLod || projectionPixels <= 0F || cameraDistance <= 0D)
             return Result.notRendered();
@@ -114,13 +140,14 @@ public final class DriveableImpostorCache
         ModelBounds bounds = cachedBounds(model, type);
         if (!bounds.valid())
             return Result.notRendered();
-        float projectedPixels = projectedDiameter(bounds.radius(), projectionPixels, cameraDistance);
-        Result exact = Result.exact(projectedPixels, bounds.radius());
+        float radius = bounds.radius() * parentScale;
+        float projectedPixels = projectedDiameter(radius, projectionPixels, cameraDistance);
+        Result exact = Result.exact(projectedPixels, radius);
         if (!allowImpostor)
             return exact;
 
         boolean groundVehicle = type instanceof VehicleType && !type.isFloatOnWater();
-        float sizeDistanceScale = DriveableLodPolicy.distanceScale(bounds.radius(), groundVehicle,
+        float sizeDistanceScale = DriveableLodPolicy.distanceScale(radius, groundVehicle,
             (float)config.groundVehicleLodDistanceFactor);
         float minimumDistance = config.driveableImpostorMinimumDistance * sizeDistanceScale;
         float maximumDistance = config.driveableImpostorMaximumDistance > 0F
@@ -134,7 +161,7 @@ public final class DriveableImpostorCache
         Entry entry = getOrCreate(model, type, sourceTexture, translucent, cull, red, green, blue, bounds);
         if (entry == null || entry.failed)
             return exact;
-        Quaternionf entityRotation = new Quaternionf()
+        Quaternionf entityRotation = suppliedRotation != null ? suppliedRotation : new Quaternionf()
             .rotateY(entityYaw * Mth.DEG_TO_RAD)
             .rotateZ(entityPitch * Mth.DEG_TO_RAD)
             .rotateX(entityRoll * Mth.DEG_TO_RAD);
@@ -161,8 +188,8 @@ public final class DriveableImpostorCache
             return exact;
 
         renderBillboard(entry, yawIndex, pitchIndex, entityRotation, cameraOrientation,
-            poseStack, buffer, packedLight);
-        return new Result(true, true, projectedPixels, bounds.radius());
+            poseStack, buffer, packedLight, overlay, drawRed, drawGreen, drawBlue, alpha);
+        return new Result(true, true, projectedPixels, radius);
     }
 
     static boolean shouldUseImpostor(float projectedPixels, double cameraDistance,
@@ -251,6 +278,16 @@ public final class DriveableImpostorCache
             byType.put(type, bounds);
         }
         return bounds;
+    }
+
+    /** Conservative radius about the model origin, including an off-center hull; needs no atlas entry. */
+    public static float modelRadius(ModelDriveable model, DriveableType type)
+    {
+        ModelBounds bounds = cachedBounds(model, type);
+        if (!bounds.valid())
+            return Float.POSITIVE_INFINITY;
+        return bounds.radius() + (float)Math.sqrt(bounds.centerX()*bounds.centerX()
+            + bounds.centerY()*bounds.centerY() + bounds.centerZ()*bounds.centerZ());
     }
 
     /**
@@ -403,7 +440,9 @@ public final class DriveableImpostorCache
         captureTarget = new TextureTarget(settings.resolution(), settings.resolution(), true, Minecraft.ON_OSX);
     }
 
-    private static void renderBillboard(Entry entry, int yawIndex, int pitchIndex, Quaternionf entityRotation, Quaternionf cameraOrientation, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderBillboard(Entry entry, int yawIndex, int pitchIndex, Quaternionf entityRotation,
+        Quaternionf cameraOrientation, PoseStack poseStack, MultiBufferSource buffer, int packedLight,
+        int overlay, float red, float green, float blue, float alpha)
     {
         int resolution = settings.resolution();
         float atlasWidth = (float)resolution * settings.yawAngles();
@@ -424,16 +463,17 @@ public final class DriveableImpostorCache
         PoseStack.Pose pose = poseStack.last();
         VertexConsumer vertices = buffer.getBuffer(EnumRenderPass.DEFAULT
             .getRenderType(entry.impostorTexture, true, false));
-        vertex(pose, vertices, -halfExtent, -halfExtent, u0, v1, packedLight);
-        vertex(pose, vertices, halfExtent, -halfExtent, u1, v1, packedLight);
-        vertex(pose, vertices, halfExtent, halfExtent, u1, v0, packedLight);
-        vertex(pose, vertices, -halfExtent, halfExtent, u0, v0, packedLight);
+        vertex(pose, vertices, -halfExtent, -halfExtent, u0, v1, packedLight, overlay, red, green, blue, alpha);
+        vertex(pose, vertices, halfExtent, -halfExtent, u1, v1, packedLight, overlay, red, green, blue, alpha);
+        vertex(pose, vertices, halfExtent, halfExtent, u1, v0, packedLight, overlay, red, green, blue, alpha);
+        vertex(pose, vertices, -halfExtent, halfExtent, u0, v0, packedLight, overlay, red, green, blue, alpha);
         poseStack.popPose();
     }
 
-    private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float u, float v, int packedLight)
+    private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float u, float v,
+        int packedLight, int overlay, float red, float green, float blue, float alpha)
     {
-        VertexPlatform.vertex(vertices, pose, x, y, 0F, 1F, 1F, 1F, 1F, u, v, OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
+        VertexPlatform.vertex(vertices, pose, x, y, 0F, red, green, blue, alpha, u, v, overlay, packedLight, 0F, 1F, 0F);
     }
 
     private static int yawIndex(float viewYaw, int yawAngles)
