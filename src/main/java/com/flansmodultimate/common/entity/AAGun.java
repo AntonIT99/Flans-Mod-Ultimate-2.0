@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
@@ -8,7 +9,7 @@ import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
@@ -17,7 +18,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
@@ -64,7 +65,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity
+public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity
 {
     private boolean suppressRemovalDrops;
     @Nullable
@@ -504,11 +505,6 @@ public class AAGun extends Entity implements SpawnDataEntity, IFlanEntity<AAGunT
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder)
-    {
-        defineEntityData(new SynchedDataDefinition(builder));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_AA_TYPE, StringUtils.EMPTY);

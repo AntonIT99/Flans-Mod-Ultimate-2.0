@@ -1,7 +1,7 @@
 package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;

@@ -1,6 +1,6 @@
 package com.flansmodultimate.platform.menu;
 
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import net.neoforged.neoforge.network.IContainerFactory;
 
 import net.minecraft.core.BlockPos;

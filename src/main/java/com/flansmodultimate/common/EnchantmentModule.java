@@ -1,4 +1,4 @@
-package com.flansmodultimate.common.enchantments;
+package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.FireableGun;

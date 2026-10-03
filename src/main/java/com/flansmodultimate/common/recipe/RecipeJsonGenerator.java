@@ -193,9 +193,7 @@ public final class RecipeJsonGenerator
 
         root.addProperty("type", "minecraft:smelting");
         root.add("ingredient", createIngredient(config.getSmeltableFrom(), config));
-        JsonObject result = new JsonObject();
-        result.addProperty("id", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
-        root.add("result", result);
+        root.addProperty("result", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
         root.addProperty("experience", 0.0F);
         root.addProperty("cookingtime", 200);
 
@@ -219,24 +217,10 @@ public final class RecipeJsonGenerator
     private static JsonObject createResult(InfoType config)
     {
         JsonObject result = new JsonObject();
-        result.addProperty("id", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
-        int count = Math.max(1, config.getRecipeOutput());
-        int maxStackSize = maxRecipeStackSize(config);
-
-        if (count > maxStackSize)
-        {
-            FlansMod.log.warn("Recipe for {} requests {} items, but the output stacks to at most {}; limiting the result",
-                config, count, maxStackSize);
-            count = maxStackSize;
-        }
-        if (count != 1)
-            result.addProperty("count", count);
+        result.addProperty("item", FlansMod.FLANSMOD_ID + ":" + config.getShortName());
+        if (config.getRecipeOutput() != 1)
+            result.addProperty("count", config.getRecipeOutput());
         return result;
-    }
-
-    static int maxRecipeStackSize(InfoType config)
-    {
-        return RecipeDataCompatibility.maxRecipeStackSize(config);
     }
 
     private static Map<Character, String> parseShapedRecipeKeys(InfoType config)

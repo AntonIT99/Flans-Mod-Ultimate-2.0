@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamBase;
@@ -36,7 +37,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public final class Flagpole extends Entity implements ITeamBase
+public final class Flagpole extends FlanSpawnEntity implements ITeamBase
 {
     private static final String NBT_DEFAULT_OWNER = "default_owner";
     private static final String NBT_OWNER = "owner";
@@ -67,12 +68,7 @@ public final class Flagpole extends Entity implements ITeamBase
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder)
-    {
-        defineEntityData(new SynchedDataDefinition(builder));
-    }
-
-    private void defineEntityData(SynchedDataDefinition data)
+    protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_DEFAULT_OWNER, 0);
         data.define(DATA_OWNER, 0);
@@ -108,9 +104,9 @@ public final class Flagpole extends Entity implements ITeamBase
     }
 
     @Override
-    public void onAddedToLevel()
+    protected void onEntityAdded()
     {
-        super.onAddedToLevel();
+        super.onEntityAdded();
         if (!level().isClientSide)
             TeamsManager.getInstance().registerBase(this);
     }

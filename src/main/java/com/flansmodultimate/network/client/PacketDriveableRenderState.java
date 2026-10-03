@@ -6,7 +6,7 @@ import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketIO;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

@@ -1,25 +1,20 @@
 package com.flansmodultimate.client.debug;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 
+import com.mojang.brigadier.CommandDispatcher;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 
 /** Client-local measurements; available without server permissions. */
-@EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
 public final class RenderDiagnosticsCommand
 {
     private RenderDiagnosticsCommand() {}
 
-    @SubscribeEvent
-    public static void register(RegisterClientCommandsEvent event)
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        event.getDispatcher().register(Commands.literal("flansrenderstats")
+        dispatcher.register(Commands.literal("flansrenderstats")
             .executes(context -> {
                 context.getSource().sendSuccess(() -> Component.literal(RenderDiagnostics.report()), false);
                 return 1;

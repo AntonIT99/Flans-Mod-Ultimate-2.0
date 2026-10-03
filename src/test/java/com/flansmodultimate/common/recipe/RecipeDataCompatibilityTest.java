@@ -68,6 +68,35 @@ class RecipeDataCompatibilityTest
     }
 
     @Test
+    void generatorLeavesRequestedCountForTheCompatibilityLayer() throws Exception
+    {
+        ToolType tool = new ToolType()
+        {
+            @Override
+            public String getShortName()
+            {
+                return "example";
+            }
+        };
+        tool.load(new TypeFile("example", EnumType.TOOL, new ContentPack("test", dataRoot), List.of(
+            "ShortName example", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
+        var createResult = RecipeJsonGenerator.class.getDeclaredMethod("createResult", com.flansmodultimate.common.types.InfoType.class);
+        createResult.setAccessible(true);
+        JsonObject output = (JsonObject) createResult.invoke(null, tool);
+        assertEquals("flansmod:example", output.get("item").getAsString());
+        assertEquals(16, output.get("count").getAsInt());
+        assertFalse(output.has("id"));
+
+        JsonObject recipe = new JsonObject();
+        recipe.addProperty("type", "minecraft:crafting_shapeless");
+        recipe.add("result", output);
+        JsonObject modern = RecipeDataCompatibility.formatGenerated(recipe, tool, RecipeDataCompatibility.Format.MODERN);
+        assertEquals("flansmod:example", modern.getAsJsonObject("result").get("id").getAsString());
+        assertFalse(modern.getAsJsonObject("result").has("count"));
+        assertEquals(16, output.get("count").getAsInt());
+    }
+
+    @Test
     void generatedRecipesRequireBothLayoutsAndLegalModernOutput() throws Exception
     {
         ToolType tool = new ToolType()

@@ -13,7 +13,7 @@ import com.flansmodultimate.util.InventoryHelper;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;

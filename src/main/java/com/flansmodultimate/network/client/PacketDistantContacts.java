@@ -2,7 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.client.distant.DistantContactsClient;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;

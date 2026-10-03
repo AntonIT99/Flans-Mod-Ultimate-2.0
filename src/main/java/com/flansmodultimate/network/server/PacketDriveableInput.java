@@ -4,7 +4,7 @@ import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import io.netty.handler.codec.DecoderException;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

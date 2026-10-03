@@ -5,7 +5,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.Team;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,7 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.item.ItemEntity;
+import com.flansmodultimate.platform.entity.FlanItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -30,7 +30,7 @@ import java.util.UUID;
  * is purely visual: the server keeps the item at the centre, and each client moves it along the circle
  * from the centre and phase it received in the spawn packet.</p>
  */
-public class TeamItemEntity extends ItemEntity implements SpawnDataEntity
+public class TeamItemEntity extends FlanItemEntity implements SpawnDataEntity
 {
     private static final String NBT_CENTER_X = "center_x";
     private static final String NBT_CENTER_Y = "center_y";

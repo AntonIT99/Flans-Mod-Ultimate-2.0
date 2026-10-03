@@ -1,6 +1,8 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.debug.RenderDiagnosticsCommand;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.neoforged.api.distmarker.Dist;
@@ -23,6 +25,12 @@ import net.minecraft.world.entity.player.Player;
 public final class ClientGameEvents
 {
     private ClientGameEvents() {}
+
+    @SubscribeEvent
+    public static void onRegisterClientCommands(RegisterClientCommandsEvent event)
+    {
+        RenderDiagnosticsCommand.register(event.getDispatcher());
+    }
 
     @SubscribeEvent
     public static void onClientTickStart(ClientTickEvent.Pre event)

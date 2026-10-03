@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanArrow;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.item.GunItem;
@@ -21,7 +22,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -33,7 +33,7 @@ import net.minecraft.world.phys.Vec3;
  * same weapon.
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class ThrownGun extends AbstractArrow
+public class ThrownGun extends FlanArrow
 {
     /** Ticks a recoverable weapon stays stuck before despawning, the lifespan of a dropped item */
     public static final int RECOVERABLE_LIFESPAN = 6000;
@@ -57,54 +57,26 @@ public class ThrownGun extends AbstractArrow
 
     public ThrownGun(Level level, LivingEntity thrower, ItemStack weapon, float throwDamage)
     {
-        // The weapon is the arrow's pickup stack, not its firing weapon, so no enchantment hooks of the gun apply
-        super(FlansMod.thrownGunEntity.get(), thrower, level, weapon.copy(), null);
-        setWeapon(getPickupItemStackOrigin());
+        super(FlansMod.thrownGunEntity.get(), thrower, level, weapon);
         this.throwDamage = throwDamage;
     }
 
     @Override
-    protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder)
-    {
-        super.defineSynchedData(builder);
-        defineEntityData(new SynchedDataDefinition(builder));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_WEAPON, ItemStack.EMPTY);
     }
 
+    @Override
     public ItemStack getWeapon()
     {
         return entityData.get(DATA_WEAPON);
     }
 
+    @Override
     protected void setWeapon(ItemStack weapon)
     {
         entityData.set(DATA_WEAPON, weapon);
-    }
-
-    /** Also reached from vanilla loading and slot access; keeps the synced copy renderers read in step. */
-    @Override
-    protected void setPickupItemStack(@NotNull ItemStack pickupItemStack)
-    {
-        super.setPickupItemStack(pickupItemStack);
-        setWeapon(getPickupItemStackOrigin());
-    }
-
-    @Override
-    @NotNull
-    protected ItemStack getDefaultPickupItem()
-    {
-        return ItemStack.EMPTY;
-    }
-
-    /** Minecraft 1.21 cannot encode the empty pickup stack of a weaponless entity, which has nothing to recover anyway. */
-    @Override
-    public boolean shouldBeSaved()
-    {
-        return super.shouldBeSaved() && !getPickupItemStackOrigin().isEmpty();
     }
 
     @Nullable
@@ -116,11 +88,8 @@ public class ThrownGun extends AbstractArrow
     @Override
     public void tick()
     {
-        if (!level().isClientSide && getPickupItemStackOrigin().isEmpty())
-        {
-            discard();
+        if (!prepareProjectileTick())
             return;
-        }
 
         // Once it has settled it no longer wounds anything walking into it
         if (inGroundTime > 4)
@@ -194,7 +163,6 @@ public class ThrownGun extends AbstractArrow
             discard();
     }
 
-    /** The weapon is saved by AbstractArrow as its pickup item; its own "weapon" key is the firing weapon. */
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag)
     {

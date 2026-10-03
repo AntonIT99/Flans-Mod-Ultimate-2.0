@@ -10,7 +10,7 @@ import com.flansmodultimate.network.client.PacketTeamsState;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

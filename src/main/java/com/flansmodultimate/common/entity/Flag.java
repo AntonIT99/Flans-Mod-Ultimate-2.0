@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamObject;
@@ -19,7 +20,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public final class Flag extends Entity implements ITeamObject
+public final class Flag extends FlanSpawnEntity implements ITeamObject
 {
     private static final String NBT_BASE = "base";
     private static final String NBT_CARRIER = "carrier";
@@ -61,12 +61,7 @@ public final class Flag extends Entity implements ITeamObject
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder)
-    {
-        defineEntityData(new SynchedDataDefinition(builder));
-    }
-
-    private void defineEntityData(SynchedDataDefinition data)
+    protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_BASE, Optional.empty());
         data.define(DATA_CARRIER, Optional.empty());

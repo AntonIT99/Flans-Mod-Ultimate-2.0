@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.enchantments.EnchantmentModule;
+import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;

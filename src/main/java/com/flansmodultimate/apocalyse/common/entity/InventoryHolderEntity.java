@@ -2,6 +2,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.platform.item.ItemStackData;
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,6 +37,7 @@ import net.minecraft.world.level.Level;
  * hands everything back when it is put down — so returning from the apocalypse means
  * finding, and beating, the shape you left behind.</p>
  */
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class InventoryHolderEntity extends PathfinderMob
 {
     private static final String NBT_HELD_ITEMS = "held_items";

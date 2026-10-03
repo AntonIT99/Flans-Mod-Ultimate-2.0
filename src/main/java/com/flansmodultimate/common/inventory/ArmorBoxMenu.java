@@ -2,7 +2,7 @@ package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.ArmorBoxBlock;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 

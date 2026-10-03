@@ -1,12 +1,10 @@
 package com.flansmodultimate.common.driveables;
 
-import com.flansmodultimate.platform.item.ItemCapabilities;
+import com.flansmodultimate.platform.fluid.FluidContainerPlatform;
+import com.flansmodultimate.platform.fluid.FluidPlatform;
 import com.mojang.logging.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -38,7 +36,7 @@ public final class FluidFuel
     private static final Logger log = LogUtils.getLogger();
 
     /** Millibuckets in one bucket, the unit the fuel table is quoted in. */
-    public static final int BUCKET = FluidType.BUCKET_VOLUME;
+    public static final int BUCKET = FluidPlatform.BUCKET_VOLUME;
 
     private static final List<Rule> RULES = new ArrayList<>();
     /** Resolved lookups, cleared whenever the table is rebuilt. */
@@ -132,35 +130,7 @@ public final class FluidFuel
     /** Whether this stack is a container holding a liquid the fuel table recognises. */
     public static boolean isFuelContainer(@NotNull ItemStack stack)
     {
-        IFluidHandlerItem handler = handlerFor(stack);
-        return handler != null && !firstBurnableTank(handler).isEmpty();
-    }
-
-    /**
-     * The fluid handler of a single item taken from this stack, or null if it holds no fluid.
-     *
-     * <p>The handler works on its own copy of one item, because Forge's bucket wrapper refuses
-     * to drain a stack of more than one and replaces the container as it drains. The caller
-     * puts the result back with {@link IFluidHandlerItem#getContainer()}.</p>
-     */
-    @Nullable
-    public static IFluidHandlerItem handlerFor(@NotNull ItemStack stack)
-    {
-        if (stack.isEmpty())
-            return null;
-        return ItemCapabilities.fluidHandler(stack.copyWithCount(1));
-    }
-
-    /** Contents of the first tank holding something this driveable can burn, else empty. */
-    @NotNull
-    public static FluidStack firstBurnableTank(@NotNull IFluidHandlerItem handler)
-    {
-        for (int tank = 0; tank < handler.getTanks(); tank++)
-        {
-            FluidStack held = handler.getFluidInTank(tank);
-            if (!held.isEmpty() && fuelPerBucket(held.getFluid()) > 0)
-                return held.copy();
-        }
-        return FluidStack.EMPTY;
+        var handler = FluidContainerPlatform.handlerFor(stack);
+        return handler != null && !FluidContainerPlatform.firstMatchingTank(handler, fluid -> FluidFuel.fuelPerBucket(fluid) > 0).isEmpty();
     }
 }

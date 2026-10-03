@@ -4,7 +4,7 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunToggleClient;
 import com.flansmodultimate.network.client.PacketPlaySound;

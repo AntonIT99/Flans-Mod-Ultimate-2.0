@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.teams;
 
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.platform.item.ItemStackData;
 

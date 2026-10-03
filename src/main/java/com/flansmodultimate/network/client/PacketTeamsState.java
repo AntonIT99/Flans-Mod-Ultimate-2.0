@@ -12,7 +12,7 @@ import com.flansmodultimate.platform.network.PacketIO;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;

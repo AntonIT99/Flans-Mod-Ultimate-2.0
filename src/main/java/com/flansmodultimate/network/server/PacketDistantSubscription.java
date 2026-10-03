@@ -2,7 +2,7 @@ package com.flansmodultimate.network.server;
 
 import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 

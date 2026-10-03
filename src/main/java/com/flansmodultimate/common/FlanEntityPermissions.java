@@ -1,4 +1,4 @@
-package com.flansmodultimate.common.permissions;
+package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
 import net.neoforged.bus.api.SubscribeEvent;

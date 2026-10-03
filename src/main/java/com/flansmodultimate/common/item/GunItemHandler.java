@@ -2,7 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.enchantments.EnchantmentModule;
+import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.Driveable;

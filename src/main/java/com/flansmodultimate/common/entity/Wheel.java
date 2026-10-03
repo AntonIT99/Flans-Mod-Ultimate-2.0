@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -23,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 
 /** Non-persistent hit and suspension proxy owned by a {@link Driveable}. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Wheel extends Entity
+public class Wheel extends FlanEntity
 {
     private static final EntityDataAccessor<Integer> DATA_PARENT_ID = SynchedEntityData.defineId(Wheel.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_WHEEL_INDEX = SynchedEntityData.defineId(Wheel.class, EntityDataSerializers.INT);
@@ -66,11 +67,6 @@ public class Wheel extends Entity
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder)
-    {
-        defineEntityData(new SynchedDataDefinition(builder));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_PARENT_ID, -1);
@@ -139,11 +135,11 @@ public class Wheel extends Entity
      * sparse movement packets would only snap it back to a stale position.
      */
     @Override
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps)
+    protected void lerpEntity(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
     {
         if (level().isClientSide && driveable != null)
             return;
-        super.lerpTo(x, y, z, yaw, pitch, steps);
+        super.lerpEntity(x, y, z, yaw, pitch, steps, teleport);
     }
 
     @Override

@@ -1,10 +1,11 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.util.ModUtils;
@@ -31,7 +32,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<ToolType>
+public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlanEntity<ToolType>
 {
     public static final float DEFAULT_HITBOX_WIDTH = 1.0F;
     public static final float DEFAULT_HITBOX_HEIGHT = 0.5F;
@@ -95,11 +96,6 @@ public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<To
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder)
-    {
-        defineEntityData(new SynchedDataDefinition(builder));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_TOOL_TYPE, StringUtils.EMPTY);

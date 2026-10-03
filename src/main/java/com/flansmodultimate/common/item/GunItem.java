@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.enchantments.EnchantmentModule;
+import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;

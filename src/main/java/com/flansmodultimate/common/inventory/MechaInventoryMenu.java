@@ -4,7 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
 import com.flansmodultimate.common.entity.Mecha;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

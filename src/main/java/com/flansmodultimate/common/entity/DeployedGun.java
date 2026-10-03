@@ -1,12 +1,13 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -14,7 +15,7 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
@@ -57,7 +58,7 @@ import java.util.Collections;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<GunType>
+public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<GunType>
 {
     private boolean suppressRemovalDrops;
     public static final int RENDER_DISTANCE = 64;
@@ -217,11 +218,6 @@ public class DeployedGun extends Entity implements SpawnDataEntity, IFlanEntity<
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder)
-    {
-        defineEntityData(new SynchedDataDefinition(builder));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_GUN_TYPE, StringUtils.EMPTY);

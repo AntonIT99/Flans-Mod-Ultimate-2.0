@@ -5,7 +5,7 @@ import com.flansmodultimate.network.ClientPacketDispatcher;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.IPacket;
 import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import net.neoforged.neoforge.network.PacketDistributor;

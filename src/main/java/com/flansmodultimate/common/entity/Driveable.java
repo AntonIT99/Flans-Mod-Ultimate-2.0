@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanEntity;
+import com.flansmodultimate.platform.fluid.FluidContainerPlatform;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.distant.DistantRenderRange;
@@ -52,7 +54,7 @@ import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.item.ToolItem;
-import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -71,7 +73,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
@@ -85,7 +87,6 @@ import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
-import com.flansmodultimate.platform.fluid.FluidPlatform;
 import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
@@ -94,10 +95,6 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -168,7 +165,7 @@ import java.util.stream.IntStream;
  * server and replicated through normal entity data/position tracking.</p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public abstract class Driveable extends Entity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
+public abstract class Driveable extends FlanEntity implements SpawnDataEntity, IFlanEntity<DriveableType>, IControllable, IMassiveEntity
 {
     public static final String NBT_TYPE = "driveable_type";
     public static final String NBT_YAW = "driveable_yaw";
@@ -880,11 +877,6 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder)
-    {
-        defineEntityData(new SynchedDataDefinition(builder));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_DRIVEABLE_TYPE, StringUtils.EMPTY);
@@ -1167,11 +1159,11 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
      * at the server tick rate even while the renderer is much faster.
      */
     @Override
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps)
+    protected void lerpEntity(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
     {
         if (!level().isClientSide)
         {
-            super.lerpTo(x, y, z, yaw, pitch, steps);
+            super.lerpEntity(x, y, z, yaw, pitch, steps, teleport);
             return;
         }
 
@@ -1191,7 +1183,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return;
 
         double distanceSquared = distanceToSqr(x, y, z);
-        if (!Double.isFinite(distanceSquared) || distanceSquared > 4096D)
+        if (teleport || !Double.isFinite(distanceSquared) || distanceSquared > 4096D)
         {
             setPos(x, y, z);
             clientVisualYaw = clientTargetYaw;
@@ -4865,11 +4857,11 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
     {
         DriveableData data = initializedData();
         ItemStack stack = data.getItem(slot);
-        IFluidHandlerItem handler = FluidFuel.handlerFor(stack);
+        var handler = FluidContainerPlatform.handlerFor(stack);
         if (handler == null)
             return false;
 
-        FluidStack held = FluidFuel.firstBurnableTank(handler);
+        var held = FluidContainerPlatform.firstMatchingTank(handler, fluid -> FluidFuel.fuelPerBucket(fluid) > 0);
         if (held.isEmpty())
             return false;
         int fuelPerBucket = FluidFuel.fuelPerBucket(held.getFluid());
@@ -4880,7 +4872,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             return false;
 
         // Named explicitly so a multi-tank container cannot hand back a different liquid.
-        FluidStack drained = handler.drain(FluidPlatform.copyWithAmount(held, drawn), IFluidHandler.FluidAction.EXECUTE);
+        var drained = FluidContainerPlatform.drain(handler, held, drawn);
         if (drained.isEmpty())
             return false;
 
@@ -4950,7 +4942,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
             ItemStack stack = data.getItem(slot);
             if (stack.isEmpty())
                 continue;
-            IEnergyStorage energy = ItemCapabilities.energy(stack);
+            var energy = ItemCapabilities.energy(stack);
             if (energy == null || !energy.canExtract())
                 continue;
 
