@@ -1,4 +1,5 @@
 package com.flansmodultimate.apocalyse.common.world;
+
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.SurvivorEntity;

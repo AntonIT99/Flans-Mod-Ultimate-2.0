@@ -1,8 +1,5 @@
 package com.flansmodultimate.client.input;
 
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.settings.IKeyConflictContext;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import org.lwjgl.glfw.GLFW;
 
 import com.flansmod.client.model.GunAnimations;
