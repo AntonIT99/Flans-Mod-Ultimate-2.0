@@ -2,6 +2,7 @@ package com.flansmod.client.tmt;
 
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelRenderer;
+import com.flansmodultimate.client.render.EntityVertexBatch;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.gpu.GeometryRevision;
 import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
@@ -2499,9 +2500,19 @@ public class ModelRendererTurbo extends ModelRenderer
         }
         long currentTransformationSequence = ++transformationSequence;
         boolean glowing = glow || glowAdditive || glowNoDepthWrite;
-        for (TexturedPolygon poly : polygons)
+        // Sodium and Embeddium take the part's vertices in bulk; polygons write only through the batch.
+        boolean batched = EntityVertexBatch.begin(vertexConsumer);
+        try
         {
-            poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glowing, currentTransformationSequence);
+            for (TexturedPolygon poly : polygons)
+            {
+                poly.draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glowing, currentTransformationSequence);
+            }
+        }
+        finally
+        {
+            if (batched)
+                EntityVertexBatch.end();
         }
     }
 

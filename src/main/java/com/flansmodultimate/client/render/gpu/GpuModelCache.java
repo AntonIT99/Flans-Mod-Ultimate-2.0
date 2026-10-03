@@ -2,6 +2,7 @@ package com.flansmodultimate.client.render.gpu;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.CustomRenderType;
+import com.flansmodultimate.client.render.EntityVertexBatch;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.config.ModClientConfig;
@@ -222,9 +223,18 @@ public final class GpuModelCache
         try
         {
             BufferBuilder builder = new BufferBuilder(uploadStorage, VertexFormat.Mode.QUADS, DefaultVertexFormat.NEW_ENTITY);
-            for (int i = 0; i < key.count; i++)
-                // UV1 is the palette index in the cached mesh; real overlay coordinates are uniforms.
-                key.geometries[i].draw(IDENTITY, builder, 0, key.paletteIndices[i], 1F, 1F, 1F, 1F);
+            boolean batched = EntityVertexBatch.begin(builder);
+            try
+            {
+                for (int i = 0; i < key.count; i++)
+                    // UV1 is the palette index in the cached mesh; real overlay coordinates are uniforms.
+                    key.geometries[i].draw(IDENTITY, builder, 0, key.paletteIndices[i], 1F, 1F, 1F, 1F);
+            }
+            finally
+            {
+                if (batched)
+                    EntityVertexBatch.end();
+            }
             buffer.bind();
             try (MeshData meshData = builder.buildOrThrow())
             {
