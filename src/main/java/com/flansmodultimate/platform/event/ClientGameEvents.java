@@ -1,6 +1,8 @@
 package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.client.debug.RenderDiagnosticsCommand;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
@@ -17,6 +19,12 @@ import net.minecraftforge.fml.common.Mod;
 public final class ClientGameEvents
 {
     private ClientGameEvents() {}
+
+    @SubscribeEvent
+    public static void onRegisterClientCommands(RegisterClientCommandsEvent event)
+    {
+        RenderDiagnosticsCommand.register(event.getDispatcher());
+    }
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)

@@ -1,5 +1,6 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.apocalyse.common.world.ApocalypsePortalManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import lombok.EqualsAndHashCode;
@@ -11,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -19,7 +19,7 @@ import net.minecraft.world.phys.AABB;
 import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class TeleporterEntity extends Entity
+public class TeleporterEntity extends FlanEntity
 {
     private static final String NBT_X = "x";
     private static final String NBT_Y = "y";
@@ -92,12 +92,6 @@ public class TeleporterEntity extends Entity
             double dz = random.nextGaussian();
             level.addParticle(ParticleTypes.PORTAL, getX() + dx, getY() + 1.0D + dy, getZ() + dz, dx, dy, dz);
         }
-    }
-
-    @Override
-    protected void defineSynchedData()
-    {
-        // No synced fields. The entity is fully reconstructed from save/spawn position.
     }
 
     @Override

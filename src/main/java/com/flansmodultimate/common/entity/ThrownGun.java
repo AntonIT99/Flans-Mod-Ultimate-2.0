@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanArrow;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.item.GunItem;
@@ -7,13 +8,11 @@ import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
-import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -23,7 +22,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -35,14 +33,13 @@ import net.minecraft.world.phys.Vec3;
  * same weapon.
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class ThrownGun extends AbstractArrow
+public class ThrownGun extends FlanArrow
 {
     /** Ticks a recoverable weapon stays stuck before despawning, the lifespan of a dropped item */
     public static final int RECOVERABLE_LIFESPAN = 6000;
     /** Gravity AbstractArrow applies on its own each tick, which this projectile replaces. */
     private static final double VANILLA_ARROW_GRAVITY = 0.05D;
 
-    protected static final String NBT_WEAPON = "weapon";
     protected static final String NBT_DAMAGE = "throw_damage";
     protected static final String NBT_DEALT_DAMAGE = "dealt_damage";
     protected static final String NBT_LIFE = "life";
@@ -60,28 +57,23 @@ public class ThrownGun extends AbstractArrow
 
     public ThrownGun(Level level, LivingEntity thrower, ItemStack weapon, float throwDamage)
     {
-        super(FlansMod.thrownGunEntity.get(), thrower, level);
-        setWeapon(weapon.copy());
+        super(FlansMod.thrownGunEntity.get(), thrower, level, weapon);
         this.throwDamage = throwDamage;
     }
 
     @Override
-    protected void defineSynchedData()
-    {
-        super.defineSynchedData();
-        defineEntityData(new SynchedDataDefinition(entityData));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_WEAPON, ItemStack.EMPTY);
     }
 
+    @Override
     public ItemStack getWeapon()
     {
         return entityData.get(DATA_WEAPON);
     }
 
+    @Override
     protected void setWeapon(ItemStack weapon)
     {
         entityData.set(DATA_WEAPON, weapon);
@@ -96,6 +88,9 @@ public class ThrownGun extends AbstractArrow
     @Override
     public void tick()
     {
+        if (!prepareProjectileTick())
+            return;
+
         // Once it has settled it no longer wounds anything walking into it
         if (inGroundTime > 4)
             dealtDamage = true;
@@ -121,13 +116,6 @@ public class ThrownGun extends AbstractArrow
     protected float getWaterInertia()
     {
         return ProjectileDrag.factor(this, ShootableType.AIR_DEFAULT_DRAG, ShootableType.WATER_DEFAULT_DRAG);
-    }
-
-    @Override
-    @NotNull
-    protected ItemStack getPickupItem()
-    {
-        return getWeapon().copy();
     }
 
     @Override
@@ -179,8 +167,6 @@ public class ThrownGun extends AbstractArrow
     public void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.readAdditionalSaveData(tag);
-        if (tag.contains(NBT_WEAPON, Tag.TAG_COMPOUND))
-            setWeapon(ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_WEAPON)));
         throwDamage = tag.getFloat(NBT_DAMAGE);
         dealtDamage = tag.getBoolean(NBT_DEALT_DAMAGE);
         life = tag.getInt(NBT_LIFE);
@@ -190,9 +176,6 @@ public class ThrownGun extends AbstractArrow
     public void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
         super.addAdditionalSaveData(tag);
-        ItemStack weapon = getWeapon();
-        if (!weapon.isEmpty())
-            tag.put(NBT_WEAPON, ItemStackData.save(weapon, level().registryAccess()));
         tag.putFloat(NBT_DAMAGE, throwDamage);
         tag.putBoolean(NBT_DEALT_DAMAGE, dealtDamage);
         tag.putInt(NBT_LIFE, life);

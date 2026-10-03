@@ -10,7 +10,7 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.types.PartType;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.InventoryHelper;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

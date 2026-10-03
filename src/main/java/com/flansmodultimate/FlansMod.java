@@ -8,7 +8,7 @@ import com.flansmodultimate.common.block.VehicleCraftingTableBlock;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
-import com.flansmodultimate.common.enchantments.EnchantmentModule;
+import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;

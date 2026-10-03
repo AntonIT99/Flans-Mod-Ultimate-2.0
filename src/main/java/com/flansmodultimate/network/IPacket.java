@@ -1,5 +1,7 @@
 package com.flansmodultimate.network;
 
+import com.flansmodultimate.platform.network.PacketBuffer;
+
 public interface IPacket
 {
     /** Encode the packet into the buffer. */

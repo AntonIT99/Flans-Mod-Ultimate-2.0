@@ -1,22 +1,20 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
-import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -34,7 +32,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<ToolType>
+public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlanEntity<ToolType>
 {
     public static final float DEFAULT_HITBOX_WIDTH = 1.0F;
     public static final float DEFAULT_HITBOX_HEIGHT = 0.5F;
@@ -98,11 +96,6 @@ public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<To
     }
 
     @Override
-    protected void defineSynchedData()
-    {
-        defineEntityData(new SynchedDataDefinition(entityData));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_TOOL_TYPE, StringUtils.EMPTY);
@@ -223,13 +216,6 @@ public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<To
     {
         ToolType type = getConfigType();
         return type == null ? ItemStack.EMPTY : ModUtils.getItemStack(type).orElse(ItemStack.EMPTY);
-    }
-
-    @Override
-    @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
-    {
-        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     @Override

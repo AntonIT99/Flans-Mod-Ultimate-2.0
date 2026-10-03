@@ -20,7 +20,7 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketManualGuidance;

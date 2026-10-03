@@ -2,7 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 

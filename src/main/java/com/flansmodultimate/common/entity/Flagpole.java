@@ -1,12 +1,12 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
-import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,8 +14,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -39,7 +37,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public final class Flagpole extends Entity implements ITeamBase
+public final class Flagpole extends FlanSpawnEntity implements ITeamBase
 {
     private static final String NBT_DEFAULT_OWNER = "default_owner";
     private static final String NBT_OWNER = "owner";
@@ -70,12 +68,7 @@ public final class Flagpole extends Entity implements ITeamBase
     }
 
     @Override
-    protected void defineSynchedData()
-    {
-        defineEntityData(new SynchedDataDefinition(entityData));
-    }
-
-    private void defineEntityData(SynchedDataDefinition data)
+    protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_DEFAULT_OWNER, 0);
         data.define(DATA_OWNER, 0);
@@ -111,9 +104,9 @@ public final class Flagpole extends Entity implements ITeamBase
     }
 
     @Override
-    public void onAddedToWorld()
+    protected void onEntityAdded()
     {
-        super.onAddedToWorld();
+        super.onEntityAdded();
         if (!level().isClientSide)
             TeamsManager.getInstance().registerBase(this);
     }
@@ -192,13 +185,6 @@ public final class Flagpole extends Entity implements ITeamBase
             objects.add(object);
         }
         tag.put(NBT_OBJECTS, objects);
-    }
-
-    @NotNull
-    @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
-    {
-        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     @Override

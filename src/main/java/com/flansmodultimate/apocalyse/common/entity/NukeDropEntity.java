@@ -1,5 +1,6 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import org.jetbrains.annotations.NotNull;
@@ -9,12 +10,11 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
 
-public class NukeDropEntity extends Entity
+public class NukeDropEntity extends FlanEntity
 {
     private static final String NBT_EXPLODED_TICKS = "exploded_ticks";
     private static final EntityDataAccessor<Integer> DATA_EXPLODED_TICKS = SynchedEntityData.defineId(NukeDropEntity.class, EntityDataSerializers.INT);
@@ -72,11 +72,6 @@ public class NukeDropEntity extends Entity
     }
 
     @Override
-    protected void defineSynchedData()
-    {
-        defineEntityData(new SynchedDataDefinition(entityData));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_EXPLODED_TICKS, 0);

@@ -4,7 +4,7 @@ import com.flansmodultimate.client.digitalammo.LocalBulletManager;
 import com.flansmodultimate.common.digitalammo.PlayerBulletStorage;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;

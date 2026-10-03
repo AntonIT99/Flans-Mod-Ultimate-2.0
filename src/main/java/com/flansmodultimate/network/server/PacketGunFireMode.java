@@ -5,7 +5,7 @@ import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunFireModeClient;
 import com.flansmodultimate.network.client.PacketPlaySound;

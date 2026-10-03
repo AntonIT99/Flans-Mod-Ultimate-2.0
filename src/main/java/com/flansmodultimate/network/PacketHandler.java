@@ -1,5 +1,7 @@
 package com.flansmodultimate.network;
 
+import com.flansmodultimate.platform.network.PacketBuffer;
+
 import com.flansmodultimate.network.client.PacketAimPoseState;
 import com.flansmodultimate.network.client.PacketAllowDebug;
 import com.flansmodultimate.network.client.PacketApocalypseCountdown;

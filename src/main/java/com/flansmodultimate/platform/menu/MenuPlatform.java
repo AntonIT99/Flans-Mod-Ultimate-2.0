@@ -1,6 +1,6 @@
 package com.flansmodultimate.platform.menu;
 
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.network.NetworkHooks;
 

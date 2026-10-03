@@ -1,15 +1,16 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseWorldgen;
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.WorldGenLevel;
@@ -24,7 +25,8 @@ import java.util.Locale;
  * saved with the chunk like any other entity, and on its first tick on the server thread it
  * performs the spawn and removes itself.</p>
  */
-public class WorldgenSpawnMarker extends Entity
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+public class WorldgenSpawnMarker extends FlanEntity
 {
     private static final String NBT_KIND = "kind";
     private static final String NBT_SEED = "seed";
@@ -77,11 +79,6 @@ public class WorldgenSpawnMarker extends Entity
         {
             FlansMod.log.error("Apocalypse worldgen {} spawn at {} failed", kind, blockPosition(), exception);
         }
-    }
-
-    @Override
-    protected void defineSynchedData()
-    {
     }
 
     @Override

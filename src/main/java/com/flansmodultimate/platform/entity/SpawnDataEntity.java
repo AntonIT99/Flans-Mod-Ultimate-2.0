@@ -1,6 +1,6 @@
 package com.flansmodultimate.platform.entity;
 
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 
 import net.minecraft.network.FriendlyByteBuf;

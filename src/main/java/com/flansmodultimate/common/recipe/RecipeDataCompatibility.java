@@ -9,6 +9,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +23,7 @@ import java.util.stream.Stream;
 /** Keeps the two Minecraft recipe data layouts available in ordinary content packs. */
 public final class RecipeDataCompatibility
 {
+    private static final Logger log = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public enum Format
@@ -212,7 +215,13 @@ public final class RecipeDataCompatibility
         {
             int count = config.getRecipeOutput();
             if (format == Format.MODERN)
-                count = Math.min(Math.max(1, count), maxRecipeStackSize(config));
+            {
+                int maxStackSize = maxRecipeStackSize(config);
+                if (count > maxStackSize)
+                    log.warn("Recipe for {} requests {} items, but the output stacks to at most {}; limiting the result",
+                        config, count, maxStackSize);
+                count = Math.min(Math.max(1, count), maxStackSize);
+            }
             JsonObject output = result.getAsJsonObject("result");
             if (count == 1)
                 output.remove("count");

@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;

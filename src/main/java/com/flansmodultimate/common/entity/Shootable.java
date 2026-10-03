@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -7,7 +8,7 @@ import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
@@ -15,13 +16,10 @@ import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import net.minecraftforge.network.NetworkHooks;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -42,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public abstract class Shootable extends Entity implements SpawnDataEntity
+public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEntity
 {
     public static final float DEFAULT_HITBOX_SIZE = 0.5F;
 
@@ -138,11 +136,6 @@ public abstract class Shootable extends Entity implements SpawnDataEntity
     }
 
     @Override
-    protected void defineSynchedData()
-    {
-        defineEntityData(new SynchedDataDefinition(entityData));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_SHOOTABLE_TYPE, StringUtils.EMPTY);
@@ -156,13 +149,6 @@ public abstract class Shootable extends Entity implements SpawnDataEntity
         super.onSyncedDataUpdated(key);
         if (DATA_HITBOX_SIZE.equals(key))
             refreshDimensions();
-    }
-
-    @Override
-    @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
-    {
-        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     @Override

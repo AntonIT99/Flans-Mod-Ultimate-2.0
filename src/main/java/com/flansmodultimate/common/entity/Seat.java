@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.api.IDriveableType;
@@ -11,7 +12,7 @@ import com.flansmodultimate.common.driveables.OpticsHud;
 import com.flansmodultimate.common.driveables.OpticsState;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.VehicleOptics;
-import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
@@ -58,7 +59,7 @@ import java.util.OptionalInt;
  * avoiding the legacy loaded-entity scans.</p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class Seat extends Entity implements IControllable, ISeat
+public class Seat extends FlanEntity implements IControllable, ISeat
 {
     private static final EntityDataAccessor<Boolean> DATA_SCOPED = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_SIGHT = SynchedEntityData.defineId(Seat.class, EntityDataSerializers.INT);
@@ -393,11 +394,6 @@ public class Seat extends Entity implements IControllable, ISeat
     }
 
     @Override
-    protected void defineSynchedData()
-    {
-        defineEntityData(new SynchedDataDefinition(entityData));
-    }
-
     protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_SCOPED, false);
@@ -576,11 +572,11 @@ public class Seat extends Entity implements IControllable, ISeat
      * slightly different camera position every network tick.
      */
     @Override
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
+    protected void lerpEntity(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
     {
         if (level().isClientSide && driveable != null)
             return;
-        super.lerpTo(x, y, z, yaw, pitch, steps, teleport);
+        super.lerpEntity(x, y, z, yaw, pitch, steps, teleport);
     }
 
     @Override

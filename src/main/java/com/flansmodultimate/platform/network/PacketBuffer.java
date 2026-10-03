@@ -1,4 +1,4 @@
-package com.flansmodultimate.network;
+package com.flansmodultimate.platform.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 

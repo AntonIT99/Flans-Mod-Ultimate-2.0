@@ -1,6 +1,8 @@
 package com.flansmodultimate.platform.world;
 
 import net.minecraft.Util;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 
@@ -26,5 +28,11 @@ public final class LevelFilePlatform
     public static void safeReplaceFile(Path current, Path latest, Path backup)
     {
         Util.safeReplaceFile(current.toFile(), latest.toFile(), backup.toFile());
+    }
+
+    /** Opens a dimension's entity region without syncing writes; dimension labels are unused on 1.20.1. */
+    public static RegionFile openEntityRegion(Path file, Path directory, ResourceLocation dimension) throws IOException
+    {
+        return new RegionFile(file, directory, false);
     }
 }

@@ -6,6 +6,7 @@ import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.platform.entity.EntityPlatform;
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.Level;
  * the aircraft, holds the throttle-up input and keeps the tank topped up, then normal plane
  * physics fly it — so a flyby that is shot down breaks up like any other plane.</p>
  */
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class FlyByPlaneEntity extends Plane
 {
     /** Marks the skeleton the flyby brought with it, so a despawn takes it along. */

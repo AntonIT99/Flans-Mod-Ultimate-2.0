@@ -1,5 +1,7 @@
 package com.flansmodultimate.common.command;
 
+import com.flansmodultimate.platform.world.LevelFilePlatform;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
@@ -46,7 +48,7 @@ final class SavedFlanEntityScanner
                     Matcher matcher = REGION_NAME.matcher(file.getFileName().toString());
                     if (!matcher.matches())
                         continue;
-                    try (RegionFile region = new RegionFile(file, directory, false))
+                    try (RegionFile region = LevelFilePlatform.openEntityRegion(file, directory, source.dimension()))
                     {
                         int regionX = Integer.parseInt(matcher.group(1));
                         int regionZ = Integer.parseInt(matcher.group(2));

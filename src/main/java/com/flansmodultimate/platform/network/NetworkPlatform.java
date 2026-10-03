@@ -5,7 +5,7 @@ import com.flansmodultimate.network.ClientPacketDispatcher;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.IPacket;
 import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;

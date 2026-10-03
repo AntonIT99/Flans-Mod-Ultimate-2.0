@@ -8,6 +8,8 @@ import net.minecraft.world.entity.Entity;
 /** Version boundary for small fluid API calls whose signatures changed. */
 public final class FluidPlatform
 {
+    public static final int BUCKET_VOLUME = net.minecraftforge.fluids.FluidType.BUCKET_VOLUME;
+
     private FluidPlatform() {}
 
     /** A copy of the fluid stack, including its data, with a different amount. */

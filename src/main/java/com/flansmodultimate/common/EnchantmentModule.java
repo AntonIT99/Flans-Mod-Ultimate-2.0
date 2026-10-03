@@ -1,4 +1,4 @@
-package com.flansmodultimate.common.enchantments;
+package com.flansmodultimate.common;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.FireableGun;
@@ -19,9 +19,11 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
 import java.util.function.Supplier;
 
@@ -203,5 +205,179 @@ public final class EnchantmentModule
     private static boolean isGloveStack(ItemStack stack)
     {
         return !stack.isEmpty() && stack.getItem() instanceof GloveItem;
+    }
+    private static class EnchantmentDuelist extends OffHandDamageEnchantment
+    {
+    }
+
+    private static class EnchantmentJuggernaut extends Enchantment
+    {
+        public EnchantmentJuggernaut()
+        {
+            super(Rarity.VERY_RARE, EnchantmentCategory.ARMOR, new EquipmentSlot[] {
+                EquipmentSlot.HEAD,
+                EquipmentSlot.CHEST,
+                EquipmentSlot.LEGS,
+                EquipmentSlot.FEET
+            });
+        }
+
+        @Override
+        public int getMinCost(int level)
+        {
+            return level * 25;
+        }
+
+        @Override
+        public int getMaxCost(int level)
+        {
+            return getMinCost(level) + 50;
+        }
+
+        @Override
+        public boolean isTreasureOnly()
+        {
+            return true;
+        }
+    }
+
+    private static class EnchantmentLumberjack extends OffHandDamageEnchantment
+    {
+    }
+
+    private static class EnchantmentNimble extends OffHandEnchantment
+    {
+        public EnchantmentNimble()
+        {
+            super(Rarity.UNCOMMON, true);
+        }
+
+        @Override
+        public int getMaxLevel()
+        {
+            return 3;
+        }
+
+        @Override
+        public int getMinCost(int level)
+        {
+            return 5 + (level - 1) * 8;
+        }
+
+        @Override
+        public int getMaxCost(int level)
+        {
+            return getMinCost(level) + 8;
+        }
+    }
+
+    private static class EnchantmentSharpshooter extends OffHandEnchantment
+    {
+        public EnchantmentSharpshooter()
+        {
+            super(Rarity.RARE, false);
+        }
+
+        @Override
+        public int getMaxLevel()
+        {
+            return 3;
+        }
+
+        @Override
+        public int getMinCost(int level)
+        {
+            return 10 + (level - 1) * 10;
+        }
+
+        @Override
+        public int getMaxCost(int level)
+        {
+            return getMinCost(level) + 10;
+        }
+
+        @Override
+        protected boolean checkCompatibility(@NotNull Enchantment other)
+        {
+            return !(other instanceof EnchantmentSharpshooter) && super.checkCompatibility(other);
+        }
+    }
+
+    private static class EnchantmentSteady extends OffHandEnchantment
+    {
+        public EnchantmentSteady()
+        {
+            super(Rarity.UNCOMMON, false);
+        }
+
+        @Override
+        public int getMaxLevel()
+        {
+            return 3;
+        }
+
+        @Override
+        public int getMinCost(int level)
+        {
+            return 5 + (level - 1) * 8;
+        }
+
+        @Override
+        public int getMaxCost(int level)
+        {
+            return getMinCost(level) + 8;
+        }
+    }
+
+    private static abstract class OffHandDamageEnchantment extends OffHandEnchantment
+    {
+        protected OffHandDamageEnchantment()
+        {
+            super(Rarity.COMMON, false);
+        }
+
+        @Override
+        public int getMaxLevel()
+        {
+            return 3;
+        }
+
+        @Override
+        protected boolean checkCompatibility(@NotNull Enchantment other)
+        {
+            return !(other instanceof OffHandDamageEnchantment) && super.checkCompatibility(other);
+        }
+    }
+
+    private static abstract class OffHandEnchantment extends Enchantment
+    {
+        private final boolean glovesOnly;
+
+        protected OffHandEnchantment(Rarity rarity, boolean glovesOnly)
+        {
+            super(rarity, EnchantmentCategory.BREAKABLE, new EquipmentSlot[] { EquipmentSlot.OFFHAND });
+            this.glovesOnly = glovesOnly;
+        }
+
+        @Override
+        public boolean canEnchant(@NotNull ItemStack stack)
+        {
+            return isValidOffHandStack(stack);
+        }
+
+        @Override
+        public boolean canApplyAtEnchantingTable(@NotNull ItemStack stack)
+        {
+            return isValidOffHandStack(stack) || stack.is(Items.BOOK);
+        }
+
+        protected boolean isValidOffHandStack(ItemStack stack)
+        {
+            if (stack.isEmpty())
+                return false;
+            if (stack.getItem() instanceof GloveItem)
+                return true;
+            return !glovesOnly && stack.getItem() instanceof ShieldItem;
+        }
     }
 }

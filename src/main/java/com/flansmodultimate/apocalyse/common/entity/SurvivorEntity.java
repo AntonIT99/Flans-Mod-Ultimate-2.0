@@ -4,6 +4,7 @@ import com.flansmodultimate.apocalyse.common.util.ApocalypseGunCombat;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseGunHelper;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +46,7 @@ import java.util.EnumSet;
  * of that animals and skull drones, and shot at them with a semi-automatic gun it reloaded from
  * two to five spare magazines. It never targets the Skull Boss, which in turn ignores AI gunfire.</p>
  */
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SurvivorEntity extends Monster
 {
     private static final int RESERVE_SLOTS = 5;

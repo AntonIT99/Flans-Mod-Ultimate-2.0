@@ -24,7 +24,7 @@ import com.flansmodultimate.common.digitalammo.DigitalAmmoStorageHandler;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
-import com.flansmodultimate.common.enchantments.EnchantmentModule;
+import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;

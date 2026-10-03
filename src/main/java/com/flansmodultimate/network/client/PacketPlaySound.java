@@ -2,7 +2,7 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.SoundNameCodec;
 import lombok.NoArgsConstructor;

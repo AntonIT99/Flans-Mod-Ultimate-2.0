@@ -5,7 +5,7 @@ import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.network.PacketBuffer;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.world.entity.player.Player;

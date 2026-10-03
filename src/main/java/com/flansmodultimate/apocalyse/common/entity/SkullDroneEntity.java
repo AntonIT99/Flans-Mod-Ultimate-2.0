@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseGunCombat;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseGunHelper;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,6 +38,7 @@ import net.minecraft.world.phys.Vec3;
  * single spare magazine. Explosions, fire and its own side's shots could not hurt it, and it never
  * despawned.</p>
  */
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SkullDroneEntity extends Monster
 {
     /** Per-tick chance of dropping the current target, or of looking for one when idle. */

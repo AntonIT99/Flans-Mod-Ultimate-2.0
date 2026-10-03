@@ -19,7 +19,7 @@ import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.permissions.FlanEntityPermissions;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.EnumMovement;

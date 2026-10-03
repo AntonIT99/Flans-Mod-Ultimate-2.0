@@ -1,18 +1,16 @@
 package com.flansmodultimate.common.entity;
 
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -22,7 +20,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public final class Flag extends Entity implements ITeamObject
+public final class Flag extends FlanSpawnEntity implements ITeamObject
 {
     private static final String NBT_BASE = "base";
     private static final String NBT_CARRIER = "carrier";
@@ -64,12 +61,7 @@ public final class Flag extends Entity implements ITeamObject
     }
 
     @Override
-    protected void defineSynchedData()
-    {
-        defineEntityData(new SynchedDataDefinition(entityData));
-    }
-
-    private void defineEntityData(SynchedDataDefinition data)
+    protected void defineEntityData(SynchedDataDefinition data)
     {
         data.define(DATA_BASE, Optional.empty());
         data.define(DATA_CARRIER, Optional.empty());
@@ -223,13 +215,6 @@ public final class Flag extends Entity implements ITeamObject
             tag.putUUID(NBT_CARRIER, carrierId);
 
         tag.putBoolean(NBT_HOME, isHome()); tag.putInt(NBT_TEAM, getTeamId()); tag.putInt(NBT_COLOUR, getColour()); tag.putInt(NBT_RETURN_TICKS, returnTicks);
-    }
-
-    @Override
-    @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
-    {
-        return NetworkHooks.getEntitySpawningPacket(this);
     }
 
     @Override

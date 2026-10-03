@@ -9,6 +9,7 @@ import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.MechaType;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,6 +37,7 @@ import java.util.Comparator;
  * distance. Everything runs through the ordinary mecha control path, so the machine takes
  * damage, loses parts and drops its contents exactly like a piloted one.</p>
  */
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AiMechaEntity extends Mecha
 {
     private static final String NBT_USING_LEFT = "ai_using_left";
