@@ -2,9 +2,6 @@ package com.flansmodultimate.common.digitalammo;
 
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -12,7 +9,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
-@Mod.EventBusSubscriber
 public final class DigitalAmmoStorageHandler
 {
     private static final String NBT_DIGITAL_AMMO = "flansmod_digital_ammo";
@@ -90,13 +86,12 @@ public final class DigitalAmmoStorageHandler
         }
     }
 
-    @SubscribeEvent
-    public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event)
+    /** Loads and syncs the player's digital ammo when they log in. */
+    public static void onPlayerJoin(Player player)
     {
         if (!isDigitalAmmoEnabled())
             return;
 
-        Player player = event.getEntity();
         if (player == null || player.level().isClientSide)
             return;
 
@@ -108,13 +103,12 @@ public final class DigitalAmmoStorageHandler
         }
     }
 
-    @SubscribeEvent
-    public static void onPlayerLeave(PlayerEvent.PlayerLoggedOutEvent event)
+    /** Saves and forgets the player's digital ammo when they log out. */
+    public static void onPlayerLeave(Player player)
     {
         if (!isDigitalAmmoEnabled())
             return;
 
-        Player player = event.getEntity();
         if (player == null || player.level().isClientSide)
             return;
 
@@ -122,21 +116,21 @@ public final class DigitalAmmoStorageHandler
         PlayerBulletStorage.clearPlayerData(player.getUUID());
     }
 
-    @SubscribeEvent
-    public static void onPlayerSave(PlayerEvent.SaveToFile event)
+    /** Writes the digital ammo into the player data being saved. */
+    public static void onPlayerSave(Player player)
     {
         if (!isDigitalAmmoEnabled())
             return;
 
-        savePlayerAmmo(event.getEntity());
+        savePlayerAmmo(player);
     }
 
-    @SubscribeEvent
-    public static void onPlayerLoad(PlayerEvent.LoadFromFile event)
+    /** Reads the digital ammo from the player data being loaded. */
+    public static void onPlayerLoad(Player player)
     {
         if (!isDigitalAmmoEnabled())
             return;
 
-        loadPlayerAmmo(event.getEntity());
+        loadPlayerAmmo(player);
     }
 }

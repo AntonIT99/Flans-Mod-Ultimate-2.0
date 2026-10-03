@@ -20,6 +20,7 @@ import com.flansmodultimate.common.command.TryTeamCommand;
 import com.flansmodultimate.common.command.VehicleCollisionDebugCommand;
 import com.flansmodultimate.common.command.VehiclePhysicsCommand;
 import com.flansmodultimate.common.command.WorldPhysicsCommand;
+import com.flansmodultimate.common.digitalammo.DigitalAmmoStorageHandler;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
@@ -49,6 +50,7 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketKillMessage;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.world.LootTablePlatform;
 import lombok.AccessLevel;
@@ -63,6 +65,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -292,6 +295,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e)
     {
+        DigitalAmmoStorageHandler.onPlayerJoin(e.getEntity());
         if (e.getEntity() instanceof ServerPlayer sp)
         {
             // Player data outlives the connection, so a player who disconnected while
@@ -334,6 +338,9 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event)
     {
+        // Before the config overrides are cleared, while the digital ammo setting still applies
+        DigitalAmmoStorageHandler.onPlayerLeave(event.getEntity());
+        DigitalAmmoSupplyHandler.clearPlayerCooldown(event.getEntity().getUUID());
         ModCommonConfig.clearServerOverride();
         ModApocalypseConfig.clearServerOverride();
         DriveableCollisionBypass.clear(event.getEntity());
@@ -341,6 +348,25 @@ public final class CommonEventHandler
         regenTimers.remove(event.getEntity().getUUID());
         if (event.getEntity() instanceof ServerPlayer player)
             FlansMod.teamsManager.playerLoggedOut(player);
+    }
+
+    @SubscribeEvent
+    public static void onPlayerSaveToFile(PlayerEvent.SaveToFile event)
+    {
+        DigitalAmmoStorageHandler.onPlayerSave(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLoadFromFile(PlayerEvent.LoadFromFile event)
+    {
+        DigitalAmmoStorageHandler.onPlayerLoad(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event)
+    {
+        if (event.getEntity() instanceof ServerPlayer player && !PlatformEvents.isBlockUseDenied(event))
+            DigitalAmmoSupplyHandler.useSupplyBlock(player, event.getLevel(), event.getPos());
     }
 
     @SubscribeEvent

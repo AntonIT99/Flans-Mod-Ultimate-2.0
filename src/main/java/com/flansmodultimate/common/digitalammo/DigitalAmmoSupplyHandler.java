@@ -3,24 +3,19 @@ package com.flansmodultimate.common.digitalammo;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import com.flansmodultimate.platform.PlatformEvents;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@Mod.EventBusSubscriber
 public final class DigitalAmmoSupplyHandler
 {
     private static final Set<ResourceLocation> supplyBlocks = new HashSet<>();
@@ -79,57 +74,44 @@ public final class DigitalAmmoSupplyHandler
         cooldownPlayers.remove(playerId);
     }
 
-    @SubscribeEvent
-    public static void onPlayerLeave(PlayerEvent.PlayerLoggedOutEvent event)
-    {
-        if (event.getEntity() instanceof ServerPlayer player)
-        {
-            clearPlayerCooldown(player.getUUID());
-        }
-    }
-
-    @SubscribeEvent
-    public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event)
+    /**
+     * Refills the player's digital ammo when they right-click a configured supply block, at most once per
+     * server tick. The caller skips this when another listener denied using the block.
+     */
+    public static void useSupplyBlock(ServerPlayer player, Level level, BlockPos pos)
     {
         if (!isDigitalAmmoEnabled()) return;
 
-        if (event.getLevel().isClientSide()) return;
+        if (level.isClientSide()) return;
 
-        if (event.getEntity() instanceof ServerPlayer player)
+        BlockState state = level.getBlockState(pos);
+        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+
+        if (!isSupplyBlock(blockId)) return;
+
+        UUID playerId = player.getUUID();
+        if (cooldownPlayers.contains(playerId)) return;
+
+        cooldownPlayers.add(playerId);
+
+        int supplyAmount = ModCommonConfig.get().digitalAmmoSupplyAmount();
+        int numTypes = ModCommonConfig.get().digitalAmmoNumTypes();
+
+        PlayerBulletStorage.PlayerBulletData bulletData = PlayerBulletStorage.getBulletDataByPlayer(playerId);
+        int maxAmount = bulletData.getMaxAmount();
+        for (int i = 1; i <= numTypes; i++)
         {
-            if (PlatformEvents.isBlockUseDenied(event)) return;
+            double current = PlayerBulletStorage.getBulletsTypeById(bulletData, i);
+            double newAmount = Math.min(current + supplyAmount, maxAmount);
+            PlayerBulletStorage.setBulletsById(bulletData, i, newAmount);
+        }
 
-            Level level = event.getLevel();
-            BlockPos pos = event.getPos();
-            BlockState state = level.getBlockState(pos);
-            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        PacketSyncDigitalAmmo.syncToClient(player);
 
-            if (!isSupplyBlock(blockId)) return;
-
-            UUID playerId = player.getUUID();
-            if (cooldownPlayers.contains(playerId)) return;
-
-            cooldownPlayers.add(playerId);
-
-            int supplyAmount = ModCommonConfig.get().digitalAmmoSupplyAmount();
-            int numTypes = ModCommonConfig.get().digitalAmmoNumTypes();
-
-            PlayerBulletStorage.PlayerBulletData bulletData = PlayerBulletStorage.getBulletDataByPlayer(playerId);
-            int maxAmount = bulletData.getMaxAmount();
-            for (int i = 1; i <= numTypes; i++)
-            {
-                double current = PlayerBulletStorage.getBulletsTypeById(bulletData, i);
-                double newAmount = Math.min(current + supplyAmount, maxAmount);
-                PlayerBulletStorage.setBulletsById(bulletData, i, newAmount);
-            }
-
-            PacketSyncDigitalAmmo.syncToClient(player);
-
-            net.minecraft.server.MinecraftServer server = level.getServer();
-            if (server != null)
-            {
-                server.execute(() -> cooldownPlayers.remove(playerId));
-            }
+        net.minecraft.server.MinecraftServer server = level.getServer();
+        if (server != null)
+        {
+            server.execute(() -> cooldownPlayers.remove(playerId));
         }
     }
 }
