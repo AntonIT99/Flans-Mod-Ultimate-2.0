@@ -1,15 +1,13 @@
 package com.flansmodultimate.event;
 
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
-import net.minecraftforge.eventbus.api.Cancelable;
-import net.minecraftforge.eventbus.api.Event;
 
 import net.minecraft.world.entity.Entity;
 
-@Cancelable
 @Getter
-public class BulletLockOnEvent extends Event
+public class BulletLockOnEvent extends FlanCancellableEvent
 {
     private final Bullet bullet;
     private final Entity lockedOnTo;

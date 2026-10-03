@@ -1,16 +1,14 @@
 package com.flansmodultimate.event;
 
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.eventbus.api.Cancelable;
-import net.minecraftforge.eventbus.api.Event;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
-@Cancelable
 @Getter
-public class GunReloadEvent extends Event
+public class GunReloadEvent extends FlanCancellableEvent
 {
     private final Entity entity;
     private final ItemStack gunStack;

@@ -1,15 +1,13 @@
 package com.flansmodultimate.event;
 
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
-import net.minecraftforge.eventbus.api.Cancelable;
-import net.minecraftforge.eventbus.api.Event;
 
 import net.minecraft.world.entity.Entity;
 
-@Cancelable
 @Getter
-public class GrenadeProximityEvent extends Event
+public class GrenadeProximityEvent extends FlanCancellableEvent
 {
     private final Grenade grenade;
     private final Entity trigger;

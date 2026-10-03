@@ -31,6 +31,19 @@ class LegacyGameplayConfigTest
         assertTrue(divisor.test(1000) && !divisor.test(1001), "the legacy bltss command accepted 0 to 1000");
     }
 
+    /** Forge lists always accepted an empty list; NeoForge's defineList would replace it with the default. */
+    @Test
+    void commonListSettingsAcceptAnEmptyList()
+    {
+        for (String path : List.of("Penetration System Settings.blocks", "Digital Ammo System Settings.digitalAmmoSupplyBlocks",
+            "World Physics Settings.dimensionGravityFactors", "World Physics Settings.dimensionDragFactors", "Vehicle Fuel Settings.fluidFuels"))
+        {
+            var value = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, ConfigSpecValues.splitPath(path));
+            assertNotNull(value, path + " is missing");
+            assertTrue(value.test(List.of()), path + " rejects an empty list");
+        }
+    }
+
     @Test
     void clientConfigDeclaresTheHitMarkerAndTooltipSettings()
     {

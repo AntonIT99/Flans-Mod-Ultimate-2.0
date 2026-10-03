@@ -1,13 +1,11 @@
 package com.flansmodultimate.event;
 
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
-import net.minecraftforge.eventbus.api.Cancelable;
-import net.minecraftforge.eventbus.api.Event;
 
 import net.minecraft.world.entity.Entity;
 
-@Cancelable
-public class GunFiredEvent extends Event
+public class GunFiredEvent extends FlanCancellableEvent
 {
     @Getter
     private final Entity shooter;

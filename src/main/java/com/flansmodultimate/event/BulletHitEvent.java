@@ -6,17 +6,15 @@ import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.raytracing.hits.DriveableHit;
 import com.flansmodultimate.common.raytracing.hits.EntityHit;
 import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.eventbus.api.Cancelable;
-import net.minecraftforge.eventbus.api.Event;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 
-@Cancelable
 @Getter
-public class BulletHitEvent extends Event
+public class BulletHitEvent extends FlanCancellableEvent
 {
     private final Bullet bullet;
     private final BulletHit hit;

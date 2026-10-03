@@ -1,5 +1,6 @@
 package com.flansmodultimate.platform;
 
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -22,7 +23,7 @@ public final class PlatformEvents
     }
 
     /** Posts a cancellable event and returns whether a listener cancelled it. */
-    public static boolean postCancellable(Event event)
+    public static boolean postCancellable(FlanCancellableEvent event)
     {
         return MinecraftForge.EVENT_BUS.post(event);
     }

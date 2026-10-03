@@ -1,9 +1,8 @@
 package com.flansmodultimate.event;
 
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
-import net.minecraftforge.eventbus.api.Cancelable;
-import net.minecraftforge.eventbus.api.Event;
 
 import net.minecraft.world.entity.player.Player;
 
@@ -12,9 +11,8 @@ import net.minecraft.world.entity.player.Player;
  * driveable seat: by clicking the seat or the hull, or by cycling seats.
  * Cancelling it keeps the player out. It is not posted when a player leaves.
  */
-@Cancelable
 @Getter
-public class PlayerEnterSeatEvent extends Event
+public class PlayerEnterSeatEvent extends FlanCancellableEvent
 {
     private final Seat seat;
     private final Player player;

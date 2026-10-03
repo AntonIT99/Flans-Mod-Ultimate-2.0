@@ -601,11 +601,10 @@ public final class ModCommonConfig
                 "about 1.1 for 7.62x39mm, 1.3 for 7.62x51mm NATO, 2.2 for .50 BMG and 12.6 for an 88mm armour-piercing shell.",
                 "Raise it to make every kinetic round punch through more targets and blocks, lower it to make armour dominate.")
             .defineInRange("kineticPenetrationReference", DEFAULT_KINETIC_PENETRATION_REFERENCE, 0.0, 100.0);
-        PENETRABLE_BLOCKS_RAW = builder
-            .comment("Per-block penetration data.",
-                "Format per line: <namespace:block>; <hardness>; <breaksOnPenetration>",
-                "Example: minecraft:stone; 3.0; false")
-            .defineList("blocks", Collections.emptyList(), String.class::isInstance);
+        builder.comment("Per-block penetration data.",
+            "Format per line: <namespace:block>; <hardness>; <breaksOnPenetration>",
+            "Example: minecraft:stone; 3.0; false");
+        PENETRABLE_BLOCKS_RAW = ConfigSpecValues.defineList(builder, "blocks", Collections.emptyList(), () -> "", String.class::isInstance);
         builder.pop();
 
         builder.push("Digital Ammo System Settings");
@@ -623,25 +622,22 @@ public final class ModCommonConfig
         DIGITAL_AMMO_NUM_TYPES = builder
             .comment("Number of different ammo types supported by the digital ammo system")
             .defineInRange("digitalAmmoNumTypes", 7, 1, 20);
-        DIGITAL_AMMO_SUPPLY_BLOCKS = builder
-            .comment("List of block IDs that act as supply blocks for digital ammo.",
-                "When a player right-clicks these blocks, their digital ammo is replenished.",
-                "Format: namespace:block (e.g., minecraft:iron_block)")
-            .defineList("digitalAmmoSupplyBlocks", Collections.emptyList(), String.class::isInstance);
+        builder.comment("List of block IDs that act as supply blocks for digital ammo.",
+            "When a player right-clicks these blocks, their digital ammo is replenished.",
+            "Format: namespace:block (e.g., minecraft:iron_block)");
+        DIGITAL_AMMO_SUPPLY_BLOCKS = ConfigSpecValues.defineList(builder, "digitalAmmoSupplyBlocks", Collections.emptyList(), () -> "", String.class::isInstance);
         DIGITAL_AMMO_SUPPLY_AMOUNT = builder
             .comment("Amount of ammo to restore for each type when using supply blocks")
             .defineInRange("digitalAmmoSupplyAmount", 100, 1, Integer.MAX_VALUE);
         builder.pop();
 
         builder.push("World Physics Settings");
-        DIMENSION_GRAVITY_FACTORS = builder
-            .comment("Gravity overrides for Flan's physics, formatted as namespace:dimension=factor (0 to 10).",
-                "Unlisted dimensions, including all vanilla dimensions, use 1.")
-            .defineList("dimensionGravityFactors", Collections.emptyList(), ModCommonConfig::validDimensionFactorLine);
-        DIMENSION_DRAG_FACTORS = builder
-            .comment("Drag overrides for Flan's physics, formatted as namespace:dimension=factor (0 to 10).",
-                "Unlisted dimensions, including all vanilla dimensions, use 1.")
-            .defineList("dimensionDragFactors", Collections.emptyList(), ModCommonConfig::validDimensionFactorLine);
+        builder.comment("Gravity overrides for Flan's physics, formatted as namespace:dimension=factor (0 to 10).",
+            "Unlisted dimensions, including all vanilla dimensions, use 1.");
+        DIMENSION_GRAVITY_FACTORS = ConfigSpecValues.defineList(builder, "dimensionGravityFactors", Collections.emptyList(), () -> "minecraft:overworld=1", ModCommonConfig::validDimensionFactorLine);
+        builder.comment("Drag overrides for Flan's physics, formatted as namespace:dimension=factor (0 to 10).",
+            "Unlisted dimensions, including all vanilla dimensions, use 1.");
+        DIMENSION_DRAG_FACTORS = ConfigSpecValues.defineList(builder, "dimensionDragFactors", Collections.emptyList(), () -> "minecraft:overworld=1", ModCommonConfig::validDimensionFactorLine);
         builder.pop();
 
         builder.push("Vehicle Physics Settings");
@@ -740,15 +736,14 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Vehicle Fuel Settings");
-        FLUID_FUELS_RAW = builder
-            .comment("Liquid fuels a driveable will burn out of its fuel or cargo slots.",
-                "Any container exposing Forge's fluid handler capability works, buckets included; no mod is required.",
-                "Format per line: <namespace:fluid>; <fuel per bucket>",
-                "A trailing * on the fluid path matches every fluid starting with it, which covers grade and heat variants.",
-                "For scale, the Parts pack Fuel Can holds 1000 fuel and vehicle tanks are usually 1000 to 6000.",
-                "The first matching line wins, so put a specific fluid above a wildcard to override it.",
-                "The defaults cover BuildCraft's oil and fuel families at their 1.7.10 values.")
-            .defineList("fluidFuels", DEFAULT_FLUID_FUELS, String.class::isInstance);
+        builder.comment("Liquid fuels a driveable will burn out of its fuel or cargo slots.",
+            "Any container exposing Forge's fluid handler capability works, buckets included; no mod is required.",
+            "Format per line: <namespace:fluid>; <fuel per bucket>",
+            "A trailing * on the fluid path matches every fluid starting with it, which covers grade and heat variants.",
+            "For scale, the Parts pack Fuel Can holds 1000 fuel and vehicle tanks are usually 1000 to 6000.",
+            "The first matching line wins, so put a specific fluid above a wildcard to override it.",
+            "The defaults cover BuildCraft's oil and fuel families at their 1.7.10 values.");
+        FLUID_FUELS_RAW = ConfigSpecValues.defineList(builder, "fluidFuels", DEFAULT_FLUID_FUELS, () -> "", String.class::isInstance);
         builder.pop();
 
         builder.push("Vehicle Damage Settings");
