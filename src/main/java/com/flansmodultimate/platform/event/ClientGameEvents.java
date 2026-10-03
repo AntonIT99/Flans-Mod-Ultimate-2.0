@@ -41,7 +41,9 @@ public final class ClientGameEvents
     @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent event)
     {
-        if (event.phase == TickEvent.Phase.END)
+        if (event.phase == TickEvent.Phase.START)
+            ClientEventHandler.onRenderFrameStart();
+        else
             ClientEventHandler.onRenderTick();
     }
 

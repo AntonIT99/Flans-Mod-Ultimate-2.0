@@ -395,7 +395,7 @@ public final class ModClientConfig
 
         builder.push("Entity Rendering Settings");
         ENABLE_GPU_MODEL_CACHE = builder
-            .comment("Experimental GPU cache for rigid full-detail vehicle and gun model parts. Uses up to 64 MiB of vertex buffers and keeps animated transforms, tint and lighting live. Unsupported geometry, sorted transparency, Fabulous graphics and known shader integrations use the standard renderer. Disable if rendering artifacts or slower frame times occur. No restart required.")
+            .comment("Experimental GPU cache for rigid full-detail vehicle and gun model parts. Uses up to 64 MiB of vertex buffers and keeps animated transforms, tint and lighting live. Unsupported geometry, sorted transparency, Fabulous graphics, OptiFine and active Oculus/Iris shader packs use the standard renderer. Disable if rendering artifacts or slower frame times occur. No restart required.")
             .define("enableGpuModelCache", true);
         BULLET_RENDER_DISTANCE = builder
             .comment("Client-side render distance in blocks for bullets.")

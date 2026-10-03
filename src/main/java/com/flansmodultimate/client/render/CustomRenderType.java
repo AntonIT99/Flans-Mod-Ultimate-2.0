@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
+import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -22,7 +23,7 @@ import java.util.function.Function;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CustomRenderType
 {
-    private record TexDepthCullKey(ResourceLocation texture, boolean depthWrite, boolean cull) {}
+    private record TexDepthCullKey(ResourceLocation texture, boolean depthWrite, boolean cull, boolean shaderPack) {}
     private record TexCullKey(ResourceLocation texture, boolean cull) {}
     private static final LinkedHashMap<ResourceLocation, RenderType[]> GPU_MODELS = new LinkedHashMap<>(64, 0.75F, true);
 
@@ -86,8 +87,8 @@ public class CustomRenderType
             }
         );
 
-    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), key.cull(), EMISSIVE_ALPHA_TRANSPARENCY, key.depthWrite() ? "entity_emissive_alpha" : "entity_emissive_alpha_no_depth_write"));
-    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key -> createEntityEmissive(key.texture(), key.depthWrite(), key.cull(), EMISSIVE_ADDITIVE_TRANSPARENCY, key.depthWrite() ? "entity_emissive_additive" : "entity_emissive_additive_no_depth_write"));
+    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ALPHA = Util.memoize(key -> createEntityEmissive(key, EMISSIVE_ALPHA_TRANSPARENCY, key.depthWrite() ? "entity_emissive_alpha" : "entity_emissive_alpha_no_depth_write"));
+    private static final Function<TexDepthCullKey, RenderType> ENTITY_EMISSIVE_ADDITIVE = Util.memoize(key -> createEntityEmissive(key, EMISSIVE_ADDITIVE_TRANSPARENCY, key.depthWrite() ? "entity_emissive_additive" : "entity_emissive_additive_no_depth_write"));
     private static final Function<TexCullKey, RenderType> ENTITY_TRANSLUCENT_UNSORTED = Util.memoize(key -> createEntityTranslucentUnsorted(key.texture(), key.cull()));
     private static final Function<TexCullKey, RenderType> ARMOR_CUTOUT = Util.memoize(key -> createArmorCutout(key.texture(), key.cull()));
     private static final Function<TexCullKey, RenderType> ARMOR_TRANSLUCENT = Util.memoize(key -> createArmorTranslucent(key.texture(), key.cull(), true));
@@ -107,21 +108,35 @@ public class CustomRenderType
             }
         );
 
-    private static RenderType createEntityEmissive(ResourceLocation texture, boolean depthWrite, boolean cull, RenderStateShard.TransparencyStateShard transparency, String debugName)
+    /**
+     * Vanilla draws glow as texture times colour, ignoring light and fog. Shader mods map that shader to their text
+     * program, which lights it like an ordinary surface, so glow would darken at night. With a pack active, the
+     * translucent emissive entity shader selects the pack's glowing-entity program instead; it needs the entity
+     * vertex format, which every glow renderer already writes in full.
+     */
+    private static RenderType createEntityEmissive(TexDepthCullKey key, RenderStateShard.TransparencyStateShard transparency, String debugName)
     {
-        RenderStateShard.WriteMaskStateShard writeMask = new RenderStateShard.WriteMaskStateShard(true, depthWrite);
+        RenderStateShard.WriteMaskStateShard writeMask = new RenderStateShard.WriteMaskStateShard(true, key.depthWrite());
         RenderType.CompositeState state = RenderType.CompositeState.builder()
-            .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexLightmapShader))
-            .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+            .setShaderState(new RenderStateShard.ShaderStateShard(key.shaderPack()
+                ? GameRenderer::getRendertypeEntityTranslucentEmissiveShader : GameRenderer::getPositionColorTexLightmapShader))
+            .setTextureState(new RenderStateShard.TextureStateShard(key.texture(), false, false))
             .setTransparencyState(transparency)
-            .setCullState(new RenderStateShard.CullStateShard(cull))
+            .setCullState(new RenderStateShard.CullStateShard(key.cull()))
             .setLightmapState(new RenderStateShard.LightmapStateShard(true))
             .setOverlayState(new RenderStateShard.OverlayStateShard(true))
             .setWriteMaskState(writeMask)
             .setDepthTestState(new RenderStateShard.DepthTestStateShard("<=", GL11C.GL_LEQUAL))
             .createCompositeState(true);
 
-        return RenderType.create(cull ? debugName + "_cull" : debugName, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 256, true, true, state);
+        String name = (key.cull() ? debugName + "_cull" : debugName) + (key.shaderPack() ? "_shader_pack" : "");
+        return RenderType.create(name, key.shaderPack() ? DefaultVertexFormat.NEW_ENTITY : DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+            VertexFormat.Mode.QUADS, 256, true, true, state);
+    }
+
+    private static TexDepthCullKey emissiveKey(ResourceLocation texture, boolean depthWrite, boolean cull)
+    {
+        return new TexDepthCullKey(texture, depthWrite, cull, ShaderPlatform.isShaderPackInUse());
     }
 
     private static RenderType createEntityTranslucentUnsorted(ResourceLocation texture, boolean cull)
@@ -181,7 +196,7 @@ public class CustomRenderType
 
     public static RenderType entityEmissiveAlpha(ResourceLocation tex, boolean cull)
     {
-        return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthCullKey(tex, true, cull));
+        return ENTITY_EMISSIVE_ALPHA.apply(emissiveKey(tex, true, cull));
     }
 
     /** Emissive alpha-blended layer (does NOT write depth) */
@@ -192,7 +207,7 @@ public class CustomRenderType
 
     public static RenderType entityEmissiveAlphaNoDepthWrite(ResourceLocation tex, boolean cull)
     {
-        return ENTITY_EMISSIVE_ALPHA.apply(new TexDepthCullKey(tex, false, cull));
+        return ENTITY_EMISSIVE_ALPHA.apply(emissiveKey(tex, false, cull));
     }
 
     /** Emissive additive layer (writes depth) */
@@ -203,7 +218,7 @@ public class CustomRenderType
 
     public static RenderType entityEmissiveAdditive(ResourceLocation tex, boolean cull)
     {
-        return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(tex, true, cull));
+        return ENTITY_EMISSIVE_ADDITIVE.apply(emissiveKey(tex, true, cull));
     }
 
     /** Emissive additive layer (does NOT write depth) */
@@ -214,7 +229,7 @@ public class CustomRenderType
 
     public static RenderType entityEmissiveAdditiveNoDepthWrite(ResourceLocation tex, boolean cull)
     {
-        return ENTITY_EMISSIVE_ADDITIVE.apply(new TexDepthCullKey(tex, false, cull));
+        return ENTITY_EMISSIVE_ADDITIVE.apply(emissiveKey(tex, false, cull));
     }
 
     public static RenderType entityTranslucentUnsorted(ResourceLocation tex, boolean cull)

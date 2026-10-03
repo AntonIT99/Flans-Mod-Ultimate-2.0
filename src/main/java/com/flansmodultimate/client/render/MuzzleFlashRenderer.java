@@ -12,6 +12,7 @@ import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -64,10 +65,15 @@ public final class MuzzleFlashRenderer
         return new Vector3f(point.x * scale, point.y * scale, point.z * scale);
     }
 
-    /** Pose is already at the physical muzzle. The 1.12.2 model keeps its historical fixed size. */
+    /**
+     * Pose is already at the physical muzzle. The 1.12.2 model keeps its historical fixed size.
+     * A flash is light, not an occluder, so it is left out of a shader pack's shadow map.
+     */
     public static void render(ModelBase model, @Nullable GunType gun, int frame, float flashScale,
                               PoseStack poseStack, MultiBufferSource buffer, int packedOverlay)
     {
+        if (ShaderPlatform.isRenderingShadowPass())
+            return;
         if (model instanceof ModelFlash flash)
         {
             ResourceLocation texture = model == DEFAULT_FLASH ? FlansMod.TEXTURE_DEFAULTFLASH : gun.getFlashTexture();

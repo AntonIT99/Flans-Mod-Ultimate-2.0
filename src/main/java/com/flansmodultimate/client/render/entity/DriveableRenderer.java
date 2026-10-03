@@ -43,6 +43,7 @@ import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
+import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -129,7 +130,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         history.advance(driveable, type);
         history.updateModelAimPivots(driveable, type, model);
         boolean thermalMask = VehicleThermalRenderer.isRenderingMask();
-        if (!thermalMask)
+        boolean shadowPass = ShaderPlatform.isRenderingShadowPass();
+        if (!thermalMask && !shadowPass)
             renderDiagnosticMarkers(driveable, type);
         ResourceLocation texture = getTextureLocation(driveable);
         boolean translucent = ModClientConfig.get().useTranslucentRendering(type);
@@ -166,12 +168,18 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         DriveableImpostorCache.Result lodResult = DriveableImpostorCache.Result.notRendered();
         if (!preview && !locallyControlled)
         {
+            // A shader pack's shadow pass sees the same camera distance and projection, but must not
+            // replace the main pass's decision. A camera-facing billboard would also cast an edge-on
+            // shadow, so a driveable drawn as an impostor casts none.
+            if (shadowPass && history.usingImpostor)
+                return;
             lodResult = DriveableImpostorCache.renderOrPrepare(
                 model, type, texture, translucent, cull, red, green, blue,
                 poseStack, buffer, packedLight, projectionPixels, cameraDistance,
                 cameraOffset, entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(),
-                !(driveable instanceof Mecha) && !locallyControlled && intact, history.usingImpostor);
-            history.usingImpostor = lodResult.usingImpostor();
+                !shadowPass && !(driveable instanceof Mecha) && intact, history.usingImpostor);
+            if (!shadowPass)
+                history.usingImpostor = lodResult.usingImpostor();
             if (lodResult.rendered())
             {
                 DriveableMuzzleFlashes.render(driveable, poseStack, buffer);
@@ -234,12 +242,17 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 (float)ModClientConfig.get().maximumDriveableLodPartPixelSize,
                 (float)ModClientConfig.get().driveableLodDetailMultiplier, cameraDistance, distanceScale);
         }
-        int trackLinkGroup = !preview && !locallyControlled && ModClientConfig.get().enableDriveableLod
-            && model instanceof ModelVehicle vehicleModel
-            ? vehicleModel.selectTrackLinkGroup(type, projectionPixels, modelOriginDistance(poseStack), modelScaleBound(poseStack),
-                (float)ModClientConfig.get().driveableTrackLinkLodPixelSize,
-                (float)ModClientConfig.get().driveableTrackLinkGroupingPixelSize, history.trackLinkGroup) : 0;
-        history.trackLinkGroup = trackLinkGroup;
+        int trackLinkGroup = 0;
+        if (!preview && !locallyControlled && ModClientConfig.get().enableDriveableLod
+            && model instanceof ModelVehicle vehicleModel)
+            // The shadow view's model distance is measured from the sun, not the camera.
+            // Reuse the main pass's choice so neither its hysteresis nor the shadow changes.
+            trackLinkGroup = shadowPass ? history.trackLinkGroup
+                : vehicleModel.selectTrackLinkGroup(type, projectionPixels, modelOriginDistance(poseStack), modelScaleBound(poseStack),
+                    (float)ModClientConfig.get().driveableTrackLinkLodPixelSize,
+                    (float)ModClientConfig.get().driveableTrackLinkGroupingPixelSize, history.trackLinkGroup);
+        if (!shadowPass)
+            history.trackLinkGroup = trackLinkGroup;
         int previousTrackGroup = TrackLinkLod.activeGroup();
         TrackLinkLod.setGroup(trackLinkGroup);
         boolean useScreenSpaceCulling = minimumPartPixels > 0F;

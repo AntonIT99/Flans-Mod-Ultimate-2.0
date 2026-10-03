@@ -28,6 +28,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -44,8 +45,11 @@ import java.util.List;
  * Lazily generated far-distance driveable impostors.
  *
  * <p>Every atlas cell is captured independently and at most one cell is generated
- * per client tick. Until a requested view is ready, callers retain the exact model
- * renderer. The cache is render-thread-only and deliberately excludes entity state:
+ * per client tick. Rendering only requests a cell; it is captured at the start of the
+ * next frame, outside level rendering, so neither fog, the current view's lighting nor
+ * a shader mod's world and shadow passes can reach the atlas. Until a requested view is
+ * ready, callers retain the exact model renderer. The cache is render-thread-only and
+ * deliberately excludes entity state:
  * captures use the existing neutral preview renderer so damaged or animated entities
  * cannot contaminate other instances of the same model and paintjob.</p>
  */
@@ -58,6 +62,9 @@ public final class DriveableImpostorCache
     private static final float HYSTERESIS = 1.2F;
     private static final float PREWARM_MULTIPLIER = 2F;
     private static final long CACHE_RETENTION_MILLIS = 2_000L;
+    /** Vanilla's level light directions, before the view rotation is applied. */
+    private static final Vector3f LEVEL_LIGHT_0 = new Vector3f(0.2F, 1F, -0.7F).normalize();
+    private static final Vector3f LEVEL_LIGHT_1 = new Vector3f(-0.2F, 1F, 0.7F).normalize();
 
     /** Small MRU list; reverse lookup avoids allocating a cache key for every rendered entity. */
     private static final List<Entry> entries = new ArrayList<>(16);
@@ -68,6 +75,11 @@ public final class DriveableImpostorCache
     private static final ImpostorAtlasBlitter atlasBlitter = new ImpostorAtlasBlitter();
     private static Settings settings;
     private static long lastCaptureTick = Long.MIN_VALUE;
+    /** The first cell requested since the last capture, captured before the next frame. */
+    @Nullable
+    private static Entry pendingEntry;
+    private static int pendingYawIndex;
+    private static int pendingPitchIndex;
 
     public record Result(boolean rendered, boolean usingImpostor, float projectedPixelDiameter, float modelRadius)
     {
@@ -135,8 +147,12 @@ public final class DriveableImpostorCache
             && projectedPixels <= impostorThreshold * PREWARM_MULTIPLIER;
         if (maximumDistance > 0F)
             withinPrewarmRange |= cameraDistance >= maximumDistance / PREWARM_MULTIPLIER;
-        if (!entry.captured[cellIndex] && withinPrewarmRange)
-            captureOneCell(entry, yawIndex, pitchIndex, cellIndex);
+        if (!entry.captured[cellIndex] && withinPrewarmRange && pendingEntry == null)
+        {
+            pendingEntry = entry;
+            pendingYawIndex = yawIndex;
+            pendingPitchIndex = pitchIndex;
+        }
 
         if (!entry.captured[cellIndex] || cameraDistance < minimumDistance
             || !DriveableLodPolicy.withinImageQuality(projectedPixels, settings.resolution(), wasUsingImpostor)
@@ -237,16 +253,37 @@ public final class DriveableImpostorCache
         return bounds;
     }
 
-    private static void captureOneCell(Entry entry, int yawIndex, int pitchIndex, int cellIndex)
+    /**
+     * Captures the cell requested while rendering. Call at the start of a frame, before
+     * any level rendering, with the main render target bound.
+     */
+    public static void capturePending()
     {
+        Entry entry = pendingEntry;
+        if (entry == null)
+            return;
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
+        {
+            pendingEntry = null;
             return;
+        }
         long gameTick = minecraft.level.getGameTime();
         if (lastCaptureTick == gameTick)
             return;
+        pendingEntry = null;
+        // Eviction or a settings change may have released the entry since the request.
+        if (entry.failed || !entries.contains(entry))
+            return;
+        int cellIndex = pendingPitchIndex * settings.yawAngles() + pendingYawIndex;
+        if (entry.captured[cellIndex])
+            return;
         lastCaptureTick = gameTick;
+        captureOneCell(entry, pendingYawIndex, pendingPitchIndex, cellIndex);
+    }
 
+    private static void captureOneCell(Entry entry, int yawIndex, int pitchIndex, int cellIndex)
+    {
         try
         {
             ensureAtlas(entry);
@@ -296,6 +333,11 @@ public final class DriveableImpostorCache
             capturePose.mulPose(Axis.XP.rotationDegrees(CAPTURE_PITCH[pitchIndex]));
             capturePose.mulPose(Axis.YP.rotationDegrees(360F * yawIndex / settings.yawAngles()));
             capturePose.translate(-entry.bounds.centerX(), -entry.bounds.centerY(), -entry.bounds.centerZ());
+            // Light every cell from above as in the level, rotated into this view, and without fog.
+            Matrix4f view = capturePose.last().pose();
+            RenderSystem.setShaderLights(view.transformDirection(new Vector3f(LEVEL_LIGHT_0)),
+                view.transformDirection(new Vector3f(LEVEL_LIGHT_1)));
+            FogRenderer.setupNoFog();
 
             if (captureBuffer == null)
                 captureBuffer = VertexPlatform.immediateBuffers(32_768);
@@ -447,6 +489,7 @@ public final class DriveableImpostorCache
             release(entry);
         entries.clear();
         boundsCache.clear();
+        pendingEntry = null;
         captureBuffer = null;
         atlasBlitter.close();
         if (captureTarget != null)
