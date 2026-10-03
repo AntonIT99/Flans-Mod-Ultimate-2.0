@@ -1,7 +1,7 @@
 package com.flansmod.client.tmt;
 
+import com.flansmodultimate.client.render.EntityVertexBatch;
 import com.flansmodultimate.client.render.gpu.GeometryRevision;
-import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Matrix3f;
@@ -387,7 +387,7 @@ public class TexturedPolygon
         final float transformedY = positionMatrix.m01() * localX + positionMatrix.m11() * localY + positionMatrix.m21() * localZ + positionMatrix.m31();
         final float transformedZ = positionMatrix.m02() * localX + positionMatrix.m12() * localY + positionMatrix.m22() * localZ + positionMatrix.m32();
 
-        VertexPlatform.vertex(vertexConsumer, transformedX, transformedY, transformedZ, red, green, blue, alpha, textureX, textureY, packedOverlay, finalLight, normalX, normalY, normalZ);
+        EntityVertexBatch.vertex(vertexConsumer, transformedX, transformedY, transformedZ, red, green, blue, alpha, textureX, textureY, packedOverlay, finalLight, normalX, normalY, normalZ);
     }
 
     private static final class RenderScratch

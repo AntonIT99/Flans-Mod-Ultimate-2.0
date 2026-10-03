@@ -1,5 +1,6 @@
 package com.flansmodultimate.client.render.gpu;
 
+import com.flansmodultimate.client.render.EntityVertexBatch;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.NotNull;
@@ -135,22 +136,31 @@ final class RigidBatch implements RigidGeometryConsumer
             {
                 fallback = backend.fallback();
                 needsBarrier = true;
-                for (int i = 0; i < key.count; i++)
+                boolean batched = EntityVertexBatch.begin(fallback);
+                try
                 {
-                    if (!ranges.visible[i]) continue;
-                    if (RenderDiagnostics.enabled) RenderDiagnostics.fallbackVertices += key.geometries[i].vertexCount();
-                    int palette = key.paletteIndices[i];
-                    int offset = palette * 16;
-                    fallbackPose.pose().set(poses, offset);
-                    offset = palette * 8;
-                    int normalOffset = palette * 9;
-                    fallbackPose.normal().set(normals[normalOffset], normals[normalOffset + 1], normals[normalOffset + 2],
-                        normals[normalOffset + 3], normals[normalOffset + 4], normals[normalOffset + 5],
-                        normals[normalOffset + 6], normals[normalOffset + 7], normals[normalOffset + 8]);
-                    int light = (int)data[offset + 4] | (int)data[offset + 5] << 16;
-                    int overlay = (int)data[offset + 6] | (int)data[offset + 7] << 16;
-                    key.geometries[i].draw(fallbackPose, fallback, light, overlay,
-                        data[offset], data[offset + 1], data[offset + 2], data[offset + 3]);
+                    for (int i = 0; i < key.count; i++)
+                    {
+                        if (!ranges.visible[i]) continue;
+                        if (RenderDiagnostics.enabled) RenderDiagnostics.fallbackVertices += key.geometries[i].vertexCount();
+                        int palette = key.paletteIndices[i];
+                        int offset = palette * 16;
+                        fallbackPose.pose().set(poses, offset);
+                        offset = palette * 8;
+                        int normalOffset = palette * 9;
+                        fallbackPose.normal().set(normals[normalOffset], normals[normalOffset + 1], normals[normalOffset + 2],
+                            normals[normalOffset + 3], normals[normalOffset + 4], normals[normalOffset + 5],
+                            normals[normalOffset + 6], normals[normalOffset + 7], normals[normalOffset + 8]);
+                        int light = (int)data[offset + 4] | (int)data[offset + 5] << 16;
+                        int overlay = (int)data[offset + 6] | (int)data[offset + 7] << 16;
+                        key.geometries[i].draw(fallbackPose, fallback, light, overlay,
+                            data[offset], data[offset + 1], data[offset + 2], data[offset + 3]);
+                    }
+                }
+                finally
+                {
+                    if (batched)
+                        EntityVertexBatch.end();
                 }
             }
         }

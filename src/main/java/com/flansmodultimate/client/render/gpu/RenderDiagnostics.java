@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.render.gpu;
 
+import com.flansmodultimate.platform.render.VertexWriterPlatform;
+
 /** Opt-in render-thread counters. No timers or per-draw allocations. */
 public final class RenderDiagnostics
 {
@@ -7,6 +9,7 @@ public final class RenderDiagnostics
     static long hits, misses, uploads, uploadBytes, evictions, throttled;
     static long draws, ranges, vertices, submittedParts, culledParts, fallbackVertices, excludedScopes;
     private static long shadowDriveables, shadowImpostors, shadowParts, shadowCulledParts, shadowEntitiesSkipped;
+    private static long bulkWrites, bulkVertices;
 
     private RenderDiagnostics() {}
 
@@ -17,6 +20,7 @@ public final class RenderDiagnostics
         hits = misses = uploads = uploadBytes = evictions = throttled = 0;
         draws = ranges = vertices = submittedParts = culledParts = fallbackVertices = excludedScopes = 0;
         shadowDriveables = shadowImpostors = shadowParts = shadowCulledParts = shadowEntitiesSkipped = 0;
+        bulkWrites = bulkVertices = 0;
     }
 
     /** A driveable in a shader pack's shadow pass, drawn or left out because the view shows its impostor. */
@@ -41,6 +45,20 @@ public final class RenderDiagnostics
         if (enabled) shadowEntitiesSkipped++;
     }
 
+    /** A batch of model vertices handed to Sodium's or Embeddium's bulk vertex writer. */
+    public static void countBulkWrite(int vertexCount)
+    {
+        if (!enabled) return;
+        bulkWrites++;
+        bulkVertices += vertexCount;
+    }
+
+    private static String bulkWriter()
+    {
+        String renderer = VertexWriterPlatform.rendererName();
+        return renderer == null ? "no Sodium or Embeddium writer" : renderer;
+    }
+
     public static String report()
     {
         return "Flan render counters (" + (enabled ? "recording" : "stopped") + "): cache hits/misses "
@@ -51,6 +69,7 @@ public final class RenderDiagnostics
             + "; shadow pass driveables drawn/impostors left out " + shadowDriveables + "/" + shadowImpostors
             + ", parts/size-culled " + shadowParts + "/" + shadowCulledParts
             + ", projectiles and proxies left out " + shadowEntitiesSkipped
+            + "; bulk vertex writes/vertices " + bulkWrites + "/" + bulkVertices + " (" + bulkWriter() + ")"
             + ". " + GpuModelCache.status();
     }
 }
