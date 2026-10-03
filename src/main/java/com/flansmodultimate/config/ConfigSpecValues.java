@@ -82,6 +82,13 @@ public final class ConfigSpecValues
         return entry instanceof ForgeConfigSpec.ConfigValue<?> value ? value : null;
     }
 
+    /** The type, default and range of the entry at the given path, or null when the spec has no such entry. */
+    @Nullable
+    public static ForgeConfigSpec.ValueSpec valueSpec(ForgeConfigSpec spec, List<String> path)
+    {
+        return spec.get(path);
+    }
+
     /**
      * Writes one value into the spec after checking that the spec accepts it, so a client cannot put a
      * value the server's own config would reject into it.
@@ -91,7 +98,7 @@ public final class ConfigSpecValues
     @SuppressWarnings("unchecked")
     public static boolean apply(ForgeConfigSpec spec, List<String> path, Object newValue)
     {
-        ForgeConfigSpec.ValueSpec valueSpec = spec.get(path);
+        ForgeConfigSpec.ValueSpec valueSpec = valueSpec(spec, path);
         ForgeConfigSpec.ConfigValue<?> value = find(spec, path);
         if (valueSpec == null || value == null || !spec.isLoaded())
         {

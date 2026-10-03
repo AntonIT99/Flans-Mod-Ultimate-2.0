@@ -81,6 +81,7 @@ import com.flansmodultimate.network.client.PacketDriveableRenderState;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.fluid.FluidPlatform;
@@ -5573,7 +5574,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         // wheel probes alone lift the hull by the average of all wheels, so a
         // ledge met by a single wheel at an angle stalled it. Wheels on the
         // ground are what lets the body step; move() recomputes onGround.
-        if (!onGround() && getStepHeight() > 0F && hasWheelContact() && stepsOnWheelContact())
+        if (!onGround() && EntityPlatform.stepHeight(this) > 0F && hasWheelContact() && stepsOnWheelContact())
             setOnGround(true);
         move(MoverType.SELF, velocity);
         // A wheel or crewed seat stopped at a wall is a collision like the body striking it
@@ -5605,7 +5606,7 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         List<AABB> probes = new ArrayList<>();
         if (configType == null)
             return probes;
-        double stepLift = DriveableTerrainProbes.stepLift(getStepHeight());
+        double stepLift = DriveableTerrainProbes.stepLift(EntityPlatform.stepHeight(this));
         for (int index = 0; index < configType.getWheelPositions().size(); index++)
         {
             DriveablePosition wheel = configType.getWheelPosition(index);
