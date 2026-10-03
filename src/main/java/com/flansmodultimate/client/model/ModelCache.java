@@ -18,6 +18,7 @@ import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.render.ShaderPlatform;
 import com.flansmodultimate.util.LogUtils;
 import com.flansmodultimate.util.ModelClassResolver;
 import com.flansmodultimate.util.ModelClassResolver.ModelClassLocation;
@@ -53,6 +54,7 @@ public final class ModelCache
 
     private static final Map<ModelCacheKey, Optional<IModelBase>> cache = new ConcurrentHashMap<>();
     private static final Map<IModelBase, List<EnumRenderPass>> renderPassCache = new ConcurrentHashMap<>();
+    private static final Map<IModelBase, List<EnumRenderPass>> shadowPassCache = new ConcurrentHashMap<>();
 
     public static void reload()
     {
@@ -61,6 +63,7 @@ public final class ModelCache
         ModelTextureFitter.clear();
         cache.clear();
         renderPassCache.clear();
+        shadowPassCache.clear();
         if (ModClientConfig.get().loadAllModelsInCache)
             loadAll();
     }
@@ -183,11 +186,21 @@ public final class ModelCache
     /**
      * Returns only the render passes represented by this model's immutable part flags.
      * Legacy renderers previously traversed the complete model four times even when it
-     * contained no glow geometry.
+     * contained no glow geometry. A shader pack's shadow pass gets only the passes that
+     * {@linkplain EnumRenderPass#castsShadow() cast a shadow}.
      */
     public static List<EnumRenderPass> getRenderPasses(IModelBase model)
     {
-        return renderPassCache.computeIfAbsent(model, ModelCache::findRenderPasses);
+        List<EnumRenderPass> passes = renderPassCache.computeIfAbsent(model, ModelCache::findRenderPasses);
+        if (!ShaderPlatform.isRenderingShadowPass())
+            return passes;
+        List<EnumRenderPass> shadowPasses = shadowPassCache.get(model);
+        if (shadowPasses == null)
+        {
+            shadowPasses = passes.stream().filter(EnumRenderPass::castsShadow).toList();
+            shadowPassCache.put(model, shadowPasses);
+        }
+        return shadowPasses;
     }
 
     private static List<EnumRenderPass> findRenderPasses(IModelBase model)

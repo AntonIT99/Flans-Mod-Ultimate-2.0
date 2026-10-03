@@ -4,6 +4,7 @@ import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelRenderer;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.gpu.GeometryRevision;
+import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
 import com.flansmodultimate.client.render.gpu.RigidGeometry;
 import com.flansmodultimate.client.render.gpu.RigidGeometryConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -2563,8 +2564,25 @@ public class ModelRendererTurbo extends ModelRenderer
         ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
         state.minimumPixelDiameter = minimumPixelDiameter;
         state.projectionPixels = projectionPixels;
+        state.fixedScale = false;
         double factor = 1D + 2D * projectionPixels / minimumPixelDiameter;
         state.thresholdFactorSquared = factor * factor * 1.00001D;
+    }
+
+    /**
+     * Like {@link #beginScreenSpaceCulling}, but at a fixed number of pixels per block instead of
+     * the view's perspective, for a view whose depths do not measure on-screen size: a shader
+     * pack's shadow map, which the caller sizes by the camera's distance to the model. Parts
+     * tested in this mode count as shadow-pass parts in render diagnostics.
+     */
+    public static void beginFixedScaleCulling(float minimumPixelDiameter, float pixelsPerBlock)
+    {
+        ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
+        state.minimumPixelDiameter = minimumPixelDiameter;
+        state.projectionPixels = pixelsPerBlock;
+        state.fixedScale = true;
+        double radius = minimumPixelDiameter / (2D * pixelsPerBlock);
+        state.culledRadiusSquared = radius * radius / 1.00001D;
     }
 
     public static void endScreenSpaceCulling()
@@ -2572,6 +2590,7 @@ public class ModelRendererTurbo extends ModelRenderer
         ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
         state.minimumPixelDiameter = 0F;
         state.projectionPixels = 0F;
+        state.fixedScale = false;
     }
 
     private boolean isBelowScreenSize(PoseStack.Pose pose)
@@ -2585,10 +2604,6 @@ public class ModelRendererTurbo extends ModelRenderer
             return false;
 
         Matrix4f matrix = pose.pose();
-        float centerX = matrix.m00() * boundsCenterX + matrix.m10() * boundsCenterY + matrix.m20() * boundsCenterZ + matrix.m30();
-        float centerY = matrix.m01() * boundsCenterX + matrix.m11() * boundsCenterY + matrix.m21() * boundsCenterZ + matrix.m31();
-        float centerZ = matrix.m02() * boundsCenterX + matrix.m12() * boundsCenterY + matrix.m22() * boundsCenterZ + matrix.m32();
-
         float scaleX = matrix.m00() * matrix.m00() + matrix.m01() * matrix.m01() + matrix.m02() * matrix.m02();
         float scaleY = matrix.m10() * matrix.m10() + matrix.m11() * matrix.m11() + matrix.m12() * matrix.m12();
         float scaleZ = matrix.m20() * matrix.m20() + matrix.m21() * matrix.m21() + matrix.m22() * matrix.m22();
@@ -2599,6 +2614,17 @@ public class ModelRendererTurbo extends ModelRenderer
         float yz = Math.abs(matrix.m10() * matrix.m20() + matrix.m11() * matrix.m21() + matrix.m12() * matrix.m22());
         double scaleSquared = Math.max(scaleX + xy + xz, Math.max(scaleY + xy + yz, scaleZ + xz + yz));
         double radiusSquared = (double)boundsRadius * boundsRadius * scaleSquared;
+        if (state.fixedScale)
+        {
+            // 2*r*pixelsPerBlock < threshold iff r < threshold/(2*pixelsPerBlock), at any depth.
+            boolean culled = radiusSquared > 0 && Double.isFinite(radiusSquared) && radiusSquared < state.culledRadiusSquared;
+            RenderDiagnostics.countShadowPart(culled);
+            return culled;
+        }
+
+        float centerX = matrix.m00() * boundsCenterX + matrix.m10() * boundsCenterY + matrix.m20() * boundsCenterZ + matrix.m30();
+        float centerY = matrix.m01() * boundsCenterX + matrix.m11() * boundsCenterY + matrix.m21() * boundsCenterZ + matrix.m31();
+        float centerZ = matrix.m02() * boundsCenterX + matrix.m12() * boundsCenterY + matrix.m22() * boundsCenterZ + matrix.m32();
         double distanceSquared = (double)centerX * centerX + (double)centerY * centerY + (double)centerZ * centerZ;
         // 2*r*projection/(distance-r) < threshold iff distance > r*(1+2*projection/threshold).
         // Keep near-camera parts instead of using the old 0.01 distance floor.
@@ -2655,6 +2681,8 @@ public class ModelRendererTurbo extends ModelRenderer
         private float minimumPixelDiameter;
         private float projectionPixels;
         private double thresholdFactorSquared;
+        private boolean fixedScale;
+        private double culledRadiusSquared;
     }
 
     /** Render-thread cache; public legacy angle/pivot mutations are checked every draw. */

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
 
@@ -15,6 +16,13 @@ public class GrenadeRenderer extends FlanEntityRenderer<Grenade>
     public GrenadeRenderer(EntityRendererProvider.Context ctx)
     {
         super(ctx);
+    }
+
+    /** Small projectiles add nothing visible to a shader pack's shadow map. */
+    @Override
+    public boolean shouldRender(@NotNull Grenade grenade, @NotNull Frustum frustum, double cameraX, double cameraY, double cameraZ)
+    {
+        return outsideShadowPass() && super.shouldRender(grenade, frustum, cameraX, cameraY, cameraZ);
     }
 
     @Override

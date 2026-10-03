@@ -42,8 +42,9 @@ public final class ShaderPlatform
     }
 
     /**
-     * Whether the shader pack's shadow map is being rendered. Entity renderers then run again from the sun's view,
-     * with the shadow programs bound and the main camera's projection still current.
+     * Whether the shader pack's shadow map is being rendered. Entity renderers then run again from the sun's view:
+     * the shadow programs are bound, the pose stack holds the sun's view and {@code RenderSystem}'s projection is the
+     * shadow map's, so neither measures what the camera sees.
      */
     public static boolean isRenderingShadowPass()
     {
@@ -78,6 +79,19 @@ public final class ShaderPlatform
         return MethodHandles.publicLookup().findVirtual(api, method, MethodType.methodType(boolean.class)).bindTo(instance);
     }
 
+    private static boolean isModLoaded(String modId)
+    {
+        try
+        {
+            return PlatformEnvironment.isModLoaded(modId);
+        }
+        catch (RuntimeException ex)
+        {
+            // There is no mod list outside a running game, such as in unit tests.
+            return false;
+        }
+    }
+
     private static boolean classExists(String name)
     {
         try
@@ -107,7 +121,7 @@ public final class ShaderPlatform
             String name = null;
             for (String[] mod : SHADER_MODS)
             {
-                if (!PlatformEnvironment.isModLoaded(mod[0]))
+                if (!isModLoaded(mod[0]))
                     continue;
                 try
                 {
