@@ -17,6 +17,51 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RenderingAllocationTest
 {
     @Test
+    void movingAcrossSizeCullingThresholdsDoesNotRebuildTheWarmedHull()
+    {
+        var bean = (com.sun.management.ThreadMXBean)ManagementFactory.getThreadMXBean();
+        assertTrue(bean.isThreadAllocatedMemorySupported());
+        bean.setThreadAllocatedMemoryEnabled(true);
+        ModelRendererTurbo[] parts = new ModelRendererTurbo[120];
+        for (int i = 0; i < parts.length; i++)
+        {
+            parts[i] = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+            parts[i].addBox(0, 0, 0, i % 8 + 1, i % 8 + 1, i % 8 + 1);
+            parts[i].setRotationPoint(i % 5, 0, 0);
+        }
+        PoseStack parent = new PoseStack();
+        Backend backend = new Backend();
+        RigidBatch batch = new RigidBatch(24, 192, 2 * 1024 * 1024 / 36);
+        runCulled(parts, parent, batch, backend, 20_000);
+        long misses = backend.misses;
+        long thread = Thread.currentThread().getId();
+        long allocated = bean.getThreadAllocatedBytes(thread);
+        runCulled(parts, parent, batch, backend, 20_000);
+        allocated = bean.getThreadAllocatedBytes(thread) - allocated;
+        assertEquals(misses, backend.misses);
+        assertTrue(allocated < 16_384, "Hot culling path allocated " + allocated + " bytes");
+        System.out.printf("Size-culled static hull: %d additional cache misses, %d bytes / 2400000 parts%n",
+            backend.misses - misses, allocated);
+    }
+
+    private static void runCulled(ModelRendererTurbo[] parts, PoseStack parent, RigidBatch batch, Backend backend, int frames)
+    {
+        for (int frame = 0; frame < frames; frame++)
+        {
+            parent.setIdentity();
+            parent.translate(0, 0, -10 - frame % 21);
+            ModelRendererTurbo.beginScreenSpaceCulling(1, 100);
+            try
+            {
+                batch.begin(backend);
+                for (ModelRendererTurbo part : parts) part.render(parent, batch, 17, 23, 1, 1, 1, 1, 1);
+                batch.end();
+            }
+            finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+        }
+    }
+
+    @Test
     void staticHullWithAnimatedParentUsesOneDrawWithoutWarmAllocations()
     {
         var bean = (com.sun.management.ThreadMXBean)ManagementFactory.getThreadMXBean();

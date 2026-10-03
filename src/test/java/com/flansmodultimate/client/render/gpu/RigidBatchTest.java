@@ -1,7 +1,9 @@
 package com.flansmodultimate.client.render.gpu;
 
+import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.client.tmt.PositionTextureVertex;
 import com.flansmod.client.tmt.TexturedPolygon;
+import com.flansmodultimate.client.model.ModelBase;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -17,6 +19,107 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RigidBatchTest
 {
+    @Test
+    void modelSizeCullingChangesVisibleRangesWithoutChangingTheWarmedMesh()
+    {
+        ModelRendererTurbo[] parts = new ModelRendererTurbo[8];
+        for (int i = 0; i < parts.length; i++)
+        {
+            parts[i] = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+            parts[i].addBox(0, 0, 0, i + 1, i + 1, i + 1);
+            if (i % 2 == 0) parts[i].setRotationPoint(i, 0, 0); // Include baked and plain leaves.
+        }
+        Backend backend = new Backend();
+        RigidBatch batch = new RigidBatch(24, 192, 10000);
+        PoseStack parent = new PoseStack();
+        for (int frame = 0; frame < 12; frame++)
+        {
+            parent.setIdentity();
+            parent.translate(0, 0, frame < 4 || frame % 2 == 0 ? -10 : -30);
+            ModelRendererTurbo.beginScreenSpaceCulling(1, 100);
+            try
+            {
+                batch.begin(backend);
+                for (ModelRendererTurbo part : parts) part.render(parent, batch, 17, 23, 1, 1, 1, 1, 1);
+                batch.end();
+            }
+            finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+        }
+        for (int i = 4; i < backend.keys.size(); i++) assertEquals(backend.keys.get(3), backend.keys.get(i));
+        assertTrue(backend.visibleVertices.get(4) > backend.visibleVertices.get(5));
+    }
+
+    @Test
+    void sizeCullingReusesTheSameMeshAndCoalescesOnlyAdjacentVisibleRanges()
+    {
+        Backend backend = new Backend();
+        RigidBatch batch = new RigidBatch(2, 8, 1000);
+        PoseStack pose = new PoseStack();
+        RigidGeometry[] parts = {geometry(), geometry(), geometry(), geometry(), geometry()};
+        batch.begin(backend);
+        for (RigidGeometry part : parts) submit(batch, part, pose);
+        GeometryKey full = batch.key.snapshot();
+        batch.end();
+        assertEquals(1, backend.rangeCounts.get(0));
+
+        batch.begin(backend);
+        for (int i = 0; i < parts.length; i++)
+            batch.submit(parts[i], pose.last(), 17, 23, 1, 1, 1, 1, i != 2);
+        assertEquals(full, batch.key);
+        assertEquals(2, batch.ranges.count);
+        assertEquals(0, batch.ranges.starts[0]);
+        assertEquals(12, batch.ranges.counts[0]);
+        assertEquals(18, batch.ranges.starts[1]);
+        assertEquals(12, batch.ranges.counts[1]);
+        batch.end();
+        assertEquals(List.of(1, 2), backend.rangeCounts);
+    }
+
+    @Test
+    void entirelyCulledBatchesDoNotUploadDrawOrFlushAndCanBeReused()
+    {
+        Backend backend = new Backend();
+        RigidBatch batch = new RigidBatch(2, 3, 1000);
+        RigidGeometry part = geometry();
+        PoseStack pose = new PoseStack();
+        batch.begin(backend);
+        for (int i = 0; i < 7; i++) batch.submit(part, pose.last(), 17, 23, 1, 1, 1, 1, false);
+        batch.end();
+        assertTrue(backend.events.isEmpty());
+        assertEquals(0, batch.ranges.geometries);
+        batch.begin(backend);
+        submit(batch, part, pose);
+        batch.end();
+        assertEquals(List.of("barrier", "gpu:1"), backend.events);
+    }
+
+    @Test
+    void mixedVisibilityFallbackAndInjectedFailureDrawOnlyVisibleGeometry()
+    {
+        for (boolean failure : new boolean[]{false, true})
+        {
+            Backend backend = new Backend();
+            backend.available = false;
+            backend.throwOnDraw = failure;
+            RigidBatch batch = new RigidBatch(2, 8, 1000);
+            PoseStack pose = new PoseStack();
+            Recording expected = new Recording();
+            RigidGeometry part = geometry();
+            batch.begin(backend);
+            for (int i = 0; i < 7; i++)
+            {
+                pose.translate(1, 2, 3);
+                boolean visible = i % 3 == 1;
+                if (visible) part.draw(pose.last(), expected, 17, 23, 1, 1, 1, 1);
+                batch.submit(part, pose.last(), 17, 23, 1, 1, 1, 1, visible);
+            }
+            batch.end();
+            assertEquals(expected.vertices.size(), backend.output.vertices.size());
+            for (int i = 0; i < expected.vertices.size(); i++)
+                assertArrayEquals(expected.vertices.get(i), backend.output.vertices.get(i), 1E-6F);
+        }
+    }
+
     @Test
     void sharedPaletteMappingIsPartOfMeshIdentity()
     {
@@ -250,6 +353,9 @@ class RigidBatchTest
     private static class Backend implements RigidBatch.Backend
     {
         final List<String> events = new ArrayList<>();
+        final List<Integer> rangeCounts = new ArrayList<>();
+        final List<GeometryKey> keys = new ArrayList<>();
+        final List<Integer> visibleVertices = new ArrayList<>();
         final Recording output = new Recording()
         {
             @Override public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz)
@@ -265,6 +371,9 @@ class RigidBatchTest
             if (!available) return false;
             if (flushPending) events.add("barrier");
             events.add("gpu:" + batch.key.count);
+            rangeCounts.add(batch.ranges.count);
+            keys.add(batch.key.snapshot());
+            visibleVertices.add(batch.ranges.visibleVertices);
             return true;
         }
         @Override public VertexConsumer fallback() { return output; }

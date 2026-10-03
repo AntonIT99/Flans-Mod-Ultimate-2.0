@@ -93,6 +93,17 @@ public final class GpuModelCache
 
     public static ShaderInstance shader() { return shader; }
 
+    public static String status()
+    {
+        ModClientConfig config = ModClientConfig.get();
+        String state = config == null || !config.enableGpuModelCache ? "disabled"
+            : shader == null ? "shader unavailable" : failed ? "failed until reload"
+            : incompatibleRenderer() ? "renderer compatibility fallback"
+            : Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS
+                ? "Fabulous fallback" : "available for eligible passes";
+        return "GPU cache " + state + "; resident " + meshes.size() + " meshes, " + meshes.bytes() / 1024 + " KiB.";
+    }
+
     public static void clear()
     {
         if (!RenderSystem.isOnRenderThread())
@@ -150,7 +161,10 @@ public final class GpuModelCache
             || pass != EnumRenderPass.DEFAULT || translucent && !config.enableFastTranslucentRendering
             || source.getClass() != MultiBufferSource.BufferSource.class || VehicleThermalRenderer.isRenderingMask()
             || Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS || incompatibleRenderer())
+        {
+            if (RenderDiagnostics.enabled) RenderDiagnostics.excludedScopes++;
             return source.getBuffer(vanilla);
+        }
         if (depth == contexts.size()) contexts.add(new Context());
         RenderType gpu = CustomRenderType.gpuModel(texture, translucent, cull);
         Context context = contexts.get(depth);
@@ -204,7 +218,10 @@ public final class GpuModelCache
         }
 
         if (size == 0 || size > UPLOAD_BYTES_PER_TICK || uploadedBytes + size > UPLOAD_BYTES_PER_TICK)
+        {
+            if (RenderDiagnostics.enabled) RenderDiagnostics.throttled++;
             return null;
+        }
 
         meshes.reserve(size);
         VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
@@ -219,6 +236,11 @@ public final class GpuModelCache
             Mesh mesh = new Mesh(buffer, size);
             meshes.put(key, mesh);
             uploadedBytes += size;
+            if (RenderDiagnostics.enabled)
+            {
+                RenderDiagnostics.uploads++;
+                RenderDiagnostics.uploadBytes += size;
+            }
             return mesh;
         }
         catch (RuntimeException ex)
@@ -301,7 +323,13 @@ public final class GpuModelCache
                 try
                 {
                     shader.apply();
-                    mesh.buffer.draw();
+                    batch.ranges.draw(mesh.buffer);
+                    if (RenderDiagnostics.enabled)
+                    {
+                        RenderDiagnostics.draws++;
+                        RenderDiagnostics.ranges += batch.ranges.count;
+                        RenderDiagnostics.vertices += batch.ranges.visibleVertices;
+                    }
                 }
                 finally { shader.clear(); }
                 return true;

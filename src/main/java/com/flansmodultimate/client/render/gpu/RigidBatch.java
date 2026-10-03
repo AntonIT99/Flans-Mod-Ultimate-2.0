@@ -20,6 +20,7 @@ final class RigidBatch implements RigidGeometryConsumer
     final float[] poses;
     final float[] normals;
     final float[] data;
+    final VisibleRanges ranges;
     private final PoseStack.Pose fallbackPose = new PoseStack().last();
     private final PoseStack.Pose lastPose = new PoseStack().last();
     private final int capacity;
@@ -43,6 +44,7 @@ final class RigidBatch implements RigidGeometryConsumer
         this.capacity = capacity;
         this.maxVertices = maxVertices;
         key = new GeometryKey(maxGeometries);
+        ranges = new VisibleRanges(maxGeometries);
         poses = new float[capacity * 16];
         normals = new float[capacity * 9];
         // Two parts share a mat4; round up so odd capacities still upload whole matrices.
@@ -60,9 +62,22 @@ final class RigidBatch implements RigidGeometryConsumer
     public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay,
                                  float red, float green, float blue, float alpha)
     {
+        submit(geometry, pose, light, overlay, red, green, blue, alpha, true);
+    }
+
+    @Override
+    public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay,
+                       float red, float green, float blue, float alpha, boolean visible)
+    {
         // Split before exceeding the per-tick upload cap, so larger merged batches
         // cannot become permanently uncacheable. A single oversized part still falls back.
         if (key.count != 0 && vertexCount + geometry.vertexCount() > maxVertices) flush();
+        if (RenderDiagnostics.enabled)
+        {
+            RenderDiagnostics.submittedParts++;
+            if (!visible) RenderDiagnostics.culledParts++;
+        }
+        ranges.add(geometry.vertexCount(), visible);
         if (paletteCount != 0 && lastLight == light && lastOverlay == overlay
             && lastRed == red && lastGreen == green && lastBlue == blue && lastAlpha == alpha
             && lastPose.pose().equals(pose.pose()) && lastPose.normal().equals(pose.normal()))
@@ -102,6 +117,7 @@ final class RigidBatch implements RigidGeometryConsumer
         if (key.count == 0) return;
         try
         {
+            if (ranges.count == 0) return;
             boolean rendered;
             try { rendered = backend.draw(this, needsBarrier); }
             catch (RuntimeException exception)
@@ -121,6 +137,8 @@ final class RigidBatch implements RigidGeometryConsumer
                 needsBarrier = true;
                 for (int i = 0; i < key.count; i++)
                 {
+                    if (!ranges.visible[i]) continue;
+                    if (RenderDiagnostics.enabled) RenderDiagnostics.fallbackVertices += key.geometries[i].vertexCount();
                     int palette = key.paletteIndices[i];
                     int offset = palette * 16;
                     fallbackPose.pose().set(poses, offset);
@@ -139,6 +157,7 @@ final class RigidBatch implements RigidGeometryConsumer
         finally
         {
             key.clear();
+            ranges.clear();
             paletteCount = 0;
             vertexCount = 0;
         }
@@ -163,6 +182,7 @@ final class RigidBatch implements RigidGeometryConsumer
         finally
         {
             key.clear();
+            ranges.clear();
             fallback = null;
             backend = null;
         }
