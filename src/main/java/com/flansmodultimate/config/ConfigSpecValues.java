@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * Reads, transfers and writes the entries of a config spec by path, without knowing what they mean. The
@@ -80,6 +82,18 @@ public final class ConfigSpecValues
     {
         Object entry = spec.getValues().get(path);
         return entry instanceof ModConfigSpec.ConfigValue<?> value ? value : null;
+    }
+
+    /**
+     * Defines a list entry that may be left empty. Forge's {@code defineList} accepts an empty list, while
+     * NeoForge's rejects one and restores the default, so the NeoForge side uses {@code defineListAllowEmpty}.
+     * {@code newElement} is the value NeoForge's config screen adds to the list; Forge has no such screen.
+     */
+    public static <T> ModConfigSpec.ConfigValue<List<? extends T>> defineList(ModConfigSpec.Builder builder, String path,
+                                                                              List<? extends T> defaultValue, Supplier<T> newElement,
+                                                                              Predicate<Object> elementValidator)
+    {
+        return builder.defineListAllowEmpty(path, defaultValue, newElement, elementValidator);
     }
 
     /** The type, default and range of the entry at the given path, or null when the spec has no such entry. */

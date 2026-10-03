@@ -19,8 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -155,13 +153,6 @@ public abstract class Shootable extends Entity implements SpawnDataEntity
         super.onSyncedDataUpdated(key);
         if (DATA_HITBOX_SIZE.equals(key))
             refreshDimensions();
-    }
-
-    @Override
-    @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity serverEntity)
-    {
-        return super.getAddEntityPacket(serverEntity);
     }
 
     @Override

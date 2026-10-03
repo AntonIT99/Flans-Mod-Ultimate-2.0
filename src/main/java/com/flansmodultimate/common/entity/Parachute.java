@@ -14,8 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -222,13 +220,6 @@ public class Parachute extends Entity implements SpawnDataEntity, IFlanEntity<To
     {
         ToolType type = getConfigType();
         return type == null ? ItemStack.EMPTY : ModUtils.getItemStack(type).orElse(ItemStack.EMPTY);
-    }
-
-    @Override
-    @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity serverEntity)
-    {
-        return super.getAddEntityPacket(serverEntity);
     }
 
     @Override

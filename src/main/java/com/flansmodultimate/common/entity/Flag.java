@@ -10,8 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -222,13 +220,6 @@ public final class Flag extends Entity implements ITeamObject
             tag.putUUID(NBT_CARRIER, carrierId);
 
         tag.putBoolean(NBT_HOME, isHome()); tag.putInt(NBT_TEAM, getTeamId()); tag.putInt(NBT_COLOUR, getColour()); tag.putInt(NBT_RETURN_TICKS, returnTicks);
-    }
-
-    @Override
-    @NotNull
-    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity serverEntity)
-    {
-        return super.getAddEntityPacket(serverEntity);
     }
 
     @Override

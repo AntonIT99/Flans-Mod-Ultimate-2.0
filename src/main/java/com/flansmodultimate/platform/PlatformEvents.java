@@ -1,7 +1,7 @@
 package com.flansmodultimate.platform;
 
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -23,7 +23,7 @@ public final class PlatformEvents
     }
 
     /** Posts a cancellable event and returns whether a listener cancelled it. */
-    public static <T extends Event & ICancellableEvent> boolean postCancellable(T event)
+    public static boolean postCancellable(FlanCancellableEvent event)
     {
         return NeoForge.EVENT_BUS.post(event).isCanceled();
     }

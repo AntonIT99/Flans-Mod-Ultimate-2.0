@@ -1,9 +1,8 @@
 package com.flansmodultimate.event;
 
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
-import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.ICancellableEvent;
 
 import net.minecraft.world.entity.player.Player;
 
@@ -13,7 +12,7 @@ import net.minecraft.world.entity.player.Player;
  * Cancelling it keeps the player out. It is not posted when a player leaves.
  */
 @Getter
-public class PlayerEnterSeatEvent extends Event implements ICancellableEvent
+public class PlayerEnterSeatEvent extends FlanCancellableEvent
 {
     private final Seat seat;
     private final Player player;

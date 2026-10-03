@@ -1,15 +1,14 @@
 package com.flansmodultimate.event;
 
+import com.flansmodultimate.platform.event.FlanCancellableEvent;
 import lombok.Getter;
 import lombok.Setter;
-import net.neoforged.bus.api.Event;
-import net.neoforged.bus.api.ICancellableEvent;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 @Getter
-public class GunReloadEvent extends Event implements ICancellableEvent
+public class GunReloadEvent extends FlanCancellableEvent
 {
     private final Entity entity;
     private final ItemStack gunStack;
