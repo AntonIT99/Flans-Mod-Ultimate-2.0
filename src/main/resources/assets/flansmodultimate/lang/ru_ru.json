@@ -230,6 +230,7 @@
   "options.flansmodultimate.value.renderpreset.off": "Выкл.",
   "options.flansmodultimate.value.renderpreset.performance": "Производительность",
   "options.flansmodultimate.value.renderpreset.quality": "Качество",
+  "options.flansmodultimate.vehicleScreenShake": "Тряска камеры от техники",
   "tooltip.flansmodultimate.armor_points": "Очки брони",
   "tooltip.flansmodultimate.attachments": "Модули",
   "tooltip.flansmodultimate.barrels": "Стволы",

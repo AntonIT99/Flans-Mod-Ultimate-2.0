@@ -78,6 +78,7 @@ import com.flansmodultimate.network.client.PacketDriveableDamage;
 import com.flansmodultimate.network.client.PacketDriveablePassengerFired;
 import com.flansmodultimate.network.client.PacketDriveablePrediction;
 import com.flansmodultimate.network.client.PacketDriveableRenderState;
+import com.flansmodultimate.network.client.PacketDriveableScreenShake;
 import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
@@ -2459,6 +2460,10 @@ public abstract class Driveable extends Entity implements SpawnDataEntity, IFlan
         if (!fired.isEmpty())
         {
             playBankEffects(secondary, fired);
+            DriveableType.ScreenShake shake = type.screenShake(secondary);
+            if (shake != null)
+                PacketHandler.sendToAllAround(new PacketDriveableScreenShake(shake), position(),
+                    type.getFancyScreenShakeRange(), level().dimension());
             if (weapon == EnumWeaponType.SHELL)
                 beginRecoil();
             if (type.isIt1() && weapon == EnumWeaponType.MISSILE)

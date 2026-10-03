@@ -51,7 +51,7 @@ class RigidModelShaderTest
             assertNotEquals(0, window, "Hidden OpenGL context");
             GLFW.glfwMakeContextCurrent(window);
             GL.createCapabilities();
-            RenderSystem.initRenderThread();
+            if (!RenderSystem.isOnRenderThread()) RenderSystem.initRenderThread();
             PathPackResources pack = new PathPackResources(new PackLocationInfo("test classpath",
                 Component.literal("test classpath"), PackSource.BUILT_IN, Optional.empty()), Path.of("."));
             ResourceProvider resources = location -> {

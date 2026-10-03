@@ -230,6 +230,7 @@
   "options.flansmodultimate.value.renderpreset.off": "Aus",
   "options.flansmodultimate.value.renderpreset.performance": "Leistung",
   "options.flansmodultimate.value.renderpreset.quality": "Qualität",
+  "options.flansmodultimate.vehicleScreenShake": "Kameraerschütterung durch Fahrzeuge",
   "tooltip.flansmodultimate.armor_points": "Rüstungspunkte",
   "tooltip.flansmodultimate.attachments": "Aufsätze",
   "tooltip.flansmodultimate.barrels": "Läufe",

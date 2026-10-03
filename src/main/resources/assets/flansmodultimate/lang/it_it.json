@@ -230,6 +230,7 @@
   "options.flansmodultimate.value.renderpreset.off": "Disattivato",
   "options.flansmodultimate.value.renderpreset.performance": "Prestazioni",
   "options.flansmodultimate.value.renderpreset.quality": "Qualità",
+  "options.flansmodultimate.vehicleScreenShake": "Scuotimento della visuale dei veicoli",
   "tooltip.flansmodultimate.armor_points": "Punti armatura",
   "tooltip.flansmodultimate.attachments": "Accessori",
   "tooltip.flansmodultimate.barrels": "Canne",

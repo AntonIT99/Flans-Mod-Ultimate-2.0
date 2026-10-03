@@ -17,6 +17,7 @@ import com.flansmodultimate.client.render.InstantShotTrail;
 import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.client.render.KillMessageFeed;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
+import com.flansmodultimate.client.render.VehicleScreenShake;
 import com.flansmodultimate.client.render.item.CustomBewlr;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.SeatInfo;
@@ -31,6 +32,7 @@ import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
 import com.flansmodultimate.util.FileUtils;
 
+import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -341,6 +343,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     {
         if (value)
             ModClient.startFlash(time);
+    }
+
+    @Override
+    public void addVehicleScreenShake(float intensity, float durationSeconds)
+    {
+        VehicleScreenShake.add(intensity, durationSeconds, Util.getMillis());
     }
 
     @Override

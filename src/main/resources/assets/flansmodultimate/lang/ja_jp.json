@@ -230,6 +230,7 @@
   "options.flansmodultimate.value.renderpreset.off": "オフ",
   "options.flansmodultimate.value.renderpreset.performance": "性能重視",
   "options.flansmodultimate.value.renderpreset.quality": "画質重視",
+  "options.flansmodultimate.vehicleScreenShake": "車両による画面の揺れ",
   "tooltip.flansmodultimate.armor_points": "アーマーポイント",
   "tooltip.flansmodultimate.attachments": "アタッチメント",
   "tooltip.flansmodultimate.barrels": "銃身",

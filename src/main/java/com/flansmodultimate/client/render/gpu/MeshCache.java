@@ -17,7 +17,19 @@ final class MeshCache<T extends MeshCache.Resource>
         this.maximumEntries = maximumEntries;
     }
 
-    T get(GeometryKey probe) { return entries.get(probe); }
+    T get(GeometryKey probe)
+    {
+        T result = entries.get(probe);
+        if (RenderDiagnostics.enabled)
+        {
+            if (result == null) RenderDiagnostics.misses++;
+            else RenderDiagnostics.hits++;
+        }
+        return result;
+    }
+
+    long bytes() { return bytes; }
+    int size() { return entries.size(); }
 
     void put(GeometryKey probe, T resource)
     {
@@ -39,6 +51,7 @@ final class MeshCache<T extends MeshCache.Resource>
             iterator.remove();
             bytes -= oldest.bytes();
             oldest.close();
+            if (RenderDiagnostics.enabled) RenderDiagnostics.evictions++;
         }
     }
 

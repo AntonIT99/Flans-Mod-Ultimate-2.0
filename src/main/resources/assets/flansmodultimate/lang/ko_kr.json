@@ -230,6 +230,7 @@
   "options.flansmodultimate.value.renderpreset.off": "끔",
   "options.flansmodultimate.value.renderpreset.performance": "성능",
   "options.flansmodultimate.value.renderpreset.quality": "품질",
+  "options.flansmodultimate.vehicleScreenShake": "차량 화면 흔들림",
   "tooltip.flansmodultimate.armor_points": "방어력 포인트",
   "tooltip.flansmodultimate.attachments": "부착물",
   "tooltip.flansmodultimate.barrels": "총열",

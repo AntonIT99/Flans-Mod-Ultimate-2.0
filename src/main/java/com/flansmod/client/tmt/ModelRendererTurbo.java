@@ -2374,22 +2374,22 @@ public class ModelRendererTurbo extends ModelRenderer
             if (renderPoseCache == null)
                 renderPoseCache = new RenderPoseCache();
             PoseStack.Pose pose = renderPoseCache.compose(poseStack.last(), scale, oldRotateOrder);
-            if (!isBelowScreenSize(pose))
+            boolean visible = !isBelowScreenSize(pose);
+            // Size culling changes draw ranges, not the identity of a cached rigid mesh.
+            if (vertexConsumer instanceof RigidGeometryConsumer gpu && !glow && !glowAdditive
+                && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler
+                && renderPoseCache.canBake())
             {
-                // Bake fixed local pivots/rotations at upload time. Adjacent rigid
-                // pieces can then share the vehicle/turret's parent palette entry.
-                if (vertexConsumer instanceof RigidGeometryConsumer gpu && !glow && !glowAdditive
-                    && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler
-                    && renderPoseCache.canBake())
+                if (gpuGeometry == null) gpuGeometry = new RigidGeometry(visibleFaces);
+                if (gpuGeometry.supported())
                 {
-                    if (gpuGeometry == null) gpuGeometry = new RigidGeometry(visibleFaces);
-                    if (gpuGeometry.supported())
-                    {
-                        gpu.submit(renderPoseCache.baked(gpuGeometry), poseStack.last(), packedLight,
-                            packedOverlay, red, green, blue, alpha);
-                        return;
-                    }
+                    gpu.submit(renderPoseCache.baked(gpuGeometry), poseStack.last(), packedLight,
+                        packedOverlay, red, green, blue, alpha, visible);
+                    return;
                 }
+            }
+            if (visible)
+            {
                 compile(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
             }
             return;
@@ -2402,8 +2402,21 @@ public class ModelRendererTurbo extends ModelRenderer
             translateAndRotate(poseStack, scale, oldRotateOrder);
         }
 
-        if (visibleFaces.length != 0 && !isBelowScreenSize(poseStack.last()))
-            compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        if (visibleFaces.length != 0)
+        {
+            boolean visible = !isBelowScreenSize(poseStack.last());
+            if (vertexConsumer instanceof RigidGeometryConsumer gpu && getClass() == ModelRendererTurbo.class
+                && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler)
+            {
+                if (gpuGeometry == null) gpuGeometry = new RigidGeometry(visibleFaces);
+                if (gpuGeometry.supported())
+                    gpu.submit(gpuGeometry, poseStack.last(), packedLight, packedOverlay, red, green, blue, alpha, visible);
+                else if (visible)
+                    compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+            }
+            else if (visible)
+                compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        }
 
         for (int childIndex = 0; childIndex < childModels.size(); childIndex++)
         {

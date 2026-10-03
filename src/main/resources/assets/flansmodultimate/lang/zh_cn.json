@@ -230,6 +230,7 @@
   "options.flansmodultimate.value.renderpreset.off": "关闭",
   "options.flansmodultimate.value.renderpreset.performance": "性能优先",
   "options.flansmodultimate.value.renderpreset.quality": "画质优先",
+  "options.flansmodultimate.vehicleScreenShake": "载具屏幕震动",
   "tooltip.flansmodultimate.armor_points": "护甲值",
   "tooltip.flansmodultimate.attachments": "附件",
   "tooltip.flansmodultimate.barrels": "炮管",

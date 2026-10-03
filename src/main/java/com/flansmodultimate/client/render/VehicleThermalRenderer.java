@@ -1,5 +1,7 @@
 package com.flansmodultimate.client.render;
 
+import org.lwjgl.opengl.GL11;
+
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.common.entity.Driveable;
@@ -87,7 +89,7 @@ public final class VehicleThermalRenderer
             heat.copyDepthFrom(main);
             heat.bindWrite(false);
             RenderSystem.enableDepthTest();
-            RenderSystem.depthFunc(org.lwjgl.opengl.GL11.GL_LEQUAL);
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderType maskType = RenderType.entitySolid(WhiteTexture.get());
             VertexConsumer mask = new HeatVertexConsumer(buffers.getBuffer(maskType));
             MultiBufferSource maskBuffers = ignored -> mask;
@@ -120,7 +122,7 @@ public final class VehicleThermalRenderer
             renderingMask = false;
             main.bindWrite(false);
             RenderSystem.enableDepthTest();
-            RenderSystem.depthFunc(org.lwjgl.opengl.GL11.GL_LEQUAL);
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.depthMask(true);
             RenderSystem.defaultBlendFunc();
         }
@@ -141,7 +143,7 @@ public final class VehicleThermalRenderer
         {
             main.bindWrite(false);
             RenderSystem.enableDepthTest();
-            RenderSystem.depthFunc(org.lwjgl.opengl.GL11.GL_LEQUAL);
+            RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.depthMask(true);
             RenderSystem.defaultBlendFunc();
         }

@@ -5,11 +5,11 @@ import com.flansmodultimate.client.CommonConfigMirror;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.ReloadPreferencesSync;
 import com.flansmodultimate.client.debug.DebugColor;
-import com.flansmodultimate.client.distant.DistantBoxRenderer;
-import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.debug.DriveableHitboxRenderer;
 import com.flansmodultimate.client.debug.PlayerHitboxRenderer;
+import com.flansmodultimate.client.distant.DistantBoxRenderer;
+import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.EnumMouseButton;
@@ -24,6 +24,7 @@ import com.flansmodultimate.client.render.MountedCameraView;
 import com.flansmodultimate.client.render.OpStickConnectionRenderer;
 import com.flansmodultimate.client.render.PlayerSkinOverrides;
 import com.flansmodultimate.client.render.VehicleOpticsClient;
+import com.flansmodultimate.client.render.VehicleScreenShake;
 import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.teams.TeamsClientState;
@@ -59,6 +60,7 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -149,15 +151,31 @@ public final class ClientEventHandler
     {
         Entity cameraEntity = event.getCamera().getEntity();
         var view = MountedCameraView.resolve(cameraEntity, (float) event.getPartialTick());
-        if (view == null)
-            return;
+        if (view != null)
+        {
+            // The reversed third person view turns the camera around, which swaps
+            // which way the driveable's roll leans on screen.
+            boolean frontView = Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT;
+            event.setYaw(Mth.wrapDegrees(frontView ? view.yaw() + 180F : view.yaw()));
+            event.setPitch(Mth.clamp(frontView ? -view.pitch() : view.pitch(), -89.9F, 89.9F));
+            event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
+        }
+        applyVehicleScreenShake(event);
+    }
 
-        // The reversed third person view turns the camera around, which swaps
-        // which way the driveable's roll leans on screen.
-        boolean frontView = Minecraft.getInstance().options.getCameraType() == CameraType.THIRD_PERSON_FRONT;
-        event.setYaw(Mth.wrapDegrees(frontView ? view.yaw() + 180F : view.yaw()));
-        event.setPitch(Mth.clamp(frontView ? -view.pitch() : view.pitch(), -89.9F, 89.9F));
-        event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
+    /** Adds the camera kick of a nearby firing driveable on top of whatever angles the view already has. */
+    private static void applyVehicleScreenShake(ViewportEvent.ComputeCameraAngles event)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null || !config.vehicleScreenShake)
+            return;
+        long now = Util.getMillis();
+        float pitch = VehicleScreenShake.pitchOffset(now);
+        float roll = VehicleScreenShake.rollOffset(now);
+        if (pitch == 0F && roll == 0F)
+            return;
+        event.setPitch(Mth.clamp(event.getPitch() + pitch, -89.9F, 89.9F));
+        event.setRoll(event.getRoll() + roll);
     }
 
     /**
@@ -477,6 +495,7 @@ public final class ClientEventHandler
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
+        VehicleScreenShake.reset();
         DistantHorizonsClient.reset();
         ModClient.clearTransientLighting();
         GpuModelCache.clear();
