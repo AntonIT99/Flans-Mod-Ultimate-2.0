@@ -31,6 +31,7 @@ public final class ModClientConfig
     private static volatile Boolean startupUncensoredContentEnabled;
 
     public final boolean showPackNameInItemDescriptions;
+    public final boolean showDetailedItemDescriptions;
     public final boolean enableUncensoredContent;
     public final EnumOptionsButtonPlacement optionsButtonPlacement;
     public final boolean showFlansHud;
@@ -47,6 +48,11 @@ public final class ModClientConfig
     public final EnumHitMarkerStyle hitMarkerStyle;
     public final boolean hdHitMarker;
     public final boolean fancyHitMarker;
+    public final boolean showHitMarker;
+    public final float hitMarkerRed;
+    public final float hitMarkerGreen;
+    public final float hitMarkerBlue;
+    public final float hitMarkerAlpha;
     public final boolean showFlashesWhenWounded;
     public final boolean enablePlayerClassSkinOverrides;
     public final int bulletRenderDistance;
@@ -121,6 +127,7 @@ public final class ModClientConfig
     public final boolean distantHorizonsDriveableRendering;
 
     private static final Supplier<Boolean> SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS;
+    private static final Supplier<Boolean> SHOW_DETAILED_ITEM_DESCRIPTIONS;
     public static final ModConfigSpec.BooleanValue ENABLE_UNCENSORED_CONTENT;
     public static final ModConfigSpec.EnumValue<EnumOptionsButtonPlacement> OPTIONS_BUTTON_PLACEMENT;
     public static final ModConfigSpec.BooleanValue SHOW_FLANS_HUD;
@@ -151,6 +158,11 @@ public final class ModClientConfig
     public static final ModConfigSpec.EnumValue<EnumHitMarkerStyle> HIT_MARKER_STYLE;
     private static final Supplier<Boolean> HD_HIT_MARKER;
     public static final ModConfigSpec.BooleanValue FANCY_HIT_MARKER;
+    private static final Supplier<Boolean> SHOW_HIT_MARKER;
+    private static final Supplier<Double> HIT_MARKER_RED;
+    private static final Supplier<Double> HIT_MARKER_GREEN;
+    private static final Supplier<Double> HIT_MARKER_BLUE;
+    private static final Supplier<Double> HIT_MARKER_ALPHA;
     public static final ModConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
@@ -235,6 +247,10 @@ public final class ModClientConfig
         SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS = builder
                 .comment("Show content pack names in item descriptions")
                 .define("showPackNameInItemDescriptions", true);
+        SHOW_DETAILED_ITEM_DESCRIPTIONS = builder
+                .comment("Show the detailed descriptions of guns, ammunition and other Flan's items: loaded ammunition, statistics",
+                    "and the full statistics shown while sneaking. When disabled, only the item's own description is listed.")
+                .define("showDetailedItemDescriptions", true);
         ENABLE_UNCENSORED_CONTENT = builder
                 .comment("Use optional encrypted uncensored names and textures supplied by packaged content packs. Changing this reloads client resources.")
                 .define("enableUncensoredContent", false);
@@ -321,6 +337,21 @@ public final class ModClientConfig
                     Red = no penetration, green = full damage, light blue = headshot, yellow = explosion.
                     """)
                 .define("fancyHitMarker", true);
+        SHOW_HIT_MARKER = builder
+                .comment("Show a hit marker when one of your shots hits")
+                .define("showHitMarker", true);
+        HIT_MARKER_RED = builder
+                .comment("Red component of the hit marker colour, used whenever the fancy hit marker does not colour it")
+                .defineInRange("hitMarkerRed", 1D, 0D, 1D);
+        HIT_MARKER_GREEN = builder
+                .comment("Green component of the hit marker colour, used whenever the fancy hit marker does not colour it")
+                .defineInRange("hitMarkerGreen", 1D, 0D, 1D);
+        HIT_MARKER_BLUE = builder
+                .comment("Blue component of the hit marker colour, used whenever the fancy hit marker does not colour it")
+                .defineInRange("hitMarkerBlue", 1D, 0D, 1D);
+        HIT_MARKER_ALPHA = builder
+                .comment("Opacity of the hit marker, applied to every style and colour")
+                .defineInRange("hitMarkerAlpha", 1D, 0D, 1D);
         SHOW_FLASHES_WHEN_WOUNDED = builder
                 .comment("Show the red blood overlay flash when the player takes damage")
                 .define("showFlashesWhenWounded", true);
@@ -583,6 +614,7 @@ public final class ModClientConfig
     private ModClientConfig()
     {
         showPackNameInItemDescriptions = SHOW_PACK_NAME_IN_ITEM_DESCRIPTIONS.get();
+        showDetailedItemDescriptions = SHOW_DETAILED_ITEM_DESCRIPTIONS.get();
         enableUncensoredContent = ENABLE_UNCENSORED_CONTENT.get();
         optionsButtonPlacement = OPTIONS_BUTTON_PLACEMENT.get();
         showFlansHud = SHOW_FLANS_HUD.get();
@@ -599,6 +631,11 @@ public final class ModClientConfig
         hitMarkerStyle = HIT_MARKER_STYLE.get();
         hdHitMarker = HD_HIT_MARKER.get();
         fancyHitMarker = FANCY_HIT_MARKER.get();
+        showHitMarker = SHOW_HIT_MARKER.get();
+        hitMarkerRed = HIT_MARKER_RED.get().floatValue();
+        hitMarkerGreen = HIT_MARKER_GREEN.get().floatValue();
+        hitMarkerBlue = HIT_MARKER_BLUE.get().floatValue();
+        hitMarkerAlpha = HIT_MARKER_ALPHA.get().floatValue();
         showFlashesWhenWounded = SHOW_FLASHES_WHEN_WOUNDED.get();
         enablePlayerClassSkinOverrides = ENABLE_PLAYER_CLASS_SKIN_OVERRIDES.get();
         bulletRenderDistance = BULLET_RENDER_DISTANCE.get();

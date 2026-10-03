@@ -196,6 +196,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
         }
 
+        if (!IFlanItem.showDetailedDescriptions())
+            return;
+
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
             // Attachments

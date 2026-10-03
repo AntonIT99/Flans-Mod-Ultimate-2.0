@@ -70,6 +70,7 @@ public class VehicleType extends DriveableType
     protected Vector3f door2Rot2 = new Vector3f();
     protected Vector3f door2Rate = new Vector3f();
     protected Vector3f door2RotRate = new Vector3f();
+    /** The door arms the weapons: they fire only while it is open, as in 1.7.10. */
     protected boolean shootWithOpenDoor;
     protected int trackLinkFix = 5;
     protected final List<SmokePoint> smokers = new ArrayList<>();
@@ -217,5 +218,14 @@ public class VehicleType extends DriveableType
     {
         String[] values = raw.replace('[', ' ').replace(']', ' ').replace(',', ' ').trim().split("\\s+");
         return new Vector3f(Float.parseFloat(values[0]), Float.parseFloat(values[1]), Float.parseFloat(values[2]));
+    }
+
+    /**
+     * Whether the vehicle's own weapons may fire with its door in the given state. Only vehicles marked
+     * ShootWithOpenDoor care: their door arms the weapons. Every other vehicle fires with the door open or shut.
+     */
+    public boolean doorAllowsFiring(boolean doorOpen)
+    {
+        return !shootWithOpenDoor || doorOpen;
     }
 }

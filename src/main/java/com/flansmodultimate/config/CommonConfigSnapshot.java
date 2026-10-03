@@ -24,6 +24,11 @@ public record CommonConfigSnapshot(
     int bonusRegenAmount,
     int bonusRegenTickDelay,
     int bonusRegenFoodLimit,
+    double maxPlayerHealth,
+    boolean enableKillMessages,
+    boolean showDistanceInKillMessage,
+    int bulletSnapshotMin,
+    int bulletSnapshotDivisor,
     int bulletTrackingRange,
     int grenadeTrackingRange,
     int deployedGunTrackingRange,
@@ -49,6 +54,7 @@ public record CommonConfigSnapshot(
     boolean forceAllowAllAttachments,
     boolean disableDualWielding,
     boolean reloadOnEmptyFire,
+    boolean gunDevMode,
     float gunDamageModifier,
     float gunRecoilModifier,
     float gunDispersionModifier,
@@ -141,7 +147,7 @@ public record CommonConfigSnapshot(
     List<String> fluidFuelLines
 )
 {
-    public static final int CURRENT_VERSION = 38;
+    public static final int CURRENT_VERSION = 39;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -163,6 +169,11 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.bonusRegenAmount);
         buf.writeVarInt(s.bonusRegenTickDelay);
         buf.writeVarInt(s.bonusRegenFoodLimit);
+        buf.writeDouble(s.maxPlayerHealth);
+        buf.writeBoolean(s.enableKillMessages);
+        buf.writeBoolean(s.showDistanceInKillMessage);
+        buf.writeVarInt(s.bulletSnapshotMin);
+        buf.writeVarInt(s.bulletSnapshotDivisor);
         buf.writeVarInt(s.bulletTrackingRange);
         buf.writeVarInt(s.grenadeTrackingRange);
         buf.writeVarInt(s.deployedGunTrackingRange);
@@ -188,6 +199,7 @@ public record CommonConfigSnapshot(
         buf.writeBoolean(s.forceAllowAllAttachments);
         buf.writeBoolean(s.disableDualWielding);
         buf.writeBoolean(s.reloadOnEmptyFire);
+        buf.writeBoolean(s.gunDevMode);
         buf.writeFloat(s.gunDamageModifier);
         buf.writeFloat(s.gunRecoilModifier);
         buf.writeFloat(s.gunDispersionModifier);
@@ -311,6 +323,11 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
+            buf.readDouble(),
+            buf.readBoolean(),
+            buf.readBoolean(),
+            buf.readVarInt(),
+            buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
             buf.readVarInt(),
@@ -332,6 +349,7 @@ public record CommonConfigSnapshot(
             buf.readVarInt(),
             buf.readVarInt(),
 
+            buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),
             buf.readBoolean(),

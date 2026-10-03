@@ -66,6 +66,8 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        if (!IFlanItem.showDetailedDescriptions())
+            return;
         tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_SPEED), IFlanItem.formatFloat(configType.getThrowSpeed() * 10F) + " m/s"));
         tooltipComponents.add(Component.empty());
 

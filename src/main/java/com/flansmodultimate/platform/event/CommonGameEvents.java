@@ -48,7 +48,7 @@ public final class CommonGameEvents
     @SubscribeEvent
     public static void onItemPickup(ItemEntityPickupEvent.Pre event)
     {
-        if (event.getPlayer() instanceof ServerPlayer player && !CommonEventHandler.canPickUp(player, event.getItemEntity().getItem()))
+        if (event.getPlayer() instanceof ServerPlayer player && !CommonEventHandler.canPickUp(player, event.getItemEntity()))
             event.setCanPickup(TriState.FALSE);
     }
 

@@ -8,6 +8,7 @@ import com.flansmodultimate.common.types.LoadoutPool;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.RewardBox;
 import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketPlayerClassSkins;
@@ -23,6 +24,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -93,9 +95,12 @@ public final class TeamsManager
     private static final String NBT_LOADOUT_POOL = "loadout_pool";
     private static final String NBT_EXPERIENCE_MULTIPLIER = "experience_multiplier";
     private static final String NBT_SCORES = "scores";
+    private static final String NBT_QUEUED_ROUND = "queued_round";
     private static final int DEFAULT_INTERMISSION_PHASE_TICKS = 200;
     private static final int DEFAULT_AUTO_BALANCE_INTERVAL_TICKS = 400;
     private static final int AUTO_BALANCE_WARNING_TICKS = 200;
+    /** Delay between a Teams respawn and the automatic reload of the gun in the first hotbar slot. */
+    private static final int RESPAWN_RELOAD_DELAY_TICKS = 5;
     public static final String DEFAULT_MOTD = "Welcome to the Teams server";
 
     public enum EnumWeaponDrop
@@ -162,10 +167,6 @@ public final class TeamsManager
     private int mechaLife;
     @Getter @Setter 
     private int aaLife;
-    @Getter @Setter 
-    private int bulletSnapshotMin;
-    @Getter @Setter 
-    private int bulletSnapshotDivisor = 50;
     @Getter 
     private boolean voting;
     @Getter @Setter 
@@ -192,6 +193,9 @@ public final class TeamsManager
     @Nullable 
     private UUID currentRoundId;
     private int rotationIndex = -1;
+    /** Round an operator picked to come next with {@code /teams admin setnext}; played once, then forgotten. */
+    @Nullable
+    private UUID queuedRoundId;
     @Getter
     private int roundTimeLeftTicks;
     @Getter
@@ -558,7 +562,64 @@ public final class TeamsManager
         generateRounds();
         if (Objects.requireNonNull(savedData).rounds.isEmpty())
             return false;
-        return startRound((rotationIndex + 1) % savedData.rounds.size());
+        int queued = queuedRoundIndex();
+        queuedRoundId = null;
+        return startRound(queued >= 0 ? queued : (rotationIndex + 1) % savedData.rounds.size());
+    }
+
+    /**
+     * Makes the round at {@code index} the next one played, whether the current round ends on its own,
+     * an operator skips to the next one, or a vote would otherwise have picked another.
+     */
+    public boolean queueNextRound(int index)
+    {
+        ensureData();
+        if (index < 0 || index >= Objects.requireNonNull(savedData).rounds.size())
+            return false;
+        queuedRoundId = savedData.rounds.get(index).getId();
+        saveRuntime();
+        return true;
+    }
+
+    /** The rotation index of the queued round, or -1 when none is queued or it no longer exists. */
+    public int queuedRoundIndex()
+    {
+        if (queuedRoundId == null || savedData == null)
+            return -1;
+        for (int i = 0; i < savedData.rounds.size(); i++)
+            if (savedData.rounds.get(i).getId().equals(queuedRoundId))
+                return i;
+        return -1;
+    }
+
+    /** Changes the score limit of the round being played, as the legacy {@code scorelimit} game type variable did. */
+    public boolean setCurrentScoreLimit(int scoreLimit)
+    {
+        Optional<TeamsRound> round = getCurrentRound();
+        if (round.isEmpty() || scoreLimit < 1)
+            return false;
+        round.get().setScoreLimit(scoreLimit);
+        markDirty();
+        syncAll(PacketTeamsState.OpenScreen.NONE);
+        return true;
+    }
+
+    /** Persists the Teams rules after a caller changed some of them through their setters. */
+    public void saveSettings()
+    {
+        saveRuntime();
+        syncAll(PacketTeamsState.OpenScreen.NONE);
+    }
+
+    /** Lag compensation, configured in the common config so the legacy BltSS settings survive restarts. */
+    public int getBulletSnapshotMin()
+    {
+        return ModCommonConfig.bulletSnapshotMin();
+    }
+
+    public int getBulletSnapshotDivisor()
+    {
+        return ModCommonConfig.bulletSnapshotDivisor();
     }
 
     public void stopRound()
@@ -744,6 +805,12 @@ public final class TeamsManager
 
     private void startVotedRound()
     {
+        if (queuedRoundIndex() >= 0)
+        {
+            voteOptionIds.clear();
+            startNextRound();
+            return;
+        }
         int[] votes = new int[voteOptionIds.size()];
         for (ServerPlayer player : getServer().getPlayerList().getPlayers())
         {
@@ -1015,7 +1082,13 @@ public final class TeamsManager
         else if (player.gameMode.getGameModeForPlayer() == GameType.SPECTATOR && data.getTeam() != Team.SPECTATORS)
             player.setGameMode(GameType.SURVIVAL);
         if (data.getTeam() != Team.SPECTATORS)
+        {
             applyLoadout(player);
+            // As in 1.7.10, respawned players hold their first hotbar slot and have that gun reloaded
+            player.getInventory().selected = 0;
+            player.connection.send(new ClientboundSetCarriedItemPacket(0));
+            data.setRespawnReloadTicks(RESPAWN_RELOAD_DELAY_TICKS);
+        }
         getCurrentGameType().map(type -> type.getSpawnPoint(this, player)).ifPresent(position -> {
             TeamsMap map = getCurrentRound().flatMap(round -> getMap(round.getMapId())).orElse(null);
             ServerLevel level = map == null ? null : getServer().getLevel(map.getDimension());
@@ -1430,6 +1503,7 @@ public final class TeamsManager
         if (tag.isEmpty())
             return;
 
+        queuedRoundId = tag.hasUUID(NBT_QUEUED_ROUND) ? tag.getUUID(NBT_QUEUED_ROUND) : null;
         enabled = !tag.contains(NBT_ENABLED) || tag.getBoolean(NBT_ENABLED);
         roundRunning = tag.getBoolean(NBT_ROUND_RUNNING);
         currentRoundId = tag.hasUUID(NBT_CURRENT_ROUND) ? tag.getUUID(NBT_CURRENT_ROUND) : null;
@@ -1535,6 +1609,10 @@ public final class TeamsManager
             tag.putUUID(NBT_CURRENT_ROUND, currentRoundId);
 
         tag.putInt(NBT_ROTATION_INDEX, rotationIndex);
+        if (queuedRoundId == null)
+            tag.remove(NBT_QUEUED_ROUND);
+        else
+            tag.putUUID(NBT_QUEUED_ROUND, queuedRoundId);
         tag.putInt(NBT_TIME_LEFT, roundTimeLeftTicks);
         tag.putInt(NBT_ELAPSED, roundElapsedTicks);
         tag.putInt(NBT_INTERMISSION, intermissionTicks);

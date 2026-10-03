@@ -136,6 +136,8 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag advanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltip);
+        if (!IFlanItem.showDetailedDescriptions())
+            return;
         DriveableData data = DriveableData.fromStack(configType, stack, context.registries());
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())

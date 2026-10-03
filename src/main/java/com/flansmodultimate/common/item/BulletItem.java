@@ -34,7 +34,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
         // FancyDescription false keeps the plain pack name and description, as in 1.7.10.
-        if (!configType.isFancyDescription())
+        if (!configType.isFancyDescription() || !IFlanItem.showDetailedDescriptions())
             return;
         tooltipComponents.add(Component.empty());
 

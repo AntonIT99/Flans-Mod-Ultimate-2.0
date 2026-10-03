@@ -47,7 +47,16 @@ public class GunItemEntity extends ItemEntity
 
     public GunItemEntity(ItemEntity itemEntity)
     {
-        this(itemEntity.level(), itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), itemEntity.getItem());
+        this(itemEntity.level(), itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), itemEntity.getItem().copy());
+        setDeltaMovement(itemEntity.getDeltaMovement());
+        setDefaultPickUpDelay();
+    }
+
+    /** Packs a stack of ammunition into the bundle; touching players with a matching gun collect it. */
+    public void addAmmoStack(ItemStack stack)
+    {
+        if (!stack.isEmpty() && stack.getItem() instanceof ShootableItem)
+            ammoStacks.add(stack.copy());
     }
 
     public GunItemEntity(Level level, double x, double y, double z, ItemStack gunStack)

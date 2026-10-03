@@ -77,6 +77,12 @@ Build the separate Packs Manager, content-pack, and NPC Vehicles & Soldiers arti
 
 Build artifacts are written under `build/libs/`.
 
+Each module also has a separate, opt-in CurseForge upload task. Configure its
+project URL and ID in its `fmu-module.gradle`, then run a task such as `publishCurseForgeOfficialPacks` from
+the checkout for the Minecraft version you want to release. See
+[CurseForge releases](docs/curseforge-releases.md) for all tasks, token setup,
+per-module settings, and upload previews.
+
 ## Repository Layout
 
 | Path | Purpose |

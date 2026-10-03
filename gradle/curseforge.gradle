@@ -1,0 +1,242 @@
+import groovy.json.JsonException
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import org.gradle.work.DisableCachingByDefault
+
+import java.nio.charset.StandardCharsets
+
+// Uses the author upload API, not the separate CurseForge discovery API.
+// No publishing task is attached to build, assemble, or Maven publishing.
+@DisableCachingByDefault(because = 'Publishing is an explicit remote side effect')
+abstract class CurseForgeRelease extends DefaultTask {
+    @Input abstract Property<String> getMinecraftVersion()
+    @Input abstract Property<String> getModLoader()
+    @Input abstract Property<String> getProjectId()
+    @Input abstract Property<String> getProjectUrl()
+    @Input abstract Property<String> getMainProjectId()
+    @Input abstract Property<String> getMainProjectSlug()
+    @Input abstract Property<String> getReleaseType()
+    @Input abstract Property<Boolean> getDryRun()
+    @Input abstract Property<Boolean> getUpload()
+    @Input abstract Property<Boolean> getContentPack()
+    @Input abstract Property<String> getDisplayName()
+    @Input abstract Property<String> getApiBaseUrl()
+    @Input abstract ListProperty<String> getRequiredDependencies()
+    @InputFile @PathSensitive(PathSensitivity.NONE)
+    abstract RegularFileProperty getChangelogFile()
+    @InputFile @Optional @PathSensitive(PathSensitivity.NONE)
+    abstract RegularFileProperty getArtifactFile()
+
+    @TaskAction
+    void publish() {
+        Map<String, String> supportedLoaders = ['1.20.1': 'Forge', '1.21.1': 'NeoForge']
+        if (supportedLoaders.get(minecraftVersion.get()) != modLoader.get())
+            throw new GradleException('CurseForge publishing supports only 1.20.1/Forge and 1.21.1/NeoForge. Use the matching branch; do not override minecraft_version.')
+        if (!(projectId.get() ==~ /[1-9][0-9]*/))
+            throw new GradleException('Set a positive numeric curseforge<Artifact>ProjectId (shown on the CurseForge project page). A URL enables publishing; the upload API also requires the numeric ID.')
+        if (!(projectUrl.get() ==~ /https:\/\/(?:www\.)?curseforge\.com\/minecraft\/mc-mods\/[a-z0-9]+(?:-[a-z0-9]+)*\/?/))
+            throw new GradleException('Use a CurseForge project URL: https://www.curseforge.com/minecraft/mc-mods/<slug>.')
+        if (!(releaseType.get() in ['release', 'beta', 'alpha']))
+            throw new GradleException('curseforgeReleaseType must be release, beta, or alpha.')
+        String changelog = changelogFile.get().asFile.getText('UTF-8')
+        if (changelog.isBlank())
+            throw new GradleException('The CurseForge changelog must not be empty.')
+        Map<String, Object> metadata = [
+                changelog: changelog,
+                changelogType: 'markdown',
+                displayName: displayName.get(),
+                gameVersionNames: [minecraftVersion.get(), modLoader.get(), 'Client', 'Server'],
+                releaseType: releaseType.get()
+        ]
+        List<Map<String, Object>> relations = new ArrayList<>()
+        if (contentPack.get()) {
+            if (!(mainProjectSlug.get() ==~ /[a-z0-9]+(?:-[a-z0-9]+)*/))
+                throw new GradleException('Set curseforgeModSlug to the main mod project slug for the module dependency.')
+            if (!mainProjectId.get().isEmpty() && !(mainProjectId.get() ==~ /[1-9][0-9]*/))
+                throw new GradleException('curseforgeModProjectId must be a positive numeric ID when provided.')
+            if (mainProjectId.get() == projectId.get() || projectUrl.get().replaceFirst(/\/$/, '').endsWith('/' + mainProjectSlug.get()))
+                throw new GradleException('The content pack and main mod must use separate CurseForge projects.')
+            Map<String, Object> dependency = [slug: mainProjectSlug.get(), type: 'requiredDependency']
+            if (!mainProjectId.get().isEmpty())
+                dependency.projectID = mainProjectId.get()
+            relations.add(dependency)
+        }
+        requiredDependencies.get().each { slug ->
+            if (!(slug ==~ /[a-z0-9]+(?:-[a-z0-9]+)*/))
+                throw new GradleException('Required dependencies must be comma-separated CurseForge project slugs.')
+            if (!relations.any { it.slug == slug })
+                relations.add([slug: slug, type: 'requiredDependency'] as Map<String, Object>)
+        }
+        if (!relations.isEmpty())
+            metadata.relations = [projects: relations]
+        // Read during execution; credentials are never serialized into the configuration cache.
+        String token = (System.getenv('CURSEFORGE_API_TOKEN') ?: '').trim()
+        if (!dryRun.get() && token.isEmpty())
+            throw new GradleException('Set CURSEFORGE_API_TOKEN to a CurseForge author API token, or use -PcurseforgeDryRun=true to preview.')
+        if (!upload.get()) {
+            logger.lifecycle("Validated CurseForge release: ${displayName.get()} -> project ${projectId.get()}")
+            return
+        }
+        File artifact = artifactFile.get().asFile
+        if (!artifact.isFile() || artifact.length() == 0)
+            throw new GradleException("Missing or empty release artifact: ${artifact}")
+        if (dryRun.get()) {
+            logger.lifecycle("CurseForge preview: ${artifact} -> ${projectUrl.get()} (ID ${projectId.get()})\n${JsonOutput.prettyPrint(JsonOutput.toJson(metadata))}")
+            return
+        }
+
+        String boundary = 'fmu-' + UUID.randomUUID()
+        byte[] header = ("--${boundary}\r\nContent-Disposition: form-data; name=\"metadata\"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n" +
+                JsonOutput.toJson(metadata) + "\r\n--${boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"${artifact.name}\"\r\nContent-Type: application/java-archive\r\n\r\n").getBytes(StandardCharsets.UTF_8)
+        byte[] footer = "\r\n--${boundary}--\r\n".getBytes(StandardCharsets.UTF_8)
+        HttpURLConnection connection = (HttpURLConnection) URI.create("${apiBaseUrl.get()}/api/projects/${projectId.get()}/upload-file").toURL().openConnection()
+        connection.requestMethod = 'POST'
+        connection.instanceFollowRedirects = false
+        connection.connectTimeout = 30000
+        connection.readTimeout = 120000
+        connection.doOutput = true
+        connection.setRequestProperty('X-Api-Token', token)
+        connection.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
+        connection.setFixedLengthStreamingMode(header.length + artifact.length() + footer.length)
+        logger.lifecycle("Uploading ${artifact.name} to CurseForge project ${projectId.get()}...")
+        try {
+            connection.outputStream.withCloseable { output ->
+                output.write(header)
+                artifact.withInputStream { input -> input.transferTo(output) }
+                output.write(footer)
+            }
+            int status = connection.responseCode
+            if (status < 200 || status >= 300)
+                throw new GradleException("CurseForge upload returned HTTP ${status}. Check the project file list before retrying; uploads are not automatically retried.")
+            Object response = connection.inputStream.withCloseable { InputStream input ->
+                new JsonSlurper().parse(input, 'UTF-8')
+            }
+            Object responseId = response instanceof Map ? ((Map<?, ?>) response).get('id') : null
+            if (!(responseId instanceof Number) || ((Number) responseId).longValue() <= 0)
+                throw new GradleException('CurseForge did not return a file ID. Check the project file list before retrying.')
+            logger.lifecycle("CurseForge accepted ${artifact.name}: file ID ${responseId} (subject to CurseForge approval).")
+        } catch (IOException ignored) {
+            // Do not print server bodies or low-level exception text that might echo credentials.
+            throw new GradleException('CurseForge upload failed during network I/O. Check the project file list before retrying; the request may have reached the server.')
+        } catch (JsonException ignored) {
+            throw new GradleException('CurseForge returned an invalid upload response. Check the project file list before retrying.')
+        } finally {
+            connection.disconnect()
+        }
+    }
+}
+
+def setting = { String name, String fallback -> providers.gradleProperty(name).orElse(fallback) }
+def booleanSetting = { String name ->
+    setting(name, 'false').map { value ->
+        if (!(value in ['true', 'false']))
+            throw new GradleException("${name} must be true or false.")
+        value == 'true'
+    }
+}
+def dryRunSetting = booleanSetting('curseforgeDryRun')
+def commonChangelog = setting('curseforgeChangelog', 'CHANGELOG.md')
+def mainId = setting('curseforgeModProjectId', '').map { it.trim() }
+def mainUrl = setting('curseforgeModProjectUrl', '').map { it.trim() }
+def mainSlug = providers.gradleProperty('curseforgeModSlug').orElse(mainUrl.map {
+    it.trim() ? it.replaceFirst(/\/$/, '').tokenize('/').last() : 'flans-mod-ultimate-2'
+})
+String loader = curseforgeModLoader
+List<Map<String, Object>> releases = new ArrayList<>()
+releases.add([name: 'Mod', jar: 'jar', defaults: Collections.emptyMap()] as Map<String, Object>)
+releases.add([name: 'PacksManager', jar: 'packsManagerJar', defaults: Collections.emptyMap()] as Map<String, Object>)
+((List<TaskProvider<Jar>>) fmuModuleJars).each { TaskProvider<Jar> jarProvider ->
+    String jarName = jarProvider.name
+    Map<String, Object> moduleDefaults = (Map<String, Object>) (fmuModulePublishing.get(jarName) ?: Collections.emptyMap())
+    releases.add([
+            name: jarName.replaceFirst(/Jar$/, '').capitalize(),
+            jar: jarName,
+            defaults: moduleDefaults
+    ] as Map<String, Object>)
+}
+// Explicit Gradle properties override module defaults, including a blank URL to disable publishing.
+Closure<Provider<String>> moduleSetting = { Map<String, Object> release, String key, String fallback ->
+    String propertySuffix = key.substring(0, 1).toUpperCase(Locale.ROOT) + key.substring(1)
+    Map<String, Object> defaults = (Map<String, Object>) (release.get('defaults') ?: Collections.emptyMap())
+    Object configured = defaults.get(key)
+    if (configured instanceof Collection)
+        configured = ((Collection<?>) configured).collect { Object value -> value.toString() }.join(',')
+    setting("curseforge${release.get('name')}${propertySuffix}", configured == null ? fallback : configured.toString())
+}
+List<Map<String, Object>> enabledReleases = releases.findAll { Map<String, Object> release ->
+    moduleSetting.call(release, 'projectUrl', '').get().trim()
+}
+List<String> validations = new ArrayList<>()
+for (Map<String, Object> release : enabledReleases) {
+    validations.add('validateCurseForge' + release.get('name').toString())
+}
+List<String> artifacts = enabledReleases.collect { Map<String, Object> release -> (String) release.get('jar') }
+// packsManagerJar has no Minecraft calls and no Forge reobfuscation task.
+List<String> reobfuscations = loader == 'Forge' ?
+        artifacts.findAll { String artifact -> artifact != 'packsManagerJar' }.collect { String artifact -> 'reobf' + artifact.capitalize() } : []
+
+releases.each { Map<String, Object> release ->
+    String name = (String) release.get('name')
+    String jarName = (String) release.get('jar')
+    boolean enabled = release in enabledReleases
+    Provider<String> projectUrlSetting = moduleSetting.call(release, 'projectUrl', '').map { String value -> value.trim() }
+    TaskProvider<Jar> jarTask = tasks.named(jarName, Jar.class)
+    def configureRelease = { CurseForgeRelease task ->
+        task.group = 'publishing'
+        task.minecraftVersion.set(providers.gradleProperty('minecraft_version'))
+        task.modLoader.set(loader)
+        task.projectId.set(moduleSetting.call(release, 'projectId', '').map { String value -> value.trim() })
+        task.projectUrl.set(projectUrlSetting)
+        task.mainProjectId.set(mainId)
+        task.mainProjectSlug.set(mainSlug)
+        task.releaseType.set(moduleSetting.call(release, 'releaseType', setting('curseforgeReleaseType', 'release').get()))
+        task.dryRun.set(dryRunSetting)
+        task.contentPack.set(name != 'Mod')
+        task.displayName.set(jarTask.get().archiveFileName.map { String fileName -> fileName.replaceFirst(/\.jar$/, '') })
+        task.changelogFile.set(layout.projectDirectory.file(moduleSetting.call(release, 'changelog', commonChangelog.get())))
+        task.apiBaseUrl.set('https://minecraft.curseforge.com')
+        task.requiredDependencies.set(moduleSetting.call(release, 'requiredDependencies', '').map { String value ->
+            value.split(',').collect { String dependency -> dependency.trim() }.findAll { String dependency -> !dependency.isEmpty() }
+        })
+        task.onlyIf("curseforge${name}ProjectUrl is configured") { Task candidate ->
+            !((CurseForgeRelease) candidate).projectUrl.get().isBlank()
+        }
+    }
+    def validation = tasks.register("validateCurseForge${name}", CurseForgeRelease) { task ->
+        configureRelease(task)
+        task.description = "Checks the CurseForge ${name} release settings without uploading."
+        task.upload.set(false)
+    }
+    tasks.register("publishCurseForge${name}", CurseForgeRelease) { task ->
+        configureRelease(task)
+        task.description = "Builds and uploads ${name} for this branch's Minecraft version (or previews with -PcurseforgeDryRun=true)."
+        task.upload.set(true)
+        if (enabled) {
+            task.artifactFile.set(jarTask.flatMap { it.archiveFile })
+            task.dependsOn(validation)
+        }
+        // Forge jars must be reobfuscated before the upload; NeoForge jars ship as built.
+        if (enabled && loader == 'Forge' && jarName != 'packsManagerJar')
+            task.dependsOn("reobf${jarName.capitalize()}")
+        // Finish every selected validation and artifact before the first upload.
+        task.mustRunAfter(validations, artifacts, reobfuscations)
+    }
+    jarTask.configure { mustRunAfter(validations) }
+}
+
+enabledReleases.eachWithIndex { Map<String, Object> release, int index ->
+    if (index > 0)
+        tasks.named("publishCurseForge${release.get('name')}", CurseForgeRelease.class) {
+            mustRunAfter("publishCurseForge${enabledReleases[index - 1].get('name')}")
+        }
+}
+tasks.register('validateCurseForge') {
+    group = 'publishing'
+    description = 'Checks all configured CurseForge destinations without building or uploading.'
+    dependsOn(validations)
+}
+tasks.register('publishCurseForge') {
+    group = 'publishing'
+    description = 'Publishes the main mod and modules with configured CurseForge URLs for this branch only.'
+    dependsOn(enabledReleases.collect { Map<String, Object> release -> 'publishCurseForge' + release.get('name').toString() })
+}

@@ -34,6 +34,8 @@ public class AttachmentItem extends Item implements IPaintableItem<AttachmentTyp
     public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        if (!IFlanItem.showDetailedDescriptions())
+            return;
         tooltipComponents.add(Component.empty());
 
         if (configType.isSilencer())

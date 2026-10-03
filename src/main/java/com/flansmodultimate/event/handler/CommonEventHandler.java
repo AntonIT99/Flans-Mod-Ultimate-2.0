@@ -7,7 +7,6 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.command.DefaultAmmoCommand;
 import com.flansmodultimate.common.command.DigitalAmmoCommand;
-import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.command.FMParticleCommand;
 import com.flansmodultimate.common.command.FlanEntityCommand;
 import com.flansmodultimate.common.command.GunAttachmentsCommand;
@@ -21,6 +20,7 @@ import com.flansmodultimate.common.command.VehicleCollisionDebugCommand;
 import com.flansmodultimate.common.command.VehiclePhysicsCommand;
 import com.flansmodultimate.common.command.WorldPhysicsCommand;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
+import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
 import com.flansmodultimate.common.enchantments.EnchantmentModule;
 import com.flansmodultimate.common.entity.Bullet;
@@ -35,6 +35,8 @@ import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.sync.ContentFingerprint;
+import com.flansmodultimate.common.teams.TeamsDeathDrops;
+import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -83,7 +85,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
@@ -296,7 +300,20 @@ public final class CommonEventHandler
             VehicleCollisionDebugCommand.syncOnLogin(sp);
             HitboxDebugCommand.syncOnLogin(sp);
             FlansMod.teamsManager.playerLoggedIn(sp);
+            applyMaxHealth(sp);
         }
+    }
+
+    /** Sets the player's base maximum health from the config, as 1.7.10 did on login and respawn. */
+    public static void applyMaxHealth(ServerPlayer player)
+    {
+        AttributeInstance maxHealth = player.getAttribute(Attributes.MAX_HEALTH);
+        double configured = ModCommonConfig.maxPlayerHealth();
+        if (maxHealth == null || maxHealth.getBaseValue() == configured)
+            return;
+        maxHealth.setBaseValue(configured);
+        if (player.getHealth() > player.getMaxHealth())
+            player.setHealth(player.getMaxHealth());
     }
 
     /** A player coming into view brings how they hold their guns, which only changes when they change it. */
@@ -327,14 +344,28 @@ public final class CommonEventHandler
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event)
     {
         if (event.getEntity() instanceof ServerPlayer player)
+        {
+            applyMaxHealth(player);
+            // A player respawning after death starts at full health, including any health the setting added
+            if (!event.isEndConquered())
+                player.setHealth(player.getMaxHealth());
             FlansMod.teamsManager.respawnPlayer(player, false);
+        }
     }
 
-    /** Whether the running Teams game type lets the player pick up the stack. */
-    public static boolean canPickUp(ServerPlayer player, ItemStack stack)
+    /**
+     * Whether a Teams round lets the player pick up the item: spectators loot nothing, and the game type
+     * may forbid more (zombies cannot pick anything up).
+     */
+    public static boolean canPickUp(ServerPlayer player, ItemEntity item)
     {
-        return FlansMod.teamsManager.getCurrentGameType()
-            .map(type -> type.canPlayerPickup(FlansMod.teamsManager, player, stack))
+        TeamsManager manager = FlansMod.teamsManager;
+        if (!manager.isEnabled() || manager.getCurrentRound().isEmpty())
+            return true;
+        if (manager.getPlayerTeam(player) == Team.SPECTATORS)
+            return false;
+        return manager.getCurrentGameType()
+            .map(type -> type.canPlayerPickup(manager, player, item.getItem()))
             .orElse(true);
     }
 
@@ -353,7 +384,10 @@ public final class CommonEventHandler
         if (event.getEntity() instanceof Mob mob)
             AmbientMobArmor.dropArmor(mob, event.getDrops());
         if (event.getEntity() instanceof Player)
+        {
             event.getDrops().removeIf(item -> !canDrop(item.getItem()));
+            TeamsDeathDrops.apply(FlansMod.teamsManager, event.getDrops());
+        }
     }
 
     private static boolean canDrop(ItemStack stack)
@@ -574,7 +608,7 @@ public final class CommonEventHandler
     /** Announces a player killed by another player's Flan's weapon to the kill feed. */
     private static void sendKillMessage(ServerPlayer victim, DamageSource source)
     {
-        if (!(source.getEntity() instanceof ServerPlayer killer) || killer == victim)
+        if (!ModCommonConfig.enableKillMessages() || !(source.getEntity() instanceof ServerPlayer killer) || killer == victim)
             return;
         InfoType weapon = findKillingWeapon(source, killer);
         if (weapon == null)

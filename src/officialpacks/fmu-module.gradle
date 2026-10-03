@@ -4,5 +4,7 @@ registerFmuModule(
     jarTask: 'officialPacksJar',
     archiveBaseName: "[$minecraft_version] Flan's Mod Ultimate Classic Packs",
     archiveVersion: '1.1',
+    // A blank projectUrl disables this module's CurseForge upload.
+    curseforge: [projectUrl: 'https://www.curseforge.com/minecraft/mc-mods/flans-ultimate-2-classic-packs', projectId: '1707900'],
     implementationTitle: 'officialpacks'
 )

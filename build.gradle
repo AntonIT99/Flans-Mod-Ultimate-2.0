@@ -120,9 +120,11 @@ configureModSourceSet(sourceSets.packsmanager, "$packs_manager_mod_id")
  * Registers an optional module described by src/<module>/fmu-module.gradle.
  * Required: sourceSet, modId, jarTask, archiveBaseName, archiveVersion.
  * Optional: directory (defaults to sourceSet), implementationTitle (defaults to sourceSet),
- *           javaCompileJvmArgs.
+ *           javaCompileJvmArgs, curseforge (projectUrl, projectId, changelog,
+ *           releaseType, requiredDependencies).
  */
-def fmuModuleJars = []
+ext.fmuModuleJars = []
+ext.fmuModulePublishing = [:]
 ext.registerFmuModule = { Map module ->
     def missing = ['sourceSet', 'modId', 'jarTask', 'archiveBaseName', 'archiveVersion'].findAll { !module[it]?.toString()?.trim() }
     if (missing)
@@ -131,6 +133,9 @@ ext.registerFmuModule = { Map module ->
     String name = module.sourceSet.toString()
     String modId = module.modId.toString()
     String moduleVersion = module.archiveVersion.toString()
+    if (module.curseforge != null && !(module.curseforge instanceof Map))
+        throw new GradleException("FMU module '${name}' curseforge settings must be a map")
+    fmuModulePublishing[module.jarTask.toString()] = new LinkedHashMap(module.curseforge ?: [:])
     File directory = file("src/${module.directory ?: name}")
     if (!directory.isDirectory())
         throw new GradleException("FMU module directory does not exist: ${directory}")
@@ -441,6 +446,10 @@ tasks.withType(PublishToMavenRepository).configureEach { PublishToMavenRepositor
         }
     }
 }
+
+// Each checkout publishes only its own Minecraft version and loader.
+ext.curseforgeModLoader = 'NeoForge'
+apply from: 'gradle/curseforge.gradle'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

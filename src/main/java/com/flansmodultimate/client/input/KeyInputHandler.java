@@ -44,6 +44,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -176,6 +177,12 @@ public final class KeyInputHandler
     private static boolean lastMouseControl;
     private static boolean wasSneaking;
     private static List<KeyMapping> claimableVanillaActions;
+
+    /** The key currently bound to open and close driveable doors, as shown on the HUD. */
+    public static Component getDoorKeyName()
+    {
+        return doorKey.getTranslatedKeyMessage();
+    }
 
     private static KeyMapping key(String name, int keyCode, IKeyConflictContext context, String category)
     {

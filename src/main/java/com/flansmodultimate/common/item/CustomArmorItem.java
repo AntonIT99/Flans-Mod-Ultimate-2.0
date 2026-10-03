@@ -96,6 +96,8 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
     public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag isAdvanced)
     {
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
+        if (!IFlanItem.showDetailedDescriptions())
+            return;
         tooltipComponents.add(Component.empty());
 
         int armorPoints = configType.getMinecraftArmorPoints();
