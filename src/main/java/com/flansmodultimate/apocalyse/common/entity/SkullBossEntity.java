@@ -6,6 +6,7 @@ import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.registry.RegistryEntry;
+import com.flansmodultimate.platform.entity.FlanMonster;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +31,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -46,7 +46,7 @@ import net.minecraft.world.phys.Vec3;
  * whoever last hurt it. Its laughs, drones and TNT carry on whether or not it has a target.</p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class SkullBossEntity extends Monster
+public class SkullBossEntity extends FlanMonster
 {
     private static final String NBT_ACTION = "apocalypse_action";
     private static final String NBT_ACTION_TICKS = "apocalypse_action_ticks";
@@ -79,7 +79,7 @@ public class SkullBossEntity extends Monster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return Monster.createMonsterAttributes()
+        return FlanMonster.createMonsterAttributes()
             .add(Attributes.MAX_HEALTH, 1024.0D)
             .add(Attributes.FLYING_SPEED, 0.35D)
             .add(Attributes.FOLLOW_RANGE, REACQUIRE_RANGE)
@@ -307,9 +307,8 @@ public class SkullBossEntity extends Monster
     }
 
     @Override
-    protected void dropCustomDeathLoot(@NotNull DamageSource source, int looting, boolean recentlyHit)
+    protected void dropEntityDeathLoot(@NotNull DamageSource source, boolean recentlyHit)
     {
-        super.dropCustomDeathLoot(source, looting, recentlyHit);
         spawnAtLocation(new ItemStack(Items.GOLDEN_APPLE, 1 + random.nextInt(3)));
         spawnAtLocation(new ItemStack(Items.GUNPOWDER, 16 + random.nextInt(16)));
         if (random.nextBoolean())

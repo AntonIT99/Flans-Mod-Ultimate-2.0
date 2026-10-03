@@ -3,6 +3,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseGunCombat;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseGunHelper;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.entity.FlanMonster;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +24,6 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -39,7 +39,7 @@ import net.minecraft.world.phys.Vec3;
  * despawned.</p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class SkullDroneEntity extends Monster
+public class SkullDroneEntity extends FlanMonster
 {
     /** Per-tick chance of dropping the current target, or of looking for one when idle. */
     private static final int TARGET_CHANGE_CHANCE = 1200;
@@ -61,7 +61,7 @@ public class SkullDroneEntity extends Monster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return Monster.createMonsterAttributes()
+        return FlanMonster.createMonsterAttributes()
             .add(Attributes.MAX_HEALTH, 60.0D)
             .add(Attributes.FLYING_SPEED, 0.45D)
             .add(Attributes.FOLLOW_RANGE, ACQUIRE_RANGE)
@@ -159,9 +159,9 @@ public class SkullDroneEntity extends Monster
 
     @Override
     @Nullable
-    public SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
     {
-        SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnType, spawnData, dataTag);
+        SpawnGroupData result = super.finalizeEntitySpawn(level, difficulty, spawnType, spawnData, dataTag);
         equipDefault(level.getRandom());
         return result;
     }
