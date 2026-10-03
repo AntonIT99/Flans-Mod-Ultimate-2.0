@@ -56,6 +56,8 @@ public final class ModClientConfig
     public final boolean showFlashesWhenWounded;
     public final boolean vehicleScreenShake;
     public final boolean enablePlayerClassSkinOverrides;
+    public final double driveableRenderDistanceMultiplier;
+    public final double flanNpcRenderDistanceMultiplier;
     public final int bulletRenderDistance;
     public final int grenadeRenderDistance;
     public final int deployedGunRenderDistance;
@@ -167,6 +169,8 @@ public final class ModClientConfig
     public static final ForgeConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
     public static final ForgeConfigSpec.BooleanValue VEHICLE_SCREEN_SHAKE;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
+    public static final ForgeConfigSpec.DoubleValue DRIVEABLE_RENDER_DISTANCE_MULTIPLIER;
+    public static final ForgeConfigSpec.DoubleValue FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
     private static final Supplier<Integer> BULLET_RENDER_DISTANCE;
     private static final Supplier<Integer> GRENADE_RENDER_DISTANCE;
     private static final Supplier<Integer> DEPLOYED_GUN_RENDER_DISTANCE;
@@ -397,6 +401,12 @@ public final class ModClientConfig
         ENABLE_GPU_MODEL_CACHE = builder
             .comment("Experimental GPU cache for rigid full-detail vehicle and gun model parts. Uses up to 64 MiB of vertex buffers and keeps animated transforms, tint and lighting live. Unsupported geometry, sorted transparency, Fabulous graphics, OptiFine and active Oculus/Iris shader packs use the standard renderer. Disable if rendering artifacts or slower frame times occur. No restart required.")
             .define("enableGpuModelCache", true);
+        DRIVEABLE_RENDER_DISTANCE_MULTIPLIER = builder
+            .comment("Multiplier of the size-based Minecraft entity render distance for vehicles, planes and mechas. Keeps collision-box proportionality and Minecraft Entity Distance scaling. Server tracking and view distance still limit visibility; Distant Horizons chunk-edge extension can override this cutoff.")
+            .defineInRange("driveableRenderDistanceMultiplier", 1D, 0.25D, 4D);
+        FLAN_NPC_RENDER_DISTANCE_MULTIPLIER = builder
+            .comment("Multiplier of the size-based Minecraft render distance for Flan-model NPCs and explicitly opted-in soldiers. Requires the NPC module. Server tracking and view distance still limit visibility; NPCs have no distant proxies.")
+            .defineInRange("flanNpcRenderDistanceMultiplier", 1D, 0.25D, 4D);
         BULLET_RENDER_DISTANCE = builder
             .comment("Client-side render distance in blocks for bullets.")
             .defineInRange("bulletRenderDistance", 128, 1, 4096);
@@ -595,8 +605,8 @@ public final class ModClientConfig
             .define("distantHorizonsExplosions", true);
         DISTANT_HORIZONS_DRIVEABLE_RENDERING = builder
             .comment("Keep drawing driveables as entities up to the edge of the vanilla chunks, where their far-terrain shapes take over,",
-                "instead of hiding them at the vanilla entity distance.")
-            .define("distantHorizonsDriveableRendering", true);
+                "This explicitly extends the configured size-based render cutoff. Off keeps that cutoff and uses distant contact shapes beyond it.")
+            .define("distantHorizonsDriveableRendering", false);
         builder.pop();
 
         configSpec = builder.build();
@@ -644,6 +654,8 @@ public final class ModClientConfig
         showFlashesWhenWounded = SHOW_FLASHES_WHEN_WOUNDED.get();
         vehicleScreenShake = VEHICLE_SCREEN_SHAKE.get();
         enablePlayerClassSkinOverrides = ENABLE_PLAYER_CLASS_SKIN_OVERRIDES.get();
+        driveableRenderDistanceMultiplier = DRIVEABLE_RENDER_DISTANCE_MULTIPLIER.get();
+        flanNpcRenderDistanceMultiplier = FLAN_NPC_RENDER_DISTANCE_MULTIPLIER.get();
         bulletRenderDistance = BULLET_RENDER_DISTANCE.get();
         grenadeRenderDistance = GRENADE_RENDER_DISTANCE.get();
         deployedGunRenderDistance = DEPLOYED_GUN_RENDER_DISTANCE.get();
@@ -851,6 +863,11 @@ public final class ModClientConfig
             FlansMod.log.warn("Ignoring a client option change made before {} was loaded", CONFIG_FILE_NAME);
             return false;
         }
+
+        var spec = ConfigSpecValues.valueSpec(configSpec, value.getPath());
+        if (newValue == null || spec == null || !spec.getClazz().isInstance(newValue) || !spec.test(newValue)
+            || newValue instanceof Double number && !Double.isFinite(number))
+            return false;
 
         if (newValue.equals(value.get()))
             return false;

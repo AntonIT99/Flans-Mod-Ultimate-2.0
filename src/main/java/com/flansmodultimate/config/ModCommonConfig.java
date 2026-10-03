@@ -127,6 +127,9 @@ public final class ModCommonConfig
     private static final int MAX_ENTITY_TRACKING_RANGE = 4096;
     private static final String ENTITY_TRACKING_CONFIG_SECTION = "Entity Tracking Settings";
 
+    public static final ForgeConfigSpec.IntValue DRIVEABLE_TRACKING_RANGE;
+    public static final ForgeConfigSpec.IntValue FLAN_NPC_TRACKING_RANGE;
+
     private static final Supplier<Boolean> ADD_ALL_PAINTJOBS_TO_CREATIVE;
     private static final Supplier<Boolean> ADD_GUNPOWDER_RECIPE;
     private static final Supplier<Boolean> VALIDATE_CONTENT_REFERENCES_ON_WORLD_LOAD;
@@ -361,6 +364,12 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push(ENTITY_TRACKING_CONFIG_SECTION);
+        DRIVEABLE_TRACKING_RANGE = builder
+            .comment("Live server-side tracking range in blocks for driveables and their seats/wheels. Server view distance and tracking scaling still apply. No restart required.")
+            .defineInRange("driveableTrackingRange", 512, 16, 512);
+        FLAN_NPC_TRACKING_RANGE = builder
+            .comment("Live server-side tracking range in blocks for Flan-model NPCs and explicitly opted-in soldiers. Requires the NPC module. Server view distance and tracking scaling still apply. No restart required.")
+            .defineInRange("flanNpcTrackingRange", 256, 16, 512);
         BULLET_TRACKING_RANGE = builder
             .comment("Server-side tracking range in blocks for bullets. Requires restart because entity types are registered during startup.")
             .defineInRange("bulletTrackingRange", DEFAULT_BULLET_TRACKING_RANGE, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
@@ -850,6 +859,8 @@ public final class ModCommonConfig
             GRENADE_TRACKING_RANGE.get(),
             DEPLOYED_GUN_TRACKING_RANGE.get(),
             AA_GUN_TRACKING_RANGE.get(),
+            DRIVEABLE_TRACKING_RANGE.get(),
+            FLAN_NPC_TRACKING_RANGE.get(),
 
             HEADSHOT_DAMAGE_MODIFIER.get().floatValue(),
             CHESTSHOT_DAMAGE_MODIFIER.get().floatValue(),
@@ -1408,6 +1419,18 @@ public final class ModCommonConfig
         return config == null ? EnumEntityAimPose.DYNAMIC : config.entityAimPose();
     }
 
+    public static int driveableTrackingRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? 512 : config.driveableTrackingRange();
+    }
+
+    public static int flanNpcTrackingRange()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? 256 : config.flanNpcTrackingRange();
+    }
+
     public static int aaGunTrackingRange()
     {
         CommonConfigSnapshot config = get();
@@ -1564,7 +1587,9 @@ public final class ModCommonConfig
         DRIVEABLE_COLLISIONS_BREAK_BLOCKS(() -> ModCommonConfig.DRIVEABLE_COLLISIONS_BREAK_BLOCKS),
         SHOOTABLES_CAN_BREAK_GLASS(() -> ModCommonConfig.SHOOTABLES_CAN_BREAK_GLASS),
         PLAYER_AIM_POSE(() -> ModCommonConfig.PLAYER_AIM_POSE),
-        ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE);
+        ENTITY_AIM_POSE(() -> ModCommonConfig.ENTITY_AIM_POSE),
+        DRIVEABLE_TRACKING_RANGE(() -> ModCommonConfig.DRIVEABLE_TRACKING_RANGE),
+        FLAN_NPC_TRACKING_RANGE(() -> ModCommonConfig.FLAN_NPC_TRACKING_RANGE);
 
         /** Deferred so that the enum can be loaded before the outer config spec is built. */
         private final Supplier<? extends ForgeConfigSpec.ConfigValue<?>> configValue;
@@ -1594,6 +1619,7 @@ public final class ModCommonConfig
     {
         CommonConfigSnapshot config = readConfig();
         instance.set(config);
+        com.flansmodultimate.common.entity.EntityDistancePolicy.requestTrackingRefresh();
         localGravityFactors = parseDimensionFactors(config.dimensionGravityFactors());
         localDragFactors = parseDimensionFactors(config.dimensionDragFactors());
         rebuildPenetrableBlocks(config.penetrableBlocksLines());

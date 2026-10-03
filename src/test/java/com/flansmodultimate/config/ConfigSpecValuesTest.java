@@ -15,6 +15,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigSpecValuesTest
 {
+    @Test
+    void rejectsFractionalOverflowingAndNonFiniteNumbers()
+    {
+        assertNull(ConfigSpecValues.coerce(Integer.class, 256.5D));
+        assertNull(ConfigSpecValues.coerce(Integer.class, Long.MAX_VALUE));
+        assertNull(ConfigSpecValues.coerce(Integer.class, Double.NaN));
+        assertNull(ConfigSpecValues.coerce(Double.class, Double.NaN));
+        assertNull(ConfigSpecValues.coerce(Double.class, Double.POSITIVE_INFINITY));
+        assertEquals(256, ConfigSpecValues.coerce(Integer.class, 256D));
+    }
+
     private enum Flavour
     {
         MILD,

@@ -6277,7 +6277,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     @Override
     public boolean shouldRenderAtSqrDistance(double distSq)
     {
-        if (super.shouldRenderAtSqrDistance(distSq))
+        double configuredDistance = EntityDistancePolicy.renderDistance(this, false);
+        if (distSq < configuredDistance * configuredDistance)
             return true;
         double distance = DistantRenderRange.driveableRenderDistance();
         return distance > 0D && distSq < distance * distance;

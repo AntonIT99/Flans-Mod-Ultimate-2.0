@@ -152,10 +152,14 @@ public final class ConfigSpecValues
         }
 
         if (type == Integer.class && value instanceof Number number)
-            return number.intValue();
+        {
+            double numeric = number.doubleValue();
+            return Double.isFinite(numeric) && numeric >= Integer.MIN_VALUE && numeric <= Integer.MAX_VALUE
+                && numeric == Math.rint(numeric) ? number.intValue() : null;
+        }
 
         if (type == Double.class && value instanceof Number number)
-            return number.doubleValue();
+            return Double.isFinite(number.doubleValue()) ? number.doubleValue() : null;
 
         return type.isInstance(value) ? value : null;
     }
