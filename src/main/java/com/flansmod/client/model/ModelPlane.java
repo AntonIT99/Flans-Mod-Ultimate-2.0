@@ -310,7 +310,7 @@ public class ModelPlane extends ModelDriveable
                                      int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
                                      float scale, EnumRenderPass renderPass)
     {
-        if (!(driveable.getConfigType() instanceof PlaneType type))
+        if (!(driveable.getConfigType() instanceof PlaneType planeType))
             return;
 
         if (driveable.isPartIntact(EnumDriveablePart.LEFT_WING))

@@ -621,6 +621,25 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             aimYaw, aimPitch, this instanceof Plane);
     }
 
+    /**
+     * Whether a seat's aim is stored relative to the turret rather than the hull.
+     * A vehicle's turret carries the passenger seats placed on it, so their guns
+     * traverse within the turret and, left alone, keep pointing along it. The
+     * driver's aim is what turns the turret, so it stays relative to the hull.
+     */
+    public boolean isTurretFramedSeat(@NotNull Seat seat)
+    {
+        SeatInfo info = seat.getSeatInfo();
+        return this instanceof Vehicle && !seat.isDriverSeat() && info != null
+            && info.getPart() == EnumDriveablePart.TURRET;
+    }
+
+    /** Hull-relative yaw of the frame a seat's aim is stored in; see {@link #isTurretFramedSeat}. */
+    public float getSeatAimFrameYaw(@NotNull Seat seat, float partialTick)
+    {
+        return isTurretFramedSeat(seat) ? Mth.rotLerp(partialTick, prevTurretYaw, getTurretYaw()) : 0F;
+    }
+
     /** Initial model pitch used when this driveable is placed in the world. */
     public float getInitialPlacementPitch() { return 0F; }
     public float getThrottle() { return prediction != null ? predictedThrottle : entityData.get(DATA_THROTTLE); }
@@ -3074,7 +3093,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         {
             Vec3 localDirection = configuredModelLocal(new Vec3(particle.x(), particle.y(), particle.z()));
             Vec3 direction = modelLocalDirectionToWorld(rotateTurretLocalDirection(localDirection,
-                seat.getAimYaw(), localAimPitch(seat.getAimPitch())));
+                seat.getHullAimYaw(), localAimPitch(seat.getAimPitch())));
             ClientHooks.RENDER.spawnParticle(particle.name(), origin.x, origin.y, origin.z,
                 direction.x, direction.y, direction.z, 1F);
         }
@@ -3206,7 +3225,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (index < passengerBarrelIndices.length)
             passengerBarrelIndices[index] = (barrel + 1) % info.getGunBarrelCount();
         Vec3 origin = getPassengerShootOrigin(seat, info, barrel);
-        Vec3 direction = aimedDirection(seat.getAimYaw(), seat.getAimPitch());
+        Vec3 direction = aimedDirection(seat.getHullAimYaw(), seat.getAimPitch());
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
         ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType),
             origin, direction, this, attacker, ShootableItem.getRoundsFired(ammo), () -> {
@@ -3278,7 +3297,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         Seat seat = getSeat(seatIndex);
         SeatInfo info = configType == null ? null : configType.getSeat(seatIndex);
         return seat == null || info == null || info.getGunType() == null
-            ? null : aimedDirection(seat.getAimYaw(), seat.getAimPitch());
+            ? null : aimedDirection(seat.getHullAimYaw(), seat.getAimPitch());
     }
 
     /**
@@ -3308,13 +3327,13 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // Aircraft draw seat guns turned half round from their rest pose
         // (ModelDriveable.registeredGunAngles), so an aircraft gun rests aiming aft.
         float restYaw = this instanceof Plane ? 180F : 0F;
-        Vec3 offset = LegacyDriveableCoordinates.aimAroundPivot(muzzle, pivot, restYaw,
-            seat.getAimYaw(), localAimPitch(seat.getAimPitch())).subtract(pivot);
-        // A vehicle draws the guns on its turret inside the turret transform.
-        // The aim is already absolute, so only the pivot rides the turret round.
-        if (this instanceof Vehicle && info.getPart() == EnumDriveablePart.TURRET)
-            pivot = turretPointToLocal(pivot, getTurretYaw(), 0F);
-        return modelLocalToWorld(pivot.add(offset));
+        Vec3 aimed = LegacyDriveableCoordinates.aimAroundPivot(muzzle, pivot, restYaw,
+            seat.getAimYaw(), localAimPitch(seat.getAimPitch()));
+        // A vehicle draws the guns on its turret inside the turret transform and
+        // their aim is relative to the turret, so the whole aimed gun rides it round.
+        if (isTurretFramedSeat(seat))
+            aimed = turretPointToLocal(aimed, getTurretYaw(), 0F);
+        return modelLocalToWorld(aimed);
     }
 
     /**

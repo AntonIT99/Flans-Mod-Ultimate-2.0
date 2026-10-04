@@ -187,14 +187,14 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     protected float gunSlideDistance = 0.25F;
     @Getter @Setter
     protected float altgunSlideDistance = 0.25F;
-    @Getter @Setter
+    @Getter @Setter @SuppressWarnings("java:S116")
     protected float RecoilSlideDistance = 0.125F;
-    @Getter @Setter
+    @Getter @Setter @SuppressWarnings("java:S116")
     protected float RotateSlideDistance = -3F;
-    @Getter @Setter
+    @Getter @Setter @SuppressWarnings("java:S116")
     protected float ShakeDistance;
-    @Getter @Setter
     /** Select an amount of recoil per shot, between 0 and 1 */
+    @Getter @Setter
     protected float recoilAmount = 0.33F;
 
     /** Charge handle distance/delay/time */
@@ -499,12 +499,10 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims, EnumRenderPass renderPass) {}
-
-    @Deprecated
-    public void renderCustom(float scale, GunAnimations anims)
+    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims, EnumRenderPass renderPass)
     {
-        // Do not call this method since it usually contain calls to the old GlStateManager API
+        // This is a placeholder for custom rendering logic that can be implemented in subclasses or specific instances of ModelGun.
+        // It allows for more complex rendering behavior based on the provided GunAnimations object, which can contain information about the current state of the gun's animations.
     }
 
     private void writeToModel(GunAnimationConfig config)

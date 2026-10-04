@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.api.IDriveableType;
 import com.flansmodultimate.api.ISeat;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
@@ -12,12 +12,12 @@ import com.flansmodultimate.common.driveables.OpticsHud;
 import com.flansmodultimate.common.driveables.OpticsState;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.driveables.VehicleOptics;
-import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -257,6 +257,16 @@ public class Seat extends FlanEntity implements IControllable, ISeat
         return entityData.get(DATA_AIM_PITCH);
     }
 
+    /**
+     * Aim yaw relative to the driveable's hull. {@link #getAimYaw} is relative to
+     * the frame the seat sits in, which is the turret for a vehicle's turret seats.
+     */
+    public float getHullAimYaw()
+    {
+        return driveable == null ? getAimYaw()
+            : Mth.wrapDegrees(getAimYaw() + driveable.getSeatAimFrameYaw(this, 1F));
+    }
+
     public float getViewAimYaw()
     {
         return getViewAimYaw(1F);
@@ -329,7 +339,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat
     {
         return driveable == null
             ? new LegacyDriveableCoordinates.ViewAngles(getYRot(), getXRot(), 0F)
-            : driveable.getMountedViewAngles(getViewAimYaw(), getViewAimPitch());
+            : driveable.getMountedViewAngles(getViewAimYaw() + driveable.getSeatAimFrameYaw(this, 1F), getViewAimPitch());
     }
 
     public float getMountedViewYaw()
@@ -561,7 +571,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat
         setPos(position.x, position.y, position.z);
         setDeltaMovement(Vec3.ZERO);
         LegacyDriveableCoordinates.ViewAngles view =
-            driveable.getMountedViewAngles(getAimYaw(), getAimPitch());
+            driveable.getMountedViewAngles(getHullAimYaw(), getAimPitch());
         setYRot(view.yaw());
         setXRot(view.pitch());
     }

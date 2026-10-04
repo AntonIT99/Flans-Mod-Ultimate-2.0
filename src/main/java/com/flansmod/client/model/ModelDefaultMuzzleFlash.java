@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
 {
-    protected ModelRendererTurbo mfModel[];
+    protected ModelRendererTurbo[] mfModel;
 
     public ModelDefaultMuzzleFlash()
     {
