@@ -44,12 +44,12 @@ public final class TrackLinkLod
                 continue;
             }
             storeTransform(part, transforms, i * 9);
-            for (var group : part.getTextureGroups())
-                for (TexturedPolygon polygon : group.poly)
-                {
-                    polygons.add(polygon);
-                    supported &= polygon != null && polygon.isRigidLodGeometry();
-                }
+            // Read-only: the texture-group accessors would make every link scan its vertices on each render.
+            for (TexturedPolygon polygon : part.getRenderPolygons())
+            {
+                polygons.add(polygon);
+                supported &= polygon != null && polygon.isRigidLodGeometry();
+            }
         }
         revisions = new long[polygons.size()];
         rigid = new boolean[polygons.size()];
@@ -101,15 +101,14 @@ public final class TrackLinkLod
                 return simplified == null;
             if (!sameTransform(part, transforms, i * 9))
                 return false;
-            for (var group : part.getTextureGroups())
-                for (TexturedPolygon polygon : group.poly)
-                {
-                    if (polygonIndex >= polygons.size() || polygon != polygons.get(polygonIndex)
-                        || polygon == null || polygon.geometryRevision() != revisions[polygonIndex]
-                        || polygon.isRigidLodGeometry() != rigid[polygonIndex])
-                        return false;
-                    polygonIndex++;
-                }
+            for (TexturedPolygon polygon : part.getRenderPolygons())
+            {
+                if (polygonIndex >= polygons.size() || polygon != polygons.get(polygonIndex)
+                    || polygon == null || polygon.geometryRevision() != revisions[polygonIndex]
+                    || polygon.isRigidLodGeometry() != rigid[polygonIndex])
+                    return false;
+                polygonIndex++;
+            }
         }
         return polygonIndex == polygons.size();
     }
@@ -158,7 +157,12 @@ public final class TrackLinkLod
     @Nullable
     public ModelRendererTurbo[] parts(int group)
     {
-        return group >= 4 ? quadrupled : group >= 2 ? doubled : simplified;
+        if (group >= 4)
+            return quadrupled;
+        if (group >= 2)
+            return doubled;
+
+        return simplified;
     }
 
     public static boolean active() { return ACTIVE_GROUP.get() > 0; }

@@ -117,7 +117,7 @@ public final class TrackLinkLodCollector implements VertexConsumer
                 vertices[i] = new PositionTextureVertex(xyz[0] * 16, xyz[1] * 16, xyz[2] * 16,
                     textures[face][corner][0], textures[face][corner][1]);
             }
-            result.copyTo(vertices, new TexturedPolygon[]{new TexturedPolygon(vertices)});
+            result.adoptGeometry(vertices, new TexturedPolygon[]{new TexturedPolygon(vertices)});
         }
         return result;
     }

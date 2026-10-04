@@ -47,6 +47,7 @@ public final class ModCommonConfig
     /** Per-class speed scales, at their neutral value unless an operator slows a class down. */
     public static final double DEFAULT_REALISTIC_PLANE_SPEED_SCALE = 1.0D;
     public static final double DEFAULT_REALISTIC_GROUND_VEHICLE_SPEED_SCALE = 1.0D;
+    public static final double DEFAULT_VEHICLE_THROTTLE_DECAY_MULTIPLIER = 4D;
     /** Absolute speed ceilings, high enough by default to be inert until an operator lowers them. */
     public static final double DEFAULT_MAX_PLANE_SPEED_KMH = 10000.0D;
     public static final double DEFAULT_MAX_VEHICLE_SPEED_KMH = 10000.0D;
@@ -250,6 +251,7 @@ public final class ModCommonConfig
     private static final Supplier<Double> REALISTIC_AIRCRAFT_THROTTLE_RESPONSE;
     private static final Supplier<Double> REALISTIC_PLANE_SPEED_SCALE;
     private static final Supplier<Double> REALISTIC_GROUND_VEHICLE_SPEED_SCALE;
+    private static final Supplier<Double> VEHICLE_THROTTLE_DECAY_MULTIPLIER;
     private static final Supplier<Double> MAX_PLANE_SPEED_KMH;
     private static final Supplier<Double> MAX_VEHICLE_SPEED_KMH;
     private static final Supplier<Boolean> FORCE_LEGACY_VEHICLE_KNOCKBACK;
@@ -650,6 +652,11 @@ public final class ModCommonConfig
         builder.pop();
 
         builder.push("Vehicle Physics Settings");
+        VEHICLE_THROTTLE_DECAY_MULTIPLIER = builder
+            .comment("Multiplier for each ground or water vehicle's content-pack ThrottleDecay rate.",
+                "4 keeps the faster default decay; 1 restores the original rate; 0 disables automatic decay.",
+                "Applies in all physics modes without changing the decay delay, conditions or persistent throttle.")
+            .defineInRange("vehicleThrottleDecayMultiplier", DEFAULT_VEHICLE_THROTTLE_DECAY_MULTIPLIER, 0D, 100D);
         FORCE_LEGACY_PLANE_PHYSICS = builder
             .comment("Force all planes to use their legacy movement physics, even when Real* aircraft parameters are present.",
                 "This bypasses derived fixed-wing propulsion, lift, controls, manoeuvre drag, draft, movement scaling and speed caps.",
@@ -972,7 +979,8 @@ public final class ModCommonConfig
 
             ENCHANTMENT_MODULE_ENABLED.get(),
 
-            List.copyOf(FLUID_FUELS_RAW.get())
+            List.copyOf(FLUID_FUELS_RAW.get()),
+            VEHICLE_THROTTLE_DECAY_MULTIPLIER.get()
         );
     }
 
@@ -1144,6 +1152,14 @@ public final class ModCommonConfig
         CommonConfigSnapshot config = get();
         return config == null ? DEFAULT_REALISTIC_GROUND_VEHICLE_SPEED_SCALE
             : config.realisticGroundVehicleSpeedScale();
+    }
+
+    /** Automatic throttle return rate, using the server's value in multiplayer. */
+    public static double vehicleThrottleDecayMultiplier()
+    {
+        CommonConfigSnapshot config = get();
+        return config == null ? DEFAULT_VEHICLE_THROTTLE_DECAY_MULTIPLIER
+            : config.vehicleThrottleDecayMultiplier();
     }
 
     /**

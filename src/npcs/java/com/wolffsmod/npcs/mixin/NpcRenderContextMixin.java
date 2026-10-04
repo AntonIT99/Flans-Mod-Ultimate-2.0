@@ -1,6 +1,7 @@
-package com.wolffsmod.npcs.platform.render;
+package com.wolffsmod.npcs.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.wolffsmod.npcs.platform.render.NpcRenderBuffers;
 import noppes.npcs.client.renderer.RenderCustomNpc;
 import noppes.npcs.entity.EntityCustomNpc;
 import org.spongepowered.asm.mixin.Mixin;

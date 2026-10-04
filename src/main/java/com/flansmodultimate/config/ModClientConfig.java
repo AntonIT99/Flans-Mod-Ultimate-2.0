@@ -15,6 +15,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import net.minecraftforge.common.ForgeConfigSpec;
+import org.apache.commons.lang3.BooleanUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,6 +66,7 @@ public final class ModClientConfig
     public final double minimumDriveablePartPixelSize;
     public final boolean enableDriveableLod;
     public final boolean enableGpuModelCache;
+    public final int gpuModelCacheMegabytes;
     public final double maximumDriveableLodPartPixelSize;
     public final double driveableLodDetailMultiplier;
     public final double groundVehicleLodDistanceFactor;
@@ -178,6 +180,7 @@ public final class ModClientConfig
     private static final ForgeConfigSpec.DoubleValue MINIMUM_DRIVEABLE_PART_PIXEL_SIZE;
     private static final ForgeConfigSpec.BooleanValue ENABLE_DRIVEABLE_LOD;
     public static final ForgeConfigSpec.BooleanValue ENABLE_GPU_MODEL_CACHE;
+    public static final ForgeConfigSpec.IntValue GPU_MODEL_CACHE_MEGABYTES;
     private static final ForgeConfigSpec.DoubleValue MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE;
     private static final ForgeConfigSpec.DoubleValue DRIVEABLE_LOD_DETAIL_MULTIPLIER;
     private static final Supplier<Double> GROUND_VEHICLE_LOD_DISTANCE_FACTOR;
@@ -399,8 +402,11 @@ public final class ModClientConfig
 
         builder.push("Entity Rendering Settings");
         ENABLE_GPU_MODEL_CACHE = builder
-            .comment("Experimental GPU cache for rigid full-detail vehicle and gun model parts. Uses up to 64 MiB of vertex buffers and keeps animated transforms, tint and lighting live. Unsupported geometry, sorted transparency, Fabulous graphics, OptiFine and active Oculus/Iris shader packs use the standard renderer. Disable if rendering artifacts or slower frame times occur. No restart required.")
+            .comment("Experimental GPU cache for rigid full-detail vehicle and gun model parts. Keeps animated transforms, tint and lighting live. Unsupported geometry, sorted transparency, Fabulous graphics, OptiFine and active Oculus/Iris shader packs use the standard renderer. Disable if rendering artifacts or slower frame times occur. No restart required.")
             .define("enableGpuModelCache", true);
+        GPU_MODEL_CACHE_MEGABYTES = builder
+            .comment("Video memory in MiB the GPU model cache may keep for vertex buffers; 0 selects it automatically: a sixteenth of dedicated video memory within 128-512 MiB, or 128 MiB when the driver does not report it. When visible meshes keep being evicted, the automatic value grows by quarters up to an eighth of video memory (at most 1 GiB) while 512 MiB of video memory stays free; it returns to its starting value on resource reload. It must hold every distinct model drawn in a frame, otherwise meshes are evicted and re-uploaded each frame; /flansrenderstats reports such evictions. Memory is used only as models are drawn. Values from 1 to 15 count as 16. No restart required.")
+            .defineInRange("gpuModelCacheMegabytes", 0, 0, GpuModelCache.MAX_CONFIGURED_MEGABYTES);
         DRIVEABLE_RENDER_DISTANCE_MULTIPLIER = builder
             .comment("Multiplier of the size-based Minecraft entity render distance for vehicles, planes and mechas. Keeps collision-box proportionality and Minecraft Entity Distance scaling. Server tracking and view distance still limit visibility; Distant Horizons chunk-edge extension can override this cutoff.")
             .defineInRange("driveableRenderDistanceMultiplier", 1D, 0.25D, 4D);
@@ -421,43 +427,43 @@ public final class ModClientConfig
             .defineInRange("aaGunRenderDistance", 128, 1, 4096);
         MINIMUM_DRIVEABLE_PART_PIXEL_SIZE = builder
             .comment("Skip individual driveable model parts whose projected bounding diameter is smaller than this many physical screen pixels. Set to 0 to disable. Only affects driveables rendered in the world.")
-            .defineInRange("minimumDriveablePartPixelSize", 0.75D, 0D, 16D);
+            .defineInRange("minimumDriveablePartPixelSize", 0.5D, 0D, 16D);
         ENABLE_DRIVEABLE_LOD = builder
             .comment("Enable automatic world-rendered driveable LOD. Medium-distance models use stronger part culling and supported tank track links use simplified geometry. Distant vehicles / planes may use generated impostors. Mechas do not use impostors because held add-ons are not part of their base model.")
             .define("enableDriveableLod", true);
         MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE = builder
             .comment("Base far-distance projected part diameter for whole-model LOD, before driveableLodDetailMultiplier. Must exceed minimumDriveablePartPixelSize to have an effect.")
-            .defineInRange("maximumDriveableLodPartPixelSize", 2D, 0D, 32D);
+            .defineInRange("maximumDriveableLodPartPixelSize", 1D, 0D, 32D);
         DRIVEABLE_LOD_DETAIL_MULTIPLIER = builder
             .comment("Multiply the far-distance part-culling threshold for the whole vehicle, including hull/turret details. Ramps smoothly from 24 to 80 size-scaled blocks, independently of impostor eligibility. 1 keeps the configured far threshold; 2 doubles it. Does not change the near threshold or enable explicitly disabled part culling.")
-            .defineInRange("driveableLodDetailMultiplier", 2D, 1D, 4D);
+            .defineInRange("driveableLodDetailMultiplier", 1D, 1D, 4D);
         GROUND_VEHICLE_LOD_DISTANCE_FACTOR = builder
             .comment("Distance multiplier for earlier whole-model LOD and impostors on small land vehicles. 0.5 halves their size-scaled distances; 1 removes the discount. Boats/aircraft are excluded. The discount fades out between model radii of 6 and 12 blocks, protecting very large ground models too.")
             .defineInRange("groundVehicleLodDistanceFactor", 0.5D, 0.25D, 1D);
         DRIVEABLE_IMPOSTOR_QUALITY_MULTIPLIER = builder
-            .comment("Multiply impostor capture resolution and yaw-view count, capped at 256 pixels and 16 yaw views. Default 2 upgrades existing 64px/8-view configs to 128px/16 views for earlier impostors. 1 uses the configured values directly. Higher quality uses more atlas memory. Screen-size quality limits can delay distance-triggered impostors.")
+            .comment("Multiply impostor capture resolution by this factor and yaw-view count by its square, capped at 256 pixels and 64 yaw views. Default 2 upgrades existing 64px/8-view configs to 128px/32 views. 1 uses the configured values directly. Atlas pages are allocated as views are requested; more visited angles use more memory. Screen-size quality limits can delay distance-triggered impostors.")
             .defineInRange("driveableImpostorQualityMultiplier", 2, 1, 2);
         DRIVEABLE_IMPOSTOR_PIXEL_SIZE = builder
             .comment("Use a generated far-distance impostor when a vehicle or plane projects to at most this many physical screen pixels. Small land vehicles gradually increase this allowance toward the image-quality limit with distance. Set this and driveableImpostorMaximumDistance to 0 to disable impostors.")
-            .defineInRange("driveableImpostorPixelSize", 32D, 0D, 256D);
+            .defineInRange("driveableImpostorPixelSize", 16D, 0D, 256D);
         DRIVEABLE_TRACK_LINK_LOD_PIXEL_SIZE = builder
             .comment("Simplify supported multipart tank track links to textured envelopes when a link projects to at most this many physical screen pixels, beyond 32 blocks. Requires enableDriveableLod; 0 disables track geometry LOD. Previews and the locally controlled vehicle retain full detail.")
-            .defineInRange("driveableTrackLinkLodPixelSize", 8D, 0D, 32D);
+            .defineInRange("driveableTrackLinkLodPixelSize", 4D, 0D, 32D);
         DRIVEABLE_TRACK_LINK_GROUPING_PIXEL_SIZE = builder
             .comment("When simplified tank links project to at most this many physical screen pixels, represent pairs with longer envelopes; at half this size, represent groups of four. Per-link animation still advances. 0 disables grouping while keeping single-link geometry LOD. Requires enableDriveableLod and driveableTrackLinkLodPixelSize. The actual threshold never exceeds the single-link LOD threshold.")
-            .defineInRange("driveableTrackLinkGroupingPixelSize", 8D, 0D, 16D);
+            .defineInRange("driveableTrackLinkGroupingPixelSize", 0D, 0D, 16D);
         DRIVEABLE_IMPOSTOR_MINIMUM_DISTANCE = builder
             .comment("Base minimum camera distance in blocks before a generated driveable impostor may be used. Small land vehicles also apply groundVehicleLodDistanceFactor; scaled up automatically for physically larger driveables (e.g. battleships) so they keep their exact model much longer.")
-            .defineInRange("driveableImpostorMinimumDistance", 64, 8, 4096);
+            .defineInRange("driveableImpostorMinimumDistance", 96, 8, 4096);
         DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE = builder
             .comment("Prefer a ready generated driveable impostor at or beyond this camera distance, subject to the capture's screen-size quality limit. Distances scale with model size without an upper size cap; small land vehicles also use groundVehicleLodDistanceFactor and gradually promote impostors as this distance approaches. Set to 0 to use only the configured projected-pixel threshold.")
-            .defineInRange("driveableImpostorMaximumDistance", 128, 0, 4096);
+            .defineInRange("driveableImpostorMaximumDistance", 192, 0, 4096);
         DRIVEABLE_IMPOSTOR_RESOLUTION = builder
             .comment("Resolution of each generated driveable impostor view. Changing this clears and regenerates the runtime cache.")
             .defineInRange("driveableImpostorResolution", 64, 32, 256);
         DRIVEABLE_IMPOSTOR_YAW_ANGLES = builder
-            .comment("Number of horizontal views generated per driveable impostor. Three vertical views are generated automatically.")
-            .defineInRange("driveableImpostorYawAngles", 8, 4, 16);
+            .comment("Base number of horizontal views per driveable impostor, scaled by the square of driveableImpostorQualityMultiplier up to 64. Nine vertical views cover -90 to +90 degrees automatically. Views are captured on demand.")
+            .defineInRange("driveableImpostorYawAngles", 8, 4, 64);
         DRIVEABLE_IMPOSTOR_CACHE_ENTRIES = builder
             .comment("Maximum generated model / paintjob impostor atlases retained in memory.")
             .defineInRange("driveableImpostorCacheEntries", 32, 1, 128);
@@ -663,6 +669,7 @@ public final class ModClientConfig
         minimumDriveablePartPixelSize = MINIMUM_DRIVEABLE_PART_PIXEL_SIZE.get();
         enableDriveableLod = ENABLE_DRIVEABLE_LOD.get();
         enableGpuModelCache = ENABLE_GPU_MODEL_CACHE.get();
+        gpuModelCacheMegabytes = GPU_MODEL_CACHE_MEGABYTES.get();
         maximumDriveableLodPartPixelSize = MAXIMUM_DRIVEABLE_LOD_PART_PIXEL_SIZE.get();
         driveableLodDetailMultiplier = DRIVEABLE_LOD_DETAIL_MULTIPLIER.get();
         groundVehicleLodDistanceFactor = GROUND_VEHICLE_LOD_DISTANCE_FACTOR.get();
@@ -865,7 +872,7 @@ public final class ModClientConfig
         }
 
         var spec = ConfigSpecValues.valueSpec(configSpec, value.getPath());
-        if (newValue == null || spec == null || !spec.getClazz().isInstance(newValue) || !spec.test(newValue)
+        if (spec == null || !spec.getClazz().isInstance(newValue) || !spec.test(newValue)
             || newValue instanceof Double number && !Double.isFinite(number))
             return false;
 
@@ -880,7 +887,7 @@ public final class ModClientConfig
     /** The last position is a read-only indication that individual config values differ from every preset. */
     public enum RenderPreset
     {
-        OFF, QUALITY, BALANCED, PERFORMANCE, AGGRESSIVE, EXTREME, MAXIMUM_FPS, CUSTOM;
+        OFF, ULTRA_QUALITY, QUALITY, BALANCED, PERFORMANCE, AGGRESSIVE, EXTREME, MAXIMUM_FPS, CUSTOM;
 
         public static RenderPreset at(int index)
         {
@@ -888,21 +895,16 @@ public final class ModClientConfig
         }
     }
 
-    public record LodValues(double nearPixels, double farPixels, double detailMultiplier,
-                            double trackPixels, double groupedTrackPixels)
-    {
-    }
+    public record LodValues(double nearPixels, double farPixels, double detailMultiplier, double trackPixels, double groupedTrackPixels) {}
 
-    public record ImpostorValues(double pixels, int minimumDistance, int maximumDistance,
-                                 int qualityMultiplier, int resolution, int yawAngles)
-    {
-    }
+    public record ImpostorValues(double pixels, int minimumDistance, int maximumDistance, int qualityMultiplier, int resolution, int yawAngles) {}
 
     private static LodValues lodValues(RenderPreset preset)
     {
         return switch (preset)
         {
             case OFF -> new LodValues(0, 0, 1, 0, 0);
+            case ULTRA_QUALITY -> new LodValues(0.25, 0.5, 1, 0, 0);
             case QUALITY -> new LodValues(0.5, 1, 1, 4, 0);
             case BALANCED -> new LodValues(0.75, 2, 2, 8, 8);
             case PERFORMANCE -> new LodValues(1.5, 4, 2, 12, 12);
@@ -918,6 +920,7 @@ public final class ModClientConfig
         return switch (preset)
         {
             case OFF -> new ImpostorValues(0, 64, 0, 2, 64, 8);
+            case ULTRA_QUALITY -> new ImpostorValues(8, 128, 256, 2, 64, 8);
             case QUALITY -> new ImpostorValues(16, 96, 192, 2, 64, 8);
             case BALANCED -> new ImpostorValues(32, 64, 128, 2, 64, 8);
             case PERFORMANCE -> new ImpostorValues(64, 48, 96, 2, 64, 8);
@@ -930,7 +933,7 @@ public final class ModClientConfig
 
     public static RenderPreset currentLodPreset()
     {
-        if (!ENABLE_DRIVEABLE_LOD.get())
+        if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.get()))
             return RenderPreset.CUSTOM;
 
         LodValues current = currentLodValues();
@@ -942,7 +945,7 @@ public final class ModClientConfig
 
     public static RenderPreset currentImpostorPreset()
     {
-        if (!ENABLE_DRIVEABLE_LOD.get())
+        if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.get()))
             return RenderPreset.CUSTOM;
 
         if (DRIVEABLE_IMPOSTOR_PIXEL_SIZE.get() == 0 && DRIVEABLE_IMPOSTOR_MAXIMUM_DISTANCE.get() == 0)
@@ -979,7 +982,7 @@ public final class ModClientConfig
             return;
 
         LodValues values = lodValues(preset);
-        if (!ENABLE_DRIVEABLE_LOD.get())
+        if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.get()))
         {
             // The disabled master switch also suppresses impostors. Preserve that effective state.
             set(DRIVEABLE_IMPOSTOR_PIXEL_SIZE, 0D);
@@ -1000,7 +1003,7 @@ public final class ModClientConfig
             return;
 
         ImpostorValues values = impostorValues(preset);
-        if (!ENABLE_DRIVEABLE_LOD.get())
+        if (BooleanUtils.isNotTrue(ENABLE_DRIVEABLE_LOD.get()))
         {
             // Preserve disabled model/track LOD when enabling the shared switch for impostors.
             LodValues off = lodValues(RenderPreset.OFF);
@@ -1055,6 +1058,8 @@ public final class ModClientConfig
 
         if (PlatformEnvironment.isClient() && old.enableGpuModelCache != get().enableGpuModelCache)
             GpuModelCache.clear();
+        if (PlatformEnvironment.isClient() && old.gpuModelCacheMegabytes != get().gpuModelCacheMegabytes)
+            GpuModelCache.budgetChanged();
 
         if (old.searchModelsInOtherContentPacks != get().searchModelsInOtherContentPacks
             || old.preferBuiltInModelClasses != get().preferBuiltInModelClasses

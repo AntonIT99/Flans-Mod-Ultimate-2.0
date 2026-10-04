@@ -31,9 +31,15 @@ final class GeometryKey
 
     void add(RigidGeometry geometry, int paletteIndex)
     {
+        add(geometry, System.identityHashCode(geometry), paletteIndex);
+    }
+
+    /** With the geometry's identity hash cached by the caller, which then need not touch the object. */
+    void add(RigidGeometry geometry, int identityHash, int paletteIndex)
+    {
         paletteIndices[count] = paletteIndex;
         geometries[count++] = geometry;
-        hash = 31 * hash + System.identityHashCode(geometry);
+        hash = 31 * hash + identityHash;
         hash = 31 * hash + paletteIndex;
     }
 

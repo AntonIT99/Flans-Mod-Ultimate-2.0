@@ -69,10 +69,12 @@ public class TransformGroupBone extends TransformGroup
 	@Override
 	public Vec3 doTransformation(PositionTransformVertex vertex)
 	{
+		// 1.7.10 wrote baseVector.subtract(neutral), and its Vec3.subtract(other) returned other - this.
+		// The reverse order point-mirrored every bound vertex through the bone's base position.
 		Vec3 vector = new Vec3(
-				baseVector.x - vertex.neutralVector.x,
-				baseVector.y - vertex.neutralVector.y,
-				baseVector.z - vertex.neutralVector.z);
+				vertex.neutralVector.x - baseVector.x,
+				vertex.neutralVector.y - baseVector.y,
+				vertex.neutralVector.z - baseVector.z);
 		Angle3D angle = attachedBone.absoluteAngles;
 		return setVectorRotations(vector,
 				angle.angleX - baseAngles.angleX,

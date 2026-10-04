@@ -68,25 +68,13 @@ class RigidModelShaderTest
             {
                 int program = shader.getId();
                 assertEquals(GL_TRUE, glGetProgrami(program, GL_LINK_STATUS), glGetProgramInfoLog(program));
-                glUseProgram(program);
-                for (String uniform : new String[]{"PartPose", "PartNormal", "PartData"})
-                {
-                    assertTrue(glGetUniformLocation(program, uniform) >= 0, uniform);
-                    int matrices = uniform.equals("PartData") ? (GpuModelCache.PARTS_PER_BATCH + 1) / 2 : GpuModelCache.PARTS_PER_BATCH;
-                    int lastPart = glGetUniformLocation(program, uniform + "[" + (matrices - 1) + "]");
-                    assertTrue(lastPart >= 0, uniform + " final part");
-                    int stride = uniform.equals("PartNormal") ? 9 : 16;
-                    float[] palette = new float[matrices * stride];
-                    for (int i = 0; i < palette.length; i++) palette[i] = i;
-                    assertNotNull(shader.getUniform(uniform));
-                    shader.getUniform(uniform).set(palette);
-                    shader.getUniform(uniform).upload();
-                    float[] uploaded = new float[stride];
-                    glGetUniformfv(program, lastPart, uploaded);
-                    for (int i = 0; i < stride; i++) assertEquals(palette.length - stride + i, uploaded[i], uniform);
-                }
+                // The palette is one std140 block of 144-byte entries, inside the 16 KiB OpenGL 3.1 guarantees.
+                int block = glGetUniformBlockIndex(program, "PartPalette");
+                assertNotEquals(GL_INVALID_INDEX, block, "palette block");
+                int size = glGetActiveUniformBlocki(program, block, GL_UNIFORM_BLOCK_DATA_SIZE);
+                assertEquals(GpuModelCache.PARTS_PER_BATCH * 144, size, "std140 palette size");
+                assertTrue(size <= 16384, "fits the guaranteed uniform block size");
                 assertEquals(GL_NO_ERROR, glGetError());
-                glUseProgram(0);
             }
             // Exercise the real registration callback and reload/failure lifecycle too.
             for (int reload = 0; reload < 2; reload++)

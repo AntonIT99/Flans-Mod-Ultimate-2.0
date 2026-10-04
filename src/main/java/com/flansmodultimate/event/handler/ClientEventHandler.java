@@ -202,6 +202,7 @@ public final class ClientEventHandler
     /** Runs once per rendered frame, before the frame, with the main render target bound. */
     public static void onRenderFrameStart()
     {
+        GpuModelCache.beginFrame();
         DriveableImpostorCache.capturePending();
     }
 

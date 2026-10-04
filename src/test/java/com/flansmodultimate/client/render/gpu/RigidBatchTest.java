@@ -50,10 +50,59 @@ class RigidBatchTest
     }
 
     @Test
-    void sizeCullingReusesTheSameMeshAndCoalescesOnlyAdjacentVisibleRanges()
+    void restingAndMovingTurretsKeepOneMeshLayout()
+    {
+        ModelRendererTurbo[] hull = parts(5, false), turret = parts(4, false), barrel = parts(3, true);
+        Backend backend = new Backend();
+        RigidBatch batch = new RigidBatch(24, 192, 100000);
+        // Turret yaw and barrel pitch in degrees. Exactly zero makes a turret or barrel pose equal its parent's.
+        float[][] states = {{0, 0}, {0, 0}, {0, 0}, {35, 4}, {35, 4}, {35, 4}, {0, 0}, {35, 4}, {0, 0}, {0, 0},
+            {-20, -3}, {0, 0}, {35, 0}, {0, 4}, {0, 0}};
+        List<List<GeometryKey>> frames = new ArrayList<>();
+        for (float[] state : states)
+        {
+            backend.keys.clear();
+            PoseStack stack = new PoseStack();
+            stack.translate(4, 70, -9);
+            stack.mulPose(Axis.YP.rotationDegrees(30));
+            batch.begin(backend);
+            for (ModelRendererTurbo part : hull) part.render(stack, batch, 17, 23, 1, 1, 1, 1, 1);
+            stack.pushPose();
+            stack.mulPose(Axis.YP.rotationDegrees(-state[0]));
+            for (ModelRendererTurbo part : turret) part.render(stack, batch, 17, 23, 1, 1, 1, 1, 1);
+            for (ModelRendererTurbo part : barrel)
+            {
+                float old = part.rotateAngleZ;
+                part.rotateAngleZ = -state[1] * (float) Math.PI / 180F;
+                part.render(stack, batch, 17, 23, 1, 1, 1, 1, 1);
+                part.rotateAngleZ = old;
+            }
+            stack.popPose();
+            batch.end();
+            frames.add(List.copyOf(backend.keys));
+        }
+        // Animated parts settle into their dynamic path after their first movements.
+        for (int i = 8; i < frames.size(); i++) assertEquals(frames.get(7), frames.get(i), "frame " + i);
+    }
+
+    /** Leaves of one assembly; the first has no pivot, the rest are baked around their own pivots. */
+    private static ModelRendererTurbo[] parts(int count, boolean sharedPivot)
+    {
+        ModelRendererTurbo[] parts = new ModelRendererTurbo[count];
+        for (int i = 0; i < count; i++)
+        {
+            parts[i] = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+            parts[i].addBox(0, 0, 0, 2 + i, 2, 3);
+            if (i != 0) parts[i].setRotationPoint(sharedPivot ? 6 : i * 3, 4, sharedPivot ? 0 : -i);
+        }
+        return parts;
+    }
+
+    @Test
+    void sizeCullingReusesTheSameMeshAndBridgesOnlyShortHiddenStretches()
     {
         Backend backend = new Backend();
-        RigidBatch batch = new RigidBatch(2, 8, 1000);
+        RigidBatch batch = new RigidBatch(2, 8, 100000);
         PoseStack pose = new PoseStack();
         RigidGeometry[] parts = {geometry(), geometry(), geometry(), geometry(), geometry()};
         batch.begin(backend);
@@ -62,17 +111,60 @@ class RigidBatchTest
         batch.end();
         assertEquals(1, backend.rangeCounts.get(0));
 
+        // A short hidden part between visible ones is drawn anyway: one range, and its vertices count as drawn.
         batch.begin(backend);
         for (int i = 0; i < parts.length; i++)
             batch.submit(parts[i], pose.last(), 17, 23, 1, 1, 1, 1, i != 2);
         assertEquals(full, batch.key);
-        assertEquals(2, batch.ranges.count);
+        assertEquals(1, batch.ranges.count);
         assertEquals(0, batch.ranges.starts[0]);
-        assertEquals(12, batch.ranges.counts[0]);
-        assertEquals(18, batch.ranges.starts[1]);
-        assertEquals(12, batch.ranges.counts[1]);
+        assertEquals(30, batch.ranges.counts[0]);
+        assertEquals(20, batch.ranges.visibleVertices);
         batch.end();
-        assertEquals(List.of(1, 2), backend.rangeCounts);
+
+        // Hidden parts at either end are never drawn, and a hidden stretch longer than the bridge splits the range.
+        RigidGeometry large = geometry(VisibleRanges.DEFAULT_BRIDGED_GAP / 6 + 1);
+        batch.begin(backend);
+        batch.submit(parts[0], pose.last(), 17, 23, 1, 1, 1, 1, false);
+        batch.submit(parts[1], pose.last(), 17, 23, 1, 1, 1, 1, true);
+        batch.submit(large, pose.last(), 17, 23, 1, 1, 1, 1, false);
+        batch.submit(parts[2], pose.last(), 17, 23, 1, 1, 1, 1, true);
+        batch.submit(parts[3], pose.last(), 17, 23, 1, 1, 1, 1, false);
+        assertEquals(2, batch.ranges.count);
+        assertEquals(6, batch.ranges.starts[0]);
+        assertEquals(6, batch.ranges.counts[0]);
+        assertEquals(12 + VisibleRanges.DEFAULT_BRIDGED_GAP + 6, batch.ranges.starts[1]);
+        assertEquals(6, batch.ranges.counts[1]);
+        batch.end();
+        assertEquals(List.of(1, 1, 2), backend.rangeCounts);
+    }
+
+    @Test
+    void aZeroBridgeDrawsExactlyTheVisibleRanges()
+    {
+        RenderDiagnostics.setBridgedGap(0);
+        try
+        {
+            RigidBatch batch = new RigidBatch(2, 8, 100000);
+            PoseStack pose = new PoseStack();
+            batch.begin(new Backend());
+            for (int i = 0; i < 5; i++) batch.submit(geometry(), pose.last(), 17, 23, 1, 1, 1, 1, i != 2);
+            assertEquals(2, batch.ranges.count);
+            assertEquals(16, batch.ranges.visibleVertices);
+            batch.end();
+        }
+        finally { RenderDiagnostics.setBridgedGap(VisibleRanges.DEFAULT_BRIDGED_GAP); }
+    }
+
+    /** One geometry of the given number of quads. */
+    static RigidGeometry geometry(int quads)
+    {
+        TexturedPolygon[] faces = new TexturedPolygon[quads];
+        for (int i = 0; i < quads; i++)
+            faces[i] = new TexturedPolygon(new PositionTextureVertex[]{
+                new PositionTextureVertex(0, 0, i, 0, 0), new PositionTextureVertex(16, 0, i, 1, 0),
+                new PositionTextureVertex(16, 16, i, 1, 1), new PositionTextureVertex(0, 16, i, 0, 1)});
+        return new RigidGeometry(faces);
     }
 
     @Test
@@ -140,16 +232,34 @@ class RigidBatchTest
     {
         Backend backend = new Backend();
         RigidBatch batch = new RigidBatch(2, 8, 24);
+        PoseStack shared = new PoseStack();
         batch.begin(backend);
-        for (int i = 0; i < 8; i++) submit(batch, geometry(), new PoseStack());
+        for (int i = 0; i < 8; i++) submit(batch, geometry(), shared);
         batch.end();
         assertEquals(List.of("barrier", "gpu:6", "gpu:2"), backend.events);
         backend.events.clear();
         batch = new RigidBatch(2, 8, 1000);
         batch.begin(backend);
-        for (int i = 0; i < 9; i++) submit(batch, geometry(), new PoseStack());
+        for (int i = 0; i < 9; i++) submit(batch, geometry(), shared);
         batch.end();
         assertEquals(List.of("barrier", "gpu:8", "gpu:1"), backend.events);
+    }
+
+    @Test
+    void equalPosesShareAPaletteEntryOnlyFromTheSameSource()
+    {
+        Backend backend = new Backend();
+        RigidBatch batch = new RigidBatch(8, 8, 1000);
+        PoseStack hull = new PoseStack();
+        PoseStack.Pose composed = new PoseStack().last(), otherComposed = new PoseStack().last();
+        batch.begin(backend);
+        submit(batch, geometry(), hull);
+        submit(batch, geometry(), new PoseStack()); // An equal pose from another stack entry
+        batch.submitComposed(geometry(), composed, 17, 23, 1, 1, 1, 1, true);
+        batch.submitComposed(geometry(), otherComposed, 17, 23, 1, 1, 1, 1, false); // Equal composed poses share
+        submit(batch, geometry(), hull);
+        assertArrayEquals(new int[]{0, 1, 2, 2, 3}, java.util.Arrays.copyOf(batch.key.paletteIndices, 5));
+        batch.end();
     }
 
     @Test
@@ -254,6 +364,72 @@ class RigidBatchTest
         cache.clear(); cache.clear();
         assertEquals(1, replacement.closes);
         assertNull(cache.get(c));
+    }
+
+    @Test
+    void budgetFollowsConfigurationOrVideoMemory()
+    {
+        long mib = 1024L * 1024, gibKiB = 1024L * 1024;
+        assertEquals(300 * mib, GpuModelCache.budgetBytes(300, 8 * gibKiB));
+        assertEquals(16 * mib, GpuModelCache.budgetBytes(3, 0)); // Always above the largest single upload
+        assertEquals(128 * mib, GpuModelCache.budgetBytes(0, 0)); // Driver does not report video memory
+        assertEquals(128 * mib, GpuModelCache.budgetBytes(0, gibKiB));
+        assertEquals(256 * mib, GpuModelCache.budgetBytes(0, 4 * gibKiB));
+        assertEquals(512 * mib, GpuModelCache.budgetBytes(0, 8 * gibKiB));
+        assertEquals(512 * mib, GpuModelCache.budgetBytes(0, 24 * gibKiB));
+        assertEquals(2048, GpuModelCache.entryLimit(16 * mib));
+        assertEquals(16384, GpuModelCache.entryLimit(512 * mib));
+    }
+
+    @Test
+    void automaticGrowthStepsWithinTheCeilingAndFreeVideoMemory()
+    {
+        long mib = 1024L * 1024, gibKiB = 1024L * 1024;
+        assertEquals(1024 * mib, GpuModelCache.growthCeiling(16 * gibKiB)); // An eighth, capped at 1 GiB
+        assertEquals(512 * mib, GpuModelCache.growthCeiling(4 * gibKiB));
+        assertEquals(128 * mib, GpuModelCache.growthCeiling(gibKiB)); // Never below the starting budget
+        assertEquals(640 * mib, GpuModelCache.grownBudget(512 * mib, 1024 * mib, 8 * gibKiB)); // A quarter
+        assertEquals(1024 * mib, GpuModelCache.grownBudget(960 * mib, 1024 * mib, 8 * gibKiB));
+        assertEquals(612 * mib, GpuModelCache.grownBudget(512 * mib, 1024 * mib, 612 * 1024)); // Keeps 512 MiB free
+        assertEquals(512 * mib, GpuModelCache.grownBudget(512 * mib, 1024 * mib, 300 * 1024));
+        assertEquals(512 * mib, GpuModelCache.grownBudget(512 * mib, 1024 * mib, -1)); // Free memory unreported
+    }
+
+    @Test
+    void workingSetEvictionsAreCountedForGrowthWithoutRecording()
+    {
+        MeshCache<FakeMesh> cache = new MeshCache<>(15, 8);
+        cache.put(key(), new FakeMesh(10));
+        cache.put(key(), new FakeMesh(10)); // Evicts a mesh uploaded this frame
+        cache.nextFrame(); cache.nextFrame(); cache.nextFrame();
+        cache.put(key(), new FakeMesh(10)); // Evicts a stale mesh
+        assertEquals(1, cache.takeWorkingSetEvictions());
+        assertEquals(0, cache.takeWorkingSetEvictions());
+    }
+
+    @Test
+    void shrinkingTheBudgetEvictsAtOnceAndCountsOnlyWorkingSetEvictions()
+    {
+        RenderDiagnostics.start();
+        try
+        {
+            MeshCache<FakeMesh> cache = new MeshCache<>(30, 8);
+            GeometryKey a = key(), b = key(), c = key();
+            FakeMesh first = new FakeMesh(10), second = new FakeMesh(10);
+            cache.put(a, first); cache.put(b, second);
+            for (int i = 0; i < 3; i++) cache.nextFrame();
+            assertSame(first, cache.get(a)); // a is drawn this frame, b has not been drawn for three
+            cache.limits(15, 8);
+            assertEquals(1, second.closes);
+            assertEquals(0, first.closes);
+            assertEquals(0, RenderDiagnostics.workingSetEvictions);
+            cache.nextFrame();
+            cache.put(c, new FakeMesh(10)); // a was drawn last frame, so evicting it re-uploads the working set
+            assertEquals(1, first.closes);
+            assertEquals(2, RenderDiagnostics.evictions);
+            assertEquals(1, RenderDiagnostics.workingSetEvictions);
+        }
+        finally { RenderDiagnostics.stop(); }
     }
 
     @Test

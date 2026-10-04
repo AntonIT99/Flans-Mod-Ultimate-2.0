@@ -74,12 +74,12 @@ public class FlansOptionsScreen extends Screen
         new QuickSection("crosshair", List.of(
             ModClientConfig.HIDE_CROSSHAIR_FOR_GUNS,
             ModClientConfig.HIT_MARKER_STYLE,
-            ModClientConfig.FANCY_HIT_MARKER)),
+            ModClientConfig.FANCY_HIT_MARKER,
+            ModClientConfig.MUZZLE_FLASH_STYLE)),
         new QuickSection("rendering", List.of(
             ModClientConfig.ENABLE_GPU_MODEL_CACHE,
             ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER,
-            ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER,
-            ModClientConfig.MUZZLE_FLASH_STYLE)),
+            ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)),
         new QuickSection("gameplay", List.of(
             ModClientConfig.AIM_TYPE,
             ModClientConfig.AIM_POSE,
@@ -173,10 +173,15 @@ public class FlansOptionsScreen extends Screen
                 continue;
 
             list.addHeader(Component.translatable(SECTION_KEY_PREFIX + section.name()));
-            list.addOptions(options);
             if (section.name().equals("rendering"))
+            {
+                list.addOptions(options.subList(0, 1));
                 list.addWidgetRow(new RenderingPresetSlider(150, RenderingPresetSlider.Kind.LOD),
                     new RenderingPresetSlider(150, RenderingPresetSlider.Kind.IMPOSTOR));
+                list.addOptions(options.subList(1, options.size()));
+            }
+            else
+                list.addOptions(options);
         }
     }
 

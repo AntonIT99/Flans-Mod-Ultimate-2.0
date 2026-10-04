@@ -1,14 +1,8 @@
-package com.wolffsmod.npcs.platform.render;
+package com.wolffsmod.npcs.mixin;
 
 import com.flansmodultimate.api.FlansModApi;
 import com.flansmodultimate.api.IFlanNpcDistance;
 import com.wolffsmod.npcs.model.FlanModelEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,6 +10,13 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 
 /** Custom NPCs owns the live entity; detached model entities do not own tracking or culling. */
 @Mixin(value = EntityNPCInterface.class, remap = false)

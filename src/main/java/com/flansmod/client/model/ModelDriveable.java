@@ -44,7 +44,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     @Getter @Setter
     protected DriveableType type;
 
-    public HashMap<String, ModelRendererTurbo[][]> gunModels = new HashMap<>();
+    public Map<String, ModelRendererTurbo[][]> gunModels = new HashMap<>();
     public ModelRendererTurbo[] bodyModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] bodyDoorOpenModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] bodyDoorCloseModel = new ModelRendererTurbo[0];
@@ -90,7 +90,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         int inputMask,
         int mode,
         boolean flareActive,
-        /** Live per-link track angles, or null for static poses such as inventory renders. */
+        /* Live per-link track angles, or null for static poses such as inventory renders. */
         @Nullable TrackLinkAnimation trackLinks)
     {
         public static final RenderState ITEM = new RenderState(
@@ -258,15 +258,8 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
                            int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
                            float scale, EnumRenderPass renderPass)
     {
-        if (parts == null)
-            return;
-
-        for (ModelRendererTurbo part : parts)
-        {
-            if (part != null)
-                part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-                    red, green, blue, alpha, scale, renderPass, oldRotateOrder);
-        }
+        ModelRendererTurbo.renderArray(parts, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass, oldRotateOrder);
     }
 
     protected void renderPartMatrix(ModelRendererTurbo[][] parts, PoseStack poseStack, VertexConsumer vertexConsumer,

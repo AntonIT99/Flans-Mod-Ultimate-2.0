@@ -5,6 +5,7 @@ import com.flansmod.client.model.TrackLinkLod;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.render.EnumRenderPass;
+import com.flansmodultimate.client.render.gpu.GeometryRevision;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +17,31 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TrackLinkLodTest
 {
+    @Test
+    void buildingDerivedMeshesLeavesTheGlobalGeometryEpochAlone()
+    {
+        ModelRendererTurbo[] parts = link();
+        long before = GeometryRevision.current();
+        TrackLinkLod lod = TrackLinkLod.create(parts, false, 2F);
+        assertNotNull(lod.parts());
+        // New parts re-read their own new polygons; other parts and their render caches stay valid.
+        assertEquals(before, GeometryRevision.current());
+        assertTrue(lod.parts()[0].getRenderPolygons().length > 0);
+    }
+
+    @Test
+    void deriveAndMatchWithoutMakingLinksScanEveryVertexOnEachRender() throws ReflectiveOperationException
+    {
+        ModelRendererTurbo[] parts = link();
+        TrackLinkLod lod = TrackLinkLod.create(parts, false);
+        assertTrue(lod.matches(parts, false));
+        var flag = ModelRendererTurbo.class.getDeclaredField("externallyMutableGeometry");
+        flag.setAccessible(true);
+        for (ModelRendererTurbo part : parts) assertFalse(flag.getBoolean(part));
+        assertNotNull(lod.parts());
+        for (ModelRendererTurbo part : lod.parts()) assertFalse(flag.getBoolean(part));
+    }
+
     @Test
     void distantTrackGroupsReduceLinksWhilePreservingTheNearTier()
     {

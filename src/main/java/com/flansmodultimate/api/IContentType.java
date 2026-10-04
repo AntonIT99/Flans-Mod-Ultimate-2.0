@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import java.util.List;
 
 /**
  * One definition read from a content pack, such as a gun, an ammunition, an armour piece or a
@@ -49,4 +50,13 @@ public interface IContentType
      */
     @Nullable
     ResourceLocation getTexture();
+
+    /**
+     * Read on either side after content loading.
+     * @return immutable paintjob descriptions in ID order, default first; empty for nonpaintable types
+     */
+    default List<PaintjobVariant> getPaintjobVariants()
+    {
+        return List.of();
+    }
 }

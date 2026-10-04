@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui.options;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.config.ConfigSpecValues;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -12,8 +13,8 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
@@ -147,7 +148,11 @@ public final class ConfigOptionFactory
         return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
             (caption, number) -> Options.genericValueLabel(caption,
                 value == ModCommonConfig.DRIVEABLE_TRACKING_RANGE || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE
-                    ? Component.translatable("options.flansmodultimate.distance.blocks", number) : Component.literal(String.valueOf(number))),
+                    ? Component.translatable("options.flansmodultimate.distance.blocks", number)
+                    : value == ModClientConfig.GPU_MODEL_CACHE_MEGABYTES
+                    ? number == 0 ? Component.translatable(VALUE_KEY_PREFIX + "automatic")
+                    : Component.translatable("options.flansmodultimate.memory.mebibytes", number)
+                    : Component.literal(String.valueOf(number))),
             new OptionInstance.IntRange(range.getMin(), range.getMax()),
             current,
             newValue -> target.setWhileDragging(value, newValue));
@@ -197,6 +202,14 @@ public final class ConfigOptionFactory
                 .append(Component.translatable("options.flansmodultimate.distance.tracking_limit",
                     value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER
                         ? ModCommonConfig.driveableTrackingRange() : ModCommonConfig.flanNpcTrackingRange())));
+        if (value == ModClientConfig.GPU_MODEL_CACHE_MEGABYTES)
+        {
+            long video = GpuModelCache.reportedVideoMemoryMegabytes();
+            Component automatic = video > 0
+                ? Component.translatable(key + ".automatic", GpuModelCache.automaticBudgetMegabytes(), video)
+                : Component.translatable(key + ".automatic_unreported", GpuModelCache.automaticBudgetMegabytes());
+            return OptionInstance.cachedConstantTooltip(Component.translatable(key).append("\n").append(automatic));
+        }
         if (I18n.exists(key))
             return OptionInstance.cachedConstantTooltip(Component.translatable(key));
 

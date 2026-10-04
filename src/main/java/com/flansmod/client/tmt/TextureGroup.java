@@ -25,6 +25,20 @@ public class TextureGroup
         poly.add(polygon);
     }
 
+    /**
+     * Adds a polygon its own part just built. Only that part reads this group, and appending marks it to
+     * re-read its groups, so the global geometry epoch stays put: bumping it makes every part of every
+     * model re-validate and drops their render caches, a visible hitch whenever a model builds geometry.
+     * A list replaced by outside code still notifies as before.
+     */
+    void addOwnedPoly(TexturedPolygon polygon)
+    {
+        if (poly instanceof PolygonList list)
+            list.addOwned(polygon);
+        else
+            poly.add(polygon);
+    }
+
     /** AbstractList routes iterators, sublists, sort and replaceAll through these mutators too. */
     private static final class PolygonList extends AbstractList<TexturedPolygon> implements RandomAccess
     {
@@ -48,6 +62,12 @@ public class TextureGroup
             TexturedPolygon old = values.set(index, value);
             GeometryRevision.changed();
             return old;
+        }
+
+        private void addOwned(TexturedPolygon value)
+        {
+            values.add(value);
+            modCount++;
         }
 
         @Override

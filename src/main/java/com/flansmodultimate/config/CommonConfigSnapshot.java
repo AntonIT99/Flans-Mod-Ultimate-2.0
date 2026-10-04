@@ -146,10 +146,11 @@ public record CommonConfigSnapshot(
 
     boolean enchantmentModuleEnabled,
 
-    List<String> fluidFuelLines
+    List<String> fluidFuelLines,
+    double vehicleThrottleDecayMultiplier
 )
 {
-    public static final int CURRENT_VERSION = 40;
+    public static final int CURRENT_VERSION = 41;
 
     public static void write(FriendlyByteBuf buf, CommonConfigSnapshot s)
     {
@@ -304,6 +305,7 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.fluidFuelLines.size());
         for (String line : s.fluidFuelLines)
             buf.writeUtf(line, 32767);
+        buf.writeDouble(s.vehicleThrottleDecayMultiplier);
     }
 
     public static CommonConfigSnapshot read(FriendlyByteBuf buf)
@@ -449,7 +451,8 @@ public record CommonConfigSnapshot(
 
             buf.readBoolean(),
 
-            List.copyOf(readLines(buf))
+            List.copyOf(readLines(buf)),
+            buf.readDouble()
         );
     }
 

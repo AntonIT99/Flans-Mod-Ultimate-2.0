@@ -422,7 +422,8 @@ public class Vehicle extends Driveable
             else if (throttleDecayDelay > 0)
                 --throttleDecayDelay;
             else if (!fixedThrottle)
-                throttle = approach(throttle, 0F, type.getThrottleDecay());
+                throttle = approach(throttle, 0F,
+                    type.getThrottleDecay() * (float)ModCommonConfig.vehicleThrottleDecayMultiplier());
         }
         float damageLimit = DriveableControlPhysics.damagedThrottleLimit(getThrottleDamageNerf());
         if (Math.abs(throttle) > damageLimit)

@@ -15,7 +15,33 @@ Recheck them against the target branch during future merges.
 
 ### NPC static world-model rendering
 
-On Forge 1.20.1, the NPC module owns its Custom NPCs integration in
+The Forge 1.20.1 model picker uses the client-only `NpcModelBrowserMixin` on
+Custom NPCs' `GuiCreationEntities`. It targets both `init` and its production SRG
+name `m_7856_`, plus the unmapped `scrollClicked` callback. It groups existing
+entity types by Flan kind and the public content-pack API, then restores the
+original row indices before letting Custom NPCs select a model. When porting,
+verify the target Custom NPCs picker methods and scroll API, and retain the
+existing entity registrations and saved model IDs.
+
+`NpcModelPreviewMixin` redirects the model screen's `drawNpc` call in
+`GuiCreationScreenInterface.render` (production `m_88315_`). The NPC module fits
+the static preview using API `0.5` geometry bounds, entity dimensions and part
+collision boxes. `NpcModelBrowserMixin` adds a paintjob level and stores its ID
+in Custom NPCs `ExtraData` under `FlanPaintjob`; the model entity reads that key
+for simple rendering while ordinary rendering retains the selected NPC skin.
+These additions currently live on Forge 1.20.1; verify the GUI call descriptor,
+vertex collector API and saved extra-data path when porting them.
+
+The client-only `NpcNameplateMixin` targets Custom NPCs' unmapped
+`RenderNPCInterface.renderLivingLabel`, replacing the second float local at its
+store (the label height after the text-scale calculation). It raises Flan labels
+above the combined model/entity/part bounds, with NPC scale and renderer Y offset;
+simple rendering retains the detached model's scale. Recheck that local-variable
+layout for another Custom NPCs build. The preview and nameplate share the NPC
+module's `FlanModelBounds` helper and the existing public geometry API.
+
+On Forge 1.20.1, the NPC module keeps its Custom NPCs mixins in
+`com.wolffsmod.npcs.mixin` and its buffer adapter in
 `com.wolffsmod.npcs.platform.render`. Its client-only `NpcRenderContextMixin`
 wraps the `MultiBufferSource` argument of Custom NPCs' concrete
 `RenderCustomNpc.render(EntityCustomNpc, float, float, PoseStack, MultiBufferSource, int)`.
@@ -39,7 +65,11 @@ ARGB tint to the API's float components. The main mod's `platform/render/WorldMo
 owns the matching version-specific vertex collection, so bounds and LOD policy stay shared.
 
 Forge packages the module's own mixin configuration and generated refmap through
-`npcsJar`, with dev-run mixin arguments in `src/npcs/fmu-module.gradle`. NeoForge
+`npcsJar`, with dev-run mixin arguments in `src/npcs/fmu-module.gradle`. Append
+the NPC `--mixin.config` argument after MixinGradle's `afterEvaluate` run setup;
+earlier arguments are overwritten and generated IntelliJ runs silently omit the
+NPC hooks. Regenerate IntelliJ launch configurations with `genIntellijRuns` after
+changing this setup. NeoForge
 registers `wolffsmodnpcs.mixins.json` in the NPC module's authored `neoforge.mods.toml`,
 uses Java 21 compatibility and omits the Forge refmap and MixinGradle wiring. Preserve
 these module packaging differences when merging master later.

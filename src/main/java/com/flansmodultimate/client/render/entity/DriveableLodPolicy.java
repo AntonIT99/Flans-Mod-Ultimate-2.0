@@ -37,7 +37,8 @@ public final class DriveableLodPolicy
 
     public static int yawAngles(int configured, int qualityMultiplier)
     {
-        return Math.min(16, configured * qualityMultiplier);
+        // Angular error is especially visible when higher-resolution impostors appear sooner.
+        return Math.min(64, configured * qualityMultiplier * qualityMultiplier);
     }
 
     public static float qualityPixelLimit(int resolution)

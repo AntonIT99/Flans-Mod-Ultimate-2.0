@@ -3,7 +3,8 @@ package com.flansmodultimate.platform.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WorldModelBoundsCollectorTest
 {
@@ -20,6 +21,10 @@ class WorldModelBoundsCollectorTest
         assertEquals((float)Math.sqrt(41), bounds.radius(), 1E-5F);
         emit(bounds, pose, -1, 0, 0);
         assertEquals((float)Math.sqrt(41), bounds.radius(), 1E-5F);
+        var box = bounds.bounds().orElseThrow();
+        assertEquals(1, box.minX, 1E-5);
+        assertEquals(5, box.maxX, 1E-5);
+        assertEquals(4, box.minY, 1E-5);
     }
 
     @Test
@@ -28,6 +33,8 @@ class WorldModelBoundsCollectorTest
         var bounds = new WorldModelBoundsCollector();
         emit(bounds, new PoseStack(), Float.NaN, 0, 0);
         assertEquals(Float.POSITIVE_INFINITY, bounds.radius());
+        assertTrue(bounds.bounds().isEmpty());
+        assertTrue(new WorldModelBoundsCollector().bounds().isEmpty());
     }
 
     private static void emit(WorldModelBoundsCollector bounds, PoseStack pose, float x, float y, float z)

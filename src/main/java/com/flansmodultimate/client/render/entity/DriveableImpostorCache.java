@@ -1,5 +1,8 @@
 package com.flansmodultimate.client.render.entity;
 
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
+
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.model.ModelCache;
@@ -24,8 +27,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
@@ -56,8 +57,11 @@ import java.util.List;
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class DriveableImpostorCache
 {
-    private static final int PITCH_ANGLES = 3;
-    private static final float[] CAPTURE_PITCH = {-30F, 0F, 30F};
+    private static final int PITCH_ANGLES = 9;
+    private static final float PITCH_STEP = 180F / (PITCH_ANGLES - 1);
+    // Keep expanded angular coverage cheap until those views are actually visited.
+    private static final int PAGE_COLUMNS = 4;
+    private static final int PAGE_ROWS = 3;
     private static final float CAPTURE_MARGIN = 1.12F;
     private static final float HYSTERESIS = 1.2F;
     private static final float PREWARM_MULTIPLIER = 2F;
@@ -108,7 +112,7 @@ public final class DriveableImpostorCache
     {
         return renderOrPrepare(model, type, sourceTexture, translucent, cull, red, green, blue,
             poseStack, buffer, packedLight, projectionPixels, cameraDistance, cameraOffset,
-            entityYaw, entityPitch, entityRoll, null, cameraOrientation, allowImpostor, wasUsingImpostor,
+            entityYaw, entityPitch, entityRoll, null, allowImpostor, wasUsingImpostor,
             1F, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
     }
 
@@ -121,7 +125,7 @@ public final class DriveableImpostorCache
     {
         return renderOrPrepare(model, type, texture, translucent, cull, typeRed, typeGreen, typeBlue,
             pose, buffers, light, projectionPixels, distance, localCameraOffset,
-            0F, 0F, 0F, rotation, cameraOrientation, allowImpostor, wasUsingImpostor,
+            0F, 0F, 0F, rotation, allowImpostor, wasUsingImpostor,
             parentScale, overlay, red, green, blue, alpha);
     }
 
@@ -129,7 +133,7 @@ public final class DriveableImpostorCache
         boolean translucent, boolean cull, float red, float green, float blue, PoseStack poseStack,
         MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset,
         float entityYaw, float entityPitch, float entityRoll, @Nullable Quaternionf suppliedRotation,
-        Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor, float parentScale,
+        boolean allowImpostor, boolean wasUsingImpostor, float parentScale,
         int overlay, float drawRed, float drawGreen, float drawBlue, float alpha)
     {
         ModClientConfig config = ModClientConfig.get();
@@ -187,7 +191,7 @@ public final class DriveableImpostorCache
                 impostorThreshold, maximumDistance, wasUsingImpostor))
             return exact;
 
-        renderBillboard(entry, yawIndex, pitchIndex, entityRotation, cameraOrientation,
+        renderBillboard(entry, view, entityRotation,
             poseStack, buffer, packedLight, overlay, drawRed, drawGreen, drawBlue, alpha);
         return new Result(true, true, projectedPixels, radius);
     }
@@ -323,7 +327,7 @@ public final class DriveableImpostorCache
     {
         try
         {
-            ensureAtlas(entry);
+            ensureAtlas(entry, yawIndex, pitchIndex);
             ensureCaptureTarget();
             capture(entry, yawIndex, pitchIndex);
             entry.captured[cellIndex] = true;
@@ -367,7 +371,7 @@ public final class DriveableImpostorCache
             RenderSystem.applyModelViewMatrix();
 
             PoseStack capturePose = new PoseStack();
-            capturePose.mulPose(Axis.XP.rotationDegrees(CAPTURE_PITCH[pitchIndex]));
+            capturePose.mulPose(Axis.XP.rotationDegrees(capturePitch(pitchIndex)));
             capturePose.mulPose(Axis.YP.rotationDegrees(360F * yawIndex / settings.yawAngles()));
             capturePose.translate(-entry.bounds.centerX(), -entry.bounds.centerY(), -entry.bounds.centerZ());
             // Light every cell from above as in the level, rotated into this view, and without fog.
@@ -389,8 +393,10 @@ public final class DriveableImpostorCache
                 captureBuffer.endBatch();
             }
 
-            atlasBlitter.copyFlipped(captureTarget.frameBufferId, entry.dynamicTexture.getId(),
-                settings.resolution(), yawIndex, pitchIndex);
+            AtlasCell cell = atlasCell(yawIndex, pitchIndex, settings.yawAngles());
+            AtlasPage page = entry.pages[cell.pageIndex()];
+            atlasBlitter.copyFlipped(captureTarget.frameBufferId, page.texture.getId(),
+                settings.resolution(), cell.column(), cell.row());
         }
         finally
         {
@@ -418,16 +424,20 @@ public final class DriveableImpostorCache
         poseStack.popPose();
     }
 
-    private static void ensureAtlas(Entry entry)
+    private static void ensureAtlas(Entry entry, int yawIndex, int pitchIndex)
     {
-        if (entry.dynamicTexture != null)
+        int pageIndex = atlasCell(yawIndex, pitchIndex, settings.yawAngles()).pageIndex();
+        if (entry.pages[pageIndex] != null)
             return;
-        int width = settings.resolution() * settings.yawAngles();
-        int height = settings.resolution() * PITCH_ANGLES;
-        entry.dynamicTexture = new DynamicTexture(new NativeImage(width, height, true));
-        entry.dynamicTexture.setFilter(true, false);
-        entry.impostorTexture = Minecraft.getInstance().getTextureManager()
-            .register("flans_driveable_impostor", entry.dynamicTexture);
+        AtlasPage page = new AtlasPage();
+        // Install first so the failure path also releases a partially created page.
+        entry.pages[pageIndex] = page;
+        int width = settings.resolution() * PAGE_COLUMNS;
+        int height = settings.resolution() * PAGE_ROWS;
+        page.texture = new DynamicTexture(new NativeImage(width, height, true));
+        page.texture.setFilter(true, false);
+        page.location = Minecraft.getInstance().getTextureManager()
+            .register("flans_driveable_impostor", page.texture);
     }
 
     private static void ensureCaptureTarget()
@@ -440,29 +450,30 @@ public final class DriveableImpostorCache
         captureTarget = new TextureTarget(settings.resolution(), settings.resolution(), true, Minecraft.ON_OSX);
     }
 
-    private static void renderBillboard(Entry entry, int yawIndex, int pitchIndex, Quaternionf entityRotation,
-        Quaternionf cameraOrientation, PoseStack poseStack, MultiBufferSource buffer, int packedLight,
+    private static void renderBillboard(Entry entry, ViewSelection view, Quaternionf entityRotation,
+        PoseStack poseStack, MultiBufferSource buffer, int packedLight,
         int overlay, float red, float green, float blue, float alpha)
     {
         int resolution = settings.resolution();
-        float atlasWidth = (float)resolution * settings.yawAngles();
-        float atlasHeight = (float)resolution * PITCH_ANGLES;
+        AtlasCell cell = atlasCell(view.yawIndex(), view.pitchIndex(), settings.yawAngles());
+        AtlasPage page = entry.pages[cell.pageIndex()];
+        float atlasWidth = (float)resolution * PAGE_COLUMNS;
+        float atlasHeight = (float)resolution * PAGE_ROWS;
         float inset = 0.5F;
-        float u0 = (yawIndex * resolution + inset) / atlasWidth;
-        float u1 = ((yawIndex + 1) * resolution - inset) / atlasWidth;
-        float v0 = (pitchIndex * resolution + inset) / atlasHeight;
-        float v1 = ((pitchIndex + 1) * resolution - inset) / atlasHeight;
+        float u0 = (cell.column() * resolution + inset) / atlasWidth;
+        float u1 = ((cell.column() + 1) * resolution - inset) / atlasWidth;
+        float v0 = (cell.row() * resolution + inset) / atlasHeight;
+        float v1 = ((cell.row() + 1) * resolution - inset) / atlasHeight;
 
         Vector3f offset = new Vector3f(entry.bounds.centerX(), entry.bounds.centerY(), entry.bounds.centerZ())
             .rotate(entityRotation);
         float halfExtent = entry.bounds.halfExtent();
         poseStack.pushPose();
         poseStack.translate(offset.x(), offset.y(), offset.z());
-        poseStack.mulPose(cameraOrientation);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180F));
+        poseStack.mulPose(view.billboardRotation(entityRotation));
         PoseStack.Pose pose = poseStack.last();
         VertexConsumer vertices = buffer.getBuffer(EnumRenderPass.DEFAULT
-            .getRenderType(entry.impostorTexture, true, false));
+            .getRenderType(page.location, true, false));
         vertex(pose, vertices, -halfExtent, -halfExtent, u0, v1, packedLight, overlay, red, green, blue, alpha);
         vertex(pose, vertices, halfExtent, -halfExtent, u1, v1, packedLight, overlay, red, green, blue, alpha);
         vertex(pose, vertices, halfExtent, halfExtent, u1, v0, packedLight, overlay, red, green, blue, alpha);
@@ -484,9 +495,23 @@ public final class DriveableImpostorCache
 
     private static int pitchIndex(float viewPitch)
     {
-        if (viewPitch < -15F)
-            return 0;
-        return viewPitch > 15F ? 2 : 1;
+        return Mth.clamp(Math.round((viewPitch + 90F) / PITCH_STEP), 0, PITCH_ANGLES - 1);
+    }
+
+    static float capturePitch(int pitchIndex)
+    {
+        return -90F + pitchIndex * PITCH_STEP;
+    }
+
+    static AtlasCell atlasCell(int yawIndex, int pitchIndex, int yawAngles)
+    {
+        int pagesPerPitch = (yawAngles + PAGE_COLUMNS - 1) / PAGE_COLUMNS;
+        return new AtlasCell(pitchIndex / PAGE_ROWS * pagesPerPitch + yawIndex / PAGE_COLUMNS,
+            yawIndex % PAGE_COLUMNS, pitchIndex % PAGE_ROWS);
+    }
+
+    record AtlasCell(int pageIndex, int column, int row)
+    {
     }
 
     /**
@@ -503,18 +528,38 @@ public final class DriveableImpostorCache
         new Quaternionf(entityRotation).conjugate().transform(localCamera);
         localCamera.sub(centerX, centerY, centerZ);
         if (!Float.isFinite(localCamera.lengthSquared()) || localCamera.lengthSquared() <= 1.0E-6F)
-            return new ViewSelection(0, 1);
+            return new ViewSelection(0, PITCH_ANGLES / 2, 0F, 0F);
 
         localCamera.normalize();
+        // Azimuth is undefined at the poles. A stable view avoids noise from the
+        // inverse rotation selecting arbitrary top/bottom captures.
+        double horizontal = Math.hypot(localCamera.x(), localCamera.z());
+        if (horizontal <= 1.0E-5D)
+        {
+            float polePitch = localCamera.y() < 0F ? -90F : 90F;
+            return new ViewSelection(0, pitchIndex(polePitch), 0F, polePitch);
+        }
         // Capturing rotates the model, so its yaw is opposite the model-space
         // azimuth from the model towards the camera.
         float captureYaw = -(float)Math.toDegrees(Math.atan2(localCamera.x(), localCamera.z()));
-        float capturePitch = (float)Math.toDegrees(Math.asin(Mth.clamp(localCamera.y(), -1F, 1F)));
-        return new ViewSelection(yawIndex(captureYaw, yawAngles), pitchIndex(capturePitch));
+        float capturePitch = (float)Math.toDegrees(Math.atan2(localCamera.y(), horizontal));
+        return new ViewSelection(yawIndex(captureYaw, yawAngles), pitchIndex(capturePitch),
+            captureYaw, capturePitch);
     }
 
-    record ViewSelection(int yawIndex, int pitchIndex)
+    record ViewSelection(int yawIndex, int pitchIndex, float viewYaw, float viewPitch)
     {
+        /**
+         * Undo the continuous capture rotation, then restore the entity rotation.
+         * This faces the model center towards the camera while preserving bank and
+         * screen orientation, including when the camera looks away from the model.
+         */
+        Quaternionf billboardRotation(Quaternionf entityRotation)
+        {
+            return new Quaternionf(entityRotation)
+                .rotateY(-viewYaw * Mth.DEG_TO_RAD)
+                .rotateX(-viewPitch * Mth.DEG_TO_RAD);
+        }
     }
 
     private static float projectedDiameter(float radius, float projectionPixels, double cameraDistance)
@@ -543,10 +588,17 @@ public final class DriveableImpostorCache
 
     private static void release(Entry entry)
     {
-        if (entry.impostorTexture != null)
-            Minecraft.getInstance().getTextureManager().release(entry.impostorTexture);
-        entry.impostorTexture = null;
-        entry.dynamicTexture = null;
+        for (int index = 0; index < entry.pages.length; index++)
+        {
+            AtlasPage page = entry.pages[index];
+            if (page == null)
+                continue;
+            if (page.location != null)
+                Minecraft.getInstance().getTextureManager().release(page.location);
+            else if (page.texture != null)
+                page.texture.close();
+            entry.pages[index] = null;
+        }
     }
 
     private record Settings(int resolution, int yawAngles, int maxEntries)
@@ -555,6 +607,18 @@ public final class DriveableImpostorCache
         {
             return yawAngles * PITCH_ANGLES;
         }
+
+        private int pageCount()
+        {
+            return (yawAngles + PAGE_COLUMNS - 1) / PAGE_COLUMNS
+                * ((PITCH_ANGLES + PAGE_ROWS - 1) / PAGE_ROWS);
+        }
+    }
+
+    private static final class AtlasPage
+    {
+        private DynamicTexture texture;
+        private ResourceLocation location;
     }
 
     private static final class Entry
@@ -569,8 +633,7 @@ public final class DriveableImpostorCache
         private final float blue;
         private final ModelBounds bounds;
         private final boolean[] captured;
-        private DynamicTexture dynamicTexture;
-        private ResourceLocation impostorTexture;
+        private final AtlasPage[] pages;
         private boolean failed;
         private long lastUsedMillis;
 
@@ -588,6 +651,7 @@ public final class DriveableImpostorCache
             this.blue = blue;
             this.bounds = bounds;
             this.captured = new boolean[cellCount];
+            this.pages = new AtlasPage[settings.pageCount()];
             this.lastUsedMillis = lastUsedMillis;
         }
 

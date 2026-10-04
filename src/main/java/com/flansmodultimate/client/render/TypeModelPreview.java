@@ -8,6 +8,7 @@ import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.platform.render.WorldModelBoundsCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -17,11 +18,33 @@ import lombok.NoArgsConstructor;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /** Static previews of AA gun and driveable models, drawn without an entity. Render thread only. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TypeModelPreview
 {
+    private static final Map<InfoType, Optional<AABB>> bounds = new HashMap<>();
+
+    /** Measures the same transformed geometry used by the static preview. Render thread only. */
+    public static Optional<AABB> bounds(InfoType type)
+    {
+        return bounds.computeIfAbsent(type, definition -> {
+            var collector = new WorldModelBoundsCollector();
+            render(definition, new PoseStack(), collector, 0, 0, 1, 1, 1, 1);
+            return collector.bounds();
+        });
+    }
+
+    public static void clearBounds()
+    {
+        bounds.clear();
+    }
+
     public static RenderType renderType(InfoType type, ResourceLocation texture)
     {
         return EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), ModClientConfig.get().useCullingRendering(type));

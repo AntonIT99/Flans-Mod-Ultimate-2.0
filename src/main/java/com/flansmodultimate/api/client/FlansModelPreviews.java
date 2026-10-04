@@ -13,11 +13,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.ApiStatus;
 
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
 
 /**
  * Draws static previews of content-pack models, such as for a GUI, a custom entity or a block
@@ -30,6 +33,18 @@ import net.minecraft.world.phys.Vec3;
 public final class FlansModelPreviews
 {
     private FlansModelPreviews() {}
+
+    /**
+     * Measures the static preview geometry, including model transforms and model scale.
+     * Client render thread only; cached until model reload.
+     * @param type definition to measure
+     * @return geometry bounds in the same block coordinates as {@link #render}, before resting-height
+     *         offsets; empty for missing, unsupported or invalid geometry
+     */
+    public static Optional<AABB> getBounds(IContentType type)
+    {
+        return type instanceof InfoType infoType ? TypeModelPreview.bounds(infoType) : Optional.empty();
+    }
 
     /**
      * @param texture the texture to draw with, usually {@link IContentType#getTexture()} or a paintjob's
