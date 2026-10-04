@@ -24,6 +24,8 @@ public final class RenderDiagnostics
     private static final int LOGGED_GEOMETRY_CHANGES = 3;
     private static long geometryChanges, faceRevalidations, scannedRevalidations, cpuParts, cpuVertices;
     private static final Map<String, long[]> cpuPartReasons = new LinkedHashMap<>();
+    private static long cachedArrayParts, uncachedArrayParts;
+    private static final Map<String, long[]> uncachedArrayReasons = new LinkedHashMap<>();
 
     private RenderDiagnostics() {}
 
@@ -43,6 +45,8 @@ public final class RenderDiagnostics
         driveables = driveableNanos = drawNanos = lookupNanos = paletteNanos = glDrawNanos = 0;
         geometryChanges = faceRevalidations = scannedRevalidations = cpuParts = cpuVertices = 0;
         cpuPartReasons.clear();
+        cachedArrayParts = uncachedArrayParts = 0;
+        uncachedArrayReasons.clear();
         startNanos = stopNanos = System.nanoTime();
     }
 
@@ -81,6 +85,20 @@ public final class RenderDiagnostics
         if (scanned) scannedRevalidations++;
     }
 
+    /** Parts of one array drawn from its compact cache. */
+    public static void countCachedArrayParts(int parts)
+    {
+        if (enabled) cachedArrayParts += parts;
+    }
+
+    /** A part of a cached array drawn by the normal per-part path instead, and why. */
+    public static void countUncachedArrayPart(String reason)
+    {
+        if (!enabled) return;
+        uncachedArrayParts++;
+        uncachedArrayReasons.computeIfAbsent(reason == null ? "unknown" : reason, ignored -> new long[1])[0]++;
+    }
+
     /** A part offered the GPU path that still drew on the CPU, and why. */
     public static void countCpuPart(String reason)
     {
@@ -97,8 +115,13 @@ public final class RenderDiagnostics
 
     private static String cpuReasons(double frames)
     {
+        return reasons(cpuPartReasons, frames);
+    }
+
+    private static String reasons(Map<String, long[]> counts, double frames)
+    {
         StringBuilder text = new StringBuilder();
-        for (var entry : cpuPartReasons.entrySet())
+        for (var entry : counts.entrySet())
             text.append(text.length() == 0 ? " (" : ", ").append(entry.getKey()).append(' ')
                 .append(String.format(Locale.ROOT, "%.1f", entry.getValue()[0] / frames));
         return text.length() == 0 ? "" : text.append(')').toString();
@@ -205,11 +228,13 @@ public final class RenderDiagnostics
                 + "%.2f ms of it and of held guns in GPU model draw submission (mesh lookup %.2f, palette upload %.2f, GL draws %.2f); "
                 + "GPU calls %.1f (%.1f render state setups, %.1f palette entries per call), ranges %.1f (bridging gaps up to %d indices), "
                 + "GPU vertices %.0f, parts %.0f (%.0f size-culled), CPU fallback vertices %.0f, uploads %.2f; "
+                + "part arrays: %.0f parts cached, %.0f by the normal path%s; "
                 + "CPU-path parts %.1f%s writing %.0f vertices; geometry changes %.2f, part re-validations %.0f "
                 + "(%.0f scanning every vertex)",
             frames, seconds, seconds > 0 ? n / seconds : 0, seconds * 1000 / n, driveables / n, driveableNanos / 1E6 / n,
             drawNanos / 1E6 / n, lookupNanos / 1E6 / n, paletteNanos / 1E6 / n, glDrawNanos / 1E6 / n, draws / n, stateSetups / n, (double)paletteEntries / Math.max(1, immediateDraws), ranges / n, VisibleRanges.bridgedGap, vertices / n,
             submittedParts / n, culledParts / n, fallbackVertices / n, uploads / n,
+            cachedArrayParts / n, uncachedArrayParts / n, reasons(uncachedArrayReasons, n),
             cpuParts / n, cpuReasons(n), cpuVertices / n, geometryChanges / n, faceRevalidations / n, scannedRevalidations / n);
     }
 

@@ -129,6 +129,9 @@ public final class GpuModelCache
 
     public static ShaderInstance shader() { return shader; }
 
+    /** Frames rendered so far, for caches that act on time rather than on calls. */
+    public static long frame() { return meshes.frame(); }
+
     public static String status()
     {
         ModClientConfig config = ModClientConfig.get();

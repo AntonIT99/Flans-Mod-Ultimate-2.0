@@ -5,6 +5,7 @@ import com.flansmodultimate.client.model.ModelRenderer;
 import com.flansmodultimate.client.render.EntityVertexBatch;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.gpu.GeometryRevision;
+import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
 import com.flansmodultimate.client.render.gpu.RigidGeometry;
 import com.flansmodultimate.client.render.gpu.RigidGeometryConsumer;
@@ -14,6 +15,7 @@ import com.wolffsmod.api.client.model.IModelBase;
 import com.wolffsmod.api.client.model.TexturedQuad;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -2904,9 +2906,15 @@ public class ModelRendererTurbo extends ModelRenderer
                 initialized = true;
                 stableRenders = 0;
                 renderPathRevision++;
-                local.setIdentity();
-                local.translate(offsetX, offsetY, offsetZ);
-                translateAndRotate(local, scale, oldRotateOrder);
+                // Offset, then pivot, then rotation, then uniform positive scale, which leaves normals alone.
+                // Animations give every part of an array the same angles, so the rotation is shared.
+                shareRotation(rotateAngleX, rotateAngleY, rotateAngleZ, oldRotateOrder);
+                PoseStack.Pose pose = local.last();
+                // The chained path translates by the offset, then the pivot, as two float additions.
+                pose.pose().set(SHARED_POSE).setTranslation(offsetX + rotationPointX * 0.0625F * scale,
+                    offsetY + rotationPointY * 0.0625F * scale, offsetZ + rotationPointZ * 0.0625F * scale);
+                if (scale != 1F) pose.pose().scale(scale);
+                pose.normal().set(SHARED_NORMAL);
                 lastOffsetX = offsetX;
                 lastOffsetY = offsetY;
                 lastOffsetZ = offsetZ;
@@ -2922,6 +2930,42 @@ public class ModelRendererTurbo extends ModelRenderer
             }
             else if (stableRenders < 2) stableRenders++;
         }
+    }
+
+    private static final Quaternionf SHARED_QUATERNION = new Quaternionf();
+    private static final Matrix4f SHARED_POSE = new Matrix4f();
+    private static final Matrix3f SHARED_NORMAL = new Matrix3f();
+    private static float sharedAngleX = Float.NaN, sharedAngleY, sharedAngleZ;
+    private static boolean sharedOldRotateOrder;
+
+    /**
+     * The rotations {@link #translateAndRotate} applies for these angles, computed once while consecutive parts
+     * share them, as every part of a wheel, barrel or leg array does under one animation. The pose and normal
+     * matrices repeat PoseStack's per-axis rotate calls, so results match the chained path bit for bit.
+     * Render thread only; the matrices are reused by the next call.
+     */
+    private static void shareRotation(float x, float y, float z, boolean oldRotateOrder)
+    {
+        if (x != sharedAngleX || y != sharedAngleY || z != sharedAngleZ || oldRotateOrder != sharedOldRotateOrder)
+        {
+            // A translation, as in the chained path, so JOML takes the same rotate branch.
+            SHARED_POSE.translation(1F, 1F, 1F);
+            SHARED_NORMAL.identity();
+            if (!oldRotateOrder && y != 0F) sharedRotate(SHARED_QUATERNION.rotationY(y));
+            if (z != 0F) sharedRotate(SHARED_QUATERNION.rotationZ(oldRotateOrder ? -z : z));
+            if (oldRotateOrder && y != 0F) sharedRotate(SHARED_QUATERNION.rotationY(-y));
+            if (x != 0F) sharedRotate(SHARED_QUATERNION.rotationX(x));
+            sharedAngleX = x;
+            sharedAngleY = y;
+            sharedAngleZ = z;
+            sharedOldRotateOrder = oldRotateOrder;
+        }
+    }
+
+    private static void sharedRotate(Quaternionf rotation)
+    {
+        SHARED_POSE.rotate(rotation);
+        SHARED_NORMAL.rotate(rotation);
     }
 
     private static final Map<ModelRendererTurbo[], PartArray> PART_ARRAYS = new WeakHashMap<>();
@@ -2969,6 +3013,53 @@ public class ModelRendererTurbo extends ModelRenderer
             && cache.lastAngleX == rotateAngleX && cache.lastAngleY == rotateAngleY && cache.lastAngleZ == rotateAngleZ;
     }
 
+    /**
+     * Whether this part has no transform and so draws its own geometry under its parent's pose: the common
+     * case of boxes placed directly in model coordinates. Such a part never gets a pose cache.
+     */
+    private boolean untransformedLeaf(float scale)
+    {
+        return renderPoseCache == null && getClass() == ModelRendererTurbo.class && isVisible()
+            && !glow && !glowAdditive && !glowNoDepthWrite && !forcedRecompile && !useLegacyCompiler
+            && childModels.isEmpty() && scale == 1F
+            && offsetX == 0F && offsetY == 0F && offsetZ == 0F
+            && rotationPointX == 0F && rotationPointY == 0F && rotationPointZ == 0F
+            && rotateAngleX == 0F && rotateAngleY == 0F && rotateAngleZ == 0F
+            && !renderFacesDirty && !externallyMutableGeometry && observedGeometryEpoch == GeometryRevision.current()
+            && renderFaces.length != 0 && gpuGeometry != null && gpuGeometry.supported();
+    }
+
+    /** Why a part cannot be served from a {@link PartArray}; render diagnostics only. */
+    private String uncachedReason(float scale, boolean oldRotateOrder)
+    {
+        RenderPoseCache cache = renderPoseCache;
+        if (getClass() != ModelRendererTurbo.class) return "custom part class";
+        if (!isVisible()) return "hidden";
+        if (glow || glowAdditive || glowNoDepthWrite) return "glow";
+        if (forcedRecompile || useLegacyCompiler) return "legacy compiler";
+        if (!childModels.isEmpty()) return "has children";
+        if (renderFacesDirty || externallyMutableGeometry || observedGeometryEpoch != GeometryRevision.current())
+            return "geometry not settled";
+        if (renderFaces.length == 0 || gpuGeometry == null || !gpuGeometry.supported()) return "no GPU geometry";
+        if (cache == null) return "untransformed but not cacheable";
+        if (cache.dynamic) return "animated";
+        if (!cache.canBake() || cache.bakedSource != gpuGeometry || cache.bakedGeometry == null) return "not yet baked";
+        if (cache.lastScale != scale || cache.lastOldRotateOrder != oldRotateOrder) return "rendered at another scale";
+        return "transform changed";
+    }
+
+    /** Why a part no longer matches its {@link PartArray} snapshot; render diagnostics only. */
+    private String snapshotMismatch(float[] transforms, int offset, int revision, RigidGeometry source)
+    {
+        if (renderPathRevision != revision)
+            return renderPoseCache != null && renderPoseCache.dynamic ? "became animated" : "render state changed";
+        if (gpuGeometry != source) return "geometry replaced";
+        if (!showModel || isHidden) return "hidden";
+        if (glow || glowAdditive || glowNoDepthWrite) return "glow";
+        if (renderFacesDirty || externallyMutableGeometry) return "geometry edited";
+        return "transform changed";
+    }
+
     /** Fields a part reads on each render, compared against a {@link PartArray} snapshot. */
     private boolean matchesSnapshot(float[] transforms, int offset, int revision, RigidGeometry source)
     {
@@ -2992,12 +3083,15 @@ public class ModelRendererTurbo extends ModelRenderer
     {
         /** Calls before building: three normal renders, since a part bakes on its third unchanged render. */
         private static final int WARM_UP = 4;
-        /** Renders after which an array with normal-path parts retries them, in case they have since baked. */
-        private static final int RETRY = 600;
+        /** Frames after which an array with normal-path parts retries them, in case they have since baked. */
+        private static final int RETRY_FRAMES = 600;
 
         private ModelRendererTurbo[] parts = new ModelRendererTurbo[0];
         private boolean built;
         private int calls;
+        private long builtFrame;
+        /** Why each normal-path part is not cached, for render diagnostics. */
+        private String[] reasons;
         private long epoch;
         private float scale;
         private boolean oldRotateOrder;
@@ -3017,7 +3111,7 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             long now = GeometryRevision.current();
             if (built && (epoch != now || this.scale != scale || this.oldRotateOrder != oldRotateOrder
-                || current.length != parts.length || slowParts > 0 && calls >= RETRY))
+                || current.length != parts.length || slowParts > 0 && GpuModelCache.frame() - builtFrame >= RETRY_FRAMES))
             {
                 built = false;
                 calls = 0;
@@ -3035,6 +3129,7 @@ public class ModelRendererTurbo extends ModelRenderer
             boolean culling = state.minimumPixelDiameter > 0F && state.projectionPixels > 0F;
             double parentScale = Double.NaN;
             boolean shared = false;
+            int cached = 0;
             for (int i = 0; i < current.length; i++)
             {
                 ModelRendererTurbo part = current[i];
@@ -3047,9 +3142,12 @@ public class ModelRendererTurbo extends ModelRenderer
                     }
                     else if (fast[i])
                     {
+                        reasons[i] = part.snapshotMismatch(transforms, i * 9, revisions[i], sources[i]);
                         fast[i] = false;
                         slowParts++;
                     }
+                    if (part != null && RenderDiagnostics.recording())
+                        RenderDiagnostics.countUncachedArrayPart(part == parts[i] ? reasons[i] : "array edited");
                     if (part != null)
                         part.render(poseStack, gpu, light, overlay, red, green, blue, alpha, scale, EnumRenderPass.DEFAULT, oldRotateOrder);
                     // Normal rendering may submit other poses, or legacy code may edit the parent in place.
@@ -3066,12 +3164,14 @@ public class ModelRendererTurbo extends ModelRenderer
                     visible = !isBelowScreenSize(state, parent.pose(), bounds[b], bounds[b + 1], bounds[b + 2], bounds[b + 3], parentScale);
                 }
                 // Consecutive baked siblings ride the same unchanged parent pose, so they share its palette entry.
+                cached++;
                 if (!shared || !gpu.submitToLastPalette(geometries[i], hashes[i], vertexCounts[i], parent, visible))
                 {
                     gpu.submitCached(geometries[i], hashes[i], vertexCounts[i], parent, light, overlay, red, green, blue, alpha, visible);
                     shared = true;
                 }
             }
+            RenderDiagnostics.countCachedArrayParts(cached);
             return true;
         }
 
@@ -3087,13 +3187,18 @@ public class ModelRendererTurbo extends ModelRenderer
             geometries = new RigidGeometry[n];
             hashes = new int[n];
             vertexCounts = new int[n];
+            reasons = new String[n];
             slowParts = 0;
             for (int i = 0; i < n; i++)
             {
                 ModelRendererTurbo part = current[i];
-                if (part == null || !part.bakedAndSettled(scale, oldRotateOrder))
+                if (part == null)
+                    continue; // Nothing to draw, and nothing to retry.
+                boolean untransformed = part.untransformedLeaf(scale);
+                if (!untransformed && !part.bakedAndSettled(scale, oldRotateOrder))
                 {
                     slowParts++;
+                    reasons[i] = part.uncachedReason(scale, oldRotateOrder);
                     continue;
                 }
                 RenderPoseCache cache = part.renderPoseCache;
@@ -3110,12 +3215,21 @@ public class ModelRendererTurbo extends ModelRenderer
                 transforms[t + 8] = part.rotateAngleZ;
                 revisions[i] = part.renderPathRevision;
                 sources[i] = part.gpuGeometry;
-                geometries[i] = cache.bakedGeometry;
-                hashes[i] = System.identityHashCode(cache.bakedGeometry);
-                vertexCounts[i] = cache.bakedGeometry.vertexCount();
+                // An untransformed part draws its own geometry under the parent; a baked one its baked copy.
+                geometries[i] = untransformed ? part.gpuGeometry : cache.bakedGeometry;
+                hashes[i] = System.identityHashCode(geometries[i]);
+                vertexCounts[i] = geometries[i].vertexCount();
                 // The same parent-space sphere the per-part path tests; radius 0 means never culled.
                 part.updateBounds();
-                if (part.hasStaticBounds && part.boundsRadius > 0F)
+                if (part.hasStaticBounds && part.boundsRadius > 0F && untransformed)
+                {
+                    int b = i * 4;
+                    bounds[b] = part.boundsCenterX;
+                    bounds[b + 1] = part.boundsCenterY;
+                    bounds[b + 2] = part.boundsCenterZ;
+                    bounds[b + 3] = part.boundsRadius;
+                }
+                else if (part.hasStaticBounds && part.boundsRadius > 0F)
                 {
                     Matrix4f local = cache.local.last().pose();
                     int b = i * 4;
@@ -3129,6 +3243,7 @@ public class ModelRendererTurbo extends ModelRenderer
             this.oldRotateOrder = oldRotateOrder;
             epoch = now;
             calls = 0;
+            builtFrame = GpuModelCache.frame();
             built = true;
         }
     }

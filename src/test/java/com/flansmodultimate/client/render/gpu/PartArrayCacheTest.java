@@ -55,6 +55,7 @@ class PartArrayCacheTest
                 if (f == 30) parts[9].addBox(0, 2, 0, 1, 1, 1);                 // Geometry grows
                 if (f == 36) { parts[2] = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 128, 128); parts[2].addBox(0, 0, 0, 3, 3, 3); }
                 if (f == 44) parts[14].glow = true;
+                if (f == 48) parts[13].setRotationPoint(1, 2, 3);                  // An untransformed part gains a pivot
             };
             change.accept(cached);
             change.accept(reference);
@@ -75,7 +76,7 @@ class PartArrayCacheTest
                     if (part != null) part.render(parent, referenceBatch, 15728880, 0, 1, 0.9F, 0.8F, 1, 1, EnumRenderPass.DEFAULT, false);
             });
             if (frame == 10)
-                assertTrue(fastParts(cached) >= 30, "the cache serves the settled parts: " + fastParts(cached));
+                assertTrue(fastParts(cached) >= 36, "the cache serves the settled parts, untransformed ones too: " + fastParts(cached));
             assertEquals(referenceBackend.draws.size(), cachedBackend.draws.size(), "draws in frame " + frame);
             for (int d = 0; d < referenceBackend.draws.size(); d++)
                 referenceBackend.draws.get(d).assertSame(cachedBackend.draws.get(d), "frame " + frame + " draw " + d);
