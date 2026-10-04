@@ -983,24 +983,8 @@ public class ModelVehicle extends ModelDriveable
                                     PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
                                     float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        if (parts == null)
-            return;
-        for (ModelRendererTurbo part : parts)
-        {
-            if (part == null)
-                continue;
-            float oldX = part.rotateAngleX;
-            float oldY = part.rotateAngleY;
-            float oldZ = part.rotateAngleZ;
-            part.rotateAngleX = x;
-            part.rotateAngleY = y;
-            part.rotateAngleZ = z;
-            part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-                red, green, blue, alpha, scale, renderPass, oldRotateOrder);
-            part.rotateAngleX = oldX;
-            part.rotateAngleY = oldY;
-            part.rotateAngleZ = oldZ;
-        }
+        ModelRendererTurbo.renderRotated(parts, x, y, z, poseStack, vertexConsumer, packedLight, packedOverlay,
+            red, green, blue, alpha, scale, renderPass, oldRotateOrder);
     }
 
     private void renderSteeringWheel(float angle, PoseStack poseStack, VertexConsumer vertexConsumer,

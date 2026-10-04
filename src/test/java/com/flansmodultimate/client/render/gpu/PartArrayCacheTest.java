@@ -56,6 +56,8 @@ class PartArrayCacheTest
                 if (f == 36) { parts[2] = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 128, 128); parts[2].addBox(0, 0, 0, 3, 3, 3); }
                 if (f == 44) parts[14].glow = true;
                 if (f == 48) parts[13].setRotationPoint(1, 2, 3);                  // An untransformed part gains a pivot
+                if (f == 52) { ModelRendererTurbo child = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 128, 128); child.addBox(0, 0, 0, 1, 1, 1); parts[15].addChild(child); }
+                if (f == 54) { ModelRendererTurbo child = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 128, 128); child.addBox(1, 1, 1, 1, 1, 1); parts[16].childModels.add(child); } // Straight into the public list
             };
             change.accept(cached);
             change.accept(reference);
