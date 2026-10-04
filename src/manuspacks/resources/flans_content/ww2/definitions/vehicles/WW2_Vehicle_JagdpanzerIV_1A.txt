@@ -68,7 +68,7 @@ ArmorTopMm 20
 ArmorBottomMm 20
 ArmorSideMm 40
 ArmorRearMm 20
-TurretArmorFrontMm 80
+TurretArmorFrontMm 80 50
 TurretArmorSideMm 40
 TurretArmorRearMm 20
 TurretArmorTopMm 20

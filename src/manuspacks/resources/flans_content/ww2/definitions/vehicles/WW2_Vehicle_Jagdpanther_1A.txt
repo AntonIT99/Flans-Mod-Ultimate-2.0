@@ -70,7 +70,7 @@ ArmorSideMm 50 30
 ArmorRearMm 40 35
 ArmorTopMm 25
 ArmorBottomMm 25
-TurretArmorFrontMm 80
+TurretArmorFrontMm 80 55
 TurretArmorSideMm 50
 TurretArmorRearMm 40
 TurretArmorTopMm 25
