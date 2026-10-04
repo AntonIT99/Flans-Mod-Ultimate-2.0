@@ -92,21 +92,21 @@ public class ModelVehicle extends ModelDriveable
     public float legSteerAmount = 1F;
     public boolean legSpeedChange = true;
 
-    private transient DriveableType trackPathType;
+    private DriveableType trackPathType;
     @Nullable
-    private transient DriveableType trackSideType;
-    private transient boolean trackMeshSidesSwapped;
-    private transient boolean trackPathSidesSwapped;
-    private transient TrackPath leftTrackPath = TrackPath.EMPTY;
-    private transient TrackPath rightTrackPath = TrackPath.EMPTY;
-    private transient TrackLinkLod trackLinkLod;
-    private transient float trackPathRadius;
-    private transient boolean barrelPitchPivotResolved;
+    private DriveableType trackSideType;
+    private boolean trackMeshSidesSwapped;
+    private boolean trackPathSidesSwapped;
+    private TrackPath leftTrackPath = TrackPath.EMPTY;
+    private TrackPath rightTrackPath = TrackPath.EMPTY;
+    private TrackLinkLod trackLinkLod;
+    private float trackPathRadius;
+    private boolean barrelPitchPivotResolved;
     @Nullable
-    private transient Vec3 primaryBarrelPitchPivot;
-    private transient boolean barrelMuzzleResolved;
+    private Vec3 primaryBarrelPitchPivot;
+    private boolean barrelMuzzleResolved;
     @Nullable
-    private transient Vec3 primaryBarrelMuzzle;
+    private Vec3 primaryBarrelMuzzle;
 
     /** Called before world part culling begins, so the derived mesh contains the complete link. */
     public boolean selectTrackLinkLod(DriveableType type, float projectionPixels, double distance, float modelScale,
@@ -196,7 +196,7 @@ public class ModelVehicle extends ModelDriveable
     private static final double SHOOT_POINT_PART_TOLERANCE = 3D;
 
     /** Rendered bounds of each barrel section, [part][minX minY minZ maxX maxY maxZ]; filled on first use. */
-    private transient double[][] barrelPartBounds;
+    private double[][] barrelPartBounds;
 
     /**
      * Pitch pivot of the barrel section a point is built on, in the units of
@@ -231,6 +231,14 @@ public class ModelVehicle extends ModelDriveable
             barrelPartBounds = bounds;
         }
 
+        ModelRendererTurbo nearest = getNearest(modelPixels);
+        return nearest == null ? null
+            : new Vec3(nearest.rotationPointX / 16D, nearest.rotationPointY / 16D, nearest.rotationPointZ / 16D);
+    }
+
+    @Nullable
+    private ModelRendererTurbo getNearest(Vec3 modelPixels)
+    {
         ModelRendererTurbo nearest = null;
         double nearestDistance = SHOOT_POINT_PART_TOLERANCE;
         for (int index = 0; index < barrelModel.length; index++)
@@ -248,8 +256,7 @@ public class ModelVehicle extends ModelDriveable
                 nearest = barrelModel[index];
             }
         }
-        return nearest == null ? null
-            : new Vec3(nearest.rotationPointX / 16D, nearest.rotationPointY / 16D, nearest.rotationPointZ / 16D);
+        return nearest;
     }
 
     /**
@@ -307,10 +314,6 @@ public class ModelVehicle extends ModelDriveable
 
     /**
      * {@link #getPrimaryBarrelMuzzle()} measured on the one barrel nearest
-     * {@code lateralHint} when the main armament ends in several tubes side by
-     * side, so the muzzle of a twin mount lands on a barrel, not between them.
-     *
-     * @param lateralHint lateral position of the wanted barrel, in model pixels
      * @return the muzzle in model pixels, or {@code null} when this model has no barrel
      */
     @Nullable
@@ -345,7 +348,7 @@ public class ModelVehicle extends ModelDriveable
     }
 
     /** Turret parts, drawn at rest scaled by {@code turretScale} and shifted by {@code turretTrans}. */
-    private transient Set<ModelRendererTurbo> turretParts;
+    private Set<ModelRendererTurbo> turretParts;
 
     @Override
     protected double[] toRestPose(ModelRendererTurbo part, double[] bounds)
@@ -455,8 +458,8 @@ public class ModelVehicle extends ModelDriveable
         {
             renderLegs(state, poseStack, vertexConsumer, packedLight, packedOverlay,
                 red, green, blue, alpha, scale, renderPass);
-            boolean hugeBoat = driveable.getConfigType() instanceof VehicleType type
-                && type.isFloatOnWater() && type.getWheelStepHeight() == 0F;
+            boolean hugeBoat = driveable.getConfigType() instanceof VehicleType vehicleType
+                && vehicleType.isFloatOnWater() && vehicleType.getWheelStepHeight() == 0F;
             float steeringWheelAngle = state.steeringAngle() * 3F * Mth.DEG_TO_RAD
                 * (hugeBoat ? -1F : 1F);
             renderSteeringWheel(steeringWheelAngle, poseStack, vertexConsumer,
@@ -472,7 +475,7 @@ public class ModelVehicle extends ModelDriveable
             renderAround(drillHeadModel, drillHeadOrigin, Axis.XP,
                 state.animationTime() * (24F + 48F * Math.abs(state.throttle())), poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        if (driveable.isPartIntact(EnumDriveablePart.CORE) && driveable.getConfigType() instanceof VehicleType type)
+        if (driveable.isPartIntact(EnumDriveablePart.CORE) && driveable.getConfigType() instanceof VehicleType vehicleType)
         {
             renderDoor(doorAnimModel, doorAttach, state.doorTransform(), state.partialTick(), poseStack, vertexConsumer,
                 packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -838,7 +841,7 @@ public class ModelVehicle extends ModelDriveable
                                    float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         ensureTrackPaths(type);
-        // A live vehicle carries eased per-link angles that FixTrackLink steers;
+        // A live vehicle carries eased per-link angles that FixTrackLink steers
         // without them the links fall back to the static pose.
         TrackLinkAnimation links = state.trackLinks() != null && state.trackLinks().isActive() ? state.trackLinks() : null;
         if (driveable.isPartIntact(trackPartForDrawnSide(type, true, false)))

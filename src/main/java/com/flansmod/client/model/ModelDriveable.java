@@ -15,6 +15,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
@@ -38,13 +39,15 @@ import java.util.Optional;
 @SuppressWarnings({"unused", "java:S1104"})
 public class ModelDriveable extends ModelBase implements IFlanTypeModel<DriveableType>
 {
+    @SuppressWarnings("java:S115")
     public static final float pi = (float) Math.PI;
     public static final float MODEL_SCALE = 1F / 16F;
 
     @Getter @Setter
     protected DriveableType type;
 
-    public Map<String, ModelRendererTurbo[][]> gunModels = new HashMap<>();
+    @SuppressWarnings("java:S1319")
+    public HashMap<String, ModelRendererTurbo[][]> gunModels = new HashMap<>();
     public ModelRendererTurbo[] bodyModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] bodyDoorOpenModel = new ModelRendererTurbo[0];
     public ModelRendererTurbo[] bodyDoorCloseModel = new ModelRendererTurbo[0];
@@ -234,9 +237,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     }
 
     /** Draw the non-animated base shared by every driveable. */
-    public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer,
-                       int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-                       float scale, EnumRenderPass renderPass)
+    public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         renderPart(bodyModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(state.doorProgress() >= 0.5F ? bodyDoorOpenModel : bodyDoorCloseModel,
@@ -244,9 +245,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     }
 
     /** Draw a neutral preview used by item, GUI and item-frame renderers. */
-    public void render(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer,
-                       int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-                       float scale, EnumRenderPass renderPass)
+    public void render(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         renderPart(bodyModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(bodyDoorCloseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -301,8 +300,9 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             if (gun == null || seat == null)
                 continue;
 
+            // Only the driver's aim turns the turret; turret passengers already aim relative to it.
             float[] angles = registeredGunAngles(seat, state.partialTick(), state.turretYaw(),
-                mountFilter == GunMountFilter.TURRET ? driverYaw : 0F, yawConvention);
+                mountFilter == GunMountFilter.TURRET && seat.isDriverSeat() ? driverYaw : 0F, yawConvention);
             float yaw = angles[0];
             float pitch = angles[1];
 
@@ -350,8 +350,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
      * registered seat gun. {@code relativeYaw} is subtracted from the seat's aim,
      * which turret-mounted guns need because the turret already carries it.
      */
-    protected static float[] registeredGunAngles(Seat seat, float partialTick, float fallbackYaw,
-                                                 float relativeYaw, GunYawConvention yawConvention)
+    protected static float[] registeredGunAngles(@NotNull Seat seat, float partialTick, float fallbackYaw, float relativeYaw, GunYawConvention yawConvention)
     {
         float aimYaw = Mth.wrapDegrees(interpolatedYaw(seat, partialTick, fallbackYaw) - relativeYaw);
         float aimPitch = Mth.lerp(partialTick, seat.getPrevAimPitch(), seat.getAimPitch());
@@ -395,7 +394,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         boolean turretMounted = isTurretMountedGun(seatInfo);
         Seat driverSeat = driveable.getSeat(0);
         float turretYaw = driveable.getTurretYaw();
-        float driverYaw = turretMounted ? interpolatedYaw(driverSeat, partialTick, turretYaw) : 0F;
+        float driverYaw = turretMounted && seat.isDriverSeat() ? interpolatedYaw(driverSeat, partialTick, turretYaw) : 0F;
         float[] angles = registeredGunAngles(seat, partialTick, turretYaw, driverYaw,
             this instanceof ModelPlane ? GunYawConvention.PLANE : GunYawConvention.VEHICLE);
 
@@ -443,7 +442,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         return Mth.sin(Mth.PI * progress) * -(5F / 16F);
     }
 
-    private static float interpolatedYaw(Seat seat, float partialTick, float fallback)
+    private static float interpolatedYaw(@Nullable Seat seat, float partialTick, float fallback)
     {
         return seat == null ? fallback : Mth.rotLerp(partialTick, seat.getPrevAimYaw(), seat.getAimYaw());
     }
@@ -863,7 +862,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     }
 
     /** Rest-pose bounds of every drawn part, in model pixels, built on first use. */
-    private transient List<double[]> restPartBounds;
+    private List<double[]> restPartBounds;
 
     /**
      * Distance, in model pixels, from a point to the nearest part as the model
@@ -904,7 +903,11 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
             double width = b[5] - b[2];
             if (height > TUBE_WIDTH || width > TUBE_WIDTH || length < Math.max(height, width))
                 continue;
-            Vec3 end = new Vec3(forwardNegativeX ? b[0] : b[3], (b[1] + b[4]) * 0.5D, (b[2] + b[5]) * 0.5D);
+            Vec3 end;
+            if (forwardNegativeX)
+                end = new Vec3(b[0], (b[1] + b[4]) * 0.5D, (b[2] + b[5]) * 0.5D);
+            else
+                end = new Vec3(b[3], (b[1] + b[4]) * 0.5D, (b[2] + b[5]) * 0.5D);
             nearest = Math.min(nearest, end.distanceTo(modelPixels));
         }
         return nearest;
@@ -982,7 +985,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
     private record GunMuzzleKey(String gunName, float gunScale) {}
 
     /** Measurements are a full vertex walk, and diagnostics ask for them every tick. */
-    private final transient HashMap<GunMuzzleKey, Optional<Vec3>> gunMuzzles = new HashMap<>();
+    private final HashMap<GunMuzzleKey, Optional<Vec3>> gunMuzzles = new HashMap<>();
 
     /**
      * Muzzle of a registered passenger gun, in model pixels, or {@code null} when
@@ -1010,7 +1013,7 @@ public class ModelDriveable extends ModelBase implements IFlanTypeModel<Driveabl
         }).orElse(null);
     }
 
-    private final transient HashMap<GunMuzzleKey, List<Vec3>> gunBarrelMuzzles = new HashMap<>();
+    private final HashMap<GunMuzzleKey, List<Vec3>> gunBarrelMuzzles = new HashMap<>();
 
     /**
      * The muzzle of every barrel of a registered passenger gun, in model pixels:

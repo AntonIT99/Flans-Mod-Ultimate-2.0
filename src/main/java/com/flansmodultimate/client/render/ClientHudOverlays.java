@@ -1124,7 +1124,7 @@ public final class ClientHudOverlays
         // their own seat, so read the angles back from whichever seat the local
         // player is actually sitting in.
         Seat gunnerSeat = player.getVehicle() instanceof Seat seat && !seat.isDriverSeat() ? seat : null;
-        float yaw = gunnerSeat != null ? gunnerSeat.getAimYaw()
+        float yaw = gunnerSeat != null ? gunnerSeat.getHullAimYaw()
             : isVehicle ? driveable.getTurretYaw() : driveable.getYaw();
         float pitch = gunnerSeat != null ? -gunnerSeat.getAimPitch()
             : isVehicle ? -driveable.getTurretPitch() : -driveable.getPitch();
