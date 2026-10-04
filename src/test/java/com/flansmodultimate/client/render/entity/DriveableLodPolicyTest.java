@@ -63,12 +63,14 @@ class DriveableLodPolicyTest
     }
 
     @Test
-    void defaultQualityDoublesResolutionAndYawSamplesWithinLimits()
+    void defaultQualityDoublesResolutionAndQuadruplesYawSamplesWithinLimits()
     {
         assertEquals(128, DriveableLodPolicy.resolution(64, 2));
-        assertEquals(16, DriveableLodPolicy.yawAngles(8, 2));
+        assertEquals(32, DriveableLodPolicy.yawAngles(8, 2));
         assertEquals(256, DriveableLodPolicy.resolution(256, 2));
-        assertEquals(16, DriveableLodPolicy.yawAngles(16, 2));
+        assertEquals(64, DriveableLodPolicy.yawAngles(16, 2));
+        assertEquals(64, DriveableLodPolicy.yawAngles(64, 2));
+        assertEquals(8, DriveableLodPolicy.yawAngles(8, 1));
         assertEquals(64, DriveableLodPolicy.resolution(64, 1));
     }
 

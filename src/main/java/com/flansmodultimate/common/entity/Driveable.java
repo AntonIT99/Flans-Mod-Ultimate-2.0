@@ -1,8 +1,7 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanEntity;
-import com.flansmodultimate.platform.fluid.FluidContainerPlatform;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.distant.DistantRenderRange;
 import com.flansmodultimate.common.driveables.CollisionBox;
@@ -54,7 +53,6 @@ import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.item.ToolItem;
-import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -73,7 +71,6 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketDriveableBankFired;
 import com.flansmodultimate.network.client.PacketDriveableDamage;
@@ -85,11 +82,14 @@ import com.flansmodultimate.network.client.PacketParticle;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.platform.fluid.FluidContainerPlatform;
 import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
@@ -4495,8 +4495,10 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             var debugPlayer = shot == null ? null : shot.getPlayerAttacker().orElse(null);
             if (armourBlocked)
                 DriveableDamageDebug.reportArmorBlock(debugPlayer, this, hit.getPart(),
-                    resolvedDamage.penetration().penetrationMm(),
-                    resolvedDamage.penetration().effectiveArmorMm());
+                    resolvedDamage.penetration().penetrationMm(), armorHit);
+            else if (armorHit.isArmoured())
+                DriveableDamageDebug.reportPenetration(debugPlayer, this, hit.getPart(), appliedDamage,
+                    resolvedDamage.penetration().penetrationMm(), armorHit);
             else
                 DriveableDamageDebug.reportDamage(debugPlayer, this, hit.getPart(), appliedDamage);
             if (resolvedDamage.shapedCharge())

@@ -124,6 +124,19 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     @Override
     public void render(@NotNull T driveable, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
+        long started = RenderDiagnostics.startTimer();
+        try
+        {
+            renderDriveable(driveable, partialTick, poseStack, buffer, packedLight);
+        }
+        finally
+        {
+            RenderDiagnostics.countDriveableTime(started);
+        }
+    }
+
+    private void renderDriveable(T driveable, float partialTick, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    {
         DriveableType type = driveable.getConfigType();
         if (type == null || !(ModelCache.getOrLoadTypeModel(type) instanceof ModelDriveable model))
             return;

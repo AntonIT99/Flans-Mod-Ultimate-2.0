@@ -16,6 +16,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class LegacyGameplayConfigTest
 {
     @Test
+    void vehicleThrottleDecayMultiplierKeepsTheFasterDefaultAndAcceptsOnlyItsRange()
+    {
+        assertSetting(ModCommonConfig.configSpec, 4D, "Vehicle Physics Settings", "vehicleThrottleDecayMultiplier");
+        var spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec,
+            List.of("Vehicle Physics Settings", "vehicleThrottleDecayMultiplier"));
+        assertTrue(spec.test(0D) && spec.test(1D) && spec.test(4D) && spec.test(100D));
+        assertFalse(spec.test(-1D) || spec.test(101D) || spec.test(Double.NaN)
+            || spec.test(Double.POSITIVE_INFINITY) || spec.test("4"));
+    }
+
+    @Test
     void distanceSettingsHaveBoundedDefaultsAndRejectUnsupportedValues()
     {
         assertSetting(ModCommonConfig.configSpec, 512, "Entity Tracking Settings", "driveableTrackingRange");

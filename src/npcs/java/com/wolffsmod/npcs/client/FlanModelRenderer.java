@@ -1,6 +1,5 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.IContentType;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.model.FlanModelEntityType;
 import org.jetbrains.annotations.NotNull;
@@ -18,19 +17,16 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class FlanModelRenderer extends LivingEntityRenderer<FlanModelEntity, FlanModelEntityModel>
 {
-    private final FlanModelEntityType entityType;
-
     public FlanModelRenderer(EntityRendererProvider.Context context, FlanModelEntityType entityType)
     {
         super(context, new FlanModelEntityModel(entityType), 0F);
-        this.entityType = entityType;
     }
 
     @Override
     @NotNull
     public ResourceLocation getTextureLocation(@NotNull FlanModelEntity entity)
     {
-        IContentType type = entityType.getInfoType();
-        return type != null && type.getTexture() != null ? type.getTexture() : MissingTextureAtlasSprite.getLocation();
+        ResourceLocation texture = entity.getModelTexture();
+        return texture != null ? texture : MissingTextureAtlasSprite.getLocation();
     }
 }

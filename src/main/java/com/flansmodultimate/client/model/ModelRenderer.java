@@ -14,8 +14,10 @@ import org.joml.Quaternionf;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.Direction;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.RandomAccess;
 import java.util.Set;
 
 @SuppressWarnings({"unused", "UnusedReturnValue", "BooleanMethodIsAlwaysInverted", "java:S1104"})
@@ -54,7 +56,9 @@ public class ModelRenderer implements IModelRenderer
     public final String boxName;
     @Getter
     public final List<ModelPart.Cube> cubeList = new ArrayList<>();
-    public final List<ModelRenderer> childModels = new ArrayList<>();
+    public final List<ModelRenderer> childModels = new ChildList(this);
+    /** Counts changes to {@link #childModels}, so render caches check one field instead of reading the list. */
+    public int childEdits;
 
     protected final IModelBase baseModel;
 
@@ -210,5 +214,41 @@ public class ModelRenderer implements IModelRenderer
     public boolean isVisible()
     {
         return !isHidden && showModel;
+    }
+
+    /** An ArrayList that counts its changes in the owning part; AbstractList routes every mutator through these. */
+    private static final class ChildList extends AbstractList<ModelRenderer> implements RandomAccess
+    {
+        private final ModelRenderer owner;
+        private final ArrayList<ModelRenderer> values = new ArrayList<>();
+
+        ChildList(ModelRenderer owner) { this.owner = owner; }
+
+        @Override public int size() { return values.size(); }
+        @Override public ModelRenderer get(int index) { return values.get(index); }
+
+        @Override
+        public ModelRenderer set(int index, ModelRenderer value)
+        {
+            owner.childEdits++;
+            return values.set(index, value);
+        }
+
+        @Override
+        public void add(int index, ModelRenderer value)
+        {
+            values.add(index, value);
+            modCount++;
+            owner.childEdits++;
+        }
+
+        @Override
+        public ModelRenderer remove(int index)
+        {
+            ModelRenderer old = values.remove(index);
+            modCount++;
+            owner.childEdits++;
+            return old;
+        }
     }
 }

@@ -233,10 +233,48 @@ public class TexturedPolygon
         return getClass() == TexturedPolygon.class && !hasTransformVertices && !invertNormal && iNormals.isEmpty();
     }
 
-    /** A retained empty normals list may acquire normals without calling a setter. */
+    /**
+     * A retained empty normals list may acquire normals without calling a setter.
+     * Why this polygon cannot be cached on the GPU, for render diagnostics; null when it can be.
+     **/
+    public String gpuIneligibility()
+    {
+        if (getClass() != TexturedPolygon.class) return "custom polygon class";
+        if (hasTransformVertices && hasBoundTransformVertices()) return "bone-bound vertices";
+        if (hasTransformVertices) return "bone-capable vertices of shared geometry";
+        if (invertNormal) return "inverted normals";
+        if (!iNormals.isEmpty() || externalNormals) return "per-vertex normals";
+        return null;
+    }
+
     public boolean isRigidGpuGeometry()
     {
         return isRigidLodGeometry() && !externalNormals;
+    }
+
+    /**
+     * Like {@link #isRigidLodGeometry()}, but for a part whose geometry never reached outside code:
+     * bone-capable vertices attached to no bone (as addShape3D builds them) always resolve to their
+     * neutral position, so they are rigid. Binding one later needs the vertex itself, which only
+     * outside code holds, and such a part does not ask for this.
+     */
+    public boolean isRigidLodGeometry(boolean ownedGeometry)
+    {
+        return getClass() == TexturedPolygon.class && !invertNormal && iNormals.isEmpty()
+            && (!hasTransformVertices || ownedGeometry && !hasBoundTransformVertices());
+    }
+
+    public boolean isRigidGpuGeometry(boolean ownedGeometry)
+    {
+        return isRigidLodGeometry(ownedGeometry) && !externalNormals;
+    }
+
+    private boolean hasBoundTransformVertices()
+    {
+        for (int i = 0; i < nVertices; i++)
+            if (vertexPositions[i] instanceof PositionTransformVertex vertex && !vertex.transformGroups.isEmpty())
+                return true;
+        return false;
     }
 
     public long geometryRevision()

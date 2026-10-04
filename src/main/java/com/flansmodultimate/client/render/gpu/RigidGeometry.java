@@ -17,6 +17,12 @@ public final class RigidGeometry
 
     public RigidGeometry(TexturedPolygon[] polygons)
     {
+        this(polygons, false);
+    }
+
+    /** @param ownedGeometry the part never handed its geometry to outside code; see {@link TexturedPolygon#isRigidLodGeometry(boolean)} */
+    public RigidGeometry(TexturedPolygon[] polygons, boolean ownedGeometry)
+    {
         source = null;
         localPose = transformedPose = null;
         faces = polygons.clone();
@@ -36,7 +42,7 @@ public final class RigidGeometry
             }
 
             revisions[i] = face.geometryRevision();
-            rigid &= face.getClass() == TexturedPolygon.class && face.isRigidGpuGeometry();
+            rigid &= face.getClass() == TexturedPolygon.class && face.isRigidGpuGeometry(ownedGeometry);
 
             int n = face.nVertices;
             if (n >= 3)

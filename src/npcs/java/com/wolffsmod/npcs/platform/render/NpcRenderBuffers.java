@@ -35,7 +35,7 @@ public final class NpcRenderBuffers implements MultiBufferSource
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    static MultiBufferSource wrap(MultiBufferSource source, EntityCustomNpc npc, float partialTick,
+    public static MultiBufferSource wrap(MultiBufferSource source, EntityCustomNpc npc, float partialTick,
         PoseStack pose, RenderCustomNpc renderer)
     {
         if (!(npc.modelData.getEntity(npc) instanceof FlanModelEntity modelEntity))
@@ -49,7 +49,8 @@ public final class NpcRenderBuffers implements MultiBufferSource
     {
         VertexConsumer vertices = source.getBuffer(renderType);
         var infoType = type.getInfoType();
-        ResourceLocation texture = npc.modelData.simpleRender && infoType != null ? infoType.getTexture() : npc.textureLocation;
+        ResourceLocation texture = npc.modelData.simpleRender
+            && npc.modelData.getEntity(npc) instanceof FlanModelEntity model ? model.getModelTexture() : npc.textureLocation;
         // Only the normal body buffer opts in. Glow overlays, invisibility and outlines retain their exact consumer.
         if (source.getClass() == MultiBufferSource.BufferSource.class && texture != null && infoType != null
             && renderType == FlansModelPreviews.getRenderType(infoType, texture))

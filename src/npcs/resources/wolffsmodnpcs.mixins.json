@@ -1,9 +1,14 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.wolffsmod.npcs.platform.render",
+  "package": "com.wolffsmod.npcs.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": ["NpcDistanceMixin"],
-  "client": ["NpcRenderContextMixin"],
+  "client": [
+      "NpcModelBrowserMixin",
+      "NpcModelPreviewMixin",
+      "NpcNameplateMixin",
+      "NpcRenderContextMixin"
+  ],
   "injectors": {"defaultRequire": 1}
 }

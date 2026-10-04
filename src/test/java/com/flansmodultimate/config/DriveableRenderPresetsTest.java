@@ -19,17 +19,27 @@ class DriveableRenderPresetsTest
         TestConfigLoader.load(spec, config);
         try
         {
-            assertEquals(ModClientConfig.RenderPreset.BALANCED, ModClientConfig.currentLodPreset());
-            assertEquals(ModClientConfig.RenderPreset.BALANCED, ModClientConfig.currentImpostorPreset());
+            assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentLodPreset());
+            assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentImpostorPreset());
+
+            ModClientConfig.applyLodPreset(ModClientConfig.RenderPreset.ULTRA_QUALITY);
+            assertEquals(new ModClientConfig.LodValues(0.25, 0.5, 1, 0, 0),
+                ModClientConfig.currentLodValues());
+            assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentImpostorPreset());
+            ModClientConfig.applyImpostorPreset(ModClientConfig.RenderPreset.ULTRA_QUALITY);
+            assertEquals(new ModClientConfig.ImpostorValues(8, 128, 256, 2, 64, 8),
+                ModClientConfig.currentImpostorValues());
+            ModClientConfig.applyLodPreset(ModClientConfig.RenderPreset.QUALITY);
+            ModClientConfig.applyImpostorPreset(ModClientConfig.RenderPreset.QUALITY);
 
             // This advanced distance factor affects both systems, so neither slider owns it.
             ConfigSpecValues.apply(spec, List.of("Entity Rendering Settings", "groundVehicleLodDistanceFactor"), 1D);
-            assertEquals(ModClientConfig.RenderPreset.BALANCED, ModClientConfig.currentLodPreset());
-            assertEquals(ModClientConfig.RenderPreset.BALANCED, ModClientConfig.currentImpostorPreset());
+            assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentLodPreset());
+            assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentImpostorPreset());
 
             ModClientConfig.applyLodPreset(ModClientConfig.RenderPreset.OFF);
             assertEquals(ModClientConfig.RenderPreset.OFF, ModClientConfig.currentLodPreset());
-            assertEquals(ModClientConfig.RenderPreset.BALANCED, ModClientConfig.currentImpostorPreset());
+            assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentImpostorPreset());
 
             ModClientConfig.applyImpostorPreset(ModClientConfig.RenderPreset.PERFORMANCE);
             assertEquals(ModClientConfig.RenderPreset.OFF, ModClientConfig.currentLodPreset());

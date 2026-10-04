@@ -64,13 +64,13 @@ PlaceTimePrimary 80
 ReloadTimeSecondary 100
 
 // Protection
-ArmorFrontMm 250
-ArmorSideMm 80
+ArmorFrontMm 150 50
+ArmorSideMm 80 25
 ArmorRearMm 80
 ArmorTopMm 40
 ArmorBottomMm 25
-TurretArmorFrontMm 250
-TurretArmorSideMm 80
+TurretArmorFrontMm 250 15
+TurretArmorSideMm 150 15
 TurretArmorRearMm 80
 TurretArmorTopMm 40
 UseRealisticVehicleHealth true

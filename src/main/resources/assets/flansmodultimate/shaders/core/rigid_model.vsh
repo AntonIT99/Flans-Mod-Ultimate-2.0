@@ -15,10 +15,18 @@ uniform mat4 ProjMat;
 uniform int FogShape;
 uniform vec3 Light0_Direction;
 uniform vec3 Light1_Direction;
-// Two parts share each metadata matrix, leaving room for 24 parts on OpenGL 3.2.
-uniform mat4 PartPose[24];
-uniform mat3 PartNormal[24];
-uniform mat4 PartData[12];
+
+// One palette entry per distinct part transform: 144 bytes in std140, so 96 entries fit the 16 KiB
+// uniform block OpenGL 3.1 guarantees. Each draw binds the range of a ring buffer it just wrote.
+struct Part {
+    mat4 pose;
+    mat3 normal;
+    vec4 color;
+    vec4 lighting; // Light and overlay coordinates, low and high halves
+};
+layout(std140) uniform PartPalette {
+    Part parts[96];
+};
 
 out float vertexDistance;
 out vec4 vertexColor;
@@ -27,15 +35,13 @@ out vec4 overlayColor;
 out vec2 texCoord0;
 
 void main() {
-    int part = UV1.x;
-    vec3 position = (PartPose[part] * vec4(Position, 1.0)).xyz;
-    vec3 normal = PartNormal[part] * Normal;
-    int metadata = part / 2;
-    int column = (part % 2) * 2;
-    ivec4 lighting = ivec4(PartData[metadata][column + 1]);
+    Part part = parts[UV1.x];
+    vec3 position = (part.pose * vec4(Position, 1.0)).xyz;
+    vec3 normal = part.normal * Normal;
+    ivec4 lighting = ivec4(part.lighting);
     gl_Position = ProjMat * ModelViewMat * vec4(position, 1.0);
     vertexDistance = fog_distance(position, FogShape);
-    vertexColor = minecraft_mix_light(Light0_Direction, Light1_Direction, normal, PartData[metadata][column]);
+    vertexColor = minecraft_mix_light(Light0_Direction, Light1_Direction, normal, part.color);
     lightMapColor = texelFetch(Sampler2, lighting.xy / 16, 0);
     overlayColor = texelFetch(Sampler1, lighting.zw, 0);
     texCoord0 = UV0;

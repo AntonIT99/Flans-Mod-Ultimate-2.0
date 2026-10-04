@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.api.PaintjobVariant;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
 import com.flansmodultimate.common.paintjob.Paintjob;
@@ -135,6 +136,14 @@ public abstract class PaintableType extends InfoType
     public Paintjob getPaintjob(int id)
     {
         return paintjobs.getOrDefault(id, defaultPaintjob);
+    }
+
+    @Override
+    public List<PaintjobVariant> getPaintjobVariants()
+    {
+        return paintjobs.values().stream().sorted(Comparator.comparingInt(Paintjob::getId))
+            .map(job -> new PaintjobVariant(job.getId(), StringUtils.isBlank(job.getDisplayName())
+                ? job.getTextureName() : job.getDisplayName(), job.getTexture())).toList();
     }
 
     public void applyPaintjobToStack(ItemStack stack, Paintjob paintjob)

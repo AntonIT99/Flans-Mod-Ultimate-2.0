@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.common.driveables.armor.ResolvedArmorHit;
 import com.flansmodultimate.common.entity.Driveable;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,14 +50,40 @@ public final class DriveableDamageDebug
             driveable.getConfigType().getName(), part.getName(), damage)).withStyle(ChatFormatting.YELLOW));
     }
 
+    /** Reports damage behind an armoured face together with the penetration check that let it through. */
+    public static void reportPenetration(@Nullable ServerPlayer player, Driveable driveable,
+                                         EnumDriveablePart part, float damage, float penetrationMm,
+                                         ResolvedArmorHit armorHit)
+    {
+        if (!isEnabled(player) || damage <= 0F)
+            return;
+        player.sendSystemMessage(Component.literal(String.format(java.util.Locale.ROOT,
+            "[FMU Debug] %s - %s: %.2f damage (penetration %.2f mm vs %s)",
+            driveable.getConfigType().getName(), part.getName(), damage, penetrationMm, describeArmor(armorHit)))
+            .withStyle(ChatFormatting.YELLOW));
+    }
+
     public static void reportArmorBlock(@Nullable ServerPlayer player, Driveable driveable,
-                                        EnumDriveablePart part, float penetrationMm, float armorMm)
+                                        EnumDriveablePart part, float penetrationMm, ResolvedArmorHit armorHit)
     {
         if (!isEnabled(player))
             return;
         player.sendSystemMessage(Component.literal(String.format(java.util.Locale.ROOT,
-            "[FMU Debug] %s - %s: blocked (penetration %.2f mm, effective armor %.2f mm)",
-            driveable.getConfigType().getName(), part.getName(), penetrationMm, armorMm))
+            "[FMU Debug] %s - %s: blocked (penetration %.2f mm vs %s)",
+            driveable.getConfigType().getName(), part.getName(), penetrationMm, describeArmor(armorHit)))
             .withStyle(ChatFormatting.RED));
+    }
+
+    /**
+     * Effective thickness with the struck face, the impact angle against its sloped normal and the nominal
+     * thickness it was derived from (the HEAT value for a HEAT hit).
+     */
+    static String describeArmor(ResolvedArmorHit armorHit)
+    {
+        float nominal = (float) (armorHit.effectiveArmorMm() * Math.cos(Math.toRadians(armorHit.impactAngleDeg())));
+        return String.format(java.util.Locale.ROOT,
+            "effective armor %.2f mm: %s face, %.2f mm nominal at %.1f deg",
+            armorHit.effectiveArmorMm(), armorHit.facing().name().toLowerCase(java.util.Locale.ROOT),
+            nominal, armorHit.impactAngleDeg());
     }
 }

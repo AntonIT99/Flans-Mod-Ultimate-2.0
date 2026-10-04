@@ -12,3 +12,5 @@ def npcsSourceSet = registerFmuModule(
 // Custom NPCs is a mandatory dependency of this module; the main mod already loads it in dev runs.
 // NeoForge 1.21.1 runs Mojang names in production, so the jar ships as compiled, like every module.
 dependencies.add(npcsSourceSet.compileOnlyConfigurationName, customNpcsDependency)
+// Geometry-framing tests use the module's client helper without loading Custom NPCs.
+dependencies.add('testImplementation', npcsSourceSet.output)

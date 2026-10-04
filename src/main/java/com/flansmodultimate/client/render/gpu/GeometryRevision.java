@@ -13,6 +13,7 @@ public final class GeometryRevision
     public static void changed()
     {
         epoch++;
+        RenderDiagnostics.countGeometryChange();
     }
 
     private GeometryRevision() {}
