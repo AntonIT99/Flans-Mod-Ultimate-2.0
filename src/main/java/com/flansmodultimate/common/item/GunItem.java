@@ -1,17 +1,13 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.EnchantmentModule;
+import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
 import com.flansmodultimate.common.guns.EnumFireDecision;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.ScopeZoom;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.IScope;
-import com.flansmodultimate.common.types.PaintableType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketGunShootClient;
@@ -21,12 +17,6 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -53,12 +43,13 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -203,8 +194,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.canToggle(stack))
         {
             boolean on = configType.isToggledOn(stack);
-            tooltipComponents.add(Component.translatable(on ? TooltipKeys.TOGGLED_ON : TooltipKeys.TOGGLED_OFF)
-                .withStyle(on ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+            tooltipComponents.add(
+                Component.translatable(on ? TooltipKeys.TOGGLED_ON : TooltipKeys.TOGGLED_OFF).withStyle(on ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
         }
 
         if (!IFlanItem.showDetailedDescriptions())
@@ -223,7 +214,6 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 for (ItemStack attachmentItem : attachmentItems)
                     tooltipComponents.add(Component.literal(attachmentItem.getDisplayName().getString()).withStyle(ChatFormatting.AQUA));
             }
-
 
             // Ammo info
             for (ItemStack bulletStack : getBulletItemStackList(stack, ItemStackData.builtInRegistries()))
@@ -274,13 +264,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BOX), originGunbox));
 
             List<ShootableType> ammoTypes = new ArrayList<>(configType.getAmmoTypes());
-            getBulletItemStackList(stack, ItemStackData.builtInRegistries()).stream()
-                .map(ItemStack::getItem)
-                .filter(ShootableItem.class::isInstance)
-                .map(ShootableItem.class::cast)
-                .map(ShootableItem::getConfigType)
-                .findFirst()
-                .ifPresent(loadedAmmoType ->
+            getBulletItemStackList(stack, ItemStackData.builtInRegistries()).stream().map(ItemStack::getItem).filter(ShootableItem.class::isInstance)
+                .map(ShootableItem.class::cast).map(ShootableItem::getConfigType).findFirst().ifPresent(loadedAmmoType ->
                 {
                     for (int i = 0; i < ammoTypes.size(); i++)
                     {
@@ -345,7 +330,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                         groupedDamageLines.computeIfAbsent(entry.getValue(), ignored -> new ArrayList<>())
                             .add(ModUtils.getItemLocalizedName(entry.getKey().getShortName()));
 
-                    groupedDamageLines.forEach((damageValues, ammoNames) -> tooltipComponents.add(createDamageComponent(String.join(", ", ammoNames), damageValues)));
+                    groupedDamageLines
+                        .forEach((damageValues, ammoNames) -> tooltipComponents.add(createDamageComponent(String.join(", ", ammoNames), damageValues)));
                 }
                 else
                 {
@@ -355,19 +341,24 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
 
             if (configType.getPrimaryFunction().isMelee() || configType.getSecondaryFunction().isMelee())
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
+                tooltipComponents
+                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
 
             if (configType.isThrowable())
             {
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_DAMAGE), IFlanItem.formatFloat(configType.getThrowDamage(stack))));
+                tooltipComponents
+                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_DAMAGE), IFlanItem.formatFloat(configType.getThrowDamage(stack))));
                 if (configType.getThrowMass() > 0F)
-                    tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MASS), IFlanItem.formatFloat(configType.getThrowMass()) + " g"));
+                    tooltipComponents
+                        .add(IFlanItem.statLine(Component.translatable(TooltipKeys.MASS), IFlanItem.formatFloat(configType.getThrowMass()) + " g"));
             }
 
             if (configType.isShowRecoil())
             {
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.VERTICAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.HORIZONTAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
+                tooltipComponents.add(
+                    IFlanItem.statLine(Component.translatable(TooltipKeys.VERTICAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.HORIZONTAL_RECOIL),
+                    IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
 
                 float sprintingControlValue = configType.getRecoilControl(stack, true, false);
                 float sneakingControlValue = configType.getRecoilControl(stack, false, true);
@@ -394,31 +385,37 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
 
             if (configType.isShowSpread())
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DISPERSION), IFlanItem.formatFloat(configType.getDispersionForDisplay(stack)) + "°"));
+                tooltipComponents.add(
+                    IFlanItem.statLine(Component.translatable(TooltipKeys.DISPERSION), IFlanItem.formatFloat(configType.getDispersionForDisplay(stack)) + "°"));
 
             if (configType.getSwitchDelay() > 0F)
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SWITCH_DELAY), IFlanItem.formatFloat(configType.getSwitchDelay())));
 
             if (configType.isShowReloadTime())
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.RELOAD_TIME), IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + " s"));
+                tooltipComponents.add(
+                    IFlanItem.statLine(Component.translatable(TooltipKeys.RELOAD_TIME), IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + " s"));
 
-            if (configType.isThrowable() || configType.isShowBulletSpeed()) {
+            if (configType.isThrowable() || configType.isShowBulletSpeed())
+            {
                 float bulletSpeed = configType.getBulletSpeed(stack);
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(configType.isThrowable() ? TooltipKeys.THROW_SPEED : TooltipKeys.MUZZLE_VELOCITY), (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " m/s") : "∞"));
+                tooltipComponents
+                    .add(IFlanItem.statLine(Component.translatable(configType.isThrowable() ? TooltipKeys.THROW_SPEED : TooltipKeys.MUZZLE_VELOCITY),
+                        (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " m/s") : "∞"));
             }
 
             if (configType.isShowShootDelay())
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RATE), IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + " rpm"));
+                tooltipComponents.add(
+                    IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RATE), IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + " rpm"));
 
             if (configType.isShowMode())
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MODE),
                     Component.translatable("tooltip.flansmodultimate.fire_mode." + configType.getFireMode(stack).name().toLowerCase(Locale.ROOT))));
 
             if (configType.getKnockback() > 0F)
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOOTER_KNOCKBACK), IFlanItem.formatFloat(configType.getKnockback())));
+                tooltipComponents
+                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOOTER_KNOCKBACK), IFlanItem.formatFloat(configType.getKnockback())));
 
-            float scopeZoom = hasVariableZoom(stack) ? getCurrentVariableZoom(stack)
-                : configType.getCurrentScope(stack).getZoomFactor();
+            float scopeZoom = hasVariableZoom(stack) ? getCurrentVariableZoom(stack) : configType.getCurrentScope(stack).getZoomFactor();
             float zoomFactor = Math.max(scopeZoom, configType.getCurrentScope(stack).getFovFactor());
             if (zoomFactor != 1F)
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ZOOM_FACTOR), "x" + IFlanItem.formatFloat(zoomFactor)));
@@ -428,7 +425,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     private DamageTooltipValues getDamageTooltipValues(ShootableType shootableType, ItemStack stack)
     {
         if (shootableType.useKineticDamageSystem())
-            return new DamageTooltipValues(true, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", false, "", false, "");
+            return new DamageTooltipValues(true, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", false,
+                "", false, "");
 
         float damage = configType.getDamageForDisplay(shootableType, stack);
         float damageVsLiving = configType.getDamageForDisplay(shootableType, stack, LivingEntity.class);
@@ -442,14 +440,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         boolean showVehicle = shootableType.getDamage().isReadDamageVsVehicles() && Math.abs(damageVsVehicle - damage) > EPS;
         boolean showPlane = shootableType.getDamage().isReadDamageVsPlanes() && Math.abs(damageVsPlane - damageVsVehicle) > EPS;
 
-        return new DamageTooltipValues(
-            false,
-            IFlanItem.formatFloat(damage, 1),
-            showLiving, showLiving ? IFlanItem.formatFloat(damageVsLiving, 1) : "",
-            showPlayer, showPlayer ? IFlanItem.formatFloat(damageVsPlayer, 1) : "",
-            showVehicle, showVehicle ? IFlanItem.formatFloat(damageVsVehicle, 1) : "",
-            showPlane, showPlane ? IFlanItem.formatFloat(damageVsPlane, 1) : ""
-        );
+        return new DamageTooltipValues(false, IFlanItem.formatFloat(damage, 1), showLiving, showLiving ? IFlanItem.formatFloat(damageVsLiving, 1) : "",
+            showPlayer, showPlayer ? IFlanItem.formatFloat(damageVsPlayer, 1) : "", showVehicle, showVehicle ? IFlanItem.formatFloat(damageVsVehicle, 1) : "",
+            showPlane, showPlane ? IFlanItem.formatFloat(damageVsPlane, 1) : "");
     }
 
     private static MutableComponent createDamageComponent(String label, DamageTooltipValues damageValues)
@@ -468,13 +461,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         return damageComponent;
     }
 
-    private record DamageTooltipValues(
-        boolean kinetic, String damage,
-        boolean showLiving, String damageVsLiving,
-        boolean showPlayer, String damageVsPlayer,
-        boolean showVehicle, String damageVsVehicle,
-        boolean showPlane, String damageVsPlane
-    ) {}
+    private record DamageTooltipValues(boolean kinetic, String damage, boolean showLiving, String damageVsLiving, boolean showPlayer, String damageVsPlayer,
+        boolean showVehicle, String damageVsVehicle, boolean showPlane, String damageVsPlane)
+    {}
 
     @Override
     public PaintableType getPaintableType()
@@ -561,8 +550,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
         if (!dualWield)
         {
-            boolean canZoom = configType.getSecondaryFunction().isZoom() || configType.getPrimaryFunction().isZoom()
-                || configType.getZoomFactor() > 1F || configType.getFovFactor() > 1F;
+            boolean canZoom = configType.getSecondaryFunction().isZoom() || configType.getPrimaryFunction().isZoom() || configType.getZoomFactor() > 1F
+                || configType.getFovFactor() > 1F;
 
             if (!canZoom)
                 ClientHooks.PLAYER.swingIfLocalPlayer(player, hand);
@@ -581,17 +570,17 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     {
         modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID),
             "Knockback resistance", configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_VALUE);
-        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID),
-            "Movement speed", configType.getMovementSpeed(stack) - 1F, ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
-        modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID),
-            "Weapon modifier", configType.getMeleeDamage(stack, false), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed",
+            configType.getMovementSpeed(stack) - 1F, ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
+        modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier",
+            configType.getMeleeDamage(stack, false), ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
     {
         if (StringUtils.isNotBlank(configType.getMeleeSound()) && !configType.isPoweredOff(stack))
-            PacketPlaySound.sendSoundPacket(entity, configType.getMeleeSoundRange(), configType.getMeleeSound(), true);
+            PacketPlaySound.sendSoundPacket(entity, configType.getMeleeSoundRange(), configType.getMeleeSound(), configType.isDistortSound());
         return false;
     }
 
@@ -705,9 +694,12 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     /**
      * Get the ammo item stack stored in the gun's NBT data (the loaded magazine / bullets).
-     * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
+     *
+     * @param id:
+     *            some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
-    public ItemStack getAmmoItemStack(ItemStack gun, int id, HolderLookup.Provider registries) {
+    public ItemStack getAmmoItemStack(ItemStack gun, int id, HolderLookup.Provider registries)
+    {
         if (gun.isEmpty())
             return ItemStack.EMPTY;
 
@@ -733,9 +725,12 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     /**
      * Set the bullet item stack stored in the gun's NBT data (the loaded magazine / bullets).
-     * @param id: some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
+     *
+     * @param id:
+     *            some guns use multiple bullet items instead of one magazine, id is here the index to identify which one.
      */
-    public void setBulletItemStack(ItemStack gun, ItemStack bullet, int id, HolderLookup.Provider registries) {
+    public void setBulletItemStack(ItemStack gun, ItemStack bullet, int id, HolderLookup.Provider registries)
+    {
         if (gun.isEmpty() || id < 0)
             return;
 
@@ -768,10 +763,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Unmodifiable
     public List<ItemStack> getBulletItemStackList(ItemStack gun, HolderLookup.Provider registries)
     {
-        return IntStream.range(0, configType.getNumAmmoItemsInGun(gun))
-            .mapToObj(i -> getAmmoItemStack(gun, i, registries))
-            .filter(s -> s != null && s.getItem() instanceof ShootableItem && ShootableItem.hasRoundsLeft(s))
-            .toList();
+        return IntStream.range(0, configType.getNumAmmoItemsInGun(gun)).mapToObj(i -> getAmmoItemStack(gun, i, registries))
+            .filter(s -> s != null && s.getItem() instanceof ShootableItem && ShootableItem.hasRoundsLeft(s)).toList();
     }
 
     public int getReloadCount(ItemStack gunStack, HolderLookup.Provider registries)
@@ -792,7 +785,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
-        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack, registries);
+        float reloadTime = (maxAmmo <= 1)
+            ? configType.getReloadTime(gunStack)
+            : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack, registries);
         return EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
     }
 
@@ -830,8 +825,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return scope.getZoomFactor();
 
         CompoundTag tag = ItemStackData.copy(gun);
-        float current = tag.contains(NBT_CURRENT_ZOOM, Tag.TAG_FLOAT)
-            ? tag.getFloat(NBT_CURRENT_ZOOM) : ScopeZoom.minimum(scope);
+        float current = tag.contains(NBT_CURRENT_ZOOM, Tag.TAG_FLOAT) ? tag.getFloat(NBT_CURRENT_ZOOM) : ScopeZoom.minimum(scope);
         return ScopeZoom.clamp(current, scope);
     }
 

@@ -452,9 +452,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected String toggleOffSound;
 
     // Sound Modifiers
-    /**
-     * Whether to distort the sound or not. Generally only set to false for looping sounds
-     */
+    /** Whether to randomize sound pitch for shots, reloads, and melee swings. */
     @Getter
     protected boolean distortSound = true;
     /**
