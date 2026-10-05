@@ -13,6 +13,58 @@ Recheck them against the target branch during future merges.
 
 ## Minecraft 1.20.1 / Forge → Minecraft 1.21.1 / NeoForge
 
+### Content-loading package on master
+
+On `master` (Forge 1.20.1), the content-loading implementation now lives in
+`com.flansmodultimate.content`. `ContentManager` delegates regeneration decisions
+and asset generation to `ContentPackAssets`, `ContentPackModels`,
+`ContentPackLocalization`, `GeneratedTextureFiles`, and `ContentPackSounds`;
+`LegacyTextureAliases` owns the armor, GUI, and skin collision state. Generators
+receive the provider's types and alias maps explicitly. Loading and generation
+order remain unchanged. When porting this refactor, update internal imports and
+resource-provider wiring while preserving the target branch's loader APIs.
+
+`com.flansmodultimate.PackagedContentPackApi` remains at its original location
+with the same registration overloads. Its implementation delegates to
+`content.PackagedContentLoader`, so packaged content mods need no source changes.
+The older root-package paths in the tables below still name the 1.21.1 branch.
+
+Master additionally uses `ContentPackDiscovery` for the shared directory/ZIP/JAR
+selection, `ContentProcessingCache` for successful generation, and
+`PackAssetIndex` / `ContentFileCache` for persisted texture signatures and parsed
+asset JSON. Warm startup validates archive metadata or directory file metadata
+and effective type values after categories; it skips resource hashing, PNG
+decoding, source model parsing, sound/recipe regeneration checks, and repacking.
+The cache is external to packs and disposable. Failed regeneration must not
+inherit a previous successful phase flag. Port these cache semantics while
+retaining the target's recipe formats and resource repository APIs.
+
+Authored custom model and blockstate filenames now remain canonical on master;
+`ModernAssetAliases` maps them to registered IDs in the read-only view. Old
+physical ID migrations recover missing originals from the previous ID mapping.
+Generated texture manifests track ownership and output digests so authored or
+edited files survive cleanup; both armor layers contribute to a collision.
+English fallback generation also supports packs without an English `.lang`.
+
+Master's `soundPackPriority` in the early content-loading TOML lists standalone
+packs (`pack:<basename>`) and shared packaged modules (`mod:<id>`), highest
+priority first. Missing entries are appended and removed sources retain their
+positions. `SoundPriorityPlan` chooses complete event definitions and individual
+.ogg resource owners independently, then resolves durations through that graph;
+`SoundAssetIndex` caches the inventories and measurements. Servers resolve the
+same plan without initializing client sound classes. Loader version 7 also
+normalizes standalone legacy sound assets when server data is reprocessed.
+
+`SoundPriority.repositorySource()` supplies a required fixed TOP, sound-only
+pack (`!flansmodultimate_sound_priority`) through the client pack finder. Its
+merged `sounds.json` sets `replace` on the selected definitions, and its .ogg
+resources delegate to the selected source. It leaves texture/data pack ordering
+alone. On a port, adapt `Pack.Info`, `Pack.create`, resource suppliers and file
+pack constructors to the target's APIs, preserving both the sound-only scope
+and priority above packaged assets. The ordinary Minecraft resource-pack order
+cannot override this configured selection. Changing just the list does not
+invalidate content generation or trigger audio remeasurement.
+
 ### NPC static world-model rendering
 
 The Forge 1.20.1 model picker uses the client-only `NpcModelBrowserMixin` on
