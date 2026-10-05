@@ -61,6 +61,14 @@ neoForge {
             logLevel = org.slf4j.event.Level.DEBUG
         }
 
+        // Debug timings plus a Flight Recorder profile of the first three minutes, saved as startup.jfr in the run directory.
+        clientProfile {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mainModId
+            logLevel = org.slf4j.event.Level.DEBUG
+            jvmArgument '-XX:StartFlightRecording=duration=180s,settings=profile,filename=startup.jfr'
+        }
+
         server {
             server()
             systemProperty 'neoforge.enabledGameTestNamespaces', mainModId

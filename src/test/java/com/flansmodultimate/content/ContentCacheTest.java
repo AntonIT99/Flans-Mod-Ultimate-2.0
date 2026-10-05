@@ -214,7 +214,7 @@ class ContentCacheTest
         Files.createDirectories(model.getParent());
         Files.writeString(model, "{\"marker\":\"A\"}");
         var original = PackAssetIndex.modern(assets, null);
-        try (var files = Files.list(root.resolve("cache")))
+        try (var files = Files.list(root.resolve("cache").resolve("asset-index")))
         {
             Path cache = files.findFirst().orElseThrow();
             var json = com.google.gson.JsonParser.parseString(Files.readString(cache)).getAsJsonObject();
@@ -230,7 +230,7 @@ class ContentCacheTest
         ContentPack pack = new ContentPack("pack", root.resolve("pack"));
         Files.createDirectories(pack.getPath());
         new ContentProcessingCache(pack, "definitions").remember(true, true, true, true);
-        try (var files = Files.list(root.resolve("cache")))
+        try (var files = Files.list(root.resolve("cache").resolve("generation")))
         {
             for (Path file : files.toList()) Files.writeString(file, "invalid JSON");
         }
@@ -258,6 +258,59 @@ class ContentCacheTest
         file.getConfigLines("Name").set(0, "Category name");
         assertNotEquals(before, file.getGenerationInput());
         assertEquals(java.util.List.of("Name First"), file.getLines());
+    }
+
+    @Test
+    void eachKindOfEntryIsKeptInItsOwnFolder() throws Exception
+    {
+        ContentPack pack = new ContentPack("pack", root.resolve("pack"));
+        Files.createDirectories(pack.getPath());
+        new ContentProcessingCache(pack, "definitions").remember(true, true, true, true);
+        PackAssetIndex.modern(pack.getAssetsPath(), null);
+        try (var folders = Files.list(root.resolve("cache")))
+        {
+            assertEquals(java.util.Set.of("generation", "asset-index"),
+                folders.map(folder -> folder.getFileName().toString()).collect(java.util.stream.Collectors.toSet()));
+        }
+        try (var leftovers = Files.walk(root.resolve("cache")))
+        {
+            assertTrue(leftovers.noneMatch(file -> file.getFileName().toString().endsWith(".tmp")));
+        }
+    }
+
+    @Test
+    void snapshotMatchesStampingEachListedFile() throws Exception
+    {
+        Path tree = root.resolve("tree");
+        for (String name : java.util.List.of("a.txt", "sub/b.png", "sub/deeper/c.json", "sub/empty.txt"))
+        {
+            Path file = tree.resolve(name);
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, name.endsWith("empty.txt") ? "" : name);
+        }
+        Files.createDirectories(tree.resolve("empty-folder"));
+        // What the walk-and-stamp form recorded, which existing cache entries were written with.
+        Map<String, ContentFileCache.Stamp> expected = new java.util.TreeMap<>();
+        try (var files = Files.walk(tree))
+        {
+            for (Path file : files.filter(Files::isRegularFile).toList())
+                expected.put(tree.relativize(file).toString().replace('\\', '/'), ContentFileCache.stamp(file));
+        }
+        assertEquals(expected, ContentFileCache.snapshot(tree));
+        assertEquals(Map.of(), ContentFileCache.snapshot(root.resolve("missing")));
+    }
+
+    @Test
+    void streamedGenerationDigestEqualsTheHashOfTheConcatenatedInput()
+    {
+        var digest = ContentFileCache.newDigest();
+        StringBuilder concatenated = new StringBuilder();
+        for (String part : java.util.List.of("guns/a.txt:[ShortName a]\n", "Sturmgeschütz 坦克\n", "{a=a_2}"))
+        {
+            digest.update(part.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            concatenated.append(part);
+        }
+        assertEquals(ContentFileCache.hash(concatenated.toString()), java.util.HexFormat.of().formatHex(digest.digest()));
     }
 
     @Test

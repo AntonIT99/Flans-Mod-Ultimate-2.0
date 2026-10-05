@@ -25,7 +25,10 @@ final class LegacyTextureAliases
     private final Map<String, Set<String>> reserved = new HashMap<>();
     private final Map<String, Set<String>> signatureNames = new HashMap<>();
     private final Map<IContentProvider, Map<String, Map<String, Map<String, String>>>> inputs = new HashMap<>();
+    /** Name indexes read by {@link #prepare}, reused when they already hold every signature a pack needs. */
+    private final Map<IContentProvider, Map<String, Map<String, Map<String, String>>>> prepared = new HashMap<>();
     private record TextureGroup(IContentProvider provider, Map<String, String> layers) {}
+    private record PreparedNames(Map<String, Map<String, Map<String, String>>> names, String error, long nanos) {}
 
     LegacyTextureAliases()
     {
@@ -47,25 +50,46 @@ final class LegacyTextureAliases
     /** Reserve authored names from every pack before allocating suffixes. */
     void prepare(List<IContentProvider> providers)
     {
-        for (IContentProvider provider : providers)
-            if (provider.shouldIndexAssetsForConflicts())
+        prepare(providers, ContentLoadingWorkers.sequential());
+    }
+
+    /** Indexes the packs on the workers, then reserves their names in pack order. */
+    void prepare(List<IContentProvider> providers, ContentLoadingWorkers workers)
+    {
+        List<IContentProvider> indexed = providers.stream().filter(IContentProvider::shouldIndexAssetsForConflicts).toList();
+        List<PreparedNames> results = workers.map(indexed, LegacyTextureAliases::readNames);
+        for (int i = 0; i < indexed.size(); i++)
+        {
+            IContentProvider provider = indexed.get(i);
+            PreparedNames result = results.get(i);
+            if (result.names() != null)
             {
-                long start = System.nanoTime();
-                try
-                {
-                    PackAssetIndex.legacyNames(provider).forEach((folder, groups) ->
-                        groups.keySet().forEach(name -> {
-                            if (!reserved.get(folder).add(name))
-                                signatureNames.get(folder).add(name);
-                        }));
-                }
-                catch (IOException | RuntimeException e)
-                {
-                    FlansLog.log.error("Could not reserve legacy texture names in '{}': {}", provider.getName(), e.toString());
-                }
-                FlansLog.log.debug("{}: Reserved legacy texture names in {} ms", provider.getName(),
-                    (System.nanoTime() - start) / 1_000_000);
+                result.names().forEach((folder, groups) ->
+                    groups.keySet().forEach(name -> {
+                        if (!reserved.get(folder).add(name))
+                            signatureNames.get(folder).add(name);
+                    }));
+                prepared.put(provider, result.names());
             }
+            else
+                FlansLog.log.error("Could not reserve legacy texture names in '{}': {}", provider.getName(), result.error());
+            FlansLog.log.debug("{}: Reserved legacy texture names in {} ms", provider.getName(), result.nanos() / 1_000_000);
+        }
+    }
+
+    private static PreparedNames readNames(IContentProvider provider)
+    {
+        long start = System.nanoTime();
+        // Walks the whole pack once: its assets are cut from that walk here and again when it registers.
+        ContentFileCache.prefetch(provider);
+        try
+        {
+            return new PreparedNames(PackAssetIndex.legacyNames(provider), null, System.nanoTime() - start);
+        }
+        catch (IOException | RuntimeException e)
+        {
+            return new PreparedNames(null, e.toString(), System.nanoTime() - start);
+        }
     }
 
     private Map<String, Map<String, Map<String, String>>> read(IContentProvider provider)
@@ -73,7 +97,11 @@ final class LegacyTextureAliases
         return inputs.computeIfAbsent(provider, ignored -> {
             try
             {
-                Map<String, Map<String, Map<String, String>>> input = PackAssetIndex.legacy(provider, signatureNames);
+                // Nothing has written to the pack's textures since it was prepared, so its name index
+                // stands as long as no collision asks for a signature it does not hold.
+                Map<String, Map<String, Map<String, String>>> names = prepared.remove(provider);
+                Map<String, Map<String, Map<String, String>>> input = names != null && !PackAssetIndex.needsSignatures(names, signatureNames)
+                    ? names : PackAssetIndex.legacy(provider, signatureNames);
                 input.forEach((folder, groups) -> reserved.get(folder).addAll(groups.keySet()));
                 return input;
             }

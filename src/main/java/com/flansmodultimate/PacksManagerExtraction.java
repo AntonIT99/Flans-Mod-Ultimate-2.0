@@ -40,13 +40,14 @@ final class PacksManagerExtraction
 
         Path stateFile = PlatformPaths.gameDir().toAbsolutePath().normalize().resolve(PACKS_MANAGER_EXTRACTION_STATE_FILE_NAME);
 
-        long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(TIMEOUT_PACKS_MANAGER_EXTRACTION);
+        long startNanos = System.nanoTime();
+        long deadlineNanos = startNanos + TimeUnit.SECONDS.toNanos(TIMEOUT_PACKS_MANAGER_EXTRACTION);
         while (true)
         {
             PacksExtractionWaitState state = readPacksExtractionWaitState(stateFile);
             if (state == PacksExtractionWaitState.COMPLETE)
             {
-                FlansLog.log.info("Packs extraction state is complete.");
+                FlansLog.log.info("Packs extraction state is complete after waiting {} ms.", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos));
                 return;
             }
             if (state == PacksExtractionWaitState.FAILED)

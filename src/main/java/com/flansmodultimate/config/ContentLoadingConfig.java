@@ -29,6 +29,8 @@ public final class ContentLoadingConfig
     private static boolean overrideConfiguredShootPoints = true;
     @Getter
     private static List<String> soundPackPriority = List.of();
+    @Getter
+    private static int contentLoadingThreads = 0;
 
     // 7: normalize standalone sound assets on dedicated servers as well as clients.
     private static final int CONTENT_LOADING_SYSTEM_VERSION = 7;
@@ -57,8 +59,13 @@ public final class ContentLoadingConfig
             overrideConfiguredSoundLengths = readBoolean(config, "overrideConfiguredSoundLengths", overrideConfiguredSoundLengths);
             overrideConfiguredShootPoints = readBoolean(config, "overrideConfiguredShootPoints", overrideConfiguredShootPoints);
             soundPackPriority = SoundPriorityConfig.reconcile(config.get(SoundPriorityConfig.KEY), List.of());
+            contentLoadingThreads = Math.max(0, readInt(config, "contentLoadingThreads", contentLoadingThreads));
 
             save(config);
+
+            if (forceRegenContentPacksAssetsAndIds)
+                FlansLog.log.warn("forceRegenContentPacksAssetsAndIds is enabled in {}: every launch regenerates the assets of all content packs "
+                    + "and repacks their archives. Set it back to false once the packs have been regenerated.", FILE_NAME);
 
             // When the loader version changes, force regen once without persisting the forced value.
             if (lastContentLoadingSystemVersion < CONTENT_LOADING_SYSTEM_VERSION)
@@ -127,6 +134,12 @@ public final class ContentLoadingConfig
             Either way, a twin or quad mount fired from one point fires from each barrel its model draws in turn,
             around that point, at the same rate of fire.
             Server and clients should use the same value.""");
+
+        config.set("contentLoadingThreads", contentLoadingThreads);
+        config.setComment("contentLoadingThreads", """
+            Threads that read and index the content packs while the game starts. 0 chooses from the number of processors.
+            The packs are still registered one after the other, in the same order, so this never changes what is loaded.
+            Set it to 1 to do everything on the loading thread.""");
 
         config.set(SoundPriorityConfig.KEY, soundPackPriority);
         config.setComment(SoundPriorityConfig.KEY, SoundPriorityConfig.COMMENT);
