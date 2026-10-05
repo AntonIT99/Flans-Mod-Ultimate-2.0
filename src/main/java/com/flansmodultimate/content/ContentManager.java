@@ -233,7 +233,7 @@ public class ContentManager
 
     private static void readContentPacksLocked()
     {
-        Path tempRoot = flanFolder.getParent().resolve(".flantemp");
+        Path tempRoot = flanFolder.getParent().resolve(".flansmod-temp");
         FileUtils.cleanupFlanTempOnStartup(tempRoot);
         ContentFileCache.configure(ModCachePaths.content(PlatformPaths.gameDir()),
             ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds());
