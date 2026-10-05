@@ -89,6 +89,11 @@ class ContentCacheTest
                 Path model = provider.getAssetsPath(fs).resolve("models/item/shared.json");
                 Files.createDirectories(model.getParent());
                 Files.writeString(model, "{\"marker\":\"" + (source.equals(a) ? "A" : "B") + "\"}");
+                // Zip entries reopen with whole-second timestamps; pin an even-second time so the
+                // stamps recorded while this filesystem is open still match after it is reopened.
+                FileTime stable = FileTime.from(java.time.Instant.parse("2020-01-01T00:00:00Z"));
+                Files.setLastModifiedTime(texture, stable);
+                Files.setLastModifiedTime(model, stable);
                 legacy.put(source, PackAssetIndex.legacy(provider));
                 modern.put(source, PackAssetIndex.modern(provider));
                 // Simulate unreadable source contents with identical per-file metadata. A warm
