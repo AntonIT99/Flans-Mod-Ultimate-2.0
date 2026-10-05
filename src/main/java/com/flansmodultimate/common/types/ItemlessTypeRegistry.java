@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.content.IContentProvider;
-import com.mojang.logging.LogUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -34,8 +34,8 @@ import java.util.Map;
  */
 public final class ItemlessTypeRegistry<T extends InfoType>
 {
-    /** Its own logger rather than the mod's, so the registry stays usable without a loaded mod. */
-    private static final Logger LOG = LogUtils.getLogger();
+    /** The shared logger holder keeps the registry usable before mod registration. */
+    private static final Logger LOG = FlansMod.Logging.LOGGER;
 
     private final String label;
     /** Unique name to type, in load order, so listings stay in the order the packs were read. */

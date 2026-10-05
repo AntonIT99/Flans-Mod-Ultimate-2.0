@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.fluid.FluidContainerPlatform;
 import com.flansmodultimate.platform.fluid.FluidPlatform;
-import com.mojang.logging.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -32,8 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FluidFuel
 {
-    // Its own logger, so parsing the table does not pull the mod class in behind it.
-    private static final Logger log = LogUtils.getLogger();
+    private static final Logger log = FlansMod.Logging.LOGGER;
 
     /** Millibuckets in one bucket, the unit the fuel table is quoted in. */
     public static final int BUCKET = FluidPlatform.BUCKET_VOLUME;

@@ -1,7 +1,7 @@
 package com.flansmodultimate.config;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
-import com.mojang.logging.LogUtils;
+import com.flansmodultimate.FlansMod;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -29,8 +29,8 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ConfigSpecValues
 {
-    /** Its own logger: this runs before, and without, the mod class being loaded. */
-    private static final Logger LOG = LogUtils.getLogger();
+    /** The shared logger holder is safe before the mod class is initialized. */
+    private static final Logger LOG = FlansMod.Logging.LOGGER;
     private static final String PATH_SEPARATOR = ".";
     private static final byte TYPE_BOOLEAN = 0;
     private static final byte TYPE_INT = 1;

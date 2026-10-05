@@ -99,6 +99,7 @@ public abstract class ModelBase implements IModelBase
         return boxList.get(rand.nextInt(boxList.size()));
     }
 
+    @Override
     public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
         renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, EnumRenderPass.DEFAULT);

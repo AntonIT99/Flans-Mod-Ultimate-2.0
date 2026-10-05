@@ -4,6 +4,7 @@ import com.flansmodultimate.client.render.item.CustomItemRenderers;
 import com.flansmodultimate.common.item.ICustomRendereredItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,14 +55,15 @@ public class BewlrRoutingModel implements BakedModel
     }
 
     @Override
+    @NotNull
     public List<BakedQuad> getQuads(@Nullable BlockState pState, @Nullable Direction pDirection, @NotNull RandomSource pRandom)
     {
         return delegate.getQuads(pState, pDirection, pRandom);
     }
 
     @Override
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction direction, @NotNull RandomSource random,
-                                    @NotNull ModelData modelData, @Nullable RenderType renderType)
+    @NotNull
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction direction, @NotNull RandomSource random, @NotNull ModelData modelData, @Nullable RenderType renderType)
     {
         return delegate.getQuads(state, direction, random, modelData, renderType);
     }
@@ -115,7 +117,7 @@ public class BewlrRoutingModel implements BakedModel
     @NotNull
     public ItemTransforms getTransforms()
     {
-        if (!hasCustomModel || CustomItemRenderers.SKIP_BEWLR.get())
+        if (!hasCustomModel || BooleanUtils.isTrue(CustomItemRenderers.SKIP_BEWLR.get()))
             return delegate.getTransforms();
         else
             return ItemTransforms.NO_TRANSFORMS;
@@ -125,9 +127,8 @@ public class BewlrRoutingModel implements BakedModel
     @NotNull
     public BakedModel applyTransform(@NotNull ItemDisplayContext displayContext, @NotNull PoseStack poseStack, boolean leftHand)
     {
-        return hasCustomModel && !CustomItemRenderers.SKIP_BEWLR.get()
-            ? this
-            : delegate.applyTransform(displayContext, poseStack, leftHand);
+        return hasCustomModel && BooleanUtils.isNotTrue(CustomItemRenderers.SKIP_BEWLR.get()) ?
+            this : delegate.applyTransform(displayContext, poseStack, leftHand);
     }
 
     @Override

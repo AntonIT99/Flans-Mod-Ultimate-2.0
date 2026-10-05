@@ -45,6 +45,18 @@ public class TextureGroup
         private final ArrayList<TexturedPolygon> values = new ArrayList<>();
 
         @Override
+        public boolean equals(Object other)
+        {
+            return other == this || values.equals(other instanceof PolygonList list ? list.values : other);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return values.hashCode();
+        }
+
+        @Override
         public int size()
         {
             return values.size();
@@ -86,5 +98,4 @@ public class TextureGroup
             return old;
         }
     }
-
 }

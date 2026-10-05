@@ -43,6 +43,12 @@ public class TexturedPolygon
     private static final float INV_16 = 0.0625F;
     private static final ThreadLocal<RenderScratch> RENDER_SCRATCH = ThreadLocal.withInitial(RenderScratch::new);
 
+    /** Releases the calling thread's scratch when its render caches are discarded. */
+    static void clearRenderScratch()
+    {
+        RENDER_SCRATCH.remove();
+    }
+
     public TexturedPolygon(PositionTextureVertex[] apositionTexturevertex)
     {
         this.invertNormal = false;

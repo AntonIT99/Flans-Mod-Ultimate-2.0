@@ -105,7 +105,14 @@ public final class DistantProxyShapes
         if (sorted[2] <= 0D)
             return;
 
-        int axis = size[0] >= size[1] && size[0] >= size[2] ? 0 : size[1] >= size[2] ? 1 : 2;
+        int axis;
+        if (size[0] >= size[1] && size[0] >= size[2])
+            axis = 0;
+        else if (size[1] >= size[2])
+            axis = 1;
+        else
+            axis = 2;
+
         int segments = segmentsFor(sorted[2], sorted[1]);
         for (int i = 0; i < segments && out.size() < MAX_BOXES; i++)
         {

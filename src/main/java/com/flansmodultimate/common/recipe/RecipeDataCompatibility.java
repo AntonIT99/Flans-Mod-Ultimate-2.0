@@ -9,7 +9,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
 /** Keeps the two Minecraft recipe data layouts available in ordinary content packs. */
 public final class RecipeDataCompatibility
 {
-    private static final Logger log = LogUtils.getLogger();
+    private static final Logger log = FlansMod.Logging.LOGGER;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public enum Format

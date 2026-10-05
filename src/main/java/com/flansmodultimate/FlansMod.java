@@ -53,7 +53,6 @@ import com.flansmodultimate.util.ModLogFile;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.mojang.logging.LogUtils;
 import lombok.Getter;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -63,6 +62,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -116,7 +116,15 @@ public class FlansMod
     private static final String PACKS_MANAGER_EXTRACTION_STATE_FAILED = "failed";
     private static final int TIMEOUT_PACKS_MANAGER_EXTRACTION = 120;
 
-    public static final Logger log = LogUtils.getLogger();
+    /** Logging must remain available before NeoForge binds the deferred registries. */
+    public static final class Logging
+    {
+        public static final Logger LOGGER = LoggerFactory.getLogger(FlansMod.class);
+
+        private Logging() {}
+    }
+
+    public static final Logger log = Logging.LOGGER;
     public static final TeamsManager teamsManager = new TeamsManager();
     public static final int DUNGEON_LOOT_CHANCE = 500;
 

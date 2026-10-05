@@ -1,5 +1,7 @@
 package com.flansmodultimate.util;
 
+import com.flansmodultimate.FlansMod;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -48,7 +50,7 @@ public final class SoundLengthIndex
     /** Recorded for sounds that could not be measured, so an unreadable file does not force a rescan every load. */
     private static final int TICKS_UNKNOWN = 0;
 
-    private static final Logger log = com.mojang.logging.LogUtils.getLogger();
+    private static final Logger log = FlansMod.Logging.LOGGER;
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 

@@ -13,6 +13,60 @@ Recheck them against the target branch during future merges.
 
 ## Minecraft 1.20.1 / Forge → Minecraft 1.21.1 / NeoForge
 
+### Content-loading package and resource repository APIs
+
+On both maintained branches, the content-loading implementation lives in
+`com.flansmodultimate.content`. `ContentManager` delegates regeneration decisions
+and asset generation to `ContentPackAssets`, `ContentPackModels`,
+`ContentPackLocalization`, `GeneratedTextureFiles`, and `ContentPackSounds`;
+`LegacyTextureAliases` owns the armor, GUI, and skin collision state. Generators
+receive the provider's types and alias maps explicitly. Loading and generation
+order remain unchanged. When porting this refactor, update internal imports and
+resource-provider wiring while preserving the target branch's loader APIs.
+
+`com.flansmodultimate.PackagedContentPackApi` remains at its original location
+with the same registration overloads. Its implementation delegates to
+`content.PackagedContentLoader`, so packaged content mods need no source changes.
+Content implementation paths in older table entries refer to classes now under
+`com.flansmodultimate.content`.
+
+Both branches use `ContentPackDiscovery` for the shared directory/ZIP/JAR
+selection, `ContentProcessingCache` for successful generation, and
+`PackAssetIndex` / `ContentFileCache` for persisted texture signatures and parsed
+asset JSON. Warm startup validates archive metadata or directory file metadata
+and effective type values after categories; it skips resource hashing, PNG
+decoding, source model parsing, sound/recipe regeneration checks, and repacking.
+The cache is external to packs and disposable. Failed regeneration must not
+inherit a previous successful phase flag. The target retains these cache semantics with its own recipe formats and resource
+repository APIs.
+
+Authored custom model and blockstate filenames remain canonical on both branches;
+`ModernAssetAliases` maps them to registered IDs in the read-only view. Old
+physical ID migrations recover missing originals from the previous ID mapping.
+Generated texture manifests track ownership and output digests so authored or
+edited files survive cleanup; both armor layers contribute to a collision.
+English fallback generation also supports packs without an English `.lang`.
+
+The shared `soundPackPriority` in the early content-loading TOML lists standalone
+packs (`pack:<basename>`) and shared packaged modules (`mod:<id>`), highest
+priority first. Missing entries are appended and removed sources retain their
+positions. `SoundPriorityPlan` chooses complete event definitions and individual
+.ogg resource owners independently, then resolves durations through that graph;
+`SoundAssetIndex` caches the inventories and measurements. Servers resolve the
+same plan without initializing client sound classes. Loader version 7 also
+normalizes standalone legacy sound assets when server data is reprocessed.
+
+`SoundPriority.repositorySource()` supplies a required fixed TOP, sound-only
+pack (`!flansmodultimate_sound_priority`) through the client pack finder. Its
+merged `sounds.json` sets `replace` on the selected definitions, and its .ogg
+resources delegate to the selected source. It leaves texture/data pack ordering
+alone. Forge uses `Pack.Info` and `Pack.create`; NeoForge uses `PackLocationInfo`,
+`Pack.Metadata`, `PackSelectionConfig` and its resource/file-pack suppliers. Both
+preserve the sound-only scope and priority above packaged assets. The ordinary
+Minecraft resource-pack order
+cannot override this configured selection. Changing just the list does not
+invalidate content generation or trigger audio remeasurement.
+
 ### NPC static world-model rendering
 
 The client-only `NpcModelBrowserMixin` groups Custom NPCs' `GuiCreationEntities`
@@ -105,6 +159,7 @@ command-registration event instead of Forge's annotations/events. The public
 
 | Class or location | Source API and destination adaptation |
 | --- | --- |
+| `src/main/java/com/flansmodultimate/FlansMod.java` (`Logging`); early configuration, content caches and render diagnostics | Master centralizes utilities on `FlansMod.log`. NeoForge deferred holders bind against vanilla registries while the mod class initializes, so reading that field before Minecraft bootstrap fails. The target initializes the same named logger in the independent nested `FlansMod.Logging` holder and aliases `FlansMod.log` to it; utility logger fields read the holder without initializing mod registration. Log ownership is preserved and early configuration and geometry remain usable before bootstrap. |
 | `gradle/curseforge.gradle` | Both branches share separate, opt-in CurseForge upload tasks for the main mod, Packs Manager, and all registered modules. `build.gradle` supplies the loader tag explicitly: `Forge` for 1.20.1, `NeoForge` for 1.21.1. Forge uploads depend on the matching `reobf` task (except Packs Manager); NeoForge uploads use the compiled artifact directly. Module `curseforge` maps in `fmu-module.gradle` supply destination defaults; Gradle properties override them. URLs enable destinations, IDs and changelogs remain configurable, and the author token is read during task execution to preserve NeoForge configuration-cache compatibility. |
 | `build.gradle`, `settings.gradle`, `src/*/fmu-module.gradle` | The ForgeGradle / Java 17 build becomes ModDevGradle / Java 21. Both scripts keep the same section order and share `configureModSourceSet`, `registerFmuModule`, and `EncryptOptionalContent` verbatim; only the loader block, Minecraft classpath wiring (`neoForge.addModdingDependenciesTo` instead of Forge's `implementation`), dev-run mod binding, metadata expansion, dev-only mod configuration (`localRuntime` instead of `runtimeOnly fg.deobf`), publishing (`artifact jar` for the reobfuscated Forge jar), Forge-only mixin refmap and `reobfJar` handling, and 1.21.1's `-Xlint` compiler flags differ. On 1.20.1 `registerFmuModule` also gives every module jar its own `reobf` task (pack model classes may call Minecraft code) and disables MixinGradle's `addMixinsTo*` stamping there; 1.21.1 ships every module jar as compiled, since NeoForge runs Mojang names in production. 1.20.1 disables the Gradle configuration cache because ForgeGradle 6 and MixinGradle do not support it. A source merge must not replace the NeoForge setup with Forge build logic. |
 | `build.gradle` (`apiJar`, `apiSourcesJar`, `apiJavadocJar`, `publishing`); `src/main/java/com/flansmodultimate/api/` | The public API types and signatures stay identical to master. Forge 1.20.1 publishes a reobfuscated `apiJar`, while NeoForge 1.21.1 ships Mojang names, so its `apiJar` takes compiled classes directly; sources, Javadoc, MIT license, coordinates, and the API Maven publication remain equivalent. NeoForge's configuration cache also requires the publish tasks to capture configuration-time values rather than Gradle project state in task actions. |

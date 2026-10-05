@@ -77,20 +77,6 @@ public final class DistantExplosionCues
         cues.clear();
     }
 
-    /** A box of side {@code 2 * half} centred {@code height} above the origin; empty when {@code half} is 0. */
-    private static DistantBox cube(double height, double half, int argb)
-    {
-        float h = (float) Math.max(0D, half);
-        float y = (float) height;
-        return new DistantBox(-h, y - h, -h, h, y + h, h, argb);
-    }
-
-    private static int argb(double alpha, double red, double green, double blue)
-    {
-        return (Mth.clamp((int) Math.round(alpha), 0, 255) << 24) | (Mth.clamp((int) Math.round(red), 0, 255) << 16)
-            | (Mth.clamp((int) Math.round(green), 0, 255) << 8) | Mth.clamp((int) Math.round(blue), 0, 255);
-    }
-
     private static final class Cue implements IDistantBoxGroup.Origin
     {
         private final Vec3 center;
@@ -157,6 +143,20 @@ public final class DistantExplosionCues
             group.setBoxes(boxes);
             group.setActive(true);
             return group;
+        }
+
+        /** A box of side {@code 2 * half} centred {@code height} above the origin; empty when {@code half} is 0. */
+        private static DistantBox cube(double height, double half, int argb)
+        {
+            float h = (float) Math.max(0D, half);
+            float y = (float) height;
+            return new DistantBox(-h, y - h, -h, h, y + h, h, argb);
+        }
+
+        private static int argb(double alpha, double red, double green, double blue)
+        {
+            return (Mth.clamp((int) Math.round(alpha), 0, 255) << 24) | (Mth.clamp((int) Math.round(red), 0, 255) << 16)
+                | (Mth.clamp((int) Math.round(green), 0, 255) << 8) | Mth.clamp((int) Math.round(blue), 0, 255);
         }
 
         /** Shapes for the current age; the box counts never change, so the groups update in place. */

@@ -1,8 +1,8 @@
 package com.flansmodultimate.client.render.gpu;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.render.VertexWriterPlatform;
 
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
@@ -19,7 +19,7 @@ public final class RenderDiagnostics
     private static long bulkWrites, bulkVertices;
     private static long frames, startNanos, stopNanos;
     private static long driveables, driveableNanos, drawNanos, lookupNanos, paletteNanos, glDrawNanos;
-    private static final Logger LOG = LogUtils.getLogger();
+    private static final Logger LOG = FlansMod.Logging.LOGGER;
     /** Caller stacks of geometry changes logged per recording, to name what keeps invalidating geometry. */
     private static final int LOGGED_GEOMETRY_CHANGES = 3;
     private static long geometryChanges, faceRevalidations, scannedRevalidations, cpuParts, cpuVertices;

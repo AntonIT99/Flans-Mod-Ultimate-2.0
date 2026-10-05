@@ -12,7 +12,6 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.logging.LogUtils;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.slf4j.Logger;
 
@@ -31,7 +30,7 @@ import net.minecraft.world.phys.Vec3;
 /** Depth-tested white-hot FLIR, composed independently of the game's selected post effect. */
 public final class VehicleThermalRenderer
 {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.Logging.LOGGER;
     private static final ResourceLocation EFFECT = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "shaders/post/vehicle_thermal.json");
     private static PostChain chain;
     private static final MultiBufferSource.BufferSource buffers = VertexPlatform.immediateBuffers(256);

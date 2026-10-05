@@ -1,6 +1,7 @@
 package com.flansmodultimate.content;
 
-import com.mojang.logging.LogUtils;
+import com.flansmodultimate.FlansMod;
+
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
 /** One deterministic selection of standalone packs for both type loading and resource discovery. */
 final class ContentPackDiscovery
 {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.Logging.LOGGER;
     private ContentPackDiscovery() {}
 
     static Map<String, Path> select(Path root, Set<Path> excluded) throws IOException

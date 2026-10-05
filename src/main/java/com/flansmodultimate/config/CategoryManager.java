@@ -10,7 +10,6 @@ import com.flansmodultimate.util.StringOrNumberListMapAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.mojang.logging.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +36,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CategoryManager
 {
-    private static final Logger log = LogUtils.getLogger();
+    private static final Logger log = FlansMod.Logging.LOGGER;
     private static final String EMPTY_CATEGORY_CONFIG = "{}\n";
     private static final Map<EnumType, List<Category>> categories = new EnumMap<>(EnumType.class);
     private static final Map<String, List<Category>> itemCategories = new HashMap<>();

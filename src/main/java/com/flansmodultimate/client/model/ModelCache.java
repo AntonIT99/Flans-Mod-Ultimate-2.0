@@ -196,13 +196,13 @@ public final class ModelCache
         List<EnumRenderPass> passes = renderPassCache.computeIfAbsent(model, ModelCache::findRenderPasses);
         if (!ShaderPlatform.isRenderingShadowPass())
             return passes;
-        List<EnumRenderPass> shadowPasses = shadowPassCache.get(model);
-        if (shadowPasses == null)
-        {
-            shadowPasses = passes.stream().filter(EnumRenderPass::castsShadow).toList();
-            shadowPassCache.put(model, shadowPasses);
-        }
-        return shadowPasses;
+        return shadowPassCache.computeIfAbsent(model, ModelCache::findShadowRenderPasses);
+    }
+
+    private static List<EnumRenderPass> findShadowRenderPasses(IModelBase model)
+    {
+        return renderPassCache.computeIfAbsent(model, ModelCache::findRenderPasses)
+            .stream().filter(EnumRenderPass::castsShadow).toList();
     }
 
     private static List<EnumRenderPass> findRenderPasses(IModelBase model)

@@ -4,7 +4,6 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.DriveableType;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.logging.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -23,7 +22,7 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DistantTextureColors
 {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.Logging.LOGGER;
     /** Olive grey, for a skin that cannot be read. */
     private static final int FALLBACK = 0xFF5E6150;
     /** Pixels sampled along each side of a skin. */
