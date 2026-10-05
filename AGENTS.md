@@ -46,6 +46,15 @@ Nested `AGENTS.md` files add rules for their directories.
 - For every feature or significant change, check whether the locally available wiki
   repository should be updated too.
 - In a mixed worktree, preserve unrelated changes and stage explicit paths only.
+- Some source sets under `src/` (for example `src/wolff*pack/`) are independent git
+  repositories with their own `.git` directory and remote. They are excluded from this
+  repository through `.git/info/exclude`, not because they are local-only or scratch
+  content: they are real, versioned, published work. Treat edits there as seriously as
+  edits to the main repository. Check `git status`/`git diff` *inside* that directory
+  (for example `git -C src/wolffromepack status`), and commit there, not in the root
+  repository. A clean root `git status` does not mean such a pack is unchanged.
+  Before assuming a `src/` directory is untracked or disposable, check for a nested
+  `.git`.
 
 ## External Reference Paths
 
