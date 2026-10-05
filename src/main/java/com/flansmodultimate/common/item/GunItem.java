@@ -579,7 +579,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
     {
-        if (StringUtils.isNotBlank(configType.getMeleeSound()) && !configType.isPoweredOff(stack))
+        // The swing hook also runs on clients; only the server may broadcast its sound.
+        if (!entity.level().isClientSide && StringUtils.isNotBlank(configType.getMeleeSound()) && !configType.isPoweredOff(stack))
             PacketPlaySound.sendSoundPacket(entity, configType.getMeleeSoundRange(), configType.getMeleeSound(), configType.isDistortSound());
         return false;
     }
