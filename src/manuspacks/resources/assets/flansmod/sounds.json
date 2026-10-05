@@ -176,7 +176,15 @@
   "lightsaber_swing": {
     "category": "player",
     "sounds": [
-      "flansmod:lightsaber_swing"
+      "flansmod:lightsaber_swing1",
+      "flansmod:lightsaber_swing2",
+      "flansmod:lightsaber_swing3",
+      "flansmod:lightsaber_swing4",
+      "flansmod:lightsaber_swing5",
+      "flansmod:lightsaber_swing6",
+      "flansmod:lightsaber_swing7",
+      "flansmod:lightsaber_swing8",
+      "flansmod:lightsaber_swing9"
     ]
   },
   "lkw_lauf": {

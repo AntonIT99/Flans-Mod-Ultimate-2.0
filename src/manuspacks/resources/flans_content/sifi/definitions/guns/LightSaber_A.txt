@@ -43,7 +43,7 @@ ShootSound lightsaber_swing
 ReloadSound boltgun_reload
 MeleeSound lightsaber_swing
 IdleSound lightsaber_idle
-IdleSoundLength 15
+IdleSoundLength 265
 
 // Tooltip
 ShowDamage False
