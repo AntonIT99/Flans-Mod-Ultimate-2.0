@@ -1083,7 +1083,7 @@ public final class FileUtils
      * Directories are deleted recursively and files are deleted directly. The temp root itself is
      * left in place unless later removed by {@link #deleteDirectoryIfEmpty(Path)}.
      *
-     * @param tempRoot temporary root directory, usually {@code .flantemp}
+     * @param tempRoot temporary root directory, usually {@code .flansmod-temp}
      */
     public static void cleanupFlanTempOnStartup(@Nullable Path tempRoot)
     {
@@ -1095,7 +1095,7 @@ public final class FileUtils
 
         if (!Files.isDirectory(tempRoot))
         {
-            FlansLog.log.warn("Skipping .flantemp startup cleanup because {} is not a directory", tempRoot);
+            FlansLog.log.warn("Skipping .flansmod-temp startup cleanup because {} is not a directory", tempRoot);
             return;
         }
 
@@ -1112,7 +1112,7 @@ public final class FileUtils
                 }
                 catch (IOException e)
                 {
-                    FlansLog.log.warn("Failed to clean .flantemp entry {} on startup: {}", path, e.toString());
+                    FlansLog.log.warn("Failed to clean flansmod-temp entry {} on startup: {}", path, e.toString());
                 }
             });
         }

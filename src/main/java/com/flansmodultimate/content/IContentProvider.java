@@ -66,7 +66,7 @@ public interface IContentProvider extends IContentPack
 
         Path archive = getPath().toAbsolutePath().normalize();
         Path minecraftDir = archive.getParent().getParent();
-        return minecraftDir.resolve(".flantemp");
+        return minecraftDir.resolve(".flansmod-temp");
     }
 
     default Path getExtractedPath()
