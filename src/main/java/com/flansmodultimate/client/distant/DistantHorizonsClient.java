@@ -1,12 +1,12 @@
 package com.flansmodultimate.client.distant;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.distant.dh.DhDistantTerrain;
 import com.flansmodultimate.common.distant.DistantRenderRange;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketDistantSubscription;
 import com.flansmodultimate.platform.PlatformEnvironment;
-import com.mojang.logging.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
 public final class DistantHorizonsClient
 {
     public static final String MOD_ID = "distanthorizons";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.log;
     /** The vanilla chunks end about here short of the render distance, where the far terrain takes over. */
     private static final double HANDOFF_MARGIN = 16D;
     private static final double MIN_HANDOFF_DISTANCE = 64D;

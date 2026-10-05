@@ -63,8 +63,7 @@ public class ModelRendererTurbo extends ModelRenderer
 
     /** Render-thread sequence used to deduplicate shared transform vertices per part draw. */
     private static long transformationSequence;
-    private static final ThreadLocal<ScreenSpaceCullingState> SCREEN_SPACE_CULLING =
-        ThreadLocal.withInitial(ScreenSpaceCullingState::new);
+    private static final ThreadLocal<ScreenSpaceCullingState> SCREEN_SPACE_CULLING = ThreadLocal.withInitial(ScreenSpaceCullingState::new);
     private static final AtomicReference<CullingOwner> cullingOwner = new AtomicReference<>();
 
     private int textureOffsetX;
@@ -1989,10 +1988,15 @@ public class ModelRendererTurbo extends ModelRenderer
             Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
             Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
         };
-        double cosX = Math.cos(rotateAngleX), sinX = Math.sin(rotateAngleX);
-        double cosY = Math.cos(rotateAngleY), sinY = Math.sin(rotateAngleY);
-        double cosZ = Math.cos(rotateAngleZ), sinZ = Math.sin(rotateAngleZ);
+
+        double cosX = Math.cos(rotateAngleX);
+        double sinX = Math.sin(rotateAngleX);
+        double cosY = Math.cos(rotateAngleY);
+        double sinY = Math.sin(rotateAngleY);
+        double cosZ = Math.cos(rotateAngleZ);
+        double sinZ = Math.sin(rotateAngleZ);
         boolean found = false;
+
         for (int i = 0; i < faceCount; i++)
         {
             TexturedPolygon face = faces[i];
@@ -2473,9 +2477,8 @@ public class ModelRendererTurbo extends ModelRenderer
                 compile(poseStack.last(), vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
         }
 
-        for (int childIndex = 0; childIndex < childModels.size(); childIndex++)
+        for (ModelRenderer childModel : childModels)
         {
-            ModelRenderer childModel = childModels.get(childIndex);
             childModel.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale);
         }
 
@@ -2553,7 +2556,7 @@ public class ModelRendererTurbo extends ModelRenderer
         }
         if (RenderDiagnostics.recording() && vertexConsumer instanceof RigidGeometryConsumer)
             RenderDiagnostics.countCpuPart(cpuPathReason(polygons));
-        long currentTransformationSequence = ++transformationSequence;
+        long currentTransformationSequence = nextTransformationSequence();
         boolean glowing = glow || glowAdditive || glowNoDepthWrite;
         // Sodium and Embeddium take the part's vertices in bulk; polygons write only through the batch.
         boolean batched = EntityVertexBatch.begin(vertexConsumer);
@@ -2569,6 +2572,11 @@ public class ModelRendererTurbo extends ModelRenderer
             if (batched)
                 EntityVertexBatch.end();
         }
+    }
+
+    private static long nextTransformationSequence()
+    {
+        return ++transformationSequence;
     }
 
     /** Why a part offered the GPU path still draws its vertices on the CPU; diagnostics only. */
@@ -2664,6 +2672,16 @@ public class ModelRendererTurbo extends ModelRenderer
         state.fixedScale = true;
         double radius = minimumPixelDiameter / (2D * pixelsPerBlock);
         state.culledRadiusSquared = radius * radius / 1.00001D;
+    }
+
+    /** Called when render caches are discarded; scratch stays reusable throughout rendering. */
+    public static void clearRenderScratch()
+    {
+        CullingOwner owner = cullingOwner.get();
+        if (owner != null && owner.thread() == Thread.currentThread())
+            cullingOwner.compareAndSet(owner, null);
+        SCREEN_SPACE_CULLING.remove();
+        TexturedPolygon.clearRenderScratch();
     }
 
     public static void endScreenSpaceCulling()
@@ -2854,7 +2872,10 @@ public class ModelRendererTurbo extends ModelRenderer
         /** The part's bounding sphere in its parent's space, for sizing a baked part without composing. */
         private boolean parentBoundsValid;
         private int parentBoundsVersion;
-        private float parentCenterX, parentCenterY, parentCenterZ, parentRadius;
+        private float parentCenterX;
+        private float parentCenterY;
+        private float parentCenterZ;
+        private float parentRadius;
 
         /**
          * Size test of a baked part against its parent pose. A baked part needs no composed pose, so this
@@ -2936,7 +2957,9 @@ public class ModelRendererTurbo extends ModelRenderer
     private static final Quaternionf SHARED_QUATERNION = new Quaternionf();
     private static final Matrix4f SHARED_POSE = new Matrix4f();
     private static final Matrix3f SHARED_NORMAL = new Matrix3f();
-    private static float sharedAngleX = Float.NaN, sharedAngleY, sharedAngleZ;
+    private static float sharedAngleX = Float.NaN;
+    private static float sharedAngleY = Float.NaN;
+    private static float sharedAngleZ = Float.NaN;
     private static boolean sharedOldRotateOrder;
 
     /**
@@ -3036,7 +3059,9 @@ public class ModelRendererTurbo extends ModelRenderer
                 gpu.submitComposed(part.gpuGeometry, RotatedRenderPose.INSTANCE, packedLight, packedOverlay, red, green, blue, alpha, visible);
                 continue;
             }
-            float oldX = part.rotateAngleX, oldY = part.rotateAngleY, oldZ = part.rotateAngleZ;
+            float oldX = part.rotateAngleX;
+            float oldY = part.rotateAngleY;
+            float oldZ = part.rotateAngleZ;
             part.rotateAngleX = x;
             part.rotateAngleY = y;
             part.rotateAngleZ = z;
@@ -3061,10 +3086,10 @@ public class ModelRendererTurbo extends ModelRenderer
         if (getClass() != ModelRendererTurbo.class || !isVisible() || glow || glowAdditive || glowNoDepthWrite
             || forcedRecompile || useLegacyCompiler || !childModels.isEmpty())
             return false;
-        TexturedPolygon[] faces = getRenderFaces();
-        if (faces.length == 0)
+        TexturedPolygon[] f = getRenderFaces();
+        if (f.length == 0)
             return false;
-        if (gpuGeometry == null) gpuGeometry = new RigidGeometry(faces, !externallyMutableGeometry);
+        if (gpuGeometry == null) gpuGeometry = new RigidGeometry(f, !externallyMutableGeometry);
         return gpuGeometry.supported();
     }
 
@@ -3087,7 +3112,10 @@ public class ModelRendererTurbo extends ModelRenderer
         {
             PartArray cache = PART_ARRAYS.get(parts);
             if (cache == null)
-                PART_ARRAYS.put(parts, cache = new PartArray());
+            {
+                cache = new PartArray();
+                PART_ARRAYS.put(parts, cache);
+            }
             if (cache.render(parts, poseStack, gpu, packedLight, packedOverlay, red, green, blue, alpha, scale, oldRotateOrder))
                 return;
         }

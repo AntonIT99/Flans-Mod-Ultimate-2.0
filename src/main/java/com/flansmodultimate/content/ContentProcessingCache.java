@@ -1,6 +1,7 @@
 package com.flansmodultimate.content;
 
-import com.mojang.logging.LogUtils;
+import com.flansmodultimate.FlansMod;
+
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -9,7 +10,7 @@ import java.util.Map;
 /** Remembers successful generation after the final archive swap, independently for client and data. */
 final class ContentProcessingCache
 {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.log;
     private static final int VERSION = 1;
     private record Entry(int version, Map<String, ContentFileCache.Stamp> files, String definitions,
                          boolean assets, boolean data) {}

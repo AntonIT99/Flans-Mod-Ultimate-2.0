@@ -222,6 +222,18 @@ public class ModelRenderer implements IModelRenderer
         private final ModelRenderer owner;
         private final ArrayList<ModelRenderer> values = new ArrayList<>();
 
+        @Override
+        public boolean equals(Object other)
+        {
+            return other == this || values.equals(other instanceof ChildList list ? list.values : other);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return values.hashCode();
+        }
+
         ChildList(ModelRenderer owner) { this.owner = owner; }
 
         @Override public int size() { return values.size(); }

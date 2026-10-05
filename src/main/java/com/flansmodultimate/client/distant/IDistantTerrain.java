@@ -45,6 +45,7 @@ public interface IDistantTerrain
         @Override
         public void reset()
         {
+            // no-op
         }
     };
 

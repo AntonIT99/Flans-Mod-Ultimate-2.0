@@ -3,7 +3,6 @@ package com.flansmodultimate.client;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.platform.PlatformEnvironment;
-import com.mojang.logging.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -41,7 +40,7 @@ public final class EntityCullingCompat
 {
     public static final String MOD_ID = "entityculling";
     static final String MOD_BASE = "dev.tr7zw.entityculling.EntityCullingModBase";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.log;
 
     /** Registers the exemptions once, during client setup. EntityCulling creates its instance while it is constructed. */
     public static void init()

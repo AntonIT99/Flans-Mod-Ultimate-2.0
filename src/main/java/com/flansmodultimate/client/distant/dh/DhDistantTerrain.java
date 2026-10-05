@@ -1,11 +1,11 @@
 package com.flansmodultimate.client.distant.dh;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.distant.DistantBox;
 import com.flansmodultimate.client.distant.DistantBoxStyle;
 import com.flansmodultimate.client.distant.DistantRaycastMath;
 import com.flansmodultimate.client.distant.IDistantBoxGroup;
 import com.flansmodultimate.client.distant.IDistantTerrain;
-import com.mojang.logging.LogUtils;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiBlockMaterial;
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiLevelType;
@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class DhDistantTerrain implements IDistantTerrain
 {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.log;
     /** API 5.1 added the level being rendered to render events, and API 5.0 the terrain data cache. */
     private static final int MIN_API_MAJOR = 5;
     private static final int MIN_API_MINOR = 1;

@@ -1,7 +1,7 @@
 package com.flansmodultimate.config;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
-import com.mojang.logging.LogUtils;
+import com.flansmodultimate.FlansMod;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 public final class ConfigSpecValues
 {
     /** Its own logger: this runs before, and without, the mod class being loaded. */
-    private static final Logger LOG = LogUtils.getLogger();
+    private static final Logger LOG = FlansMod.log;
     private static final String PATH_SEPARATOR = ".";
     private static final byte TYPE_BOOLEAN = 0;
     private static final byte TYPE_INT = 1;

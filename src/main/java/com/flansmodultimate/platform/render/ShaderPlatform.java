@@ -1,7 +1,7 @@
 package com.flansmodultimate.platform.render;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformEnvironment;
-import com.mojang.logging.LogUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -16,7 +16,7 @@ import java.lang.invoke.MethodType;
  */
 public final class ShaderPlatform
 {
-    private static final Logger LOG = LogUtils.getLogger();
+    private static final Logger LOG = FlansMod.log;
     static final String IRIS_API = "net.irisshaders.iris.api.v0.IrisApi";
     /** Mod ids and names of Iris-compatible shader mods on this loader; Oculus also declares that it provides Iris. */
     private static final String[][] SHADER_MODS = {{"oculus", "Oculus"}, {"iris", "Iris"}};

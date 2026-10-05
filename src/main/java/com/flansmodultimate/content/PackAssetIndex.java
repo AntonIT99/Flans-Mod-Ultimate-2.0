@@ -1,8 +1,8 @@
 package com.flansmodultimate.content;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.ResourceUtils;
-import com.mojang.logging.LogUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 /** Persisted texture signatures and parsed model JSON, reused when file metadata is unchanged. */
 final class PackAssetIndex
 {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.log;
     private static final int VERSION = 1;
     private record Data(int version, Map<String, ContentFileCache.Stamp> files,
                         Map<String, Map<String, Map<String, String>>> legacy, ModernAssetAliases.Assets modern) {}

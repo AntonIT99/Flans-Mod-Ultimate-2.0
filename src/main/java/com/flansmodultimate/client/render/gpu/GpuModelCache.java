@@ -25,7 +25,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.logging.LogUtils;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import org.slf4j.Logger;
 
@@ -46,7 +45,7 @@ import java.util.function.Supplier;
 /** Bounded, render-thread-only GPU batches of local rigid geometry with per-draw pose palettes. */
 public final class GpuModelCache
 {
-    private static final Logger LOG = LogUtils.getLogger();
+    private static final Logger LOG = FlansMod.log;
     /**
      * Palette entries per draw. The palette is a std140 uniform block of 144-byte entries (mat4 pose, mat3
      * normal, tint, light and overlay), so 96 fit the 16 KiB block size OpenGL 3.1 guarantees. Fancy track
@@ -308,6 +307,7 @@ public final class GpuModelCache
             RenderSystem.recordRenderCall(GpuModelCache::clear);
             return;
         }
+        com.flansmod.client.tmt.ModelRendererTurbo.clearRenderScratch();
         meshes.clear();
         meshes.takeWorkingSetEvictions();
         grownBytes = 0;

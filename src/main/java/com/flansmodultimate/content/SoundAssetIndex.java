@@ -1,9 +1,9 @@
 package com.flansmodultimate.content;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.OggDurationReader;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 /** Measures audio only on an asset-cache miss; warm archives require just their outer file stamp. */
 final class SoundAssetIndex
 {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.log;
     private static final int VERSION = 1;
     private record Cache(int version, Map<String, ContentFileCache.Stamp> files, SoundPriorityPlan.Assets assets) {}
 

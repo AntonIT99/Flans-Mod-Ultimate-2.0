@@ -1,9 +1,10 @@
 package com.flansmodultimate.platform.render;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.logging.LogUtils;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryStack;
+
+import com.flansmodultimate.FlansMod;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.lang.invoke.MethodHandle;
@@ -22,7 +23,7 @@ import java.lang.reflect.Modifier;
  */
 public final class VertexWriterPlatform
 {
-    private static final Logger LOG = LogUtils.getLogger();
+    private static final Logger LOG = FlansMod.log;
     /** Candidate APIs on this loader: writer interface, holder of the entity-format token, and the token's field. */
     private static final String[][] WRITERS = {{
         "net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter",

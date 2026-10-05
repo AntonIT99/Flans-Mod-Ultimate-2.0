@@ -62,9 +62,7 @@ public abstract class ModelPoolEntry
      */
     protected void setGroup(String groupName, Bone bone, double weight)
     {
-        if(groups.isEmpty() || !groups.containsKey(groupName))
-            groups.put(groupName, new TransformGroupBone(bone, weight));
-        group = groups.get(groupName);
+        group = groups.computeIfAbsent(groupName, key -> new TransformGroupBone(bone, weight));
     }
 
     /**
@@ -79,11 +77,7 @@ public abstract class ModelPoolEntry
      */
     protected void setTextureGroup(String groupName)
     {
-        if(textures.isEmpty() || !textures.containsKey(groupName))
-        {
-            textures.put(groupName, new TextureGroup());
-        }
-        texture = textures.get(groupName);
+        texture = textures.computeIfAbsent(groupName, key -> new TextureGroup());
     }
 
     protected void applyGroups(Map<String, TransformGroup> groupsMap, Map<String, TextureGroup> texturesMap)

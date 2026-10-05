@@ -872,7 +872,7 @@ public final class FileUtils
 
         if (convertJarToZip && Files.exists(target))
         {
-            com.mojang.logging.LogUtils.getLogger().error("Cannot convert '{}' to ZIP because '{}' already exists. Preserving both archives.", originalArchive, target);
+            FlansMod.log.error("Cannot convert '{}' to ZIP because '{}' already exists. Preserving both archives.", originalArchive, target);
             return false;
         }
 

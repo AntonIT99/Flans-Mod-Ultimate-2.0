@@ -4,7 +4,6 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ContentLoadingConfig;
 import com.flansmodultimate.util.SoundLengthIndex;
 import com.google.gson.Gson;
-import com.mojang.logging.LogUtils;
 import net.minecraftforge.fml.ModList;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +39,7 @@ public final class SoundPriority
 {
     // Required TOP packs are inserted in reverse key order. Sort before packaged asset packs.
     static final String PACK_ID = "!flansmodultimate_sound_priority";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = FlansMod.log;
     private static final AtomicReference<State> state = new AtomicReference<>();
 
     record Source(String id, Path root, Path archive)
