@@ -10,6 +10,7 @@ import com.flansmodultimate.common.guns.ScopeZoom;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.PacketCancelSound;
 import com.flansmodultimate.network.client.PacketGunShootClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemAttributes;
@@ -656,14 +657,19 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.getSecondaryFunction() == EnumFunction.CUSTOM_MELEE && data.isSecondaryFunctionKeyPressed())
             gunItemHandler.doCustomMelee(level, player, data, hand);
 
-        if (soundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()) && !configType.isPoweredOff(gunStack))
-        {
-            PacketPlaySound.sendSoundPacket(player, configType.getIdleSoundRange(), configType.getIdleSound(), false);
-            soundDelay = configType.getIdleSoundLength();
-        }
-
         if (soundDelay > 0)
             soundDelay--;
+
+        int idleSoundDelay = data.getIdleSoundDelay(hand);
+        if (idleSoundDelay <= 0 && StringUtils.isNotBlank(configType.getIdleSound()) && !configType.isPoweredOff(gunStack))
+        {
+            UUID soundId = data.getIdleSoundId(hand);
+            PacketHandler.sendToDimension(level.dimension(), new PacketCancelSound(soundId));
+            PacketPlaySound.sendSoundPacket(player, configType.getIdleSoundRange(), configType.getIdleSound(), false, false, true, soundId);
+            idleSoundDelay = configType.getIdleSoundLength();
+        }
+
+        data.setIdleSoundDelay(hand, Math.max(0, idleSoundDelay - 1));
     }
 
     private void ensureGunTags(ItemStack stack)

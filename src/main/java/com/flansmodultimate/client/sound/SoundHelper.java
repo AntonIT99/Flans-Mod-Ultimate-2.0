@@ -1,16 +1,12 @@
-package com.flansmodultimate.client;
+package com.flansmodultimate.client.sound;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.sound.EntitySoundInstance;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketRequestPlaySound;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -22,14 +18,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SoundHelper
@@ -74,9 +66,8 @@ public final class SoundHelper
         // The sound engine drops a sound once it becomes inaudible, and refuses to start one that is
         // already out of range. Forgetting those lets the owner start the loop again as it comes back
         // into earshot, instead of staying silent for good after driving away once.
-        loopingEntitySounds.values().removeIf(soundInstance -> soundInstance.isStopped()
-            || soundInstance.isSourceGone()
-            || !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
+        loopingEntitySounds.values().removeIf(
+            soundInstance -> soundInstance.isStopped() || soundInstance.isSourceGone() || !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
     }
 
     /**
@@ -85,10 +76,14 @@ public final class SoundHelper
      * Calling this every tick with the same sound keeps the running sound untouched, so the sound
      * engine loops it without a gap. Passing a different sound replaces it, and passing none stops it.
      *
-     * @param source  the entity the sound follows
-     * @param channel names the looping sound on that entity, so an entity can run several at once
-     * @param sound   the sound to loop, or {@code null} or blank to stop whatever is playing
-     * @param range   how far the sound carries
+     * @param source
+     *            the entity the sound follows
+     * @param channel
+     *            names the looping sound on that entity, so an entity can run several at once
+     * @param sound
+     *            the sound to loop, or {@code null} or blank to stop whatever is playing
+     * @param range
+     *            how far the sound carries
      */
     public static void setLoopingEntitySound(Entity source, String channel, @Nullable String sound, float range, boolean varyPitch)
     {
@@ -128,10 +123,10 @@ public final class SoundHelper
         playEntitySound(source, sound, range, false, false);
     }
 
-    private static Optional<EntitySoundInstance> playEntitySound(Entity source, @Nullable String sound, float range,
-                                                                  boolean looping, boolean varyPitch)
+    private static Optional<EntitySoundInstance> playEntitySound(Entity source, @Nullable String sound, float range, boolean looping, boolean varyPitch)
     {
-        return getSoundEvent(sound).map(soundEvent -> {
+        return getSoundEvent(sound).map(soundEvent ->
+        {
             EntitySoundInstance soundInstance = new EntitySoundInstance(soundEvent, source, range, looping, varyPitch);
             Minecraft.getInstance().getSoundManager().play(soundInstance);
             return soundInstance;
@@ -149,12 +144,8 @@ public final class SoundHelper
         if (player == null || level == null)
             return;
 
-        getSoundEvent(sound).ifPresent(soundEvent -> {
-            float volume = getVolumeFromRange(range, false);
-
-            level.playLocalSound(pos.x, pos.y, pos.z, soundEvent, SoundSource.PLAYERS, volume, 1F, false);
-            PacketHandler.sendToServer(new PacketRequestPlaySound(pos, range, sound));
-        });
+        playSound(sound, pos, range, false, false, false, UUID.randomUUID(), player);
+        PacketHandler.sendToServer(new PacketRequestPlaySound(pos, range, sound));
     }
 
     public static void playSoundDelayedLocalAndBroadcast(@Nullable String sound, Vec3 pos, float range, int delayTicks)
@@ -162,19 +153,23 @@ public final class SoundHelper
         pendingSounds.add(new PendingSound(delayTicks, () -> playSoundLocalAndBroadcast(sound, pos, range)));
     }
 
-    public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, boolean relativeToListener)
+    public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID,
+        @Nullable Entity source)
     {
         if (StringUtils.isBlank(sound))
             return;
 
-        getSoundEvent(sound).ifPresent(soundEvent -> {
+        getSoundEvent(sound).ifPresent(soundEvent ->
+        {
             RandomSource r = RandomSource.create(instanceUUID.getMostSignificantBits() ^ instanceUUID.getLeastSignificantBits());
             float volume = SoundHelper.getVolumeFromRange(range, silenced);
             float pitchBase = distort ? (1.0F / (r.nextFloat() * 0.4F + 0.8F)) : 1.0F;
             float pitch = pitchBase * (silenced ? 2.0F : 1.0F);
-            Vec3 soundPosition = relativeToListener ? Vec3.ZERO : pos;
 
-            SimpleSoundInstance soundInstance = new SimpleSoundInstance(soundEvent.getLocation(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, soundPosition.x, soundPosition.y, soundPosition.z, relativeToListener);
+            SoundInstance soundInstance = cancellable && source != null
+                ? new EntitySoundInstance(soundEvent, source, volume, pitch, r)
+                : new SimpleSoundInstance(soundEvent.getLocation(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, pos.x,
+                    pos.y, pos.z, false);
 
             if (cancellable)
                 cancellableSounds.put(instanceUUID, soundInstance);

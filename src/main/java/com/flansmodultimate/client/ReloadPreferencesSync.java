@@ -20,7 +20,7 @@ public final class ReloadPreferencesSync
         ModClientConfig config = ModClientConfig.get();
         Minecraft minecraft = Minecraft.getInstance();
         // The client config is baked before the game exists, and there is nothing to tell while not connected
-        if (config == null || minecraft == null || minecraft.getConnection() == null)
+        if (config == null || minecraft.getConnection() == null)
             return;
 
         PacketHandler.sendToServer(new PacketReloadPreferences(config.combineAmmoOnReload, config.ammoToUpperInventoryOnReload));

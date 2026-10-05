@@ -26,7 +26,7 @@ public final class AimPoseClient
         ModClientConfig config = ModClientConfig.get();
         Minecraft minecraft = Minecraft.getInstance();
         // The client config is baked before the game exists, and there is nothing to tell while not connected
-        if (config == null || minecraft == null || minecraft.getConnection() == null)
+        if (config == null || minecraft.getConnection() == null)
             return;
 
         boolean dynamic = config.aimPose == EnumAimPose.DYNAMIC;
@@ -49,11 +49,17 @@ public final class AimPoseClient
 
         Component choice = ConfigOptionFactory.valueLabel(EnumAimPose.class, next);
         EnumPlayerAimPose serverRule = ModCommonConfig.playerAimPose();
-        Component message = serverRule == EnumPlayerAimPose.FREE_CHOICE
-            ? Component.translatable("message.flansmodultimate.aim_pose", choice)
-            : Component.translatable("message.flansmodultimate.aim_pose_server_forced", choice,
-                ConfigOptionFactory.valueLabel(EnumAimPose.class,
-                    serverRule == EnumPlayerAimPose.DYNAMIC ? EnumAimPose.DYNAMIC : EnumAimPose.ENFORCED));
+
+        Component message;
+        if (serverRule == EnumPlayerAimPose.FREE_CHOICE)
+            message = Component.translatable("message.flansmodultimate.aim_pose", choice);
+        else if (serverRule == EnumPlayerAimPose.DYNAMIC)
+            message = Component.translatable("message.flansmodultimate.aim_pose_server_forced", choice,
+                ConfigOptionFactory.valueLabel(EnumAimPose.class, EnumAimPose.DYNAMIC));
+        else
+            message = Component.translatable("message.flansmodultimate.aim_pose_server_forced", choice,
+                ConfigOptionFactory.valueLabel(EnumAimPose.class, EnumAimPose.ENFORCED));
+
         minecraft.player.displayClientMessage(message, true);
     }
 }

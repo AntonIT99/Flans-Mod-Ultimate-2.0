@@ -2,19 +2,18 @@ package com.flansmodultimate.network.client;
 
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.SoundNameCodec;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -37,10 +36,11 @@ public class PacketPlaySound implements IClientPacket
     private boolean silenced;
     private boolean cancellable;
     private UUID instanceUUID;
-    /** Entity id of the player who caused the sound, or {@link #NO_SOURCE}. */
+    /** Entity id of the entity who caused the sound, or {@link #NO_SOURCE}. */
     private int sourceId = NO_SOURCE;
 
-    public PacketPlaySound(Vec3 position, double range, @Nullable String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Player source)
+    public PacketPlaySound(Vec3 position, double range, @Nullable String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID,
+        @Nullable Entity source)
     {
         posX = (float) position.x;
         posY = (float) position.y;
@@ -54,7 +54,7 @@ public class PacketPlaySound implements IClientPacket
         sourceId = source != null ? source.getId() : NO_SOURCE;
     }
 
-    public PacketPlaySound(Vec3 position, double range, @Nullable String sound, boolean distort, boolean silenced, @Nullable Player source)
+    public PacketPlaySound(Vec3 position, double range, @Nullable String sound, boolean distort, boolean silenced, @Nullable Entity source)
     {
         this(position, range, sound, distort, silenced, false, UUID.randomUUID(), source);
     }
@@ -72,8 +72,8 @@ public class PacketPlaySound implements IClientPacket
         data.writeFloat(posZ);
         data.writeFloat(range);
         SoundNameCodec.write(data, sound);
-        int flags = (distort ? FLAG_DISTORT : 0) | (silenced ? FLAG_SILENCED : 0)
-            | (cancellable ? FLAG_CANCELLABLE : 0) | (sourceId != NO_SOURCE ? FLAG_HAS_SOURCE : 0);
+        int flags = (distort ? FLAG_DISTORT : 0) | (silenced ? FLAG_SILENCED : 0) | (cancellable ? FLAG_CANCELLABLE : 0)
+            | (sourceId != NO_SOURCE ? FLAG_HAS_SOURCE : 0);
         data.writeByte(flags);
         if (cancellable)
             data.writeUUID(instanceUUID);
@@ -102,38 +102,41 @@ public class PacketPlaySound implements IClientPacket
     @Override
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
-        Player source = sourceId != NO_SOURCE && level.getEntity(sourceId) instanceof Player sourcePlayer ? sourcePlayer : null;
+        Entity source = sourceId != NO_SOURCE ? level.getEntity(sourceId) : null;
         ClientHooks.SOUND.playSound(sound, new Vec3(posX, posY, posZ), range, distort, silenced, cancellable, instanceUUID, source);
     }
 
-    public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Player player)
+    public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced,
+        boolean cancellable, UUID instanceUUID, @Nullable Entity source)
     {
         double audibleRange = Math.max(1D, range);
-        PacketHandler.sendToAllAround(new PacketPlaySound(position, audibleRange, sound, distort, silenced, cancellable, instanceUUID, player), position, audibleRange, dimension);
+        PacketHandler.sendToAllAround(new PacketPlaySound(position, audibleRange, sound, distort, silenced, cancellable, instanceUUID, source), position,
+            audibleRange, dimension);
     }
 
-    public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced, @Nullable Player player)
+    public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced,
+        @Nullable Entity source)
     {
-        sendSoundPacket(position, range, dimension, sound, distort, silenced, false, UUID.randomUUID(), player);
+        sendSoundPacket(position, range, dimension, sound, distort, silenced, false, UUID.randomUUID(), source);
     }
 
-    public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, @Nullable Player player)
+    public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, @Nullable Entity source)
     {
-        sendSoundPacket(position, range, dimension, sound, distort, false, player);
+        sendSoundPacket(position, range, dimension, sound, distort, false, source);
     }
 
     public static void sendSoundPacket(Entity entity, double range, String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID)
     {
-        sendSoundPacket(entity.position(), range, entity.level().dimension(), sound, distort, silenced, cancellable, instanceUUID, entity instanceof Player player ? player : null);
+        sendSoundPacket(entity.position(), range, entity.level().dimension(), sound, distort, silenced, cancellable, instanceUUID, entity);
     }
 
     public static void sendSoundPacket(Entity entity, double range, String sound, boolean distort, boolean silenced)
     {
-        sendSoundPacket(entity.position(), range, entity.level().dimension(), sound, distort, silenced, entity instanceof Player player ? player : null);
+        sendSoundPacket(entity.position(), range, entity.level().dimension(), sound, distort, silenced, entity);
     }
 
     public static void sendSoundPacket(Entity entity, double range, String sound, boolean distort)
     {
-        sendSoundPacket(entity.position(), range, entity.level().dimension(), sound, distort, false, entity instanceof Player player ? player : null);
+        sendSoundPacket(entity.position(), range, entity.level().dimension(), sound, distort, false, entity);
     }
 }
