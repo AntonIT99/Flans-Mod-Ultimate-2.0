@@ -104,17 +104,6 @@ final class ContentLoadingWorkers implements AutoCloseable
             pool.shutdownNow();
     }
 
-    private static RuntimeException rethrow(Throwable cause)
-    {
-        if (cause instanceof CompletionException && cause.getCause() != null)
-            cause = cause.getCause();
-        if (cause instanceof RuntimeException runtimeException)
-            throw runtimeException;
-        if (cause instanceof Error error)
-            throw error;
-        throw new IllegalStateException(cause);
-    }
-
     /** A result that may still be computing. */
     static final class Task<T>
     {
@@ -144,6 +133,17 @@ final class ContentLoadingWorkers implements AutoCloseable
             {
                 throw rethrow(e);
             }
+        }
+
+        private static RuntimeException rethrow(Throwable cause)
+        {
+            if (cause instanceof CompletionException && cause.getCause() != null)
+                cause = cause.getCause();
+            if (cause instanceof RuntimeException runtimeException)
+                throw runtimeException;
+            if (cause instanceof Error error)
+                throw error;
+            throw new IllegalStateException(cause);
         }
     }
 }

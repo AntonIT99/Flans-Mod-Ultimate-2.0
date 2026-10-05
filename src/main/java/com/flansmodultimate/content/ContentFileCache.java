@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import org.apache.commons.io.FilenameUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * External, disposable caches. Validation reads metadata, never unchanged resource contents.
@@ -48,10 +50,10 @@ final class ContentFileCache
     /** Older temporary files belong to no running write: a crash left them. */
     private static final Duration ABANDONED_TEMPORARY_AGE = Duration.ofDays(1);
 
-    private static volatile Path directory;
+    private static final AtomicReference<Path> directory = new AtomicReference<>();
     private static volatile boolean bypass;
     /** Snapshots taken while the packs load, by absolute root; null at any other time. */
-    private static volatile Map<Path, Map<String, Stamp>> runSnapshots;
+    private static final AtomicReference<Map<Path, Map<String, Stamp>>> runSnapshots = new AtomicReference<>();
 
     record Stamp(long size, String modified, String identity) {}
 
@@ -82,7 +84,7 @@ final class ContentFileCache
 
     static void configure(Path path, boolean forceRegeneration)
     {
-        directory = path;
+        directory.set(path);
         bypass = forceRegeneration;
     }
 
@@ -100,7 +102,7 @@ final class ContentFileCache
      */
     static void beginRun()
     {
-        runSnapshots = new ConcurrentHashMap<>();
+        runSnapshots.set(new ConcurrentHashMap<>());
     }
 
     /**
@@ -110,19 +112,19 @@ final class ContentFileCache
     static void endRun(boolean keepForResourceDiscovery)
     {
         if (!keepForResourceDiscovery)
-            runSnapshots = null;
+            runSnapshots.set(null);
     }
 
     /** Drops the snapshots kept for the first resource discovery; later ones see the packs as they are. */
     static void releaseRunSnapshots()
     {
-        runSnapshots = null;
+        runSnapshots.set(null);
     }
 
     /** Walks a standalone folder pack ahead of its turn, so that its later snapshots come from memory. */
     static void prefetch(IContentProvider provider)
     {
-        if (runSnapshots == null || provider.isArchive() || provider.isPreprocessed())
+        if (runSnapshots.get() == null || provider.isArchive() || provider.isPreprocessed())
             return;
         try
         {
@@ -137,7 +139,7 @@ final class ContentFileCache
     /** Forgets every remembered snapshot that includes or lies within the path, after writing to it. */
     static void forget(Path path)
     {
-        Map<Path, Map<String, Stamp>> snapshots = runSnapshots;
+        Map<Path, Map<String, Stamp>> snapshots = runSnapshots.get();
         if (snapshots == null)
             return;
         Path changed = path.toAbsolutePath().normalize();
@@ -150,7 +152,7 @@ final class ContentFileCache
      */
     static Map<String, Stamp> snapshot(Path root) throws IOException
     {
-        Map<Path, Map<String, Stamp>> snapshots = runSnapshots;
+        Map<Path, Map<String, Stamp>> snapshots = runSnapshots.get();
         if (snapshots == null)
             return walk(root);
 
@@ -206,7 +208,7 @@ final class ContentFileCache
         Files.walkFileTree(root, new SimpleFileVisitor<>()
         {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException
+            public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attributes) throws IOException
             {
                 // Links are stamped through to their target, as the file they stand for.
                 if (attributes.isSymbolicLink())
@@ -220,7 +222,7 @@ final class ContentFileCache
             }
 
             @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exception) throws IOException
+            public FileVisitResult visitFileFailed(@NotNull Path file, @NotNull IOException exception) throws IOException
             {
                 // A file deleted during the walk is simply absent from the snapshot.
                 if (Files.notExists(file))
@@ -363,7 +365,7 @@ final class ContentFileCache
      */
     static void pruneIfDue()
     {
-        Path root = directory;
+        Path root = directory.get();
         if (root == null || bypass || !Files.isDirectory(root))
             return;
         Path marker = root.resolve(PRUNE_MARKER);
@@ -465,7 +467,7 @@ final class ContentFileCache
 
     private static Path file(Kind kind, String key)
     {
-        Path root = directory;
+        Path root = directory.get();
         return root == null ? null : root.resolve(kind.folder).resolve(hash(key) + ".json");
     }
 }

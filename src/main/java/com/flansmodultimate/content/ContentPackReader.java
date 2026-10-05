@@ -149,7 +149,7 @@ final class ContentPackReader
 
     private static void stripBomIfPresent(List<String> lines)
     {
-        if (!lines.isEmpty() && !lines.get(0).isEmpty() && lines.get(0).charAt(0) == '﻿')
+        if (!lines.isEmpty() && !lines.get(0).isEmpty() && lines.get(0).charAt(0) == '\uFEFF')
             lines.set(0, lines.get(0).substring(1));
     }
 }

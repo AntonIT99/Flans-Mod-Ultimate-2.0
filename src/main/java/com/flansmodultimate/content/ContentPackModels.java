@@ -102,7 +102,7 @@ final class ContentPackModels
         try
         {
             // 1) Rename the file itself to lowercase (safe even on case-insensitive FS)
-            jsonFile = FileUtils.renameToLowercase(jsonFile);
+            FileUtils.renameToLowercase(jsonFile);
 
             // Resource references are normalized in the view; custom JSON strings stay authored.
         }

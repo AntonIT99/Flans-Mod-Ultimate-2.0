@@ -256,9 +256,12 @@ public class ContentManager
             applyMeasuredMuzzles();
             long end = System.nanoTime();
 
-            FlansLog.log.info("Loaded {} content pack(s) in {} ms using {} thread(s) (packs: {} ms, sounds, references and muzzles: {} ms).",
-                contentPacks.size(), formatMilliseconds(end - loadStart), workers.threads(),
-                formatMilliseconds(postLoadStart - loadStart), formatMilliseconds(end - postLoadStart));
+            if (FlansLog.log.isInfoEnabled())
+            {
+                FlansLog.log.info("Loaded {} content pack(s) in {} ms using {} thread(s) (packs: {} ms, sounds, references and muzzles: {} ms).",
+                    contentPacks.size(), formatMilliseconds(end - loadStart), workers.threads(),
+                    formatMilliseconds(postLoadStart - loadStart), formatMilliseconds(end - postLoadStart));
+            }
             keepSnapshots = PlatformEnvironment.isClient();
         }
         finally
