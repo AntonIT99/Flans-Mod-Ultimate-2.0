@@ -279,12 +279,17 @@ public final class ModCommonConfig
 
     private static final ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     private static final AtomicReference<CommonConfigSnapshot> instance = new AtomicReference<>();
-    private static final AtomicReference<CommonConfigSnapshot> serverOverride = new AtomicReference<>();
-    private static volatile Map<ResourceLocation, Double> localGravityFactors = Map.of();
-    private static volatile Map<ResourceLocation, Double> localDragFactors = Map.of();
-    private static volatile Map<ResourceLocation, Double> serverGravityFactors = Map.of();
-    private static volatile Map<ResourceLocation, Double> serverDragFactors = Map.of();
+    private static final AtomicReference<DimensionFactors> localDimensionFactors =
+        new AtomicReference<>(DimensionFactors.EMPTY);
+    private static final AtomicReference<ServerConfigSnapshot> serverOverride = new AtomicReference<>();
     private static final AtomicReference<EntityTrackingRanges> earlyEntityTrackingRanges = new AtomicReference<>();
+
+    private record DimensionFactors(Map<ResourceLocation, Double> gravity, Map<ResourceLocation, Double> drag)
+    {
+        private static final DimensionFactors EMPTY = new DimensionFactors(Map.of(), Map.of());
+    }
+
+    private record ServerConfigSnapshot(CommonConfigSnapshot config, DimensionFactors dimensionFactors) {}
 
     static
     {
@@ -989,8 +994,8 @@ public final class ModCommonConfig
         var server = PlatformEnvironment.currentServer();
         if (server != null && server.isSameThread())
             return instance.get();
-        CommonConfigSnapshot override = serverOverride.get();
-        return override != null ? override : instance.get();
+        ServerConfigSnapshot override = serverOverride.get();
+        return override != null ? override.config() : instance.get();
     }
 
     public static double gravityFactor(Level level)
@@ -1005,12 +1010,17 @@ public final class ModCommonConfig
 
     private static Map<ResourceLocation, Double> currentFactors(boolean gravity)
     {
+        DimensionFactors local = localDimensionFactors.get();
         var server = PlatformEnvironment.currentServer();
         if (server != null && server.isSameThread())
-            return gravity ? localGravityFactors : localDragFactors;
-        if (serverOverride.get() != null)
-            return gravity ? serverGravityFactors : serverDragFactors;
-        return gravity ? localGravityFactors : localDragFactors;
+            return gravity ? local.gravity() : local.drag();
+        ServerConfigSnapshot override = serverOverride.get();
+        if (override != null)
+        {
+            DimensionFactors factors = override.dimensionFactors();
+            return gravity ? factors.gravity() : factors.drag();
+        }
+        return gravity ? local.gravity() : local.drag();
     }
 
     /** Persist a dimension override and synchronize it to connected clients. Server thread only. */
@@ -1571,9 +1581,10 @@ public final class ModCommonConfig
 
     public static void applyServerSnapshot(CommonConfigSnapshot config)
     {
-        serverOverride.set(config);
-        serverGravityFactors = parseDimensionFactors(config.dimensionGravityFactors());
-        serverDragFactors = parseDimensionFactors(config.dimensionDragFactors());
+        DimensionFactors factors = new DimensionFactors(
+            parseDimensionFactors(config.dimensionGravityFactors()),
+            parseDimensionFactors(config.dimensionDragFactors()));
+        serverOverride.set(new ServerConfigSnapshot(config, factors));
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
         FluidFuel.rebuild(config.fluidFuelLines());
     }
@@ -1636,8 +1647,9 @@ public final class ModCommonConfig
         CommonConfigSnapshot config = readConfig();
         instance.set(config);
         com.flansmodultimate.common.entity.EntityDistancePolicy.requestTrackingRefresh();
-        localGravityFactors = parseDimensionFactors(config.dimensionGravityFactors());
-        localDragFactors = parseDimensionFactors(config.dimensionDragFactors());
+        localDimensionFactors.set(new DimensionFactors(
+            parseDimensionFactors(config.dimensionGravityFactors()),
+            parseDimensionFactors(config.dimensionDragFactors())));
         rebuildPenetrableBlocks(config.penetrableBlocksLines());
         FluidFuel.rebuild(config.fluidFuelLines());
         DigitalAmmoSupplyHandler.reloadSupplyBlocks();

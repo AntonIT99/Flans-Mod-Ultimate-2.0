@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.content.IContentProvider;
 import com.mojang.brigadier.context.CommandContext;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -38,8 +39,8 @@ final class TryCommandSupport
     static void clearCarriedItems(ServerPlayer player)
     {
         Inventory inventory = player.getInventory();
-        inventory.items.replaceAll(ignored -> ItemStack.EMPTY);
-        inventory.offhand.replaceAll(ignored -> ItemStack.EMPTY);
+        Collections.fill(inventory.items, ItemStack.EMPTY);
+        Collections.fill(inventory.offhand, ItemStack.EMPTY);
         inventory.setChanged();
         player.containerMenu.broadcastChanges();
     }

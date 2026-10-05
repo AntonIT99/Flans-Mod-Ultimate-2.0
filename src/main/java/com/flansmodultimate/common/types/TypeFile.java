@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.config.Category;
 import com.flansmodultimate.config.CategoryPropertyMode;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -87,6 +87,12 @@ public class TypeFile
     public String toString()
     {
         return type.getConfigFolderName() + "/" + getName() + " [" + contentPack.getName() + "]";
+    }
+
+    /** Text and category-resolved values that can affect generated resources. */
+    public String getGenerationInput()
+    {
+        return type + "/" + name + ":" + lines + ":" + new java.util.TreeMap<>(configMap);
     }
 
     public static String getContentPackName(String toStringValue)

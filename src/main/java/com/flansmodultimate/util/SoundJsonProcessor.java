@@ -443,7 +443,10 @@ public final class SoundJsonProcessor {
             long l = Long.parseLong(raw);
             return new JsonPrimitive(l);
         }
-        catch (NumberFormatException ignored) {}
+        catch (NumberFormatException ignored)
+        {
+            // Ignored
+        }
 
         try
         {

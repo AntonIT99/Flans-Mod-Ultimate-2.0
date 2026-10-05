@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
+import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;

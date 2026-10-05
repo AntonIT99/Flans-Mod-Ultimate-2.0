@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.recipe;
 
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.content.IContentProvider;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.item.ItemStack;

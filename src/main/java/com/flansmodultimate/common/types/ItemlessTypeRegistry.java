@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.IContentProvider;
 import com.mojang.logging.LogUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -73,8 +73,9 @@ public final class ItemlessTypeRegistry<T extends InfoType>
             unique = original + "_" + suffix;
         if (!unique.equals(original))
         {
+            String packName = packName(type);
             LOG.warn("Detected conflict for {} id '{}': {} and {}. Creating id alias '{}' in [{}]",
-                label, original, type, byUniqueName.get(original), unique, packName(type));
+                label, original, type, byUniqueName.get(original), unique, packName);
         }
 
         byUniqueName.put(unique, type);

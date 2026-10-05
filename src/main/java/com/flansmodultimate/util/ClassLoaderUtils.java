@@ -1,9 +1,10 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -16,16 +17,42 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClassLoaderUtils
 {
     /** A transformed legacy class file together with the OpenGL transforms found inside it. */
-    public record ModifiedClass(byte[] classData, List<TransformOp> transforms) {}
+    public record ModifiedClass(byte[] classData, List<TransformOp> transforms)
+    {
+        @Override
+        public boolean equals(Object other)
+        {
+            if (this == other)
+                return true;
+            if (!(other instanceof ModifiedClass that))
+                return false;
+            return Arrays.equals(classData, that.classData) && Objects.equals(transforms, that.transforms);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 31 * Arrays.hashCode(classData) + Objects.hashCode(transforms);
+        }
+
+        @Override
+        @NotNull
+        public String toString()
+        {
+            return "ModifiedClass[classData=" + Arrays.toString(classData) + ", transforms=" + transforms + "]";
+        }
+    }
 
     /**
      * One loader per class file tree, keyed by {@link IContentProvider#getModelSourceId()}, so equally named
@@ -176,17 +203,23 @@ public final class ClassLoaderUtils
 
         List<TransformOp> modelTransforms = new ArrayList<>();
         ClassWriter cw = new SafeClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classLoader);
+        ClassVisitor superAndOwnerFixVisitor = getSuperAndOwnerFixVisitor(cw, map);
+        ClassVisitor transformVisitor = new TransformClassVisitor(Opcodes.ASM9, superAndOwnerFixVisitor, modelTransforms);
+
+        cr.accept(transformVisitor, 0);
+        return new ModifiedClass(cw.toByteArray(), List.copyOf(modelTransforms));
+    }
+
+    @NotNull
+    private static ClassVisitor getSuperAndOwnerFixVisitor(ClassWriter cw, Map<String, String> map)
+    {
         ClassVisitor deobfClassVisitor = new DeobfClassVisitor(cw, minecraftMethodMappings, minecraftFieldMappings);
         // ASM 9.9 added SimpleRemapper(api, map) and deprecated this constructor (not for removal); the
         // 1.20.1 toolchain ships ASM 9.8, so both branches keep the constructor available in each.
         @SuppressWarnings("deprecation")
         SimpleRemapper classNameRemapper = new SimpleRemapper(map);
         ClassVisitor remapper = new ClassRemapper(deobfClassVisitor, classNameRemapper);
-        ClassVisitor superAndOwnerFixVisitor = new SuperAndOwnerFixVisitor(Opcodes.ASM9, remapper, LEGACY_MODELBASE, NEW_MODELBASE);
-        ClassVisitor transformVisitor = new TransformClassVisitor(Opcodes.ASM9, superAndOwnerFixVisitor, modelTransforms);
-
-        cr.accept(transformVisitor, 0);
-        return new ModifiedClass(cw.toByteArray(), List.copyOf(modelTransforms));
+        return new SuperAndOwnerFixVisitor(Opcodes.ASM9, remapper, LEGACY_MODELBASE, NEW_MODELBASE);
     }
 
     @Nullable

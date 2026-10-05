@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +13,8 @@ import org.jetbrains.annotations.Nullable;
 public final class PilotGun extends DriveablePosition
 {
     private final String gunTypeShortName;
-    @Nullable private final IContentProvider contentPack;
+    @Nullable
+    private final IContentProvider contentPack;
 
     public PilotGun(Vector3f position, EnumDriveablePart part, String gunTypeShortName)
     {

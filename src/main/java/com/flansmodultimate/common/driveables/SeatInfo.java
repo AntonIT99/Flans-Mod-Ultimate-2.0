@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -24,24 +24,41 @@ public final class SeatInfo
     private final boolean driver;
     private final String gunTypeShortName;
     private final String gunName;
-    @Nullable private final IContentProvider contentPack;
+    @Nullable
+    private final IContentProvider contentPack;
 
-    @Setter private float minYaw = -360F;
-    @Setter private float maxYaw = 360F;
-    @Setter private float minPitch = -89F;
-    @Setter private float maxPitch = 89F;
-    @Setter private int gunnerID = -1;
-    @Setter private Vector3f rotatedOffset = new Vector3f();
-    @Setter private Vector3f gunOrigin;
-    @Setter private Vector3f aimingSpeed = new Vector3f(2F, 2F, 0F);
-    @Setter private boolean legacyAiming;
-    @Setter private boolean yawBeforePitch;
-    @Setter private boolean traverseSounds;
-    @Setter private boolean latePitch = true;
-    @Setter private String yawSound = StringUtils.EMPTY;
-    @Setter private int yawSoundLength;
-    @Setter private String pitchSound = StringUtils.EMPTY;
-    @Setter private int pitchSoundLength;
+    @Setter
+    private float minYaw;
+    @Setter
+    private float maxYaw;
+    @Setter
+    private float minPitch;
+    @Setter
+    private float maxPitch;
+    @Setter
+    private int gunnerID = -1;
+    @Setter
+    private Vector3f rotatedOffset = new Vector3f();
+    @Setter
+    private Vector3f gunOrigin;
+    @Setter
+    private Vector3f aimingSpeed = new Vector3f(2F, 2F, 0F);
+    @Setter
+    private boolean legacyAiming;
+    @Setter
+    private boolean yawBeforePitch;
+    @Setter
+    private boolean traverseSounds;
+    @Setter
+    private boolean latePitch = true;
+    @Setter
+    private String yawSound = StringUtils.EMPTY;
+    @Setter
+    private int yawSoundLength;
+    @Setter
+    private String pitchSound = StringUtils.EMPTY;
+    @Setter
+    private int pitchSoundLength;
     /**
      * Where each barrel of a twin or quad seat gun ends, as offsets in blocks
      * from {@link #gunOrigin}, measured off the model while the content loads.
@@ -49,17 +66,12 @@ public final class SeatInfo
      */
     private List<Vector3f> gunBarrels = List.of();
 
-    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver,
-                    float minYaw, float maxYaw, float minPitch, float maxPitch,
-                    @Nullable String gunTypeShortName, @Nullable String gunName)
+    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName, @Nullable String gunName)
     {
         this(id, position, part, driver, minYaw, maxYaw, minPitch, maxPitch, gunTypeShortName, gunName, null);
     }
 
-    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver,
-                    float minYaw, float maxYaw, float minPitch, float maxPitch,
-                    @Nullable String gunTypeShortName, @Nullable String gunName,
-                    @Nullable IContentProvider contentPack)
+    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName, @Nullable String gunName, @Nullable IContentProvider contentPack)
     {
         this.id = Math.max(0, id);
         this.position = new Vector3f(position.x, position.y, position.z);
@@ -131,9 +143,20 @@ public final class SeatInfo
         return ShootPoint.plusBarrel(gunOrigin, gunBarrels, barrel);
     }
 
-    public int getX() { return Math.round(position.x * 16F); }
-    public int getY() { return Math.round(position.y * 16F); }
-    public int getZ() { return Math.round(position.z * 16F); }
+    public int getX()
+    {
+        return Math.round(position.x * 16F);
+    }
+
+    public int getY()
+    {
+        return Math.round(position.y * 16F);
+    }
+
+    public int getZ()
+    {
+        return Math.round(position.z * 16F);
+    }
 
     @Nullable
     public GunType getGunType()

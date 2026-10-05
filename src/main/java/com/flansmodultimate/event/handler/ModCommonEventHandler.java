@@ -1,15 +1,16 @@
 package com.flansmodultimate.event.handler;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.ModRepositorySource;
-import com.flansmodultimate.PackagedContentRepositorySource;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
 import com.flansmodultimate.common.recipe.GunpowderRecipeCondition;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
+import com.flansmodultimate.content.ContentManager;
+import com.flansmodultimate.content.ModRepositorySource;
+import com.flansmodultimate.content.PackagedContentRepositorySource;
+import com.flansmodultimate.content.SoundPriority;
 import com.flansmodultimate.platform.network.NetworkPlatform;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,8 @@ public final class ModCommonEventHandler
     public static void registerPack(AddPackFindersEvent event)
     {
         event.addRepositorySource(PackagedContentRepositorySource.create(event.getPackType()));
+        if (event.getPackType() == PackType.CLIENT_RESOURCES)
+            event.addRepositorySource(SoundPriority.repositorySource());
 
         if (event.getPackType() == PackType.SERVER_DATA && ModApocalypseConfig.apocalypseDimensionDatapackEnabled())
             event.addRepositorySource(ApocalypseDatapackSource.create());

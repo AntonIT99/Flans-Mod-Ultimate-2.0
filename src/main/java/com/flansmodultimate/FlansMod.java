@@ -1,6 +1,7 @@
 package com.flansmodultimate;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
+import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.block.GunWorkbenchBlock;
 import com.flansmodultimate.common.block.PaintjobTableBlock;
 import com.flansmodultimate.common.block.TeamSpawnerBlock;
@@ -8,7 +9,6 @@ import com.flansmodultimate.common.block.VehicleCraftingTableBlock;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.common.block.entity.PaintjobTableBlockEntity;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
-import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.DeployedGun;
@@ -41,6 +41,7 @@ import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.platform.menu.MenuPlatform;
@@ -491,6 +492,7 @@ public class FlansMod
         UNSUPPORTED
     }
 
+    @SuppressWarnings("unchecked")
     private static void registerCreativeModeTabs()
     {
         ResourceKey<CreativeModeTab> creativeTabMainKey = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(MOD_ID, CreativeTabs.TAB_GENERAL));
@@ -525,7 +527,7 @@ public class FlansMod
             EnumType.GUN_BOX
         )));
 
-        BiConsumer<String, Supplier<CreativeModeTab>> registerTab = (name, factory) -> creativeModeTabRegistry.register(name, factory);
+        BiConsumer<String, Supplier<CreativeModeTab>> registerTab = creativeModeTabRegistry::register;
         CreativeTabs.registerCreativeTab(registerTab, CreativeTabs.TAB_GENERAL, generalItemList, Collections.emptyList(), CreativeModeTabs.SPAWN_EGGS, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(registerTab, CreativeTabs.TAB_ARMORS, FlansMod.getItems(EnumType.ARMOR), List.of(EnumType.ARMOR), creativeTabMainKey, creativeTabsFlansModReloadedKey);
         CreativeTabs.registerCreativeTab(registerTab, CreativeTabs.TAB_ATTACHMENTS, FlansMod.getItems(EnumType.ATTACHMENT), List.of(EnumType.ATTACHMENT), creativeTabMainKey, creativeTabsFlansModReloadedKey);

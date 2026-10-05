@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PartType;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -14,7 +14,8 @@ public final class Propeller extends DriveablePosition
 {
     private final int id;
     private final String itemTypeShortName;
-    @Nullable private final IContentProvider contentPack;
+    @Nullable
+    private final IContentProvider contentPack;
 
     public Propeller(int id, Vector3f position, EnumDriveablePart planePart, String itemTypeShortName)
     {

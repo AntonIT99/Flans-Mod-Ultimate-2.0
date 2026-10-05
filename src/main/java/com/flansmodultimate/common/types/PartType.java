@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.Getter;
 
 import net.minecraft.world.item.ItemStack;

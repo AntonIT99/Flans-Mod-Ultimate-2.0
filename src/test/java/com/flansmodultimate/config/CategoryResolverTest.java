@@ -1,8 +1,8 @@
 package com.flansmodultimate.config;
 
-import com.flansmodultimate.ContentPack;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.content.ContentPack;
 import com.flansmodultimate.util.StringOrNumberListMapAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

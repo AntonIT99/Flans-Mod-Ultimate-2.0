@@ -11,8 +11,10 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The common config of the server this client is connected to, as the server reported it, so the options
@@ -22,9 +24,9 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommonConfigMirror
 {
-    @Nullable
-    private static volatile Map<String, Object> values;
-    private static volatile boolean mayEdit;
+    private static final AtomicReference<@Nullable Snapshot> state = new AtomicReference<>();
+
+    private record Snapshot(Map<String, Object> values, boolean mayEdit) {}
 
     /** Asks the server for its common config. The answer arrives asynchronously. */
     public static void request()
@@ -37,26 +39,25 @@ public final class CommonConfigMirror
 
     public static void accept(Map<String, Object> serverValues, boolean playerMayEdit)
     {
-        values = serverValues;
-        mayEdit = playerMayEdit;
+        state.set(new Snapshot(immutableCopy(serverValues), playerMayEdit));
     }
 
     public static void clear()
     {
-        values = null;
-        mayEdit = false;
+        state.set(null);
     }
 
     /** Whether the server has answered yet. */
     public static boolean isReady()
     {
-        return values != null;
+        return state.get() != null;
     }
 
     /** Whether the server said this player may change its common config. */
     public static boolean mayEdit()
     {
-        return mayEdit;
+        Snapshot current = state.get();
+        return current != null && current.mayEdit();
     }
 
     /**
@@ -66,7 +67,8 @@ public final class CommonConfigMirror
     @Nullable
     public static Object get(ForgeConfigSpec.ConfigValue<?> value)
     {
-        Map<String, Object> current = values;
+        Snapshot snapshot = state.get();
+        Map<String, Object> current = snapshot == null ? null : snapshot.values();
         if (current == null)
             return value.get();
 
@@ -83,8 +85,18 @@ public final class CommonConfigMirror
     /** Applies the change locally as well, so the screen keeps showing it until the server answers. */
     public static void expect(List<String> path, Object newValue)
     {
-        Map<String, Object> current = values;
-        if (current != null)
-            current.put(ConfigSpecValues.joinPath(path), newValue);
+        String key = ConfigSpecValues.joinPath(path);
+        state.updateAndGet(current -> {
+            if (current == null)
+                return null;
+            Map<String, Object> updated = new HashMap<>(current.values());
+            updated.put(key, newValue);
+            return new Snapshot(immutableCopy(updated), current.mayEdit());
+        });
+    }
+
+    private static Map<String, Object> immutableCopy(Map<String, Object> values)
+    {
+        return Map.copyOf(values);
     }
 }

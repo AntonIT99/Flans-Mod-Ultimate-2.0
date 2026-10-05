@@ -1,4 +1,4 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
 
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;

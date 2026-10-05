@@ -1,7 +1,7 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.ContentManager;
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.ContentManager;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;

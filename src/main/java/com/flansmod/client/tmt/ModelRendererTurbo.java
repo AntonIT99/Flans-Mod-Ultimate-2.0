@@ -30,6 +30,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An extension to the ModelRenderer class. It basically is a copy of ModelRenderer,
@@ -64,7 +65,7 @@ public class ModelRendererTurbo extends ModelRenderer
     private static long transformationSequence;
     private static final ThreadLocal<ScreenSpaceCullingState> SCREEN_SPACE_CULLING =
         ThreadLocal.withInitial(ScreenSpaceCullingState::new);
-    private static volatile CullingOwner cullingOwner;
+    private static final AtomicReference<CullingOwner> cullingOwner = new AtomicReference<>();
 
     private int textureOffsetX;
     private int textureOffsetY;
@@ -2680,12 +2681,12 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     private static ScreenSpaceCullingState cullingState()
     {
-        CullingOwner owner = cullingOwner;
+        CullingOwner owner = cullingOwner.get();
         Thread thread = Thread.currentThread();
         if (owner != null && owner.thread() == thread)
             return owner.state();
         ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
-        cullingOwner = new CullingOwner(thread, state);
+        cullingOwner.set(new CullingOwner(thread, state));
         return state;
     }
 

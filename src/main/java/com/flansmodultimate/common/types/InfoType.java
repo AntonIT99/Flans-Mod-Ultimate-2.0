@@ -1,11 +1,12 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
+import com.flansmodultimate.content.ContentManager;
+import com.flansmodultimate.content.ContentPackPaths;
+import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.entity.EffectPlatform;
 import com.flansmodultimate.util.DynamicReference;
@@ -606,7 +607,7 @@ public abstract class InfoType implements IContentType
     public static ResourceLocation loadSkinTexture(String textureName, InfoType type)
     {
         return loadTexture(textureName, ContentManager.getSkinsTextureReferences().get(type.getContentPack()),
-            name -> "textures/" + ContentManager.FOLDER_TEXTURES_SKINS + "/" + name + FileUtils.PNG_EXTENSION);
+            name -> "textures/" + ContentPackPaths.FOLDER_TEXTURES_SKINS + "/" + name + FileUtils.PNG_EXTENSION);
     }
 
     private static ResourceLocation loadTexture(String textureName, Map<String, DynamicReference> refsMap, UnaryOperator<String> texturePath)

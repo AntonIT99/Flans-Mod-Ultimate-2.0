@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.recipe;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.content.ContentManager;
+import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.NoArgsConstructor;
@@ -143,7 +143,7 @@ public final class RecipeResolver
         // 1.7 resolved vanilla unlocalized names (item.pickaxeDiamond, item.bootsIron,
         // etc.) before Flan short names. Preserve that precedence for this reserved
         // vocabulary so a pending content registration cannot capture the token.
-        Optional<T> result = Optional.empty();
+        Optional<T> result;
         if (isLegacyEquipmentId(sanitizedId))
         {
             result = resolution.legacy(sanitizedId, damage);
@@ -205,33 +205,39 @@ public final class RecipeResolver
         String[] split = rawId.split(":", 2);
         String namespace = ResourceUtils.sanitize(split[0]);
         String path = ResourceUtils.sanitize(split[1]);
-        if (namespace.equals(FlansMod.FLANSMOD_ID))
+        switch (namespace)
         {
-            String aliasedId = ContentManager.getShortnameAliasInContentPack(path, provider);
-            result = resolution.flansmod(aliasedId);
-            if (result.isPresent())
-                return result;
+            case FlansMod.FLANSMOD_ID ->
+            {
+                String aliasedId = ContentManager.getShortnameAliasInContentPack(path, provider);
+                result = resolution.flansmod(aliasedId);
+                if (result.isPresent())
+                    return result;
 
-            if (!aliasedId.equals(path))
-                return resolution.flansmod(path);
+                if (!aliasedId.equals(path))
+                    return resolution.flansmod(path);
 
-            return Optional.empty();
-        }
+                return Optional.empty();
+            }
+            case FlansMod.APOCALYPSE_ID ->
+            {
+                return resolution.registered(namespace, apocalypseRecipePath(path));
+            }
+            case "minecraft" ->
+            {
+                result = resolution.registered("minecraft", path);
+                if (result.isPresent())
+                    return result;
 
-        if (namespace.equals(FlansMod.APOCALYPSE_ID))
-            return resolution.registered(namespace, apocalypseRecipePath(path));
+                result = resolution.legacy(path, damage);
+                if (result.isPresent())
+                    return result;
 
-        if (namespace.equals("minecraft"))
-        {
-            result = resolution.registered("minecraft", path);
-            if (result.isPresent())
-                return result;
-
-            result = resolution.legacy(path, damage);
-            if (result.isPresent())
-                return result;
-
-            return resolution.vanillaPath(path);
+                return resolution.vanillaPath(path);
+            }
+            default -> {
+                // no-op
+            }
         }
 
         return resolution.registered(namespace, path);
@@ -268,9 +274,6 @@ public final class RecipeResolver
             return Optional.empty();
 
         Item item = BuiltInRegistries.ITEM.get(location);
-        if (item == null)
-            return Optional.empty();
-
         ItemStack stack = new ItemStack(item, amount);
         if (damage > 0)
             stack.setDamageValue(damage);
@@ -312,9 +315,6 @@ public final class RecipeResolver
             return Optional.empty();
 
         Item item = BuiltInRegistries.ITEM.get(location);
-        if (item == null)
-            return Optional.empty();
-
         ItemStack stack = new ItemStack(item, amount);
         if (damage > 0)
             stack.setDamageValue(damage);
@@ -481,7 +481,7 @@ public final class RecipeResolver
         for (Item item : BuiltInRegistries.ITEM)
         {
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
-            if (itemId != null && itemId.getNamespace().equals("minecraft") && registryPathMatches(itemId.getPath(), lookupPath))
+            if (itemId.getNamespace().equals("minecraft") && registryPathMatches(itemId.getPath(), lookupPath))
                 return Optional.of(item);
         }
         return Optional.empty();
@@ -603,10 +603,7 @@ public final class RecipeResolver
 
     private static Optional<ResourceLocation> id(ItemLike item)
     {
-        ResourceLocation location = BuiltInRegistries.ITEM.getKey(item.asItem());
-        if (location == null)
-            location = BuiltInRegistries.ITEM.getKey(item.asItem());
-        return Optional.ofNullable(location);
+        return Optional.of(BuiltInRegistries.ITEM.getKey(item.asItem()));
     }
 
     private static ItemLike legacyLog(int damage)

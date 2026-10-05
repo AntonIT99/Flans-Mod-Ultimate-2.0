@@ -5,9 +5,9 @@
  */
 package com.flansmodultimate.api;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -46,7 +46,7 @@ public final class FlansModApi
      */
     public static List<IContentPack> getContentPacks()
     {
-        return Collections.unmodifiableList(ContentManager.getContentPacks());
+        return List.copyOf(ContentManager.getContentPacks());
     }
 
     /**

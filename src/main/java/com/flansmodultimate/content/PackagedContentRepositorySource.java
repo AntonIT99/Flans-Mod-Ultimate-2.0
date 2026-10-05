@@ -1,4 +1,7 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
@@ -13,12 +16,9 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 /** Supplies enabled packaged assets and recipes as required, top-priority built-in packs. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PackagedContentRepositorySource
 {
-    private PackagedContentRepositorySource()
-    {
-    }
-
     public static RepositorySource create(PackType packType)
     {
         return acceptor -> loadPacks(packType, acceptor);
@@ -26,7 +26,7 @@ public final class PackagedContentRepositorySource
 
     private static void loadPacks(PackType packType, Consumer<Pack> acceptor)
     {
-        for (PackagedContentPackApi.RegisteredModule module : PackagedContentPackApi.getRegisteredModules())
+        for (PackagedContentLoader.RegisteredModule module : PackagedContentLoader.getRegisteredModules())
         {
             if (packType == PackType.CLIENT_RESOURCES)
             {
@@ -49,7 +49,7 @@ public final class PackagedContentRepositorySource
     }
 
     private static void addEncryptedResourcePack(Consumer<Pack> acceptor,
-                                                 PackagedContentPackApi.RegisteredModule module)
+                                                 PackagedContentLoader.RegisteredModule module)
     {
         Path bundlePath = module.resourceRoot().resolve(EncryptedResourcePack.BUNDLE_RESOURCE_PATH);
         if (!java.nio.file.Files.isRegularFile(bundlePath))

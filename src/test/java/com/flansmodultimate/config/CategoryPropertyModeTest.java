@@ -1,9 +1,9 @@
 package com.flansmodultimate.config;
 
-import com.flansmodultimate.ContentPack;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.content.ContentPack;
+import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

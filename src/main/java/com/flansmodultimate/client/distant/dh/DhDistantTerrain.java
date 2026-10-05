@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +42,7 @@ import java.util.OptionalDouble;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link IDistantTerrain} backed by the Distant Horizons API. The only class that touches Distant Horizons,
@@ -66,8 +67,7 @@ public final class DhDistantTerrain implements IDistantTerrain
     });
     private final List<Group> groups = new ArrayList<>();
     /** The client level Distant Horizons last rendered, captured on the render thread. */
-    @Nullable
-    private volatile IDhApiLevelWrapper renderedLevel;
+    private final AtomicReference<@Nullable IDhApiLevelWrapper> renderedLevel = new AtomicReference<>();
     /** Set from any thread when Distant Horizons unloads a level; handled on the next tick. */
     private volatile boolean levelUnloaded;
     /** Increases whenever the level changes, which invalidates every group made before. */
@@ -102,7 +102,7 @@ public final class DhDistantTerrain implements IDistantTerrain
             public void beforeRender(DhApiCancelableEventParam<DhApiRenderParam> event)
             {
                 if (event.value != null)
-                    terrain.renderedLevel = event.value.clientLevelWrapper;
+                    terrain.renderedLevel.set(event.value.clientLevelWrapper);
             }
         });
         DhApiEventRegister.on(DhApiLevelUnloadEvent.class, new DhApiLevelUnloadEvent()
@@ -138,7 +138,7 @@ public final class DhDistantTerrain implements IDistantTerrain
     private void invalidate()
     {
         generation++;
-        renderedLevel = null;
+        renderedLevel.set(null);
         for (Group group : List.copyOf(groups))
             group.close();
         groups.clear();
@@ -156,7 +156,7 @@ public final class DhDistantTerrain implements IDistantTerrain
         if (clientLevel == null)
             return null;
 
-        IDhApiLevelWrapper rendered = renderedLevel;
+        IDhApiLevelWrapper rendered = renderedLevel.get();
         if (rendered != null && rendered.getWrappedMcObject() == clientLevel)
             return rendered;
 
@@ -218,7 +218,7 @@ public final class DhDistantTerrain implements IDistantTerrain
     {
         IDhApiTerrainDataRepo repo = DhApi.Delayed.terrainRepo;
         IDhApiLevelWrapper level = currentLevel();
-        if (repo == null || level == null || !(maxDistance > 0D) || direction.lengthSqr() < 1.0E-12D)
+        if (repo == null || level == null || maxDistance <= 0D || direction.lengthSqr() < 1.0E-12D)
             return CompletableFuture.completedFuture(OptionalDouble.empty());
 
         Vec3 unit = direction.normalize();
@@ -318,8 +318,7 @@ public final class DhDistantTerrain implements IDistantTerrain
         private final DistantBoxStyle style;
         private final long createdIn;
         private final EDhApiBlockMaterial material;
-        @Nullable
-        private volatile Origin origin;
+        private final AtomicReference<@Nullable Origin> origin = new AtomicReference<>();
         /** The boxes last handed to the renderer; unchanged ones are not uploaded again. */
         private List<DistantBox> current = List.of();
         @Nullable
@@ -344,17 +343,17 @@ public final class DhDistantTerrain implements IDistantTerrain
 
         private void beforeRender(DhApiRenderParam parameters)
         {
-            Origin current = origin;
-            if (current == null)
+            Origin o = origin.get();
+            if (o == null)
                 return;
-            Vec3 position = current.at(parameters.partialTicks);
+            Vec3 position = o.at(parameters.partialTicks);
             boxes.setOriginBlockPos(new DhApiVec3d(position.x, position.y, position.z));
         }
 
         @Override
         public void setOrigin(Origin origin)
         {
-            this.origin = origin;
+            this.origin.set(origin);
             Vec3 position = origin.at(0F);
             boxes.setOriginBlockPos(new DhApiVec3d(position.x, position.y, position.z));
         }
@@ -372,8 +371,7 @@ public final class DhDistantTerrain implements IDistantTerrain
             if (boxes.size() != source.size())
             {
                 boxes.clear();
-                for (DistantBox box : source)
-                    boxes.add(new DhApiRenderableBox(new DhApiVec3d(), new DhApiVec3d(), Color.WHITE, material));
+                source.forEach(box -> boxes.add(new DhApiRenderableBox(new DhApiVec3d(), new DhApiVec3d(), Color.WHITE, material)));
             }
             for (int i = 0; i < source.size(); i++)
             {

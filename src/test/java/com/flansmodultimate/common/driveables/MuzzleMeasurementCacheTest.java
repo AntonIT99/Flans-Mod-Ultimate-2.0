@@ -1,14 +1,14 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.ContentPack;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.content.ContentPack;
+import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.phys.Vec3;

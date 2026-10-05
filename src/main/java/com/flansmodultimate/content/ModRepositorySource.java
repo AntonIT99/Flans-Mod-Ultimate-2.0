@@ -1,5 +1,6 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
 
+import com.flansmodultimate.FlansMod;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,11 +26,6 @@ public class ModRepositorySource extends FolderRepositorySource
     protected final Path folder;
     protected final PackType packType;
 
-    public ModRepositorySource(Path pFolder)
-    {
-        this(pFolder, PackType.CLIENT_RESOURCES);
-    }
-
     public ModRepositorySource(Path pFolder, PackType packType)
     {
         super(pFolder, packType, PackSource.BUILT_IN);
@@ -40,11 +36,19 @@ public class ModRepositorySource extends FolderRepositorySource
     @Override
     public void loadPacks(@NotNull Consumer<Pack> pOnLoad)
     {
+        java.util.Set<Path> selected = ContentManager.getContentPacks().stream()
+            .filter(provider -> !provider.isPreprocessed())
+            .map(provider -> provider.getPath().toAbsolutePath().normalize()).collect(java.util.stream.Collectors.toSet());
+        if (packType == PackType.CLIENT_RESOURCES)
+            ModernAssetAliases.rebuild(ContentManager.getContentPacks());
+
         try
         {
             FileUtil.createDirectoriesSafe(folder);
             discoverPacks(folder, false, (path, resourcesSupplier) ->
             {
+                if (!selected.contains(path.toAbsolutePath().normalize()))
+                    return;
                 String fileName = path.getFileName().toString();
                 Pack.Info mcmetaFileInfo = readPackInfo("file/" + fileName, resourcesSupplier);
 
@@ -52,7 +56,8 @@ public class ModRepositorySource extends FolderRepositorySource
                 Pack.Info info = new Pack.Info((mcmetaFileInfo != null) ? mcmetaFileInfo.description() : MutableComponent.create(new LiteralContents(FilenameUtils.getBaseName(fileName))),
                     packFormat, packFormat, (mcmetaFileInfo != null) ? mcmetaFileInfo.requestedFeatures() : FeatureFlagSet.of(), false);
 
-                Pack.ResourcesSupplier filteredSupplier = packId -> new FilteringPackResources(resourcesSupplier.open(packId), packType);
+                Pack.ResourcesSupplier filteredSupplier = packId -> new FilteringPackResources(resourcesSupplier.open(packId), packType,
+                    ModernAssetAliases.forPack(path));
 
                 Pack pack = Pack.create("file/" + fileName, Component.literal(fileName), true, filteredSupplier, info, packType, Pack.Position.BOTTOM, false, PackSource.BUILT_IN);
                 pOnLoad.accept(pack);

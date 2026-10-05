@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.recipe;
 
-import com.flansmodultimate.ContentPack;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.content.ContentPack;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;

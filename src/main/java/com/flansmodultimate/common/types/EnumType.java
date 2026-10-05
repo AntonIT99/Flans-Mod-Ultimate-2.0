@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.common.block.ArmorBoxBlock;
 import com.flansmodultimate.common.block.GunBoxBlock;
 import com.flansmodultimate.common.block.IFlanBlock;
@@ -23,6 +22,7 @@ import com.flansmodultimate.common.item.PlaneItem;
 import com.flansmodultimate.common.item.RewardBoxItem;
 import com.flansmodultimate.common.item.ToolItem;
 import com.flansmodultimate.common.item.VehicleItem;
+import com.flansmodultimate.content.ContentPackPaths;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -36,26 +36,26 @@ import java.util.Optional;
 @Getter
 public enum EnumType
 {
-    AA_GUN("aagun", "aaguns", ContentManager.FOLDER_TEXTURES_SKINS, AAGunType.class, AAGunItem.class, null, false, 7),
-    ARMOR("armor", "armorFiles", ContentManager.FOLDER_TEXTURES_ARMOR, ArmorType.class, CustomArmorItem.class, null, false, 0),
-    ARMOR_BOX("armor_box", "armorBoxes", ContentManager.FOLDER_TEXTURES_SKINS, ArmorBoxType.class, ArmorBoxItem.class, ArmorBoxBlock.class, false, 10),
-    ATTACHMENT("attachment", "attachments", ContentManager.FOLDER_TEXTURES_SKINS, AttachmentType.class, AttachmentItem.class, null, false, 3),
-    BULLET("bullet", "bullets", ContentManager.FOLDER_TEXTURES_SKINS, BulletType.class, BulletItem.class, null, false, 1),
-    GLOVE("glove", "gloves", ContentManager.FOLDER_TEXTURES_SKINS, GloveType.class, GloveItem.class, null, false, 8),
-    GRENADE("grenade", "grenades", ContentManager.FOLDER_TEXTURES_SKINS, GrenadeType.class, GrenadeItem.class, null, false, 2),
-    GUN("gun", "guns", ContentManager.FOLDER_TEXTURES_SKINS, GunType.class, GunItem.class, null, true, 4),
-    GUN_BOX("gun_box", "boxes", ContentManager.FOLDER_TEXTURES_SKINS, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false, 11),
-    ITEM_HOLDER("item_holder", "itemHolders", ContentManager.FOLDER_TEXTURES_SKINS, ItemHolderType.class, ItemHolderItem.class, ItemHolderBlock.class, false, 9),
-    PART("part", "parts", ContentManager.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
-    TOOL("tool", "tools", ContentManager.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6),
-    MECHA_ITEM("mecha_item", "mechaItems", ContentManager.FOLDER_TEXTURES_SKINS, MechaItemType.class, MechaAddonItem.class, null, false, 7),
-    VEHICLE("vehicle", "vehicles", ContentManager.FOLDER_TEXTURES_SKINS, VehicleType.class, VehicleItem.class, null, false, 8),
-    PLANE("plane", "planes", ContentManager.FOLDER_TEXTURES_SKINS, PlaneType.class, PlaneItem.class, null, false, 9),
-    MECHA("mecha", "mechas", ContentManager.FOLDER_TEXTURES_SKINS, MechaType.class, MechaItem.class, null, false, 10),
-    PLAYER_CLASS("player_class", "classes", ContentManager.FOLDER_TEXTURES_SKINS, PlayerClass.class, null, null, false, 12),
-    TEAM("team", "teams", ContentManager.FOLDER_TEXTURES_SKINS, Team.class, null, null, false, 13),
-    REWARD_BOX("reward_box", "rewardBoxes", ContentManager.FOLDER_TEXTURES_SKINS, RewardBox.class, RewardBoxItem.class, null, false, 14),
-    LOADOUT_POOL("loadout_pool", "loadouts", ContentManager.FOLDER_TEXTURES_SKINS, LoadoutPool.class, null, null, false, 15);
+    AA_GUN("aagun", "aaguns", ContentPackPaths.FOLDER_TEXTURES_SKINS, AAGunType.class, AAGunItem.class, null, false, 7),
+    ARMOR("armor", "armorFiles", ContentPackPaths.FOLDER_TEXTURES_ARMOR, ArmorType.class, CustomArmorItem.class, null, false, 0),
+    ARMOR_BOX("armor_box", "armorBoxes", ContentPackPaths.FOLDER_TEXTURES_SKINS, ArmorBoxType.class, ArmorBoxItem.class, ArmorBoxBlock.class, false, 10),
+    ATTACHMENT("attachment", "attachments", ContentPackPaths.FOLDER_TEXTURES_SKINS, AttachmentType.class, AttachmentItem.class, null, false, 3),
+    BULLET("bullet", "bullets", ContentPackPaths.FOLDER_TEXTURES_SKINS, BulletType.class, BulletItem.class, null, false, 1),
+    GLOVE("glove", "gloves", ContentPackPaths.FOLDER_TEXTURES_SKINS, GloveType.class, GloveItem.class, null, false, 8),
+    GRENADE("grenade", "grenades", ContentPackPaths.FOLDER_TEXTURES_SKINS, GrenadeType.class, GrenadeItem.class, null, false, 2),
+    GUN("gun", "guns", ContentPackPaths.FOLDER_TEXTURES_SKINS, GunType.class, GunItem.class, null, true, 4),
+    GUN_BOX("gun_box", "boxes", ContentPackPaths.FOLDER_TEXTURES_SKINS, GunBoxType.class, GunBoxItem.class, GunBoxBlock.class, false, 11),
+    ITEM_HOLDER("item_holder", "itemHolders", ContentPackPaths.FOLDER_TEXTURES_SKINS, ItemHolderType.class, ItemHolderItem.class, ItemHolderBlock.class, false, 9),
+    PART("part", "parts", ContentPackPaths.FOLDER_TEXTURES_SKINS, PartType.class, PartItem.class, null, false, 5),
+    TOOL("tool", "tools", ContentPackPaths.FOLDER_TEXTURES_SKINS, ToolType.class, ToolItem.class, null, false, 6),
+    MECHA_ITEM("mecha_item", "mechaItems", ContentPackPaths.FOLDER_TEXTURES_SKINS, MechaItemType.class, MechaAddonItem.class, null, false, 7),
+    VEHICLE("vehicle", "vehicles", ContentPackPaths.FOLDER_TEXTURES_SKINS, VehicleType.class, VehicleItem.class, null, false, 8),
+    PLANE("plane", "planes", ContentPackPaths.FOLDER_TEXTURES_SKINS, PlaneType.class, PlaneItem.class, null, false, 9),
+    MECHA("mecha", "mechas", ContentPackPaths.FOLDER_TEXTURES_SKINS, MechaType.class, MechaItem.class, null, false, 10),
+    PLAYER_CLASS("player_class", "classes", ContentPackPaths.FOLDER_TEXTURES_SKINS, PlayerClass.class, null, null, false, 12),
+    TEAM("team", "teams", ContentPackPaths.FOLDER_TEXTURES_SKINS, Team.class, null, null, false, 13),
+    REWARD_BOX("reward_box", "rewardBoxes", ContentPackPaths.FOLDER_TEXTURES_SKINS, RewardBox.class, RewardBoxItem.class, null, false, 14),
+    LOADOUT_POOL("loadout_pool", "loadouts", ContentPackPaths.FOLDER_TEXTURES_SKINS, LoadoutPool.class, null, null, false, 15);
 
     private final String identifier;
     private final String configFolderName;
