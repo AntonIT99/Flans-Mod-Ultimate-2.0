@@ -1,5 +1,6 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.GloveItem;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.platform.registry.RegistryEntry;

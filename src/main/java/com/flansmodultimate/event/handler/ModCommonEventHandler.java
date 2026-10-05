@@ -1,6 +1,6 @@
 package com.flansmodultimate.event.handler;
 
-import com.flansmodultimate.EnchantmentItemRepositorySource;
+import com.flansmodultimate.content.EnchantmentItemRepositorySource;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
