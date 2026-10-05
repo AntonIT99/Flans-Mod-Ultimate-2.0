@@ -1,6 +1,7 @@
 package com.flansmodultimate.content;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.config.ContentLoadingConfig;
 import com.flansmodultimate.util.FlansLog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -10,6 +11,7 @@ import com.google.gson.JsonParser;
 import net.minecraftforge.fml.ModList;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,7 +65,7 @@ final class ModernAssetAliases
         List<Input> inputs = new ArrayList<>();
         List<Assets> cachedAssets = new ArrayList<>();
         List<IContentProvider> indexed = new ArrayList<>();
-        try
+        try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(ContentLoadingConfig.getContentLoadingThreads()))
         {
             // The main mod's built-in assets are immutable too; reserve their names before user packs.
             var modFile = ModList.get().getModFileById(FlansMod.MOD_ID).getFile();
@@ -91,8 +93,18 @@ final class ModernAssetAliases
                 });
                 // The cached overload does not use Input.assets; an archive path avoids opening it.
                 inputs.add(new Input(provider.getPath(), provider.isPreprocessed(), entryModels, renamedModels));
-                cachedAssets.add(PackAssetIndex.modern(provider));
             }
+            // Each pack's index is independent; the plan below takes them in pack order.
+            cachedAssets.addAll(workers.map(indexed, provider -> {
+                try
+                {
+                    return PackAssetIndex.modern(provider);
+                }
+                catch (IOException e)
+                {
+                    throw new UncheckedIOException(e);
+                }
+            }));
             List<View> plans = plan(inputs, cachedAssets);
             Map<Path, View> rebuilt = new HashMap<>();
             for (int i = 0; i < indexed.size(); i++)
@@ -112,6 +124,11 @@ final class ModernAssetAliases
         {
             views.set(Map.of());
             FlansLog.log.error("Could not resolve modern content-pack asset conflicts", e);
+        }
+        finally
+        {
+            // Later discoveries walk the packs again: their files may have been edited since.
+            ContentFileCache.releaseRunSnapshots();
         }
     }
 

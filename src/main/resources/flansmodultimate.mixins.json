@@ -28,6 +28,7 @@
       "MountedRiderTurnMixin",
       "NpcRenderDistanceMixin",
       "PlayerSkinOverrideMixin",
+      "SearchRegistryLazyTreesMixin",
       "SeatedPlayerRendererMixin",
       "VehicleOpticsLightMixin",
       "WorldOpenFlowsApocalypseMixin"

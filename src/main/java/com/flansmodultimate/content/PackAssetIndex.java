@@ -6,6 +6,7 @@ import com.flansmodultimate.util.ResourceUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,12 +27,14 @@ import java.util.stream.Stream;
 /** Persisted texture signatures and parsed model JSON, reused when file metadata is unchanged. */
 final class PackAssetIndex
 {
-    // Version 2 permits name-only entries; older loaders must not compare their empty signatures.
-    private static final int VERSION = 2;
-    private record Data(int version, Map<String, ContentFileCache.Stamp> files,
+    // 2: name-only entries; older loaders must not compare their empty signatures.
+    // 3: a fingerprint of the file stamps and the source path instead of every stamp.
+    private static final int VERSION = 3;
+    private record Data(String source, int version, String files,
                         Map<String, Map<String, Map<String, String>>> legacy, ModernAssetAliases.Assets modern) {}
     private final String key;
-    private final Map<String, ContentFileCache.Stamp> files;
+    private final String source;
+    private final String files;
     private Map<String, Map<String, Map<String, String>>> legacy;
     private ModernAssetAliases.Assets modern;
 
@@ -46,7 +49,8 @@ final class PackAssetIndex
         // Loader union paths print only their path inside the module. Different modules can
         // all print "assets/flansmod", so persist the physical source identity as well.
         key = key(assets.toString(), archive == null ? directorySource : archive);
-        files = archive == null ? ContentFileCache.snapshot(assets) : Map.of("archive", ContentFileCache.stamp(archive));
+        source = ContentFileCache.source(archive == null ? directorySource : archive);
+        files = ContentFileCache.fingerprint(archive == null ? ContentFileCache.snapshot(assets) : Map.of("archive", ContentFileCache.stamp(archive)));
         Data previous = readData(key);
         if (previous != null && files.equals(previous.files()))
         {
@@ -64,14 +68,13 @@ final class PackAssetIndex
             ? packaged.getArchiveAssetsRoot() : "/assets/flansmod";
         Data previous = readData(key(assets, provider.getPath()));
         return previous != null
-            && Map.of("archive", ContentFileCache.stamp(provider.getPath())).equals(previous.files()) ? previous : null;
+            && ContentFileCache.fingerprint(Map.of("archive", ContentFileCache.stamp(provider.getPath()))).equals(previous.files()) ? previous : null;
     }
 
     private static Data readData(String key)
     {
-        Data data = ContentFileCache.read(key, Data.class);
-        // Version 1 contains complete pixel signatures and is safe to reuse without a cold rebuild.
-        if (data == null || (data.version() != 1 && data.version() != VERSION) || data.files() == null)
+        Data data = ContentFileCache.read(ContentFileCache.Kind.ASSET_INDEX, key, Data.class);
+        if (data == null || data.version() != VERSION || data.files() == null)
             return null;
         if (data.legacy() != null && (!data.legacy().keySet().equals(Set.of("armor", "gui", "skins"))
             || data.legacy().values().stream().anyMatch(groups -> groups == null
@@ -140,7 +143,7 @@ final class PackAssetIndex
         return legacy(provider, fs, null);
     }
 
-    private static boolean needsSignatures(Map<String, Map<String, Map<String, String>>> legacy,
+    static boolean needsSignatures(Map<String, Map<String, Map<String, String>>> legacy,
         Map<String, Set<String>> signatureNames)
     {
         return legacy == null || legacy.entrySet().stream().anyMatch(folder ->
@@ -202,7 +205,7 @@ final class PackAssetIndex
 
     private void save()
     {
-        ContentFileCache.write(key, new Data(VERSION, files, legacy, modern));
+        ContentFileCache.write(ContentFileCache.Kind.ASSET_INDEX, key, new Data(source, VERSION, files, legacy, modern));
     }
 
     private static Map<String, Map<String, String>> readLegacy(Path directory, boolean armor, Set<String> signatureNames) throws IOException
@@ -230,7 +233,8 @@ final class PackAssetIndex
     {
         try (InputStream input = Files.newInputStream(file))
         {
-            BufferedImage image = ImageIO.read(input);
+            // Decoded in memory: ImageIO would otherwise buffer the stream in a temporary file.
+            BufferedImage image = ImageIO.read(new MemoryCacheImageInputStream(input));
             if (image == null)
             {
                 FlansLog.log.warn("Invalid PNG texture '{}'", file);

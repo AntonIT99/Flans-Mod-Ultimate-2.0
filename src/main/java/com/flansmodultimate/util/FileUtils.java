@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -558,7 +559,7 @@ public final class FileUtils
     private static BufferedImage readImage(Path file) throws IOException
     {
         try (InputStream fileInput = Files.newInputStream(file);
-             ImageInputStream input = ImageIO.createImageInputStream(fileInput))
+             ImageInputStream input = new MemoryCacheImageInputStream(fileInput))
         {
             if (input == null)
                 return null;

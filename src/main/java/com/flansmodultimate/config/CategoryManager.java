@@ -70,6 +70,7 @@ public final class CategoryManager
 
     static void loadCategories(Path configDir, Path defaultConfigDir, boolean useDefaults)
     {
+        long start = System.nanoTime();
         FlansLog.log.info("Loading categories");
         categories.clear();
         itemCategories.clear();
@@ -110,7 +111,7 @@ public final class CategoryManager
                 FlansLog.log.info("Loaded {} categories for {} type", numCategoriesForType, type.getIdentifier());
         }
 
-        FlansLog.log.info("Finished loading categories");
+        FlansLog.log.info("Finished loading categories in {} ms", (System.nanoTime() - start) / 1_000_000);
     }
 
     private static void ensureUserCategoryFileExists(Path file)

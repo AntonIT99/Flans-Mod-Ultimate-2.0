@@ -17,8 +17,9 @@ import java.util.stream.Stream;
 /** Measures audio only on an asset-cache miss; warm archives require just their outer file stamp. */
 final class SoundAssetIndex
 {
-    private static final int VERSION = 1;
-    private record Cache(int version, Map<String, ContentFileCache.Stamp> files, SoundPriorityPlan.Assets assets) {}
+    // 2: a fingerprint of the file stamps and the source path instead of every stamp.
+    private static final int VERSION = 2;
+    private record Cache(String source, int version, String files, SoundPriorityPlan.Assets assets) {}
 
     private SoundAssetIndex() {}
 
@@ -36,8 +37,9 @@ final class SoundAssetIndex
         else
             files = Map.of("archive", ContentFileCache.stamp(source.archive()));
         String key = "sound-assets:" + source.id() + ":" + (source.archive() == null ? source.root() : source.archive());
-        Cache previous = ContentFileCache.read(key, Cache.class);
-        if (previous != null && previous.version() == VERSION && files.equals(previous.files())
+        String fingerprint = ContentFileCache.fingerprint(files);
+        Cache previous = ContentFileCache.read(ContentFileCache.Kind.SOUND_INDEX, key, Cache.class);
+        if (previous != null && previous.version() == VERSION && fingerprint.equals(previous.files())
             && previous.assets() != null && previous.assets().events() != null && previous.assets().files() != null
             && !previous.assets().files().containsValue(null))
             return previous.assets();
@@ -49,7 +51,8 @@ final class SoundAssetIndex
             {
                 assets = readAssets(fs.getPath("/assets/flansmod"));
             }
-        ContentFileCache.write(key, new Cache(VERSION, files, assets));
+        String location = ContentFileCache.source(source.archive() == null ? source.root() : source.archive());
+        ContentFileCache.write(ContentFileCache.Kind.SOUND_INDEX, key, new Cache(location, VERSION, fingerprint, assets));
         return assets;
     }
 

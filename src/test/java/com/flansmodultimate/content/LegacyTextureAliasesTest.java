@@ -41,6 +41,40 @@ class LegacyTextureAliasesTest
     }
 
     @Test
+    void preparingOnWorkersAssignsTheSameAliasesAsOneThread() throws Exception
+    {
+        List<ContentPack> packs = new java.util.ArrayList<>();
+        for (int i = 0; i < 6; i++)
+        {
+            ContentPack pack = pack("p" + i);
+            png(pack, "uniform_1", i % 2 == 0 ? 0xffff0000 : 0xff0000ff);
+            png(pack, "uniform_2", 0xffff0000);
+            png(pack, "own" + i + "_1", 0xff00ff00);
+            packs.add(pack);
+        }
+        List<String> expected = aliases(packs, ContentLoadingWorkers.sequential());
+        try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(4))
+        {
+            assertEquals(expected, aliases(packs, workers));
+        }
+        assertEquals(List.of("uniform", "uniform_2", "uniform"), expected.subList(0, 3));
+    }
+
+    private static List<String> aliases(List<ContentPack> packs, ContentLoadingWorkers workers)
+    {
+        LegacyTextureAliases aliases = new LegacyTextureAliases();
+        aliases.prepare(List.copyOf(packs), workers);
+        List<String> result = new java.util.ArrayList<>();
+        for (ContentPack pack : packs)
+        {
+            aliases.initialize(pack);
+            aliases.findDuplicates(pack);
+            result.add(aliases.getArmorTextureReferences().get(pack).get("uniform").get());
+        }
+        return result;
+    }
+
+    @Test
     void sharesEqualPixelsWithDifferentPngEncodings() throws Exception
     {
         ContentPack a = pack("a"), b = pack("b");

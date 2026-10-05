@@ -14,6 +14,7 @@ import net.minecraft.server.packs.resources.Resource;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
@@ -88,7 +89,7 @@ public final class ModelTextureFitter
 
         // Only the image header is decoded, the pixels are never read.
         try (InputStream stream = resource.get().open();
-             ImageInputStream imageInput = ImageIO.createImageInputStream(stream))
+             ImageInputStream imageInput = new MemoryCacheImageInputStream(stream))
         {
             if (imageInput == null)
                 return Optional.empty();

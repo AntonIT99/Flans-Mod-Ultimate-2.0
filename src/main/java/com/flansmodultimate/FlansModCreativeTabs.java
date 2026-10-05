@@ -11,6 +11,7 @@ import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.google.common.base.Suppliers;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -140,9 +141,11 @@ public final class FlansModCreativeTabs
     {
         boolean onlyGunAmmo = tabName.equals(TAB_GUNS);
         boolean onlyVehicleAmmo = tabName.equals(TAB_BOMBS_AND_SHELLS);
+        // The tab's items are fixed once registration ends; the tab is rebuilt on every world join.
+        Supplier<List<Supplier<? extends Item>>> sortedItems = Suppliers.memoize(() -> sortForCreativeTab(itemsForTab));
 
         return (parameters, output) -> {
-            for (Supplier<? extends Item> ro : sortForCreativeTab(itemsForTab))
+            for (Supplier<? extends Item> ro : sortedItems.get())
             {
                 Item item = ro.get();
 

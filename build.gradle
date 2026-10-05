@@ -65,6 +65,12 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
         }
 
+        // Debug timings plus a Flight Recorder profile of the first three minutes, saved as startup.jfr in the run directory.
+        clientProfile {
+            parent((RunConfig) minecraft.runs.getByName('clientDebug'))
+            jvmArg '-XX:StartFlightRecording=duration=180s,settings=profile,filename=startup.jfr'
+        }
+
         server {
             property 'forge.enabledGameTestNamespaces', mainModId
             args '--nogui'

@@ -84,6 +84,12 @@ public final class SoundPriority
 
     static void initialize(List<IContentProvider> providers)
     {
+        initialize(providers, ContentLoadingWorkers.sequential());
+    }
+
+    /** Indexes the sound sources on the workers; the plan is built from them in priority order. */
+    static void initialize(List<IContentProvider> providers, ContentLoadingWorkers workers)
+    {
         Map<String, Source> discovered = new LinkedHashMap<>();
         for (var module : PackagedContentLoader.getRegisteredModules().stream()
             .sorted(Comparator.comparing(PackagedContentLoader.RegisteredModule::modId)).toList())
@@ -104,21 +110,36 @@ public final class SoundPriority
             }
         List<String> configured = ContentLoadingConfig.synchronizeSoundPackPriority(List.copyOf(discovered.keySet()));
         List<Source> sources = orderedSources(discovered, configured);
+        List<IndexedSource> indexed = workers.map(sources, SoundPriority::index);
         List<SoundPriorityPlan.Assets> assets = new ArrayList<>();
-        for (Source source : sources)
-            try
+        for (IndexedSource source : indexed)
+        {
+            if (source.assets() != null)
+                assets.add(source.assets());
+            else
             {
-                assets.add(SoundAssetIndex.read(source));
-            }
-            catch (IOException | RuntimeException exception)
-            {
-                FlansLog.log.error("Could not index sound source '{}': {}", source.id(), exception.toString());
+                FlansLog.log.error("Could not index sound source '{}': {}", source.id(), source.error());
                 assets.add(new SoundPriorityPlan.Assets(new com.google.gson.JsonObject(), Map.of()));
             }
+        }
         SoundPriorityPlan plan = SoundPriorityPlan.create(assets);
         state.set(new State(sources, plan, new Gson().toJson(plan.events()).getBytes(StandardCharsets.UTF_8)));
         SoundLengthIndex.replace(plan.lengths());
         FlansLog.log.info("Sound source priority (highest first): {}", sources.stream().map(Source::id).toList());
+    }
+
+    private record IndexedSource(String id, SoundPriorityPlan.Assets assets, String error) {}
+
+    private static IndexedSource index(Source source)
+    {
+        try
+        {
+            return new IndexedSource(source.id(), SoundAssetIndex.read(source), null);
+        }
+        catch (IOException | RuntimeException exception)
+        {
+            return new IndexedSource(source.id(), null, exception.toString());
+        }
     }
 
     static String standaloneId(IContentProvider provider)

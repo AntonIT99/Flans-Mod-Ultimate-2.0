@@ -2,25 +2,25 @@ package com.flansmodultimate.content;
 
 import com.flansmodultimate.util.FlansLog;
 import java.io.IOException;
-import java.util.Map;
 
 /** Remembers successful generation after the final archive swap, independently for client and data. */
 final class ContentProcessingCache
 {
-    private static final int VERSION = 1;
-    private record Entry(int version, Map<String, ContentFileCache.Stamp> files, String definitions,
+    // 2: a fingerprint of the file stamps and the pack's path instead of every stamp.
+    private static final int VERSION = 2;
+    private record Entry(String source, int version, String files, String definitions,
                          boolean assets, boolean data) {}
     private final IContentProvider provider;
     private final String definitions;
-    private final Map<String, ContentFileCache.Stamp> current;
+    private final String current;
     private final Entry previous;
 
     ContentProcessingCache(IContentProvider provider, String definitions)
     {
         this.provider = provider;
         this.definitions = definitions;
-        current = snapshot();
-        previous = ContentFileCache.read(key(), Entry.class);
+        current = fingerprint(false);
+        previous = ContentFileCache.read(ContentFileCache.Kind.GENERATION, key(), Entry.class);
     }
 
     boolean assetsCurrent()
@@ -44,17 +44,21 @@ final class ContentProcessingCache
         // A warm load does not even rewrite the cache file.
         if (!assetsAttempted && !dataAttempted && matches())
             return;
-        Map<String, ContentFileCache.Stamp> finished = snapshot();
+        // Generation has just written to the pack: what it holds now is walked again.
+        String finished = fingerprint(true);
         if (finished != null)
-            ContentFileCache.write(key(), new Entry(VERSION, finished, definitions,
+            ContentFileCache.write(ContentFileCache.Kind.GENERATION, key(), new Entry(ContentFileCache.source(provider.getPath()),
+                VERSION, finished, definitions,
                 assetsAttempted ? assetsGenerated : assetsCurrent(), dataAttempted ? dataGenerated : dataCurrent()));
     }
 
-    private Map<String, ContentFileCache.Stamp> snapshot()
+    private String fingerprint(boolean afterWriting)
     {
         try
         {
-            return ContentFileCache.snapshot(provider, provider.getPath());
+            if (afterWriting && !provider.isArchive())
+                return ContentFileCache.fingerprint(ContentFileCache.freshSnapshot(provider.getPath()));
+            return ContentFileCache.fingerprint(ContentFileCache.snapshot(provider, provider.getPath()));
         }
         catch (IOException e)
         {

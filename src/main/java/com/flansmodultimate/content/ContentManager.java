@@ -28,7 +28,6 @@ import com.flansmodultimate.util.LogUtils;
 import com.flansmodultimate.util.ModCachePaths;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.SoundLengthIndex;
-import com.flansmodultimate.util.TextDecoding;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,23 +41,23 @@ import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.nio.file.DirectoryStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Stream;
 
 import static com.flansmodultimate.content.ContentPackPaths.*;
 
@@ -102,7 +101,6 @@ public class ContentManager
     private static final String CONTENT_STARTUP_LOCK_FILE = ".flansmod-content.lock";
 
     private static final List<IContentProvider> contentPacks = new ArrayList<>();
-    private static final Map<IContentProvider, ArrayList<TypeFile>> files = new HashMap<>();
     private static final Map<IContentProvider, ArrayList<InfoType>> configs = new HashMap<>();
     private static final Map<IContentProvider, String> generationInputs = new HashMap<>();
     private static Set<Path> excludedFlanArchives = Set.of();
@@ -233,171 +231,203 @@ public class ContentManager
 
     private static void readContentPacksLocked()
     {
+        long loadStart = System.nanoTime();
         Path tempRoot = flanFolder.getParent().resolve(".flansmod-temp");
         FileUtils.cleanupFlanTempOnStartup(tempRoot);
-        ContentFileCache.configure(ModCachePaths.content(PlatformPaths.gameDir()),
+        ContentFileCache.configure(ModCachePaths.contentPacks(PlatformPaths.gameDir()),
             ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds());
         PartType.clearDefaultEngines();
-        if (PlatformEnvironment.isClient())
-            legacyTextures.prepare(contentPacks);
+        ContentFileCache.beginRun();
+        // A client's first resource discovery reuses the snapshots, then releases them.
+        boolean keepSnapshots = false;
 
-        for (IContentProvider provider : contentPacks)
+        try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(ContentLoadingConfig.getContentLoadingThreads()))
         {
-            long startTime = System.currentTimeMillis();
+            if (PlatformEnvironment.isClient())
+                legacyTextures.prepare(contentPacks, workers);
 
-            files.putIfAbsent(provider, new ArrayList<>());
-            configs.putIfAbsent(provider, new ArrayList<>());
+            ContentPackReader reader = new ContentPackReader(contentPacks, workers);
+            for (IContentProvider provider : contentPacks)
+                loadContentPack(provider, reader);
 
-            shortnameReferences.putIfAbsent(provider, new HashMap<>());
-            legacyTextures.initialize(provider);
+            long postLoadStart = System.nanoTime();
+            applyMeasuredSoundLengths(workers);
+            resolveDeferredContentReferences();
+            applyMeasuredMuzzles();
+            long end = System.nanoTime();
 
-            if (!provider.isArchive())
-                compileJavaModelsIfNeeded(provider);
-
-            boolean preprocessed = provider.isPreprocessed();
-            boolean preLoadAssets = false;
-            boolean preLoadData = false;
-            boolean unpackArchive = false;
-            ContentProcessingCache processingCache = null;
-            long postTypeStart;
-            long textureIndexNanos = 0L;
-            long idAliasNanos = 0L;
-            long assetCheckNanos = 0L;
-            long dataCheckNanos = 0L;
-            long unpackCheckNanos = 0L;
-
-            try (FileUtils.ArchiveFileSystemCache ignored = FileUtils.cacheArchiveFileSystems())
-            {
-                loadTypes(provider);
-                postTypeStart = System.nanoTime();
-
-                if (PlatformEnvironment.isClient() && provider.shouldIndexAssetsForConflicts())
-                {
-                    long phaseStart = System.nanoTime();
-                    legacyTextures.findDuplicates(provider);
-                    textureIndexNanos = System.nanoTime() - phaseStart;
-                }
-
-                if (!preprocessed)
-                {
-                    processingCache = new ContentProcessingCache(provider, generationInputs.get(provider));
-                    long phaseStart = System.nanoTime();
-                    boolean idAliasNeedsUpdate = AliasFileManager.shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
-                    idAliasNanos = System.nanoTime() - phaseStart;
-
-                    phaseStart = System.nanoTime();
-                    preLoadAssets = PlatformEnvironment.isClient() &&
-                        (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds() || idAliasNeedsUpdate
-                            || !processingCache.assetsCurrent() || ContentPackAssets.aliasesChanged(provider, textureReferences(provider)));
-                    assetCheckNanos = System.nanoTime() - phaseStart;
-
-                    phaseStart = System.nanoTime();
-                    preLoadData = ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds() || idAliasNeedsUpdate
-                        || !processingCache.dataCurrent();
-                    dataCheckNanos = System.nanoTime() - phaseStart;
-
-                    phaseStart = System.nanoTime();
-                    unpackArchive = shouldUnpackArchive(provider, preLoadAssets, preLoadData, idAliasNeedsUpdate);
-                    unpackCheckNanos = System.nanoTime() - phaseStart;
-                }
-            }
-
-            long postTypeNanos = System.nanoTime() - postTypeStart;
-            long archiveCloseNanos = postTypeNanos - textureIndexNanos - idAliasNanos - assetCheckNanos - dataCheckNanos - unpackCheckNanos;
-
-            if (FlansLog.log.isDebugEnabled())
-            {
-                FlansLog.log.debug("{}: Post-type checks completed in {} ms (textures: {} ms, id aliases: {} ms, assets: {} ms, data: {} ms, unpack: {} ms, archive close: {} ms)",
-                    provider.getName(),
-                    formatMilliseconds(postTypeNanos),
-                    formatMilliseconds(textureIndexNanos),
-                    formatMilliseconds(idAliasNanos),
-                    formatMilliseconds(assetCheckNanos),
-                    formatMilliseconds(dataCheckNanos),
-                    formatMilliseconds(unpackCheckNanos),
-                    formatMilliseconds(Math.max(0L, archiveCloseNanos)));
-            }
-
-            if (preprocessed)
-            {
-                long endTime = System.currentTimeMillis();
-                FlansLog.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), endTime - startTime);
-                continue;
-            }
-
-            boolean archiveExtracted = false;
-            boolean assetsComplete = false;
-            boolean dataComplete = false;
-
-            if (unpackArchive)
-            {
-                FlansLog.log.info("Reprocessing {}...", provider.getName());
-                FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
-                archiveExtracted = FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
-            }
-
-            if (archiveExtracted || !provider.isArchive())
-            {
-                if (archiveExtracted)
-                    compileJavaModelsIfNeeded(provider);
-
-                ContentPackAssets.createMcMeta(provider);
-
-                if (preLoadData)
-                    ContentPackAssets.createRecipeJsonFiles(provider, listItems(provider));
-
-                if (preLoadAssets)
-                    ContentPackAssets.generate(provider, configs.get(provider), listItems(provider), listBlocks(provider), textureReferences(provider));
-                else if (preLoadData && !PlatformEnvironment.isClient())
-                    ContentPackSounds.generate(provider);
-
-                assetsComplete = preLoadAssets && ContentPackAssets.outputsPresent(provider, listItems(provider), listBlocks(provider), textureReferences(provider));
-                dataComplete = preLoadData && ContentPackAssets.dataOutputsPresent(provider, listItems(provider));
-
-                AliasFileManager.writeToAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
-            }
-
-            boolean repackSucceeded = true;
-            if (archiveExtracted)
-            {
-                repackSucceeded = FileUtils.repackArchive(provider);
-            }
-
-            if (repackSucceeded && (!provider.isArchive() || !unpackArchive || archiveExtracted))
-            {
-                processingCache.remember(assetsComplete, dataComplete, preLoadAssets, preLoadData);
-                if (PlatformEnvironment.isClient() && (preLoadAssets || preLoadData))
-                    legacyTextures.rememberAfterProcessing(provider);
-            }
-
-            long endTime = System.currentTimeMillis();
-            FlansLog.log.info("Loaded content pack {} in {} ms.", provider.getName(), endTime - startTime);
+            FlansLog.log.info("Loaded {} content pack(s) in {} ms using {} thread(s) (packs: {} ms, sounds, references and muzzles: {} ms).",
+                contentPacks.size(), formatMilliseconds(end - loadStart), workers.threads(),
+                formatMilliseconds(postLoadStart - loadStart), formatMilliseconds(end - postLoadStart));
+            keepSnapshots = PlatformEnvironment.isClient();
+        }
+        finally
+        {
+            ContentFileCache.endRun(keepSnapshots);
         }
 
-        applyMeasuredSoundLengths();
-        resolveDeferredContentReferences();
-        applyMeasuredMuzzles();
-
+        ContentFileCache.pruneIfDue();
         FileUtils.deleteDirectoryIfEmpty(tempRoot);
     }
 
-    private static void loadTypes(IContentProvider provider)
+    private static void loadContentPack(IContentProvider provider, ContentPackReader reader)
+    {
+        long startTime = System.currentTimeMillis();
+
+        configs.putIfAbsent(provider, new ArrayList<>());
+
+        shortnameReferences.putIfAbsent(provider, new HashMap<>());
+        legacyTextures.initialize(provider);
+
+        if (!provider.isArchive())
+            compileJavaModelsIfNeeded(provider);
+
+        boolean preprocessed = provider.isPreprocessed();
+        boolean preLoadAssets = false;
+        boolean preLoadData = false;
+        boolean unpackArchive = false;
+        ContentProcessingCache processingCache = null;
+        long postTypeStart;
+        long textureIndexNanos = 0L;
+        long idAliasNanos = 0L;
+        long assetCheckNanos = 0L;
+        long dataCheckNanos = 0L;
+        long unpackCheckNanos = 0L;
+
+        try (FileUtils.ArchiveFileSystemCache ignored = FileUtils.cacheArchiveFileSystems())
+        {
+            loadTypes(provider, reader);
+            postTypeStart = System.nanoTime();
+
+            if (PlatformEnvironment.isClient() && provider.shouldIndexAssetsForConflicts())
+            {
+                long phaseStart = System.nanoTime();
+                legacyTextures.findDuplicates(provider);
+                textureIndexNanos = System.nanoTime() - phaseStart;
+            }
+
+            if (!preprocessed)
+            {
+                processingCache = new ContentProcessingCache(provider, generationInputs.get(provider));
+                long phaseStart = System.nanoTime();
+                boolean idAliasNeedsUpdate = AliasFileManager.shouldUpdateAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
+                idAliasNanos = System.nanoTime() - phaseStart;
+
+                phaseStart = System.nanoTime();
+                preLoadAssets = PlatformEnvironment.isClient() &&
+                    (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds() || idAliasNeedsUpdate
+                        || !processingCache.assetsCurrent() || ContentPackAssets.aliasesChanged(provider, textureReferences(provider)));
+                assetCheckNanos = System.nanoTime() - phaseStart;
+
+                phaseStart = System.nanoTime();
+                preLoadData = ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds() || idAliasNeedsUpdate
+                    || !processingCache.dataCurrent();
+                dataCheckNanos = System.nanoTime() - phaseStart;
+
+                phaseStart = System.nanoTime();
+                unpackArchive = shouldUnpackArchive(provider, preLoadAssets, preLoadData, idAliasNeedsUpdate);
+                unpackCheckNanos = System.nanoTime() - phaseStart;
+            }
+        }
+
+        long postTypeNanos = System.nanoTime() - postTypeStart;
+        long archiveCloseNanos = postTypeNanos - textureIndexNanos - idAliasNanos - assetCheckNanos - dataCheckNanos - unpackCheckNanos;
+
+        if (FlansLog.log.isDebugEnabled())
+        {
+            FlansLog.log.debug("{}: Post-type checks completed in {} ms (textures: {} ms, id aliases: {} ms, assets: {} ms, data: {} ms, unpack: {} ms, archive close: {} ms)",
+                provider.getName(),
+                formatMilliseconds(postTypeNanos),
+                formatMilliseconds(textureIndexNanos),
+                formatMilliseconds(idAliasNanos),
+                formatMilliseconds(assetCheckNanos),
+                formatMilliseconds(dataCheckNanos),
+                formatMilliseconds(unpackCheckNanos),
+                formatMilliseconds(Math.max(0L, archiveCloseNanos)));
+        }
+
+        if (preprocessed)
+        {
+            long endTime = System.currentTimeMillis();
+            FlansLog.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), endTime - startTime);
+            return;
+        }
+
+        boolean archiveExtracted = false;
+        boolean assetsComplete = false;
+        boolean dataComplete = false;
+
+        if (unpackArchive)
+        {
+            FlansLog.log.info("Reprocessing {}...", provider.getName());
+            FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
+            archiveExtracted = FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
+        }
+
+        if (archiveExtracted || !provider.isArchive())
+        {
+            if (archiveExtracted)
+                compileJavaModelsIfNeeded(provider);
+
+            ContentPackAssets.createMcMeta(provider);
+
+            if (preLoadData)
+                ContentPackAssets.createRecipeJsonFiles(provider, listItems(provider));
+
+            if (preLoadAssets)
+                ContentPackAssets.generate(provider, configs.get(provider), listItems(provider), listBlocks(provider), textureReferences(provider));
+            else if (preLoadData && !PlatformEnvironment.isClient())
+                ContentPackSounds.generate(provider);
+
+            assetsComplete = preLoadAssets && ContentPackAssets.outputsPresent(provider, listItems(provider), listBlocks(provider), textureReferences(provider));
+            dataComplete = preLoadData && ContentPackAssets.dataOutputsPresent(provider, listItems(provider));
+
+            AliasFileManager.writeToAliasMappingFile(ID_ALIAS_FILE, provider, DynamicReference.getAliasMapping(shortnameReferences.get(provider)));
+        }
+
+        // Generation wrote to the folder: snapshots taken before it no longer describe the pack.
+        if ((preLoadAssets || preLoadData) && !provider.isArchive())
+            ContentFileCache.forget(provider.getPath());
+
+        boolean repackSucceeded = true;
+        if (archiveExtracted)
+        {
+            repackSucceeded = FileUtils.repackArchive(provider);
+        }
+
+        if (repackSucceeded && (!provider.isArchive() || !unpackArchive || archiveExtracted))
+        {
+            processingCache.remember(assetsComplete, dataComplete, preLoadAssets, preLoadData);
+            if (PlatformEnvironment.isClient() && (preLoadAssets || preLoadData))
+                legacyTextures.rememberAfterProcessing(provider);
+        }
+
+        long endTime = System.currentTimeMillis();
+        FlansLog.log.info("Loaded content pack {} in {} ms.", provider.getName(), endTime - startTime);
+    }
+
+    private static void loadTypes(IContentProvider provider, ContentPackReader reader)
     {
         long readStart = System.nanoTime();
         long readEnd;
         long registerEnd;
+        int typeFiles;
         try (FileUtils.ArchiveFileSystemCache ignored = FileUtils.cacheArchiveFileSystems())
         {
-            readFiles(provider);
+            ContentPackReader.Result read = reader.take(provider);
+            readAliasMappingFiles(provider, read.aliasFiles());
             readEnd = System.nanoTime();
-            registerConfigs(provider);
+            typeFiles = read.typeFiles().size();
+            registerConfigs(provider, read.typeFiles());
             registerEnd = System.nanoTime();
         }
 
         if (FlansLog.log.isDebugEnabled())
         {
-            FlansLog.log.debug("{}: Types loaded in {} ms (read: {} ms, register: {} ms)",
+            // Read time is the wait for files the workers may already have read ahead.
+            FlansLog.log.debug("{}: {} types loaded in {} ms (read: {} ms, register: {} ms)",
                 provider.getName(),
+                typeFiles,
                 formatMilliseconds(registerEnd - readStart),
                 formatMilliseconds(readEnd - readStart),
                 formatMilliseconds(registerEnd - readEnd));
@@ -414,14 +444,14 @@ public class ContentManager
      * files they play. This runs once every pack has been read, because a type may well play a sound
      * that another pack provides.
      */
-    private static void applyMeasuredSoundLengths()
+    private static void applyMeasuredSoundLengths(ContentLoadingWorkers workers)
     {
         long startTime = System.currentTimeMillis();
         boolean overrideConfiguredLengths = ContentLoadingConfig.isOverrideConfiguredSoundLengths();
 
         // Priority resolves event aliases against the actual selected .ogg, on servers and clients alike.
         SoundLengthIndex.clear();
-        SoundPriority.initialize(contentPacks);
+        SoundPriority.initialize(contentPacks, workers);
         if (!overrideConfiguredLengths)
             SoundLengthIndex.clear();
 
@@ -533,43 +563,19 @@ public class ContentManager
         return ContentPackDiscovery.select(rootPath, excludedFlanArchives);
     }
 
-    private static void readFiles(IContentProvider provider)
+    /** Alias files found at the root of the pack while its definitions were read. */
+    private static void readAliasMappingFiles(IContentProvider provider, Set<String> aliasFiles)
     {
-        try (DirectoryStream<Path> dirStream = FileUtils.createDirectoryStream(provider))
+        if (aliasFiles.contains(ID_ALIAS_FILE))
+            readAliasMappingFile(ID_ALIAS_FILE, provider, shortnameReferences);
+        if (PlatformEnvironment.isClient())
         {
-            dirStream.forEach(path ->
-            {
-                if (Files.isDirectory(path))
-                {
-                    readTypeFolder(path, provider);
-                }
-                else if (Files.isRegularFile(path))
-                {
-                    if (path.getFileName().toString().equals(ID_ALIAS_FILE))
-                    {
-                        readAliasMappingFile(path.getFileName().toString(), provider, shortnameReferences);
-                    }
-                    if (PlatformEnvironment.isClient())
-                    {
-                        if (path.getFileName().toString().equals(ARMOR_TEXTURES_ALIAS_FILE))
-                        {
-                            readAliasMappingFile(path.getFileName().toString(), provider, legacyTextures.getArmorTextureReferences());
-                        }
-                        if (path.getFileName().toString().equals(GUI_TEXTURES_ALIAS_FILE))
-                        {
-                            readAliasMappingFile(path.getFileName().toString(), provider, legacyTextures.getGuiTextureReferences());
-                        }
-                        if (path.getFileName().toString().equals(SKINS_TEXTURES_ALIAS_FILE))
-                        {
-                            readAliasMappingFile(path.getFileName().toString(), provider, legacyTextures.getSkinsTextureReferences());
-                        }
-                    }
-                }
-            });
-        }
-        catch (IOException e)
-        {
-            FlansLog.log.error("Failed to load types in content pack '{}'", provider.getName(), e);
+            if (aliasFiles.contains(ARMOR_TEXTURES_ALIAS_FILE))
+                readAliasMappingFile(ARMOR_TEXTURES_ALIAS_FILE, provider, legacyTextures.getArmorTextureReferences());
+            if (aliasFiles.contains(GUI_TEXTURES_ALIAS_FILE))
+                readAliasMappingFile(GUI_TEXTURES_ALIAS_FILE, provider, legacyTextures.getGuiTextureReferences());
+            if (aliasFiles.contains(SKINS_TEXTURES_ALIAS_FILE))
+                readAliasMappingFile(SKINS_TEXTURES_ALIAS_FILE, provider, legacyTextures.getSkinsTextureReferences());
         }
     }
 
@@ -582,63 +588,14 @@ public class ContentManager
         }
     }
 
-    private static void readTypeFolder(Path folder, IContentProvider provider)
+    private static void registerConfigs(IContentProvider contentPack, List<TypeFile> readTypeFiles)
     {
-        String folderName = folder.getFileName().toString();
-        if (!EnumType.getFoldersList().contains(folderName))
-            return;
-
-        try (Stream<Path> walk = Files.walk(folder))
-        {
-            files.get(provider).addAll(walk
-                .filter(Files::isRegularFile)
-                .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.TXT_EXTENSION))
-                .map(txtFile -> readTypeFile(txtFile, folderName, provider))
-                .filter(Objects::nonNull)
-                .toList()
-            );
-        }
-        catch (IOException e)
-        {
-            FlansLog.log.error("Failed to read '{}' folder in content pack '{}'", folderName, provider.getName(), e);
-        }
-    }
-
-    @Nullable
-    private static TypeFile readTypeFile(Path file, String folderName, IContentProvider provider)
-    {
-        try
-        {
-            List<String> lines = readTypeFileLines(file);
-            stripBomIfPresent(lines);
-            return new TypeFile(file.getFileName().toString(), EnumType.getType(folderName).orElse(null), provider, lines);
-        }
-        catch (IOException e)
-        {
-            FlansLog.log.error("Failed to read '{}/{}' in content pack '{}'", folderName, file.getFileName(), provider.getName(), e);
-            return null;
-        }
-    }
-
-    private static List<String> readTypeFileLines(Path file) throws IOException
-    {
-        return TextDecoding.readLines(file);
-    }
-
-    private static void stripBomIfPresent(List<String> lines)
-    {
-        if (!lines.isEmpty() && !lines.get(0).isEmpty() && lines.get(0).charAt(0) == '\uFEFF')
-        {
-            lines.set(0, lines.get(0).substring(1));
-        }
-    }
-
-    private static void registerConfigs(IContentProvider contentPack)
-    {
-        List<TypeFile> typeFiles = files.get(contentPack).stream()
+        List<TypeFile> typeFiles = readTypeFiles.stream()
             .sorted(Comparator.comparingInt((TypeFile typeFile) -> typeFile.getType().getLoadOrder()).thenComparing(TypeFile::getName))
             .toList();
-        StringBuilder generationInput = new StringBuilder();
+        // Fed file by file rather than concatenated first: the hash is the same, without holding
+        // a copy of the whole pack's text.
+        MessageDigest generationInput = ContentFileCache.newDigest();
 
         for (TypeFile typeFile : typeFiles)
         {
@@ -648,7 +605,7 @@ public class ContentManager
                 // and the categories are the mod's, identical on both sides.
                 ContentFingerprint.record(typeFile);
                 CategoryManager.applyCategoriesToFile(typeFile);
-                generationInput.append(typeFile.getGenerationInput()).append('\n');
+                generationInput.update((typeFile.getGenerationInput() + '\n').getBytes(StandardCharsets.UTF_8));
                 EnumType type = typeFile.getType();
                 Constructor<? extends InfoType> constructor = typeConstructors.get(type);
                 if (constructor == null)
@@ -691,9 +648,9 @@ public class ContentManager
                 LogUtils.logErrorWithoutStacktrace(e);
             }
         }
-        files.clear();
-        generationInput.append(new java.util.TreeMap<>(DynamicReference.getAliasMapping(shortnameReferences.get(contentPack))));
-        generationInputs.put(contentPack, ContentFileCache.hash(generationInput.toString()));
+        generationInput.update(new java.util.TreeMap<>(DynamicReference.getAliasMapping(shortnameReferences.get(contentPack)))
+            .toString().getBytes(StandardCharsets.UTF_8));
+        generationInputs.put(contentPack, HexFormat.of().formatHex(generationInput.digest()));
     }
 
     private static void addConfig(IContentProvider contentPack, InfoType config)
@@ -839,6 +796,8 @@ public class ContentManager
             }
 
             JavaModelCompiler.compileJavaModels(provider);
+            // Compiled classes are written into the pack.
+            ContentFileCache.forget(provider.isArchive() ? provider.getExtractedPath() : provider.getPath());
         }
         catch (LinkageError e)
         {

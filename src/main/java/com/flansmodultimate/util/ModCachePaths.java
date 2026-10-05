@@ -24,9 +24,10 @@ public final class ModCachePaths
         return gameDir.resolve(DIRECTORY_NAME);
     }
 
-    public static Path content(Path gameDir)
+    /** Generation state and asset, sound and model-source indexes of the content packs, one subfolder per kind. */
+    public static Path contentPacks(Path gameDir)
     {
-        return root(gameDir).resolve("content");
+        return root(gameDir).resolve("content-packs");
     }
 
     /** Migrate only the two 2.1 cache files, retaining any existing new-layout entries. */
