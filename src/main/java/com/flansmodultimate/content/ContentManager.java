@@ -25,6 +25,7 @@ import com.flansmodultimate.util.FileUtils;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.JavaModelCompiler;
 import com.flansmodultimate.util.LogUtils;
+import com.flansmodultimate.util.ModCachePaths;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.SoundLengthIndex;
 import com.flansmodultimate.util.TextDecoding;
@@ -132,6 +133,8 @@ public class ContentManager
 
         Path gameDir = PlatformPaths.gameDir().toAbsolutePath().normalize();
         Path normalizedFlanFolder = flanFolder.toAbsolutePath().normalize();
+        FileUtils.runWithFileLock(gameDir.resolve(CONTENT_STARTUP_LOCK_FILE), "Flan cache migration",
+            () -> ModCachePaths.migrate(gameDir));
         boolean isGameDirectory = normalizedFlanFolder.equals(gameDir);
         try
         {
@@ -149,7 +152,7 @@ public class ContentManager
 
         ContentPackRelocator.RelocationResult result = ContentPackRelocator.reconcile(
             PlatformPaths.modsDir(), normalizedFlanFolder,
-            gameDir.resolve(ContentPackRelocator.CACHE_FILE_NAME)
+            ModCachePaths.root(gameDir).resolve(ContentPackRelocator.CACHE_FILE_NAME)
         );
         excludedFlanArchives = result.excludedFromContentLoading();
         result.warnings().forEach(FlansLog.log::warn);
@@ -232,7 +235,7 @@ public class ContentManager
     {
         Path tempRoot = flanFolder.getParent().resolve(".flantemp");
         FileUtils.cleanupFlanTempOnStartup(tempRoot);
-        ContentFileCache.configure(flanFolder.getParent().resolve(".flansmod-content-cache"),
+        ContentFileCache.configure(ModCachePaths.content(PlatformPaths.gameDir()),
             ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds());
         PartType.clearDefaultEngines();
         if (PlatformEnvironment.isClient())

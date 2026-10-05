@@ -23,6 +23,7 @@ import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.ClassLoaderUtils;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModelClassResolver;
+import com.flansmodultimate.util.ModCachePaths;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.AccessLevel;
@@ -236,7 +237,7 @@ final class MuzzleMeasurementCache
 
     static Path file()
     {
-        return PlatformPaths.gameDir().resolve(".flancache").resolve(FILE_NAME);
+        return ModCachePaths.root().resolve(FILE_NAME);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.flansmodultimate.content;
 
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.ModCachePaths;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -37,7 +38,7 @@ import java.util.zip.ZipFile;
 final class ContentPackRelocator
 {
     static final String DESCRIPTOR_PATH = "META-INF/flansmodultimate-content.json";
-    static final String CACHE_FILE_NAME = ".flansmod-pack-locations-cache.json";
+    static final String CACHE_FILE_NAME = ModCachePaths.PACK_LOCATIONS_FILE_NAME;
 
     private static final int CACHE_VERSION = 1;
     private static final int DESCRIPTOR_VERSION = 1;
