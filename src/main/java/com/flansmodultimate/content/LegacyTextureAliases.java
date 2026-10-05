@@ -23,6 +23,7 @@ final class LegacyTextureAliases
     @Getter private final Map<IContentProvider, Map<String, DynamicReference>> skinsTextureReferences = new HashMap<>();
     private final Map<String, Map<String, TextureGroup>> textures = new HashMap<>();
     private final Map<String, Set<String>> reserved = new HashMap<>();
+    private final Map<String, Set<String>> signatureNames = new HashMap<>();
     private final Map<IContentProvider, Map<String, Map<String, Map<String, String>>>> inputs = new HashMap<>();
     private record TextureGroup(IContentProvider provider, Map<String, String> layers) {}
 
@@ -32,6 +33,7 @@ final class LegacyTextureAliases
         {
             textures.put(folder, new HashMap<>());
             reserved.put(folder, new HashSet<>());
+            signatureNames.put(folder, new HashSet<>());
         }
     }
 
@@ -47,7 +49,23 @@ final class LegacyTextureAliases
     {
         for (IContentProvider provider : providers)
             if (provider.shouldIndexAssetsForConflicts())
-                read(provider);
+            {
+                long start = System.nanoTime();
+                try
+                {
+                    PackAssetIndex.legacyNames(provider).forEach((folder, groups) ->
+                        groups.keySet().forEach(name -> {
+                            if (!reserved.get(folder).add(name))
+                                signatureNames.get(folder).add(name);
+                        }));
+                }
+                catch (IOException | RuntimeException e)
+                {
+                    FlansLog.log.error("Could not reserve legacy texture names in '{}': {}", provider.getName(), e.toString());
+                }
+                FlansLog.log.debug("{}: Reserved legacy texture names in {} ms", provider.getName(),
+                    (System.nanoTime() - start) / 1_000_000);
+            }
     }
 
     private Map<String, Map<String, Map<String, String>>> read(IContentProvider provider)
@@ -55,7 +73,7 @@ final class LegacyTextureAliases
         return inputs.computeIfAbsent(provider, ignored -> {
             try
             {
-                Map<String, Map<String, Map<String, String>>> input = PackAssetIndex.legacy(provider);
+                Map<String, Map<String, Map<String, String>>> input = PackAssetIndex.legacy(provider, signatureNames);
                 input.forEach((folder, groups) -> reserved.get(folder).addAll(groups.keySet()));
                 return input;
             }

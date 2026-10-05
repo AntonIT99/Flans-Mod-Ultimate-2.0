@@ -1,6 +1,8 @@
 package com.flansmodultimate.content;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.io.TempDir;
 
 import javax.imageio.ImageIO;
@@ -14,6 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class LegacyTextureAliasesTest
 {
     @TempDir Path root;
+
+    @BeforeEach void configure() { ContentFileCache.configure(root.resolve("cache")); }
+    @AfterEach void reset() { ContentFileCache.configure(null); }
 
     @Test
     void checksBothArmorLayersAndKeepsTheFirstOwnerWhenSharing() throws Exception
@@ -33,6 +38,36 @@ class LegacyTextureAliasesTest
         }
         assertEquals("uniform", aliases.getArmorTextureReferences().get(b).get("uniform").get());
         assertEquals("uniform_2", aliases.getArmorTextureReferences().get(c).get("uniform").get());
+    }
+
+    @Test
+    void sharesEqualPixelsWithDifferentPngEncodings() throws Exception
+    {
+        ContentPack a = pack("a"), b = pack("b");
+        png(a, "uniform_1", 0xffff0000);
+        Path file = b.getAssetsPath().resolve("armor/uniform_1.png");
+        Files.createDirectories(file.getParent());
+        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_3BYTE_BGR);
+        image.setRGB(0, 0, 0xffff0000);
+        ImageIO.write(image, "png", file.toFile());
+        LegacyTextureAliases aliases = new LegacyTextureAliases();
+        aliases.prepare(List.of(a, b)); aliases.initialize(a); aliases.initialize(b);
+        aliases.findDuplicates(a); aliases.findDuplicates(b);
+        assertEquals("uniform", aliases.getArmorTextureReferences().get(b).get("uniform").get());
+    }
+
+    @Test
+    void decodesANewCollisionAfterAnEarlierUniqueNameScan() throws Exception
+    {
+        ContentPack a = pack("a"), b = pack("b");
+        png(a, "uniform_1", 0xffff0000);
+        LegacyTextureAliases initial = new LegacyTextureAliases();
+        initial.prepare(List.of(a)); initial.initialize(a); initial.findDuplicates(a);
+        png(b, "uniform_1", 0xff0000ff);
+        LegacyTextureAliases combined = new LegacyTextureAliases();
+        combined.prepare(List.of(a, b)); combined.initialize(a); combined.initialize(b);
+        combined.findDuplicates(a); combined.findDuplicates(b);
+        assertEquals("uniform_2", combined.getArmorTextureReferences().get(b).get("uniform").get());
     }
 
     @Test

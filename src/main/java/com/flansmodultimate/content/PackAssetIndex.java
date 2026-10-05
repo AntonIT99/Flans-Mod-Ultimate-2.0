@@ -26,7 +26,8 @@ import java.util.stream.Stream;
 /** Persisted texture signatures and parsed model JSON, reused when file metadata is unchanged. */
 final class PackAssetIndex
 {
-    private static final int VERSION = 1;
+    // Version 2 permits name-only entries; older loaders must not compare their empty signatures.
+    private static final int VERSION = 2;
     private record Data(int version, Map<String, ContentFileCache.Stamp> files,
                         Map<String, Map<String, Map<String, String>>> legacy, ModernAssetAliases.Assets modern) {}
     private final String key;
@@ -36,12 +37,15 @@ final class PackAssetIndex
 
     private PackAssetIndex(IContentProvider provider, FileSystem fs) throws IOException
     {
-        this(provider.getAssetsPath(fs), provider.isArchive() ? provider.getPath() : null);
+        this(provider.getAssetsPath(fs), provider.isArchive() ? provider.getPath() : null,
+            provider instanceof PackagedContentProvider ? provider.getPath() : provider.getAssetsPath(fs));
     }
 
-    private PackAssetIndex(Path assets, Path archive) throws IOException
+    private PackAssetIndex(Path assets, Path archive, Path directorySource) throws IOException
     {
-        key = key(assets.toString(), archive == null ? assets.toAbsolutePath().normalize() : archive);
+        // Loader union paths print only their path inside the module. Different modules can
+        // all print "assets/flansmod", so persist the physical source identity as well.
+        key = key(assets.toString(), archive == null ? directorySource : archive);
         files = archive == null ? ContentFileCache.snapshot(assets) : Map.of("archive", ContentFileCache.stamp(archive));
         Data previous = readData(key);
         if (previous != null && files.equals(previous.files()))
@@ -66,7 +70,8 @@ final class PackAssetIndex
     private static Data readData(String key)
     {
         Data data = ContentFileCache.read(key, Data.class);
-        if (data == null || data.version() != VERSION || data.files() == null)
+        // Version 1 contains complete pixel signatures and is safe to reuse without a cold rebuild.
+        if (data == null || (data.version() != 1 && data.version() != VERSION) || data.files() == null)
             return null;
         if (data.legacy() != null && (!data.legacy().keySet().equals(Set.of("armor", "gui", "skins"))
             || data.legacy().values().stream().anyMatch(groups -> groups == null
@@ -88,13 +93,25 @@ final class PackAssetIndex
 
     static Map<String, Map<String, Map<String, String>>> legacy(IContentProvider provider) throws IOException
     {
+        return legacy(provider, (Map<String, Set<String>>) null);
+    }
+
+    /** Empty signatures reserve filenames without decoding textures that cannot collide. */
+    static Map<String, Map<String, Map<String, String>>> legacyNames(IContentProvider provider) throws IOException
+    {
+        return legacy(provider, Map.of());
+    }
+
+    static Map<String, Map<String, Map<String, String>>> legacy(IContentProvider provider,
+        Map<String, Set<String>> signatureNames) throws IOException
+    {
         Data cached = cachedArchive(provider);
-        if (cached != null && cached.legacy() != null)
+        if (cached != null && !needsSignatures(cached.legacy(), signatureNames))
             return cached.legacy();
         FileSystem fs = FileUtils.createFileSystem(provider);
         try
         {
-            return legacy(provider, fs);
+            return legacy(provider, fs, signatureNames);
         }
         finally
         {
@@ -120,13 +137,30 @@ final class PackAssetIndex
 
     static Map<String, Map<String, Map<String, String>>> legacy(IContentProvider provider, FileSystem fs) throws IOException
     {
+        return legacy(provider, fs, null);
+    }
+
+    private static boolean needsSignatures(Map<String, Map<String, Map<String, String>>> legacy,
+        Map<String, Set<String>> signatureNames)
+    {
+        return legacy == null || legacy.entrySet().stream().anyMatch(folder ->
+            folder.getValue().entrySet().stream().anyMatch(group ->
+                (signatureNames == null || signatureNames.getOrDefault(folder.getKey(), Set.of()).contains(group.getKey()))
+                    && group.getValue().containsValue("")));
+    }
+
+    private static Map<String, Map<String, Map<String, String>>> legacy(IContentProvider provider, FileSystem fs,
+        Map<String, Set<String>> signatureNames) throws IOException
+    {
         PackAssetIndex index = new PackAssetIndex(provider, fs);
-        if (index.legacy == null)
+        if (needsSignatures(index.legacy, signatureNames))
         {
+            FlansLog.log.debug("{}: Rebuilding legacy texture index", provider.getName());
             index.legacy = new LinkedHashMap<>();
             Path root = provider.getTextureSourcePath(fs);
             for (String folder : new String[] {"armor", "gui", "skins"})
-                index.legacy.put(folder, readLegacy(root.resolve(folder), folder.equals("armor")));
+                index.legacy.put(folder, readLegacy(root.resolve(folder), folder.equals("armor"),
+                    signatureNames == null ? null : signatureNames.getOrDefault(folder, Set.of())));
             index.save();
         }
         return index.legacy;
@@ -145,7 +179,12 @@ final class PackAssetIndex
 
     static ModernAssetAliases.Assets modern(Path assets, Path archive) throws IOException
     {
-        PackAssetIndex index = new PackAssetIndex(assets, archive);
+        return modern(assets, archive, assets.toAbsolutePath().normalize());
+    }
+
+    static ModernAssetAliases.Assets modern(Path assets, Path archive, Path directorySource) throws IOException
+    {
+        PackAssetIndex index = new PackAssetIndex(assets, archive, directorySource);
         if (index.modern == null)
         {
             index.modern = ModernAssetAliases.read(assets);
@@ -166,7 +205,7 @@ final class PackAssetIndex
         ContentFileCache.write(key, new Data(VERSION, files, legacy, modern));
     }
 
-    private static Map<String, Map<String, String>> readLegacy(Path directory, boolean armor) throws IOException
+    private static Map<String, Map<String, String>> readLegacy(Path directory, boolean armor, Set<String> signatureNames) throws IOException
     {
         Map<String, Map<String, String>> groups = new TreeMap<>();
         if (!Files.isDirectory(directory))
@@ -180,7 +219,8 @@ final class PackAssetIndex
                 String base = FilenameUtils.getBaseName(file.getFileName().toString());
                 String name = ResourceUtils.sanitize(armor ? LegacyTextureAliases.getArmorTextureBaseName(base) : base);
                 String layer = armor ? base.substring(LegacyTextureAliases.getArmorTextureBaseName(base).length()) : "";
-                groups.computeIfAbsent(name, ignored -> new TreeMap<>()).put(layer, pixelSignature(file));
+                groups.computeIfAbsent(name, ignored -> new TreeMap<>()).put(layer,
+                    signatureNames == null || signatureNames.contains(name) ? pixelSignature(file) : "");
             }
         }
         return groups;
@@ -199,11 +239,13 @@ final class PackAssetIndex
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.update(ByteBuffer.allocate(8).putInt(image.getWidth()).putInt(image.getHeight()).array());
             ByteBuffer row = ByteBuffer.allocate(image.getWidth() * Integer.BYTES);
+            int[] pixels = new int[image.getWidth()];
             for (int y = 0; y < image.getHeight(); y++)
             {
                 row.clear();
-                for (int x = 0; x < image.getWidth(); x++)
-                    row.putInt(image.getRGB(x, y));
+                image.getRGB(0, y, image.getWidth(), 1, pixels, 0, image.getWidth());
+                for (int pixel : pixels)
+                    row.putInt(pixel);
                 digest.update(row.array());
             }
             return HexFormat.of().formatHex(digest.digest());
