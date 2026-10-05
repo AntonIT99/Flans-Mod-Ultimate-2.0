@@ -2,10 +2,9 @@ package com.flansmodultimate.platform.render;
 
 import org.lwjgl.system.MemoryStack;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -25,7 +24,6 @@ import java.lang.reflect.Modifier;
  */
 public final class VertexWriterPlatform
 {
-    private static final Logger LOG = FlansMod.Logging.LOGGER;
     /** Candidate APIs on this loader: writer interface, holder of the entity-format token, and the token's field. */
     private static final String[][] WRITERS = {
         {"net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter",
@@ -121,7 +119,7 @@ public final class VertexWriterPlatform
                 try
                 {
                     Binding binding = bind(candidate[0], candidate[1], candidate[2], candidate[3]);
-                    LOG.info("Using {}'s bulk vertex writer for Flan's models", candidate[3]);
+                    FlansLog.log.info("Using {}'s bulk vertex writer for Flan's models", candidate[3]);
                     return binding;
                 }
                 catch (ClassNotFoundException ex)
@@ -130,7 +128,7 @@ public final class VertexWriterPlatform
                 }
                 catch (ReflectiveOperationException | LinkageError | RuntimeException ex)
                 {
-                    LOG.warn("{} is installed, but its bulk vertex writer is unavailable; using single vertex writes", candidate[3], ex);
+                    FlansLog.log.warn("{} is installed, but its bulk vertex writer is unavailable; using single vertex writes", candidate[3], ex);
                 }
             }
             return null;

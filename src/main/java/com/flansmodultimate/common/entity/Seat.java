@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.api.IDriveableType;
 import com.flansmodultimate.api.ISeat;
@@ -213,7 +213,7 @@ public class Seat extends FlanEntity implements IControllable, ISeat
 
     public Seat(Level level, Driveable parent, int seatIndex, SeatInfo info)
     {
-        super(FlansMod.seatEntity.get(), level);
+        super(FlansModEntities.seatEntity.get(), level);
         noPhysics = true;
         bind(parent, seatIndex, info);
         // Legacy EntitySeat starts looking down the middle of its traverse and

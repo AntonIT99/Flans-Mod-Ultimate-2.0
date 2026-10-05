@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
@@ -34,7 +35,7 @@ public final class TeamsMissionResultsScreen extends Screen
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick); int left = width / 2 - 128;
 
         int top = height / 2 - 100;
-        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSMISSIONRESULTS, left, top, 0, 0, 256, 200, 512, 256);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSMISSIONRESULTS, left, top, 0, 0, 256, 200, 512, 256);
         PacketLoadoutState state = LoadoutClientState.get();
         graphics.drawCenteredString(font, title, width / 2, top + 12, 0xFFFFFF);
 

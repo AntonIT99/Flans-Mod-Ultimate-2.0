@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.util.FlansLog;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -70,7 +70,7 @@ public final class ModelTextureFitter
 
         if (rescaled[0])
         {
-            FlansMod.log.warn("Model {} declares a texture size that does not match {} ({}x{}). Its texture coordinates have been rescaled.", model.getClass().getName(), texture, size.width(), size.height());
+            FlansLog.log.warn("Model {} declares a texture size that does not match {} ({}x{}). Its texture coordinates have been rescaled.", model.getClass().getName(), texture, size.width(), size.height());
         }
     }
 
@@ -112,7 +112,7 @@ public final class ModelTextureFitter
         }
         catch (Exception e)
         {
-            FlansMod.log.warn("Could not read the size of texture {}: {}", texture, e.getMessage());
+            FlansLog.log.warn("Could not read the size of texture {}: {}", texture, e.getMessage());
             return Optional.empty();
         }
     }

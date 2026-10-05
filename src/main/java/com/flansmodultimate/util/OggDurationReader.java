@@ -1,10 +1,7 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.FlansMod;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -46,7 +43,6 @@ public final class OggDurationReader
 
     private static final int TICKS_PER_SECOND = 20;
 
-    private static final Logger log = FlansMod.Logging.LOGGER;
 
     /**
      * Reads how many whole ticks the given Ogg Vorbis file plays for, truncated rather than rounded.
@@ -78,7 +74,7 @@ public final class OggDurationReader
         }
         catch (IOException e)
         {
-            log.warn("Could not read the sound length of {}: {}", file, e.toString());
+            FlansLog.log.warn("Could not read the sound length of {}: {}", file, e.toString());
             return OptionalInt.empty();
         }
     }

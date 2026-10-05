@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanEntity;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.driveables.DriveablePosition;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -42,7 +42,7 @@ public class Wheel extends FlanEntity
 
     public Wheel(Level level, Driveable parent, int wheelIndex)
     {
-        super(FlansMod.wheelEntity.get(), level);
+        super(FlansModEntities.wheelEntity.get(), level);
         noPhysics = true;
         bind(parent, wheelIndex);
     }

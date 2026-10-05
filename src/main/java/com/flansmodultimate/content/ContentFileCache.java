@@ -1,11 +1,9 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
-
+import com.flansmodultimate.util.FlansLog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +21,6 @@ import java.util.stream.Stream;
 /** External, disposable caches. Validation reads metadata, never unchanged resource contents. */
 final class ContentFileCache
 {
-    private static final Logger LOGGER = FlansMod.Logging.LOGGER;
     private static final Gson GSON = new GsonBuilder().create();
     private static Path directory;
     private static boolean bypass;
@@ -82,7 +79,7 @@ final class ContentFileCache
         }
         catch (IOException | RuntimeException e)
         {
-            LOGGER.debug("Ignoring invalid content cache '{}': {}", file, e.toString());
+            FlansLog.log.debug("Ignoring invalid content cache '{}': {}", file, e.toString());
             return null;
         }
     }
@@ -105,7 +102,7 @@ final class ContentFileCache
         }
         catch (IOException e)
         {
-            LOGGER.warn("Could not write content cache '{}': {}", file, e.toString());
+            FlansLog.log.warn("Could not write content cache '{}': {}", file, e.toString());
         }
     }
 

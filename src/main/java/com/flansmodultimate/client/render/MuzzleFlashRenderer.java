@@ -7,7 +7,7 @@ import com.flansmod.client.model.ModelFlash;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.types.GunType;
@@ -76,7 +76,7 @@ public final class MuzzleFlashRenderer
             return;
         if (model instanceof ModelFlash flash)
         {
-            ResourceLocation texture = model == DEFAULT_FLASH ? FlansMod.TEXTURE_DEFAULTFLASH : gun.getFlashTexture();
+            ResourceLocation texture = model == DEFAULT_FLASH ? FlansModTextures.TEXTURE_DEFAULTFLASH : gun.getFlashTexture();
             flash.renderFlash(Math.max(0, Math.min(2, frame)), poseStack,
                 buffer.getBuffer(CustomRenderType.entityEmissiveAlpha(texture)), LightTexture.FULL_BRIGHT,
                 packedOverlay, 1F, 1F, 1F, 1F, flashScale);

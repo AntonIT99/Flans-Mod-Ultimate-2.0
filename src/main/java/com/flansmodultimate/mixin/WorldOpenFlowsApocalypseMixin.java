@@ -1,8 +1,8 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoice;
 import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoiceScreen;
+import com.flansmodultimate.util.FlansLog;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -52,7 +52,7 @@ public abstract class WorldOpenFlowsApocalypseMixin
         }
         catch (IOException | RuntimeException exception)
         {
-            FlansMod.log.error("Could not record the Apocalypse choice for world '{}'", levelId, exception);
+            FlansLog.log.error("Could not record the Apocalypse choice for world '{}'", levelId, exception);
             minecraft.setScreen(new AlertScreen(() -> minecraft.setScreen(lastScreen),
                 Component.translatable("gui.flansmodultimate.apocalypse_choice.title"),
                 Component.translatable("gui.flansmodultimate.apocalypse_choice.save_failed", exception.getMessage())));

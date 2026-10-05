@@ -13,14 +13,15 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.core.registries.BuiltInRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -124,7 +125,7 @@ public final class ApocalypseWorldgen
     public static void runDeferredSpawn(ServerLevel level, WorldgenSpawnMarker.Kind kind, Vec3 position, RandomSource random)
     {
         BlockPos pos = BlockPos.containing(position);
-        FlansMod.log.debug("Apocalypse worldgen {} spawn at {}", kind, pos);
+        FlansLog.log.debug("Apocalypse worldgen {} spawn at {}", kind, pos);
         switch (kind)
         {
             case SURVIVOR -> spawnSurvivor(level, pos);
@@ -162,7 +163,7 @@ public final class ApocalypseWorldgen
     {
         if (!canWrite(level, BlockPos.containing(x, y, z)))
             return;
-        FlansMod.log.debug("Apocalypse worldgen {} marker at ({}, {}, {})", kind, x, y, z);
+        FlansLog.log.debug("Apocalypse worldgen {} marker at ({}, {}, {})", kind, x, y, z);
         WorldgenSpawnMarker.place(level, kind, x, y, z, random);
     }
 

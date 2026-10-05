@@ -10,7 +10,7 @@ import com.flansmod.client.model.TrackLinkAnimation;
 import com.flansmod.client.model.TrackLinkLod;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
@@ -349,7 +349,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     {
         DriveableType type = driveable.getConfigType();
         if (type == null)
-            return FlansMod.FALLBACK_TEXTURE;
+            return FlansModTextures.FALLBACK_TEXTURE;
 
         Paintjob paintjob = type.getPaintjob(driveable.getPaintjobId());
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();

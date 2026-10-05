@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.inventory;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
+
+import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.item.PartItem;
 import com.flansmodultimate.common.types.DriveableType;
@@ -41,7 +43,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
 
     public DriveableCraftingMenu(int containerId, Inventory playerInventory, BlockPos workbenchPos)
     {
-        super(FlansMod.driveableCraftingMenu.get(), containerId);
+        super(FlansModMenus.driveableCraftingMenu.get(), containerId);
         this.playerInventory = playerInventory;
         access = ContainerLevelAccess.create(playerInventory.player.level(), workbenchPos);
     }
@@ -175,7 +177,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
     @Override
     public boolean stillValid(@NotNull Player player)
     {
-        return access.evaluate((level, pos) -> (level.getBlockState(pos).is(FlansMod.vehicleCraftingTable.get()) || level.getBlockState(pos).is(FlansMod.gunWorkbench.get()))
+        return access.evaluate((level, pos) -> (level.getBlockState(pos).is(FlansModBlocks.vehicleCraftingTable.get()) || level.getBlockState(pos).is(FlansModBlocks.gunWorkbench.get()))
             && player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= MAX_DISTANCE_SQUARED, false);
     }
 

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render.entity;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -67,7 +68,7 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
     public void render(@NotNull T entity, float yaw, float partialTick, @NotNull PoseStack poseStack,
                        @NotNull MultiBufferSource buffer, int packedLight)
     {
-        VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(FlansMod.TEXTURE_FLAGPOLE));
+        VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(FlansModTextures.TEXTURE_FLAGPOLE));
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
 
@@ -101,6 +102,6 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
     @Override
     public ResourceLocation getTextureLocation(@NotNull T entity)
     {
-        return FlansMod.TEXTURE_FLAGPOLE;
+        return FlansModTextures.TEXTURE_FLAGPOLE;
     }
 }

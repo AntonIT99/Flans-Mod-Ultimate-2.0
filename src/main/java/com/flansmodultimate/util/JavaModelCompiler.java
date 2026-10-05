@@ -76,7 +76,7 @@ public final class JavaModelCompiler
         }
         catch (IOException e)
         {
-            FlansMod.log.warn("Could not check Java model sources in content pack '{}': {}", provider.getName(), e.toString());
+            FlansLog.log.warn("Could not check Java model sources in content pack '{}': {}", provider.getName(), e.toString());
             return false;
         }
     }
@@ -91,7 +91,7 @@ public final class JavaModelCompiler
         }
         catch (IOException e)
         {
-            FlansMod.log.warn("Could not scan Java model sources in content pack '{}': {}", provider.getName(), e.toString());
+            FlansLog.log.warn("Could not scan Java model sources in content pack '{}': {}", provider.getName(), e.toString());
             return;
         }
 
@@ -101,7 +101,7 @@ public final class JavaModelCompiler
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null)
         {
-            FlansMod.log.warn("Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.", provider.getName());
+            FlansLog.log.warn("Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.", provider.getName());
             return;
         }
 
@@ -118,17 +118,17 @@ public final class JavaModelCompiler
             if (transformedSources.isEmpty())
                 return;
 
-            FlansMod.log.info("Compiling {} Java model source(s) in content pack '{}'", transformedSources.size(), provider.getName());
+            FlansLog.log.info("Compiling {} Java model source(s) in content pack '{}'", transformedSources.size(), provider.getName());
             if (!compileSources(compiler, packRoot, tempClassRoot, transformedSources))
                 return;
 
             int classCount = copyTransformedClasses(tempClassRoot, packRoot);
             writeManifest(packRoot, plan.sourceHashes());
-            FlansMod.log.info("Compiled {} Java model source(s) into {} class file(s) for content pack '{}'", transformedSources.size(), classCount, provider.getName());
+            FlansLog.log.info("Compiled {} Java model source(s) into {} class file(s) for content pack '{}'", transformedSources.size(), classCount, provider.getName());
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to compile Java model sources in content pack '{}'", provider.getName(), e);
+            FlansLog.log.error("Failed to compile Java model sources in content pack '{}'", provider.getName(), e);
         }
         finally
         {
@@ -195,7 +195,7 @@ public final class JavaModelCompiler
         }
         catch (IOException e)
         {
-            FlansMod.log.warn("Could not read Java model compiler manifest '{}': {}", manifestFile.toAbsolutePath(), e.toString());
+            FlansLog.log.warn("Could not read Java model compiler manifest '{}': {}", manifestFile.toAbsolutePath(), e.toString());
             return Optional.empty();
         }
     }
@@ -374,14 +374,14 @@ public final class JavaModelCompiler
         diagnosticList.stream()
             .filter(diagnostic -> diagnostic.getKind() == Diagnostic.Kind.ERROR)
             .limit(MAX_DIAGNOSTICS_TO_LOG)
-            .forEach(diagnostic -> FlansMod.log.error("Java model compile error in {} at line {}: {}",
+            .forEach(diagnostic -> FlansLog.log.error("Java model compile error in {} at line {}: {}",
                 diagnostic.getSource() == null ? "unknown source" : diagnostic.getSource().getName(),
                 diagnostic.getLineNumber(),
                 diagnostic.getMessage(Locale.ROOT)));
 
         long omitted = diagnosticList.stream().filter(diagnostic -> diagnostic.getKind() == Diagnostic.Kind.ERROR).count() - MAX_DIAGNOSTICS_TO_LOG;
         if (omitted > 0)
-            FlansMod.log.error("Omitted {} additional Java model compile error(s).", omitted);
+            FlansLog.log.error("Omitted {} additional Java model compile error(s).", omitted);
     }
 
     private static String transformSource(String source)

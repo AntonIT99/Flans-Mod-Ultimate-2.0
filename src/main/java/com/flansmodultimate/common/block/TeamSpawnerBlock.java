@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.block;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
+
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.platform.block.FlanEntityBlock;
@@ -70,7 +71,7 @@ public final class TeamSpawnerBlock extends FlanEntityBlock
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type)
     {
-        return level.isClientSide ? null : createTickerHelper(type, FlansMod.teamSpawnerBlockEntity.get(), TeamSpawnerBlockEntity::serverTick);
+        return level.isClientSide ? null : createTickerHelper(type, FlansModBlocks.teamSpawnerBlockEntity.get(), TeamSpawnerBlockEntity::serverTick);
     }
 
     @Override

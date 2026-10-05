@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanSpawnEntity;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamObject;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +54,7 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
 
     public Flag(ServerLevel level, Flagpole base)
     {
-        this(FlansMod.flagEntity.get(), level);
+        this(FlansModEntities.flagEntity.get(), level);
         setBaseId(base.getUUID());
         setTeamId(base.getOwnerId());
         setPos(base.getX(), base.getY() + 2D, base.getZ());

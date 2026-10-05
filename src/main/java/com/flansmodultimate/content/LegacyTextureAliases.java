@@ -1,8 +1,8 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -61,7 +61,7 @@ final class LegacyTextureAliases
             }
             catch (IOException | RuntimeException e)
             {
-                FlansMod.log.error("Could not index legacy textures in '{}': {}", provider.getName(), e.toString());
+                FlansLog.log.error("Could not index legacy textures in '{}': {}", provider.getName(), e.toString());
                 return Map.of();
             }
         });
@@ -82,7 +82,7 @@ final class LegacyTextureAliases
                 if (existing != null && !existing.layers().equals(layers))
                 {
                     if (provider.isPreprocessed())
-                        FlansMod.log.error("Conflicting texture '{}/{}' in read-only bundled content [{}] and [{}]. Rename one of the bundled textures.", folder, original, provider.getConflictDisplayName(), existing.provider().getConflictDisplayName());
+                        FlansLog.log.error("Conflicting texture '{}/{}' in read-only bundled content [{}] and [{}]. Rename one of the bundled textures.", folder, original, provider.getConflictDisplayName(), existing.provider().getConflictDisplayName());
                     else
                     {
                         String persisted = references.containsKey(original) ? references.get(original).get() : original;
@@ -115,7 +115,7 @@ final class LegacyTextureAliases
         }
         catch (IOException e)
         {
-            FlansMod.log.warn("Could not cache processed legacy textures '{}': {}", provider.getName(), e.toString());
+            FlansLog.log.warn("Could not cache processed legacy textures '{}': {}", provider.getName(), e.toString());
         }
         finally
         {

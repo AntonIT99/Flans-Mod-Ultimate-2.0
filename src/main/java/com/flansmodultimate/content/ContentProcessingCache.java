@@ -1,16 +1,12 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
-
-import org.slf4j.Logger;
-
+import com.flansmodultimate.util.FlansLog;
 import java.io.IOException;
 import java.util.Map;
 
 /** Remembers successful generation after the final archive swap, independently for client and data. */
 final class ContentProcessingCache
 {
-    private static final Logger LOGGER = FlansMod.Logging.LOGGER;
     private static final int VERSION = 1;
     private record Entry(int version, Map<String, ContentFileCache.Stamp> files, String definitions,
                          boolean assets, boolean data) {}
@@ -62,7 +58,7 @@ final class ContentProcessingCache
         }
         catch (IOException e)
         {
-            LOGGER.warn("Could not validate content generation cache for '{}': {}", provider.getName(), e.toString());
+            FlansLog.log.warn("Could not validate content generation cache for '{}': {}", provider.getName(), e.toString());
             return null;
         }
     }

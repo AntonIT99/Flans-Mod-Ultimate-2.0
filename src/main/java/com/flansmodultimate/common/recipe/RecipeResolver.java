@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.content.IContentProvider;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.NoArgsConstructor;
@@ -65,7 +66,7 @@ public final class RecipeResolver
         if (stack.isPresent())
             return stack.get();
 
-        FlansMod.log.warn("Could not find {} in recipe", rawId);
+        FlansLog.log.warn("Could not find {} in recipe", rawId);
         return ItemStack.EMPTY;
     }
 

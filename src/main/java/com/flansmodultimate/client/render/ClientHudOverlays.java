@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DriveableArmorDebugHud;
 import com.flansmodultimate.client.digitalammo.LocalBulletManager;
@@ -487,7 +488,7 @@ public final class ClientHudOverlays
         float alpha = Math.max((ModClient.getHitMarkerTime() - 10F + partialTick) / 10F, 0F);
 
         ModClientConfig config = ModClientConfig.get();
-        drawCenteredHitMarker(g, FlansMod.TEXTURE_GUI_BASICHITMARKER, sw, sh,
+        drawCenteredHitMarker(g, FlansModTextures.TEXTURE_GUI_BASICHITMARKER, sw, sh,
             config.hitMarkerRed, config.hitMarkerGreen, config.hitMarkerBlue, alpha * config.hitMarkerAlpha);
     }
 
@@ -533,7 +534,7 @@ public final class ClientHudOverlays
         if (customTexture != null)
             renderFullScreenOverlay(g, customTexture, sw, sh, red, green, blue, alpha);
         else
-            drawCenteredHitMarker(g, ModClientConfig.get().hdHitMarker ? FlansMod.TEXTURE_GUI_FMUHITMARKERHD : FlansMod.TEXTURE_GUI_FMUHITMARKER, sw, sh, red, green, blue, alpha);
+            drawCenteredHitMarker(g, ModClientConfig.get().hdHitMarker ? FlansModTextures.TEXTURE_GUI_FMUHITMARKERHD : FlansModTextures.TEXTURE_GUI_FMUHITMARKER, sw, sh, red, green, blue, alpha);
     }
 
     /**
@@ -580,7 +581,7 @@ public final class ClientHudOverlays
         float remaining = ModClient.getFlashTime() - partialTick;
         float fadeTicks = Math.max(1F, ModClient.getFlashDuration() * FLASH_FADE_FRACTION);
         float alpha = Mth.clamp(remaining / fadeTicks, 0F, 1F);
-        renderFullScreenOverlay(g, FlansMod.TEXTURE_GUI_FLASH, sw, sh, 1F, 1F, 1F, alpha);
+        renderFullScreenOverlay(g, FlansModTextures.TEXTURE_GUI_FLASH, sw, sh, 1F, 1F, 1F, alpha);
     };
 
     /** Flan's Mod Ultimate 1.7.10 style red flash shown while the player is wounded. */
@@ -589,7 +590,7 @@ public final class ClientHudOverlays
             return;
 
         float alpha = Mth.clamp((ModClient.getWoundedTime() - partialTick) / WOUNDED_FLASH_FADE_TICKS, 0F, 1F);
-        renderFullScreenOverlay(g, FlansMod.TEXTURE_GUI_BLOOD, sw, sh, 1F, 1F, 1F, alpha);
+        renderFullScreenOverlay(g, FlansModTextures.TEXTURE_GUI_BLOOD, sw, sh, 1F, 1F, 1F, alpha);
     };
 
     /** Half a pixel of shift when the given screen dimension is odd, so an even sized image stays exactly centered. */
@@ -885,7 +886,7 @@ public final class ClientHudOverlays
 
         int numTypes = Math.min(LocalBulletManager.getNumTypes(), BAR_X_OFFSETS.length);
 
-        RenderSystem.setShaderTexture(0, FlansMod.TEXTURE_GUI_AMMOGUI);
+        RenderSystem.setShaderTexture(0, FlansModTextures.TEXTURE_GUI_AMMOGUI);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -893,7 +894,7 @@ public final class ClientHudOverlays
         int bgX = 10;
         int bgY = sh - 50;
 
-        g.blit(FlansMod.TEXTURE_GUI_AMMOGUI, bgX, bgY, 0, 30, 120, 12, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+        g.blit(FlansModTextures.TEXTURE_GUI_AMMOGUI, bgX, bgY, 0, 30, 120, 12, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
         for (int i = 0; i < numTypes; i++)
         {
@@ -907,8 +908,8 @@ public final class ClientHudOverlays
                 int barX = (int) Math.round(bgX + BAR_X_OFFSETS[i]);
                 int barY = bgY + 12;
 
-                RenderSystem.setShaderTexture(0, FlansMod.TEXTURE_GUI_AMMOGUI);
-                g.blit(FlansMod.TEXTURE_GUI_AMMOGUI, barX, barY, 2, 18, barWidth, BAR_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+                RenderSystem.setShaderTexture(0, FlansModTextures.TEXTURE_GUI_AMMOGUI);
+                g.blit(FlansModTextures.TEXTURE_GUI_AMMOGUI, barX, barY, 2, 18, barWidth, BAR_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
             }
         }
 
@@ -940,7 +941,7 @@ public final class ClientHudOverlays
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-        g.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES, centre - TEAM_INFO_HALF_WIDTH, 0,
+        g.blit(FlansModTextures.TEXTURE_GUI_TEAMSSCORES, centre - TEAM_INFO_HALF_WIDTH, 0,
             TEAM_INFO_U, TEAM_INFO_V, TEAM_INFO_HALF_WIDTH * 2, TEAM_INFO_HEIGHT, 256, 256);
 
         if (teamGame)
@@ -982,7 +983,7 @@ public final class ClientHudOverlays
     private static void drawTeamColourBlock(GuiGraphics g, int x, int u, int colour)
     {
         RenderSystem.setShaderColor(((colour >> 16) & 0xFF) / 255F, ((colour >> 8) & 0xFF) / 255F, (colour & 0xFF) / 255F, 1F);
-        g.blit(FlansMod.TEXTURE_GUI_TEAMSSCORES, x, 0, u, TEAM_COLOUR_V, TEAM_COLOUR_WIDTH, TEAM_INFO_HEIGHT, 256, 256);
+        g.blit(FlansModTextures.TEXTURE_GUI_TEAMSSCORES, x, 0, u, TEAM_COLOUR_V, TEAM_COLOUR_WIDTH, TEAM_INFO_HEIGHT, 256, 256);
     }
 
     @Nullable
@@ -1025,7 +1026,7 @@ public final class ClientHudOverlays
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-                g.blit(FlansMod.TEXTURE_GUI_HEADSHOTSYMBOL, sw - font.width(KILL_MESSAGE_GAP + victim), iconY,
+                g.blit(FlansModTextures.TEXTURE_GUI_HEADSHOTSYMBOL, sw - font.width(KILL_MESSAGE_GAP + victim), iconY,
                     HEADSHOT_SYMBOL_SIZE, HEADSHOT_SYMBOL_SIZE, 0F, 0F,
                     HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET, HEADSHOT_SYMBOL_SHEET);
             }

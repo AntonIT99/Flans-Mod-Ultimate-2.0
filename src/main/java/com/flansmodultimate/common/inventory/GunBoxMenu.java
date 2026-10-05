@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.block.GunBoxBlock;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class GunBoxMenu extends AbstractContainerMenu
 
     public GunBoxMenu(int id, Inventory playerInv, BlockPos pos, GunBoxBlock block)
     {
-        super(FlansMod.gunBoxMenu.get(), id);
+        super(FlansModMenus.gunBoxMenu.get(), id);
         this.pos = pos;
         this.access = ContainerLevelAccess.create(playerInv.player.level(), pos);
         this.block = block;

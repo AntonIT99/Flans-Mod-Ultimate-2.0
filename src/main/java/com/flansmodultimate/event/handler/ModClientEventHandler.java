@@ -1,6 +1,10 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
+import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.FlansModItems;
+import com.flansmodultimate.FlansModParticles;
 import com.flansmodultimate.client.EntityCullingCompat;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.gui.ModMenuScreens;
@@ -53,6 +57,7 @@ import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.client.HudOverlayPlatform;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.registry.RegistryEntry;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.api.distmarker.Dist;
@@ -128,7 +133,7 @@ public final class ModClientEventHandler
                         entity != null && gunItem.isChargingThrow(entity, stack) ? 1F : 0F);
                 }
             }
-            ItemProperties.register(FlansMod.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
+            ItemProperties.register(FlansModItems.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
                 (stack, level, entity, seed) -> ItemOpStick.getMode(stack).ordinal());
         });
     }
@@ -206,22 +211,22 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event)
     {
-        event.registerEntityRenderer(FlansMod.bulletEntity.get(), BulletRenderer::new);
-        event.registerEntityRenderer(FlansMod.grenadeEntity.get(), GrenadeRenderer::new);
-        event.registerEntityRenderer(FlansMod.thrownGunEntity.get(), ThrownGunRenderer::new);
-        event.registerEntityRenderer(FlansMod.deployedGunEntity.get(), DeployableGunRenderer::new);
-        event.registerEntityRenderer(FlansMod.aaGunEntity.get(), AAGunRenderer::new);
-        event.registerEntityRenderer(FlansMod.parachuteEntity.get(), ParachuteRenderer::new);
-        event.registerEntityRenderer(FlansMod.planeEntity.get(), DriveableRenderer::new);
-        event.registerEntityRenderer(FlansMod.vehicleEntity.get(), DriveableRenderer::new);
-        event.registerEntityRenderer(FlansMod.mechaEntity.get(), DriveableRenderer::new);
-        event.registerEntityRenderer(FlansMod.seatEntity.get(), InvisibleEntityRenderer::new);
-        event.registerEntityRenderer(FlansMod.wheelEntity.get(), InvisibleEntityRenderer::new);
-        event.registerEntityRenderer(FlansMod.flagpoleEntity.get(), TeamObjectRenderer::new);
-        event.registerEntityRenderer(FlansMod.flagEntity.get(), TeamObjectRenderer::new);
-        event.registerEntityRenderer(FlansMod.gunItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
-        event.registerEntityRenderer(FlansMod.teamItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
-        event.registerBlockEntityRenderer(FlansMod.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.bulletEntity.get(), BulletRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.grenadeEntity.get(), GrenadeRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.thrownGunEntity.get(), ThrownGunRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.deployedGunEntity.get(), DeployableGunRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.aaGunEntity.get(), AAGunRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.parachuteEntity.get(), ParachuteRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.planeEntity.get(), DriveableRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.vehicleEntity.get(), DriveableRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.mechaEntity.get(), DriveableRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.seatEntity.get(), InvisibleEntityRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.wheelEntity.get(), InvisibleEntityRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.flagpoleEntity.get(), TeamObjectRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.flagEntity.get(), TeamObjectRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.gunItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
+        event.registerEntityRenderer(FlansModEntities.teamItemEntity.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
+        event.registerBlockEntityRenderer(FlansModBlocks.itemHolderBlockEntity.get(), ItemHolderRenderer::new);
     }
 
     @SubscribeEvent
@@ -233,23 +238,23 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerParticles(RegisterParticleProvidersEvent event)
     {
-        event.registerSpriteSet(FlansMod.afterburnParticle.get(), AfterburnParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.bigSmokeParticle.get(), BigSmokeParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.blastPuffParticle.get(), BlastPuffParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.debris1Particle.get(), Debris1Particle.Provider::new);
-        event.registerSpriteSet(FlansMod.explodeParticle.get(), LegacyExplodeParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.fireExplosionParticle.get(), FireExplosionParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.flareParticle.get(), FlareParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.flashParticle.get(), FlashParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.fmFlameParticle.get(), FmFlameParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.fmMuzzleFlashParticle.get(), FmMuzzleFlashParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.fmSmokeParticle.get(), FmSmokeParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.fmTracerParticle.get(), FmTracerParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.fmTracerGreenParticle.get(), FmTracerParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.fmTracerRedParticle.get(), FmTracerParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.rocketExhaustParticle.get(), RocketExhaustParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.smokeBurstParticle.get(), SmokeBurstParticle.Provider::new);
-        event.registerSpriteSet(FlansMod.smokeGrenadeParticle.get(), SmokeGrenadeParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.afterburnParticle.get(), AfterburnParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.bigSmokeParticle.get(), BigSmokeParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.blastPuffParticle.get(), BlastPuffParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.debris1Particle.get(), Debris1Particle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.explodeParticle.get(), LegacyExplodeParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.fireExplosionParticle.get(), FireExplosionParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.flareParticle.get(), FlareParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.flashParticle.get(), FlashParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.fmFlameParticle.get(), FmFlameParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.fmMuzzleFlashParticle.get(), FmMuzzleFlashParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.fmSmokeParticle.get(), FmSmokeParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.fmTracerParticle.get(), FmTracerParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.fmTracerGreenParticle.get(), FmTracerParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.fmTracerRedParticle.get(), FmTracerParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.rocketExhaustParticle.get(), RocketExhaustParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.smokeBurstParticle.get(), SmokeBurstParticle.Provider::new);
+        event.registerSpriteSet(FlansModParticles.smokeGrenadeParticle.get(), SmokeGrenadeParticle.Provider::new);
     }
 
     /** Team spawners paint their overlay decal in the colour of the team that owns them. */
@@ -261,7 +266,7 @@ public final class ModClientEventHandler
                 return TeamSpawnerBlockEntity.UNOWNED_COLOUR;
             return level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner
                 ? spawner.getTeamColour() : TeamSpawnerBlockEntity.UNOWNED_COLOUR;
-        }, FlansMod.playerSpawner.get(), FlansMod.itemSpawner.get(), FlansMod.vehicleSpawner.get());
+        }, FlansModBlocks.playerSpawner.get(), FlansModBlocks.itemSpawner.get(), FlansModBlocks.vehicleSpawner.get());
     }
 
     @SubscribeEvent
@@ -269,7 +274,7 @@ public final class ModClientEventHandler
     {
         // A spawner in the inventory belongs to no team yet
         event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF,
-            FlansMod.playerSpawnerItem.get(), FlansMod.itemSpawnerItem.get(), FlansMod.vehicleSpawnerItem.get());
+            FlansModItems.playerSpawnerItem.get(), FlansModItems.itemSpawnerItem.get(), FlansModItems.vehicleSpawnerItem.get());
 
         event.register((stack, tintIndex) -> {
             Item item = stack.getItem();
@@ -330,7 +335,7 @@ public final class ModClientEventHandler
             )
             .forEach(e -> {
                 if (soundManager.getSoundEvent(e.getKey()) == null)
-                    FlansMod.log.warn("Missing sound {}: {}", e.getKey(), e.getValue());
+                    FlansLog.log.warn("Missing sound {}: {}", e.getKey(), e.getValue());
             });
     }
 }

@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.DriveableInput;
@@ -64,7 +64,7 @@ public class Vehicle extends Driveable
     public Vehicle(Level level, VehicleType type, double x, double y, double z, float yaw,
                    @Nullable Player placer, ItemStack sourceStack)
     {
-        super(FlansMod.vehicleEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
+        super(FlansModEntities.vehicleEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
     }
 
     @Nullable

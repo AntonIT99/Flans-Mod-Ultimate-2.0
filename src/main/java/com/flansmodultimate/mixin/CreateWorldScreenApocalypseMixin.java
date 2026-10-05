@@ -1,9 +1,9 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
 import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoice;
 import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoiceScreen;
+import com.flansmodultimate.util.FlansLog;
 import com.mojang.datafixers.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -121,7 +121,7 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
         Pair<Path, PackRepository> selection = getDataPackSelectionSettings(configuration);
         if (selection == null)
         {
-            FlansMod.log.warn("Could not prepare the data packs to {} the Apocalypse dimension", withApocalypse ? "add" : "remove");
+            FlansLog.log.warn("Could not prepare the data packs to {} the Apocalypse dimension", withApocalypse ? "add" : "remove");
             minecraft.setScreen(createScreen);
             return;
         }

@@ -1,10 +1,9 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -27,7 +26,6 @@ import java.util.stream.Stream;
 /** Persisted texture signatures and parsed model JSON, reused when file metadata is unchanged. */
 final class PackAssetIndex
 {
-    private static final Logger LOGGER = FlansMod.Logging.LOGGER;
     private static final int VERSION = 1;
     private record Data(int version, Map<String, ContentFileCache.Stamp> files,
                         Map<String, Map<String, Map<String, String>>> legacy, ModernAssetAliases.Assets modern) {}
@@ -195,7 +193,7 @@ final class PackAssetIndex
             BufferedImage image = ImageIO.read(input);
             if (image == null)
             {
-                LOGGER.warn("Invalid PNG texture '{}'", file);
+                FlansLog.log.warn("Invalid PNG texture '{}'", file);
                 return "invalid:" + file.getFileName();
             }
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

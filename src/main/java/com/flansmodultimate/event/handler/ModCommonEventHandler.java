@@ -2,6 +2,7 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.EnchantmentItemRepositorySource;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModClientConfig;
@@ -31,9 +32,9 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event)
     {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansMod.itemHolderBlockEntity.get(),
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansModBlocks.itemHolderBlockEntity.get(),
             (blockEntity, direction) -> blockEntity.getItemHandler());
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansMod.paintjobTableBlockEntity.get(),
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansModBlocks.paintjobTableBlockEntity.get(),
             (blockEntity, direction) -> blockEntity.getItemHandler());
     }
 

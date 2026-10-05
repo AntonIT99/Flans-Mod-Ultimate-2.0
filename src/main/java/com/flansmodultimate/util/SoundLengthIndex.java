@@ -1,7 +1,5 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.FlansMod;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -9,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +47,6 @@ public final class SoundLengthIndex
     /** Recorded for sounds that could not be measured, so an unreadable file does not force a rescan every load. */
     private static final int TICKS_UNKNOWN = 0;
 
-    private static final Logger log = FlansMod.Logging.LOGGER;
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
@@ -139,7 +135,7 @@ public final class SoundLengthIndex
         index.add(FIELD_SOUNDS, entries);
 
         FileUtils.writeString(indexFile, GSON.toJson(index));
-        log.debug("Indexed the length of {} sound(s) in {}", sounds.size(), indexFile);
+        FlansLog.log.debug("Indexed the length of {} sound(s) in {}", sounds.size(), indexFile);
     }
 
     /**
@@ -176,7 +172,7 @@ public final class SoundLengthIndex
             Path file = soundsDir.resolve(soundFile.getKey());
             OptionalInt ticks = OggDurationReader.readDurationTicks(file);
             if (ticks.isEmpty())
-                log.warn("Could not determine the length of sound file {}", file);
+                FlansLog.log.warn("Could not determine the length of sound file {}", file);
 
             sounds.put(soundFile.getKey(), new IndexedSound(toSoundEventKey(soundFile.getKey()),
                 soundFile.getValue(), ticks.orElse(TICKS_UNKNOWN)));
@@ -200,7 +196,7 @@ public final class SoundLengthIndex
         }
         catch (IOException e)
         {
-            log.error("Could not scan sounds folder {}", soundsDir, e);
+            FlansLog.log.error("Could not scan sounds folder {}", soundsDir, e);
             return Collections.emptyMap();
         }
     }
@@ -229,7 +225,7 @@ public final class SoundLengthIndex
         }
         catch (IOException | RuntimeException e)
         {
-            log.warn("Could not read the sound length index {}: {}", indexFile, e.toString());
+            FlansLog.log.warn("Could not read the sound length index {}: {}", indexFile, e.toString());
             return Optional.empty();
         }
     }

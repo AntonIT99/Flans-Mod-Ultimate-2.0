@@ -4,7 +4,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import com.flansmod.client.model.ModelDriveable;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
@@ -12,6 +11,7 @@ import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.render.VertexPlatform;
+import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -339,7 +339,7 @@ public final class DriveableImpostorCache
             captureBuffer = null;
             entry.failed = true;
             release(entry);
-            FlansMod.log.warn("Disabling generated LOD impostor for model {} and texture {}: {}",
+            FlansLog.log.warn("Disabling generated LOD impostor for model {} and texture {}: {}",
                 entry.model.getClass().getName(), entry.sourceTexture, e.toString());
         }
     }

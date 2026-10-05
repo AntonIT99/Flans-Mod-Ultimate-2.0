@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
 import com.flansmodultimate.common.entity.Mecha;
@@ -78,7 +78,7 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
 
     public MechaInventoryMenu(int containerId, Inventory playerInventory, @Nullable Mecha mecha)
     {
-        super(FlansMod.mechaInventoryMenu.get(), containerId);
+        super(FlansModMenus.mechaInventoryMenu.get(), containerId);
         this.mecha = mecha;
         mechaInventory = mecha == null || mecha.getDriveableData() == null
             ? new SimpleContainer(1) : mecha.getDriveableData();

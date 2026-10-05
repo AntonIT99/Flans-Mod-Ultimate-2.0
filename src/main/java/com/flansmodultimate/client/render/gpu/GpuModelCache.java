@@ -18,6 +18,7 @@ import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.mixin.BufferSourceAccessor;
 import com.flansmodultimate.platform.render.ShaderPlatform;
+import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -47,7 +48,6 @@ import java.util.function.Supplier;
 /** Bounded, render-thread-only GPU batches of local rigid geometry with per-draw pose palettes. */
 public final class GpuModelCache
 {
-    private static final Logger LOG = FlansMod.Logging.LOGGER;
     /**
      * Palette entries per draw. The palette is a std140 uniform block of 144-byte entries (mat4 pose, mat3
      * normal, tint, light and overlay), so 96 fit the 16 KiB block size OpenGL 3.1 guarantees. Fancy track
@@ -114,7 +114,7 @@ public final class GpuModelCache
                 int size = block == GL31C.GL_INVALID_INDEX ? 0 : GL31C.glGetActiveUniformBlocki(program, block, GL31C.GL_UNIFORM_BLOCK_DATA_SIZE);
                 if (block == GL31C.GL_INVALID_INDEX || size <= 0 || size > GL11C.glGetInteger(GL31C.GL_MAX_UNIFORM_BLOCK_SIZE))
                 {
-                    LOG.warn("GPU model shader lacks a usable pose palette block; using standard model rendering");
+                    FlansLog.log.warn("GPU model shader lacks a usable pose palette block; using standard model rendering");
                     return;
                 }
                 GL31C.glUniformBlockBinding(program, block, PALETTE_BINDING);
@@ -124,7 +124,7 @@ public final class GpuModelCache
         }
         catch (IOException | RuntimeException ex)
         {
-            LOG.warn("GPU model shader unavailable; using standard model rendering", ex);
+            FlansLog.log.warn("GPU model shader unavailable; using standard model rendering", ex);
         }
     }
 
@@ -241,7 +241,7 @@ public final class GpuModelCache
         if (next <= current) return;
         grownBytes = next;
         meshes.limits(next, entryLimit(next));
-        LOG.info("GPU model cache budget grown from {} to {} MiB after repeated evictions of visible meshes",
+        FlansLog.log.info("GPU model cache budget grown from {} to {} MiB after repeated evictions of visible meshes",
             current / MIB, next / MIB);
     }
 
@@ -262,7 +262,7 @@ public final class GpuModelCache
         }
         catch (RuntimeException | LinkageError ex)
         {
-            LOG.debug("Free video memory unavailable for GPU model cache growth", ex);
+            FlansLog.log.debug("Free video memory unavailable for GPU model cache growth", ex);
             return -1;
         }
     }
@@ -289,7 +289,7 @@ public final class GpuModelCache
         }
         catch (RuntimeException | LinkageError ex)
         {
-            LOG.debug("Video memory size unavailable for the GPU model cache budget", ex);
+            FlansLog.log.debug("Video memory size unavailable for the GPU model cache budget", ex);
             return 0;
         }
     }
@@ -656,7 +656,7 @@ public final class GpuModelCache
         {
             clear();
             failed = true;
-            LOG.warn("GPU model rendering failed; using standard rendering until reload", exception);
+            FlansLog.log.warn("GPU model rendering failed; using standard rendering until reload", exception);
         }
     }
 }

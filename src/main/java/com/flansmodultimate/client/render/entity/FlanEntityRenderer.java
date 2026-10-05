@@ -2,7 +2,7 @@ package com.flansmodultimate.client.render.entity;
 
 import com.flansmod.client.model.ModelBomb;
 import com.flansmod.client.model.ModelBullet;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
@@ -113,6 +113,6 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
             if (infoType != null)
                 return infoType.getTexture();
         }
-        return FlansMod.FALLBACK_TEXTURE;
+        return FlansModTextures.FALLBACK_TEXTURE;
     }
 }

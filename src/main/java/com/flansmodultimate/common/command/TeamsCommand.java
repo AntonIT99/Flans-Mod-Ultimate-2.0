@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModItems;
+
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.teams.GameType;
 import com.flansmodultimate.common.teams.PlayerStats;
@@ -615,8 +616,8 @@ public final class TeamsCommand
     private static int giveKit(CommandContext<CommandSourceStack> context) throws com.mojang.brigadier.exceptions.CommandSyntaxException
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        for (ItemStack stack : List.of(new ItemStack(FlansMod.opStick.get()), new ItemStack(FlansMod.flagpoleItem.get(), 16),
-            new ItemStack(FlansMod.playerSpawnerItem.get(), 16), new ItemStack(FlansMod.itemSpawnerItem.get(), 16), new ItemStack(FlansMod.vehicleSpawnerItem.get(), 16)))
+        for (ItemStack stack : List.of(new ItemStack(FlansModItems.opStick.get()), new ItemStack(FlansModItems.flagpoleItem.get(), 16),
+            new ItemStack(FlansModItems.playerSpawnerItem.get(), 16), new ItemStack(FlansModItems.itemSpawnerItem.get(), 16), new ItemStack(FlansModItems.vehicleSpawnerItem.get(), 16)))
             if (!player.getInventory().add(stack)) player.drop(stack, false);
         return success(context, "Teams operator kit added to your inventory");
     }

@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.DriveablePart;
@@ -19,7 +21,6 @@ import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.EnumMovement;
@@ -117,7 +118,7 @@ public class Mecha extends Driveable
     public Mecha(Level level, MechaType type, double x, double y, double z, float yaw,
                  @Nullable Player placer, ItemStack sourceStack)
     {
-        this(FlansMod.mechaEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
+        this(FlansModEntities.mechaEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
     }
 
     /** Placement constructor for subclasses registered under their own entity type. */

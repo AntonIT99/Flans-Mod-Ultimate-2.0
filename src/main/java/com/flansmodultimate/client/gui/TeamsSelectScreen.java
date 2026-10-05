@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketTeamsState;
@@ -88,11 +89,11 @@ public final class TeamsSelectScreen extends Screen
             return;
         int left = width / 2 - 128;
         int top = height / 2 - panelHeight / 2;
-        graphics.blit(FlansMod.TEXTURE_GUI_TEAMS, left, top, 0, 0, 256, 22, 256, 256);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top, 0, 0, 256, 22, 256, 256);
         int count = classMenu ? state.getClassChoices().size() : state.getTeamChoices().size();
         for (int row = 0; row < count; row++)
-            graphics.blit(FlansMod.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * row, 0, classMenu ? 23 : 48, 256, 24, 256, 256);
-        graphics.blit(FlansMod.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * count, 0, 73, 256, 7, 256, 256);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * row, 0, classMenu ? 23 : 48, 256, 24, 256, 256);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMS, left, top + 22 + 24 * count, 0, 73, 256, 7, 256, 256);
         graphics.drawString(font, title, left + 8, top + 7, 0xFFFFFF, true);
         super.render(graphics, mouseX, mouseY, partialTick);
 

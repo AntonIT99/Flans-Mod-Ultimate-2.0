@@ -5,6 +5,7 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.StringOrNumberListMapAdapter;
 import com.google.gson.Gson;
@@ -13,7 +14,6 @@ import com.google.gson.reflect.TypeToken;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +36,6 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValue;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CategoryManager
 {
-    private static final Logger log = FlansMod.Logging.LOGGER;
     private static final String EMPTY_CATEGORY_CONFIG = "{}\n";
     private static final Map<EnumType, List<Category>> categories = new EnumMap<>(EnumType.class);
     private static final Map<String, List<Category>> itemCategories = new HashMap<>();
@@ -71,7 +70,7 @@ public final class CategoryManager
 
     static void loadCategories(Path configDir, Path defaultConfigDir, boolean useDefaults)
     {
-        log.info("Loading categories");
+        FlansLog.log.info("Loading categories");
         categories.clear();
         itemCategories.clear();
 
@@ -95,12 +94,12 @@ public final class CategoryManager
             }
             catch (IOException e)
             {
-                log.error("Failed to copy {}", defaultFile, e);
+                FlansLog.log.error("Failed to copy {}", defaultFile, e);
             }
 
             List<Category> resolved = new CategoryResolver(type, loadForType(type, defaultFile),
                 loadForType(type, userFile), useDefaults)
-                .resolve(message -> log.error("{}", message));
+                .resolve(message -> FlansLog.log.error("{}", message));
             categories.put(type, resolved);
             for (Category category : resolved)
                 for (String item : category.getItems())
@@ -108,10 +107,10 @@ public final class CategoryManager
 
             int numCategoriesForType = categories.get(type).size();
             if (numCategoriesForType > 0)
-                log.info("Loaded {} categories for {} type", numCategoriesForType, type.getIdentifier());
+                FlansLog.log.info("Loaded {} categories for {} type", numCategoriesForType, type.getIdentifier());
         }
 
-        log.info("Finished loading categories");
+        FlansLog.log.info("Finished loading categories");
     }
 
     private static void ensureUserCategoryFileExists(Path file)
@@ -129,13 +128,13 @@ public final class CategoryManager
         }
         catch (IOException e)
         {
-            log.error("Failed to create empty category config file {}", file.toAbsolutePath(), e);
+            FlansLog.log.error("Failed to create empty category config file {}", file.toAbsolutePath(), e);
         }
     }
 
     private static List<Category> loadForType(EnumType type, Path file)
     {
-        log.debug("Loading categories for type {} from file {}", type, file.toAbsolutePath());
+        FlansLog.log.debug("Loading categories for type {} from file {}", type, file.toAbsolutePath());
 
         if (!Files.exists(file))
             return List.of();
@@ -146,7 +145,7 @@ public final class CategoryManager
             Map<String, Category> map = gson.fromJson(reader, mapType);
             if (map == null)
             {
-                log.warn("Category config file {} for type {} is empty or invalid. Using empty category map.", file.toAbsolutePath(), type);
+                FlansLog.log.warn("Category config file {} for type {} is empty or invalid. Using empty category map.", file.toAbsolutePath(), type);
                 return List.of();
             }
 
@@ -158,12 +157,12 @@ public final class CategoryManager
             }
 
             List<Category> list = map.values().stream().toList();
-            log.debug("Successfully parsed {} categories from {}", list.size(), file.toAbsolutePath());
+            FlansLog.log.debug("Successfully parsed {} categories from {}", list.size(), file.toAbsolutePath());
             return list;
         }
         catch (IOException e)
         {
-            log.error("Failed to read category config file {} for type {}", file.toAbsolutePath(), type, e);
+            FlansLog.log.error("Failed to read category config file {} for type {}", file.toAbsolutePath(), type, e);
             return List.of();
         }
     }

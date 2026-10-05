@@ -1,7 +1,8 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
 import com.flansmodultimate.common.guns.FireableGun;
@@ -9,7 +10,6 @@ import com.flansmodultimate.common.guns.FiredShot;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.AAGunType;
@@ -18,12 +18,14 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -139,7 +141,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     public AAGun(Level level, AAGunType type, double x, double y, double z, @Nullable Player placer)
     {
-        super(FlansMod.aaGunEntity.get(), level);
+        super(FlansModEntities.aaGunEntity.get(), level);
         configType = type;
         setShortName(type.getShortName());
         initType();
@@ -544,7 +546,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
                 configType = aaGunType;
             if (configType == null)
             {
-                FlansMod.log.warn("Unknown AA gun type {}, discarding.", shortname);
+                FlansLog.log.warn("Unknown AA gun type {}, discarding.", shortname);
                 discard();
                 return;
             }
@@ -565,7 +567,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         catch (Exception e)
         {
             discard();
-            FlansMod.log.warn("Failed to read AA gun spawn data", e);
+            FlansLog.log.warn("Failed to read AA gun spawn data", e);
         }
     }
 
@@ -662,7 +664,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Error removing AA gun entity", e);
+            FlansLog.log.error("Error removing AA gun entity", e);
         }
 
         super.remove(reason);

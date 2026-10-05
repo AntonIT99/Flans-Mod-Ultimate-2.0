@@ -1,7 +1,7 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
-
+import com.flansmodultimate.util.FlansLog;
+import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.chat.Component;
@@ -95,7 +95,7 @@ public class ModRepositorySource extends FolderRepositorySource
         }
         catch (IOException ioexception)
         {
-            FlansMod.log.warn("Failed to list packs in {}", folder, ioexception);
+            FlansLog.log.warn("Failed to list packs in {}", folder, ioexception);
         }
     }
 

@@ -1,7 +1,8 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModSounds;
+import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumFireMode;
@@ -400,7 +401,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * Bullet insert reload sound
      */
     @Getter
-    protected String bulletInsert = FlansMod.SOUND_DEFAULT_SHELL_INSERT;
+    protected String bulletInsert = FlansModSounds.SOUND_DEFAULT_SHELL_INSERT;
     /**
      * Pump Sound
      */
@@ -442,7 +443,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * The sound to play when switching between firing modes. Defaults to the built-in firing mode switch sound
      */
     @Getter
-    protected String modeSwitchSound = FlansMod.SOUND_SWITCH_FIRING_MODE;
+    protected String modeSwitchSound = FlansModSounds.SOUND_SWITCH_FIRING_MODE;
     /**
      * The sound to play while holding the weapon in the hand
      */
@@ -1050,7 +1051,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         casingTexture = loadTexture(casingTextureName, this);
         flashModelClassName = findModelClass(flashModelName, contentPack);
         flashTexture = StringUtils.isBlank(flashTextureName) && DEFAULT_FLASH_MODEL_CLASS.equalsIgnoreCase(flashModelClassName)
-            ? FlansMod.TEXTURE_DEFAULTFLASH
+            ? FlansModTextures.TEXTURE_DEFAULTFLASH
             : loadTexture(flashTextureName, this);
         hitTexture = StringUtils.isBlank(hitTextureName) ? null : loadTexture(hitTextureName, this);
         muzzleFlashModelClassName = findModelClass(muzzleFlashModelName, contentPack);
@@ -1205,7 +1206,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Override
     public ResourceLocation getZoomOverlay()
     {
-        return Optional.ofNullable(overlay).orElse(FlansMod.FALLBACK_TEXTURE);
+        return Optional.ofNullable(overlay).orElse(FlansModTextures.FALLBACK_TEXTURE);
     }
 
     public List<ShootableType> getAmmoTypes()
@@ -2003,7 +2004,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             if (StringUtils.isNotBlank(sound))
                 return sound;
         }
-        return FlansMod.SOUND_SWITCH_FIRING_MODE;
+        return FlansModSounds.SOUND_SWITCH_FIRING_MODE;
     }
 
     /**

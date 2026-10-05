@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanSpawnEntity;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.TeamsManager;
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +63,7 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
 
     public Flagpole(Level level, Vec3 position)
     {
-        this(FlansMod.flagpoleEntity.get(), level);
+        this(FlansModEntities.flagpoleEntity.get(), level);
         setPos(position);
     }
 

@@ -5,6 +5,7 @@ import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -65,7 +66,7 @@ public final class ContentLoadingConfig
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Could not read config file {}", FILE_NAME, e);
+            FlansLog.log.error("Could not read config file {}", FILE_NAME, e);
             writeDefaults(file);
         }
     }
@@ -78,7 +79,7 @@ public final class ContentLoadingConfig
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Could not write config file {}", FILE_NAME, e);
+            FlansLog.log.error("Could not write config file {}", FILE_NAME, e);
         }
     }
 
@@ -135,7 +136,7 @@ public final class ContentLoadingConfig
         }
         catch (java.io.IOException exception)
         {
-            FlansMod.log.error("Could not write config file {}", FILE_NAME, exception);
+            FlansLog.log.error("Could not write config file {}", FILE_NAME, exception);
         }
     }
 
@@ -148,7 +149,7 @@ public final class ContentLoadingConfig
         catch (Exception exception)
         {
             soundPackPriority = SoundPriorityConfig.reconcile(soundPackPriority, discovered);
-            FlansMod.log.error("Could not save sound priorities in {}", FILE_NAME, exception);
+            FlansLog.log.error("Could not save sound priorities in {}", FILE_NAME, exception);
         }
         return soundPackPriority;
     }
@@ -161,7 +162,7 @@ public final class ContentLoadingConfig
         if (value instanceof String str)
             return str;
 
-        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected string.", key, FILE_NAME, value);
+        FlansLog.log.warn("Ignoring invalid {} in {}: {}. Expected string.", key, FILE_NAME, value);
         return defaultValue;
     }
 
@@ -173,7 +174,7 @@ public final class ContentLoadingConfig
         if (value instanceof Boolean bool)
             return bool;
 
-        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected boolean.", key, FILE_NAME, value);
+        FlansLog.log.warn("Ignoring invalid {} in {}: {}. Expected boolean.", key, FILE_NAME, value);
         return defaultValue;
     }
 
@@ -189,7 +190,7 @@ public final class ContentLoadingConfig
                 return (int)longValue;
         }
 
-        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected integer.", key, FILE_NAME, value);
+        FlansLog.log.warn("Ignoring invalid {} in {}: {}. Expected integer.", key, FILE_NAME, value);
         return defaultValue;
     }
 }

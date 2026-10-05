@@ -1,13 +1,14 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanSpawnEntity;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ToolType;
-import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +58,7 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
 
     public Parachute(Level level, ToolType type, Player player)
     {
-        this(FlansMod.parachuteEntity.get(), level);
+        this(FlansModEntities.parachuteEntity.get(), level);
         configType = type;
         setShortName(type.getShortName());
         setPos(player.getX(), player.getY() + START_Y_OFFSET, player.getZ());
@@ -242,7 +243,7 @@ public class Parachute extends FlanSpawnEntity implements SpawnDataEntity, IFlan
     {
         if (resolveType() == null)
         {
-            FlansMod.log.warn("Unknown parachute type {}, discarding.", getShortName());
+            FlansLog.log.warn("Unknown parachute type {}, discarding.", getShortName());
             discard();
         }
     }

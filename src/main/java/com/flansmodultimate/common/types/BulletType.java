@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
@@ -311,9 +312,9 @@ public class BulletType extends ShootableType
             blockHitFXScale = (float) ((Math.log(explosionRadius + 2) / Math.log(2.15)) + 0.05);
 
         if (textureName.isBlank())
-            textureName = FlansMod.DEFAULT_BULLET_TEXTURE;
+            textureName = FlansModTextures.DEFAULT_BULLET_TEXTURE;
         if (trailTexture.isBlank())
-            trailTexture = FlansMod.DEFAULT_BULLET_TRAIL_TEXTURE;
+            trailTexture = FlansModTextures.DEFAULT_BULLET_TRAIL_TEXTURE;
 
         if (roundsPerItem > 1)
         {

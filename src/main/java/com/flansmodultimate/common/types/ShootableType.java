@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.explosions.FlanExplosion;
@@ -8,6 +7,7 @@ import com.flansmodultimate.common.explosions.FragmentationModel;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.IContentProvider;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -674,7 +674,7 @@ public abstract class ShootableType extends InfoType
         for (String groupName : groupNames)
         {
             if (getAmmoGroup(groupName) == null)
-                FlansMod.log.warn("UseAmmoGroup refers to unknown ammo group '{}' in {}", groupName, source);
+                FlansLog.log.warn("UseAmmoGroup refers to unknown ammo group '{}' in {}", groupName, source);
         }
     }
 

@@ -14,6 +14,7 @@ import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
+import com.flansmodultimate.util.FlansLog;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -788,7 +789,7 @@ public final class ModClientConfig
         }
         catch (Exception e)
         {
-            FlansMod.log.warn("Could not read {} before the initial client resource load; encrypted content will remain disabled for this launch.", CONFIG_FILE_NAME, e);
+            FlansLog.log.warn("Could not read {} before the initial client resource load; encrypted content will remain disabled for this launch.", CONFIG_FILE_NAME, e);
             return false;
         }
     }
@@ -867,7 +868,7 @@ public final class ModClientConfig
     {
         if (!configSpec.isLoaded())
         {
-            FlansMod.log.warn("Ignoring a client option change made before {} was loaded", CONFIG_FILE_NAME);
+            FlansLog.log.warn("Ignoring a client option change made before {} was loaded", CONFIG_FILE_NAME);
             return false;
         }
 

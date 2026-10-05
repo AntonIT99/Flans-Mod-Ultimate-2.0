@@ -1,10 +1,10 @@
 package com.flansmodultimate.apocalyse.client;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.platform.world.LevelFilePlatform;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -83,7 +83,7 @@ public final class ApocalypseWorldChoice
         catch (IOException | RuntimeException exception)
         {
             // Leave an unreadable world to Minecraft's own error handling rather than asking about it.
-            FlansMod.log.warn("Could not read {} to check for the Apocalypse dimension", levelData, exception);
+            FlansLog.log.warn("Could not read {} to check for the Apocalypse dimension", levelData, exception);
             return false;
         }
     }
@@ -120,7 +120,7 @@ public final class ApocalypseWorldChoice
             LevelFilePlatform.writeCompressed(root, written);
             LevelFilePlatform.safeReplaceFile(levelData, written, access.getLevelPath(LevelResource.OLD_LEVEL_DATA_FILE));
         }
-        FlansMod.log.info("World '{}' {} the Apocalypse dimension", levelId, withApocalypse ? "now includes" : "keeps out");
+        FlansLog.log.info("World '{}' {} the Apocalypse dimension", levelId, withApocalypse ? "now includes" : "keeps out");
     }
 
     private static boolean containsString(ListTag list, String value)

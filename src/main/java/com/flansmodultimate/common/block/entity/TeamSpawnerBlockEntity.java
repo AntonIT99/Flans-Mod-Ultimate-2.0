@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.block.entity;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
+
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
@@ -79,7 +80,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
 
     public TeamSpawnerBlockEntity(BlockPos pos, BlockState state, Mode mode)
     {
-        super(FlansMod.teamSpawnerBlockEntity.get(), pos, state);
+        super(FlansModBlocks.teamSpawnerBlockEntity.get(), pos, state);
         this.mode = mode;
     }
 

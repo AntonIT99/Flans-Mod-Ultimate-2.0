@@ -7,6 +7,7 @@ import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.util.FlansLog;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -159,7 +160,7 @@ public final class EnchantmentModule
             }
         }
 
-        FlansMod.log.debug("Juggernaut capped incoming damage {} to {}", event.amount(), threshold);
+        FlansLog.log.debug("Juggernaut capped incoming damage {} to {}", event.amount(), threshold);
         event.setAmount(threshold);
     }
 

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.particle;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -38,7 +39,7 @@ public final class LegacyParticleRenderTypes
     };
 
     /** Countermeasure flares kept their own texture instead of a particle atlas sprite. */
-    public static final ParticleRenderType FLARE = createForTexture("FLAN_LEGACY_FLARE", FlansMod.TEXTURE_GUI_FLARE);
+    public static final ParticleRenderType FLARE = createForTexture("FLAN_LEGACY_FLARE", FlansModTextures.TEXTURE_GUI_FLARE);
 
     private LegacyParticleRenderTypes() {}
 

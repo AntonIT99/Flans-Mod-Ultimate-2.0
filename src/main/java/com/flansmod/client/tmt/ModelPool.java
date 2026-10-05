@@ -1,7 +1,7 @@
 package com.flansmod.client.tmt;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformPaths;
+import com.flansmodultimate.util.FlansLog;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -38,8 +38,8 @@ public class ModelPool
         }
         catch(Exception e)
         {
-            FlansMod.log.error("A new {} could not be initialized.", modelClass.getName());
-            FlansMod.log.error(e.getMessage());
+            FlansLog.log.error("A new {} could not be initialized.", modelClass.getName());
+            FlansLog.log.error(e.getMessage());
             return null;
         }
 
@@ -55,7 +55,7 @@ public class ModelPool
 
         if(modelFile == null || !modelFile.exists())
         {
-            FlansMod.log.warn("The model with the name {} does not exist.", file);
+            FlansLog.log.warn("The model with the name {} does not exist.", file);
             return null;
         }
 

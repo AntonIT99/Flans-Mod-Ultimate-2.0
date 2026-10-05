@@ -1,11 +1,11 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.recipe.RecipeDataCompatibility;
 import com.flansmodultimate.common.recipe.RecipeJsonGenerator;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.SoundLengthIndex;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -138,7 +138,7 @@ final class ContentPackAssets
             }
             catch (IOException e)
             {
-                FlansMod.log.error("Failed to create {}", mcMetaFile, e);
+                FlansLog.log.error("Failed to create {}", mcMetaFile, e);
             }
         }
     }

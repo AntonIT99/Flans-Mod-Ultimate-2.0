@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.particle;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModParticles;
+
 import com.flansmodultimate.common.physics.ModPhysics;
 import org.jetbrains.annotations.NotNull;
 
@@ -66,7 +67,7 @@ public class BigSmokeParticle extends ParticleBase
             double ry = yo + dy * 1 + 7 * level.random.nextDouble();
             double rz = zo + dz * 1 + 5 * level.random.nextDouble();
 
-            ParticleHelper.spawnSubParticle(FlansMod.rocketExhaustParticle.get(), rx, ry, rz);
+            ParticleHelper.spawnSubParticle(FlansModParticles.rocketExhaustParticle.get(), rx, ry, rz);
 
             disperseTimer = 2;
         }

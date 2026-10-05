@@ -3,6 +3,7 @@ package com.flansmodultimate.client.render;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.AccessLevel;
@@ -128,7 +129,7 @@ public final class PlayerSkinOverrides
         Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(texture);
         if (resource.isEmpty())
         {
-            FlansMod.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} was not found",
+            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} was not found",
                 playerClass.getSkinOverride(), playerClassName, texture);
             return Optional.empty();
         }
@@ -147,7 +148,7 @@ public final class PlayerSkinOverrides
                 if (height * 2 == width)
                     return Optional.of(convertLegacySkin(texture, image, scale));
             }
-            FlansMod.log.warn("Ignoring SkinOverride '{}' of player class {}: {}x{} is not a player skin layout"
+            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: {}x{} is not a player skin layout"
                     + " (expected a square sheet, or a 2:1 sheet for the old skin format,"
                     + " sized in multiples of {} pixels)",
                 playerClass.getSkinOverride(), playerClassName, width, height, SKIN_WIDTH);
@@ -155,7 +156,7 @@ public final class PlayerSkinOverrides
         }
         catch (IOException | IllegalArgumentException exception)
         {
-            FlansMod.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} could not be read: {}",
+            FlansLog.log.warn("Ignoring SkinOverride '{}' of player class {}: texture {} could not be read: {}",
                 playerClass.getSkinOverride(), playerClassName, texture, exception.getMessage());
             return Optional.empty();
         }
@@ -174,7 +175,7 @@ public final class PlayerSkinOverrides
         {
             Minecraft.getInstance().getTextureManager()
                 .register(converted, new DynamicTexture(toModernLayout(legacy, scale)));
-            FlansMod.log.debug("Rebuilt the legacy {}x{} SkinOverride texture {} into the modern skin layout",
+            FlansLog.log.debug("Rebuilt the legacy {}x{} SkinOverride texture {} into the modern skin layout",
                 legacy.getWidth(), legacy.getHeight(), source);
         }
         return converted;

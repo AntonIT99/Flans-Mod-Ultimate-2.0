@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.particle;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModParticles;
+
 import com.flansmodultimate.common.physics.ModPhysics;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,7 +69,7 @@ public class FlareParticle extends ParticleBase
             double py = yo + dy * i;
             double pz = zo + dz * i;
             
-            ParticleHelper.spawnSubParticle(FlansMod.fmFlameParticle.get(), px, py, pz);
+            ParticleHelper.spawnSubParticle(FlansModParticles.fmFlameParticle.get(), px, py, pz);
         }
 
         if (onGround)

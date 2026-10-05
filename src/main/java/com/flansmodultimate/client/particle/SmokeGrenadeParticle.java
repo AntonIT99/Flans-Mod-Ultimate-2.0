@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.particle;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModParticles;
+
 import com.flansmodultimate.common.physics.ModPhysics;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,8 +64,8 @@ public class SmokeGrenadeParticle extends ParticleBase
 
         if (dischargeTime < 0)
         {
-            ParticleHelper.spawnSubParticle(FlansMod.smokeBurstParticle.get(), x, y, z);
-            ParticleHelper.spawnSubParticle(FlansMod.bigSmokeParticle.get(), x, y, z);
+            ParticleHelper.spawnSubParticle(FlansModParticles.smokeBurstParticle.get(), x, y, z);
+            ParticleHelper.spawnSubParticle(FlansModParticles.bigSmokeParticle.get(), x, y, z);
             remove();
         }
         
@@ -79,7 +80,7 @@ public class SmokeGrenadeParticle extends ParticleBase
             double py = yo + dy * i;
             double pz = zo + dz * i;
 
-            ParticleHelper.spawnSubParticle(FlansMod.explodeParticle.get(), px, py, pz);
+            ParticleHelper.spawnSubParticle(FlansModParticles.explodeParticle.get(), px, py, pz);
         }
 
         if (onGround)

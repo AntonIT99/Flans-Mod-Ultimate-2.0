@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.block.ArmorBoxBlock;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class ArmorBoxMenu extends AbstractContainerMenu
 
     public ArmorBoxMenu(int id, Inventory playerInv, BlockPos pos, ArmorBoxBlock block)
     {
-        super(FlansMod.armorBoxMenu.get(), id);
+        super(FlansModMenus.armorBoxMenu.get(), id);
         this.pos = pos;
         this.access = ContainerLevelAccess.create(playerInv.player.level(), pos);
         this.block = block;

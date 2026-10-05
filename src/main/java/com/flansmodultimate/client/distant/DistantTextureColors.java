@@ -1,12 +1,12 @@
 package com.flansmodultimate.client.distant;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.paintjob.Paintjob;
 import com.flansmodultimate.common.types.DriveableType;
+import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.platform.NativeImage;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +22,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DistantTextureColors
 {
-    private static final Logger LOGGER = FlansMod.Logging.LOGGER;
     /** Olive grey, for a skin that cannot be read. */
     private static final int FALLBACK = 0xFF5E6150;
     /** Pixels sampled along each side of a skin. */
@@ -34,7 +33,7 @@ public final class DistantTextureColors
     {
         Paintjob paintjob = type.getPaintjob(paintjobId);
         ResourceLocation texture = paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
-        return texture == null || FlansMod.FALLBACK_TEXTURE.equals(texture) ? FALLBACK : colors.computeIfAbsent(texture, DistantTextureColors::read);
+        return texture == null || FlansModTextures.FALLBACK_TEXTURE.equals(texture) ? FALLBACK : colors.computeIfAbsent(texture, DistantTextureColors::read);
     }
 
     public static void clear()
@@ -76,7 +75,7 @@ public final class DistantTextureColors
         }
         catch (Exception exception)
         {
-            LOGGER.debug("Could not read {} for its distant colour", texture, exception);
+            FlansLog.log.debug("Could not read {} for its distant colour", texture, exception);
             return FALLBACK;
         }
     }

@@ -1,9 +1,8 @@
 package com.flansmodultimate.platform.render;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.util.FlansLog;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -16,7 +15,6 @@ import java.lang.invoke.MethodType;
  */
 public final class ShaderPlatform
 {
-    private static final Logger LOG = FlansMod.Logging.LOGGER;
     static final String IRIS_API = "net.irisshaders.iris.api.v0.IrisApi";
     /** Mod ids and names of Iris-compatible shader mods on this loader. */
     private static final String[][] SHADER_MODS = {{"iris", "Iris"}};
@@ -118,7 +116,7 @@ public final class ShaderPlatform
                 catch (ReflectiveOperationException | LinkageError | RuntimeException ex)
                 {
                     inUse = shadowPass = FALSE;
-                    LOG.warn("{} is loaded, but its shader API is unavailable; assuming no shader pack is active", mod[1], ex);
+                    FlansLog.log.warn("{} is loaded, but its shader API is unavailable; assuming no shader pack is active", mod[1], ex);
                 }
                 break;
             }

@@ -1,10 +1,9 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.OggDurationReader;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -18,7 +17,6 @@ import java.util.stream.Stream;
 /** Measures audio only on an asset-cache miss; warm archives require just their outer file stamp. */
 final class SoundAssetIndex
 {
-    private static final Logger LOGGER = FlansMod.Logging.LOGGER;
     private static final int VERSION = 1;
     private record Cache(int version, Map<String, ContentFileCache.Stamp> files, SoundPriorityPlan.Assets assets) {}
 
@@ -66,7 +64,7 @@ final class SoundAssetIndex
             }
             catch (IOException | RuntimeException exception)
             {
-                LOGGER.warn("Could not read sound definitions '{}': {}", json, exception.toString());
+                FlansLog.log.warn("Could not read sound definitions '{}': {}", json, exception.toString());
             }
         Map<String, Integer> files = new TreeMap<>();
         Path sounds = assets.resolve("sounds");

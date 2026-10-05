@@ -8,6 +8,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -92,7 +93,7 @@ final class ContentPackModels
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not open {}", jsonFolderPath, e);
+            FlansLog.log.error("Could not open {}", jsonFolderPath, e);
         }
     }
 
@@ -107,7 +108,7 @@ final class ContentPackModels
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to process file: {}", jsonFile, e);
+            FlansLog.log.error("Failed to process file: {}", jsonFile, e);
         }
     }
 
@@ -250,7 +251,7 @@ final class ContentPackModels
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not restore authored asset '{}' from '{}'", original, old, e);
+            FlansLog.log.error("Could not restore authored asset '{}' from '{}'", original, old, e);
         }
     }
 

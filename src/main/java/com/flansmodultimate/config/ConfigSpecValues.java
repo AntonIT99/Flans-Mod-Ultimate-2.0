@@ -1,12 +1,11 @@
 package com.flansmodultimate.config;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -29,8 +28,6 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ConfigSpecValues
 {
-    /** The shared logger holder is safe before the mod class is initialized. */
-    private static final Logger LOG = FlansMod.Logging.LOGGER;
     private static final String PATH_SEPARATOR = ".";
     private static final byte TYPE_BOOLEAN = 0;
     private static final byte TYPE_INT = 1;
@@ -116,14 +113,14 @@ public final class ConfigSpecValues
         ModConfigSpec.ConfigValue<?> value = find(spec, path);
         if (valueSpec == null || value == null || !spec.isLoaded())
         {
-            LOG.warn("Ignoring a change of the unknown config entry {}", joinPath(path));
+            FlansLog.log.warn("Ignoring a change of the unknown config entry {}", joinPath(path));
             return false;
         }
 
         Object corrected = coerce(valueSpec.getClazz(), newValue);
         if (corrected == null || !valueSpec.test(corrected))
         {
-            LOG.warn("Ignoring the rejected value {} for the config entry {}", newValue, joinPath(path));
+            FlansLog.log.warn("Ignoring the rejected value {} for the config entry {}", newValue, joinPath(path));
             return false;
         }
 

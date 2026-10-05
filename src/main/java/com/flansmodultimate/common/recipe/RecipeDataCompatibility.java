@@ -1,15 +1,14 @@
 package com.flansmodultimate.common.recipe;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.util.FlansLog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +21,6 @@ import java.util.stream.Stream;
 /** Keeps the two Minecraft recipe data layouts available in ordinary content packs. */
 public final class RecipeDataCompatibility
 {
-    private static final Logger log = FlansMod.Logging.LOGGER;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public enum Format
@@ -77,7 +75,7 @@ public final class RecipeDataCompatibility
         }
         catch (IOException e)
         {
-            FlansMod.log.warn("Could not inspect content-pack data in {}", dataRoot, e);
+            FlansLog.log.warn("Could not inspect content-pack data in {}", dataRoot, e);
             return List.of();
         }
     }
@@ -94,7 +92,7 @@ public final class RecipeDataCompatibility
         }
         catch (IOException e)
         {
-            FlansMod.log.warn("Could not inspect recipes in {}", folder, e);
+            FlansLog.log.warn("Could not inspect recipes in {}", folder, e);
             return List.of();
         }
     }
@@ -131,7 +129,7 @@ public final class RecipeDataCompatibility
             }
             catch (IOException e)
             {
-                FlansMod.log.warn("Could not create recipe counterpart {}", target, e);
+                FlansLog.log.warn("Could not create recipe counterpart {}", target, e);
             }
         }
     }
@@ -145,7 +143,7 @@ public final class RecipeDataCompatibility
         }
         catch (RuntimeException | IOException e)
         {
-            FlansMod.log.warn("Could not parse recipe {}", source, e);
+            FlansLog.log.warn("Could not parse recipe {}", source, e);
             return Optional.empty();
         }
     }
@@ -217,7 +215,7 @@ public final class RecipeDataCompatibility
             {
                 int maxStackSize = maxRecipeStackSize(config);
                 if (count > maxStackSize)
-                    log.warn("Recipe for {} requests {} items, but the output stacks to at most {}; limiting the result",
+                    FlansLog.log.warn("Recipe for {} requests {} items, but the output stacks to at most {}; limiting the result",
                         config, count, maxStackSize);
                 count = Math.min(Math.max(1, count), maxStackSize);
             }

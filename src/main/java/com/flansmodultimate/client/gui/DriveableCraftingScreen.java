@@ -1,7 +1,7 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmod.client.model.ModelDriveable;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.common.inventory.DriveableCraftingMenu;
@@ -143,7 +143,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     @Override
     protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
     {
-        graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, leftPos, topPos, 0, 0, GUI_WIDTH, GUI_HEIGHT, SHEET_SIZE, SHEET_SIZE);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLECRAFTING, leftPos, topPos, 0, 0, GUI_WIDTH, GUI_HEIGHT, SHEET_SIZE, SHEET_SIZE);
         renderBlueprints(graphics, mouseX, mouseY);
         renderRecipe(graphics, mouseX, mouseY);
         renderEngineSlot(graphics, mouseX, mouseY);
@@ -189,7 +189,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
                 int x = leftPos + BLUEPRINTS_LEFT + column * SLOT_SIZE;
                 int y = topPos + BLUEPRINTS_TOP + row * SLOT_SIZE;
                 if (index == selectedBlueprint)
-                    graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, SELECTED_U, SELECTED_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
+                    graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, SELECTED_U, SELECTED_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
 
                 ItemStack stack = ModUtils.getItemStack(blueprints.get(index)).orElse(ItemStack.EMPTY);
                 if (stack.isEmpty())
@@ -221,7 +221,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
                 int y = topPos + RECIPE_TOP + row * SLOT_SIZE;
 
                 if (!hasEnough(required))
-                    graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, MISSING_U, MISSING_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
+                    graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, MISSING_U, MISSING_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
                 graphics.renderItem(required, x, y);
                 graphics.renderItemDecorations(font, required, x, y);
                 if (isInside(mouseX, mouseY, x, y, ICON_SIZE, ICON_SIZE))
@@ -243,7 +243,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         ItemStack engineStack = engine == null ? ItemStack.EMPTY : ModUtils.getItemStack(engine, selected.numEngines()).orElse(ItemStack.EMPTY);
         if (engineStack.isEmpty())
         {
-            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, MISSING_U, MISSING_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLECRAFTING, x, y, MISSING_U, MISSING_V, ICON_SIZE, ICON_SIZE, SHEET_SIZE, SHEET_SIZE);
             return;
         }
         graphics.renderItem(engineStack, x, y);
@@ -421,7 +421,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
             int u = up
                 ? (active ? UP_ENABLED_U : UP_DISABLED_U)
                 : (active ? DOWN_ENABLED_U : DOWN_DISABLED_U);
-            graphics.blit(FlansMod.TEXTURE_GUI_DRIVEABLECRAFTING, getX(), getY(), u, 0, SIZE, SIZE, SHEET_SIZE, SHEET_SIZE);
+            graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLECRAFTING, getX(), getY(), u, 0, SIZE, SIZE, SHEET_SIZE, SHEET_SIZE);
         }
     }
 }

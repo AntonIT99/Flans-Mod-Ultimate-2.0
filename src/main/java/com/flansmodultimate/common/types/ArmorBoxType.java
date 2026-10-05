@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.content.IContentProvider;
@@ -97,7 +98,7 @@ public class ArmorBoxType extends BlockType
 
     public ResourceLocation getGuiTexture()
     {
-        return loadGuiTextureLocation(guiTexturePath, FlansMod.TEXTURE_GUI_ARMORBOX);
+        return loadGuiTextureLocation(guiTexturePath, FlansModTextures.TEXTURE_GUI_ARMORBOX);
     }
 
     /** Each instance of this class refers to one page full of recipes, that is, one full set of armour */

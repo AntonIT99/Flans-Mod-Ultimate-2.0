@@ -3,6 +3,7 @@ package com.flansmodultimate.content;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.TextDecoding;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -48,7 +49,7 @@ final class ContentPackLocalization
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to read localization files in {}", langDir, e);
+            FlansLog.log.error("Failed to read localization files in {}", langDir, e);
         }
 
         Path english = langDir.resolve("en_us.json");
@@ -64,7 +65,7 @@ final class ContentPackLocalization
             }
             catch (IOException | RuntimeException e)
             {
-                FlansMod.log.warn("Could not read English translations '{}': {}", english, e.toString());
+                FlansLog.log.warn("Could not read English translations '{}': {}", english, e.toString());
                 return; // Do not overwrite authored malformed JSON.
             }
         }
@@ -78,7 +79,7 @@ final class ContentPackLocalization
             }
             catch (IOException | RuntimeException e)
             {
-                FlansMod.log.warn("Could not read translation ownership '{}': {}", ownership, e.toString());
+                FlansLog.log.warn("Could not read translation ownership '{}': {}", ownership, e.toString());
             }
         }
         Map<String, String> generated = new LinkedHashMap<>();
@@ -126,7 +127,7 @@ final class ContentPackLocalization
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to write to localization file {}", jsonPath, e);
+            FlansLog.log.error("Failed to write to localization file {}", jsonPath, e);
         }
     }
 
@@ -155,7 +156,7 @@ final class ContentPackLocalization
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Failed to read localization file {}", langFile, e);
+            FlansLog.log.error("Failed to read localization file {}", langFile, e);
         }
         return translations;
     }

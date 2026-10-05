@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.inventory;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
+
+import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.platform.item.ItemStackData;
@@ -62,7 +64,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
 
     public GunWorkbenchMenu(int id, Inventory playerInv, BlockPos blockPos)
     {
-        super(FlansMod.gunWorkbenchMenu.get(), id);
+        super(FlansModMenus.gunWorkbenchMenu.get(), id);
         this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
         this.registries = playerInv.player.level().registryAccess();
 
@@ -202,7 +204,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     {
         return access.evaluate((level, pos) -> {
             Block block = level.getBlockState(pos).getBlock();
-            return block == FlansMod.gunWorkbench.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
+            return block == FlansModBlocks.gunWorkbench.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
         }, true);
     }
 

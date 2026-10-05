@@ -1,12 +1,12 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanArrow;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.platform.entity.FlanArrow;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +57,7 @@ public class ThrownGun extends FlanArrow
 
     public ThrownGun(Level level, LivingEntity thrower, ItemStack weapon, float throwDamage)
     {
-        super(FlansMod.thrownGunEntity.get(), thrower, level, weapon);
+        super(FlansModEntities.thrownGunEntity.get(), thrower, level, weapon);
         this.throwDamage = throwDamage;
     }
 

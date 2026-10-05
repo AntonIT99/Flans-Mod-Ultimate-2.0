@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.particle;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModParticles;
+
 import com.flansmodultimate.common.explosions.ExplosionVisuals;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -113,7 +114,7 @@ public final class ExplosionSpectacle
         if (!ParticleHelper.shouldSpawnLandmark(x, y, z, range))
             return;
         Particle particle = Minecraft.getInstance().particleEngine.createParticle(
-            FlansMod.fireExplosionParticle.get(), x, y, z, 0D, 0D, 0D);
+            FlansModParticles.fireExplosionParticle.get(), x, y, z, 0D, 0D, 0D);
         if (particle != null)
             particle.scale(size / FireExplosionParticle.BASE_SIZE);
     }

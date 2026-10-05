@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.block.entity;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
+
 import com.flansmodultimate.common.inventory.PaintjobTableMenu;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
 import com.flansmodultimate.platform.item.FlanItemStackHandler;
@@ -32,7 +33,7 @@ public class PaintjobTableBlockEntity extends FlanBlockEntity implements MenuPro
 
     public PaintjobTableBlockEntity(BlockPos pos, BlockState state)
     {
-        super(FlansMod.paintjobTableBlockEntity.get(), pos, state);
+        super(FlansModBlocks.paintjobTableBlockEntity.get(), pos, state);
         blockState = state;
     }
 

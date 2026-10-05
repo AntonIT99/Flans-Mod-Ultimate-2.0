@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
@@ -14,12 +15,13 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GrenadeProximityEvent;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketFlak;
 import com.flansmodultimate.network.client.PacketFlashBang;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
+import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
@@ -121,7 +123,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     public Grenade(Level level, GrenadeType grenadeType, Vec3 position, float rotationPitch, float rotationYaw, @Nullable LivingEntity entity)
     {
-        super(FlansMod.grenadeEntity.get(), level, grenadeType);
+        super(FlansModEntities.grenadeEntity.get(), level, grenadeType);
         setPos(position);
         this.configType = grenadeType;
         numUsesRemaining = grenadeType.getNumUses();
@@ -230,7 +232,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
                 configType = gType;
             if (configType == null)
             {
-                FlansMod.log.warn("Unknown grenade type {}, discarding.", shortname);
+                FlansLog.log.warn("Unknown grenade type {}, discarding.", shortname);
                 discard();
                 return;
             }
@@ -254,7 +256,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         catch (Exception e)
         {
             discard();
-            FlansMod.log.warn("Failed to read grenade spawn data", e);
+            FlansLog.log.warn("Failed to read grenade spawn data", e);
         }
     }
 
@@ -440,7 +442,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         }
         catch (Exception ex)
         {
-            FlansMod.log.error("Error ticking grenade {}", shortname, ex);
+            FlansLog.log.error("Error ticking grenade {}", shortname, ex);
             discard();
         }
     }

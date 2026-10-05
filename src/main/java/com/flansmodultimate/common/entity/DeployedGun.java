@@ -1,13 +1,13 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
@@ -15,12 +15,14 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -107,7 +109,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 
     public DeployedGun(Level level, BlockPos pos, Direction direction, GunType gunType)
     {
-        super(FlansMod.deployedGunEntity.get(), level);
+        super(FlansModEntities.deployedGunEntity.get(), level);
         setShortName(gunType.getShortName());
         blockPos = pos;
         setGunDirection(direction.get2DDataValue());
@@ -290,7 +292,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
                 configType = gType;
             if (configType == null)
             {
-                FlansMod.log.warn("Unknown gun type {}, discarding.", shortname);
+                FlansLog.log.warn("Unknown gun type {}, discarding.", shortname);
                 discard();
             }
             setGunDirection(buf.readInt());
@@ -301,7 +303,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         catch (Exception e)
         {
             discard();
-            FlansMod.log.warn("Failed to read deployable gun spawn data", e);
+            FlansLog.log.warn("Failed to read deployable gun spawn data", e);
         }
     }
 
@@ -373,7 +375,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Error removing deployable gun entity", e);
+            FlansLog.log.error("Error removing deployable gun entity", e);
         }
 
         super.remove(reason);

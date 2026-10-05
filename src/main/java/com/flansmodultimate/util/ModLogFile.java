@@ -21,7 +21,7 @@ import java.nio.file.Path;
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class ModLogFile
 {
-    private static final String LOGGER_NAMESPACE = "com.flansmodultimate";
+    private static final String LOGGER_NAMESPACE = FlansLog.LOGGER_NAME;
     private static final String INFO_APPENDER_NAME = "FlansModUltimateInfoFile";
     private static final String DEBUG_APPENDER_NAME = "FlansModUltimateDebugFile";
 

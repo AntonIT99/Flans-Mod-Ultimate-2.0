@@ -1,10 +1,9 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.content.IContentProvider;
+import com.flansmodultimate.util.FlansLog;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -34,8 +33,6 @@ import java.util.Map;
  */
 public final class ItemlessTypeRegistry<T extends InfoType>
 {
-    /** The shared logger holder keeps the registry usable before mod registration. */
-    private static final Logger LOG = FlansMod.Logging.LOGGER;
 
     private final String label;
     /** Unique name to type, in load order, so listings stay in the order the packs were read. */
@@ -63,7 +60,7 @@ public final class ItemlessTypeRegistry<T extends InfoType>
         String existing = packAliases.get(original);
         if (existing != null)
         {
-            LOG.warn("Detected conflict for {} id '{}' in same content pack: {} and {}. Ignoring {}",
+            FlansLog.log.warn("Detected conflict for {} id '{}' in same content pack: {} and {}. Ignoring {}",
                 label, original, type, byUniqueName.get(existing), type.getFileName());
             return StringUtils.EMPTY;
         }
@@ -74,7 +71,7 @@ public final class ItemlessTypeRegistry<T extends InfoType>
         if (!unique.equals(original))
         {
             String packName = packName(type);
-            LOG.warn("Detected conflict for {} id '{}': {} and {}. Creating id alias '{}' in [{}]",
+            FlansLog.log.warn("Detected conflict for {} id '{}': {} and {}. Creating id alias '{}' in [{}]",
                 label, original, type, byUniqueName.get(original), unique, packName);
         }
 

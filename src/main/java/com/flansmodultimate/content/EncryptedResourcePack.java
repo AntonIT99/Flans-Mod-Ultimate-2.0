@@ -1,7 +1,7 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ModClientConfig;
+import com.flansmodultimate.util.FlansLog;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.SharedConstants;
@@ -181,13 +181,13 @@ public final class EncryptedResourcePack implements PackResources
                     entries.keySet().forEach(location -> loadedNamespaces.add(location.getNamespace()));
                     current = new LoadedResources(entries, Set.copyOf(loadedNamespaces));
                     resources.set(current);
-                    FlansMod.log.info("Loaded {} encrypted uncensored resource(s) for {}.", entries.size(), keyId);
+                    FlansLog.log.info("Loaded {} encrypted uncensored resource(s) for {}.", entries.size(), keyId);
                 }
                 catch (Exception e)
                 {
                     current = new LoadedResources(Map.of(), Set.of());
                     resources.set(current);
-                    FlansMod.log.error("Could not load encrypted uncensored resources from {}.", bundlePath, e);
+                    FlansLog.log.error("Could not load encrypted uncensored resources from {}.", bundlePath, e);
                 }
             }
             return current;
