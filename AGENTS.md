@@ -64,6 +64,27 @@ checking. They are read-only references: never edit them unless explicitly asked
   Ganesha Mk1A 1.7.10 fork, used occasionally as an extra reference for alternative
   implementations. Treat it as inspiration, not authority.
 
+## Code Style and Static Analysis
+
+- Follow the project code style: Allman braces (`else`, `catch`, `finally`,
+  `while` on new lines), 4-space indents without tabs, 4-space continuation indent,
+  160-column right margin, and no wildcard imports. Import groups, in order:
+  project/libraries (`com`, `io`, `lombok`, `net.minecraftforge`, `noppes`, `org`),
+  then `net.minecraft`, then `javax`/`java`, then static imports last.
+- The sources of truth are `config/spotless/eclipse-java-formatter.xml` (Spotless),
+  and `.idea/codeStyles/Project.xml` (IntelliJ). Do not edit
+  them unless asked.
+- Spotless is ratcheted from `origin/master`, so it only touches changed files. After
+  editing Java, `.gradle`, `.properties`, `.gitignore`, or `.md` files, run
+  `gradlew spotlessApply`, then `gradlew spotlessCheck`. Use `// spotless:off` /
+  `// spotless:on` only for deliberately hand-aligned code. Never reformat files you
+  did not otherwise change.
+- SonarLint runs through Gradle with one task per source set (`sonarlintMain`,
+  `sonarlintTest`, `sonarlintPacksmanager`, ...; all are part of `check`). Run the
+  tasks for the source sets you touched. Introduce no new issues in touched code and fix existing ones only when
+  they are in scope. Notable rules: no `volatile` on non-primitive fields (S3077; use
+  `AtomicReference` or similar instead).
+
 ## Build and Validation
 
 Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
@@ -71,5 +92,6 @@ Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManag
 tests first. Run a full build after loader setup, registries, networking, entities,
 resources, source sets, or packaging changes. Keep `gradlew` executable.
 
-Before completion, review the scoped diff, run relevant checks and `git diff --check`,
+Before completion, review the scoped diff, run relevant checks, `spotlessCheck`,
+SonarLint on touched source sets, and `git diff --check`,
 and report validation that could not be performed.

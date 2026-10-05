@@ -14,6 +14,40 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'org.spongepowered.mixin' version '0.7.+'
+    id 'name.remal.sonarlint'
+    id 'com.diffplug.spotless'
+}
+
+// Code Style with Spotless
+spotless {
+    encoding 'UTF-8'
+    ratchetFrom 'origin/master'
+
+    java {
+        target 'src/*/java/**/*.java'
+
+        toggleOffOn()
+
+        importOrder(
+            'com|io|lombok|net.minecraftforge|noppes|org',
+            'net.minecraft',
+            'javax|java',
+            '',
+            '\\#'
+        )
+        removeUnusedImports()
+
+        eclipse().configFile('config/spotless/eclipse-java-formatter.xml')
+
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    format 'misc', {
+        target '*.gradle', '*.properties', '.gitignore', '*.md'
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 version = mod_version
