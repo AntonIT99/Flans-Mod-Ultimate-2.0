@@ -1,12 +1,12 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.ContentPack;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.content.ContentPack;
+import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.network.chat.Component;

@@ -1,7 +1,7 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.ContentPack;
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.ContentPack;
+import com.flansmodultimate.content.IContentProvider;
 import com.wolffsmod.api.client.model.IModelBase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -138,8 +138,8 @@ class ClassLoaderUtilsTest
         List<TransformOp> ops = ClassLoaderUtils.getTransforms(modelClass);
         assertNotNull(ops, "No transforms stored for " + modelClass);
         assertEquals(1, ops.size());
-        assertEquals(TransformOp.EnumKind.TRANSLATE, ops.get(0).kind);
-        assertArrayEquals(new float[] { expectedX, 2F, 0F }, ops.get(0).args);
+        assertEquals(TransformOp.EnumKind.TRANSLATE, ops.get(0).kind());
+        assertArrayEquals(new float[] { expectedX, 2F, 0F }, ops.get(0).args());
     }
 
     private IContentProvider createContentPack(String packName, String className) throws IOException

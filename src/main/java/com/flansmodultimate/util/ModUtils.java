@@ -1,13 +1,13 @@
 package com.flansmodultimate.util;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.entity.Wheel;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.EnumMovement;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.PlatformTags;
 import com.flansmodultimate.platform.entity.EntityPlatform;
@@ -186,7 +186,7 @@ public final class ModUtils
      * the pack ships no translation. Types without an item (player classes, teams, loadout pools) have no
      * translation key, so those keep the {@code Name} line.
      *
-     * @see com.flansmodultimate.ContentManager
+     * @see com.flansmodultimate.content.ContentManager
      */
     public static Component getDisplayName(@Nullable InfoType infoType)
     {

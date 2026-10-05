@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.driveables.DriveableAmmoLoader;
 import com.flansmodultimate.common.driveables.DriveableAmmoLoader.BankReport;
 import com.flansmodultimate.common.driveables.DriveableAmmoLoader.LoadReport;
@@ -13,6 +12,7 @@ import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.content.IContentProvider;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -118,9 +118,18 @@ public final class RearmCommand
         for (BankReport bank : report.banks())
             context.getSource().sendSuccess(() -> bankLine(bank), false);
 
-        String summary = changed > 0
-            ? "Rearmed " + target.name() + ": " + changed + (changed == 1 ? " slot" : " slots")
-            : "Nothing to load on " + target.name() + "; everything is already loaded";
+        String summary;
+        if (changed > 0)
+        {
+            if (changed == 1)
+                summary = "Rearmed " + target.name() + ": " + changed + " slot";
+            else
+                summary = "Rearmed " + target.name() + ": " + changed + " slots";
+        }
+        else
+        {
+            summary = "Nothing to load on " + target.name() + "; everything is already loaded";
+        }
         context.getSource().sendSuccess(() -> Component.literal(summary), true);
         return changed;
     }
@@ -164,9 +173,19 @@ public final class RearmCommand
         if (vehicle instanceof DeployedGun deployedGun && deployedGun.getConfigType() != null)
             return new DeployedGunTarget(deployedGun);
 
-        Driveable driveable = vehicle instanceof Driveable direct ? direct
-            : vehicle instanceof Seat seat ? seat.getDriveable()
-            : vehicle != null && vehicle.getVehicle() instanceof Driveable parent ? parent : null;
+        Driveable driveable;
+        if (vehicle instanceof Driveable direct)
+        {
+            driveable = direct;
+        }
+        else
+        {
+            if (vehicle instanceof Seat seat)
+                driveable = seat.getDriveable();
+            else
+                driveable = vehicle != null && vehicle.getVehicle() instanceof Driveable parent ? parent : null;
+        }
+
         if (driveable != null && driveable.getConfigType() != null && driveable.getDriveableData() != null)
             return new DriveableTarget(driveable.getConfigType(), driveable.getDriveableData(), null);
 
@@ -234,21 +253,73 @@ public final class RearmCommand
 
     private record AAGunTarget(AAGun gun) implements Target
     {
-        @Override public String name() { return gun.getConfigType().getName(); }
-        @Override public IContentProvider contentPack() { return gun.getConfigType().getContentPack(); }
-        @Override public LoadReport load(@Nullable ShootableType requested) { return MountedGunAmmoLoader.load(gun, requested); }
-        @Override public Set<ShootableType> loadableAmmo() { return MountedGunAmmoLoader.loadableAmmo(gun); }
-        @Override public void commit() {}
-        @Override public String suffix() { return " rearmed (AA gun)"; }
+        @Override
+        public String name()
+        {
+            return gun.getConfigType().getName();
+        }
+
+        @Override
+        public IContentProvider contentPack()
+        {
+            return gun.getConfigType().getContentPack();
+        }
+
+        @Override
+        public LoadReport load(@Nullable ShootableType requested)
+        {
+            return MountedGunAmmoLoader.load(gun, requested);
+        }
+
+        @Override
+        public Set<ShootableType> loadableAmmo()
+        {
+            return MountedGunAmmoLoader.loadableAmmo(gun);
+        }
+
+        @Override
+        public void commit() {}
+
+        @Override
+        public String suffix()
+        {
+            return " rearmed (AA gun)";
+        }
     }
 
     private record DeployedGunTarget(DeployedGun gun) implements Target
     {
-        @Override public String name() { return gun.getConfigType().getName(); }
-        @Override public IContentProvider contentPack() { return gun.getConfigType().getContentPack(); }
-        @Override public LoadReport load(@Nullable ShootableType requested) { return MountedGunAmmoLoader.load(gun, requested); }
-        @Override public Set<ShootableType> loadableAmmo() { return MountedGunAmmoLoader.loadableAmmo(gun); }
-        @Override public void commit() {}
-        @Override public String suffix() { return " rearmed (deployed gun)"; }
+        @Override
+        public String name()
+        {
+            return gun.getConfigType().getName();
+        }
+
+        @Override
+        public IContentProvider contentPack()
+        {
+            return gun.getConfigType().getContentPack();
+        }
+
+        @Override
+        public LoadReport load(@Nullable ShootableType requested)
+        {
+            return MountedGunAmmoLoader.load(gun, requested);
+        }
+
+        @Override
+        public Set<ShootableType> loadableAmmo()
+        {
+            return MountedGunAmmoLoader.loadableAmmo(gun);
+        }
+
+        @Override
+        public void commit() {}
+
+        @Override
+        public String suffix()
+        {
+            return " rearmed (deployed gun)";
+        }
     }
 }

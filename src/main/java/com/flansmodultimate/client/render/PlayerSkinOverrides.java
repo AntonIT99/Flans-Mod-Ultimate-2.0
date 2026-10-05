@@ -21,14 +21,13 @@ import net.minecraft.server.packs.resources.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Applies the SkinOverride of a team player class to the wearer's player model.
@@ -51,7 +50,7 @@ public final class PlayerSkinOverrides
     private static final int OPAQUE_ALPHA_THRESHOLD = 128;
     private static final int ALPHA_MASK = 0xFF000000;
 
-    private static volatile Map<UUID, String> classByPlayer = Map.of();
+    private static final AtomicReference<Map<UUID, String>> classByPlayer = new AtomicReference<>(Map.of());
     private static final Map<String, Optional<ResourceLocation>> VALIDATED = new ConcurrentHashMap<>();
     /** Locations of the sheets this class generated, so they can be handed back to the texture manager. */
     private static final Set<ResourceLocation> CONVERTED = ConcurrentHashMap.newKeySet();
@@ -59,12 +58,12 @@ public final class PlayerSkinOverrides
     /** Replaces the known player class assignments with the set just received from the server. */
     public static void setPlayerClasses(Map<UUID, String> classes)
     {
-        classByPlayer = classes.isEmpty() ? Map.of() : Collections.unmodifiableMap(new HashMap<>(classes));
+        classByPlayer.set(classes.isEmpty() ? Map.of() : Map.copyOf(classes));
     }
 
     public static void clear()
     {
-        classByPlayer = Map.of();
+        classByPlayer.set(Map.of());
         clearValidationCache();
     }
 
@@ -99,7 +98,7 @@ public final class PlayerSkinOverrides
         if (!ModClientConfig.get().enablePlayerClassSkinOverrides)
             return null;
 
-        String playerClass = classByPlayer.get(player.getUUID());
+        String playerClass = classByPlayer.get().get(player.getUUID());
         if (playerClass == null || !usesStandardPlayerModel(renderer))
             return null;
         return VALIDATED.computeIfAbsent(playerClass, PlayerSkinOverrides::validate).orElse(null);

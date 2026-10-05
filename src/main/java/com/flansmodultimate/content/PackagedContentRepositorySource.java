@@ -1,4 +1,7 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -17,12 +20,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 /** Supplies enabled packaged assets and recipes as required, top-priority built-in packs. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PackagedContentRepositorySource
 {
-    private PackagedContentRepositorySource()
-    {
-    }
-
     public static RepositorySource create(PackType packType)
     {
         return acceptor -> loadPacks(packType, acceptor);
@@ -30,7 +30,7 @@ public final class PackagedContentRepositorySource
 
     private static void loadPacks(PackType packType, Consumer<Pack> acceptor)
     {
-        for (PackagedContentPackApi.RegisteredModule module : PackagedContentPackApi.getRegisteredModules())
+        for (PackagedContentLoader.RegisteredModule module : PackagedContentLoader.getRegisteredModules())
         {
             if (packType == PackType.CLIENT_RESOURCES)
             {
@@ -53,14 +53,14 @@ public final class PackagedContentRepositorySource
     }
 
     private static void addEncryptedResourcePack(Consumer<Pack> acceptor,
-                                                 PackagedContentPackApi.RegisteredModule module)
+                                                 PackagedContentLoader.RegisteredModule module)
     {
         Path bundlePath = module.resourceRoot().resolve(EncryptedResourcePack.BUNDLE_RESOURCE_PATH);
         if (!java.nio.file.Files.isRegularFile(bundlePath))
             return;
 
-        // PackRepository stores discovered packs in a sorted map and inserts required TOP packs
-        // in reverse key order. The leading underscore makes this pack sort before ":assets",
+        // PackRepository sorts each repository source by ID and inserts required TOP packs
+        // in reverse discovery order. The leading underscore makes this pack sort before ":assets",
         // which places the encrypted overlay after the normal assets in the effective stack.
         String id = encryptedPackId(module.modId());
         PackLocationInfo location = new PackLocationInfo(id, Component.literal("Optional uncensored Flan content"),

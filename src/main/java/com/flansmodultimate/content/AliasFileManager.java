@@ -1,7 +1,7 @@
-package com.flansmodultimate.util;
+package com.flansmodultimate.content;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.util.FileUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -11,10 +11,11 @@ import java.lang.reflect.Type;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-public class AliasFileManager implements AutoCloseable
+final class AliasFileManager implements AutoCloseable
 {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -24,7 +25,7 @@ public class AliasFileManager implements AutoCloseable
     private final String fileName;
     private final IContentProvider provider;
 
-    public AliasFileManager(String fileName, IContentProvider provider)
+    AliasFileManager(String fileName, IContentProvider provider)
     {
         this.fileName = fileName;
         this.provider = provider;
@@ -58,7 +59,9 @@ public class AliasFileManager implements AutoCloseable
 
         try
         {
-            Files.writeString(file, gson.toJson(aliasMapping));
+            String json = gson.toJson(aliasMapping);
+            if (!Files.isRegularFile(file) || !Files.readString(file).equals(json))
+                Files.writeString(file, json);
         }
         catch (Exception e)
         {
@@ -70,5 +73,28 @@ public class AliasFileManager implements AutoCloseable
     public void close()
     {
         FileUtils.closeFileSystem(fs, provider);
+    }
+
+    static boolean shouldUpdateAliasMappingFile(String fileName, IContentProvider provider, @Nullable Map<String, String> aliasMapping)
+    {
+        if (aliasMapping == null)
+            aliasMapping = Collections.emptyMap();
+
+        try (AliasFileManager fileManager = new AliasFileManager(fileName, provider))
+        {
+            Optional<Map<String, String>> mapping = fileManager.readFile();
+            return mapping.isEmpty() || !mapping.get().equals(aliasMapping);
+        }
+    }
+
+    static void writeToAliasMappingFile(String fileName, IContentProvider provider, @Nullable Map<String, String> aliasMapping)
+    {
+        if (aliasMapping == null)
+            aliasMapping = Collections.emptyMap();
+
+        try (AliasFileManager fileManager = new AliasFileManager(fileName, provider))
+        {
+            fileManager.writeToFile(aliasMapping);
+        }
     }
 }

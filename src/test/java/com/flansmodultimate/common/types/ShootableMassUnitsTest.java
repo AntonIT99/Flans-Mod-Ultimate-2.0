@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.ContentPack;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.guns.FiredShot;
+import com.flansmodultimate.content.ContentPack;
+import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

@@ -1,6 +1,5 @@
 package com.flansmodultimate.event.handler;
 
-import com.flansmodultimate.ContentManager;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.EntityCullingCompat;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
@@ -48,6 +47,7 @@ import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.client.HudOverlayPlatform;

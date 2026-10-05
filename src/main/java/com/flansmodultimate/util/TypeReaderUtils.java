@@ -304,9 +304,24 @@ public class TypeReaderUtils
 
     private static float parseVectorComponent(String raw)
     {
-        String value = raw.trim().replaceAll("^,+|,+$", "");
-        if (value.indexOf(',') == value.lastIndexOf(',') && value.indexOf(',') > 0 && value.indexOf('.') < 0)
+        String value = raw.trim();
+
+        int start = 0;
+        int end = value.length();
+
+        while (start < end && value.charAt(start) == ',')
+            start++;
+        while (end > start && value.charAt(end - 1) == ',')
+            end--;
+
+        value = value.substring(start, end);
+
+        int comma = value.indexOf(',');
+        if (comma >= 0 && comma == value.lastIndexOf(',') && value.indexOf('.') < 0)
+        {
             value = value.replace(',', '.');
+        }
+
         return Float.parseFloat(value);
     }
 

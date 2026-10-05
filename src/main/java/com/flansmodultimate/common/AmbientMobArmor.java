@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class AmbientMobArmor
@@ -32,7 +33,7 @@ public final class AmbientMobArmor
     private static final String NBT_PENDING = "flansmodultimate:ambient_armor_pending";
     private static final String NBT_ARMOR_SLOTS = "flansmodultimate:ambient_armor_slots";
 
-    private static volatile EquipmentPool equipmentPool;
+    private static final AtomicReference<EquipmentPool> equipmentPool = new AtomicReference<>();
 
     public static void equip(Mob mob)
     {
@@ -100,14 +101,17 @@ public final class AmbientMobArmor
 
     private static EquipmentPool getEquipmentPool()
     {
-        EquipmentPool result = equipmentPool;
+        EquipmentPool result = equipmentPool.get();
         if (result == null)
         {
             synchronized (AmbientMobArmor.class)
             {
-                result = equipmentPool;
+                result = equipmentPool.get();
                 if (result == null)
-                    equipmentPool = result = buildEquipmentPool();
+                {
+                    result = buildEquipmentPool();
+                    equipmentPool.set(result);
+                }
             }
         }
         return result;

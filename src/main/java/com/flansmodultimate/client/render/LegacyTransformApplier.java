@@ -66,15 +66,15 @@ public final class LegacyTransformApplier
 
         for (TransformOp op : ops)
         {
-            switch (op.kind)
+            switch (op.kind())
             {
-                case TRANSLATE -> poseStack.translate(op.args[0], op.args[1], op.args[2]);
-                case SCALE -> poseStack.scale(op.args[0], op.args[1], op.args[2]);
+                case TRANSLATE -> poseStack.translate(op.args()[0], op.args()[1], op.args()[2]);
+                case SCALE -> poseStack.scale(op.args()[0], op.args()[1], op.args()[2]);
                 case ROTATE -> {
-                    float angle = op.args[0];
-                    float x = op.args[1];
-                    float y = op.args[2];
-                    float z = op.args[3];
+                    float angle = op.args()[0];
+                    float x = op.args()[1];
+                    float y = op.args()[2];
+                    float z = op.args()[3];
 
                     if (x == 1 && y == 0 && z == 0)
                     {

@@ -1,6 +1,11 @@
 package com.flansmodultimate.util;
 
-public class TransformOp
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.Objects;
+
+public record TransformOp(EnumKind kind, float[] args, String methodName, String methodDesc)
 {
     public enum EnumKind
     {
@@ -9,24 +14,32 @@ public class TransformOp
         ROTATE
     }
 
-    public final EnumKind kind;
-    public final float[] args;
-    public final String methodName;   // where it was found
-    public final String methodDesc;
-
-    public TransformOp(EnumKind kind, float[] args, String methodName, String methodDesc)
+    @Override
+    public boolean equals(Object obj)
     {
-        this.kind = kind;
-        this.args = args;
-        this.methodName = methodName;
-        this.methodDesc = methodDesc;
+        if (this == obj) return true;
+        if (!(obj instanceof TransformOp other)) return false;
+
+        return kind == other.kind
+            && Arrays.equals(args, other.args)
+            && Objects.equals(methodName, other.methodName)
+            && Objects.equals(methodDesc, other.methodDesc);
     }
 
     @Override
+    public int hashCode()
+    {
+        int result = Objects.hash(kind, methodName, methodDesc);
+        return 31 * result + Arrays.hashCode(args);
+    }
+
+    @Override
+    @NotNull
     public String toString()
     {
         StringBuilder sb = new StringBuilder(kind.name()).append("(");
-        for (int i = 0; i < args.length; i++) {
+        for (int i = 0; i < args.length; i++)
+        {
             if (i > 0) sb.append(", ");
             sb.append(args[i]);
         }

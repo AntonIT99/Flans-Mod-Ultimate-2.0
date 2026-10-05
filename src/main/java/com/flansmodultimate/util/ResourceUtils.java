@@ -6,6 +6,7 @@ import com.flansmodultimate.common.types.BlockType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.common.types.PaintableType;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,10 +19,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ResourceUtils
 {
+    /** Recognize only the basic cube shape emitted by this mod, so authored geometry survives regeneration. */
+    public static boolean isGeneratedBlockModel(JsonObject model)
+    {
+        if (model.size() != 2 || !model.has("parent") || !model.get("parent").isJsonPrimitive()
+            || !model.get("parent").getAsString().equals("minecraft:block/cube_bottom_top")
+            || !model.has("textures") || !model.get("textures").isJsonObject())
+            return false;
+        Set<String> slots = model.getAsJsonObject("textures").keySet();
+        return slots.equals(Set.of("top", "bottom", "side"))
+            || slots.equals(Set.of("top", "bottom", "side", "particle"));
+    }
+
     public static String sanitize(@Nullable String name)
     {
         if (name == null)
@@ -132,10 +146,10 @@ public final class ResourceUtils
 
         public static ModelJson createItemModel(InfoType config, Paintjob paintjob)
         {
-            return createItemModel(config, paintjob, paintjob.getIcon());
+            return createItemModel(config, paintjob.getIcon());
         }
 
-        public static ModelJson createItemModel(InfoType config, Paintjob paintjob, String icon)
+        public static ModelJson createItemModel(InfoType config, String icon)
         {
             String parent = "minecraft:item/generated";
             if (config.getType().isHasBlock())

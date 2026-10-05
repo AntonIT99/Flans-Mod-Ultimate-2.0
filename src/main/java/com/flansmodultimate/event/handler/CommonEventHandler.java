@@ -1,8 +1,9 @@
 package com.flansmodultimate.event.handler;
-import com.flansmodultimate.ContentManager;
+
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.KillMessageData;
 import com.flansmodultimate.common.AmbientMobArmor;
+import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.command.DefaultAmmoCommand;
@@ -23,7 +24,6 @@ import com.flansmodultimate.common.digitalammo.DigitalAmmoStorageHandler;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.distant.DistantSync;
 import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
-import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
@@ -45,6 +45,7 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
+import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketContentFingerprint;
 import com.flansmodultimate.network.client.PacketKillMessage;

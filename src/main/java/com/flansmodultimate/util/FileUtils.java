@@ -1,7 +1,7 @@
 package com.flansmodultimate.util;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
@@ -860,14 +860,21 @@ public final class FileUtils
      * JAR is deleted only after the ZIP has been written successfully.
      *
      * @param provider archive provider whose extracted directory should be repacked
+     * @return whether the processed archive was successfully installed
      */
-    public static void repackArchive(IContentProvider provider)
+    public static boolean repackArchive(IContentProvider provider)
     {
         boolean convertJarToZip = provider.isJarFile();
         Path originalArchive = provider.getPath();
         Path target = convertJarToZip
             ? provider.getPath().getParent().resolve(FilenameUtils.getBaseName(provider.getName()) + ZIP_EXTENSION)
             : provider.getPath();
+
+        if (convertJarToZip && Files.exists(target))
+        {
+            com.mojang.logging.LogUtils.getLogger().error("Cannot convert '{}' to ZIP because '{}' already exists. Preserving both archives.", originalArchive, target);
+            return false;
+        }
 
         Path tmp = target.resolveSibling(target.getFileName() + ".tmp");
         Path bak = target.resolveSibling(target.getFileName() + ".bak");
@@ -933,6 +940,7 @@ public final class FileUtils
 
             // 5) remove backup after success
             Files.deleteIfExists(bak);
+            return true;
         }
         catch (IOException e)
         {
@@ -946,6 +954,7 @@ public final class FileUtils
             {
                 // Ignored
             }
+            return false;
         }
     }
 

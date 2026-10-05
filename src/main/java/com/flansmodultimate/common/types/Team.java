@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
@@ -135,9 +136,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Ammunition this weapon explicitly refuses; applied after every other ammunition source. */
     @Getter
     protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
-    private volatile List<BulletType> resolvedAmmoTypes;
-    /** Ammo group revision the cache above was built from; groups can still grow while later packs load */
-    private volatile int resolvedAmmoGroupRevision;
+    private final AtomicReference<ResolvedAmmoCache> resolvedAmmoCache = new AtomicReference<>();
+
+    private record ResolvedAmmoCache(int groupRevision, List<BulletType> types) {}
 
     protected boolean harvestBlocks;
     protected final Set<String> materialsHarvested = new LinkedHashSet<>();
@@ -274,7 +275,15 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected float buoyancy = 0.0165F;
     protected float floatOffset;
     protected float bulletDetectionRadius = -1F;
-    /** Largest detection radius of any loaded type; only grows, so it stays a safe bound across reloads. */
+    /** Largest detection radius of any loaded type; only grows, so it stays a safe bound across reloads.
+     * -- GETTER --
+     *  Returns the maximum combined health represented by this driveable's parts.
+     *  <p>Normalized health has an authoritative total before its per-part values
+     *  are rounded to floats. Legacy driveables instead define their total as the
+     *  sum of the authored health of every part.</p>
+     *  How far any driveable's hull can reach from its centre, for bounding bullet searches.
+     */
+    @Getter
     private static volatile float maxBulletDetectionRadius = 8F;
     protected int animFrames = 2;
 
@@ -382,7 +391,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean it1;
     protected final List<CollisionMesh> collisionMeshes = new ArrayList<>();
     protected boolean fancyCollision;
-    private transient volatile DriveableCollisionProfile collisionProfile;
+    private final AtomicReference<DriveableCollisionProfile> collisionProfile = new AtomicReference<>();
 
     /**
      * Optional real-world source data exactly as authored, in real-world units.
@@ -699,7 +708,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readWeapons(TypeFile file)
     {
-        resolvedAmmoTypes = null;
+        resolvedAmmoCache.set(null);
         acceptAllAmmo = readValue("AllowAllAmmo", acceptAllAmmo, file);
         acceptAllAmmo = readValue("AcceptAllAmmo", acceptAllAmmo, file);
         readLines("AddAmmo", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank)
@@ -943,7 +952,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readCollisionMeshes(TypeFile file)
     {
-        collisionProfile = null;
+        collisionProfile.set(null);
         fancyCollision = readValue("FancyCollision", fancyCollision, file);
         readMeshLines("AddCollisionMesh", EnumDriveablePart.CORE, file);
         readMeshLines("AddTurretCollisionMesh", EnumDriveablePart.TURRET, file);
@@ -987,7 +996,10 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 bulletDetectionRadius = Math.max(bulletDetectionRadius, box.getRootPosition().length() + box.getRadius());
             bulletDetectionRadius += 1F;
         }
-        maxBulletDetectionRadius = Math.max(maxBulletDetectionRadius, bulletDetectionRadius);
+        synchronized (DriveableType.class)
+        {
+            maxBulletDetectionRadius = Math.max(maxBulletDetectionRadius, bulletDetectionRadius);
+        }
         deriveWheelContactClearance();
         resolvedPhysics = VehiclePhysicsResolver.resolve(physicsCategory(), realWorldSpec,
             deriveGeometry(), legacyPhysicsHints());
@@ -996,19 +1008,6 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             authoredHealth, ModCommonConfig.realisticVehicleHealthScale());
         health.clear();
         health.putAll(resolvedHealth.boxes());
-    }
-
-    /**
-     * Returns the maximum combined health represented by this driveable's parts.
-     *
-     * <p>Normalized health has an authoritative total before its per-part values
-     * are rounded to floats. Legacy driveables instead define their total as the
-     * sum of the authored health of every part.</p>
-     */
-    /** How far any driveable's hull can reach from its centre, for bounding bullet searches. */
-    public static float getMaxBulletDetectionRadius()
-    {
-        return maxBulletDetectionRadius;
     }
 
     public float getTotalHp()
@@ -1145,9 +1144,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public List<BulletType> getAmmoTypes()
     {
         int revision = ShootableType.getAmmoGroupRevision();
-        List<BulletType> cached = resolvedAmmoTypes;
-        if (cached != null && resolvedAmmoGroupRevision == revision)
-            return cached;
+        ResolvedAmmoCache cached = resolvedAmmoCache.get();
+        if (cached != null && cached.groupRevision() == revision)
+            return cached.types();
 
         List<BulletType> result = new ArrayList<>();
         for (String shortName : ammo)
@@ -1164,10 +1163,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         // RemoveAmmo is applied last so it overrides Ammo, AddAmmo and every ammo group.
         if (!removedAmmo.isEmpty())
             result.removeIf(bulletType -> removedAmmo.removes(bulletType.getOriginalShortName()));
-        cached = List.copyOf(result);
-        resolvedAmmoTypes = cached;
-        resolvedAmmoGroupRevision = revision;
-        return cached;
+        List<BulletType> resolved = List.copyOf(result);
+        resolvedAmmoCache.set(new ResolvedAmmoCache(revision, resolved));
+        return resolved;
     }
 
     public boolean isValidAmmo(@Nullable BulletType bulletType)
@@ -1829,14 +1827,17 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Lazily compiled once per immutable content type and shared by entities. */
     public DriveableCollisionProfile getCollisionProfile()
     {
-        DriveableCollisionProfile cached = collisionProfile;
+        DriveableCollisionProfile cached = collisionProfile.get();
         if (cached == null)
         {
             synchronized (this)
             {
-                cached = collisionProfile;
+                cached = collisionProfile.get();
                 if (cached == null)
-                    collisionProfile = cached = DriveableCollisionProfile.compile(this);
+                {
+                    cached = DriveableCollisionProfile.compile(this);
+                    collisionProfile.set(cached);
+                }
             }
         }
         return cached;
@@ -1935,7 +1936,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private static float readFloatOrBoolean(String key, float fallback, TypeFile file)
     {
-        String raw = readValue(key, (String) null, file);
+        String raw = readValue(key, null, file);
         if (raw == null)
             return fallback;
         if (raw.equalsIgnoreCase("true"))
@@ -2047,8 +2048,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      *
      * <p>{@link #aliasFloat} cannot express this, because it lets the
      * <em>last</em> key present win.
-     */
-    /**
+     * <p>
      * What one weapon bank's timing keys add up to.
      *
      * @param delay           the cadence between shots, by the precedence above
@@ -2159,11 +2159,30 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public EngineSoundPitch getEngineSoundPitchCurve(EngineSoundPitch defaults)
     {
         float base = Float.isFinite(engineSoundPitchBase) ? engineSoundPitchBase : defaults.base();
-        float full = Float.isFinite(engineSoundPitchAt100) ? Math.max(0F, engineSoundPitchAt100)
-            : Float.isFinite(engineSoundPitchRange) ? base + engineSoundPitchRange : defaults.full();
-        float half = Float.isFinite(engineSoundPitchAt50) ? Math.max(0F, engineSoundPitchAt50)
-            : Float.isFinite(engineSoundPitchRange) ? base + engineSoundPitchRange * 0.5F
-            : Float.isFinite(engineSoundPitchAt100) ? (base + full) * 0.5F : defaults.half();
+        float full;
+        if (Float.isFinite(engineSoundPitchAt100))
+        {
+            full = Math.max(0F, engineSoundPitchAt100);
+        }
+        else
+        {
+            if (Float.isFinite(engineSoundPitchRange))
+                full = base + engineSoundPitchRange;
+            else
+                full = defaults.full();
+        }
+        float half;
+        if (Float.isFinite(engineSoundPitchAt50))
+        {
+            half = Math.max(0F, engineSoundPitchAt50);
+        }
+        else
+        {
+            if (Float.isFinite(engineSoundPitchRange))
+                half = base + engineSoundPitchRange * 0.5F;
+            else
+                half = Float.isFinite(engineSoundPitchAt100) ? (base + full) * 0.5F : defaults.half();
+        }
         return new EngineSoundPitch(base, half, full);
     }
 

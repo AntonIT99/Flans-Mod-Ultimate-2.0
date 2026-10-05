@@ -1,5 +1,6 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IContentPack;
 import com.flansmodultimate.util.FileUtils;
 import org.apache.commons.io.FilenameUtils;

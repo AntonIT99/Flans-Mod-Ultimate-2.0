@@ -1,9 +1,9 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.ContentPack;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
+import com.flansmodultimate.content.ContentPack;
+import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

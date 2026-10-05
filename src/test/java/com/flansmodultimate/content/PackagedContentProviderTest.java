@@ -1,4 +1,4 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -73,7 +73,7 @@ class PackagedContentProviderTest
         assertEquals(Map.of(
             "modernwarfare", "Modern Warfare Content Pack",
             "parts", "Parts Content Pack"
-        ), PackagedContentPackApi.loadDisplayNames(mapping));
+        ), PackagedContentLoader.loadDisplayNames(mapping));
     }
 
     private static PackagedContentProvider provider(Path modulePath, Path content, Path assets,

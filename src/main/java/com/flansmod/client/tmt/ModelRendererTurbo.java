@@ -30,6 +30,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An extension to the ModelRenderer class. It basically is a copy of ModelRenderer,
@@ -64,7 +65,7 @@ public class ModelRendererTurbo extends ModelRenderer
     private static long transformationSequence;
     private static final ThreadLocal<ScreenSpaceCullingState> SCREEN_SPACE_CULLING =
         ThreadLocal.withInitial(ScreenSpaceCullingState::new);
-    private static volatile CullingOwner cullingOwner;
+    private static final AtomicReference<CullingOwner> cullingOwner = new AtomicReference<>();
 
     private int textureOffsetX;
     private int textureOffsetY;
@@ -2680,12 +2681,12 @@ public class ModelRendererTurbo extends ModelRenderer
      */
     private static ScreenSpaceCullingState cullingState()
     {
-        CullingOwner owner = cullingOwner;
+        CullingOwner owner = cullingOwner.get();
         Thread thread = Thread.currentThread();
         if (owner != null && owner.thread() == thread)
             return owner.state();
         ScreenSpaceCullingState state = SCREEN_SPACE_CULLING.get();
-        cullingOwner = new CullingOwner(thread, state);
+        cullingOwner.set(new CullingOwner(thread, state));
         return state;
     }
 
@@ -2970,7 +2971,12 @@ public class ModelRendererTurbo extends ModelRenderer
 
     private static final Matrix4f ROTATED_SHARED = new Matrix4f();
     private static final Matrix3f ROTATED_NORMAL = new Matrix3f();
-    private static final PoseStack.Pose ROTATED_POSE = new PoseStack().last();
+    // Geometry is also constructed for server-authoritative muzzle measurement.
+    // Delay the client-only scratch pose until the rendering path actually uses it.
+    private static final class RotatedRenderPose
+    {
+        private static final PoseStack.Pose INSTANCE = new PoseStack().last();
+    }
     private static final org.joml.Vector3f ROTATED_TRANSLATION = new org.joml.Vector3f();
 
     /**
@@ -3008,13 +3014,13 @@ public class ModelRendererTurbo extends ModelRenderer
                     if (scale != 1F) ROTATED_SHARED.scale(scale);
                     ROTATED_SHARED.mulLocal(parent.pose());
                     ROTATED_NORMAL.set(parent.normal()).mul(SHARED_NORMAL);
-                    ROTATED_POSE.normal().set(ROTATED_NORMAL);
+                    RotatedRenderPose.INSTANCE.normal().set(ROTATED_NORMAL);
                     state = cullingState();
                     culling = state.minimumPixelDiameter > 0F && state.projectionPixels > 0F;
                     if (culling) scaleSquared = scaleBoundSquared(ROTATED_SHARED);
                     prepared = true;
                 }
-                Matrix4f pose = ROTATED_POSE.pose().set(ROTATED_SHARED);
+                Matrix4f pose = RotatedRenderPose.INSTANCE.pose().set(ROTATED_SHARED);
                 parent.pose().transformPosition(part.offsetX + part.rotationPointX * 0.0625F * scale,
                     part.offsetY + part.rotationPointY * 0.0625F * scale,
                     part.offsetZ + part.rotationPointZ * 0.0625F * scale, ROTATED_TRANSLATION);
@@ -3027,7 +3033,7 @@ public class ModelRendererTurbo extends ModelRenderer
                         visible = !isBelowScreenSize(state, pose, part.boundsCenterX, part.boundsCenterY,
                             part.boundsCenterZ, part.boundsRadius, scaleSquared);
                 }
-                gpu.submitComposed(part.gpuGeometry, ROTATED_POSE, packedLight, packedOverlay, red, green, blue, alpha, visible);
+                gpu.submitComposed(part.gpuGeometry, RotatedRenderPose.INSTANCE, packedLight, packedOverlay, red, green, blue, alpha, visible);
                 continue;
             }
             float oldX = part.rotateAngleX, oldY = part.rotateAngleY, oldZ = part.rotateAngleZ;

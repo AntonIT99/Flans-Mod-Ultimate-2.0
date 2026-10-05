@@ -152,6 +152,6 @@ public final class CreativeTabs
     private static String getRegistryName(Item item)
     {
         ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
-        return key != null ? key.toString() : null;
+        return key.toString();
     }
 }

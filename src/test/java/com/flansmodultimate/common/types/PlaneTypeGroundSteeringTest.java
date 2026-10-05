@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.ContentPack;
 import com.flansmodultimate.config.Category;
+import com.flansmodultimate.content.ContentPack;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

@@ -53,8 +53,9 @@ public final class SoundLengthIndex
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
     /**
-     * Measured length of every sound event, in the order the content packs were loaded. The first
-     * pack registering a sound event owns it, exactly like {@link com.flansmodultimate.FlansMod#registerSound}.
+     * Measured event durations. Startup installs the sound-priority plan through {@link #replace(Map)},
+     * resolving event aliases and .ogg overrides before applying timers. {@link #load(Path)} remains
+     * a first-index-wins helper for individual legacy indexes.
      */
     private static final Map<String, Integer> soundLengths = new HashMap<>();
 
@@ -81,6 +82,16 @@ public final class SoundLengthIndex
     public static void clear()
     {
         soundLengths.clear();
+    }
+
+    /** Install durations resolved through the selected sound definitions and actual file owners. */
+    public static void replace(Map<String, Integer> lengths)
+    {
+        soundLengths.clear();
+        lengths.forEach((sound, ticks) -> {
+            if (ticks > 0)
+                soundLengths.put(ResourceUtils.sanitize(sound), ticks);
+        });
     }
 
     /**

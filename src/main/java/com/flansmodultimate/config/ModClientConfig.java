@@ -29,7 +29,7 @@ public final class ModClientConfig
     private static final String UNCENSORED_CONTENT_CONFIG_PATH = "General Settings.enableUncensoredContent";
     public static final ModConfigSpec configSpec;
 
-    private static volatile Boolean startupUncensoredContentEnabled;
+    private static final AtomicReference<Boolean> startupUncensoredContentEnabled = new AtomicReference<>();
 
     public final boolean showPackNameInItemDescriptions;
     public final boolean showDetailedItemDescriptions;
@@ -758,17 +758,17 @@ public final class ModClientConfig
         if (configSpec.isLoaded())
             return ENABLE_UNCENSORED_CONTENT.get();
 
-        Boolean startupValue = startupUncensoredContentEnabled;
+        Boolean startupValue = startupUncensoredContentEnabled.get();
         if (startupValue == null)
         {
             synchronized (ModClientConfig.class)
             {
-                startupValue = startupUncensoredContentEnabled;
+                startupValue = startupUncensoredContentEnabled.get();
                 if (startupValue == null)
                 {
                     Path configPath = PlatformPaths.configDir().resolve(CONFIG_FILE_NAME);
                     startupValue = readUncensoredContentSetting(configPath);
-                    startupUncensoredContentEnabled = startupValue;
+                    startupUncensoredContentEnabled.set(startupValue);
                 }
             }
         }

@@ -1,6 +1,6 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.IContentProvider;
 import com.wolffsmod.api.client.model.IModelBase;
 
 import java.io.IOException;

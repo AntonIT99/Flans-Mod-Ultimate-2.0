@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ContentLoadingConfig
@@ -25,8 +26,11 @@ public final class ContentLoadingConfig
     private static boolean overrideConfiguredSoundLengths = true;
     @Getter
     private static boolean overrideConfiguredShootPoints = true;
+    @Getter
+    private static List<String> soundPackPriority = List.of();
 
-    private static final int CONTENT_LOADING_SYSTEM_VERSION = 6;
+    // 7: normalize standalone sound assets on dedicated servers as well as clients.
+    private static final int CONTENT_LOADING_SYSTEM_VERSION = 7;
     private static final String FILE_NAME = FlansMod.MOD_ID + "-content-loading.toml";
 
     static
@@ -40,7 +44,7 @@ public final class ContentLoadingConfig
         Path file = configDir.resolve(FILE_NAME);
 
         FileUtils.tryCreateDirectories(configDir);
-        try (CommentedFileConfig config = CommentedFileConfig.of(file, TomlFormat.instance()))
+        try (CommentedFileConfig config = CommentedFileConfig.builder(file, TomlFormat.instance()).sync().build())
         {
             if (Files.isRegularFile(file))
                 config.load();
@@ -51,6 +55,7 @@ public final class ContentLoadingConfig
             useDefaultCategories = readBoolean(config, "useDefaultCategories", useDefaultCategories);
             overrideConfiguredSoundLengths = readBoolean(config, "overrideConfiguredSoundLengths", overrideConfiguredSoundLengths);
             overrideConfiguredShootPoints = readBoolean(config, "overrideConfiguredShootPoints", overrideConfiguredShootPoints);
+            soundPackPriority = SoundPriorityConfig.reconcile(config.get(SoundPriorityConfig.KEY), List.of());
 
             save(config);
 
@@ -67,7 +72,7 @@ public final class ContentLoadingConfig
 
     private static void writeDefaults(Path file)
     {
-        try (CommentedFileConfig config = CommentedFileConfig.of(file, TomlFormat.instance()))
+        try (CommentedFileConfig config = CommentedFileConfig.builder(file, TomlFormat.instance()).sync().build())
         {
             save(config);
         }
@@ -122,7 +127,30 @@ public final class ContentLoadingConfig
             around that point, at the same rate of fire.
             Server and clients should use the same value.""");
 
-        config.save();
+        config.set(SoundPriorityConfig.KEY, soundPackPriority);
+        config.setComment(SoundPriorityConfig.KEY, SoundPriorityConfig.COMMENT);
+        try
+        {
+            SoundPriorityConfig.saveIfChanged(config, PlatformPaths.configDir().resolve(FILE_NAME));
+        }
+        catch (java.io.IOException exception)
+        {
+            FlansMod.log.error("Could not write config file {}", FILE_NAME, exception);
+        }
+    }
+
+    public static List<String> synchronizeSoundPackPriority(List<String> discovered)
+    {
+        try
+        {
+            soundPackPriority = SoundPriorityConfig.synchronize(PlatformPaths.configDir().resolve(FILE_NAME), discovered);
+        }
+        catch (Exception exception)
+        {
+            soundPackPriority = SoundPriorityConfig.reconcile(soundPackPriority, discovered);
+            FlansMod.log.error("Could not save sound priorities in {}", FILE_NAME, exception);
+        }
+        return soundPackPriority;
     }
 
     private static String readString(CommentedFileConfig config, String key, String defaultValue)

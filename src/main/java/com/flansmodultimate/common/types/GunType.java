@@ -596,9 +596,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected float pivotHeight = 0.375F;
     @Nullable
-    private transient Vec3 measuredDeployableMuzzlePivot;
+    private Vec3 measuredDeployableMuzzlePivot;
     @Nullable
-    private transient Vec3 measuredDeployableMuzzle;
+    private Vec3 measuredDeployableMuzzle;
 
     //Default Scope Settings. Overriden by scope attachments
     //In many cases, this will simply be iron sights
@@ -1307,8 +1307,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /** The recoil factor of the chambered round, or 1 when the gun is empty. */
     private float loadedRecoilMultiplier(@Nullable ItemStack gunStack)
     {
-        ShootableType ammo = getLoadedAmmo(gunStack);
-        return ammo == null ? 1F : ammo.getRecoilMultiplier();
+        ShootableType loadedAmmo = getLoadedAmmo(gunStack);
+        return loadedAmmo == null ? 1F : loadedAmmo.getRecoilMultiplier();
     }
 
     /**
@@ -1608,6 +1608,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             case SNEAKING:
                 stackSpread *= sneakSpreadModifier;
                 break;
+            default:
+                break;
         }
 
         if (airborne) {
@@ -1687,6 +1689,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
                 break;
             case WALKING:
                 stackRecoil *= recoilWalkingMultiplier;
+                break;
+            default:
                 break;
         }
 
@@ -1863,11 +1867,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         if (bullets <= 0)
             bullets = numBullets;
 
-        if (stack != null)
-        {
-            if (getGrip(stack) != null && getSecondaryFire(stack))
-                bullets = getGrip(stack).secondaryNumBullets;
-        }
+        if (stack != null && getGrip(stack) != null && getSecondaryFire(stack))
+            bullets = getGrip(stack).secondaryNumBullets;
 
         return bullets;
     }

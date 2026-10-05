@@ -27,7 +27,7 @@ Useful starting points:
 
 | Concern | 1.7.10 source | Modern destination |
 | --- | --- | --- |
-| Bootstrap/content loading | `common/FlansMod.java`, `common/CommonProxy.java` | `FlansMod.java`, `ContentManager.java` |
+| Bootstrap/content loading | `common/FlansMod.java`, `common/CommonProxy.java` | `FlansMod.java`, `content/ContentManager.java` on master (root `ContentManager.java` on branches before the package refactor) |
 | Text definitions | `common/types/InfoType.java`, subtype `read` methods | `common/types/InfoType.java`, subtype parsers, `TypeFile` |
 | Guns | `common/guns/GunType.java`, `ItemGun.java` | `common/types/GunType.java`, gun items/handlers |
 | Driveables | `common/driveables/DriveableType.java`, `EntityDriveable.java` | `common/types/DriveableType.java`, driveable entities/handlers |

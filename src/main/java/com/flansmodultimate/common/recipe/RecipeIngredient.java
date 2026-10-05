@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.recipe;
 
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.IContentProvider;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 

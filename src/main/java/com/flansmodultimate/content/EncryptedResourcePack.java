@@ -1,5 +1,6 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
 
+import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ModClientConfig;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +14,10 @@ import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.resources.IoSupplier;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
@@ -24,12 +28,16 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Client resource pack backed by one authenticated encrypted bundle.
@@ -54,8 +62,9 @@ public final class EncryptedResourcePack implements PackResources
     private final PackLocationInfo location;
     private final String keyId;
     private final Path bundlePath;
-    private volatile Map<ResourceLocation, byte[]> entries;
-    private volatile Set<String> namespaces = Set.of();
+    private final AtomicReference<LoadedResources> resources = new AtomicReference<>();
+
+    private record LoadedResources(Map<ResourceLocation, byte[]> entries, Set<String> namespaces) {}
 
     public EncryptedResourcePack(PackLocationInfo location, String keyId, Path bundlePath)
     {
@@ -82,19 +91,30 @@ public final class EncryptedResourcePack implements PackResources
         if (type != PackType.CLIENT_RESOURCES || !isEnabled())
             return null;
 
-        byte[] data = getEntries().get(location);
+        byte[] data = getResources().entries().get(location);
         return data == null ? null : () -> new ByteArrayInputStream(data);
     }
 
     @Override
-    public void listResources(@NotNull PackType type, @NotNull String namespace, @NotNull String path,
-                              @NotNull ResourceOutput output)
+    public void listResources(@NotNull PackType type, @NotNull String namespace, @NotNull String path, @NotNull ResourceOutput output)
     {
         if (type != PackType.CLIENT_RESOURCES || !isEnabled())
             return;
 
-        String prefix = path.isEmpty() ? "" : path.endsWith("/") ? path : path + "/";
-        getEntries().forEach((location, data) -> {
+        String prefix;
+        if (path.isEmpty())
+        {
+            prefix = "";
+        }
+        else
+        {
+            if (path.endsWith("/"))
+                prefix = path;
+            else
+                prefix = path + "/";
+        }
+
+        getResources().entries().forEach((location, data) -> {
             if (location.getNamespace().equals(namespace)
                 && (location.getPath().equals(path) || location.getPath().startsWith(prefix)))
             {
@@ -109,8 +129,7 @@ public final class EncryptedResourcePack implements PackResources
     {
         if (type != PackType.CLIENT_RESOURCES || !isEnabled())
             return Set.of();
-        getEntries();
-        return namespaces;
+        return getResources().namespaces();
     }
 
     @Override
@@ -134,10 +153,9 @@ public final class EncryptedResourcePack implements PackResources
     }
 
     @Override
-    public void close()
+    public synchronized void close()
     {
-        entries = null;
-        namespaces = Set.of();
+        resources.set(null);
     }
 
     private static boolean isEnabled()
@@ -145,36 +163,38 @@ public final class EncryptedResourcePack implements PackResources
         return ModClientConfig.isUncensoredContentEnabled();
     }
 
-    private Map<ResourceLocation, byte[]> getEntries()
+    private LoadedResources getResources()
     {
-        Map<ResourceLocation, byte[]> current = entries;
+        LoadedResources current = resources.get();
         if (current != null)
             return current;
 
         synchronized (this)
         {
-            if (entries == null)
+            current = resources.get();
+            if (current == null)
             {
                 try
                 {
-                    entries = Collections.unmodifiableMap(decryptBundle(bundlePath, keyId));
+                    Map<ResourceLocation, byte[]> entries = Collections.unmodifiableMap(decryptBundle(bundlePath, keyId));
                     Set<String> loadedNamespaces = new LinkedHashSet<>();
                     entries.keySet().forEach(location -> loadedNamespaces.add(location.getNamespace()));
-                    namespaces = Set.copyOf(loadedNamespaces);
+                    current = new LoadedResources(entries, Set.copyOf(loadedNamespaces));
+                    resources.set(current);
                     FlansMod.log.info("Loaded {} encrypted uncensored resource(s) for {}.", entries.size(), keyId);
                 }
                 catch (Exception e)
                 {
-                    entries = Map.of();
-                    namespaces = Set.of();
+                    current = new LoadedResources(Map.of(), Set.of());
+                    resources.set(current);
                     FlansMod.log.error("Could not load encrypted uncensored resources from {}.", bundlePath, e);
                 }
             }
-            return entries;
+            return current;
         }
     }
 
-    static Map<ResourceLocation, byte[]> decryptBundle(Path bundlePath, String keyId) throws Exception
+    static Map<ResourceLocation, byte[]> decryptBundle(Path bundlePath, String keyId) throws IOException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException
     {
         byte[] encryptedFile = Files.readAllBytes(bundlePath);
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(encryptedFile)))
@@ -197,8 +217,7 @@ public final class EncryptedResourcePack implements PackResources
                 throw new IOException("Truncated or trailing encrypted resource data");
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(deriveKey(keyId), "AES"),
-                new GCMParameterSpec(GCM_TAG_BITS, iv));
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(deriveKey(keyId), "AES"), new GCMParameterSpec(GCM_TAG_BITS, iv));
             cipher.updateAAD(aad(keyId));
             return readArchive(cipher.doFinal(encrypted));
         }
@@ -262,7 +281,7 @@ public final class EncryptedResourcePack implements PackResources
         }
     }
 
-    private static byte[] deriveKey(String keyId) throws Exception
+    private static byte[] deriveKey(String keyId) throws NoSuchAlgorithmException
     {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         digest.update(KEY_SALT.getBytes(StandardCharsets.UTF_8));

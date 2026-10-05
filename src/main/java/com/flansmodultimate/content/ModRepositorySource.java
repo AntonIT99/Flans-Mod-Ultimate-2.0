@@ -1,4 +1,6 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
+
+import com.flansmodultimate.FlansMod;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -49,6 +51,12 @@ public class ModRepositorySource extends FolderRepositorySource
     @Override
     public void loadPacks(@NotNull Consumer<Pack> pOnLoad)
     {
+        java.util.Set<Path> selected = ContentManager.getContentPacks().stream()
+            .filter(provider -> !provider.isPreprocessed())
+            .map(provider -> provider.getPath().toAbsolutePath().normalize()).collect(java.util.stream.Collectors.toSet());
+        if (packType == PackType.CLIENT_RESOURCES)
+            ModernAssetAliases.rebuild(ContentManager.getContentPacks());
+
         try
         {
             net.minecraft.FileUtil.createDirectoriesSafe(folder);
@@ -56,6 +64,8 @@ public class ModRepositorySource extends FolderRepositorySource
             {
                 for (Path path : paths)
                 {
+                    if (!selected.contains(path.toAbsolutePath().normalize()))
+                        continue;
                     Pack.ResourcesSupplier supplier = createPackResourcesSupplier(path);
                     if (supplier == null)
                         continue;
@@ -65,13 +75,13 @@ public class ModRepositorySource extends FolderRepositorySource
                         @Override
                         public PackResources openPrimary(PackLocationInfo location)
                         {
-                            return new FilteringPackResources(supplier.openPrimary(location), packType);
+                            return new FilteringPackResources(supplier.openPrimary(location), packType, ModernAssetAliases.forPack(path));
                         }
 
                         @Override
                         public PackResources openFull(PackLocationInfo location, Pack.Metadata metadata)
                         {
-                            return new FilteringPackResources(supplier.openFull(location, metadata), packType);
+                            return new FilteringPackResources(supplier.openFull(location, metadata), packType, ModernAssetAliases.forPack(path));
                         }
                     };
 

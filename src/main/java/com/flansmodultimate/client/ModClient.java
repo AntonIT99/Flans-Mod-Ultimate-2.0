@@ -70,6 +70,7 @@ import net.minecraft.world.phys.HitResult;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
@@ -247,7 +248,8 @@ public class ModClient
     private static final DynamicLightUpdates dynamicLights = new DynamicLightUpdates();
     private static ClientLevel lightingLevel;
     /** Immutable-after-publication lookup read by the render/light threads. */
-    private static volatile Long2ByteMap forceDarkSkyLight = Long2ByteMaps.EMPTY_MAP;
+    private static final AtomicReference<Long2ByteMap> forceDarkSkyLight =
+        new AtomicReference<>(Long2ByteMaps.EMPTY_MAP);
 
     // Gun animations
     /** Gun animation variables for each entity holding a gun. Currently only applicable to the player */
@@ -515,7 +517,7 @@ public class ModClient
                     : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light), Block.UPDATE_CLIENTS);
             }
         });
-        forceDarkSkyLight = darkSkyLight.isEmpty() ? Long2ByteMaps.EMPTY_MAP : Long2ByteMaps.unmodifiable(darkSkyLight);
+        forceDarkSkyLight.set(darkSkyLight.isEmpty() ? Long2ByteMaps.EMPTY_MAP : Long2ByteMaps.unmodifiable(darkSkyLight));
     }
 
     public static boolean hasFancyGraphics()
@@ -631,14 +633,14 @@ public class ModClient
     /** Called by the client-only light-engine mixin for sky-light samples. */
     public static int applyForceDarkSkyLight(BlockPos pos, int vanillaLight)
     {
-        Long2ByteMap overrides = forceDarkSkyLight;
+        Long2ByteMap overrides = forceDarkSkyLight.get();
         long key = pos.asLong();
         return overrides.containsKey(key) ? Math.min(vanillaLight, Byte.toUnsignedInt(overrides.get(key))) : vanillaLight;
     }
 
     public static void clearTransientLighting()
     {
-        forceDarkSkyLight = Long2ByteMaps.EMPTY_MAP;
+        forceDarkSkyLight.set(Long2ByteMaps.EMPTY_MAP);
         dynamicLights.reset();
         lightingLevel = null;
     }

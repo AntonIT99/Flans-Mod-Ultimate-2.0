@@ -3,8 +3,8 @@ package com.flansmodultimate.common.types;
 import com.flansmod.client.model.EnumAnimationType;
 import com.flansmod.client.model.EnumMeleeAnimation;
 import com.flansmod.client.model.ModelGun;
-import com.flansmodultimate.ContentPack;
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.ContentPack;
+import com.flansmodultimate.content.IContentProvider;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

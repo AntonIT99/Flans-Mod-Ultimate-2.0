@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
@@ -28,6 +27,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketBlockHitEffect;

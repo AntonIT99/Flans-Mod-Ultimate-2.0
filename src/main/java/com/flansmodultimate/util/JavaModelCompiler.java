@@ -2,7 +2,7 @@ package com.flansmodultimate.util;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.IContentProvider;
+import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -13,6 +13,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
@@ -38,12 +44,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JavaModelCompiler

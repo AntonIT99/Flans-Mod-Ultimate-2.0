@@ -1,6 +1,6 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.ContentPack;
+import com.flansmodultimate.content.ContentPack;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,6 +16,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FileUtilsTest
 {
+    @Test
+    void jarConversionCannotReplaceAnotherPackZip() throws Exception
+    {
+        Path packs = Files.createDirectories(tempDir.resolve("flan"));
+        Path jar = packs.resolve("Pack.jar"), zip = packs.resolve("Pack.zip");
+        Files.writeString(jar, "original jar");
+        Files.writeString(zip, "original zip");
+        ContentPack pack = new ContentPack("Pack.jar", jar);
+        Files.createDirectories(pack.getExtractedPath());
+        Files.writeString(pack.getExtractedPath().resolve("generated.txt"), "generated");
+        assertFalse(FileUtils.repackArchive(pack));
+        assertEquals("original jar", Files.readString(jar));
+        assertEquals("original zip", Files.readString(zip));
+        assertEquals(jar.toAbsolutePath().normalize(), pack.getPath());
+    }
     @TempDir
     Path tempDir;
 

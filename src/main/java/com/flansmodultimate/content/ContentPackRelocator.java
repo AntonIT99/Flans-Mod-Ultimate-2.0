@@ -1,10 +1,12 @@
-package com.flansmodultimate;
+package com.flansmodultimate.content;
 
 import com.flansmodultimate.util.FileUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +33,7 @@ import java.util.zip.ZipFile;
  * Reconciles standalone Flan content archives and packaged-content mod JARs before content loading.
  * Archive contents are inspected only when their path, size, or modification time changed.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class ContentPackRelocator
 {
     static final String DESCRIPTOR_PATH = "META-INF/flansmodultimate-content.json";
@@ -50,10 +53,6 @@ final class ContentPackRelocator
         "armor", "assets", "com", "gui", "models", "skins", "sound", "sounds"
     );
 
-    private ContentPackRelocator()
-    {
-    }
-
     static RelocationResult reconcile(Path modsFolder, Path flanFolder, Path cachePath)
     {
         long start = System.nanoTime();
@@ -65,19 +64,15 @@ final class ContentPackRelocator
 
         Path normalizedMods = normalize(modsFolder);
         Path normalizedFlan = normalize(flanFolder);
-        if (!areSafeDistinctFolders(normalizedMods, normalizedFlan))
+        if (areNotSafeDistinctFolders(normalizedMods, normalizedFlan))
         {
-            warnings.add("Cannot relocate Flan content because the mods and flan folders overlap: '"
-                + normalizedMods + "' and '" + normalizedFlan + "'.");
-            return finish(start, movedContentPacks, movedBundles, inspectedArchives,
-                excludedFromContentLoading, warnings);
+            warnings.add("Cannot relocate Flan content because the mods and flan folders overlap: '" + normalizedMods + "' and '" + normalizedFlan + "'.");
+            return finish(start, movedContentPacks, movedBundles, inspectedArchives, excludedFromContentLoading, warnings);
         }
         if (!Files.isDirectory(normalizedMods) || !FileUtils.tryCreateDirectories(normalizedFlan))
         {
-            warnings.add("Cannot relocate Flan content because a required folder is unavailable: mods='"
-                + normalizedMods + "', flan='" + normalizedFlan + "'.");
-            return finish(start, movedContentPacks, movedBundles, inspectedArchives,
-                excludedFromContentLoading, warnings);
+            warnings.add("Cannot relocate Flan content because a required folder is unavailable: mods='" + normalizedMods + "', flan='" + normalizedFlan + "'.");
+            return finish(start, movedContentPacks, movedBundles, inspectedArchives, excludedFromContentLoading, warnings);
         }
 
         try
@@ -91,12 +86,10 @@ final class ContentPackRelocator
             return finish(start, movedContentPacks, movedBundles, inspectedArchives,
                 excludedFromContentLoading, warnings);
         }
-        if (!areSafeDistinctFolders(normalizedMods, normalizedFlan))
+        if (areNotSafeDistinctFolders(normalizedMods, normalizedFlan))
         {
-            warnings.add("Cannot relocate Flan content because the resolved mods and flan folders overlap: '"
-                + normalizedMods + "' and '" + normalizedFlan + "'.");
-            return finish(start, movedContentPacks, movedBundles, inspectedArchives,
-                excludedFromContentLoading, warnings);
+            warnings.add("Cannot relocate Flan content because the resolved mods and flan folders overlap: '" + normalizedMods + "' and '" + normalizedFlan + "'.");
+            return finish(start, movedContentPacks, movedBundles, inspectedArchives, excludedFromContentLoading, warnings);
         }
 
         ClassificationCache cache = loadCache(cachePath);
@@ -311,11 +304,11 @@ final class ContentPackRelocator
         return name.endsWith(FileUtils.JAR_EXTENSION) || name.endsWith(FileUtils.ZIP_EXTENSION);
     }
 
-    private static boolean areSafeDistinctFolders(Path modsFolder, Path flanFolder)
+    private static boolean areNotSafeDistinctFolders(Path modsFolder, Path flanFolder)
     {
-        return !modsFolder.equals(flanFolder)
-            && !modsFolder.startsWith(flanFolder)
-            && !flanFolder.startsWith(modsFolder);
+        return modsFolder.equals(flanFolder)
+            || modsFolder.startsWith(flanFolder)
+            || flanFolder.startsWith(modsFolder);
     }
 
     private static Path normalize(Path path)
@@ -351,15 +344,7 @@ final class ContentPackRelocator
             {
                 GSON.toJson(cache, writer);
             }
-            try
-            {
-                Files.move(temporary, normalizedCache, StandardCopyOption.ATOMIC_MOVE,
-                    StandardCopyOption.REPLACE_EXISTING);
-            }
-            catch (java.nio.file.AtomicMoveNotSupportedException e)
-            {
-                Files.move(temporary, normalizedCache, StandardCopyOption.REPLACE_EXISTING);
-            }
+            moveCacheIntoPlace(temporary, normalizedCache);
         }
         catch (IOException e)
         {
@@ -370,7 +355,20 @@ final class ContentPackRelocator
             }
             catch (IOException ignored)
             {
+                // Ignored
             }
+        }
+    }
+
+    private static void moveCacheIntoPlace(Path temporary, Path normalizedCache) throws IOException
+    {
+        try
+        {
+            Files.move(temporary, normalizedCache, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        }
+        catch (java.nio.file.AtomicMoveNotSupportedException e)
+        {
+            Files.move(temporary, normalizedCache, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -392,9 +390,7 @@ final class ContentPackRelocator
         UNKNOWN
     }
 
-    record RelocationResult(int movedContentPacks, int movedBundles, int inspectedArchives,
-                            long elapsedMillis, Set<Path> excludedFromContentLoading,
-                            List<String> warnings)
+    record RelocationResult(int movedContentPacks, int movedBundles, int inspectedArchives, long elapsedMillis, Set<Path> excludedFromContentLoading, List<String> warnings)
     {
         boolean restartRequired()
         {
@@ -404,29 +400,14 @@ final class ContentPackRelocator
 
     private record CachedClassification(ArchiveKind kind, boolean inspected) {}
 
-    private static final class ClassificationCache
+    private record ClassificationCache(int version, Map<String, CacheEntry> entries)
     {
-        final int version;
-        final Map<String, CacheEntry> entries;
-
-        ClassificationCache(int version, Map<String, CacheEntry> entries)
+        private ClassificationCache(int version, Map<String, CacheEntry> entries)
         {
             this.version = version;
             this.entries = Map.copyOf(entries);
         }
     }
 
-    private static final class CacheEntry
-    {
-        final long size;
-        final long lastModifiedMillis;
-        final ArchiveKind kind;
-
-        CacheEntry(long size, long lastModifiedMillis, ArchiveKind kind)
-        {
-            this.size = size;
-            this.lastModifiedMillis = lastModifiedMillis;
-            this.kind = kind;
-        }
-    }
+    private record CacheEntry(long size, long lastModifiedMillis, ArchiveKind kind) {}
 }
