@@ -32,7 +32,7 @@
 
     <codeStyleSettings language="JAVA">
         <!-- Current code generally fits inside this while allowing complex signatures. -->
-        <option name="RIGHT_MARGIN" value="160" />
+        <option name="RIGHT_MARGIN" value="180" />
 
         <!-- Allman braces. -->
         <option name="BRACE_STYLE" value="2" />
