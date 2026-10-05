@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -22,7 +23,7 @@ public final class TeamsRankIcon
         int column = Math.floorMod(rank, RANKS_PER_ROW);
         int row = Math.floorMod(prestige, PRESTIGE_ROWS);
         int size = doubleSize ? ICON_SIZE * 2 : ICON_SIZE;
-        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSRANKS, x, y, size, size,
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSRANKS, x, y, size, size,
             column * ICON_SIZE, row * ICON_SIZE, ICON_SIZE, ICON_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
     }
 }

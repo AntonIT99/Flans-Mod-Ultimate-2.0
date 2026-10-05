@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModMenus;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -24,12 +24,12 @@ public final class ModMenuScreens
 
     public static void register(Registrar registrar)
     {
-        registrar.register(FlansMod.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
-        registrar.register(FlansMod.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
-        registrar.register(FlansMod.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
-        registrar.register(FlansMod.mechaInventoryMenu.get(), MechaInventoryScreen::new);
-        registrar.register(FlansMod.paintjobTableMenu.get(), PaintjobTableScreen::new);
-        registrar.register(FlansMod.armorBoxMenu.get(), ArmorBoxScreen::new);
-        registrar.register(FlansMod.gunBoxMenu.get(), GunBoxScreen::new);
+        registrar.register(FlansModMenus.gunWorkbenchMenu.get(), GunWorkbenchScreen::new);
+        registrar.register(FlansModMenus.driveableCraftingMenu.get(), DriveableCraftingScreen::new);
+        registrar.register(FlansModMenus.driveableInventoryMenu.get(), DriveableInventoryScreen::new);
+        registrar.register(FlansModMenus.mechaInventoryMenu.get(), MechaInventoryScreen::new);
+        registrar.register(FlansModMenus.paintjobTableMenu.get(), PaintjobTableScreen::new);
+        registrar.register(FlansModMenus.armorBoxMenu.get(), ArmorBoxScreen::new);
+        registrar.register(FlansModMenus.gunBoxMenu.get(), GunBoxScreen::new);
     }
 }

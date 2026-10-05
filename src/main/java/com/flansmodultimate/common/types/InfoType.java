@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.recipe.RecipeResolver;
@@ -11,6 +12,7 @@ import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.entity.EffectPlatform;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.SoundLengthIndex;
@@ -468,7 +470,7 @@ public abstract class InfoType implements IContentType
 
             timer.applyLength().accept(measuredLength.getAsInt());
             resolved++;
-            FlansMod.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)",
+            FlansLog.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)",
                 originalShortName, timer.parameterName(), sound, configuredLength, measuredLength.getAsInt());
         }
 
@@ -577,7 +579,7 @@ public abstract class InfoType implements IContentType
                         }
                         catch (IOException e)
                         {
-                            FlansMod.log.error("Could not open {}", redirectFile, e);
+                            FlansLog.log.error("Could not open {}", redirectFile, e);
                         }
                     }
 
@@ -612,7 +614,7 @@ public abstract class InfoType implements IContentType
 
     private static ResourceLocation loadTexture(String textureName, Map<String, DynamicReference> refsMap, UnaryOperator<String> texturePath)
     {
-        ResourceLocation texture = FlansMod.FALLBACK_TEXTURE;
+        ResourceLocation texture = FlansModTextures.FALLBACK_TEXTURE;
         if (StringUtils.isNotBlank(textureName))
         {
             refsMap.putIfAbsent(textureName, new DynamicReference(textureName));
@@ -786,7 +788,7 @@ public abstract class InfoType implements IContentType
         {
             if (!lootReflectionFailureLogged)
             {
-                FlansMod.log.error("Could not append Flan's Mod dungeon loot entries", ex);
+                FlansLog.log.error("Could not append Flan's Mod dungeon loot entries", ex);
                 lootReflectionFailureLogged = true;
             }
             return Optional.empty();

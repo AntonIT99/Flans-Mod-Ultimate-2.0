@@ -5,6 +5,7 @@ import com.flansmodultimate.client.sound.EntitySoundInstance;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketRequestPlaySound;
 import com.flansmodultimate.platform.registry.RegistryEntry;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -199,7 +200,7 @@ public final class SoundHelper
         RegistryEntry<SoundEvent> soundEvent = FlansMod.getSoundEvent(sound).orElse(null);
         if (soundEvent == null || soundEvent.getId() == null)
         {
-            FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
+            FlansLog.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
             return Optional.empty();
         }
         return Optional.of(soundEvent.get());

@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModItems;
 import com.flansmodultimate.api.PaintjobVariant;
 import com.flansmodultimate.common.item.IPaintableItem;
 import com.flansmodultimate.common.paintjob.LegacyDyeMapper;
@@ -122,7 +123,7 @@ public abstract class PaintableType extends InfoType
         try
         {
             if (dyeName.equalsIgnoreCase(RAINBOW_DYE))
-                return () -> new ItemStack(FlansMod.rainbowPaintcan.get(), Integer.parseInt(stackSize));
+                return () -> new ItemStack(FlansModItems.rainbowPaintcan.get(), Integer.parseInt(stackSize));
             else
                 return () -> LegacyDyeMapper.toDyeStack(dyeName, Integer.parseInt(stackSize));
         }

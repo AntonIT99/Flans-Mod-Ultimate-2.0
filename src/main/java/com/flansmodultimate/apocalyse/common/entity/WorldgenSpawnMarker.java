@@ -1,9 +1,9 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanEntity;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.world.ApocalypseWorldgen;
+import com.flansmodultimate.platform.entity.FlanEntity;
+import com.flansmodultimate.util.FlansLog;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,7 +77,7 @@ public class WorldgenSpawnMarker extends FlanEntity
         }
         catch (RuntimeException exception)
         {
-            FlansMod.log.error("Apocalypse worldgen {} spawn at {} failed", kind, blockPosition(), exception);
+            FlansLog.log.error("Apocalypse worldgen {} spawn at {} failed", kind, blockPosition(), exception);
         }
     }
 
@@ -91,7 +91,7 @@ public class WorldgenSpawnMarker extends FlanEntity
         catch (IllegalArgumentException exception)
         {
             // An unknown kind came from a newer or edited save: do nothing rather than guess.
-            FlansMod.log.warn("Discarding apocalypse worldgen marker with unknown kind '{}'", tag.getString(NBT_KIND));
+            FlansLog.log.warn("Discarding apocalypse worldgen marker with unknown kind '{}'", tag.getString(NBT_KIND));
             kind = null;
         }
         seed = tag.getLong(NBT_SEED);

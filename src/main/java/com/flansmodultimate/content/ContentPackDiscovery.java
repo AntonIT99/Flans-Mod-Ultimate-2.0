@@ -1,9 +1,7 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
-
+import com.flansmodultimate.util.FlansLog;
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,7 +16,6 @@ import java.util.stream.Stream;
 /** One deterministic selection of standalone packs for both type loading and resource discovery. */
 final class ContentPackDiscovery
 {
-    private static final Logger LOGGER = FlansMod.log;
     private ContentPackDiscovery() {}
 
     static Map<String, Path> select(Path root, Set<Path> excluded) throws IOException
@@ -36,7 +33,7 @@ final class ContentPackDiscovery
                     : FilenameUtils.getBaseName(path.getFileName().toString());
                 Path previous = selected.putIfAbsent(basename.toLowerCase(Locale.ROOT), path);
                 if (previous != null)
-                    LOGGER.warn("Ignoring duplicate content pack '{}'; selected '{}' (directory, then ZIP, then JAR).", path.getFileName(), previous.getFileName());
+                    FlansLog.log.warn("Ignoring duplicate content pack '{}'; selected '{}' (directory, then ZIP, then JAR).", path.getFileName(), previous.getFileName());
             }
         }
         Map<String, Path> byFilename = new LinkedHashMap<>();

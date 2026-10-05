@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.block.entity;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
+
 import com.flansmodultimate.common.block.ItemHolderBlock;
 import com.flansmodultimate.common.types.ItemHolderType;
 import com.flansmodultimate.platform.block.FlanBlockEntity;
@@ -30,7 +31,7 @@ public class ItemHolderBlockEntity extends FlanBlockEntity
 
     public ItemHolderBlockEntity(BlockPos pos, BlockState state)
     {
-        super(FlansMod.itemHolderBlockEntity.get(), pos, state);
+        super(FlansModBlocks.itemHolderBlockEntity.get(), pos, state);
         if (state.getBlock() instanceof ItemHolderBlock itemHolderBlock)
             type = itemHolderBlock.getConfigType();
     }

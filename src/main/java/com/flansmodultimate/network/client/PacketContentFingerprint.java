@@ -1,14 +1,14 @@
 package com.flansmodultimate.network.client;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.sync.EnumContentMismatch;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.util.FlansLog;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -70,7 +70,7 @@ public class PacketContentFingerprint implements IClientPacket
         mismatches.forEach((pack, mismatch) -> {
             player.displayClientMessage(Component.translatable(mismatch.getTranslationKey(), pack)
                 .withStyle(ChatFormatting.YELLOW), false);
-            FlansMod.log.warn("Content pack '{}' does not match the server: {}", pack, mismatch);
+            FlansLog.log.warn("Content pack '{}' does not match the server: {}", pack, mismatch);
         });
     }
 }

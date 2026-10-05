@@ -1,6 +1,5 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.content.IContentProvider;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
@@ -86,7 +85,7 @@ public final class FileUtils
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not create {}", outputFile, e);
+            FlansLog.log.error("Could not create {}", outputFile, e);
         }
     }
 
@@ -103,7 +102,7 @@ public final class FileUtils
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not delete {}", file, e);
+            FlansLog.log.error("Could not delete {}", file, e);
         }
     }
 
@@ -318,7 +317,7 @@ public final class FileUtils
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not compare files {} and {}", file1, file2, e);
+            FlansLog.log.error("Could not compare files {} and {}", file1, file2, e);
             return true;
         }
     }
@@ -350,7 +349,7 @@ public final class FileUtils
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not compare file bytes {} and {}", file1, file2, e);
+            FlansLog.log.error("Could not compare file bytes {} and {}", file1, file2, e);
             return true;
         }
     }
@@ -442,7 +441,7 @@ public final class FileUtils
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not compare file {} with in-memory data", file, e);
+            FlansLog.log.error("Could not compare file {} with in-memory data", file, e);
             return true; // safest: treat as different so we refresh it
         }
     }
@@ -485,19 +484,19 @@ public final class FileUtils
         catch (TimeoutException e)
         {
             result.cancel(true);
-            FlansMod.log.warn("Timed out comparing image pixels between {} and {}", file1, file2);
+            FlansLog.log.warn("Timed out comparing image pixels between {} and {}", file1, file2);
             return false;
         }
         catch (InterruptedException e)
         {
             Thread.currentThread().interrupt();
             result.cancel(true);
-            FlansMod.log.warn("Interrupted while comparing image pixels between {} and {}", file1, file2);
+            FlansLog.log.warn("Interrupted while comparing image pixels between {} and {}", file1, file2);
             return false;
         }
         catch (ExecutionException e)
         {
-            FlansMod.log.warn("Could not compare image pixels between {} and {}: {}", file1, file2, String.valueOf(e.getCause()));
+            FlansLog.log.warn("Could not compare image pixels between {} and {}: {}", file1, file2, String.valueOf(e.getCause()));
             return false;
         }
     }
@@ -599,7 +598,7 @@ public final class FileUtils
     {
         if (path == null)
         {
-            FlansMod.log.error("Could not create directory: path is null");
+            FlansLog.log.error("Could not create directory: path is null");
             return false;
         }
 
@@ -610,7 +609,7 @@ public final class FileUtils
         }
         catch (IOException | SecurityException e)
         {
-            FlansMod.log.error("Could not create directory {}", path.toAbsolutePath(), e);
+            FlansLog.log.error("Could not create directory {}", path.toAbsolutePath(), e);
             return false;
         }
     }
@@ -632,7 +631,7 @@ public final class FileUtils
     {
         if (lockFile == null)
         {
-            FlansMod.log.error("Cannot run locked operation '{}': lock file is null", operationName);
+            FlansLog.log.error("Cannot run locked operation '{}': lock file is null", operationName);
             return false;
         }
 
@@ -645,17 +644,17 @@ public final class FileUtils
         {
             try (FileChannel channel = FileChannel.open(normalizedLockFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE))
             {
-                FlansMod.log.debug("Waiting for {} lock at {}", operationName, normalizedLockFile);
+                FlansLog.log.debug("Waiting for {} lock at {}", operationName, normalizedLockFile);
                 try (FileLock ignored = channel.lock())
                 {
-                    FlansMod.log.debug("Acquired {} lock at {}", operationName, normalizedLockFile);
+                    FlansLog.log.debug("Acquired {} lock at {}", operationName, normalizedLockFile);
                     operation.run();
                     return true;
                 }
             }
             catch (IOException | OverlappingFileLockException e)
             {
-                FlansMod.log.error("Could not acquire {} lock at {}", operationName, normalizedLockFile, e);
+                FlansLog.log.error("Could not acquire {} lock at {}", operationName, normalizedLockFile, e);
                 return false;
             }
         }
@@ -682,7 +681,7 @@ public final class FileUtils
             }
             catch (IOException e)
             {
-                FlansMod.log.error("Failed to open {}", provider.getPath(), e);
+                FlansLog.log.error("Failed to open {}", provider.getPath(), e);
             }
         }
         return null;
@@ -708,7 +707,7 @@ public final class FileUtils
             }
             catch (IOException e)
             {
-                FlansMod.log.error("Failed to close {}", provider.getPath(), e);
+                FlansLog.log.error("Failed to close {}", provider.getPath(), e);
             }
         }
     }
@@ -796,12 +795,12 @@ public final class FileUtils
 
                 if (safeName.isBlank())
                 {
-                    FlansMod.log.warn("Skipping archive entry with empty sanitized name: '{}'", rawName);
+                    FlansLog.log.warn("Skipping archive entry with empty sanitized name: '{}'", rawName);
                     continue;
                 }
 
                 if (wasMeaningfullySanitized(rawName, safeName, entry.isDirectory()))
-                    FlansMod.log.warn("Sanitized invalid archive entry name: '{}' -> '{}'", rawName, safeName);
+                    FlansLog.log.warn("Sanitized invalid archive entry name: '{}' -> '{}'", rawName, safeName);
 
                 Path outPath = normalizedOutputDir.resolve(safeName).normalize();
 
@@ -827,7 +826,7 @@ public final class FileUtils
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to extract archive for content pack {}", archivePath, e);
+            FlansLog.log.error("Failed to extract archive for content pack {}", archivePath, e);
             return false;
         }
     }
@@ -872,7 +871,7 @@ public final class FileUtils
 
         if (convertJarToZip && Files.exists(target))
         {
-            FlansMod.log.error("Cannot convert '{}' to ZIP because '{}' already exists. Preserving both archives.", originalArchive, target);
+            FlansLog.log.error("Cannot convert '{}' to ZIP because '{}' already exists. Preserving both archives.", originalArchive, target);
             return false;
         }
 
@@ -944,7 +943,7 @@ public final class FileUtils
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Error repacking archive {}", provider.getExtractedPath(), e);
+            FlansLog.log.error("Error repacking archive {}", provider.getExtractedPath(), e);
             // Best-effort cleanup of tmp (leave bak intact for recovery)
             try
             {
@@ -1036,13 +1035,13 @@ public final class FileUtils
                 }
                 catch (IOException e)
                 {
-                    FlansMod.log.error("Failed to delete {}", path, e);
+                    FlansLog.log.error("Failed to delete {}", path, e);
                 }
             });
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to delete {}", dir, e);
+            FlansLog.log.error("Failed to delete {}", dir, e);
         }
     }
 
@@ -1096,7 +1095,7 @@ public final class FileUtils
 
         if (!Files.isDirectory(tempRoot))
         {
-            FlansMod.log.warn("Skipping .flantemp startup cleanup because {} is not a directory", tempRoot);
+            FlansLog.log.warn("Skipping .flantemp startup cleanup because {} is not a directory", tempRoot);
             return;
         }
 
@@ -1113,13 +1112,13 @@ public final class FileUtils
                 }
                 catch (IOException e)
                 {
-                    FlansMod.log.warn("Failed to clean .flantemp entry {} on startup: {}", path, e.toString());
+                    FlansLog.log.warn("Failed to clean .flantemp entry {} on startup: {}", path, e.toString());
                 }
             });
         }
         catch (IOException e)
         {
-            FlansMod.log.debug("Failed to list temp root {}: {}", tempRoot, e.toString());
+            FlansLog.log.debug("Failed to list temp root {}: {}", tempRoot, e.toString());
         }
     }
 
@@ -1140,7 +1139,7 @@ public final class FileUtils
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to prepare extraction dir {}", outputDir, e);
+            FlansLog.log.error("Failed to prepare extraction dir {}", outputDir, e);
         }
     }
 
@@ -1223,7 +1222,7 @@ public final class FileUtils
             }
             catch (IOException e)
             {
-                FlansMod.log.error("Failed to open {}", archive, e);
+                FlansLog.log.error("Failed to open {}", archive, e);
                 return null;
             }
         }
@@ -1249,7 +1248,7 @@ public final class FileUtils
                 }
                 catch (IOException e)
                 {
-                    FlansMod.log.error("Failed to close {}", entry.getKey(), e);
+                    FlansLog.log.error("Failed to close {}", entry.getKey(), e);
                 }
             }
             fileSystems.clear();

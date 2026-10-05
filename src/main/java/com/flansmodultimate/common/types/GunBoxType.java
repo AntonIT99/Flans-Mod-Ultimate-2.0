@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.content.IContentProvider;
@@ -197,7 +198,7 @@ public class GunBoxType extends BlockType
 
     public ResourceLocation getGuiTexture()
     {
-        return loadGuiTextureLocation(guiTexturePath, FlansMod.TEXTURE_GUI_WEAPONBOX);
+        return loadGuiTextureLocation(guiTexturePath, FlansModTextures.TEXTURE_GUI_WEAPONBOX);
     }
 
     public static class GunBoxPage

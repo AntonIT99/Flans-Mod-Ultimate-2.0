@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.LogUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -23,7 +23,7 @@ public final class ItemFactory
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Failed to instantiate Item for {}", config);
+            FlansLog.log.error("Failed to instantiate Item for {}", config);
             LogUtils.logErrorWithoutStacktrace(e);
             return null;
         }

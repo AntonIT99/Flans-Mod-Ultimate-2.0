@@ -11,6 +11,7 @@ import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -1520,7 +1521,7 @@ public final class ModCommonConfig
         }
         catch (Exception e)
         {
-            FlansMod.log.warn("Unable to read early entity tracking settings from {}. Using defaults: {}", configPath, e.toString());
+            FlansLog.log.warn("Unable to read early entity tracking settings from {}. Using defaults: {}", configPath, e.toString());
             return defaults;
         }
     }
@@ -1538,7 +1539,7 @@ public final class ModCommonConfig
                 return (int)value;
         }
 
-        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected integer in range [{}, {}].",
+        FlansLog.log.warn("Ignoring invalid {} in {}: {}. Expected integer in range [{}, {}].",
             key, configPath, raw, MIN_ENTITY_TRACKING_RANGE, MAX_ENTITY_TRACKING_RANGE);
         return defaultValue;
     }
@@ -1668,7 +1669,7 @@ public final class ModCommonConfig
             String[] parts = trimmed.split(";");
             if (parts.length != 3)
             {
-                FlansMod.log.warn("Invalid config line: {}", line);
+                FlansLog.log.warn("Invalid config line: {}", line);
                 continue;
             }
 
@@ -1685,7 +1686,7 @@ public final class ModCommonConfig
             }
             catch (Exception e)
             {
-                FlansMod.log.error("Failed to parse line '{}': {}", line, e.getMessage());
+                FlansLog.log.error("Failed to parse line '{}': {}", line, e.getMessage());
             }
         }
     }

@@ -2,13 +2,14 @@ package com.flansmodultimate.network.server;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.registry.RegistryEntry;
+import com.flansmodultimate.util.FlansLog;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -65,7 +66,7 @@ public class PacketRequestPlaySound implements IServerPacket
         RegistryEntry<SoundEvent> event = FlansMod.getSoundEvent(sound).orElse(null);
         if (event == null || event.getId() == null)
         {
-            FlansMod.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
+            FlansLog.log.debug("Could not play sound event {}", ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, sound));
             return;
         }
 

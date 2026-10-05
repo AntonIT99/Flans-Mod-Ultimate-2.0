@@ -21,6 +21,7 @@ import com.flansmodultimate.config.ContentLoadingConfig;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.ClassLoaderUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModelClassResolver;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -199,7 +200,7 @@ final class MuzzleMeasurementCache
         }
         catch (IOException | RuntimeException e)
         {
-            FlansMod.log.warn("Ignoring unreadable muzzle measurement cache {}: {}", file, e.toString());
+            FlansLog.log.warn("Ignoring unreadable muzzle measurement cache {}: {}", file, e.toString());
             return null;
         }
     }
@@ -216,7 +217,7 @@ final class MuzzleMeasurementCache
         }
         catch (IOException | RuntimeException e)
         {
-            FlansMod.log.warn("Could not write the muzzle measurement cache {}: {}", file, e.toString());
+            FlansLog.log.warn("Could not write the muzzle measurement cache {}: {}", file, e.toString());
         }
     }
 
@@ -274,7 +275,7 @@ final class MuzzleMeasurementCache
         catch (NoSuchAlgorithmException | IOException | RuntimeException e)
         {
             // Without a key nothing can be trusted, so every run measures again.
-            FlansMod.log.warn("Could not fingerprint the content for the muzzle measurement cache: {}", e.toString());
+            FlansLog.log.warn("Could not fingerprint the content for the muzzle measurement cache: {}", e.toString());
             return "unkeyed-" + System.nanoTime();
         }
     }

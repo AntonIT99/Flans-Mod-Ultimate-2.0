@@ -1,6 +1,5 @@
 package com.flansmodultimate.util;
 
-import com.flansmodultimate.FlansMod;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -105,7 +104,7 @@ public final class SoundJsonProcessor {
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not process {}", soundsJsonFile, e);
+            FlansLog.log.error("Could not process {}", soundsJsonFile, e);
         }
     }
 
@@ -323,7 +322,7 @@ public final class SoundJsonProcessor {
         }
         catch (IOException e)
         {
-            FlansMod.log.warn("Could not scan sounds dir {}", soundsDir, e);
+            FlansLog.log.warn("Could not scan sounds dir {}", soundsDir, e);
             return Collections.emptySet();
         }
     }

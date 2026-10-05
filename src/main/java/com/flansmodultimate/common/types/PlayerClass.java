@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -121,7 +121,7 @@ public class PlayerClass extends InfoType
             .orElse(ItemStack.EMPTY);
         if (stack.isEmpty())
         {
-            FlansMod.log.warn("Unknown starting item '{}' in player class {}", parts[0], originalShortName);
+            FlansLog.log.warn("Unknown starting item '{}' in player class {}", parts[0], originalShortName);
             return ItemStack.EMPTY;
         }
 

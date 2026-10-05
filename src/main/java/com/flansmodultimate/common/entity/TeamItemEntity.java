@@ -1,12 +1,13 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.Team;
-import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.platform.entity.FlanItemEntity;
 import com.flansmodultimate.platform.entity.SpawnDataEntity;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +15,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import com.flansmodultimate.platform.entity.FlanItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -55,7 +55,7 @@ public class TeamItemEntity extends FlanItemEntity implements SpawnDataEntity
 
     public TeamItemEntity(Level level, BlockPos spawnerPos, UUID spawnerId, ItemStack stack, double angle)
     {
-        this(FlansMod.teamItemEntity.get(), level);
+        this(FlansModEntities.teamItemEntity.get(), level);
         this.center = Vec3.atCenterOf(spawnerPos);
         this.angle = angle;
         this.spawnerId = spawnerId;

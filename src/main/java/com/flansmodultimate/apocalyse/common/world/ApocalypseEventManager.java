@@ -1,6 +1,5 @@
 package com.flansmodultimate.apocalyse.common.world;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.AiMechaEntity;
 import com.flansmodultimate.apocalyse.common.entity.InventoryHolderEntity;
@@ -10,6 +9,7 @@ import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketApocalypseCountdown;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -78,7 +78,7 @@ public final class ApocalypseEventManager
 
         int ticks = ModApocalypseConfig.apocalypseCountdownLength();
         data.startCountdown(ticks, mecha.getUUID(), mecha.getOwnerId(), level.dimension());
-        FlansMod.log.info("An AI chip mecha has armed the apocalypse. {} ticks remain.", ticks);
+        FlansLog.log.info("An AI chip mecha has armed the apocalypse. {} ticks remain.", ticks);
         broadcastCountdown(level.getServer(), ticks);
     }
 
@@ -137,7 +137,7 @@ public final class ApocalypseEventManager
 
     private static void begin(MinecraftServer server, ServerLevel level, Mecha mecha, ApocalypseSavedData data)
     {
-        FlansMod.log.info("The apocalypse has begun!");
+        FlansLog.log.info("The apocalypse has begun!");
         BlockPos entryPoint = mecha.blockPosition();
         List<ServerPlayer> travellers = selectTravellers(server, level, mecha, data.getCountdownPlacerId());
         data.clearCountdown();

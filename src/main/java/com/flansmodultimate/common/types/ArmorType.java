@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -176,7 +176,7 @@ public class ArmorType extends InfoType
                 armorItemType = ArmorItem.Type.BOOTS;
                 break;
             default:
-                FlansMod.log.error("Armor Type '{}' not recognized! Defaulting to Helmet", rawArmorItemType);
+                FlansLog.log.error("Armor Type '{}' not recognized! Defaulting to Helmet", rawArmorItemType);
                 armorItemType = ArmorItem.Type.HELMET;
                 break;
         }

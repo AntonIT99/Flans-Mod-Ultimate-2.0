@@ -1,12 +1,12 @@
 package com.flansmodultimate.common;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.FireableGun;
 import com.flansmodultimate.common.item.GloveItem;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.util.FlansLog;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -172,7 +172,7 @@ public final class EnchantmentModule
             }
         }
 
-        FlansMod.log.debug("Juggernaut capped incoming damage {} to {}", event.amount(), threshold);
+        FlansLog.log.debug("Juggernaut capped incoming damage {} to {}", event.amount(), threshold);
         event.setAmount(threshold);
     }
 

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketBaseEditState;
 import com.flansmodultimate.network.server.PacketBaseEditAction;
@@ -107,7 +108,7 @@ public final class TeamsBaseEditScreen extends Screen
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         int left = width / 2 - 128;
         int top = height / 2 - 94;
-        graphics.blit(FlansMod.TEXTURE_GUI_BASEEDIT, left, top, 0, 0, 256, 189, 256, 256);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_BASEEDIT, left, top, 0, 0, 256, 189, 256, 256);
         graphics.drawString(font, title, left + 6, top + 6, 0xFFFFFF, false);
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.base_name"), left + 6, top + 24, 0xFFFFFF, false);
         graphics.drawString(font, Component.translatable("gui.flansmod.teams.map"), left + 6, top + 64, 0xFFFFFF, false);

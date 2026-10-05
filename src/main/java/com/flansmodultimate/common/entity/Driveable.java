@@ -90,6 +90,7 @@ import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
@@ -955,7 +956,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         }
         catch (RuntimeException exception)
         {
-            FlansMod.log.warn("Invalid driveable spawn data; discarding entity", exception);
+            FlansLog.log.warn("Invalid driveable spawn data; discarding entity", exception);
             discard();
         }
     }
@@ -972,7 +973,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
         if (!(InfoType.getInfoType(typeName) instanceof DriveableType type))
         {
-            FlansMod.log.warn("Unknown driveable type {}, discarding entity", typeName);
+            FlansLog.log.warn("Unknown driveable type {}, discarding entity", typeName);
             discard();
             return;
         }

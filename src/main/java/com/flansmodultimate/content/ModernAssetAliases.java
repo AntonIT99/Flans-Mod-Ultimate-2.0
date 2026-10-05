@@ -1,12 +1,12 @@
 package com.flansmodultimate.content;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.util.FlansLog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import net.minecraftforge.fml.ModList;
 
 import java.io.IOException;
@@ -102,7 +102,7 @@ final class ModernAssetAliases
                     View view = plans.get(i + 1);
                     rebuilt.put(provider.getPath().toAbsolutePath().normalize(), view);
                     if (!view.sources().isEmpty())
-                        FlansMod.log.info("Aliased {} modern asset resources in [{}]", view.sources().size(), provider.getName());
+                        FlansLog.log.info("Aliased {} modern asset resources in [{}]", view.sources().size(), provider.getName());
                 }
             }
             views.set(Map.copyOf(rebuilt));
@@ -110,7 +110,7 @@ final class ModernAssetAliases
         catch (IOException | RuntimeException e)
         {
             views.set(Map.of());
-            FlansMod.log.error("Could not resolve modern content-pack asset conflicts", e);
+            FlansLog.log.error("Could not resolve modern content-pack asset conflicts", e);
         }
     }
 
@@ -264,7 +264,7 @@ final class ModernAssetAliases
             }
             catch (RuntimeException e)
             {
-                FlansMod.log.warn("Cannot rewrite malformed asset JSON '{}': {}", file, e.toString());
+                FlansLog.log.warn("Cannot rewrite malformed asset JSON '{}': {}", file, e.toString());
             }
         }
         return result;

@@ -1,8 +1,8 @@
 package com.flansmodultimate.client.render;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import org.jetbrains.annotations.NotNull;
@@ -93,7 +93,7 @@ public class ArmorCapeLayer<T extends LivingEntity, M extends HumanoidModel<T>> 
             return Optional.empty();
         if (Minecraft.getInstance().getResourceManager().getResource(texture).isEmpty())
         {
-            FlansMod.log.warn("Ignoring CapeTexture '{}' of armor {}: texture {} was not found",
+            FlansLog.log.warn("Ignoring CapeTexture '{}' of armor {}: texture {} was not found",
                 armorType.getCapeTextureName(), armorType.getShortName(), texture);
             return Optional.empty();
         }

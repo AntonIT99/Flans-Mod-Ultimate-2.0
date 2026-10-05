@@ -1,7 +1,7 @@
 package com.flansmod.client.model;
 
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
 
 import net.minecraft.resources.ResourceLocation;
 
@@ -29,6 +29,6 @@ public class ModelDefaultMuzzleFlash extends ModelMuzzleFlash
     @Override
     public ResourceLocation getTexture()
     {
-        return FlansMod.TEXTURE_DEFAULTMUZZLEFLASH;
+        return FlansModTextures.TEXTURE_DEFAULTMUZZLEFLASH;
     }
 }

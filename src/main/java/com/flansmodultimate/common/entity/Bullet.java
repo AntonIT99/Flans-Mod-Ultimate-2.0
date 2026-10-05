@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.api.IBullet;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
@@ -20,12 +22,13 @@ import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.network.server.PacketManualGuidance;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
+import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -142,7 +145,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     public Bullet(Level level, FiredShot firedShot, Vec3 origin, Vec3 direction)
     {
-        super(FlansMod.bulletEntity.get(), level, firedShot.getBulletType());
+        super(FlansModEntities.bulletEntity.get(), level, firedShot.getBulletType());
         this.firedShot = firedShot;
         configType = firedShot.getBulletType();
         initialPenetratingPower = ShootingHelper.getInitialPenetratingPower(firedShot);
@@ -344,7 +347,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 configType = bType;
             if (configType == null)
             {
-                FlansMod.log.warn("Unknown bullet type {}, discarding.", shortname);
+                FlansLog.log.warn("Unknown bullet type {}, discarding.", shortname);
                 discard();
                 return;
             }
@@ -363,7 +366,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         catch (Exception e)
         {
             discard();
-            FlansMod.log.warn("Failed to read bullet spawn data", e);
+            FlansLog.log.warn("Failed to read bullet spawn data", e);
         }
     }
 
@@ -501,7 +504,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         }
         catch (Exception ex)
         {
-            FlansMod.log.error("Error ticking bullet {}", shortname, ex);
+            FlansLog.log.error("Error ticking bullet {}", shortname, ex);
             discard();
         }
     }
@@ -1228,7 +1231,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         playedFlybySound = true;
         float soundVolume = 10.0F;
         float soundPitch = 1.0F / (random.nextFloat() * 0.4F + 0.8F);
-        FlansMod.getSoundEvent(FlansMod.SOUND_BULLETFLYBY).ifPresent(soundEvent ->
+        FlansMod.getSoundEvent(FlansModSounds.SOUND_BULLETFLYBY).ifPresent(soundEvent ->
                 level.playLocalSound(getX(), getY(), getZ(), soundEvent.get(), SoundSource.HOSTILE, soundVolume, soundPitch, false));
     }
 }

@@ -1,9 +1,7 @@
 package com.flansmodultimate.client.render.gpu;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.render.VertexWriterPlatform;
-
-import org.slf4j.Logger;
+import com.flansmodultimate.util.FlansLog;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -19,7 +17,6 @@ public final class RenderDiagnostics
     private static long bulkWrites, bulkVertices;
     private static long frames, startNanos, stopNanos;
     private static long driveables, driveableNanos, drawNanos, lookupNanos, paletteNanos, glDrawNanos;
-    private static final Logger LOG = FlansMod.log;
     /** Caller stacks of geometry changes logged per recording, to name what keeps invalidating geometry. */
     private static final int LOGGED_GEOMETRY_CHANGES = 3;
     private static long geometryChanges, faceRevalidations, scannedRevalidations, cpuParts, cpuVertices;
@@ -74,7 +71,7 @@ public final class RenderDiagnostics
     {
         if (!enabled) return;
         if (geometryChanges++ < LOGGED_GEOMETRY_CHANGES)
-            LOG.info("Flan render counters: geometry change while recording", new Throwable("geometry change caller"));
+            FlansLog.log.info("Flan render counters: geometry change while recording", new Throwable("geometry change caller"));
     }
 
     /** A part re-validating its polygons instead of reusing them; scanned when it also checks every vertex. */

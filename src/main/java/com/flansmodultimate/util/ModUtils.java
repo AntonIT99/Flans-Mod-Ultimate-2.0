@@ -289,7 +289,7 @@ public final class ModUtils
     {
         if (isInteger(id))
         {
-            FlansMod.log.warn("Numeric block id '{}' is not supported since Minecraft 1.13, use a registry name such as 'minecraft:stone' instead", id);
+            FlansLog.log.warn("Numeric block id '{}' is not supported since Minecraft 1.13, use a registry name such as 'minecraft:stone' instead", id);
             return Optional.empty();
         }
 
@@ -306,7 +306,7 @@ public final class ModUtils
     {
         if (isInteger(id))
         {
-            FlansMod.log.warn("Numeric item id '{}' is not supported since Minecraft 1.13, use a registry name such as 'minecraft:stone' instead", id);
+            FlansLog.log.warn("Numeric item id '{}' is not supported since Minecraft 1.13, use a registry name such as 'minecraft:stone' instead", id);
             return Optional.empty();
         }
 

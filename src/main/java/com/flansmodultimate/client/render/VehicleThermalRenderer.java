@@ -8,12 +8,12 @@ import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.render.VertexPlatform;
+import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
-import org.slf4j.Logger;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
@@ -30,7 +30,6 @@ import net.minecraft.world.phys.Vec3;
 /** Depth-tested white-hot FLIR, composed independently of the game's selected post effect. */
 public final class VehicleThermalRenderer
 {
-    private static final Logger LOGGER = FlansMod.log;
     private static final ResourceLocation EFFECT = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "shaders/post/vehicle_thermal.json");
     private static PostChain chain;
     private static final MultiBufferSource.BufferSource buffers = VertexPlatform.immediateBuffers(256);
@@ -114,7 +113,7 @@ public final class VehicleThermalRenderer
             if (chain != null) chain.close();
             chain = null;
             failed = true;
-            LOGGER.error("Could not render vehicle thermal optics; reload resources to retry", ex);
+            FlansLog.log.error("Could not render vehicle thermal optics; reload resources to retry", ex);
         }
         finally
         {

@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.particle;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModParticles;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -65,8 +66,8 @@ public class FmTracerParticle extends ParticleBase
         @Override
         public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double vx, double vy, double vz)
         {
-            if (type == FlansMod.fmTracerParticle.get())
-                ParticleHelper.spawnSubParticle(FlansMod.fmSmokeParticle.get(), x, y, z);
+            if (type == FlansModParticles.fmTracerParticle.get())
+                ParticleHelper.spawnSubParticle(FlansModParticles.fmSmokeParticle.get(), x, y, z);
             return new FmTracerParticle(level, x, y, z, vx, vy, vz, sprites);
         }
     }

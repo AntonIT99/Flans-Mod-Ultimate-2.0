@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.paintjob.Paintjob;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -65,13 +65,13 @@ public final class RewardBox extends InfoType
             InfoType rawType = InfoType.getInfoType(values[1], contentPack);
             if (!(rawType instanceof PaintableType paintable))
             {
-                FlansMod.log.warn("Unknown paintable type '{}' in reward box {}", values[1], originalShortName);
+                FlansLog.log.warn("Unknown paintable type '{}' in reward box {}", values[1], originalShortName);
                 continue;
             }
             Paintjob paintjob = findPaintjob(paintable, values[2]);
             if (paintjob == null)
             {
-                FlansMod.log.warn("Unknown paintjob '{}' for '{}' in reward box {}", values[2], values[1], originalShortName);
+                FlansLog.log.warn("Unknown paintjob '{}' for '{}' in reward box {}", values[2], values[1], originalShortName);
                 continue;
             }
             paintjob.setRarity(rarity);

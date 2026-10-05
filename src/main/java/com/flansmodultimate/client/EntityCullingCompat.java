@@ -1,12 +1,12 @@
 package com.flansmodultimate.client;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +40,6 @@ public final class EntityCullingCompat
 {
     public static final String MOD_ID = "entityculling";
     static final String MOD_BASE = "dev.tr7zw.entityculling.EntityCullingModBase";
-    private static final Logger LOGGER = FlansMod.log;
 
     /** Registers the exemptions once, during client setup. EntityCulling creates its instance while it is constructed. */
     public static void init()
@@ -53,13 +52,13 @@ public final class EntityCullingCompat
             if (instance == null)
                 throw new IllegalStateException("EntityCulling is not initialized");
             exempt(instance,
-                List.of(FlansMod.bulletEntity.get(), FlansMod.planeEntity.get(), ApocalypseContent.flyByPlane.get()),
-                List.of(FlansMod.vehicleEntity.get(), FlansMod.mechaEntity.get(), ApocalypseContent.aiMecha.get(),
-                    FlansMod.seatEntity.get(), FlansMod.wheelEntity.get(), FlansMod.grenadeEntity.get()));
+                List.of(FlansModEntities.bulletEntity.get(), FlansModEntities.planeEntity.get(), ApocalypseContent.flyByPlane.get()),
+                List.of(FlansModEntities.vehicleEntity.get(), FlansModEntities.mechaEntity.get(), ApocalypseContent.aiMecha.get(),
+                    FlansModEntities.seatEntity.get(), FlansModEntities.wheelEntity.get(), FlansModEntities.grenadeEntity.get()));
         }
         catch (ReflectiveOperationException | LinkageError | RuntimeException ex)
         {
-            LOGGER.warn("EntityCulling is loaded, but its whitelists are unavailable; Flan's Mod driveables and projectiles may freeze while unseen", ex);
+            FlansLog.log.warn("EntityCulling is loaded, but its whitelists are unavailable; Flan's Mod driveables and projectiles may freeze while unseen", ex);
         }
     }
 

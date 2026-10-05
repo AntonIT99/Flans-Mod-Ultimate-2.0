@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
@@ -100,7 +100,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable,
                                   Page initialPage, int passengerSeatIndex)
     {
-        super(FlansMod.driveableInventoryMenu.get(), containerId);
+        super(FlansModMenus.driveableInventoryMenu.get(), containerId);
         this.playerInventory = playerInventory;
         this.driveable = driveable;
         this.passengerSeatIndex = passengerSeatIndex;

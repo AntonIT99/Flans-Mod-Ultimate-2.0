@@ -1,10 +1,9 @@
 package com.flansmodultimate.common.sync;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-
 import org.apache.commons.io.FilenameUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -133,7 +132,7 @@ public final class ContentFingerprint
         {
             // Every JVM is required to provide SHA-256, so this is unreachable in practice, and a
             // fingerprint is worth nothing to crash a load over.
-            FlansMod.log.error("Cannot fingerprint content pack '{}': {} is unavailable", pack, ALGORITHM);
+            FlansLog.log.error("Cannot fingerprint content pack '{}': {} is unavailable", pack, ALGORITHM);
             return null;
         }
     }

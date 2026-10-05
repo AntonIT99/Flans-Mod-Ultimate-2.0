@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.inventory;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
+
+import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +34,7 @@ public class PaintjobTableMenu extends AbstractContainerMenu
 
     public PaintjobTableMenu(int id, Inventory playerInv, BlockPos blockPos)
     {
-        super(FlansMod.paintjobTableMenu.get(), id);
+        super(FlansModMenus.paintjobTableMenu.get(), id);
         this.access = ContainerLevelAccess.create(playerInv.player.level(), blockPos);
 
         // The two working slots belong to this menu, not to the block, so several players
@@ -65,7 +67,7 @@ public class PaintjobTableMenu extends AbstractContainerMenu
     {
         return access.evaluate((level, pos) -> {
             Block block = level.getBlockState(pos).getBlock();
-            return block == FlansMod.paintjobTable.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
+            return block == FlansModBlocks.paintjobTable.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
         }, true);
     }
 

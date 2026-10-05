@@ -22,6 +22,7 @@ import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.JavaModelCompiler;
 import com.flansmodultimate.util.LogUtils;
 import com.flansmodultimate.util.ResourceUtils;
@@ -142,7 +143,7 @@ public class ContentManager
         }
         if (isGameDirectory)
         {
-            FlansMod.log.warn("Content pack relocation is disabled because the configured flan folder is the game directory: '{}'.", gameDir);
+            FlansLog.log.warn("Content pack relocation is disabled because the configured flan folder is the game directory: '{}'.", gameDir);
             return;
         }
 
@@ -151,14 +152,14 @@ public class ContentManager
             gameDir.resolve(ContentPackRelocator.CACHE_FILE_NAME)
         );
         excludedFlanArchives = result.excludedFromContentLoading();
-        result.warnings().forEach(FlansMod.log::warn);
+        result.warnings().forEach(FlansLog.log::warn);
         if (result.movedContentPacks() > 0)
-            FlansMod.log.info("Moved {} misplaced standalone Flan content pack(s) from mods to '{}'.",
+            FlansLog.log.info("Moved {} misplaced standalone Flan content pack(s) from mods to '{}'.",
                 result.movedContentPacks(), normalizedFlanFolder);
         if (result.restartRequired())
-            FlansMod.log.warn("Moved {} Flan pack mod bundle(s) to '{}'. Restart the game to activate them.",
+            FlansLog.log.warn("Moved {} Flan pack mod bundle(s) to '{}'. Restart the game to activate them.",
                 result.movedBundles(), PlatformPaths.modsDir().toAbsolutePath());
-        FlansMod.log.debug("Verified Flan archive locations in {} ms; inspected {} new or changed archive(s).",
+        FlansLog.log.debug("Verified Flan archive locations in {} ms; inspected {} new or changed archive(s).",
             result.elapsedMillis(), result.inspectedArchives());
     }
 
@@ -179,7 +180,7 @@ public class ContentManager
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to load content packs from flan folder.", e);
+            FlansLog.log.error("Failed to load content packs from flan folder.", e);
         }
     }
 
@@ -212,7 +213,7 @@ public class ContentManager
         Path gameDir = flanFolder.getParent();
         if (gameDir == null)
         {
-            FlansMod.log.error("Cannot load content packs because flan folder '{}' has no parent directory.", flanFolder);
+            FlansLog.log.error("Cannot load content packs because flan folder '{}' has no parent directory.", flanFolder);
             return;
         }
 
@@ -301,9 +302,9 @@ public class ContentManager
             long postTypeNanos = System.nanoTime() - postTypeStart;
             long archiveCloseNanos = postTypeNanos - textureIndexNanos - idAliasNanos - assetCheckNanos - dataCheckNanos - unpackCheckNanos;
 
-            if (FlansMod.log.isDebugEnabled())
+            if (FlansLog.log.isDebugEnabled())
             {
-                FlansMod.log.debug("{}: Post-type checks completed in {} ms (textures: {} ms, id aliases: {} ms, assets: {} ms, data: {} ms, unpack: {} ms, archive close: {} ms)",
+                FlansLog.log.debug("{}: Post-type checks completed in {} ms (textures: {} ms, id aliases: {} ms, assets: {} ms, data: {} ms, unpack: {} ms, archive close: {} ms)",
                     provider.getName(),
                     formatMilliseconds(postTypeNanos),
                     formatMilliseconds(textureIndexNanos),
@@ -317,7 +318,7 @@ public class ContentManager
             if (preprocessed)
             {
                 long endTime = System.currentTimeMillis();
-                FlansMod.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), endTime - startTime);
+                FlansLog.log.info("Loaded preprocessed content pack {} in {} ms.", provider.getName(), endTime - startTime);
                 continue;
             }
 
@@ -327,7 +328,7 @@ public class ContentManager
 
             if (unpackArchive)
             {
-                FlansMod.log.info("Reprocessing {}...", provider.getName());
+                FlansLog.log.info("Reprocessing {}...", provider.getName());
                 FileUtils.prepareFreshExtractionDir(provider.getExtractedPath());
                 archiveExtracted = FileUtils.extractArchive(provider.getPath(), provider.getExtractedPath());
             }
@@ -367,7 +368,7 @@ public class ContentManager
             }
 
             long endTime = System.currentTimeMillis();
-            FlansMod.log.info("Loaded content pack {} in {} ms.", provider.getName(), endTime - startTime);
+            FlansLog.log.info("Loaded content pack {} in {} ms.", provider.getName(), endTime - startTime);
         }
 
         applyMeasuredSoundLengths();
@@ -390,9 +391,9 @@ public class ContentManager
             registerEnd = System.nanoTime();
         }
 
-        if (FlansMod.log.isDebugEnabled())
+        if (FlansLog.log.isDebugEnabled())
         {
-            FlansMod.log.debug("{}: Types loaded in {} ms (read: {} ms, register: {} ms)",
+            FlansLog.log.debug("{}: Types loaded in {} ms (read: {} ms, register: {} ms)",
                 provider.getName(),
                 formatMilliseconds(registerEnd - readStart),
                 formatMilliseconds(readEnd - readStart),
@@ -430,11 +431,11 @@ public class ContentManager
 
         if (!overrideConfiguredLengths)
         {
-            FlansMod.log.info("Keeping the sound lengths configured in the content packs because overrideConfiguredSoundLengths is disabled.");
+            FlansLog.log.info("Keeping the sound lengths configured in the content packs because overrideConfiguredSoundLengths is disabled.");
             return;
         }
 
-        FlansMod.log.info("Replaced {} configured sound length(s) with the measured length of the sound file in {} ms. "
+        FlansLog.log.info("Replaced {} configured sound length(s) with the measured length of the sound file in {} ms. "
             + "Enable debug logging to see them, or set overrideConfiguredSoundLengths to false to keep the configured values.",
             resolved, System.currentTimeMillis() - startTime);
     }
@@ -452,7 +453,7 @@ public class ContentManager
         boolean overrideConfiguredShootPoints = ContentLoadingConfig.isOverrideConfiguredShootPoints();
         ModelMuzzleMeasurement.measure(types, contentPacks, overrideConfiguredShootPoints);
         if (!overrideConfiguredShootPoints)
-            FlansMod.log.info("Keeping the shoot points and AA gun barrels configured in the flan folder packs because overrideConfiguredShootPoints is disabled.");
+            FlansLog.log.info("Keeping the shoot points and AA gun barrels configured in the flan folder packs because overrideConfiguredShootPoints is disabled.");
     }
 
     private static void resolveDeferredContentReferences()
@@ -477,7 +478,7 @@ public class ContentManager
         int parts = 0;
         int tools = 0;
 
-        FlansMod.log.info("Validating content references...");
+        FlansLog.log.info("Validating content references...");
         for (ArrayList<InfoType> providerConfigs : configs.values())
         {
             for (InfoType config : providerConfigs)
@@ -512,7 +513,7 @@ public class ContentManager
                 }
             }
         }
-        FlansMod.log.info("Validated content references for {} GunBoxes, {} ArmorBoxes, {} driveables, {} parts, and {} tools.", gunBoxes, armorBoxes, driveables, parts, tools);
+        FlansLog.log.info("Validated content references for {} GunBoxes, {} ArmorBoxes, {} driveables, {} parts, and {} tools.", gunBoxes, armorBoxes, driveables, parts, tools);
     }
 
     private static void loadFlanFolder()
@@ -565,7 +566,7 @@ public class ContentManager
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to load types in content pack '{}'", provider.getName(), e);
+            FlansLog.log.error("Failed to load types in content pack '{}'", provider.getName(), e);
         }
     }
 
@@ -596,7 +597,7 @@ public class ContentManager
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to read '{}' folder in content pack '{}'", folderName, provider.getName(), e);
+            FlansLog.log.error("Failed to read '{}' folder in content pack '{}'", folderName, provider.getName(), e);
         }
     }
 
@@ -611,7 +612,7 @@ public class ContentManager
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Failed to read '{}/{}' in content pack '{}'", folderName, file.getFileName(), provider.getName(), e);
+            FlansLog.log.error("Failed to read '{}/{}' in content pack '{}'", folderName, file.getFileName(), provider.getName(), e);
             return null;
         }
     }
@@ -678,12 +679,12 @@ public class ContentManager
                 }
                 else
                 {
-                    FlansMod.log.error("ShortName not set: {}", typeFile);
+                    FlansLog.log.error("ShortName not set: {}", typeFile);
                 }
             }
             catch (Exception e)
             {
-                FlansMod.log.error("Failed to add {}", typeFile);
+                FlansLog.log.error("Failed to add {}", typeFile);
                 LogUtils.logErrorWithoutStacktrace(e);
             }
         }
@@ -728,7 +729,7 @@ public class ContentManager
         }
         catch (Exception e)
         {
-            FlansMod.log.warn("Could not register expected model texture '{}': {}", texturePath, origin);
+            FlansLog.log.warn("Could not register expected model texture '{}': {}", texturePath, origin);
         }
     }
 
@@ -749,7 +750,7 @@ public class ContentManager
                 .thenComparing(missing -> missing.origin().typeFolderName())
                 .thenComparing(missing -> missing.origin().fileName())
                 .thenComparing(missing -> missing.textureId().toString()))
-            .forEach(missing -> FlansMod.log.warn("Missing texture {}: {}", missing.textureId(), missing.origin()));
+            .forEach(missing -> FlansLog.log.warn("Missing texture {}: {}", missing.textureId(), missing.origin()));
     }
 
     private static ResourceLocation toTextureResource(ResourceLocation textureId)
@@ -788,11 +789,11 @@ public class ContentManager
                 .or(() -> otherFileAlias.filter(conflictingFile -> contentPackName.equals(TypeFile.getContentPackName(conflictingFile))));
             if (conflictingFileInSamePack.isPresent())
             {
-                FlansMod.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, conflictingFileInSamePack.get(), fileName);
+                FlansLog.log.warn("Detected conflict for item id '{}' in same content pack: {} and {}. Ignoring {}", originalShortname, file, conflictingFileInSamePack.get(), fileName);
                 return StringUtils.EMPTY;
             }
 
-            FlansMod.log.warn("Detected conflict for item id '{}': {} and {}. Creating id alias '{}' in [{}]", originalShortname, file, otherFileOriginal, newShortname, contentPackName);
+            FlansLog.log.warn("Detected conflict for item id '{}': {} and {}. Creating id alias '{}' in [{}]", originalShortname, file, otherFileOriginal, newShortname, contentPackName);
             shortname = newShortname;
         }
 
@@ -830,7 +831,7 @@ public class ContentManager
 
             if (!JavaModelCompiler.isCompilerAvailable())
             {
-                FlansMod.log.warn("Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.", provider.getName());
+                FlansLog.log.warn("Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.", provider.getName());
                 return;
             }
 
@@ -838,7 +839,7 @@ public class ContentManager
         }
         catch (LinkageError e)
         {
-            FlansMod.log.warn("Java model source compilation is unavailable for content pack '{}': {}", provider.getName(), e.toString());
+            FlansLog.log.warn("Java model source compilation is unavailable for content pack '{}': {}", provider.getName(), e.toString());
         }
     }
 

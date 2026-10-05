@@ -10,7 +10,6 @@ import com.flansmod.client.model.ModelGun;
 import com.flansmod.client.model.ModelMG;
 import com.flansmod.client.model.ModelMuzzleFlash;
 import com.flansmod.client.tmt.ModelRendererTurbo;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
@@ -19,6 +18,7 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.render.ShaderPlatform;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.LogUtils;
 import com.flansmodultimate.util.ModelClassResolver;
 import com.flansmodultimate.util.ModelClassResolver.ModelClassLocation;
@@ -264,14 +264,14 @@ public final class ModelCache
                     // same name compiled into the mod, unless that override is disabled in the client config.
                     model = (IModelBase) ModelClassResolver.instantiate(modelLocation, ModClientConfig.get().preferBuiltInModelClasses);
                     if (!modelLocation.contentPack().equals(type.getContentPack()))
-                        FlansMod.log.debug("Loaded model class {} for {} from fallback content pack [{}].", modelLocation.className(), type, modelLocation.contentPack().getName());
+                        FlansLog.log.debug("Loaded model class {} for {} from fallback content pack [{}].", modelLocation.className(), type, modelLocation.contentPack().getName());
                 }
                 catch (Exception | LinkageError e)
                 {
-                    FlansMod.log.error("Could not load model class {} for {}", modelClassName, type);
+                    FlansLog.log.error("Could not load model class {} for {}", modelClassName, type);
                     NoSuchFileException missingFile = findMissingFile(e);
                     if (missingFile != null)
-                        FlansMod.log.error("File not found: {}", missingFile.getFile());
+                        FlansLog.log.error("File not found: {}", missingFile.getFile());
                     else
                         LogUtils.logErrorWithoutStacktrace(e);
                 }

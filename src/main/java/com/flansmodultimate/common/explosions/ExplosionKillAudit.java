@@ -1,12 +1,12 @@
 package com.flansmodultimate.common.explosions;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Shootable;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -39,13 +39,13 @@ public final class ExplosionKillAudit
             (int) killer.getX(), (int) killer.getY(), (int) killer.getZ(),
             armorName(victim.getItemBySlot(EquipmentSlot.CHEST)),
             armorName(killer.getItemBySlot(EquipmentSlot.CHEST)));
-        FlansMod.log.info(message);
+        FlansLog.log.info(message);
 
         int warningThresholdSeconds = ModCommonConfig.get().noticeSpawnKillTime();
         if (isPossibleSpawnKill(lifetimeSeconds, warningThresholdSeconds))
         {
             String warning = formatSpawnKillWarning(killer.getGameProfile().getName(), victim.getGameProfile().getName(), lifetimeSeconds, warningThresholdSeconds);
-            FlansMod.log.warn(warning);
+            FlansLog.log.warn(warning);
         }
     }
 

@@ -1,15 +1,15 @@
 package com.flansmodultimate.network.server;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ConfigSpecValues;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.platform.PlatformEnvironment;
+import com.flansmodultimate.platform.network.PacketBuffer;
+import com.flansmodultimate.util.FlansLog;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.ChatFormatting;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -66,7 +66,7 @@ public class PacketSetCommonConfigValue implements IServerPacket
         String name = player.getGameProfile().getName();
         if (!mayEditCommonConfig(player))
         {
-            FlansMod.log.warn("{} tried to change the server setting {} without permission", name, path);
+            FlansLog.log.warn("{} tried to change the server setting {} without permission", name, path);
             player.sendSystemMessage(Component.translatable("gui.flansmodultimate.options.server_option_denied").withStyle(ChatFormatting.RED));
             PacketRequestCommonConfig.sendTo(player);
             return;
@@ -74,7 +74,7 @@ public class PacketSetCommonConfigValue implements IServerPacket
 
         if (ModCommonConfig.setRuntimeValue(ConfigSpecValues.splitPath(path), value))
         {
-            FlansMod.log.info("{} set the server setting {} to {}", name, path, value);
+            FlansLog.log.info("{} set the server setting {} to {}", name, path, value);
             player.sendSystemMessage(Component.translatable("gui.flansmodultimate.options.server_option_changed",
                 path, String.valueOf(value)).withStyle(ChatFormatting.YELLOW));
             return;

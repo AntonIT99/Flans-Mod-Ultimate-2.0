@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.particle;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModParticles;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -33,7 +34,7 @@ public class FmFlameParticle extends ParticleBase
         
         setSpriteFromAge(sprites);
 
-        ParticleHelper.spawnSubParticle(FlansMod.fmSmokeParticle.get(), x, y, z);
+        ParticleHelper.spawnSubParticle(FlansModParticles.fmSmokeParticle.get(), x, y, z);
     }
 
     @Override

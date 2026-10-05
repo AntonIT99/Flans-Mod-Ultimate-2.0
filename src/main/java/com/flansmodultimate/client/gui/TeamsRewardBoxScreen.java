@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
@@ -71,7 +72,7 @@ public final class TeamsRewardBoxScreen extends Screen
 
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSOPENCREATES, left, top, 0, 0, WIDTH, HEIGHT, 256, 256);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSOPENCREATES, left, top, 0, 0, WIDTH, HEIGHT, 256, 256);
         graphics.drawCenteredString(font, title, width / 2, top + 10, 0xFFFFFF);
 
         if (state != null)

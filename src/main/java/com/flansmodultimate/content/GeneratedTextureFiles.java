@@ -1,8 +1,8 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.DynamicReference;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -77,7 +77,7 @@ final class GeneratedTextureFiles
         }
         catch (IOException | RuntimeException e)
         {
-            FlansMod.log.error("Could not generate textures from '{}' to '{}': {}", source, destination, e.toString());
+            FlansLog.log.error("Could not generate textures from '{}' to '{}': {}", source, destination, e.toString());
         }
     }
 
@@ -168,7 +168,7 @@ final class GeneratedTextureFiles
         }
         catch (IOException | RuntimeException e)
         {
-            FlansMod.log.warn("Ignoring invalid generated texture manifest '{}': {}", file, e.toString());
+            FlansLog.log.warn("Ignoring invalid generated texture manifest '{}': {}", file, e.toString());
         }
         return new Manifest(1, Map.of());
     }

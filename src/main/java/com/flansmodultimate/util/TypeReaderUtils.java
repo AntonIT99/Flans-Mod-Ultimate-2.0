@@ -1,7 +1,6 @@
 package com.flansmodultimate.util;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.TypeFile;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -646,12 +645,12 @@ public class TypeReaderUtils
 
     public static void logError(String s, TypeFile file)
     {
-        FlansMod.log.error("Error in {}/{}/{}: {}", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s);
+        FlansLog.log.error("Error in {}/{}/{}: {}", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s);
     }
 
     public static void logError(String s, TypeFile file, Exception exception)
     {
-        FlansMod.log.error("Error in {}/{}/{}: {}", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s, exception);
+        FlansLog.log.error("Error in {}/{}/{}: {}", file.getContentPack().getName(), file.getType().getConfigFolderName(), file.getName(), s, exception);
     }
 
     private static String incorrectFormat(String key, String valuePattern)

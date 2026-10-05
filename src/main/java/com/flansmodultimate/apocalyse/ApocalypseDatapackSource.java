@@ -1,6 +1,7 @@
 package com.flansmodultimate.apocalyse;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.fml.ModList;
@@ -51,7 +52,7 @@ public final class ApocalypseDatapackSource
         IModFileInfo modFileInfo = ModList.get().getModFileById(FlansMod.MOD_ID);
         if (modFileInfo == null)
         {
-            FlansMod.log.warn("Unable to register Apocalypse datapack: mod file for {} was not found", FlansMod.MOD_ID);
+            FlansLog.log.warn("Unable to register Apocalypse datapack: mod file for {} was not found", FlansMod.MOD_ID);
             return;
         }
 
@@ -69,7 +70,7 @@ public final class ApocalypseDatapackSource
 
         if (pack == null)
         {
-            FlansMod.log.warn("Unable to register Apocalypse datapack from {}", packRoot);
+            FlansLog.log.warn("Unable to register Apocalypse datapack from {}", packRoot);
             return;
         }
 

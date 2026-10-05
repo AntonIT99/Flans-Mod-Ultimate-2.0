@@ -4,7 +4,6 @@ import com.flansmod.client.model.ModelAAGun;
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmod.client.model.ModelMG;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.model.MuzzleMeasurements;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
@@ -13,6 +12,7 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModelClassResolver;
 import com.flansmodultimate.util.ModelClassResolver.ModelClassLocation;
 import lombok.AccessLevel;
@@ -86,7 +86,7 @@ public final class ModelMuzzleMeasurement
         if (cached != null)
         {
             int moved = MuzzleMeasurementCache.apply(cached, types);
-            FlansMod.log.info("Applied the muzzles measured on {} model(s) in {} ms, since no content pack changed: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s). Delete {} to measure them again.",
+            FlansLog.log.info("Applied the muzzles measured on {} model(s) in {} ms, since no content pack changed: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s). Delete {} to measure them again.",
                 cached.models, System.currentTimeMillis() - startTime, cached.deployedGuns.size(), cached.aaGuns.size(), moved,
                 cached.driveables.size(), cached.mountCount(), MuzzleMeasurementCache.file());
             return;
@@ -105,7 +105,7 @@ public final class ModelMuzzleMeasurement
         tally.results.models = (int) models.values().stream().filter(Optional::isPresent).count();
         tally.results.failed = tally.failed;
         MuzzleMeasurementCache.save(key, tally.results);
-        FlansMod.log.info("Measured {} model(s) in {} ms: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s), {} type(s) could not be measured.",
+        FlansLog.log.info("Measured {} model(s) in {} ms: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s), {} type(s) could not be measured.",
             tally.results.models, System.currentTimeMillis() - startTime,
             tally.deployedGuns, tally.aaGuns, tally.points, tally.driveables, tally.mounts, tally.failed);
     }
@@ -153,7 +153,7 @@ public final class ModelMuzzleMeasurement
             else if (type instanceof DriveableType driveableType && model instanceof ModelDriveable driveableModel)
             {
                 // Trusted points are only reported when they look mirrored, never moved.
-                if (trusted && FlansMod.log.isDebugEnabled())
+                if (trusted && FlansLog.log.isDebugEnabled())
                     reportMirroredPoints(driveableType, driveableModel);
                 else if (!trusted)
                 {
@@ -168,7 +168,7 @@ public final class ModelMuzzleMeasurement
         catch (Exception | LinkageError e)
         {
             tally.failed++;
-            FlansMod.log.warn("Could not measure the muzzles of {}: {}", type, rootCause(e));
+            FlansLog.log.warn("Could not measure the muzzles of {}: {}", type, rootCause(e));
         }
     }
 
@@ -195,7 +195,7 @@ public final class ModelMuzzleMeasurement
             }
             catch (Exception | LinkageError e)
             {
-                FlansMod.log.warn("Could not load model class {} to measure the muzzles of {}: {}", className, type, rootCause(e));
+                FlansLog.log.warn("Could not load model class {} to measure the muzzles of {}: {}", className, type, rootCause(e));
                 return Optional.empty();
             }
         }).orElse(null);
@@ -305,8 +305,8 @@ public final class ModelMuzzleMeasurement
                 moves.add(muzzle.label() + " " + format(authored) + " -> " + format(muzzle.position()));
         }
 
-        if (!moves.isEmpty() && FlansMod.log.isDebugEnabled())
-            FlansMod.log.debug("Moved muzzles of {} onto its model: {}", type, String.join(", ", moves));
+        if (!moves.isEmpty() && FlansLog.log.isDebugEnabled())
+            FlansLog.log.debug("Moved muzzles of {} onto its model: {}", type, String.join(", ", moves));
         return moves.size();
     }
 
@@ -405,8 +405,8 @@ public final class ModelMuzzleMeasurement
             }
         }
 
-        if (!spreads.isEmpty() && FlansMod.log.isDebugEnabled())
-            FlansMod.log.debug("Spread the shots of {} over its model's barrels: {}", type, String.join(", ", spreads));
+        if (!spreads.isEmpty() && FlansLog.log.isDebugEnabled())
+            FlansLog.log.debug("Spread the shots of {} over its model's barrels: {}", type, String.join(", ", spreads));
         return spreads.size();
     }
 
@@ -441,7 +441,7 @@ public final class ModelMuzzleMeasurement
             {
                 Vector3f muzzle = muzzlePixels(points.get(index));
                 if (MuzzleMeasurements.isMirroredMuzzle(model, inputs, muzzle))
-                    FlansMod.log.debug("{} {} {} looks mirrored: the model has a barrel at {}", type,
+                    FlansLog.log.debug("{} {} {} looks mirrored: the model has a barrel at {}", type,
                         bankLabel(secondary, index), format(muzzle), format(new Vector3f(muzzle.x, muzzle.y, -muzzle.z)));
             }
         }

@@ -2,6 +2,7 @@ package com.flansmodultimate.content;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ResourceUtils;
 import com.flansmodultimate.util.SoundJsonProcessor;
 import com.flansmodultimate.util.SoundLengthIndex;
@@ -60,7 +61,7 @@ final class ContentPackSounds
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not scan legacy sound folder {}", soundDir, e);
+            FlansLog.log.error("Could not scan legacy sound folder {}", soundDir, e);
             return;
         }
 
@@ -83,7 +84,7 @@ final class ContentPackSounds
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not scan sounds folder {}", soundsDir, e);
+            FlansLog.log.error("Could not scan sounds folder {}", soundsDir, e);
             return new HashSet<>();
         }
     }
@@ -110,7 +111,7 @@ final class ContentPackSounds
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not copy legacy sound {} to {}", source, target, e);
+            FlansLog.log.error("Could not copy legacy sound {} to {}", source, target, e);
         }
     }
 
@@ -128,7 +129,7 @@ final class ContentPackSounds
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not scan sounds folder {}", soundsDir, e);
+            FlansLog.log.error("Could not scan sounds folder {}", soundsDir, e);
             return;
         }
 
@@ -163,7 +164,7 @@ final class ContentPackSounds
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not normalize sound file {}", source, e);
+            FlansLog.log.error("Could not normalize sound file {}", source, e);
         }
     }
 
@@ -219,7 +220,7 @@ final class ContentPackSounds
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not scan sound directories under {}", root, e);
+            FlansLog.log.error("Could not scan sound directories under {}", root, e);
             return;
         }
 
@@ -256,7 +257,7 @@ final class ContentPackSounds
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not normalize sound directory {}", source, e);
+            FlansLog.log.error("Could not normalize sound directory {}", source, e);
         }
     }
 
@@ -271,7 +272,7 @@ final class ContentPackSounds
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not clean empty sound directories under {}", root, e);
+            FlansLog.log.error("Could not clean empty sound directories under {}", root, e);
         }
     }
 }

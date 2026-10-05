@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.network.PacketHandler;
@@ -79,7 +80,7 @@ public final class TeamsLoadoutHubScreen extends Screen
 
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
-        graphics.blit(FlansMod.TEXTURE_GUI_TEAMSLANDINGPAGE, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSLANDINGPAGE, left, top, 0, 0, WIDTH, HEIGHT, 512, 256);
         // The server's greeting takes the header, as it did in 1.12.2, with the pool named
         // underneath it so neither is lost.
         graphics.drawCenteredString(font, state.getMotd(), width / 2, top + 6, 0xFFFFFF);

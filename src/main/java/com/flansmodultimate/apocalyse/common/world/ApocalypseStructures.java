@@ -1,11 +1,12 @@
 package com.flansmodultimate.apocalyse.common.world;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.apocalyse.common.entity.WorldgenSpawnMarker;
 import com.flansmodultimate.apocalyse.common.util.ApocalypseLoot;
 import com.flansmodultimate.common.block.entity.ItemHolderBlockEntity;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -111,7 +112,7 @@ public final class ApocalypseStructures
             return;
         int top = Mth.clamp(surface - LAB_FLOOR_HEIGHT - 1, minTop, maxTop);
 
-        FlansMod.log.debug("Apocalypse research lab piece at chunk {} (top floor Y={})", chunk, top);
+        FlansLog.log.debug("Apocalypse research lab piece at chunk {} (top floor Y={})", chunk, top);
         buildResearchLabPiece(level, chunk, chunkRandom(level.getSeed(), chunk.x, chunk.z), top);
     }
 
@@ -285,7 +286,7 @@ public final class ApocalypseStructures
             {
                 set(level, x + 2 + 8 * j, y + 1, z + 1, rand.nextBoolean()
                     ? Blocks.CRAFTING_TABLE.defaultBlockState()
-                    : FlansMod.vehicleCraftingTable.get().defaultBlockState());
+                    : FlansModBlocks.vehicleCraftingTable.get().defaultBlockState());
                 set(level, x + 4 + 8 * j, y + 1, z + 1, Blocks.IRON_BLOCK.defaultBlockState());
                 set(level, x + 5 + 8 * j, y + 2, z + 1, Blocks.IRON_BLOCK.defaultBlockState());
                 set(level, x + 5 + 8 * j, y + 1, z + 1, Blocks.IRON_BLOCK.defaultBlockState());
@@ -505,7 +506,7 @@ public final class ApocalypseStructures
 
         int y = noiseSurface(level, stripX * RUNWAY_CHUNKS * 16 + RUNWAY_CHUNKS * 8, chunk.getMinBlockZ() + 8);
         y = Mth.clamp(y, level.getMinBuildHeight() + 8, level.getMaxBuildHeight() - 12);
-        FlansMod.log.debug("Apocalypse runway section at chunk {} (Y={})", chunk, y);
+        FlansLog.log.debug("Apocalypse runway section at chunk {} (Y={})", chunk, y);
         buildRunwaySection(level, chunk, chunkRandom(level.getSeed(), chunk.x, chunk.z), y);
     }
 
@@ -547,8 +548,8 @@ public final class ApocalypseStructures
         fill(level, x, y + 8, z + 5, x + 1, y + 9, z + 11, wool);
 
         set(level, x + 1, y + 1, z + 1, Blocks.CRAFTING_TABLE.defaultBlockState());
-        set(level, x + 2, y + 1, z + 1, FlansMod.gunWorkbench.get().defaultBlockState());
-        set(level, x + 1, y + 1, z + 14, FlansMod.gunWorkbench.get().defaultBlockState());
+        set(level, x + 2, y + 1, z + 1, FlansModBlocks.gunWorkbench.get().defaultBlockState());
+        set(level, x + 1, y + 1, z + 14, FlansModBlocks.gunWorkbench.get().defaultBlockState());
 
         set(level, x + 1, y + 4, z + 14, Blocks.GLOWSTONE.defaultBlockState());
         set(level, x + 1, y + 4, z + 1, Blocks.GLOWSTONE.defaultBlockState());
@@ -591,7 +592,7 @@ public final class ApocalypseStructures
         if (maxHeight - minHeight > 3 || maxHeight + 7 >= level.getMaxBuildHeight())
             return;
 
-        FlansMod.log.debug("Apocalypse dye factory at chunk {}", chunk);
+        FlansLog.log.debug("Apocalypse dye factory at chunk {}", chunk);
         int y = maxHeight + 1;
         BlockState planks = Blocks.OAK_PLANKS.defaultBlockState();
         BlockState cobble = Blocks.COBBLESTONE.defaultBlockState();
@@ -618,8 +619,8 @@ public final class ApocalypseStructures
 
         // Two random weapon boxes either side of a gun workbench and a vehicle crafting table.
         placeWeaponBox(level, rand, x + 1, y, z + 6);
-        set(level, x + 1, y, z + 7, FlansMod.gunWorkbench.get().defaultBlockState());
-        set(level, x + 1, y, z + 8, FlansMod.vehicleCraftingTable.get().defaultBlockState());
+        set(level, x + 1, y, z + 7, FlansModBlocks.gunWorkbench.get().defaultBlockState());
+        set(level, x + 1, y, z + 8, FlansModBlocks.vehicleCraftingTable.get().defaultBlockState());
         placeWeaponBox(level, rand, x + 1, y, z + 9);
 
         // Chest racks.

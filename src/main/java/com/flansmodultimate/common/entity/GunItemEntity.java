@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.item.BulletItem;
 import com.flansmodultimate.common.item.GunItem;
@@ -61,7 +61,7 @@ public class GunItemEntity extends ItemEntity
 
     public GunItemEntity(Level level, double x, double y, double z, ItemStack gunStack)
     {
-        super(FlansMod.gunItemEntity.get(), level);
+        super(FlansModEntities.gunItemEntity.get(), level);
         setPos(x, y, z);
         setDeltaMovement(level.random.nextDouble() * 0.2D - 0.1D, 0.2D, level.random.nextDouble() * 0.2D - 0.1D);
         setItem(gunStack);

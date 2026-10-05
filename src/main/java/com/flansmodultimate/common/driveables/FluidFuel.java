@@ -1,13 +1,12 @@
 package com.flansmodultimate.common.driveables;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.fluid.FluidContainerPlatform;
 import com.flansmodultimate.platform.fluid.FluidPlatform;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -32,7 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FluidFuel
 {
-    private static final Logger log = FlansMod.log;
 
     /** Millibuckets in one bucket, the unit the fuel table is quoted in. */
     public static final int BUCKET = FluidPlatform.BUCKET_VOLUME;
@@ -73,7 +71,7 @@ public final class FluidFuel
             String[] parts = trimmed.split(";");
             if (parts.length != 2)
             {
-                log.warn("Invalid fluid fuel line: {}", line);
+                FlansLog.log.warn("Invalid fluid fuel line: {}", line);
                 continue;
             }
 
@@ -83,7 +81,7 @@ public final class FluidFuel
             }
             catch (Exception e)
             {
-                log.error("Failed to parse fluid fuel line '{}': {}", line, e.getMessage());
+                FlansLog.log.error("Failed to parse fluid fuel line '{}': {}", line, e.getMessage());
             }
         }
     }

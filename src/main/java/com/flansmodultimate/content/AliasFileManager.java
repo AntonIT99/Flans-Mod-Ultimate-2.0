@@ -1,7 +1,7 @@
 package com.flansmodultimate.content;
 
-import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -48,7 +48,7 @@ final class AliasFileManager implements AutoCloseable
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Error reading {} in {}", file.getFileName(), provider.getPath(), e);
+            FlansLog.log.error("Error reading {} in {}", file.getFileName(), provider.getPath(), e);
             return Optional.empty();
         }
     }
@@ -65,7 +65,7 @@ final class AliasFileManager implements AutoCloseable
         }
         catch (Exception e)
         {
-            FlansMod.log.error("Error writing to {} in {}", file.getFileName(), provider.getPath(), e);
+            FlansLog.log.error("Error writing to {} in {}", file.getFileName(), provider.getPath(), e);
         }
     }
 

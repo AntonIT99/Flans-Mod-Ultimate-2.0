@@ -3,6 +3,7 @@ package com.flansmodultimate.common.recipe;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.util.FileUtils;
+import com.flansmodultimate.util.FlansLog;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -67,7 +68,7 @@ public final class RecipeJsonGenerator
             }
             catch (RuntimeException | IOException exception)
             {
-                FlansMod.log.warn("Could not inspect generated recipe {}; regenerating it", modernRecipe, exception);
+                FlansLog.log.warn("Could not inspect generated recipe {}; regenerating it", modernRecipe, exception);
                 return true;
             }
         }
@@ -112,7 +113,7 @@ public final class RecipeJsonGenerator
         Optional<List<String>> pattern = getTrimmedPattern(config);
         if (pattern.isEmpty())
         {
-            FlansMod.log.warn("Invalid recipe grid in {}", config);
+            FlansLog.log.warn("Invalid recipe grid in {}", config);
             return new JsonObject();
         }
 
@@ -120,7 +121,7 @@ public final class RecipeJsonGenerator
         pattern = removeUndefinedRecipeKeys(pattern.get(), recipeKeys, config);
         if (pattern.isEmpty())
         {
-            FlansMod.log.warn("Invalid recipe grid in {}", config);
+            FlansLog.log.warn("Invalid recipe grid in {}", config);
             return new JsonObject();
         }
 
@@ -160,7 +161,7 @@ public final class RecipeJsonGenerator
                 if (c != ' ' && StringUtils.isBlank(recipeKeys.get(c)))
                 {
                     if (warnedKeys.add(c))
-                        FlansMod.log.warn("Failed to find '{}' in recipe for {}", c, config);
+                        FlansLog.log.warn("Failed to find '{}' in recipe for {}", c, config);
                     builder.append(' ');
                 }
                 else
@@ -228,7 +229,7 @@ public final class RecipeJsonGenerator
         List<String> tokens = config.getRecipeTokens();
         if (tokens.size() % 2 != 0) {
             String token = tokens.get(tokens.size() - 1);
-            FlansMod.log.warn("Ignoring trailing recipe token '{}' in {}", token, config);
+            FlansLog.log.warn("Ignoring trailing recipe token '{}' in {}", token, config);
         }
 
 
@@ -329,7 +330,7 @@ public final class RecipeJsonGenerator
         }
         catch (IOException e)
         {
-            FlansMod.log.error("Could not create {}", recipeFile, e);
+            FlansLog.log.error("Could not create {}", recipeFile, e);
         }
     }
 

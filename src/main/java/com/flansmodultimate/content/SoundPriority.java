@@ -2,12 +2,12 @@ package com.flansmodultimate.content;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.config.ContentLoadingConfig;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.SoundLengthIndex;
 import com.google.gson.Gson;
 import net.minecraftforge.fml.ModList;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
@@ -39,7 +39,6 @@ public final class SoundPriority
 {
     // Required TOP packs are inserted in reverse key order. Sort before packaged asset packs.
     static final String PACK_ID = "!flansmodultimate_sound_priority";
-    private static final Logger LOGGER = FlansMod.log;
     private static final AtomicReference<State> state = new AtomicReference<>();
 
     record Source(String id, Path root, Path archive)
@@ -113,13 +112,13 @@ public final class SoundPriority
             }
             catch (IOException | RuntimeException exception)
             {
-                LOGGER.error("Could not index sound source '{}': {}", source.id(), exception.toString());
+                FlansLog.log.error("Could not index sound source '{}': {}", source.id(), exception.toString());
                 assets.add(new SoundPriorityPlan.Assets(new com.google.gson.JsonObject(), Map.of()));
             }
         SoundPriorityPlan plan = SoundPriorityPlan.create(assets);
         state.set(new State(sources, plan, new Gson().toJson(plan.events()).getBytes(StandardCharsets.UTF_8)));
         SoundLengthIndex.replace(plan.lengths());
-        LOGGER.info("Sound source priority (highest first): {}", sources.stream().map(Source::id).toList());
+        FlansLog.log.info("Sound source priority (highest first): {}", sources.stream().map(Source::id).toList());
     }
 
     static String standaloneId(IContentProvider provider)

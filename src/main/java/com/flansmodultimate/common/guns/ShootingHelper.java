@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
@@ -382,29 +383,29 @@ public final class ShootingHelper
 
         // special-case certain blocks if you want
         if (block == Blocks.BRICKS)
-            return Optional.of(FlansMod.SOUND_IMPACT_BRICKS);
+            return Optional.of(FlansModSounds.SOUND_IMPACT_BRICKS);
 
         SoundType sound = state.getSoundType(level, pos, null);
 
         // "dirt-ish" stuff
         if (sound == SoundType.GRAVEL || sound == SoundType.SAND || sound == SoundType.ROOTED_DIRT || sound == SoundType.MUD)
-            return Optional.of(FlansMod.SOUND_IMPACT_DIRT);
+            return Optional.of(FlansModSounds.SOUND_IMPACT_DIRT);
 
         // glass / brittle
         if (sound == SoundType.GLASS || sound == SoundType.TUFF)
-            return Optional.of(FlansMod.SOUND_IMPACT_GLASS);
+            return Optional.of(FlansModSounds.SOUND_IMPACT_GLASS);
 
         // metal-ish
         if (sound == SoundType.METAL || sound == SoundType.CHAIN || sound == SoundType.LANTERN || sound == SoundType.COPPER)
-            return Optional.of(FlansMod.SOUND_IMPACT_METAL);
+            return Optional.of(FlansModSounds.SOUND_IMPACT_METAL);
 
         // stone / rock
         if (sound == SoundType.STONE || sound == SoundType.DEEPSLATE || sound == SoundType.NETHER_BRICKS || sound == SoundType.NETHERRACK || sound == SoundType.BASALT)
-            return Optional.of(FlansMod.SOUND_IMPACT_ROCK);
+            return Optional.of(FlansModSounds.SOUND_IMPACT_ROCK);
 
         // wood
         if (sound == SoundType.WOOD || sound == SoundType.NETHER_WOOD || sound == SoundType.SCAFFOLDING || sound == SoundType.LADDER)
-            return Optional.of(FlansMod.SOUND_IMPACT_WOOD);
+            return Optional.of(FlansModSounds.SOUND_IMPACT_WOOD);
 
         return Optional.empty();
     }

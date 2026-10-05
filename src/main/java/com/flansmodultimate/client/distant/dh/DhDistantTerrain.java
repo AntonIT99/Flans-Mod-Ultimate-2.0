@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.distant.dh;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.client.distant.DistantBox;
 import com.flansmodultimate.client.distant.DistantBoxStyle;
 import com.flansmodultimate.client.distant.DistantRaycastMath;
@@ -29,7 +29,6 @@ import com.seibel.distanthorizons.api.objects.math.DhApiVec3d;
 import com.seibel.distanthorizons.api.objects.render.DhApiRenderableBox;
 import com.seibel.distanthorizons.api.objects.render.DhApiRenderableBoxGroupShading;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
@@ -54,7 +53,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class DhDistantTerrain implements IDistantTerrain
 {
-    private static final Logger LOGGER = FlansMod.log;
     /** API 5.1 added the level being rendered to render events, and API 5.0 the terrain data cache. */
     private static final int MIN_API_MAJOR = 5;
     private static final int MIN_API_MINOR = 1;
@@ -90,7 +88,7 @@ public final class DhDistantTerrain implements IDistantTerrain
         int minor = DhApi.getApiMinorVersion();
         if (major < MIN_API_MAJOR || major == MIN_API_MAJOR && minor < MIN_API_MINOR)
         {
-            LOGGER.warn("Distant Horizons {} provides API {}.{}; Flan's Mod needs {}.{} or newer, so its integration stays off",
+            FlansLog.log.warn("Distant Horizons {} provides API {}.{}; Flan's Mod needs {}.{} or newer, so its integration stays off",
                 DhApi.getModVersion(), major, minor, MIN_API_MAJOR, MIN_API_MINOR);
             return NONE;
         }
@@ -113,7 +111,7 @@ public final class DhDistantTerrain implements IDistantTerrain
                 terrain.levelUnloaded = true;
             }
         });
-        LOGGER.info("Distant Horizons {} (API {}.{}) found; enabling Flan's Mod far-terrain integration", DhApi.getModVersion(), major, minor);
+        FlansLog.log.info("Distant Horizons {} (API {}.{}) found; enabling Flan's Mod far-terrain integration", DhApi.getModVersion(), major, minor);
         return terrain;
     }
 
@@ -229,7 +227,7 @@ public final class DhDistantTerrain implements IDistantTerrain
             }
             catch (RuntimeException | LinkageError exception)
             {
-                LOGGER.debug("Distant Horizons raycast failed", exception);
+                FlansLog.log.debug("Distant Horizons raycast failed", exception);
                 return OptionalDouble.empty();
             }
         }, raycastWorker);
@@ -306,7 +304,7 @@ public final class DhDistantTerrain implements IDistantTerrain
         }
         catch (RuntimeException | LinkageError exception)
         {
-            LOGGER.debug("Could not create a Distant Horizons box group", exception);
+            FlansLog.log.debug("Could not create a Distant Horizons box group", exception);
             return null;
         }
     }
@@ -427,7 +425,7 @@ public final class DhDistantTerrain implements IDistantTerrain
             }
             catch (Exception exception)
             {
-                LOGGER.debug("Could not free a Distant Horizons box group", exception);
+                FlansLog.log.debug("Could not free a Distant Horizons box group", exception);
             }
         }
     }

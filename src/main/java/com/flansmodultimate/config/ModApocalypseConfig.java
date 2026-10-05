@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformPaths;
+import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -186,7 +187,7 @@ public final class ModApocalypseConfig
         }
         catch (Exception e)
         {
-            FlansMod.log.warn("Unable to read early apocalypse datapack settings from {}. Using defaults: {}", configPath, e.toString());
+            FlansLog.log.warn("Unable to read early apocalypse datapack settings from {}. Using defaults: {}", configPath, e.toString());
             return new EarlyApocalypseSettings(true, true);
         }
     }
@@ -199,7 +200,7 @@ public final class ModApocalypseConfig
         if (raw instanceof Boolean value)
             return value;
 
-        FlansMod.log.warn("Ignoring invalid {} in {}: {}. Expected boolean.", key, configPath, raw);
+        FlansLog.log.warn("Ignoring invalid {} in {}: {}. Expected boolean.", key, configPath, raw);
         return defaultValue;
     }
 

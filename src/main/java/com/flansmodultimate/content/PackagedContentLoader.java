@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
+import com.flansmodultimate.util.FlansLog;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -105,7 +106,7 @@ public final class PackagedContentLoader
             throw new IllegalStateException("Production packaged Flan content must be loaded from a JAR: " + modulePath);
         }
 
-        FlansMod.log.info("Registering packaged Flan content module {} in {} mode from {}.", modId,
+        FlansLog.log.info("Registering packaged Flan content module {} in {} mode from {}.", modId,
             archiveBacked ? "production JAR" : "development directory", modulePath);
 
         List<String> discoveredPackIds = discoverPackIds(moduleContentRoot);
@@ -137,7 +138,7 @@ public final class PackagedContentLoader
         {
             if (!enabled.contains(packId))
             {
-                FlansMod.log.info("Packaged content pack '{}' from {} is disabled.", packId, modId);
+                FlansLog.log.info("Packaged content pack '{}' from {} is disabled.", packId, modId);
                 continue;
             }
 
@@ -161,7 +162,7 @@ public final class PackagedContentLoader
         RegisteredModule module = new RegisteredModule(modId, moduleResourceRoot, moduleContentRoot, List.copyOf(providers));
         modules.add(module);
         ContentManager.addPackagedContentPacks(providers);
-        FlansMod.log.info("Registered {} enabled packaged content pack(s) from {}: {}", providers.size(), modId,
+        FlansLog.log.info("Registered {} enabled packaged content pack(s) from {}: {}", providers.size(), modId,
             providers.stream().map(PackagedContentProvider::getPackId).toList());
     }
 
@@ -228,7 +229,7 @@ public final class PackagedContentLoader
         catch (Exception e)
         {
             spec.setConfig(null);
-            FlansMod.log.error("Could not read early packaged-content selection from {}. Enabling all packs.", configPath, e);
+            FlansLog.log.error("Could not read early packaged-content selection from {}. Enabling all packs.", configPath, e);
             enabled.addAll(packIds);
         }
 

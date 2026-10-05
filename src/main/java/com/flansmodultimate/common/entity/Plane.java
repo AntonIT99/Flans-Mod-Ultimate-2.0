@@ -1,7 +1,8 @@
 package com.flansmodultimate.common.entity;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModEntities;
+import com.flansmodultimate.FlansModParticles;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableControlPhysics;
@@ -132,7 +133,7 @@ public class Plane extends Driveable
     public Plane(Level level, PlaneType type, double x, double y, double z, float yaw,
                  @Nullable Player placer, ItemStack sourceStack)
     {
-        this(FlansMod.planeEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
+        this(FlansModEntities.planeEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
     }
 
     /** Placement constructor for subclasses registered under their own entity type. */
@@ -544,7 +545,7 @@ public class Plane extends Driveable
             return;
         Vec3 position = legacyPointToWorld(new Vec3(local.x, local.y, local.z));
         for (int i = 0; i < 4; i++)
-            level().addParticle(FlansMod.afterburnParticle.get(), position.x, position.y, position.z, 0D, 0D, 0D);
+            level().addParticle(FlansModParticles.afterburnParticle.get(), position.x, position.y, position.z, 0D, 0D, 0D);
     }
 
     /** 1.7.10 raised a Valkyrie's wheels by 90/16 blocks in fighter mode, where its legs are stowed. */

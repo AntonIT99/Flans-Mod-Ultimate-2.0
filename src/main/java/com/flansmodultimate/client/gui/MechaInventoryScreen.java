@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui;
 
-import com.flansmodultimate.FlansMod;
+import com.flansmodultimate.FlansModTextures;
+
 import com.flansmodultimate.client.render.entity.DriveableRenderer;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.inventory.MechaInventoryMenu;
@@ -107,7 +108,7 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
     protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY)
     {
         RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-        graphics.blit(FlansMod.TEXTURE_GUI_MECHAINVENTORY, leftPos, topPos, 0, 0, GUI_WIDTH, GUI_HEIGHT, SHEET_WIDTH, SHEET_HEIGHT);
+        graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos, topPos, 0, 0, GUI_WIDTH, GUI_HEIGHT, SHEET_WIDTH, SHEET_HEIGHT);
 
         renderCargoRows(graphics);
         renderScrollButtons(graphics);
@@ -125,7 +126,7 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
             int columns = Math.min(MechaInventoryMenu.COLUMN_COUNT, cargoSlots - firstSlot);
             if (columns <= 0)
                 break;
-            graphics.blit(FlansMod.TEXTURE_GUI_MECHAINVENTORY, leftPos + CARGO_ROW_LEFT, topPos + CARGO_ROW_TOP + CARGO_ROW_HEIGHT * row,
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + CARGO_ROW_LEFT, topPos + CARGO_ROW_TOP + CARGO_ROW_HEIGHT * row,
                 CARGO_ROW_U, CARGO_ROW_V, SLOT_SIZE * columns, SLOT_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
         }
     }
@@ -134,10 +135,10 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
     private void renderScrollButtons(GuiGraphics graphics)
     {
         if (menu.getScrollRow() <= 0)
-            graphics.blit(FlansMod.TEXTURE_GUI_MECHAINVENTORY, leftPos + SCROLL_BUTTON_LEFT, topPos + SCROLL_UP_TOP,
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + SCROLL_BUTTON_LEFT, topPos + SCROLL_UP_TOP,
                 SCROLL_DISABLED_U, SCROLL_UP_DISABLED_V, SCROLL_BUTTON_SIZE, SCROLL_BUTTON_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
         if (menu.getScrollRow() >= menu.getMaxScrollRow())
-            graphics.blit(FlansMod.TEXTURE_GUI_MECHAINVENTORY, leftPos + SCROLL_BUTTON_LEFT, topPos + SCROLL_DOWN_TOP,
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + SCROLL_BUTTON_LEFT, topPos + SCROLL_DOWN_TOP,
                 SCROLL_DISABLED_U, SCROLL_DOWN_DISABLED_V, SCROLL_BUTTON_SIZE, SCROLL_BUTTON_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
     }
 
@@ -153,12 +154,12 @@ public final class MechaInventoryScreen extends AbstractContainerScreen<MechaInv
         float fuelInTank = mecha.getDriveableData().getFuelInTank();
 
         if (fuelInTank < (float)fuelTankSize / LOW_FUEL_FRACTION && (mecha.tickCount / 5) % 4 > 1)
-            graphics.blit(FlansMod.TEXTURE_GUI_MECHAINVENTORY, leftPos + LOW_FUEL_LEFT, topPos + LOW_FUEL_TOP,
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + LOW_FUEL_LEFT, topPos + LOW_FUEL_TOP,
                 LOW_FUEL_U, 0, LOW_FUEL_SIZE, LOW_FUEL_SIZE, SHEET_WIDTH, SHEET_HEIGHT);
 
         int barHeight = (int)(FUEL_BAR_HEIGHT * Math.min(fuelInTank / fuelTankSize, 1F));
         if (barHeight > 0)
-            graphics.blit(FlansMod.TEXTURE_GUI_MECHAINVENTORY, leftPos + FUEL_BAR_LEFT, topPos + FUEL_BAR_BOTTOM - barHeight,
+            graphics.blit(FlansModTextures.TEXTURE_GUI_MECHAINVENTORY, leftPos + FUEL_BAR_LEFT, topPos + FUEL_BAR_BOTTOM - barHeight,
                 FUEL_BAR_U, FUEL_BAR_V, FUEL_BAR_WIDTH, barHeight, SHEET_WIDTH, SHEET_HEIGHT);
     }
 
