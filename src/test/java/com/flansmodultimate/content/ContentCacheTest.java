@@ -71,6 +71,106 @@ class ContentCacheTest
     }
 
     @Test
+    void virtualModulePathsHaveSeparatePersistentIndexesAcrossStarts() throws Exception
+    {
+        Path a = root.resolve("a.zip"), b = root.resolve("b.zip");
+        Map<Path, Map<String, Map<String, Map<String, String>>>> legacy = new java.util.HashMap<>();
+        Map<Path, ModernAssetAliases.Assets> modern = new java.util.HashMap<>();
+        for (Path source : java.util.List.of(a, b))
+        {
+            try (var fs = java.nio.file.FileSystems.newFileSystem(source, Map.of("create", "true")))
+            {
+                var provider = virtualModule(source, fs);
+                Path texture = provider.getTextureSourcePath(fs).resolve("armor/shared_1.png");
+                Files.createDirectories(texture.getParent());
+                var image = new java.awt.image.BufferedImage(2, 2, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                image.setRGB(0, 0, source.equals(a) ? 0xffff0000 : 0xff0000ff);
+                try (var out = Files.newOutputStream(texture)) { javax.imageio.ImageIO.write(image, "png", out); }
+                Path model = provider.getAssetsPath(fs).resolve("models/item/shared.json");
+                Files.createDirectories(model.getParent());
+                Files.writeString(model, "{\"marker\":\"" + (source.equals(a) ? "A" : "B") + "\"}");
+                legacy.put(source, PackAssetIndex.legacy(provider));
+                modern.put(source, PackAssetIndex.modern(provider));
+                // Simulate unreadable source contents with identical per-file metadata. A warm
+                // load must reuse both indexes, even though both virtual roots print the same path.
+                FileTime textureTime = Files.getLastModifiedTime(texture), modelTime = Files.getLastModifiedTime(model);
+                Files.write(texture, new byte[(int)Files.size(texture)]);
+                Files.setLastModifiedTime(texture, textureTime);
+                Files.writeString(model, " ".repeat((int)Files.size(model)));
+                Files.setLastModifiedTime(model, modelTime);
+            }
+        }
+        assertNotEquals(legacy.get(a), legacy.get(b));
+        assertNotEquals(modern.get(a), modern.get(b));
+        var before = ContentFileCache.snapshot(root.resolve("cache"));
+        for (Path source : java.util.List.of(a, b))
+            try (var fs = java.nio.file.FileSystems.newFileSystem(source))
+            {
+                var provider = virtualModule(source, fs);
+                assertEquals(legacy.get(source), PackAssetIndex.legacyNames(provider));
+                assertEquals(legacy.get(source), PackAssetIndex.legacy(provider));
+                assertEquals(modern.get(source), PackAssetIndex.modern(provider));
+            }
+        assertEquals(before, ContentFileCache.snapshot(root.resolve("cache")));
+    }
+
+    private static PackagedContentProvider virtualModule(Path physicalSource, java.nio.file.FileSystem fs)
+    {
+        Path assets = fs.getPath("/assets/flansmod");
+        return new PackagedContentProvider(physicalSource.getFileName().toString(), "module", "module", physicalSource,
+            fs.getPath("/"), assets, fs.getPath("/"), "/", "/assets/flansmod", "/", false, true);
+    }
+
+    @Test
+    void archiveNameIndexUpgradesOnlyTheRequestedGroups() throws Exception
+    {
+        Path archive = root.resolve("pack.zip");
+        var image = new java.awt.image.BufferedImage(2, 2, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        var bytes = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(image, "png", bytes);
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(archive)))
+        {
+            for (String name : java.util.List.of("shared_1", "unique_1"))
+            {
+                zip.putNextEntry(new ZipEntry("assets/flansmod/armor/" + name + ".png"));
+                zip.write(bytes.toByteArray());
+                zip.closeEntry();
+            }
+        }
+        ContentPack pack = new ContentPack("pack.zip", archive);
+        assertEquals("", PackAssetIndex.legacyNames(pack).get("armor").get("shared").get("_1"));
+        var selective = PackAssetIndex.legacy(pack, Map.of("armor", java.util.Set.of("shared")));
+        assertFalse(selective.get("armor").get("shared").get("_1").isEmpty());
+        assertEquals("", selective.get("armor").get("unique").get("_1"));
+        FileTime time = Files.getLastModifiedTime(archive);
+        Files.write(archive, new byte[(int)Files.size(archive)]);
+        Files.setLastModifiedTime(archive, time);
+        assertEquals(selective, PackAssetIndex.legacy(pack, Map.of("armor", java.util.Set.of("shared"))));
+    }
+
+    @Test
+    void nameOnlyIndexSkipsDecodingAndUpgradesWhenACollisionAppears() throws Exception
+    {
+        ContentPack pack = new ContentPack("pack", root.resolve("pack"));
+        Path texture = pack.getAssetsPath().resolve("armor/uniform_1.png");
+        Files.createDirectories(texture.getParent());
+        var image = new java.awt.image.BufferedImage(2, 2, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, 0xffff0000);
+        javax.imageio.ImageIO.write(image, "png", texture.toFile());
+        assertEquals("", PackAssetIndex.legacyNames(pack).get("armor").get("uniform").get("_1"));
+        assertEquals("", PackAssetIndex.legacy(pack, Map.of()).get("armor").get("uniform").get("_1"));
+        var signatures = PackAssetIndex.legacy(pack, Map.of("armor", java.util.Set.of("uniform")));
+        assertFalse(signatures.get("armor").get("uniform").get("_1").isEmpty());
+        assertEquals(signatures, PackAssetIndex.legacy(pack));
+        FileTime time = Files.getLastModifiedTime(texture);
+        Files.write(texture, new byte[(int)Files.size(texture)]);
+        Files.setLastModifiedTime(texture, time);
+        assertEquals(signatures, PackAssetIndex.legacy(pack, Map.of("armor", java.util.Set.of("uniform"))));
+        ContentFileCache.configure(root.resolve("cache"), true);
+        assertEquals("", PackAssetIndex.legacy(pack, Map.of()).get("armor").get("uniform").get("_1"));
+    }
+
+    @Test
     void cachedAssetIndexUsesMetadataAndRebuildsAfterAChange() throws Exception
     {
         Path assets = root.resolve("assets"), model = assets.resolve("models/item/model.json");

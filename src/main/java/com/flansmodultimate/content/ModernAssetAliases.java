@@ -71,7 +71,8 @@ final class ModernAssetAliases
             Path builtinAssets = modFile.findResource("assets", FlansMod.FLANSMOD_ID);
             inputs.add(new Input(builtinAssets, true));
             cachedAssets.add(PackAssetIndex.modern(builtinAssets,
-                Files.isRegularFile(modFile.getFilePath()) ? modFile.getFilePath() : null));
+                Files.isRegularFile(modFile.getFilePath()) ? modFile.getFilePath() : null,
+                modFile.getFilePath()));
             for (IContentProvider provider : providers)
             {
                 if (!provider.shouldIndexAssetsForConflicts())
