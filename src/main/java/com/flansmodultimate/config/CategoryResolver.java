@@ -2,14 +2,7 @@ package com.flansmodultimate.config;
 
 import com.flansmodultimate.common.types.EnumType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 /** Resolves definitions before any item is indexed; input categories are never mutated. */
@@ -71,14 +64,17 @@ final class CategoryResolver
         try
         {
             Category result = new Category(type, key.name);
+            // Case-insensitive keys let later declarations override earlier ones without scanning.
+            result.setProperties(new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            result.setPropertyModes(new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
+            result.setExceptions(new TreeMap<>(String.CASE_INSENSITIVE_ORDER));
             if (!key.defaults && useDefaults && defaults.containsKey(key.name))
                 merge(result, resolve(new Key(true, key.name)));
             String parent = declaration.getInherits();
             if (parent != null && !parent.isBlank())
             {
                 boolean explicitDefault = parent.startsWith("default:");
-                merge(result, resolve(new Key(key.defaults || explicitDefault,
-                    explicitDefault ? parent.substring("default:".length()) : parent)));
+                merge(result, resolve(new Key(key.defaults || explicitDefault, explicitDefault ? parent.substring("default:".length()) : parent)));
             }
             merge(result, declaration);
             resolved.put(key, result);
@@ -106,18 +102,12 @@ final class CategoryResolver
     private static void mergeLists(Map<String, List<String>> target, Map<String, List<String>> source)
     {
         if (source != null)
-            source.forEach((key, value) -> {
-                target.keySet().removeIf(existing -> existing.equalsIgnoreCase(key));
-                target.put(key, value == null ? new ArrayList<>() : new ArrayList<>(value));
-            });
+            source.forEach((key, value) -> target.put(key, value == null ? new ArrayList<>() : new ArrayList<>(value)));
     }
 
     private static <T> void mergeMap(Map<String, T> target, Map<String, T> source)
     {
         if (source != null)
-            source.forEach((key, value) -> {
-                target.keySet().removeIf(existing -> existing.equalsIgnoreCase(key));
-                target.put(key, value);
-            });
+            target.putAll(source);
     }
 }
