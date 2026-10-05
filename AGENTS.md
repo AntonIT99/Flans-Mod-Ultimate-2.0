@@ -80,6 +80,11 @@ checking. They are read-only references: never edit them unless explicitly asked
   160-column right margin, and no wildcard imports. Import groups, in order:
   project/libraries (`com`, `io`, `lombok`, `net.minecraftforge`, `noppes`, `org`),
   then `net.minecraft`, then `javax`/`java`, then static imports last.
+- Declare all class and instance fields before methods; do not place methods between
+  field declarations.
+- Prefer Lombok annotations such as `@Getter`, `@Setter`, and `@NoArgsConstructor`
+  (and other suitable Lombok annotations) to replace boilerplate code. Use them in
+  line with the class's intended access, mutability, and constructor behavior.
 - The sources of truth are `config/spotless/eclipse-java-formatter.xml` (Spotless),
   and `.idea/codeStyles/Project.xml` (IntelliJ). Do not edit
   them unless asked.
