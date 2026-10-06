@@ -15,10 +15,12 @@ import java.util.Map;
  * Writes a particle name as a small id when it is one of this mod's known particle names, and as
  * text otherwise.
  *
- * <p>Particle packets are among the most frequent the server sends, and the name was most of
+ * <p>
+ * Particle packets are among the most frequent the server sends, and the name was most of
  * each one. The table is built from {@link FlanParticles#sortedNames()}, identical on both ends
  * because the network protocol version only matches between identical mod versions. Anything
- * outside the table, such as a block-crack particle carrying its block id, falls back to text.</p>
+ * outside the table, such as a block-crack particle carrying its block id, falls back to text.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ParticleNameCodec

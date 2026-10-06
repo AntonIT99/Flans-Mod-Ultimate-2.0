@@ -10,9 +10,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
-import net.caffeinemc.mods.sodium.api.vertex.format.common.ModelVertex;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.system.MemoryStack;
@@ -20,6 +17,10 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+
+import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
+import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
+import net.caffeinemc.mods.sodium.api.vertex.format.common.ModelVertex;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,7 +41,8 @@ class EntityVertexBatchTest
     void bulkWritesMatchTheBuilderByteForByteAcrossBatchBoundaries()
     {
         // 30 boxes of 24 vertices need two bulk writes of at most 512 vertices.
-        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+        {}, 0, 0);
         for (int box = 0; box < 30; box++)
             part.addBox(box - 15, box % 4, -box * 0.5F, 3, 2 + box % 3, 4);
         part.rotationPointX = 2F;
@@ -71,7 +73,8 @@ class EntityVertexBatchTest
     @Test
     void consumersThatRefuseBulkWritesStillGetEveryVertex()
     {
-        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+        {}, 0, 0);
         part.addBox(0, 0, 0, 16, 16, 16);
         BulkRecorder refusing = new BulkRecorder(false);
         assertFalse(VertexWriterPlatform.canWrite(refusing));
@@ -141,20 +144,63 @@ class EntityVertexBatchTest
         }
 
         @Override
-        public void vertex(float x, float y, float z, float red, float green, float blue, float alpha,
-                           float u, float v, int overlay, int light, float nx, float ny, float nz)
+        public void vertex(float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int overlay, int light, float nx, float ny, float nz)
         {
             singleVertices++;
         }
 
-        @Override public VertexConsumer vertex(double x, double y, double z) { throw new AssertionError(); }
-        @Override public VertexConsumer color(int r, int g, int b, int a) { throw new AssertionError(); }
-        @Override public VertexConsumer uv(float u, float v) { throw new AssertionError(); }
-        @Override public VertexConsumer overlayCoords(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer uv2(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer normal(float x, float y, float z) { throw new AssertionError(); }
-        @Override public void endVertex() { throw new AssertionError(); }
-        @Override public void defaultColor(int r, int g, int b, int a) { throw new AssertionError(); }
-        @Override public void unsetDefaultColor() { throw new AssertionError(); }
+        @Override
+        public VertexConsumer vertex(double x, double y, double z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer color(int r, int g, int b, int a)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv(float u, float v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer overlayCoords(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv2(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer normal(float x, float y, float z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void endVertex()
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void defaultColor(int r, int g, int b, int a)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void unsetDefaultColor()
+        {
+            throw new AssertionError();
+        }
     }
 }

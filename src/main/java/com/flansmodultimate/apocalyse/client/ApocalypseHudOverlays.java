@@ -24,7 +24,8 @@ public final class ApocalypseHudOverlays
         registrar.aboveHotbar("apocalypse_countdown", COUNTDOWN);
     }
 
-    public static final HudOverlayPlatform.HudLayer COUNTDOWN = (graphics, partialTick, screenWidth, screenHeight) -> {
+    public static final HudOverlayPlatform.HudLayer COUNTDOWN = (graphics, partialTick, screenWidth, screenHeight) ->
+    {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.options.hideGui || minecraft.player == null || !ApocalypseClientState.isCountingDown())
             return;

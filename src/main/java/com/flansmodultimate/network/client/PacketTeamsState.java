@@ -8,11 +8,11 @@ import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.PlayerClass;
 import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -27,15 +27,24 @@ import java.util.List;
 @NoArgsConstructor
 public final class PacketTeamsState implements IClientPacket
 {
-    public enum OpenScreen { NONE, TEAM_SELECT, CLASS_SELECT, SCOREBOARD, VOTING, CLOSE }
+    public enum OpenScreen
+    {
+        NONE, TEAM_SELECT, CLASS_SELECT, SCOREBOARD, VOTING, CLOSE
+    }
 
-    public record TeamChoice(String id, String name, int colour) {}
-    public record ClassChoice(String id, String name, int unlockLevel, List<ItemStack> loadout) {}
-    public record PlayerScore(String name, int score, int kills, int deaths, int zombieScore, String playerClass) {}
-    public record TeamScore(String id, String name, int colour, int score, List<PlayerScore> players) {}
-    public record VoteOption(String mapName, String gameType, String teams, int votes) {}
+    public record TeamChoice(String id, String name, int colour)
+    {}
+    public record ClassChoice(String id, String name, int unlockLevel, List<ItemStack> loadout)
+    {}
+    public record PlayerScore(String name, int score, int kills, int deaths, int zombieScore, String playerClass)
+    {}
+    public record TeamScore(String id, String name, int colour, int score, List<PlayerScore> players)
+    {}
+    public record VoteOption(String mapName, String gameType, String teams, int votes)
+    {}
     /** Viewer-independent data, built once for each broadcast rather than once per player. */
-    public record SharedScoreboard(List<TeamScore> teamScores, List<VoteOption> voteOptions) {}
+    public record SharedScoreboard(List<TeamScore> teamScores, List<VoteOption> voteOptions)
+    {}
 
     private OpenScreen openScreen = OpenScreen.NONE;
     private boolean enabled;
@@ -62,8 +71,7 @@ public final class PacketTeamsState implements IClientPacket
         return create(manager, viewer, openScreen, createSharedScoreboard(manager));
     }
 
-    public static PacketTeamsState create(TeamsManager manager, ServerPlayer viewer, OpenScreen openScreen,
-                                         SharedScoreboard shared)
+    public static PacketTeamsState create(TeamsManager manager, ServerPlayer viewer, OpenScreen openScreen, SharedScoreboard shared)
     {
         PacketTeamsState packet = new PacketTeamsState();
         packet.openScreen = openScreen;
@@ -109,9 +117,9 @@ public final class PacketTeamsState implements IClientPacket
 
         if (openScreen == OpenScreen.CLASS_SELECT && selectedTeam != null && selectedTeam != Team.SPECTATORS)
         {
-            packet.classChoices = selectedTeam.getClasses().stream().map(playerClass ->
-                new ClassChoice(playerClass.getShortName(), playerClass.getName(), playerClass.getUnlockLevel(),
-                    playerClass.createStartingItemPreviews())).toList();
+            packet.classChoices = selectedTeam.getClasses().stream()
+                .map(playerClass -> new ClassChoice(playerClass.getShortName(), playerClass.getName(), playerClass.getUnlockLevel(), playerClass.createStartingItemPreviews()))
+                .toList();
         }
 
         packet.teamScores = shared.teamScores();
@@ -131,10 +139,8 @@ public final class PacketTeamsState implements IClientPacket
             Team team = Team.getTeam(id);
             if (team == null)
                 continue;
-            List<PlayerScore> players = manager.getPlayersOnTeam(team).stream()
-                .map(player -> playerScore(player))
-                .sorted(Comparator.comparingInt(PlayerScore::score).reversed().thenComparing(PlayerScore::name, String.CASE_INSENSITIVE_ORDER))
-                .toList();
+            List<PlayerScore> players = manager.getPlayersOnTeam(team).stream().map(player -> playerScore(player))
+                .sorted(Comparator.comparingInt(PlayerScore::score).reversed().thenComparing(PlayerScore::name, String.CASE_INSENSITIVE_ORDER)).toList();
             scores.add(new TeamScore(id, team.getName(), team.getTeamColour(), manager.getTeamScore(team), players));
         }
 
@@ -151,8 +157,8 @@ public final class PacketTeamsState implements IClientPacket
             TeamsRound option = manager.getVoteOptions().get(i);
             String map = manager.getMap(option.getMapId()).map(value -> value.getName()).orElse(option.getMapId());
             GameType type = option.getGametype();
-            String teams = option.getTeamIds().stream().map(Team::getTeam).filter(java.util.Objects::nonNull)
-                .map(Team::getName).reduce((left, right) -> left + " vs " + right).orElse("");
+            String teams = option.getTeamIds().stream().map(Team::getTeam).filter(java.util.Objects::nonNull).map(Team::getName).reduce((left, right) -> left + " vs " + right)
+                .orElse("");
             options.add(new VoteOption(map, type == null ? option.getGameTypeId() : type.getName(), teams, votes[i]));
         }
         return new SharedScoreboard(List.copyOf(scores), List.copyOf(options));
@@ -184,28 +190,45 @@ public final class PacketTeamsState implements IClientPacket
         data.writeUtf(selectedTeam);
         data.writeUtf(selectedClass);
 
-        data.writeCollection(teamChoices, (buf, choice) -> {
-            buf.writeUtf(choice.id()); buf.writeUtf(choice.name()); buf.writeInt(choice.colour());
+        data.writeCollection(teamChoices, (buf, choice) ->
+        {
+            buf.writeUtf(choice.id());
+            buf.writeUtf(choice.name());
+            buf.writeInt(choice.colour());
         });
         data.writeVarInt(classChoices.size());
         for (ClassChoice choice : classChoices)
         {
-            data.writeUtf(choice.id()); data.writeUtf(choice.name()); data.writeVarInt(choice.unlockLevel());
+            data.writeUtf(choice.id());
+            data.writeUtf(choice.name());
+            data.writeVarInt(choice.unlockLevel());
             PacketIO.writeItems(data, choice.loadout());
         }
-        data.writeCollection(teamScores, (buf, team) -> {
-            buf.writeUtf(team.id()); buf.writeUtf(team.name()); buf.writeInt(team.colour()); buf.writeVarInt(team.score());
+        data.writeCollection(teamScores, (buf, team) ->
+        {
+            buf.writeUtf(team.id());
+            buf.writeUtf(team.name());
+            buf.writeInt(team.colour());
+            buf.writeVarInt(team.score());
             buf.writeCollection(team.players(), PacketTeamsState::writePlayer);
         });
-        data.writeCollection(voteOptions, (buf, option) -> {
-            buf.writeUtf(option.mapName()); buf.writeUtf(option.gameType()); buf.writeUtf(option.teams()); buf.writeVarInt(option.votes());
+        data.writeCollection(voteOptions, (buf, option) ->
+        {
+            buf.writeUtf(option.mapName());
+            buf.writeUtf(option.gameType());
+            buf.writeUtf(option.teams());
+            buf.writeVarInt(option.votes());
         });
     }
 
     private static void writePlayer(FriendlyByteBuf data, PlayerScore player)
     {
-        data.writeUtf(player.name()); data.writeInt(player.score()); data.writeVarInt(player.kills());
-        data.writeVarInt(player.deaths()); data.writeVarInt(player.zombieScore()); data.writeUtf(player.playerClass());
+        data.writeUtf(player.name());
+        data.writeInt(player.score());
+        data.writeVarInt(player.kills());
+        data.writeVarInt(player.deaths());
+        data.writeVarInt(player.zombieScore());
+        data.writeUtf(player.playerClass());
     }
 
     @Override
@@ -247,23 +270,98 @@ public final class PacketTeamsState implements IClientPacket
         TeamsClientState.accept(this);
     }
 
-    public OpenScreen getOpenScreen() { return openScreen; }
-    public boolean isEnabled() { return enabled; }
-    public boolean isVehiclesCanZoom() { return vehiclesCanZoom; }
-    public boolean isRoundRunning() { return roundRunning; }
-    public boolean isSortedByTeam() { return sortedByTeam; }
-    public boolean isShowZombieScore() { return showZombieScore; }
-    public String getMapName() { return mapName; }
-    public String getGameType() { return gameType; }
-    public int getTimeLeftTicks() { return timeLeftTicks; }
-    public int getIntermissionTicks() { return intermissionTicks; }
-    public int getScoreLimit() { return scoreLimit; }
-    public int getPlayerRank() { return playerRank; }
-    public int getPlayerVote() { return playerVote; }
-    public String getSelectedTeam() { return selectedTeam; }
-    public String getSelectedClass() { return selectedClass; }
-    public List<TeamChoice> getTeamChoices() { return teamChoices; }
-    public List<ClassChoice> getClassChoices() { return classChoices; }
-    public List<TeamScore> getTeamScores() { return teamScores; }
-    public List<VoteOption> getVoteOptions() { return voteOptions; }
+    public OpenScreen getOpenScreen()
+    {
+        return openScreen;
+    }
+
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public boolean isVehiclesCanZoom()
+    {
+        return vehiclesCanZoom;
+    }
+
+    public boolean isRoundRunning()
+    {
+        return roundRunning;
+    }
+
+    public boolean isSortedByTeam()
+    {
+        return sortedByTeam;
+    }
+
+    public boolean isShowZombieScore()
+    {
+        return showZombieScore;
+    }
+
+    public String getMapName()
+    {
+        return mapName;
+    }
+
+    public String getGameType()
+    {
+        return gameType;
+    }
+
+    public int getTimeLeftTicks()
+    {
+        return timeLeftTicks;
+    }
+
+    public int getIntermissionTicks()
+    {
+        return intermissionTicks;
+    }
+
+    public int getScoreLimit()
+    {
+        return scoreLimit;
+    }
+
+    public int getPlayerRank()
+    {
+        return playerRank;
+    }
+
+    public int getPlayerVote()
+    {
+        return playerVote;
+    }
+
+    public String getSelectedTeam()
+    {
+        return selectedTeam;
+    }
+
+    public String getSelectedClass()
+    {
+        return selectedClass;
+    }
+
+    public List<TeamChoice> getTeamChoices()
+    {
+        return teamChoices;
+    }
+
+    public List<ClassChoice> getClassChoices()
+    {
+        return classChoices;
+    }
+
+    public List<TeamScore> getTeamScores()
+    {
+        return teamScores;
+    }
+
+    public List<VoteOption> getVoteOptions()
+    {
+        return voteOptions;
+    }
 }

@@ -1,11 +1,11 @@
 package com.flansmodultimate.client.distant.dh;
 
-import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.client.distant.DistantBox;
 import com.flansmodultimate.client.distant.DistantBoxStyle;
 import com.flansmodultimate.client.distant.DistantRaycastMath;
 import com.flansmodultimate.client.distant.IDistantBoxGroup;
 import com.flansmodultimate.client.distant.IDistantTerrain;
+import com.flansmodultimate.util.FlansLog;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiBlockMaterial;
 import com.seibel.distanthorizons.api.enums.worldGeneration.EDhApiLevelType;
@@ -47,9 +47,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * {@link IDistantTerrain} backed by the Distant Horizons API. The only class that touches Distant Horizons,
  * and only loaded once the mod is known to be present: {@link #create()} checks the API version first.
  *
- * <p>Boxes are drawn through Distant Horizons' generic object renderer, which depth tests them against its
+ * <p>
+ * Boxes are drawn through Distant Horizons' generic object renderer, which depth tests them against its
  * terrain and fogs them with it. Raycasts read its terrain database on a worker thread of their own, with a
- * cache per level, because each read can decompress a whole section.</p>
+ * cache per level, because each read can decompress a whole section.
+ * </p>
  */
 public final class DhDistantTerrain implements IDistantTerrain
 {
@@ -58,7 +60,8 @@ public final class DhDistantTerrain implements IDistantTerrain
     private static final int MIN_API_MINOR = 1;
     private static final String NAMESPACE = "FlansModUltimate";
 
-    private final ExecutorService raycastWorker = Executors.newSingleThreadExecutor(runnable -> {
+    private final ExecutorService raycastWorker = Executors.newSingleThreadExecutor(runnable ->
+    {
         Thread thread = new Thread(runnable, "Flan's Mod Distant Horizons Rangefinder");
         thread.setDaemon(true);
         return thread;
@@ -78,8 +81,7 @@ public final class DhDistantTerrain implements IDistantTerrain
     private IDhApiTerrainDataCache cache;
 
     private DhDistantTerrain()
-    {
-    }
+    {}
 
     /** The Distant Horizons backend, or {@link IDistantTerrain#NONE} when its API is too old. */
     public static IDistantTerrain create()
@@ -88,8 +90,8 @@ public final class DhDistantTerrain implements IDistantTerrain
         int minor = DhApi.getApiMinorVersion();
         if (major < MIN_API_MAJOR || major == MIN_API_MAJOR && minor < MIN_API_MINOR)
         {
-            FlansLog.log.warn("Distant Horizons {} provides API {}.{}; Flan's Mod needs {}.{} or newer, so its integration stays off",
-                DhApi.getModVersion(), major, minor, MIN_API_MAJOR, MIN_API_MINOR);
+            FlansLog.log.warn("Distant Horizons {} provides API {}.{}; Flan's Mod needs {}.{} or newer, so its integration stays off", DhApi.getModVersion(), major, minor,
+                MIN_API_MAJOR, MIN_API_MINOR);
             return NONE;
         }
 
@@ -140,7 +142,8 @@ public final class DhDistantTerrain implements IDistantTerrain
         for (Group group : List.copyOf(groups))
             group.close();
         groups.clear();
-        raycastWorker.execute(() -> {
+        raycastWorker.execute(() ->
+        {
             cache = null;
             cacheLevel = null;
         });
@@ -193,8 +196,7 @@ public final class DhDistantTerrain implements IDistantTerrain
 
         try
         {
-            if (!Boolean.TRUE.equals(configs.graphics().renderingEnabled().getValue())
-                || !Boolean.TRUE.equals(configs.graphics().genericRendering().renderingEnabled().getValue()))
+            if (!Boolean.TRUE.equals(configs.graphics().renderingEnabled().getValue()) || !Boolean.TRUE.equals(configs.graphics().genericRendering().renderingEnabled().getValue()))
                 return false;
             IDhApiLevelWrapper level = currentLevel();
             return level != null && level.getRenderRegister() != null;
@@ -220,7 +222,8 @@ public final class DhDistantTerrain implements IDistantTerrain
             return CompletableFuture.completedFuture(OptionalDouble.empty());
 
         Vec3 unit = direction.normalize();
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync(() ->
+        {
             try
             {
                 return raycastNow(repo, level, origin, unit, maxDistance);
@@ -260,13 +263,13 @@ public final class DhDistantTerrain implements IDistantTerrain
         // Its length limit is a Manhattan distance, longer than the straight one by this factor
         double manhattanFactor = Math.abs(direction.x) + Math.abs(direction.y) + Math.abs(direction.z);
         int maxLength = (int) Math.min(Integer.MAX_VALUE, Math.ceil((maxDistance - skipped) * manhattanFactor) + 2D);
-        DhApiResult<DhApiRaycastResult> result = repo.raycast(level, start.x, start.y, start.z,
-            (float) direction.x, (float) direction.y, (float) direction.z, maxLength, cacheFor(repo, level));
+        DhApiResult<DhApiRaycastResult> result = repo.raycast(level, start.x, start.y, start.z, (float) direction.x, (float) direction.y, (float) direction.z, maxLength,
+            cacheFor(repo, level));
         if (result == null || !result.success || result.payload == null || result.payload.dataPoint == null || result.payload.pos == null)
             return OptionalDouble.empty();
 
-        double distance = skipped + DistantRaycastMath.entryDistance(start, direction, result.payload.pos.x,
-            result.payload.dataPoint.bottomYBlockPos, result.payload.dataPoint.topYBlockPos, result.payload.pos.z);
+        double distance = skipped + DistantRaycastMath.entryDistance(start, direction, result.payload.pos.x, result.payload.dataPoint.bottomYBlockPos,
+            result.payload.dataPoint.topYBlockPos, result.payload.pos.z);
         return distance <= maxDistance ? OptionalDouble.of(distance) : OptionalDouble.empty();
     }
 

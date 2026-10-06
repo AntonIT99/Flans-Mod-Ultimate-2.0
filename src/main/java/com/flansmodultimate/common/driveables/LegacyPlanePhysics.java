@@ -30,7 +30,8 @@ public final class LegacyPlanePhysics
     public static final double SOUND_BARRIER_BUFFET_MIN = 1.9D;
     public static final double SOUND_BARRIER_BUFFET_MAX = 2.05D;
 
-    private LegacyPlanePhysics() {}
+    private LegacyPlanePhysics()
+    {}
 
     /** One random turbulence kick, in degrees, from a uniform sample in [0, 1). */
     public static float turbulenceKick(float uniform)
@@ -64,9 +65,7 @@ public final class LegacyPlanePhysics
     public static float propellerStep(float throttle)
     {
         float magnitude = Math.abs(finite(throttle));
-        return magnitude == 0F ? 0F
-            : (float) (Math.pow(magnitude, PROPELLER_THROTTLE_EXPONENT) * PROPELLER_FULL_THROTTLE_RADIANS
-                * (180D / Math.PI));
+        return magnitude == 0F ? 0F : (float) (Math.pow(magnitude, PROPELLER_THROTTLE_EXPONENT) * PROPELLER_FULL_THROTTLE_RADIANS * (180D / Math.PI));
     }
 
     /** Supplies a small visual idle speed while the engine is active, without affecting thrust. */
@@ -86,10 +85,8 @@ public final class LegacyPlanePhysics
         return rate == 0F ? 0F : (float) (rate / ROTOR_THROTTLE_DIVISOR * ROTOR_RENDER_SCALE);
     }
 
-    public static ControlRates controlRates(EnumPlaneMode mode, float speed, float horizontalSpeed, float throttle,
-                                            float flapYaw, float flapPitch, float flapRoll,
-                                            float turnLeft, float turnRight, float lookUp, float lookDown,
-                                            float rollLeft, float rollRight)
+    public static ControlRates controlRates(EnumPlaneMode mode, float speed, float horizontalSpeed, float throttle, float flapYaw, float flapPitch, float flapRoll, float turnLeft,
+        float turnRight, float lookUp, float lookDown, float rollLeft, float rollRight)
     {
         float sensitivity;
         float yawSensitivity;
@@ -102,18 +99,13 @@ public final class LegacyPlanePhysics
         else
         {
             float safeSpeed = Math.max(0F, finite(speed));
-            sensitivity = safeSpeed < FULL_CONTROL_AUTHORITY_SPEED
-                ? safeSpeed / FULL_CONTROL_AUTHORITY_SPEED
-                : safeSpeed < 1F ? 1F
-                : safeSpeed < 3F ? 1.5F - safeSpeed * 0.5F : 0F;
-            float divisor = (float)Math.sqrt(Math.max(1.0E-4F, finite(turnRight)));
-            yawSensitivity = horizontalSpeed < 0.7F
-                ? Math.max(sensitivity, 2.5F * safeSpeed / divisor) : sensitivity;
+            sensitivity = safeSpeed < FULL_CONTROL_AUTHORITY_SPEED ? safeSpeed / FULL_CONTROL_AUTHORITY_SPEED : safeSpeed < 1F ? 1F : safeSpeed < 3F ? 1.5F - safeSpeed * 0.5F : 0F;
+            float divisor = (float) Math.sqrt(Math.max(1.0E-4F, finite(turnRight)));
+            yawSensitivity = horizontalSpeed < 0.7F ? Math.max(sensitivity, 2.5F * safeSpeed / divisor) : sensitivity;
         }
         sensitivity *= 0.125F;
         yawSensitivity *= 0.125F * (mode == EnumPlaneMode.PLANE ? FIXED_WING_YAW_AUTHORITY_SCALE : 1F);
-        return new ControlRates(
-            finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight)) * yawSensitivity,
+        return new ControlRates(finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight)) * yawSensitivity,
             finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown)) * sensitivity,
             finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight)) * sensitivity);
     }
@@ -121,34 +113,33 @@ public final class LegacyPlanePhysics
     /**
      * Control rates for an aircraft running the real-world profile.
      *
-     * <p>Identical in shape to {@link #controlRates}, but the speed-dependent
+     * <p>
+     * Identical in shape to {@link #controlRates}, but the speed-dependent
      * sensitivity is supplied by the caller as a normalised authority in
      * {@code [0, 1]} derived from the aircraft's own terminal speed, instead of
      * the legacy curve's fixed 0.5 / 1 / 3 blocks-per-tick breakpoints. Those
      * breakpoints assumed a two blocks-per-tick top speed and drop authority to
      * zero above three, which is what made fast aircraft uncontrollable.
      *
-     * <p>The three axes are also scaled separately. The legacy model used one
+     * <p>
+     * The three axes are also scaled separately. The legacy model used one
      * sensitivity for all of them, which left a fighter rolling at about twenty
      * degrees per second; a real aircraft rolls fastest, pitches more slowly and
      * yaws slowest, because the rudder is the smallest surface.
      *
-     * <p>Legacy aircraft use a comparable arcade-biased control curve expressed
+     * <p>
+     * Legacy aircraft use a comparable arcade-biased control curve expressed
      * in absolute blocks per tick; they never reach this normalized method.
      */
-    public static ControlRates derivedControlRates(float authority, float flapYaw, float flapPitch, float flapRoll,
-                                                   float turnLeft, float turnRight, float lookUp, float lookDown,
-                                                   float rollLeft, float rollRight)
+    public static ControlRates derivedControlRates(float authority, float flapYaw, float flapPitch, float flapRoll, float turnLeft, float turnRight, float lookUp, float lookDown,
+        float rollLeft, float rollRight)
     {
         float sensitivity = Mth.clamp(finite(authority), 0F, 1F) * 0.125F;
         return new ControlRates(
-            finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight))
-                * sensitivity * VehiclePhysicsConstants.DERIVED_YAW_AUTHORITY_SCALE
+            finite(flapYaw) * (flapYaw > 0F ? finite(turnLeft) : finite(turnRight)) * sensitivity * VehiclePhysicsConstants.DERIVED_YAW_AUTHORITY_SCALE
                 * FIXED_WING_YAW_AUTHORITY_SCALE,
-            finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown))
-                * sensitivity * VehiclePhysicsConstants.DERIVED_PITCH_AUTHORITY_SCALE,
-            finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight))
-                * sensitivity * VehiclePhysicsConstants.DERIVED_ROLL_AUTHORITY_SCALE);
+            finite(flapPitch) * (flapPitch > 0F ? finite(lookUp) : finite(lookDown)) * sensitivity * VehiclePhysicsConstants.DERIVED_PITCH_AUTHORITY_SCALE,
+            finite(flapRoll) * (flapRoll > 0F ? finite(rollLeft) : finite(rollRight)) * sensitivity * VehiclePhysicsConstants.DERIVED_ROLL_AUTHORITY_SCALE);
     }
 
     public static float approachMomentum(float current, float target)
@@ -167,8 +158,7 @@ public final class LegacyPlanePhysics
         if (!Float.isFinite(current) || !Float.isFinite(target) || !Float.isFinite(responseScale))
             return 0F;
         float step = Math.max(0.05F, responseScale);
-        return Mth.clamp(current < target ? Math.min(target, current + step)
-            : Math.max(target, current - step), -20F, 20F);
+        return Mth.clamp(current < target ? Math.min(target, current + step) : Math.max(target, current - step), -20F, 20F);
     }
 
     public static float drag(float configuredDrag)
@@ -176,18 +166,15 @@ public final class LegacyPlanePhysics
         return Mth.clamp(1F - 0.05F * Math.max(0F, finite(configuredDrag)), 0F, 1F);
     }
 
-    public static float thrust(float throttle, float forwardPower, float reversePower, float waterPower,
-                               float engineSpeed, boolean underWater)
+    public static float thrust(float throttle, float forwardPower, float reversePower, float waterPower, float engineSpeed, boolean underWater)
     {
         float configured = throttle > 0F ? (underWater ? waterPower : forwardPower) : reversePower;
         return 0.01F * Math.max(0F, finite(configured) + finite(engineSpeed));
     }
 
-    public static boolean isLiftingOff(EnumPlaneMode mode, double speed, double takeoffSpeed,
-                                       double forwardVertical, double verticalSpeed)
+    public static boolean isLiftingOff(EnumPlaneMode mode, double speed, double takeoffSpeed, double forwardVertical, double verticalSpeed)
     {
-        if (mode != EnumPlaneMode.PLANE || !Double.isFinite(speed)
-            || !Double.isFinite(forwardVertical) || !Double.isFinite(verticalSpeed))
+        if (mode != EnumPlaneMode.PLANE || !Double.isFinite(speed) || !Double.isFinite(forwardVertical) || !Double.isFinite(verticalSpeed))
             return false;
         double requiredSpeed = Math.max(0.15D, Double.isFinite(takeoffSpeed) ? takeoffSpeed : 0D);
         return speed >= requiredSpeed && forwardVertical > 0.02D && verticalSpeed > 0D;
@@ -198,9 +185,7 @@ public final class LegacyPlanePhysics
     {
         if (!Float.isFinite(current) || !Float.isFinite(resting))
             return 0F;
-        return current < resting
-            ? Math.min(resting, current + LANDING_ATTITUDE_RECOVERY_DEG_PER_TICK)
-            : Math.max(resting, current - LANDING_ATTITUDE_RECOVERY_DEG_PER_TICK);
+        return current < resting ? Math.min(resting, current + LANDING_ATTITUDE_RECOVERY_DEG_PER_TICK) : Math.max(resting, current - LANDING_ATTITUDE_RECOVERY_DEG_PER_TICK);
     }
 
     /**
@@ -208,11 +193,10 @@ public final class LegacyPlanePhysics
      * wing is not usable forward airflow and must not restore lift merely
      * because the resulting world velocity is large.
      */
-    public static double forwardAirspeed(double velocityX, double velocityY, double velocityZ,
-                                         double forwardX, double forwardY, double forwardZ)
+    public static double forwardAirspeed(double velocityX, double velocityY, double velocityZ, double forwardX, double forwardY, double forwardZ)
     {
-        if (!Double.isFinite(velocityX) || !Double.isFinite(velocityY) || !Double.isFinite(velocityZ)
-            || !Double.isFinite(forwardX) || !Double.isFinite(forwardY) || !Double.isFinite(forwardZ))
+        if (!Double.isFinite(velocityX) || !Double.isFinite(velocityY) || !Double.isFinite(velocityZ) || !Double.isFinite(forwardX) || !Double.isFinite(forwardY)
+            || !Double.isFinite(forwardZ))
             return 0D;
         double forwardLength = Math.sqrt(forwardX * forwardX + forwardY * forwardY + forwardZ * forwardZ);
         if (forwardLength <= 1.0E-8D)
@@ -225,19 +209,15 @@ public final class LegacyPlanePhysics
      * Authority gates the effect on usable wing airflow or rotor lift, while the
      * response factor lets lifting-surface span and mass slow or quicken it.
      */
-    public static float passiveRollLevelingRate(float rollDegrees, boolean rollInputActive,
-                                                float authority, float responseFactor)
+    public static float passiveRollLevelingRate(float rollDegrees, boolean rollInputActive, float authority, float responseFactor)
     {
-        if (rollInputActive || !Float.isFinite(rollDegrees) || !Float.isFinite(authority)
-            || !Float.isFinite(responseFactor))
+        if (rollInputActive || !Float.isFinite(rollDegrees) || !Float.isFinite(authority) || !Float.isFinite(responseFactor))
             return 0F;
         float usableAuthority = Mth.clamp(authority, 0F, 1F);
-        float usableResponse = Mth.clamp(responseFactor, VehiclePhysicsConstants.MIN_ROLL_INERTIA_FACTOR,
-            VehiclePhysicsConstants.MAX_ROLL_INERTIA_FACTOR);
-        float scale = usableAuthority * (float)Math.sqrt(usableResponse);
+        float usableResponse = Mth.clamp(responseFactor, VehiclePhysicsConstants.MIN_ROLL_INERTIA_FACTOR, VehiclePhysicsConstants.MAX_ROLL_INERTIA_FACTOR);
+        float scale = usableAuthority * (float) Math.sqrt(usableResponse);
         float maximum = PASSIVE_ROLL_LEVEL_MAX_DEG_PER_TICK * scale;
-        return Mth.clamp(Mth.wrapDegrees(rollDegrees) * PASSIVE_ROLL_LEVEL_PROPORTION * scale,
-            -maximum, maximum);
+        return Mth.clamp(Mth.wrapDegrees(rollDegrees) * PASSIVE_ROLL_LEVEL_PROPORTION * scale, -maximum, maximum);
     }
 
     private static float finite(float value)
@@ -245,5 +225,6 @@ public final class LegacyPlanePhysics
         return Float.isFinite(value) ? value : 0F;
     }
 
-    public record ControlRates(float yaw, float pitch, float roll) {}
+    public record ControlRates(float yaw, float pitch, float roll)
+    {}
 }

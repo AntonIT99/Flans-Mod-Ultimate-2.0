@@ -11,14 +11,11 @@ import java.util.Map;
 public class ModelPool
 {
     private static final Map<String, ModelPoolEntry> modelMap = new HashMap<>();
-    private static final String[] resourceDir = new String[] {
-            "/resources/models/",
-            "/resources/mod/models/",
-            "/Flan/"
-    };
+    private static final String[] resourceDir = new String[]{"/resources/models/", "/resources/mod/models/", "/Flan/"};
     public static final Class<ModelPoolObjEntry> OBJ = ModelPoolObjEntry.class;
 
-    private ModelPool() {}
+    private ModelPool()
+    {}
 
     @Nullable
     public static ModelPoolEntry addFile(String file, Class<?> modelClass, Map<String, TransformGroup> group, Map<String, TextureGroup> textureGroup)
@@ -36,7 +33,7 @@ public class ModelPool
         {
             entry = (ModelPoolEntry) modelClass.getConstructor().newInstance();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             FlansLog.log.error("A new {} could not be initialized.", modelClass.getName());
             FlansLog.log.error(e.getMessage());
@@ -48,12 +45,12 @@ public class ModelPool
         for (int i = 0; i < resourceDir.length && (modelFile == null || !modelFile.exists()); i++)
         {
             String absPath = new File(PlatformPaths.configDir().getParent().toFile(), resourceDir[i]).getAbsolutePath();
-            if(!absPath.endsWith("/") || !absPath.endsWith("\\"))
+            if (!absPath.endsWith("/") || !absPath.endsWith("\\"))
                 absPath += "/";
             modelFile = entry.checkValidPath(absPath + file);
         }
 
-        if(modelFile == null || !modelFile.exists())
+        if (modelFile == null || !modelFile.exists())
         {
             FlansLog.log.warn("The model with the name {} does not exist.", file);
             return null;

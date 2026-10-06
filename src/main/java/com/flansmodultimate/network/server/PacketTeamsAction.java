@@ -7,10 +7,10 @@ import com.flansmodultimate.common.types.Team;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,12 +20,7 @@ public final class PacketTeamsAction implements IServerPacket
 {
     public enum Action
     {
-        SELECT_TEAM,
-        SELECT_CLASS,
-        CAST_VOTE,
-        OPEN_TEAM,
-        OPEN_CLASS,
-        OPEN_SCOREBOARD
+        SELECT_TEAM, SELECT_CLASS, CAST_VOTE, OPEN_TEAM, OPEN_CLASS, OPEN_SCOREBOARD
     }
 
     private Action action = Action.OPEN_SCOREBOARD;
@@ -89,8 +84,10 @@ public final class PacketTeamsAction implements IServerPacket
         switch (action)
         {
             case OPEN_TEAM -> {
-                if (manager.getCurrentLoadoutPool().isPresent()) manager.syncLoadouts(player, PacketLoadoutState.OpenScreen.HUB, 0, "");
-                else manager.syncPlayer(player, PacketTeamsState.OpenScreen.TEAM_SELECT);
+                if (manager.getCurrentLoadoutPool().isPresent())
+                    manager.syncLoadouts(player, PacketLoadoutState.OpenScreen.HUB, 0, "");
+                else
+                    manager.syncPlayer(player, PacketTeamsState.OpenScreen.TEAM_SELECT);
             }
             case OPEN_CLASS -> {
                 PlayerData data = PlayerData.getInstance(player);
@@ -102,8 +99,14 @@ public final class PacketTeamsAction implements IServerPacket
             case OPEN_SCOREBOARD -> manager.syncPlayer(player, PacketTeamsState.OpenScreen.SCOREBOARD);
             case CAST_VOTE -> {
                 int option;
-                try { option = Integer.parseInt(value); }
-                catch (NumberFormatException ignored) { return; }
+                try
+                {
+                    option = Integer.parseInt(value);
+                }
+                catch (NumberFormatException ignored)
+                {
+                    return;
+                }
                 if (!manager.castVote(player, option))
                     player.sendSystemMessage(Component.literal("That voting option is not available"));
             }

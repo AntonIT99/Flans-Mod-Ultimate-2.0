@@ -1,7 +1,5 @@
 package com.flansmodultimate.client.render;
 
-import org.lwjgl.opengl.GL11;
-
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.common.entity.Driveable;
@@ -14,6 +12,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
@@ -38,12 +37,18 @@ public final class VehicleThermalRenderer
     private static boolean maskReady;
     private static int width, height;
 
-    private VehicleThermalRenderer() {}
-    public static boolean isRenderingMask() { return renderingMask; }
+    private VehicleThermalRenderer()
+    {}
+
+    public static boolean isRenderingMask()
+    {
+        return renderingMask;
+    }
 
     public static void reset()
     {
-        if (chain != null) chain.close();
+        if (chain != null)
+            chain.close();
         chain = null;
         failed = false;
         maskReady = false;
@@ -59,15 +64,18 @@ public final class VehicleThermalRenderer
         // AFTER_LEVEL's Forge 1.20.1 pose contains the projection, not the world
         // view. Build the mask here using the same world pose as ordinary entities,
         // then compose at AFTER_LEVEL so weather and the remaining scene are included.
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
+            return;
         maskReady = false;
         if (!VehicleOpticsClient.thermal())
         {
-            if (chain != null) reset();
+            if (chain != null)
+                reset();
             return;
         }
         Minecraft mc = Minecraft.getInstance();
-        if (failed || mc.level == null) return;
+        if (failed || mc.level == null)
+            return;
         RenderTarget main = mc.getMainRenderTarget();
         try
         {
@@ -75,12 +83,14 @@ public final class VehicleThermalRenderer
             {
                 chain = new PostChain(mc.getTextureManager(), mc.getResourceManager(), main, EFFECT);
                 chain.resize(main.width, main.height);
-                width = main.width; height = main.height;
+                width = main.width;
+                height = main.height;
             }
             if (width != main.width || height != main.height)
             {
                 chain.resize(main.width, main.height);
-                width = main.width; height = main.height;
+                width = main.width;
+                height = main.height;
             }
             RenderTarget heat = chain.getTempTarget("heat");
             heat.clear(Minecraft.ON_OSX);
@@ -96,9 +106,9 @@ public final class VehicleThermalRenderer
             Seat occupied = VehicleOpticsClient.activeSeat();
             for (Entity entity : mc.level.entitiesForRendering())
             {
-                if (!(entity instanceof LivingEntity || entity instanceof Driveable) || entity == mc.player
-                    || !entity.isAlive() || entity.isInvisible() || occupied != null && entity == occupied.getDriveable()
-                    || !event.getFrustum().isVisible(entity.getBoundingBox())) continue;
+                if (!(entity instanceof LivingEntity || entity instanceof Driveable) || entity == mc.player || !entity.isAlive() || entity.isInvisible()
+                    || occupied != null && entity == occupied.getDriveable() || !event.getFrustum().isVisible(entity.getBoundingBox()))
+                    continue;
                 renderEntity(entity, camera, ClientPlatform.partialTick(event), event.getPoseStack(), maskBuffers);
             }
             // Driveables too far away to be drawn as entities are just as hot
@@ -110,7 +120,8 @@ public final class VehicleThermalRenderer
         }
         catch (Exception ex)
         {
-            if (chain != null) chain.close();
+            if (chain != null)
+                chain.close();
             chain = null;
             failed = true;
             FlansLog.log.error("Could not render vehicle thermal optics; reload resources to retry", ex);
@@ -128,7 +139,8 @@ public final class VehicleThermalRenderer
 
     private static void composite(float partialTick)
     {
-        if (!maskReady || chain == null || !VehicleOpticsClient.thermal()) return;
+        if (!maskReady || chain == null || !VehicleOpticsClient.thermal())
+            return;
         maskReady = false;
         RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
         try
@@ -154,24 +166,76 @@ public final class VehicleThermalRenderer
         pose.pushPose();
         try
         {
-            pose.translate(Mth.lerp(partial, entity.xOld, entity.getX()) - camera.x + offset.x,
-                Mth.lerp(partial, entity.yOld, entity.getY()) - camera.y + offset.y,
+            pose.translate(Mth.lerp(partial, entity.xOld, entity.getX()) - camera.x + offset.x, Mth.lerp(partial, entity.yOld, entity.getY()) - camera.y + offset.y,
                 Mth.lerp(partial, entity.zOld, entity.getZ()) - camera.z + offset.z);
             renderer.render(entity, Mth.rotLerp(partial, entity.yRotO, entity.getYRot()), partial, pose, buffer, LightTexture.FULL_BRIGHT);
         }
-        finally { pose.popPose(); }
+        finally
+        {
+            pose.popPose();
+        }
     }
 
     private record HeatVertexConsumer(VertexConsumer delegate) implements VertexConsumer
     {
-        @Override public VertexConsumer vertex(double x, double y, double z) { delegate.vertex(x, y, z); return this; }
-        @Override public VertexConsumer color(int r, int g, int b, int a) { delegate.color(255, 255, 255, 255); return this; }
-        @Override public VertexConsumer uv(float u, float v) { delegate.uv(0.5F, 0.5F); return this; }
-        @Override public VertexConsumer overlayCoords(int u, int v) { delegate.overlayCoords(OverlayTexture.NO_OVERLAY); return this; }
-        @Override public VertexConsumer uv2(int u, int v) { delegate.uv2(LightTexture.FULL_BRIGHT); return this; }
-        @Override public VertexConsumer normal(float x, float y, float z) { delegate.normal(x, y, z); return this; }
-        @Override public void endVertex() { delegate.endVertex(); }
-        @Override public void defaultColor(int r, int g, int b, int a) { delegate.defaultColor(255, 255, 255, 255); }
-        @Override public void unsetDefaultColor() { delegate.unsetDefaultColor(); }
+        @Override
+        public VertexConsumer vertex(double x, double y, double z)
+        {
+            delegate.vertex(x, y, z);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer color(int r, int g, int b, int a)
+        {
+            delegate.color(255, 255, 255, 255);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer uv(float u, float v)
+        {
+            delegate.uv(0.5F, 0.5F);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer overlayCoords(int u, int v)
+        {
+            delegate.overlayCoords(OverlayTexture.NO_OVERLAY);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer uv2(int u, int v)
+        {
+            delegate.uv2(LightTexture.FULL_BRIGHT);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer normal(float x, float y, float z)
+        {
+            delegate.normal(x, y, z);
+            return this;
+        }
+
+        @Override
+        public void endVertex()
+        {
+            delegate.endVertex();
+        }
+
+        @Override
+        public void defaultColor(int r, int g, int b, int a)
+        {
+            delegate.defaultColor(255, 255, 255, 255);
+        }
+
+        @Override
+        public void unsetDefaultColor()
+        {
+            delegate.unsetDefaultColor();
+        }
     }
 }

@@ -105,12 +105,18 @@ public final class InventoryHelper
     }
 
     /**
-     * @param inv              target container
-     * @param stack            stack to insert/merge (will be decremented/emptied)
-     * @param creative         if true, treat as success without modifying
-     * @param combine          if true, merge into existing stacks first
-     * @param toUpperContainer if true, prefer the "upper" range first, otherwise the "lower" range first
-     * @param splitIndex       boundary between ranges (player inventory hotbar = 9). Use inv.getContainerSize() to mean "no split".
+     * @param inv
+     *            target container
+     * @param stack
+     *            stack to insert/merge (will be decremented/emptied)
+     * @param creative
+     *            if true, treat as success without modifying
+     * @param combine
+     *            if true, merge into existing stacks first
+     * @param toUpperContainer
+     *            if true, prefer the "upper" range first, otherwise the "lower" range first
+     * @param splitIndex
+     *            boundary between ranges (player inventory hotbar = 9). Use inv.getContainerSize() to mean "no split".
      */
     public static boolean addItemStackToContainer(Container inv, ItemStack stack, boolean creative, boolean combine, boolean toUpperContainer, int splitIndex)
     {

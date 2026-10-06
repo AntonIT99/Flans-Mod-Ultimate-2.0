@@ -65,6 +65,91 @@ and priority above packaged assets. The ordinary Minecraft resource-pack order
 cannot override this configured selection. Changing just the list does not
 invalidate content generation or trigger audio remeasurement.
 
+### NPC ranged projectile integration on master
+
+Forge 1.20.1 now intercepts Custom NPCs' `EntityNPCInterface.performRangedAttack`
+and its production SRG name `m_6504_` through `NpcRangedAttackMixin`. The module
+uses API 0.6 `FlansProjectiles`, `ProjectileParameters`, `ProjectileShot` and
+`WeaponMuzzle`; no Custom NPCs dependency is added to the main mod. Its settings
+are mixed into `DataStats.readToNBT` and `save`, under `WolffsModWeapons`, and the
+`Wolff's Mod` page uses `SPacketMenuGet`/`SPacketMenuSave` with `EnumMenuType.STATS`.
+Check these names, permission paths and GUI callbacks against the installed
+Custom NPCs jar when porting. Missing setting keys retain their defaults.
+
+`NpcRangedControlsMixin` is client-only and targets `SubGuiNpcRangeProperties` and
+`SubGuiNpcProjectiles`, including both `init` and production `m_7856_`. It marks
+inactive fields and buttons read-only after initialization and guards their
+callbacks so focus loss cannot overwrite stored defaults. Verify widget IDs and
+the `GuiWrapper.parent` chain when porting: `getParent()` returns the root, or the
+dialog itself before attachment. `FlansProjectiles.getSources` supplies reusable
+setting authority without spawning entities; dialog IDs and tooltips stay in the
+NPC module. Any still-used fallback in a mixed bank or belt remains editable.
+
+`TYPE_PROPERTIES` adds default-enabled model inheritance through API 0.6
+`FlansEntityTypes`/`EntityTypeProperties`. The NPC-specific reversible overlay
+captures all replaced defaults before writes and returns stored defaults from
+`DataStats`, `DataAI` and `DataAdvanced` save methods. Their load hooks invalidate
+only the loaded component's captured defaults. `NpcTypeSyncMixin` extends the
+existing `writeSpawnData()`/`readSpawnData(CompoundTag)` server-to-client transport
+with switch state and the small set of stored mapped fields; the ordinary sounds
+page does not request stats data itself. No new client-to-server authority is added.
+The server refreshes inheritance before NPC ticks; model NBT load restores actual
+saved health after resolving hull HP. Health changes preserve the damaged fraction.
+`WolffsModTypeMaxHealth` records the effective saved maximum separately from
+`MaxHealth`, which remains the user's fallback. Older saves use their original
+`MaxHealth` when converting the saved damage fraction to inherited hull HP.
+
+`NpcTypeControlsMixin` also targets `GuiNpcStats`, `GuiNPCSoundsMenu`,
+`SubGuiNpcMeleeProperties` and `SubGuiNpcMovement`, using the installed jar's IDs
+and `GuiButtonNop.setDisplay(int)`. It displays converted inherited values and
+keeps focus/button callbacks from writing them back as defaults. Distinct native
+mount values can be displayed together without collapsing them into one weapon.
+`NpcTypeRangedTimingMixin` redirects the ranged goal's `getBurst`/`getBurstDelay`
+calls, retaining its targeting and navigation while removing artificial burst
+gaps for inherited native banks. Its fractional cooldown accounts for the goal's
+post-decrement test. Recheck `tick`/`m_8037_`, `stop`/`m_8041_`, field names, NBT
+keys and the live maximum-health attribute bound when porting these hooks.
+
+The firing path owns projectile creation on the server and reuses Flan's native
+entities and damage attribution. An explicit `FiredShot` platform definition
+preserves fallback ammunition overrides for NPCs whose model is a driveable but
+whose live entity is a Custom NPC. The model entities remain detached, static
+rendering objects. Preserve that separation and static preview coordinate frame
+when adapting model muzzle transforms; do not spawn a driveable to fire its NPC model.
+
+### NPC equipped-item authority on master
+
+Forge 1.20.1 adds `FlansEquipment`, equipped weapon/armor inspection records,
+`IEquipmentPolicy` and the client-only `FlansEquipmentRender` entry point.
+Native item actions run on the server and consume real ammunition or thrown
+weapons. These are separate from the older reusable-template model-bank path.
+The NPC module owns vanilla weapon dispatch, charge/reload/cadence, item readouts,
+and the Custom NPCs-specific `NpcWeaponAdapter` extension.
+
+The installed Custom NPCs build overrides `getDamageAfterArmorAbsorb` to omit
+native armor. `NpcEquipmentMixin` calls its vanilla superclass when equipment
+authority is enabled, bypasses `Resistances.applyResistance` and the knockback
+resistance field, and provides mob armor/shield wear hooks. Check the descriptors
+and SRG aliases against the target Custom NPCs jar; the bytecode contract test
+checks those seams without loading the mod or any client classes. The existing
+stats packet and spawn/update transport carry the four additional named switches.
+
+Vanilla bows and crossbows still use 1.20.1 stack NBT for charged projectiles and
+enchantments; newer branches need their native item-component APIs. Modded bow
+subclasses use arrow factories/custom-arrow hooks. Player-specific weapon use is
+not emulated with a fake player. Client-only hooks run after Custom NPCs'
+`AnimationHandler.animateBipedPost` and in the resistance slider editor. Armor
+resting poses are applied after `HumanoidModel.copyPropertiesTo` in the armor
+layer; recheck Forge/NeoForge custom armor model hooks on each target branch.
+
+Multi-target mixins into Custom NPCs data classes must mark their own field
+shadows explicitly `remap = false`, even when the mixin itself disables remapping.
+Mixin rejects a remappable shadow shared by multiple targets during runtime
+validation. The installed 20260711 Custom NPCs jar also fails in Forge's
+`GameTestServer`: its world-directory lookup attempts to load client Minecraft
+and returns null on that server subtype. Common NPC equipment mixins load before
+that third-party failure; this harness cannot verify live combat or editor behavior.
+
 ### NPC static world-model rendering
 
 The Forge 1.20.1 model picker uses the client-only `NpcModelBrowserMixin` on

@@ -12,13 +12,11 @@ import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -84,11 +82,11 @@ public final class ApocalypseGunHelper
         {
             int ammoSlot = slot;
             BulletType ammoType = ammo.get(random.nextInt(ammo.size()));
-            ModUtils.getItemStack(ammoType).ifPresent(ammoStack -> {
+            ModUtils.getItemStack(ammoType).ifPresent(ammoStack ->
+            {
                 int rounds = Math.max(1, ammoType.getRoundsPerItem());
                 ShootableItem.setRoundsRemaining(ammoStack, rounds);
-                gunItem.setBulletItemStack(gunStack, ammoStack, ammoSlot,
-                    com.flansmodultimate.platform.item.ItemStackData.builtInRegistries());
+                gunItem.setBulletItemStack(gunStack, ammoStack, ammoSlot, com.flansmodultimate.platform.item.ItemStackData.builtInRegistries());
             });
         }
         return Optional.of(gunStack);
@@ -107,7 +105,8 @@ public final class ApocalypseGunHelper
 
         ShootableType selected = ammoTypes.get(random.nextInt(ammoTypes.size()));
         int count = selected.getMaxStackSize() > 1 && random.nextBoolean() ? 1 + random.nextInt(Math.min(3, selected.getMaxStackSize())) : 1;
-        return ModUtils.getItemStack(selected, count).map(stack -> {
+        return ModUtils.getItemStack(selected, count).map(stack ->
+        {
             if (stack.getItem() instanceof ShootableItem)
                 ShootableItem.setRoundsRemaining(stack, Math.max(1, selected.getRoundsPerItem()));
             return stack;
@@ -122,7 +121,8 @@ public final class ApocalypseGunHelper
             return Optional.empty();
         BulletType selected = ammo.get(random.nextInt(ammo.size()));
         int count = selected.getMaxStackSize() > 1 ? 1 + random.nextInt(Math.min(3, selected.getMaxStackSize())) : 1;
-        return ModUtils.getItemStack(selected, count).map(stack -> {
+        return ModUtils.getItemStack(selected, count).map(stack ->
+        {
             if (stack.getItem() instanceof ShootableItem)
                 ShootableItem.setRoundsRemaining(stack, Math.max(1, selected.getRoundsPerItem()));
             return stack;
@@ -149,7 +149,8 @@ public final class ApocalypseGunHelper
 
         ItemStack ammoStack = loaded.stack();
         BulletType bulletType = loaded.type();
-        ShootingHandler handler = () -> {
+        ShootingHandler handler = () ->
+        {
             ShootableItem.consumeRound(ammoStack);
             gunItem.setBulletItemStack(gunStack, ammoStack, loaded.slot(), shooter.level().registryAccess());
         };
@@ -160,8 +161,7 @@ public final class ApocalypseGunHelper
     }
 
     @Nullable
-    private static LoadedAmmo firstLoadedBullet(GunItem gunItem, ItemStack gunStack,
-                                                 net.minecraft.core.HolderLookup.Provider registries)
+    private static LoadedAmmo firstLoadedBullet(GunItem gunItem, ItemStack gunStack, net.minecraft.core.HolderLookup.Provider registries)
     {
         int slots = gunItem.getConfigType().getNumAmmoItemsInGun(gunStack);
         for (int slot = 0; slot < slots; slot++)
@@ -191,5 +191,6 @@ public final class ApocalypseGunHelper
         return ammo;
     }
 
-    private record LoadedAmmo(int slot, ItemStack stack, BulletType type) {}
+    private record LoadedAmmo(int slot, ItemStack stack, BulletType type)
+    {}
 }

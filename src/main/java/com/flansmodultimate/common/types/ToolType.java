@@ -95,9 +95,7 @@ public class ToolType extends InfoType
         if (rechargeRecipeSourceFile == null)
             return;
 
-        logError("Could not resolve RechargeRecipe ingredient '" + recipeItem.getItemName()
-            + "' (amount " + recipeItem.getAmount()
-            + ") for tool '" + getShortName()
+        logError("Could not resolve RechargeRecipe ingredient '" + recipeItem.getItemName() + "' (amount " + recipeItem.getAmount() + ") for tool '" + getShortName()
             + "', skipping ingredient.", rechargeRecipeSourceFile);
     }
 }

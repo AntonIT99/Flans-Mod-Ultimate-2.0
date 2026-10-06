@@ -72,20 +72,17 @@ public final class GunAmmoSelectScreen extends Screen
             AmmoChoice choice = choices.get(first + row);
             String name = ModUtils.getDisplayNameString(choice.type());
             Component label = Component.literal(name.isBlank() ? choice.type().getOriginalShortName() : name);
-            Button button = Button.builder(label, ignored -> select(choice.type().getOriginalShortName()))
-                .bounds(width / 2 - 70, top + 24 + row * ROW_HEIGHT, 166, 20).build();
+            Button button = Button.builder(label, ignored -> select(choice.type().getOriginalShortName())).bounds(width / 2 - 70, top + 24 + row * ROW_HEIGHT, 166, 20).build();
             button.active = !choice.type().getOriginalShortName().equals(selectedAmmo);
             addRenderableWidget(button);
         }
 
         if (maxPage() > 0)
         {
-            Button previous = Button.builder(Component.literal("<"), ignored -> changePage(-1))
-                .bounds(width / 2 - 70, top + 28 + count * ROW_HEIGHT, 80, 20).build();
+            Button previous = Button.builder(Component.literal("<"), ignored -> changePage(-1)).bounds(width / 2 - 70, top + 28 + count * ROW_HEIGHT, 80, 20).build();
             previous.active = page > 0;
             addRenderableWidget(previous);
-            Button next = Button.builder(Component.literal(">"), ignored -> changePage(1))
-                .bounds(width / 2 + 16, top + 28 + count * ROW_HEIGHT, 80, 20).build();
+            Button next = Button.builder(Component.literal(">"), ignored -> changePage(1)).bounds(width / 2 + 16, top + 28 + count * ROW_HEIGHT, 80, 20).build();
             next.active = page < maxPage();
             addRenderableWidget(next);
         }
@@ -117,8 +114,7 @@ public final class GunAmmoSelectScreen extends Screen
         int first = page * CHOICES_PER_PAGE;
         int count = Math.min(CHOICES_PER_PAGE, choices.size() - first);
         int top = height / 2 - (count * ROW_HEIGHT + 45) / 2;
-        graphics.fill(width / 2 - 104, top - 4, width / 2 + 104,
-            top + 52 + count * ROW_HEIGHT, 0xCC101010);
+        graphics.fill(width / 2 - 104, top - 4, width / 2 + 104, top + 52 + count * ROW_HEIGHT, 0xCC101010);
         graphics.drawCenteredString(font, title, width / 2, top + 4, 0xFFFFFF);
         ItemStack hoveredStack = ItemStack.EMPTY;
         for (int row = 0; row < count; row++)
@@ -145,5 +141,6 @@ public final class GunAmmoSelectScreen extends Screen
         return false;
     }
 
-    private record AmmoChoice(ShootableType type, ItemStack stack) {}
+    private record AmmoChoice(ShootableType type, ItemStack stack)
+    {}
 }

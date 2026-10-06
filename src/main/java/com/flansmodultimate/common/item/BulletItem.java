@@ -62,30 +62,28 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
         if (!rounds.isEmpty())
         {
             tooltipComponents.add(Component.translatable(TooltipKeys.ROUNDS_MIX).append(": ").withStyle(ChatFormatting.BLUE));
-            rounds.forEach(round ->
-                tooltipComponents.add(Component.literal("  " + round.name() + " (" + round.count() + ")").withStyle(ChatFormatting.DARK_AQUA)));
+            rounds.forEach(round -> tooltipComponents.add(Component.literal("  " + round.name() + " (" + round.count() + ")").withStyle(ChatFormatting.DARK_AQUA)));
         }
 
         if (context == null || context.showLaunchStats())
-            appendPerRound(tooltipComponents, TooltipKeys.MUZZLE_VELOCITY, rounds, shot -> {
-            float velocity = muzzleVelocity(configType, shot, context);
-            return velocity > 0F ? IFlanItem.formatFloat(velocity * 20F, rounds.isEmpty() ? 3 : 2) + " m/s" : null;
-        });
+            appendPerRound(tooltipComponents, TooltipKeys.MUZZLE_VELOCITY, rounds, shot ->
+            {
+                float velocity = muzzleVelocity(configType, shot, context);
+                return velocity > 0F ? IFlanItem.formatFloat(velocity * 20F, rounds.isEmpty() ? 3 : 2) + " m/s" : null;
+            });
 
-        appendPerRound(tooltipComponents, TooltipKeys.PENETRATION_AT_100M, rounds, shot -> {
+        appendPerRound(tooltipComponents, TooltipKeys.PENETRATION_AT_100M, rounds, shot ->
+        {
             float penetration = penetrationAt100m(configType, shot, context);
             // HEAT is shown as the internationally used ammunition abbreviation, like the unit beside it.
-            return penetration > 0F ? IFlanItem.formatFloat(penetration) + "mm" + (configType.isHeat() ? " HEAT" : "")
-                : null;
+            return penetration > 0F ? IFlanItem.formatFloat(penetration) + "mm" + (configType.isHeat() ? " HEAT" : "") : null;
         });
 
         // Kinetic penetrating power cannot be stated meaningfully until both mass and launch velocity are known.
         // In a standalone ammo tooltip there may be no weapon context to provide the missing velocity.
-        boolean hasUnresolvedKineticPower = projectileMass(configType, 0, context) > 0F
-            && muzzleVelocity(configType, 0, context) <= 0F;
+        boolean hasUnresolvedKineticPower = projectileMass(configType, 0, context) > 0F && muzzleVelocity(configType, 0, context) <= 0F;
         if (!hasUnresolvedKineticPower)
-            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PENETRATING_POWER),
-                IFlanItem.formatFloat(penetratingPower(configType, 0, context))));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.PENETRATING_POWER), IFlanItem.formatFloat(penetratingPower(configType, 0, context))));
 
         if (hasLockOn())
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.GUIDANCE), Component.translatable(TooltipKeys.GUIDANCE_LOCK_ON)));
@@ -104,6 +102,7 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
 
     private boolean hasLockOn()
     {
-        return configType.isLockOnToLivings() || configType.isLockOnToMechas() || configType.isLockOnToPlanes() || configType.isLockOnToPlayers() || configType.isLockOnToVehicles();
+        return configType.isLockOnToLivings() || configType.isLockOnToMechas() || configType.isLockOnToPlanes() || configType.isLockOnToPlayers()
+            || configType.isLockOnToVehicles();
     }
 }

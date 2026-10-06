@@ -19,8 +19,7 @@ class VehicleOpticsTest
 
     private static SeatInfo seat(int id)
     {
-        return new SeatInfo(id, new Vector3f(), EnumDriveablePart.CORE, id == 0,
-            -180, 180, -45, 45, null, null);
+        return new SeatInfo(id, new Vector3f(), EnumDriveablePart.CORE, id == 0, -180, 180, -45, 45, null, null);
     }
 
     private VehicleOptics read(String... lines)
@@ -29,7 +28,8 @@ class VehicleOpticsTest
         return VehicleOpticsReader.read(new TypeFile("optics", EnumType.VEHICLE, pack, List.of(lines)), seats, warnings::add);
     }
 
-    @Test void driverListsAndThermalIndicesMatchLegacy()
+    @Test
+    void driverListsAndThermalIndicesMatchLegacy()
     {
         VehicleOptics optics = read("HasScope true", "Gunsight day night thermal", "GunsightZoom 2 4", "ThermalGuis 3");
         assertTrue(optics.available());
@@ -41,19 +41,19 @@ class VehicleOpticsTest
         assertTrue(warnings.isEmpty());
     }
 
-    @Test void driverCycleCountComesFromOverlaysButPassengerCountIncludesZoomsAndThermal()
+    @Test
+    void driverCycleCountComesFromOverlaysButPassengerCountIncludesZoomsAndThermal()
     {
-        VehicleOptics driver = read("Gunsight day", "GunsightZoom 2 4 8", "ThermalGuis 4",
-            "SeatGunsight 1 day", "SeatGunsightZooms 1 2 4 8", "SeatThermalGUIs 1 4");
+        VehicleOptics driver = read("Gunsight day", "GunsightZoom 2 4 8", "ThermalGuis 4", "SeatGunsight 1 day", "SeatGunsightZooms 1 2 4 8", "SeatThermalGUIs 1 4");
         assertEquals(1, driver.sightCount());
         assertEquals(4, seats.get(1).getOptics().sightCount());
     }
 
-    @Test void aliasesAndRepeatedLinesApplyInSourceOrder()
+    @Test
+    void aliasesAndRepeatedLinesApplyInSourceOrder()
     {
-        VehicleOptics driver = read("  hasScope true", "HasScope false", "gunsightZoom 2", "GunsightZoom 6",
-            "PassengerHasScope 1 true", "SeatHasScope 1 false", "PassengerZoom 1 3",
-            "PassengerNightSight 1 true", "nightScope true");
+        VehicleOptics driver = read("  hasScope true", "HasScope false", "gunsightZoom 2", "GunsightZoom 6", "PassengerHasScope 1 true", "SeatHasScope 1 false",
+            "PassengerZoom 1 3", "PassengerNightSight 1 true", "nightScope true");
         assertFalse(driver.available());
         assertEquals(6F, driver.zoom(0));
         assertTrue(driver.isNightSight());
@@ -62,7 +62,8 @@ class VehicleOpticsTest
         assertTrue(seats.get(1).getOptics().isNightSight());
     }
 
-    @Test void seatGunsightAutoEnablesOverlayUntilOpticsModeIsDeclared()
+    @Test
+    void seatGunsightAutoEnablesOverlayUntilOpticsModeIsDeclared()
     {
         read("PassengerGunsights 1 tv flir", "SeatThermalGuis 1 2", "OpticsModeSeat 1 true");
         VehicleOptics optics = seats.get(1).getOptics();
@@ -72,7 +73,8 @@ class VehicleOpticsTest
         assertTrue(optics.thermal(1));
     }
 
-    @Test void seatGunsightStartsUnscopedButAutoScopeIsForced()
+    @Test
+    void seatGunsightStartsUnscopedButAutoScopeIsForced()
     {
         read("SeatGunsight 1 sight", "SeatAutoScope 0 true");
         assertFalse(seats.get(1).getOptics().startsActive());
@@ -81,7 +83,8 @@ class VehicleOpticsTest
         assertTrue(seats.get(0).getOptics().forced());
     }
 
-    @Test void overlaySeatStartsUnscopedAndTheGunnerMayRaiseIt()
+    @Test
+    void overlaySeatStartsUnscopedAndTheGunnerMayRaiseIt()
     {
         read("SeatGunsight 1 sight");
         VehicleOptics definition = seats.get(1).getOptics();
@@ -101,7 +104,8 @@ class VehicleOpticsTest
         assertFalse(state.isActive());
     }
 
-    @Test void autoScopeCannotBeLowered()
+    @Test
+    void autoScopeCannotBeLowered()
     {
         read("SeatAutoScope 1 true");
         VehicleOptics definition = seats.get(1).getOptics();
@@ -111,10 +115,10 @@ class VehicleOpticsTest
         assertTrue(state.isActive());
     }
 
-    @Test void camerasUsePixelsAndSeparateEnableFlags()
+    @Test
+    void camerasUsePixelsAndSeparateEnableFlags()
     {
-        VehicleOptics driver = read("GunsightPos 16 32 -48", "HasGunsightPos true",
-            "PilotOptics true", "DriverOpticsCamera 64 80 96", "SeatOpticsCamera 1 8 24 40");
+        VehicleOptics driver = read("GunsightPos 16 32 -48", "HasGunsightPos true", "PilotOptics true", "DriverOpticsCamera 64 80 96", "SeatOpticsCamera 1 8 24 40");
         assertTrue(driver.isHasCamera());
         assertEquals(1F, driver.getCamera().x);
         assertEquals(-3F, driver.getCamera().z);
@@ -123,7 +127,8 @@ class VehicleOpticsTest
         assertEquals(2.5F, seats.get(1).getOptics().getCamera().z);
     }
 
-    @Test void sharedHelicopterOverlayDoesNotEnableScopes()
+    @Test
+    void sharedHelicopterOverlayDoesNotEnableScopes()
     {
         read("PassengerGunsight legacy", "SeatOverlay 1 true");
         assertEquals("legacy", seats.get(1).getOptics().overlay(0));
@@ -131,22 +136,21 @@ class VehicleOpticsTest
         assertFalse(seats.get(0).getOptics().available());
     }
 
-    @Test void malformedSeatAndNonfiniteNumbersDoNotAbortLaterLines()
+    @Test
+    void malformedSeatAndNonfiniteNumbersDoNotAbortLaterLines()
     {
-        VehicleOptics driver = read("SeatGunsight -1 bad", "PassengerZoom 1 NaN", "GunsightZoom Infinity",
-            "SeatOpticsCamera 99 0 0 0", "HasScope true", "GunsightZoom 4");
+        VehicleOptics driver = read("SeatGunsight -1 bad", "PassengerZoom 1 NaN", "GunsightZoom Infinity", "SeatOpticsCamera 99 0 0 0", "HasScope true", "GunsightZoom 4");
         assertEquals(4, warnings.size());
         assertTrue(driver.available());
         assertEquals(4F, driver.zoom(0));
         assertEquals(1F, seats.get(1).getOptics().zoom(0));
     }
 
-    @Test void hudOverridesUseOneBasedSightAndFallbackToDefaults()
+    @Test
+    void hudOverridesUseOneBasedSightAndFallbackToDefaults()
     {
-        read("SeatOpticsHUD 1 true", "SeatOpticsHUDColor 1 255 128 0", "SeatOpticsHUDColorSight 1 2 0x112233",
-            "SeatOpticsHUDScale 1 1.5", "SeatOpticsHUDScaleSight 1 2 2",
-            "SeatOpticsRangePos 1 -20 30", "SeatOpticsRangePosSight 1 2 -40 60",
-            "SeatOpticsRangeTextureSight 1 2 range", "SeatOpticsRangeTextureSize 1 90 20",
+        read("SeatOpticsHUD 1 true", "SeatOpticsHUDColor 1 255 128 0", "SeatOpticsHUDColorSight 1 2 0x112233", "SeatOpticsHUDScale 1 1.5", "SeatOpticsHUDScaleSight 1 2 2",
+            "SeatOpticsRangePos 1 -20 30", "SeatOpticsRangePosSight 1 2 -40 60", "SeatOpticsRangeTextureSight 1 2 range", "SeatOpticsRangeTextureSize 1 90 20",
             "SeatOpticsCompassMarkerSight 1 2 marker", "SeatOpticsElevationIndicator 1 true");
         OpticsHud hud = seats.get(1).getOptics().getHud();
         assertTrue(hud.isEnabled());
@@ -162,7 +166,8 @@ class VehicleOpticsTest
         assertTrue(hud.isElevationIndicator());
     }
 
-    @Test void pilotHudDefaultsAndExplicitInheritanceRemainDistinct()
+    @Test
+    void pilotHudDefaultsAndExplicitInheritanceRemainDistinct()
     {
         read("PilotOpticsHUD true", "SeatOpticsHUDInherit 1 NONE");
         assertTrue(seats.get(0).getOptics().getHud().isEnabled());
@@ -171,7 +176,8 @@ class VehicleOpticsTest
         assertTrue(seats.get(1).getOptics().getHud().isOverridePilotDefaults());
     }
 
-    @Test void independentOccupantsDoNotShareScopeOrSightState()
+    @Test
+    void independentOccupantsDoNotShareScopeOrSightState()
     {
         VehicleOptics definition = read("HasScope true", "Gunsight tv flir", "ThermalGuis 2");
         OpticsState first = new OpticsState(), second = new OpticsState();
@@ -185,12 +191,14 @@ class VehicleOpticsTest
         assertEquals("tv", definition.overlay(0));
     }
 
-    @Test void toggleCooldownUsesServerTicksAndPermissionRevocationResets()
+    @Test
+    void toggleCooldownUsesServerTicksAndPermissionRevocationResets()
     {
         VehicleOptics definition = read("HasScope true");
         OpticsState state = new OpticsState();
         state.update(definition, true, 10, true, false);
-        for (int i = 0; i < 20; i++) state.update(definition, true, 10, true, false);
+        for (int i = 0; i < 20; i++)
+            state.update(definition, true, 10, true, false);
         assertTrue(state.isActive());
         state.update(definition, true, 20, true, false);
         assertFalse(state.isActive());
@@ -200,7 +208,8 @@ class VehicleOpticsTest
         assertEquals(0, state.getSight());
     }
 
-    @Test void activatedScopeStartsOnThermalChannelAndSingleSightThermalCanToggle()
+    @Test
+    void activatedScopeStartsOnThermalChannelAndSingleSightThermalCanToggle()
     {
         read("SeatGunsight 1 flir", "SeatThermalGuis 1 1");
         VehicleOptics definition = seats.get(1).getOptics();
@@ -220,7 +229,8 @@ class VehicleOpticsTest
         assertFalse(state.isThermal());
     }
 
-    @Test void cycleDebouncesAndWraps()
+    @Test
+    void cycleDebouncesAndWraps()
     {
         VehicleOptics definition = read("HasScope true", "Gunsight a b c");
         OpticsState state = new OpticsState();
@@ -233,10 +243,10 @@ class VehicleOpticsTest
         assertEquals(0, state.getSight());
     }
 
-    @Test void opticsIntentsAreEdgesAndUnknownBitsAreRejected()
+    @Test
+    void opticsIntentsAreEdgesAndUnknownBitsAreRejected()
     {
-        assertEquals(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT,
-            DriveableInput.sanitize(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT | (1 << 30)));
+        assertEquals(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT, DriveableInput.sanitize(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT | (1 << 30)));
         assertEquals(0, DriveableInput.CONTINUOUS_MASK & (DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT));
     }
 }

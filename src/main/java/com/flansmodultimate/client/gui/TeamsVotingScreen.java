@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketTeamsState;
@@ -35,8 +34,7 @@ public final class TeamsVotingScreen extends Screen
         for (int i = 0; i < count; i++)
         {
             int option = i + 1;
-            addRenderableWidget(Button.builder(Component.translatable("gui.flansmod.teams.vote"), ignored ->
-                PacketHandler.sendToServer(PacketTeamsAction.castVote(option)))
+            addRenderableWidget(Button.builder(Component.translatable("gui.flansmod.teams.vote"), ignored -> PacketHandler.sendToServer(PacketTeamsAction.castVote(option)))
                 .bounds(left + 198, top + 24 + 24 * i, 48, 20).build());
         }
     }

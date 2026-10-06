@@ -26,13 +26,14 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.platform.client.ArmPosePlatform;
 import com.flansmodultimate.platform.client.ClientPlatform;
-import it.unimi.dsi.fastutil.longs.Long2ByteMap;
-import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
-import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.GraphicsStatus;
@@ -59,14 +60,15 @@ import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+
+import it.unimi.dsi.fastutil.longs.Long2ByteMap;
+import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
+import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
@@ -277,8 +279,8 @@ public class ModClient
             seat.resetClientAim();
         player.setYRot(driveable.getYaw());
         player.setXRot(driveable.getPitch());
-        player.displayClientMessage(Component
-            .translatable(controlModeMouse ? "message.flansmodultimate.driveable_control.mouse" : "message.flansmodultimate.driveable_control.keyboard"), true);
+        player.displayClientMessage(
+            Component.translatable(controlModeMouse ? "message.flansmodultimate.driveable_control.mouse" : "message.flansmodultimate.driveable_control.keyboard"), true);
         return true;
     }
 
@@ -502,8 +504,8 @@ public class ModClient
             @Override
             public void setLight(long position, int light)
             {
-                level.setBlock(BlockPos.of(position),
-                    light == 0 ? Blocks.AIR.defaultBlockState() : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light), Block.UPDATE_CLIENTS);
+                level.setBlock(BlockPos.of(position), light == 0 ? Blocks.AIR.defaultBlockState() : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light),
+                    Block.UPDATE_CLIENTS);
             }
         });
         forceDarkSkyLight.set(darkSkyLight.isEmpty() ? Long2ByteMaps.EMPTY_MAP : Long2ByteMaps.unmodifiable(darkSkyLight));
@@ -890,8 +892,8 @@ public class ModClient
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
-        if (anim == EnumAnimationType.CUSTOMRIFLE || anim == EnumAnimationType.SHOTGUN || anim == EnumAnimationType.STRIKER
-            || anim == EnumAnimationType.CUSTOMSHOTGUN || anim == EnumAnimationType.CUSTOMSTRIKER)
+        if (anim == EnumAnimationType.CUSTOMRIFLE || anim == EnumAnimationType.SHOTGUN || anim == EnumAnimationType.STRIKER || anim == EnumAnimationType.CUSTOMSHOTGUN
+            || anim == EnumAnimationType.CUSTOMSTRIKER)
         {
             float clipPosition = GunItemRenderer.getClipPosition(modelGun, stack, animations.getLastReloadAnimationProgress());
             float maxBullets = GunItemRenderer.getNumBulletsInReload(modelGun, animations);
@@ -899,8 +901,8 @@ public class ModClient
             int bulletNum = Mth.floor(ammoPosition);
             float bulletProgress = ammoPosition - bulletNum;
 
-            if ((anim == EnumAnimationType.CUSTOMRIFLE || maxBullets > 1) && type.getNumAmmoItemsInGun(stack) > 1
-                && StringUtils.isNotBlank(type.getBulletInsert()) && ModClient.getLastBulletReload() != -2)
+            if ((anim == EnumAnimationType.CUSTOMRIFLE || maxBullets > 1) && type.getNumAmmoItemsInGun(stack) > 1 && StringUtils.isNotBlank(type.getBulletInsert())
+                && ModClient.getLastBulletReload() != -2)
             {
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {

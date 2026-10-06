@@ -105,11 +105,11 @@ public final class ModClientEventHandler
     public static void clientSetup(FMLClientSetupEvent event)
     {
         // The Config button of the mod list opens the same screen as the pause menu button
-        ModList.get().getModContainerById(FlansMod.MOD_ID).ifPresent(container ->
-            container.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
-                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new FlansSettingsHubScreen(parent))));
+        ModList.get().getModContainerById(FlansMod.MOD_ID).ifPresent(container -> container.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+            () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new FlansSettingsHubScreen(parent))));
 
-        event.enqueueWork(() -> {
+        event.enqueueWork(() ->
+        {
             CustomItemRenderers.registerAll();
             DistantHorizonsClient.init();
             EntityCullingCompat.init();
@@ -119,7 +119,8 @@ public final class ModClientEventHandler
             {
                 if (item.get() instanceof IPaintableItem<?>)
                 {
-                    ItemProperties.register(item.get(), FlansMod.PAINTJOB, (stack, level, entity, seed) -> {
+                    ItemProperties.register(item.get(), FlansMod.PAINTJOB, (stack, level, entity, seed) ->
+                    {
                         CompoundTag tag = ItemStackData.copy(stack);
                         return tag.contains(IPaintableItem.NBT_PAINTJOB_ID) ? tag.getInt(IPaintableItem.NBT_PAINTJOB_ID) : 0;
                     });
@@ -128,8 +129,7 @@ public final class ModClientEventHandler
                 // Like the trident's, lets a model switch to a raised pose while a throw is charged
                 if (item.get() instanceof GunItem gunItem && gunItem.getConfigType().isThrowable())
                 {
-                    ItemProperties.register(item.get(), FlansMod.THROWING, (stack, level, entity, seed) ->
-                        entity != null && gunItem.isChargingThrow(entity, stack) ? 1F : 0F);
+                    ItemProperties.register(item.get(), FlansMod.THROWING, (stack, level, entity, seed) -> entity != null && gunItem.isChargingThrow(entity, stack) ? 1F : 0F);
                 }
             }
             ItemProperties.register(FlansModItems.opStick.get(), ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, "teams_mode"),
@@ -142,16 +142,14 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event)
     {
-        Set<ResourceLocation> customRenderedItemIds = FlansMod.getItems().stream()
-            .filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>)
-            .map(RegistryEntry::getId)
-            .filter(java.util.Objects::nonNull)
-            .collect(Collectors.toUnmodifiableSet());
+        Set<ResourceLocation> customRenderedItemIds = FlansMod.getItems().stream().filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>)
+            .map(RegistryEntry::getId).filter(java.util.Objects::nonNull).collect(Collectors.toUnmodifiableSet());
 
         // Wrap all variants in one pass. Large legacy installations can have
         // thousands of registered Flan items, so one full map scan per item is
         // prohibitively expensive during every resource reload.
-        event.getModels().replaceAll((location, original) -> {
+        event.getModels().replaceAll((location, original) ->
+        {
             if (customRenderedItemIds.contains(ClientPlatform.modelItemId(location)) && !(original instanceof BewlrRoutingModel))
                 return new BewlrRoutingModel(original);
             return original;
@@ -238,11 +236,11 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void registerBlockColors(RegisterColorHandlersEvent.Block event)
     {
-        event.register((state, level, pos, tintIndex) -> {
+        event.register((state, level, pos, tintIndex) ->
+        {
             if (tintIndex != 0 || level == null || pos == null)
                 return TeamSpawnerBlockEntity.UNOWNED_COLOUR;
-            return level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner
-                ? spawner.getTeamColour() : TeamSpawnerBlockEntity.UNOWNED_COLOUR;
+            return level.getBlockEntity(pos) instanceof TeamSpawnerBlockEntity spawner ? spawner.getTeamColour() : TeamSpawnerBlockEntity.UNOWNED_COLOUR;
         }, FlansModBlocks.playerSpawner.get(), FlansModBlocks.itemSpawner.get(), FlansModBlocks.vehicleSpawner.get());
     }
 
@@ -250,10 +248,11 @@ public final class ModClientEventHandler
     public static void registerItemColors(RegisterColorHandlersEvent.Item event)
     {
         // A spawner in the inventory belongs to no team yet
-        event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF,
-            FlansModItems.playerSpawnerItem.get(), FlansModItems.itemSpawnerItem.get(), FlansModItems.vehicleSpawnerItem.get());
+        event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF, FlansModItems.playerSpawnerItem.get(),
+            FlansModItems.itemSpawnerItem.get(), FlansModItems.vehicleSpawnerItem.get());
 
-        event.register((stack, tintIndex) -> {
+        event.register((stack, tintIndex) ->
+        {
             Item item = stack.getItem();
             if (item instanceof IFlanItem<?> flanItem)
                 // Legacy content packs store colours as 24-bit RGB. The 1.21
@@ -262,11 +261,7 @@ public final class ModClientEventHandler
                 // ignores the alpha byte.
                 return 0xFF000000 | flanItem.getConfigType().getColour();
             return 0xFFFFFFFF;
-        },
-        FlansMod.getItems().stream()
-            .map(RegistryEntry::get)
-            .toArray(Item[]::new)
-        );
+        }, FlansMod.getItems().stream().map(RegistryEntry::get).toArray(Item[]::new));
     }
 
     @SubscribeEvent
@@ -278,7 +273,8 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void onClientReload(RegisterClientReloadListenersEvent event)
     {
-        event.registerReloadListener((ResourceManagerReloadListener) rm -> {
+        event.registerReloadListener((ResourceManagerReloadListener) rm ->
+        {
             VehicleThermalRenderer.reset();
             ModelCache.reload();
             PlayerSkinOverrides.clearValidationCache();
@@ -296,7 +292,7 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void onSoundEngineLoad(SoundEngineLoadEvent event)
     {
-        //Only start checking for missing sounds if the sound engine has been initialized once
+        // Only start checking for missing sounds if the sound engine has been initialized once
         if (!isSoundEngineInitialized)
         {
             isSoundEngineInitialized = true;
@@ -307,10 +303,9 @@ public final class ModClientEventHandler
 
         FlansMod.getSoundsOrigins().entrySet().stream()
             .sorted(Comparator.<Map.Entry<ResourceLocation, TypeFile>, String>comparing(e -> e.getValue().getContentPack().getName(), Comparator.naturalOrder())
-                .thenComparing(e -> e.getValue().getType(), Comparator.naturalOrder())
-                .thenComparing(e -> e.getValue().getName(), Comparator.naturalOrder())
-            )
-            .forEach(e -> {
+                .thenComparing(e -> e.getValue().getType(), Comparator.naturalOrder()).thenComparing(e -> e.getValue().getName(), Comparator.naturalOrder()))
+            .forEach(e ->
+            {
                 if (soundManager.getSoundEvent(e.getKey()) == null)
                     FlansLog.log.warn("Missing sound {}: {}", e.getKey(), e.getValue());
             });

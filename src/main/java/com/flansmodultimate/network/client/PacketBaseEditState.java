@@ -4,11 +4,11 @@ import com.flansmodultimate.client.gui.TeamsBaseEditScreen;
 import com.flansmodultimate.common.teams.ITeamBase;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.Minecraft;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -19,7 +19,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public final class PacketBaseEditState implements IClientPacket
 {
-    public record MapChoice(String id, String name) {}
+    public record MapChoice(String id, String name)
+    {}
 
     private UUID baseId = new UUID(0L, 0L);
     private String baseName = "";
@@ -34,8 +35,8 @@ public final class PacketBaseEditState implements IClientPacket
         packet.baseName = base.getBaseName();
         packet.selectedMap = base.getMapId();
         packet.ownerId = base.getDefaultOwnerId();
-        packet.maps = manager.getMaps().stream().filter(map -> map.getDimension().equals(base.getDimension()))
-            .map(map -> new MapChoice(map.getShortName(), map.getName())).toList();
+        packet.maps = manager.getMaps().stream().filter(map -> map.getDimension().equals(base.getDimension())).map(map -> new MapChoice(map.getShortName(), map.getName()))
+            .toList();
         return packet;
     }
 
@@ -46,7 +47,11 @@ public final class PacketBaseEditState implements IClientPacket
         data.writeUtf(baseName, 60);
         data.writeUtf(selectedMap, 128);
         data.writeVarInt(ownerId);
-        data.writeCollection(maps, (buf, map) -> { buf.writeUtf(map.id(), 128); buf.writeUtf(map.name(), 128); });
+        data.writeCollection(maps, (buf, map) ->
+        {
+            buf.writeUtf(map.id(), 128);
+            buf.writeUtf(map.name(), 128);
+        });
     }
 
     @Override
@@ -65,9 +70,28 @@ public final class PacketBaseEditState implements IClientPacket
         Minecraft.getInstance().setScreen(new TeamsBaseEditScreen(this));
     }
 
-    public UUID getBaseId() { return baseId; }
-    public String getBaseName() { return baseName; }
-    public String getSelectedMap() { return selectedMap; }
-    public int getOwnerId() { return ownerId; }
-    public List<MapChoice> getMaps() { return maps; }
+    public UUID getBaseId()
+    {
+        return baseId;
+    }
+
+    public String getBaseName()
+    {
+        return baseName;
+    }
+
+    public String getSelectedMap()
+    {
+        return selectedMap;
+    }
+
+    public int getOwnerId()
+    {
+        return ownerId;
+    }
+
+    public List<MapChoice> getMaps()
+    {
+        return maps;
+    }
 }

@@ -36,8 +36,7 @@ public class DynamicReference
 
     public static Map<String, String> getAliasMapping(Map<String, DynamicReference> references)
     {
-        return references.entrySet().stream()
-                .filter(entry -> !entry.getKey().equals(entry.getValue().get()))
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get()));
+        return references.entrySet().stream().filter(entry -> !entry.getKey().equals(entry.getValue().get()))
+            .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get()));
     }
 }

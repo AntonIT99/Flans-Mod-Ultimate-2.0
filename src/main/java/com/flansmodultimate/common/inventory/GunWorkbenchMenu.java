@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansModBlocks;
-
 import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.GunItem;
@@ -60,7 +59,8 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     private ItemStack lastGunStack = ItemStack.EMPTY;
     private boolean busy = false;
 
-    private static final String[] SPECIFIC_TAGS = { GunItem.NBT_BARREL, GunItem.NBT_SCOPE, GunItem.NBT_STOCK, GunItem.NBT_GRIP, GunItem.NBT_GADGET, GunItem.NBT_SLIDE, GunItem.NBT_PUMP, GunItem.NBT_ACCESSORY };
+    private static final String[] SPECIFIC_TAGS = {GunItem.NBT_BARREL, GunItem.NBT_SCOPE, GunItem.NBT_STOCK, GunItem.NBT_GRIP, GunItem.NBT_GADGET, GunItem.NBT_SLIDE,
+        GunItem.NBT_PUMP, GunItem.NBT_ACCESSORY};
 
     public GunWorkbenchMenu(int id, Inventory playerInv, BlockPos blockPos)
     {
@@ -115,8 +115,8 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
      * Rules:
      * - From menu slots -> player inventory
      * - From player inventory:
-     *    - If gun slot empty and item is gun -> move to gun slot
-     *    - Else if item is attachment -> try specific slots first, then generic
+     * - If gun slot empty and item is gun -> move to gun slot
+     * - Else if item is attachment -> try specific slots first, then generic
      */
     @Override
     @NotNull
@@ -202,7 +202,8 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     @Override
     public boolean stillValid(@NotNull Player player)
     {
-        return access.evaluate((level, pos) -> {
+        return access.evaluate((level, pos) ->
+        {
             Block block = level.getBlockState(pos).getBlock();
             return block == FlansModBlocks.gunWorkbench.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
         }, true);
@@ -212,7 +213,8 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
     public void removed(@NotNull Player player)
     {
         super.removed(player);
-        access.execute((level, pos) -> {
+        access.execute((level, pos) ->
+        {
             busy = true;
 
             // make sure gun NBT is up to date
@@ -264,8 +266,7 @@ public class GunWorkbenchMenu extends AbstractContainerMenu
         }
 
         // Detect gun change (replacement)
-        boolean gunChanged = lastGunStack.isEmpty()
-            || !ItemStackData.isSameItemSameData(gunStack, lastGunStack);
+        boolean gunChanged = lastGunStack.isEmpty() || !ItemStackData.isSameItemSameData(gunStack, lastGunStack);
 
         if (gunChanged)
         {

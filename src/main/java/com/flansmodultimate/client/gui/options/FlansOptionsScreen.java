@@ -26,10 +26,12 @@ import java.util.List;
  * The mod's options screen, reached from the button added to the vanilla options screen or pause menu, and
  * from the Config button of the mod list.
  *
- * <p>{@link Mode#QUICK} shows the settings worth changing mid-game, client ones plus a few server toggles.
+ * <p>
+ * {@link Mode#QUICK} shows the settings worth changing mid-game, client ones plus a few server toggles.
  * {@link Mode#CLIENT} and {@link Mode#COMMON} show everything one of the two config files has, section by
  * section. Client settings take effect as soon as they are changed; common settings are requests the server
- * validates, applies and reports back, so the screen always ends up showing what is really in force.</p>
+ * validates, applies and reports back, so the screen always ends up showing what is really in force.
+ * </p>
  */
 public class FlansOptionsScreen extends Screen
 {
@@ -59,45 +61,22 @@ public class FlansOptionsScreen extends Screen
 
     /** The client settings the quick screen shows, in the order and grouping it shows them. */
     private static final List<QuickSection> QUICK_SECTIONS = List.of(
-        new QuickSection("hud", List.of(
-            ModClientConfig.SHOW_FLANS_HUD,
-            ModClientConfig.SHOW_AMMO_HUD,
-            ModClientConfig.AMMO_HUD_LAYOUT,
-            ModClientConfig.SHOW_ARMOR_DAMAGE_ABSORPTION_BAR,
-            ModClientConfig.SHOW_SHOOTABLE_DURABILITY_BARS,
-            ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED,
-            ModClientConfig.VEHICLE_SCREEN_SHAKE,
-            ModClientConfig.VEHICLE_HUD_LEFT_X,
-            ModClientConfig.VEHICLE_HUD_LEFT_Y,
-            ModClientConfig.VEHICLE_HUD_RIGHT_X,
-            ModClientConfig.VEHICLE_HUD_RIGHT_Y)),
-        new QuickSection("crosshair", List.of(
-            ModClientConfig.HIDE_CROSSHAIR_FOR_GUNS,
-            ModClientConfig.HIT_MARKER_STYLE,
-            ModClientConfig.FANCY_HIT_MARKER,
-            ModClientConfig.MUZZLE_FLASH_STYLE)),
-        new QuickSection("rendering", List.of(
-            ModClientConfig.ENABLE_GPU_MODEL_CACHE,
-            ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER,
-            ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)),
-        new QuickSection("gameplay", List.of(
-            ModClientConfig.AIM_TYPE,
-            ModClientConfig.AIM_POSE,
-            ModClientConfig.GUN_BLOCK_INTERACTION,
-            ModClientConfig.DRIVEABLE_SPEED_UNIT,
-            ModClientConfig.DRIVEABLE_VERTICAL_SPEED_UNIT,
-            ModClientConfig.ENABLE_UNCENSORED_CONTENT,
-            ModClientConfig.OPTIONS_BUTTON_PLACEMENT)),
-        new QuickSection(DISTANT_HORIZONS_SECTION, List.of(
-            ModClientConfig.DISTANT_HORIZONS_INTEGRATION,
-            ModClientConfig.DISTANT_HORIZONS_RANGEFINDER,
-            ModClientConfig.DISTANT_HORIZONS_CONTACTS,
-            ModClientConfig.DISTANT_HORIZONS_EXPLOSIONS,
-            ModClientConfig.DISTANT_HORIZONS_DRIVEABLE_RENDERING)));
+        new QuickSection("hud",
+            List.of(ModClientConfig.SHOW_FLANS_HUD, ModClientConfig.SHOW_AMMO_HUD, ModClientConfig.AMMO_HUD_LAYOUT, ModClientConfig.SHOW_ARMOR_DAMAGE_ABSORPTION_BAR,
+                ModClientConfig.SHOW_SHOOTABLE_DURABILITY_BARS, ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED, ModClientConfig.VEHICLE_SCREEN_SHAKE, ModClientConfig.VEHICLE_HUD_LEFT_X,
+                ModClientConfig.VEHICLE_HUD_LEFT_Y, ModClientConfig.VEHICLE_HUD_RIGHT_X, ModClientConfig.VEHICLE_HUD_RIGHT_Y)),
+        new QuickSection("crosshair",
+            List.of(ModClientConfig.HIDE_CROSSHAIR_FOR_GUNS, ModClientConfig.HIT_MARKER_STYLE, ModClientConfig.FANCY_HIT_MARKER, ModClientConfig.MUZZLE_FLASH_STYLE)),
+        new QuickSection("rendering",
+            List.of(ModClientConfig.ENABLE_GPU_MODEL_CACHE, ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER, ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)),
+        new QuickSection("gameplay",
+            List.of(ModClientConfig.AIM_TYPE, ModClientConfig.AIM_POSE, ModClientConfig.GUN_BLOCK_INTERACTION, ModClientConfig.DRIVEABLE_SPEED_UNIT,
+                ModClientConfig.DRIVEABLE_VERTICAL_SPEED_UNIT, ModClientConfig.ENABLE_UNCENSORED_CONTENT, ModClientConfig.OPTIONS_BUTTON_PLACEMENT)),
+        new QuickSection(DISTANT_HORIZONS_SECTION, List.of(ModClientConfig.DISTANT_HORIZONS_INTEGRATION, ModClientConfig.DISTANT_HORIZONS_RANGEFINDER,
+            ModClientConfig.DISTANT_HORIZONS_CONTACTS, ModClientConfig.DISTANT_HORIZONS_EXPLOSIONS, ModClientConfig.DISTANT_HORIZONS_DRIVEABLE_RENDERING)));
 
     private record QuickSection(String name, List<ForgeConfigSpec.ConfigValue<?>> values)
-    {
-    }
+    {}
 
     @Nullable
     private final Screen lastScreen;
@@ -176,8 +155,7 @@ public class FlansOptionsScreen extends Screen
             if (section.name().equals("rendering"))
             {
                 list.addOptions(options.subList(0, 1));
-                list.addWidgetRow(new RenderingPresetSlider(150, RenderingPresetSlider.Kind.LOD),
-                    new RenderingPresetSlider(150, RenderingPresetSlider.Kind.IMPOSTOR));
+                list.addWidgetRow(new RenderingPresetSlider(150, RenderingPresetSlider.Kind.LOD), new RenderingPresetSlider(150, RenderingPresetSlider.Kind.IMPOSTOR));
                 list.addOptions(options.subList(1, options.size()));
             }
             else
@@ -242,19 +220,15 @@ public class FlansOptionsScreen extends Screen
         if (mode != Mode.QUICK)
         {
             addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
-                .bounds((width - WIDE_BUTTON_WIDTH) / 2, height - BUTTON_BOTTOM_MARGIN, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT)
-                .build());
+                .bounds((width - WIDE_BUTTON_WIDTH) / 2, height - BUTTON_BOTTOM_MARGIN, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT).build());
             return;
         }
 
         int left = width / 2 - BUTTON_WIDTH - BUTTON_GAP / 2;
-        addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.options.all_settings"),
-                button -> minecraft.setScreen(new FlansSettingsHubScreen(this)))
-            .bounds(left, height - BUTTON_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT)
-            .build());
+        addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.options.all_settings"), button -> minecraft.setScreen(new FlansSettingsHubScreen(this)))
+            .bounds(left, height - BUTTON_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT).build());
         addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
-            .bounds(left + BUTTON_WIDTH + BUTTON_GAP, height - BUTTON_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT)
-            .build());
+            .bounds(left + BUTTON_WIDTH + BUTTON_GAP, height - BUTTON_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT).build());
     }
 
     /**
@@ -298,9 +272,7 @@ public class FlansOptionsScreen extends Screen
         if (minecraft != null && minecraft.level == null)
             return Component.translatable("gui.flansmodultimate.options.common_local");
 
-        return Component.translatable(commonTarget.editable()
-            ? "gui.flansmodultimate.options.common_server"
-            : "gui.flansmodultimate.options.common_server_read_only");
+        return Component.translatable(commonTarget.editable() ? "gui.flansmodultimate.options.common_server" : "gui.flansmodultimate.options.common_server_read_only");
     }
 
     @Override

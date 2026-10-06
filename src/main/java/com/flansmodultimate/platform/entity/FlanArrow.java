@@ -1,15 +1,15 @@
 package com.flansmodultimate.platform.entity;
 
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.nbt.CompoundTag;
+import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.Tag;
-import com.flansmodultimate.platform.item.ItemStackData;
+import net.minecraft.world.level.Level;
 
 /** Adapts arrow data, pickup storage, construction and persistence to the Minecraft version. */
 public abstract class FlanArrow extends AbstractArrow

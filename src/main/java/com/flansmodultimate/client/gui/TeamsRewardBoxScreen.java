@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketLoadoutState;
@@ -43,24 +42,21 @@ public final class TeamsRewardBoxScreen extends Screen
         {
             if (row >= ROWS)
                 break;
-            Button button = Button.builder(Component.literal("Open " + type.name() + " x" + type.unopened()),
-                    ignored -> openFirstUnopened(state, type.boxId()))
+            Button button = Button.builder(Component.literal("Open " + type.name() + " x" + type.unopened()), ignored -> openFirstUnopened(state, type.boxId()))
                 .bounds(left + 28, top + 30 + row * 25, 140, 20).build();
             button.active = type.unopened() > 0;
             addRenderableWidget(button);
             row++;
         }
 
-        addRenderableWidget(Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub()))
-            .bounds(left + 68, top + 171, 60, 20).build());
+        addRenderableWidget(
+            Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub())).bounds(left + 68, top + 171, 60, 20).build());
     }
 
     /** Opens the oldest box the player still holds of this kind. */
     private static void openFirstUnopened(PacketLoadoutState state, String boxId)
     {
-        state.getBoxes().stream()
-            .filter(box -> !box.opened() && boxId.equals(box.boxId()))
-            .findFirst()
+        state.getBoxes().stream().filter(box -> !box.opened() && boxId.equals(box.boxId())).findFirst()
             .ifPresent(box -> PacketHandler.sendToServer(PacketLoadoutAction.openBox(box.id())));
     }
 
@@ -90,9 +86,7 @@ public final class TeamsRewardBoxScreen extends Screen
 
         if (state != null && !state.getRevealedReward().isBlank())
         {
-            String name = state.getRewards().stream().filter(reward -> reward.key().equals(state.getRevealedReward()))
-                .map(PacketLoadoutState.RewardView::name)
-                .findFirst()
+            String name = state.getRewards().stream().filter(reward -> reward.key().equals(state.getRevealedReward())).map(PacketLoadoutState.RewardView::name).findFirst()
                 .orElse(state.getRevealedReward());
             graphics.drawCenteredString(font, "Unlocked: " + name, width / 2, top + 151, 0xFFE06B);
         }

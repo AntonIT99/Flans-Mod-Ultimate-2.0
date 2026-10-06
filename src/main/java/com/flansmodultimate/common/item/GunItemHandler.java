@@ -31,6 +31,10 @@ import com.flansmodultimate.platform.fluid.FluidPlatform;
 import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -51,9 +55,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
-import org.apache.commons.lang3.StringUtils;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -183,12 +184,10 @@ public class GunItemHandler
         if (player.getVehicle() instanceof Seat)
             return;
 
-        float dispersionDegrees = Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR
-            * type.getSpread(gunStack, ModUtils.getEnumMovement(player), !player.onGround());
+        float dispersionDegrees = Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * type.getSpread(gunStack, ModUtils.getEnumMovement(player), !player.onGround());
 
         ThrownGun thrown = new ThrownGun(level, player, gunStack, type.getThrowDamage(gunStack));
-        thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0F, type.getBulletSpeed(gunStack),
-            dispersionDegrees * Mth.DEG_TO_RAD / VANILLA_INACCURACY_RADIANS);
+        thrown.shootFromRotation(player, player.getXRot(), player.getYRot(), 0F, type.getBulletSpeed(gunStack), dispersionDegrees * Mth.DEG_TO_RAD / VANILLA_INACCURACY_RADIANS);
         if (player.getAbilities().instabuild)
             thrown.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
         level.addFreshEntity(thrown);
@@ -300,9 +299,8 @@ public class GunItemHandler
         if (!item.configType.shouldShowMuzzleFlashParticles() || StringUtils.isBlank(item.configType.getMuzzleFlashParticle()))
             return;
 
-        PacketHandler.sendToAllAround(new PacketGunMuzzleFlash(player.getUUID(), hand, item.configType.getMuzzleFlashParticle(),
-            item.configType.getMuzzleFlashParticleSize(), item.configType.shouldShowMuzzleFlashParticleToShooter()), player.position(), 128D,
-            level.dimension());
+        PacketHandler.sendToAllAround(new PacketGunMuzzleFlash(player.getUUID(), hand, item.configType.getMuzzleFlashParticle(), item.configType.getMuzzleFlashParticleSize(),
+            item.configType.shouldShowMuzzleFlashParticleToShooter()), player.position(), 128D, level.dimension());
     }
 
     public void playEmptyClick(ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand)
@@ -440,8 +438,8 @@ public class GunItemHandler
         if (item.lockOnSoundDelay > 0)
             item.lockOnSoundDelay--;
 
-        if (!(item.configType.isLockOnToLivings() || item.configType.isLockOnToMechas() || item.configType.isLockOnToPlanes()
-            || item.configType.isLockOnToPlayers() || item.configType.isLockOnToVehicles()))
+        if (!(item.configType.isLockOnToLivings() || item.configType.isLockOnToMechas() || item.configType.isLockOnToPlanes() || item.configType.isLockOnToPlayers()
+            || item.configType.isLockOnToVehicles()))
             return;
 
         Entity closest = findLockOnTarget(level, player, data, hand);
@@ -574,9 +572,7 @@ public class GunItemHandler
         }
 
         Vector3f nextPosInWorldCoords = JomlUtils.fromVec3(segment.end);
-        Vector3f dPos = (data.getLastMeleePositions()[pointIdx] == null)
-            ? new Vector3f()
-            : new Vector3f(nextPosInWorldCoords).sub(data.getLastMeleePositions()[pointIdx]);
+        Vector3f dPos = (data.getLastMeleePositions()[pointIdx] == null) ? new Vector3f() : new Vector3f(nextPosInWorldCoords).sub(data.getLastMeleePositions()[pointIdx]);
 
         if (level.isClientSide)
             ClientHooks.RENDER.spawnDebugVector(JomlUtils.toVec3(data.getLastMeleePositions()[pointIdx]), JomlUtils.toVec3(dPos), 200, 1F, 0F, 0F);
@@ -597,8 +593,7 @@ public class GunItemHandler
         Vector3f meleeDamagePoint = JomlUtils.fromFlansVector(item.configType.getMeleeDamagePoints().get(pointIdx));
 
         Vector3f nextPos = JomlUtils.fromFlansVector(item.configType.getMeleePath().get((data.getMeleeProgress() + 1) % item.configType.getMeleePath().size()));
-        Vector3f nextAngles = JomlUtils
-            .fromFlansVector(item.configType.getMeleePathAngles().get((data.getMeleeProgress() + 1) % item.configType.getMeleePathAngles().size()));
+        Vector3f nextAngles = JomlUtils.fromFlansVector(item.configType.getMeleePathAngles().get((data.getMeleeProgress() + 1) % item.configType.getMeleePathAngles().size()));
 
         RotatedAxes nextAxes = new RotatedAxes().rotateGlobalRoll(-nextAngles.x).rotateGlobalPitch(-nextAngles.z).rotateGlobalYaw(-nextAngles.y);
 
@@ -624,8 +619,7 @@ public class GunItemHandler
         return hits;
     }
 
-    private void collectHitsForEntity(Player attacker, PlayerData attackerData, MeleeSegment segment, int pointIdx, Entity candidate, List<BulletHit> outHits,
-        Vector3f dPos)
+    private void collectHitsForEntity(Player attacker, PlayerData attackerData, MeleeSegment segment, int pointIdx, Entity candidate, List<BulletHit> outHits, Vector3f dPos)
     {
         if (candidate instanceof Player otherPlayer)
         {
@@ -648,8 +642,7 @@ public class GunItemHandler
         return attackerData.getLastMeleePositions() != null && attackerData.getLastMeleePositions()[pointIdx] != null;
     }
 
-    private void collectHitsForPlayer(Player attacker, PlayerData attackerData, MeleeSegment segment, int pointIdx, Player otherPlayer, List<BulletHit> outHits,
-        Vector3f dPos)
+    private void collectHitsForPlayer(Player attacker, PlayerData attackerData, MeleeSegment segment, int pointIdx, Player otherPlayer, List<BulletHit> outHits, Vector3f dPos)
     {
         PlayerData otherData = PlayerData.getInstance(otherPlayer);
 
@@ -659,17 +652,15 @@ public class GunItemHandler
         PlayerSnapshot snapshot = selectSnapshot(attacker, otherData);
         if (snapshot != null)
         {
-            List<BulletHit> playerHits = snapshot.raytrace(
-                attackerData.getLastMeleePositions()[pointIdx] == null ? JomlUtils.fromVec3(segment.end) : attackerData.getLastMeleePositions()[pointIdx],
-                dPos);
+            List<BulletHit> playerHits = snapshot
+                .raytrace(attackerData.getLastMeleePositions()[pointIdx] == null ? JomlUtils.fromVec3(segment.end) : attackerData.getLastMeleePositions()[pointIdx], dPos);
             outHits.addAll(playerHits);
             return;
         }
 
         Optional<Vec3> clip = otherPlayer.getBoundingBox().clip(segment.start, segment.end);
-        clip.ifPresent(hit -> outHits
-            .add(new PlayerBulletHit(new PlayerHitbox(otherPlayer, new Matrix4f(), new Vector3f(), new Vector3f(), new Vector3f(), EnumHitboxType.BODY),
-                (float) segment.lambdaAt(hit))));
+        clip.ifPresent(hit -> outHits.add(new PlayerBulletHit(new PlayerHitbox(otherPlayer, new Matrix4f(), new Vector3f(), new Vector3f(), new Vector3f(), EnumHitboxType.BODY),
+            (float) segment.lambdaAt(hit))));
     }
 
     private PlayerSnapshot selectSnapshot(Player attacker, PlayerData otherData)
@@ -687,8 +678,7 @@ public class GunItemHandler
         return snapshot;
     }
 
-    private void applyHits(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, MeleeSegment segment, List<BulletHit> hits, int pointIdx,
-        Vector3f dPos)
+    private void applyHits(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, MeleeSegment segment, List<BulletHit> hits, int pointIdx, Vector3f dPos)
     {
         double swingDistance = segment.length();
 
@@ -732,8 +722,7 @@ public class GunItemHandler
         return destroySpeed < 0.0F || destroySpeed > 0.2F;
     }
 
-    private void applyPlayerHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, PlayerBulletHit hit,
-        int pointIdx, Vector3f dPos)
+    private void applyPlayerHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, PlayerBulletHit hit, int pointIdx, Vector3f dPos)
     {
         Player attackedPlayer = hit.getHitbox().player;
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, false));
@@ -743,12 +732,11 @@ public class GunItemHandler
             attackedPlayer.invulnerableTime = attackedPlayer.hurtDuration / 2;
 
         ClientHooks.RENDER.spawnDebugDot(new Vec3(attackerData.getLastMeleePositions()[pointIdx].x + dPos.x * hit.getIntersectTime(),
-            attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(),
-            attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
+            attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()),
+            1000, 1F, 0F, 0F);
     }
 
-    private void applyEntityHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, EntityHit hit, int pointIdx,
-        Vector3f dPos)
+    private void applyEntityHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, EntityHit hit, int pointIdx, Vector3f dPos)
     {
         Entity target = hit.getEntity();
         float damage = (float) (swingDistance * item.configType.getMeleeDamage(itemstack, target instanceof Driveable));
@@ -758,8 +746,8 @@ public class GunItemHandler
             living.invulnerableTime = living.hurtDuration / 2;
 
         ClientHooks.RENDER.spawnDebugDot(new Vec3(attackerData.getLastMeleePositions()[pointIdx].x + dPos.x * hit.getIntersectTime(),
-            attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(),
-            attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
+            attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()),
+            1000, 1F, 0F, 0F);
     }
 
     private void advanceAndResetIfDone(PlayerData data)

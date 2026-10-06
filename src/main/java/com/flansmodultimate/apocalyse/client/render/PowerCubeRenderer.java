@@ -41,12 +41,13 @@ public class PowerCubeRenderer implements BlockEntityRenderer<PowerCubeBlockEnti
         poseStack.pushPose();
         try
         {
-            float bob = (float)Math.sin(age * 0.08F + angleOffset) * 0.06F;
+            float bob = (float) Math.sin(age * 0.08F + angleOffset) * 0.06F;
             poseStack.translate(0.5D, 0.5D + bob, 0.5D);
             poseStack.mulPose(Axis.YP.rotationDegrees(age * 4.0F + angleOffset));
             poseStack.mulPose(Axis.XP.rotationDegrees(age * 2.7F + angleOffset * 0.5F));
             poseStack.scale(scale, scale, scale);
-            itemRenderer.renderStatic(CORE_STACK, ItemDisplayContext.FIXED, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, poseStack, buffer, Minecraft.getInstance().level, 0);
+            itemRenderer.renderStatic(CORE_STACK, ItemDisplayContext.FIXED, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, poseStack, buffer, Minecraft.getInstance().level,
+                0);
         }
         finally
         {

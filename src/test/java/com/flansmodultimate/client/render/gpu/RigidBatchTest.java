@@ -25,9 +25,11 @@ class RigidBatchTest
         ModelRendererTurbo[] parts = new ModelRendererTurbo[8];
         for (int i = 0; i < parts.length; i++)
         {
-            parts[i] = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+            parts[i] = new ModelRendererTurbo(new ModelBase()
+            {}, 0, 0);
             parts[i].addBox(0, 0, 0, i + 1, i + 1, i + 1);
-            if (i % 2 == 0) parts[i].setRotationPoint(i, 0, 0); // Include baked and plain leaves.
+            if (i % 2 == 0)
+                parts[i].setRotationPoint(i, 0, 0); // Include baked and plain leaves.
         }
         Backend backend = new Backend();
         RigidBatch batch = new RigidBatch(24, 192, 10000);
@@ -40,12 +42,17 @@ class RigidBatchTest
             try
             {
                 batch.begin(backend);
-                for (ModelRendererTurbo part : parts) part.render(parent, batch, 17, 23, 1, 1, 1, 1, 1);
+                for (ModelRendererTurbo part : parts)
+                    part.render(parent, batch, 17, 23, 1, 1, 1, 1, 1);
                 batch.end();
             }
-            finally { ModelRendererTurbo.endScreenSpaceCulling(); }
+            finally
+            {
+                ModelRendererTurbo.endScreenSpaceCulling();
+            }
         }
-        for (int i = 4; i < backend.keys.size(); i++) assertEquals(backend.keys.get(3), backend.keys.get(i));
+        for (int i = 4; i < backend.keys.size(); i++)
+            assertEquals(backend.keys.get(3), backend.keys.get(i));
         assertTrue(backend.visibleVertices.get(4) > backend.visibleVertices.get(5));
     }
 
@@ -56,8 +63,7 @@ class RigidBatchTest
         Backend backend = new Backend();
         RigidBatch batch = new RigidBatch(24, 192, 100000);
         // Turret yaw and barrel pitch in degrees. Exactly zero makes a turret or barrel pose equal its parent's.
-        float[][] states = {{0, 0}, {0, 0}, {0, 0}, {35, 4}, {35, 4}, {35, 4}, {0, 0}, {35, 4}, {0, 0}, {0, 0},
-            {-20, -3}, {0, 0}, {35, 0}, {0, 4}, {0, 0}};
+        float[][] states = {{0, 0}, {0, 0}, {0, 0}, {35, 4}, {35, 4}, {35, 4}, {0, 0}, {35, 4}, {0, 0}, {0, 0}, {-20, -3}, {0, 0}, {35, 0}, {0, 4}, {0, 0}};
         List<List<GeometryKey>> frames = new ArrayList<>();
         for (float[] state : states)
         {
@@ -66,10 +72,12 @@ class RigidBatchTest
             stack.translate(4, 70, -9);
             stack.mulPose(Axis.YP.rotationDegrees(30));
             batch.begin(backend);
-            for (ModelRendererTurbo part : hull) part.render(stack, batch, 17, 23, 1, 1, 1, 1, 1);
+            for (ModelRendererTurbo part : hull)
+                part.render(stack, batch, 17, 23, 1, 1, 1, 1, 1);
             stack.pushPose();
             stack.mulPose(Axis.YP.rotationDegrees(-state[0]));
-            for (ModelRendererTurbo part : turret) part.render(stack, batch, 17, 23, 1, 1, 1, 1, 1);
+            for (ModelRendererTurbo part : turret)
+                part.render(stack, batch, 17, 23, 1, 1, 1, 1, 1);
             for (ModelRendererTurbo part : barrel)
             {
                 float old = part.rotateAngleZ;
@@ -82,7 +90,8 @@ class RigidBatchTest
             frames.add(List.copyOf(backend.keys));
         }
         // Animated parts settle into their dynamic path after their first movements.
-        for (int i = 8; i < frames.size(); i++) assertEquals(frames.get(7), frames.get(i), "frame " + i);
+        for (int i = 8; i < frames.size(); i++)
+            assertEquals(frames.get(7), frames.get(i), "frame " + i);
     }
 
     /** Leaves of one assembly; the first has no pivot, the rest are baked around their own pivots. */
@@ -91,9 +100,11 @@ class RigidBatchTest
         ModelRendererTurbo[] parts = new ModelRendererTurbo[count];
         for (int i = 0; i < count; i++)
         {
-            parts[i] = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+            parts[i] = new ModelRendererTurbo(new ModelBase()
+            {}, 0, 0);
             parts[i].addBox(0, 0, 0, 2 + i, 2, 3);
-            if (i != 0) parts[i].setRotationPoint(sharedPivot ? 6 : i * 3, 4, sharedPivot ? 0 : -i);
+            if (i != 0)
+                parts[i].setRotationPoint(sharedPivot ? 6 : i * 3, 4, sharedPivot ? 0 : -i);
         }
         return parts;
     }
@@ -106,7 +117,8 @@ class RigidBatchTest
         PoseStack pose = new PoseStack();
         RigidGeometry[] parts = {geometry(), geometry(), geometry(), geometry(), geometry()};
         batch.begin(backend);
-        for (RigidGeometry part : parts) submit(batch, part, pose);
+        for (RigidGeometry part : parts)
+            submit(batch, part, pose);
         GeometryKey full = batch.key.snapshot();
         batch.end();
         assertEquals(1, backend.rangeCounts.get(0));
@@ -148,12 +160,16 @@ class RigidBatchTest
             RigidBatch batch = new RigidBatch(2, 8, 100000);
             PoseStack pose = new PoseStack();
             batch.begin(new Backend());
-            for (int i = 0; i < 5; i++) batch.submit(geometry(), pose.last(), 17, 23, 1, 1, 1, 1, i != 2);
+            for (int i = 0; i < 5; i++)
+                batch.submit(geometry(), pose.last(), 17, 23, 1, 1, 1, 1, i != 2);
             assertEquals(2, batch.ranges.count);
             assertEquals(16, batch.ranges.visibleVertices);
             batch.end();
         }
-        finally { RenderDiagnostics.setBridgedGap(VisibleRanges.DEFAULT_BRIDGED_GAP); }
+        finally
+        {
+            RenderDiagnostics.setBridgedGap(VisibleRanges.DEFAULT_BRIDGED_GAP);
+        }
     }
 
     /** One geometry of the given number of quads. */
@@ -161,8 +177,7 @@ class RigidBatchTest
     {
         TexturedPolygon[] faces = new TexturedPolygon[quads];
         for (int i = 0; i < quads; i++)
-            faces[i] = new TexturedPolygon(new PositionTextureVertex[]{
-                new PositionTextureVertex(0, 0, i, 0, 0), new PositionTextureVertex(16, 0, i, 1, 0),
+            faces[i] = new TexturedPolygon(new PositionTextureVertex[]{new PositionTextureVertex(0, 0, i, 0, 0), new PositionTextureVertex(16, 0, i, 1, 0),
                 new PositionTextureVertex(16, 16, i, 1, 1), new PositionTextureVertex(0, 16, i, 0, 1)});
         return new RigidGeometry(faces);
     }
@@ -175,7 +190,8 @@ class RigidBatchTest
         RigidGeometry part = geometry();
         PoseStack pose = new PoseStack();
         batch.begin(backend);
-        for (int i = 0; i < 7; i++) batch.submit(part, pose.last(), 17, 23, 1, 1, 1, 1, false);
+        for (int i = 0; i < 7; i++)
+            batch.submit(part, pose.last(), 17, 23, 1, 1, 1, 1, false);
         batch.end();
         assertTrue(backend.events.isEmpty());
         assertEquals(0, batch.ranges.geometries);
@@ -202,7 +218,8 @@ class RigidBatchTest
             {
                 pose.translate(1, 2, 3);
                 boolean visible = i % 3 == 1;
-                if (visible) part.draw(pose.last(), expected, 17, 23, 1, 1, 1, 1);
+                if (visible)
+                    part.draw(pose.last(), expected, 17, 23, 1, 1, 1, 1);
                 batch.submit(part, pose.last(), 17, 23, 1, 1, 1, 1, visible);
             }
             batch.end();
@@ -217,13 +234,19 @@ class RigidBatchTest
     {
         RigidGeometry a = geometry(), b = geometry();
         GeometryKey shared = new GeometryKey(2), separate = new GeometryKey(2);
-        shared.add(a, 0); shared.add(b, 0);
-        separate.add(a, 0); separate.add(b, 1);
+        shared.add(a, 0);
+        shared.add(b, 0);
+        separate.add(a, 0);
+        separate.add(b, 1);
         assertNotEquals(shared, separate);
         GeometryKey stored = shared.snapshot();
-        shared.clear(); shared.add(a, 0); shared.add(b, 1);
+        shared.clear();
+        shared.add(a, 0);
+        shared.add(b, 1);
         assertNotEquals(stored, shared);
-        shared.clear(); shared.add(a, 0); shared.add(b, 0);
+        shared.clear();
+        shared.add(a, 0);
+        shared.add(b, 0);
         assertEquals(stored, shared);
     }
 
@@ -234,13 +257,15 @@ class RigidBatchTest
         RigidBatch batch = new RigidBatch(2, 8, 24);
         PoseStack shared = new PoseStack();
         batch.begin(backend);
-        for (int i = 0; i < 8; i++) submit(batch, geometry(), shared);
+        for (int i = 0; i < 8; i++)
+            submit(batch, geometry(), shared);
         batch.end();
         assertEquals(List.of("barrier", "gpu:6", "gpu:2"), backend.events);
         backend.events.clear();
         batch = new RigidBatch(2, 8, 1000);
         batch.begin(backend);
-        for (int i = 0; i < 9; i++) submit(batch, geometry(), shared);
+        for (int i = 0; i < 9; i++)
+            submit(batch, geometry(), shared);
         batch.end();
         assertEquals(List.of("barrier", "gpu:8", "gpu:1"), backend.events);
     }
@@ -274,8 +299,10 @@ class RigidBatchTest
         batch.begin(backend);
         for (int i = 0; i < 10; i++)
         {
-            if (i == 4) pose.translate(3, 4, 5);
-            if (i == 7) pose.last().normal().scale(2); // Normal changes alone must split palettes too.
+            if (i == 4)
+                pose.translate(3, 4, 5);
+            if (i == 7)
+                pose.last().normal().scale(2); // Normal changes alone must split palettes too.
             int light = i < 6 ? 0xCAFE0123 : 0x1234BEEF;
             geometry.draw(pose.last(), expected, light, 23, 1, 0.5F, 0.25F, 1);
             batch.submit(geometry, pose.last(), light, 23, 1, 0.5F, 0.25F, 1);
@@ -331,18 +358,24 @@ class RigidBatchTest
     {
         RigidGeometry a = geometry(), b = geometry();
         GeometryKey probe = new GeometryKey(3);
-        probe.add(a); probe.add(b);
+        probe.add(a);
+        probe.add(b);
         MeshCache<FakeMesh> cache = new MeshCache<>(100, 4);
         FakeMesh mesh = new FakeMesh(10);
         cache.put(probe, mesh);
         assertSame(mesh, cache.get(probe));
-        probe.clear(); probe.add(b); probe.add(a);
+        probe.clear();
+        probe.add(b);
+        probe.add(a);
         assertNull(cache.get(probe));
-        probe.clear(); probe.add(a);
+        probe.clear();
+        probe.add(a);
         assertNull(cache.get(probe));
         probe.add(geometry());
         assertNull(cache.get(probe));
-        probe.clear(); probe.add(a); probe.add(b);
+        probe.clear();
+        probe.add(a);
+        probe.add(b);
         assertSame(mesh, cache.get(probe));
     }
 
@@ -352,7 +385,8 @@ class RigidBatchTest
         MeshCache<FakeMesh> cache = new MeshCache<>(25, 2);
         GeometryKey a = key(), b = key(), c = key();
         FakeMesh first = new FakeMesh(10), second = new FakeMesh(10), third = new FakeMesh(10);
-        cache.put(a, first); cache.put(b, second);
+        cache.put(a, first);
+        cache.put(b, second);
         assertSame(first, cache.get(a)); // b is now the eviction candidate.
         cache.put(c, third);
         assertEquals(1, second.closes);
@@ -361,7 +395,8 @@ class RigidBatchTest
         cache.put(c, replacement); // replace c and evict a for the byte budget.
         assertEquals(1, third.closes);
         assertEquals(1, first.closes);
-        cache.clear(); cache.clear();
+        cache.clear();
+        cache.clear();
         assertEquals(1, replacement.closes);
         assertNull(cache.get(c));
     }
@@ -401,7 +436,9 @@ class RigidBatchTest
         MeshCache<FakeMesh> cache = new MeshCache<>(15, 8);
         cache.put(key(), new FakeMesh(10));
         cache.put(key(), new FakeMesh(10)); // Evicts a mesh uploaded this frame
-        cache.nextFrame(); cache.nextFrame(); cache.nextFrame();
+        cache.nextFrame();
+        cache.nextFrame();
+        cache.nextFrame();
         cache.put(key(), new FakeMesh(10)); // Evicts a stale mesh
         assertEquals(1, cache.takeWorkingSetEvictions());
         assertEquals(0, cache.takeWorkingSetEvictions());
@@ -416,8 +453,10 @@ class RigidBatchTest
             MeshCache<FakeMesh> cache = new MeshCache<>(30, 8);
             GeometryKey a = key(), b = key(), c = key();
             FakeMesh first = new FakeMesh(10), second = new FakeMesh(10);
-            cache.put(a, first); cache.put(b, second);
-            for (int i = 0; i < 3; i++) cache.nextFrame();
+            cache.put(a, first);
+            cache.put(b, second);
+            for (int i = 0; i < 3; i++)
+                cache.nextFrame();
             assertSame(first, cache.get(a)); // a is drawn this frame, b has not been drawn for three
             cache.limits(15, 8);
             assertEquals(1, second.closes);
@@ -429,7 +468,10 @@ class RigidBatchTest
             assertEquals(2, RenderDiagnostics.evictions);
             assertEquals(1, RenderDiagnostics.workingSetEvictions);
         }
-        finally { RenderDiagnostics.stop(); }
+        finally
+        {
+            RenderDiagnostics.stop();
+        }
     }
 
     @Test
@@ -438,13 +480,15 @@ class RigidBatchTest
         Backend backend = new Backend();
         RigidBatch batch = new RigidBatch(2);
         batch.begin(backend);
-        for (int i = 0; i < 5; i++) submit(batch, geometry(), new PoseStack());
+        for (int i = 0; i < 5; i++)
+            submit(batch, geometry(), new PoseStack());
         batch.vertex(1, 2, 3, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0);
         submit(batch, geometry(), new PoseStack());
         batch.end();
         assertEquals(List.of("barrier", "gpu:2", "gpu:2", "gpu:1", "cpu", "barrier", "gpu:1"), backend.events);
         assertEquals(0, batch.key.count);
-        for (RigidGeometry geometry : batch.key.geometries) assertNull(geometry);
+        for (RigidGeometry geometry : batch.key.geometries)
+            assertNull(geometry);
     }
 
     @Test
@@ -486,7 +530,9 @@ class RigidBatchTest
         assertEquals("flushCpu", backend.events.get(backend.events.size() - 1));
         backend.available = true;
         backend.events.clear();
-        batch.begin(backend); submit(batch, geometry(), new PoseStack()); batch.end();
+        batch.begin(backend);
+        submit(batch, geometry(), new PoseStack());
+        batch.end();
         assertEquals(List.of("barrier", "gpu:1"), backend.events);
     }
 
@@ -509,21 +555,42 @@ class RigidBatchTest
 
     static RigidGeometry geometry()
     {
-        return new RigidGeometry(new TexturedPolygon[]{new TexturedPolygon(new PositionTextureVertex[]{
-            new PositionTextureVertex(0, 0, 0, 0, 0), new PositionTextureVertex(16, 0, 0, 1, 0),
-            new PositionTextureVertex(0, 16, 0, 0, 1)})});
+        return new RigidGeometry(new TexturedPolygon[]{new TexturedPolygon(
+            new PositionTextureVertex[]{new PositionTextureVertex(0, 0, 0, 0, 0), new PositionTextureVertex(16, 0, 0, 1, 0), new PositionTextureVertex(0, 16, 0, 0, 1)})});
     }
 
-    private static GeometryKey key() { GeometryKey key = new GeometryKey(1); key.add(geometry()); return key; }
-    static void submit(RigidBatch batch, RigidGeometry geometry, PoseStack pose) { batch.submit(geometry, pose.last(), 17, 23, 1, 1, 1, 1); }
+    private static GeometryKey key()
+    {
+        GeometryKey key = new GeometryKey(1);
+        key.add(geometry());
+        return key;
+    }
+
+    static void submit(RigidBatch batch, RigidGeometry geometry, PoseStack pose)
+    {
+        batch.submit(geometry, pose.last(), 17, 23, 1, 1, 1, 1);
+    }
 
     static class FakeMesh implements MeshCache.Resource
     {
         final long bytes;
         int closes;
-        FakeMesh(long bytes) { this.bytes = bytes; }
-        @Override public long bytes() { return bytes; }
-        @Override public void close() { closes++; }
+        FakeMesh(long bytes)
+        {
+            this.bytes = bytes;
+        }
+
+        @Override
+        public long bytes()
+        {
+            return bytes;
+        }
+
+        @Override
+        public void close()
+        {
+            closes++;
+        }
     }
 
     private static class Backend implements RigidBatch.Backend
@@ -534,42 +601,110 @@ class RigidBatchTest
         final List<Integer> visibleVertices = new ArrayList<>();
         final Recording output = new Recording()
         {
-            @Override public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz)
+            @Override
+            public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz)
             {
                 events.add("cpu");
                 super.vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz);
             }
         };
         boolean available = true, throwOnDraw;
-        @Override public boolean draw(RigidBatch batch, boolean flushPending)
+        @Override
+        public boolean draw(RigidBatch batch, boolean flushPending)
         {
-            if (throwOnDraw) throw new IllegalStateException("injected GPU failure");
-            if (!available) return false;
-            if (flushPending) events.add("barrier");
+            if (throwOnDraw)
+                throw new IllegalStateException("injected GPU failure");
+            if (!available)
+                return false;
+            if (flushPending)
+                events.add("barrier");
             events.add("gpu:" + batch.key.count);
             rangeCounts.add(batch.ranges.count);
             keys.add(batch.key.snapshot());
             visibleVertices.add(batch.ranges.visibleVertices);
             return true;
         }
-        @Override public VertexConsumer fallback() { return output; }
-        @Override public void flushFallback() { events.add("flushCpu"); }
-        @Override public void failed(RuntimeException exception) { events.add("failed"); }
+
+        @Override
+        public VertexConsumer fallback()
+        {
+            return output;
+        }
+
+        @Override
+        public void flushFallback()
+        {
+            events.add("flushCpu");
+        }
+
+        @Override
+        public void failed(RuntimeException exception)
+        {
+            events.add("failed");
+        }
     }
 
     static class Recording implements VertexConsumer
     {
         final List<float[]> vertices = new ArrayList<>();
-        @Override public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz)
-        { vertices.add(new float[]{x,y,z,r,g,b,a,u,v,overlay,light,nx,ny,nz}); }
-        @Override public VertexConsumer vertex(double x, double y, double z) { throw new AssertionError(); }
-        @Override public VertexConsumer color(int r, int g, int b, int a) { throw new AssertionError(); }
-        @Override public VertexConsumer uv(float u, float v) { throw new AssertionError(); }
-        @Override public VertexConsumer overlayCoords(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer uv2(int u, int v) { throw new AssertionError(); }
-        @Override public VertexConsumer normal(float x, float y, float z) { throw new AssertionError(); }
-        @Override public void endVertex() { throw new AssertionError(); }
-        @Override public void defaultColor(int r, int g, int b, int a) { throw new AssertionError(); }
-        @Override public void unsetDefaultColor() { throw new AssertionError(); }
+        @Override
+        public void vertex(float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz)
+        {
+            vertices.add(new float[]{x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz});
+        }
+
+        @Override
+        public VertexConsumer vertex(double x, double y, double z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer color(int r, int g, int b, int a)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv(float u, float v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer overlayCoords(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer uv2(int u, int v)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public VertexConsumer normal(float x, float y, float z)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void endVertex()
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void defaultColor(int r, int g, int b, int a)
+        {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void unsetDefaultColor()
+        {
+            throw new AssertionError();
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import com.flansmodultimate.platform.client.ClientPlatform;

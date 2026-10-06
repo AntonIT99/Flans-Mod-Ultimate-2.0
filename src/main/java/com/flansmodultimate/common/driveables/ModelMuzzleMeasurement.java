@@ -34,12 +34,15 @@ import java.util.Optional;
  * loading, on a dedicated server as on a client, so the server fires from the
  * model's barrels on its own authority.
  *
- * <p>Legacy model classes only build geometry when they are constructed, and the
+ * <p>
+ * Legacy model classes only build geometry when they are constructed, and the
  * model framework resolves its rendering classes lazily, so the models load on a
  * dedicated server as they do on the client. A model that cannot be loaded, for
- * instance one whose constructor reaches client code, keeps its type as authored.</p>
+ * instance one whose constructor reaches client code, keeps its type as authored.
+ * </p>
  *
- * <p>A pack a mod ships from the mods folder is trusted as written: its driveables
+ * <p>
+ * A pack a mod ships from the mods folder is trusted as written: its driveables
  * keep their muzzles and its AA guns fire from their {@code Barrel} lines, elevated
  * round the measured pivot. A pack in the flan folder is not: its driveables have
  * their muzzles moved onto the measured ones by the rules of
@@ -49,14 +52,19 @@ import java.util.Optional;
  * ones a client used to report, and a twin or quad mount fired from one point
  * takes its model's barrels in turn, spread round that point. Deployable guns
  * always use a measurable model muzzle, with {@code PivotHeight} retained as
- * their compatibility fallback.</p>
+ * their compatibility fallback.
+ * </p>
  *
- * <p>Model classes are resolved with the client's default settings, whatever the
- * client configuration says, so a server and its clients measure the same class.</p>
+ * <p>
+ * Model classes are resolved with the client's default settings, whatever the
+ * client configuration says, so a server and its clients measure the same class.
+ * </p>
  *
- * <p>The results are kept by {@link MuzzleMeasurementCache}: a restart on unchanged
+ * <p>
+ * The results are kept by {@link MuzzleMeasurementCache}: a restart on unchanged
  * content replays them instead of loading and measuring every model again. The
- * debug report on trusted packs only comes from a pass that actually measures.</p>
+ * debug report on trusted packs only comes from a pass that actually measures.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModelMuzzleMeasurement
@@ -68,8 +76,10 @@ public final class ModelMuzzleMeasurement
      * Measures the models of {@code types}, or replays the last measurement when
      * none of the content it depends on has changed since.
      *
-     * @param contentPacks           every loaded content pack, which the cached results are keyed on
-     * @param correctFlanFolderPacks move the muzzles of the flan folder packs onto the measured ones
+     * @param contentPacks
+     *            every loaded content pack, which the cached results are keyed on
+     * @param correctFlanFolderPacks
+     *            move the muzzles of the flan folder packs onto the measured ones
      */
     public static void measure(List<InfoType> types, List<IContentProvider> contentPacks, boolean correctFlanFolderPacks)
     {
@@ -86,9 +96,10 @@ public final class ModelMuzzleMeasurement
         if (cached != null)
         {
             int moved = MuzzleMeasurementCache.apply(cached, types);
-            FlansLog.log.info("Applied the muzzles measured on {} model(s) in {} ms, since no content pack changed: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s). Delete {} to measure them again.",
-                cached.models, System.currentTimeMillis() - startTime, cached.deployedGuns.size(), cached.aaGuns.size(), moved,
-                cached.driveables.size(), cached.mountCount(), MuzzleMeasurementCache.file());
+            FlansLog.log.info(
+                "Applied the muzzles measured on {} model(s) in {} ms, since no content pack changed: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s). Delete {} to measure them again.",
+                cached.models, System.currentTimeMillis() - startTime, cached.deployedGuns.size(), cached.aaGuns.size(), moved, cached.driveables.size(), cached.mountCount(),
+                MuzzleMeasurementCache.file());
             return;
         }
 
@@ -105,9 +116,9 @@ public final class ModelMuzzleMeasurement
         tally.results.models = (int) models.values().stream().filter(Optional::isPresent).count();
         tally.results.failed = tally.failed;
         MuzzleMeasurementCache.save(key, tally.results);
-        FlansLog.log.info("Measured {} model(s) in {} ms: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s), {} type(s) could not be measured.",
-            tally.results.models, System.currentTimeMillis() - startTime,
-            tally.deployedGuns, tally.aaGuns, tally.points, tally.driveables, tally.mounts, tally.failed);
+        FlansLog.log.info(
+            "Measured {} model(s) in {} ms: {} deployed gun(s), {} AA gun(s) with measured barrels, {} shoot point(s) of {} driveable(s) moved onto their model's muzzles, {} multi-barrel mount(s), {} type(s) could not be measured.",
+            tally.results.models, System.currentTimeMillis() - startTime, tally.deployedGuns, tally.aaGuns, tally.points, tally.driveables, tally.mounts, tally.failed);
     }
 
     private static final class Tally
@@ -121,20 +132,17 @@ public final class ModelMuzzleMeasurement
         private int failed;
     }
 
-    private static void measure(InfoType type, boolean correctFlanFolderPacks, Map<ModelClassLocation, Optional<Object>> models,
-                                Tally tally)
+    private static void measure(InfoType type, boolean correctFlanFolderPacks, Map<ModelClassLocation, Optional<Object>> models, Tally tally)
     {
         boolean trusted = trustsDefinition(type, correctFlanFolderPacks);
         // AA guns are measured whether or not their lines are trusted: the pivot
         // elevates a trusted line, and the muzzle fills a barrel that has none.
         // Driveables are too: a trusted point keeps its place, but a twin or quad
         // mount still spreads its shots over the barrels the model draws.
-        if (!(type instanceof AAGunType) && !(type instanceof DriveableType)
-            && !(type instanceof GunType gunType && gunType.isDeployable()))
+        if (!(type instanceof AAGunType) && !(type instanceof DriveableType) && !(type instanceof GunType gunType && gunType.isDeployable()))
             return;
 
-        String className = type instanceof GunType gunType
-            ? gunType.resolveDeployableModelClassName() : type.resolveModelClassName();
+        String className = type instanceof GunType gunType ? gunType.resolveDeployableModelClassName() : type.resolveModelClassName();
         if (StringUtils.isBlank(className))
             return;
         Object model = loadModel(type, className, models);
@@ -188,7 +196,8 @@ public final class ModelMuzzleMeasurement
     private static Object loadModel(InfoType type, String className, Map<ModelClassLocation, Optional<Object>> models)
     {
         ModelClassLocation location = ModelClassResolver.find(type.getContentPack(), className, true);
-        return models.computeIfAbsent(location, key -> {
+        return models.computeIfAbsent(location, key ->
+        {
             try
             {
                 return Optional.of(ModelClassResolver.instantiate(key, false));
@@ -236,24 +245,20 @@ public final class ModelMuzzleMeasurement
     }
 
     /** Moves a shoot point and records the move, so a later run on the same content can replay it. */
-    private static boolean applyShootPoint(DriveableType type, boolean secondary, int index, Vector3f position,
-                                           MuzzleMeasurementCache.Results results)
+    private static boolean applyShootPoint(DriveableType type, boolean secondary, int index, Vector3f position, MuzzleMeasurementCache.Results results)
     {
         if (!type.applyMeasuredShootPoint(secondary, index, position))
             return false;
-        MuzzleMeasurementCache.recordMove(results, type,
-            new MuzzleMeasurementCache.Move(false, secondary, index, position.x, position.y, position.z));
+        MuzzleMeasurementCache.recordMove(results, type, new MuzzleMeasurementCache.Move(false, secondary, index, position.x, position.y, position.z));
         return true;
     }
 
     /** Moves a seat's {@code GunOrigin} and records the move. */
-    private static boolean applyGunOrigin(DriveableType type, int seat, Vector3f position,
-                                          MuzzleMeasurementCache.Results results)
+    private static boolean applyGunOrigin(DriveableType type, int seat, Vector3f position, MuzzleMeasurementCache.Results results)
     {
         if (!type.applyMeasuredGunOrigin(seat, position))
             return false;
-        MuzzleMeasurementCache.recordMove(results, type,
-            new MuzzleMeasurementCache.Move(true, false, seat, position.x, position.y, position.z));
+        MuzzleMeasurementCache.recordMove(results, type, new MuzzleMeasurementCache.Move(true, false, seat, position.x, position.y, position.z));
         return true;
     }
 
@@ -266,8 +271,7 @@ public final class ModelMuzzleMeasurement
             if (info != null && info.getGunType() != null && StringUtils.isNotBlank(info.getGunName()))
                 seatGuns.add(new MuzzleMeasurements.SeatGun(seat, info.getGunName()));
         }
-        return new MuzzleMeasurements.DriveableInputs(type instanceof PlaneType, type.getModelScale(),
-            type.getVehicleGunModelScale(), seatGuns);
+        return new MuzzleMeasurements.DriveableInputs(type instanceof PlaneType, type.getModelScale(), type.getVehicleGunModelScale(), seatGuns);
     }
 
     /** @return how many muzzles were moved */
@@ -277,7 +281,7 @@ public final class ModelMuzzleMeasurement
         List<String> moves = new ArrayList<>();
 
         // Mirrored points first, so the barrels below are matched on the side the author meant.
-        for (boolean secondary : new boolean[] { false, true })
+        for (boolean secondary : new boolean[]{false, true})
         {
             List<ShootPoint> points = type.shootPoints(secondary);
             for (int index = 0; index < points.size(); index++)
@@ -300,8 +304,7 @@ public final class ModelMuzzleMeasurement
                 continue;
             Vector3f origin = seat.getGunOrigin();
             Vector3f authored = new Vector3f(origin.x * 16F, origin.y * 16F, origin.z * 16F);
-            if (distance(authored, muzzle.position()) >= MIN_CORRECTION_PIXELS
-                && applyGunOrigin(type, muzzle.seatIndex(), muzzle.position(), results))
+            if (distance(authored, muzzle.position()) >= MIN_CORRECTION_PIXELS && applyGunOrigin(type, muzzle.seatIndex(), muzzle.position(), results))
                 moves.add(muzzle.label() + " " + format(authored) + " -> " + format(muzzle.position()));
         }
 
@@ -317,9 +320,8 @@ public final class ModelMuzzleMeasurement
      * closest pairs first. A bank holding an {@code AddGun} is left alone: its
      * gun is not one of the barrels.
      */
-    private static void correctPrimaryBarrels(DriveableType type, ModelDriveable model,
-                                              MuzzleMeasurements.DriveableInputs inputs, List<String> moves,
-                                              MuzzleMeasurementCache.Results results)
+    private static void correctPrimaryBarrels(DriveableType type, ModelDriveable model, MuzzleMeasurements.DriveableInputs inputs, List<String> moves,
+        MuzzleMeasurementCache.Results results)
     {
         List<ShootPoint> primary = type.shootPoints(false);
         if (primary.isEmpty() || primary.stream().anyMatch(point -> point.getRootPos() instanceof PilotGun))
@@ -342,7 +344,7 @@ public final class ModelMuzzleMeasurement
         for (int point = 0; point < authored.size(); point++)
         {
             for (int barrel = 0; barrel < barrels.size(); barrel++)
-                pairs.add(new int[] { point, barrel });
+                pairs.add(new int[]{point, barrel});
         }
         pairs.sort(Comparator.comparingDouble(pair -> distance(authored.get(pair[0]), barrels.get(pair[1]).position())));
         boolean[] pointTaken = new boolean[authored.size()];
@@ -374,8 +376,7 @@ public final class ModelMuzzleMeasurement
         List<ShootPoint> primary = type.shootPoints(false);
         if (isOnePoint(primary))
         {
-            List<Vector3f> barrels = MuzzleMeasurements.derivePrimaryBarrels(model, inputs).stream()
-                .map(DerivedMuzzle::position).toList();
+            List<Vector3f> barrels = MuzzleMeasurements.derivePrimaryBarrels(model, inputs).stream().map(DerivedMuzzle::position).toList();
             List<Vector3f> offsets = MuzzleMeasurements.barrelSpread(barrels, muzzlePixels(primary.get(0)));
             for (int index = 0; index < primary.size() && !offsets.isEmpty(); index++)
             {
@@ -384,8 +385,7 @@ public final class ModelMuzzleMeasurement
                 List<Vector3f> staggered = new ArrayList<>(offsets);
                 Collections.rotate(staggered, -(index * offsets.size() / primary.size()));
                 if (type.applyMeasuredBarrels(false, index, staggered))
-                    MuzzleMeasurementCache.recordSpread(results, type,
-                        new MuzzleMeasurementCache.Spread(false, false, index, staggered));
+                    MuzzleMeasurementCache.recordSpread(results, type, new MuzzleMeasurementCache.Spread(false, false, index, staggered));
             }
             if (!offsets.isEmpty())
                 spreads.add("primary x" + offsets.size() + (primary.size() > 1 ? " over " + primary.size() + " points" : ""));
@@ -394,13 +394,11 @@ public final class ModelMuzzleMeasurement
         for (MuzzleMeasurements.SeatGun seatGun : inputs.seatGuns())
         {
             Vector3f origin = type.getSeat(seatGun.seatIndex()).getGunOrigin();
-            List<Vector3f> offsets = MuzzleMeasurements.barrelSpread(
-                MuzzleMeasurements.deriveSeatGunBarrels(model, inputs, seatGun),
+            List<Vector3f> offsets = MuzzleMeasurements.barrelSpread(MuzzleMeasurements.deriveSeatGunBarrels(model, inputs, seatGun),
                 new Vector3f(origin.x * 16F, origin.y * 16F, origin.z * 16F));
             if (!offsets.isEmpty() && type.applyMeasuredGunBarrels(seatGun.seatIndex(), offsets))
             {
-                MuzzleMeasurementCache.recordSpread(results, type,
-                    new MuzzleMeasurementCache.Spread(true, false, seatGun.seatIndex(), offsets));
+                MuzzleMeasurementCache.recordSpread(results, type, new MuzzleMeasurementCache.Spread(true, false, seatGun.seatIndex(), offsets));
                 spreads.add("seat " + seatGun.seatIndex() + " x" + offsets.size());
             }
         }
@@ -419,11 +417,9 @@ public final class ModelMuzzleMeasurement
         return points.stream().allMatch(point -> distance(muzzlePixels(point), first) < MIN_CORRECTION_PIXELS);
     }
 
-    private static void moveShootPoint(DriveableType type, int index, Vector3f authored, DerivedMuzzle barrel,
-                                       List<String> moves, MuzzleMeasurementCache.Results results)
+    private static void moveShootPoint(DriveableType type, int index, Vector3f authored, DerivedMuzzle barrel, List<String> moves, MuzzleMeasurementCache.Results results)
     {
-        if (distance(authored, barrel.position()) >= MIN_CORRECTION_PIXELS
-            && applyShootPoint(type, false, index, barrel.position(), results))
+        if (distance(authored, barrel.position()) >= MIN_CORRECTION_PIXELS && applyShootPoint(type, false, index, barrel.position(), results))
             moves.add(barrel.label() + " " + format(authored) + " -> " + format(barrel.position()));
     }
 
@@ -434,15 +430,15 @@ public final class ModelMuzzleMeasurement
     private static void reportMirroredPoints(DriveableType type, ModelDriveable model)
     {
         MuzzleMeasurements.DriveableInputs inputs = inputs(type);
-        for (boolean secondary : new boolean[] { false, true })
+        for (boolean secondary : new boolean[]{false, true})
         {
             List<ShootPoint> points = type.shootPoints(secondary);
             for (int index = 0; index < points.size(); index++)
             {
                 Vector3f muzzle = muzzlePixels(points.get(index));
                 if (MuzzleMeasurements.isMirroredMuzzle(model, inputs, muzzle))
-                    FlansLog.log.debug("{} {} {} looks mirrored: the model has a barrel at {}", type,
-                        bankLabel(secondary, index), format(muzzle), format(new Vector3f(muzzle.x, muzzle.y, -muzzle.z)));
+                    FlansLog.log.debug("{} {} {} looks mirrored: the model has a barrel at {}", type, bankLabel(secondary, index), format(muzzle),
+                        format(new Vector3f(muzzle.x, muzzle.y, -muzzle.z)));
             }
         }
     }

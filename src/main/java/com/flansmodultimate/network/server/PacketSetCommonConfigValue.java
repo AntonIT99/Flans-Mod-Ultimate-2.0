@@ -75,8 +75,7 @@ public class PacketSetCommonConfigValue implements IServerPacket
         if (ModCommonConfig.setRuntimeValue(ConfigSpecValues.splitPath(path), value))
         {
             FlansLog.log.info("{} set the server setting {} to {}", name, path, value);
-            player.sendSystemMessage(Component.translatable("gui.flansmodultimate.options.server_option_changed",
-                path, String.valueOf(value)).withStyle(ChatFormatting.YELLOW));
+            player.sendSystemMessage(Component.translatable("gui.flansmodultimate.options.server_option_changed", path, String.valueOf(value)).withStyle(ChatFormatting.YELLOW));
             return;
         }
 

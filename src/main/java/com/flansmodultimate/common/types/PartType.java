@@ -24,17 +24,7 @@ public class PartType extends InfoType
 {
     public enum Category
     {
-        COCKPIT,
-        WING,
-        ENGINE,
-        PROPELLER,
-        BAY,
-        TAIL,
-        WHEEL,
-        CHASSIS,
-        TURRET,
-        FUEL,
-        MISC
+        COCKPIT, WING, ENGINE, PROPELLER, BAY, TAIL, WHEEL, CHASSIS, TURRET, FUEL, MISC
     }
 
     /** The default engine (normally the first one read by the type loader) for driveables with corrupt nbt or those spawned in creative */
@@ -56,7 +46,7 @@ public class PartType extends InfoType
     /** (Fuel) The amount of fuel this fuel tank gives */
     @Getter
     protected int fuel = 0;
-    /** The types of driveables that this engine works with. Used to designate some engines as mecha CPUs and what not*/
+    /** The types of driveables that this engine works with. Used to designate some engines as mecha CPUs and what not */
     protected Set<EnumType> worksWith = EnumSet.of(EnumType.MECHA, EnumType.PLANE, EnumType.VEHICLE);
     protected List<RecipeIngredient> partBoxRecipeRefs = new ArrayList<>();
     protected boolean partBoxRecipeResolved;
@@ -84,7 +74,7 @@ public class PartType extends InfoType
         engineSpeed = readValue("EngineSpeed", engineSpeed, file);
         enginePower = Math.max(0F, readValue("EnginePower", enginePower, file));
 
-        //RedstoneFlux, for engines
+        // RedstoneFlux, for engines
         useRFPower = readValue("UseRF", useRFPower, file);
         useRFPower = readValue("UseRFPower", useRFPower, file);
         canBeDefaultEngine = readValue("CanBeDefaultEngine", canBeDefaultEngine, file);
@@ -95,7 +85,8 @@ public class PartType extends InfoType
         if (file.hasConfigLine("WorksWith"))
         {
             EnumSet<EnumType> configuredTypes = EnumSet.noneOf(EnumType.class);
-            readValuesInLines("WorksWith", file).ifPresent(lines -> lines.forEach(split -> {
+            readValuesInLines("WorksWith", file).ifPresent(lines -> lines.forEach(split ->
+            {
                 for (String rawType : split)
                     EnumType.getType(rawType).ifPresentOrElse(configuredTypes::add, () -> logError("Unknown type '" + rawType + "' in WorksWith", file));
             }));
@@ -105,7 +96,7 @@ public class PartType extends InfoType
         // Fuel cans
         fuel = readValue("Fuel", fuel, file);
 
-        //Recipe
+        // Recipe
         if (hasValueForConfigField("PartBoxRecipe", file))
         {
             partBoxRecipeSourceFile = file;
@@ -173,24 +164,17 @@ public class PartType extends InfoType
         String normalized = requested.trim();
         int separator = normalized.indexOf(':');
         String path = separator >= 0 ? normalized.substring(separator + 1) : normalized;
-        return defaultEngineCandidates.stream()
-            .filter(engine -> engine.worksWith(type))
-            .filter(engine -> path.equalsIgnoreCase(engine.getOriginalShortName())
-                || path.equalsIgnoreCase(engine.selectionShortName()))
-            .findFirst().orElse(null);
+        return defaultEngineCandidates.stream().filter(engine -> engine.worksWith(type))
+            .filter(engine -> path.equalsIgnoreCase(engine.getOriginalShortName()) || path.equalsIgnoreCase(engine.selectionShortName())).findFirst().orElse(null);
     }
 
     private static PartType findGlobalFallback(EnumType type)
     {
-        List<PartType> compatible = defaultEngineCandidates.stream()
-            .filter(engine -> engine.worksWith(type)).toList();
+        List<PartType> compatible = defaultEngineCandidates.stream().filter(engine -> engine.worksWith(type)).toList();
         boolean hasOfficial = compatible.stream().anyMatch(engine -> engine.contentPack.isOfficial());
-        Comparator<PartType> closestToStandard = Comparator
-            .comparingDouble((PartType engine) -> Math.abs(engine.engineSpeed - 1F))
-            .thenComparing(PartType::selectionShortName, String.CASE_INSENSITIVE_ORDER);
-        return compatible.stream()
-            .filter(engine -> !hasOfficial || engine.contentPack.isOfficial())
-            .min(closestToStandard).orElse(null);
+        Comparator<PartType> closestToStandard = Comparator.comparingDouble((PartType engine) -> Math.abs(engine.engineSpeed - 1F)).thenComparing(PartType::selectionShortName,
+            String.CASE_INSENSITIVE_ORDER);
+        return compatible.stream().filter(engine -> !hasOfficial || engine.contentPack.isOfficial()).min(closestToStandard).orElse(null);
     }
 
     private String selectionShortName()
@@ -241,9 +225,7 @@ public class PartType extends InfoType
         if (partBoxRecipeSourceFile == null)
             return;
 
-        logError("Could not resolve PartBoxRecipe ingredient '" + recipeItem.getItemName()
-            + "' (amount " + recipeItem.getAmount()
-            + ") for part '" + getShortName()
+        logError("Could not resolve PartBoxRecipe ingredient '" + recipeItem.getItemName() + "' (amount " + recipeItem.getAmount() + ") for part '" + getShortName()
             + "', skipping ingredient.", partBoxRecipeSourceFile);
     }
 

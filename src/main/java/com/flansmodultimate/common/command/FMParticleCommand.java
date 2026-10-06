@@ -45,34 +45,33 @@ public final class FMParticleCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(Commands.literal("fmparticle")
-            .requires(source -> source.hasPermission(2))
-            .then(Commands.argument(NAME, StringArgumentType.string())
-                .suggests((context, builder) -> SharedSuggestionProvider.suggest(FlanParticles.suggestions(), builder))
-                // Short form: a single particle one block above the caller
-                .executes(context -> sendParticles(context, context.getSource().getPosition().add(0D, SHORT_FORM_HEIGHT, 0D),
-                    Vec3.ZERO, 0.0F, SHORT_FORM_COUNT, DEFAULT_SCALE, allPlayers(context)))
-                .then(Commands.argument(POS, Vec3Argument.vec3())
-                    .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3.ZERO, 0.0F, 0, DEFAULT_SCALE, allPlayers(context)))
-                    .then(Commands.argument(DELTA, Vec3Argument.vec3(false))
-                        .then(Commands.argument(SPEED, FloatArgumentType.floatArg(0.0F))
-                            .then(Commands.argument(COUNT, IntegerArgumentType.integer(0))
-                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA), FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT), DEFAULT_SCALE, allPlayers(context)))
-                                .then(Commands.argument(SCALE, FloatArgumentType.floatArg(0.0F))
-                                    .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA), FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT), FloatArgumentType.getFloat(context, SCALE), allPlayers(context)))
-                                    .then(Commands.argument(VIEWERS, EntityArgument.players())
-                                        .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA), FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT), FloatArgumentType.getFloat(context, SCALE), EntityArgument.getPlayers(context, VIEWERS)))
-                                    )
-                                )
-                                .then(Commands.argument(VIEWERS, EntityArgument.players())
-                                    .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA), FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT), DEFAULT_SCALE, EntityArgument.getPlayers(context, VIEWERS)))
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        );
+        dispatcher
+            .register(
+                Commands.literal("fmparticle").requires(source -> source.hasPermission(2))
+                    .then(
+                        Commands.argument(NAME, StringArgumentType.string()).suggests((context, builder) -> SharedSuggestionProvider.suggest(FlanParticles.suggestions(), builder))
+                            // Short form: a single particle one block above the caller
+                            .executes(context -> sendParticles(context, context.getSource().getPosition().add(0D, SHORT_FORM_HEIGHT, 0D), Vec3.ZERO, 0.0F, SHORT_FORM_COUNT,
+                                DEFAULT_SCALE, allPlayers(context)))
+                            .then(Commands.argument(POS, Vec3Argument.vec3())
+                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3.ZERO, 0.0F, 0, DEFAULT_SCALE, allPlayers(context)))
+                                .then(Commands.argument(DELTA, Vec3Argument.vec3(false))
+                                    .then(Commands.argument(SPEED, FloatArgumentType.floatArg(0.0F))
+                                        .then(Commands.argument(COUNT, IntegerArgumentType.integer(0))
+                                            .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA),
+                                                FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT), DEFAULT_SCALE, allPlayers(context)))
+                                            .then(Commands.argument(SCALE, FloatArgumentType.floatArg(0.0F))
+                                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA),
+                                                    FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT),
+                                                    FloatArgumentType.getFloat(context, SCALE), allPlayers(context)))
+                                                .then(Commands.argument(VIEWERS, EntityArgument.players())
+                                                    .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA),
+                                                        FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT),
+                                                        FloatArgumentType.getFloat(context, SCALE), EntityArgument.getPlayers(context, VIEWERS)))))
+                                            .then(Commands.argument(VIEWERS, EntityArgument.players())
+                                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA),
+                                                    FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT), DEFAULT_SCALE,
+                                                    EntityArgument.getPlayers(context, VIEWERS))))))))));
     }
 
     private static Collection<ServerPlayer> allPlayers(CommandContext<CommandSourceStack> context)
@@ -80,7 +79,8 @@ public final class FMParticleCommand
         return context.getSource().getServer().getPlayerList().getPlayers();
     }
 
-    private static int sendParticles(CommandContext<CommandSourceStack> context, Vec3 pos, Vec3 delta, float speed, int count, float scale, Collection<ServerPlayer> viewers) throws CommandSyntaxException
+    private static int sendParticles(CommandContext<CommandSourceStack> context, Vec3 pos, Vec3 delta, float speed, int count, float scale, Collection<ServerPlayer> viewers)
+        throws CommandSyntaxException
     {
         String requested = StringArgumentType.getString(context, NAME);
         // Reject unknown names here instead of letting every client silently log a warning

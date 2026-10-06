@@ -1,10 +1,10 @@
 package com.flansmodultimate.platform.world;
 
 import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.chunk.storage.RegionFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -12,7 +12,8 @@ import java.nio.file.Path;
 /** Version boundary for compressed NBT files in a world folder, such as {@code level.dat}. */
 public final class LevelFilePlatform
 {
-    private LevelFilePlatform() {}
+    private LevelFilePlatform()
+    {}
 
     public static CompoundTag readCompressed(Path file) throws IOException
     {

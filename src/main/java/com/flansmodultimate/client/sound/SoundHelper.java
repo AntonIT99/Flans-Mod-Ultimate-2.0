@@ -7,6 +7,9 @@ import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -18,8 +21,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -66,8 +67,8 @@ public final class SoundHelper
         // The sound engine drops a sound once it becomes inaudible, and refuses to start one that is
         // already out of range. Forgetting those lets the owner start the loop again as it comes back
         // into earshot, instead of staying silent for good after driving away once.
-        loopingEntitySounds.values().removeIf(
-            soundInstance -> soundInstance.isStopped() || soundInstance.isSourceGone() || !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
+        loopingEntitySounds.values()
+            .removeIf(soundInstance -> soundInstance.isStopped() || soundInstance.isSourceGone() || !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
     }
 
     /**
@@ -153,8 +154,7 @@ public final class SoundHelper
         pendingSounds.add(new PendingSound(delayTicks, () -> playSoundLocalAndBroadcast(sound, pos, range)));
     }
 
-    public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID,
-        @Nullable Entity source)
+    public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Entity source)
     {
         if (StringUtils.isBlank(sound))
             return;
@@ -168,8 +168,7 @@ public final class SoundHelper
 
             SoundInstance soundInstance = cancellable && source != null
                 ? new EntitySoundInstance(soundEvent, source, volume, pitch, r)
-                : new SimpleSoundInstance(soundEvent.getLocation(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, pos.x,
-                    pos.y, pos.z, false);
+                : new SimpleSoundInstance(soundEvent.getLocation(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, pos.x, pos.y, pos.z, false);
 
             if (cancellable)
                 cancellableSounds.put(instanceUUID, soundInstance);

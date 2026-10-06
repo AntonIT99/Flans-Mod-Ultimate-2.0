@@ -20,7 +20,8 @@ public final class ShaderPlatform
     private static final String[][] SHADER_MODS = {{"oculus", "Oculus"}, {"iris", "Iris"}};
     private static final MethodHandle FALSE = MethodHandles.constant(boolean.class, false);
 
-    private ShaderPlatform() {}
+    private ShaderPlatform()
+    {}
 
     /**
      * Whether a shader pack currently replaces the vanilla world pipeline. While one is active, the shader mod
@@ -31,7 +32,7 @@ public final class ShaderPlatform
     {
         try
         {
-            return (boolean)ShaderMod.SHADER_PACK_IN_USE.invokeExact();
+            return (boolean) ShaderMod.SHADER_PACK_IN_USE.invokeExact();
         }
         catch (Throwable ex)
         {
@@ -48,7 +49,7 @@ public final class ShaderPlatform
     {
         try
         {
-            return (boolean)ShaderMod.RENDERING_SHADOW_PASS.invokeExact();
+            return (boolean) ShaderMod.RENDERING_SHADOW_PASS.invokeExact();
         }
         catch (Throwable ex)
         {

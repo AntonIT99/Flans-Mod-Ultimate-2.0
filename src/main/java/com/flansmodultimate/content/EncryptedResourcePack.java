@@ -63,7 +63,8 @@ public final class EncryptedResourcePack implements PackResources
     private final Path bundlePath;
     private final AtomicReference<LoadedResources> resources = new AtomicReference<>();
 
-    private record LoadedResources(Map<ResourceLocation, byte[]> entries, Set<String> namespaces) {}
+    private record LoadedResources(Map<ResourceLocation, byte[]> entries, Set<String> namespaces)
+    {}
 
     public EncryptedResourcePack(String packId, String keyId, Path bundlePath)
     {
@@ -79,7 +80,7 @@ public final class EncryptedResourcePack implements PackResources
     }
 
     @Override
-    public IoSupplier<InputStream> getRootResource(String @NotNull ... path)
+    public IoSupplier<InputStream> getRootResource(String @NotNull... path)
     {
         return null;
     }
@@ -113,9 +114,9 @@ public final class EncryptedResourcePack implements PackResources
                 prefix = path + "/";
         }
 
-        getResources().entries().forEach((location, data) -> {
-            if (location.getNamespace().equals(namespace)
-                && (location.getPath().equals(path) || location.getPath().startsWith(prefix)))
+        getResources().entries().forEach((location, data) ->
+        {
+            if (location.getNamespace().equals(namespace) && (location.getPath().equals(path) || location.getPath().startsWith(prefix)))
             {
                 output.accept(location, () -> new ByteArrayInputStream(data));
             }
@@ -187,7 +188,8 @@ public final class EncryptedResourcePack implements PackResources
         }
     }
 
-    static Map<ResourceLocation, byte[]> decryptBundle(Path bundlePath, String keyId) throws IOException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException
+    static Map<ResourceLocation, byte[]> decryptBundle(Path bundlePath, String keyId) throws IOException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException,
+        NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException
     {
         byte[] encryptedFile = Files.readAllBytes(bundlePath);
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(encryptedFile)))

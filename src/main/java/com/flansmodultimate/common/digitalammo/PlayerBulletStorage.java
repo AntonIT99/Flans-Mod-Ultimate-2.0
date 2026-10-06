@@ -14,7 +14,8 @@ public final class PlayerBulletStorage
     private static final int DEFAULT_AMOUNT = 100;
     private static final int DEFAULT_MAX_AMOUNT = 1000;
 
-    private PlayerBulletStorage() {}
+    private PlayerBulletStorage()
+    {}
 
     public static PlayerBulletData getBulletDataByPlayer(UUID playerUUID)
     {
@@ -153,8 +154,10 @@ public final class PlayerBulletStorage
         @Override
         public boolean equals(Object obj)
         {
-            if (this == obj) return true;
-            if (!(obj instanceof PlayerBulletData other)) return false;
+            if (this == obj)
+                return true;
+            if (!(obj instanceof PlayerBulletData other))
+                return false;
             return player != null && player.equals(other.player);
         }
 

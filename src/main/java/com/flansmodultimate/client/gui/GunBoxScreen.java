@@ -164,7 +164,8 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
 
     private void renderInfoTypeStack(GuiGraphics gg, GunBoxType.GunBoxEntry entry, int x, int y)
     {
-        ModUtils.getItemStack(entry.getType()).ifPresent(stack -> {
+        ModUtils.getItemStack(entry.getType()).ifPresent(stack ->
+        {
             gg.renderItem(stack, x, y);
             gg.renderItemDecorations(font, stack, x, y);
         });
@@ -231,8 +232,7 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
 
             if (craftHighlight)
             {
-                getDisplayedCraftEntry()
-                    .map(GunBoxType.GunBoxEntry::getType)
+                getDisplayedCraftEntry().map(GunBoxType.GunBoxEntry::getType)
                     .ifPresent(type -> PacketHandler.sendToServer(new PacketBuyWeapon(menu.getPos(), type.getShortName())));
                 return true;
             }

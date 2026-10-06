@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.render;
 
 import com.flansmod.client.model.ModelCustomArmour;
+import com.flansmodultimate.api.IEquipmentPolicy;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.item.CustomArmorItem;
 import com.flansmodultimate.common.types.ArmorType;
@@ -29,7 +30,8 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     }
 
     @Override
-    public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, @NotNull T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch)
+    public void render(@NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, @NotNull T entity, float limbSwing, float limbSwingAmount,
+        float partialTicks, float ageInTicks, float netHeadYaw, float headPitch)
     {
         int overlay = LivingEntityRenderer.getOverlayCoords(entity, 0F);
         renderArmorPiece(poseStack, buffer, entity, EquipmentSlot.HEAD, packedLight, overlay);
@@ -44,12 +46,15 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
         ItemStack itemStack = entity.getItemBySlot(slot);
         Item item = itemStack.getItem();
 
-        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == slot && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour model)
+        if (item instanceof CustomArmorItem armorItem && armorItem.getEquipmentSlot() == slot
+            && ModelCache.getOrLoadTypeModel(armorItem.getConfigType()) instanceof ModelCustomArmour model)
         {
             ArmorType armorType = armorItem.getConfigType();
             ResourceLocation texture = armorType.getTexture();
             getParentModel().copyPropertiesTo((HumanoidModel<T>) model);
-            
+            if (entity instanceof IEquipmentPolicy policy && !policy.flansArmorAnimations())
+                com.flansmodultimate.client.model.EquipmentAnimationSupport.restArmor(model);
+
             setModelPartVisibility(model, slot, entity);
 
             boolean translucent = ModClientConfig.get().useTranslucentRendering(armorType);
@@ -62,33 +67,28 @@ public class CustomArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     private void setModelPartVisibility(ModelCustomArmour model, EquipmentSlot slot, LivingEntity entity)
     {
         model.setAllVisible(false);
-        
+
         switch (slot)
         {
-            case HEAD ->
-            {
+            case HEAD -> {
                 model.head.visible = true;
                 model.hat.visible = entity instanceof Player player && player.isModelPartShown(PlayerModelPart.HAT);
             }
-            case CHEST ->
-            {
+            case CHEST -> {
                 model.body.visible = true;
                 model.rightArm.visible = true;
                 model.leftArm.visible = true;
             }
-            case LEGS ->
-            {
+            case LEGS -> {
                 model.body.visible = true;
                 model.rightLeg.visible = true;
                 model.leftLeg.visible = true;
             }
-            case FEET ->
-            {
+            case FEET -> {
                 model.rightLeg.visible = true;
                 model.leftLeg.visible = true;
             }
-            default ->
-            {
+            default -> {
                 // no-op
             }
         }

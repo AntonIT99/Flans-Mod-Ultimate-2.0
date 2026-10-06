@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.teams.LoadoutSlot;
@@ -40,12 +39,17 @@ public final class TeamsLoadoutEditScreen extends Screen
     protected void init()
     {
         PacketLoadoutState state = LoadoutClientState.get();
-        if (state == null || loadoutIndex >= state.getLoadouts().size()) return;
+        if (state == null || loadoutIndex >= state.getLoadouts().size())
+            return;
         int left = width / 2 - WIDTH / 2;
         int top = height / 2 - HEIGHT / 2;
         for (LoadoutSlot slot : LoadoutSlot.values())
-            addRenderableWidget(Button.builder(Component.literal(slot.getDisplayName()), ignored -> { selectedSlot = slot; page = 0; rebuild(); })
-                .bounds(left + 7, top + 28 + slot.ordinal() * 25, 75, 20).build());
+            addRenderableWidget(Button.builder(Component.literal(slot.getDisplayName()), ignored ->
+            {
+                selectedSlot = slot;
+                page = 0;
+                rebuild();
+            }).bounds(left + 7, top + 28 + slot.ordinal() * 25, 75, 20).build());
 
         List<PacketLoadoutState.Entry> choices = choices(state);
         int start = page * PAGE_SIZE;
@@ -53,35 +57,41 @@ public final class TeamsLoadoutEditScreen extends Screen
         {
             PacketLoadoutState.Entry choice = choices.get(i);
             int local = i - start;
-            Button button = Button.builder(Component.literal(choice.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setEntry(loadoutIndex, selectedSlot, choice.typeId())))
+            Button button = Button
+                .builder(Component.literal(choice.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setEntry(loadoutIndex, selectedSlot, choice.typeId())))
                 .bounds(left + 91 + (local % 3) * 75, top + 28 + (local / 3) * 25, 70, 20).build();
             button.active = state.getRank() >= choice.unlockRank();
             addRenderableWidget(button);
         }
 
         addRenderableWidget(Button.builder(Component.literal("Clear"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setEntry(loadoutIndex, selectedSlot, "$clear")))
-            .bounds(left + 7, top + 159, 75, 20)
-            .build());
+            .bounds(left + 7, top + 159, 75, 20).build());
 
         if (page > 0)
-            addRenderableWidget(Button.builder(Component.literal("<"), ignored -> { page--; rebuild(); })
-                .bounds(left + 91, top + 159, 25, 20)
-                .build());
+            addRenderableWidget(Button.builder(Component.literal("<"), ignored ->
+            {
+                page--;
+                rebuild();
+            }).bounds(left + 91, top + 159, 25, 20).build());
 
         if ((page + 1) * PAGE_SIZE < choices.size())
-            addRenderableWidget(Button.builder(Component.literal(">"), ignored -> { page++; rebuild(); })
-                .bounds(left + 286, top + 159, 25, 20)
-                .build());
+            addRenderableWidget(Button.builder(Component.literal(">"), ignored ->
+            {
+                page++;
+                rebuild();
+            }).bounds(left + 286, top + 159, 25, 20).build());
 
         String selectedType = "";
         var selected = state.getLoadouts().get(loadoutIndex).get(selectedSlot);
-        if (selected.getItem() instanceof IFlanItem<?> item) selectedType = item.getConfigType().getOriginalShortName();
+        if (selected.getItem() instanceof IFlanItem<?> item)
+            selectedType = item.getConfigType().getOriginalShortName();
         int paint = 0;
 
         if (!selectedType.isBlank())
         {
-            addRenderableWidget(Button.builder(Component.literal("Default"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setPaint(loadoutIndex, selectedSlot, "$default")))
-                .bounds(left + 121, top + 159, 43, 20).build());
+            addRenderableWidget(
+                Button.builder(Component.literal("Default"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setPaint(loadoutIndex, selectedSlot, "$default")))
+                    .bounds(left + 121, top + 159, 43, 20).build());
             paint = 1;
         }
 
@@ -90,13 +100,14 @@ public final class TeamsLoadoutEditScreen extends Screen
             if (!selectedType.equalsIgnoreCase(reward.typeId()) || paint >= 4)
                 continue;
             int x = left + 121 + paint * 47;
-            addRenderableWidget(Button.builder(Component.literal(reward.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setPaint(loadoutIndex, selectedSlot, reward.key())))
-                .bounds(x, top + 159, 43, 20).build());
+            addRenderableWidget(
+                Button.builder(Component.literal(reward.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setPaint(loadoutIndex, selectedSlot, reward.key())))
+                    .bounds(x, top + 159, 43, 20).build());
             paint++;
         }
 
-        addRenderableWidget(Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub()))
-            .bounds(left + 246, top + 181, 65, 16).build());
+        addRenderableWidget(
+            Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub())).bounds(left + 246, top + 181, 65, 16).build());
     }
 
     private List<PacketLoadoutState.Entry> choices(PacketLoadoutState state)
@@ -136,7 +147,8 @@ public final class TeamsLoadoutEditScreen extends Screen
                 int x = left + 93 + (local % 3) * 75;
                 int y = top + 30 + (local / 3) * 25;
                 graphics.renderItem(stack, x, y);
-                if (!stack.isEmpty() && mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16) graphics.renderTooltip(font, stack, mouseX, mouseY);
+                if (!stack.isEmpty() && mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16)
+                    graphics.renderTooltip(font, stack, mouseX, mouseY);
             }
         }
         super.render(graphics, mouseX, mouseY, partialTick);

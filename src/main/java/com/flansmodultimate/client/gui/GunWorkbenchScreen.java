@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.common.inventory.GunWorkbenchMenu;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -39,7 +38,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
     private static final int ATTACH_SLOTS_GUI_Y = 89;
     private static final int GENERIC_SLOTS_GUI_Y = 115;
     private static final int SLOT_SIZE = 18;
-    private final int[] lastStats = new int[] {0, 0, 0, 0, 0};
+    private final int[] lastStats = new int[]{0, 0, 0, 0, 0};
 
     private static final int BAR_W = 80;
     private static final int BAR_H = 10;
@@ -70,7 +69,8 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         // flip button
         double m = mouseX - leftPos;
         double n = mouseY - topPos;
-        if ((button == 0 || button == 1) && m >= 146 && m <= 165 && n >= 63 && n <= 72) {
+        if ((button == 0 || button == 1) && m >= 146 && m <= 165 && n >= 63 && n <= 72)
+        {
             flipGunModel = !flipGunModel;
             return true;
         }
@@ -126,7 +126,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
             gg.drawString(font, String.valueOf(round2(getDamageStat(gunStack, gunItem))), 241, 62, color, false);
             gg.drawString(font, round2(gunType.getDispersionForDisplay(gunStack)) + "°", 241, 74, color, false);
             gg.drawString(font, String.valueOf(round2(gunType.getDisplayVerticalRecoil(gunStack))), 241, 86, color, false);
-            gg.drawString(font, round2(gunType.getReloadTime(gunStack)/ 20F) + "s", 241, 98, color, false);
+            gg.drawString(font, round2(gunType.getReloadTime(gunStack) / 20F) + "s", 241, 98, color, false);
 
             float sprinting = roundN(1F - gunType.getRecoilControl(gunStack, true, false), 2);
             float normal = roundN(1F - gunType.getRecoilControl(gunStack, false, false), 2);
@@ -161,30 +161,27 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         float dispersion = type.getDispersionForDisplay(gunStack);
         float recoil = type.getDisplayVerticalRecoil(gunStack);
         float reloadTime = type.getReloadTime(gunStack) / 20F;
-        int[] targetsPx = new int[]
-        {
-            ratioToPixels(ratioGood(damage, DMG_MIN, DMG_MAX, false)),
-            ratioToPixels(ratioGood(dispersion, DISP_MIN, DISP_MAX, true)),
-            ratioToPixels(ratioGood(recoil, RECOIL_MIN, RECOIL_MAX, true)),
-            ratioToPixels(ratioGood(reloadTime, REL_MIN, REL_MAX, true)),
-            0
-        };
+        int[] targetsPx = new int[]{ratioToPixels(ratioGood(damage, DMG_MIN, DMG_MAX, false)), ratioToPixels(ratioGood(dispersion, DISP_MIN, DISP_MAX, true)),
+            ratioToPixels(ratioGood(recoil, RECOIL_MIN, RECOIL_MAX, true)), ratioToPixels(ratioGood(reloadTime, REL_MIN, REL_MAX, true)), 0};
         renderStatBars(gg, targetsPx);
 
         // attachment icons
-        boolean[] allow = new boolean[] { type.isAllowBarrelAttachments(), type.isAllowScopeAttachments(), type.isAllowStockAttachments(), type.isAllowGripAttachments(), type.isAllowGadgetAttachments(), type.isAllowSlideAttachments(), type.isAllowPumpAttachments(), type.isAllowAccessoryAttachments() };
+        boolean[] allow = new boolean[]{type.isAllowBarrelAttachments(), type.isAllowScopeAttachments(), type.isAllowStockAttachments(), type.isAllowGripAttachments(),
+            type.isAllowGadgetAttachments(), type.isAllowSlideAttachments(), type.isAllowPumpAttachments(), type.isAllowAccessoryAttachments()};
 
         for (int m = 0; m < allow.length; m++)
         {
             if (allow[m])
-                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (m * SLOT_SIZE), topPos + ATTACH_SLOTS_GUI_Y - 1, 340F + (m * SLOT_SIZE), 136F, SLOT_SIZE, SLOT_SIZE, 512, 256);
+                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (m * SLOT_SIZE), topPos + ATTACH_SLOTS_GUI_Y - 1, 340F + (m * SLOT_SIZE), 136F,
+                    SLOT_SIZE, SLOT_SIZE, 512, 256);
         }
 
         // generic attachment slot backgrounds
         for (int x = 0; x < 8; x++)
         {
             if (x < type.getNumGenericAttachmentSlots())
-                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (SLOT_SIZE * x), topPos + GENERIC_SLOTS_GUI_Y - 1, 340F, 100F, SLOT_SIZE, SLOT_SIZE, 512, 256);
+                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + ATTACH_SLOTS_GUI_X + (SLOT_SIZE * x), topPos + GENERIC_SLOTS_GUI_Y - 1, 340F, 100F, SLOT_SIZE,
+                    SLOT_SIZE, 512, 256);
         }
 
         List<Paintjob> applicable = type.getApplicablePaintjobs();
@@ -227,7 +224,8 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         GunType type = gunItem.getConfigType();
 
         String[] text = {"Barrel", "Scope", "Stock", "Grip", "Gadget", "Slide", "Pump", "Accessory"};
-        boolean[] allow = {type.isAllowBarrelAttachments(), type.isAllowScopeAttachments(), type.isAllowStockAttachments(), type.isAllowGripAttachments(), type.isAllowGadgetAttachments(), type.isAllowSlideAttachments(), type.isAllowPumpAttachments(), type.isAllowAccessoryAttachments()};
+        boolean[] allow = {type.isAllowBarrelAttachments(), type.isAllowScopeAttachments(), type.isAllowStockAttachments(), type.isAllowGripAttachments(),
+            type.isAllowGadgetAttachments(), type.isAllowSlideAttachments(), type.isAllowPumpAttachments(), type.isAllowAccessoryAttachments()};
 
         int guiX = mouseX - leftPos;
         int guiY = mouseY - topPos;
@@ -237,10 +235,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         {
             int slotX = ATTACH_SLOTS_GUI_X + a * SLOT_SIZE;
 
-            if (allow[a]
-                && guiX >= slotX && guiX < slotX + SLOT_SIZE
-                && guiY >= slotY && guiY < slotY + SLOT_SIZE
-                && menu.isAttachmentSlotEmpty(a))
+            if (allow[a] && guiX >= slotX && guiX < slotX + SLOT_SIZE && guiY >= slotY && guiY < slotY + SLOT_SIZE && menu.isAttachmentSlotEmpty(a))
             {
                 hoveringModSlotTooltip = Component.literal(text[a]);
                 return;
@@ -314,7 +309,8 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
             for (int x = 0; x < 2; x++)
             {
                 int idx = 2 * y + x;
-                if (idx >= num) continue;
+                if (idx >= num)
+                    continue;
 
                 int slotX = 181 + x * SLOT_SIZE;
                 int slotY = 150 + y * SLOT_SIZE;
@@ -346,7 +342,8 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
         for (int i = 0; i < needed.size(); i++)
         {
             ItemStack want = needed.get(i);
-            if (want == null || want.isEmpty()) continue;
+            if (want == null || want.isEmpty())
+                continue;
 
             int haveCount = InventoryHelper.countInInventory(inv, want);
             boolean enough = haveCount >= want.getCount();
@@ -394,7 +391,7 @@ public class GunWorkbenchScreen extends AbstractContainerScreen<GunWorkbenchMenu
                 // control stat
                 gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239, topPos + 60 + (12 * k), 340F, 80F, 32, BAR_H, 512, 256);
                 gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239 + 26, topPos + 60 + (12 * k), 341F, 90F, 28, BAR_H, 512, 256);
-                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239 + 26 + 28,topPos + 60 + (12 * k), 394F, 70F, 32, BAR_H, 512, 256);
+                gg.blit(FlansModTextures.TEXTURE_GUI_GUNWORKBENCH, leftPos + 239 + 26 + 28, topPos + 60 + (12 * k), 394F, 70F, 32, BAR_H, 512, 256);
                 continue;
             }
 

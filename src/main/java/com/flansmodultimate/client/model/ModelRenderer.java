@@ -91,17 +91,17 @@ public class ModelRenderer implements IModelRenderer
 
     public ModelRenderer(ModelBase model)
     {
-        this((IModelBase)model);
+        this((IModelBase) model);
     }
 
     public ModelRenderer(ModelBase model, String boxNameIn)
     {
-        this((IModelBase)model, boxNameIn);
+        this((IModelBase) model, boxNameIn);
     }
 
     public ModelRenderer(ModelBase model, int texOffX, int texOffY)
     {
-        this((IModelBase)model, texOffX, texOffY);
+        this((IModelBase) model, texOffX, texOffY);
     }
 
     public void addChild(ModelRenderer renderer)
@@ -151,7 +151,8 @@ public class ModelRenderer implements IModelRenderer
 
     protected void addBox(float offX, float offY, float offZ, int width, int height, int depth, float scaleFactor, boolean mirrored)
     {
-        cubeList.add(new ModelPart.Cube(textureOffsetX, textureOffsetY, offX, offY, offZ, width, height, depth, scaleFactor, scaleFactor, scaleFactor, mirrored, 1.0F, 1.0F, Set.of(Direction.values())));
+        cubeList.add(new ModelPart.Cube(textureOffsetX, textureOffsetY, offX, offY, offZ, width, height, depth, scaleFactor, scaleFactor, scaleFactor, mirrored, 1.0F, 1.0F,
+            Set.of(Direction.values())));
     }
 
     @Override
@@ -162,7 +163,8 @@ public class ModelRenderer implements IModelRenderer
         childModels.add(modelRenderer);
     }
 
-    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale)
+    public void render(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale)
     {
         if (!isVisible() || (cubeList.isEmpty() && childModels.isEmpty()))
             return;
@@ -210,7 +212,7 @@ public class ModelRenderer implements IModelRenderer
         textureHeight = textureHeightIn;
         return this;
     }
-    
+
     public boolean isVisible()
     {
         return !isHidden && showModel;
@@ -234,10 +236,22 @@ public class ModelRenderer implements IModelRenderer
             return values.hashCode();
         }
 
-        ChildList(ModelRenderer owner) { this.owner = owner; }
+        ChildList(ModelRenderer owner)
+        {
+            this.owner = owner;
+        }
 
-        @Override public int size() { return values.size(); }
-        @Override public ModelRenderer get(int index) { return values.get(index); }
+        @Override
+        public int size()
+        {
+            return values.size();
+        }
+
+        @Override
+        public ModelRenderer get(int index)
+        {
+            return values.get(index);
+        }
 
         @Override
         public ModelRenderer set(int index, ModelRenderer value)

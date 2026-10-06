@@ -30,8 +30,10 @@ public final class RecipeResolver
      * The token may include a legacy metadata suffix such as {@code dyePowder.1}; that suffix is parsed before
      * delegating to {@link #resolve(String, int, int, IContentProvider)}.
      *
-     * @param token    raw recipe token from a content pack recipe definition
-     * @param provider content pack context used for short name alias lookup
+     * @param token
+     *            raw recipe token from a content pack recipe definition
+     * @param provider
+     *            content pack context used for short name alias lookup
      * @return the resolved stack, or {@link ItemStack#EMPTY} when the token cannot be resolved
      */
     public static ItemStack resolve(String token, @Nullable IContentProvider provider)
@@ -50,10 +52,14 @@ public final class RecipeResolver
      * registered {@code flansmod:<id>}, registered {@code flansmodapocalypse:<id>}, registered
      * {@code minecraft:<id>}, legacy item mapping, then vanilla registry path fallback.
      *
-     * @param id       raw item id or legacy recipe token
-     * @param amount   requested stack size
-     * @param damage   legacy metadata value parsed from tokens like {@code cloth.14}
-     * @param provider content pack context used for short name alias lookup
+     * @param id
+     *            raw item id or legacy recipe token
+     * @param amount
+     *            requested stack size
+     * @param damage
+     *            legacy metadata value parsed from tokens like {@code cloth.14}
+     * @param provider
+     *            content pack context used for short name alias lookup
      * @return the resolved stack, or {@link ItemStack#EMPTY} when no registered item can be found
      */
     public static ItemStack resolve(String id, int amount, int damage, @Nullable IContentProvider provider)
@@ -76,8 +82,10 @@ public final class RecipeResolver
      * The token may include a legacy metadata suffix such as {@code dyePowder.1}; that suffix is parsed before
      * delegating to {@link #resolveItemId(String, int, IContentProvider)}.
      *
-     * @param token    raw recipe token from a content pack recipe definition
-     * @param provider content pack context used for short name alias lookup
+     * @param token
+     *            raw recipe token from a content pack recipe definition
+     * @param provider
+     *            content pack context used for short name alias lookup
      * @return the resolved item id, or {@link Optional#empty()} when the token cannot be resolved
      */
     public static Optional<ResourceLocation> resolveItemId(String token, @Nullable IContentProvider provider)
@@ -97,9 +105,12 @@ public final class RecipeResolver
      * registered {@code flansmod:<id>}, registered {@code flansmodapocalypse:<id>}, registered
      * {@code minecraft:<id>}, legacy item mapping, then vanilla registry path fallback.
      *
-     * @param id       raw item id or legacy recipe token
-     * @param damage   legacy metadata value parsed from tokens like {@code wool.11}
-     * @param provider content pack context used for short name alias lookup
+     * @param id
+     *            raw item id or legacy recipe token
+     * @param damage
+     *            legacy metadata value parsed from tokens like {@code wool.11}
+     * @param provider
+     *            content pack context used for short name alias lookup
      * @return the resolved item id, or {@link Optional#empty()} when no known id can be found
      */
     public static Optional<ResourceLocation> resolveItemId(String id, int damage, @Nullable IContentProvider provider)
@@ -118,7 +129,8 @@ public final class RecipeResolver
      * or generated items. Namespaced tokens keep their namespace; unnamespaced tokens are written as
      * {@code flansmod:<sanitized token>}.
      *
-     * @param token raw recipe token from a content pack recipe definition
+     * @param token
+     *            raw recipe token from a content pack recipe definition
      * @return fallback item id for generated recipe JSON
      */
     public static ResourceLocation createFallbackItemId(String token)
@@ -180,8 +192,7 @@ public final class RecipeResolver
 
     private static boolean isLegacyEquipmentId(String id)
     {
-        String[] prefixes = {"sword", "pickaxe", "hatchet", "axe", "shovel", "hoe",
-            "helmet", "chestplate", "leggings", "boots"};
+        String[] prefixes = {"sword", "pickaxe", "hatchet", "axe", "shovel", "hoe", "helmet", "chestplate", "leggings", "boots"};
         String[] materials = {"wood", "stone", "iron", "steel", "gold", "diamond"};
         for (String prefix : prefixes)
         {
@@ -208,8 +219,7 @@ public final class RecipeResolver
         String path = ResourceUtils.sanitize(split[1]);
         switch (namespace)
         {
-            case FlansMod.FLANSMOD_ID ->
-            {
+            case FlansMod.FLANSMOD_ID -> {
                 String aliasedId = ContentManager.getShortnameAliasInContentPack(path, provider);
                 result = resolution.flansmod(aliasedId);
                 if (result.isPresent())
@@ -220,12 +230,10 @@ public final class RecipeResolver
 
                 return Optional.empty();
             }
-            case FlansMod.APOCALYPSE_ID ->
-            {
+            case FlansMod.APOCALYPSE_ID -> {
                 return resolution.registered(namespace, apocalypseRecipePath(path));
             }
-            case "minecraft" ->
-            {
+            case "minecraft" -> {
                 result = resolution.registered("minecraft", path);
                 if (result.isPresent())
                     return result;
@@ -408,9 +416,7 @@ public final class RecipeResolver
 
     private static ItemStack getLegacyRecipeElement(String id, int amount, int damage)
     {
-        return getLegacyRecipeItem(id, damage)
-            .map(item -> stack(item, amount))
-            .orElse(ItemStack.EMPTY);
+        return getLegacyRecipeItem(id, damage).map(item -> stack(item, amount)).orElse(ItemStack.EMPTY);
     }
 
     private static Optional<ResourceLocation> getLegacyRecipeItemId(String id, int damage)

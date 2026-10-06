@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-
 public abstract class ModelPoolEntry
 {
     public String name;
@@ -23,16 +22,16 @@ public abstract class ModelPoolEntry
     {
         File file = null;
 
-        for(int index = 0; index < fileExtensions.length && (file == null || !file.exists()); index++)
+        for (int index = 0; index < fileExtensions.length && (file == null || !file.exists()); index++)
         {
             String absPath = path;
 
-            if(!path.endsWith("." + fileExtensions[index]))
+            if (!path.endsWith("." + fileExtensions[index]))
                 absPath += "." + fileExtensions[index];
 
             file = new File(absPath);
         }
-        if(file == null || !file.exists())
+        if (file == null || !file.exists())
             return null;
         return file;
     }
@@ -44,7 +43,8 @@ public abstract class ModelPoolEntry
      * to allow for vertex transformation. If a transformation group does not exist,
      * a new one will be created.
      *
-     * @param groupName the name of the transformation group you want to switch to
+     * @param groupName
+     *            the name of the transformation group you want to switch to
      */
     protected void setGroup(String groupName)
     {
@@ -56,9 +56,12 @@ public abstract class ModelPoolEntry
      * to allow for vertex transformation. If a transformation group does not exist,
      * a new one will be created.
      *
-     * @param groupName the name of the transformation group you want to switch to
-     * @param bone      the Bone this transformation group is attached to
-     * @param weight    the weight of the transformation group
+     * @param groupName
+     *            the name of the transformation group you want to switch to
+     * @param bone
+     *            the Bone this transformation group is attached to
+     * @param weight
+     *            the weight of the transformation group
      */
     protected void setGroup(String groupName, Bone bone, double weight)
     {
@@ -72,8 +75,9 @@ public abstract class ModelPoolEntry
      * set a default texture, either at initialization or before
      * rendering.
      *
-     * @param groupName The name of the texture group. If the texture
-     *                  group doesn't exist, it creates a new group automatically.
+     * @param groupName
+     *            The name of the texture group. If the texture
+     *            group doesn't exist, it creates a new group automatically.
      */
     protected void setTextureGroup(String groupName)
     {
@@ -88,12 +92,12 @@ public abstract class ModelPoolEntry
         Iterator<String> groupsItr = groupsCol.iterator();
         Iterator<String> texturesItr = texturesCol.iterator();
 
-        while(groupsItr.hasNext())
+        while (groupsItr.hasNext())
         {
             int nameIdx = 0;
             String groupKey = groupsItr.next();
             String currentGroup = name + "_" + nameIdx + ":" + groupKey;
-            while(!groupsMap.isEmpty() && groupsMap.containsKey(currentGroup))
+            while (!groupsMap.isEmpty() && groupsMap.containsKey(currentGroup))
             {
                 nameIdx++;
                 currentGroup = name + "_" + nameIdx + ":" + groupKey;
@@ -101,12 +105,12 @@ public abstract class ModelPoolEntry
             groupsMap.put(currentGroup, groups.get(groupKey));
         }
 
-        while(texturesItr.hasNext())
+        while (texturesItr.hasNext())
         {
             int nameIdx = 0;
             String groupKey = texturesItr.next();
             String currentGroup = name + "_" + nameIdx + ":" + groupKey;
-            while(!groupsMap.isEmpty() && texturesMap.containsKey(currentGroup))
+            while (!groupsMap.isEmpty() && texturesMap.containsKey(currentGroup))
             {
                 nameIdx++;
                 currentGroup = name + "_" + nameIdx + ":" + groupKey;

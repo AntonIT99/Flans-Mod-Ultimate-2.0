@@ -1,10 +1,9 @@
 package com.flansmodultimate.client.input;
 
-import org.lwjgl.glfw.GLFW;
-
 import com.flansmodultimate.config.ModClientConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
@@ -12,7 +11,8 @@ import net.minecraft.world.InteractionHand;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GunInputState
 {
-    public record ButtonState(boolean isPressed, boolean isPrevPressed) {}
+    public record ButtonState(boolean isPressed, boolean isPrevPressed)
+    {}
 
     private static ButtonState primaryFunctionState = new ButtonState(false, false);
     private static ButtonState offhandPrimaryFunctionState = new ButtonState(false, false);
@@ -69,7 +69,6 @@ public final class GunInputState
 
     public static ButtonState getSecondaryFunctionState(InteractionHand hand, boolean mainHandEmpty)
     {
-        return getSecondaryButton(hand, mainHandEmpty) == ModClientConfig.get().aimButton
-            ? secondaryFunctionState : primaryFunctionState;
+        return getSecondaryButton(hand, mainHandEmpty) == ModClientConfig.get().aimButton ? secondaryFunctionState : primaryFunctionState;
     }
 }

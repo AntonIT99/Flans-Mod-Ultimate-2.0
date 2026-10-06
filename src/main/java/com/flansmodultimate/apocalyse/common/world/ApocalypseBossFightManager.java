@@ -21,14 +21,11 @@ public final class ApocalypseBossFightManager
     private static final int BOSS_SPAWN_HEIGHT = 22;
 
     private ApocalypseBossFightManager()
-    {
-    }
+    {}
 
     public static void tryActivate(Level level, BlockPos placedPos, @Nullable LivingEntity placer)
     {
-        if (!(level instanceof ServerLevel serverLevel)
-            || !level.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL)
-            || !ModApocalypseConfig.apocalypseMobsEnabled()
+        if (!(level instanceof ServerLevel serverLevel) || !level.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL) || !ModApocalypseConfig.apocalypseMobsEnabled()
             || !level.getBlockState(placedPos.below()).is(Blocks.BEDROCK))
             return;
 
@@ -83,9 +80,7 @@ public final class ApocalypseBossFightManager
 
     private static boolean isBossAltar(Level level, BlockPos corner)
     {
-        if (!isPowerCubeOnBedrock(level, corner)
-            || !isPowerCubeOnBedrock(level, corner.offset(3, 0, 0))
-            || !isPowerCubeOnBedrock(level, corner.offset(0, 0, 3))
+        if (!isPowerCubeOnBedrock(level, corner) || !isPowerCubeOnBedrock(level, corner.offset(3, 0, 0)) || !isPowerCubeOnBedrock(level, corner.offset(0, 0, 3))
             || !isPowerCubeOnBedrock(level, corner.offset(3, 0, 3)))
             return false;
 
@@ -128,8 +123,7 @@ public final class ApocalypseBossFightManager
             boss.setTarget(placer);
         EntityPlatform.finalizeSpawnWithEvent(boss, level, level.getCurrentDifficultyAt(center), MobSpawnType.TRIGGERED);
         level.addFreshEntity(boss);
-        level.players().stream()
-            .filter(player -> player.distanceToSqr(center.getX(), center.getY(), center.getZ()) < 256.0D * 256.0D)
+        level.players().stream().filter(player -> player.distanceToSqr(center.getX(), center.getY(), center.getZ()) < 256.0D * 256.0D)
             .forEach(player -> player.displayClientMessage(Component.translatable("message.flansmodultimate.apocalypse_boss_awakened"), false));
     }
 

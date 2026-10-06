@@ -99,9 +99,7 @@ public class PacksManagerMod
         Path statePath = resolveExtractionStatePath();
         int resolvedPacksVersion = readBundledPacksVersion();
         ExtractionState previousState = readExtractionState(statePath).orElse(null);
-        int lastExtractedPacksVersion = Optional.ofNullable(previousState)
-            .map(ExtractionState::effectiveLastExtractedPacksVersion)
-            .orElse(NO_EXTRACTED_PACKS_VERSION);
+        int lastExtractedPacksVersion = Optional.ofNullable(previousState).map(ExtractionState::effectiveLastExtractedPacksVersion).orElse(NO_EXTRACTED_PACKS_VERSION);
 
         writeResolvingState(statePath, flanOutputDir, resolvedPacksVersion, lastExtractedPacksVersion);
         try
@@ -128,7 +126,8 @@ public class PacksManagerMod
         return Optional.ofNullable(previousState).map(state -> state.isCompleteForAtLeast(resolvedPacksVersion, flanOutputDir)).orElse(false);
     }
 
-    private void extractBundledPacks(Path flanOutputDir, Path statePath, @Nullable ExtractionState previousState, int resolvedPacksVersion, int lastExtractedPacksVersion) throws IOException
+    private void extractBundledPacks(Path flanOutputDir, Path statePath, @Nullable ExtractionState previousState, int resolvedPacksVersion, int lastExtractedPacksVersion)
+        throws IOException
     {
         prepareFlanOutputDir(flanOutputDir, previousState, resolvedPacksVersion);
         writeResolvingState(statePath, flanOutputDir, resolvedPacksVersion, lastExtractedPacksVersion);
@@ -157,9 +156,7 @@ public class PacksManagerMod
         Path gameDir = PlatformPaths.gameDir().toAbsolutePath().normalize();
         Path defaultFlanPath = gameDir.resolve(readContentPacksRelativePath()).toAbsolutePath().normalize();
         Path fallbackFlanPath = gameDir.resolve(FALLBACK_FLAN_DIR_NAME).toAbsolutePath().normalize();
-        Path resolvedPath = !Files.exists(defaultFlanPath) && Files.exists(fallbackFlanPath)
-            ? fallbackFlanPath
-            : defaultFlanPath;
+        Path resolvedPath = !Files.exists(defaultFlanPath) && Files.exists(fallbackFlanPath) ? fallbackFlanPath : defaultFlanPath;
 
         if (resolvedPath.equals(gameDir))
             throw new IllegalStateException("Refusing to use the game directory itself as the flan output directory. Check " + CONTENT_LOADING_CONFIG_FILE_NAME + ".");
@@ -212,7 +209,8 @@ public class PacksManagerMod
                 int version = Integer.parseInt(value);
                 if (version <= NO_EXTRACTED_PACKS_VERSION)
                 {
-                    log.error("Bundled packs version in '{}' must be greater than {} but was '{}'. Falling back to {}.", BUNDLED_PACKS_VERSION_RESOURCE, NO_EXTRACTED_PACKS_VERSION, value, FALLBACK_BUNDLED_PACKS_VERSION);
+                    log.error("Bundled packs version in '{}' must be greater than {} but was '{}'. Falling back to {}.", BUNDLED_PACKS_VERSION_RESOURCE, NO_EXTRACTED_PACKS_VERSION,
+                        value, FALLBACK_BUNDLED_PACKS_VERSION);
                     return FALLBACK_BUNDLED_PACKS_VERSION;
                 }
 
@@ -290,8 +288,7 @@ public class PacksManagerMod
         do
         {
             candidate = path.resolveSibling(path.getFileName() + "_" + suffix++);
-        }
-        while (Files.exists(candidate));
+        } while (Files.exists(candidate));
         return candidate;
     }
 
@@ -334,19 +331,13 @@ public class PacksManagerMod
         }
     }
 
-    private void writeExtractionState(Path statePath, Path flanOutputDir, ExtractionStatus state, int resolvedPacksVersion, int lastExtractedPacksVersion, @Nullable String message) throws IOException
+    private void writeExtractionState(Path statePath, Path flanOutputDir, ExtractionStatus state, int resolvedPacksVersion, int lastExtractedPacksVersion, @Nullable String message)
+        throws IOException
     {
         ensureDirectoryExists(statePath.getParent());
 
-        ExtractionState extractionState = new ExtractionState(
-            EXTRACTION_STATE_PROTOCOL_VERSION,
-            state,
-            resolvedPacksVersion,
-            lastExtractedPacksVersion,
-            normalizePathForState(flanOutputDir),
-            LocalDateTime.now().toString(),
-            message
-        );
+        ExtractionState extractionState = new ExtractionState(EXTRACTION_STATE_PROTOCOL_VERSION, state, resolvedPacksVersion, lastExtractedPacksVersion,
+            normalizePathForState(flanOutputDir), LocalDateTime.now().toString(), message);
         Path tempPath = statePath.resolveSibling(statePath.getFileName() + ".tmp");
         Files.writeString(tempPath, gson.toJson(extractionState), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
@@ -420,7 +411,8 @@ public class PacksManagerMod
         log.info("Extracted: {} -> {} ({} bytes)", entry.getName(), outputPath, written);
     }
 
-    private record ExtractionState(int protocolVersion, ExtractionStatus state, int resolvedPacksVersion, int lastExtractedPacksVersion, @Nullable String flanOutputPath, String updatedAt, @Nullable String message)
+    private record ExtractionState(int protocolVersion, ExtractionStatus state, int resolvedPacksVersion, int lastExtractedPacksVersion, @Nullable String flanOutputPath,
+        String updatedAt, @Nullable String message)
     {
         private int effectiveLastExtractedPacksVersion()
         {
@@ -433,9 +425,7 @@ public class PacksManagerMod
 
         private boolean isCompleteForAtLeast(int expectedPacksVersion, Path expectedFlanOutputDir)
         {
-            return protocolVersion == EXTRACTION_STATE_PROTOCOL_VERSION
-                && state == ExtractionStatus.COMPLETE
-                && effectiveLastExtractedPacksVersion() >= expectedPacksVersion
+            return protocolVersion == EXTRACTION_STATE_PROTOCOL_VERSION && state == ExtractionStatus.COMPLETE && effectiveLastExtractedPacksVersion() >= expectedPacksVersion
                 && normalizePathForState(expectedFlanOutputDir).equals(flanOutputPath);
         }
     }
@@ -443,10 +433,8 @@ public class PacksManagerMod
     private enum ExtractionStatus
     {
         @SerializedName("resolving")
-        RESOLVING,
-        @SerializedName("complete")
-        COMPLETE,
-        @SerializedName("failed")
+        RESOLVING, @SerializedName("complete")
+        COMPLETE, @SerializedName("failed")
         FAILED
     }
 }

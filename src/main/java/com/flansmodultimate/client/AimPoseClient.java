@@ -54,11 +54,9 @@ public final class AimPoseClient
         if (serverRule == EnumPlayerAimPose.FREE_CHOICE)
             message = Component.translatable("message.flansmodultimate.aim_pose", choice);
         else if (serverRule == EnumPlayerAimPose.DYNAMIC)
-            message = Component.translatable("message.flansmodultimate.aim_pose_server_forced", choice,
-                ConfigOptionFactory.valueLabel(EnumAimPose.class, EnumAimPose.DYNAMIC));
+            message = Component.translatable("message.flansmodultimate.aim_pose_server_forced", choice, ConfigOptionFactory.valueLabel(EnumAimPose.class, EnumAimPose.DYNAMIC));
         else
-            message = Component.translatable("message.flansmodultimate.aim_pose_server_forced", choice,
-                ConfigOptionFactory.valueLabel(EnumAimPose.class, EnumAimPose.ENFORCED));
+            message = Component.translatable("message.flansmodultimate.aim_pose_server_forced", choice, ConfigOptionFactory.valueLabel(EnumAimPose.class, EnumAimPose.ENFORCED));
 
         minecraft.player.displayClientMessage(message, true);
     }

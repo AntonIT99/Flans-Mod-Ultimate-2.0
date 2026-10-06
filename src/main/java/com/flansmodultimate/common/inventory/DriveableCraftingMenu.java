@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansModBlocks;
-
 import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.item.PartItem;
@@ -50,13 +49,8 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
 
     public static List<DriveableType> getBlueprints()
     {
-        return InfoType.getInfoTypes().values().stream()
-            .filter(DriveableType.class::isInstance)
-            .map(DriveableType.class::cast)
-            .distinct()
-            .sorted(Comparator.comparing(DriveableType::getName, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(DriveableType::getShortName, String.CASE_INSENSITIVE_ORDER))
-            .toList();
+        return InfoType.getInfoTypes().values().stream().filter(DriveableType.class::isInstance).map(DriveableType.class::cast).distinct()
+            .sorted(Comparator.comparing(DriveableType::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(DriveableType::getShortName, String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     @Override
@@ -76,8 +70,7 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
         if (ModUtils.getItem(type).isEmpty())
             return false;
         if (type.numEngines() <= 0)
-            return playerInventory.player.getAbilities().instabuild
-                || InventoryHelper.canConsumeAll(playerInventory, type.getDriveableRecipe());
+            return playerInventory.player.getAbilities().instabuild || InventoryHelper.canConsumeAll(playerInventory, type.getDriveableRecipe());
         if (playerInventory.player.getAbilities().instabuild)
             return findBestEngine(playerInventory, type, true) != null;
         PartType engine = findBestEngine(playerInventory, type, false);
@@ -151,14 +144,8 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
         }
 
         Comparator<PartType> bestFirst = Comparator.comparingDouble(PartType::getEngineSpeed).reversed()
-            .thenComparing(Comparator.comparingDouble(PartType::getEnginePower).reversed())
-            .thenComparing(PartType::getShortName, String.CASE_INSENSITIVE_ORDER);
-        PartType best = counts.entrySet().stream()
-            .filter(entry -> creative || entry.getValue() >= enginesNeeded)
-            .map(Map.Entry::getKey)
-            .sorted(bestFirst)
-            .findFirst()
-            .orElse(null);
+            .thenComparing(Comparator.comparingDouble(PartType::getEnginePower).reversed()).thenComparing(PartType::getShortName, String.CASE_INSENSITIVE_ORDER);
+        PartType best = counts.entrySet().stream().filter(entry -> creative || entry.getValue() >= enginesNeeded).map(Map.Entry::getKey).sorted(bestFirst).findFirst().orElse(null);
         if (best != null)
             return best;
 
@@ -177,8 +164,9 @@ public final class DriveableCraftingMenu extends AbstractContainerMenu
     @Override
     public boolean stillValid(@NotNull Player player)
     {
-        return access.evaluate((level, pos) -> (level.getBlockState(pos).is(FlansModBlocks.vehicleCraftingTable.get()) || level.getBlockState(pos).is(FlansModBlocks.gunWorkbench.get()))
-            && player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= MAX_DISTANCE_SQUARED, false);
+        return access
+            .evaluate((level, pos) -> (level.getBlockState(pos).is(FlansModBlocks.vehicleCraftingTable.get()) || level.getBlockState(pos).is(FlansModBlocks.gunWorkbench.get()))
+                && player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= MAX_DISTANCE_SQUARED, false);
     }
 
     @Override

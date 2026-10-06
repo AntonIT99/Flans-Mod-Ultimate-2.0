@@ -184,9 +184,10 @@ public class RotatedAxes
 
     private void convertMatrixToAngles()
     {
-        rotationYaw = (float)Math.atan2(rotationMatrix.m20(), rotationMatrix.m00()) * 180F / Mth.PI;
-        rotationPitch = (float)Math.atan2(-rotationMatrix.m10(), Math.sqrt(rotationMatrix.m12() * rotationMatrix.m12() + rotationMatrix.m11() * rotationMatrix.m11())) * 180F / Mth.PI;
-        rotationRoll = (float)Math.atan2(rotationMatrix.m12(), rotationMatrix.m11()) * 180F / Mth.PI;
+        rotationYaw = (float) Math.atan2(rotationMatrix.m20(), rotationMatrix.m00()) * 180F / Mth.PI;
+        rotationPitch = (float) Math.atan2(-rotationMatrix.m10(), Math.sqrt(rotationMatrix.m12() * rotationMatrix.m12() + rotationMatrix.m11() * rotationMatrix.m11())) * 180F
+            / Mth.PI;
+        rotationRoll = (float) Math.atan2(rotationMatrix.m12(), rotationMatrix.m11()) * 180F / Mth.PI;
     }
 
     public RotatedAxes findLocalAxesGlobally(RotatedAxes in)

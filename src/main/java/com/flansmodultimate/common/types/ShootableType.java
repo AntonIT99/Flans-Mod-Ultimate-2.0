@@ -116,8 +116,7 @@ public abstract class ShootableType extends InfoType
         public final float kFragDamage;
         public final float dragLength;
 
-        EnumFragType(float defaultMetalGrams, float fragmentMassGrams, float effectiveFraction,
-                     float kFragDamage, float dragLength)
+        EnumFragType(float defaultMetalGrams, float fragmentMassGrams, float effectiveFraction, float kFragDamage, float dragLength)
         {
             this.defaultMetalGrams = defaultMetalGrams;
             this.fragmentMassGrams = fragmentMassGrams;
@@ -134,7 +133,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected boolean hasDynamicLight;
 
-    //Item Stuff
+    // Item Stuff
     /** The maximum number of grenades that can be stacked together */
     @Getter
     protected int maxStackSize = 1;
@@ -181,7 +180,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected float reloadTimeMultiplier = 1F;
 
-    //Physics and Stuff
+    // Physics and Stuff
     /** The speed at which the grenade should fall */
     @Getter
     protected float fallSpeed = 1F;
@@ -201,7 +200,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected float mass;
 
-    //Damage to hit entities
+    // Damage to hit entities
     /** Amount of damage to impart upon various entities */
     @Getter
     protected final DamageStats damage = new DamageStats();
@@ -213,7 +212,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected float ignoreArmorDamageFactor;
 
-    //Detonation Conditions
+    // Detonation Conditions
     /** If 0, then the grenade will last until some other detonation condition is met, else the grenade will detonate after this time (in ticks) */
     @Getter
     protected int fuse;
@@ -236,7 +235,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected int primeDelay;
 
-    //Detonation Stuff
+    // Detonation Stuff
     /**
      * Explosive mass in kg TNT equivalent. Authored as {@code ExplosiveMassTNTg} (grams) or
      * {@code ExplosiveMassTNTKg} (kilograms). Used for the new damage system. Will be ignored when 0
@@ -276,7 +275,7 @@ public abstract class ShootableType extends InfoType
     @Getter
     protected String detonateSound = StringUtils.EMPTY;
 
-    //Particles and Smoke
+    // Particles and Smoke
     /** Whether trail particles are given off */
     @Getter
     protected boolean trailParticles;
@@ -331,7 +330,7 @@ public abstract class ShootableType extends InfoType
         readLines("AddAmmoFor", file).ifPresent(lines -> lines.forEach(type -> additionalAmmoMapping.computeIfAbsent(type, key -> new ArrayList<>()).add(this)));
         readValuesInLines("AddToAmmoGroup", file).ifPresent(lines -> lines.forEach(values -> joinAmmoGroup(values, file)));
 
-        //Item Stuff
+        // Item Stuff
         maxStackSize = readValue("StackSize", maxStackSize, file);
         maxStackSize = readValue("MaxStackSize", maxStackSize, file);
         maxStackSize = Math.max(maxStackSize, recipeOutput);
@@ -370,7 +369,7 @@ public abstract class ShootableType extends InfoType
             mass = 0F;
         }
 
-        //Hit stuff
+        // Hit stuff
         damage.setDamage(readValue("Damage", damage.getDamage(), file));
         damage.setDamage(readValue("DamageVsEntity", damage.getDamage(), file));
         damage.setDamage(readValue("HitEntityDamage", damage.getDamage(), file));
@@ -384,7 +383,8 @@ public abstract class ShootableType extends InfoType
         damage.setDamageVsVehicles(readValue("DamageVsVehicles", damage.getDamageVsVehicles(), file));
         damage.setDamageVsVehicles(readValue("DamageVsDriveable", damage.getDamageVsVehicles(), file));
         damage.setDamageVsVehicles(readValue("DamageVsDriveables", damage.getDamageVsVehicles(), file));
-        damage.setReadDamageVsVehicles(file.hasConfigLine("DamageVsVehicle") || file.hasConfigLine("DamageVsVehicles") || file.hasConfigLine("DamageVsDriveable") || file.hasConfigLine("DamageVsDriveables"));
+        damage.setReadDamageVsVehicles(
+            file.hasConfigLine("DamageVsVehicle") || file.hasConfigLine("DamageVsVehicles") || file.hasConfigLine("DamageVsDriveable") || file.hasConfigLine("DamageVsDriveables"));
         damage.setDamageVsPlanes(readValue("DamageVsPlane", damage.getDamageVsPlanes(), file));
         damage.setDamageVsPlanes(readValue("DamageVsPlanes", damage.getDamageVsPlanes(), file));
         damage.setReadDamageVsPlanes(file.hasConfigLine("DamageVsPlane") || file.hasConfigLine("DamageVsPlanes"));
@@ -407,7 +407,7 @@ public abstract class ShootableType extends InfoType
         primeDelay = readValue("PrimeDelay", primeDelay, file);
         primeDelay = readValue("TriggerDelay", primeDelay, file);
 
-        //Detonation
+        // Detonation
         fireRadius = readValue("FireRadius", fireRadius, file);
         fireRadius = readValue("Fire", fireRadius, file);
         explosionBreaksBlocks = readValue("ExplosionBreaksBlocks", explosionBreaksBlocks, file);
@@ -442,7 +442,8 @@ public abstract class ShootableType extends InfoType
         explosionBlastDamage.setDamageVsVehicles(readValue("ExplosionDamageVsVehicles", explosionBlastDamage.getDamageVsVehicles(), file));
         explosionBlastDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDriveable", explosionBlastDamage.getDamageVsVehicles(), file));
         explosionBlastDamage.setDamageVsVehicles(readValue("ExplosionDamageVsDriveables", explosionBlastDamage.getDamageVsVehicles(), file));
-        explosionBlastDamage.setReadDamageVsVehicles(file.hasConfigLine("ExplosionDamageVsVehicle") || file.hasConfigLine("ExplosionDamageVsVehicles") || file.hasConfigLine("ExplosionDamageVsDriveable") || file.hasConfigLine("ExplosionDamageVsDriveables"));
+        explosionBlastDamage.setReadDamageVsVehicles(file.hasConfigLine("ExplosionDamageVsVehicle") || file.hasConfigLine("ExplosionDamageVsVehicles")
+            || file.hasConfigLine("ExplosionDamageVsDriveable") || file.hasConfigLine("ExplosionDamageVsDriveables"));
         explosionBlastDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlane", explosionBlastDamage.getDamageVsPlanes(), file));
         explosionBlastDamage.setDamageVsPlanes(readValue("ExplosionDamageVsPlanes", explosionBlastDamage.getDamageVsPlanes(), file));
         explosionBlastDamage.setReadDamageVsPlanes(file.hasConfigLine("ExplosionDamageVsPlane") || file.hasConfigLine("ExplosionDamageVsPlanes"));
@@ -455,9 +456,8 @@ public abstract class ShootableType extends InfoType
         fragMetalMassGrams = readValue("FragMetalMassg", fragMetalMassGrams, file);
         fragCount = readValue("FragCount", fragCount, file);
         fragBurstHeight = readValue("FragBurstHeight", fragBurstHeight, file);
-        if (!Float.isFinite(fragMetalMassGrams) || fragMetalMassGrams < 0F
-            || !Float.isFinite(fragCount) || fragCount < 0F
-            || !Float.isFinite(fragBurstHeight) || fragBurstHeight < 0F)
+        if (!Float.isFinite(fragMetalMassGrams) || fragMetalMassGrams < 0F || !Float.isFinite(fragCount) || fragCount < 0F || !Float.isFinite(fragBurstHeight)
+            || fragBurstHeight < 0F)
         {
             logError("FragMetalMassg, FragCount and FragBurstHeight must be finite non-negative values", file);
             fragMetalMassGrams = Math.max(0F, Float.isFinite(fragMetalMassGrams) ? fragMetalMassGrams : 0F);
@@ -466,8 +466,7 @@ public abstract class ShootableType extends InfoType
         }
         explosionFragDamage.setDamage(readValue("FragDamage", explosionFragDamage.getDamage(), file));
         explosionFragDamage.setDamage(readValue("FragDamageVsEntity", explosionFragDamage.getDamage(), file));
-        explosionFragDamage.setReadDamage(fragType != EnumFragType.DEFAULT
-            || file.hasConfigLine("FragDamage") || file.hasConfigLine("FragDamageVsEntity"));
+        explosionFragDamage.setReadDamage(fragType != EnumFragType.DEFAULT || file.hasConfigLine("FragDamage") || file.hasConfigLine("FragDamageVsEntity"));
         explosionFragDamage.setDamageVsLiving(readValue("FragDamageVsLiving", explosionFragDamage.getDamageVsLiving(), file));
         explosionFragDamage.setReadDamageVsLiving(file.hasConfigLine("FragDamageVsLiving"));
         explosionFragDamage.setDamageVsPlayer(readValue("FragDamageVsPlayer", explosionFragDamage.getDamageVsPlayer(), file));
@@ -477,7 +476,8 @@ public abstract class ShootableType extends InfoType
         explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsVehicles", explosionFragDamage.getDamageVsVehicles(), file));
         explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsDriveable", explosionFragDamage.getDamageVsVehicles(), file));
         explosionFragDamage.setDamageVsVehicles(readValue("FragDamageVsDriveables", explosionFragDamage.getDamageVsVehicles(), file));
-        explosionFragDamage.setReadDamageVsVehicles(file.hasConfigLine("FragDamageVsVehicle") || file.hasConfigLine("FragDamageVsVehicles") || file.hasConfigLine("FragDamageVsDriveable") || file.hasConfigLine("FragDamageVsDriveables"));
+        explosionFragDamage.setReadDamageVsVehicles(file.hasConfigLine("FragDamageVsVehicle") || file.hasConfigLine("FragDamageVsVehicles")
+            || file.hasConfigLine("FragDamageVsDriveable") || file.hasConfigLine("FragDamageVsDriveables"));
         explosionFragDamage.setDamageVsPlanes(readValue("FragDamageVsPlane", explosionFragDamage.getDamageVsPlanes(), file));
         explosionFragDamage.setDamageVsPlanes(readValue("FragDamageVsPlanes", explosionFragDamage.getDamageVsPlanes(), file));
         explosionFragDamage.setReadDamageVsPlanes(file.hasConfigLine("FragDamageVsPlane") || file.hasConfigLine("FragDamageVsPlanes"));
@@ -492,7 +492,7 @@ public abstract class ShootableType extends InfoType
         dropItemOnDetonate = readValue("DropItemOnDetonate", dropItemOnDetonate, file);
         detonateSound = readSound("DetonateSound", detonateSound, file);
 
-        //Particles
+        // Particles
         smokeParticleCount = readValue("FlareParticleCount", smokeParticleCount, file);
         debrisParticleCount = readValue("DebrisParticleCount", debrisParticleCount, file);
         trailParticles = readValue("TrailParticles", trailParticles, file);
@@ -573,19 +573,17 @@ public abstract class ShootableType extends InfoType
     public FlanExplosion.Stats getExplosionStats(@Nullable Entity explosiveEntity)
     {
         FragmentationModel.Burst fragments = fragmentationFor(getExplosiveMass(), getMass());
-        return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(),
-            getExplosionBlastDamage(), (float) fragments.queryRadius(),
-            (float) Math.min(4D, fragments.fragmentCount() / 300D), explosionFragDamage,
-            useNewExplosionSystem() ? getExplosiveMass() : 0F, fragments);
+        return new FlanExplosion.Stats(getExplosionRadius(), getExplosionPower(), getBlastRadius(), getExplosionBlastDamage(), (float) fragments.queryRadius(),
+            (float) Math.min(4D, fragments.fragmentCount() / 300D), explosionFragDamage, useNewExplosionSystem() ? getExplosiveMass() : 0F, fragments);
     }
 
     protected FragmentationModel.Burst fragmentationFor(float chargeKg, float totalMassGrams)
     {
-        return FragmentationModel.create(fragType, chargeKg, totalMassGrams,
-            fragMetalMassGrams, fragCount, fragPattern).withPeak(explosionFragDamage.getDamage());
+        return FragmentationModel.create(fragType, chargeKg, totalMassGrams, fragMetalMassGrams, fragCount, fragPattern).withPeak(explosionFragDamage.getDamage());
     }
 
-    public float getDispersionForDisplay() {
+    public float getDispersionForDisplay()
+    {
         return Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * bulletSpread;
     }
 
@@ -618,7 +616,8 @@ public abstract class ShootableType extends InfoType
      */
     public static void readAmmoGroups(TypeFile file, Set<String> groupNames)
     {
-        readValuesInLines("UseAmmoGroup", file).ifPresent(lines -> lines.forEach(values -> {
+        readValuesInLines("UseAmmoGroup", file).ifPresent(lines -> lines.forEach(values ->
+        {
             String groupName = readAmmoGroupName("UseAmmoGroup", values, file);
             if (groupName != null)
                 groupNames.add(groupName);
@@ -681,10 +680,12 @@ public abstract class ShootableType extends InfoType
     /**
      * Every registered ammunition type, ordered by content pack name and then by shortname.
      *
-     * <p>The registry behind this is a hash map, so an unordered walk would pick a different
+     * <p>
+     * The registry behind this is a hash map, so an unordered walk would pick a different
      * type from one load to the next. Callers that fall back to "any ammunition of this kind",
      * as rearming a driveable whose definition declares none has to, need that pick to be the
-     * same on every load.</p>
+     * same on every load.
+     * </p>
      */
     public static List<ShootableType> registeredAmmoTypes()
     {

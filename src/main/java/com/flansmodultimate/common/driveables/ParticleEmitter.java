@@ -20,18 +20,15 @@ public final class ParticleEmitter
     private final float maxHealth;
     private final EnumDriveablePart part;
 
-    public ParticleEmitter(String particleType, int emitRate, Vector3f origin, Vector3f extents, Vector3f velocity,
-                           float minThrottle, float maxThrottle, float minHealth, float maxHealth,
-                           EnumDriveablePart part)
+    public ParticleEmitter(String particleType, int emitRate, Vector3f origin, Vector3f extents, Vector3f velocity, float minThrottle, float maxThrottle, float minHealth,
+        float maxHealth, EnumDriveablePart part)
     {
         this.particleType = StringUtils.defaultString(particleType);
         this.emitRate = Math.max(1, emitRate);
         this.origin = new Vector3f(origin.x, origin.y, origin.z);
         this.extents = new Vector3f(extents.x, extents.y, extents.z);
         this.velocity = velocity.length();
-        this.direction = this.velocity > 0F
-            ? new Vector3f(velocity.x / this.velocity, velocity.y / this.velocity, velocity.z / this.velocity)
-            : new Vector3f();
+        this.direction = this.velocity > 0F ? new Vector3f(velocity.x / this.velocity, velocity.y / this.velocity, velocity.z / this.velocity) : new Vector3f();
         this.minThrottle = minThrottle;
         this.maxThrottle = maxThrottle;
         this.minHealth = minHealth;

@@ -31,8 +31,8 @@ public abstract class FlanEntityBlock extends BaseEntityBlock
     @Override
     @NotNull
     @SuppressWarnings("deprecation") // Block#use is the 1.20.1 interaction entry point.
-    public final InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player,
-                                       @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    public final InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand,
+        @NotNull BlockHitResult hit)
     {
         return interact(state, level, pos, player, hand);
     }

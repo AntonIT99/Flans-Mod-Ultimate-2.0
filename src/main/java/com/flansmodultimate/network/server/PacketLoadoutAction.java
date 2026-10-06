@@ -17,12 +17,12 @@ import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.network.client.PacketLoadoutState;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.ModUtils;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,14 +35,7 @@ public final class PacketLoadoutAction implements IServerPacket
 {
     public enum Action
     {
-        OPEN_HUB,
-        OPEN_CHOOSE,
-        EDIT,
-        SELECT,
-        SET_ENTRY,
-        SET_PAINT,
-        OPEN_BOX,
-        PLAY
+        OPEN_HUB, OPEN_CHOOSE, EDIT, SELECT, SET_ENTRY, SET_PAINT, OPEN_BOX, PLAY
     }
 
     private Action action = Action.OPEN_HUB;
@@ -52,7 +45,10 @@ public final class PacketLoadoutAction implements IServerPacket
 
     private PacketLoadoutAction(Action action, int index, LoadoutSlot slot, String value)
     {
-        this.action = action; this.index = index; this.slot = slot; this.value = value == null ? "" : value;
+        this.action = action;
+        this.index = index;
+        this.slot = slot;
+        this.value = value == null ? "" : value;
     }
 
     public static PacketLoadoutAction openHub()
@@ -107,8 +103,12 @@ public final class PacketLoadoutAction implements IServerPacket
     @Override
     public void decodeInto(PacketBuffer data)
     {
-        int actionId = data.readUnsignedByte(); action = actionId < Action.values().length ? Action.values()[actionId] : Action.OPEN_HUB;
-        index = data.readVarInt(); int slotId = data.readUnsignedByte(); slot = LoadoutSlot.values()[Math.min(slotId, LoadoutSlot.values().length - 1)]; value = data.readUtf(256);
+        int actionId = data.readUnsignedByte();
+        action = actionId < Action.values().length ? Action.values()[actionId] : Action.OPEN_HUB;
+        index = data.readVarInt();
+        int slotId = data.readUnsignedByte();
+        slot = LoadoutSlot.values()[Math.min(slotId, LoadoutSlot.values().length - 1)];
+        value = data.readUtf(256);
     }
 
     @Override
@@ -139,10 +139,12 @@ public final class PacketLoadoutAction implements IServerPacket
     {
         PlayerStats stats = manager.getStats(player);
         if (index < 0 || index >= LoadoutPool.LOADOUT_COUNT || stats.getRank() < pool.getLoadoutUnlockLevel(index)
-            || !pool.validate(stats.getLoadouts(pool).get(index), stats.getRank(), stats::ownsReward)) return;
+            || !pool.validate(stats.getLoadouts(pool).get(index), stats.getRank(), stats::ownsReward))
+            return;
         stats.setSelectedLoadout(index);
         Team selected = PlayerData.getInstance(player).getNewTeam();
-        if (selected != null && selected != Team.SPECTATORS) manager.confirmSelection(player);
+        if (selected != null && selected != Team.SPECTATORS)
+            manager.confirmSelection(player);
         manager.markPlayerDataDirty();
         manager.syncLoadouts(player, PacketLoadoutState.OpenScreen.CLOSE, index, "");
     }
@@ -150,22 +152,27 @@ public final class PacketLoadoutAction implements IServerPacket
     private void setEntry(TeamsManager manager, ServerPlayer player, LoadoutPool pool)
     {
         PlayerStats stats = manager.getStats(player);
-        if (index < 0 || index >= LoadoutPool.LOADOUT_COUNT) return;
+        if (index < 0 || index >= LoadoutPool.LOADOUT_COUNT)
+            return;
         PlayerLoadout edited = stats.getLoadouts(pool).get(index).copy();
-        if ("$clear".equals(value)) edited.set(slot, ItemStack.EMPTY);
+        if ("$clear".equals(value))
+            edited.set(slot, ItemStack.EMPTY);
         else
         {
             InfoType type = InfoType.getInfoType(value, pool.getContentPack());
-            if (type == null || !pool.isEntryUnlocked(slot, type, stats.getRank())) return;
+            if (type == null || !pool.isEntryUnlocked(slot, type, stats.getRank()))
+                return;
             if (type instanceof AttachmentType attachment)
             {
                 ItemStack gun = edited.get(slot);
-                if (!(gun.getItem() instanceof GunItem gunItem) || !accepts(gunItem.getConfigType(), attachment)) return;
+                if (!(gun.getItem() instanceof GunItem gunItem) || !accepts(gunItem.getConfigType(), attachment))
+                    return;
                 CompoundTag gunData = ItemStackData.copy(gun);
                 CompoundTag attachments = gunData.getCompound(GunItem.NBT_ATTACHMENTS);
                 String attachmentSlot = attachmentSlot(attachment.getEnumAttachmentType());
                 ItemStack attachmentStack = ModUtils.getItemStack(attachment).orElse(ItemStack.EMPTY);
-                if (attachmentStack.isEmpty()) return;
+                if (attachmentStack.isEmpty())
+                    return;
                 attachments.put(attachmentSlot, ItemStackData.save(attachmentStack, player.level().registryAccess()));
                 gunData.put(GunItem.NBT_ATTACHMENTS, attachments);
                 ItemStackData.set(gun, gunData);
@@ -174,7 +181,8 @@ public final class PacketLoadoutAction implements IServerPacket
             else
             {
                 ItemStack stack = pool.createEntryStack(type);
-                if (stack.isEmpty()) return;
+                if (stack.isEmpty())
+                    return;
                 edited.set(slot, stack);
             }
         }
@@ -188,16 +196,21 @@ public final class PacketLoadoutAction implements IServerPacket
     private void setPaint(TeamsManager manager, ServerPlayer player, LoadoutPool pool)
     {
         PlayerStats stats = manager.getStats(player);
-        if (index < 0 || index >= LoadoutPool.LOADOUT_COUNT) return;
+        if (index < 0 || index >= LoadoutPool.LOADOUT_COUNT)
+            return;
         RewardBox.Reward reward = "$default".equals(value) ? null : RewardBox.findReward(value);
-        if (reward == null && !"$default".equals(value)) return;
-        if (reward != null && !stats.ownsReward(value)) return;
+        if (reward == null && !"$default".equals(value))
+            return;
+        if (reward != null && !stats.ownsReward(value))
+            return;
         PlayerLoadout edited = stats.getLoadouts(pool).get(index).copy();
         ItemStack stack = edited.get(slot);
         if (!(stack.getItem() instanceof com.flansmodultimate.common.item.IFlanItem<?> item) || !(item.getConfigType() instanceof PaintableType paintable)
-            || (reward != null && !paintable.getOriginalShortName().equalsIgnoreCase(reward.typeId()))) return;
+            || (reward != null && !paintable.getOriginalShortName().equalsIgnoreCase(reward.typeId())))
+            return;
         var paintjob = reward == null ? paintable.getDefaultPaintjob() : RewardBox.resolve(reward);
-        if (paintjob == null) return;
+        if (paintjob == null)
+            return;
         paintable.applyPaintjobToStack(stack, paintjob);
         edited.set(slot, stack);
         if (stats.replaceLoadout(pool, index, edited))
@@ -210,14 +223,22 @@ public final class PacketLoadoutAction implements IServerPacket
     private void openBox(TeamsManager manager, ServerPlayer player)
     {
         UUID id;
-        try { id = UUID.fromString(value); } catch (IllegalArgumentException ignored) { return; }
+        try
+        {
+            id = UUID.fromString(value);
+        }
+        catch (IllegalArgumentException ignored)
+        {
+            return;
+        }
         RewardBox.Reward reward = manager.openRewardBox(player, id);
         manager.syncLoadouts(player, PacketLoadoutState.OpenScreen.REWARD_BOX, 0, reward == null ? "" : reward.key());
     }
 
     private static boolean accepts(com.flansmodultimate.common.types.GunType gun, AttachmentType attachment)
     {
-        if (!gun.isAllowAllAttachments() && !gun.getAllowedAttachments().contains(attachment)) return false;
+        if (!gun.isAllowAllAttachments() && !gun.getAllowedAttachments().contains(attachment))
+            return false;
         return switch (attachment.getEnumAttachmentType())
         {
             case BARREL -> gun.isAllowBarrelAttachments();
@@ -236,9 +257,15 @@ public final class PacketLoadoutAction implements IServerPacket
     {
         return switch (type)
         {
-            case BARREL -> GunItem.NBT_BARREL; case SIGHTS -> GunItem.NBT_SCOPE; case STOCK -> GunItem.NBT_STOCK;
-            case GRIP -> GunItem.NBT_GRIP; case GADGET -> GunItem.NBT_GADGET; case SLIDE -> GunItem.NBT_SLIDE;
-            case PUMP -> GunItem.NBT_PUMP; case ACCESSORY -> GunItem.NBT_ACCESSORY; case GENERIC -> GunItem.NBT_GENERIC + "0";
+            case BARREL -> GunItem.NBT_BARREL;
+            case SIGHTS -> GunItem.NBT_SCOPE;
+            case STOCK -> GunItem.NBT_STOCK;
+            case GRIP -> GunItem.NBT_GRIP;
+            case GADGET -> GunItem.NBT_GADGET;
+            case SLIDE -> GunItem.NBT_SLIDE;
+            case PUMP -> GunItem.NBT_PUMP;
+            case ACCESSORY -> GunItem.NBT_ACCESSORY;
+            case GENERIC -> GunItem.NBT_GENERIC + "0";
         };
     }
 }

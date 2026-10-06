@@ -1,7 +1,8 @@
 package net.caffeinemc.mods.sodium.api.vertex.buffer;
 
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
 import org.lwjgl.system.MemoryStack;
+
+import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
 
 /**
  * Test stand-in for the bulk vertex writer that Embeddium keeps in Sodium's package on Forge 1.20.1, limited to the

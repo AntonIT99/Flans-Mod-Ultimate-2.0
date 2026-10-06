@@ -52,7 +52,8 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
     private static final EntityDataAccessor<String> DATA_NAME = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<String> DATA_MAP = SynchedEntityData.defineId(Flagpole.class, EntityDataSerializers.STRING);
 
-    @Nullable private UUID flagId;
+    @Nullable
+    private UUID flagId;
     private final Set<UUID> objectIds = new LinkedHashSet<>();
 
     public Flagpole(EntityType<?> type, Level level)
@@ -161,20 +162,27 @@ public final class Flagpole extends FlanSpawnEntity implements ITeamBase
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        setDefaultOwnerId(tag.getInt(NBT_DEFAULT_OWNER)); setOwnerId(tag.getInt(NBT_OWNER)); setBaseName(tag.getString(NBT_NAME)); setMapId(tag.getString(NBT_MAP));
+        setDefaultOwnerId(tag.getInt(NBT_DEFAULT_OWNER));
+        setOwnerId(tag.getInt(NBT_OWNER));
+        setBaseName(tag.getString(NBT_NAME));
+        setMapId(tag.getString(NBT_MAP));
         flagId = tag.hasUUID(NBT_FLAG) ? tag.getUUID(NBT_FLAG) : null;
         objectIds.clear();
         for (Tag entry : tag.getList(NBT_OBJECTS, Tag.TAG_COMPOUND))
         {
             CompoundTag object = (CompoundTag) entry;
-            if (object.hasUUID(NBT_ID)) objectIds.add(object.getUUID(NBT_ID));
+            if (object.hasUUID(NBT_ID))
+                objectIds.add(object.getUUID(NBT_ID));
         }
     }
 
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        tag.putInt(NBT_DEFAULT_OWNER, getDefaultOwnerId()); tag.putInt(NBT_OWNER, getOwnerId()); tag.putString(NBT_NAME, getBaseName()); tag.putString(NBT_MAP, getMapId());
+        tag.putInt(NBT_DEFAULT_OWNER, getDefaultOwnerId());
+        tag.putInt(NBT_OWNER, getOwnerId());
+        tag.putString(NBT_NAME, getBaseName());
+        tag.putString(NBT_MAP, getMapId());
         if (flagId != null)
             tag.putUUID(NBT_FLAG, flagId);
         ListTag objects = new ListTag();

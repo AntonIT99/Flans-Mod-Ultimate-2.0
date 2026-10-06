@@ -11,7 +11,6 @@ class PackagedContentRepositorySourceTest
     {
         String modId = "test_content_module";
 
-        assertTrue(PackagedContentRepositorySource.encryptedPackId(modId)
-            .compareTo(modId + ":assets") < 0);
+        assertTrue(PackagedContentRepositorySource.encryptedPackId(modId).compareTo(modId + ":assets") < 0);
     }
 }

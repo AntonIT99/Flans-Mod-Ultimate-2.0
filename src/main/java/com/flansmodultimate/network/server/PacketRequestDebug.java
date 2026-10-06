@@ -4,10 +4,10 @@ import com.flansmodultimate.common.driveables.DriveableDamageDebug;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.PacketAllowDebug;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 

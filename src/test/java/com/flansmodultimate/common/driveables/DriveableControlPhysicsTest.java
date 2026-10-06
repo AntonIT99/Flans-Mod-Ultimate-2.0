@@ -12,18 +12,12 @@ class DriveableControlPhysicsTest
     void aircraftTaxiOverrideLeavesFlightAndForcedLegacyYawUntouched()
     {
         double taxiSpeed = com.flansmodultimate.common.driveables.physics.VehiclePhysicsUnits.kmhToBlocksPerTick(10D);
-        assertEquals(0.6F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
-            taxiSpeed, true, false), EPSILON);
-        assertEquals(0F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
-            0D, true, false), "a parked plane clears residual flight yaw");
-        assertEquals(-0.3F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
-            -taxiSpeed * 0.5D, true, false), EPSILON);
-        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
-            taxiSpeed, false, false), "airborne rudder controls retain their old yaw");
-        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F,
-            taxiSpeed, true, true));
-        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 0F, 9F,
-            taxiSpeed, true, false));
+        assertEquals(0.6F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F, taxiSpeed, true, false), EPSILON);
+        assertEquals(0F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F, 0D, true, false), "a parked plane clears residual flight yaw");
+        assertEquals(-0.3F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F, -taxiSpeed * 0.5D, true, false), EPSILON);
+        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F, taxiSpeed, false, false), "airborne rudder controls retain their old yaw");
+        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 12F, 9F, taxiSpeed, true, true));
+        assertEquals(8F, DriveableControlPhysics.planeGroundSteeringYawDelta(8F, 0F, 9F, taxiSpeed, true, false));
     }
 
     @Test
@@ -36,12 +30,10 @@ class DriveableControlPhysicsTest
         assertEquals(12F, delta * 20F, 0.0001F);
         assertEquals(180F, delta * 300F, 0.001F, "15 seconds for a sustained 180-degree turn");
         assertEquals(-delta, DriveableControlPhysics.realSteeringYawDelta(12F, -control, true, true, 0D, 0D));
-        assertEquals(delta * 0.5F, DriveableControlPhysics.realSteeringYawDelta(12F,
-            DriveableControlPhysics.realSingleTrackTurnControl(0F, control, true, true, false),
-            true, true, 0D, 0D), EPSILON);
-        assertEquals(delta * 0.5F, DriveableControlPhysics.realSteeringYawDelta(12F,
-            DriveableControlPhysics.realSingleTrackTurnControl(1F, 0F, false, false, true),
-            true, true, 0D, 0D), EPSILON);
+        assertEquals(delta * 0.5F,
+            DriveableControlPhysics.realSteeringYawDelta(12F, DriveableControlPhysics.realSingleTrackTurnControl(0F, control, true, true, false), true, true, 0D, 0D), EPSILON);
+        assertEquals(delta * 0.5F,
+            DriveableControlPhysics.realSteeringYawDelta(12F, DriveableControlPhysics.realSingleTrackTurnControl(1F, 0F, false, false, true), true, true, 0D, 0D), EPSILON);
         assertEquals(0F, DriveableControlPhysics.realSteeringYawDelta(12F, control, true, false, 1D, 1D));
     }
 
@@ -69,10 +61,8 @@ class DriveableControlPhysicsTest
     @Test
     void passengerAircraftFallbackKeepsOnlyFlightAxes()
     {
-        int flight = DriveableInput.FORWARD | DriveableInput.LEFT | DriveableInput.ASCEND
-            | DriveableInput.ROLL_RIGHT;
-        int forbidden = DriveableInput.PRIMARY_FIRE | DriveableInput.SECONDARY_FIRE
-            | DriveableInput.TOGGLE_ENGINE | DriveableInput.TOGGLE_GEAR | DriveableInput.MENU;
+        int flight = DriveableInput.FORWARD | DriveableInput.LEFT | DriveableInput.ASCEND | DriveableInput.ROLL_RIGHT;
+        int forbidden = DriveableInput.PRIMARY_FIRE | DriveableInput.SECONDARY_FIRE | DriveableInput.TOGGLE_ENGINE | DriveableInput.TOGGLE_GEAR | DriveableInput.MENU;
 
         assertEquals(flight, DriveableInput.aircraftFallbackControls(flight | forbidden));
     }
@@ -152,34 +142,25 @@ class DriveableControlPhysicsTest
     @Test
     void oneSurvivingTrackConvertsThrottleToHalfSpeedRotation()
     {
-        assertEquals(-10F, DriveableControlPhysics.singleTrackTurnControl(1F, 0F, false,
-            true, false), EPSILON);
-        assertEquals(10F, DriveableControlPhysics.singleTrackTurnControl(1F, 0F, false,
-            false, true), EPSILON);
-        assertEquals(10F, DriveableControlPhysics.singleTrackTurnControl(-1F, 0F, false,
-            true, false), EPSILON);
-        assertEquals(-10F, DriveableControlPhysics.singleTrackTurnControl(-1F, 0F, false,
-            false, true), EPSILON);
+        assertEquals(-10F, DriveableControlPhysics.singleTrackTurnControl(1F, 0F, false, true, false), EPSILON);
+        assertEquals(10F, DriveableControlPhysics.singleTrackTurnControl(1F, 0F, false, false, true), EPSILON);
+        assertEquals(10F, DriveableControlPhysics.singleTrackTurnControl(-1F, 0F, false, true, false), EPSILON);
+        assertEquals(-10F, DriveableControlPhysics.singleTrackTurnControl(-1F, 0F, false, false, true), EPSILON);
     }
 
     @Test
     void steeringKeepsItsDirectionWithEitherSurvivingTrack()
     {
-        assertEquals(4.5F, DriveableControlPhysics.singleTrackTurnControl(0.8F, 9F, true,
-            true, false), EPSILON);
-        assertEquals(4.5F, DriveableControlPhysics.singleTrackTurnControl(0.8F, 9F, true,
-            false, true), EPSILON);
-        assertEquals(-4.5F, DriveableControlPhysics.singleTrackTurnControl(-0.8F, -9F, true,
-            true, false), EPSILON);
+        assertEquals(4.5F, DriveableControlPhysics.singleTrackTurnControl(0.8F, 9F, true, true, false), EPSILON);
+        assertEquals(4.5F, DriveableControlPhysics.singleTrackTurnControl(0.8F, 9F, true, false, true), EPSILON);
+        assertEquals(-4.5F, DriveableControlPhysics.singleTrackTurnControl(-0.8F, -9F, true, true, false), EPSILON);
     }
 
     @Test
     void zeroOrTwoSurvivingTracksDoNotUseTheDamagedTrackControl()
     {
-        assertEquals(0F, DriveableControlPhysics.singleTrackTurnControl(1F, 9F, true,
-            true, true), EPSILON);
-        assertEquals(0F, DriveableControlPhysics.singleTrackTurnControl(1F, 9F, true,
-            false, false), EPSILON);
+        assertEquals(0F, DriveableControlPhysics.singleTrackTurnControl(1F, 9F, true, true, true), EPSILON);
+        assertEquals(0F, DriveableControlPhysics.singleTrackTurnControl(1F, 9F, true, false, false), EPSILON);
     }
 
     @Test
@@ -200,8 +181,7 @@ class DriveableControlPhysicsTest
     @Test
     void vehicleThrottleLeverLatchesUntilAPedalTakesControlBack()
     {
-        boolean fixed = DriveableControlPhysics.fixedVehicleThrottle(false, true, false,
-            DriveableInput.THROTTLE_INCREASE);
+        boolean fixed = DriveableControlPhysics.fixedVehicleThrottle(false, true, false, DriveableInput.THROTTLE_INCREASE);
         assertTrue(fixed);
         assertTrue(DriveableControlPhysics.fixedVehicleThrottle(fixed, true, false, 0));
         assertFalse(DriveableControlPhysics.fixedVehicleThrottle(fixed, true, false, DriveableInput.FORWARD));

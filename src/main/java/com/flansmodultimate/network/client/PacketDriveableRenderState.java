@@ -3,10 +3,10 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +20,8 @@ public final class PacketDriveableRenderState implements IClientPacket
     private int[] slots = new int[0];
     private ItemStack[] stacks = new ItemStack[0];
 
-    public PacketDriveableRenderState() {}
+    public PacketDriveableRenderState()
+    {}
 
     public PacketDriveableRenderState(@NotNull Driveable driveable)
     {

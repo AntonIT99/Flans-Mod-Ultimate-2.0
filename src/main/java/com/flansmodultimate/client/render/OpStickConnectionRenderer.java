@@ -20,9 +20,11 @@ import java.util.Optional;
 /**
  * Draws the link an operator stick is holding open.
  *
- * <p>Between choosing the two ends of a connection there is nothing on screen to say which
+ * <p>
+ * Between choosing the two ends of a connection there is nothing on screen to say which
  * base or object is already selected. 1.7.10 anchored a fishing line to it; this draws the
- * same line, from the holder to the waiting endpoint, straight from the stick's own data.</p>
+ * same line, from the holder to the waiting endpoint, straight from the stick's own data.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class OpStickConnectionRenderer

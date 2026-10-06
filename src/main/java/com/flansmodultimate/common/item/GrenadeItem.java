@@ -102,8 +102,8 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
 
     private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
     {
-        modifiers.add(Attributes.ATTACK_DAMAGE, "grenade_attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID),
-            "Weapon modifier", configType.getMeleeDamage(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.ATTACK_DAMAGE, "grenade_attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier",
+            configType.getMeleeDamage(), ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override

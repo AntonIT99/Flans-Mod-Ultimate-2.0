@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.teams;
 
+import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
-import com.flansmodultimate.platform.item.ItemStackData;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -22,9 +22,15 @@ public final class PlayerLoadout
 
     private final ItemStack[] slots = new ItemStack[LoadoutSlot.values().length];
 
-    public PlayerLoadout() { Arrays.fill(slots, ItemStack.EMPTY); }
+    public PlayerLoadout()
+    {
+        Arrays.fill(slots, ItemStack.EMPTY);
+    }
 
-    public ItemStack get(LoadoutSlot slot) { return slots[slot.ordinal()]; }
+    public ItemStack get(LoadoutSlot slot)
+    {
+        return slots[slot.ordinal()];
+    }
 
     public void set(LoadoutSlot slot, ItemStack stack)
     {
@@ -48,7 +54,8 @@ public final class PlayerLoadout
     {
         CompoundTag tag = new CompoundTag();
         for (LoadoutSlot slot : LoadoutSlot.values())
-            if (!get(slot).isEmpty()) tag.put(tagKey(slot), ItemStackData.save(get(slot), registries));
+            if (!get(slot).isEmpty())
+                tag.put(tagKey(slot), ItemStackData.save(get(slot), registries));
         return tag;
     }
 
@@ -56,19 +63,22 @@ public final class PlayerLoadout
     {
         PlayerLoadout result = new PlayerLoadout();
         for (LoadoutSlot slot : LoadoutSlot.values())
-            if (tag.contains(tagKey(slot))) result.set(slot, ItemStackData.parse(registries, tag.getCompound(tagKey(slot))));
+            if (tag.contains(tagKey(slot)))
+                result.set(slot, ItemStackData.parse(registries, tag.getCompound(tagKey(slot))));
         return result;
     }
 
     public void write(PacketBuffer data)
     {
-        for (LoadoutSlot slot : LoadoutSlot.values()) PacketIO.writeItem(data, get(slot));
+        for (LoadoutSlot slot : LoadoutSlot.values())
+            PacketIO.writeItem(data, get(slot));
     }
 
     public static PlayerLoadout read(PacketBuffer data)
     {
         PlayerLoadout result = new PlayerLoadout();
-        for (LoadoutSlot slot : LoadoutSlot.values()) result.set(slot, PacketIO.readItem(data));
+        for (LoadoutSlot slot : LoadoutSlot.values())
+            result.set(slot, PacketIO.readItem(data));
         return result;
     }
 

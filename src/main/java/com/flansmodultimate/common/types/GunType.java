@@ -14,6 +14,10 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -22,9 +26,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -959,8 +960,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         // Attachment settings
         allowAllAttachments = readValue("AllowAllAttachments", allowAllAttachments, file);
         if (hasValueForConfigField("AllowAttachments", file))
-            readValuesToList("AllowAttachments", file)
-                .forEach(attachment -> allowedAttachments.add(AttachmentType.getAttachment(ResourceUtils.sanitize(attachment))));
+            readValuesToList("AllowAttachments", file).forEach(attachment -> allowedAttachments.add(AttachmentType.getAttachment(ResourceUtils.sanitize(attachment))));
 
         allowBarrelAttachments = readValue("AllowBarrelAttachments", allowBarrelAttachments, file);
         allowScopeAttachments = readValue("AllowScopeAttachments", allowScopeAttachments, file);

@@ -32,7 +32,8 @@ public class Shape2D
         return coords.toArray(new Coord2D[0]);
     }
 
-    public Shape3D extrude(float x, float y, float z, float rotX, float rotY, float rotZ, float depth, int u, int v, float textureWidth, float textureHeight, int shapeTextureWidth, int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, float[] faceLengths)
+    public Shape3D extrude(float x, float y, float z, float rotX, float rotY, float rotZ, float depth, int u, int v, float textureWidth, float textureHeight, int shapeTextureWidth,
+        int shapeTextureHeight, int sideTextureWidth, int sideTextureHeight, float[] faceLengths)
     {
         PositionTransformVertex[] verts = new PositionTransformVertex[coords.size() * 2];
         PositionTransformVertex[] vertsTop = new PositionTransformVertex[coords.size()];
@@ -43,12 +44,12 @@ public class Shape2D
 
         extrudeVector = setVectorRotations(extrudeVector, rotX, rotY, rotZ);
 
-        if(faceLengths != null && faceLengths.length < coords.size())
+        if (faceLengths != null && faceLengths.length < coords.size())
             faceLengths = null;
 
         float totalLength = 0;
 
-        for(int idx = 0; idx < coords.size(); idx++)
+        for (int idx = 0; idx < coords.size(); idx++)
         {
             Coord2D curCoord = coords.get(idx);
             Coord2D nextCoord = coords.get((idx + 1) % coords.size());
@@ -60,19 +61,14 @@ public class Shape2D
 
             vecCoord = setVectorRotations(vecCoord, rotX, rotY, rotZ);
 
-            verts[idx] = new PositionTransformVertex(
-                    x + (float)vecCoord.x,
-                    y + (float)vecCoord.y,
-                    z + (float)vecCoord.z, texU1, texV);
-            verts[idx + coords.size()] = new PositionTransformVertex(
-                    x + (float)vecCoord.x - (float)extrudeVector.x,
-                    y + (float)vecCoord.y - (float)extrudeVector.y,
-                    z + (float)vecCoord.z - (float)extrudeVector.z, texU2, texV);
+            verts[idx] = new PositionTransformVertex(x + (float) vecCoord.x, y + (float) vecCoord.y, z + (float) vecCoord.z, texU1, texV);
+            verts[idx + coords.size()] = new PositionTransformVertex(x + (float) vecCoord.x - (float) extrudeVector.x, y + (float) vecCoord.y - (float) extrudeVector.y,
+                z + (float) vecCoord.z - (float) extrudeVector.z, texU2, texV);
 
             vertsTop[idx] = new PositionTransformVertex(verts[idx]);
             vertsBottom[coords.size() - idx - 1] = new PositionTransformVertex(verts[idx + coords.size()]);
 
-            if(faceLengths != null)
+            if (faceLengths != null)
                 totalLength += faceLengths[idx];
             else
                 totalLength += getSegmentLength(curCoord, nextCoord);
@@ -84,20 +80,20 @@ public class Shape2D
         float currentLengthPosition = totalLength;
         float inverseTotalLength = totalLength == 0F ? 0F : 1F / totalLength;
 
-        for(int idx = 0; idx < coords.size(); idx++)
+        for (int idx = 0; idx < coords.size(); idx++)
         {
             Coord2D curCoord = coords.get(idx);
             Coord2D nextCoord = coords.get((idx + 1) % coords.size());
             float currentLength = getSegmentLength(curCoord, nextCoord);
-            if(faceLengths != null)
+            if (faceLengths != null)
                 currentLength = faceLengths[faceLengths.length - idx - 1];
             float ratioPosition = currentLengthPosition * inverseTotalLength;
             float ratioLength = (currentLengthPosition - currentLength) * inverseTotalLength;
 
             float texU1 = ((ratioLength * sideTextureWidth + u) / textureWidth);
             float texU2 = ((ratioPosition * sideTextureWidth + u) / textureWidth);
-            float texV1 = (((float)v + (float)shapeTextureHeight) / textureHeight);
-            float texV2 = (((float)v + (float)shapeTextureHeight + sideTextureHeight) / textureHeight);
+            float texV1 = (((float) v + (float) shapeTextureHeight) / textureHeight);
+            float texV2 = (((float) v + (float) shapeTextureHeight + sideTextureHeight) / textureHeight);
 
             PositionTransformVertex[] polySide = new PositionTransformVertex[4];
 
@@ -117,7 +113,7 @@ public class Shape2D
     {
         double xDiff = current.xCoord - next.xCoord;
         double yDiff = current.yCoord - next.yCoord;
-        return (float)Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+        return (float) Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     }
 
     protected Vec3 setVectorRotations(Vec3 vector, float xRot, float yRot, float zRot)

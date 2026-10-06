@@ -45,14 +45,9 @@ final class ContentPackRelocator
     private static final int MAX_DESCRIPTOR_BYTES = 64 * 1024;
     private static final long SLOW_SCAN_WARNING_MILLIS = 2_000L;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Set<String> DEFINITION_FOLDERS = Set.of(
-        "aaguns", "armorfiles", "armorboxes", "attachments", "bullets", "classes", "gloves",
-        "grenades", "guns", "boxes", "itemholders", "parts", "tools", "mechaitems", "vehicles",
-        "planes", "mechas", "teams", "rewardboxes", "loadouts"
-    );
-    private static final Set<String> LEGACY_SUPPORT_FOLDERS = Set.of(
-        "armor", "assets", "com", "gui", "models", "skins", "sound", "sounds"
-    );
+    private static final Set<String> DEFINITION_FOLDERS = Set.of("aaguns", "armorfiles", "armorboxes", "attachments", "bullets", "classes", "gloves", "grenades", "guns", "boxes",
+        "itemholders", "parts", "tools", "mechaitems", "vehicles", "planes", "mechas", "teams", "rewardboxes", "loadouts");
+    private static final Set<String> LEGACY_SUPPORT_FOLDERS = Set.of("armor", "assets", "com", "gui", "models", "skins", "sound", "sounds");
 
     static RelocationResult reconcile(Path modsFolder, Path flanFolder, Path cachePath)
     {
@@ -84,8 +79,7 @@ final class ContentPackRelocator
         catch (IOException e)
         {
             warnings.add("Cannot resolve the mods or flan folder safely: " + e.getMessage());
-            return finish(start, movedContentPacks, movedBundles, inspectedArchives,
-                excludedFromContentLoading, warnings);
+            return finish(start, movedContentPacks, movedBundles, inspectedArchives, excludedFromContentLoading, warnings);
         }
         if (areNotSafeDistinctFolders(normalizedMods, normalizedFlan))
         {
@@ -96,16 +90,14 @@ final class ContentPackRelocator
         ClassificationCache cache = loadCache(cachePath);
         Map<String, CacheEntry> refreshedEntries = new HashMap<>();
 
-        try (DirectoryStream<Path> candidates = Files.newDirectoryStream(normalizedMods,
-            ContentPackRelocator::isArchiveFile))
+        try (DirectoryStream<Path> candidates = Files.newDirectoryStream(normalizedMods, ContentPackRelocator::isArchiveFile))
         {
             for (Path candidate : candidates)
             {
                 CachedClassification classification = classifyCached(candidate, cache, refreshedEntries);
                 ArchiveKind kind = classification.kind;
                 inspectedArchives += classification.inspected ? 1 : 0;
-                if (kind == ArchiveKind.CONTENT_PACK
-                    && move(candidate, normalizedFlan.resolve(candidate.getFileName()), warnings))
+                if (kind == ArchiveKind.CONTENT_PACK && move(candidate, normalizedFlan.resolve(candidate.getFileName()), warnings))
                 {
                     movedContentPacks++;
                 }
@@ -116,8 +108,7 @@ final class ContentPackRelocator
             warnings.add("Could not scan mods folder '" + normalizedMods + "': " + e.getMessage());
         }
 
-        try (DirectoryStream<Path> candidates = Files.newDirectoryStream(normalizedFlan,
-            ContentPackRelocator::isArchiveFile))
+        try (DirectoryStream<Path> candidates = Files.newDirectoryStream(normalizedFlan, ContentPackRelocator::isArchiveFile))
         {
             for (Path candidate : candidates)
             {
@@ -148,16 +139,14 @@ final class ContentPackRelocator
 
         refreshedEntries.entrySet().removeIf(entry -> !Files.isRegularFile(Path.of(entry.getKey())));
         saveCache(cachePath, new ClassificationCache(CACHE_VERSION, refreshedEntries), warnings);
-        return finish(start, movedContentPacks, movedBundles, inspectedArchives,
-            excludedFromContentLoading, warnings);
+        return finish(start, movedContentPacks, movedBundles, inspectedArchives, excludedFromContentLoading, warnings);
     }
 
     static ArchiveKind classify(Path archive)
     {
         try (ZipFile zip = new ZipFile(archive.toFile()))
         {
-            boolean loaderMod = zip.getEntry("META-INF/mods.toml") != null
-                || zip.getEntry("META-INF/neoforge.mods.toml") != null;
+            boolean loaderMod = zip.getEntry("META-INF/mods.toml") != null || zip.getEntry("META-INF/neoforge.mods.toml") != null;
             ArchiveKind descriptorKind = readDescriptorKind(zip);
             if (descriptorKind != ArchiveKind.UNKNOWN)
             {
@@ -194,8 +183,7 @@ final class ContentPackRelocator
                 return ArchiveKind.UNKNOWN;
 
             JsonObject root = JsonParser.parseString(new String(bytes, StandardCharsets.UTF_8)).getAsJsonObject();
-            if (!root.has("formatVersion") || root.get("formatVersion").getAsInt() != DESCRIPTOR_VERSION
-                || !root.has("kind"))
+            if (!root.has("formatVersion") || root.get("formatVersion").getAsInt() != DESCRIPTOR_VERSION || !root.has("kind"))
                 return ArchiveKind.UNKNOWN;
 
             return switch (root.get("kind").getAsString().toLowerCase(Locale.ROOT))
@@ -209,8 +197,7 @@ final class ContentPackRelocator
 
     private static boolean isKnownPackBundle(ZipFile zip)
     {
-        return zip.getEntry("flansmodultimate_packs_manager/bundled_packs_version.txt") != null
-            || zip.getEntry("flansmodultimate_packs/bundled_packs_version.txt") != null
+        return zip.getEntry("flansmodultimate_packs_manager/bundled_packs_version.txt") != null || zip.getEntry("flansmodultimate_packs/bundled_packs_version.txt") != null
             || zip.getEntry("flans_content/pack_names.json") != null;
     }
 
@@ -242,12 +229,10 @@ final class ContentPackRelocator
             if (definitionFolder != null && name.endsWith(".txt"))
                 definitionFolders.add(definitionFolder);
         }
-        return !definitionFolders.isEmpty()
-            && (hasFlanAssets || hasSupportingFolder || definitionFolders.size() > 1);
+        return !definitionFolders.isEmpty() && (hasFlanAssets || hasSupportingFolder || definitionFolders.size() > 1);
     }
 
-    private static CachedClassification classifyCached(Path candidate, ClassificationCache cache,
-                                                        Map<String, CacheEntry> refreshedEntries)
+    private static CachedClassification classifyCached(Path candidate, ClassificationCache cache, Map<String, CacheEntry> refreshedEntries)
     {
         String key = normalize(candidate).toString();
         try
@@ -256,8 +241,7 @@ final class ContentPackRelocator
             CacheEntry cached = cache.version == CACHE_VERSION ? cache.entries.get(key) : null;
             ArchiveKind kind;
             boolean inspected;
-            if (cached != null && cached.size == attributes.size()
-                && cached.lastModifiedMillis == attributes.lastModifiedTime().toMillis())
+            if (cached != null && cached.size == attributes.size() && cached.lastModifiedMillis == attributes.lastModifiedTime().toMillis())
             {
                 kind = cached.kind;
                 inspected = false;
@@ -280,8 +264,7 @@ final class ContentPackRelocator
     {
         if (Files.exists(destination))
         {
-            warnings.add("Found misplaced Flan archive '" + source.getFileName() + "', but destination '"
-                + destination + "' already exists. Nothing was overwritten.");
+            warnings.add("Found misplaced Flan archive '" + source.getFileName() + "', but destination '" + destination + "' already exists. Nothing was overwritten.");
             return false;
         }
 
@@ -307,9 +290,7 @@ final class ContentPackRelocator
 
     private static boolean areNotSafeDistinctFolders(Path modsFolder, Path flanFolder)
     {
-        return modsFolder.equals(flanFolder)
-            || modsFolder.startsWith(flanFolder)
-            || flanFolder.startsWith(modsFolder);
+        return modsFolder.equals(flanFolder) || modsFolder.startsWith(flanFolder) || flanFolder.startsWith(modsFolder);
     }
 
     private static Path normalize(Path path)
@@ -324,9 +305,7 @@ final class ContentPackRelocator
         try (Reader reader = Files.newBufferedReader(cachePath, StandardCharsets.UTF_8))
         {
             ClassificationCache cache = GSON.fromJson(reader, ClassificationCache.class);
-            return cache == null || cache.entries == null
-                ? new ClassificationCache(CACHE_VERSION, Map.of())
-                : cache;
+            return cache == null || cache.entries == null ? new ClassificationCache(CACHE_VERSION, Map.of()) : cache;
         }
         catch (Exception e)
         {
@@ -373,22 +352,18 @@ final class ContentPackRelocator
         }
     }
 
-    private static RelocationResult finish(long startNanos, int movedContentPacks, int movedBundles,
-                                           int inspectedArchives, Set<Path> excludedFromContentLoading,
-                                           List<String> warnings)
+    private static RelocationResult finish(long startNanos, int movedContentPacks, int movedBundles, int inspectedArchives, Set<Path> excludedFromContentLoading,
+        List<String> warnings)
     {
         long elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000L;
         if (elapsedMillis > SLOW_SCAN_WARNING_MILLIS)
             warnings.add("Flan archive location verification took " + elapsedMillis + " ms.");
-        return new RelocationResult(movedContentPacks, movedBundles, inspectedArchives, elapsedMillis,
-            Set.copyOf(excludedFromContentLoading), List.copyOf(warnings));
+        return new RelocationResult(movedContentPacks, movedBundles, inspectedArchives, elapsedMillis, Set.copyOf(excludedFromContentLoading), List.copyOf(warnings));
     }
 
     enum ArchiveKind
     {
-        CONTENT_PACK,
-        PACK_MOD_BUNDLE,
-        UNKNOWN
+        CONTENT_PACK, PACK_MOD_BUNDLE, UNKNOWN
     }
 
     record RelocationResult(int movedContentPacks, int movedBundles, int inspectedArchives, long elapsedMillis, Set<Path> excludedFromContentLoading, List<String> warnings)
@@ -399,7 +374,8 @@ final class ContentPackRelocator
         }
     }
 
-    private record CachedClassification(ArchiveKind kind, boolean inspected) {}
+    private record CachedClassification(ArchiveKind kind, boolean inspected)
+    {}
 
     private record ClassificationCache(int version, Map<String, CacheEntry> entries)
     {
@@ -410,5 +386,6 @@ final class ContentPackRelocator
         }
     }
 
-    private record CacheEntry(long size, long lastModifiedMillis, ArchiveKind kind) {}
+    private record CacheEntry(long size, long lastModifiedMillis, ArchiveKind kind)
+    {}
 }

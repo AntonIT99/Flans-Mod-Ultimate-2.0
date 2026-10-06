@@ -11,20 +11,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DriveableTypeEngineSoundTest
 {
-    private static final com.flansmodultimate.common.driveables.EngineSoundPitch VEHICLE_DEFAULTS =
-        new com.flansmodultimate.common.driveables.EngineSoundPitch(0.5F, 0.8F, 1.2F);
-    private static final IContentProvider PACK = new ContentPack("test",
-        Path.of("build", "test-packs", "engine-sounds"));
+    private static final com.flansmodultimate.common.driveables.EngineSoundPitch VEHICLE_DEFAULTS = new com.flansmodultimate.common.driveables.EngineSoundPitch(0.5F, 0.8F, 1.2F);
+    private static final IContentProvider PACK = new ContentPack("test", Path.of("build", "test-packs", "engine-sounds"));
 
     @Test
     void readsEngineStartupTimingAndPitchConfiguration()
     {
         VehicleType type = new VehicleType();
-        type.read(new TypeFile("synthetic", EnumType.VEHICLE, PACK, List.of(
-            "Driver 0 0 0",
-            "StartEngineSoundLength 37",
-            "EngineSoundPitchRange 1.2",
-            "EngineSoundPitchBase 0.4")));
+        type.read(new TypeFile("synthetic", EnumType.VEHICLE, PACK, List.of("Driver 0 0 0", "StartEngineSoundLength 37", "EngineSoundPitchRange 1.2", "EngineSoundPitchBase 0.4")));
 
         assertEquals(37, type.getStartEngineSoundLength());
         assertEquals(1.2F, type.getEngineSoundPitchRange());
@@ -45,8 +39,7 @@ class DriveableTypeEngineSoundTest
     void rangeWithoutBaseStartsAtClientDefaultBase()
     {
         VehicleType type = new VehicleType();
-        type.read(new TypeFile("synthetic", EnumType.VEHICLE, PACK, List.of(
-            "Driver 0 0 0", "EngineSoundPitchRange 1.0")));
+        type.read(new TypeFile("synthetic", EnumType.VEHICLE, PACK, List.of("Driver 0 0 0", "EngineSoundPitchRange 1.0")));
 
         assertEquals(0.5F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS).base());
         assertEquals(1.0F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS).half());
@@ -57,9 +50,7 @@ class DriveableTypeEngineSoundTest
     void authoredHalfAndFullPitchOverrideTheClientDefaults()
     {
         VehicleType type = new VehicleType();
-        type.read(new TypeFile("synthetic", EnumType.VEHICLE, PACK, List.of(
-            "Driver 0 0 0", "EngineSoundPitchBase 0.6", "EngineSoundPitchAt50 0.9",
-            "EngineSoundPitchAt100 1.4")));
+        type.read(new TypeFile("synthetic", EnumType.VEHICLE, PACK, List.of("Driver 0 0 0", "EngineSoundPitchBase 0.6", "EngineSoundPitchAt50 0.9", "EngineSoundPitchAt100 1.4")));
 
         assertEquals(0.6F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS).base());
         assertEquals(0.9F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS).half());
@@ -108,8 +99,7 @@ class DriveableTypeEngineSoundTest
         assertEquals("ignition", type.getEngineStartupSound());
         assertEquals("running", type.getEngineIdleLoopSound());
         assertTrue(type.usesEngineSoundAsIdleLoop());
-        assertEquals(0.65F, com.flansmodultimate.common.driveables.DriveableControlPhysics.engineSoundPitch(
-            0F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS), 1F));
+        assertEquals(0.65F, com.flansmodultimate.common.driveables.DriveableControlPhysics.engineSoundPitch(0F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS), 1F));
     }
 
     @Test

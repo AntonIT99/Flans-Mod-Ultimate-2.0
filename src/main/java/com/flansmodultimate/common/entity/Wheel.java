@@ -165,8 +165,7 @@ public class Wheel extends FlanEntity
 
     private EnumDriveablePart getPart()
     {
-        DriveablePosition definition = driveable == null || driveable.getConfigType() == null ? null
-            : driveable.getConfigType().getWheelPosition(getWheelIndex());
+        DriveablePosition definition = driveable == null || driveable.getConfigType() == null ? null : driveable.getConfigType().getWheelPosition(getWheelIndex());
         return definition == null ? EnumDriveablePart.CORE : definition.getPart();
     }
 

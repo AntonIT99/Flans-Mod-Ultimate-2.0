@@ -73,9 +73,11 @@ public class ArmorBoxMenu extends AbstractContainerMenu
 
     @Override
     @NotNull
-    public ItemStack quickMoveStack(@NotNull Player player, int index) {
+    public ItemStack quickMoveStack(@NotNull Player player, int index)
+    {
         Slot slot = this.slots.get(index);
-        if (!slot.hasItem()) return ItemStack.EMPTY;
+        if (!slot.hasItem())
+            return ItemStack.EMPTY;
 
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();

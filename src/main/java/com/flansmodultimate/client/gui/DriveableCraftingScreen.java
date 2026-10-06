@@ -93,8 +93,8 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     protected void init()
     {
         super.init();
-        craftButton = addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.driveable.craft"), button -> craftSelected())
-            .bounds(leftPos + 110, topPos + 198, 40, 20).build());
+        craftButton = addRenderableWidget(
+            Button.builder(Component.translatable("gui.flansmodultimate.driveable.craft"), button -> craftSelected()).bounds(leftPos + 110, topPos + 198, 40, 20).build());
         blueprintsUpButton = addRenderableWidget(new ArrowButton(leftPos + 157, topPos + 21, true, button -> scrollBlueprints(-1)));
         blueprintsDownButton = addRenderableWidget(new ArrowButton(leftPos + 157, topPos + 75, false, button -> scrollBlueprints(1)));
         recipeUpButton = addRenderableWidget(new ArrowButton(leftPos + 83, topPos + 177, true, button -> scrollRecipe(-1)));
@@ -118,8 +118,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     private void craftSelected()
     {
         List<DriveableType> blueprints = DriveableCraftingMenu.getBlueprints();
-        if (minecraft == null || minecraft.player == null || minecraft.gameMode == null
-            || selectedBlueprint < 0 || selectedBlueprint >= blueprints.size())
+        if (minecraft == null || minecraft.player == null || minecraft.gameMode == null || selectedBlueprint < 0 || selectedBlueprint >= blueprints.size())
             return;
         int id = DriveableCraftingMenu.CRAFT_BUTTON_BASE + selectedBlueprint;
         if (menu.clickMenuButton(minecraft.player, id))
@@ -164,12 +163,12 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         }
 
         graphics.drawString(font, font.plainSubstrByWidth(ModUtils.getDisplayNameString(selected), MAX_NAME_WIDTH), STATS_LEFT, STATS_TOP, WHITE, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()),
-            STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT, WHITE, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()),
-            STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 2, WHITE, false);
-        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.ammo", selected.getNumAmmoSlots()),
-            STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 3, WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.cargo", selected.getNumCargoSlots()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT, WHITE,
+            false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.passengers", selected.getNumPassengers()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 2,
+            WHITE, false);
+        graphics.drawString(font, Component.translatable("gui.flansmodultimate.driveable.ammo", selected.getNumAmmoSlots()), STATS_LEFT, STATS_TOP + STATS_LINE_HEIGHT * 3, WHITE,
+            false);
 
         // Engine requirement, beside its slot
         graphics.drawString(font, selected.numEngines() + "x", 100, 177, WHITE, false);
@@ -288,8 +287,8 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
-            model.render(selected, pose, buffers.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
+            model.render(selected, pose, buffers.getBuffer(renderPass.getRenderType(texture, translucent, cull)), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, red, green,
+                blue, 1F, 1F, renderPass);
         }
         buffers.endBatch();
         Lighting.setupFor3DItems();
@@ -309,8 +308,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
     {
         if (minecraft == null || minecraft.player == null)
             return false;
-        return minecraft.player.getAbilities().instabuild
-            || InventoryHelper.countInInventory(minecraft.player.getInventory(), required) >= required.getCount();
+        return minecraft.player.getAbilities().instabuild || InventoryHelper.countInInventory(minecraft.player.getInventory(), required) >= required.getCount();
     }
 
     @Override
@@ -418,9 +416,7 @@ public final class DriveableCraftingScreen extends AbstractContainerScreen<Drive
         @Override
         public void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
         {
-            int u = up
-                ? (active ? UP_ENABLED_U : UP_DISABLED_U)
-                : (active ? DOWN_ENABLED_U : DOWN_DISABLED_U);
+            int u = up ? (active ? UP_ENABLED_U : UP_DISABLED_U) : (active ? DOWN_ENABLED_U : DOWN_DISABLED_U);
             graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLECRAFTING, getX(), getY(), u, 0, SIZE, SIZE, SHEET_SIZE, SHEET_SIZE);
         }
     }

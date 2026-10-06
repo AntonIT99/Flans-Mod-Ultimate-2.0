@@ -32,8 +32,7 @@ class DriveableCollisionProfileTest
         List<Vector3f> modifiers = zeroModifiers();
         modifiers.set(0, new Vector3f(0.25F, 0.5F, 0.75F));
         modifiers.set(6, new Vector3f(1F, 1.25F, 1.5F));
-        DriveableCollisionProfile.Shape shape = DriveableCollisionProfile.compileMesh(
-            mesh(new Vector3f(2F, 3F, 4F), new Vector3f(5F, 6F, 7F), modifiers));
+        DriveableCollisionProfile.Shape shape = DriveableCollisionProfile.compileMesh(mesh(new Vector3f(2F, 3F, 4F), new Vector3f(5F, 6F, 7F), modifiers));
 
         assertNotNull(shape);
         assertVertex(shape, 0, 3.25D, -2.5D, -1.75D);
@@ -43,8 +42,7 @@ class DriveableCollisionProfileTest
     @Test
     void compiledFacePlanesPointOutwardAndContainAllCorners()
     {
-        DriveableCollisionProfile.Shape shape = DriveableCollisionProfile.compileMesh(
-            mesh(new Vector3f(), new Vector3f(2F, 1F, 3F), zeroModifiers()));
+        DriveableCollisionProfile.Shape shape = DriveableCollisionProfile.compileMesh(mesh(new Vector3f(), new Vector3f(2F, 1F, 3F), zeroModifiers()));
         assertNotNull(shape);
         double[] points = shape.coordinates();
         double centreX = average(points, 0);
@@ -57,8 +55,7 @@ class DriveableCollisionProfileTest
             assertTrue(DriveableCollisionProfile.facePlane(points, face, centreX, centreY, centreZ, plane));
             for (int vertex = 0; vertex < 8; vertex++)
             {
-                double signed = plane[0] * shape.vertex(vertex, 0) + plane[1] * shape.vertex(vertex, 1)
-                    + plane[2] * shape.vertex(vertex, 2) + plane[3];
+                double signed = plane[0] * shape.vertex(vertex, 0) + plane[1] * shape.vertex(vertex, 1) + plane[2] * shape.vertex(vertex, 2) + plane[3];
                 assertTrue(signed <= EPSILON, "corner must remain inside every outward face plane");
             }
         }
@@ -112,8 +109,7 @@ class DriveableCollisionProfileTest
         return result;
     }
 
-    private static void assertVertex(DriveableCollisionProfile.Shape shape, int vertex,
-                                     double x, double y, double z)
+    private static void assertVertex(DriveableCollisionProfile.Shape shape, int vertex, double x, double y, double z)
     {
         assertEquals(x, shape.vertex(vertex, 0), EPSILON);
         assertEquals(y, shape.vertex(vertex, 1), EPSILON);

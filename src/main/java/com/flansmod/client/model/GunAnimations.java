@@ -94,12 +94,7 @@ public class GunAnimations
     @Getter
     public enum EnumLookAtState
     {
-        NONE(1),
-        TILT1(10),
-        LOOK1(20),
-        TILT2(10),
-        LOOK2(20),
-        UNTILT(10);
+        NONE(1), TILT1(10), LOOK1(20), TILT2(10), LOOK2(20), UNTILT(10);
 
         private final int time;
 
@@ -113,7 +108,7 @@ public class GunAnimations
     {
         long seed = seedFromString(type.getShortName());
         RandomSource r = RandomSource.create(seed);
-        sprintingStance = new Vector3f(nextRange(r, -15f, -5f), nextRange(r,   0f, 45f), nextRange(r, -20f, 10f));
+        sprintingStance = new Vector3f(nextRange(r, -15f, -5f), nextRange(r, 0f, 45f), nextRange(r, -20f, 10f));
     }
 
     private static float nextRange(RandomSource r, float min, float max)
@@ -137,56 +132,56 @@ public class GunAnimations
 
     public void update()
     {
-        //Assign values
+        // Assign values
         lastPumped = pumped;
         lastCharged = charged;
         lastGunPullback = gunPullback;
         lastCasingStage = casingStage;
 
-        //Time until pump-action
+        // Time until pump-action
         if (timeUntilPump > 0)
         {
             timeUntilPump--;
             if (timeUntilPump == 0)
             {
-                //Pump it!
+                // Pump it!
                 pumping = true;
                 lastPumped = pumped = -1F;
                 ModClient.setShotState(1);
             }
         }
 
-        //Timer until pulling back the charge handle/bolt
+        // Timer until pulling back the charge handle/bolt
         if (timeUntilCharge > 0)
         {
             timeUntilCharge--;
             if (timeUntilCharge == 0)
             {
-                //Pump it!
+                // Pump it!
                 charging = true;
                 lastCharged = charged = -1F;
             }
         }
 
-        //Time until hammer pullback
+        // Time until hammer pullback
         if (timeUntilPullback > 0)
         {
             timeUntilPullback--;
             if (timeUntilPullback == 0)
             {
-                //Reset the hammer
+                // Reset the hammer
                 isFired = true;
                 lastGunPullback = gunPullback = -1F;
             }
         }
         else
         {
-            //Automatically reset hammer
+            // Automatically reset hammer
             hammerRotation *= 0.6F;
             althammerRotation *= 0.6F;
         }
 
-        //Time until bullet casing ejection
+        // Time until bullet casing ejection
         if (timeUntilCasing > 0)
         {
             timeUntilCasing--;
@@ -201,7 +196,7 @@ public class GunAnimations
         if (muzzleFlashTime > 0)
             muzzleFlashTime--;
 
-        if(pumping)
+        if (pumping)
         {
             pumped += 2F / timeToPumpFor;
             if (pumped >= 0.999F)
@@ -221,12 +216,12 @@ public class GunAnimations
                 isFired = false;
         }
 
-        //Recoil model
+        // Recoil model
         lastGunRecoil = gunRecoil;
         if (gunRecoil > 0)
             gunRecoil *= 0.7F;
 
-        //Slide model
+        // Slide model
         lastGunSlide = gunSlide;
         if (isGunEmpty)
             lastGunSlide = gunSlide = 0.5F;
@@ -235,9 +230,9 @@ public class GunAnimations
         else if (gunSlide > 0 && !isGunEmpty)
             gunSlide *= 0.5F;
 
-        //Reload
+        // Reload
         lastReloadAnimationProgress = reloadAnimationProgress;
-        if(reloading)
+        if (reloading)
             reloadAnimationProgress += 1F / reloadAnimationTime;
         if (reloading && reloadAnimationProgress >= 0.9F)
             isGunEmpty = false;
@@ -247,10 +242,10 @@ public class GunAnimations
         minigunBarrelRotation += minigunBarrelRotationSpeed;
         minigunBarrelRotationSpeed *= 0.9F;
 
-        if(meleeAnimationLength > 0)
+        if (meleeAnimationLength > 0)
         {
             meleeAnimationProgress++;
-            //If we are done, reset
+            // If we are done, reset
             if (meleeAnimationProgress > meleeAnimationLength)
                 meleeAnimationProgress = meleeAnimationLength = 0;
         }
@@ -258,7 +253,7 @@ public class GunAnimations
         if (switchAnimationProgress > 0)
         {
             switchAnimationProgress += 1F;
-            //If we are done, reset
+            // If we are done, reset
             if (switchAnimationProgress == switchAnimationLength)
                 switchAnimationLength = 0;
         }
@@ -271,10 +266,10 @@ public class GunAnimations
 
         switch (lookAt)
         {
-            case NONE:
+            case NONE :
                 lookAtTimer = 0;
                 break;
-            case TILT1, LOOK1, TILT2, LOOK2, UNTILT:
+            case TILT1, LOOK1, TILT2, LOOK2, UNTILT :
             {
                 lookAtTimer++;
                 if (lookAtTimer >= lookAt.getTime())
@@ -284,7 +279,7 @@ public class GunAnimations
                 }
                 break;
             }
-            default:
+            default :
                 break;
         }
     }
@@ -301,7 +296,7 @@ public class GunAnimations
 
     public void doShoot(int pumpDelay, int pumpTime, int hammerDelay, float hammerAngle, float althammerAngle, int casingDelay)
     {
-        //Accumulative recoil function
+        // Accumulative recoil function
         lastGunRecoil = gunRecoil += recoilAmount;
 
         minigunBarrelRotationSpeed += 2F;

@@ -22,11 +22,11 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 public class ItemHolderRenderer implements BlockEntityRenderer<ItemHolderBlockEntity>
 {
     public ItemHolderRenderer(BlockEntityRendererProvider.Context context)
-    {
-    }
+    {}
 
     @Override
-    public void render(@NotNull ItemHolderBlockEntity holder, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight, int packedOverlay)
+    public void render(@NotNull ItemHolderBlockEntity holder, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight,
+        int packedOverlay)
     {
         ItemHolderType type = holder.getItemHolderType();
         if (type == null)
@@ -66,19 +66,16 @@ public class ItemHolderRenderer implements BlockEntityRenderer<ItemHolderBlockEn
         switch (facing)
         {
             case NORTH -> poseStack.translate(-1F, 0F, 0F);
-            case EAST ->
-            {
+            case EAST -> {
                 poseStack.translate(-1F, 0F, 1F);
                 poseStack.mulPose(Axis.YP.rotationDegrees(90F));
             }
-            case SOUTH ->
-            {
+            case SOUTH -> {
                 poseStack.translate(0F, 0F, 1F);
                 poseStack.mulPose(Axis.YP.rotationDegrees(180F));
             }
             case WEST -> poseStack.mulPose(Axis.YP.rotationDegrees(270F));
-            default ->
-            {
+            default -> {
                 // no-op
             }
         }
@@ -107,7 +104,8 @@ public class ItemHolderRenderer implements BlockEntityRenderer<ItemHolderBlockEn
                 poseStack.translate(0F, 0.25F, 0F);
             }
 
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, Minecraft.getInstance().level, 0);
+            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer,
+                Minecraft.getInstance().level, 0);
         }
         finally
         {

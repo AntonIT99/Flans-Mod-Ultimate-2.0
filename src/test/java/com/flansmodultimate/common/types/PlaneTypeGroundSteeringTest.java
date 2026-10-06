@@ -48,7 +48,6 @@ class PlaneTypeGroundSteeringTest
     {
         List<String> definition = new ArrayList<>(List.of("Driver 0 0 0"));
         definition.addAll(List.of(lines));
-        return new TypeFile("taxi", EnumType.PLANE,
-            new ContentPack("test", Path.of("build", "test-packs", "test")), definition);
+        return new TypeFile("taxi", EnumType.PLANE, new ContentPack("test", Path.of("build", "test-packs", "test")), definition);
     }
 }

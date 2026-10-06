@@ -12,7 +12,6 @@ import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.world.item.ItemStack;
@@ -159,8 +158,7 @@ public class PlaneType extends DriveableType
         newFlightControl = readValue("NewFlightControl", newFlightControl, file);
         turnLeftModifier = readOptionalValue("TurnLeftSpeed", turnLeftModifier, file);
         turnRightModifier = readValue("TurnRightSpeed", turnRightModifier, file);
-        String groundTurnKey = file.hasConfigLine("RealTurnRateDegPerSec")
-            ? "RealTurnRateDegPerSec" : "TurnRateDegPerSec";
+        String groundTurnKey = file.hasConfigLine("RealTurnRateDegPerSec") ? "RealTurnRateDegPerSec" : "TurnRateDegPerSec";
         float groundTurnRate = readValue(groundTurnKey, 0F, file);
         realTurnRateDegPerSec = Float.isFinite(groundTurnRate) && groundTurnRate > 0F ? groundTurnRate : 0F;
         lookUpModifier = readValue("LookUpSpeed", lookUpModifier, file);
@@ -248,8 +246,7 @@ public class PlaneType extends DriveableType
     @Override
     protected LegacyPhysicsHints legacyPhysicsHints()
     {
-        return new LegacyPhysicsHints(false, false, maxNegativeThrottle, floatOnWater,
-            newFlightControl, false);
+        return new LegacyPhysicsHints(false, false, maxNegativeThrottle, floatOnWater, newFlightControl, false);
     }
 
     private void readPropellers(String key, List<Propeller> destination, TypeFile file)
@@ -264,8 +261,8 @@ public class PlaneType extends DriveableType
             try
             {
                 Propeller propeller = new Propeller(Integer.parseInt(values[0]),
-                    new Vector3f(parseLegacyFloat(values[1]) / 16F, parseLegacyFloat(values[2]) / 16F, parseLegacyFloat(values[3]) / 16F),
-                    EnumDriveablePart.getPart(values[4]), values[5], contentPack);
+                    new Vector3f(parseLegacyFloat(values[1]) / 16F, parseLegacyFloat(values[2]) / 16F, parseLegacyFloat(values[3]) / 16F), EnumDriveablePart.getPart(values[4]),
+                    values[5], contentPack);
                 destination.add(propeller);
                 driveableRecipe.add(RecipeIngredient.parse(values[5], 1, contentPack));
             }

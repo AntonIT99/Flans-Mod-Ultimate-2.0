@@ -45,7 +45,8 @@ public class PowerCubeBlock extends FlanEntityBlock
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type)
     {
-        return level.isClientSide ? (tickerLevel, pos, blockState, blockEntity) -> {
+        return level.isClientSide ? (tickerLevel, pos, blockState, blockEntity) ->
+        {
             if (blockEntity instanceof PowerCubeBlockEntity cube)
                 PowerCubeBlockEntity.tick(cube);
         } : null;
@@ -75,7 +76,8 @@ public class PowerCubeBlock extends FlanEntityBlock
 
     @Override
     @NotNull
-    public BlockState updateShape(@NotNull BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos)
+    public BlockState updateShape(@NotNull BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos,
+        @NotNull BlockPos neighborPos)
     {
         if (direction == Direction.DOWN && !canSurvive(state, level, pos))
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();

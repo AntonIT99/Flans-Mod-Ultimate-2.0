@@ -8,11 +8,12 @@ import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +90,7 @@ public class AttachmentType extends PaintableType implements IScope
     /** This variable controls whether the underbarrel is enabled */
     protected boolean secondaryFire;
     /** The list of bullet types that can be used in the secondary mode */
+    @Getter
     protected List<String> secondaryAmmo = new ArrayList<>();
     /** The delay between shots in ticks (1/20ths of seconds) */
     protected float secondaryDamage = 1;

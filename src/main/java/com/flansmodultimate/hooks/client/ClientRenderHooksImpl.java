@@ -39,6 +39,8 @@ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -90,13 +92,15 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
-    public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
+    public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks,
+        float lifetimeScale)
     {
         ParticleHelper.spawnSustained(particleType, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
     }
 
     @Override
-    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
+    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale,
+        int burstSize, int durationTicks, float lifetimeScale)
     {
         ParticleHelper.spawnSustained(hotParticleType, particleType, hotTicks, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
     }
@@ -120,7 +124,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
         if (mc.level == null)
             return;
 
-        Player shooter = mc.level.getPlayerByUUID(playerUUID);
+        LivingEntity shooter = muzzleFlashShooter(mc, playerUUID);
         if (shooter == null)
             return;
 
@@ -181,7 +185,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
      * Gun-model X is the barrel direction; it must be transformed by the arm
      * axes rather than interpreted as a camera-space sideways offset.
      */
-    private static Vec3 getMuzzleFlashPosition(Player player, InteractionHand hand, Vector3f shoulderOffset, Vector3f handOffset)
+    private static Vec3 getMuzzleFlashPosition(LivingEntity player, InteractionHand hand, Vector3f shoulderOffset, Vector3f handOffset)
     {
         boolean offHand = hand == InteractionHand.OFF_HAND;
         float side = offHand ? -1.0F : 1.0F;
@@ -191,33 +195,38 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
         // eye height keeps the same standing-player placement while following
         // crouching and entities whose dimensions have been changed.
         double shoulderHeight = player.getEyeHeight() - (1.62D - 22.0D / 16.0D);
-        Vec3 pos = player.position()
-            .add(toVec3(bodyAxes.getYAxis()).scale(shoulderHeight))
-            .subtract(toVec3(bodyAxes.getZAxis()).scale(side * 6.0D / 16.0D));
+        Vec3 pos = player.position().add(toVec3(bodyAxes.getYAxis()).scale(shoulderHeight)).subtract(toVec3(bodyAxes.getZAxis()).scale(side * 6.0D / 16.0D));
 
         Vector3f adjustedShoulderOffset = new Vector3f(shoulderOffset.x, shoulderOffset.y, shoulderOffset.z * side);
         pos = pos.add(toVec3(bodyAxes.findLocalVectorGlobally(toJoml(adjustedShoulderOffset))));
 
-        RotatedAxes armAxes = new RotatedAxes(
-            player.getYHeadRot() + 90.0F - 8.0F * side,
-            player.getXRot(),
-            0.0F);
+        RotatedAxes armAxes = new RotatedAxes(player.getYHeadRot() + 90.0F - 8.0F * side, player.getXRot(), 0.0F);
         pos = pos.add(toVec3(armAxes.getXAxis()).scale(10.0D / 16.0D));
 
         Vector3f adjustedHandOffset = new Vector3f(handOffset.x, handOffset.y, handOffset.z * side);
         return pos.add(toVec3(armAxes.findLocalVectorGlobally(toJoml(adjustedHandOffset))));
     }
 
-    private static Vec3 getMuzzleFlashVelocity(Player player, Minecraft minecraft)
+    private static Vec3 getMuzzleFlashVelocity(LivingEntity player, Minecraft minecraft)
     {
         RotatedAxes axes = new RotatedAxes(player.getYHeadRot() + 90.0F, player.getXRot(), 0.0F);
         org.joml.Vector3f velocity = axes.getXAxis();
-        velocity.add(
-            minecraft.level.random.nextFloat() * 2.0F - 1.0F,
-            minecraft.level.random.nextFloat() * 2.0F - 1.0F,
-            minecraft.level.random.nextFloat() * 2.0F - 1.0F);
+        velocity.add(minecraft.level.random.nextFloat() * 2.0F - 1.0F, minecraft.level.random.nextFloat() * 2.0F - 1.0F, minecraft.level.random.nextFloat() * 2.0F - 1.0F);
         velocity.mul(0.05F);
         return toVec3(velocity);
+    }
+
+    private static LivingEntity muzzleFlashShooter(Minecraft minecraft, UUID uuid)
+    {
+        Player player = minecraft.level.getPlayerByUUID(uuid);
+        if (player != null)
+            return player;
+        for (Entity entity : minecraft.level.entitiesForRendering())
+        {
+            if (entity instanceof LivingEntity living && living.getUUID().equals(uuid))
+                return living;
+        }
+        return null;
     }
 
     private static org.joml.Vector3f toJoml(Vector3f vector)
@@ -238,8 +247,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
         // In singleplayer this also runs on the server thread, for the debug
         // command. Loading a model there would read the texture atlas off the
         // render thread, so away from it take only what rendering has cached.
-        Object loaded = Minecraft.getInstance().isSameThread()
-            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        Object loaded = Minecraft.getInstance().isSameThread() ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
         if (!(loaded instanceof ModelDriveable model))
             return List.of();
         return MuzzleMeasurements.deriveMuzzles(model, driveableInputs(type));
@@ -251,8 +259,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
         if (type == null)
             return List.of();
         // As deriveMuzzles: off the render thread, only take what is already loaded.
-        Object loaded = Minecraft.getInstance().isSameThread()
-            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        Object loaded = Minecraft.getInstance().isSameThread() ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
         if (!(loaded instanceof ModelDriveable model))
             return List.of();
         return MuzzleMeasurements.derivePrimaryBarrels(model, driveableInputs(type));
@@ -267,8 +274,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
             if (info != null && info.getGunType() != null && info.getGunName() != null)
                 seatGuns.add(new MuzzleMeasurements.SeatGun(seat, info.getGunName()));
         }
-        return new MuzzleMeasurements.DriveableInputs(type instanceof PlaneType, type.getModelScale(),
-            type.getVehicleGunModelScale(), seatGuns);
+        return new MuzzleMeasurements.DriveableInputs(type instanceof PlaneType, type.getModelScale(), type.getVehicleGunModelScale(), seatGuns);
     }
 
     @Override
@@ -277,8 +283,7 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
         if (type == null)
             return List.of();
         // As deriveMuzzles: off the render thread, only take what is already loaded.
-        Object loaded = Minecraft.getInstance().isSameThread()
-            ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
+        Object loaded = Minecraft.getInstance().isSameThread() ? ModelCache.getOrLoadTypeModel(type) : ModelCache.getLoadedTypeModel(type);
         if (!(loaded instanceof ModelAAGun model))
             return List.of();
         return MuzzleMeasurements.deriveAAGunBarrelOffsets(model, type.getNumBarrels());

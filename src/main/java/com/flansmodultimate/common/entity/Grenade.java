@@ -115,6 +115,12 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         this(level, grenadeType, position, ModUtils.getPitchFromDirection(direction), ModUtils.getYawFromDirection(direction), entity);
     }
 
+    /** Addon firing path with optional launch audio; projectile effects remain defined by its type. */
+    public Grenade(Level level, GrenadeType grenadeType, Vec3 position, Vec3 direction, @Nullable LivingEntity entity, boolean playThrowSound)
+    {
+        this(level, grenadeType, position, ModUtils.getPitchFromDirection(direction), ModUtils.getYawFromDirection(direction), entity, playThrowSound);
+    }
+
     /** For living entities throwing grenades. */
     public Grenade(Level level, GrenadeType grenadeType, @NotNull LivingEntity livingEntity)
     {
@@ -123,12 +129,17 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     public Grenade(Level level, GrenadeType grenadeType, Vec3 position, float rotationPitch, float rotationYaw, @Nullable LivingEntity entity)
     {
+        this(level, grenadeType, position, rotationPitch, rotationYaw, entity, true);
+    }
+
+    private Grenade(Level level, GrenadeType grenadeType, Vec3 position, float rotationPitch, float rotationYaw, @Nullable LivingEntity entity, boolean playThrowSound)
+    {
         super(FlansModEntities.grenadeEntity.get(), level, grenadeType);
         setPos(position);
         this.configType = grenadeType;
         numUsesRemaining = grenadeType.getNumUses();
 
-        //Set the grenade to be facing the way the Pitch and Yaw variables define
+        // Set the grenade to be facing the way the Pitch and Yaw variables define
         axes.setAngles(rotationYaw + 90F, grenadeType.isSpinWhenThrown() ? rotationPitch : 0F, 0F);
         rotationYaw = grenadeType.isSpinWhenThrown() ? rotationYaw + 90F : 0F;
         setXRot(rotationPitch);
@@ -136,13 +147,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         xRotO = rotationPitch;
         yRotO = rotationYaw;
 
-        //Give the grenade velocity in the direction the player is looking
+        // Give the grenade velocity in the direction the player is looking
         float speed = 0.5F * grenadeType.getThrowSpeed();
         setDeltaMovement(axes.getXAxis().x * speed, axes.getXAxis().y * speed, axes.getXAxis().z * speed);
         if (grenadeType.isSpinWhenThrown())
             angularVelocity = new Vec3(0, 0, 10);
 
-        if (grenadeType.getThrowSound() != null)
+        if (playThrowSound && grenadeType.getThrowSound() != null)
             PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), grenadeType.getThrowSound(), true);
 
         thrower = entity;
@@ -453,7 +464,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (level.isClientSide || !checkForUUIDs)
             return;
 
-        if (thrower == null && throwerUUID != null && ((ServerLevel)level).getEntity(throwerUUID) instanceof LivingEntity living)
+        if (thrower == null && throwerUUID != null && ((ServerLevel) level).getEntity(throwerUUID) instanceof LivingEntity living)
             thrower = living;
 
         checkForUUIDs = false;
@@ -584,13 +595,13 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         Direction sideHit = hit.getDirection();
         switch (sideHit)
         {
-            case UP, DOWN:
+            case UP, DOWN :
                 postHitMotVec.y = -postHitMotVec.y;
                 break;
-            case EAST, WEST:
+            case EAST, WEST :
                 postHitMotVec.x = -postHitMotVec.x;
                 break;
-            case NORTH, SOUTH:
+            case NORTH, SOUTH :
                 postHitMotVec.z = -postHitMotVec.z;
                 break;
         }
@@ -618,8 +629,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         // Bounce sound
         if (velocity.lengthSqr() > 0.01D)
         {
-            FlansMod.getSoundEvent(configType.getBounceSound()).ifPresent(soundEvent ->
-                playSound(soundEvent.get(), 1.0F, 1.2F / (random.nextFloat() * 0.2F + 0.9F)));
+            FlansMod.getSoundEvent(configType.getBounceSound()).ifPresent(soundEvent -> playSound(soundEvent.get(), 1.0F, 1.2F / (random.nextFloat() * 0.2F + 0.9F)));
         }
 
         // Sticky grenades
@@ -636,25 +646,25 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             float yaw = axes.getYaw();
             switch (hit.getDirection())
             {
-                case DOWN:
+                case DOWN :
                     axes.setAngles(yaw, 180F, 0F);
                     break;
-                case UP:
+                case UP :
                     axes.setAngles(yaw, 0F, 0F);
                     break;
-                case NORTH:
+                case NORTH :
                     axes.setAngles(270F, 90F, 0F);
                     axes.rotateLocalYaw(yaw);
                     break;
-                case SOUTH:
+                case SOUTH :
                     axes.setAngles(90F, 90F, 0F);
                     axes.rotateLocalYaw(yaw);
                     break;
-                case WEST:
+                case WEST :
                     axes.setAngles(180F, 90F, 0F);
                     axes.rotateLocalYaw(yaw);
                     break;
-                case EAST:
+                case EAST :
                     axes.setAngles(0F, 90F, 0F);
                     axes.rotateLocalYaw(yaw);
                     break;
@@ -665,7 +675,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         }
     }
 
-    protected void updateStickToThrower() {
+    protected void updateStickToThrower()
+    {
         if (!configType.isStickToThrower())
             return;
 
@@ -682,8 +693,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         if (stickedEntity == null && !stuck)
         {
-            ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream()
-                .findFirst()
+            ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream().findFirst()
                 .ifPresent(entity -> stickedEntity = entity);
         }
 
@@ -702,9 +712,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         if (stickedEntity == null && !stuck)
         {
-            ModUtils.queryEntities(level, null, getBoundingBox(), Driveable.class, null).stream()
-                .findFirst()
-                .ifPresent(driveable -> stickedEntity = driveable);
+            ModUtils.queryEntities(level, null, getBoundingBox(), Driveable.class, null).stream().findFirst().ifPresent(driveable -> stickedEntity = driveable);
         }
 
         if (stickedEntity != null)
@@ -722,15 +730,14 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         if (stickedEntity == null)
         {
-            ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream()
-                .findFirst()
-                .ifPresent(entity -> {
-                    if (configType.isAllowStickSound())
-                    {
-                        PacketPlaySound.sendSoundPacket(this, configType.getStickSoundRange(), configType.getStickSound(), true);
-                    }
-                    stickedEntity = entity;
-                });
+            ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream().findFirst().ifPresent(entity ->
+            {
+                if (configType.isAllowStickSound())
+                {
+                    PacketPlaySound.sendSoundPacket(this, configType.getStickSoundRange(), configType.getStickSound(), true);
+                }
+                stickedEntity = entity;
+            });
         }
 
         if (stickedEntity != null)
@@ -743,8 +750,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
     protected void handleImpactDamage(Level level, Vec3 impactMotion)
     {
-        if (stuck || (!configType.useKineticDamageSystem()
-            && configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
+        if (stuck || (!configType.useKineticDamageSystem() && configType.getDamage().getDamageVsLiving() <= 0F && configType.getDamage().getDamageVsPlayer() <= 0F))
             return;
 
         double speedSq = impactMotion.lengthSqr();
@@ -796,14 +802,14 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             {
                 if (configType.isFlashEffects())
                 {
-                    configType.getFlashEffectInstances().forEach(effect ->
-                        entity.addEffect(new MobEffectInstance(effect)));
+                    configType.getFlashEffectInstances().forEach(effect -> entity.addEffect(new MobEffectInstance(effect)));
                 }
                 entity.hurt(getDamageSource(), configType.getFlashDamage());
             }
         }
 
-        PacketHandler.sendToAllAround(new PacketFlak(position(), configType.getSmokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(position(), configType.getSmokeParticlesCount(), configType.getSmokeParticleType()), position(),
+            ModCommonConfig.smokeParticlesRange(), level.dimension());
 
         if (configType.isFlashSoundEnable())
             PacketPlaySound.sendSoundPacket(this, configType.getFlashSoundRange(), configType.getFlashSound(), true);

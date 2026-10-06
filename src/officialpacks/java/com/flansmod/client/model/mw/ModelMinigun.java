@@ -78,7 +78,7 @@ public class ModelMinigun extends ModelGun
 
         minigunBarrelModel = new ModelRendererTurbo[24];
 
-        //Barrels
+        // Barrels
         minigunBarrelModel[0] = new ModelRendererTurbo(this, 0, 16, textureX, textureY);
         minigunBarrelModel[0].addBox(12F, 1F, -0.5F, 28, 1, 1);
         minigunBarrelModel[0].rotateAngleX = 0.0F;
@@ -110,27 +110,33 @@ public class ModelMinigun extends ModelGun
         minigunBarrelModel[5].setRotationPoint(0F, -1F, 0F);
 
         minigunBarrelModel[6] = new ModelRendererTurbo(this, 0, 28, textureX, textureY);
-        minigunBarrelModel[6].addShapeBox(8F, 0F, -3F, 4, 3, 6, 0F, /* 0 */ 0F, 0F, 0F, /* 1 */ 0F, 0F, 0F, /* 2 */ 0F, 0F, 0F, /* 3 */ 0F, 0F, 0F, /* 4 */ 0F, -0.5F, -1.5F, /* 5 */ 0F, -0.5F, -1.5F, /* 6 */ 0F, -0.5F, -1.5F, /* 7 */ 0F, -0.5F, -1.5F);
+        minigunBarrelModel[6].addShapeBox(8F, 0F, -3F, 4, 3, 6, 0F, /* 0 */ 0F, 0F, 0F, /* 1 */ 0F, 0F, 0F, /* 2 */ 0F, 0F, 0F, /* 3 */ 0F, 0F, 0F, /* 4 */ 0F, -0.5F, -1.5F,
+            /* 5 */ 0F, -0.5F, -1.5F, /* 6 */ 0F, -0.5F, -1.5F, /* 7 */ 0F, -0.5F, -1.5F);
         minigunBarrelModel[6].setRotationPoint(0F, -1F, 0F);
 
         minigunBarrelModel[7] = new ModelRendererTurbo(this, 20, 28, textureX, textureY);
-        minigunBarrelModel[7].addShapeBox(8F, -3F, -3F, 4, 3, 6, 0F, /* 0 */ 0F, -0.5F, -1.5F, /* 1 */ 0F, -0.5F, -1.5F, /* 2 */ 0F, -0.5F, -1.5F, /* 3 */ 0F, -0.5F, -1.5F, /* 4 */ 0F, 0F, 0F, /* 5 */ 0F, 0F, 0F, /* 6 */ 0F, 0F, 0F, /* 7 */ 0F, 0F, 0F);
+        minigunBarrelModel[7].addShapeBox(8F, -3F, -3F, 4, 3, 6, 0F, /* 0 */ 0F, -0.5F, -1.5F, /* 1 */ 0F, -0.5F, -1.5F, /* 2 */ 0F, -0.5F, -1.5F, /* 3 */ 0F, -0.5F, -1.5F,
+            /* 4 */ 0F, 0F, 0F, /* 5 */ 0F, 0F, 0F, /* 6 */ 0F, 0F, 0F, /* 7 */ 0F, 0F, 0F);
         minigunBarrelModel[7].setRotationPoint(0F, -1F, 0F);
 
         minigunBarrelModel[8] = new ModelRendererTurbo(this, 0, 37, textureX, textureY);
-        minigunBarrelModel[8].addShapeBox(28F, 0F, -3F, 2, 3, 6, 0F, /* 0 */ 0F, 0F, 0F, /* 1 */ 0F, 0F, 0F, /* 2 */ 0F, 0F, 0F, /* 3 */ 0F, 0F, 0F, /* 4 */ 0F, -0.5F, -1.5F, /* 5 */ 0F, -0.5F, -1.5F, /* 6 */ 0F, -0.5F, -1.5F, /* 7 */ 0F, -0.5F, -1.5F);
+        minigunBarrelModel[8].addShapeBox(28F, 0F, -3F, 2, 3, 6, 0F, /* 0 */ 0F, 0F, 0F, /* 1 */ 0F, 0F, 0F, /* 2 */ 0F, 0F, 0F, /* 3 */ 0F, 0F, 0F, /* 4 */ 0F, -0.5F, -1.5F,
+            /* 5 */ 0F, -0.5F, -1.5F, /* 6 */ 0F, -0.5F, -1.5F, /* 7 */ 0F, -0.5F, -1.5F);
         minigunBarrelModel[8].setRotationPoint(0F, -1F, 0F);
 
         minigunBarrelModel[9] = new ModelRendererTurbo(this, 16, 37, textureX, textureY);
-        minigunBarrelModel[9].addShapeBox(28F, -3F, -3F, 2, 3, 6, 0F, /* 0 */ 0F, -0.5F, -1.5F, /* 1 */ 0F, -0.5F, -1.5F, /* 2 */ 0F, -0.5F, -1.5F, /* 3 */ 0F, -0.5F, -1.5F, /* 4 */ 0F, 0F, 0F, /* 5 */ 0F, 0F, 0F, /* 6 */ 0F, 0F, 0F, /* 7 */ 0F, 0F, 0F);
+        minigunBarrelModel[9].addShapeBox(28F, -3F, -3F, 2, 3, 6, 0F, /* 0 */ 0F, -0.5F, -1.5F, /* 1 */ 0F, -0.5F, -1.5F, /* 2 */ 0F, -0.5F, -1.5F, /* 3 */ 0F, -0.5F, -1.5F,
+            /* 4 */ 0F, 0F, 0F, /* 5 */ 0F, 0F, 0F, /* 6 */ 0F, 0F, 0F, /* 7 */ 0F, 0F, 0F);
         minigunBarrelModel[9].setRotationPoint(0F, -1F, 0F);
 
         minigunBarrelModel[10] = new ModelRendererTurbo(this, 32, 37, textureX, textureY);
-        minigunBarrelModel[10].addShapeBox(36F, 0F, -3F, 2, 3, 6, 0F, /* 0 */ 0F, 0F, 0F, /* 1 */ 0F, 0F, 0F, /* 2 */ 0F, 0F, 0F, /* 3 */ 0F, 0F, 0F, /* 4 */ 0F, -0.5F, -1.5F, /* 5 */ 0F, -0.5F, -1.5F, /* 6 */ 0F, -0.5F, -1.5F, /* 7 */ 0F, -0.5F, -1.5F);
+        minigunBarrelModel[10].addShapeBox(36F, 0F, -3F, 2, 3, 6, 0F, /* 0 */ 0F, 0F, 0F, /* 1 */ 0F, 0F, 0F, /* 2 */ 0F, 0F, 0F, /* 3 */ 0F, 0F, 0F, /* 4 */ 0F, -0.5F, -1.5F,
+            /* 5 */ 0F, -0.5F, -1.5F, /* 6 */ 0F, -0.5F, -1.5F, /* 7 */ 0F, -0.5F, -1.5F);
         minigunBarrelModel[10].setRotationPoint(0F, -1F, 0F);
 
         minigunBarrelModel[11] = new ModelRendererTurbo(this, 48, 37, textureX, textureY);
-        minigunBarrelModel[11].addShapeBox(36F, -3F, -3F, 2, 3, 6, 0F, /* 0 */ 0F, -0.5F, -1.5F, /* 1 */ 0F, -0.5F, -1.5F, /* 2 */ 0F, -0.5F, -1.5F, /* 3 */ 0F, -0.5F, -1.5F, /* 4 */ 0F, 0F, 0F, /* 5 */ 0F, 0F, 0F, /* 6 */ 0F, 0F, 0F, /* 7 */ 0F, 0F, 0F);
+        minigunBarrelModel[11].addShapeBox(36F, -3F, -3F, 2, 3, 6, 0F, /* 0 */ 0F, -0.5F, -1.5F, /* 1 */ 0F, -0.5F, -1.5F, /* 2 */ 0F, -0.5F, -1.5F, /* 3 */ 0F, -0.5F, -1.5F,
+            /* 4 */ 0F, 0F, 0F, /* 5 */ 0F, 0F, 0F, /* 6 */ 0F, 0F, 0F, /* 7 */ 0F, 0F, 0F);
         minigunBarrelModel[11].setRotationPoint(0F, -1F, 0F);
 
         // Steampunk cogs
@@ -206,12 +212,14 @@ public class ModelMinigun extends ModelGun
         spinnerModel[6] = new ModelRendererTurbo(this, 0, 28, textureX, textureY); // Box 12
         spinnerModel[7] = new ModelRendererTurbo(this, 20, 28, textureX, textureY); // Box 13
 
-        spinnerModel[0].addShapeBox(0F, -3F, -3F, 4, 3, 6, 0F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 6
+        spinnerModel[0].addShapeBox(0F, -3F, -3F, 4, 3, 6, 0F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F,
+            0F); // Box 6
         spinnerModel[0].setRotationPoint(5F, -1F, 6F);
         spinnerModel[0].rotateAngleX = 0.52359878F;
         spinnerModel[0].rotateAngleY = 1.57079633F;
 
-        spinnerModel[1].addShapeBox(0F, 0F, -3F, 4, 3, 6, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F); // Box 7
+        spinnerModel[1].addShapeBox(0F, 0F, -3F, 4, 3, 6, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, -0.5F, -1.5F, 0F, -0.5F,
+            -1.5F); // Box 7
         spinnerModel[1].setRotationPoint(5F, -1F, 6F);
         spinnerModel[1].rotateAngleX = 0.52359878F;
         spinnerModel[1].rotateAngleY = 1.57079633F;
@@ -259,7 +267,8 @@ public class ModelMinigun extends ModelGun
     }
 
     @Override
-    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims, EnumRenderPass renderPass)
+    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        GunAnimations anims, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.translate(spinnerOrigin.x, spinnerOrigin.y, spinnerOrigin.z);

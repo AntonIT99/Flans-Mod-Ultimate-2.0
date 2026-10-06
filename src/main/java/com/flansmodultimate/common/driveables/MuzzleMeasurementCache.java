@@ -22,8 +22,8 @@ import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.ClassLoaderUtils;
 import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.ModelClassResolver;
 import com.flansmodultimate.util.ModCachePaths;
+import com.flansmodultimate.util.ModelClassResolver;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.AccessLevel;
@@ -55,12 +55,14 @@ import java.util.stream.Stream;
  * Keeps the results of {@link ModelMuzzleMeasurement} between runs, so a client
  * or server restarted on the same content skips loading and measuring every model.
  *
- * <p>The cache is coarse on purpose: one key covers every content pack, the
+ * <p>
+ * The cache is coarse on purpose: one key covers every content pack, the
  * user's categories, the option deciding which packs are corrected, and the code
  * that parses types and measures models. Any change to any of them measures
  * everything again; an unchanged restart takes every result from the file. The
  * results are replayed onto freshly read types, which come out of the same files
- * exactly as they did when the results were recorded.</p>
+ * exactly as they did when the results were recorded.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class MuzzleMeasurementCache
@@ -71,11 +73,9 @@ final class MuzzleMeasurementCache
     private static final Gson GSON = new GsonBuilder().create();
 
     /** The code whose changes change what a measurement returns. */
-    private static final List<Class<?>> MEASURING_CODE = List.of(
-        ModelMuzzleMeasurement.class, MuzzleMeasurements.class, ModelRendererTurbo.class, ModelBase.class,
-        ModelDriveable.class, ModelVehicle.class, ModelPlane.class, ModelMecha.class, ModelAAGun.class, ModelMG.class,
-        LegacyDriveableCoordinates.class, AAGunBarrelGeometry.class, ClassLoaderUtils.class, ModelClassResolver.class,
-        InfoType.class, DriveableType.class, AAGunType.class, GunType.class, TypeFile.class, ShootPoint.class, SeatInfo.class);
+    private static final List<Class<?>> MEASURING_CODE = List.of(ModelMuzzleMeasurement.class, MuzzleMeasurements.class, ModelRendererTurbo.class, ModelBase.class,
+        ModelDriveable.class, ModelVehicle.class, ModelPlane.class, ModelMecha.class, ModelAAGun.class, ModelMG.class, LegacyDriveableCoordinates.class, AAGunBarrelGeometry.class,
+        ClassLoaderUtils.class, ModelClassResolver.class, InfoType.class, DriveableType.class, AAGunType.class, GunType.class, TypeFile.class, ShootPoint.class, SeatInfo.class);
 
     /** What one measurement pass did, in the order it did it. */
     static final class Results
@@ -94,21 +94,23 @@ final class MuzzleMeasurementCache
     }
 
     /** Measured AA gun barrel pivots and muzzles, in model pixels. */
-    record Barrels(double[][] pivots, double[][] muzzles) {}
+    record Barrels(double[][] pivots, double[][] muzzles)
+    {}
 
     /** Measured deployable-gun pivot and muzzle, in model pixels. */
-    record Muzzle(double[] pivot, double[] muzzle) {}
+    record Muzzle(double[] pivot, double[] muzzle)
+    {}
 
     /** One shoot point or {@code GunOrigin} moved onto the model, in type-file pixels. */
-    record Move(boolean gunOrigin, boolean secondary, int index, float x, float y, float z) {}
+    record Move(boolean gunOrigin, boolean secondary, int index, float x, float y, float z)
+    {}
 
     /** The barrels of one shoot point or seat gun, as offsets from its muzzle in type-file pixels. */
     record Spread(boolean gunOrigin, boolean secondary, int index, float[][] offsets)
     {
         Spread(boolean gunOrigin, boolean secondary, int index, List<Vector3f> offsets)
         {
-            this(gunOrigin, secondary, index,
-                offsets.stream().map(offset -> new float[] { offset.x, offset.y, offset.z }).toArray(float[][]::new));
+            this(gunOrigin, secondary, index, offsets.stream().map(offset -> new float[]{offset.x, offset.y, offset.z}).toArray(float[][]::new));
         }
 
         List<Vector3f> offsetVectors()
@@ -117,7 +119,8 @@ final class MuzzleMeasurementCache
         }
     }
 
-    private record Stored(int version, String key, Results results) {}
+    private record Stored(int version, String key, Results results)
+    {}
 
     static String typeKey(InfoType type)
     {
@@ -249,15 +252,12 @@ final class MuzzleMeasurementCache
         try
         {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            update(digest, "format " + FORMAT_VERSION + " correct " + correctFlanFolderPacks
-                + " defaultCategories " + ContentLoadingConfig.isUseDefaultCategories());
+            update(digest, "format " + FORMAT_VERSION + " correct " + correctFlanFolderPacks + " defaultCategories " + ContentLoadingConfig.isUseDefaultCategories());
             for (Class<?> code : MEASURING_CODE)
                 update(digest, code.getName(), classBytes(code));
             // Mods register their packs from their constructors, which run in parallel,
             // so the packs are taken in an order of their own rather than the load order.
-            List<IContentProvider> packs = contentPacks.stream()
-                .sorted(Comparator.comparing(IContentProvider::getName).thenComparing(pack -> pack.getPath().toString()))
-                .toList();
+            List<IContentProvider> packs = contentPacks.stream().sorted(Comparator.comparing(IContentProvider::getName).thenComparing(pack -> pack.getPath().toString())).toList();
             // Logical packs packaged in one mod share its jar or folder, which is read once.
             Set<Path> fingerprinted = new HashSet<>();
             for (IContentProvider pack : packs)
@@ -317,8 +317,7 @@ final class MuzzleMeasurementCache
                 String name = file.getFileName().toString().toLowerCase(Locale.ROOT);
                 if (name.endsWith(".zip") || name.endsWith(".jar"))
                     update(digest, path.relativize(file) + " " + Files.size(file) + " " + Files.getLastModifiedTime(file).toMillis());
-                else if (name.endsWith(".txt") || name.endsWith(".class") || name.endsWith(".java")
-                    || categories && name.endsWith(".json"))
+                else if (name.endsWith(".txt") || name.endsWith(".class") || name.endsWith(".java") || categories && name.endsWith(".json"))
                     update(digest, path.relativize(file).toString(), Files.readAllBytes(file));
             }
         }
@@ -347,13 +346,13 @@ final class MuzzleMeasurementCache
     {
         double[][] arrays = new double[vectors.length][];
         for (int i = 0; i < vectors.length; i++)
-            arrays[i] = new double[] { vectors[i].x, vectors[i].y, vectors[i].z };
+            arrays[i] = new double[]{vectors[i].x, vectors[i].y, vectors[i].z};
         return arrays;
     }
 
     private static double[] toArray(Vec3 vector)
     {
-        return new double[] { vector.x, vector.y, vector.z };
+        return new double[]{vector.x, vector.y, vector.z};
     }
 
     private static Vec3[] toVectors(double[][] arrays)

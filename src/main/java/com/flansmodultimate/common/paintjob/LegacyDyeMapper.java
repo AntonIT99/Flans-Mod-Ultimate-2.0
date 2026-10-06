@@ -17,7 +17,8 @@ public final class LegacyDyeMapper
         return new ItemStack(toDyeItem(legacyName), count);
     }
 
-    public static Item toDyeItem(String legacyName) {
+    public static Item toDyeItem(String legacyName)
+    {
         String k = normalize(legacyName);
 
         return switch (k)
@@ -46,7 +47,8 @@ public final class LegacyDyeMapper
         };
     }
 
-    private static String normalize(String s) {
+    private static String normalize(String s)
+    {
         // Lowercase and drop underscores, dashes, and spaces; turn camelCase "lightBlue" into "lightblue".
         return s.toLowerCase(Locale.ROOT).replaceAll("[_\\-\\s]", "");
     }

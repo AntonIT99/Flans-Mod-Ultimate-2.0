@@ -59,7 +59,8 @@ final class ContentPackLocalization
         {
             try (java.io.Reader reader = Files.newBufferedReader(english, StandardCharsets.UTF_8))
             {
-                Map<String, String> existing = gson.fromJson(reader, new com.google.gson.reflect.TypeToken<Map<String, String>>() {}.getType());
+                Map<String, String> existing = gson.fromJson(reader, new com.google.gson.reflect.TypeToken<Map<String, String>>()
+                {}.getType());
                 if (existing != null)
                     fallback.putAll(existing);
             }
@@ -73,7 +74,8 @@ final class ContentPackLocalization
         {
             try (java.io.Reader reader = Files.newBufferedReader(ownership, StandardCharsets.UTF_8))
             {
-                Map<String, String> old = gson.fromJson(reader, new com.google.gson.reflect.TypeToken<Map<String, String>>() {}.getType());
+                Map<String, String> old = gson.fromJson(reader, new com.google.gson.reflect.TypeToken<Map<String, String>>()
+                {}.getType());
                 if (old != null)
                     old.forEach(fallback::remove);
             }
@@ -161,7 +163,8 @@ final class ContentPackLocalization
         return translations;
     }
 
-    private static List<String> readLinesUtf8OrUtf16(Path file) throws IOException {
+    private static List<String> readLinesUtf8OrUtf16(Path file) throws IOException
+    {
         List<String> lines = TextDecoding.readLines(file);
         stripBomIfPresent(lines);
         return lines;
@@ -169,11 +172,13 @@ final class ContentPackLocalization
 
     private static String convertTranslationKey(String legacyKey)
     {
-        if (legacyKey.startsWith(TRANSLATION_KEY_PREFIX_ITEM) && legacyKey.endsWith(TRANSLATION_KEY_SUFFIX_NAME)) {
+        if (legacyKey.startsWith(TRANSLATION_KEY_PREFIX_ITEM) && legacyKey.endsWith(TRANSLATION_KEY_SUFFIX_NAME))
+        {
             String id = legacyKey.substring(5, legacyKey.length() - 5).toLowerCase(Locale.ROOT);
             return TRANSLATION_KEY_PREFIX_ITEM + FlansMod.FLANSMOD_ID + "." + id;
         }
-        if ((legacyKey.startsWith(TRANSLATION_KEY_PREFIX_TYPE) || legacyKey.startsWith(TRANSLATION_KEY_PREFIX_BLOCK)) && legacyKey.endsWith(TRANSLATION_KEY_SUFFIX_NAME)) {
+        if ((legacyKey.startsWith(TRANSLATION_KEY_PREFIX_TYPE) || legacyKey.startsWith(TRANSLATION_KEY_PREFIX_BLOCK)) && legacyKey.endsWith(TRANSLATION_KEY_SUFFIX_NAME))
+        {
             String id = legacyKey.substring(legacyKey.indexOf('.') + 1, legacyKey.length() - 5).toLowerCase(Locale.ROOT);
             return TRANSLATION_KEY_PREFIX_BLOCK + FlansMod.FLANSMOD_ID + "." + id;
         }

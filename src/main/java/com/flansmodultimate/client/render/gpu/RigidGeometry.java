@@ -20,7 +20,10 @@ public final class RigidGeometry
         this(polygons, false);
     }
 
-    /** @param ownedGeometry the part never handed its geometry to outside code; see {@link TexturedPolygon#isRigidLodGeometry(boolean)} */
+    /**
+     * @param ownedGeometry
+     *            the part never handed its geometry to outside code; see {@link TexturedPolygon#isRigidLodGeometry(boolean)}
+     */
     public RigidGeometry(TexturedPolygon[] polygons, boolean ownedGeometry)
     {
         source = null;

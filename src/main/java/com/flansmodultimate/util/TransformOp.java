@@ -9,21 +9,18 @@ public record TransformOp(EnumKind kind, float[] args, String methodName, String
 {
     public enum EnumKind
     {
-        TRANSLATE,
-        SCALE,
-        ROTATE
+        TRANSLATE, SCALE, ROTATE
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (!(obj instanceof TransformOp other)) return false;
+        if (this == obj)
+            return true;
+        if (!(obj instanceof TransformOp other))
+            return false;
 
-        return kind == other.kind
-            && Arrays.equals(args, other.args)
-            && Objects.equals(methodName, other.methodName)
-            && Objects.equals(methodDesc, other.methodDesc);
+        return kind == other.kind && Arrays.equals(args, other.args) && Objects.equals(methodName, other.methodName) && Objects.equals(methodDesc, other.methodDesc);
     }
 
     @Override
@@ -40,7 +37,8 @@ public record TransformOp(EnumKind kind, float[] args, String methodName, String
         StringBuilder sb = new StringBuilder(kind.name()).append("(");
         for (int i = 0; i < args.length; i++)
         {
-            if (i > 0) sb.append(", ");
+            if (i > 0)
+                sb.append(", ");
             sb.append(args[i]);
         }
         sb.append(") in ").append(methodName).append(methodDesc);

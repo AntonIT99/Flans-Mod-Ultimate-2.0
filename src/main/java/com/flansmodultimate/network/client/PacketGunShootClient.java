@@ -3,10 +3,10 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;

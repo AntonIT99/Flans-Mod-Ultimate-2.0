@@ -30,8 +30,7 @@ public final class PackagedContentRepositorySource
         {
             if (packType == PackType.CLIENT_RESOURCES)
             {
-                addPack(acceptor, packType, module.modId() + ":assets",
-                    "Official Flan content assets", module.resourceRoot());
+                addPack(acceptor, packType, module.modId() + ":assets", "Official Flan content assets", module.resourceRoot());
                 addEncryptedResourcePack(acceptor, module);
                 continue;
             }
@@ -41,15 +40,13 @@ public final class PackagedContentRepositorySource
                 Path logicalPackRoot = module.contentRoot().resolve(provider.getPackId());
                 if (java.nio.file.Files.isDirectory(logicalPackRoot.resolve("data")))
                 {
-                    addPack(acceptor, packType, module.modId() + ":" + provider.getPackId(),
-                        provider.getName(), logicalPackRoot);
+                    addPack(acceptor, packType, module.modId() + ":" + provider.getPackId(), provider.getName(), logicalPackRoot);
                 }
             }
         }
     }
 
-    private static void addEncryptedResourcePack(Consumer<Pack> acceptor,
-                                                 PackagedContentLoader.RegisteredModule module)
+    private static void addEncryptedResourcePack(Consumer<Pack> acceptor, PackagedContentLoader.RegisteredModule module)
     {
         Path bundlePath = module.resourceRoot().resolve(EncryptedResourcePack.BUNDLE_RESOURCE_PATH);
         if (!java.nio.file.Files.isRegularFile(bundlePath))
@@ -60,11 +57,10 @@ public final class PackagedContentRepositorySource
         // which places the encrypted overlay after the normal assets in the effective stack.
         String id = encryptedPackId(module.modId());
         int packFormat = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
-        Pack.Info info = new Pack.Info(Component.literal("Optional uncensored Flan content"),
-            packFormat, packFormat, FeatureFlagSet.of(), false);
+        Pack.Info info = new Pack.Info(Component.literal("Optional uncensored Flan content"), packFormat, packFormat, FeatureFlagSet.of(), false);
         Pack.ResourcesSupplier resources = packId -> new EncryptedResourcePack(packId, module.modId(), bundlePath);
-        Pack pack = Pack.create(id, Component.literal("Optional uncensored Flan content"), true, resources,
-            info, PackType.CLIENT_RESOURCES, Pack.Position.TOP, true, PackSource.BUILT_IN);
+        Pack pack = Pack.create(id, Component.literal("Optional uncensored Flan content"), true, resources, info, PackType.CLIENT_RESOURCES, Pack.Position.TOP, true,
+            PackSource.BUILT_IN);
         acceptor.accept(pack);
     }
 
@@ -73,15 +69,12 @@ public final class PackagedContentRepositorySource
         return modId + ":_encrypted_assets";
     }
 
-    private static void addPack(Consumer<Pack> acceptor, PackType packType, String id,
-                                String displayName, Path root)
+    private static void addPack(Consumer<Pack> acceptor, PackType packType, String id, String displayName, Path root)
     {
         int packFormat = SharedConstants.getCurrentVersion().getPackVersion(packType);
-        Pack.Info info = new Pack.Info(Component.literal(displayName), packFormat, packFormat,
-            FeatureFlagSet.of(), false);
+        Pack.Info info = new Pack.Info(Component.literal(displayName), packFormat, packFormat, FeatureFlagSet.of(), false);
         Pack.ResourcesSupplier resources = packId -> new PathPackResources(packId, root, true);
-        Pack pack = Pack.create(id, Component.literal(displayName), true, resources, info,
-            packType, Pack.Position.TOP, true, PackSource.BUILT_IN);
+        Pack pack = Pack.create(id, Component.literal(displayName), true, resources, info, packType, Pack.Position.TOP, true, PackSource.BUILT_IN);
         acceptor.accept(pack);
     }
 }

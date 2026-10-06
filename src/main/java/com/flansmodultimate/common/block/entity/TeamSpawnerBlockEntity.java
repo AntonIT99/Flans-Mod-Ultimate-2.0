@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.block.entity;
 
 import com.flansmodultimate.FlansModBlocks;
-
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.TeamItemEntity;
 import com.flansmodultimate.common.item.AAGunItem;
@@ -55,9 +54,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
 
     public enum Mode
     {
-        PLAYER,
-        ITEM,
-        VEHICLE
+        PLAYER, ITEM, VEHICLE
     }
 
     private UUID objectId = UUID.randomUUID();
@@ -110,8 +107,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         spawner.currentDelay = spawner.spawnDelayTicks;
 
         AABB nearby = new AABB(pos).inflate(spawner.mode == Mode.VEHICLE ? 8D : 1.5D);
-        if (!serverLevel.getEntities((Entity) null, nearby, entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER)
-            && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
+        if (!serverLevel.getEntities((Entity) null, nearby,
+            entity -> entity.getPersistentData().hasUUID(NBT_SPAWNER) && spawner.objectId.equals(entity.getPersistentData().getUUID(NBT_SPAWNER))).isEmpty())
             return;
 
         for (int index = 0; index < spawner.templates.size(); index++)
@@ -122,8 +119,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
                 Entity spawned = null;
                 if (template.getItem() instanceof DriveableItem<?, ?> driveableItem)
                 {
-                    Driveable driveable = driveableItem.spawnDriveable(level, pos.getX() + 0.5D,
-                        pos.getY() + 1D + driveableItem.getConfigType().getYOffset(), pos.getZ() + 0.5D,
+                    Driveable driveable = driveableItem.spawnDriveable(level, pos.getX() + 0.5D, pos.getY() + 1D + driveableItem.getConfigType().getYOffset(), pos.getZ() + 0.5D,
                         0F, null, template.copyWithCount(1));
                     spawned = driveable;
                 }
@@ -135,8 +131,7 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             }
 
             // Spawned items circle the spawner, evenly spaced, until a player of the owning team takes them
-            TeamItemEntity item = new TeamItemEntity(level, pos, spawner.objectId, template.copy(),
-                index * Math.PI * 2D / spawner.templates.size());
+            TeamItemEntity item = new TeamItemEntity(level, pos, spawner.objectId, template.copy(), index * Math.PI * 2D / spawner.templates.size());
             item.getPersistentData().putUUID(NBT_SPAWNER, spawner.objectId);
             level.addFreshEntity(item);
         }
@@ -164,7 +159,9 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
         tag.putUUID(NBT_OBJECT_ID, objectId);
         if (baseId != null)
             tag.putUUID(NBT_BASE_ID, baseId);
-        tag.putString(NBT_MODE, mode.name()); tag.putInt(NBT_SPAWN_DELAY, spawnDelayTicks); tag.putInt(NBT_CURRENT_DELAY, currentDelay);
+        tag.putString(NBT_MODE, mode.name());
+        tag.putInt(NBT_SPAWN_DELAY, spawnDelayTicks);
+        tag.putInt(NBT_CURRENT_DELAY, currentDelay);
         tag.putInt(NBT_TEAM_COLOUR, teamColour);
         ListTag items = new ListTag();
         templates.forEach(stack -> items.add(ItemStackData.save(stack, registries)));
@@ -186,7 +183,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
             mode = Mode.PLAYER;
         }
 
-        spawnDelayTicks = Math.max(20, tag.getInt(NBT_SPAWN_DELAY)); currentDelay = Math.max(0, tag.getInt(NBT_CURRENT_DELAY));
+        spawnDelayTicks = Math.max(20, tag.getInt(NBT_SPAWN_DELAY));
+        currentDelay = Math.max(0, tag.getInt(NBT_CURRENT_DELAY));
         teamColour = tag.contains(NBT_TEAM_COLOUR) ? tag.getInt(NBT_TEAM_COLOUR) : UNOWNED_COLOUR;
         templates.clear();
 
@@ -271,7 +269,8 @@ public final class TeamSpawnerBlockEntity extends FlanBlockEntity implements ITe
     @Override
     public void setBaseId(@Nullable UUID baseId)
     {
-        this.baseId = baseId; setChangedAndSync();
+        this.baseId = baseId;
+        setChangedAndSync();
     }
 
     @Override

@@ -45,27 +45,29 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
 
     static
     {
-        SLOT_POSITIONS.put(EnumMechaSlotType.LEGS, new int[] {84, 128});
-        SLOT_POSITIONS.put(EnumMechaSlotType.HIPS, new int[] {60, 128});
-        SLOT_POSITIONS.put(EnumMechaSlotType.LEFT_ARM, new int[] {36, 80});
-        SLOT_POSITIONS.put(EnumMechaSlotType.LEFT_TOOL, new int[] {36, 56});
-        SLOT_POSITIONS.put(EnumMechaSlotType.LEFT_SHOULDER, new int[] {60, 32});
-        SLOT_POSITIONS.put(EnumMechaSlotType.HEAD, new int[] {84, 32});
-        SLOT_POSITIONS.put(EnumMechaSlotType.FEET, new int[] {108, 128});
-        SLOT_POSITIONS.put(EnumMechaSlotType.RIGHT_ARM, new int[] {132, 80});
-        SLOT_POSITIONS.put(EnumMechaSlotType.RIGHT_TOOL, new int[] {132, 56});
-        SLOT_POSITIONS.put(EnumMechaSlotType.RIGHT_SHOULDER, new int[] {108, 32});
-        SLOT_POSITIONS.put(EnumMechaSlotType.U1, new int[] {10, 32});
-        SLOT_POSITIONS.put(EnumMechaSlotType.U2, new int[] {10, 56});
-        SLOT_POSITIONS.put(EnumMechaSlotType.U3, new int[] {10, 80});
-        SLOT_POSITIONS.put(EnumMechaSlotType.U4, new int[] {10, 104});
-        SLOT_POSITIONS.put(EnumMechaSlotType.U5, new int[] {10, 128});
+        SLOT_POSITIONS.put(EnumMechaSlotType.LEGS, new int[]{84, 128});
+        SLOT_POSITIONS.put(EnumMechaSlotType.HIPS, new int[]{60, 128});
+        SLOT_POSITIONS.put(EnumMechaSlotType.LEFT_ARM, new int[]{36, 80});
+        SLOT_POSITIONS.put(EnumMechaSlotType.LEFT_TOOL, new int[]{36, 56});
+        SLOT_POSITIONS.put(EnumMechaSlotType.LEFT_SHOULDER, new int[]{60, 32});
+        SLOT_POSITIONS.put(EnumMechaSlotType.HEAD, new int[]{84, 32});
+        SLOT_POSITIONS.put(EnumMechaSlotType.FEET, new int[]{108, 128});
+        SLOT_POSITIONS.put(EnumMechaSlotType.RIGHT_ARM, new int[]{132, 80});
+        SLOT_POSITIONS.put(EnumMechaSlotType.RIGHT_TOOL, new int[]{132, 56});
+        SLOT_POSITIONS.put(EnumMechaSlotType.RIGHT_SHOULDER, new int[]{108, 32});
+        SLOT_POSITIONS.put(EnumMechaSlotType.U1, new int[]{10, 32});
+        SLOT_POSITIONS.put(EnumMechaSlotType.U2, new int[]{10, 56});
+        SLOT_POSITIONS.put(EnumMechaSlotType.U3, new int[]{10, 80});
+        SLOT_POSITIONS.put(EnumMechaSlotType.U4, new int[]{10, 104});
+        SLOT_POSITIONS.put(EnumMechaSlotType.U5, new int[]{10, 128});
     }
 
-    @Nullable @Getter private final Mecha mecha;
+    @Nullable @Getter
+    private final Mecha mecha;
     private final Container mechaInventory;
     private final DriveableMappedSlot[] cargoSlots = new DriveableMappedSlot[GRID_SLOT_COUNT];
-    @Getter private int scrollRow;
+    @Getter
+    private int scrollRow;
     private final int mechaSlotEnd;
     private final int playerInventoryStart;
     private final int playerInventoryEnd;
@@ -80,15 +82,13 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
     {
         super(FlansModMenus.mechaInventoryMenu.get(), containerId);
         this.mecha = mecha;
-        mechaInventory = mecha == null || mecha.getDriveableData() == null
-            ? new SimpleContainer(1) : mecha.getDriveableData();
+        mechaInventory = mecha == null || mecha.getDriveableData() == null ? new SimpleContainer(1) : mecha.getDriveableData();
 
         for (int row = 0; row < VISIBLE_ROWS; row++)
         {
             for (int column = 0; column < COLUMN_COUNT; column++)
             {
-                DriveableMappedSlot slot = new DriveableMappedSlot(mechaInventory,
-                    CARGO_LEFT + column * SLOT_SIZE, CARGO_TOP + row * CARGO_ROW_HEIGHT, stack -> true);
+                DriveableMappedSlot slot = new DriveableMappedSlot(mechaInventory, CARGO_LEFT + column * SLOT_SIZE, CARGO_TOP + row * CARGO_ROW_HEIGHT, stack -> true);
                 cargoSlots[row * COLUMN_COUNT + column] = slot;
                 addSlot(slot);
             }
@@ -110,8 +110,7 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
         for (int row = 0; row < 3; row++)
         {
             for (int column = 0; column < 9; column++)
-                addSlot(new Slot(playerInventory, column + row * 9 + 9,
-                    PLAYER_INVENTORY_LEFT + column * SLOT_SIZE, 98 + row * SLOT_SIZE));
+                addSlot(new Slot(playerInventory, column + row * 9 + 9, PLAYER_INVENTORY_LEFT + column * SLOT_SIZE, 98 + row * SLOT_SIZE));
         }
         for (int column = 0; column < 9; column++)
             addSlot(new Slot(playerInventory, column, PLAYER_INVENTORY_LEFT + column * SLOT_SIZE, 156));
@@ -162,8 +161,7 @@ public final class MechaInventoryMenu extends AbstractContainerMenu
         if (id == PASSENGER_GUNS_BUTTON || id == REPAIR_BUTTON)
         {
             if (mecha != null && player instanceof ServerPlayer serverPlayer)
-                mecha.openDriveableInventoryMenu(serverPlayer, id == PASSENGER_GUNS_BUTTON
-                    ? DriveableInventoryMenu.Page.GUNS : DriveableInventoryMenu.Page.REPAIR);
+                mecha.openDriveableInventoryMenu(serverPlayer, id == PASSENGER_GUNS_BUTTON ? DriveableInventoryMenu.Page.GUNS : DriveableInventoryMenu.Page.REPAIR);
             return true;
         }
         return false;

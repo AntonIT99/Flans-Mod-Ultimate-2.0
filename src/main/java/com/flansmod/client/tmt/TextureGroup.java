@@ -89,6 +89,7 @@ public class TextureGroup
             modCount++;
             GeometryRevision.changed();
         }
+
         @Override
         public TexturedPolygon remove(int index)
         {

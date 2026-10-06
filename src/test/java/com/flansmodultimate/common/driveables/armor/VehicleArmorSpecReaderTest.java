@@ -51,8 +51,7 @@ class VehicleArmorSpecReaderTest
     @Test
     void invalidValuesWarnAndRemainAbsent()
     {
-        VehicleArmorSpecReader.Result result = read(
-            "ArmorFrontMm -1", "ArmorRearMm NaN", "ArmorTopMm 20 95", "PartArmorMm imaginary 10");
+        VehicleArmorSpecReader.Result result = read("ArmorFrontMm -1", "ArmorRearMm NaN", "ArmorTopMm 20 95", "PartArmorMm imaginary 10");
         assertTrue(result.spec().isEmpty());
         assertEquals(4, result.warnings().size());
     }
@@ -95,8 +94,7 @@ class VehicleArmorSpecReaderTest
         assertEquals(new ArmorPlate(37F, 0F), after.partOverrides().get(EnumDriveablePart.DECK_2));
 
         VehicleArmorSpec before = read("PartArmorMm deck2 37", "ArmorDeckMm 121").spec();
-        assertEquals(new ArmorPlate(37F, 0F), before.partOverrides().get(EnumDriveablePart.DECK_2),
-            "the more specific key must win regardless of declaration order");
+        assertEquals(new ArmorPlate(37F, 0F), before.partOverrides().get(EnumDriveablePart.DECK_2), "the more specific key must win regardless of declaration order");
     }
 
     @Test
@@ -117,8 +115,8 @@ class VehicleArmorSpecReaderTest
     @Test
     void heatProtectionRefinesThePlateOfTheSameFaceAndKeepsItsSlope()
     {
-        VehicleArmorSpec spec = read("ArmorFrontMm 600 0", "ArmorFrontVsHeatMm 950", "ArmorSideMm 70",
-            "TurretArmorFrontMm 650 10", "TurretArmorFrontVsHeatMm 1100", "ArmorRearMm 40").spec();
+        VehicleArmorSpec spec = read("ArmorFrontMm 600 0", "ArmorFrontVsHeatMm 950", "ArmorSideMm 70", "TurretArmorFrontMm 650 10", "TurretArmorFrontVsHeatMm 1100",
+            "ArmorRearMm 40").spec();
         assertEquals(new ArmorPlate(600F, 0F, 950F), spec.hull().get(EnumArmorFacing.FRONT));
         assertEquals(new ArmorPlate(650F, 10F, 1100F), spec.turret().get(EnumArmorFacing.FRONT));
         // A face with no HEAT key resists HEAT with its kinetic value.
@@ -129,8 +127,7 @@ class VehicleArmorSpecReaderTest
     @Test
     void sideAndPartHeatKeysCoverEveryPlateTheirArmourKeyCovers()
     {
-        VehicleArmorSpec spec = read("ArmorSideMm 80", "ArmorSideVsHeatMm 300",
-            "PartArmorMm rightSkirt 8", "PartArmorVsHeatMm rightSkirt 0").spec();
+        VehicleArmorSpec spec = read("ArmorSideMm 80", "ArmorSideVsHeatMm 300", "PartArmorMm rightSkirt 8", "PartArmorVsHeatMm rightSkirt 0").spec();
         assertEquals(300F, spec.hull().get(EnumArmorFacing.LEFT).heatThicknessMm());
         assertEquals(300F, spec.hull().get(EnumArmorFacing.RIGHT).heatThicknessMm());
         assertEquals(new ArmorPlate(8F, 0F, 0F), spec.partOverrides().get(EnumDriveablePart.RIGHT_SKIRT));
@@ -139,8 +136,7 @@ class VehicleArmorSpecReaderTest
     @Test
     void heatKeysWithoutAPlateToRefineWarnAndChangeNothing()
     {
-        VehicleArmorSpecReader.Result result = read("ArmorFrontVsHeatMm 900",
-            "PartArmorVsHeatMm leftTrack 30", "ArmorRearMm 40", "ArmorRearVsHeatMm -5");
+        VehicleArmorSpecReader.Result result = read("ArmorFrontVsHeatMm 900", "PartArmorVsHeatMm leftTrack 30", "ArmorRearMm 40", "ArmorRearVsHeatMm -5");
         assertFalse(result.spec().hull().containsKey(EnumArmorFacing.FRONT));
         assertTrue(result.spec().partOverrides().isEmpty());
         assertEquals(new ArmorPlate(40F, 0F), result.spec().hull().get(EnumArmorFacing.REAR));

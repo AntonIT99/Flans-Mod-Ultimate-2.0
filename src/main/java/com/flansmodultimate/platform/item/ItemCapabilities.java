@@ -10,7 +10,8 @@ import net.minecraft.world.item.ItemStack;
 /** Version boundary for item capability lookups (Forge capabilities or NeoForge item capabilities). */
 public final class ItemCapabilities
 {
-    private ItemCapabilities() {}
+    private ItemCapabilities()
+    {}
 
     /** The stack's energy storage, or null if it has none. */
     @Nullable

@@ -4,9 +4,15 @@
   "package": "com.wolffsmod.npcs.mixin",
   "refmap": "wolffsmodnpcs.refmap.json",
   "compatibilityLevel": "JAVA_17",
-  "mixins": ["NpcDistanceMixin"],
+  "mixins": ["NpcDistanceMixin", "NpcWeaponSettingsMixin", "NpcRangedAttackMixin", "NpcTypeDataMixin", "NpcTypePropertiesMixin", "NpcTypeModelLoadMixin", "NpcTypeRangedTimingMixin", "NpcTypeSyncMixin", "NpcEquipmentMixin", "NpcEquipmentAttackAiMixin", "NpcEquipmentLegacyRangedMixin"],
   "client": [
+      "NpcTypeControlsMixin",
+      "NpcArmorControlsMixin",
+      "NpcEquipmentAnimationMixin",
+      "NpcRangedControlsMixin",
+      "NpcEditorMenuMixin",
       "NpcModelBrowserMixin",
+      "NpcModelScrollAccessor",
       "NpcModelPreviewMixin",
       "NpcNameplateMixin",
       "NpcRenderContextMixin"

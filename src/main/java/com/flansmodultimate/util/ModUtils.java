@@ -51,8 +51,7 @@ import java.util.function.Predicate;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ModUtils
 {
-    private static final GameProfile BLOCK_BREAK_FAKE_PLAYER = new GameProfile(
-        UUID.fromString("8b90a6f3-93ce-4a42-bd86-88ec5eb17b5d"), "[FlansMod]");
+    private static final GameProfile BLOCK_BREAK_FAKE_PLAYER = new GameProfile(UUID.fromString("8b90a6f3-93ce-4a42-bd86-88ec5eb17b5d"), "[FlansMod]");
     /** The value the defaulted item registry hands back for any id it does not know. */
     private static final ResourceLocation AIR_ID = ResourceLocation.fromNamespaceAndPath("minecraft", "air");
 
@@ -99,14 +98,8 @@ public final class ModUtils
 
     public static boolean canEntityBeHitByBullets(Entity entity)
     {
-        return !(entity instanceof Bullet)
-            && !(entity instanceof Seat)
-            && !(entity instanceof Wheel)
-            && !(entity instanceof ItemEntity)
-            && !(entity instanceof Projectile)
-            && !(entity instanceof ExperienceOrb)
-            && !(entity instanceof Display)
-            && !(entity instanceof Interaction);
+        return !(entity instanceof Bullet) && !(entity instanceof Seat) && !(entity instanceof Wheel) && !(entity instanceof ItemEntity) && !(entity instanceof Projectile)
+            && !(entity instanceof ExperienceOrb) && !(entity instanceof Display) && !(entity instanceof Interaction);
     }
 
     public static List<Entity> queryEntities(Level level, @Nullable Entity except, AABB box, @Nullable Predicate<? super Entity> filter)
@@ -190,9 +183,7 @@ public final class ModUtils
      */
     public static Component getDisplayName(@Nullable InfoType infoType)
     {
-        return getItemStack(infoType)
-            .map(ItemStack::getHoverName)
-            .orElseGet(() -> Component.literal(infoType == null ? StringUtils.EMPTY : infoType.getName()));
+        return getItemStack(infoType).map(ItemStack::getHoverName).orElseGet(() -> Component.literal(infoType == null ? StringUtils.EMPTY : infoType.getName()));
     }
 
     /** {@link #getDisplayName(InfoType)} as plain text, for the string-based font and layout helpers. */
@@ -293,10 +284,7 @@ public final class ModUtils
             return Optional.empty();
         }
 
-        return Optional.ofNullable(ResourceLocation.tryParse(id))
-            .filter(BuiltInRegistries.BLOCK::containsKey)
-            .map(BuiltInRegistries.BLOCK::get)
-            .map(Block::defaultBlockState);
+        return Optional.ofNullable(ResourceLocation.tryParse(id)).filter(BuiltInRegistries.BLOCK::containsKey).map(BuiltInRegistries.BLOCK::get).map(Block::defaultBlockState);
     }
 
     /**
@@ -363,9 +351,7 @@ public final class ModUtils
 
     public static String getItemLocalizedName(String itemId)
     {
-        return resolveItem(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId))
-            .map(item -> item.getDescription().getString())
-            .orElse(itemId);
+        return resolveItem(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, itemId)).map(item -> item.getDescription().getString()).orElse(itemId);
     }
 
     public static float getYawFromDirection(Vec3 dir)
@@ -396,19 +382,24 @@ public final class ModUtils
         return new Vec3(x, y, z);
     }
 
-    public static EnumMovement getEnumMovement(LivingEntity entity) {
-        if (entity != null) {
-            if (entity.isSprinting()) {
+    public static EnumMovement getEnumMovement(LivingEntity entity)
+    {
+        if (entity != null)
+        {
+            if (entity.isSprinting())
+            {
                 return EnumMovement.SPRINTING;
             }
 
             Vec3 delta = entity.getDeltaMovement();
             boolean isMoving = Math.abs(delta.x) > 0.005 || Math.abs(delta.z) > 0.005;
-            if (isMoving) {
+            if (isMoving)
+            {
                 return EnumMovement.WALKING;
             }
 
-            if (entity.isCrouching()) {
+            if (entity.isCrouching())
+            {
                 return EnumMovement.SNEAKING;
             }
         }

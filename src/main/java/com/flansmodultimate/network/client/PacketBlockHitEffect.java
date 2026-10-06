@@ -3,12 +3,12 @@ package com.flansmodultimate.network.client;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,10 +37,12 @@ public class PacketBlockHitEffect implements IClientPacket
 
     public PacketBlockHitEffect(Vec3 hit, Vec3 motion, BlockPos position, Direction facingDirection, float explosionRadius, float blockHitFXScale, float bbWidth)
     {
-        this((float) hit.x, (float) hit.y, (float) hit.z, (float) motion.x, (float) motion.y, (float) motion.z, position.getX(), position.getY(), position.getZ(), facingDirection, explosionRadius, blockHitFXScale, bbWidth);
+        this((float) hit.x, (float) hit.y, (float) hit.z, (float) motion.x, (float) motion.y, (float) motion.z, position.getX(), position.getY(), position.getZ(), facingDirection,
+            explosionRadius, blockHitFXScale, bbWidth);
     }
 
-    public PacketBlockHitEffect(float x, float y, float z, float motionX, float motionY, float motionZ, int blockX, int blockY, int blockZ, Direction facingDirection, float explosionRadius, float blockHitFXScale, float bbWidth)
+    public PacketBlockHitEffect(float x, float y, float z, float motionX, float motionY, float motionZ, int blockX, int blockY, int blockZ, Direction facingDirection,
+        float explosionRadius, float blockHitFXScale, float bbWidth)
     {
         this.x = x;
         this.y = y;
@@ -116,7 +118,7 @@ public class PacketBlockHitEffect implements IClientPacket
         Vec3 motion = new Vec3(motionX, motionY, motionZ);
 
         double scalingFactor = ClientHooks.RENDER.hasFancyGraphics() ? 10.0 : 2.0;
-        int numBlockParticles = (int)(Math.pow(explosionRadius + 1.0, 1.5) * scalingFactor + 20.0);
+        int numBlockParticles = (int) (Math.pow(explosionRadius + 1.0, 1.5) * scalingFactor + 20.0);
         double velocityFactor = Math.sqrt(explosionRadius + 1.0) * blockHitFXScale * 0.5;
 
         for (int i = 0; i < numBlockParticles; i++)

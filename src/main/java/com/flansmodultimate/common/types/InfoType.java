@@ -66,7 +66,8 @@ public abstract class InfoType implements IContentType
     private static final String LOOT_POOL_NAME = "FlansMod";
 
     /** A timer telling the mod when to play a sound again, paired with the sound it plays. */
-    private record SoundTimer(String parameterName, Supplier<String> sound, IntSupplier length, IntConsumer applyLength) {}
+    private record SoundTimer(String parameterName, Supplier<String> sound, IntSupplier length, IntConsumer applyLength)
+    {}
 
     /** Populated while reading a type and cleared once the measured sound lengths have been applied. */
     private final List<SoundTimer> soundTimers = new ArrayList<>();
@@ -280,8 +281,8 @@ public abstract class InfoType implements IContentType
                 {
                     String recipeRow = getRecipeRow((i + row + 1 < lines.size()) ? lines.get(i + row + 1) : StringUtils.EMPTY);
                     if (hasRecipeContentAfterGrid(recipeRow))
-                        TypeReaderUtils.logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow
-                            + "' is supposed to be part of the recipe", file);
+                        TypeReaderUtils
+                            .logError("Looks like a bad recipe in " + originalShortName + ". Double check whether '" + recipeRow + "' is supposed to be part of the recipe", file);
 
                     recipePattern.add(padRecipeRow(recipeRow));
                 }
@@ -329,8 +330,7 @@ public abstract class InfoType implements IContentType
     private static String getRecipeRow(String recipeRow)
     {
         String row = Objects.requireNonNullElse(recipeRow, StringUtils.EMPTY);
-        if (row.regionMatches(true, 0, "Recipe", 0, "Recipe".length()) && row.length() > "Recipe".length()
-            && Character.isWhitespace(row.charAt("Recipe".length())))
+        if (row.regionMatches(true, 0, "Recipe", 0, "Recipe".length()) && row.length() > "Recipe".length() && Character.isWhitespace(row.charAt("Recipe".length())))
             return row.substring("Recipe".length() + 1);
         return row;
     }
@@ -488,8 +488,8 @@ public abstract class InfoType implements IContentType
 
             timer.applyLength().accept(measuredLength.getAsInt());
             resolved++;
-            FlansLog.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)", originalShortName, timer.parameterName(), sound,
-                configuredLength, measuredLength.getAsInt());
+            FlansLog.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)", originalShortName, timer.parameterName(), sound, configuredLength,
+                measuredLength.getAsInt());
         }
 
         soundTimers.clear();
@@ -501,8 +501,7 @@ public abstract class InfoType implements IContentType
         addEffects(key, effects, file, ambient, visible, 250, 0);
     }
 
-    protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible, int defaultDuration,
-        int defaultAmplifier)
+    protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible, int defaultDuration, int defaultAmplifier)
     {
         readValuesInLines(key, file).ifPresent(lines -> lines.forEach(effectValues ->
         {
@@ -522,8 +521,7 @@ public abstract class InfoType implements IContentType
                     }
                     else
                     {
-                        TypeReaderUtils.logError(
-                            String.format("Potion ID %s does not exist in '%s %s'", effectId, key, String.join(StringUtils.SPACE, effectValues)), file);
+                        TypeReaderUtils.logError(String.format("Potion ID %s does not exist in '%s %s'", effectId, key, String.join(StringUtils.SPACE, effectValues)), file);
                     }
                 }
                 catch (NumberFormatException e)
@@ -728,8 +726,7 @@ public abstract class InfoType implements IContentType
         if (dungeonChance <= 0 || !type.isHasItem())
             return;
 
-        ModUtils.getItem(this).map(item -> createDungeonLootEntry(item, FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance))
-            .ifPresent(entry -> addLootEntry(table, entry));
+        ModUtils.getItem(this).map(item -> createDungeonLootEntry(item, FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance)).ifPresent(entry -> addLootEntry(table, entry));
     }
 
     protected LootPoolEntryContainer createDungeonLootEntry(Item item, int weight)
@@ -777,12 +774,12 @@ public abstract class InfoType implements IContentType
             LootPoolEntryContainer[] newEntries = Arrays.copyOf(oldEntries, oldEntries.length + 1);
             newEntries[oldEntries.length] = entry;
 
-            Constructor<LootPool> constructor = LootPool.class.getDeclaredConstructor(LootPoolEntryContainer[].class, LootItemCondition[].class,
-                LootItemFunction[].class, NumberProvider.class, NumberProvider.class, String.class);
+            Constructor<LootPool> constructor = LootPool.class.getDeclaredConstructor(LootPoolEntryContainer[].class, LootItemCondition[].class, LootItemFunction[].class,
+                NumberProvider.class, NumberProvider.class, String.class);
             constructor.setAccessible(true);
 
-            return Optional.of(constructor.newInstance(newEntries, (LootItemCondition[]) conditionsField.get(pool),
-                (LootItemFunction[]) functionsField.get(pool), pool.getRolls(), pool.getBonusRolls(), LOOT_POOL_NAME));
+            return Optional.of(constructor.newInstance(newEntries, (LootItemCondition[]) conditionsField.get(pool), (LootItemFunction[]) functionsField.get(pool), pool.getRolls(),
+                pool.getBonusRolls(), LOOT_POOL_NAME));
         }
         catch (Exception ex)
         {
@@ -798,8 +795,7 @@ public abstract class InfoType implements IContentType
     private static class LootBuildContext
     {
         private final LootTable table;
-        private final LootPool.Builder builder = LootPool.lootPool().name(LOOT_POOL_NAME).setRolls(ConstantValue.exactly(1F))
-            .setBonusRolls(ConstantValue.exactly(1F));
+        private final LootPool.Builder builder = LootPool.lootPool().name(LOOT_POOL_NAME).setRolls(ConstantValue.exactly(1F)).setBonusRolls(ConstantValue.exactly(1F));
         private final List<LootPoolEntryContainer> entries = new ArrayList<>();
         private int entryCount;
 

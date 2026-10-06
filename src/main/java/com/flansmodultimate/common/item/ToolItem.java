@@ -218,9 +218,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         LivingEntity chosen = user;
         Vec3 delta = end.subtract(start);
 
-        AABB searchBox = user.getBoundingBox()
-            .expandTowards(delta)
-            .inflate(1.0D);
+        AABB searchBox = user.getBoundingBox().expandTowards(delta).inflate(1.0D);
 
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, user, start, end, searchBox, e -> e instanceof LivingEntity living && living != user);
         if (hit != null && hit.getEntity() instanceof LivingEntity living)
@@ -259,8 +257,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         Driveable fallbackDriveable = getDriveable(fallback.getEntity());
         if (fallbackDriveable == null)
             return best;
-        float fallbackTime = motion.lengthSqr() <= 1.0E-8D ? 0F
-            : (float) (start.distanceTo(fallback.getLocation()) / motion.length());
+        float fallbackTime = motion.lengthSqr() <= 1.0E-8D ? 0F : (float) (start.distanceTo(fallback.getLocation()) / motion.length());
         return fallbackTime < bestTime ? fallbackDriveable : best;
     }
 

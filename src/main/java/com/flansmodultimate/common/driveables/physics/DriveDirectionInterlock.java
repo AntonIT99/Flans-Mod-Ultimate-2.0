@@ -3,7 +3,8 @@ package com.flansmodultimate.common.driveables.physics;
 /**
  * Direction interlock for the real-world ground drivetrain.
  *
- * <p>A gearbox cannot drive a vehicle backwards while it is still rolling
+ * <p>
+ * A gearbox cannot drive a vehicle backwards while it is still rolling
  * forwards, nor the other way round. Demand against the direction of travel
  * therefore leaves the drive in neutral and the vehicle only sheds its momentum.
  * The opposite gear is selected once the vehicle has all but stopped and stayed
@@ -11,11 +12,13 @@ package com.flansmodultimate.common.driveables.physics;
  * then takes up tractive force progressively over
  * {@link VehiclePhysicsConstants#CLUTCH_ENGAGE_TICKS}.
  *
- * <p>Without it, reverse demand became full launch force on the tick the vehicle
+ * <p>
+ * Without it, reverse demand became full launch force on the tick the vehicle
  * crossed zero. Reverse speeds are low enough that the whole run sits inside the
  * launch-limited regime, so even a heavy tank snapped into reverse in a few ticks.
  *
- * <p>Pulling away in the gear already selected is unaffected. One instance
+ * <p>
+ * Pulling away in the gear already selected is unaffected. One instance
  * belongs to one vehicle and {@link #advance} must be called exactly once per
  * tick, because the shift pause and the clutch are counted in calls.
  */
@@ -30,8 +33,10 @@ public final class DriveDirectionInterlock
     /**
      * Advances the drivetrain by one tick.
      *
-     * @param demand         signed drive demand; only its sign is used
-     * @param forwardSpeedMs signed longitudinal speed in m/s, positive forwards
+     * @param demand
+     *            signed drive demand; only its sign is used
+     * @param forwardSpeedMs
+     *            signed longitudinal speed in m/s, positive forwards
      * @return the share of available tractive force transmitted this tick, from 0 to 1
      */
     public double advance(double demand, double forwardSpeedMs)

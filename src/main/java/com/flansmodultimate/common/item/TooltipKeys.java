@@ -6,7 +6,8 @@ package com.flansmodultimate.common.item;
  */
 public final class TooltipKeys
 {
-    private TooltipKeys() {}
+    private TooltipKeys()
+    {}
 
     public static final String ARMOR_POINTS = "tooltip.flansmodultimate.armor_points";
     public static final String ATTACHMENTS = "tooltip.flansmodultimate.attachments";

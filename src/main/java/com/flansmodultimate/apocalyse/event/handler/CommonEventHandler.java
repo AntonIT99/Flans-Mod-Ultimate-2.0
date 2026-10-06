@@ -61,8 +61,10 @@ public final class CommonEventHandler
     /**
      * Arms the apocalypse when a mecha running an AI chip appears in the world.
      *
-     * <p>This is the placement hook: a mecha reaches the world through its item, through a
-     * command, or out of a structure, and every one of those routes ends here.</p>
+     * <p>
+     * This is the placement hook: a mecha reaches the world through its item, through a
+     * command, or out of a structure, and every one of those routes ends here.
+     * </p>
      */
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event)
@@ -84,9 +86,7 @@ public final class CommonEventHandler
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event)
     {
-        if (!(event.getEntity() instanceof ServerPlayer player)
-            || !ModApocalypseConfig.apocalypseDimensionEnabled()
-            || !ModApocalypseConfig.apocalypseRespawnInApocalypse())
+        if (!(event.getEntity() instanceof ServerPlayer player) || !ModApocalypseConfig.apocalypseDimensionEnabled() || !ModApocalypseConfig.apocalypseRespawnInApocalypse())
             return;
 
         ServerLevel targetLevel = player.server.getLevel(ApocalypseContent.APOCALYPSE_LEVEL);

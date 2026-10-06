@@ -30,8 +30,7 @@ class PackagedContentProviderTest
         assertEquals("Flan's Mod Official Content Packs", provider.getConflictDisplayName());
         assertEquals(content, provider.getContentRoot(null));
         assertEquals(assets.resolve("textures"), provider.getTextureSourcePath(null));
-        assertEquals(models.resolve("com/flansmod/client/model/ModelTest.class"),
-            provider.getModelPath("com.flansmod.client.model.ModelTest", null));
+        assertEquals(models.resolve("com/flansmod/client/model/ModelTest.class"), provider.getModelPath("com.flansmod.client.model.ModelTest", null));
     }
 
     @Test
@@ -54,8 +53,7 @@ class PackagedContentProviderTest
         {
             assertEquals(fs.getPath("/flans_content/parts"), provider.getContentRoot(fs));
             assertEquals(fs.getPath("/assets/flansmod/textures"), provider.getTextureSourcePath(fs));
-            assertEquals(fs.getPath("/flans_models/com/flansmod/client/model/ModelTest.class"),
-                provider.getModelPath("com.flansmod.client.model.ModelTest", fs));
+            assertEquals(fs.getPath("/flans_models/com/flansmod/client/model/ModelTest.class"), provider.getModelPath("com.flansmod.client.model.ModelTest", fs));
         }
     }
 
@@ -70,20 +68,12 @@ class PackagedContentProviderTest
             }
             """);
 
-        assertEquals(Map.of(
-            "modernwarfare", "Modern Warfare Content Pack",
-            "parts", "Parts Content Pack"
-        ), PackagedContentLoader.loadDisplayNames(mapping));
+        assertEquals(Map.of("modernwarfare", "Modern Warfare Content Pack", "parts", "Parts Content Pack"), PackagedContentLoader.loadDisplayNames(mapping));
     }
 
-    private static PackagedContentProvider provider(Path modulePath, Path content, Path assets,
-                                                     Path models, boolean archiveBacked)
+    private static PackagedContentProvider provider(Path modulePath, Path content, Path assets, Path models, boolean archiveBacked)
     {
-        return new PackagedContentProvider(
-            "Parts (Official)", "Flan's Mod Official Content Packs", "parts", modulePath,
-            content, assets, models,
-            "flans_content/parts", "assets/flansmod", "flans_models",
-            archiveBacked, true
-        );
+        return new PackagedContentProvider("Parts (Official)", "Flan's Mod Official Content Packs", "parts", modulePath, content, assets, models, "flans_content/parts",
+            "assets/flansmod", "flans_models", archiveBacked, true);
     }
 }

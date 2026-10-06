@@ -72,7 +72,7 @@ public final class PlayerShootingHandler implements ShootingHandler
 
         PlayerData data = PlayerData.getInstance(player);
         EnumFireMode mode = gunType.getFireMode(gunStack);
-        
+
         if (mode == EnumFireMode.BURST)
         {
             int remaining = data.getBurstRoundsRemaining(hand);
@@ -90,10 +90,6 @@ public final class PlayerShootingHandler implements ShootingHandler
     private void knockbackOppositeLook(Player player, float knockback)
     {
         Vec3 look = player.getLookAngle();
-        player.setDeltaMovement(player.getDeltaMovement().add(
-            -look.x * knockback * 0.1,
-            -look.y * knockback * 0.1,
-            -look.z * knockback * 0.1
-        ));
+        player.setDeltaMovement(player.getDeltaMovement().add(-look.x * knockback * 0.1, -look.y * knockback * 0.1, -look.z * knockback * 0.1));
     }
 }

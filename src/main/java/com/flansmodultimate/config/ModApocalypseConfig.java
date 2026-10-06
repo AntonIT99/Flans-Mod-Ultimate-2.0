@@ -58,93 +58,57 @@ public final class ModApocalypseConfig
     {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
         builder.push(APOCALYPSE_CONFIG_SECTION);
-        APOCALYPSE_ENABLED = builder
-            .comment("Master switch for integrated Flan's Mod Apocalypse content and server-side behavior.")
-            .define("apocalypseEnabled", true);
-        APOCALYPSE_DIMENSION_ENABLED = builder
-            .comment("Register and auto-enable the built-in Apocalypse dimension datapack during world loading.",
-                "Requires a full game/server restart after changing because datapack repositories are built before worlds load.",
-                "Only affects newly created worlds. Minecraft stores a world's dimension list in level.dat and merges it",
-                "back in on load, so a world that already contains the Apocalypse dimension keeps it even when this is off;",
-                "the gameplay features gated by this option are still disabled for that world.")
-            .define("apocalypseDimensionEnabled", true);
-        APOCALYPSE_PORTALS_ENABLED = builder
-            .comment("Enable power-cube portal activation and portal entity teleporting.")
-            .define("apocalypsePortalsEnabled", true);
-        APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED = builder
-            .comment("Generate abandoned apocalypse portals outside the apocalypse dimension.")
+        APOCALYPSE_ENABLED = builder.comment("Master switch for integrated Flan's Mod Apocalypse content and server-side behavior.").define("apocalypseEnabled", true);
+        APOCALYPSE_DIMENSION_ENABLED = builder.comment("Register and auto-enable the built-in Apocalypse dimension datapack during world loading.",
+            "Requires a full game/server restart after changing because datapack repositories are built before worlds load.",
+            "Only affects newly created worlds. Minecraft stores a world's dimension list in level.dat and merges it",
+            "back in on load, so a world that already contains the Apocalypse dimension keeps it even when this is off;",
+            "the gameplay features gated by this option are still disabled for that world.").define("apocalypseDimensionEnabled", true);
+        APOCALYPSE_PORTALS_ENABLED = builder.comment("Enable power-cube portal activation and portal entity teleporting.").define("apocalypsePortalsEnabled", true);
+        APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED = builder.comment("Generate abandoned apocalypse portals outside the apocalypse dimension.")
             .define("apocalypseOverworldPortalGenerationEnabled", true);
-        APOCALYPSE_WORLDGEN_ENABLED = builder
-            .comment("Enable apocalypse sulphur pools, dead trees, skeleton displays, portals, and simple structure generation.")
+        APOCALYPSE_WORLDGEN_ENABLED = builder.comment("Enable apocalypse sulphur pools, dead trees, skeleton displays, portals, and simple structure generation.")
             .define("apocalypseWorldgenEnabled", true);
-        APOCALYPSE_MOBS_ENABLED = builder
-            .comment("Enable apocalypse survivor, drone, and boss spawning/behavior.")
-            .define("apocalypseMobsEnabled", true);
-        APOCALYPSE_NUKE_DROPS_ENABLED = builder
-            .comment("Enable nuke drop entities during apocalypse events.")
-            .define("apocalypseNukeDropsEnabled", true);
-        APOCALYPSE_COUNTDOWN_LENGTH = builder
-            .comment("Time in ticks between placing a mecha with an AI-chip engine and the apocalypse starting.")
+        APOCALYPSE_MOBS_ENABLED = builder.comment("Enable apocalypse survivor, drone, and boss spawning/behavior.").define("apocalypseMobsEnabled", true);
+        APOCALYPSE_NUKE_DROPS_ENABLED = builder.comment("Enable nuke drop entities during apocalypse events.").define("apocalypseNukeDropsEnabled", true);
+        APOCALYPSE_COUNTDOWN_LENGTH = builder.comment("Time in ticks between placing a mecha with an AI-chip engine and the apocalypse starting.")
             .defineInRange("apocalypseCountdownLength", 469, 19, Integer.MAX_VALUE);
-        APOCALYPSE_SURVIVOR_RARITY = builder
-            .comment("Chunk generation rarity for survivors. 1 means every eligible attempt; larger values are rarer.")
+        APOCALYPSE_SURVIVOR_RARITY = builder.comment("Chunk generation rarity for survivors. 1 means every eligible attempt; larger values are rarer.")
             .defineInRange("apocalypseSurvivorRarity", 250, 1, Integer.MAX_VALUE);
-        APOCALYPSE_WANDERING_SURVIVOR_RARITY = builder
-            .comment("Per-player server tick rarity for wandering survivors in the apocalypse dimension.")
+        APOCALYPSE_WANDERING_SURVIVOR_RARITY = builder.comment("Per-player server tick rarity for wandering survivors in the apocalypse dimension.")
             .defineInRange("apocalypseWanderingSurvivorRarity", 500, 1, Integer.MAX_VALUE);
-        APOCALYPSE_FLY_BY_RARITY = builder
-            .comment("Per-player server tick rarity for aircraft flying over the apocalypse dimension.")
-            .defineInRange("apocalypseFlyByRarity", 5000, 1, Integer.MAX_VALUE);
-        APOCALYPSE_SKELETON_RARITY = builder
-            .comment("Chunk generation rarity for buried skeleton displays.")
-            .defineInRange("apocalypseSkeletonRarity", 50, 1, Integer.MAX_VALUE);
-        APOCALYPSE_DEAD_TREE_RARITY = builder
-            .comment("Chunk generation rarity for dead trees.")
-            .defineInRange("apocalypseDeadTreeRarity", 100, 1, Integer.MAX_VALUE);
-        APOCALYPSE_VEHICLE_RARITY = builder
-            .comment("Chunk generation rarity for damaged, empty-fuel vehicles supplied by installed content packs.")
+        APOCALYPSE_FLY_BY_RARITY = builder.comment("Per-player server tick rarity for aircraft flying over the apocalypse dimension.").defineInRange("apocalypseFlyByRarity", 5000,
+            1, Integer.MAX_VALUE);
+        APOCALYPSE_SKELETON_RARITY = builder.comment("Chunk generation rarity for buried skeleton displays.").defineInRange("apocalypseSkeletonRarity", 50, 1, Integer.MAX_VALUE);
+        APOCALYPSE_DEAD_TREE_RARITY = builder.comment("Chunk generation rarity for dead trees.").defineInRange("apocalypseDeadTreeRarity", 100, 1, Integer.MAX_VALUE);
+        APOCALYPSE_VEHICLE_RARITY = builder.comment("Chunk generation rarity for damaged, empty-fuel vehicles supplied by installed content packs.")
             .defineInRange("apocalypseVehicleRarity", 2000, 1, Integer.MAX_VALUE);
-        APOCALYPSE_AIRPORT_RARITY = builder
-            .comment("Rarity of four-chunk airfields, rolled once per four-chunk strip on the High Plateau.")
+        APOCALYPSE_AIRPORT_RARITY = builder.comment("Rarity of four-chunk airfields, rolled once per four-chunk strip on the High Plateau.")
             .defineInRange("apocalypseAirportRarity", 125, 1, Integer.MAX_VALUE);
-        APOCALYPSE_DYE_FACTORY_RARITY = builder
-            .comment("Chunk generation rarity for dye factories on flat Deep Canyon floor.")
-            .defineInRange("apocalypseDyeFactoryRarity", 400, 1, Integer.MAX_VALUE);
-        APOCALYPSE_LAB_RARITY = builder
-            .comment("Rarity of 3x3-chunk research labs, rolled once per 3x3-chunk region on the High Plateau.")
-            .defineInRange("apocalypseLabRarity", 100, 1, Integer.MAX_VALUE);
-        APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY = builder
-            .comment("Chunk generation rarity for abandoned portals in the apocalypse dimension.")
+        APOCALYPSE_DYE_FACTORY_RARITY = builder.comment("Chunk generation rarity for dye factories on flat Deep Canyon floor.").defineInRange("apocalypseDyeFactoryRarity", 400, 1,
+            Integer.MAX_VALUE);
+        APOCALYPSE_LAB_RARITY = builder.comment("Rarity of 3x3-chunk research labs, rolled once per 3x3-chunk region on the High Plateau.").defineInRange("apocalypseLabRarity",
+            100, 1, Integer.MAX_VALUE);
+        APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY = builder.comment("Chunk generation rarity for abandoned portals in the apocalypse dimension.")
             .defineInRange("apocalypseAbandonedPortalRarity", 4000, 1, Integer.MAX_VALUE);
-        APOCALYPSE_ABANDONED_PORTAL_OVERWORLD_RARITY = builder
-            .comment("Chunk generation rarity for abandoned portals outside the apocalypse dimension.")
+        APOCALYPSE_ABANDONED_PORTAL_OVERWORLD_RARITY = builder.comment("Chunk generation rarity for abandoned portals outside the apocalypse dimension.")
             .defineInRange("apocalypseAbandonedPortalOverworldRarity", 4000, 1, Integer.MAX_VALUE);
-        APOCALYPSE_RETURN_RADIUS = builder
-            .comment("Distance from the recorded entry point where return portals are searched/generated.")
-            .defineInRange("apocalypseReturnRadius", 100, 1, Integer.MAX_VALUE);
-        APOCALYPSE_SPAWN_RADIUS = builder
-            .comment("Distance from a death point used by apocalypse respawn logic.")
-            .defineInRange("apocalypseSpawnRadius", 100, 1, Integer.MAX_VALUE);
+        APOCALYPSE_RETURN_RADIUS = builder.comment("Distance from the recorded entry point where return portals are searched/generated.").defineInRange("apocalypseReturnRadius",
+            100, 1, Integer.MAX_VALUE);
+        APOCALYPSE_SPAWN_RADIUS = builder.comment("Distance from a death point used by apocalypse respawn logic.").defineInRange("apocalypseSpawnRadius", 100, 1,
+            Integer.MAX_VALUE);
         APOCALYPSE_RESPAWN_IN_APOCALYPSE = builder
             .comment("If true, players who die in the apocalypse dimension respawn near their death point instead of normal overworld spawn behavior.")
             .define("apocalypseRespawnInApocalypse", false);
         APOCALYPSE_TELEPORT_OPTION = builder
-            .comment("Who an AI-chip apocalypse trigger sends to the apocalypse dimension when it fires.",
-                "PLACER_ONLY: only the player who placed the mecha.",
-                "DIM: everyone in the dimension it was placed in.",
-                "NEARBY: everyone within 50 blocks of it.",
-                "DIM_OPT_IN / NEARBY_OPT_IN: nobody is moved automatically; those players are told the",
-                "apocalypse has begun and travel through a portal if they choose to.")
+            .comment("Who an AI-chip apocalypse trigger sends to the apocalypse dimension when it fires.", "PLACER_ONLY: only the player who placed the mecha.",
+                "DIM: everyone in the dimension it was placed in.", "NEARBY: everyone within 50 blocks of it.",
+                "DIM_OPT_IN / NEARBY_OPT_IN: nobody is moved automatically; those players are told the", "apocalypse has begun and travel through a portal if they choose to.")
             .defineEnum("apocalypseTeleportOption", ApocalypseTeleportOption.PLACER_ONLY);
-        APOCALYPSE_ACID_DAMAGE = builder
-            .comment("Damage per tick from sulphuric acid.")
-            .defineInRange("apocalypseAcidDamage", 5.0, 0.0, 1000.0);
-        APOCALYPSE_NUKE_EXPLOSION_POWER = builder
-            .comment("Explosion power when a nuke drop impacts. Set to 0 to keep nuke drops visual only.")
+        APOCALYPSE_ACID_DAMAGE = builder.comment("Damage per tick from sulphuric acid.").defineInRange("apocalypseAcidDamage", 5.0, 0.0, 1000.0);
+        APOCALYPSE_NUKE_EXPLOSION_POWER = builder.comment("Explosion power when a nuke drop impacts. Set to 0 to keep nuke drops visual only.")
             .defineInRange("apocalypseNukeExplosionPower", 0.0, 0.0, 1000.0);
-        APOCALYPSE_NUKE_VISUAL_TICKS = builder
-            .comment("Lifetime after nuke impact, in ticks.")
-            .defineInRange("apocalypseNukeVisualTicks", 500, 1, Integer.MAX_VALUE);
+        APOCALYPSE_NUKE_VISUAL_TICKS = builder.comment("Lifetime after nuke impact, in ticks.").defineInRange("apocalypseNukeVisualTicks", 500, 1, Integer.MAX_VALUE);
         builder.pop();
 
         configSpec = builder.build();
@@ -180,10 +144,8 @@ public final class ModApocalypseConfig
         try (FileConfig config = FileConfig.of(configPath, TomlFormat.instance()))
         {
             config.load();
-            return new EarlyApocalypseSettings(
-                readEarlyBoolean(config, configPath, "apocalypseEnabled", true),
-                readEarlyBoolean(config, configPath, "apocalypseDimensionEnabled", true)
-            );
+            return new EarlyApocalypseSettings(readEarlyBoolean(config, configPath, "apocalypseEnabled", true),
+                readEarlyBoolean(config, configPath, "apocalypseDimensionEnabled", true));
         }
         catch (Exception e)
         {
@@ -206,36 +168,15 @@ public final class ModApocalypseConfig
 
     private static ApocalypseConfigSnapshot readConfig()
     {
-        return new ApocalypseConfigSnapshot(
-            ApocalypseConfigSnapshot.CURRENT_VERSION,
+        return new ApocalypseConfigSnapshot(ApocalypseConfigSnapshot.CURRENT_VERSION,
 
-            APOCALYPSE_ENABLED.get(),
-            APOCALYPSE_DIMENSION_ENABLED.get(),
-            APOCALYPSE_PORTALS_ENABLED.get(),
-            APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED.get(),
-            APOCALYPSE_WORLDGEN_ENABLED.get(),
-            APOCALYPSE_MOBS_ENABLED.get(),
-            APOCALYPSE_NUKE_DROPS_ENABLED.get(),
-            APOCALYPSE_COUNTDOWN_LENGTH.get(),
-            APOCALYPSE_SURVIVOR_RARITY.get(),
-            APOCALYPSE_WANDERING_SURVIVOR_RARITY.get(),
-            APOCALYPSE_FLY_BY_RARITY.get(),
-            APOCALYPSE_SKELETON_RARITY.get(),
-            APOCALYPSE_DEAD_TREE_RARITY.get(),
-            APOCALYPSE_VEHICLE_RARITY.get(),
-            APOCALYPSE_AIRPORT_RARITY.get(),
-            APOCALYPSE_DYE_FACTORY_RARITY.get(),
-            APOCALYPSE_LAB_RARITY.get(),
-            APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY.get(),
-            APOCALYPSE_ABANDONED_PORTAL_OVERWORLD_RARITY.get(),
-            APOCALYPSE_RETURN_RADIUS.get(),
-            APOCALYPSE_SPAWN_RADIUS.get(),
-            APOCALYPSE_RESPAWN_IN_APOCALYPSE.get(),
-            APOCALYPSE_TELEPORT_OPTION.get(),
-            APOCALYPSE_ACID_DAMAGE.get().floatValue(),
-            APOCALYPSE_NUKE_EXPLOSION_POWER.get().floatValue(),
-            APOCALYPSE_NUKE_VISUAL_TICKS.get()
-        );
+            APOCALYPSE_ENABLED.get(), APOCALYPSE_DIMENSION_ENABLED.get(), APOCALYPSE_PORTALS_ENABLED.get(), APOCALYPSE_OVERWORLD_PORTAL_GENERATION_ENABLED.get(),
+            APOCALYPSE_WORLDGEN_ENABLED.get(), APOCALYPSE_MOBS_ENABLED.get(), APOCALYPSE_NUKE_DROPS_ENABLED.get(), APOCALYPSE_COUNTDOWN_LENGTH.get(),
+            APOCALYPSE_SURVIVOR_RARITY.get(), APOCALYPSE_WANDERING_SURVIVOR_RARITY.get(), APOCALYPSE_FLY_BY_RARITY.get(), APOCALYPSE_SKELETON_RARITY.get(),
+            APOCALYPSE_DEAD_TREE_RARITY.get(), APOCALYPSE_VEHICLE_RARITY.get(), APOCALYPSE_AIRPORT_RARITY.get(), APOCALYPSE_DYE_FACTORY_RARITY.get(), APOCALYPSE_LAB_RARITY.get(),
+            APOCALYPSE_ABANDONED_PORTAL_APOC_RARITY.get(), APOCALYPSE_ABANDONED_PORTAL_OVERWORLD_RARITY.get(), APOCALYPSE_RETURN_RADIUS.get(), APOCALYPSE_SPAWN_RADIUS.get(),
+            APOCALYPSE_RESPAWN_IN_APOCALYPSE.get(), APOCALYPSE_TELEPORT_OPTION.get(), APOCALYPSE_ACID_DAMAGE.get().floatValue(), APOCALYPSE_NUKE_EXPLOSION_POWER.get().floatValue(),
+            APOCALYPSE_NUKE_VISUAL_TICKS.get());
     }
 
     public static ApocalypseConfigSnapshot get()
@@ -262,17 +203,13 @@ public final class ModApocalypseConfig
     public static boolean apocalypseDimensionEnabled()
     {
         ApocalypseConfigSnapshot config = get();
-        return config == null
-            ? APOCALYPSE_ENABLED.get() && APOCALYPSE_DIMENSION_ENABLED.get()
-            : config.apocalypseEnabled() && config.apocalypseDimensionEnabled();
+        return config == null ? APOCALYPSE_ENABLED.get() && APOCALYPSE_DIMENSION_ENABLED.get() : config.apocalypseEnabled() && config.apocalypseDimensionEnabled();
     }
 
     public static boolean apocalypsePortalsEnabled()
     {
         ApocalypseConfigSnapshot config = get();
-        return config == null
-            ? APOCALYPSE_ENABLED.get() && APOCALYPSE_PORTALS_ENABLED.get()
-            : config.apocalypseEnabled() && config.apocalypsePortalsEnabled();
+        return config == null ? APOCALYPSE_ENABLED.get() && APOCALYPSE_PORTALS_ENABLED.get() : config.apocalypseEnabled() && config.apocalypsePortalsEnabled();
     }
 
     public static boolean apocalypseOverworldPortalGenerationEnabled()
@@ -286,25 +223,19 @@ public final class ModApocalypseConfig
     public static boolean apocalypseWorldgenEnabled()
     {
         ApocalypseConfigSnapshot config = get();
-        return config == null
-            ? APOCALYPSE_ENABLED.get() && APOCALYPSE_WORLDGEN_ENABLED.get()
-            : config.apocalypseEnabled() && config.apocalypseWorldgenEnabled();
+        return config == null ? APOCALYPSE_ENABLED.get() && APOCALYPSE_WORLDGEN_ENABLED.get() : config.apocalypseEnabled() && config.apocalypseWorldgenEnabled();
     }
 
     public static boolean apocalypseMobsEnabled()
     {
         ApocalypseConfigSnapshot config = get();
-        return config == null
-            ? APOCALYPSE_ENABLED.get() && APOCALYPSE_MOBS_ENABLED.get()
-            : config.apocalypseEnabled() && config.apocalypseMobsEnabled();
+        return config == null ? APOCALYPSE_ENABLED.get() && APOCALYPSE_MOBS_ENABLED.get() : config.apocalypseEnabled() && config.apocalypseMobsEnabled();
     }
 
     public static boolean apocalypseNukeDropsEnabled()
     {
         ApocalypseConfigSnapshot config = get();
-        return config == null
-            ? APOCALYPSE_ENABLED.get() && APOCALYPSE_NUKE_DROPS_ENABLED.get()
-            : config.apocalypseEnabled() && config.apocalypseNukeDropsEnabled();
+        return config == null ? APOCALYPSE_ENABLED.get() && APOCALYPSE_NUKE_DROPS_ENABLED.get() : config.apocalypseEnabled() && config.apocalypseNukeDropsEnabled();
     }
 
     public static int apocalypseCountdownLength()
@@ -394,9 +325,7 @@ public final class ModApocalypseConfig
     public static boolean apocalypseRespawnInApocalypse()
     {
         ApocalypseConfigSnapshot config = get();
-        return config == null
-            ? APOCALYPSE_ENABLED.get() && APOCALYPSE_RESPAWN_IN_APOCALYPSE.get()
-            : config.apocalypseEnabled() && config.apocalypseRespawnInApocalypse();
+        return config == null ? APOCALYPSE_ENABLED.get() && APOCALYPSE_RESPAWN_IN_APOCALYPSE.get() : config.apocalypseEnabled() && config.apocalypseRespawnInApocalypse();
     }
 
     public static ApocalypseTeleportOption apocalypseTeleportOption()
@@ -425,12 +354,9 @@ public final class ModApocalypseConfig
 
     public enum ApocalypseTeleportOption
     {
-        PLACER_ONLY,
-        DIM,
-        DIM_OPT_IN,
-        NEARBY,
-        NEARBY_OPT_IN
+        PLACER_ONLY, DIM, DIM_OPT_IN, NEARBY, NEARBY_OPT_IN
     }
 
-    private record EarlyApocalypseSettings(boolean apocalypseEnabled, boolean apocalypseDimensionEnabled) {}
+    private record EarlyApocalypseSettings(boolean apocalypseEnabled, boolean apocalypseDimensionEnabled)
+    {}
 }

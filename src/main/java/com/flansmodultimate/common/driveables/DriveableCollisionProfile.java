@@ -10,21 +10,22 @@ import java.util.Map;
 /**
  * Immutable, precomputed geometry used for driveable-to-entity collision.
  *
- * <p>The legacy {@code AddCollisionMesh} points are corner modifiers rather
+ * <p>
+ * The legacy {@code AddCollisionMesh} points are corner modifiers rather
  * than absolute vertices. They are expanded here once when the type is first
  * used, instead of rebuilding and mutating collision boxes for every entity
  * on every tick. Damage and projectile tracing deliberately continue to use
- * the exact per-part {@link CollisionBox} definitions.</p>
+ * the exact per-part {@link CollisionBox} definitions.
+ * </p>
  */
 public final class DriveableCollisionProfile
 {
-    static final int[][] FACE_QUADS = {
-        {0, 1, 2, 3}, // top
+    static final int[][] FACE_QUADS = {{0, 1, 2, 3}, // top
         {4, 7, 6, 5}, // bottom
         {1, 5, 6, 2}, // +x
         {3, 7, 4, 0}, // -x
         {0, 4, 5, 1}, // -z
-        {2, 6, 7, 3}  // +z
+        {2, 6, 7, 3} // +z
     };
 
     private final List<Shape> shapes;
@@ -68,8 +69,7 @@ public final class DriveableCollisionProfile
     /** Package-visible for focused geometry tests. */
     static Shape compileMesh(CollisionMesh mesh)
     {
-        if (mesh == null || mesh.position() == null || mesh.size() == null
-            || mesh.vertices() == null || mesh.vertices().size() != 8)
+        if (mesh == null || mesh.position() == null || mesh.size() == null || mesh.vertices() == null || mesh.vertices().size() != 8)
             return null;
 
         Vector3f pos = mesh.position();
@@ -82,18 +82,12 @@ public final class DriveableCollisionProfile
         // checkCollision, leaving the model-Y inversion represented below.
         set(points, 0, pos.x - modifier.get(0).x, -pos.y + modifier.get(0).y, pos.z - modifier.get(0).z);
         set(points, 1, pos.x + size.x + modifier.get(1).x, -pos.y + modifier.get(1).y, pos.z - modifier.get(1).z);
-        set(points, 2, pos.x + size.x + modifier.get(2).x, -pos.y + modifier.get(2).y,
-            pos.z + size.z + modifier.get(2).z);
-        set(points, 3, pos.x - modifier.get(3).x, -pos.y + modifier.get(3).y,
-            pos.z + size.z + modifier.get(3).z);
-        set(points, 4, pos.x - modifier.get(4).x, -pos.y - size.y - modifier.get(4).y,
-            pos.z - modifier.get(4).z);
-        set(points, 5, pos.x + size.x + modifier.get(5).x, -pos.y - size.y - modifier.get(5).y,
-            pos.z - modifier.get(5).z);
-        set(points, 6, pos.x + size.x + modifier.get(6).x, -pos.y - size.y - modifier.get(6).y,
-            pos.z + size.z + modifier.get(6).z);
-        set(points, 7, pos.x - modifier.get(7).x, -pos.y - size.y - modifier.get(7).y,
-            pos.z + size.z + modifier.get(7).z);
+        set(points, 2, pos.x + size.x + modifier.get(2).x, -pos.y + modifier.get(2).y, pos.z + size.z + modifier.get(2).z);
+        set(points, 3, pos.x - modifier.get(3).x, -pos.y + modifier.get(3).y, pos.z + size.z + modifier.get(3).z);
+        set(points, 4, pos.x - modifier.get(4).x, -pos.y - size.y - modifier.get(4).y, pos.z - modifier.get(4).z);
+        set(points, 5, pos.x + size.x + modifier.get(5).x, -pos.y - size.y - modifier.get(5).y, pos.z - modifier.get(5).z);
+        set(points, 6, pos.x + size.x + modifier.get(6).x, -pos.y - size.y - modifier.get(6).y, pos.z + size.z + modifier.get(6).z);
+        set(points, 7, pos.x - modifier.get(7).x, -pos.y - size.y - modifier.get(7).y, pos.z + size.z + modifier.get(7).z);
 
         LegacyDriveableCoordinates.toLocalVertices(points);
 
@@ -229,8 +223,7 @@ public final class DriveableCollisionProfile
                     return false;
                 for (int vertex = 0; vertex < 8; vertex++)
                 {
-                    double signed = plane[0] * vertex(vertex, 0) + plane[1] * vertex(vertex, 1)
-                        + plane[2] * vertex(vertex, 2) + plane[3];
+                    double signed = plane[0] * vertex(vertex, 0) + plane[1] * vertex(vertex, 1) + plane[2] * vertex(vertex, 2) + plane[3];
                     if (signed > 1.0E-4D)
                         return false;
                 }
@@ -248,16 +241,55 @@ public final class DriveableCollisionProfile
             return vertices[index * 3 + axis];
         }
 
-        public EnumDriveablePart getPart() { return part; }
-        public boolean isTurret() { return turret; }
-        public boolean isBarrel() { return barrel; }
-        public boolean isConvex() { return convex; }
-        public double getMinX() { return minX; }
-        public double getMinY() { return minY; }
-        public double getMinZ() { return minZ; }
-        public double getMaxX() { return maxX; }
-        public double getMaxY() { return maxY; }
-        public double getMaxZ() { return maxZ; }
+        public EnumDriveablePart getPart()
+        {
+            return part;
+        }
+
+        public boolean isTurret()
+        {
+            return turret;
+        }
+
+        public boolean isBarrel()
+        {
+            return barrel;
+        }
+
+        public boolean isConvex()
+        {
+            return convex;
+        }
+
+        public double getMinX()
+        {
+            return minX;
+        }
+
+        public double getMinY()
+        {
+            return minY;
+        }
+
+        public double getMinZ()
+        {
+            return minZ;
+        }
+
+        public double getMaxX()
+        {
+            return maxX;
+        }
+
+        public double getMaxY()
+        {
+            return maxY;
+        }
+
+        public double getMaxZ()
+        {
+            return maxZ;
+        }
     }
 
     /** Shared turret classification for collision, projectile hits and armour precedence. */
@@ -269,8 +301,7 @@ public final class DriveableCollisionProfile
     /** One centred AA gun box, in world blocks, with its bottom at the gun's origin. */
     public static DriveableCollisionProfile aaGun(float width, float height)
     {
-        CollisionBox box = CollisionBox.inWorldUnits(0F, -width * 0.5F, 0F, -width * 0.5F,
-            width, height, width, 0F, 0F);
+        CollisionBox box = CollisionBox.inWorldUnits(0F, -width * 0.5F, 0F, -width * 0.5F, width, height, width, 0F, 0F);
         Shape shape = compilePartBox(EnumDriveablePart.CORE, box);
         return new DriveableCollisionProfile(shape == null ? List.of() : List.of(shape), false);
     }
@@ -285,8 +316,7 @@ public final class DriveableCollisionProfile
      * Produces an outward unit plane for a quad. The output is n.xyz followed
      * by d for {@code dot(n, point) + d = 0}.
      */
-    static boolean facePlane(double[] points, int[] face, double centreX, double centreY, double centreZ,
-                             double[] output)
+    static boolean facePlane(double[] points, int[] face, double centreX, double centreY, double centreZ, double[] output)
     {
         int a = face[0] * 3;
         int b = face[1] * 3;

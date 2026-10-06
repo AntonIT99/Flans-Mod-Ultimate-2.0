@@ -9,14 +9,12 @@ class TypeReaderUtilsTest
     @Test
     void keepsApostrophesInsideLegacyProjectileNames()
     {
-        assertArrayEquals(new String[]{"Pzgr.L'Spur", "1", "72", "0", "850", "30"},
-            TypeReaderUtils.splitValues("Pzgr.L'Spur 1 72 0 850 30"));
+        assertArrayEquals(new String[]{"Pzgr.L'Spur", "1", "72", "0", "850", "30"}, TypeReaderUtils.splitValues("Pzgr.L'Spur 1 72 0 850 30"));
     }
 
     @Test
     void stillSupportsQuotedValues()
     {
-        assertArrayEquals(new String[]{"High Explosive", "1", "72"},
-            TypeReaderUtils.splitValues("\"High Explosive\" 1 72"));
+        assertArrayEquals(new String[]{"High Explosive", "1", "72"}, TypeReaderUtils.splitValues("\"High Explosive\" 1 72"));
     }
 }

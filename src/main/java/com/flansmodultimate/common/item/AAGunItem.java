@@ -122,17 +122,18 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
 
             if (!ammoTypes.stream().allMatch(ShootableType::useKineticDamageSystem))
             {
-                tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.VS_LIVING).withStyle(ChatFormatting.GREEN))
-                    .append(" ").append(Component.translatable(TooltipKeys.VS_PLAYER).withStyle(ChatFormatting.RED))
-                    .append(" ").append(Component.translatable(TooltipKeys.VS_VEHICLE).withStyle(ChatFormatting.AQUA))
-                    .append(" ").append(Component.translatable(TooltipKeys.VS_PLANE).withStyle(ChatFormatting.LIGHT_PURPLE)));
+                tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.VS_LIVING).withStyle(ChatFormatting.GREEN)).append(" ")
+                    .append(Component.translatable(TooltipKeys.VS_PLAYER).withStyle(ChatFormatting.RED)).append(" ")
+                    .append(Component.translatable(TooltipKeys.VS_VEHICLE).withStyle(ChatFormatting.AQUA)).append(" ")
+                    .append(Component.translatable(TooltipKeys.VS_PLANE).withStyle(ChatFormatting.LIGHT_PURPLE)));
             }
 
             for (ShootableType shootableType : ammoTypes)
             {
                 if (shootableType.useKineticDamageSystem())
                 {
-                    tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, null), 1)));
+                    tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()),
+                        IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, null), 1)));
                 }
                 else
                 {
@@ -172,15 +173,11 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
         tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BARRELS), String.valueOf(configType.getNumBarrels())));
         if (configType.isSentry())
         {
-            String targets = Stream.of(
-                    configType.isTargetMobs() ? Component.translatable(TooltipKeys.TARGET_MOBS).getString() : null,
-                    configType.isTargetPlayers() ? Component.translatable(TooltipKeys.TARGET_PLAYERS).getString() : null,
-                    configType.isTargetVehicles() ? Component.translatable(TooltipKeys.TARGET_VEHICLES).getString() : null,
-                    configType.isTargetPlanes() ? Component.translatable(TooltipKeys.TARGET_PLANES).getString() : null,
-                    configType.isTargetMechas() ? Component.translatable(TooltipKeys.TARGET_MECHAS).getString() : null
-                )
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(", "));
+            String targets = Stream.of(configType.isTargetMobs() ? Component.translatable(TooltipKeys.TARGET_MOBS).getString() : null,
+                configType.isTargetPlayers() ? Component.translatable(TooltipKeys.TARGET_PLAYERS).getString() : null,
+                configType.isTargetVehicles() ? Component.translatable(TooltipKeys.TARGET_VEHICLES).getString() : null,
+                configType.isTargetPlanes() ? Component.translatable(TooltipKeys.TARGET_PLANES).getString() : null,
+                configType.isTargetMechas() ? Component.translatable(TooltipKeys.TARGET_MECHAS).getString() : null).filter(Objects::nonNull).collect(Collectors.joining(", "));
 
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.TARGET_RANGE), IFlanItem.formatFloat(configType.getTargetRange())));
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.TARGETS), targets));

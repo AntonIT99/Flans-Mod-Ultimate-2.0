@@ -14,11 +14,14 @@ import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.function.Supplier;
 
-public record CustomArmorMaterial(String name, int durability, int defense, int enchantability, SoundEvent equipSound, float toughness, float knockbackResistance, Supplier<Ingredient> repairMaterial) implements ArmorMaterial
+public record CustomArmorMaterial(String name, int durability, int defense, int enchantability, SoundEvent equipSound, float toughness, float knockbackResistance,
+    Supplier<Ingredient> repairMaterial) implements ArmorMaterial
 {
     CustomArmorMaterial(ArmorType type)
     {
-        this(type.getShortName(), type.getDurability(), type.getDefaultMinecraftArmorPoints(), type.getEnchantability(), FlansMod.getSoundEvent(type.getEquipSound()).map(RegistryEntry::get).orElse(SoundEvents.ARMOR_EQUIP_GENERIC), type.getToughness(), 0.0F, () -> Ingredient.of(Items.IRON_INGOT));
+        this(type.getShortName(), type.getDurability(), type.getDefaultMinecraftArmorPoints(), type.getEnchantability(),
+            FlansMod.getSoundEvent(type.getEquipSound()).map(RegistryEntry::get).orElse(SoundEvents.ARMOR_EQUIP_GENERIC), type.getToughness(), 0.0F,
+            () -> Ingredient.of(Items.IRON_INGOT));
     }
 
     @Override

@@ -44,10 +44,8 @@ class ExplosionVisualsTest
     void smallCalibreRoundsAreBrief()
     {
         // Both are the complaint this tuning answers: a few grams of filler should flash and go.
-        assertTrue(ExplosionVisuals.lifetimeScale(crater(FIFTY_CAL_KG)) < 0.55F,
-            ".50 cal should clear in about half its authored particle time");
-        assertTrue(ExplosionVisuals.lifetimeScale(crater(TWENTY_MM_KG)) < 0.75F,
-            "20 mm should still be brief");
+        assertTrue(ExplosionVisuals.lifetimeScale(crater(FIFTY_CAL_KG)) < 0.55F, ".50 cal should clear in about half its authored particle time");
+        assertTrue(ExplosionVisuals.lifetimeScale(crater(TWENTY_MM_KG)) < 0.75F, "20 mm should still be brief");
     }
 
     @Test
@@ -58,8 +56,7 @@ class ExplosionVisualsTest
         // the square root in intensity() exists to avoid.
         float fiftyCal = ExplosionVisuals.lifetimeScale(crater(FIFTY_CAL_KG));
         float twentyMm = ExplosionVisuals.lifetimeScale(crater(TWENTY_MM_KG));
-        assertTrue(twentyMm > fiftyCal * 1.15F,
-            "the 20 mm should read as a step up from the .50 cal, got " + fiftyCal + " vs " + twentyMm);
+        assertTrue(twentyMm > fiftyCal * 1.15F, "the 20 mm should read as a step up from the .50 cal, got " + fiftyCal + " vs " + twentyMm);
     }
 
     @Test
@@ -67,10 +64,8 @@ class ExplosionVisualsTest
     void aHeavyChargeIsPersistent()
     {
         float heavy = crater(STURMTIGER_CHARGE_KG);
-        assertTrue(ExplosionVisuals.lifetimeScale(heavy) > 1.0F,
-            "a demolition charge should outlast its authored particle time");
-        assertTrue(ExplosionVisuals.countScale(heavy) > 2.5F,
-            "a demolition charge should throw several times the authored particle count");
+        assertTrue(ExplosionVisuals.lifetimeScale(heavy) > 1.0F, "a demolition charge should outlast its authored particle time");
+        assertTrue(ExplosionVisuals.countScale(heavy) > 2.5F, "a demolition charge should throw several times the authored particle count");
     }
 
     @ParameterizedTest(name = "{0} kg -> brighter, bigger, longer than anything lighter")
@@ -94,22 +89,17 @@ class ExplosionVisualsTest
     {
         // A vanilla explosion puff lives 6-9 ticks, so a duration inside that leaves a single
         // burst with no follow-up waves at all - which is what "brief" has to mean in practice.
-        assertTrue(ExplosionVisuals.fireballDurationTicks(crater(FIFTY_CAL_KG)) <= 6,
-            ".50 cal should not outlive a single puff");
-        assertTrue(ExplosionVisuals.fireballDurationTicks(crater(STURMTIGER_CHARGE_KG)) >= 60,
-            "a 10 kg charge should keep burning for several seconds");
+        assertTrue(ExplosionVisuals.fireballDurationTicks(crater(FIFTY_CAL_KG)) <= 6, ".50 cal should not outlive a single puff");
+        assertTrue(ExplosionVisuals.fireballDurationTicks(crater(STURMTIGER_CHARGE_KG)) >= 60, "a 10 kg charge should keep burning for several seconds");
     }
 
     @Test
     @DisplayName("Blast and fragmentation visuals appear only once those envelopes are worth showing")
     void theEnvelopeVisualsAreGatedOnTheirOwnRadii()
     {
-        assertEquals(0, ExplosionVisuals.shockwaveCount(blast(TWENTY_MM_KG)),
-            "a 20 mm blast envelope is too small to read as a wave");
-        assertTrue(ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)) > 0,
-            "an 88 mm shell reaches far enough past its crater to be worth drawing");
-        assertTrue(ExplosionVisuals.shockwaveCount(blast(STURMTIGER_CHARGE_KG))
-            > ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)),
+        assertEquals(0, ExplosionVisuals.shockwaveCount(blast(TWENTY_MM_KG)), "a 20 mm blast envelope is too small to read as a wave");
+        assertTrue(ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)) > 0, "an 88 mm shell reaches far enough past its crater to be worth drawing");
+        assertTrue(ExplosionVisuals.shockwaveCount(blast(STURMTIGER_CHARGE_KG)) > ExplosionVisuals.shockwaveCount(blast(EIGHTY_EIGHT_MM_KG)),
             "a heavier charge drives a wider wave");
     }
 
@@ -118,32 +108,20 @@ class ExplosionVisualsTest
     void fragmentationSprayRespectsIntensity()
     {
         float radius = 30F;
-        assertEquals(0, ExplosionVisuals.fragSparkCount(radius, 0F, 5000D, 0.25D, 2048),
-            "a charge that throws no fragments should spray none");
-        assertTrue(ExplosionVisuals.fragSparkCount(radius, 4F, 5000D, 0.25D, 2048)
-            > ExplosionVisuals.fragSparkCount(radius, 0.8F, 5000D, 0.25D, 2048),
+        assertEquals(0, ExplosionVisuals.fragSparkCount(radius, 0F, 5000D, 0.25D, 2048), "a charge that throws no fragments should spray none");
+        assertTrue(ExplosionVisuals.fragSparkCount(radius, 4F, 5000D, 0.25D, 2048) > ExplosionVisuals.fragSparkCount(radius, 0.8F, 5000D, 0.25D, 2048),
             "a frag shell should spray more than a blast charge reaching the same distance");
-        assertEquals(0, ExplosionVisuals.fragSparkCount(2F, 4F, 5000D, 0.25D, 2048),
-            "a spray inside the fireball would not be visible");
-        assertTrue(ExplosionVisuals.fragSparkCount(4F, 1F, 5000D, 0.25D, 2048) > 0,
-            "a grenade-sized fragmentation envelope should have a visible spray");
-        assertEquals(ExplosionVisuals.DEFAULT_MAX_FRAG_SPARKS,
-            ExplosionVisuals.fragSparkCount(1000F, 4F, 5000D, 0.25D, ExplosionVisuals.DEFAULT_MAX_FRAG_SPARKS),
+        assertEquals(0, ExplosionVisuals.fragSparkCount(2F, 4F, 5000D, 0.25D, 2048), "a spray inside the fireball would not be visible");
+        assertTrue(ExplosionVisuals.fragSparkCount(4F, 1F, 5000D, 0.25D, 2048) > 0, "a grenade-sized fragmentation envelope should have a visible spray");
+        assertEquals(ExplosionVisuals.DEFAULT_MAX_FRAG_SPARKS, ExplosionVisuals.fragSparkCount(1000F, 4F, 5000D, 0.25D, ExplosionVisuals.DEFAULT_MAX_FRAG_SPARKS),
             "even an extreme burst must stay within the particle cap");
-        assertEquals(450, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 2048),
-            "the larger fragmentation envelope should produce a dense spray");
-        assertEquals(120, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 120),
-            "the client cap should limit an individual explosion");
-        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 0),
-            "the client should be able to disable fragmentation sparks");
-        assertEquals(11, ExplosionVisuals.fragSparkCount(30F, 4F, 42.9D, 0.25D, 2048),
-            "the multiplier applies after limiting sparks to effective fragments");
-        assertEquals(42, ExplosionVisuals.fragSparkCount(30F, 4F, 42.9D, 4D, 2048),
-            "sparks must never exceed the integer number of effective fragments");
-        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 0.9D, 0.25D, 2048),
-            "fewer than one effective fragment cannot produce a spark");
-        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0D, 2048),
-            "zero multiplier disables fragmentation sparks");
+        assertEquals(450, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 2048), "the larger fragmentation envelope should produce a dense spray");
+        assertEquals(120, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 120), "the client cap should limit an individual explosion");
+        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0.25D, 0), "the client should be able to disable fragmentation sparks");
+        assertEquals(11, ExplosionVisuals.fragSparkCount(30F, 4F, 42.9D, 0.25D, 2048), "the multiplier applies after limiting sparks to effective fragments");
+        assertEquals(42, ExplosionVisuals.fragSparkCount(30F, 4F, 42.9D, 4D, 2048), "sparks must never exceed the integer number of effective fragments");
+        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 0.9D, 0.25D, 2048), "fewer than one effective fragment cannot produce a spark");
+        assertEquals(0, ExplosionVisuals.fragSparkCount(30F, 4F, 5000D, 0D, 2048), "zero multiplier disables fragmentation sparks");
     }
 
     @Test
@@ -151,8 +129,7 @@ class ExplosionVisualsTest
     void theSmokeColumnMarksTheHeaviestCharges()
     {
         assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(TWENTY_MM_KG)));
-        assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(EIGHTY_EIGHT_MM_KG)),
-            "ordinary tank gunnery should not raise a column");
+        assertEquals(0, ExplosionVisuals.smokeColumnCount(crater(EIGHTY_EIGHT_MM_KG)), "ordinary tank gunnery should not raise a column");
         assertTrue(ExplosionVisuals.smokeColumnCount(crater(STURMTIGER_CHARGE_KG)) > 0);
         assertEquals(0.2F, ExplosionVisuals.smokeColumnLifetimeScale(crater(STURMTIGER_CHARGE_KG)), 0.0001F,
             "an explosion should use only a brief tail of the smoke-screen particle");
@@ -169,8 +146,7 @@ class ExplosionVisualsTest
         assertTrue(ExplosionVisuals.fireballCount(craterRadius) >= 1);
         assertTrue(ExplosionVisuals.fireballDurationTicks(craterRadius) >= 1);
         assertTrue(ExplosionVisuals.smokeColumnCount(craterRadius) >= 0);
-        assertFalse(ExplosionVisuals.scaledCount(20, craterRadius) > 120,
-            "a scaled particle count must stay within its client budget");
+        assertFalse(ExplosionVisuals.scaledCount(20, craterRadius) > 120, "a scaled particle count must stay within its client budget");
     }
 
     @Test
@@ -179,12 +155,11 @@ class ExplosionVisualsTest
     {
         // These are the rounds the user was already happy with, and they are also the ones fired
         // most often, so nothing here may start costing a client particles.
-        for (float massKg : new float[] {FIFTY_CAL_KG, TWENTY_MM_KG})
+        for (float massKg : new float[]{FIFTY_CAL_KG, TWENTY_MM_KG})
         {
             float crater = crater(massKg);
             for (ExplosionVisuals.Layer layer : ExplosionVisuals.LAYERS)
-                assertEquals(0, layer.count(crater),
-                    layer.particle() + " should not appear on a " + massKg + " kg round");
+                assertEquals(0, layer.count(crater), layer.particle() + " should not appear on a " + massKg + " kg round");
         }
     }
 
@@ -198,23 +173,19 @@ class ExplosionVisualsTest
         long onForShell = ExplosionVisuals.LAYERS.stream().filter(l -> l.count(shell) > 0).count();
         long onForCharge = ExplosionVisuals.LAYERS.stream().filter(l -> l.count(charge) > 0).count();
 
-        assertEquals(ExplosionVisuals.LAYERS.size(), onForCharge,
-            "a demolition charge should get the full set of particle types");
-        assertTrue(onForShell > 0 && onForShell < onForCharge,
-            "an 88 mm shell should get some variety but not all of it, got " + onForShell);
+        assertEquals(ExplosionVisuals.LAYERS.size(), onForCharge, "a demolition charge should get the full set of particle types");
+        assertTrue(onForShell > 0 && onForShell < onForCharge, "an 88 mm shell should get some variety but not all of it, got " + onForShell);
     }
 
     @Test
     @DisplayName("The extra layers bring genuine variety, not one sprite repeated")
     void theExtraLayersAreDistinctParticleTypes()
     {
-        assertEquals(ExplosionVisuals.LAYERS.size(),
-            ExplosionVisuals.LAYERS.stream().map(ExplosionVisuals.Layer::particle).distinct().count(),
+        assertEquals(ExplosionVisuals.LAYERS.size(), ExplosionVisuals.LAYERS.stream().map(ExplosionVisuals.Layer::particle).distinct().count(),
             "each layer should contribute a different particle type");
 
         for (ExplosionVisuals.Layer layer : ExplosionVisuals.LAYERS)
-            assertTrue(FlanParticles.resolve(layer.particle()).isPresent(),
-                layer.particle() + " is not a particle the client can resolve");
+            assertTrue(FlanParticles.resolve(layer.particle()).isPresent(), layer.particle() + " is not a particle the client can resolve");
     }
 
     @ParameterizedTest(name = "a crater radius of {0} keeps every extra layer bounded")
@@ -225,8 +196,7 @@ class ExplosionVisualsTest
         for (ExplosionVisuals.Layer layer : ExplosionVisuals.LAYERS)
         {
             int count = layer.count(craterRadius);
-            assertTrue(count >= 0 && count <= layer.maxCount(),
-                layer.particle() + " produced " + count + " particles");
+            assertTrue(count >= 0 && count <= layer.maxCount(), layer.particle() + " produced " + count + " particles");
         }
     }
 
@@ -234,7 +204,7 @@ class ExplosionVisualsTest
     @DisplayName("The staged layers stay off for the rounds players fire by the hundred")
     void smallCalibreRoundsGetNoStagedLayers()
     {
-        for (float massKg : new float[] {FIFTY_CAL_KG, TWENTY_MM_KG})
+        for (float massKg : new float[]{FIFTY_CAL_KG, TWENTY_MM_KG})
         {
             float crater = crater(massKg);
             assertEquals(0F, ExplosionVisuals.afterglowScale(crater), massKg + " kg should only flash white");
@@ -259,8 +229,7 @@ class ExplosionVisualsTest
         assertTrue(ExplosionVisuals.dustSkirtWaves(charge) > ExplosionVisuals.dustSkirtWaves(shell));
         assertTrue(ExplosionVisuals.fireballStemSteps(charge) > 0, "a demolition charge should raise a stem");
         assertTrue(ExplosionVisuals.mushroomCapPuffs(charge) > 0, "a demolition charge should mushroom");
-        assertTrue(ExplosionVisuals.mushroomCapRadius(charge) < ExplosionVisuals.fireballStemHeight(charge),
-            "the cap should be narrower than the stem is tall");
+        assertTrue(ExplosionVisuals.mushroomCapRadius(charge) < ExplosionVisuals.fireballStemHeight(charge), "the cap should be narrower than the stem is tall");
     }
 
     @Test
@@ -269,8 +238,7 @@ class ExplosionVisualsTest
     {
         float charge = crater(STURMTIGER_CHARGE_KG);
         assertTrue(ExplosionVisuals.dustSkirtReach(charge, blast(STURMTIGER_CHARGE_KG)) <= blast(STURMTIGER_CHARGE_KG));
-        assertTrue(ExplosionVisuals.dustSkirtReach(charge, 1F) >= charge,
-            "the skirt should still clear the crater itself");
+        assertTrue(ExplosionVisuals.dustSkirtReach(charge, 1F) >= charge, "the skirt should still clear the crater itself");
     }
 
     @ParameterizedTest(name = "a crater radius of {0} keeps every staged layer bounded")
@@ -293,8 +261,7 @@ class ExplosionVisualsTest
     void stagedPuffSizesStayInProportionWithTheCappedShapes()
     {
         float charge = crater(STURMTIGER_CHARGE_KG);
-        assertEquals(charge, ExplosionVisuals.stagedSizingRadius(charge), 0.0001F,
-            "ordinary charges should size their puffs from their own crater");
+        assertEquals(charge, ExplosionVisuals.stagedSizingRadius(charge), 0.0001F, "ordinary charges should size their puffs from their own crater");
 
         // A legacy ExplosionRadius of 200 under a 256 block cap: the stem is already at its ceiling,
         // so the puffs drawing it must be too.
@@ -308,10 +275,8 @@ class ExplosionVisualsTest
     @DisplayName("Heavy charges are drawn from further away, but never beyond the packet range")
     void theLandmarkRangeGrowsWithTheChargeUpToThePacketRange()
     {
-        assertTrue(ExplosionVisuals.landmarkRange(crater(STURMTIGER_CHARGE_KG))
-            > ExplosionVisuals.landmarkRange(crater(EIGHTY_EIGHT_MM_KG)));
-        assertTrue(ExplosionVisuals.landmarkRange(crater(STURMTIGER_CHARGE_KG)) > 128F,
-            "a demolition charge's column should outlast the default particle distance");
+        assertTrue(ExplosionVisuals.landmarkRange(crater(STURMTIGER_CHARGE_KG)) > ExplosionVisuals.landmarkRange(crater(EIGHTY_EIGHT_MM_KG)));
+        assertTrue(ExplosionVisuals.landmarkRange(crater(STURMTIGER_CHARGE_KG)) > 128F, "a demolition charge's column should outlast the default particle distance");
         assertEquals(ExplosionVisuals.MAX_LANDMARK_RANGE, ExplosionVisuals.landmarkRange(1.0e9F), 0.0001F);
         assertEquals(0F, ExplosionVisuals.landmarkRange(Float.NaN));
     }
@@ -320,9 +285,8 @@ class ExplosionVisualsTest
     @DisplayName("Small-calibre HE keeps its grey pop; heavier HE burns first, then cools")
     void ordinaryFireballsBurnBeforeTheyCool()
     {
-        for (float massKg : new float[] {FIFTY_CAL_KG, TWENTY_MM_KG})
-            assertEquals(0, ExplosionVisuals.fireballHotTicks(crater(massKg), false),
-                massKg + " kg should not change its fireball");
+        for (float massKg : new float[]{FIFTY_CAL_KG, TWENTY_MM_KG})
+            assertEquals(0, ExplosionVisuals.fireballHotTicks(crater(massKg), false), massKg + " kg should not change its fireball");
 
         float shell = crater(EIGHTY_EIGHT_MM_KG);
         int hot = ExplosionVisuals.fireballHotTicks(shell, false);
@@ -351,7 +315,6 @@ class ExplosionVisualsTest
     @DisplayName("An unauthored particle count stays unauthored")
     void aZeroCountIsNotInvented()
     {
-        assertEquals(0, ExplosionVisuals.scaledCount(0, crater(STURMTIGER_CHARGE_KG)),
-            "a pack that asked for no flares should not be given any");
+        assertEquals(0, ExplosionVisuals.scaledCount(0, crater(STURMTIGER_CHARGE_KG)), "a pack that asked for no flares should not be given any");
     }
 }

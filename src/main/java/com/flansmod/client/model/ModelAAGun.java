@@ -17,7 +17,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
 {
-    public record BarrelOriginData(Vec3[] pivots, Vec3[] muzzles) {}
+    public record BarrelOriginData(Vec3[] pivots, Vec3[] muzzles)
+    {}
 
     /** Parts ending this close behind the furthest one form the muzzle face, in model pixels. */
     private static final double MUZZLE_FACE_TOLERANCE = 1.5D;
@@ -46,12 +47,14 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         return AAGunType.class;
     }
 
-    public void renderBase(AAGun aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderBase(AAGun aa, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         renderParts(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderGun(AAGun aa, float gunPitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderGun(AAGun aa, float gunPitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         float pitch = -gunPitch * Mth.DEG_TO_RAD;
 
@@ -87,12 +90,14 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         {
             if (!aa.hasAmmo(i))
                 continue;
-            renderBarrelPartArray(ammoModel[i], barrelX, barrelY, barrelZ, pitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderBarrelPartArray(ammoModel[i], barrelX, barrelY, barrelZ, pitch, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+                renderPass);
         }
     }
 
     /** Draw a neutral preview, with the gun level and every barrel loaded, for renderers without an AA gun entity. */
-    public void render(AAGunType aaGunType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void render(AAGunType aaGunType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         renderParts(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderParts(seatModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -112,7 +117,8 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
             renderBarrelPartArray(ammo, barrelX, barrelY, barrelZ, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    private static void renderParts(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderParts(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
+        float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo part : parts)
         {
@@ -121,7 +127,8 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
         }
     }
 
-    private static void renderBarrelPartArray(ModelRendererTurbo[] parts, float x, float y, float z, float pitch, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private static void renderBarrelPartArray(ModelRendererTurbo[] parts, float x, float y, float z, float pitch, PoseStack poseStack, VertexConsumer vertexConsumer,
+        int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (parts == null)
             return;
@@ -168,12 +175,14 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
      * The centre of a barrel's front face, relative to the barrel pivot every
      * barrel part is drawn at.
      *
-     * <p>Reads face bounds, not vertex bounds: {@link #flipAll} mirrors the faces
+     * <p>
+     * Reads face bounds, not vertex bounds: {@link #flipAll} mirrors the faces
      * and leaves each part's vertex array where it was built, so vertex bounds
      * put the muzzle of a flipped model on the wrong side and height. Only the
      * parts reaching the front face count, as in
      * {@link ModelDriveable#measureMuzzle}, so a breech, cradle or cooling jacket
-     * wider than the bore does not pull the muzzle off the barrel's axis.</p>
+     * wider than the bore does not pull the muzzle off the barrel's axis.
+     * </p>
      */
     @Nullable
     static Vec3 findMuzzlePoint(ModelRendererTurbo[] parts)
@@ -209,10 +218,8 @@ public class ModelAAGun extends ModelBase implements IFlanTypeModel<AAGunType>
 
     private static double[] emptyBounds()
     {
-        return new double[] {
-            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
-            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
-        };
+        return new double[]{Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
+            Double.NEGATIVE_INFINITY};
     }
 
     public void flipAll()

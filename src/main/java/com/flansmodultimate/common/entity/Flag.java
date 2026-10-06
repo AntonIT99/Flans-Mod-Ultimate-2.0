@@ -199,8 +199,10 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
     {
         setBaseId(tag.hasUUID(NBT_BASE) ? tag.getUUID(NBT_BASE) : null);
         entityData.set(DATA_CARRIER, tag.hasUUID(NBT_CARRIER) ? Optional.of(tag.getUUID(NBT_CARRIER)) : Optional.empty());
-        entityData.set(DATA_HOME, tag.getBoolean(NBT_HOME)); setTeamId(tag.getInt(NBT_TEAM));
-        setColour(tag.contains(NBT_COLOUR) ? tag.getInt(NBT_COLOUR) : 0xFFFFFF); returnTicks = tag.getInt(NBT_RETURN_TICKS);
+        entityData.set(DATA_HOME, tag.getBoolean(NBT_HOME));
+        setTeamId(tag.getInt(NBT_TEAM));
+        setColour(tag.contains(NBT_COLOUR) ? tag.getInt(NBT_COLOUR) : 0xFFFFFF);
+        returnTicks = tag.getInt(NBT_RETURN_TICKS);
     }
 
     @Override
@@ -214,7 +216,10 @@ public final class Flag extends FlanSpawnEntity implements ITeamObject
         if (carrierId != null)
             tag.putUUID(NBT_CARRIER, carrierId);
 
-        tag.putBoolean(NBT_HOME, isHome()); tag.putInt(NBT_TEAM, getTeamId()); tag.putInt(NBT_COLOUR, getColour()); tag.putInt(NBT_RETURN_TICKS, returnTicks);
+        tag.putBoolean(NBT_HOME, isHome());
+        tag.putInt(NBT_TEAM, getTeamId());
+        tag.putInt(NBT_COLOUR, getColour());
+        tag.putInt(NBT_RETURN_TICKS, returnTicks);
     }
 
     @Override

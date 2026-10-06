@@ -1,8 +1,8 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.apocalyse.common.world.ApocalypsePortalManager;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.entity.FlanEntity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -98,17 +98,22 @@ public class TeleporterEntity extends FlanEntity
     protected void readAdditionalSaveData(@NotNull CompoundTag tag)
     {
         lowerLeftCorner = new BlockPos(tag.getInt(NBT_X), tag.getInt(NBT_Y), tag.getInt(NBT_Z));
-        if (tag.contains(NBT_TARGET_X)) targetTeleporter = new BlockPos(tag.getInt(NBT_TARGET_X), tag.getInt(NBT_TARGET_Y), tag.getInt(NBT_TARGET_Z));
+        if (tag.contains(NBT_TARGET_X))
+            targetTeleporter = new BlockPos(tag.getInt(NBT_TARGET_X), tag.getInt(NBT_TARGET_Y), tag.getInt(NBT_TARGET_Z));
         setPos(lowerLeftCorner.getX() + 2.0D, lowerLeftCorner.getY() + 0.5D, lowerLeftCorner.getZ() + 2.0D);
     }
 
     @Override
     protected void addAdditionalSaveData(@NotNull CompoundTag tag)
     {
-        tag.putInt(NBT_X, lowerLeftCorner.getX()); tag.putInt(NBT_Y, lowerLeftCorner.getY()); tag.putInt(NBT_Z, lowerLeftCorner.getZ());
+        tag.putInt(NBT_X, lowerLeftCorner.getX());
+        tag.putInt(NBT_Y, lowerLeftCorner.getY());
+        tag.putInt(NBT_Z, lowerLeftCorner.getZ());
         if (targetTeleporter != null)
         {
-            tag.putInt(NBT_TARGET_X, targetTeleporter.getX()); tag.putInt(NBT_TARGET_Y, targetTeleporter.getY()); tag.putInt(NBT_TARGET_Z, targetTeleporter.getZ());
+            tag.putInt(NBT_TARGET_X, targetTeleporter.getX());
+            tag.putInt(NBT_TARGET_Y, targetTeleporter.getY());
+            tag.putInt(NBT_TARGET_Z, targetTeleporter.getZ());
         }
     }
 }

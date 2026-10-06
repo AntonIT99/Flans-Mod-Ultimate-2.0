@@ -37,9 +37,11 @@ class TrackLinkLodTest
         assertTrue(lod.matches(parts, false));
         var flag = ModelRendererTurbo.class.getDeclaredField("externallyMutableGeometry");
         flag.setAccessible(true);
-        for (ModelRendererTurbo part : parts) assertFalse(flag.getBoolean(part));
+        for (ModelRendererTurbo part : parts)
+            assertFalse(flag.getBoolean(part));
         assertNotNull(lod.parts());
-        for (ModelRendererTurbo part : lod.parts()) assertFalse(flag.getBoolean(part));
+        for (ModelRendererTurbo part : lod.parts())
+            assertFalse(flag.getBoolean(part));
     }
 
     @Test
@@ -112,10 +114,10 @@ class TrackLinkLodTest
         for (int i = 0; i < 24; i += 4)
         {
             float[] a = simplified.vertices.get(i), b = simplified.vertices.get(i + 1), c = simplified.vertices.get(i + 2);
-            float x = (b[1]-a[1])*(c[2]-a[2]) - (b[2]-a[2])*(c[1]-a[1]);
-            float y = (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2]);
-            float z = (b[0]-a[0])*(c[1]-a[1]) - (b[1]-a[1])*(c[0]-a[0]);
-            assertTrue(x*a[11] + y*a[12] + z*a[13] > 0);
+            float x = (b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]);
+            float y = (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]);
+            float z = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+            assertTrue(x * a[11] + y * a[12] + z * a[13] > 0);
         }
     }
 
@@ -125,8 +127,8 @@ class TrackLinkLodTest
         ModelRendererTurbo[] parts = link();
         for (ModelRendererTurbo p : parts)
         {
-            p.rotateAngleX = (float)Math.PI / 2;
-            p.rotateAngleY = (float)Math.PI / 2;
+            p.rotateAngleX = (float) Math.PI / 2;
+            p.rotateAngleY = (float) Math.PI / 2;
             p.rotationPointX = 3;
             p.offsetZ = 0.25F;
         }
@@ -182,8 +184,8 @@ class TrackLinkLodTest
         assertFalse(lod.matches(parts, false));
         assertNull(TrackLinkLod.create(parts, false).parts());
         normals.clear();
-        var vertices = new PositionTextureVertex[]{new PositionTransformVertex(0, 0, 0, 0, 0),
-            new PositionTransformVertex(1, 0, 0, 1, 0), new PositionTransformVertex(0, 1, 0, 0, 1)};
+        var vertices = new PositionTextureVertex[]{new PositionTransformVertex(0, 0, 0, 0, 0), new PositionTransformVertex(1, 0, 0, 1, 0),
+            new PositionTransformVertex(0, 1, 0, 0, 1)};
         parts[0].copyTo(vertices, new TexturedPolygon[]{new TexturedPolygon(vertices)});
         assertNull(TrackLinkLod.create(parts, false).parts());
     }
@@ -194,7 +196,8 @@ class TrackLinkLodTest
         ModelRendererTurbo[] parts = new ModelRendererTurbo[2];
         for (int i = 0; i < 2; i++)
         {
-            parts[i] = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+            parts[i] = new ModelRendererTurbo(new ModelBase()
+            {}, 0, 0);
             parts[i].addBox(0, 0, 0, 16, 16, 16);
         }
         TrackLinkLod lod = TrackLinkLod.create(parts, false);
@@ -213,7 +216,8 @@ class TrackLinkLodTest
         ModelRendererTurbo[] parts = new ModelRendererTurbo[4];
         for (int i = 0; i < parts.length; i++)
         {
-            parts[i] = new ModelRendererTurbo(new ModelBase() {}, i * 4, i * 3);
+            parts[i] = new ModelRendererTurbo(new ModelBase()
+            {}, i * 4, i * 3);
             parts[i].addBox(-2, -1, -6 + i * 2, 4, 2, 6);
         }
         return parts;
@@ -221,7 +225,10 @@ class TrackLinkLodTest
 
     private static final class TrackType extends com.flansmodultimate.common.types.VehicleType
     {
-        TrackType() { trackLinkLength = 3.8F; }
+        TrackType()
+        {
+            trackLinkLength = 3.8F;
+        }
     }
 
     private static RecordingVertexConsumer record(ModelRendererTurbo[] parts, boolean oldOrder)
@@ -234,8 +241,7 @@ class TrackLinkLodTest
 
     private static float[] bounds(RecordingVertexConsumer vertices)
     {
-        float[] b = {Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
-            Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY};
+        float[] b = {Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY};
         for (float[] v : vertices.vertices)
             for (int i = 0; i < 3; i++)
             {

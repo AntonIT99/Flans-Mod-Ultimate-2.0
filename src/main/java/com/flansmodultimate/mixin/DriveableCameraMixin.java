@@ -33,7 +33,8 @@ import net.minecraft.world.phys.Vec3;
 @Mixin(Camera.class)
 public abstract class DriveableCameraMixin
 {
-    @Shadow private Vec3 position;
+    @Shadow
+    private Vec3 position;
 
     @Shadow
     protected abstract void setPosition(Vec3 position);
@@ -46,18 +47,17 @@ public abstract class DriveableCameraMixin
      * with the exact render-time driveable seat transform, before vanilla
      * applies third-person zoom.
      *
-     * <p>Both halves matter, and each one hides in the view the other breaks.
+     * <p>
+     * Both halves matter, and each one hides in the view the other breaks.
      * Vanilla builds the third-person boom from the rider's rotation, which
      * carries whatever mouse movement was folded into it since the last tick,
      * so a detached camera swims around a steady plane. Vanilla also raises the
      * eye along world up rather than along the driveable's up, which slides the
-     * first-person view out of a banking cockpit while the boom conceals it.</p>
+     * first-person view out of a banking cockpit while the boom conceals it.
+     * </p>
      */
-    @Inject(method = "setup", at = @At(value = "INVOKE",
-        target = "Lnet/minecraft/client/Camera;setPosition(DDD)V", shift = At.Shift.AFTER))
-    private void flansmodultimate$positionMountedCamera(BlockGetter level, Entity cameraEntity,
-                                                        boolean detached, boolean reverse,
-                                                        float partialTick, CallbackInfo callback)
+    @Inject(method = "setup", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setPosition(DDD)V", shift = At.Shift.AFTER))
+    private void flansmodultimate$positionMountedCamera(BlockGetter level, Entity cameraEntity, boolean detached, boolean reverse, float partialTick, CallbackInfo callback)
     {
         if (!detached && cameraEntity instanceof Player player && player.getVehicle() instanceof DeployedGun gun)
         {
@@ -76,8 +76,7 @@ public abstract class DriveableCameraMixin
                 Vec3 muzzle = type.getMeasuredDeployableMuzzle();
                 if (muzzle != null)
                 {
-                    double cameraY = gun.getY() + DeployedGunMuzzleGeometry.recommendedCameraHeight(
-                        muzzle, type.getModelScale());
+                    double cameraY = gun.getY() + DeployedGunMuzzleGeometry.recommendedCameraHeight(muzzle, type.getModelScale());
                     setPosition(new Vec3(position.x, cameraY, position.z));
                 }
                 // PivotHeight is only the legacy projectile fallback. Model
@@ -88,8 +87,7 @@ public abstract class DriveableCameraMixin
             return;
         }
 
-        if (!(cameraEntity instanceof Player player) || !(player.getVehicle() instanceof Seat seat)
-            || seat.getDriveable() == null)
+        if (!(cameraEntity instanceof Player player) || !(player.getVehicle() instanceof Seat seat) || seat.getDriveable() == null)
             return;
 
         // Vanilla stacks the eye height on world up. 1.7.10 instead placed the
@@ -100,8 +98,7 @@ public abstract class DriveableCameraMixin
         // and the third person boom hides it, so it shows up in first person.
         double vanillaFeetY = Mth.lerp(partialTick, player.yo, player.getY());
         double eyeOffset = seat.getPassengerRidingOffset(player) + (position.y - vanillaFeetY);
-        setPosition(seat.getDriveable().getInterpolatedRiderWorldPosition(
-            seat.getSeatIndex(), eyeOffset, partialTick));
+        setPosition(seat.getDriveable().getInterpolatedRiderWorldPosition(seat.getSeatIndex(), eyeOffset, partialTick));
         if (!detached && VehicleOpticsClient.activeSeat() == seat && seat.getOptics() != null && seat.getOptics().isHasCamera())
             setPosition(seat.getDriveable().getInterpolatedOpticsPosition(seat, partialTick));
 
@@ -125,8 +122,6 @@ public abstract class DriveableCameraMixin
             return vanillaDistance;
 
         float requestedDistance = controllable.getCameraDistance();
-        return Float.isFinite(requestedDistance)
-            ? Mth.clamp(requestedDistance, 1F, 64F)
-            : vanillaDistance;
+        return Float.isFinite(requestedDistance) ? Mth.clamp(requestedDistance, 1F, 64F) : vanillaDistance;
     }
 }

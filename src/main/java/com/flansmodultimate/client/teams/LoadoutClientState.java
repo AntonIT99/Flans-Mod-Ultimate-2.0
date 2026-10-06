@@ -37,9 +37,9 @@ public final class LoadoutClientState
             case REWARD_BOX -> minecraft.setScreen(new TeamsRewardBoxScreen());
             case MISSION_RESULTS -> minecraft.setScreen(new TeamsMissionResultsScreen());
             case CLOSE -> {
-                if (minecraft.screen instanceof TeamsLoadoutHubScreen || minecraft.screen instanceof TeamsChooseLoadoutScreen
-                    || minecraft.screen instanceof TeamsLoadoutEditScreen || minecraft.screen instanceof TeamsRewardBoxScreen
-                    || minecraft.screen instanceof TeamsMissionResultsScreen) minecraft.setScreen(null);
+                if (minecraft.screen instanceof TeamsLoadoutHubScreen || minecraft.screen instanceof TeamsChooseLoadoutScreen || minecraft.screen instanceof TeamsLoadoutEditScreen
+                    || minecraft.screen instanceof TeamsRewardBoxScreen || minecraft.screen instanceof TeamsMissionResultsScreen)
+                    minecraft.setScreen(null);
             }
             case NONE -> {
                 // No-op

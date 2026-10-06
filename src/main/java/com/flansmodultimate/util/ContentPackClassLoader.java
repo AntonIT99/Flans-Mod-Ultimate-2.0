@@ -33,7 +33,8 @@ public final class ContentPackClassLoader extends ClassLoader
      * Loads the content pack's own version of a class, even when the mod provides a class with that
      * name as well.
      *
-     * @throws IOException if the content pack does not contain that class file or it cannot be read
+     * @throws IOException
+     *             if the content pack does not contain that class file or it cannot be read
      */
     public Class<?> loadContentPackClass(String className) throws IOException
     {

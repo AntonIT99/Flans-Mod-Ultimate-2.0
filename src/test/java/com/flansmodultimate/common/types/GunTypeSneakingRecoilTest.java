@@ -38,8 +38,7 @@ class GunTypeSneakingRecoilTest
     @Test
     void theLegacyDivisorWinsOverTheMultiplier()
     {
-        assertEquals(1F, GunType.sneakingYawRecoil(2F, 2F, 0.25F), EPSILON,
-            "DecreaseRecoil has the same priority over RecoilSneakingMultiplier on the pitch side");
+        assertEquals(1F, GunType.sneakingYawRecoil(2F, 2F, 0.25F), EPSILON, "DecreaseRecoil has the same priority over RecoilSneakingMultiplier on the pitch side");
     }
 
     @Test

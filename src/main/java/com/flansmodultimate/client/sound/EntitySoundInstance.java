@@ -4,8 +4,8 @@ import com.flansmodultimate.common.driveables.DriveableControlPhysics;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModClientConfig;
-
 import lombok.Setter;
+
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;

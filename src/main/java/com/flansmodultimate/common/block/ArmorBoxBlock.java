@@ -32,11 +32,7 @@ public class ArmorBoxBlock extends FlanBlock implements IFlanBlock<ArmorBoxType>
 
     public ArmorBoxBlock(ArmorBoxType type)
     {
-        super(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.WOOD)
-            .strength(2.0F, 4.0F)
-            .sound(SoundType.WOOD)
-        );
+        super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F, 4.0F).sound(SoundType.WOOD));
         configType = type;
     }
 

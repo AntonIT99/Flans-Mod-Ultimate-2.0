@@ -46,16 +46,10 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
 
     public enum Page
     {
-        MENU("Menu"),
-        GUNS("Guns"),
-        BOMBS("Bombs"),
-        MISSILES("Missiles"),
-        CARGO("Cargo"),
-        FUEL("Fuel"),
-        ADDONS("Addons"),
-        REPAIR("Repair");
+        MENU("Menu"), GUNS("Guns"), BOMBS("Bombs"), MISSILES("Missiles"), CARGO("Cargo"), FUEL("Fuel"), ADDONS("Addons"), REPAIR("Repair");
 
-        @Getter private final String displayName;
+        @Getter
+        private final String displayName;
 
         Page(String displayName)
         {
@@ -63,16 +57,20 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         }
     }
 
-    @Nullable @Getter private final Driveable driveable;
+    @Nullable @Getter
+    private final Driveable driveable;
     private final Inventory playerInventory;
     private final Container driveableInventory;
     private final DriveableMappedSlot[] gridSlots = new DriveableMappedSlot[GRID_SLOT_COUNT];
     private final DriveableMappedSlot[] gunSlots = new DriveableMappedSlot[GUN_SLOT_COUNT];
     private final DriveableMappedSlot fuelSlot;
-    @Getter private Page page = Page.MENU;
-    @Getter private int scrollRow;
+    @Getter
+    private Page page = Page.MENU;
+    @Getter
+    private int scrollRow;
     /** Seat whose single passenger-gun slot this menu exposes, or -1 for the ordinary driver menu. */
-    @Getter private final int passengerSeatIndex;
+    @Getter
+    private final int passengerSeatIndex;
     private final int driveableSlotEnd;
     private final int playerInventoryStart;
     private final int playerInventoryEnd;
@@ -97,20 +95,17 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         this(containerId, playerInventory, driveable, initialPage, -1);
     }
 
-    public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable,
-                                  Page initialPage, int passengerSeatIndex)
+    public DriveableInventoryMenu(int containerId, Inventory playerInventory, @Nullable Driveable driveable, Page initialPage, int passengerSeatIndex)
     {
         super(FlansModMenus.driveableInventoryMenu.get(), containerId);
         this.playerInventory = playerInventory;
         this.driveable = driveable;
         this.passengerSeatIndex = passengerSeatIndex;
-        driveableInventory = driveable == null || driveable.getDriveableData() == null
-            ? new SimpleContainer(1) : driveable.getDriveableData();
+        driveableInventory = driveable == null || driveable.getDriveableData() == null ? new SimpleContainer(1) : driveable.getDriveableData();
 
         for (int row = 0; row < GUN_SLOT_COUNT; row++)
         {
-            DriveableMappedSlot slot = new DriveableMappedSlot(driveableInventory,
-                GUI_X_OFFSET + 29, 25 + row * 19, this::mayPlaceOnCurrentPage);
+            DriveableMappedSlot slot = new DriveableMappedSlot(driveableInventory, GUI_X_OFFSET + 29, 25 + row * 19, this::mayPlaceOnCurrentPage);
             gunSlots[row] = slot;
             addSlot(slot);
         }
@@ -119,8 +114,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
             for (int column = 0; column < COLUMN_COUNT; column++)
             {
                 int visibleIndex = row * COLUMN_COUNT + column;
-                DriveableMappedSlot slot = new DriveableMappedSlot(driveableInventory,
-                    GUI_X_OFFSET + 10 + column * SLOT_SIZE, 25 + row * 19, this::mayPlaceOnCurrentPage);
+                DriveableMappedSlot slot = new DriveableMappedSlot(driveableInventory, GUI_X_OFFSET + 10 + column * SLOT_SIZE, 25 + row * 19, this::mayPlaceOnCurrentPage);
                 gridSlots[visibleIndex] = slot;
                 addSlot(slot);
             }
@@ -133,8 +127,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         for (int row = 0; row < 3; row++)
         {
             for (int column = 0; column < 9; column++)
-                addSlot(new PageAwarePlayerSlot(playerInventory, column + row * 9 + 9,
-                    GUI_X_OFFSET + 8 + column * SLOT_SIZE, 98 + row * SLOT_SIZE));
+                addSlot(new PageAwarePlayerSlot(playerInventory, column + row * 9 + 9, GUI_X_OFFSET + 8 + column * SLOT_SIZE, 98 + row * SLOT_SIZE));
         }
         for (int column = 0; column < 9; column++)
             addSlot(new PageAwarePlayerSlot(playerInventory, column, GUI_X_OFFSET + 8 + column * SLOT_SIZE, 156));
@@ -209,10 +202,8 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
     {
         if (isPassengerGunMenu() || !(driveableInventory instanceof DriveableData data))
             return List.of();
-        return data.getParts().values().stream()
-            .filter(part -> part.getMaxHealth() > 0F)
-            .sorted(Comparator.comparing(part -> part.getType().getName(), String.CASE_INSENSITIVE_ORDER))
-            .toList();
+        return data.getParts().values().stream().filter(part -> part.getMaxHealth() > 0F)
+            .sorted(Comparator.comparing(part -> part.getType().getName(), String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     @Override
@@ -349,11 +340,9 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
             case MENU -> false;
             // Legacy FilterAmmunitionInput accepts bullets and grenades in all
             // weapon pages; when disabled it intentionally accepts any item.
-            case GUNS, BOMBS, MISSILES -> !driveable.getConfigType().isFilterAmmunition()
-                || stack.getItem() instanceof ShootableItem;
+            case GUNS, BOMBS, MISSILES -> !driveable.getConfigType().isFilterAmmunition() || stack.getItem() instanceof ShootableItem;
             case CARGO -> true;
-            case FUEL -> stack.getItem() instanceof PartItem part
-                && part.getConfigType().getCategory() == PartType.Category.FUEL;
+            case FUEL -> stack.getItem() instanceof PartItem part && part.getConfigType().getCategory() == PartType.Category.FUEL;
             // The mapped DriveableData slot enforces the exact mecha slot type,
             // including legacy gun tools and bullet-fed arm slots.
             case ADDONS -> true;
@@ -369,8 +358,7 @@ public final class DriveableInventoryMenu extends AbstractContainerMenu
         if (!isPassengerGunMenu())
             return true;
         Seat seat = driveable.getSeat(player);
-        return seat != null && !seat.isDriverSeat() && seat.getSeatIndex() == passengerSeatIndex
-            && getPassengerGunAmmoIndex() >= 0;
+        return seat != null && !seat.isDriverSeat() && seat.getSeatIndex() == passengerSeatIndex && getPassengerGunAmmoIndex() >= 0;
     }
 
     @Override

@@ -32,11 +32,13 @@ import net.minecraft.world.phys.Vec3;
 /**
  * An autonomous flying gun, as the 1.12.2 {@code EntitySkullDrone}.
  *
- * <p>The legacy drone had no goals at all. It picked up the nearest player now and then, turned
+ * <p>
+ * The legacy drone had no goals at all. It picked up the nearest player now and then, turned
  * on whoever hurt it, and lost interest at random. While it had a target it hung at a drifting
  * point five to ten blocks above it and fired its gun at the weapon's own rate, reloading from a
  * single spare magazine. Explosions, fire and its own side's shots could not hurt it, and it never
- * despawned.</p>
+ * despawned.
+ * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SkullDroneEntity extends FlanMonster
@@ -61,10 +63,7 @@ public class SkullDroneEntity extends FlanMonster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return FlanMonster.createMonsterAttributes()
-            .add(Attributes.MAX_HEALTH, 60.0D)
-            .add(Attributes.FLYING_SPEED, 0.45D)
-            .add(Attributes.FOLLOW_RANGE, ACQUIRE_RANGE)
+        return FlanMonster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 60.0D).add(Attributes.FLYING_SPEED, 0.45D).add(Attributes.FOLLOW_RANGE, ACQUIRE_RANGE)
             .add(Attributes.ATTACK_DAMAGE, 5.0D);
     }
 
@@ -101,8 +100,7 @@ public class SkullDroneEntity extends FlanMonster
 
         if (random.nextInt(REPOSITION_CHANCE) == 0)
         {
-            offsetFromTarget = new Vec3(offsetFromTarget.x * 0.5D + random.nextGaussian() * 10D,
-                random.nextFloat() * 5D + 5D,
+            offsetFromTarget = new Vec3(offsetFromTarget.x * 0.5D + random.nextGaussian() * 10D, random.nextFloat() * 5D + 5D,
                 offsetFromTarget.z * 0.5D + random.nextGaussian() * 10D);
         }
         Vec3 motion = target.position().add(offsetFromTarget).subtract(position()).scale(APPROACH_RATE);
@@ -127,8 +125,8 @@ public class SkullDroneEntity extends FlanMonster
 
     private void acquireNearestPlayer()
     {
-        Player player = level().getNearestPlayer(TargetingConditions.forCombat().range(ACQUIRE_RANGE)
-            .selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(), this);
+        Player player = level().getNearestPlayer(TargetingConditions.forCombat().range(ACQUIRE_RANGE).selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(),
+            this);
         if (player != null)
             setTarget(player);
     }
@@ -138,8 +136,7 @@ public class SkullDroneEntity extends FlanMonster
     public void setTarget(@Nullable LivingEntity target)
     {
         super.setTarget(target);
-        offsetFromTarget = new Vec3(offsetFromTarget.x + random.nextGaussian() * 5D, 10D,
-            offsetFromTarget.z + random.nextGaussian() * 5D);
+        offsetFromTarget = new Vec3(offsetFromTarget.x + random.nextGaussian() * 5D, 10D, offsetFromTarget.z + random.nextGaussian() * 5D);
     }
 
     @Override
@@ -151,15 +148,15 @@ public class SkullDroneEntity extends FlanMonster
             return false;
         boolean hurt = super.hurt(source, amount);
         // Retaliation switches target without moving the hover point, as in 1.12.2.
-        if (!level().isClientSide && source.getEntity() instanceof LivingEntity attacker
-            && !(attacker instanceof Player player && (player.isCreative() || player.isSpectator())))
+        if (!level().isClientSide && source.getEntity() instanceof LivingEntity attacker && !(attacker instanceof Player player && (player.isCreative() || player.isSpectator())))
             super.setTarget(attacker);
         return hurt;
     }
 
     @Override
     @Nullable
-    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType,
+        @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
     {
         SpawnGroupData result = super.finalizeEntitySpawn(level, difficulty, spawnType, spawnData, dataTag);
         equipDefault(level.getRandom());

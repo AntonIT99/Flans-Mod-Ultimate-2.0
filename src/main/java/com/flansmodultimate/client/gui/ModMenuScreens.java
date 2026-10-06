@@ -18,8 +18,7 @@ public final class ModMenuScreens
     @FunctionalInterface
     public interface Registrar
     {
-        <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(MenuType<? extends M> type,
-                                                                                          MenuScreens.ScreenConstructor<M, U> constructor);
+        <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(MenuType<? extends M> type, MenuScreens.ScreenConstructor<M, U> constructor);
     }
 
     public static void register(Registrar registrar)

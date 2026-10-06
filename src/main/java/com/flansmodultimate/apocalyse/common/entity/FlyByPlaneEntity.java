@@ -22,10 +22,12 @@ import net.minecraft.world.level.Level;
 /**
  * An aircraft that crosses the apocalypse sky under its own power.
  *
- * <p>1.7.10 kept these flying by overriding the fuel checks and pinning the throttle open
+ * <p>
+ * 1.7.10 kept these flying by overriding the fuel checks and pinning the throttle open
  * every tick. The same is done here through the ordinary control path: the autopilot commands
  * the aircraft, holds the throttle-up input and keeps the tank topped up, then normal plane
- * physics fly it — so a flyby that is shot down breaks up like any other plane.</p>
+ * physics fly it — so a flyby that is shot down breaks up like any other plane.
+ * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class FlyByPlaneEntity extends Plane
@@ -84,8 +86,10 @@ public class FlyByPlaneEntity extends Plane
     /**
      * Puts a skeleton at the controls once there is a seat to put it in.
      *
-     * <p>Seat entities are created by the driveable's own first tick, so the crew cannot be
-     * placed at spawn time and is boarded here instead.</p>
+     * <p>
+     * Seat entities are created by the driveable's own first tick, so the crew cannot be
+     * placed at spawn time and is boarded here instead.
+     * </p>
      */
     private void seatCrew()
     {

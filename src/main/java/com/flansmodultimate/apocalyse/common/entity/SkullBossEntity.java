@@ -5,8 +5,8 @@ import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.FlanDamageSources;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.platform.entity.EntityPlatform;
-import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.platform.entity.FlanMonster;
+import com.flansmodultimate.platform.registry.RegistryEntry;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,10 +40,12 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The Skull Boss, as the 1.12.2 {@code EntitySkullBoss}.
  *
- * <p>It does not chase anyone. It swings around its arena on a spring pulled towards its home,
+ * <p>
+ * It does not chase anyone. It swings around its arena on a spring pulled towards its home,
  * the origin above the boss pillars for a boss summoned there, and bobs between that height
  * and 80 blocks below it on a slow sine. It fights whoever summoned it and switches to
- * whoever last hurt it. Its laughs, drones and TNT carry on whether or not it has a target.</p>
+ * whoever last hurt it. Its laughs, drones and TNT carry on whether or not it has a target.
+ * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SkullBossEntity extends FlanMonster
@@ -63,7 +65,8 @@ public class SkullBossEntity extends FlanMonster
     private static final double REACQUIRE_RANGE = 128.0D;
     private static final float MAX_DAMAGE = 99.0F;
 
-    private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.PROGRESS);
+    private final ServerBossEvent bossEvent = new ServerBossEvent(Component.translatable("entity.flansmodapocalypse.skullboss"), BossEvent.BossBarColor.YELLOW,
+        BossEvent.BossBarOverlay.PROGRESS);
     private Action currentAction = Action.IDLE;
     private int actionTicks;
     @Nullable
@@ -79,12 +82,8 @@ public class SkullBossEntity extends FlanMonster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return FlanMonster.createMonsterAttributes()
-            .add(Attributes.MAX_HEALTH, 1024.0D)
-            .add(Attributes.FLYING_SPEED, 0.35D)
-            .add(Attributes.FOLLOW_RANGE, REACQUIRE_RANGE)
-            .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
-            .add(Attributes.ATTACK_DAMAGE, 12.0D);
+        return FlanMonster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 1024.0D).add(Attributes.FLYING_SPEED, 0.35D).add(Attributes.FOLLOW_RANGE, REACQUIRE_RANGE)
+            .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D).add(Attributes.ATTACK_DAMAGE, 12.0D);
     }
 
     @Override
@@ -163,8 +162,8 @@ public class SkullBossEntity extends FlanMonster
         }
         if (target == null && tickCount % 20 == 0)
         {
-            target = level().getNearestPlayer(TargetingConditions.forCombat().range(REACQUIRE_RANGE)
-                .selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(), this);
+            target = level().getNearestPlayer(TargetingConditions.forCombat().range(REACQUIRE_RANGE).selector(EntitySelector.NO_CREATIVE_OR_SPECTATOR::test).ignoreLineOfSight(),
+                this);
             setTarget(target);
         }
         return target;
@@ -208,8 +207,8 @@ public class SkullBossEntity extends FlanMonster
 
         if (actionTicks % 5 == 0 && level instanceof ServerLevel serverLevel)
         {
-            serverLevel.explode(this, getX() + random.nextGaussian() * 10.0D, getY() + random.nextGaussian() * 10.0D,
-                getZ() + random.nextGaussian() * 10.0D, LAUGH_EXPLOSION_POWER, false, Level.ExplosionInteraction.NONE);
+            serverLevel.explode(this, getX() + random.nextGaussian() * 10.0D, getY() + random.nextGaussian() * 10.0D, getZ() + random.nextGaussian() * 10.0D, LAUGH_EXPLOSION_POWER,
+                false, Level.ExplosionInteraction.NONE);
         }
     }
 
@@ -289,8 +288,7 @@ public class SkullBossEntity extends FlanMonster
 
     private static boolean isFlanDamage(DamageSource source)
     {
-        return source.is(FlanDamageSources.SHOOTABLE) || source.is(FlanDamageSources.HEADSHOT)
-            || source.is(FlanDamageSources.MELEE) || source.is(FlanDamageSources.EXPLOSION);
+        return source.is(FlanDamageSources.SHOOTABLE) || source.is(FlanDamageSources.HEADSHOT) || source.is(FlanDamageSources.MELEE) || source.is(FlanDamageSources.EXPLOSION);
     }
 
     @Override
@@ -366,11 +364,7 @@ public class SkullBossEntity extends FlanMonster
 
     private enum Action
     {
-        IDLE,
-        LAUGH,
-        SPAWN_DRONES,
-        SHOOT_TNT,
-        DROP_NUKE;
+        IDLE, LAUGH, SPAWN_DRONES, SHOOT_TNT, DROP_NUKE;
 
         private static Action byId(int id)
         {

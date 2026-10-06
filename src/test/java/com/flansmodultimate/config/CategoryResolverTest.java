@@ -17,8 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CategoryResolverTest
 {
-    private static final Gson GSON = new GsonBuilder()
-        .registerTypeAdapter(StringOrNumberListMapAdapter.targetType(), new StringOrNumberListMapAdapter()).create();
+    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(StringOrNumberListMapAdapter.targetType(), new StringOrNumberListMapAdapter()).create();
 
     private static Category category(String name, String json)
     {
@@ -51,8 +50,7 @@ class CategoryResolverTest
         assertEquals(CategoryPropertyMode.REPLACE, merged.getPropertyMode("mass"));
         assertFalse(merged.getPropertiesFor("old").containsKey("Mass"));
         assertEquals(List.of("Ball", "Tracer"), base.getProperties().get("AddRound"));
-        TypeFile file = new TypeFile("new", EnumType.BULLET,
-            new ContentPack("test", Path.of("build", "test-packs", "inheritance")), List.of());
+        TypeFile file = new TypeFile("new", EnumType.BULLET, new ContentPack("test", Path.of("build", "test-packs", "inheritance")), List.of());
         file.addCategoryConfigMap(merged, "new");
         assertEquals(List.of("AP"), file.getConfigLines("AddRound"));
     }
@@ -120,8 +118,7 @@ class CategoryResolverTest
         Category self = category("Self", "{\"inherits\":\"Self\"}");
         Category valid = category("Valid", "{}");
         List<String> errors = new ArrayList<>();
-        List<Category> result = new CategoryResolver(EnumType.BULLET, List.of(),
-            List.of(a, b, dependent, missing, self, valid), true).resolve(errors::add);
+        List<Category> result = new CategoryResolver(EnumType.BULLET, List.of(), List.of(a, b, dependent, missing, self, valid), true).resolve(errors::add);
         assertEquals(List.of("Valid"), result.stream().map(Category::getName).toList());
         assertEquals(5, errors.size());
         assertTrue(errors.stream().anyMatch(error -> error.contains("Unknown")));

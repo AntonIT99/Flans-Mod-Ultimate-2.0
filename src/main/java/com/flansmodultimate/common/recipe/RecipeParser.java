@@ -14,8 +14,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.logError;
 public final class RecipeParser
 {
     private RecipeParser()
-    {
-    }
+    {}
 
     public static List<RecipeIngredient> parseAmountThenItemReferences(String[] split, int firstAmountIndex, @Nullable IContentProvider contentPack, TypeFile file, String context)
     {

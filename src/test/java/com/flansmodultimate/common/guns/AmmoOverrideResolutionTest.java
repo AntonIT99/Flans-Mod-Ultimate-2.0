@@ -25,8 +25,7 @@ class AmmoOverrideResolutionTest
     @Test
     void anEmptyOverrideChangesNothing()
     {
-        BulletType bullet = bullet("Mass 6800", "MuzzleVelocity 770", "ExplosiveMassTNTg 29",
-            "PenetrationAt100m 143");
+        BulletType bullet = bullet("Mass 6800", "MuzzleVelocity 770", "ExplosiveMassTNTg 29", "PenetrationAt100m 143");
 
         assertEquals(6800F, AmmoOverride.EMPTY.resolveMass(bullet, 0));
         assertEquals(38.5F, AmmoOverride.EMPTY.resolveBulletSpeed(bullet, 0, 0F), 1.0E-4F);
@@ -37,13 +36,8 @@ class AmmoOverrideResolutionTest
     @Test
     void aScalarOverrideReplacesTheAmmunitionValue()
     {
-        BulletType bullet = bullet("Mass 6800", "MuzzleVelocity 770", "ExplosiveMassTNTg 29",
-            "PenetrationAt100m 143");
-        AmmoOverride override = overrides(
-            "AmmoMass shell 4100",
-            "AmmoMuzzleVelocity shell 990",
-            "AmmoExplosiveMassTNTg shell 0",
-            "AmmoPenetrationAt100m shell 177");
+        BulletType bullet = bullet("Mass 6800", "MuzzleVelocity 770", "ExplosiveMassTNTg 29", "PenetrationAt100m 143");
+        AmmoOverride override = overrides("AmmoMass shell 4100", "AmmoMuzzleVelocity shell 990", "AmmoExplosiveMassTNTg shell 0", "AmmoPenetrationAt100m shell 177");
 
         assertEquals(4100F, override.resolveMass(bullet, 0));
         assertEquals(49.5F, override.resolveBulletSpeed(bullet, 0, 0F), 1.0E-4F);
@@ -65,18 +59,14 @@ class AmmoOverrideResolutionTest
     @Test
     void aReplacementBeltDisplacesTheAmmunitionsOwnBelt()
     {
-        BulletType bullet = bullet("RoundsPerItem 2",
-            "AddRound AP 1 162 0 800 45",
-            "AddRound HE 1 135 16 835 0");
+        BulletType bullet = bullet("RoundsPerItem 2", "AddRound AP 1 162 0 800 45", "AddRound HE 1 135 16 835 0");
         assertTrue(bullet.hasDifferentRounds());
         assertEquals(162F, bullet.getMass(0));
 
-        AmmoOverride override = overrides(
-            "AddRoundForAmmo belt Ball 1 46 0 900 12");
+        AmmoOverride override = overrides("AddRoundForAmmo belt Ball 1 46 0 900 12");
 
         assertEquals(46F, override.resolveMass(bullet, 0));
-        assertEquals(46F, override.resolveMass(bullet, 1),
-            "the ammunition's own second round must not show through");
+        assertEquals(46F, override.resolveMass(bullet, 1), "the ammunition's own second round must not show through");
         assertEquals(45F, override.resolveBulletSpeed(bullet, 1, 0F), 1.0E-4F);
         assertEquals(0F, override.resolveExplosiveMass(bullet, 1));
         assertEquals(12F, override.resolvePenetrationAt100m(bullet, 1));
@@ -86,25 +76,20 @@ class AmmoOverrideResolutionTest
     void aScalarOverrideBeatsItsOwnReplacementBelt()
     {
         BulletType bullet = bullet("Mass 100");
-        AmmoOverride override = overrides(
-            "AddRoundForAmmo belt AP 1 162 0 800 45",
-            "AmmoMass belt 999");
+        AmmoOverride override = overrides("AddRoundForAmmo belt AP 1 162 0 800 45", "AmmoMass belt 999");
 
         assertEquals(999F, override.resolveMass(bullet, 0));
-        assertEquals(45F, override.resolvePenetrationAt100m(bullet, 0),
-            "the belt still supplies the fields the scalar override leaves alone");
+        assertEquals(45F, override.resolvePenetrationAt100m(bullet, 0), "the belt still supplies the fields the scalar override leaves alone");
     }
 
     @Test
     void theWeaponVelocityRemainsTheLastFallback()
     {
         BulletType bullet = bullet("Mass 9");
-        assertEquals(7F, AmmoOverride.EMPTY.resolveBulletSpeed(bullet, 0, 7F), 1.0E-4F,
-            "an ammunition with no velocity of its own keeps taking the weapon's");
+        assertEquals(7F, AmmoOverride.EMPTY.resolveBulletSpeed(bullet, 0, 7F), 1.0E-4F, "an ammunition with no velocity of its own keeps taking the weapon's");
 
         AmmoOverride override = overrides("AmmoMuzzleVelocity round 400");
-        assertEquals(20F, override.resolveBulletSpeed(bullet, 0, 7F), 1.0E-4F,
-            "an overridden velocity must win over the weapon's");
+        assertEquals(20F, override.resolveBulletSpeed(bullet, 0, 7F), 1.0E-4F, "an overridden velocity must win over the weapon's");
     }
 
     @Test
@@ -123,8 +108,7 @@ class AmmoOverrideResolutionTest
         assertEquals(0F, AmmoOverride.EMPTY.resolveMass(bullet, 0));
 
         AmmoOverride override = overrides("AmmoMass laser 44");
-        assertEquals(44F, override.resolveMass(bullet, 0),
-            "a positive resolved mass is what puts the shot on the kinetic scale");
+        assertEquals(44F, override.resolveMass(bullet, 0), "a positive resolved mass is what puts the shot on the kinetic scale");
     }
 
     private static BulletType bullet(String... lines)
@@ -136,8 +120,7 @@ class AmmoOverrideResolutionTest
 
     private static AmmoOverride overrides(String... lines)
     {
-        AmmoOverrides.Result result = AmmoOverrides.read(
-            new TypeFile("syntheticWeapon", EnumType.GUN, PACK, List.of(lines)));
+        AmmoOverrides.Result result = AmmoOverrides.read(new TypeFile("syntheticWeapon", EnumType.GUN, PACK, List.of(lines)));
         assertTrue(result.warnings().isEmpty(), () -> "unexpected warnings: " + result.warnings());
         assertEquals(1, result.overrides().asMap().size());
         return result.overrides().asMap().values().iterator().next();

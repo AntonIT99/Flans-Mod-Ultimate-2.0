@@ -89,7 +89,7 @@ public class TexturedPolygon
     {
         PositionTextureVertex[] var1 = new PositionTextureVertex[this.vertexPositions.length];
 
-        for(int var2 = 0; var2 < this.vertexPositions.length; ++var2)
+        for (int var2 = 0; var2 < this.vertexPositions.length; ++var2)
         {
             var1[var2] = this.vertexPositions[this.vertexPositions.length - var2 - 1];
         }
@@ -116,7 +116,8 @@ public class TexturedPolygon
         draw(pose, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, glow, Long.MIN_VALUE);
     }
 
-    void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glow, long transformationSequence)
+    void draw(PoseStack.Pose pose, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, boolean glow,
+        long transformationSequence)
     {
         if (nVertices < 3)
             return;
@@ -156,16 +157,13 @@ public class TexturedPolygon
         float[] staticVertices = getCompiledStaticVertices();
         // Incomplete legacy normal lists inherit the previous emitted normal.
         // Preserve their original emission order instead of changing that fallback.
-        int[] indices = !glow && hasPerVertexNormals && perVertexNormalCount < nVertices
-            ? getLegacyRenderVertexIndices() : renderVertexIndices;
+        int[] indices = !glow && hasPerVertexNormals && perVertexNormalCount < nVertices ? getLegacyRenderVertexIndices() : renderVertexIndices;
         for (int vertexIndex : indices)
         {
             int dataIndex = vertexIndex * 5;
-            emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer,
-                    packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign,
-                    perVertexNormalCount, hasPerVertexNormals, vertexIndex,
-                    staticVertices[dataIndex], staticVertices[dataIndex + 1], staticVertices[dataIndex + 2],
-                    staticVertices[dataIndex + 3], staticVertices[dataIndex + 4]);
+            emitVertex(positionMatrix, normalMatrix, transformedNormal, vertexConsumer, packedOverlay, finalLight, red, green, blue, alpha, glow, normalSign, perVertexNormalCount,
+                hasPerVertexNormals, vertexIndex, staticVertices[dataIndex], staticVertices[dataIndex + 1], staticVertices[dataIndex + 2], staticVertices[dataIndex + 3],
+                staticVertices[dataIndex + 4]);
         }
     }
 
@@ -179,9 +177,9 @@ public class TexturedPolygon
         {
             PositionTextureVertex vertex = vertexPositions[vertexIndex];
             int dataIndex = vertexIndex * 5;
-            data[dataIndex] = (float)vertex.vector3D.x() * INV_16;
-            data[dataIndex + 1] = (float)vertex.vector3D.y() * INV_16;
-            data[dataIndex + 2] = (float)vertex.vector3D.z() * INV_16;
+            data[dataIndex] = (float) vertex.vector3D.x() * INV_16;
+            data[dataIndex + 1] = (float) vertex.vector3D.y() * INV_16;
+            data[dataIndex + 2] = (float) vertex.vector3D.z() * INV_16;
             data[dataIndex + 3] = vertex.texturePositionX;
             data[dataIndex + 4] = vertex.texturePositionY;
         }
@@ -230,7 +228,8 @@ public class TexturedPolygon
             observedUvs[i * 2 + 1] = vertex.texturePositionY;
         }
         observedCount = nVertices;
-        if (changed) invalidateCompiledVertices();
+        if (changed)
+            invalidateCompiledVertices();
     }
 
     /** Derived LOD geometry must not freeze legacy bone deformation. */
@@ -245,11 +244,16 @@ public class TexturedPolygon
      **/
     public String gpuIneligibility()
     {
-        if (getClass() != TexturedPolygon.class) return "custom polygon class";
-        if (hasTransformVertices && hasBoundTransformVertices()) return "bone-bound vertices";
-        if (hasTransformVertices) return "bone-capable vertices of shared geometry";
-        if (invertNormal) return "inverted normals";
-        if (!iNormals.isEmpty() || externalNormals) return "per-vertex normals";
+        if (getClass() != TexturedPolygon.class)
+            return "custom polygon class";
+        if (hasTransformVertices && hasBoundTransformVertices())
+            return "bone-bound vertices";
+        if (hasTransformVertices)
+            return "bone-capable vertices of shared geometry";
+        if (invertNormal)
+            return "inverted normals";
+        if (!iNormals.isEmpty() || externalNormals)
+            return "per-vertex normals";
         return null;
     }
 
@@ -266,8 +270,7 @@ public class TexturedPolygon
      */
     public boolean isRigidLodGeometry(boolean ownedGeometry)
     {
-        return getClass() == TexturedPolygon.class && !invertNormal && iNormals.isEmpty()
-            && (!hasTransformVertices || ownedGeometry && !hasBoundTransformVertices());
+        return getClass() == TexturedPolygon.class && !invertNormal && iNormals.isEmpty() && (!hasTransformVertices || ownedGeometry && !hasBoundTransformVertices());
     }
 
     public boolean isRigidGpuGeometry(boolean ownedGeometry)
@@ -362,9 +365,9 @@ public class TexturedPolygon
             if (compiledTransformPositions[index] != position)
             {
                 compiledTransformPositions[index] = position;
-                compiledStaticVertices[dataIndex] = (float)position.x * INV_16;
-                compiledStaticVertices[dataIndex + 1] = (float)position.y * INV_16;
-                compiledStaticVertices[dataIndex + 2] = (float)position.z * INV_16;
+                compiledStaticVertices[dataIndex] = (float) position.x * INV_16;
+                compiledStaticVertices[dataIndex + 1] = (float) position.y * INV_16;
+                compiledStaticVertices[dataIndex + 2] = (float) position.z * INV_16;
                 cachedFaceNormalValid = false;
             }
             compiledStaticVertices[dataIndex + 3] = vertex.texturePositionX;
@@ -400,9 +403,9 @@ public class TexturedPolygon
                 normalZ *= inverseLength;
             }
 
-            cachedFaceNormalX = (float)normalX;
-            cachedFaceNormalY = (float)normalY;
-            cachedFaceNormalZ = (float)normalZ;
+            cachedFaceNormalX = (float) normalX;
+            cachedFaceNormalY = (float) normalY;
+            cachedFaceNormalZ = (float) normalZ;
             cachedFaceNormalValid = true;
         }
 
@@ -410,16 +413,14 @@ public class TexturedPolygon
         normalMatrix.transform(transformedNormal);
     }
 
-    private void emitVertex(Matrix4f positionMatrix, Matrix3f normalMatrix,
-            Vector3f transformedNormal, VertexConsumer vertexConsumer,
-            int packedOverlay, int finalLight, float red, float green, float blue, float alpha,
-            boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals,
-            int vertexIndex, float localX, float localY, float localZ, float textureX, float textureY)
+    private void emitVertex(Matrix4f positionMatrix, Matrix3f normalMatrix, Vector3f transformedNormal, VertexConsumer vertexConsumer, int packedOverlay, int finalLight, float red,
+        float green, float blue, float alpha, boolean glow, float normalSign, int perVertexNormalCount, boolean hasPerVertexNormals, int vertexIndex, float localX, float localY,
+        float localZ, float textureX, float textureY)
     {
         if (hasPerVertexNormals && !glow && vertexIndex < perVertexNormalCount)
         {
             Vec3 normal = iNormals.get(vertexIndex);
-            transformedNormal.set((float)normal.x * normalSign, (float)normal.y * normalSign, (float)normal.z * normalSign);
+            transformedNormal.set((float) normal.x * normalSign, (float) normal.y * normalSign, (float) normal.z * normalSign);
             normalMatrix.transform(transformedNormal);
         }
 
@@ -431,7 +432,8 @@ public class TexturedPolygon
         final float transformedY = positionMatrix.m01() * localX + positionMatrix.m11() * localY + positionMatrix.m21() * localZ + positionMatrix.m31();
         final float transformedZ = positionMatrix.m02() * localX + positionMatrix.m12() * localY + positionMatrix.m22() * localZ + positionMatrix.m32();
 
-        EntityVertexBatch.vertex(vertexConsumer, transformedX, transformedY, transformedZ, red, green, blue, alpha, textureX, textureY, packedOverlay, finalLight, normalX, normalY, normalZ);
+        EntityVertexBatch.vertex(vertexConsumer, transformedX, transformedY, transformedZ, red, green, blue, alpha, textureX, textureY, packedOverlay, finalLight, normalX, normalY,
+            normalZ);
     }
 
     private static final class RenderScratch

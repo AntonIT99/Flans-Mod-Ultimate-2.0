@@ -173,7 +173,9 @@ public class ApocalypseSavedData extends FlanSavedData
             CompoundTag pointTag = new CompoundTag();
             BlockPos pos = entry.getValue();
             pointTag.putUUID(NBT_UUID, entry.getKey());
-            pointTag.putInt(NBT_X, pos.getX()); pointTag.putInt(NBT_Y, pos.getY()); pointTag.putInt(NBT_Z, pos.getZ());
+            pointTag.putInt(NBT_X, pos.getX());
+            pointTag.putInt(NBT_Y, pos.getY());
+            pointTag.putInt(NBT_Z, pos.getZ());
             list.add(pointTag);
         }
         tag.put(NBT_ENTRY_POINTS, list);
@@ -184,7 +186,9 @@ public class ApocalypseSavedData extends FlanSavedData
             CompoundTag pointTag = new CompoundTag();
             BlockPos pos = entry.getValue();
             pointTag.putUUID(NBT_UUID, entry.getKey());
-            pointTag.putInt(NBT_X, pos.getX()); pointTag.putInt(NBT_Y, pos.getY()); pointTag.putInt(NBT_Z, pos.getZ());
+            pointTag.putInt(NBT_X, pos.getX());
+            pointTag.putInt(NBT_Y, pos.getY());
+            pointTag.putInt(NBT_Z, pos.getZ());
             deaths.add(pointTag);
         }
         tag.put(NBT_DEATH_POINTS, deaths);

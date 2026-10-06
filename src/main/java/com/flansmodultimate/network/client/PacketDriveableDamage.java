@@ -23,7 +23,8 @@ public final class PacketDriveableDamage implements IClientPacket
     private static final Map<Integer, PendingDamage> PENDING = new HashMap<>();
     private static Level pendingLevel;
 
-    private record PendingDamage(PacketDriveableDamage packet, long expiresAt) {}
+    private record PendingDamage(PacketDriveableDamage packet, long expiresAt)
+    {}
 
     private int driveableId;
     private int[] partOrdinals = new int[0];
@@ -31,7 +32,8 @@ public final class PacketDriveableDamage implements IClientPacket
     private int[] fireTicks = new int[0];
     private byte[] flags = new byte[0];
 
-    public PacketDriveableDamage() {}
+    public PacketDriveableDamage()
+    {}
 
     public PacketDriveableDamage(int driveableId, @NotNull List<DriveablePart> parts)
     {
@@ -114,7 +116,7 @@ public final class PacketDriveableDamage implements IClientPacket
         }
         if (level == null)
             return;
-        for (Iterator<Map.Entry<Integer, PendingDamage>> it = PENDING.entrySet().iterator(); it.hasNext(); )
+        for (Iterator<Map.Entry<Integer, PendingDamage>> it = PENDING.entrySet().iterator(); it.hasNext();)
         {
             Map.Entry<Integer, PendingDamage> entry = it.next();
             Entity entity = level.getEntity(entry.getKey());

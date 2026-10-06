@@ -31,11 +31,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class SoundJsonProcessor {
-    private static final Gson GSON = new GsonBuilder()
-            .disableHtmlEscaping()
-            .setPrettyPrinting()
-            .create();
+public final class SoundJsonProcessor
+{
+    private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
     private static final String DEFAULT_CATEGORY = "player";
 
@@ -47,11 +45,15 @@ public final class SoundJsonProcessor {
      * - Add entries for .ogg under soundsDir not referenced anywhere in sounds.json
      * - Pretty print; delete file if empty
      *
-     * @param soundsJsonFile path to sounds.json
-     * @param namespace      namespace to use (e.g., "flansmod")
-     * @param soundsDir      folder that contains .ogg files (e.g., assets/flansmod/sounds)
+     * @param soundsJsonFile
+     *            path to sounds.json
+     * @param namespace
+     *            namespace to use (e.g., "flansmod")
+     * @param soundsDir
+     *            folder that contains .ogg files (e.g., assets/flansmod/sounds)
      */
-    public static void process(Path soundsJsonFile, String namespace, Path soundsDir) {
+    public static void process(Path soundsJsonFile, String namespace, Path soundsDir)
+    {
         try
         {
             String content = Files.readString(soundsJsonFile, StandardCharsets.UTF_8);
@@ -98,7 +100,8 @@ public final class SoundJsonProcessor {
 
             // Pretty print with trailing newline
             String out = GSON.toJson(root);
-            if (!out.endsWith("\n")) out += "\n";
+            if (!out.endsWith("\n"))
+                out += "\n";
             Files.writeString(soundsJsonFile, out, StandardCharsets.UTF_8);
 
         }
@@ -159,7 +162,8 @@ public final class SoundJsonProcessor {
             JsonElement val = e.getValue();
 
             JsonElement newVal = val;
-            if (val.isJsonObject()) {
+            if (val.isJsonObject())
+            {
                 newVal = sanitizeDefinitionSounds(val.getAsJsonObject(), namespace);
             }
             sanitizedDefs.add(key, newVal);
@@ -228,7 +232,9 @@ public final class SoundJsonProcessor {
                         }
                     }
                     arr.add(copy);
-                } else {
+                }
+                else
+                {
                     // passthrough unknown forms
                     arr.add(se);
                 }
@@ -251,10 +257,7 @@ public final class SoundJsonProcessor {
         Set<String> existingKeys = new HashSet<>(root.keySet());
 
         // 4) For each ogg NOT referenced, add a new event entry at the end
-        List<OggDescriptor> missing = oggs.stream()
-                .filter(o -> !referenced.contains(o.identifier))
-                .sorted(Comparator.comparing(o -> o.eventKey))
-                .toList();
+        List<OggDescriptor> missing = oggs.stream().filter(o -> !referenced.contains(o.identifier)).sorted(Comparator.comparing(o -> o.eventKey)).toList();
 
         for (OggDescriptor o : missing)
         {
@@ -281,7 +284,8 @@ public final class SoundJsonProcessor {
         while (true)
         {
             String candidate = base + "-" + i;
-            if (!existing.contains(candidate)) return candidate;
+            if (!existing.contains(candidate))
+                return candidate;
             i++;
         }
     }
@@ -289,10 +293,13 @@ public final class SoundJsonProcessor {
     /**
      * Represents a discovered ogg file and the proposed event key.
      *
-     * @param identifier e.g., "flansmod:weapons/rifle_shot"   (sanitized)
-     * @param eventKey   e.g., "rifle_shot"                    (sanitized)
+     * @param identifier
+     *            e.g., "flansmod:weapons/rifle_shot" (sanitized)
+     * @param eventKey
+     *            e.g., "rifle_shot" (sanitized)
      */
-    private record OggDescriptor(String identifier, String eventKey) {}
+    private record OggDescriptor(String identifier, String eventKey)
+    {}
 
     /** Collect all .ogg files under soundsDir as fully qualified identifiers + default event keys (both sanitized). */
     private static Set<OggDescriptor> collectOggs(String namespace, Path soundsDir)
@@ -302,23 +309,21 @@ public final class SoundJsonProcessor {
 
         try (Stream<Path> stream = Files.walk(soundsDir))
         {
-            return stream
-                    .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.OGG_EXTENSION))
-                    .map(p -> {
-                        Path rel = soundsDir.relativize(p);
-                        // Build id path with forward slashes and no ".ogg"
-                        String relUnix = rel.toString().replace('\\', '/');
-                        String noExt = relUnix.endsWith(FileUtils.OGG_EXTENSION) ? relUnix.substring(0, relUnix.length() - 4) : relUnix;
+            return stream.filter(p -> Files.isRegularFile(p) && p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.OGG_EXTENSION)).map(p ->
+            {
+                Path rel = soundsDir.relativize(p);
+                // Build id path with forward slashes and no ".ogg"
+                String relUnix = rel.toString().replace('\\', '/');
+                String noExt = relUnix.endsWith(FileUtils.OGG_EXTENSION) ? relUnix.substring(0, relUnix.length() - 4) : relUnix;
 
-                        // SANITIZE the path part and the derived event key
-                        String sanitizedPath = ResourceUtils.sanitize(noExt);
-                        String identifier = sanitizeIdentifier(namespace + ":" + sanitizedPath, namespace);
+                // SANITIZE the path part and the derived event key
+                String sanitizedPath = ResourceUtils.sanitize(noExt);
+                String identifier = sanitizeIdentifier(namespace + ":" + sanitizedPath, namespace);
 
-                        String baseName = stripOgg(p.getFileName().toString());
-                        String eventKey = ResourceUtils.sanitize(baseName);
-                        return new OggDescriptor(identifier, eventKey);
-                    })
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+                String baseName = stripOgg(p.getFileName().toString());
+                String eventKey = ResourceUtils.sanitize(baseName);
+                return new OggDescriptor(identifier, eventKey);
+            }).collect(Collectors.toCollection(LinkedHashSet::new));
         }
         catch (IOException e)
         {
@@ -409,11 +414,12 @@ public final class SoundJsonProcessor {
     }
 
     /** Skips the next JSON value (object/array/primitive/null). */
-    private static void skipAny(JsonReader reader) throws IOException {
+    private static void skipAny(JsonReader reader) throws IOException
+    {
         JsonToken t = reader.peek();
         switch (t)
         {
-            case BEGIN_OBJECT:
+            case BEGIN_OBJECT :
                 reader.beginObject();
                 while (reader.peek() == JsonToken.NAME)
                 {
@@ -422,7 +428,7 @@ public final class SoundJsonProcessor {
                 }
                 reader.endObject();
                 break;
-            case BEGIN_ARRAY:
+            case BEGIN_ARRAY :
                 reader.beginArray();
                 while (reader.peek() != JsonToken.END_ARRAY)
                 {
@@ -430,13 +436,14 @@ public final class SoundJsonProcessor {
                 }
                 reader.endArray();
                 break;
-            default:
+            default :
                 reader.skipValue();
         }
     }
 
     /** Preserve numeric exactness where possible. */
-    private static JsonPrimitive numberPrimitive(String raw) {
+    private static JsonPrimitive numberPrimitive(String raw)
+    {
         try
         {
             long l = Long.parseLong(raw);
@@ -479,7 +486,8 @@ public final class SoundJsonProcessor {
         {
             ns = s.substring(0, colon);
             path = s.substring(colon + 1);
-            if (ns.isBlank() && defaultNamespace != null) ns = defaultNamespace;
+            if (ns.isBlank() && defaultNamespace != null)
+                ns = defaultNamespace;
         }
         else
         {

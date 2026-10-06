@@ -25,7 +25,8 @@ import java.util.function.Consumer;
  */
 public final class ItemStackData
 {
-    private ItemStackData() {}
+    private ItemStackData()
+    {}
 
     public static boolean has(ItemStack stack)
     {

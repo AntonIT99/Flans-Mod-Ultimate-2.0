@@ -31,11 +31,16 @@ public final class KillMessageFeed
     /** One kill feed line. The weapon icon is resolved once, when the message arrives. */
     public static final class Entry
     {
-        @Getter private final Component killer;
-        @Getter private final Component victim;
-        @Getter private final boolean headshot;
-        @Getter private final ItemStack weapon;
-        @Getter private int line;
+        @Getter
+        private final Component killer;
+        @Getter
+        private final Component victim;
+        @Getter
+        private final boolean headshot;
+        @Getter
+        private final ItemStack weapon;
+        @Getter
+        private int line;
         private int timer = MESSAGE_LIFETIME;
 
         private Entry(KillMessageData data)

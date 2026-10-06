@@ -47,11 +47,13 @@ import java.util.Optional;
 /**
  * The Apocalypse's per-chunk generators.
  *
- * <p>Block placement runs from {@link ApocalypseChunkFeature} on a worldgen worker thread, so
+ * <p>
+ * Block placement runs from {@link ApocalypseChunkFeature} on a worldgen worker thread, so
  * everything here writes through a {@link WorldGenLevel} and stays within the chunk being
  * decorated and its direct neighbours, the only ones a feature may write to. Spawns that need
  * the server thread are left to a {@link WorldgenSpawnMarker}, which calls back into
- * {@link #runDeferredSpawn} once the chunk is live.</p>
+ * {@link #runDeferredSpawn} once the chunk is live.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseWorldgen
@@ -74,8 +76,7 @@ public final class ApocalypseWorldgen
             generateDeadTree(level, random, randomSurfacePos(level, chunkPos, random));
         if (random.nextInt(ModApocalypseConfig.apocalypseSkeletonRarity()) == 0)
             generateSkeletonDisplay(level, random, randomSurfacePos(level, chunkPos, random));
-        if (ModApocalypseConfig.apocalypsePortalsEnabled()
-            && random.nextInt(ModApocalypseConfig.apocalypseAbandonedPortalRarity()) == 0)
+        if (ModApocalypseConfig.apocalypsePortalsEnabled() && random.nextInt(ModApocalypseConfig.apocalypseAbandonedPortalRarity()) == 0)
             generateAbandonedPortal(level, random, randomSurfacePos(level, chunkPos, random));
 
         // Labs and airfields span several chunks: each chunk decides from its region's seed
@@ -98,11 +99,8 @@ public final class ApocalypseWorldgen
     /** Seeds the occasional abandoned portal outside the wasteland. */
     public static boolean generateOverworldPortal(WorldGenLevel level, ChunkPos chunkPos)
     {
-        if (!ModApocalypseConfig.apocalypseWorldgenEnabled()
-            || !ModApocalypseConfig.apocalypseDimensionEnabled()
-            || !ModApocalypseConfig.apocalypsePortalsEnabled()
-            || !ModApocalypseConfig.apocalypseOverworldPortalGenerationEnabled()
-            || !hasApocalypseDimension(level.getServer()))
+        if (!ModApocalypseConfig.apocalypseWorldgenEnabled() || !ModApocalypseConfig.apocalypseDimensionEnabled() || !ModApocalypseConfig.apocalypsePortalsEnabled()
+            || !ModApocalypseConfig.apocalypseOverworldPortalGenerationEnabled() || !hasApocalypseDimension(level.getServer()))
             return false;
 
         RandomSource random = chunkRandom(level, chunkPos);
@@ -130,24 +128,20 @@ public final class ApocalypseWorldgen
         {
             case SURVIVOR -> spawnSurvivor(level, pos);
             case ABANDONED_VEHICLE -> generateAbandonedVehicle(level, random, pos);
-            case LAB_MECHA ->
-            {
+            case LAB_MECHA -> {
                 if (ModApocalypseConfig.apocalypseMobsEnabled())
                     ApocalypseDriveableHelper.spawnDungeonMecha(level, pos, random);
             }
             case PARKED_PLANE -> ApocalypseDriveableHelper.spawnParkedPlane(level, position.x, position.y, position.z, random);
-            case APOCALYPSE_PORTAL ->
-            {
+            case APOCALYPSE_PORTAL -> {
                 if (!ModApocalypseConfig.apocalypsePortalsEnabled() || !ApocalypsePortalManager.createPortal(level, pos, null))
                     return;
                 ApocalypseStructures.placePortalCache(level, random, pos);
                 if (random.nextBoolean())
                     postGuard(level, random, pos.getX() + (random.nextBoolean() ? 6 : -3), pos.getZ() + (random.nextBoolean() ? 6 : -3));
             }
-            case OVERWORLD_PORTAL ->
-            {
-                if (ModApocalypseConfig.apocalypsePortalsEnabled() && ModApocalypseConfig.apocalypseOverworldPortalGenerationEnabled()
-                    && hasApocalypseDimension(level.getServer()))
+            case OVERWORLD_PORTAL -> {
+                if (ModApocalypseConfig.apocalypsePortalsEnabled() && ModApocalypseConfig.apocalypseOverworldPortalGenerationEnabled() && hasApocalypseDimension(level.getServer()))
                     ApocalypsePortalManager.createPortal(level, pos, null);
             }
         }
@@ -206,20 +200,15 @@ public final class ApocalypseWorldgen
 
         // Info types are backed by a HashMap, so sort before using the worldgen RNG.
         // This keeps the selected vehicle stable for a given seed and installed pack set.
-        List<VehicleType> candidates = InfoType.getInfoTypes().values().stream()
-            .filter(VehicleType.class::isInstance)
-            .map(VehicleType.class::cast)
-            .filter(VehicleType::isPlaceableOnLand)
-            .distinct()
-            .sorted(Comparator.comparing(VehicleType::getShortName, String.CASE_INSENSITIVE_ORDER))
-            .toList();
+        List<VehicleType> candidates = InfoType.getInfoTypes().values().stream().filter(VehicleType.class::isInstance).map(VehicleType.class::cast)
+            .filter(VehicleType::isPlaceableOnLand).distinct().sorted(Comparator.comparing(VehicleType::getShortName, String.CASE_INSENSITIVE_ORDER)).toList();
         if (candidates.isEmpty())
             return;
 
         VehicleType type = candidates.get(random.nextInt(candidates.size()));
         float yaw = random.nextFloat() * 360F;
-        Driveable.spawn(level, type, pos.getX() + 0.5D, pos.getY() + type.getYOffset(), pos.getZ() + 0.5D,
-            yaw, null, null).ifPresent(vehicle -> {
+        Driveable.spawn(level, type, pos.getX() + 0.5D, pos.getY() + type.getYOffset(), pos.getZ() + 0.5D, yaw, null, null).ifPresent(vehicle ->
+        {
             vehicle.getPersistentData().putBoolean("flansmodultimate:apocalypse_abandoned", true);
             vehicle.getDriveableData().setFuelInTank(0F);
 
@@ -259,7 +248,8 @@ public final class ApocalypseWorldgen
     private static void generateSkeletonDisplay(WorldGenLevel level, RandomSource random, BlockPos pos)
     {
         Optional<Block> skeleton = random.nextBoolean() ? flanBlock("flanskeleton") : flanBlock("flanskeleton2");
-        skeleton.ifPresent(block -> {
+        skeleton.ifPresent(block ->
+        {
             BlockState state = block.defaultBlockState();
             if (state.hasProperty(HorizontalDirectionalBlock.FACING))
                 state = state.setValue(HorizontalDirectionalBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(random));
@@ -332,10 +322,12 @@ public final class ApocalypseWorldgen
     /**
      * Whether a generator may place a block here.
      *
-     * <p>During worldgen a feature may only write to the chunk it decorates and its direct
+     * <p>
+     * During worldgen a feature may only write to the chunk it decorates and its direct
      * neighbours; anything further is refused with an error. On the server thread, a block is
      * never placed into an unloaded chunk, which would make the server wait on its own chunk
-     * pipeline.</p>
+     * pipeline.
+     * </p>
      */
     static boolean canWrite(LevelAccessor level, BlockPos pos)
     {
@@ -344,8 +336,7 @@ public final class ApocalypseWorldgen
         if (level instanceof WorldGenRegion region)
         {
             ChunkPos centre = region.getCenter();
-            return Math.abs(SectionPos.blockToSectionCoord(pos.getX()) - centre.x) <= 1
-                && Math.abs(SectionPos.blockToSectionCoord(pos.getZ()) - centre.z) <= 1;
+            return Math.abs(SectionPos.blockToSectionCoord(pos.getX()) - centre.x) <= 1 && Math.abs(SectionPos.blockToSectionCoord(pos.getZ()) - centre.z) <= 1;
         }
         return level.hasChunkAt(pos);
     }

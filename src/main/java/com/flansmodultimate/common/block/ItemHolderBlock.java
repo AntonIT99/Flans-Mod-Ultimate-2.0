@@ -40,12 +40,7 @@ public class ItemHolderBlock extends FlanEntityBlock implements IFlanBlock<ItemH
 
     public ItemHolderBlock(ItemHolderType type)
     {
-        super(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.STONE)
-            .strength(2.0F, 4.0F)
-            .sound(SoundType.STONE)
-            .noOcclusion()
-        );
+        super(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0F, 4.0F).sound(SoundType.STONE).noOcclusion());
         configType = type;
         registerDefaultState(stateDefinition.any().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
     }
@@ -100,7 +95,8 @@ public class ItemHolderBlock extends FlanEntityBlock implements IFlanBlock<ItemH
 
     @Override
     @NotNull
-    public BlockState updateShape(@NotNull BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos)
+    public BlockState updateShape(@NotNull BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos,
+        @NotNull BlockPos neighborPos)
     {
         if (direction == Direction.DOWN && !canSurvive(state, level, pos))
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();

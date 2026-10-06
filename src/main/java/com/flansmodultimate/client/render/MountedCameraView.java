@@ -16,11 +16,13 @@ import net.minecraft.world.entity.player.Player;
 /**
  * Single source of truth for the orientation of a driveable-mounted camera.
  *
- * <p>The third person boom is built inside {@code Camera.setup}, well before
+ * <p>
+ * The third person boom is built inside {@code Camera.setup}, well before
  * {@code ViewportEvent.ComputeCameraAngles} can change the rendered angles.
  * Resolving both from here keeps the boom, the view direction and the screen
  * roll describing the same orientation instead of drifting apart by whatever
- * mouse movement vanilla folded into the rider's rotation this frame.</p>
+ * mouse movement vanilla folded into the rider's rotation this frame.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MountedCameraView
@@ -31,8 +33,7 @@ public final class MountedCameraView
      */
     public static boolean isViewLockedToDriveable(@Nullable Driveable driveable, @Nullable Seat seat)
     {
-        return driveable instanceof Plane && seat != null && seat.isDriverSeat()
-            && ModClient.isMouseControlEnabled() && !seat.isScoped();
+        return driveable instanceof Plane && seat != null && seat.isDriverSeat() && ModClient.isMouseControlEnabled() && !seat.isScoped();
     }
 
     /** Camera angles of the seat this entity rides, or null if it rides none. */
@@ -48,12 +49,8 @@ public final class MountedCameraView
 
         float partial = Mth.clamp(partialTick, 0F, 1F);
         boolean locked = isViewLockedToDriveable(driveable, seat);
-        return LegacyDriveableCoordinates.mountedViewAngles(
-            Mth.rotLerp(partial, driveable.getPrevYaw(), driveable.getYaw()),
-            Mth.rotLerp(partial, driveable.getPrevPitch(), driveable.getPitch()),
-            Mth.rotLerp(partial, driveable.getPrevRoll(), driveable.getRoll()),
-            locked ? 0F : seat.getViewAimYaw(partial) + driveable.getSeatAimFrameYaw(seat, partial),
-            locked ? 0F : seat.getViewAimPitch(),
-            driveable instanceof Plane);
+        return LegacyDriveableCoordinates.mountedViewAngles(Mth.rotLerp(partial, driveable.getPrevYaw(), driveable.getYaw()),
+            Mth.rotLerp(partial, driveable.getPrevPitch(), driveable.getPitch()), Mth.rotLerp(partial, driveable.getPrevRoll(), driveable.getRoll()),
+            locked ? 0F : seat.getViewAimYaw(partial) + driveable.getSeatAimFrameYaw(seat, partial), locked ? 0F : seat.getViewAimPitch(), driveable instanceof Plane);
     }
 }

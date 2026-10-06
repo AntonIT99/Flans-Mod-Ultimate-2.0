@@ -11,7 +11,8 @@ public final class DriveableControlPhysics
     /** Aircraft taxi steering is measured at walking/slow taxi speed, not maximum flight speed. */
     public static final double PLANE_GROUND_STEERING_REFERENCE_KMH = 10D;
 
-    private DriveableControlPhysics() {}
+    private DriveableControlPhysics()
+    {}
 
     /**
      * Authored hull yaw rate, independent of engine speed and legacy steering modifiers.
@@ -19,8 +20,7 @@ public final class DriveableControlPhysics
      * already carries its half-authority factor. Rolling vehicles reverse steering
      * with their travel direction and cannot pivot while stationary.
      */
-    public static float realSteeringYawDelta(float rateDegPerSec, float control, boolean tracked,
-                                             boolean engineActive, double signedSpeed, double referenceSpeed)
+    public static float realSteeringYawDelta(float rateDegPerSec, float control, boolean tracked, boolean engineActive, double signedSpeed, double referenceSpeed)
     {
         if (!Float.isFinite(rateDegPerSec) || rateDegPerSec <= 0F || !Float.isFinite(control))
             return 0F;
@@ -28,28 +28,23 @@ public final class DriveableControlPhysics
         if (tracked)
             speedFactor = engineActive ? 1D : 0D;
         else
-            speedFactor = Double.isFinite(signedSpeed) && Double.isFinite(referenceSpeed) && referenceSpeed > 0D
-                ? Math.max(-1D, Math.min(1D, signedSpeed / referenceSpeed)) : 0D;
-        return (float) (rateDegPerSec / VehiclePhysicsUnits.TICKS_PER_SECOND
-            * clamp(control / HELD_CONTROL_ANGLE, -1F, 1F) * speedFactor);
+            speedFactor = Double.isFinite(signedSpeed) && Double.isFinite(referenceSpeed) && referenceSpeed > 0D ? Math.max(-1D, Math.min(1D, signedSpeed / referenceSpeed)) : 0D;
+        return (float) (rateDegPerSec / VehiclePhysicsUnits.TICKS_PER_SECOND * clamp(control / HELD_CONTROL_ANGLE, -1F, 1F) * speedFactor);
     }
 
     /** The automatic broken-track turn uses the held-input range in the real-rate model. */
-    public static float realSingleTrackTurnControl(float throttle, float steeringControl, boolean steeringHeld,
-                                                   boolean leftTrackIntact, boolean rightTrackIntact)
+    public static float realSingleTrackTurnControl(float throttle, float steeringControl, boolean steeringHeld, boolean leftTrackIntact, boolean rightTrackIntact)
     {
         float control = singleTrackTurnControl(throttle, steeringControl, steeringHeld, leftTrackIntact, rightTrackIntact);
         return steeringHeld ? control : control * HELD_CONTROL_ANGLE / MAX_CONTROL_ANGLE;
     }
 
     /** Replaces only wheel-supported aircraft yaw; an airborne or forced-legacy plane keeps flight yaw. */
-    public static float planeGroundSteeringYawDelta(float flightYaw, float rate, float control,
-                                                   double signedSpeed, boolean wheelSupported, boolean forceLegacy)
+    public static float planeGroundSteeringYawDelta(float flightYaw, float rate, float control, double signedSpeed, boolean wheelSupported, boolean forceLegacy)
     {
         if (forceLegacy || !wheelSupported || !Float.isFinite(rate) || rate <= 0F)
             return flightYaw;
-        return realSteeringYawDelta(rate, control, false, false, signedSpeed,
-            VehiclePhysicsUnits.kmhToBlocksPerTick(PLANE_GROUND_STEERING_REFERENCE_KMH));
+        return realSteeringYawDelta(rate, control, false, false, signedSpeed, VehiclePhysicsUnits.kmhToBlocksPerTick(PLANE_GROUND_STEERING_REFERENCE_KMH));
     }
 
     /** Steering follows rolling direction, even with a neutral throttle or an inactive engine. */
@@ -103,15 +98,12 @@ public final class DriveableControlPhysics
     }
 
     /** Signed propulsion after applying the configured forward / reverse / water power. */
-    public static float directionalPropulsion(float throttle, float forwardPower, float reversePower,
-                                               float waterPower, boolean inWater)
+    public static float directionalPropulsion(float throttle, float forwardPower, float reversePower, float waterPower, boolean inWater)
     {
         float normalized = normalizedThrottle(throttle, reversePower);
         if (normalized == 0F)
             return 0F;
-        float configured = normalized > 0F
-            ? (inWater ? nonNegative(waterPower) : nonNegative(forwardPower))
-            : nonNegative(reversePower);
+        float configured = normalized > 0F ? (inWater ? nonNegative(waterPower) : nonNegative(forwardPower)) : nonNegative(reversePower);
         return normalized * configured;
     }
 
@@ -120,20 +112,20 @@ public final class DriveableControlPhysics
     {
         if (!Float.isFinite(current) || !Float.isFinite(input) || !Float.isFinite(inputStep))
             return 0F;
-        return clamp((current + input * Math.max(0F, inputStep)) * CONTROL_RETENTION,
-            -MAX_CONTROL_ANGLE, MAX_CONTROL_ANGLE);
+        return clamp((current + input * Math.max(0F, inputStep)) * CONTROL_RETENTION, -MAX_CONTROL_ANGLE, MAX_CONTROL_ANGLE);
     }
 
     /**
      * Converts the surviving side of a tracked vehicle into rotation-only control.
      *
-     * <p>A steering key keeps its ordinary turn direction. Without a steering key,
+     * <p>
+     * A steering key keeps its ordinary turn direction. Without a steering key,
      * forward or reverse drives the remaining track and therefore yaws toward the
      * broken side. One moving track has half the turning authority of two tracks
-     * counter-rotating.</p>
+     * counter-rotating.
+     * </p>
      */
-    public static float singleTrackTurnControl(float throttle, float steeringControl, boolean steeringHeld,
-                                               boolean leftTrackIntact, boolean rightTrackIntact)
+    public static float singleTrackTurnControl(float throttle, float steeringControl, boolean steeringHeld, boolean leftTrackIntact, boolean rightTrackIntact)
     {
         if (leftTrackIntact == rightTrackIntact)
             return 0F;
@@ -182,8 +174,7 @@ public final class DriveableControlPhysics
     {
         if (!Float.isFinite(throttle))
             return 0F;
-        return Math.min(1F, Math.abs(throttle)) * 0.4F
-            * (nonNegative(configuredPower) + nonNegative(engineSpeed));
+        return Math.min(1F, Math.abs(throttle)) * 0.4F * (nonNegative(configuredPower) + nonNegative(engineSpeed));
     }
 
     private static float nonNegative(float value)

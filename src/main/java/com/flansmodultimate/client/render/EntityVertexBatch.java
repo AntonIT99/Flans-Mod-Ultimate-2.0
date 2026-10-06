@@ -27,7 +27,8 @@ public final class EntityVertexBatch
     private static VertexConsumer target;
     private static int count;
 
-    private EntityVertexBatch() {}
+    private EntityVertexBatch()
+    {}
 
     /**
      * Starts batching the vertices given to {@link #vertex} for {@code consumer}. Returns false, leaving every
@@ -44,8 +45,8 @@ public final class EntityVertexBatch
     }
 
     /** One entity-format vertex, already transformed: batched for the open batch's consumer, otherwise written directly. */
-    public static void vertex(VertexConsumer consumer, float x, float y, float z, float red, float green, float blue, float alpha,
-                              float u, float v, int packedOverlay, int packedLight, float normalX, float normalY, float normalZ)
+    public static void vertex(VertexConsumer consumer, float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int packedOverlay,
+        int packedLight, float normalX, float normalY, float normalZ)
     {
         if (consumer != target)
         {
@@ -54,7 +55,7 @@ public final class EntityVertexBatch
         }
         if (count == CAPACITY)
             flush();
-        put(Scratch.BUFFER + (long)count * STRIDE, x, y, z, red, green, blue, alpha, u, v, packedOverlay, packedLight, normalX, normalY, normalZ);
+        put(Scratch.BUFFER + (long) count * STRIDE, x, y, z, red, green, blue, alpha, u, v, packedOverlay, packedLight, normalX, normalY, normalZ);
         count++;
     }
 
@@ -92,8 +93,8 @@ public final class EntityVertexBatch
     }
 
     /** Encodes one vertex exactly as Minecraft's buffer builder does, with a zero padding byte. */
-    static void put(long pointer, float x, float y, float z, float red, float green, float blue, float alpha,
-                    float u, float v, int packedOverlay, int packedLight, float normalX, float normalY, float normalZ)
+    static void put(long pointer, float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int packedOverlay, int packedLight, float normalX,
+        float normalY, float normalZ)
     {
         MemoryUtil.memPutFloat(pointer, x);
         MemoryUtil.memPutFloat(pointer + 4, y);
@@ -109,18 +110,18 @@ public final class EntityVertexBatch
 
     private static int colour(float value)
     {
-        return (int)(value * 255.0F) & 0xFF;
+        return (int) (value * 255.0F) & 0xFF;
     }
 
     private static int normal(float value)
     {
-        return (int)(Mth.clamp(value, -1.0F, 1.0F) * 127.0F) & 0xFF;
+        return (int) (Mth.clamp(value, -1.0F, 1.0F) * 127.0F) & 0xFF;
     }
 
     /** Native memory, allocated once the first batch opens, so it is never reserved without a bulk writer. */
     private static final class Scratch
     {
-        private static final long BUFFER = MemoryUtil.nmemAlignedAlloc(64, (long)CAPACITY * STRIDE);
+        private static final long BUFFER = MemoryUtil.nmemAlignedAlloc(64, (long) CAPACITY * STRIDE);
         /** Room for writers that copy a batch to convert it, such as outline and enchantment glint consumers. */
         private static final MemoryStack STACK = MemoryStack.create(8 * CAPACITY * STRIDE);
     }

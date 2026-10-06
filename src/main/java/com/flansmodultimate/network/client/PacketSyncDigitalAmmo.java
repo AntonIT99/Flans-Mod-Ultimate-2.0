@@ -5,18 +5,18 @@ import com.flansmodultimate.common.digitalammo.PlayerBulletStorage;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.platform.network.PacketBuffer;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
 
 public class PacketSyncDigitalAmmo implements IClientPacket
 {
     private double[] bullets;
 
     public PacketSyncDigitalAmmo()
-    {
-    }
+    {}
 
     public PacketSyncDigitalAmmo(double[] bullets)
     {

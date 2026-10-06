@@ -54,10 +54,8 @@ final class ContentPackSounds
         List<Path> sourceFiles;
         try (Stream<Path> stream = Files.walk(soundDir))
         {
-            sourceFiles = stream.filter(Files::isRegularFile)
-                .filter(FileUtils::isOgg)
-                .sorted(Comparator.comparing(path -> soundDir.relativize(path).toString().toLowerCase(Locale.ROOT)))
-                .toList();
+            sourceFiles = stream.filter(Files::isRegularFile).filter(FileUtils::isOgg)
+                .sorted(Comparator.comparing(path -> soundDir.relativize(path).toString().toLowerCase(Locale.ROOT))).toList();
         }
         catch (IOException e)
         {
@@ -77,9 +75,7 @@ final class ContentPackSounds
 
         try (Stream<Path> stream = Files.walk(soundsDir))
         {
-            return stream.filter(Files::isRegularFile)
-                .filter(FileUtils::isOgg)
-                .map(path -> soundNameKey(normalizeSoundRelativePath(soundsDir.relativize(path))))
+            return stream.filter(Files::isRegularFile).filter(FileUtils::isOgg).map(path -> soundNameKey(normalizeSoundRelativePath(soundsDir.relativize(path))))
                 .collect(Collectors.toCollection(HashSet::new));
         }
         catch (IOException e)
@@ -123,9 +119,7 @@ final class ContentPackSounds
         List<Path> soundFiles;
         try (Stream<Path> stream = Files.walk(soundsDir))
         {
-            soundFiles = stream.filter(Files::isRegularFile)
-                .sorted(Comparator.comparing((Path path) -> soundsDir.relativize(path).getNameCount()).reversed())
-                .toList();
+            soundFiles = stream.filter(Files::isRegularFile).sorted(Comparator.comparing((Path path) -> soundsDir.relativize(path).getNameCount()).reversed()).toList();
         }
         catch (IOException e)
         {
@@ -213,10 +207,8 @@ final class ContentPackSounds
         List<Path> soundDirectories;
         try (Stream<Path> stream = Files.walk(root))
         {
-            soundDirectories = stream.filter(Files::isDirectory)
-                .filter(path -> !path.equals(root))
-                .sorted(Comparator.comparing((Path path) -> root.relativize(path).getNameCount()).reversed())
-                .toList();
+            soundDirectories = stream.filter(Files::isDirectory).filter(path -> !path.equals(root))
+                .sorted(Comparator.comparing((Path path) -> root.relativize(path).getNameCount()).reversed()).toList();
         }
         catch (IOException e)
         {
@@ -265,10 +257,7 @@ final class ContentPackSounds
     {
         try (Stream<Path> stream = Files.walk(root))
         {
-            stream.filter(Files::isDirectory)
-                .filter(path -> !path.equals(root))
-                .sorted(Comparator.reverseOrder())
-                .forEach(FileUtils::deleteDirectoryIfEmpty);
+            stream.filter(Files::isDirectory).filter(path -> !path.equals(root)).sorted(Comparator.reverseOrder()).forEach(FileUtils::deleteDirectoryIfEmpty);
         }
         catch (IOException e)
         {

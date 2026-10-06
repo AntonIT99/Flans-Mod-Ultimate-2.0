@@ -2,10 +2,10 @@ package com.flansmodultimate.network.server;
 
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;

@@ -24,10 +24,7 @@ class ContentPackRelocatorTest
     {
         Path mods = Files.createDirectory(tempDir.resolve("mods"));
         Path flan = Files.createDirectory(tempDir.resolve("flan"));
-        Path archive = createArchive(mods.resolve("modern-pack.zip"), Map.of(
-            "guns/TestGun.txt", "ShortName TestGun",
-            "assets/flansmod/textures/items/test.png", "png"
-        ));
+        Path archive = createArchive(mods.resolve("modern-pack.zip"), Map.of("guns/TestGun.txt", "ShortName TestGun", "assets/flansmod/textures/items/test.png", "png"));
 
         ContentPackRelocator.RelocationResult result = reconcile(mods, flan);
 
@@ -40,13 +37,10 @@ class ContentPackRelocatorTest
     @Test
     void recognizesUnprocessedLegacyPackWithoutGeneratedAssets() throws Exception
     {
-        Path archive = createArchive(tempDir.resolve("legacy-pack.jar"), Map.of(
-            "guns/LegacyGun.txt", "ShortName LegacyGun",
-            "models/ModelLegacyGun.java", "class ModelLegacyGun {}"
-        ));
+        Path archive = createArchive(tempDir.resolve("legacy-pack.jar"),
+            Map.of("guns/LegacyGun.txt", "ShortName LegacyGun", "models/ModelLegacyGun.java", "class ModelLegacyGun {}"));
 
-        assertEquals(ContentPackRelocator.ArchiveKind.CONTENT_PACK,
-            ContentPackRelocator.classify(archive));
+        assertEquals(ContentPackRelocator.ArchiveKind.CONTENT_PACK, ContentPackRelocator.classify(archive));
     }
 
     @Test
@@ -54,11 +48,8 @@ class ContentPackRelocatorTest
     {
         Path mods = Files.createDirectory(tempDir.resolve("mods"));
         Path flan = Files.createDirectory(tempDir.resolve("flan"));
-        createArchive(flan.resolve("third-party-bundle.jar"), Map.of(
-            "META-INF/mods.toml", "modLoader=\"javafml\"",
-            ContentPackRelocator.DESCRIPTOR_PATH, bundleDescriptor(),
-            "custom_content/pack/guns/Test.txt", "ShortName Test"
-        ));
+        createArchive(flan.resolve("third-party-bundle.jar"),
+            Map.of("META-INF/mods.toml", "modLoader=\"javafml\"", ContentPackRelocator.DESCRIPTOR_PATH, bundleDescriptor(), "custom_content/pack/guns/Test.txt", "ShortName Test"));
 
         ContentPackRelocator.RelocationResult result = reconcile(mods, flan);
 
@@ -70,30 +61,20 @@ class ContentPackRelocatorTest
     @Test
     void recognizesKnownBundleWithoutDescriptor() throws Exception
     {
-        Path archive = createArchive(tempDir.resolve("official.jar"), Map.of(
-            "META-INF/mods.toml", "modLoader=\"javafml\"",
-            "flans_content/pack_names.json", "{}"
-        ));
+        Path archive = createArchive(tempDir.resolve("official.jar"), Map.of("META-INF/mods.toml", "modLoader=\"javafml\"", "flans_content/pack_names.json", "{}"));
 
-        assertEquals(ContentPackRelocator.ArchiveKind.PACK_MOD_BUNDLE,
-            ContentPackRelocator.classify(archive));
+        assertEquals(ContentPackRelocator.ArchiveKind.PACK_MOD_BUNDLE, ContentPackRelocator.classify(archive));
     }
 
     @Test
     void neverLetsDescriptorOverrideLoaderMetadataRules() throws Exception
     {
-        Path modClaimingStandalone = createArchive(tempDir.resolve("bad-mod.jar"), Map.of(
-            "META-INF/mods.toml", "modLoader=\"javafml\"",
-            ContentPackRelocator.DESCRIPTOR_PATH, contentPackDescriptor()
-        ));
-        Path bundleWithoutMetadata = createArchive(tempDir.resolve("bad-bundle.jar"), Map.of(
-            ContentPackRelocator.DESCRIPTOR_PATH, bundleDescriptor()
-        ));
+        Path modClaimingStandalone = createArchive(tempDir.resolve("bad-mod.jar"),
+            Map.of("META-INF/mods.toml", "modLoader=\"javafml\"", ContentPackRelocator.DESCRIPTOR_PATH, contentPackDescriptor()));
+        Path bundleWithoutMetadata = createArchive(tempDir.resolve("bad-bundle.jar"), Map.of(ContentPackRelocator.DESCRIPTOR_PATH, bundleDescriptor()));
 
-        assertEquals(ContentPackRelocator.ArchiveKind.UNKNOWN,
-            ContentPackRelocator.classify(modClaimingStandalone));
-        assertEquals(ContentPackRelocator.ArchiveKind.UNKNOWN,
-            ContentPackRelocator.classify(bundleWithoutMetadata));
+        assertEquals(ContentPackRelocator.ArchiveKind.UNKNOWN, ContentPackRelocator.classify(modClaimingStandalone));
+        assertEquals(ContentPackRelocator.ArchiveKind.UNKNOWN, ContentPackRelocator.classify(bundleWithoutMetadata));
     }
 
     @Test
@@ -101,13 +82,9 @@ class ContentPackRelocatorTest
     {
         Path mods = Files.createDirectory(tempDir.resolve("mods"));
         Path flan = Files.createDirectory(tempDir.resolve("flan"));
-        Path unrelatedMod = createArchive(mods.resolve("unrelated.jar"), Map.of(
-            "META-INF/mods.toml", "modLoader=\"javafml\"",
-            "assets/flansmod/textures/items/compatibility.png", "png"
-        ));
-        Path ambiguous = createArchive(mods.resolve("ambiguous.zip"), Map.of(
-            "guns/notes.txt", "not enough evidence"
-        ));
+        Path unrelatedMod = createArchive(mods.resolve("unrelated.jar"),
+            Map.of("META-INF/mods.toml", "modLoader=\"javafml\"", "assets/flansmod/textures/items/compatibility.png", "png"));
+        Path ambiguous = createArchive(mods.resolve("ambiguous.zip"), Map.of("guns/notes.txt", "not enough evidence"));
 
         ContentPackRelocator.RelocationResult result = reconcile(mods, flan);
 
@@ -121,10 +98,7 @@ class ContentPackRelocatorTest
     {
         Path mods = Files.createDirectory(tempDir.resolve("mods"));
         Path flan = Files.createDirectory(tempDir.resolve("flan"));
-        Path source = createArchive(mods.resolve("pack.zip"), Map.of(
-            "guns/Test.txt", "ShortName Test",
-            "assets/flansmod/test", "test"
-        ));
+        Path source = createArchive(mods.resolve("pack.zip"), Map.of("guns/Test.txt", "ShortName Test", "assets/flansmod/test", "test"));
         Path destination = createArchive(flan.resolve("pack.zip"), Map.of("keep.txt", "keep"));
         long destinationSize = Files.size(destination);
 
@@ -141,10 +115,7 @@ class ContentPackRelocatorTest
     {
         Path mods = Files.createDirectory(tempDir.resolve("mods"));
         Path flan = Files.createDirectory(tempDir.resolve("flan"));
-        Path bundle = createArchive(flan.resolve("bundle.zip"), Map.of(
-            "META-INF/mods.toml", "modLoader=\"javafml\"",
-            ContentPackRelocator.DESCRIPTOR_PATH, bundleDescriptor()
-        ));
+        Path bundle = createArchive(flan.resolve("bundle.zip"), Map.of("META-INF/mods.toml", "modLoader=\"javafml\"", ContentPackRelocator.DESCRIPTOR_PATH, bundleDescriptor()));
 
         ContentPackRelocator.RelocationResult result = reconcile(mods, flan);
 
@@ -159,9 +130,7 @@ class ContentPackRelocatorTest
     {
         Path mods = Files.createDirectory(tempDir.resolve("mods"));
         Path flan = Files.createDirectory(tempDir.resolve("flan"));
-        createArchive(mods.resolve("unrelated.jar"), Map.of(
-            "META-INF/mods.toml", "modLoader=\"javafml\""
-        ));
+        createArchive(mods.resolve("unrelated.jar"), Map.of("META-INF/mods.toml", "modLoader=\"javafml\""));
 
         ContentPackRelocator.RelocationResult first = reconcile(mods, flan);
         ContentPackRelocator.RelocationResult second = reconcile(mods, flan);
@@ -177,16 +146,14 @@ class ContentPackRelocatorTest
         Path mods = Files.createDirectory(tempDir.resolve("mods"));
         Path nestedFlan = Files.createDirectory(mods.resolve("flan"));
 
-        ContentPackRelocator.RelocationResult result = ContentPackRelocator.reconcile(
-            mods, nestedFlan, tempDir.resolve(ContentPackRelocator.CACHE_FILE_NAME));
+        ContentPackRelocator.RelocationResult result = ContentPackRelocator.reconcile(mods, nestedFlan, tempDir.resolve(ContentPackRelocator.CACHE_FILE_NAME));
 
         assertTrue(result.warnings().stream().anyMatch(message -> message.contains("overlap")));
     }
 
     private ContentPackRelocator.RelocationResult reconcile(Path mods, Path flan)
     {
-        return ContentPackRelocator.reconcile(mods, flan,
-            tempDir.resolve(ContentPackRelocator.CACHE_FILE_NAME));
+        return ContentPackRelocator.reconcile(mods, flan, tempDir.resolve(ContentPackRelocator.CACHE_FILE_NAME));
     }
 
     private static Path createArchive(Path path, Map<String, String> entries) throws IOException

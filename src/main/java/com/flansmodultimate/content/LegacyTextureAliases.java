@@ -18,17 +18,22 @@ import static com.flansmodultimate.content.ContentPackPaths.*;
 /** Assigns one alias to the complete armor layer group, using cached pixel signatures. */
 final class LegacyTextureAliases
 {
-    @Getter private final Map<IContentProvider, Map<String, DynamicReference>> armorTextureReferences = new HashMap<>();
-    @Getter private final Map<IContentProvider, Map<String, DynamicReference>> guiTextureReferences = new HashMap<>();
-    @Getter private final Map<IContentProvider, Map<String, DynamicReference>> skinsTextureReferences = new HashMap<>();
+    @Getter
+    private final Map<IContentProvider, Map<String, DynamicReference>> armorTextureReferences = new HashMap<>();
+    @Getter
+    private final Map<IContentProvider, Map<String, DynamicReference>> guiTextureReferences = new HashMap<>();
+    @Getter
+    private final Map<IContentProvider, Map<String, DynamicReference>> skinsTextureReferences = new HashMap<>();
     private final Map<String, Map<String, TextureGroup>> textures = new HashMap<>();
     private final Map<String, Set<String>> reserved = new HashMap<>();
     private final Map<String, Set<String>> signatureNames = new HashMap<>();
     private final Map<IContentProvider, Map<String, Map<String, Map<String, String>>>> inputs = new HashMap<>();
     /** Name indexes read by {@link #prepare}, reused when they already hold every signature a pack needs. */
     private final Map<IContentProvider, Map<String, Map<String, Map<String, String>>>> prepared = new HashMap<>();
-    private record TextureGroup(IContentProvider provider, Map<String, String> layers) {}
-    private record PreparedNames(Map<String, Map<String, Map<String, String>>> names, String error, long nanos) {}
+    private record TextureGroup(IContentProvider provider, Map<String, String> layers)
+    {}
+    private record PreparedNames(Map<String, Map<String, Map<String, String>>> names, String error, long nanos)
+    {}
 
     LegacyTextureAliases()
     {
@@ -64,11 +69,11 @@ final class LegacyTextureAliases
             PreparedNames result = results.get(i);
             if (result.names() != null)
             {
-                result.names().forEach((folder, groups) ->
-                    groups.keySet().forEach(name -> {
-                        if (!reserved.get(folder).add(name))
-                            signatureNames.get(folder).add(name);
-                    }));
+                result.names().forEach((folder, groups) -> groups.keySet().forEach(name ->
+                {
+                    if (!reserved.get(folder).add(name))
+                        signatureNames.get(folder).add(name);
+                }));
                 prepared.put(provider, result.names());
             }
             else
@@ -94,14 +99,16 @@ final class LegacyTextureAliases
 
     private Map<String, Map<String, Map<String, String>>> read(IContentProvider provider)
     {
-        return inputs.computeIfAbsent(provider, ignored -> {
+        return inputs.computeIfAbsent(provider, ignored ->
+        {
             try
             {
                 // Nothing has written to the pack's textures since it was prepared, so its name index
                 // stands as long as no collision asks for a signature it does not hold.
                 Map<String, Map<String, Map<String, String>>> names = prepared.remove(provider);
                 Map<String, Map<String, Map<String, String>>> input = names != null && !PackAssetIndex.needsSignatures(names, signatureNames)
-                    ? names : PackAssetIndex.legacy(provider, signatureNames);
+                    ? names
+                    : PackAssetIndex.legacy(provider, signatureNames);
                 input.forEach((folder, groups) -> reserved.get(folder).addAll(groups.keySet()));
                 return input;
             }
@@ -115,27 +122,31 @@ final class LegacyTextureAliases
 
     void findDuplicates(IContentProvider provider)
     {
-        read(provider).forEach((folder, groups) -> {
-            Map<String, DynamicReference> references = switch (folder) {
+        read(provider).forEach((folder, groups) ->
+        {
+            Map<String, DynamicReference> references = switch (folder)
+            {
                 case FOLDER_TEXTURES_ARMOR -> armorTextureReferences.get(provider);
                 case FOLDER_TEXTURES_GUI -> guiTextureReferences.get(provider);
                 default -> skinsTextureReferences.get(provider);
             };
-            groups.forEach((original, layers) -> {
+            groups.forEach((original, layers) ->
+            {
                 Map<String, TextureGroup> registered = textures.get(folder);
                 TextureGroup existing = registered.get(original);
                 String alias = original;
                 if (existing != null && !existing.layers().equals(layers))
                 {
                     if (provider.isPreprocessed())
-                        FlansLog.log.error("Conflicting texture '{}/{}' in read-only bundled content [{}] and [{}]. Rename one of the bundled textures.", folder, original, provider.getConflictDisplayName(), existing.provider().getConflictDisplayName());
+                        FlansLog.log.error("Conflicting texture '{}/{}' in read-only bundled content [{}] and [{}]. Rename one of the bundled textures.", folder, original,
+                            provider.getConflictDisplayName(), existing.provider().getConflictDisplayName());
                     else
                     {
                         String persisted = references.containsKey(original) ? references.get(original).get() : original;
                         if (!persisted.equals(original) && reserved.get(folder).add(persisted))
                             alias = persisted;
                         else
-                            for (int suffix = 2; ; suffix++)
+                            for (int suffix = 2;; suffix++)
                                 if (reserved.get(folder).add(original + "_" + suffix))
                                 {
                                     alias = original + "_" + suffix;

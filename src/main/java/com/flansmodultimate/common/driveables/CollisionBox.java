@@ -27,20 +27,18 @@ public final class CollisionBox
         this(health, x, y, z, width, height, depth, 5F, 0F, true);
     }
 
-    public CollisionBox(float health, float x, float y, float z, float width, float height, float depth,
-                        float penetrationResistance)
+    public CollisionBox(float health, float x, float y, float z, float width, float height, float depth, float penetrationResistance)
     {
         this(health, x, y, z, width, height, depth, penetrationResistance, 0F, true);
     }
 
-    public CollisionBox(float health, float x, float y, float z, float width, float height, float depth,
-                        float penetrationResistance, float crewDamageMultiplier)
+    public CollisionBox(float health, float x, float y, float z, float width, float height, float depth, float penetrationResistance, float crewDamageMultiplier)
     {
         this(health, x, y, z, width, height, depth, penetrationResistance, crewDamageMultiplier, true);
     }
 
-    private CollisionBox(float health, float x, float y, float z, float width, float height, float depth,
-                         float penetrationResistance, float crewDamageMultiplier, boolean modelUnits)
+    private CollisionBox(float health, float x, float y, float z, float width, float height, float depth, float penetrationResistance, float crewDamageMultiplier,
+        boolean modelUnits)
     {
         float scale = modelUnits ? 1F / 16F : 1F;
         this.health = Math.max(0F, health);
@@ -54,16 +52,27 @@ public final class CollisionBox
         this.crewDamageMultiplier = Math.max(0F, crewDamageMultiplier);
     }
 
-    public static CollisionBox inWorldUnits(float health, float x, float y, float z, float width, float height,
-                                            float depth, float penetrationResistance, float crewDamageMultiplier)
+    public static CollisionBox inWorldUnits(float health, float x, float y, float z, float width, float height, float depth, float penetrationResistance,
+        float crewDamageMultiplier)
     {
         return new CollisionBox(health, x, y, z, width, height, depth, penetrationResistance, crewDamageMultiplier, false);
     }
 
     /** Legacy aliases retained for entity/model code. */
-    public float getW() { return width; }
-    public float getH() { return height; }
-    public float getD() { return depth; }
+    public float getW()
+    {
+        return width;
+    }
+
+    public float getH()
+    {
+        return height;
+    }
+
+    public float getD()
+    {
+        return depth;
+    }
 
     public Vector3f getCentre()
     {

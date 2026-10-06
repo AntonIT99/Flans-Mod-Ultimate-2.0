@@ -25,7 +25,8 @@ public abstract class FlanMonster extends Monster
         dropEntityDeathLoot(source, recentlyHit);
     }
 
-    protected void dropEntityDeathLoot(DamageSource source, boolean recentlyHit) {}
+    protected void dropEntityDeathLoot(DamageSource source, boolean recentlyHit)
+    {}
 
     @Override
     public final SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, SpawnGroupData spawnData, CompoundTag dataTag)
@@ -34,8 +35,7 @@ public abstract class FlanMonster extends Monster
     }
 
     @SuppressWarnings("deprecation") // Calls the vanilla superclass implementation from the loader lifecycle.
-    protected SpawnGroupData finalizeEntitySpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-        MobSpawnType spawnType, SpawnGroupData spawnData, CompoundTag dataTag)
+    protected SpawnGroupData finalizeEntitySpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, SpawnGroupData spawnData, CompoundTag dataTag)
     {
         return super.finalizeSpawn(level, difficulty, spawnType, spawnData, dataTag);
     }

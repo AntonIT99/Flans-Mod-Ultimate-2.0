@@ -16,5 +16,6 @@ public final class GeometryRevision
         RenderDiagnostics.countGeometryChange();
     }
 
-    private GeometryRevision() {}
+    private GeometryRevision()
+    {}
 }

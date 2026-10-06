@@ -21,7 +21,8 @@ import java.util.Map;
 public final class StringOrNumberListMapAdapter implements JsonDeserializer<Map<String, List<String>>>, JsonSerializer<Map<String, List<String>>>
 {
 
-    private static final Type TARGET_TYPE = new TypeToken<Map<String, List<String>>>() {}.getType();
+    private static final Type TARGET_TYPE = new TypeToken<Map<String, List<String>>>()
+    {}.getType();
 
     public static Type targetType()
     {
@@ -29,8 +30,8 @@ public final class StringOrNumberListMapAdapter implements JsonDeserializer<Map<
     }
 
     @Override
-    public Map<String, List<String>> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext ctx)
-        throws JsonParseException {
+    public Map<String, List<String>> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext ctx) throws JsonParseException
+    {
 
         Map<String, List<String>> out = new LinkedHashMap<>();
         if (json == null || json.isJsonNull())
@@ -112,7 +113,8 @@ public final class StringOrNumberListMapAdapter implements JsonDeserializer<Map<
             {
                 for (String s : values)
                 {
-                    if (s != null) arr.add(s);
+                    if (s != null)
+                        arr.add(s);
                 }
             }
             obj.add(e.getKey(), arr);
@@ -120,4 +122,3 @@ public final class StringOrNumberListMapAdapter implements JsonDeserializer<Map<
         return obj;
     }
 }
-

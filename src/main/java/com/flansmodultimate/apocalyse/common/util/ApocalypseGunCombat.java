@@ -32,10 +32,12 @@ import java.util.Optional;
  * Gun handling for the Apocalypse's autonomous shooters, ported from the 1.12.2
  * {@code EntityFlansModShooter} and {@code EntitySkullDrone}.
  *
- * <p>Each call to {@link #tryFire} is one trigger pull. It respects the weapon's own cadence
+ * <p>
+ * Each call to {@link #tryFire} is one trigger pull. It respects the weapon's own cadence
  * through a shoot delay that counts down every tick, and when the gun runs dry it reloads from
  * the shooter's reserve magazines, waiting out the weapon's reload time before the next shot.
- * The two legacy shooters differed in their timings and aim, which {@link Profile} captures.</p>
+ * The two legacy shooters differed in their timings and aim, which {@link Profile} captures.
+ * </p>
  */
 public final class ApocalypseGunCombat
 {
@@ -108,7 +110,8 @@ public final class ApocalypseGunCombat
             return;
         for (int i = 0; i < count; i++)
         {
-            ApocalypseGunHelper.spareAmmoFor(gunItem.getConfigType(), random).ifPresent(stack -> {
+            ApocalypseGunHelper.spareAmmoFor(gunItem.getConfigType(), random).ifPresent(stack ->
+            {
                 stack.setCount(1);
                 addReserve(stack);
             });
@@ -168,13 +171,13 @@ public final class ApocalypseGunCombat
         ShootableType shootableType = shootableItem.getConfigType();
         boolean lastBullet = ShootableItem.getRoundsRemaining(ammoStack) == 1;
 
-        fire(gunType, gunStack, shootableType, ammoStack, target, () -> {
+        fire(gunType, gunStack, shootableType, ammoStack, target, () ->
+        {
             ShootableItem.consumeRound(ammoStack);
             gunItem.setBulletItemStack(gunStack, ammoStack, slot, owner.level().registryAccess());
         });
 
-        if (soundDelay <= 0 && playSound(gunType.getShootSound(gunStack, lastBullet), gunType.getGunSoundRange(),
-            gunType.isDistortSound(), gunType.isSilencedSound(gunStack)))
+        if (soundDelay <= 0 && playSound(gunType.getShootSound(gunStack, lastBullet), gunType.getGunSoundRange(), gunType.isDistortSound(), gunType.isSilencedSound(gunStack)))
             soundDelay = gunType.getShootSoundLength();
 
         shootDelay = nextShotDelay(gunType, gunStack, ShootableItem.getRoundsFired(ammoStack));
@@ -192,22 +195,21 @@ public final class ApocalypseGunCombat
             origin = owner.position().subtract(0D, 1D, 0D);
             direction = target.position().subtract(origin);
             FireableGun base = new FireableGun(gunType, gunStack, owner, null, EnumMovement.NONE, true);
-            fireableGun = new FireableGun(gunType, base.getDamage(), base.getSpread() * 5F + 10F,
-                base.getBulletSpeed(), base.getBulletSpeedMultiplier(), EnumSpreadPattern.CIRCLE);
+            fireableGun = new FireableGun(gunType, base.getDamage(), base.getSpread() * 5F + 10F, base.getBulletSpeed(), base.getBulletSpeedMultiplier(), EnumSpreadPattern.CIRCLE);
         }
         else
         {
             origin = owner.getEyePosition();
             direction = target.getEyePosition().subtract(origin).normalize();
-            direction = direction.add(random.nextFloat() * direction.x * SURVIVOR_AIM_LEAN,
-                random.nextFloat() * direction.y * SURVIVOR_AIM_LEAN, random.nextFloat() * direction.z * SURVIVOR_AIM_LEAN);
+            direction = direction.add(random.nextFloat() * direction.x * SURVIVOR_AIM_LEAN, random.nextFloat() * direction.y * SURVIVOR_AIM_LEAN,
+                random.nextFloat() * direction.z * SURVIVOR_AIM_LEAN);
             fireableGun = new FireableGun(gunType, gunStack, owner, null, EnumMovement.NONE, !owner.onGround());
         }
         if (direction.lengthSqr() < 1.0E-6D)
             return;
 
-        ShootingHelper.fireWeapon(owner.level(), fireableGun, shootableType, gunType.getNumBullets(gunStack, shootableType),
-            origin, direction.normalize(), owner, owner, ShootableItem.getRoundsFired(ammoStack), consume);
+        ShootingHelper.fireWeapon(owner.level(), fireableGun, shootableType, gunType.getNumBullets(gunStack, shootableType), origin, direction.normalize(), owner, owner,
+            ShootableItem.getRoundsFired(ammoStack), consume);
     }
 
     private float nextShotDelay(GunType gunType, ItemStack gunStack, int roundsFired)
@@ -295,8 +297,7 @@ public final class ApocalypseGunCombat
     {
         reserve.clear();
         for (Tag entry : tag.getList(NBT_RESERVE, Tag.TAG_COMPOUND))
-            Optional.of(ItemStackData.parse(owner.level().registryAccess(), (CompoundTag) entry))
-                .filter(stack -> !stack.isEmpty()).ifPresent(this::addReserve);
+            Optional.of(ItemStackData.parse(owner.level().registryAccess(), (CompoundTag) entry)).filter(stack -> !stack.isEmpty()).ifPresent(this::addReserve);
         shootDelay = tag.getFloat(NBT_SHOOT_DELAY);
     }
 }

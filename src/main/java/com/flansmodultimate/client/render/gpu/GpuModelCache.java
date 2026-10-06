@@ -1,15 +1,5 @@
 package com.flansmodultimate.client.render.gpu;
 
-import org.lwjgl.opengl.ATIMeminfo;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL15C;
-import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL31C;
-import org.lwjgl.opengl.GLCapabilities;
-import org.lwjgl.opengl.NVXGPUMemoryInfo;
-import org.lwjgl.system.MemoryUtil;
-
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.render.CustomRenderType;
 import com.flansmodultimate.client.render.EntityVertexBatch;
@@ -27,6 +17,15 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraftforge.client.event.RegisterShadersEvent;
+import org.lwjgl.opengl.ATIMeminfo;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL15C;
+import org.lwjgl.opengl.GL30C;
+import org.lwjgl.opengl.GL31C;
+import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.opengl.NVXGPUMemoryInfo;
+import org.lwjgl.system.MemoryUtil;
 
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
@@ -95,7 +94,8 @@ public final class GpuModelCache
     private static long uploadTick = Long.MIN_VALUE;
     private static long uploadedBytes;
 
-    private GpuModelCache() {}
+    private GpuModelCache()
+    {}
 
     public static void registerShader(RegisterShadersEvent event)
     {
@@ -104,20 +104,21 @@ public final class GpuModelCache
         clear();
         try
         {
-            event.registerShader(new ShaderInstance(event.getResourceProvider(),
-                ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "rigid_model"), DefaultVertexFormat.NEW_ENTITY), value -> {
-                int program = value.getId();
-                int block = GL31C.glGetUniformBlockIndex(program, "PartPalette");
-                int size = block == GL31C.GL_INVALID_INDEX ? 0 : GL31C.glGetActiveUniformBlocki(program, block, GL31C.GL_UNIFORM_BLOCK_DATA_SIZE);
-                if (block == GL31C.GL_INVALID_INDEX || size <= 0 || size > GL11C.glGetInteger(GL31C.GL_MAX_UNIFORM_BLOCK_SIZE))
+            event.registerShader(
+                new ShaderInstance(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "rigid_model"), DefaultVertexFormat.NEW_ENTITY), value ->
                 {
-                    FlansLog.log.warn("GPU model shader lacks a usable pose palette block; using standard model rendering");
-                    return;
-                }
-                GL31C.glUniformBlockBinding(program, block, PALETTE_BINDING);
-                paletteBlockBytes = size;
-                shader = value;
-            });
+                    int program = value.getId();
+                    int block = GL31C.glGetUniformBlockIndex(program, "PartPalette");
+                    int size = block == GL31C.GL_INVALID_INDEX ? 0 : GL31C.glGetActiveUniformBlocki(program, block, GL31C.GL_UNIFORM_BLOCK_DATA_SIZE);
+                    if (block == GL31C.GL_INVALID_INDEX || size <= 0 || size > GL11C.glGetInteger(GL31C.GL_MAX_UNIFORM_BLOCK_SIZE))
+                    {
+                        FlansLog.log.warn("GPU model shader lacks a usable pose palette block; using standard model rendering");
+                        return;
+                    }
+                    GL31C.glUniformBlockBinding(program, block, PALETTE_BINDING);
+                    paletteBlockBytes = size;
+                    shader = value;
+                });
         }
         catch (IOException | RuntimeException ex)
         {
@@ -125,28 +126,41 @@ public final class GpuModelCache
         }
     }
 
-    public static ShaderInstance shader() { return shader; }
+    public static ShaderInstance shader()
+    {
+        return shader;
+    }
 
     /** Frames rendered so far, for caches that act on time rather than on calls. */
-    public static long frame() { return meshes.frame(); }
+    public static long frame()
+    {
+        return meshes.frame();
+    }
 
     public static String status()
     {
         ModClientConfig config = ModClientConfig.get();
-        String state = config == null || !config.enableGpuModelCache ? "disabled"
-            : shader == null ? "shader unavailable" : failed ? "failed until reload"
-            : ShaderPlatform.isOptiFineLoaded() ? "OptiFine compatibility fallback"
-            : ShaderPlatform.isShaderPackInUse() ? ShaderPlatform.shaderModName() + " shader pack fallback"
-            : Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS
-                ? "Fabulous fallback" : "available for eligible passes";
+        String state = config == null || !config.enableGpuModelCache
+            ? "disabled"
+            : shader == null
+                ? "shader unavailable"
+                : failed
+                    ? "failed until reload"
+                    : ShaderPlatform.isOptiFineLoaded()
+                        ? "OptiFine compatibility fallback"
+                        : ShaderPlatform.isShaderPackInUse()
+                            ? ShaderPlatform.shaderModName() + " shader pack fallback"
+                            : Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS ? "Fabulous fallback" : "available for eligible passes";
         int configured = config == null ? 0 : config.gpuModelCacheMegabytes;
-        String budget = configured > 0 ? "configured"
-            : videoMemoryKiB < 0 ? "automatic" : videoMemoryKiB == 0 ? "automatic, video memory not reported"
-            : "automatic" + (grownBytes > 0 ? ", grown from " + budgetBytes(0, videoMemoryKiB) / MIB + " MiB" : "")
-                + ", " + videoMemoryKiB / 1024 + " MiB video memory";
-        return String.format(java.util.Locale.ROOT, "GPU cache %s; resident %d of %d meshes, %d of %d KiB (%.0f%%, %s)%s.",
-            state, meshes.size(), meshes.maximumEntries(), meshes.bytes() / 1024, meshes.maximumBytes() / 1024,
-            100D * meshes.bytes() / meshes.maximumBytes(), budget, RenderDiagnostics.peakUsage(meshes.maximumBytes()));
+        String budget = configured > 0
+            ? "configured"
+            : videoMemoryKiB < 0
+                ? "automatic"
+                : videoMemoryKiB == 0
+                    ? "automatic, video memory not reported"
+                    : "automatic" + (grownBytes > 0 ? ", grown from " + budgetBytes(0, videoMemoryKiB) / MIB + " MiB" : "") + ", " + videoMemoryKiB / 1024 + " MiB video memory";
+        return String.format(java.util.Locale.ROOT, "GPU cache %s; resident %d of %d meshes, %d of %d KiB (%.0f%%, %s)%s.", state, meshes.size(), meshes.maximumEntries(),
+            meshes.bytes() / 1024, meshes.maximumBytes() / 1024, 100D * meshes.bytes() / meshes.maximumBytes(), budget, RenderDiagnostics.peakUsage(meshes.maximumBytes()));
     }
 
     /**
@@ -158,14 +172,16 @@ public final class GpuModelCache
     static long budgetBytes(int configuredMegabytes, long videoMemoryKiB)
     {
         // Far above the largest single upload, which must always fit.
-        if (configuredMegabytes > 0) return Math.max(MIN_CONFIGURED_MEGABYTES, configuredMegabytes) * MIB;
-        if (videoMemoryKiB <= 0) return UNKNOWN_MEMORY_BYTES;
+        if (configuredMegabytes > 0)
+            return Math.max(MIN_CONFIGURED_MEGABYTES, configuredMegabytes) * MIB;
+        if (videoMemoryKiB <= 0)
+            return UNKNOWN_MEMORY_BYTES;
         return Math.max(MIN_AUTOMATIC_BYTES, Math.min(MAX_AUTOMATIC_BYTES, videoMemoryKiB * 1024 / VIDEO_MEMORY_SHARE));
     }
 
     static int entryLimit(long budgetBytes)
     {
-        return (int)Math.max(MIN_ENTRIES, budgetBytes / BYTES_PER_ENTRY);
+        return (int) Math.max(MIN_ENTRIES, budgetBytes / BYTES_PER_ENTRY);
     }
 
     /** Re-read the configured budget on the render thread before the next upload, evicting down to it. */
@@ -177,20 +193,24 @@ public final class GpuModelCache
 
     private static void applyBudget()
     {
-        if (!budgetStale) return;
+        if (!budgetStale)
+            return;
         budgetStale = false;
-        if (videoMemoryKiB < 0) videoMemoryKiB = queryVideoMemoryKiB();
+        if (videoMemoryKiB < 0)
+            videoMemoryKiB = queryVideoMemoryKiB();
         ModClientConfig config = ModClientConfig.get();
         int configured = config == null ? 0 : config.gpuModelCacheMegabytes;
         long budget = budgetBytes(configured, videoMemoryKiB);
-        if (configured == 0) budget = Math.max(budget, grownBytes);
+        if (configured == 0)
+            budget = Math.max(budget, grownBytes);
         meshes.limits(budget, entryLimit(budget));
     }
 
     /** The budget in MiB that Automatic currently uses on this machine, including growth. Render thread only. */
     public static long automaticBudgetMegabytes()
     {
-        if (videoMemoryKiB < 0) videoMemoryKiB = queryVideoMemoryKiB();
+        if (videoMemoryKiB < 0)
+            videoMemoryKiB = queryVideoMemoryKiB();
         return Math.max(budgetBytes(0, videoMemoryKiB), grownBytes) / MIB;
     }
 
@@ -207,7 +227,8 @@ public final class GpuModelCache
     /** One growth step of a quarter, within the ceiling and leaving the reserve of currently free video memory. */
     static long grownBudget(long current, long ceiling, long freeVideoMemoryKiB)
     {
-        if (freeVideoMemoryKiB < 0) return current;
+        if (freeVideoMemoryKiB < 0)
+            return current;
         long next = Math.min(ceiling, current + current / 4);
         next = Math.min(next, current + Math.max(0, freeVideoMemoryKiB - FREE_VIDEO_MEMORY_RESERVE_KIB) * 1024);
         return Math.max(current, next);
@@ -224,22 +245,25 @@ public final class GpuModelCache
         long now = System.nanoTime();
         if (growthWindowStart == 0 || now - growthWindowStart < GROWTH_WINDOW_NANOS)
         {
-            if (growthWindowStart == 0) growthWindowStart = now;
+            if (growthWindowStart == 0)
+                growthWindowStart = now;
             return;
         }
         growthWindowStart = now;
         thrashingWindows = meshes.takeWorkingSetEvictions() >= GROWTH_EVICTIONS ? thrashingWindows + 1 : 0;
-        if (thrashingWindows < GROWTH_WINDOWS) return;
+        if (thrashingWindows < GROWTH_WINDOWS)
+            return;
         thrashingWindows = 0;
         ModClientConfig config = ModClientConfig.get();
-        if (config == null || config.gpuModelCacheMegabytes > 0 || videoMemoryKiB <= 0) return;
+        if (config == null || config.gpuModelCacheMegabytes > 0 || videoMemoryKiB <= 0)
+            return;
         long current = meshes.maximumBytes();
         long next = grownBudget(current, growthCeiling(videoMemoryKiB), queryFreeVideoMemoryKiB());
-        if (next <= current) return;
+        if (next <= current)
+            return;
         grownBytes = next;
         meshes.limits(next, entryLimit(next));
-        FlansLog.log.info("GPU model cache budget grown from {} to {} MiB after repeated evictions of visible meshes",
-            current / MIB, next / MIB);
+        FlansLog.log.info("GPU model cache budget grown from {} to {} MiB after repeated evictions of visible meshes", current / MIB, next / MIB);
     }
 
     /** Currently free video memory in KiB, or -1 when the driver does not report it. */
@@ -267,7 +291,8 @@ public final class GpuModelCache
     /** Video memory in MiB the automatic budget is based on; 0 when the driver does not report it. Render thread only. */
     public static long reportedVideoMemoryMegabytes()
     {
-        if (videoMemoryKiB < 0) videoMemoryKiB = queryVideoMemoryKiB();
+        if (videoMemoryKiB < 0)
+            videoMemoryKiB = queryVideoMemoryKiB();
         return videoMemoryKiB / 1024;
     }
 
@@ -371,7 +396,8 @@ public final class GpuModelCache
     }
 
     /** Compatibility wrapper; hot call sites use begin/end to avoid capturing callbacks. */
-    public static void render(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture, boolean translucent, boolean cull, boolean allowed, Consumer<VertexConsumer> render)
+    public static void render(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture, boolean translucent, boolean cull, boolean allowed,
+        Consumer<VertexConsumer> render)
     {
         VertexConsumer consumer = begin(source, pass, texture, translucent, cull, allowed);
         try
@@ -385,24 +411,25 @@ public final class GpuModelCache
     }
 
     /** Only explicit normal model passes opt in. A context belongs to one nesting depth. */
-    public static VertexConsumer begin(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture,
-                                       boolean translucent, boolean cull, boolean allowed)
+    public static VertexConsumer begin(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture, boolean translucent, boolean cull, boolean allowed)
     {
-        if (depth != 0) contexts.get(depth - 1).batch.suspend();
+        if (depth != 0)
+            contexts.get(depth - 1).batch.suspend();
         RenderType vanilla = pass.getRenderType(texture, translucent, cull);
         ModClientConfig config = ModClientConfig.get();
-        if (!allowed || config == null || !config.enableGpuModelCache || shader == null || failed
-            || pass != EnumRenderPass.DEFAULT || translucent && !config.enableFastTranslucentRendering
-            || source.getClass() != MultiBufferSource.BufferSource.class || VehicleThermalRenderer.isRenderingMask()
+        if (!allowed || config == null || !config.enableGpuModelCache || shader == null || failed || pass != EnumRenderPass.DEFAULT
+            || translucent && !config.enableFastTranslucentRendering || source.getClass() != MultiBufferSource.BufferSource.class || VehicleThermalRenderer.isRenderingMask()
             || Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS || incompatibleRenderer())
         {
-            if (RenderDiagnostics.enabled) RenderDiagnostics.excludedScopes++;
+            if (RenderDiagnostics.enabled)
+                RenderDiagnostics.excludedScopes++;
             return source.getBuffer(vanilla);
         }
-        if (depth == contexts.size()) contexts.add(new Context());
+        if (depth == contexts.size())
+            contexts.add(new Context());
         RenderType gpu = CustomRenderType.gpuModel(texture, translucent, cull);
         Context context = contexts.get(depth);
-        context.source = (MultiBufferSource.BufferSource)source;
+        context.source = (MultiBufferSource.BufferSource) source;
         context.vanilla = vanilla;
         context.gpu = gpu;
         context.batch.begin(context);
@@ -412,11 +439,15 @@ public final class GpuModelCache
 
     public static void end(VertexConsumer consumer)
     {
-        if (!(consumer instanceof RigidBatch batch)) return;
+        if (!(consumer instanceof RigidBatch batch))
+            return;
         if (depth == 0 || contexts.get(depth - 1).batch != batch)
             throw new IllegalStateException("GPU model scopes must close in reverse order");
         Context context = contexts.get(depth - 1);
-        try { batch.end(); }
+        try
+        {
+            batch.end();
+        }
         finally
         {
             context.source = null;
@@ -424,14 +455,18 @@ public final class GpuModelCache
             context.previousShader = null;
             depth--;
             // Pathological recursion must not permanently grow the reusable pool.
-            if (depth >= 16) contexts.remove(depth);
+            if (depth >= 16)
+                contexts.remove(depth);
         }
     }
 
     private record Mesh(VertexBuffer buffer, long bytes) implements MeshCache.Resource
     {
         @Override
-        public void close() { buffer.close(); }
+        public void close()
+        {
+            buffer.close();
+        }
     }
 
     private static Mesh mesh(GeometryKey key)
@@ -441,7 +476,8 @@ public final class GpuModelCache
             return cached;
 
         long vertices = 0;
-        for (int i = 0; i < key.count; i++) vertices += key.geometries[i].vertexCount();
+        for (int i = 0; i < key.count; i++)
+            vertices += key.geometries[i].vertexCount();
         long size = vertices * DefaultVertexFormat.NEW_ENTITY.getVertexSize();
         long tick = Minecraft.getInstance().level == null ? System.nanoTime() / 50_000_000L : Minecraft.getInstance().level.getGameTime();
 
@@ -453,7 +489,8 @@ public final class GpuModelCache
 
         if (size == 0 || size > UPLOAD_BYTES_PER_TICK || uploadedBytes + size > UPLOAD_BYTES_PER_TICK)
         {
-            if (RenderDiagnostics.enabled) RenderDiagnostics.throttled++;
+            if (RenderDiagnostics.enabled)
+                RenderDiagnostics.throttled++;
             return null;
         }
 
@@ -502,7 +539,8 @@ public final class GpuModelCache
     static void discardUpload(BufferBuilder upload)
     {
         // discard() alone leaves BufferBuilder.building set, poisoning every upload after a failure.
-        if (upload.building()) upload.end().release();
+        if (upload.building())
+            upload.end().release();
         upload.discard();
     }
 
@@ -518,29 +556,39 @@ public final class GpuModelCache
                 samplerTextures[i] = texture;
             }
         }
-        if (shader.MODEL_VIEW_MATRIX != null) shader.MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
-        if (shader.PROJECTION_MATRIX != null) shader.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
-        if (shader.INVERSE_VIEW_ROTATION_MATRIX != null) shader.INVERSE_VIEW_ROTATION_MATRIX.set(RenderSystem.getInverseViewRotationMatrix());
-        if (shader.COLOR_MODULATOR != null) shader.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
-        if (shader.GLINT_ALPHA != null) shader.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
-        if (shader.FOG_START != null) shader.FOG_START.set(RenderSystem.getShaderFogStart());
-        if (shader.FOG_END != null) shader.FOG_END.set(RenderSystem.getShaderFogEnd());
-        if (shader.FOG_COLOR != null) shader.FOG_COLOR.set(RenderSystem.getShaderFogColor());
-        if (shader.FOG_SHAPE != null) shader.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
-        if (shader.TEXTURE_MATRIX != null) shader.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
-        if (shader.GAME_TIME != null) shader.GAME_TIME.set(RenderSystem.getShaderGameTime());
+        if (shader.MODEL_VIEW_MATRIX != null)
+            shader.MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
+        if (shader.PROJECTION_MATRIX != null)
+            shader.PROJECTION_MATRIX.set(RenderSystem.getProjectionMatrix());
+        if (shader.INVERSE_VIEW_ROTATION_MATRIX != null)
+            shader.INVERSE_VIEW_ROTATION_MATRIX.set(RenderSystem.getInverseViewRotationMatrix());
+        if (shader.COLOR_MODULATOR != null)
+            shader.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
+        if (shader.GLINT_ALPHA != null)
+            shader.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
+        if (shader.FOG_START != null)
+            shader.FOG_START.set(RenderSystem.getShaderFogStart());
+        if (shader.FOG_END != null)
+            shader.FOG_END.set(RenderSystem.getShaderFogEnd());
+        if (shader.FOG_COLOR != null)
+            shader.FOG_COLOR.set(RenderSystem.getShaderFogColor());
+        if (shader.FOG_SHAPE != null)
+            shader.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
+        if (shader.TEXTURE_MATRIX != null)
+            shader.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
+        if (shader.GAME_TIME != null)
+            shader.GAME_TIME.set(RenderSystem.getShaderGameTime());
         if (shader.SCREEN_SIZE != null)
         {
             var window = Minecraft.getInstance().getWindow();
-            shader.SCREEN_SIZE.set((float)window.getWidth(), (float)window.getHeight());
+            shader.SCREEN_SIZE.set((float) window.getWidth(), (float) window.getHeight());
         }
         RenderSystem.setupShaderLights(shader);
     }
 
     private static final class Context implements RigidBatch.Backend, Supplier<ShaderInstance>
     {
-        private final RigidBatch batch = new RigidBatch(PARTS_PER_BATCH, GEOMETRIES_PER_BATCH,
-            (int)(UPLOAD_BYTES_PER_TICK / DefaultVertexFormat.NEW_ENTITY.getVertexSize()));
+        private final RigidBatch batch = new RigidBatch(PARTS_PER_BATCH, GEOMETRIES_PER_BATCH, (int) (UPLOAD_BYTES_PER_TICK / DefaultVertexFormat.NEW_ENTITY.getVertexSize()));
         private MultiBufferSource.BufferSource source;
         private RenderType vanilla;
         private RenderType gpu;
@@ -552,8 +600,14 @@ public final class GpuModelCache
         public boolean draw(RigidBatch batch, boolean flushPending)
         {
             long started = RenderDiagnostics.startTimer();
-            try { return submit(batch, flushPending); }
-            finally { RenderDiagnostics.countDrawTime(started); }
+            try
+            {
+                return submit(batch, flushPending);
+            }
+            finally
+            {
+                RenderDiagnostics.countDrawTime(started);
+            }
         }
 
         /** Mesh lookup, any upload, buffered-vertex flush, state setup and the GL draw itself. */
@@ -562,11 +616,11 @@ public final class GpuModelCache
             long lookup = RenderDiagnostics.startTimer();
             Mesh mesh = failed || shader == null ? null : mesh(batch.key);
             RenderDiagnostics.countLookupTime(lookup);
-            if (mesh == null) return false;
+            if (mesh == null)
+                return false;
             // Consecutive GPU batches have no intervening buffered vertices. Only
             // initial entry, fallback vertices and reentrant boundaries need this.
-            if (flushPending || !(source instanceof BufferSourceAccessor buffers)
-                || !buffers.flansmodultimate$startedBuffers().isEmpty())
+            if (flushPending || !(source instanceof BufferSourceAccessor buffers) || !buffers.flansmodultimate$startedBuffers().isEmpty())
             {
                 endDraws();
                 source.endBatch();
@@ -610,13 +664,15 @@ public final class GpuModelCache
             gpu.setupRenderState();
             prepareShader(shader, samplerTextures);
             shader.apply();
-            if (RenderDiagnostics.enabled) RenderDiagnostics.stateSetups++;
+            if (RenderDiagnostics.enabled)
+                RenderDiagnostics.stateSetups++;
         }
 
         @Override
         public void endDraws()
         {
-            if (!open) return;
+            if (!open)
+                return;
             open = false;
             try
             {

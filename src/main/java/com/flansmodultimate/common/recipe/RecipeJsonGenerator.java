@@ -62,8 +62,8 @@ public final class RecipeJsonGenerator
             {
                 JsonObject recipe = JsonParser.parseString(Files.readString(modernRecipe, StandardCharsets.UTF_8)).getAsJsonObject();
                 JsonObject result = recipe.getAsJsonObject("result");
-                if (result == null || (result.has("count") && (result.get("count").getAsInt() < 1
-                    || result.get("count").getAsInt() > RecipeDataCompatibility.maxRecipeStackSize(config))))
+                if (result == null
+                    || (result.has("count") && (result.get("count").getAsInt() < 1 || result.get("count").getAsInt() > RecipeDataCompatibility.maxRecipeStackSize(config))))
                     return true;
             }
             catch (RuntimeException | IOException exception)
@@ -104,8 +104,7 @@ public final class RecipeJsonGenerator
     private static void writeBothVersions(InfoType config, Path dataFolder, String fileName, JsonObject recipe)
     {
         for (RecipeDataCompatibility.Format format : RecipeDataCompatibility.Format.values())
-            writeRecipe(format.resolve(dataFolder).resolve(fileName),
-                RecipeDataCompatibility.formatGenerated(recipe, config, format));
+            writeRecipe(format.resolve(dataFolder).resolve(fileName), RecipeDataCompatibility.formatGenerated(recipe, config, format));
     }
 
     private static JsonObject createShapedRecipe(InfoType config)
@@ -227,11 +226,11 @@ public final class RecipeJsonGenerator
     private static Map<Character, String> parseShapedRecipeKeys(InfoType config)
     {
         List<String> tokens = config.getRecipeTokens();
-        if (tokens.size() % 2 != 0) {
+        if (tokens.size() % 2 != 0)
+        {
             String token = tokens.get(tokens.size() - 1);
             FlansLog.log.warn("Ignoring trailing recipe token '{}' in {}", token, config);
         }
-
 
         Map<Character, String> keys = new HashMap<>();
         for (int i = 0; i + 1 < tokens.size(); i += 2)

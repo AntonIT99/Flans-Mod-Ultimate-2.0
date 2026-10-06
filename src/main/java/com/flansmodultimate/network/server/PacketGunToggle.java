@@ -10,12 +10,13 @@ import com.flansmodultimate.network.client.PacketGunToggleClient;
 import com.flansmodultimate.network.client.PacketPlaySound;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 /** Switches a gun and its toggleable attachments (flashlights, lasers, blades) on or off */
 @NoArgsConstructor

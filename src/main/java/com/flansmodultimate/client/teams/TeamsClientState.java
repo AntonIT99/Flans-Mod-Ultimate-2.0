@@ -6,6 +6,7 @@ import com.flansmodultimate.client.gui.TeamsVotingScreen;
 import com.flansmodultimate.network.client.PacketTeamsState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 
@@ -32,8 +33,7 @@ public final class TeamsClientState
     {
         Minecraft minecraft = Minecraft.getInstance();
         Player viewer = minecraft.player;
-        return hasActiveRound() && viewer != null && renderedPlayer != viewer
-            && !isTeamsSpectator(viewer) && isTeamsSpectator(renderedPlayer);
+        return hasActiveRound() && viewer != null && renderedPlayer != viewer && !isTeamsSpectator(viewer) && isTeamsSpectator(renderedPlayer);
     }
 
     /** Enemy tags are hidden in team modes; every active-player tag is hidden in FFA. */
@@ -95,8 +95,7 @@ public final class TeamsClientState
             case SCOREBOARD -> minecraft.setScreen(new TeamsScoreScreen());
             case VOTING -> minecraft.setScreen(new TeamsVotingScreen());
             case CLOSE -> {
-                if (minecraft.screen instanceof TeamsSelectScreen || minecraft.screen instanceof TeamsScoreScreen
-                    || minecraft.screen instanceof TeamsVotingScreen)
+                if (minecraft.screen instanceof TeamsSelectScreen || minecraft.screen instanceof TeamsScoreScreen || minecraft.screen instanceof TeamsVotingScreen)
                     minecraft.setScreen(null);
             }
             case NONE -> {

@@ -49,17 +49,8 @@ class RealWorldSpecReaderTest
     @Test
     void readsEveryCommonAndCategoryKey()
     {
-        RealWorldSpecReader.Result result = read(
-            "RealMassKg 2890",
-            "RealMaxSpeedKmh 635",
-            "RealEnginePowerKw 993",
-            "RealEngineThrustKn 79.6",
-            "RealWingSpanM 11.23",
-            "RealWingAreaM2 22.48",
-            "RealClimbRateMs 17.0",
-            "DriveType TRACKED",
-            "RealMaxReverseSpeedKmh 8",
-            "RealDraftM 1.5");
+        RealWorldSpecReader.Result result = read("RealMassKg 2890", "RealMaxSpeedKmh 635", "RealEnginePowerKw 993", "RealEngineThrustKn 79.6", "RealWingSpanM 11.23",
+            "RealWingAreaM2 22.48", "RealClimbRateMs 17.0", "DriveType TRACKED", "RealMaxReverseSpeedKmh 8", "RealDraftM 1.5");
 
         assertEquals(2890F, result.spec().massKg());
         assertEquals(635F, result.spec().maxSpeedKmh());
@@ -78,11 +69,8 @@ class RealWorldSpecReaderTest
     @Test
     void unprefixedAliasesReadEveryRealParameter()
     {
-        RealWorldVehicleSpec spec = read(
-            "MassKg 1000", "MaxSpeedKmh 100", "EnginePowerKw 200",
-            "EngineThrustKn 30", "WingSpanM 10", "WingAreaM2 20",
-            "ClimbRateMs 5", "AirBrakeAreaM2 2", "RotorDiameterM 8",
-            "RotorCount 2", "MaxReverseSpeedKmh 12", "DraftM 1").spec();
+        RealWorldVehicleSpec spec = read("MassKg 1000", "MaxSpeedKmh 100", "EnginePowerKw 200", "EngineThrustKn 30", "WingSpanM 10", "WingAreaM2 20", "ClimbRateMs 5",
+            "AirBrakeAreaM2 2", "RotorDiameterM 8", "RotorCount 2", "MaxReverseSpeedKmh 12", "DraftM 1").spec();
         assertEquals(1000F, spec.massKg());
         assertEquals(100F, spec.maxSpeedKmh());
         assertEquals(200F, spec.enginePowerKw());
@@ -99,11 +87,9 @@ class RealWorldSpecReaderTest
         assertEquals((float) VehiclePhysicsUnits.hpToKw(100), read("EnginePowerHp 100").spec().enginePowerKw());
         assertEquals((float) VehiclePhysicsUnits.psToKw(100), read("EnginePowerPS 100").spec().enginePowerKw());
         assertEquals(2000F, read("DisplacementT 2").spec().massKg());
-        assertEquals((float) VehiclePhysicsUnits.longTonsToKg(2),
-            read("DisplacementLongTons 2").spec().massKg());
+        assertEquals((float) VehiclePhysicsUnits.longTonsToKg(2), read("DisplacementLongTons 2").spec().massKg());
         assertEquals((float) VehiclePhysicsUnits.knotsToKmh(10), read("MaxSpeedKn 10").spec().maxSpeedKmh());
-        assertEquals((float) VehiclePhysicsUnits.knotsToKmh(10),
-            read("MaxReverseSpeedKn 10").spec().ground().maxReverseSpeedKmh());
+        assertEquals((float) VehiclePhysicsUnits.knotsToKmh(10), read("MaxReverseSpeedKn 10").spec().ground().maxReverseSpeedKmh());
     }
 
     @Test
@@ -152,8 +138,7 @@ class RealWorldSpecReaderTest
     @Test
     void enginePowerPSOverridesBothEnginePowerKwAndEnginePowerHpWhenAllAreDeclared()
     {
-        RealWorldSpecReader.Result result = read(
-            "RealEnginePowerKw 500", "RealEnginePowerHp 1332", "RealEnginePowerPS 1350");
+        RealWorldSpecReader.Result result = read("RealEnginePowerKw 500", "RealEnginePowerHp 1332", "RealEnginePowerPS 1350");
         assertEquals(993.0F, result.spec().enginePowerKw(), 0.5F);
     }
 
@@ -252,27 +237,20 @@ class RealWorldSpecReaderTest
     @Test
     void completenessRulesMatchTheDocumentedRequiredSets()
     {
-        RealWorldVehicleSpec ground = read(
-            "RealMassKg 2400", "RealEnginePowerKw 140", "RealMaxSpeedKmh 113").spec();
+        RealWorldVehicleSpec ground = read("RealMassKg 2400", "RealEnginePowerKw 140", "RealMaxSpeedKmh 113").spec();
         assertTrue(ground.hasCompleteGroundProfile());
         assertFalse(ground.hasCompleteAircraftProfile());
 
         RealWorldVehicleSpec partialGround = read("RealMassKg 2400", "RealEnginePowerKw 140").spec();
         assertFalse(partialGround.hasCompleteGroundProfile());
 
-        RealWorldVehicleSpec aircraft = read(
-            "RealMassKg 2890", "RealMaxSpeedKmh 635",
-            "RealWingSpanM 11.23", "RealWingAreaM2 22.48", "RealEnginePowerKw 993").spec();
+        RealWorldVehicleSpec aircraft = read("RealMassKg 2890", "RealMaxSpeedKmh 635", "RealWingSpanM 11.23", "RealWingAreaM2 22.48", "RealEnginePowerKw 993").spec();
         assertTrue(aircraft.hasCompleteAircraftProfile());
 
-        RealWorldVehicleSpec jet = read(
-            "RealMassKg 12700", "RealMaxSpeedKmh 2120",
-            "RealWingSpanM 9.96", "RealWingAreaM2 30", "RealEngineThrustKn 79.6").spec();
+        RealWorldVehicleSpec jet = read("RealMassKg 12700", "RealMaxSpeedKmh 2120", "RealWingSpanM 9.96", "RealWingAreaM2 30", "RealEngineThrustKn 79.6").spec();
         assertTrue(jet.hasCompleteAircraftProfile(), "thrust alone must satisfy the propulsion requirement");
 
-        RealWorldVehicleSpec noClimbRate = read(
-            "RealMassKg 2890", "RealMaxSpeedKmh 635",
-            "RealWingSpanM 11.23", "RealWingAreaM2 22.48", "RealEnginePowerKw 993").spec();
+        RealWorldVehicleSpec noClimbRate = read("RealMassKg 2890", "RealMaxSpeedKmh 635", "RealWingSpanM 11.23", "RealWingAreaM2 22.48", "RealEnginePowerKw 993").spec();
         assertNull(noClimbRate.aircraft().climbRateMs());
         assertTrue(noClimbRate.hasCompleteAircraftProfile(), "climb rate is a calibration input, not a requirement");
     }
@@ -280,15 +258,13 @@ class RealWorldSpecReaderTest
     @Test
     void navalDisplacementAndKnotKeysConvertIntoTheCommonUnits()
     {
-        RealWorldVehicleSpec metric = read("RealDisplacementT 38000", "RealMaxSpeedKn 27.5",
-            "RealMaxReverseSpeedKn 9").spec();
+        RealWorldVehicleSpec metric = read("RealDisplacementT 38000", "RealMaxSpeedKn 27.5", "RealMaxReverseSpeedKn 9").spec();
         assertEquals(38_000_000F, metric.massKg());
         assertEquals(27.5F * 1.852F, metric.maxSpeedKmh(), 1.0E-3F);
         assertEquals(9F * 1.852F, metric.ground().maxReverseSpeedKmh(), 1.0E-3F);
 
         RealWorldVehicleSpec imperial = read("RealDisplacementLongTons 35000").spec();
-        assertEquals(35_561_642F, imperial.massKg(), 1F,
-            "a long ton is 1016.0469088 kg, not a metric tonne");
+        assertEquals(35_561_642F, imperial.massKg(), 1F, "a long ton is 1016.0469088 kg, not a metric tonne");
     }
 
     @Test
@@ -296,8 +272,7 @@ class RealWorldSpecReaderTest
     {
         // Same last-declared-wins priority the engine power aliases use, so a
         // definition that carries both spellings resolves deterministically.
-        RealWorldVehicleSpec spec = read("RealMassKg 1", "RealDisplacementT 2",
-            "RealDisplacementLongTons 3", "RealMaxSpeedKmh 10", "RealMaxSpeedKn 10").spec();
+        RealWorldVehicleSpec spec = read("RealMassKg 1", "RealDisplacementT 2", "RealDisplacementLongTons 3", "RealMaxSpeedKmh 10", "RealMaxSpeedKn 10").spec();
         assertEquals(3F * 1016.0469088F, spec.massKg(), 1.0E-2F);
         assertEquals(18.52F, spec.maxSpeedKmh(), 1.0E-3F);
     }
@@ -313,8 +288,7 @@ class RealWorldSpecReaderTest
     @Test
     void aShipCompletesTheGroundProfileFromNavalUnitsAlone()
     {
-        RealWorldVehicleSpec spec = read("RealDisplacementT 2500", "RealMaxSpeedKn 36",
-            "RealEnginePowerHp 52000", "DriveType MARINE", "RealDraftM 3.7").spec();
+        RealWorldVehicleSpec spec = read("RealDisplacementT 2500", "RealMaxSpeedKn 36", "RealEnginePowerHp 52000", "DriveType MARINE", "RealDraftM 3.7").spec();
         assertTrue(spec.hasCompleteGroundProfile());
         assertEquals(EnumDriveType.MARINE, spec.ground().driveType());
         assertEquals(3.7F, spec.marine().draftM());
@@ -333,6 +307,7 @@ class RealWorldSpecReaderTest
         IContentProvider pack = new ContentPack("test", Path.of("build", "test-packs", "test"));
         return RealWorldSpecReader.read(new TypeFile("testVehicle", EnumType.VEHICLE, pack, List.of(lines)));
     }
+
     @Test
     void theAirBrakeAreaIsReadAndValidatedLikeEveryOtherAircraftDimension()
     {
@@ -341,8 +316,7 @@ class RealWorldSpecReaderTest
         assertFalse(result.hasWarnings());
 
         RealWorldSpecReader.Result absent = read("Model Spitfire");
-        assertNull(absent.spec().aircraft().airBrakeAreaM2(),
-            "an undeclared brake area stays unset so the wing-area fallback applies");
+        assertNull(absent.spec().aircraft().airBrakeAreaM2(), "an undeclared brake area stays unset so the wing-area fallback applies");
 
         RealWorldSpecReader.Result malformed = read("RealAirBrakeAreaM2 huge");
         assertNull(malformed.spec().aircraft().airBrakeAreaM2());

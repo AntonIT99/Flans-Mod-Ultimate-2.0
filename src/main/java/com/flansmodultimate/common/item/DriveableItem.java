@@ -93,9 +93,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     {
         if (level.isClientSide)
             return null;
-        ItemStack entityStack = sourceStack == null || sourceStack.isEmpty()
-            ? new ItemStack(this)
-            : sourceStack.copyWithCount(1);
+        ItemStack entityStack = sourceStack == null || sourceStack.isEmpty() ? new ItemStack(this) : sourceStack.copyWithCount(1);
         D driveable = createDriveable(level, x, y, z, yaw, placer, entityStack);
         if (driveable == null)
             return null;
@@ -152,7 +150,8 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
         if (!ClientHooks.TOOLTIPS.isShiftDown())
         {
             if (configType.getFuelTankSize() > 0)
-                tooltip.add(Component.translatable(TooltipKeys.FUEL, IFlanItem.formatFloat(data.getFuelInTank()), configType.getFuelTankSize()).withStyle(ChatFormatting.DARK_BLUE));
+                tooltip
+                    .add(Component.translatable(TooltipKeys.FUEL, IFlanItem.formatFloat(data.getFuelInTank()), configType.getFuelTankSize()).withStyle(ChatFormatting.DARK_BLUE));
             if (data.getEngine() != null)
                 tooltip.add(Component.translatable(TooltipKeys.ENGINE, ModUtils.getDisplayName(data.getEngine())).withStyle(ChatFormatting.DARK_BLUE));
 
@@ -166,8 +165,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
             if (totalMaxHealth > 0F)
                 tooltip.add(IFlanItem.healthLine(TooltipKeys.HEALTH, totalHealth, totalMaxHealth));
 
-            long damagedParts = data.getParts().values().stream()
-                .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
+            long damagedParts = data.getParts().values().stream().filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
             if (damagedParts > 0)
                 tooltip.add(Component.translatable(TooltipKeys.DAMAGED_PARTS, damagedParts).withStyle(ChatFormatting.RED));
 
@@ -219,5 +217,6 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
         return new Placement(hitPos.getX() + 0.5D, hitPos.getY() + 1D, hitPos.getZ() + 0.5D);
     }
 
-    private record Placement(double x, double y, double z) {}
+    private record Placement(double x, double y, double z)
+    {}
 }

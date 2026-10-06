@@ -35,22 +35,19 @@ class EncryptedResourcePackTest
     {
         Map<String, byte[]> expected = new LinkedHashMap<>();
         expected.put("assets/flansmod/lang/en_us.json", "{\"item.flansmod.test\":\"Test\"}".getBytes(StandardCharsets.UTF_8));
-        expected.put("assets/flansmod/textures/item/test.png", new byte[] { 1, 2, 3, 4 });
+        expected.put("assets/flansmod/textures/item/test.png", new byte[]{1, 2, 3, 4});
         Path bundle = writeBundle(expected);
 
         Map<ResourceLocation, byte[]> actual = EncryptedResourcePack.decryptBundle(bundle, KEY_ID);
 
-        assertArrayEquals(expected.get("assets/flansmod/lang/en_us.json"),
-            actual.get(ResourceLocation.fromNamespaceAndPath("flansmod", "lang/en_us.json")));
-        assertArrayEquals(expected.get("assets/flansmod/textures/item/test.png"),
-            actual.get(ResourceLocation.fromNamespaceAndPath("flansmod", "textures/item/test.png")));
+        assertArrayEquals(expected.get("assets/flansmod/lang/en_us.json"), actual.get(ResourceLocation.fromNamespaceAndPath("flansmod", "lang/en_us.json")));
+        assertArrayEquals(expected.get("assets/flansmod/textures/item/test.png"), actual.get(ResourceLocation.fromNamespaceAndPath("flansmod", "textures/item/test.png")));
     }
 
     @Test
     void rejectsModifiedCiphertext() throws Exception
     {
-        Path bundle = writeBundle(Map.of(
-            "assets/flansmod/lang/en_us.json", "{}".getBytes(StandardCharsets.UTF_8)));
+        Path bundle = writeBundle(Map.of("assets/flansmod/lang/en_us.json", "{}".getBytes(StandardCharsets.UTF_8)));
         byte[] modified = Files.readAllBytes(bundle);
         modified[modified.length - 1] ^= 1;
         Files.write(bundle, modified);

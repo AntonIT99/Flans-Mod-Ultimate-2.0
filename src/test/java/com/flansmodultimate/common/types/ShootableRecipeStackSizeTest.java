@@ -27,8 +27,7 @@ class ShootableRecipeStackSizeTest
     private static BulletType load(String stackSize, String recipeOutput)
     {
         BulletType bullet = new BulletType();
-        bullet.load(new TypeFile("syntheticBullet", EnumType.BULLET,
-            new ContentPack("test", Path.of("build", "test-packs", "recipe-stack")),
+        bullet.load(new TypeFile("syntheticBullet", EnumType.BULLET, new ContentPack("test", Path.of("build", "test-packs", "recipe-stack")),
             List.of("ShortName synthetic_bullet", stackSize, recipeOutput)));
         return bullet;
     }

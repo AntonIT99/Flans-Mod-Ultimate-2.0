@@ -9,9 +9,9 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
 
-public class SmokeBurstParticle extends ParticleBase 
+public class SmokeBurstParticle extends ParticleBase
 {
-    protected SmokeBurstParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites) 
+    protected SmokeBurstParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites)
     {
         super(level, x, y, z, vx, vy, vz, sprites);
         lifetime = 6;

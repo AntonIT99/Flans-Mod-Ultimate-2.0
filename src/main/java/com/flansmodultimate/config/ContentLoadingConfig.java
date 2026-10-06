@@ -200,7 +200,7 @@ public final class ContentLoadingConfig
         {
             long longValue = number.longValue();
             if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE)
-                return (int)longValue;
+                return (int) longValue;
         }
 
         FlansLog.log.warn("Ignoring invalid {} in {}: {}. Expected integer.", key, FILE_NAME, value);

@@ -37,12 +37,7 @@ public final class EnchantmentModule
     static RegistryObject<Enchantment> sharpshooterEnchant;
     static RegistryObject<Enchantment> juggernautEnchant;
 
-    private static final EquipmentSlot[] ARMOR_SLOTS = {
-        EquipmentSlot.HEAD,
-        EquipmentSlot.CHEST,
-        EquipmentSlot.LEGS,
-        EquipmentSlot.FEET
-    };
+    private static final EquipmentSlot[] ARMOR_SLOTS = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
     public static void register(DeferredRegister<Enchantment> registry)
     {
@@ -207,19 +202,13 @@ public final class EnchantmentModule
         return !stack.isEmpty() && stack.getItem() instanceof GloveItem;
     }
     private static class EnchantmentDuelist extends OffHandDamageEnchantment
-    {
-    }
+    {}
 
     private static class EnchantmentJuggernaut extends Enchantment
     {
         public EnchantmentJuggernaut()
         {
-            super(Rarity.VERY_RARE, EnchantmentCategory.ARMOR, new EquipmentSlot[] {
-                EquipmentSlot.HEAD,
-                EquipmentSlot.CHEST,
-                EquipmentSlot.LEGS,
-                EquipmentSlot.FEET
-            });
+            super(Rarity.VERY_RARE, EnchantmentCategory.ARMOR, new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET});
         }
 
         @Override
@@ -242,8 +231,7 @@ public final class EnchantmentModule
     }
 
     private static class EnchantmentLumberjack extends OffHandDamageEnchantment
-    {
-    }
+    {}
 
     private static class EnchantmentNimble extends OffHandEnchantment
     {
@@ -355,7 +343,7 @@ public final class EnchantmentModule
 
         protected OffHandEnchantment(Rarity rarity, boolean glovesOnly)
         {
-            super(rarity, EnchantmentCategory.BREAKABLE, new EquipmentSlot[] { EquipmentSlot.OFFHAND });
+            super(rarity, EnchantmentCategory.BREAKABLE, new EquipmentSlot[]{EquipmentSlot.OFFHAND});
             this.glovesOnly = glovesOnly;
         }
 

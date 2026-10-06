@@ -69,4 +69,3 @@ public final class ModCommonConfigSync
         return new PacketSyncCommonConfig(commonConfig, apocalypseConfig);
     }
 }
-

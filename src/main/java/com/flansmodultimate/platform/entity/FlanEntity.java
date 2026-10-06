@@ -1,6 +1,5 @@
 package com.flansmodultimate.platform.entity;
 
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
@@ -19,7 +18,8 @@ public abstract class FlanEntity extends Entity
         defineEntityData(new SynchedDataDefinition(entityData));
     }
 
-    protected void defineEntityData(SynchedDataDefinition data) {}
+    protected void defineEntityData(SynchedDataDefinition data)
+    {}
 
     @Override
     public final void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport)
@@ -40,5 +40,6 @@ public abstract class FlanEntity extends Entity
         onEntityAdded();
     }
 
-    protected void onEntityAdded() {}
+    protected void onEntityAdded()
+    {}
 }

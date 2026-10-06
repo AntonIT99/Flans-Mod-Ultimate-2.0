@@ -29,8 +29,7 @@ class MuzzleMeasurementCacheTest
     private static VehicleType vehicle()
     {
         VehicleType vehicle = new VehicleType();
-        vehicle.load(new TypeFile("cacheVehicle", EnumType.VEHICLE, PACK,
-            List.of("ShortName cacheVehicle", "Driver 0 0 0", "BarrelPosition 10 20 0")));
+        vehicle.load(new TypeFile("cacheVehicle", EnumType.VEHICLE, PACK, List.of("ShortName cacheVehicle", "Driver 0 0 0", "BarrelPosition 10 20 0")));
         return vehicle;
     }
 
@@ -44,8 +43,7 @@ class MuzzleMeasurementCacheTest
     private static GunType deployedGun()
     {
         GunType gun = new GunType();
-        gun.load(new TypeFile("cacheDeployedGun", EnumType.GUN, PACK,
-            List.of("ShortName cacheDeployedGun", "Deployable True")));
+        gun.load(new TypeFile("cacheDeployedGun", EnumType.GUN, PACK, List.of("ShortName cacheDeployedGun", "Deployable True")));
         return gun;
     }
 
@@ -54,13 +52,10 @@ class MuzzleMeasurementCacheTest
     {
         MuzzleMeasurementCache.Results results = new MuzzleMeasurementCache.Results();
         MuzzleMeasurementCache.recordMove(results, vehicle(), new MuzzleMeasurementCache.Move(false, false, 0, 30F, 22F, -4F));
-        MuzzleMeasurementCache.recordBarrels(results, aaGun(),
-            new Vec3[] { new Vec3(1, 2, 3), new Vec3(1, 2, -3) }, new Vec3[] { new Vec3(20, 2, 3), new Vec3(20, 2, -3) });
-        MuzzleMeasurementCache.recordDeployedGunMuzzle(results, deployedGun(),
-            new Vec3(0, 6, 0), new Vec3(0, 6, 20));
+        MuzzleMeasurementCache.recordBarrels(results, aaGun(), new Vec3[]{new Vec3(1, 2, 3), new Vec3(1, 2, -3)}, new Vec3[]{new Vec3(20, 2, 3), new Vec3(20, 2, -3)});
+        MuzzleMeasurementCache.recordDeployedGunMuzzle(results, deployedGun(), new Vec3(0, 6, 0), new Vec3(0, 6, 20));
 
-        MuzzleMeasurementCache.Results restored = MuzzleMeasurementCache.fromJson(
-            MuzzleMeasurementCache.toJson("key", results), "key");
+        MuzzleMeasurementCache.Results restored = MuzzleMeasurementCache.fromJson(MuzzleMeasurementCache.toJson("key", results), "key");
         VehicleType vehicle = vehicle();
         AAGunType aaGun = aaGun();
         GunType deployedGun = deployedGun();
@@ -81,12 +76,10 @@ class MuzzleMeasurementCacheTest
     void storedBarrelsReplayAndFollowTheirPointWhenItMoves()
     {
         MuzzleMeasurementCache.Results results = new MuzzleMeasurementCache.Results();
-        MuzzleMeasurementCache.recordSpread(results, vehicle(), new MuzzleMeasurementCache.Spread(false, false, 0,
-            List.of(new Vector3f(0F, -2F, 6F), new Vector3f(0F, 2F, -6F))));
+        MuzzleMeasurementCache.recordSpread(results, vehicle(), new MuzzleMeasurementCache.Spread(false, false, 0, List.of(new Vector3f(0F, -2F, 6F), new Vector3f(0F, 2F, -6F))));
         MuzzleMeasurementCache.recordMove(results, vehicle(), new MuzzleMeasurementCache.Move(false, false, 0, 30F, 22F, 0F));
 
-        MuzzleMeasurementCache.Results restored = MuzzleMeasurementCache.fromJson(
-            MuzzleMeasurementCache.toJson("key", results), "key");
+        MuzzleMeasurementCache.Results restored = MuzzleMeasurementCache.fromJson(MuzzleMeasurementCache.toJson("key", results), "key");
         VehicleType vehicle = vehicle();
         MuzzleMeasurementCache.apply(restored, List.<InfoType>of(vehicle));
 

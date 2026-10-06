@@ -3,10 +3,10 @@ package com.flansmodultimate.network.server;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -118,7 +118,7 @@ public class PacketDeployedGunInput implements IServerPacket
     static Vec3[][] readBarrelOriginData(PacketBuffer data)
     {
         if (!data.readBoolean())
-            return new Vec3[][] { EMPTY_BARREL_DATA, EMPTY_BARREL_DATA };
+            return new Vec3[][]{EMPTY_BARREL_DATA, EMPTY_BARREL_DATA};
 
         int count = data.readVarInt();
         if (count <= 0 || count > MAX_SYNCED_BARRELS)
@@ -131,7 +131,7 @@ public class PacketDeployedGunInput implements IServerPacket
             barrelPivots[i] = readVec3(data);
             barrelMuzzles[i] = readVec3(data);
         }
-        return new Vec3[][] { barrelPivots, barrelMuzzles };
+        return new Vec3[][]{barrelPivots, barrelMuzzles};
     }
 
     private static void writeVec3(PacketBuffer data, Vec3 vector)

@@ -28,7 +28,9 @@ public final class PacketDebugHitboxes implements IClientPacket
     private String shortName = "";
     private boolean reset;
     private final Map<EnumDriveablePart, CollisionBox> boxes = new EnumMap<>(EnumDriveablePart.class);
-    public PacketDebugHitboxes() {}
+    public PacketDebugHitboxes()
+    {}
+
     public PacketDebugHitboxes(DriveableType type, boolean reset)
     {
         shortName = type.getShortName();
@@ -36,19 +38,24 @@ public final class PacketDebugHitboxes implements IClientPacket
         if (!reset)
             boxes.putAll(type.getHealth());
     }
-    @Override public void encodeInto(PacketBuffer data)
+
+    @Override
+    public void encodeInto(PacketBuffer data)
     {
         data.writeUtf(shortName);
         data.writeBoolean(reset);
         data.writeVarInt(boxes.size());
-        boxes.forEach((part, box) -> {
+        boxes.forEach((part, box) ->
+        {
             data.writeUtf(part.getShortName());
-            for (float value : new float[] {box.getHealth(), box.getX(), box.getY(), box.getZ(),
-                box.getWidth(), box.getHeight(), box.getDepth(), box.getPenetrationResistance(), box.getCrewDamageMultiplier()})
+            for (float value : new float[]{box.getHealth(), box.getX(), box.getY(), box.getZ(), box.getWidth(), box.getHeight(), box.getDepth(), box.getPenetrationResistance(),
+                box.getCrewDamageMultiplier()})
                 data.writeFloat(value);
         });
     }
-    @Override public void decodeInto(PacketBuffer data)
+
+    @Override
+    public void decodeInto(PacketBuffer data)
     {
         shortName = data.readUtf();
         reset = data.readBoolean();
@@ -71,7 +78,9 @@ public final class PacketDebugHitboxes implements IClientPacket
             boxes.put(part, CollisionBox.inWorldUnits(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]));
         }
     }
-    @Override public void handleClientSide(@NotNull Player player, @NotNull Level level)
+
+    @Override
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         if (InfoType.getInfoType(shortName) instanceof DriveableType type)
         {

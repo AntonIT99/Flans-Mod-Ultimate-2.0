@@ -3,7 +3,8 @@ package com.flansmodultimate.client.render.entity;
 /** Pure selection rules shared by geometry LOD and generated impostors. Distances are in blocks. */
 public final class DriveableLodPolicy
 {
-    private DriveableLodPolicy() {}
+    private DriveableLodPolicy()
+    {}
 
     public static float distanceScale(float radius, boolean groundVehicle, float groundFactor)
     {
@@ -17,13 +18,11 @@ public final class DriveableLodPolicy
         return size * factor;
     }
 
-    public static float partThreshold(float base, float maximum, float detailMultiplier,
-                                      double distance, float distanceScale)
+    public static float partThreshold(float base, float maximum, float detailMultiplier, double distance, float distanceScale)
     {
-        if (base <= 0F || maximum <= base || !Double.isFinite(distance)
-            || !Float.isFinite(distanceScale) || distanceScale <= 0F)
+        if (base <= 0F || maximum <= base || !Double.isFinite(distance) || !Float.isFinite(distanceScale) || distanceScale <= 0F)
             return base;
-        float blend = clamp((float)(distance / distanceScale - 24D) / 56F);
+        float blend = clamp((float) (distance / distanceScale - 24D) / 56F);
         // Smooth the endpoints while retaining a monotonic transition from 24 to 80 scaled blocks.
         blend = blend * blend * (3F - 2F * blend);
         float far = Math.max(base, maximum * detailMultiplier);
@@ -47,21 +46,19 @@ public final class DriveableLodPolicy
         return resolution / 1.12F * 1.25F;
     }
 
-    public static float impostorThreshold(float configured, double distance, float minimumDistance,
-                                          float maximumDistance, boolean groundVehicle, int resolution)
+    public static float impostorThreshold(float configured, double distance, float minimumDistance, float maximumDistance, boolean groundVehicle, int resolution)
     {
         // Keep explicit off / pixel-only configurations: no distance promotion without a maximum.
         if (!groundVehicle || configured <= 0F || maximumDistance <= minimumDistance)
             return configured;
-        float blend = clamp((float)((distance - minimumDistance) / (maximumDistance - minimumDistance)));
+        float blend = clamp((float) ((distance - minimumDistance) / (maximumDistance - minimumDistance)));
         float promoted = Math.max(configured, qualityPixelLimit(resolution));
         return configured + (promoted - configured) * blend;
     }
 
     public static boolean withinImageQuality(float projectedPixels, int resolution, boolean previous)
     {
-        return Float.isFinite(projectedPixels) && projectedPixels > 0F
-            && projectedPixels <= qualityPixelLimit(resolution) * (previous ? 1.1F : 1F);
+        return Float.isFinite(projectedPixels) && projectedPixels > 0F && projectedPixels <= qualityPixelLimit(resolution) * (previous ? 1.1F : 1F);
     }
 
     private static float clamp(float value)

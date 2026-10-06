@@ -16,7 +16,8 @@ import net.minecraft.world.level.Level;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseDamageSources
 {
-    public static final ResourceKey<DamageType> SULPHURIC_ACID = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "sulphuric_acid"));
+    public static final ResourceKey<DamageType> SULPHURIC_ACID = ResourceKey.create(Registries.DAMAGE_TYPE,
+        ResourceLocation.fromNamespaceAndPath(FlansMod.APOCALYPSE_ID, "sulphuric_acid"));
 
     public static DamageSource sulphuricAcid(Level level)
     {

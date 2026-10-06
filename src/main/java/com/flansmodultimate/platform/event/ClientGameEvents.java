@@ -2,9 +2,9 @@ package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.debug.RenderDiagnosticsCommand;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
@@ -18,7 +18,8 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientGameEvents
 {
-    private ClientGameEvents() {}
+    private ClientGameEvents()
+    {}
 
     @SubscribeEvent
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event)

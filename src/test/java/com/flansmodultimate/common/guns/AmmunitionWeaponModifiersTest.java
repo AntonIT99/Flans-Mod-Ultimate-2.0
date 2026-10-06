@@ -86,8 +86,7 @@ class AmmunitionWeaponModifiersTest
 
         FiredShot shot = new FiredShot(gun, round, null, null, 0);
 
-        assertEquals(10F, shot.getFireableGun().getDamage(), EPSILON,
-            "the general constructor must not apply modifiers of its own");
+        assertEquals(10F, shot.getFireableGun().getDamage(), EPSILON, "the general constructor must not apply modifiers of its own");
     }
 
     @Test

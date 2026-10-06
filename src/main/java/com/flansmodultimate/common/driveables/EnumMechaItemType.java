@@ -5,15 +5,7 @@ import java.util.Locale;
 
 public enum EnumMechaItemType
 {
-    UPGRADE,
-    TOOL,
-    ARM_UPGRADE,
-    LEG_UPGRADE,
-    HEAD_UPGRADE,
-    SHOULDER_UPGRADE,
-    FEET_UPGRADE,
-    HIPS_UPGRADE,
-    NOTHING;
+    UPGRADE, TOOL, ARM_UPGRADE, LEG_UPGRADE, HEAD_UPGRADE, SHOULDER_UPGRADE, FEET_UPGRADE, HIPS_UPGRADE, NOTHING;
 
     public static EnumMechaItemType parse(String value)
     {

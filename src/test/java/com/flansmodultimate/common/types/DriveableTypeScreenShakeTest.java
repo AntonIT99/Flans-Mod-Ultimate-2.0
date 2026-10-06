@@ -40,8 +40,8 @@ class DriveableTypeScreenShakeTest
     @Test
     void shellsAndMissilesKickFromEitherBank()
     {
-        VehicleType type = read("Driver 0 0 0", "Primary missile", "Secondary shell", "FancyScreenShake true",
-            "FancyScreenShakePrimaryIntensity 2.5", "FancyScreenShakePrimaryDuration 0.4");
+        VehicleType type = read("Driver 0 0 0", "Primary missile", "Secondary shell", "FancyScreenShake true", "FancyScreenShakePrimaryIntensity 2.5",
+            "FancyScreenShakePrimaryDuration 0.4");
         DriveableType.ScreenShake expected = new DriveableType.ScreenShake(2.5F, 0.4F);
         assertEquals(expected, type.screenShake(false));
         assertEquals(expected, type.screenShake(true));
@@ -59,8 +59,8 @@ class DriveableTypeScreenShakeTest
     {
         assertNull(read("Driver 0 0 0", "Primary shell", "Secondary gun", "FancyScreenShake true").screenShake(true));
 
-        VehicleType type = read("Driver 0 0 0", "Primary shell", "Secondary gun", "FancyScreenShake true",
-            "CoaxRecoil true", "FancyScreenShakeCoaxIntensity 0.5", "FancyScreenShakeCoaxDuration 0.1");
+        VehicleType type = read("Driver 0 0 0", "Primary shell", "Secondary gun", "FancyScreenShake true", "CoaxRecoil true", "FancyScreenShakeCoaxIntensity 0.5",
+            "FancyScreenShakeCoaxDuration 0.1");
         assertEquals(new DriveableType.ScreenShake(0.5F, 0.1F), type.screenShake(true));
     }
 
@@ -75,19 +75,15 @@ class DriveableTypeScreenShakeTest
     @Test
     void zeroOrNegativeSettingsDisableTheKick()
     {
-        assertNull(read("Driver 0 0 0", "Primary shell", "FancyScreenShake true",
-            "FancyScreenShakePrimaryIntensity -3").screenShake(false));
-        assertNull(read("Driver 0 0 0", "Primary shell", "FancyScreenShake true",
-            "FancyScreenShakePrimaryDuration 0").screenShake(false));
-        assertNull(read("Driver 0 0 0", "Primary shell", "FancyScreenShake true",
-            "FancyScreenShakeRange 0").screenShake(false));
+        assertNull(read("Driver 0 0 0", "Primary shell", "FancyScreenShake true", "FancyScreenShakePrimaryIntensity -3").screenShake(false));
+        assertNull(read("Driver 0 0 0", "Primary shell", "FancyScreenShake true", "FancyScreenShakePrimaryDuration 0").screenShake(false));
+        assertNull(read("Driver 0 0 0", "Primary shell", "FancyScreenShake true", "FancyScreenShakeRange 0").screenShake(false));
     }
 
     @Test
     void keysAreCaseInsensitive()
     {
-        VehicleType type = read("Driver 0 0 0", "Primary shell", "fancyscreenshake true",
-            "FANCYSCREENSHAKEPRIMARYINTENSITY 3");
+        VehicleType type = read("Driver 0 0 0", "Primary shell", "fancyscreenshake true", "FANCYSCREENSHAKEPRIMARYINTENSITY 3");
         assertEquals(new DriveableType.ScreenShake(3F, 0.18F), type.screenShake(false));
     }
 }

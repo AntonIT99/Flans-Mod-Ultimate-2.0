@@ -49,8 +49,7 @@ class LegacyAnimationDirectivesTest
     void revolverTwoNamesResolveToTheRevolverAnimationAsIn1710()
     {
         assertEquals(EnumAnimationType.REVOLVER, gun("animAnimationType REVOLVER2").getAnimationConfig().getAnimationType());
-        assertEquals(EnumAnimationType.CUSTOMREVOLVER,
-            gun("animAnimationType customRevolver2").getAnimationConfig().getAnimationType());
+        assertEquals(EnumAnimationType.CUSTOMREVOLVER, gun("animAnimationType customRevolver2").getAnimationConfig().getAnimationType());
     }
 
     @Test

@@ -63,8 +63,9 @@ public class PlayerSnapshot
     }
 
     /**
-     * @param partialTick interpolation between the previous and current tick, as used for rendering;
-     *                    {@code 1} takes the current tick values
+     * @param partialTick
+     *            interpolation between the previous and current tick, as used for rendering;
+     *            {@code 1} takes the current tick values
      */
     public PlayerSnapshot(Player p, float partialTick)
     {
@@ -294,7 +295,9 @@ public class PlayerSnapshot
 
     /**
      * Vanilla arm pose per hand from PlayerRenderer.getArmPose, before any gun pose is applied.
-     * @param mainTwoHanded whether the vanilla main hand pose is two-handed, which only matters for the off hand
+     *
+     * @param mainTwoHanded
+     *            whether the vanilla main hand pose is two-handed, which only matters for the off hand
      */
     private static ArmPose armPose(Player p, InteractionHand hand, boolean mainTwoHanded)
     {
@@ -311,14 +314,22 @@ public class PlayerSnapshot
             UseAnim useAnim = stack.getUseAnimation();
             switch (useAnim)
             {
-                case BLOCK: return ArmPose.BLOCK;
-                case BOW: return ArmPose.AIM;
-                case SPEAR: return ArmPose.THROW_SPEAR;
-                case CROSSBOW: return ArmPose.CROSSBOW_CHARGE;
-                case SPYGLASS: return ArmPose.SPYGLASS;
-                case TOOT_HORN: return ArmPose.TOOT_HORN;
-                case BRUSH: return ArmPose.BRUSH;
-                default: break;
+                case BLOCK :
+                    return ArmPose.BLOCK;
+                case BOW :
+                    return ArmPose.AIM;
+                case SPEAR :
+                    return ArmPose.THROW_SPEAR;
+                case CROSSBOW :
+                    return ArmPose.CROSSBOW_CHARGE;
+                case SPYGLASS :
+                    return ArmPose.SPYGLASS;
+                case TOOT_HORN :
+                    return ArmPose.TOOT_HORN;
+                case BRUSH :
+                    return ArmPose.BRUSH;
+                default :
+                    break;
             }
         }
         else if (!p.swinging && stack.getItem() instanceof CrossbowItem && CrossbowItem.isCharged(stack))
@@ -367,39 +378,36 @@ public class PlayerSnapshot
 
     /**
      * Mirrors HumanoidModel.poseRightArm / poseLeftArm.
-     * @param side {@code 1} when {@code arm} is the right arm, {@code -1} for the left arm
+     *
+     * @param side
+     *            {@code 1} when {@code arm} is the right arm, {@code -1} for the left arm
      */
     private static void poseArm(Player p, ArmPose pose, Part head, Part arm, Part otherArm, float side)
     {
         switch (pose)
         {
             case EMPTY -> arm.yRot = 0F;
-            case ITEM ->
-            {
+            case ITEM -> {
                 arm.xRot = arm.xRot * 0.5F - Mth.PI / 10F;
                 arm.yRot = 0F;
             }
-            case BLOCK ->
-            {
+            case BLOCK -> {
                 arm.xRot = arm.xRot * 0.5F - 0.9424779F;
                 arm.yRot = -side * Mth.PI / 6F;
             }
-            case AIM ->
-            {
+            case AIM -> {
                 // Bow pose: the held arm follows the head, the other arm reaches across to support it
                 arm.yRot = -side * 0.1F + head.yRot;
                 otherArm.yRot = side * 0.5F + head.yRot;
                 arm.xRot = -Mth.PI / 2F + head.xRot;
                 otherArm.xRot = -Mth.PI / 2F + head.xRot;
             }
-            case ONE_AIM ->
-            {
+            case ONE_AIM -> {
                 // ModClient.oneArmAim: the held arm of the bow pose alone
                 arm.yRot = -side * 0.1F + head.yRot;
                 arm.xRot = -Mth.PI / 2F + head.xRot;
             }
-            case BOTH_AIM ->
-            {
+            case BOTH_AIM -> {
                 // ModClient.bothArmsAim
                 arm.xRot = -Mth.PI / 2F;
                 arm.yRot = -side * 0.05F;
@@ -408,19 +416,16 @@ public class PlayerSnapshot
                 otherArm.yRot = side * 0.05F;
                 otherArm.zRot = 0F;
             }
-            case SUPPORT ->
-            {
+            case SUPPORT -> {
                 // ModClient.bowSupport: the free arm of the bow pose alone
                 arm.yRot = -side * 0.5F + head.yRot;
                 arm.xRot = -Mth.PI / 2F + head.xRot;
             }
-            case THROW_SPEAR, THROW ->
-            {
+            case THROW_SPEAR, THROW -> {
                 arm.xRot = arm.xRot * 0.5F - Mth.PI;
                 arm.yRot = 0F;
             }
-            case CROSSBOW_CHARGE ->
-            {
+            case CROSSBOW_CHARGE -> {
                 arm.yRot = -side * 0.8F;
                 arm.xRot = -0.97079635F;
                 float chargeDuration = EntityPlatform.crossbowChargeDuration(p.getUseItem(), p);
@@ -428,25 +433,21 @@ public class PlayerSnapshot
                 otherArm.yRot = Mth.lerp(charge, 0.4F, 0.85F) * side;
                 otherArm.xRot = Mth.lerp(charge, arm.xRot, -Mth.PI / 2F);
             }
-            case CROSSBOW_HOLD ->
-            {
+            case CROSSBOW_HOLD -> {
                 arm.yRot = -side * 0.3F + head.yRot;
                 otherArm.yRot = side * 0.6F + head.yRot;
                 arm.xRot = -Mth.PI / 2F + head.xRot + 0.1F;
                 otherArm.xRot = -1.5F + head.xRot;
             }
-            case SPYGLASS ->
-            {
+            case SPYGLASS -> {
                 arm.xRot = Mth.clamp(head.xRot - 1.9198622F - (p.isCrouching() ? 0.2617994F : 0F), -2.4F, 3.3F);
                 arm.yRot = head.yRot - side * 0.2617994F;
             }
-            case TOOT_HORN ->
-            {
+            case TOOT_HORN -> {
                 arm.xRot = Mth.clamp(head.xRot, -1.2F, 1.2F) - 1.4835298F;
                 arm.yRot = head.yRot - side * Mth.PI / 6F;
             }
-            case BRUSH ->
-            {
+            case BRUSH -> {
                 arm.xRot = arm.xRot * 0.5F - Mth.PI / 5F;
                 arm.yRot = 0F;
             }
@@ -555,9 +556,7 @@ public class PlayerSnapshot
     /** Positions a model part like ModelPart.translateAndRotate */
     private static Matrix4f partTransform(Matrix4f root, Part part)
     {
-        return new Matrix4f(root)
-            .translate(part.x * PIXEL, part.y * PIXEL, part.z * PIXEL)
-            .rotateZYX(part.zRot, part.yRot, part.xRot);
+        return new Matrix4f(root).translate(part.x * PIXEL, part.y * PIXEL, part.z * PIXEL).rotateZYX(part.zRot, part.yRot, part.xRot);
     }
 
     /** Adds a box given in model pixels */
@@ -580,11 +579,7 @@ public class PlayerSnapshot
         if (!gunType.isShield())
             return;
 
-        Matrix4f transform = new Matrix4f(armTransform)
-            .rotateX(-Mth.PI / 2F)
-            .rotateY(Mth.PI)
-            .translate((leftHand ? -1F : 1F) / 16F, 0.125F, -0.625F)
-            .rotateY(Mth.PI / 2F)
+        Matrix4f transform = new Matrix4f(armTransform).rotateX(-Mth.PI / 2F).rotateY(Mth.PI).translate((leftHand ? -1F : 1F) / 16F, 0.125F, -0.625F).rotateY(Mth.PI / 2F)
             .translate(-0.08F, -0.12F, 0F);
 
         com.flansmod.common.vector.Vector3f thirdPersonOffset = gunType.getAnimationConfig().getThirdPersonOffset();
@@ -609,16 +604,16 @@ public class PlayerSnapshot
 
     public List<BulletHit> raytrace(Vector3f origin, Vector3f motion, float lowerBound, float upperBound)
     {
-        //Prepare a list for the hits
+        // Prepare a list for the hits
         List<BulletHit> hits = new ArrayList<>();
 
         if (upperBound <= lowerBound)
             return hits;
 
-        //Get the bullet raytrace vector into local coordinates
+        // Get the bullet raytrace vector into local coordinates
         Vector3f localOrigin = new Vector3f(origin).sub(pos);
 
-        //Check each hitbox for a hit
+        // Check each hitbox for a hit
         for (PlayerHitbox hitbox : hitboxes)
         {
             PlayerBulletHit hit = hitbox.raytrace(localOrigin, motion);
@@ -634,9 +629,8 @@ public class PlayerSnapshot
     /** Vanilla arm poses plus this mod's gun aiming poses (AIM also covers drawing a bow) */
     private enum ArmPose
     {
-        EMPTY(false), ITEM(false), BLOCK(false), AIM(true), ONE_AIM(false), BOTH_AIM(true), THROW_SPEAR(false),
-        THROW(false), SUPPORT(false),
-        CROSSBOW_CHARGE(true), CROSSBOW_HOLD(true), SPYGLASS(false), TOOT_HORN(false), BRUSH(false);
+        EMPTY(false), ITEM(false), BLOCK(false), AIM(true), ONE_AIM(false), BOTH_AIM(true), THROW_SPEAR(false), THROW(false), SUPPORT(false), CROSSBOW_CHARGE(true), CROSSBOW_HOLD(
+            true), SPYGLASS(false), TOOT_HORN(false), BRUSH(false);
 
         private final boolean twoHanded;
 

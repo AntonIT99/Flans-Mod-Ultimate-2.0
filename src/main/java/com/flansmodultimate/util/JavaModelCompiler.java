@@ -55,12 +55,9 @@ public final class JavaModelCompiler
     private static final int MAX_DIAGNOSTICS_TO_LOG = 20;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Type SOURCE_HASH_MAP_TYPE = new TypeToken<Map<String, String>>() {}.getType();
-    private static final List<Charset> SOURCE_CHARSETS = List.of(
-        StandardCharsets.UTF_8,
-        Charset.forName("GB18030"),
-        StandardCharsets.ISO_8859_1
-    );
+    private static final Type SOURCE_HASH_MAP_TYPE = new TypeToken<Map<String, String>>()
+    {}.getType();
+    private static final List<Charset> SOURCE_CHARSETS = List.of(StandardCharsets.UTF_8, Charset.forName("GB18030"), StandardCharsets.ISO_8859_1);
 
     public static boolean isCompilerAvailable()
     {
@@ -101,7 +98,9 @@ public final class JavaModelCompiler
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null)
         {
-            FlansLog.log.warn("Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.", provider.getName());
+            FlansLog.log.warn(
+                "Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.",
+                provider.getName());
             return;
         }
 
@@ -161,12 +160,8 @@ public final class JavaModelCompiler
 
         try (Stream<Path> walk = Files.walk(javaRoot))
         {
-            return walk
-                .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(JAVA_EXTENSION))
-                .filter(source -> !hasPrimaryDirectoryClass(packRoot, source))
-                .sorted()
-                .toList();
+            return walk.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(JAVA_EXTENSION))
+                .filter(source -> !hasPrimaryDirectoryClass(packRoot, source)).sorted().toList();
         }
     }
 
@@ -246,14 +241,8 @@ public final class JavaModelCompiler
         try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, Locale.ROOT, StandardCharsets.UTF_8))
         {
             Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromPaths(sources);
-            List<String> options = List.of(
-                "-encoding", StandardCharsets.UTF_8.name(),
-                "-proc:none",
-                "-source", "17",
-                "-target", "17",
-                "-classpath", buildClasspath(packRoot, tempClassRoot),
-                "-d", tempClassRoot.toString()
-            );
+            List<String> options = List.of("-encoding", StandardCharsets.UTF_8.name(), "-proc:none", "-source", "17", "-target", "17", "-classpath",
+                buildClasspath(packRoot, tempClassRoot), "-d", tempClassRoot.toString());
 
             Boolean ok = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits).call();
             if (!Boolean.TRUE.equals(ok))
@@ -273,10 +262,7 @@ public final class JavaModelCompiler
         List<Path> classFiles;
         try (Stream<Path> walk = Files.walk(tempClassRoot))
         {
-            classFiles = walk
-                .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.CLASS_EXTENSION))
-                .sorted()
+            classFiles = walk.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.CLASS_EXTENSION)).sorted()
                 .toList();
         }
 
@@ -371,13 +357,9 @@ public final class JavaModelCompiler
     private static void logDiagnostics(DiagnosticCollector<JavaFileObject> diagnostics)
     {
         List<Diagnostic<? extends JavaFileObject>> diagnosticList = diagnostics.getDiagnostics();
-        diagnosticList.stream()
-            .filter(diagnostic -> diagnostic.getKind() == Diagnostic.Kind.ERROR)
-            .limit(MAX_DIAGNOSTICS_TO_LOG)
+        diagnosticList.stream().filter(diagnostic -> diagnostic.getKind() == Diagnostic.Kind.ERROR).limit(MAX_DIAGNOSTICS_TO_LOG)
             .forEach(diagnostic -> FlansLog.log.error("Java model compile error in {} at line {}: {}",
-                diagnostic.getSource() == null ? "unknown source" : diagnostic.getSource().getName(),
-                diagnostic.getLineNumber(),
-                diagnostic.getMessage(Locale.ROOT)));
+                diagnostic.getSource() == null ? "unknown source" : diagnostic.getSource().getName(), diagnostic.getLineNumber(), diagnostic.getMessage(Locale.ROOT)));
 
         long omitted = diagnosticList.stream().filter(diagnostic -> diagnostic.getKind() == Diagnostic.Kind.ERROR).count() - MAX_DIAGNOSTICS_TO_LOG;
         if (omitted > 0)
@@ -387,11 +369,8 @@ public final class JavaModelCompiler
     private static String transformSource(String source)
     {
         String transformed = source;
-        for (Map.Entry<String, String> mapping : ClassLoaderUtils.getSourceClassMappings()
-            .entrySet()
-            .stream()
-            .sorted(Comparator.comparingInt((Map.Entry<String, String> mapping) -> mapping.getKey().length()).reversed())
-            .toList())
+        for (Map.Entry<String, String> mapping : ClassLoaderUtils.getSourceClassMappings().entrySet().stream()
+            .sorted(Comparator.comparingInt((Map.Entry<String, String> mapping) -> mapping.getKey().length()).reversed()).toList())
         {
             transformed = transformed.replace(mapping.getKey(), mapping.getValue());
         }
@@ -416,8 +395,7 @@ public final class JavaModelCompiler
 
     private static String transformGlStateManagerCalls(String source)
     {
-        String transformed = source
-            .replace("import net.minecraft.client.renderer.GlStateManager;", "import org.lwjgl.opengl.GL11;")
+        String transformed = source.replace("import net.minecraft.client.renderer.GlStateManager;", "import org.lwjgl.opengl.GL11;")
             .replace("net.minecraft.client.renderer.GlStateManager", "org.lwjgl.opengl.GL11");
 
         transformed = transformed.replaceAll("\\bGlStateManager\\s*\\.\\s*translate\\s*\\(", "GL11.glTranslatef(");
@@ -475,7 +453,8 @@ public final class JavaModelCompiler
         return Files.exists(packRoot.resolve(toPrimaryClassPath(toPackRelativePath(packRoot, source))));
     }
 
-    private record CompilePlan(List<Path> sources, Map<String, String> sourceHashes, boolean needsCompile) {}
+    private record CompilePlan(List<Path> sources, Map<String, String> sourceHashes, boolean needsCompile)
+    {}
 
     private record SourceManifest(int version, Map<String, String> sourceHashes)
     {

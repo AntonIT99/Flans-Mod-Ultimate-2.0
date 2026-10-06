@@ -20,4 +20,3 @@ public record PenetrationLoss(float loss, EnumType type)
         }
     }
 }
-

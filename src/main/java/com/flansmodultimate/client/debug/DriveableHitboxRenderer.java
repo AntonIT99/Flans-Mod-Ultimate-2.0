@@ -33,17 +33,9 @@ import net.minecraft.world.phys.Vec3;
 public final class DriveableHitboxRenderer
 {
     /** Corner pairs of a box's 12 edges; corner bit 1 selects max X, bit 2 max Y and bit 4 max Z. */
-    private static final int[][] EDGES = {
-        {0, 1}, {2, 3}, {4, 5}, {6, 7},
-        {0, 2}, {1, 3}, {4, 6}, {5, 7},
-        {0, 4}, {1, 5}, {2, 6}, {3, 7}
-    };
+    private static final int[][] EDGES = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {0, 2}, {1, 3}, {4, 6}, {5, 7}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
     /** Edge order of the convex hull vertices: four corners on top and four below. */
-    private static final int[][] HULL_EDGES = {
-        {0, 1}, {1, 2}, {2, 3}, {3, 0},
-        {4, 5}, {5, 6}, {6, 7}, {7, 4},
-        {0, 4}, {1, 5}, {2, 6}, {3, 7}
-    };
+    private static final int[][] HULL_EDGES = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
 
     /** Draws visible driveable and AA gun hitboxes after entities, then flushes the outlines. */
     public static void renderAll(@NotNull PoseStack poseStack, @NotNull MultiBufferSource.BufferSource buffer, @NotNull Camera camera, @NotNull Frustum frustum, float partialTick)
@@ -56,8 +48,7 @@ public final class DriveableHitboxRenderer
         VertexConsumer lines = buffer.getBuffer(CustomRenderType.debugLinesSeeThrough());
         for (Entity entity : level.entitiesForRendering())
         {
-            if (!(entity instanceof Driveable) && !(entity instanceof AAGun)
-                || !frustum.isVisible(entity.getBoundingBoxForCulling()))
+            if (!(entity instanceof Driveable) && !(entity instanceof AAGun) || !frustum.isVisible(entity.getBoundingBoxForCulling()))
                 continue;
             if (entity instanceof Driveable driveable)
             {
@@ -87,9 +78,7 @@ public final class DriveableHitboxRenderer
         {
             int from = edge[0] * 3;
             int to = edge[1] * 3;
-            addLine(pose, lines,
-                new Vec3(vertices[from], vertices[from + 1], vertices[from + 2]),
-                new Vec3(vertices[to], vertices[to + 1], vertices[to + 2]), 1F, 1F, 0F);
+            addLine(pose, lines, new Vec3(vertices[from], vertices[from + 1], vertices[from + 2]), new Vec3(vertices[to], vertices[to + 1], vertices[to + 2]), 1F, 1F, 0F);
         }
     }
 
@@ -112,10 +101,10 @@ public final class DriveableHitboxRenderer
             AABB bounds = driveable.partBoxModelLocal(box);
             for (int corner = 0; corner < corners.length; corner++)
             {
-                Vec3 partLocal = new Vec3((corner & 1) == 0 ? bounds.minX : bounds.maxX,
-                    (corner & 2) == 0 ? bounds.minY : bounds.maxY, (corner & 4) == 0 ? bounds.minZ : bounds.maxZ);
-                Vec3 hullLocal = DriveableProjectileCollision.partPointToHullLocal(partLocal, part.getType(),
-                    driveable.getTurretYaw(), driveable.getTurretPitch(), turretPivot, turretOffset);
+                Vec3 partLocal = new Vec3((corner & 1) == 0 ? bounds.minX : bounds.maxX, (corner & 2) == 0 ? bounds.minY : bounds.maxY,
+                    (corner & 4) == 0 ? bounds.minZ : bounds.maxZ);
+                Vec3 hullLocal = DriveableProjectileCollision.partPointToHullLocal(partLocal, part.getType(), driveable.getTurretYaw(), driveable.getTurretPitch(), turretPivot,
+                    turretOffset);
                 corners[corner] = driveable.modelLocalDirectionToWorld(hullLocal);
             }
 

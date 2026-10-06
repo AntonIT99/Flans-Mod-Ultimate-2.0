@@ -18,6 +18,12 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -44,11 +50,6 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -195,8 +196,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         if (configType.canToggle(stack))
         {
             boolean on = configType.isToggledOn(stack);
-            tooltipComponents.add(
-                Component.translatable(on ? TooltipKeys.TOGGLED_ON : TooltipKeys.TOGGLED_OFF).withStyle(on ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+            tooltipComponents.add(Component.translatable(on ? TooltipKeys.TOGGLED_ON : TooltipKeys.TOGGLED_OFF).withStyle(on ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
         }
 
         if (!IFlanItem.showDetailedDescriptions())
@@ -265,8 +265,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.BOX), originGunbox));
 
             List<ShootableType> ammoTypes = new ArrayList<>(configType.getAmmoTypes());
-            getBulletItemStackList(stack, ItemStackData.builtInRegistries()).stream().map(ItemStack::getItem).filter(ShootableItem.class::isInstance)
-                .map(ShootableItem.class::cast).map(ShootableItem::getConfigType).findFirst().ifPresent(loadedAmmoType ->
+            getBulletItemStackList(stack, ItemStackData.builtInRegistries()).stream().map(ItemStack::getItem).filter(ShootableItem.class::isInstance).map(ShootableItem.class::cast)
+                .map(ShootableItem::getConfigType).findFirst().ifPresent(loadedAmmoType ->
                 {
                     for (int i = 0; i < ammoTypes.size(); i++)
                     {
@@ -328,11 +328,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                 {
                     Map<DamageTooltipValues, List<String>> groupedDamageLines = new LinkedHashMap<>();
                     for (Map.Entry<ShootableType, DamageTooltipValues> entry : damageValuesByType.entrySet())
-                        groupedDamageLines.computeIfAbsent(entry.getValue(), ignored -> new ArrayList<>())
-                            .add(ModUtils.getItemLocalizedName(entry.getKey().getShortName()));
+                        groupedDamageLines.computeIfAbsent(entry.getValue(), ignored -> new ArrayList<>()).add(ModUtils.getItemLocalizedName(entry.getKey().getShortName()));
 
-                    groupedDamageLines
-                        .forEach((damageValues, ammoNames) -> tooltipComponents.add(createDamageComponent(String.join(", ", ammoNames), damageValues)));
+                    groupedDamageLines.forEach((damageValues, ammoNames) -> tooltipComponents.add(createDamageComponent(String.join(", ", ammoNames), damageValues)));
                 }
                 else
                 {
@@ -342,24 +340,20 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             }
 
             if (configType.getPrimaryFunction().isMelee() || configType.getSecondaryFunction().isMelee())
-                tooltipComponents
-                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MELEE_DAMAGE), IFlanItem.formatFloat(configType.getMeleeDamage(stack, false))));
 
             if (configType.isThrowable())
             {
-                tooltipComponents
-                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_DAMAGE), IFlanItem.formatFloat(configType.getThrowDamage(stack))));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_DAMAGE), IFlanItem.formatFloat(configType.getThrowDamage(stack))));
                 if (configType.getThrowMass() > 0F)
-                    tooltipComponents
-                        .add(IFlanItem.statLine(Component.translatable(TooltipKeys.MASS), IFlanItem.formatFloat(configType.getThrowMass()) + " g"));
+                    tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MASS), IFlanItem.formatFloat(configType.getThrowMass()) + " g"));
             }
 
             if (configType.isShowRecoil())
             {
-                tooltipComponents.add(
-                    IFlanItem.statLine(Component.translatable(TooltipKeys.VERTICAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.HORIZONTAL_RECOIL),
-                    IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.VERTICAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
+                tooltipComponents
+                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.HORIZONTAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
 
                 float sprintingControlValue = configType.getRecoilControl(stack, true, false);
                 float sneakingControlValue = configType.getRecoilControl(stack, false, true);
@@ -367,8 +361,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
                 final float EPS = 0.0001F;
                 boolean isDefault = Math.abs(sprintingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SPRINTING) < EPS
-                    && Math.abs(sneakingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SNEAKING) < EPS
-                    && Math.abs(normalControlValue - GunType.DEFAULT_RECOIL_CONTROL) < EPS;
+                    && Math.abs(sneakingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SNEAKING) < EPS && Math.abs(normalControlValue - GunType.DEFAULT_RECOIL_CONTROL) < EPS;
 
                 if (!isDefault)
                 {
@@ -377,44 +370,39 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                     String normalControl = IFlanItem.formatFloat(1F - normalControlValue);
 
                     tooltipComponents.add(Component.translatable(TooltipKeys.RECOIL_CONTROL).append(": ").withStyle(ChatFormatting.BLUE));
-                    tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.SPRINTING).withStyle(ChatFormatting.RED))
-                        .append(" ").append(Component.translatable(TooltipKeys.CROUCHING).withStyle(ChatFormatting.GREEN)));
-                    tooltipComponents.add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED)
-                        .append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
+                    tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.SPRINTING).withStyle(ChatFormatting.RED)).append(" ")
+                        .append(Component.translatable(TooltipKeys.CROUCHING).withStyle(ChatFormatting.GREEN)));
+                    tooltipComponents
+                        .add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED).append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
+                            .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
                 }
             }
 
             if (configType.isShowSpread())
-                tooltipComponents.add(
-                    IFlanItem.statLine(Component.translatable(TooltipKeys.DISPERSION), IFlanItem.formatFloat(configType.getDispersionForDisplay(stack)) + "°"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.DISPERSION), IFlanItem.formatFloat(configType.getDispersionForDisplay(stack)) + "°"));
 
             if (configType.getSwitchDelay() > 0F)
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SWITCH_DELAY), IFlanItem.formatFloat(configType.getSwitchDelay())));
 
             if (configType.isShowReloadTime())
-                tooltipComponents.add(
-                    IFlanItem.statLine(Component.translatable(TooltipKeys.RELOAD_TIME), IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + " s"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.RELOAD_TIME), IFlanItem.formatFloat(configType.getReloadTime(stack) / 20F) + " s"));
 
             if (configType.isThrowable() || configType.isShowBulletSpeed())
             {
                 float bulletSpeed = configType.getBulletSpeed(stack);
-                tooltipComponents
-                    .add(IFlanItem.statLine(Component.translatable(configType.isThrowable() ? TooltipKeys.THROW_SPEED : TooltipKeys.MUZZLE_VELOCITY),
-                        (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " m/s") : "∞"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(configType.isThrowable() ? TooltipKeys.THROW_SPEED : TooltipKeys.MUZZLE_VELOCITY),
+                    (bulletSpeed != 0F) ? (IFlanItem.formatFloat(bulletSpeed * 20F) + " m/s") : "∞"));
             }
 
             if (configType.isShowShootDelay())
-                tooltipComponents.add(
-                    IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RATE), IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + " rpm"));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RATE), IFlanItem.formatFloat(1200F / configType.getShootDelay(stack)) + " rpm"));
 
             if (configType.isShowMode())
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MODE),
                     Component.translatable("tooltip.flansmodultimate.fire_mode." + configType.getFireMode(stack).name().toLowerCase(Locale.ROOT))));
 
             if (configType.getKnockback() > 0F)
-                tooltipComponents
-                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOOTER_KNOCKBACK), IFlanItem.formatFloat(configType.getKnockback())));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOOTER_KNOCKBACK), IFlanItem.formatFloat(configType.getKnockback())));
 
             float scopeZoom = hasVariableZoom(stack) ? getCurrentVariableZoom(stack) : configType.getCurrentScope(stack).getZoomFactor();
             float zoomFactor = Math.max(scopeZoom, configType.getCurrentScope(stack).getFovFactor());
@@ -426,8 +414,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     private DamageTooltipValues getDamageTooltipValues(ShootableType shootableType, ItemStack stack)
     {
         if (shootableType.useKineticDamageSystem())
-            return new DamageTooltipValues(true, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", false,
-                "", false, "");
+            return new DamageTooltipValues(true, IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, stack), 1), false, "", false, "", false, "", false, "");
 
         float damage = configType.getDamageForDisplay(shootableType, stack);
         float damageVsLiving = configType.getDamageForDisplay(shootableType, stack, LivingEntity.class);
@@ -441,9 +428,9 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         boolean showVehicle = shootableType.getDamage().isReadDamageVsVehicles() && Math.abs(damageVsVehicle - damage) > EPS;
         boolean showPlane = shootableType.getDamage().isReadDamageVsPlanes() && Math.abs(damageVsPlane - damageVsVehicle) > EPS;
 
-        return new DamageTooltipValues(false, IFlanItem.formatFloat(damage, 1), showLiving, showLiving ? IFlanItem.formatFloat(damageVsLiving, 1) : "",
-            showPlayer, showPlayer ? IFlanItem.formatFloat(damageVsPlayer, 1) : "", showVehicle, showVehicle ? IFlanItem.formatFloat(damageVsVehicle, 1) : "",
-            showPlane, showPlane ? IFlanItem.formatFloat(damageVsPlane, 1) : "");
+        return new DamageTooltipValues(false, IFlanItem.formatFloat(damage, 1), showLiving, showLiving ? IFlanItem.formatFloat(damageVsLiving, 1) : "", showPlayer,
+            showPlayer ? IFlanItem.formatFloat(damageVsPlayer, 1) : "", showVehicle, showVehicle ? IFlanItem.formatFloat(damageVsVehicle, 1) : "", showPlane,
+            showPlane ? IFlanItem.formatFloat(damageVsPlane, 1) : "");
     }
 
     private static MutableComponent createDamageComponent(String label, DamageTooltipValues damageValues)
@@ -462,8 +449,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
         return damageComponent;
     }
 
-    private record DamageTooltipValues(boolean kinetic, String damage, boolean showLiving, String damageVsLiving, boolean showPlayer, String damageVsPlayer,
-        boolean showVehicle, String damageVsVehicle, boolean showPlane, String damageVsPlane)
+    private record DamageTooltipValues(boolean kinetic, String damage, boolean showLiving, String damageVsLiving, boolean showPlayer, String damageVsPlayer, boolean showVehicle,
+        String damageVsVehicle, boolean showPlane, String damageVsPlane)
     {}
 
     @Override
@@ -569,8 +556,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
 
     private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
     {
-        modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID),
-            "Knockback resistance", configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID), "Knockback resistance",
+            configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_VALUE);
         modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed",
             configType.getMovementSpeed(stack) - 1F, ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
         modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier",
@@ -792,9 +779,7 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     public float getActualReloadTime(ItemStack gunStack, HolderLookup.Provider registries, @Nullable ItemStack otherHand)
     {
         int maxAmmo = configType.getNumAmmoItemsInGun(gunStack);
-        float reloadTime = (maxAmmo <= 1)
-            ? configType.getReloadTime(gunStack)
-            : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack, registries);
+        float reloadTime = (maxAmmo <= 1) ? configType.getReloadTime(gunStack) : (configType.getReloadTime(gunStack) / maxAmmo) * getReloadCount(gunStack, registries);
         return EnchantmentModule.getModifiedReloadTime(reloadTime, otherHand);
     }
 

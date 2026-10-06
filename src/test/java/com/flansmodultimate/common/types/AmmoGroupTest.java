@@ -91,8 +91,7 @@ class AmmoGroupTest
         BulletType other = bullet("agtOther", "AddToAmmoGroup AgtCalibreG");
 
         GunType gun = new GunType();
-        gun.read(new TypeFile("agtMultiGun", EnumType.GUN, PACK, List.of("ShortName agtMultiGun",
-            "UseAmmoGroup AgtCalibreF", "UseAmmoGroup AgtCalibreG")));
+        gun.read(new TypeFile("agtMultiGun", EnumType.GUN, PACK, List.of("ShortName agtMultiGun", "UseAmmoGroup AgtCalibreF", "UseAmmoGroup AgtCalibreG")));
 
         assertEquals(List.of(shared, other), gun.getAmmoTypes());
     }

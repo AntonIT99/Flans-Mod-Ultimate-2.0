@@ -25,8 +25,7 @@ public final class ApocalypsePortalManager
     private static final int PORTAL_HEIGHT_CLEARANCE = 3;
 
     private ApocalypsePortalManager()
-    {
-    }
+    {}
 
     public static void tryActivatePortal(Level level, BlockPos placedPos)
     {
@@ -46,9 +45,7 @@ public final class ApocalypsePortalManager
 
     public static boolean isPortalFrame(Level level, BlockPos lowerLeftCorner)
     {
-        if (!isPowerCube(level, lowerLeftCorner)
-            || !isPowerCube(level, lowerLeftCorner.offset(3, 0, 0))
-            || !isPowerCube(level, lowerLeftCorner.offset(0, 0, 3))
+        if (!isPowerCube(level, lowerLeftCorner) || !isPowerCube(level, lowerLeftCorner.offset(3, 0, 0)) || !isPowerCube(level, lowerLeftCorner.offset(0, 0, 3))
             || !isPowerCube(level, lowerLeftCorner.offset(3, 0, 3)))
             return false;
 
@@ -84,9 +81,7 @@ public final class ApocalypsePortalManager
         else
         {
             targetLevel = player.server.getLevel(Level.OVERWORLD);
-            searchCenter = ApocalypseSavedData.get(sourceLevel)
-                .getEntryPoint(player.getUUID())
-                .orElse(player.blockPosition());
+            searchCenter = ApocalypseSavedData.get(sourceLevel).getEntryPoint(player.getUUID()).orElse(player.blockPosition());
         }
 
         if (targetLevel == null)
@@ -95,8 +90,7 @@ public final class ApocalypsePortalManager
             return;
         }
 
-        Optional<BlockPos> targetCorner = teleporter.getTargetTeleporter()
-            .filter(pos -> targetLevel.isLoaded(pos) && isPortalFrame(targetLevel, pos))
+        Optional<BlockPos> targetCorner = teleporter.getTargetTeleporter().filter(pos -> targetLevel.isLoaded(pos) && isPortalFrame(targetLevel, pos))
             .or(() -> findOrCreatePortal(targetLevel, searchCenter, teleporter.getLowerLeftCorner()));
 
         if (targetCorner.isEmpty())
@@ -121,8 +115,8 @@ public final class ApocalypsePortalManager
         {
             double angle = level.random.nextDouble() * Math.PI * 2.0D;
             double distance = Math.max(8.0D, radius * (0.5D + level.random.nextDouble() * 0.75D));
-            int x = searchCenter.getX() + (int)Math.round(Math.cos(angle) * distance);
-            int z = searchCenter.getZ() + (int)Math.round(Math.sin(angle) * distance);
+            int x = searchCenter.getX() + (int) Math.round(Math.cos(angle) * distance);
+            int z = searchCenter.getZ() + (int) Math.round(Math.sin(angle) * distance);
             Optional<BlockPos> surface = findSurfacePortalCorner(level, x, z);
             if (surface.isPresent() && createPortal(level, surface.get(), reciprocalTarget))
                 return surface;
@@ -159,9 +153,7 @@ public final class ApocalypsePortalManager
             BlockPos candidate = pos.below(dy);
             if (candidate.getY() <= level.getMinBuildHeight() + 2)
                 break;
-            if (level.getWorldBorder().isWithinBounds(candidate)
-                && level.getWorldBorder().isWithinBounds(candidate.offset(3, 0, 3))
-                && level.getBlockState(candidate).isAir()
+            if (level.getWorldBorder().isWithinBounds(candidate) && level.getWorldBorder().isWithinBounds(candidate.offset(3, 0, 3)) && level.getBlockState(candidate).isAir()
                 && level.getBlockState(candidate.below()).isFaceSturdy(level, candidate.below(), Direction.UP))
                 return Optional.of(candidate);
         }

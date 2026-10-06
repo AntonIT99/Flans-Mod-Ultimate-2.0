@@ -4,11 +4,7 @@ import org.lwjgl.glfw.GLFW;
 
 public enum EnumMouseButton
 {
-    MOUSE_LEFT,
-    MOUSE_RIGHT,
-    MOUSE_MIDDLE,
-    MOUSE_4,
-    MOUSE_5;
+    MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE, MOUSE_4, MOUSE_5;
 
     public int toGlfw()
     {

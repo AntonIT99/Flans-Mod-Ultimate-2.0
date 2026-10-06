@@ -46,13 +46,16 @@ public final class PackagedContentLoader
     /**
      * Registers packaged content without enforcing any logical packs.
      *
-     * @param context packaging mod loading context
-     * @param modId packaging mod id
-     * @param contentRoot root containing one directory per logical pack
-     * @param modelsRoot root containing compiled legacy model classes
+     * @param context
+     *            packaging mod loading context
+     * @param modId
+     *            packaging mod id
+     * @param contentRoot
+     *            root containing one directory per logical pack
+     * @param modelsRoot
+     *            root containing compiled legacy model classes
      */
-    public static synchronized void register(FMLJavaModLoadingContext context, String modId,
-                                             String contentRoot, String modelsRoot)
+    public static synchronized void register(FMLJavaModLoadingContext context, String modId, String contentRoot, String modelsRoot)
     {
         register(context, modId, contentRoot, modelsRoot, Set.of());
     }
@@ -61,15 +64,18 @@ public final class PackagedContentLoader
      * Discovers logical packs below {@code contentRoot}, creates an early Forge configuration for
      * their activation, and registers enabled definitions with the main content loader.
      *
-     * @param context packaging mod loading context
-     * @param modId packaging mod id
-     * @param contentRoot root containing one directory per logical pack
-     * @param modelsRoot root containing compiled legacy model classes
-     * @param enforcedPackIds packs which cannot be disabled
+     * @param context
+     *            packaging mod loading context
+     * @param modId
+     *            packaging mod id
+     * @param contentRoot
+     *            root containing one directory per logical pack
+     * @param modelsRoot
+     *            root containing compiled legacy model classes
+     * @param enforcedPackIds
+     *            packs which cannot be disabled
      */
-    public static synchronized void register(FMLJavaModLoadingContext context, String modId,
-                                             String contentRoot, String modelsRoot,
-                                             Set<String> enforcedPackIds)
+    public static synchronized void register(FMLJavaModLoadingContext context, String modId, String contentRoot, String modelsRoot, Set<String> enforcedPackIds)
     {
         register(context, modId, contentRoot, modelsRoot, enforcedPackIds, Map.of());
     }
@@ -77,10 +83,8 @@ public final class PackagedContentLoader
     /**
      * Registers packaged content with optional display-name overrides keyed by logical pack ID.
      */
-    public static synchronized void register(FMLJavaModLoadingContext context, String modId,
-                                             String contentRoot, String modelsRoot,
-                                             Set<String> enforcedPackIds,
-                                             Map<String, String> displayNameOverrides)
+    public static synchronized void register(FMLJavaModLoadingContext context, String modId, String contentRoot, String modelsRoot, Set<String> enforcedPackIds,
+        Map<String, String> displayNameOverrides)
     {
         if (modules.stream().anyMatch(module -> module.modId().equals(modId)))
             throw new IllegalStateException("Packaged Flan content module already registered: " + modId);
@@ -94,27 +98,21 @@ public final class PackagedContentLoader
         Path moduleResourceRoot = modFileInfo.getFile().findResource("pack.mcmeta").getParent();
         Path moduleAssetsRoot = modFileInfo.getFile().findResource("assets", FlansMod.FLANSMOD_ID);
         Path modulePath = modFileInfo.getFile().getFilePath();
-        String moduleDisplayName = ModList.get().getModContainerById(modId)
-            .map(container -> container.getModInfo().getDisplayName())
-            .filter(displayName -> !displayName.isBlank())
+        String moduleDisplayName = ModList.get().getModContainerById(modId).map(container -> container.getModInfo().getDisplayName()).filter(displayName -> !displayName.isBlank())
             .orElse(modId);
         boolean archiveBacked = PlatformEnvironment.isProduction();
 
-        if (archiveBacked && (!Files.isRegularFile(modulePath)
-            || !modulePath.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")))
+        if (archiveBacked && (!Files.isRegularFile(modulePath) || !modulePath.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")))
         {
             throw new IllegalStateException("Production packaged Flan content must be loaded from a JAR: " + modulePath);
         }
 
-        FlansLog.log.info("Registering packaged Flan content module {} in {} mode from {}.", modId,
-            archiveBacked ? "production JAR" : "development directory", modulePath);
+        FlansLog.log.info("Registering packaged Flan content module {} in {} mode from {}.", modId, archiveBacked ? "production JAR" : "development directory", modulePath);
 
         List<String> discoveredPackIds = discoverPackIds(moduleContentRoot);
         Set<String> discoveredPackIdSet = new LinkedHashSet<>(discoveredPackIds);
         Set<String> enforced = normalizePackIds(enforcedPackIds);
-        Map<String, String> configuredDisplayNames = new LinkedHashMap<>(
-            loadDisplayNames(moduleContentRoot.resolve("pack_names.json"))
-        );
+        Map<String, String> configuredDisplayNames = new LinkedHashMap<>(loadDisplayNames(moduleContentRoot.resolve("pack_names.json")));
         configuredDisplayNames.putAll(normalizeDisplayNames(displayNameOverrides));
         Map<String, String> displayNames = Map.copyOf(configuredDisplayNames);
         if (!discoveredPackIdSet.containsAll(enforced))
@@ -127,8 +125,7 @@ public final class PackagedContentLoader
         {
             Set<String> unknown = new LinkedHashSet<>(displayNames.keySet());
             unknown.removeAll(discoveredPackIdSet);
-            throw new IllegalStateException("Display names were configured for unknown packaged content packs in "
-                + contentRoot + ": " + unknown);
+            throw new IllegalStateException("Display names were configured for unknown packaged content packs in " + contentRoot + ": " + unknown);
         }
 
         Set<String> enabled = loadEarlySelection(context, modId, discoveredPackIds, enforced);
@@ -146,16 +143,11 @@ public final class PackagedContentLoader
             boolean definitionsSubdirectory = Files.isDirectory(packRoot.resolve("definitions"));
             Path definitionsRoot = definitionsSubdirectory ? packRoot.resolve("definitions") : packRoot;
             String archivePackRoot = joinArchivePath(contentRoot, packId);
-            String archiveDefinitionsRoot = definitionsSubdirectory
-                ? joinArchivePath(archivePackRoot, "definitions")
-                : archivePackRoot;
+            String archiveDefinitionsRoot = definitionsSubdirectory ? joinArchivePath(archivePackRoot, "definitions") : archivePackRoot;
 
-            providers.add(new PackagedContentProvider(
-                displayNames.getOrDefault(packId, displayName(packId)), moduleDisplayName, packId, modulePath,
-                definitionsRoot, moduleAssetsRoot, moduleModelsRoot,
-                archiveDefinitionsRoot, joinArchivePath("assets", FlansMod.FLANSMOD_ID), modelsRoot,
-                archiveBacked, indexSharedAssets, "flansmodultimate_officialpacks".equals(modId)
-            ));
+            providers.add(new PackagedContentProvider(displayNames.getOrDefault(packId, displayName(packId)), moduleDisplayName, packId, modulePath, definitionsRoot,
+                moduleAssetsRoot, moduleModelsRoot, archiveDefinitionsRoot, joinArchivePath("assets", FlansMod.FLANSMOD_ID), modelsRoot, archiveBacked, indexSharedAssets,
+                "flansmodultimate_officialpacks".equals(modId)));
             indexSharedAssets = false;
         }
 
@@ -178,10 +170,7 @@ public final class PackagedContentLoader
 
         try (Stream<Path> stream = Files.list(contentRoot))
         {
-            return stream.filter(Files::isDirectory)
-                .map(path -> path.getFileName().toString().toLowerCase(Locale.ROOT))
-                .sorted()
-                .toList();
+            return stream.filter(Files::isDirectory).map(path -> path.getFileName().toString().toLowerCase(Locale.ROOT)).sorted().toList();
         }
         catch (Exception e)
         {
@@ -189,18 +178,15 @@ public final class PackagedContentLoader
         }
     }
 
-    private static Set<String> loadEarlySelection(FMLJavaModLoadingContext context, String modId,
-                                                  List<String> packIds, Set<String> enforced)
+    private static Set<String> loadEarlySelection(FMLJavaModLoadingContext context, String modId, List<String> packIds, Set<String> enforced)
     {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
         Map<String, ForgeConfigSpec.BooleanValue> values = new LinkedHashMap<>();
-        builder.comment("Pack selection is applied during item registration and therefore requires a game restart.")
-            .push("contentPacks");
+        builder.comment("Pack selection is applied during item registration and therefore requires a game restart.").push("contentPacks");
         for (String packId : packIds)
         {
             if (!enforced.contains(packId))
-                values.put(packId, builder.comment("Load the packaged content pack '" + packId + "'.")
-                    .define(packId, true));
+                values.put(packId, builder.comment("Load the packaged content pack '" + packId + "'.").define(packId, true));
         }
         builder.pop();
         ForgeConfigSpec spec = builder.build();
@@ -219,7 +205,8 @@ public final class PackagedContentLoader
                 spec.correct(config);
                 config.save();
                 spec.setConfig(config);
-                values.forEach((packId, value) -> {
+                values.forEach((packId, value) ->
+                {
                     if (BooleanUtils.isTrue(value.get()))
                         enabled.add(packId);
                 });
@@ -238,9 +225,7 @@ public final class PackagedContentLoader
 
     private static List<String> orderPackIds(List<String> discovered, Set<String> enforced)
     {
-        return discovered.stream()
-            .sorted(Comparator.comparing((String id) -> !enforced.contains(id)).thenComparing(id -> id))
-            .toList();
+        return discovered.stream().sorted(Comparator.comparing((String id) -> !enforced.contains(id)).thenComparing(id -> id)).toList();
     }
 
     private static Set<String> normalizePackIds(Set<String> packIds)
@@ -253,7 +238,8 @@ public final class PackagedContentLoader
     private static Map<String, String> normalizeDisplayNames(Map<String, String> displayNames)
     {
         Map<String, String> normalized = new LinkedHashMap<>();
-        displayNames.forEach((packId, displayName) -> {
+        displayNames.forEach((packId, displayName) ->
+        {
             String normalizedPackId = packId.toLowerCase(Locale.ROOT);
             if (normalizedPackId.isBlank())
                 throw new IllegalArgumentException("Pack ID for a display-name override cannot be blank");
@@ -309,22 +295,14 @@ public final class PackagedContentLoader
 
     private static String[] splitPath(String path)
     {
-        return Stream.of(path.split("[/\\\\]+"))
-            .filter(part -> !part.isBlank())
-            .toArray(String[]::new);
+        return Stream.of(path.split("[/\\\\]+")).filter(part -> !part.isBlank()).toArray(String[]::new);
     }
 
     private static String joinArchivePath(String... parts)
     {
-        return Stream.of(parts)
-            .flatMap(part -> Stream.of(part.split("[/\\\\]+")))
-            .filter(part -> !part.isBlank())
-            .reduce((left, right) -> left + "/" + right)
-            .orElse("");
+        return Stream.of(parts).flatMap(part -> Stream.of(part.split("[/\\\\]+"))).filter(part -> !part.isBlank()).reduce((left, right) -> left + "/" + right).orElse("");
     }
 
-    record RegisteredModule(String modId, Path resourceRoot, Path contentRoot,
-                            List<PackagedContentProvider> providers)
-    {
-    }
+    record RegisteredModule(String modId, Path resourceRoot, Path contentRoot, List<PackagedContentProvider> providers)
+    {}
 }

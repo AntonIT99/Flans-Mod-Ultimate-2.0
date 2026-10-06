@@ -47,7 +47,6 @@ public final class SoundLengthIndex
     /** Recorded for sounds that could not be measured, so an unreadable file does not force a rescan every load. */
     private static final int TICKS_UNKNOWN = 0;
 
-
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
     /**
@@ -58,14 +57,16 @@ public final class SoundLengthIndex
     private static final Map<String, Integer> soundLengths = new HashMap<>();
 
     /** One indexed sound file: the sound event it is registered as, its size, and its length. */
-    private record IndexedSound(String key, long size, int ticks) {}
+    private record IndexedSound(String key, long size, int ticks)
+    {}
 
     /**
      * Adds the sounds of one content pack to the lookup. Sound events already known from an earlier
      * pack keep the length they were loaded with, so the length always belongs to the file that is
      * actually registered under that name.
      *
-     * @param indexFile the index of a content pack, which does not have to exist
+     * @param indexFile
+     *            the index of a content pack, which does not have to exist
      */
     public static void load(Path indexFile)
     {
@@ -86,7 +87,8 @@ public final class SoundLengthIndex
     public static void replace(Map<String, Integer> lengths)
     {
         soundLengths.clear();
-        lengths.forEach((sound, ticks) -> {
+        lengths.forEach((sound, ticks) ->
+        {
             if (ticks > 0)
                 soundLengths.put(ResourceUtils.sanitize(sound), ticks);
         });
@@ -95,7 +97,8 @@ public final class SoundLengthIndex
     /**
      * Looks up how long a sound plays for.
      *
-     * @param sound the name a sound is registered under, as read from a content pack
+     * @param sound
+     *            the name a sound is registered under, as read from a content pack
      * @return the length in ticks, or empty when no loaded pack has a measurement for it
      */
     public static OptionalInt getSoundLength(String sound)
@@ -108,8 +111,10 @@ public final class SoundLengthIndex
      * Rewrites the index for the given sounds folder, measuring every {@code .ogg} it contains. The
      * index file is removed when the pack has no sounds at all.
      *
-     * @param soundsDir the assets/flansmod/sounds folder of a content pack
-     * @param indexFile where to write the index
+     * @param soundsDir
+     *            the assets/flansmod/sounds folder of a content pack
+     * @param indexFile
+     *            where to write the index
      */
     public static void generate(Path soundsDir, Path indexFile)
     {
@@ -147,8 +152,10 @@ public final class SoundLengthIndex
      * as large as the sound it replaces therefore goes unnoticed until the pack is reprocessed for
      * another reason, or {@code forceRegenContentPacksAssetsAndIds} is set.
      *
-     * @param soundsDir the assets/flansmod/sounds folder of a content pack
-     * @param indexFile the index to validate
+     * @param soundsDir
+     *            the assets/flansmod/sounds folder of a content pack
+     * @param indexFile
+     *            the index to validate
      * @return {@code true} when the index has to be regenerated
      */
     public static boolean isOutdated(Path soundsDir, Path indexFile)
@@ -174,8 +181,7 @@ public final class SoundLengthIndex
             if (ticks.isEmpty())
                 FlansLog.log.warn("Could not determine the length of sound file {}", file);
 
-            sounds.put(soundFile.getKey(), new IndexedSound(toSoundEventKey(soundFile.getKey()),
-                soundFile.getValue(), ticks.orElse(TICKS_UNKNOWN)));
+            sounds.put(soundFile.getKey(), new IndexedSound(toSoundEventKey(soundFile.getKey()), soundFile.getValue(), ticks.orElse(TICKS_UNKNOWN)));
         }
         return sounds;
     }
@@ -189,9 +195,7 @@ public final class SoundLengthIndex
         try (Stream<Path> stream = Files.walk(soundsDir))
         {
             Map<String, Long> fileSizes = new TreeMap<>();
-            stream.filter(Files::isRegularFile)
-                .filter(FileUtils::isOgg)
-                .forEach(file -> fileSizes.put(toRelativePath(soundsDir, file), readFileSize(file)));
+            stream.filter(Files::isRegularFile).filter(FileUtils::isOgg).forEach(file -> fileSizes.put(toRelativePath(soundsDir, file), readFileSize(file)));
             return fileSizes;
         }
         catch (IOException e)
@@ -217,8 +221,7 @@ public final class SoundLengthIndex
             for (Map.Entry<String, JsonElement> entry : index.getAsJsonObject(FIELD_SOUNDS).entrySet())
             {
                 JsonObject sound = entry.getValue().getAsJsonObject();
-                indexedSounds.put(entry.getKey(), new IndexedSound(sound.get(FIELD_KEY).getAsString(),
-                    sound.get(FIELD_SIZE).getAsLong(), sound.get(FIELD_TICKS).getAsInt()));
+                indexedSounds.put(entry.getKey(), new IndexedSound(sound.get(FIELD_KEY).getAsString(), sound.get(FIELD_SIZE).getAsLong(), sound.get(FIELD_TICKS).getAsInt()));
             }
 
             return Optional.of(indexedSounds);

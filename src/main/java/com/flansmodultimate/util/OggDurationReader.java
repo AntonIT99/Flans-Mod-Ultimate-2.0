@@ -43,11 +43,11 @@ public final class OggDurationReader
 
     private static final int TICKS_PER_SECOND = 20;
 
-
     /**
      * Reads how many whole ticks the given Ogg Vorbis file plays for, truncated rather than rounded.
      *
-     * @param file the {@code .ogg} file to measure
+     * @param file
+     *            the {@code .ogg} file to measure
      * @return the length in ticks, at least {@code 1}, or empty when the file is not readable Ogg Vorbis
      */
     public static OptionalInt readDurationTicks(Path file)
@@ -70,7 +70,7 @@ public final class OggDurationReader
             // last tick it is still playing overlaps itself inaudibly, while one repeated a tick late
             // leaves a gap that is clearly audible in a continuous sound such as an engine.
             long ticks = totalSamples * TICKS_PER_SECOND / sampleRate;
-            return OptionalInt.of((int)Math.max(1L, Math.min(Integer.MAX_VALUE, ticks)));
+            return OptionalInt.of((int) Math.max(1L, Math.min(Integer.MAX_VALUE, ticks)));
         }
         catch (IOException e)
         {
@@ -106,7 +106,7 @@ public final class OggDurationReader
      */
     private static long readLastGranulePosition(SeekableByteChannel channel, long fileSize) throws IOException
     {
-        int tailSize = (int)Math.min(fileSize, MAX_PAGE_SIZE);
+        int tailSize = (int) Math.min(fileSize, MAX_PAGE_SIZE);
         ByteBuffer tail = read(channel, fileSize - tailSize, tailSize);
 
         for (int offset = tail.limit() - PAGE_HEADER_SIZE; offset >= 0; offset--)

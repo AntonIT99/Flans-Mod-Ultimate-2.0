@@ -57,12 +57,14 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
         return gunMuzzleFlashPoint;
     }
 
-    public void renderAttachment(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderAttachment(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         renderAttachment(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass, true);
     }
 
-    public void renderAttachment(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass, boolean toggledOn)
+    public void renderAttachment(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass, boolean toggledOn)
     {
         for (ModelRendererTurbo model : attachmentModel)
             if (model != null)
@@ -76,7 +78,8 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
                 model.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderAttachmentAmmo(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderAttachmentAmmo(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo model : ammoModel)
             if (model != null)
@@ -106,7 +109,7 @@ public class ModelAttachment extends ModelBase implements IFlanTypeModel<Attachm
 
     protected void translate(ModelRendererTurbo[] model, float x, float y, float z)
     {
-        for(ModelRendererTurbo anAttachmentModel : model)
+        for (ModelRendererTurbo anAttachmentModel : model)
         {
             anAttachmentModel.rotationPointX += x;
             anAttachmentModel.rotationPointY += y;

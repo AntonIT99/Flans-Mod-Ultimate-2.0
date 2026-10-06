@@ -29,8 +29,7 @@ import java.util.Set;
 final class TryCommandSupport
 {
     /** In the order they are worn, so listings and messages read top to bottom. */
-    static final List<EquipmentSlot> ARMOUR_SLOTS =
-        List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
+    static final List<EquipmentSlot> ARMOUR_SLOTS = List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
 
     /**
      * Empties the carried inventory and the off hand but leaves the armour slots alone, so that
@@ -68,16 +67,14 @@ final class TryCommandSupport
     {
         MutableComponent line = Component.literal(type.getShortName()).withStyle(ChatFormatting.GREEN);
         if (!type.getShortName().equalsIgnoreCase(type.getOriginalShortName()))
-            line.append(Component.literal(" (= " + type.getOriginalShortName() + ")")
-                .withStyle(ChatFormatting.DARK_GRAY));
+            line.append(Component.literal(" (= " + type.getOriginalShortName() + ")").withStyle(ChatFormatting.DARK_GRAY));
         return line;
     }
 
     static MutableComponent packSuffix(InfoType type)
     {
         String pack = packName(type);
-        return pack == null ? Component.empty()
-            : Component.literal(" [" + pack + "]").withStyle(ChatFormatting.LIGHT_PURPLE);
+        return pack == null ? Component.empty() : Component.literal(" [" + pack + "]").withStyle(ChatFormatting.LIGHT_PURPLE);
     }
 
     /** Content pack names may contain spaces, so they are matched loosely rather than by equality. */
@@ -85,8 +82,7 @@ final class TryCommandSupport
     static String matchingContentPack(String filter, Collection<? extends InfoType> candidates)
     {
         String wanted = normalize(filter);
-        return contentPacks(candidates).stream().filter(pack -> normalize(pack).equals(wanted))
-            .findFirst().orElse(null);
+        return contentPacks(candidates).stream().filter(pack -> normalize(pack).equals(wanted)).findFirst().orElse(null);
     }
 
     static Set<String> contentPacks(Collection<? extends InfoType> candidates)

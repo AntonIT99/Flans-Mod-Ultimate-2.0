@@ -3,7 +3,8 @@ package com.flansmodultimate.common.driveables;
 /**
  * Pure block strike curve for the collision point sweep.
  *
- * <p>Legacy Flan's dealt {@code hardness * hardness * speed} flat hitpoints to
+ * <p>
+ * Legacy Flan's dealt {@code hardness * hardness * speed} flat hitpoints to
  * whichever part carried the collision point that struck a block. The shape is
  * kept - a soft block barely scuffs an airframe while stone or metal tears it
  * apart, and both scale with how fast the point was travelling - but the result
@@ -21,20 +22,21 @@ public final class DriveableImpactDamage
     /** One point cannot destroy a healthy part on its own; a sustained plough can. */
     private static final float MAX_FRACTION_PER_STRIKE = 0.35F;
 
-    private DriveableImpactDamage() {}
+    private DriveableImpactDamage()
+    {}
 
     /**
-     * @param hardness the struck block's destroy speed; unbreakable blocks report
-     *                 a negative value and, as in legacy, do no damage
-     * @param speed    the impact speed in blocks per tick
+     * @param hardness
+     *            the struck block's destroy speed; unbreakable blocks report
+     *            a negative value and, as in legacy, do no damage
+     * @param speed
+     *            the impact speed in blocks per tick
      * @return the share of the struck part's maximum health lost this tick
      */
     public static float blockStrikeHealthFraction(float hardness, double speed)
     {
-        if (!Float.isFinite(hardness) || hardness <= MIN_DAMAGING_HARDNESS
-            || !Double.isFinite(speed) || speed < MIN_IMPACT_SPEED)
+        if (!Float.isFinite(hardness) || hardness <= MIN_DAMAGING_HARDNESS || !Double.isFinite(speed) || speed < MIN_IMPACT_SPEED)
             return 0F;
-        return (float) Math.min(MAX_FRACTION_PER_STRIKE,
-            hardness * hardness * speed * HEALTH_FRACTION_PER_STRIKE);
+        return (float) Math.min(MAX_FRACTION_PER_STRIKE, hardness * hardness * speed * HEALTH_FRACTION_PER_STRIKE);
     }
 }

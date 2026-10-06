@@ -20,10 +20,12 @@ import java.util.Locale;
 /**
  * Stands in for work that worldgen cannot do on its worker threads.
  *
- * <p>Driveables, AI mechas, survivors and teleporter portals touch server state that only the
+ * <p>
+ * Driveables, AI mechas, survivors and teleporter portals touch server state that only the
  * server thread may change. Worldgen therefore leaves one of these in the chunk, where it is
  * saved with the chunk like any other entity, and on its first tick on the server thread it
- * performs the spawn and removes itself.</p>
+ * performs the spawn and removes itself.
+ * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class WorldgenSpawnMarker extends FlanEntity
@@ -33,12 +35,7 @@ public class WorldgenSpawnMarker extends FlanEntity
 
     public enum Kind
     {
-        SURVIVOR,
-        ABANDONED_VEHICLE,
-        LAB_MECHA,
-        PARKED_PLANE,
-        APOCALYPSE_PORTAL,
-        OVERWORLD_PORTAL
+        SURVIVOR, ABANDONED_VEHICLE, LAB_MECHA, PARKED_PLANE, APOCALYPSE_PORTAL, OVERWORLD_PORTAL
     }
 
     @Nullable

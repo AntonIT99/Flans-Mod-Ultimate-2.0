@@ -8,7 +8,8 @@ import java.util.function.Consumer;
 /** Resolves definitions before any item is indexed; input categories are never mutated. */
 final class CategoryResolver
 {
-    private record Key(boolean defaults, String name) {}
+    private record Key(boolean defaults, String name)
+    {}
 
     private final EnumType type;
     private final Map<String, Category> defaults = new LinkedHashMap<>();

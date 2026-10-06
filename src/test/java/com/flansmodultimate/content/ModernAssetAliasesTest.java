@@ -30,13 +30,14 @@ class ModernAssetAliasesTest
         write(a, "textures/item/shared.png", "first");
         write(b, "textures/item/shared.png", "second");
         write(c, "textures/item/shared.png", "second");
-        List<ModernAssetAliases.View> views = ModernAssetAliases.plan(List.of(
-            new ModernAssetAliases.Input(a, false), new ModernAssetAliases.Input(b, false), new ModernAssetAliases.Input(c, false)));
+        List<ModernAssetAliases.View> views = ModernAssetAliases
+            .plan(List.of(new ModernAssetAliases.Input(a, false), new ModernAssetAliases.Input(b, false), new ModernAssetAliases.Input(c, false)));
         assertEquals(views.get(1).sources(), views.get(2).sources());
         assertTrue(views.get(2).sources().containsKey("textures/item/shared_2.png"));
         assertFalse(views.get(2).sources().containsKey("textures/item/shared_3.png"));
     }
-    @TempDir Path temp;
+    @TempDir
+    Path temp;
 
     @Test
     void propagatesTextureModelAndBlockstateAliasesWithoutChangingFiles() throws Exception
@@ -64,7 +65,7 @@ class ModernAssetAliasesTest
         write(second, "blockstates/unique.json", """
             {"variants":{"":{"model":"flansmod:block/metal"},"a=true":[{"model":"flansmod:block/base","weight":2}]},
             "multipart":[{"when":{"a":"true"},"apply":[{"model":"flansmod:block/metal","y":90}]}]}
-            """ );
+            """);
 
         List<ModernAssetAliases.Input> inputs = List.of(new ModernAssetAliases.Input(first, true), new ModernAssetAliases.Input(second, false));
         ModernAssetAliases.View view = ModernAssetAliases.plan(inputs).get(1);
@@ -103,8 +104,7 @@ class ModernAssetAliasesTest
             write(pack, "textures/item/sub/shared.png", "nested");
         }
         write(second, "textures/item/sub/shared.png.mcmeta", "{\"animation\":{}}");
-        ModernAssetAliases.View view = ModernAssetAliases.plan(List.of(
-            new ModernAssetAliases.Input(first, true), new ModernAssetAliases.Input(second, false))).get(1);
+        ModernAssetAliases.View view = ModernAssetAliases.plan(List.of(new ModernAssetAliases.Input(first, true), new ModernAssetAliases.Input(second, false))).get(1);
         assertFalse(view.hidden().contains("textures/item/shared.png"));
         assertFalse(view.hidden().contains("textures/block/shared.png"));
         assertEquals("textures/item/sub/shared.png", view.sources().get("textures/item/sub/shared_2.png"));
@@ -118,9 +118,8 @@ class ModernAssetAliasesTest
         write(first, "models/item/tool.json", "{\"parent\":\"flansmod:item/paint\"}");
         write(first, "models/item/paint.json", "{\"parent\":\"flansmod:item/tool\"}");
         write(second, "models/item/paint.json", "{\"parent\":\"minecraft:item/generated\"}");
-        List<ModernAssetAliases.View> views = ModernAssetAliases.plan(List.of(
-            new ModernAssetAliases.Input(first, false, Set.of("item/tool")),
-            new ModernAssetAliases.Input(second, false, Set.of("item/paint"))));
+        List<ModernAssetAliases.View> views = ModernAssetAliases
+            .plan(List.of(new ModernAssetAliases.Input(first, false, Set.of("item/tool")), new ModernAssetAliases.Input(second, false, Set.of("item/paint"))));
         assertEquals("flansmod:item/paint_2", json(views.get(0), "models/item/tool.json").get("parent").getAsString());
         assertTrue(views.get(0).sources().containsKey("models/item/paint_2.json"));
         assertTrue(views.get(1).hidden().isEmpty());
@@ -133,11 +132,11 @@ class ModernAssetAliasesTest
         write(pack, "models/block/box_2.json", "{\"elements\":[],\"textures\":{\"particle\":\"flansmod:block/metal\"}}");
         write(pack, "models/item/box_2.json", "{\"parent\":\"flansmod:block/box\"}");
         write(pack, "blockstates/box_2.json", "{\"multipart\":[{\"apply\":{\"model\":\"flansmod:block/box\"}}]}");
-        ModernAssetAliases.View view = ModernAssetAliases.plan(List.of(new ModernAssetAliases.Input(pack, false,
-            Set.of("block/box_2", "item/box_2"), Map.of("block/box", "block/box_2")))).get(0);
+        ModernAssetAliases.View view = ModernAssetAliases
+            .plan(List.of(new ModernAssetAliases.Input(pack, false, Set.of("block/box_2", "item/box_2"), Map.of("block/box", "block/box_2")))).get(0);
         assertEquals("flansmod:block/box_2", json(view, "models/item/box_2.json").get("parent").getAsString());
-        assertEquals("flansmod:block/box_2", json(view, "blockstates/box_2.json").getAsJsonArray("multipart")
-            .get(0).getAsJsonObject().getAsJsonObject("apply").get("model").getAsString());
+        assertEquals("flansmod:block/box_2",
+            json(view, "blockstates/box_2.json").getAsJsonArray("multipart").get(0).getAsJsonObject().getAsJsonObject("apply").get("model").getAsString());
     }
 
     @Test
@@ -169,11 +168,9 @@ class ModernAssetAliasesTest
             Path archived = fs.getPath("/assets/flansmod");
             write(archived, "textures/item/icon.png", "second pixels");
             write(archived, "models/item/test.json", "{\"textures\":{\"layer0\":\"flansmod:item/icon\"}}");
-            List<ModernAssetAliases.Input> inputs = List.of(new ModernAssetAliases.Input(first, true),
-                new ModernAssetAliases.Input(archived, false));
+            List<ModernAssetAliases.Input> inputs = List.of(new ModernAssetAliases.Input(first, true), new ModernAssetAliases.Input(archived, false));
             ModernAssetAliases.View view = ModernAssetAliases.plan(inputs).get(1);
-            assertEquals("flansmod:item/icon_2", json(view, "models/item/test.json").getAsJsonObject("textures")
-                .get("layer0").getAsString());
+            assertEquals("flansmod:item/icon_2", json(view, "models/item/test.json").getAsJsonObject("textures").get("layer0").getAsString());
             write(archived, "textures/item/icon.png", "first pixels");
             ModernAssetAliases.View reloaded = ModernAssetAliases.plan(inputs).get(1);
             assertTrue(reloaded.sources().isEmpty());
@@ -192,21 +189,23 @@ class ModernAssetAliasesTest
         write(second, "textures/blocks/block.png", "legacy block");
         write(second, "models/item/unique.json", "{\"textures\":{\"layer0\":\"flansmod:item/icon\"}}");
         write(second.getParent().getParent(), "data/flansmod/textures/item/icon.png", "server data");
-        ModernAssetAliases.View view = ModernAssetAliases.plan(List.of(
-            new ModernAssetAliases.Input(first, true), new ModernAssetAliases.Input(second, false))).get(1);
-        try (FilteringPackResources resources = new FilteringPackResources(
-            new PathPackResources("test", second.getParent().getParent(), false), PackType.CLIENT_RESOURCES, view))
+        ModernAssetAliases.View view = ModernAssetAliases.plan(List.of(new ModernAssetAliases.Input(first, true), new ModernAssetAliases.Input(second, false))).get(1);
+        try (FilteringPackResources resources = new FilteringPackResources(new PathPackResources("test", second.getParent().getParent(), false), PackType.CLIENT_RESOURCES, view))
         {
             assertNull(resources.getResource(PackType.CLIENT_RESOURCES, id("textures/item/icon.png")));
             assertNotNull(resources.getResource(PackType.CLIENT_RESOURCES, id("textures/item/icon_2.png")));
             Map<String, String> listed = new HashMap<>();
             for (String folder : List.of("textures", "models"))
-                resources.listResources(PackType.CLIENT_RESOURCES, "flansmod", folder, (location, supplier) -> {
+                resources.listResources(PackType.CLIENT_RESOURCES, "flansmod", folder, (location, supplier) ->
+                {
                     try (var stream = supplier.get())
                     {
                         listed.put(location.getPath(), new String(stream.readAllBytes(), StandardCharsets.UTF_8));
                     }
-                    catch (Exception e) { throw new AssertionError(e); }
+                    catch (Exception e)
+                    {
+                        throw new AssertionError(e);
+                    }
                 });
             assertEquals("b", listed.get("textures/item/icon_2.png"));
             assertFalse(listed.containsKey("textures/item/icon.png"));

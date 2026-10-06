@@ -10,13 +10,13 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.common.types.LoadoutPool;
 import com.flansmodultimate.common.types.RewardBox;
 import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -32,20 +32,18 @@ public final class PacketLoadoutState implements IClientPacket
 {
     public enum OpenScreen
     {
-        NONE,
-        HUB,
-        CHOOSE,
-        EDIT,
-        REWARD_BOX,
-        MISSION_RESULTS,
-        CLOSE
+        NONE, HUB, CHOOSE, EDIT, REWARD_BOX, MISSION_RESULTS, CLOSE
     }
 
-    public record Entry(LoadoutSlot slot, String typeId, String name, int unlockRank, ItemStack preview) {}
-    public record BoxView(UUID id, String boxId, String name, boolean opened, String rewardKey, ItemStack preview) {}
+    public record Entry(LoadoutSlot slot, String typeId, String name, int unlockRank, ItemStack preview)
+    {}
+    public record BoxView(UUID id, String boxId, String name, boolean opened, String rewardKey, ItemStack preview)
+    {}
     /** One kind of reward box the pool offers, listed even when the player holds none of it. */
-    public record BoxTypeView(String boxId, String name, ItemStack preview, int unopened) {}
-    public record RewardView(String key, String typeId, String name, int rarity) {}
+    public record BoxTypeView(String boxId, String name, ItemStack preview, int unopened)
+    {}
+    public record RewardView(String key, String typeId, String name, int rarity)
+    {}
 
     private OpenScreen openScreen = OpenScreen.NONE;
     private String motd = "";
@@ -72,7 +70,8 @@ public final class PacketLoadoutState implements IClientPacket
         packet.revealedReward = revealedReward == null ? "" : revealedReward;
         packet.motd = manager.getMotd();
         LoadoutPool pool = manager.getCurrentLoadoutPool().orElse(null);
-        if (pool == null) return packet;
+        if (pool == null)
+            return packet;
         PlayerStats stats = manager.getStats(player);
         packet.poolId = pool.getShortName();
         packet.poolName = pool.getName();
@@ -89,12 +88,12 @@ public final class PacketLoadoutState implements IClientPacket
             {
                 InfoType type = InfoType.getInfoType(entry.typeId(), pool.getContentPack());
                 if (type != null)
-                    entries.add(new Entry(slot, type.getOriginalShortName(), type.getName(), entry.unlockRank(),
-                        ModUtils.getItemStack(type).orElse(ItemStack.EMPTY)));
+                    entries.add(new Entry(slot, type.getOriginalShortName(), type.getName(), entry.unlockRank(), ModUtils.getItemStack(type).orElse(ItemStack.EMPTY)));
             }
         packet.entries = List.copyOf(entries);
 
-        packet.boxes = stats.getRewardBoxes().stream().map(instance -> {
+        packet.boxes = stats.getRewardBoxes().stream().map(instance ->
+        {
             RewardBox box = RewardBox.get(instance.boxId());
             return new BoxView(instance.id(), instance.boxId(), box == null ? instance.boxId() : box.getName(), instance.isOpened(), instance.rewardKey(),
                 box == null ? ItemStack.EMPTY : ModUtils.getItemStack(box).orElse(ItemStack.EMPTY));
@@ -106,17 +105,15 @@ public final class PacketLoadoutState implements IClientPacket
         for (RewardBoxInstance instance : stats.getRewardBoxes())
             if (!instance.isOpened() && !boxTypeIds.contains(instance.boxId()))
                 boxTypeIds.add(instance.boxId());
-        packet.boxTypes = boxTypeIds.stream().map(boxId -> {
+        packet.boxTypes = boxTypeIds.stream().map(boxId ->
+        {
             RewardBox box = RewardBox.get(boxId);
-            long unopened = stats.getRewardBoxes().stream()
-                .filter(instance -> !instance.isOpened() && boxId.equals(instance.boxId())).count();
-            return new BoxTypeView(boxId, box == null ? boxId : box.getName(),
-                box == null ? ItemStack.EMPTY : ModUtils.getItemStack(box).orElse(ItemStack.EMPTY), (int)unopened);
+            long unopened = stats.getRewardBoxes().stream().filter(instance -> !instance.isOpened() && boxId.equals(instance.boxId())).count();
+            return new BoxTypeView(boxId, box == null ? boxId : box.getName(), box == null ? ItemStack.EMPTY : ModUtils.getItemStack(box).orElse(ItemStack.EMPTY), (int) unopened);
         }).toList();
 
         packet.rewards = stats.getRewardBoxes().stream().filter(RewardBoxInstance::isOpened).map(instance -> RewardBox.findReward(instance.rewardKey()))
-            .filter(java.util.Objects::nonNull).distinct().map(reward ->
-                new RewardView(reward.key(), reward.typeId(), reward.paintName(), reward.rarity().ordinal())).toList();
+            .filter(java.util.Objects::nonNull).distinct().map(reward -> new RewardView(reward.key(), reward.typeId(), reward.paintName(), reward.rarity().ordinal())).toList();
         return packet;
     }
 
@@ -125,33 +122,53 @@ public final class PacketLoadoutState implements IClientPacket
     {
         data.writeByte(openScreen.ordinal());
         data.writeUtf(motd, 256);
-        data.writeUtf(poolId); data.writeUtf(poolName);
-        data.writeVarInt(rank); data.writeVarInt(experience); data.writeVarInt(experienceForNextRank);
-        data.writeVarInt(selectedLoadout); data.writeVarInt(editLoadout); data.writeUtf(revealedReward);
+        data.writeUtf(poolId);
+        data.writeUtf(poolName);
+        data.writeVarInt(rank);
+        data.writeVarInt(experience);
+        data.writeVarInt(experienceForNextRank);
+        data.writeVarInt(selectedLoadout);
+        data.writeVarInt(editLoadout);
+        data.writeUtf(revealedReward);
         data.writeVarInt(loadouts.size());
-        for (PlayerLoadout loadout : loadouts) loadout.write(data);
+        for (PlayerLoadout loadout : loadouts)
+            loadout.write(data);
         data.writeVarInt(loadoutUnlockRanks.size());
-        for (int unlockRank : loadoutUnlockRanks) data.writeVarInt(unlockRank);
+        for (int unlockRank : loadoutUnlockRanks)
+            data.writeVarInt(unlockRank);
         data.writeVarInt(entries.size());
         for (Entry entry : entries)
         {
-            data.writeByte(entry.slot().ordinal()); data.writeUtf(entry.typeId()); data.writeUtf(entry.name());
-            data.writeVarInt(entry.unlockRank()); PacketIO.writeItem(data, entry.preview());
+            data.writeByte(entry.slot().ordinal());
+            data.writeUtf(entry.typeId());
+            data.writeUtf(entry.name());
+            data.writeVarInt(entry.unlockRank());
+            PacketIO.writeItem(data, entry.preview());
         }
         data.writeVarInt(boxes.size());
         for (BoxView box : boxes)
         {
-            data.writeUUID(box.id()); data.writeUtf(box.boxId()); data.writeUtf(box.name()); data.writeBoolean(box.opened());
-            data.writeUtf(box.rewardKey()); PacketIO.writeItem(data, box.preview());
+            data.writeUUID(box.id());
+            data.writeUtf(box.boxId());
+            data.writeUtf(box.name());
+            data.writeBoolean(box.opened());
+            data.writeUtf(box.rewardKey());
+            PacketIO.writeItem(data, box.preview());
         }
         data.writeVarInt(boxTypes.size());
         for (BoxTypeView box : boxTypes)
         {
-            data.writeUtf(box.boxId()); data.writeUtf(box.name());
-            PacketIO.writeItem(data, box.preview()); data.writeVarInt(box.unopened());
+            data.writeUtf(box.boxId());
+            data.writeUtf(box.name());
+            PacketIO.writeItem(data, box.preview());
+            data.writeVarInt(box.unopened());
         }
-        data.writeCollection(rewards, (buf, reward) -> {
-            buf.writeUtf(reward.key()); buf.writeUtf(reward.typeId()); buf.writeUtf(reward.name()); buf.writeVarInt(reward.rarity());
+        data.writeCollection(rewards, (buf, reward) ->
+        {
+            buf.writeUtf(reward.key());
+            buf.writeUtf(reward.typeId());
+            buf.writeUtf(reward.name());
+            buf.writeVarInt(reward.rarity());
         });
     }
 
@@ -161,22 +178,29 @@ public final class PacketLoadoutState implements IClientPacket
         int screen = data.readUnsignedByte();
         openScreen = screen < OpenScreen.values().length ? OpenScreen.values()[screen] : OpenScreen.NONE;
         motd = data.readUtf(256);
-        poolId = data.readUtf(); poolName = data.readUtf();
-        rank = data.readVarInt(); experience = data.readVarInt(); experienceForNextRank = data.readVarInt();
-        selectedLoadout = data.readVarInt(); editLoadout = data.readVarInt(); revealedReward = data.readUtf();
+        poolId = data.readUtf();
+        poolName = data.readUtf();
+        rank = data.readVarInt();
+        experience = data.readVarInt();
+        experienceForNextRank = data.readVarInt();
+        selectedLoadout = data.readVarInt();
+        editLoadout = data.readVarInt();
+        revealedReward = data.readUtf();
         int loadoutCount = data.readVarInt();
         loadouts = new ArrayList<>(loadoutCount);
-        for (int i = 0; i < loadoutCount; i++) loadouts.add(PlayerLoadout.read(data));
+        for (int i = 0; i < loadoutCount; i++)
+            loadouts.add(PlayerLoadout.read(data));
         int unlockCount = data.readVarInt();
         loadoutUnlockRanks = new ArrayList<>(unlockCount);
-        for (int i = 0; i < unlockCount; i++) loadoutUnlockRanks.add(data.readVarInt());
+        for (int i = 0; i < unlockCount; i++)
+            loadoutUnlockRanks.add(data.readVarInt());
         int entryCount = data.readVarInt();
         entries = new ArrayList<>(entryCount);
         for (int i = 0; i < entryCount; i++)
         {
             int slot = data.readUnsignedByte();
-            entries.add(new Entry(LoadoutSlot.values()[Math.min(slot, LoadoutSlot.values().length - 1)],
-                data.readUtf(), data.readUtf(), data.readVarInt(), PacketIO.readItem(data)));
+            entries
+                .add(new Entry(LoadoutSlot.values()[Math.min(slot, LoadoutSlot.values().length - 1)], data.readUtf(), data.readUtf(), data.readVarInt(), PacketIO.readItem(data)));
         }
         int boxCount = data.readVarInt();
         boxes = new ArrayList<>(boxCount);

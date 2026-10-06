@@ -42,4 +42,3 @@ public interface IPaintableItem<T extends InfoType> extends IFlanItem<T>
         return stack;
     }
 }
-

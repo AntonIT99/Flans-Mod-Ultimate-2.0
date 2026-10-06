@@ -10,7 +10,8 @@ public final class FluidPlatform
 {
     public static final int BUCKET_VOLUME = net.minecraftforge.fluids.FluidType.BUCKET_VOLUME;
 
-    private FluidPlatform() {}
+    private FluidPlatform()
+    {}
 
     /** A copy of the fluid stack, including its data, with a different amount. */
     public static FluidStack copyWithAmount(FluidStack stack, int amount)

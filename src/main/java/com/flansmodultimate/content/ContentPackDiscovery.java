@@ -16,29 +16,27 @@ import java.util.stream.Stream;
 /** One deterministic selection of standalone packs for both type loading and resource discovery. */
 final class ContentPackDiscovery
 {
-    private ContentPackDiscovery() {}
+    private ContentPackDiscovery()
+    {}
 
     static Map<String, Path> select(Path root, Set<Path> excluded) throws IOException
     {
         Map<String, Path> selected = new LinkedHashMap<>();
         try (Stream<Path> files = Files.list(root))
         {
-            for (Path path : files.filter(file -> !excluded.contains(file.toAbsolutePath().normalize()))
-                .filter(file -> priority(file) < 3)
-                .sorted(Comparator.comparingInt(ContentPackDiscovery::priority)
-                    .thenComparing(file -> file.getFileName().toString(), String.CASE_INSENSITIVE_ORDER)
-                    .thenComparing(file -> file.getFileName().toString())).toList())
+            for (Path path : files.filter(file -> !excluded.contains(file.toAbsolutePath().normalize())).filter(file -> priority(file) < 3)
+                .sorted(Comparator.comparingInt(ContentPackDiscovery::priority).thenComparing(file -> file.getFileName().toString(), String.CASE_INSENSITIVE_ORDER)
+                    .thenComparing(file -> file.getFileName().toString()))
+                .toList())
             {
-                String basename = Files.isDirectory(path) ? path.getFileName().toString()
-                    : FilenameUtils.getBaseName(path.getFileName().toString());
+                String basename = Files.isDirectory(path) ? path.getFileName().toString() : FilenameUtils.getBaseName(path.getFileName().toString());
                 Path previous = selected.putIfAbsent(basename.toLowerCase(Locale.ROOT), path);
                 if (previous != null)
                     FlansLog.log.warn("Ignoring duplicate content pack '{}'; selected '{}' (directory, then ZIP, then JAR).", path.getFileName(), previous.getFileName());
             }
         }
         Map<String, Path> byFilename = new LinkedHashMap<>();
-        selected.values().stream().sorted(Comparator.comparing(path -> path.getFileName().toString()))
-            .forEach(path -> byFilename.put(path.getFileName().toString(), path));
+        selected.values().stream().sorted(Comparator.comparing(path -> path.getFileName().toString())).forEach(path -> byFilename.put(path.getFileName().toString(), path));
         return byFilename;
     }
 

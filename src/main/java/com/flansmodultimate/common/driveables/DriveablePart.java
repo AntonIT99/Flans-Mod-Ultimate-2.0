@@ -13,7 +13,8 @@ public final class DriveablePart
     private static final int DEFAULT_FIRE_TICKS = 20;
 
     private final EnumDriveablePart type;
-    @Nullable private CollisionBox box;
+    @Nullable
+    private CollisionBox box;
     private float maxHealth;
     private float health;
     private int fireTime;

@@ -20,7 +20,8 @@ public final class TeamsChooseLoadoutScreen extends Screen
         super(Component.literal("Choose Loadout"));
     }
 
-    @Override protected void init()
+    @Override
+    protected void init()
     {
         PacketLoadoutState state = LoadoutClientState.get();
         if (state == null)
@@ -34,10 +35,12 @@ public final class TeamsChooseLoadoutScreen extends Screen
             button.active = i >= state.getLoadoutUnlockRanks().size() || state.getRank() >= state.getLoadoutUnlockRanks().get(i);
             addRenderableWidget(button);
         }
-        addRenderableWidget(Button.builder(Component.literal("Change Team"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.play()))
-            .bounds(width / 2 - 45, top + 140, 90, 20).build());
+        addRenderableWidget(
+            Button.builder(Component.literal("Change Team"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.play())).bounds(width / 2 - 45, top + 140, 90, 20).build());
     }
-    @Override public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+
+    @Override
+    public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
         ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
         PacketLoadoutState state = LoadoutClientState.get();
@@ -60,6 +63,7 @@ public final class TeamsChooseLoadoutScreen extends Screen
         }
         super.render(graphics, mouseX, mouseY, partialTick);
     }
+
     @Override
     public boolean isPauseScreen()
     {

@@ -8,7 +8,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 /** Version boundary for looking up mob effects by their legacy numeric potion IDs. */
 public final class EffectPlatform
 {
-    private EffectPlatform() {}
+    private EffectPlatform()
+    {}
 
     /** An effect instance for the legacy 1-based potion ID, or null if no effect has that ID. */
     @Nullable

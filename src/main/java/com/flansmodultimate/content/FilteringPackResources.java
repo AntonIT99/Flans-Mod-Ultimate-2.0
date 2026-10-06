@@ -36,16 +36,14 @@ public final class FilteringPackResources implements PackResources
             return false;
 
         return location.getNamespace().equals(FlansMod.FLANSMOD_ID)
-            && (location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES_ARMOR + "/")
-            || location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES_GUI + "/")
-            || location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES_SKINS + "/")
-            || location.getPath().startsWith(ContentPackPaths.FOLDER_SOUND + "/")
-            || location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES + "/" + ContentPackPaths.FOLDER_TEXTURES_ITEMS + "/")
-            || location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES + "/" + ContentPackPaths.FOLDER_TEXTURES_BLOCKS + "/"));
+            && (location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES_ARMOR + "/") || location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES_GUI + "/")
+                || location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES_SKINS + "/") || location.getPath().startsWith(ContentPackPaths.FOLDER_SOUND + "/")
+                || location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES + "/" + ContentPackPaths.FOLDER_TEXTURES_ITEMS + "/")
+                || location.getPath().startsWith(ContentPackPaths.FOLDER_TEXTURES + "/" + ContentPackPaths.FOLDER_TEXTURES_BLOCKS + "/"));
     }
 
     @Override
-    public IoSupplier<InputStream> getRootResource(String @NotNull ... path)
+    public IoSupplier<InputStream> getRootResource(String @NotNull... path)
     {
         return delegate.getRootResource(path);
     }
@@ -75,7 +73,8 @@ public final class FilteringPackResources implements PackResources
     @Override
     public void listResources(@NotNull PackType type, @NotNull String namespace, @NotNull String path, @NotNull ResourceOutput output)
     {
-        delegate.listResources(type, namespace, path, (location, supplier) -> {
+        delegate.listResources(type, namespace, path, (location, supplier) ->
+        {
             IoSupplier<InputStream> resource = getResource(type, location);
             if (resource != null)
                 output.accept(location, resource);

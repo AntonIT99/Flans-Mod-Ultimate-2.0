@@ -30,8 +30,7 @@ public class ApocalypseWorldChoiceScreen extends Screen
     private final Runnable onCancel;
     private MultiLineLabel messageLines = MultiLineLabel.EMPTY;
 
-    private ApocalypseWorldChoiceScreen(Component message, Component withLabel, Component withoutLabel,
-                                        Consumer<Boolean> onChoice, Runnable onCancel)
+    private ApocalypseWorldChoiceScreen(Component message, Component withLabel, Component withoutLabel, Consumer<Boolean> onChoice, Runnable onCancel)
     {
         super(Component.translatable("gui.flansmodultimate.apocalypse_choice.title"));
         this.message = message;
@@ -44,21 +43,17 @@ public class ApocalypseWorldChoiceScreen extends Screen
     /** Asked when a new world is about to be created. */
     public static ApocalypseWorldChoiceScreen forNewWorld(Consumer<Boolean> onChoice, Runnable onCancel)
     {
-        return new ApocalypseWorldChoiceScreen(
-            Component.translatable("gui.flansmodultimate.apocalypse_choice.new_world"),
-            Component.translatable("gui.flansmodultimate.apocalypse_choice.create_with"),
-            Component.translatable("gui.flansmodultimate.apocalypse_choice.create_without"),
-            onChoice, onCancel);
+        return new ApocalypseWorldChoiceScreen(Component.translatable("gui.flansmodultimate.apocalypse_choice.new_world"),
+            Component.translatable("gui.flansmodultimate.apocalypse_choice.create_with"), Component.translatable("gui.flansmodultimate.apocalypse_choice.create_without"), onChoice,
+            onCancel);
     }
 
     /** Asked once when a saved world without the Apocalypse is opened. */
     public static ApocalypseWorldChoiceScreen forExistingWorld(Consumer<Boolean> onChoice, Runnable onCancel)
     {
-        return new ApocalypseWorldChoiceScreen(
-            Component.translatable("gui.flansmodultimate.apocalypse_choice.existing_world"),
-            Component.translatable("gui.flansmodultimate.apocalypse_choice.add"),
-            Component.translatable("gui.flansmodultimate.apocalypse_choice.keep_without"),
-            onChoice, onCancel);
+        return new ApocalypseWorldChoiceScreen(Component.translatable("gui.flansmodultimate.apocalypse_choice.existing_world"),
+            Component.translatable("gui.flansmodultimate.apocalypse_choice.add"), Component.translatable("gui.flansmodultimate.apocalypse_choice.keep_without"), onChoice,
+            onCancel);
     }
 
     @Override
@@ -67,12 +62,9 @@ public class ApocalypseWorldChoiceScreen extends Screen
         messageLines = MultiLineLabel.create(font, message, width - 50);
         int buttonY = contentTop() + messageLines.getLineCount() * font.lineHeight + 20;
         int x = (width - BUTTON_WIDTH) / 2;
-        addRenderableWidget(Button.builder(withLabel, button -> onChoice.accept(true))
-            .bounds(x, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build());
-        addRenderableWidget(Button.builder(withoutLabel, button -> onChoice.accept(false))
-            .bounds(x, buttonY + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build());
-        addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> onCancel.run())
-            .bounds(x, buttonY + 2 * BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build());
+        addRenderableWidget(Button.builder(withLabel, button -> onChoice.accept(true)).bounds(x, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT).build());
+        addRenderableWidget(Button.builder(withoutLabel, button -> onChoice.accept(false)).bounds(x, buttonY + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build());
+        addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, button -> onCancel.run()).bounds(x, buttonY + 2 * BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build());
     }
 
     @Override

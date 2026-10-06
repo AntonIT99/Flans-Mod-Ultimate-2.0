@@ -38,25 +38,23 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
 
         // Arrow buttons
         // back button: x+77..87, y+87..97
-        // forward:     x+89..99, y+87..97
+        // forward: x+89..99, y+87..97
         int x0 = leftPos;
         int y0 = topPos;
         ResourceLocation guiTexture = menu.getBlock().getConfigType().getGuiTexture();
 
-        addRenderableWidget(new TextureRegionButton(x0 + 77, y0 + 87, 176, guiTexture,
-            btn -> {
-                if (page > 0)
-                    page--;
-            }
-        ));
+        addRenderableWidget(new TextureRegionButton(x0 + 77, y0 + 87, 176, guiTexture, btn ->
+        {
+            if (page > 0)
+                page--;
+        }));
 
-        addRenderableWidget(new TextureRegionButton(x0 + 89, y0 + 87, 186, guiTexture,
-            btn -> {
-                int max = menu.getBlock().getConfigType().getPages().size() - 1;
-                if (page < max)
-                    page++;
-            }
-        ));
+        addRenderableWidget(new TextureRegionButton(x0 + 89, y0 + 87, 186, guiTexture, btn ->
+        {
+            int max = menu.getBlock().getConfigType().getPages().size() - 1;
+            if (page < max)
+                page++;
+        }));
     }
 
     @Override
@@ -147,7 +145,8 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                 int ax = leftPos + 9 + 83 * i;
                 int ay = topPos + 44 + 22 * j;
 
-                ModUtils.getItemStack(armorType).ifPresent(armorStack -> {
+                ModUtils.getItemStack(armorType).ifPresent(armorStack ->
+                {
                     gg.renderItem(armorStack, ax, ay);
                     gg.renderItemDecorations(font, armorStack, ax, ay);
                 });
@@ -179,8 +178,8 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
     {
         if (button == 0 || button == 1)
         {
-            int m = (int)mouseX - leftPos;
-            int n = (int)mouseY - topPos;
+            int m = (int) mouseX - leftPos;
+            int n = (int) mouseY - topPos;
 
             ArmorBoxType type = menu.getBlock().getConfigType();
             if (!type.getPages().isEmpty())
@@ -190,9 +189,7 @@ public class ArmorBoxScreen extends AbstractContainerScreen<ArmorBoxMenu>
                     for (int y = 0; y < 2; y++)
                     {
                         int idx = x * 2 + y;
-                        if (type.getPages().get(page).getArmorType(idx) != null
-                            && m > 7 + 83 * x && m < 27 + 83 * x
-                            && n > 42 + 22 * y && n < 62 + 22 * y)
+                        if (type.getPages().get(page).getArmorType(idx) != null && m > 7 + 83 * x && m < 27 + 83 * x && n > 42 + 22 * y && n < 62 + 22 * y)
                         {
 
                             PacketHandler.sendToServer(new ArmorBoxBuyPacket(menu.getPos(), page, idx));
