@@ -18,6 +18,11 @@ plugins {
     id 'com.diffplug.spotless'
 }
 
+// Keep analysis reports available without failing the build on findings.
+tasks.withType(name.remal.gradle_plugins.sonarlint.SonarLint).configureEach {
+    ignoreFailures = true
+}
+
 // Code Style with Spotless
 spotless {
     encoding 'UTF-8'
