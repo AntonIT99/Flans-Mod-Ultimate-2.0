@@ -21,6 +21,7 @@ plugins {
 // Code Style with Spotless
 spotless {
     encoding 'UTF-8'
+    lineEndings 'UNIX'
     ratchetFrom 'origin/master'
 
     java {
