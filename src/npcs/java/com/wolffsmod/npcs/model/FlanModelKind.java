@@ -3,9 +3,9 @@ package com.wolffsmod.npcs.model;
 import com.flansmodultimate.api.IAAGunType;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.api.IDriveableType;
-import org.jetbrains.annotations.Nullable;
-
+import lombok.Getter;
 import net.minecraft.world.entity.EntityDimensions;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The content-pack definitions a Custom NPC can take the shape of.
@@ -14,6 +14,7 @@ import net.minecraft.world.entity.EntityDimensions;
  * previous NPC Vehicles mod, only apply where {@link FlanModelShape} finds nothing in the
  * definition to measure.</p>
  */
+@Getter
 public enum FlanModelKind
 {
     AA_GUN(EntityDimensions.scalable(2F, 2F), 0F),
@@ -22,6 +23,10 @@ public enum FlanModelKind
     MECHA(EntityDimensions.scalable(2F, 4F), 0F);
 
     private final EntityDimensions dimensions;
+    /**
+     * -- GETTER --
+     * Blocks between the NPC's feet and the model origin.
+     */
     private final float modelHeight;
 
     FlanModelKind(EntityDimensions dimensions, float modelHeight)
@@ -47,14 +52,4 @@ public enum FlanModelKind
         return null;
     }
 
-    public EntityDimensions getDimensions()
-    {
-        return dimensions;
-    }
-
-    /** Blocks between the NPC's feet and the model origin. */
-    public float getModelHeight()
-    {
-        return modelHeight;
-    }
 }

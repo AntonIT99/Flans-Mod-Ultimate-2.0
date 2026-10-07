@@ -4,27 +4,21 @@ import com.flansmodultimate.api.EquippedWeaponProperties;
 import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.api.FlansProjectiles;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import net.minecraftforge.common.ToolActions;
-import noppes.npcs.entity.EntityNPCInterface;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ThrowablePotionItem;
-import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraftforge.common.ToolActions;
+import noppes.npcs.entity.EntityNPCInterface;
 
 import java.util.Optional;
 
 /** Item classification and combat defaults. Readouts use the same inspector as runtime actions. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcEquipment
 {
-    private NpcEquipment()
-    {}
-
     public static boolean enabled(EntityNPCInterface npc, Feature feature)
     {
         return ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().enabled(feature);

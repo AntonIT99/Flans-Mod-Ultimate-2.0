@@ -5,9 +5,6 @@ import com.wolffsmod.npcs.combat.EquipmentAttributes;
 import com.wolffsmod.npcs.combat.NpcArmorPreview;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import noppes.npcs.entity.EntityNPCInterface;
-import noppes.npcs.shared.client.gui.components.GuiBasic;
-
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -19,6 +16,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.shared.client.gui.components.GuiBasic;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -48,7 +47,7 @@ public final class NpcArmorControls
             var properties = FlansEquipment.getArmorProperties(stack);
             if (properties.isPresent())
             {
-                normal += properties.get().defense();
+                normal = (float) (normal + properties.get().defense());
             }
         }
         return normal;

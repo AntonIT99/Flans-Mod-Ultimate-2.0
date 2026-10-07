@@ -1,5 +1,7 @@
 package com.wolffsmod.npcs.combat;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -7,10 +9,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
 /** Resolves the item's attribute operations against vanilla combat bases, never against NPC editor damage. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EquipmentAttributes
 {
-    private EquipmentAttributes()
-    {}
 
     public static double value(ItemStack stack, EquipmentSlot slot, Attribute attribute, double base)
     {

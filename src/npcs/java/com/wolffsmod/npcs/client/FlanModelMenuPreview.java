@@ -4,13 +4,12 @@ import com.flansmodultimate.api.client.FlansModelPreviews;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.math.Axis;
 import com.wolffsmod.npcs.model.FlanModelEntity;
-import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
-import org.joml.Quaternionf;
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
+import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
+import org.joml.Quaternionf;
 
 /** Static model-menu preview; its framing never changes the NPC's saved size or world hitbox. */
 public final class FlanModelMenuPreview
@@ -31,10 +30,12 @@ public final class FlanModelMenuPreview
             texture = model.getModelTexture();
         if (texture == null)
             return;
-        int left = screen.guiLeft + 128, right = screen.guiLeft + screen.imageWidth - 12;
-        int top = screen.guiTop + 32, bottom = screen.guiTop + 194;
+        int left = screen.guiLeft + 128;
+        int right = screen.guiLeft + screen.imageWidth - 12;
+        int top = screen.guiTop + 32;
+        int bottom = screen.guiTop + 194;
         Quaternionf orientation = Axis.XP.rotationDegrees(20).mul(Axis.YP.rotationDegrees(rotation));
-        float scale = FlanPreviewFraming.pixelsPerBlock(bounds, orientation, right - left, bottom - top);
+        float scale = FlanPreviewFraming.pixelsPerBlock(bounds, orientation, (right - left), (bottom - top));
         var center = bounds.getCenter();
         graphics.flush();
         graphics.enableScissor(left, top, right, bottom);

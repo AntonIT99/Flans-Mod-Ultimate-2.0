@@ -39,7 +39,7 @@ public final class NpcTypeReadouts
 
     private static void numbers(Map<NpcTypeProperty, String> values, EntityTypeProperties type, NpcTypeProperty property, ToDoubleFunction<Weapon> setting)
     {
-        String readout = type.weapons().stream().mapToDouble(setting).filter(Double::isFinite).mapToLong(value -> (long) value).distinct().mapToObj(Long::toString)
+        String readout = type.weapons().stream().mapToDouble(setting).filter(Double::isFinite).mapToLong(long.class::cast).distinct().mapToObj(Long::toString)
             .collect(Collectors.joining(" / "));
         if (!readout.isEmpty())
             values.put(property, readout);

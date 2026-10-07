@@ -6,28 +6,27 @@ import com.flansmodultimate.api.ProjectileParameters;
 import com.flansmodultimate.api.WeaponMuzzle;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.event.NpcEvent;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
-
 import java.util.List;
 import java.util.Optional;
 
 /** Bridges an NPC trigger to Flan's reusable projectile API. Custom NPCs retains timing and targeting. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcRangedAttack
 {
     private static final WeaponMuzzle EYE_MUZZLE = new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of());
-
-    private NpcRangedAttack()
-    {}
 
     public static boolean fire(EntityNPCInterface npc, LivingEntity target, boolean highArc, int sequence)
     {

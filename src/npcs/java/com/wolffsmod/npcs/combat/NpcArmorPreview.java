@@ -1,13 +1,13 @@
 package com.wolffsmod.npcs.combat;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.world.damagesource.CombatRules;
 
 /** Display-only projection of the damage pipeline: Flan ratio, native armor, then enchantment protection. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcArmorPreview
 {
-    private NpcArmorPreview()
-    {}
-
     public static float protection(float incoming, float defense, float armor, float toughness, int enchantments)
     {
         if (incoming <= 0F)

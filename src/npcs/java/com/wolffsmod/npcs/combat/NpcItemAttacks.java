@@ -4,11 +4,8 @@ import com.flansmodultimate.api.FlansEquipment;
 import com.flansmodultimate.api.FlansProjectiles;
 import com.flansmodultimate.api.ProjectileParameters;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import noppes.npcs.EventHooks;
-import noppes.npcs.api.event.NpcEvent;
-import noppes.npcs.api.wrapper.ItemStackWrapper;
-import noppes.npcs.entity.EntityNPCInterface;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.sounds.SoundEvents;
@@ -16,33 +13,23 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.Snowball;
-import net.minecraft.world.entity.projectile.ThrownEgg;
-import net.minecraft.world.entity.projectile.ThrownEnderpearl;
-import net.minecraft.world.entity.projectile.ThrownPotion;
-import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.item.ArrowItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ThrowablePotionItem;
-import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.entity.projectile.*;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.Vec3;
+import noppes.npcs.EventHooks;
+import noppes.npcs.api.event.NpcEvent;
+import noppes.npcs.api.wrapper.ItemStackWrapper;
+import noppes.npcs.entity.EntityNPCInterface;
 
 /** Executes equipped items rather than copying NPC projectile/effect settings into synthetic projectiles. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NpcItemAttacks
 {
     // Vanilla's crossbow launch velocity, independent of pi.
     @SuppressWarnings("java:S9133")
     private static final float CROSSBOW_VELOCITY = 3.15F;
-
-    private NpcItemAttacks()
-    {}
 
     public static boolean melee(EntityNPCInterface npc, Entity target)
     {

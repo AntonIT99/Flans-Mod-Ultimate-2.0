@@ -1,14 +1,14 @@
 package com.wolffsmod.npcs.combat;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.minecraft.world.phys.Vec3;
 
 /** Intercepts using Flan's discrete move-then-drag-and-gravity physics, without world access. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProjectileAim
 {
     private static final double MAX_FLIGHT_TICKS = 200D;
-
-    private ProjectileAim()
-    {}
 
     public static Vec3 direction(Vec3 displacement, Vec3 targetVelocity, double speed, double gravity, double drag, boolean highArc)
     {

@@ -9,15 +9,15 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
-import noppes.npcs.api.wrapper.ItemStackWrapper;
-import noppes.npcs.entity.EntityCustomNpc;
-import noppes.npcs.entity.EntityNPCInterface;
-import noppes.npcs.entity.data.DataAI;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+import noppes.npcs.api.wrapper.ItemStackWrapper;
+import noppes.npcs.entity.EntityCustomNpc;
+import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.entity.data.DataAI;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +30,8 @@ public final class NpcTypeProperties
     private int lastFlags = -1;
     private boolean lastNative;
     private int nextInspection;
-    private Optional<EntityTypeProperties> type = Optional.empty();
+    @Nullable
+    private EntityTypeProperties type;
     private Map<NpcTypeProperty, Tag> mapped = Map.of();
     private float loadingHealthFraction = -1F;
 
@@ -47,9 +48,11 @@ public final class NpcTypeProperties
             lastFlags = flags;
             lastNative = nativeAttack;
             nextInspection = npc.tickCount + 20;
-            type = selected == null ? Optional.empty() : FlansEntityTypes.getProperties(selected, options.enabled(Feature.SECONDARY_BANK), options.enabled(Feature.MODEL_MUZZLES));
+            type = Optional.ofNullable(selected)
+                    .flatMap(value -> FlansEntityTypes.getProperties(value, options.enabled(Feature.SECONDARY_BANK), options.enabled(Feature.MODEL_MUZZLES)))
+                    .orElse(null);
             double maxHealth = Attributes.MAX_HEALTH instanceof RangedAttribute attribute ? attribute.getMaxValue() : Integer.MAX_VALUE;
-            mapped = type.map(properties -> NpcTypeMapping.create(properties, options, nativeAttack, maxHealth)).orElse(Map.of());
+            mapped = Optional.ofNullable(type).map(properties -> NpcTypeMapping.create(properties, options, nativeAttack, maxHealth)).orElse(Map.of());
         }
         if (overrides.refresh(mapped, property -> NpcTypePropertyAccess.read(npc, property), (property, value) -> NpcTypePropertyAccess.write(npc, property, value))
             && !npc.level().isClientSide)
@@ -66,22 +69,22 @@ public final class NpcTypeProperties
 
     public Optional<EntityTypeProperties> type()
     {
-        return type;
+        return Optional.ofNullable(type);
     }
 
     public boolean nativeTiming()
     {
-        return lastNative && type.isPresent() && type.get().shootDelay().isPresent();
+        return lastNative && type != null && type.shootDelay().isPresent();
     }
 
     public boolean usesNativeProjectile()
     {
-        return lastNative && type.isPresent();
+        return lastNative && type != null;
     }
 
     public double shotDelay()
     {
-        return type.map(properties -> properties.shootDelay().orElse(1D)).orElse(1D);
+        return Optional.ofNullable(type).map(properties -> properties.shootDelay().orElse(1D)).orElse(1D);
     }
 
     public void loaded(Component component)
