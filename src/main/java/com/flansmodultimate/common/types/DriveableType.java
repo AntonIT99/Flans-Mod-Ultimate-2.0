@@ -3,35 +3,9 @@ package com.flansmodultimate.common.types;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.api.DriveableKind;
 import com.flansmodultimate.api.IDriveableType;
-import com.flansmodultimate.common.driveables.CollisionBox;
-import com.flansmodultimate.common.driveables.CollisionMesh;
-import com.flansmodultimate.common.driveables.DriveableCollisionProfile;
-import com.flansmodultimate.common.driveables.DriveableExplosion;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.DriveablePosition;
-import com.flansmodultimate.common.driveables.EngineSoundPitch;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.driveables.ParticleEmitter;
-import com.flansmodultimate.common.driveables.PilotGun;
-import com.flansmodultimate.common.driveables.SeatInfo;
-import com.flansmodultimate.common.driveables.ShootPoint;
-import com.flansmodultimate.common.driveables.VehicleOptics;
-import com.flansmodultimate.common.driveables.VehicleOpticsReader;
-import com.flansmodultimate.common.driveables.armor.ResolvedVehicleArmor;
-import com.flansmodultimate.common.driveables.armor.VehicleArmorResolver;
-import com.flansmodultimate.common.driveables.armor.VehicleArmorSpec;
-import com.flansmodultimate.common.driveables.armor.VehicleArmorSpecReader;
-import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
-import com.flansmodultimate.common.driveables.physics.EnumDriveType;
-import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
-import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
-import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
-import com.flansmodultimate.common.driveables.physics.RealWorldVehicleSpec;
-import com.flansmodultimate.common.driveables.physics.ResolvedVehiclePhysics;
-import com.flansmodultimate.common.driveables.physics.VehicleGeometry;
-import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
-import com.flansmodultimate.common.driveables.physics.VehiclePhysicsResolver;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.armor.*;
+import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.guns.AmmoOverrides;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.RemovedAmmo;
@@ -43,26 +17,14 @@ import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.phys.AABB;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -81,7 +43,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected final Map<EnumDriveablePart, CollisionBox> health = new EnumMap<>(EnumDriveablePart.class);
     /** Runtime baseline kept separately from authored HP weights and shoot-point overrides. */
     private Map<EnumDriveablePart, CollisionBox> debugHitboxBaseline;
-    @Getter private long debugHitboxRevision;
+    @Getter
+    private long debugHitboxRevision;
 
     public void setDebugHitboxes(Map<EnumDriveablePart, CollisionBox> boxes)
     {
@@ -106,14 +69,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     public float[] debugHitboxPixels(CollisionBox runtime)
     {
         CollisionBox box = this instanceof PlaneType ? applyPlaneModelFacing(runtime) : runtime;
-        return new float[] {-(box.getZ() + box.getDepth()) * 16F, box.getY() * 16F,
-            box.getX() * 16F, box.getDepth() * 16F, box.getHeight() * 16F, box.getWidth() * 16F};
+        return new float[]{-(box.getZ() + box.getDepth()) * 16F, box.getY() * 16F, box.getX() * 16F, box.getDepth() * 16F, box.getHeight() * 16F, box.getWidth() * 16F};
     }
 
     public CollisionBox debugHitboxFromPixels(float hp, float[] geometry, float resistance, float crew)
     {
-        CollisionBox box = new CollisionBox(hp, geometry[0], geometry[1], geometry[2], geometry[3],
-            geometry[4], geometry[5], resistance, crew);
+        CollisionBox box = new CollisionBox(hp, geometry[0], geometry[1], geometry[2], geometry[3], geometry[4], geometry[5], resistance, crew);
         return this instanceof PlaneType ? applyPlaneModelFacing(box) : box;
     }
 
@@ -138,7 +99,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected RemovedAmmo removedAmmo = RemovedAmmo.EMPTY;
     private final AtomicReference<ResolvedAmmoCache> resolvedAmmoCache = new AtomicReference<>();
 
-    private record ResolvedAmmoCache(int groupRevision, List<BulletType> types) {}
+    private record ResolvedAmmoCache(int groupRevision, List<BulletType> types)
+    {}
 
     protected boolean harvestBlocks;
     protected final Set<String> materialsHarvested = new LinkedHashSet<>();
@@ -229,7 +191,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean filterAmmunition;
     protected boolean worksUnderWater;
 
-    public record ShootParticle(String name, float x, float y, float z) {}
+    public record ShootParticle(String name, float x, float y, float z)
+    {}
     protected final List<ShootParticle> shootParticlesPrimary = new ArrayList<>();
     protected final List<ShootParticle> shootParticlesSecondary = new ArrayList<>();
     private final Map<Integer, List<ShootParticle>> shootParticlesPassenger = new HashMap<>();
@@ -256,12 +219,14 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * geometry that actually meets the ground, or NaN when the type declares no
      * wheel or track collision box to derive it from.
      *
-     * <p>WheelPosition is only an anchor, and packs do not agree on where it
+     * <p>
+     * WheelPosition is only an anchor, and packs do not agree on where it
      * sits: the official content puts it on the contact plane, while others put
      * it an axle height above. The collision boxes of the wheel and track parts
      * do describe the geometry that touches the ground, so the gap between the
      * lowest of those and the lowest anchor is the clearance the suspension has
-     * to keep for the rendered model to rest on the surface.</p>
+     * to keep for the rendered model to rest on the surface.
+     * </p>
      */
     protected float wheelContactClearance = Float.NaN;
     protected boolean canRoll = true;
@@ -273,15 +238,20 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean placeableOnWater;
     protected boolean placeableOnSponge;
     protected float buoyancy = 0.0165F;
+    /** Opt-in Labjac naval compartment damage, listing and sinking rules. */
+    protected boolean epicShip;
     protected float floatOffset;
     protected float bulletDetectionRadius = -1F;
-    /** Largest detection radius of any loaded type; only grows, so it stays a safe bound across reloads.
+    /**
+     * Largest detection radius of any loaded type; only grows, so it stays a safe bound across reloads.
      * -- GETTER --
-     *  Returns the maximum combined health represented by this driveable's parts.
-     *  <p>Normalized health has an authoritative total before its per-part values
-     *  are rounded to floats. Legacy driveables instead define their total as the
-     *  sum of the authored health of every part.</p>
-     *  How far any driveable's hull can reach from its centre, for bounding bullet searches.
+     * Returns the maximum combined health represented by this driveable's parts.
+     * <p>
+     * Normalized health has an authoritative total before its per-part values
+     * are rounded to floats. Legacy driveables instead define their total as the
+     * sum of the authored health of every part.
+     * </p>
+     * How far any driveable's hull can reach from its centre, for bounding bullet searches.
      */
     @Getter
     private static volatile float maxBulletDetectionRadius = 8F;
@@ -367,7 +337,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected float recoilTime = 5F;
 
     /** A camera kick sent to the players near a firing driveable, as {@code FancyScreenShake} describes it. */
-    public record ScreenShake(float intensity, float durationSeconds) {}
+    public record ScreenShake(float intensity, float durationSeconds)
+    {}
     /** Opt-in for the camera kick a firing main gun or coaxial gun sends to nearby players. */
     protected boolean fancyScreenShake;
     /** Whether the secondary gun bank, the coaxial machine gun, also kicks the camera. */
@@ -412,8 +383,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * geometry and the legacy fields. Never null: runtime code branches on
      * {@link ResolvedVehiclePhysics#mode()} instead of null-checking.
      */
-    protected ResolvedVehiclePhysics resolvedPhysics =
-        ResolvedVehiclePhysics.legacy(EnumVehicleCategory.OTHER, EnumDriveType.RWD);
+    protected ResolvedVehiclePhysics resolvedPhysics = ResolvedVehiclePhysics.legacy(EnumVehicleCategory.OTHER, EnumDriveType.RWD);
 
     /** Optional authored armour. Missing entries remain distinct from explicit zero plates. */
     protected VehicleArmorSpec armorSpec = VehicleArmorSpec.EMPTY;
@@ -422,8 +392,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Explicit opt-in; false preserves authored HP exactly. */
     protected boolean useRealisticVehicleHealth;
     /** Final normalized or legacy health allocation exposed to UI/debug consumers. */
-    protected VehicleHealthScaler.Result resolvedHealth =
-        VehicleHealthScaler.resolve(false, null, Map.of(), ModCommonConfig.DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE);
+    protected VehicleHealthScaler.Result resolvedHealth = VehicleHealthScaler.resolve(false, null, Map.of(), ModCommonConfig.DEFAULT_REALISTIC_VEHICLE_HEALTH_SCALE);
 
     @Override
     protected void read(TypeFile file)
@@ -474,8 +443,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     private void readSeats(TypeFile file)
     {
         List<String[]> passengerLines = readValuesInLines("Passenger", file).orElse(List.of());
-        int largestId = passengerLines.stream().filter(values -> values != null && values.length > 0)
-            .mapToInt(values -> parseInt(values[0], 0, "Passenger id", file)).max().orElse(0);
+        int largestId = passengerLines.stream().filter(values -> values != null && values.length > 0).mapToInt(values -> parseInt(values[0], 0, "Passenger id", file)).max()
+            .orElse(0);
         int requestedPassengers = Math.max(0, readValue("NumPassengers", passengerLines.size(), file));
         requestedPassengers = Math.max(0, readValue("Passengers", requestedPassengers, file));
         numPassengers = Math.max(requestedPassengers, largestId);
@@ -504,8 +473,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 float maxPitch = values.length > 8 ? Float.parseFloat(values[8]) : 89F;
                 String gunType = values.length > 9 ? values[9] : StringUtils.EMPTY;
                 String gunName = values.length > 10 ? values[10] : StringUtils.EMPTY;
-                SeatInfo seat = new SeatInfo(id, modelVector(values, 1), EnumDriveablePart.getPart(values[4]), false,
-                    minYaw, maxYaw, minPitch, maxPitch, gunType, gunName, contentPack);
+                SeatInfo seat = new SeatInfo(id, modelVector(values, 1), EnumDriveablePart.getPart(values[4]), false, minYaw, maxYaw, minPitch, maxPitch, gunType, gunName,
+                    contentPack);
                 if (StringUtils.isNotBlank(gunType))
                 {
                     seat.setGunnerID(numPassengerGunners++);
@@ -528,8 +497,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         if (drivers.isEmpty() || drivers.get(0) == null || drivers.get(0).length < 3)
         {
             logError("No valid Driver or Pilot definition; using model origin", file);
-            driver = new SeatInfo(0, new Vector3f(), EnumDriveablePart.getPart(driverPartName), true,
-                -360F, 360F, -89F, 89F, null, driverGun, contentPack);
+            driver = new SeatInfo(0, new Vector3f(), EnumDriveablePart.getPart(driverPartName), true, -360F, 360F, -89F, 89F, null, driverGun, contentPack);
         }
         else
         {
@@ -540,14 +508,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
                 float maxYaw = values.length > 4 ? Float.parseFloat(values[4]) : 360F;
                 float minPitch = values.length > 5 ? Float.parseFloat(values[5]) : -89F;
                 float maxPitch = values.length > 6 ? Float.parseFloat(values[6]) : 89F;
-                driver = new SeatInfo(0, modelVector(values, 0), EnumDriveablePart.getPart(driverPartName), true,
-                    minYaw, maxYaw, minPitch, maxPitch, null, driverGun, contentPack);
+                driver = new SeatInfo(0, modelVector(values, 0), EnumDriveablePart.getPart(driverPartName), true, minYaw, maxYaw, minPitch, maxPitch, null, driverGun, contentPack);
             }
             catch (RuntimeException ex)
             {
                 logError("Could not parse Driver/Pilot definition; using model origin", file, ex);
-                driver = new SeatInfo(0, new Vector3f(), EnumDriveablePart.CORE, true,
-                    -360F, 360F, -89F, 89F, null, driverGun, contentPack);
+                driver = new SeatInfo(0, new Vector3f(), EnumDriveablePart.CORE, true, -360F, 360F, -89F, 89F, null, driverGun, contentPack);
             }
         }
         seats.set(0, driver);
@@ -578,8 +544,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         List<String[]> lines = new ArrayList<>();
         lines.addAll(readValuesInLines("Wheel", file).orElse(List.of()));
         lines.addAll(readValuesInLines("WheelPosition", file).orElse(List.of()));
-        int maxIndex = lines.stream().filter(v -> v != null && v.length > 0)
-            .mapToInt(v -> parseInt(v[0], -1, "wheel index", file)).max().orElse(-1);
+        int maxIndex = lines.stream().filter(v -> v != null && v.length > 0).mapToInt(v -> parseInt(v[0], -1, "wheel index", file)).max().orElse(-1);
         for (int i = 0; i <= maxIndex; i++)
             wheelPositions.add(null);
         for (String[] values : lines)
@@ -612,7 +577,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readPartBoxes("SetupCompositeArmoredPart", file, 0F);
         readPartBoxes("SetuCrewedpPart", file, 1F);
 
-        forEachLine("PartDeathExplosion", file, 4, values -> {
+        forEachLine("PartDeathExplosion", file, 4, values ->
+        {
             EnumDriveablePart part = EnumDriveablePart.getPart(values[0]);
             if (part == null)
                 return;
@@ -620,14 +586,15 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             float player = values.length > 5 ? Float.parseFloat(values[5]) : living;
             float plane = values.length > 6 ? Float.parseFloat(values[6]) : 1F;
             float vehicle = values.length > 7 ? Float.parseFloat(values[7]) : plane;
-            partDeathExplosions.put(part, new DriveableExplosion(Float.parseFloat(values[1]), Float.parseFloat(values[2]),
-                parseBoolean(values[3]), living, player, plane, vehicle));
+            partDeathExplosions.put(part,
+                new DriveableExplosion(Float.parseFloat(values[1]), Float.parseFloat(values[2]), parseBoolean(values[3]), living, player, plane, vehicle));
         });
 
         readPartRecipes("AddRecipeParts", file);
         readPartRecipes("AddRecipePart", file);
         readPartRecipes("AddRecipieParts", file);
-        forEachLine("AddDye", file, 2, values -> {
+        forEachLine("AddDye", file, 2, values ->
+        {
             int amount = Integer.parseInt(values[0]);
             driveableRecipe.add(RecipeIngredient.parse("minecraft:" + normalizeDye(values[1]) + "_dye", amount, contentPack));
         });
@@ -676,7 +643,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readPartBoxes(String key, TypeFile file, float defaultCrewMultiplier)
     {
-        forEachLine(key, file, 8, values -> {
+        forEachLine(key, file, 8, values ->
+        {
             int start = values[0].equalsIgnoreCase(key) ? 1 : 0;
             if (values.length - start < 8)
             {
@@ -691,9 +659,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             }
             float resistance = values.length > start + 8 ? parseLegacyFloat(values[start + 8]) : 5F;
             float crew = values.length > start + 9 ? parseLegacyFloat(values[start + 9]) : defaultCrewMultiplier;
-            CollisionBox box = new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]),
-                parseLegacyFloat(values[start + 3]), parseLegacyFloat(values[start + 4]), parseLegacyFloat(values[start + 5]),
-                parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance, crew);
+            CollisionBox box = new CollisionBox(parseLegacyFloat(values[start + 1]), parseLegacyFloat(values[start + 2]), parseLegacyFloat(values[start + 3]),
+                parseLegacyFloat(values[start + 4]), parseLegacyFloat(values[start + 5]), parseLegacyFloat(values[start + 6]), parseLegacyFloat(values[start + 7]), resistance,
+                crew);
             health.put(part, this instanceof PlaneType ? applyPlaneModelFacing(box) : box);
         });
     }
@@ -701,9 +669,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** Plane models face the opposite way to the simulation frame, as seats and wheels already account for. */
     private static CollisionBox applyPlaneModelFacing(CollisionBox box)
     {
-        return CollisionBox.inWorldUnits(box.getHealth(), -(box.getX() + box.getWidth()), box.getY(),
-            -(box.getZ() + box.getDepth()), box.getWidth(), box.getHeight(), box.getDepth(),
-            box.getPenetrationResistance(), box.getCrewDamageMultiplier());
+        return CollisionBox.inWorldUnits(box.getHealth(), -(box.getX() + box.getWidth()), box.getY(), -(box.getZ() + box.getDepth()), box.getWidth(), box.getHeight(),
+            box.getDepth(), box.getPenetrationResistance(), box.getCrewDamageMultiplier());
     }
 
     private void readWeapons(TypeFile file)
@@ -711,8 +678,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         resolvedAmmoCache.set(null);
         acceptAllAmmo = readValue("AllowAllAmmo", acceptAllAmmo, file);
         acceptAllAmmo = readValue("AcceptAllAmmo", acceptAllAmmo, file);
-        readLines("AddAmmo", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank)
-            .map(String::trim).forEach(ammo::add));
+        readLines("AddAmmo", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank).map(String::trim).forEach(ammo::add));
         ShootableType.readAmmoGroups(file, ammoGroups);
         ammoOverrides = readAmmoOverrides(file);
         removedAmmo = RemovedAmmo.read(file);
@@ -725,13 +691,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         damageMultiplierPrimary = readValue("DammageModifierPrimary", damageMultiplierPrimary, file);
         damageMultiplierSecondary = readValue("DamageMultiplierSecondary", damageMultiplierSecondary, file);
         damageMultiplierSecondary = readValue("DamageModifierSecondary", damageMultiplierSecondary, file);
-        BankTiming primaryTiming = resolveBankTiming(file, shootDelayPrimary,
-            "ShootDelayPrimarySeconds", "RoundsPerMinPrimary", "ShootDelayPrimary", "ShellDelay", "BombDelay");
+        BankTiming primaryTiming = resolveBankTiming(file, shootDelayPrimary, "ShootDelayPrimarySeconds", "RoundsPerMinPrimary", "ShootDelayPrimary", "ShellDelay", "BombDelay");
         shootDelayPrimary = primaryTiming.delay();
         shootDelayDeclaredPrimary = primaryTiming.declared();
         longestDeclaredDelayPrimary = primaryTiming.longestDeclared();
-        BankTiming secondaryTiming = resolveBankTiming(file, shootDelaySecondary,
-            "ShootDelaySecondarySeconds", "RoundsPerMinSecondary", "ShootDelaySecondary", "ShootDelay");
+        BankTiming secondaryTiming = resolveBankTiming(file, shootDelaySecondary, "ShootDelaySecondarySeconds", "RoundsPerMinSecondary", "ShootDelaySecondary", "ShootDelay");
         shootDelaySecondary = secondaryTiming.delay();
         shootDelayDeclaredSecondary = secondaryTiming.declared();
         longestDeclaredDelaySecondary = secondaryTiming.longestDeclared();
@@ -767,12 +731,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         readShootParticles("ShootParticlesPrimary", shootParticlesPrimary, file);
         readShootParticles("ShootParticlesSecondary", shootParticlesSecondary, file);
         readShootParticles("ShootParticleSecondary", shootParticlesSecondary, file);
-        forEachLine("ShootParticlesPassenger", file, 5, values -> {
+        forEachLine("ShootParticlesPassenger", file, 5, values ->
+        {
             int seat = Integer.parseInt(values[0]);
             if (seat > 0 && getSeat(seat) != null)
-                shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>()).add(
-                    new ShootParticle(values[1], Float.parseFloat(values[2]),
-                        Float.parseFloat(values[3]), Float.parseFloat(values[4])));
+                shootParticlesPassenger.computeIfAbsent(seat, ignored -> new ArrayList<>())
+                    .add(new ShootParticle(values[1], Float.parseFloat(values[2]), Float.parseFloat(values[3]), Float.parseFloat(values[4])));
         });
         readLegacyGuns(file);
         readLegacyWeaponPosition("BombPosition", EnumDriveablePart.CORE, EnumWeaponType.BOMB, file);
@@ -848,6 +812,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         worksUnderWater = readValue("WorksUnderWater", worksUnderWater, file);
         floatOnWater = readValue("FloatOnWater", floatOnWater, file);
         buoyancy = readValue("Buoyancy", buoyancy, file);
+        epicShip = readValue("EpicShip", epicShip, file);
         floatOffset = readValue("FloatOffset", floatOffset, file);
         canMountEntity = readValue("CanMountEntity", canMountEntity, file);
         wheelStepHeight = aliasFloat(wheelStepHeight, file, "WheelRadius", "WheelStepHeight");
@@ -857,11 +822,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         harvestBlocks = readValue("Harvester", harvestBlocks, file);
         collectHarvest = readValue("CollectHarvest", collectHarvest, file);
         dropHarvest = readValue("DropHarvest", dropHarvest, file);
-        readLines("HarvestMaterial", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank)
-            .map(value -> value.trim().toLowerCase(Locale.ROOT)).forEach(materialsHarvested::add));
-        readLines("HarvestToolType", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank)
-            .forEach(this::addHarvestToolType));
-        readValues("HarvestBox", file, 2).ifPresent(values -> {
+        readLines("HarvestMaterial", file)
+            .ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank).map(value -> value.trim().toLowerCase(Locale.ROOT)).forEach(materialsHarvested::add));
+        readLines("HarvestToolType", file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank).forEach(this::addHarvestToolType));
+        readValues("HarvestBox", file, 2).ifPresent(values ->
+        {
             try
             {
                 harvestBoxSize = parseVector(values[0], 1F / 16F);
@@ -963,13 +928,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     private void readParticles(TypeFile file)
     {
         emittersRequireOccupant = readValue("EmittersRequireOccupant", emittersRequireOccupant, file);
-        Consumer<String[]> parser = values -> {
+        Consumer<String[]> parser = values ->
+        {
             Vector3f origin = parseVector(values[2], 1F / 16F);
             Vector3f extents = parseVector(values[3], 1F / 16F);
             Vector3f velocity = parseVector(values[4], 1F / 16F);
-            emitters.add(new ParticleEmitter(values[0], Integer.parseInt(values[1]), origin, extents, velocity,
-                Float.parseFloat(values[5]), Float.parseFloat(values[6]), Float.parseFloat(values[7]),
-                Float.parseFloat(values[8]), EnumDriveablePart.getPart(values[9])));
+            emitters.add(new ParticleEmitter(values[0], Integer.parseInt(values[1]), origin, extents, velocity, Float.parseFloat(values[5]), Float.parseFloat(values[6]),
+                Float.parseFloat(values[7]), Float.parseFloat(values[8]), EnumDriveablePart.getPart(values[9])));
         };
         forEachLine("AddParticle", file, 10, parser);
         forEachLine("AddEmitter", file, 10, parser);
@@ -1001,11 +966,9 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             maxBulletDetectionRadius = Math.max(maxBulletDetectionRadius, bulletDetectionRadius);
         }
         deriveWheelContactClearance();
-        resolvedPhysics = VehiclePhysicsResolver.resolve(physicsCategory(), realWorldSpec,
-            deriveGeometry(), legacyPhysicsHints());
+        resolvedPhysics = VehiclePhysicsResolver.resolve(physicsCategory(), realWorldSpec, deriveGeometry(), legacyPhysicsHints());
         resolvedArmor = VehicleArmorResolver.resolve(armorSpec, authoredHealth.keySet());
-        resolvedHealth = VehicleHealthScaler.resolve(useRealisticVehicleHealth, realWorldSpec.massKg(),
-            authoredHealth, ModCommonConfig.realisticVehicleHealthScale());
+        resolvedHealth = VehicleHealthScaler.resolve(useRealisticVehicleHealth, realWorldSpec.massKg(), authoredHealth, ModCommonConfig.realisticVehicleHealthScale());
         health.clear();
         health.putAll(resolvedHealth.boxes());
     }
@@ -1032,8 +995,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      */
     public VehicleImpulsePhysics.ImpulseMass getImpulseMass()
     {
-        return VehicleImpulsePhysics.resolveMass(realWorldSpec.massKg(), authoredMassKg,
-            ModCommonConfig.fallbackImpulseMassKg(physicsCategory()));
+        return VehicleImpulsePhysics.resolveMass(realWorldSpec.massKg(), authoredMassKg, ModCommonConfig.fallbackImpulseMassKg(physicsCategory()));
     }
 
     /**
@@ -1065,24 +1027,25 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * track come from the spread of the declared wheel positions, whose legacy X
      * is the fore-aft axis and legacy Z the lateral one.
      * <p>
-     * Parts whose collision boxes describe where a driveable meets the ground. */
-    private static final Set<EnumDriveablePart> GROUND_CONTACT_PARTS = EnumSet.of(
-        EnumDriveablePart.CORE_WHEEL, EnumDriveablePart.FRONT_WHEEL, EnumDriveablePart.BACK_WHEEL,
-        EnumDriveablePart.FRONT_LEFT_WHEEL, EnumDriveablePart.FRONT_RIGHT_WHEEL,
-        EnumDriveablePart.BACK_LEFT_WHEEL, EnumDriveablePart.BACK_RIGHT_WHEEL,
-        EnumDriveablePart.LEFT_TRACK, EnumDriveablePart.RIGHT_TRACK, EnumDriveablePart.TAIL_WHEEL,
-        EnumDriveablePart.LEFT_WING_WHEEL, EnumDriveablePart.RIGHT_WING_WHEEL, EnumDriveablePart.SKIDS);
+     * Parts whose collision boxes describe where a driveable meets the ground.
+     */
+    private static final Set<EnumDriveablePart> GROUND_CONTACT_PARTS = EnumSet.of(EnumDriveablePart.CORE_WHEEL, EnumDriveablePart.FRONT_WHEEL, EnumDriveablePart.BACK_WHEEL,
+        EnumDriveablePart.FRONT_LEFT_WHEEL, EnumDriveablePart.FRONT_RIGHT_WHEEL, EnumDriveablePart.BACK_LEFT_WHEEL, EnumDriveablePart.BACK_RIGHT_WHEEL,
+        EnumDriveablePart.LEFT_TRACK, EnumDriveablePart.RIGHT_TRACK, EnumDriveablePart.TAIL_WHEEL, EnumDriveablePart.LEFT_WING_WHEEL, EnumDriveablePart.RIGHT_WING_WHEEL,
+        EnumDriveablePart.SKIDS);
 
     /**
      * Measures {@link #wheelContactClearance} from the authored geometry.
      *
-     * <p>The contact plane is the lower of the two things a type declares about
+     * <p>
+     * The contact plane is the lower of the two things a type declares about
      * where it meets the ground: its wheel anchors and the bottoms of its wheel
      * and track boxes. Taking the lower of the two is what makes the measurement
      * safe against either one being authored loosely, since a box that stops
      * short of the anchors is a tight box rather than a driveable that hovers.
      * The upper bound then stops a single mis-authored box from levitating the
-     * whole driveable.</p>
+     * whole driveable.
+     * </p>
      */
     private void deriveWheelContactClearance()
     {
@@ -1104,8 +1067,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
             if (Float.isNaN(lowestAnchor) || anchor < lowestAnchor)
                 lowestAnchor = anchor;
         }
-        wheelContactClearance = Float.isNaN(lowestBox) || Float.isNaN(lowestAnchor)
-            ? Float.NaN : Math.max(0F, Math.min(0.5F, lowestAnchor - lowestBox));
+        wheelContactClearance = Float.isNaN(lowestBox) || Float.isNaN(lowestAnchor) ? Float.NaN : Math.max(0F, Math.min(0.5F, lowestAnchor - lowestBox));
     }
 
     private VehicleGeometry deriveGeometry()
@@ -1253,11 +1215,13 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * Height at which a wheel anchor rests above the surface below it, in blocks.
      * Like the anchors themselves, ModelScale does not apply to it.
      *
-     * <p>Packs disagree on what WheelPosition means, so this prefers the value
+     * <p>
+     * Packs disagree on what WheelPosition means, so this prefers the value
      * measured from the type's own wheel and track collision boxes and only
      * falls back to a convention when there are none to measure. Aircraft
      * landing gear is authored on the strut, above the tyre's contact patch,
-     * so that convention keeps the historical 6/16 block.</p>
+     * so that convention keeps the historical 6/16 block.
+     * </p>
      */
     public float getWheelGroundClearance()
     {
@@ -1292,13 +1256,16 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /**
      * Moves one shoot point to {@code modelPixels}, for the shoot-point debug command.
      *
-     * <p>Rewrites the point's offset rather than its root so the mount itself is
+     * <p>
+     * Rewrites the point's offset rather than its root so the mount itself is
      * left alone: a root that is a {@link PilotGun} stays the same object, keeps
      * its ammunition and stays out of {@link #pilotGuns} twice. Since the firing
      * path reads root plus offset as the muzzle, the point lands exactly where
-     * asked either way.</p>
+     * asked either way.
+     * </p>
      *
-     * @param modelPixels the new muzzle, in the units and convention of a type file
+     * @param modelPixels
+     *            the new muzzle, in the units and convention of a type file
      * @return false when this weapon bank has no point at {@code index}
      */
     public boolean setDebugShootPoint(boolean secondaryWeapon, int index, Vector3f modelPixels)
@@ -1316,7 +1283,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * is loading. Unlike the debug overrides this becomes the type's baseline, so
      * {@code /flandebug shootpoint reset} keeps it.
      *
-     * @param modelPixels the measured muzzle, in the units and convention of a type file
+     * @param modelPixels
+     *            the measured muzzle, in the units and convention of a type file
      * @return false when this weapon bank has no point at {@code index}
      */
     public boolean applyMeasuredShootPoint(boolean secondaryWeapon, int index, Vector3f modelPixels)
@@ -1347,7 +1315,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * Gives one shoot point the barrels of a twin or quad mount measured off the
      * model, so it fires from each of them in turn.
      *
-     * @param offsetPixels each barrel's muzzle relative to the point's, in type-file pixels
+     * @param offsetPixels
+     *            each barrel's muzzle relative to the point's, in type-file pixels
      * @return false when this weapon bank has no point at {@code index}
      */
     public boolean applyMeasuredBarrels(boolean secondaryWeapon, int index, List<Vector3f> offsetPixels)
@@ -1362,7 +1331,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /**
      * Gives one seat's gun the barrels of a twin or quad mount measured off the model.
      *
-     * @param offsetPixels each barrel's muzzle relative to the seat's {@code GunOrigin}, in type-file pixels
+     * @param offsetPixels
+     *            each barrel's muzzle relative to the seat's {@code GunOrigin}, in type-file pixels
      * @return false when the seat does not exist or mounts no gun
      */
     public boolean applyMeasuredGunBarrels(int seatIndex, List<Vector3f> offsetPixels)
@@ -1388,9 +1358,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     {
         ShootPoint point = points.get(index);
         DriveablePosition root = point.getRootPos();
-        Vector3f offset = new Vector3f(modelPixels.x / 16F - root.getPosition().x,
-            modelPixels.y / 16F - root.getPosition().y,
-            modelPixels.z / 16F - root.getPosition().z);
+        Vector3f offset = new Vector3f(modelPixels.x / 16F - root.getPosition().x, modelPixels.y / 16F - root.getPosition().y, modelPixels.z / 16F - root.getPosition().z);
         points.set(index, new ShootPoint(root, offset, debugOverride, point.getBarrels()));
     }
 
@@ -1469,7 +1437,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /**
      * The cadence between shots of a weapon bank.
      *
-     * <p>A bank firing mounted guns takes its cadence from the gun, because the
+     * <p>
+     * A bank firing mounted guns takes its cadence from the gun, because the
      * gun is what fires: the vehicle only overrides that by stating a rate of its
      * own for the bank. {@code ReadWeaponsFromGunTypes} removes even that, handing
      * the gun the last word. A bank firing the vehicle's own ordnance has no gun
@@ -1491,13 +1460,15 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /**
      * How long a full reload of this bank takes, in ticks.
      *
-     * <p>For the vehicle's own ordnance this is the longest figure the pack states
+     * <p>
+     * For the vehicle's own ordnance this is the longest figure the pack states
      * anywhere for the bank - its reload keys and every one of its timing keys -
      * so a pack that expresses a tank's cycle as {@code ShellDelay} alone keeps the
      * cycle it always had, and one that states both gets the slower of the two
      * rather than whichever key happens to be read last.
      *
-     * <p>For a bank firing mounted guns the gun's own reload time stands in,
+     * <p>
+     * For a bank firing mounted guns the gun's own reload time stands in,
      * unless the vehicle states a reload time for the bank;
      * {@code ReadWeaponsFromGunTypes} again hands the gun the last word.
      */
@@ -1524,8 +1495,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     /** The sound a full reload of this bank plays, preferring the bank's own over the shared one. */
     public String reloadSound(boolean secondaryWeapon)
     {
-        return StringUtils.firstNonBlank(
-            secondaryWeapon ? reloadSoundSecondary : reloadSoundPrimary, reloadSoundShared, StringUtils.EMPTY);
+        return StringUtils.firstNonBlank(secondaryWeapon ? reloadSoundSecondary : reloadSoundPrimary, reloadSoundShared, StringUtils.EMPTY);
     }
 
     /** The GunType referenced by the AddGun/PilotGun mount used for this weapon bank, if any. */
@@ -1749,8 +1719,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readShootParticles(String key, List<ShootParticle> destination, TypeFile file)
     {
-        forEachLine(key, file, 4, values -> destination.add(new ShootParticle(values[0], Float.parseFloat(values[1]),
-            Float.parseFloat(values[2]), Float.parseFloat(values[3]))));
+        forEachLine(key, file, 4, values -> destination.add(new ShootParticle(values[0], Float.parseFloat(values[1]), Float.parseFloat(values[2]), Float.parseFloat(values[3]))));
     }
 
     private void readLegacyWeaponPosition(String key, EnumDriveablePart part, EnumWeaponType weapon, TypeFile file)
@@ -1776,7 +1745,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readPositionLines(String key, List<DriveablePosition> destination, TypeFile file, boolean indexed)
     {
-        forEachLine(key, file, indexed ? 5 : 4, values -> {
+        forEachLine(key, file, indexed ? 5 : 4, values ->
+        {
             int start = indexed ? 1 : 0;
             destination.add(new DriveablePosition(modelVector(values, start), EnumDriveablePart.getPart(values[start + 3])));
         });
@@ -1784,7 +1754,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readVectorValueLines(String key, List<Vector3f> destination, TypeFile file, float scale)
     {
-        readLines(key, file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank).forEach(value -> {
+        readLines(key, file).ifPresent(lines -> lines.stream().filter(StringUtils::isNotBlank).forEach(value ->
+        {
             try
             {
                 destination.add(parseVector(value, scale));
@@ -1798,7 +1769,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readMeshLines(String key, EnumDriveablePart part, TypeFile file)
     {
-        forEachLine(key, file, 10, values -> {
+        forEachLine(key, file, 10, values ->
+        {
             Vector3f position = parseVector(values[0], 1F / 16F);
             Vector3f size = parseVector(values[1], 1F / 16F);
             List<Vector3f> vertices = new ArrayList<>(8);
@@ -1812,7 +1784,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     {
         // Some generators include an unused compatibility token after size,
         // while documented raw lines contain exactly 30 numeric values.
-        forEachLine(key, file, 30, values -> {
+        forEachLine(key, file, 30, values ->
+        {
             Vector3f position = modelVector(values, 0);
             Vector3f size = modelVector(values, 3);
             int vertexStart = values.length >= 31 ? 7 : 6;
@@ -1846,12 +1819,12 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     private void readSeatVectorLines(String key, TypeFile file, SeatVectorSetter setter, boolean modelUnits)
     {
         int minimumValues = 4;
-        forEachLine(key, file, minimumValues, values -> {
+        forEachLine(key, file, minimumValues, values ->
+        {
             SeatInfo seat = getSeat(Integer.parseInt(values[0]));
             if (seat != null)
             {
-                Vector3f vector = new Vector3f(parseLegacyFloat(values[1]), parseLegacyFloat(values[2]),
-                    values.length > 3 ? parseLegacyFloat(values[3]) : 0F);
+                Vector3f vector = new Vector3f(parseLegacyFloat(values[1]), parseLegacyFloat(values[2]), values.length > 3 ? parseLegacyFloat(values[3]) : 0F);
                 if (modelUnits)
                     vector.scale(1F / 16F);
                 setter.set(seat, vector);
@@ -1861,7 +1834,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readSeatBooleanLines(String key, TypeFile file, SeatBooleanSetter setter)
     {
-        forEachLine(key, file, 2, values -> {
+        forEachLine(key, file, 2, values ->
+        {
             SeatInfo seat = getSeat(Integer.parseInt(values[0]));
             if (seat != null)
                 setter.set(seat, parseBoolean(values[1]));
@@ -1870,7 +1844,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readSeatIntLines(String key, TypeFile file, SeatIntSetter setter)
     {
-        forEachLine(key, file, 2, values -> {
+        forEachLine(key, file, 2, values ->
+        {
             SeatInfo seat = getSeat(Integer.parseInt(values[0]));
             if (seat != null)
                 setter.set(seat, Integer.parseInt(values[1]));
@@ -1879,7 +1854,8 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private void readSeatStringLines(String key, TypeFile file, SeatStringSetter setter)
     {
-        forEachLine(key, file, 2, values -> {
+        forEachLine(key, file, 2, values ->
+        {
             SeatInfo seat = getSeat(Integer.parseInt(values[0]));
             if (seat != null)
                 setter.set(seat, values[1]);
@@ -2004,8 +1980,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     private static String normalizeDye(String raw)
     {
-        return raw.trim().toLowerCase(Locale.ROOT).replace("lightblue", "light_blue")
-            .replace("lightgray", "light_gray").replace("silver", "light_gray");
+        return raw.trim().toLowerCase(Locale.ROOT).replace("lightblue", "light_blue").replace("lightgray", "light_gray").replace("silver", "light_gray");
     }
 
     /**
@@ -2018,16 +1993,11 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         String tool = raw.trim().toLowerCase(Locale.ROOT);
         switch (tool)
         {
-            case "axe" -> Collections.addAll(materialsHarvested,
-                "axe", "wood", "log", "plank", "plant", "vine");
-            case "pickaxe", "drill" -> Collections.addAll(materialsHarvested,
-                "pickaxe", "stone", "ore", "iron", "anvil", "rock");
-            case "spade", "shovel", "excavator" -> Collections.addAll(materialsHarvested,
-                "shovel", "dirt", "grass", "sand", "gravel", "snow", "clay", "ground");
-            case "hoe", "combine" -> Collections.addAll(materialsHarvested,
-                "hoe", "crop", "plant", "leaves", "vine", "cactus", "pumpkin", "melon", "gourd");
-            case "tank" -> Collections.addAll(materialsHarvested,
-                "axe", "wood", "log", "plank", "plant", "leaves", "cactus");
+            case "axe" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", "plant", "vine");
+            case "pickaxe", "drill" -> Collections.addAll(materialsHarvested, "pickaxe", "stone", "ore", "iron", "anvil", "rock");
+            case "spade", "shovel", "excavator" -> Collections.addAll(materialsHarvested, "shovel", "dirt", "grass", "sand", "gravel", "snow", "clay", "ground");
+            case "hoe", "combine" -> Collections.addAll(materialsHarvested, "hoe", "crop", "plant", "leaves", "vine", "cactus", "pumpkin", "melon", "gourd");
+            case "tank" -> Collections.addAll(materialsHarvested, "axe", "wood", "log", "plank", "plant", "leaves", "cactus");
             default -> materialsHarvested.add(tool);
         }
     }
@@ -2046,16 +2016,21 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
      * that carries several of them for backwards compatibility still gets the
      * reading it intends.
      *
-     * <p>{@link #aliasFloat} cannot express this, because it lets the
+     * <p>
+     * {@link #aliasFloat} cannot express this, because it lets the
      * <em>last</em> key present win.
      * <p>
      * What one weapon bank's timing keys add up to.
      *
-     * @param delay           the cadence between shots, by the precedence above
-     * @param declared        whether the pack stated any of these keys at all
-     * @param longestDeclared the longest delay any stated key works out to, in ticks
+     * @param delay
+     *            the cadence between shots, by the precedence above
+     * @param declared
+     *            whether the pack stated any of these keys at all
+     * @param longestDeclared
+     *            the longest delay any stated key works out to, in ticks
      */
-    private record BankTiming(float delay, boolean declared, float longestDeclared) {}
+    private record BankTiming(float delay, boolean declared, float longestDeclared)
+    {}
 
     private static BankTiming resolveBankTiming(TypeFile file, float current, String secondsKey, String roundsPerMinKey, String... delayKeys)
     {
@@ -2186,10 +2161,26 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
         return new EngineSoundPitch(base, half, full);
     }
 
-    @FunctionalInterface private interface SeatVectorSetter { void set(SeatInfo seat, Vector3f value); }
-    @FunctionalInterface private interface SeatBooleanSetter { void set(SeatInfo seat, boolean value); }
-    @FunctionalInterface private interface SeatIntSetter { void set(SeatInfo seat, int value); }
-    @FunctionalInterface private interface SeatStringSetter { void set(SeatInfo seat, String value); }
+    @FunctionalInterface
+    private interface SeatVectorSetter
+    {
+        void set(SeatInfo seat, Vector3f value);
+    }
+    @FunctionalInterface
+    private interface SeatBooleanSetter
+    {
+        void set(SeatInfo seat, boolean value);
+    }
+    @FunctionalInterface
+    private interface SeatIntSetter
+    {
+        void set(SeatInfo seat, int value);
+    }
+    @FunctionalInterface
+    private interface SeatStringSetter
+    {
+        void set(SeatInfo seat, String value);
+    }
 
     @Override
     public void addLoot(LootTable table)
