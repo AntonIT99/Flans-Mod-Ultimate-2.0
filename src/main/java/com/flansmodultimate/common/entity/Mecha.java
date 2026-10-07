@@ -3,32 +3,14 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanEntityPermissions;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.DriveableInput;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumMechaSlotType;
-import com.flansmodultimate.common.driveables.EnumMechaToolType;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
-import com.flansmodultimate.common.driveables.MechaPhysics;
-import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.FireableGun;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.ShotCooldown;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.inventory.MechaInventoryMenu;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.MechaAddonItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.physics.ModPhysics;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.EnumMovement;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.MechaItemType;
-import com.flansmodultimate.common.types.MechaType;
-import com.flansmodultimate.common.types.PartType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.network.client.PacketPlaySound;
@@ -40,10 +22,6 @@ import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -55,11 +33,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -73,6 +47,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,14 +61,18 @@ public class Mecha extends Driveable
 {
     private static final int JUMP_COOLDOWN = 20;
     private static final String NBT_LEG_YAW = "LegsYaw";
-    private static final EntityDataAccessor<Float> DATA_LEG_YAW =
-        SynchedEntityData.defineId(Mecha.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_LEG_YAW = SynchedEntityData.defineId(Mecha.class, EntityDataSerializers.FLOAT);
 
-    @Getter protected float legSwing;
-    @Getter protected float prevLegSwing;
-    @Getter protected float legYaw;
-    @Getter protected float prevLegYaw;
-    @Getter protected float shieldEnergy;
+    @Getter
+    protected float legSwing;
+    @Getter
+    protected float prevLegSwing;
+    @Getter
+    protected float legYaw;
+    @Getter
+    protected float prevLegYaw;
+    @Getter
+    protected float shieldEnergy;
     private int jumpDelay;
     private int stompDelay;
     private int shieldRechargeDelay;
@@ -103,27 +84,28 @@ public class Mecha extends Driveable
     private final float[] handGunCooldown = new float[2];
     private final int[] handGunHeldTicks = new int[2];
     private final int[] handGunBurstRemaining = new int[2];
-    @Nullable private BlockPos breakingBlock;
+    @Nullable
+    private BlockPos breakingBlock;
     private float breakingProgress;
     /** Block the held mining arms reached this tick, consumed by {@link #tickMining()}. */
-    @Nullable private BlockPos miningAim;
+    @Nullable
+    private BlockPos miningAim;
     private int miningHand;
-    @Nullable private MechaItemType miningSoundTool;
+    @Nullable
+    private MechaItemType miningSoundTool;
 
     public Mecha(EntityType<?> entityType, Level level)
     {
         super(entityType, level);
     }
 
-    public Mecha(Level level, MechaType type, double x, double y, double z, float yaw,
-                 @Nullable Player placer, ItemStack sourceStack)
+    public Mecha(Level level, MechaType type, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack)
     {
         this(FlansModEntities.mechaEntity.get(), level, type, x, y, z, yaw, placer, sourceStack);
     }
 
     /** Placement constructor for subclasses registered under their own entity type. */
-    protected Mecha(EntityType<?> entityType, Level level, MechaType type, double x, double y, double z, float yaw,
-                    @Nullable Player placer, ItemStack sourceStack)
+    protected Mecha(EntityType<?> entityType, Level level, MechaType type, double x, double y, double z, float yaw, @Nullable Player placer, ItemStack sourceStack)
     {
         super(entityType, level, type, x, y, z, yaw, placer, sourceStack);
     }
@@ -197,13 +179,10 @@ public class Mecha extends Driveable
         int input = getInputMask();
         float forwardInput = axis(input, DriveableInput.FORWARD, DriveableInput.BACKWARD);
         float sideInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
-        Vec3 intent = MechaPhysics.movementIntent(
-            MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), forwardInput, sideInput);
+        Vec3 intent = MechaPhysics.movementIntent(MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), forwardInput, sideInput);
         boolean walking = intent.lengthSqr() > 0.01D;
-        boolean canMove = isUnderCommand() && isEngineActive() && hasFuelForMovement()
-            && isPartIntact(EnumDriveablePart.HIPS);
-        double moveSpeed = MechaPhysics.movementSpeed(type.getMoveSpeed(), type.getRealWorldSpec().maxSpeedKmh(),
-            getEngineSpeed(), speedMultiplier());
+        boolean canMove = isUnderCommand() && isEngineActive() && hasFuelForMovement() && isPartIntact(EnumDriveablePart.HIPS);
+        double moveSpeed = MechaPhysics.movementSpeed(type.getMoveSpeed(), type.getRealWorldSpec().maxSpeedKmh(), getEngineSpeed(), speedMultiplier());
         Vec3 current = getDeltaMovement();
         float rocketPower = Mth.clamp(jetPackPower(), 0.1F, 8F);
         MechaItemType rocket = rocketPack();
@@ -221,8 +200,7 @@ public class Mecha extends Driveable
             else if (!onGround() && rocket != null && hasFuelForAddon(10F * rocketPower))
             {
                 rocketThrust = true;
-                velocity = velocity.multiply(1D, ModPhysics.dragRetention(0.95D, level()), 1D)
-                    .add(0D, 0.07D * rocketPower, 0D);
+                velocity = velocity.multiply(1D, ModPhysics.dragRetention(0.95D, level()), 1D).add(0D, 0.07D * rocketPower, 0D);
                 fallDistance = 0F;
                 consumeAddonFuel(10F * rocketPower);
                 if (toolCooldown[0] <= 0 && StringUtils.isNotBlank(rocket.getSoundEffect()))
@@ -233,8 +211,7 @@ public class Mecha extends Driveable
             }
         }
 
-        boolean boostedAirMovement = canMove && walking && !onGround() && rocket != null
-            && hasFuelForAddon(10F * rocketPower + engineFuelPerTick());
+        boolean boostedAirMovement = canMove && walking && !onGround() && rocket != null && hasFuelForAddon(10F * rocketPower + engineFuelPerTick());
         if (boostedAirMovement)
             moveSpeed *= rocketPower;
         Vec3 desired = canMove ? intent.scale(moveSpeed) : Vec3.ZERO;
@@ -273,8 +250,7 @@ public class Mecha extends Driveable
         {
             float forwardInput = axis(getInputMask(), DriveableInput.FORWARD, DriveableInput.BACKWARD);
             float sideInput = axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT);
-            Vec3 intent = MechaPhysics.movementIntent(
-                MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), forwardInput, sideInput);
+            Vec3 intent = MechaPhysics.movementIntent(MechaPhysics.driverMovementYaw(getYaw() + getTurretYaw()), forwardInput, sideInput);
             boolean walking = Math.abs(getThrottle()) > 0.01F && intent.lengthSqr() > 0.01D;
             updateLegFacing(type, intent, walking);
             updateLegAnimation(type, walking);
@@ -308,8 +284,7 @@ public class Mecha extends Driveable
     }
 
     @Override
-    public void acceptInput(@NotNull ServerPlayer player, int mask, float aimYaw, float aimPitch,
-                            float flightPitch, float flightRoll, boolean mouseControl, int sequence)
+    public void acceptInput(@NotNull ServerPlayer player, int mask, float aimYaw, float aimPitch, float flightPitch, float flightRoll, boolean mouseControl, int sequence)
     {
         float oldBodyYaw = getYaw();
         float relativeAimYaw = MechaPhysics.relativeAimYaw(oldBodyYaw, aimYaw);
@@ -348,8 +323,7 @@ public class Mecha extends Driveable
         legSwing += increment * Math.max(0.25F, speedMultiplier());
         if (legSwing > 1F)
             legSwing -= Mth.floor(legSwing);
-        if (stompDelay <= 0 && crossedRange(previousPhase, legSwing, type.getStompRangeLower(), type.getStompRangeUpper())
-            && StringUtils.isNotBlank(type.getStompSound()))
+        if (stompDelay <= 0 && crossedRange(previousPhase, legSwing, type.getStompRangeLower(), type.getStompRangeUpper()) && StringUtils.isNotBlank(type.getStompSound()))
         {
             if (!level().isClientSide)
                 PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), type.getStompSound(), false);
@@ -368,16 +342,14 @@ public class Mecha extends Driveable
     {
         float force = (float) Math.max(0D, -descent - 0.45D);
         if (type.isTakeFallDamage() && !stopFallDamage())
-            damagePart(EnumDriveablePart.HIPS, force * 18F * type.getFallDamageMultiplier()
-                * Math.max(0F, type.getFallDamageFactor()), level().damageSources().fall());
+            damagePart(EnumDriveablePart.HIPS, force * 18F * type.getFallDamageMultiplier() * Math.max(0F, type.getFallDamageFactor()), level().damageSources().fall());
         if ((type.isDamageBlocksFromFalling() || breakBlocksUponFalling()) && force * type.getBlockDamageFromFalling() > 0.8F)
             breakLandingBlocks(Math.min(3, 1 + Mth.floor(force * type.getBlockDamageFromFalling())));
     }
 
     private void breakLandingBlocks(int radius)
     {
-        if (!(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof Player player)
-            || !FlansMod.teamsManager.isDriveablesBreakBlocks())
+        if (!(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof Player player) || !FlansMod.teamsManager.isDriveablesBreakBlocks())
             return;
         BlockPos centre = BlockPos.containing(getX(), getBoundingBox().minY - 0.1D, getZ());
         for (BlockPos pos : BlockPos.betweenClosed(centre.offset(-radius, -1, -radius), centre.offset(radius, 0, radius)))
@@ -423,8 +395,7 @@ public class Mecha extends Driveable
     @Override
     public boolean damagePart(@Nullable EnumDriveablePart partType, float amount, @Nullable net.minecraft.world.damagesource.DamageSource source)
     {
-        if (source != null && source.getEntity() instanceof Player player
-            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
+        if (source != null && source.getEntity() instanceof Player player && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ATTACK))
             return false;
         if (!level().isClientSide && amount > 0F && shieldEnergy > 0F)
         {
@@ -441,8 +412,7 @@ public class Mecha extends Driveable
     private void useHandTool(EnumMechaSlotType slot, boolean left, boolean held)
     {
         int index = left ? 0 : 1;
-        if (driveableData == null || !isUnderCommand()
-            || !isPartIntact(left ? EnumDriveablePart.LEFT_ARM : EnumDriveablePart.RIGHT_ARM))
+        if (driveableData == null || !isUnderCommand() || !isPartIntact(left ? EnumDriveablePart.LEFT_ARM : EnumDriveablePart.RIGHT_ARM))
         {
             handGunHeldTicks[index] = 0;
             handGunBurstRemaining[index] = 0;
@@ -486,8 +456,7 @@ public class Mecha extends Driveable
         // Sub-tick fire rates get all of their shots away in this tick, exactly as
         // the same gun would in a player's hands. Every path that does not fire a
         // shot returns outright, so the loop only repeats on a shot that landed.
-        while (ShotCooldown.isReady(handGunCooldown[index])
-            && shouldFireHandGun(mode, held, rising, handGunHeldTicks[index], handGunBurstRemaining[index]))
+        while (ShotCooldown.isReady(handGunCooldown[index]) && shouldFireHandGun(mode, held, rising, handGunHeldTicks[index], handGunBurstRemaining[index]))
         {
             if (!fireHandGun(slot, left, rising, mode, gunItem, gunType, gunStack, index))
                 return;
@@ -500,8 +469,7 @@ public class Mecha extends Driveable
      * One shot from a mecha hand gun, or the reload it needs first. Returns false
      * once the hand has stopped putting rounds out this tick.
      */
-    private boolean fireHandGun(EnumMechaSlotType slot, boolean left, boolean rising, EnumFireMode mode,
-        GunItem gunItem, GunType gunType, ItemStack gunStack, int index)
+    private boolean fireHandGun(EnumMechaSlotType slot, boolean left, boolean rising, EnumFireMode mode, GunItem gunItem, GunType gunType, ItemStack gunStack, int index)
     {
         LoadedHandAmmo loaded = findLoadedHandAmmo(gunItem, gunType, gunStack);
         if (loaded == null)
@@ -528,11 +496,9 @@ public class Mecha extends Driveable
 
         LivingEntity attacker = getControllingEntity() instanceof LivingEntity living ? living : null;
         ItemStack otherHand = oppositeHandStack(left);
-        FireableGun fireable = new FireableGun(gunType, gunStack, attacker, otherHand,
-            attacker == null ? EnumMovement.NONE : ModUtils.getEnumMovement(attacker), !onGround());
+        FireableGun fireable = new FireableGun(gunType, gunStack, attacker, otherHand, attacker == null ? EnumMovement.NONE : ModUtils.getEnumMovement(attacker), !onGround());
         fireable.applyAmmunition(loaded.bulletType());
-        FiredShot shot = new FiredShot(fireable, loaded.bulletType(), this, attacker,
-            ShootableItem.getRoundsFired(loaded.stack()));
+        FiredShot shot = new FiredShot(fireable, loaded.bulletType(), this, attacker, ShootableItem.getRoundsFired(loaded.stack()));
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
         boolean consumeAmmo = !creative && !infiniteAmmo();
         boolean lastBullet = countLoadedHandRounds(gunItem, gunType, gunStack) <= 1;
@@ -541,18 +507,18 @@ public class Mecha extends Driveable
             return false;
         Vec3 origin = handGunOrigin(mechaType, left);
         Vec3 direction = aimDirection();
-        ShootingHelper.fireGun(level(), shot, Math.max(1, gunType.getNumBullets(gunStack, loaded.bulletType())),
-            origin, direction, () -> {
-                if (consumeAmmo)
-                {
-                    ShootableItem.consumeRound(loaded.stack());
-                    gunItem.setBulletItemStack(gunStack, loaded.stack(), loaded.slot(), level().registryAccess());
-                    if (StringUtils.isNotBlank(loaded.bulletType().getDropItemOnShoot()))
-                        ModUtils.dropItem(level(), this, loaded.bulletType().getDropItemOnShoot(), loaded.bulletType().getContentPack());
-                    initializedData().setMechaAddon(slot, gunStack);
-                    acknowledgeInternalWeaponInventoryChange();
-                }
-            });
+        ShootingHelper.fireGun(level(), shot, Math.max(1, gunType.getNumBullets(gunStack, loaded.bulletType())), origin, direction, () ->
+        {
+            if (consumeAmmo)
+            {
+                ShootableItem.consumeRound(loaded.stack());
+                gunItem.setBulletItemStack(gunStack, loaded.stack(), loaded.slot(), level().registryAccess());
+                if (StringUtils.isNotBlank(loaded.bulletType().getDropItemOnShoot()))
+                    ModUtils.dropItem(level(), this, loaded.bulletType().getDropItemOnShoot(), loaded.bulletType().getContentPack());
+                initializedData().setMechaAddon(slot, gunStack);
+                acknowledgeInternalWeaponInventoryChange();
+            }
+        });
 
         String shootSound = gunType.getShootSound(gunStack, lastBullet);
         if (StringUtils.isNotBlank(shootSound))
@@ -572,8 +538,7 @@ public class Mecha extends Driveable
         for (int slot = 0; slot < gunType.getNumAmmoItemsInGun(gunStack); slot++)
         {
             ItemStack stack = gunItem.getAmmoItemStack(gunStack, slot, level().registryAccess());
-            if (stack.getItem() instanceof ShootableItem shootableItem
-                && shootableItem.getConfigType() instanceof BulletType bulletType
+            if (stack.getItem() instanceof ShootableItem shootableItem && shootableItem.getConfigType() instanceof BulletType bulletType
                 && gunType.getAmmoTypes().contains(bulletType) && ShootableItem.hasRoundsLeft(stack))
                 return new LoadedHandAmmo(slot, stack, bulletType);
         }
@@ -626,12 +591,10 @@ public class Mecha extends Driveable
         for (int slot = 0; slot < data.getContainerSize(); slot++)
         {
             ItemStack candidate = data.getItem(slot);
-            if (!(candidate.getItem() instanceof ShootableItem shootableItem)
-                || !allowed.contains(shootableItem.getConfigType()) || !ShootableItem.hasRoundsLeft(candidate))
+            if (!(candidate.getItem() instanceof ShootableItem shootableItem) || !allowed.contains(shootableItem.getConfigType()) || !ShootableItem.hasRoundsLeft(candidate))
                 continue;
             int rounds = ShootableItem.getRoundsRemaining(candidate);
-            boolean candidatePreferred = StringUtils.isNotBlank(preferred)
-                && preferred.equalsIgnoreCase(shootableItem.getConfigType().getShortName());
+            boolean candidatePreferred = StringUtils.isNotBlank(preferred) && preferred.equalsIgnoreCase(shootableItem.getConfigType().getShortName());
             if ((candidatePreferred && !bestPreferred) || candidatePreferred == bestPreferred && rounds > bestRounds)
             {
                 bestSlot = slot;
@@ -668,11 +631,9 @@ public class Mecha extends Driveable
     {
         com.flansmod.common.vector.Vector3f arm = left ? type.getLeftArmOrigin() : type.getRightArmOrigin();
         Vec3 localArm = LegacyDriveableCoordinates.toLocal(arm);
-        Vec3 legacyExtension = new Vec3(type.getArmLength() + 1.2F * type.getHeldItemScale(),
-            0.5F * type.getHeldItemScale(), 0D);
-        Vec3 extension = rotateTurretLocalDirection(LegacyDriveableCoordinates.toLocal(legacyExtension),
-            getTurretYaw(), getTurretPitch());
-        return localToWorld(localArm.x + extension.x, localArm.y + extension.y, localArm.z + extension.z);
+        Vec3 legacyExtension = new Vec3(type.getArmLength() + 1.2F * type.getHeldItemScale(), 0.5F * type.getHeldItemScale(), 0D);
+        Vec3 extension = rotateTurretLocalDirection(LegacyDriveableCoordinates.toLocal(legacyExtension), getTurretYaw(), getTurretPitch());
+        return modelLocalToWorld(localArm.add(extension));
     }
 
     private static boolean shouldFireHandGun(EnumFireMode mode, boolean held, boolean rising, int heldTicks, int burstRemaining)
@@ -686,7 +647,8 @@ public class Mecha extends Driveable
         };
     }
 
-    private record LoadedHandAmmo(int slot, ItemStack stack, BulletType bulletType) {}
+    private record LoadedHandAmmo(int slot, ItemStack stack, BulletType bulletType)
+    {}
 
     private void useMeleeTool(MechaItemType tool, int index)
     {
@@ -699,8 +661,8 @@ public class Mecha extends Driveable
         Vec3 origin = attacker.getEyePosition();
         Vec3 direction = aimDirection();
         AABB sweep = new AABB(origin, origin.add(direction.scale(reach))).inflate(1.25D);
-        Entity target = level().getEntities(this, sweep, entity -> entity instanceof LivingEntity && entity != attacker && !isPartOfThis(entity))
-            .stream().min(java.util.Comparator.comparingDouble(entity -> entity.distanceToSqr(origin))).orElse(null);
+        Entity target = level().getEntities(this, sweep, entity -> entity instanceof LivingEntity && entity != attacker && !isPartOfThis(entity)).stream()
+            .min(java.util.Comparator.comparingDouble(entity -> entity.distanceToSqr(origin))).orElse(null);
         if (target != null)
         {
             target.hurt(level().damageSources().mobAttack(attacker), Math.max(1F, 6F * tool.getSpeed()));
@@ -714,16 +676,14 @@ public class Mecha extends Driveable
     /** Points a held mining arm at the block it reaches. The right arm wins when both do, as in 1.7.10. */
     private void aimMiningTool(MechaItemType tool, int index)
     {
-        if (!(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof Player player)
-            || !FlansMod.teamsManager.isDriveablesBreakBlocks())
+        if (!(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof Player player) || !FlansMod.teamsManager.isDriveablesBreakBlocks())
             return;
         MechaType mechaType = getMechaType();
         if (mechaType == null)
             return;
         double reach = Mth.clamp(tool.getReach() * mechaType.getReach(), 1F, 32F);
         Vec3 origin = player.getEyePosition();
-        BlockHitResult hit = level().clip(new ClipContext(origin, origin.add(aimDirection().scale(reach)),
-            ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        BlockHitResult hit = level().clip(new ClipContext(origin, origin.add(aimDirection().scale(reach)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (hit.getType() != HitResult.Type.BLOCK || !serverLevel.mayInteract(player, hit.getBlockPos())
             || !player.mayUseItemAt(hit.getBlockPos(), hit.getDirection(), ItemStack.EMPTY))
             return;
@@ -744,8 +704,7 @@ public class Mecha extends Driveable
         MechaItemType soundTool = miningSoundTool;
         miningAim = null;
         miningSoundTool = null;
-        if (target == null || !(level() instanceof ServerLevel serverLevel)
-            || !(getControllingEntity() instanceof Player player) || driveableData == null)
+        if (target == null || !(level() instanceof ServerLevel serverLevel) || !(getControllingEntity() instanceof Player player) || driveableData == null)
         {
             breakingBlock = null;
             breakingProgress = 0F;
@@ -775,8 +734,7 @@ public class Mecha extends Driveable
             playToolSound(soundTool);
     }
 
-    private void addEffectiveToolSpeed(EnumMechaSlotType slot, EnumDriveablePart arm, BlockState state, float hardness,
-                                       List<Float> speeds)
+    private void addEffectiveToolSpeed(EnumMechaSlotType slot, EnumDriveablePart arm, BlockState state, float hardness, List<Float> speeds)
     {
         if (isPartIntact(arm) && initializedData().getMechaAddon(slot).getItem() instanceof MechaAddonItem addon)
         {
@@ -875,8 +833,7 @@ public class Mecha extends Driveable
 
     private void scanForDiamonds(@Nullable MechaItemType detector)
     {
-        if (detector == null || !(level() instanceof ServerLevel) || StringUtils.isBlank(detector.getDetectSound())
-            || getControllingEntity() == null)
+        if (detector == null || !(level() instanceof ServerLevel) || StringUtils.isBlank(detector.getDetectSound()) || getControllingEntity() == null)
             return;
         BlockPos centre = blockPosition();
         int radius = 12;
@@ -898,7 +855,7 @@ public class Mecha extends Driveable
 
     private Vec3 aimDirection()
     {
-        return ModUtils.getDirectionFromPitchAndYaw(getPitch() + getTurretPitch(), getYaw() + getTurretYaw()).normalize();
+        return aimedDirection(getTurretYaw(), getTurretPitch());
     }
 
     private static boolean effectiveAgainst(EnumMechaToolType function, BlockState state)
@@ -967,31 +924,102 @@ public class Mecha extends Driveable
         return types;
     }
 
-    public boolean stopFallDamage() { return getUpgradeTypes().stream().anyMatch(MechaItemType::isStopMechaFallDamage); }
-    public boolean breakBlocksUponFalling() { return getUpgradeTypes().stream().anyMatch(MechaItemType::isForceBlockFallDamage); }
-    public boolean vacuumItems() { return getUpgradeTypes().stream().anyMatch(MechaItemType::isVacuumItems); }
-    public boolean refineIron() { return getUpgradeTypes().stream().anyMatch(MechaItemType::isRefineIron); }
-    public boolean wasteCompact() { return getUpgradeTypes().stream().anyMatch(MechaItemType::isWasteCompact); }
-    public boolean autoCoal() { return getUpgradeTypes().stream().anyMatch(MechaItemType::isAutoCoal); }
-    public boolean infiniteAmmo() { return getUpgradeTypes().stream().anyMatch(MechaItemType::isInfiniteAmmo); }
-    public boolean shouldFloat() { return getUpgradeTypes().stream().anyMatch(MechaItemType::isFloater); }
-    @Nullable public MechaItemType diamondDetect() { return getUpgradeTypes().stream().filter(MechaItemType::isDiamondDetect).findFirst().orElse(null); }
-    @Nullable public MechaItemType rocketPack() { return getUpgradeTypes().stream().filter(MechaItemType::isRocketPack).findFirst().orElse(null); }
-    public boolean shouldFly() { return rocketPack() != null; }
+    public boolean stopFallDamage()
+    {
+        return getUpgradeTypes().stream().anyMatch(MechaItemType::isStopMechaFallDamage);
+    }
+
+    public boolean breakBlocksUponFalling()
+    {
+        return getUpgradeTypes().stream().anyMatch(MechaItemType::isForceBlockFallDamage);
+    }
+
+    public boolean vacuumItems()
+    {
+        return getUpgradeTypes().stream().anyMatch(MechaItemType::isVacuumItems);
+    }
+
+    public boolean refineIron()
+    {
+        return getUpgradeTypes().stream().anyMatch(MechaItemType::isRefineIron);
+    }
+
+    public boolean wasteCompact()
+    {
+        return getUpgradeTypes().stream().anyMatch(MechaItemType::isWasteCompact);
+    }
+
+    public boolean autoCoal()
+    {
+        return getUpgradeTypes().stream().anyMatch(MechaItemType::isAutoCoal);
+    }
+
+    public boolean infiniteAmmo()
+    {
+        return getUpgradeTypes().stream().anyMatch(MechaItemType::isInfiniteAmmo);
+    }
+
+    public boolean shouldFloat()
+    {
+        return getUpgradeTypes().stream().anyMatch(MechaItemType::isFloater);
+    }
+
+    @Nullable
+    public MechaItemType diamondDetect()
+    {
+        return getUpgradeTypes().stream().filter(MechaItemType::isDiamondDetect).findFirst().orElse(null);
+    }
+
+    @Nullable
+    public MechaItemType rocketPack()
+    {
+        return getUpgradeTypes().stream().filter(MechaItemType::isRocketPack).findFirst().orElse(null);
+    }
+
+    public boolean shouldFly()
+    {
+        return rocketPack() != null;
+    }
 
     public float autoRepair()
     {
-        return getUpgradeTypes().stream().filter(MechaItemType::isAutoRepair).map(MechaItemType::getAutoRepairAmount)
-            .max(Float::compare).orElse(0F);
+        return getUpgradeTypes().stream().filter(MechaItemType::isAutoRepair).map(MechaItemType::getAutoRepairAmount).max(Float::compare).orElse(0F);
     }
 
-    public float speedMultiplier() { return product(MechaItemType::getSpeedMultiplier); }
-    public float diamondMultiplier() { return product(MechaItemType::getFortuneDiamond); }
-    public float redstoneMultiplier() { return product(MechaItemType::getFortuneRedstone); }
-    public float coalMultiplier() { return product(MechaItemType::getFortuneCoal); }
-    public float emeraldMultiplier() { return product(MechaItemType::getFortuneEmerald); }
-    public float ironMultiplier() { return product(MechaItemType::getFortuneIron); }
-    public float jetPackPower() { return product(MechaItemType::getRocketPower); }
+    public float speedMultiplier()
+    {
+        return product(MechaItemType::getSpeedMultiplier);
+    }
+
+    public float diamondMultiplier()
+    {
+        return product(MechaItemType::getFortuneDiamond);
+    }
+
+    public float redstoneMultiplier()
+    {
+        return product(MechaItemType::getFortuneRedstone);
+    }
+
+    public float coalMultiplier()
+    {
+        return product(MechaItemType::getFortuneCoal);
+    }
+
+    public float emeraldMultiplier()
+    {
+        return product(MechaItemType::getFortuneEmerald);
+    }
+
+    public float ironMultiplier()
+    {
+        return product(MechaItemType::getFortuneIron);
+    }
+
+    public float jetPackPower()
+    {
+        return product(MechaItemType::getRocketPower);
+    }
 
     public float vulnerability()
     {
@@ -1026,8 +1054,7 @@ public class Mecha extends Driveable
 
     private boolean hasFuelForAddon(float amount)
     {
-        return !usesFuel() || getControllingEntity() instanceof Player player && player.getAbilities().instabuild
-            || getFuel() >= amount;
+        return !usesFuel() || getControllingEntity() instanceof Player player && player.getAbilities().instabuild || getFuel() >= amount;
     }
 
     private boolean hasFuelForMovement()
@@ -1049,8 +1076,7 @@ public class Mecha extends Driveable
 
     private boolean usesFuel()
     {
-        return getConfigType() != null && getConfigType().getFuelTankSize() >= 0F
-            && FlansMod.teamsManager.isVehiclesNeedFuel();
+        return getConfigType() != null && getConfigType().getFuelTankSize() >= 0F && FlansMod.teamsManager.isVehiclesNeedFuel();
     }
 
     /** Mechas get their own window instead of the paged driveable one. */
@@ -1060,8 +1086,7 @@ public class Mecha extends Driveable
         if (!canPlayerAccessInventory(player) || getDriveableData() == null || getConfigType() == null)
             return false;
         MenuPlatform.open(player,
-            new SimpleMenuProvider((containerId, inventory, ignored) -> new MechaInventoryMenu(containerId, inventory, this),
-                ModUtils.getDisplayName(getConfigType())),
+            new SimpleMenuProvider((containerId, inventory, ignored) -> new MechaInventoryMenu(containerId, inventory, this), ModUtils.getDisplayName(getConfigType())),
             buffer -> buffer.writeVarInt(getId()));
         return true;
     }
