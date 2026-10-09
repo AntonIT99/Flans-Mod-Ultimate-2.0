@@ -19,7 +19,8 @@ import java.util.List;
 /** Loader boundary for posting events to the game event bus. */
 public final class PlatformEvents
 {
-    private PlatformEvents() {}
+    private PlatformEvents()
+    {}
 
     public static void post(Event event)
     {

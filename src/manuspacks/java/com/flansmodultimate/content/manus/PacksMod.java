@@ -1,8 +1,8 @@
 package com.flansmodultimate.content.manus;
 
 import com.flansmodultimate.PackagedContentPackApi;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
 
 import java.util.Set;
 

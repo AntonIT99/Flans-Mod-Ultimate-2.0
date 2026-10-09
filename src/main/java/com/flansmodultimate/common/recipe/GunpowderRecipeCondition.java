@@ -11,11 +11,9 @@ import java.util.function.Supplier;
 
 public final class GunpowderRecipeCondition implements ICondition
 {
-    public static final DeferredRegister<MapCodec<? extends ICondition>> CODECS =
-        DeferredRegister.create(NeoForgeRegistries.Keys.CONDITION_CODECS, FlansMod.FLANSMOD_ID);
+    public static final DeferredRegister<MapCodec<? extends ICondition>> CODECS = DeferredRegister.create(NeoForgeRegistries.Keys.CONDITION_CODECS, FlansMod.FLANSMOD_ID);
     private static final MapCodec<GunpowderRecipeCondition> CODEC = MapCodec.unit(new GunpowderRecipeCondition());
-    public static final Supplier<MapCodec<GunpowderRecipeCondition>> REGISTERED_CODEC =
-        CODECS.register("add_gunpowder_recipe", () -> CODEC);
+    public static final Supplier<MapCodec<GunpowderRecipeCondition>> REGISTERED_CODEC = CODECS.register("add_gunpowder_recipe", () -> CODEC);
 
     @Override
     public MapCodec<? extends ICondition> codec()

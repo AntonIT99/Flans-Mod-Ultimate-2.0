@@ -30,13 +30,11 @@ class RecipeJsonMigrationTest
         assertTrue(RecipeDataCompatibility.hasMissingCounterparts(dataFolder));
         RecipeDataCompatibility.fillMissingCounterparts(dataFolder);
 
-        JsonObject craftingResult = JsonParser.parseString(Files.readString(namespace.resolve("recipe/example_shaped.json")))
-            .getAsJsonObject().getAsJsonObject("result");
+        JsonObject craftingResult = JsonParser.parseString(Files.readString(namespace.resolve("recipe/example_shaped.json"))).getAsJsonObject().getAsJsonObject("result");
         assertEquals("flansmod:example", craftingResult.get("id").getAsString());
         assertEquals(3, craftingResult.get("count").getAsInt());
         assertFalse(craftingResult.has("item"));
-        JsonObject smeltingResult = JsonParser.parseString(Files.readString(namespace.resolve("recipe/example_smelting.json")))
-            .getAsJsonObject().getAsJsonObject("result");
+        JsonObject smeltingResult = JsonParser.parseString(Files.readString(namespace.resolve("recipe/example_smelting.json"))).getAsJsonObject().getAsJsonObject("result");
         assertEquals("flansmod:example", smeltingResult.get("id").getAsString());
         assertFalse(RecipeDataCompatibility.hasMissingCounterparts(dataFolder));
         assertTrue(Files.readString(crafting).contains("\"item\""));

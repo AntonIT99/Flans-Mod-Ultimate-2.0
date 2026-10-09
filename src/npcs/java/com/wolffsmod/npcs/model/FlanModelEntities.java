@@ -22,9 +22,11 @@ import java.util.TreeMap;
 /**
  * Registers one {@link FlanModelEntityType} for every AA gun and driveable of the loaded content packs.
  *
- * <p>Custom NPCs lists every registered living entity type in its model selection, so each
+ * <p>
+ * Custom NPCs lists every registered living entity type in its model selection, so each
  * definition becomes a selectable NPC model without any class of its own. Flan's Mod Ultimate reads
- * the content packs while it is constructed, which is complete before any registry event fires.</p>
+ * the content packs while it is constructed, which is complete before any registry event fires.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FlanModelEntities
@@ -42,7 +44,8 @@ public final class FlanModelEntities
 
     public static void registerEntityTypes(RegisterEvent event)
     {
-        event.register(Registries.ENTITY_TYPE, helper -> {
+        event.register(Registries.ENTITY_TYPE, helper ->
+        {
             // Shortname order keeps the registration independent of hash iteration order.
             Map<String, IContentType> definitions = new TreeMap<>();
             for (IContentType type : FlansModApi.getTypes())
@@ -51,7 +54,8 @@ public final class FlanModelEntities
                     definitions.put(type.getShortName(), type);
             }
 
-            definitions.forEach((shortName, type) -> {
+            definitions.forEach((shortName, type) ->
+            {
                 FlanModelKind kind = FlanModelKind.of(type);
                 ResourceLocation id = ResourceLocation.tryBuild(NpcsMod.MOD_ID, ID_PREFIX + shortName);
                 if (id == null)

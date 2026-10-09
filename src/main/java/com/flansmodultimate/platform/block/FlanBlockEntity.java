@@ -27,10 +27,12 @@ public abstract class FlanBlockEntity extends BlockEntity
     }
 
     /** Writes this block entity's own saved data. */
-    protected void saveData(CompoundTag tag, HolderLookup.Provider registries) {}
+    protected void saveData(CompoundTag tag, HolderLookup.Provider registries)
+    {}
 
     /** Reads this block entity's own saved data. */
-    protected void loadData(CompoundTag tag, HolderLookup.Provider registries) {}
+    protected void loadData(CompoundTag tag, HolderLookup.Provider registries)
+    {}
 
     /** Tag sent to clients with the chunk; defaults to the loader's update tag. */
     protected CompoundTag createUpdateTag(HolderLookup.Provider registries)
@@ -112,8 +114,7 @@ public abstract class FlanBlockEntity extends BlockEntity
     }
 
     @Override
-    public final void onDataPacket(@NotNull Connection connection, @NotNull ClientboundBlockEntityDataPacket packet,
-                                   @NotNull HolderLookup.Provider registries)
+    public final void onDataPacket(@NotNull Connection connection, @NotNull ClientboundBlockEntityDataPacket packet, @NotNull HolderLookup.Provider registries)
     {
         readDataPacket(connection, packet, registries);
     }

@@ -22,7 +22,8 @@ public final class SoundPriorityConfig
         It is enforced independently of Minecraft's ordinary resource-pack ordering for these Flan sounds.
         Server and clients should use the same order.""";
 
-    private SoundPriorityConfig() {}
+    private SoundPriorityConfig()
+    {}
 
     public static List<String> reconcile(Object configured, List<String> discovered)
     {

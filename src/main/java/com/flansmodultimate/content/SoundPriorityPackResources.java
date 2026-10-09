@@ -70,7 +70,7 @@ final class SoundPriorityPackResources implements PackResources
     }
 
     @Override
-    public IoSupplier<InputStream> getRootResource(String @NotNull ... path)
+    public IoSupplier<InputStream> getRootResource(String @NotNull... path)
     {
         return null;
     }

@@ -19,11 +19,9 @@ class LegacyGameplayConfigTest
     void vehicleThrottleDecayMultiplierKeepsTheFasterDefaultAndAcceptsOnlyItsRange()
     {
         assertSetting(ModCommonConfig.configSpec, 4D, "Vehicle Physics Settings", "vehicleThrottleDecayMultiplier");
-        var spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec,
-            List.of("Vehicle Physics Settings", "vehicleThrottleDecayMultiplier"));
+        var spec = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, List.of("Vehicle Physics Settings", "vehicleThrottleDecayMultiplier"));
         assertTrue(spec.test(0D) && spec.test(1D) && spec.test(4D) && spec.test(100D));
-        assertFalse(spec.test(-1D) || spec.test(101D) || spec.test(Double.NaN)
-            || spec.test(Double.POSITIVE_INFINITY) || spec.test("4"));
+        assertFalse(spec.test(-1D) || spec.test(101D) || spec.test(Double.NaN) || spec.test(Double.POSITIVE_INFINITY) || spec.test("4"));
     }
 
     @Test
@@ -66,8 +64,8 @@ class LegacyGameplayConfigTest
     @Test
     void commonListSettingsAcceptAnEmptyList()
     {
-        for (String path : List.of("Penetration System Settings.blocks", "Digital Ammo System Settings.digitalAmmoSupplyBlocks",
-            "World Physics Settings.dimensionGravityFactors", "World Physics Settings.dimensionDragFactors", "Vehicle Fuel Settings.fluidFuels"))
+        for (String path : List.of("Penetration System Settings.blocks", "Digital Ammo System Settings.digitalAmmoSupplyBlocks", "World Physics Settings.dimensionGravityFactors",
+            "World Physics Settings.dimensionDragFactors", "Vehicle Fuel Settings.fluidFuels"))
         {
             var value = ConfigSpecValues.valueSpec(ModCommonConfig.configSpec, ConfigSpecValues.splitPath(path));
             assertNotNull(value, path + " is missing");

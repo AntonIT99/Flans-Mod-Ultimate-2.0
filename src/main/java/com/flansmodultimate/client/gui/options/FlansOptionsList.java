@@ -101,8 +101,7 @@ public class FlansOptionsList extends ContainerObjectSelectionList<FlansOptionsL
     }
 
     public abstract static class Entry extends ContainerObjectSelectionList.Entry<Entry>
-    {
-    }
+    {}
 
     /** A section title. It holds no widgets, so it is skipped by keyboard navigation. */
     private class HeaderEntry extends Entry
@@ -115,8 +114,7 @@ public class FlansOptionsList extends ContainerObjectSelectionList<FlansOptionsL
         }
 
         @Override
-        public void render(GuiGraphics graphics, int index, int top, int left, int entryWidth, int entryHeight,
-                           int mouseX, int mouseY, boolean hovering, float partialTick)
+        public void render(GuiGraphics graphics, int index, int top, int left, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovering, float partialTick)
         {
             int textTop = top + entryHeight - minecraft.font.lineHeight - 2;
             graphics.drawString(minecraft.font, title, width / 2 - ROW_HALF_WIDTH, textTop, HEADER_COLOUR, false);
@@ -146,8 +144,7 @@ public class FlansOptionsList extends ContainerObjectSelectionList<FlansOptionsL
         }
 
         @Override
-        public void render(GuiGraphics graphics, int index, int top, int left, int entryWidth, int entryHeight,
-                           int mouseX, int mouseY, boolean hovering, float partialTick)
+        public void render(GuiGraphics graphics, int index, int top, int left, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovering, float partialTick)
         {
             for (AbstractWidget widget : widgets)
             {

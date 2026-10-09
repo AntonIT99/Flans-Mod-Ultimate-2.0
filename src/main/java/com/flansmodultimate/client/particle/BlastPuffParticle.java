@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.particle;
 
 import com.flansmodultimate.common.physics.ModPhysics;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,23 +38,31 @@ public class BlastPuffParticle extends TextureSheetParticle
     /**
      * How one puff looks over its life.
      *
-     * @param startR   colour at birth
-     * @param endR     colour at death; the colour moves toward it quickly at first, then settles
-     * @param alpha    opacity at birth, fading to nothing by the end of its life
-     * @param growth   how much larger than its birth size the puff ends up, 0 for no growth
-     * @param drag     velocity kept each tick
-     * @param buoyancy upward acceleration in blocks per tick squared, negative to sink
-     * @param glow     share of its life over which the puff fades from full brightness to the
-     *                 world's light, 0 for a puff lit like any other
-     * @param additive whether the puff adds light to what is behind it rather than covering it
-     * @param collides whether the puff stops against blocks
+     * @param startR
+     *            colour at birth
+     * @param endR
+     *            colour at death; the colour moves toward it quickly at first, then settles
+     * @param alpha
+     *            opacity at birth, fading to nothing by the end of its life
+     * @param growth
+     *            how much larger than its birth size the puff ends up, 0 for no growth
+     * @param drag
+     *            velocity kept each tick
+     * @param buoyancy
+     *            upward acceleration in blocks per tick squared, negative to sink
+     * @param glow
+     *            share of its life over which the puff fades from full brightness to the
+     *            world's light, 0 for a puff lit like any other
+     * @param additive
+     *            whether the puff adds light to what is behind it rather than covering it
+     * @param collides
+     *            whether the puff stops against blocks
      */
-    public record Look(float startR, float startG, float startB, float endR, float endG, float endB,
-                       float alpha, float growth, float drag, float buoyancy, float glow,
-                       boolean additive, boolean collides) {}
+    public record Look(float startR, float startG, float startB, float endR, float endG, float endB, float alpha, float growth, float drag, float buoyancy, float glow, boolean additive,
+        boolean collides)
+    {}
 
-    protected BlastPuffParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz,
-                                SpriteSet sprites, Look look, float size, int lifetime)
+    protected BlastPuffParticle(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprites, Look look, float size, int lifetime)
     {
         super(level, x, y, z);
         this.look = look;
@@ -76,8 +83,7 @@ public class BlastPuffParticle extends TextureSheetParticle
 
     /** Creates a puff, or returns {@code null} before the particle sprites have loaded. */
     @Nullable
-    public static BlastPuffParticle create(ClientLevel level, double x, double y, double z,
-                                           double vx, double vy, double vz, Look look, float size, int lifetime)
+    public static BlastPuffParticle create(ClientLevel level, double x, double y, double z, double vx, double vy, double vz, Look look, float size, int lifetime)
     {
         return sprites == null ? null : new BlastPuffParticle(level, x, y, z, vx, vy, vz, sprites, look, size, lifetime);
     }
@@ -156,8 +162,7 @@ public class BlastPuffParticle extends TextureSheetParticle
     }
 
     /** A plain grey puff, which is what a bare {@code /particle flansmod:blast_puff} gives. */
-    private static final Look DEFAULT_LOOK = new Look(0.6F, 0.6F, 0.6F, 0.45F, 0.45F, 0.45F,
-        0.8F, 1.0F, 0.92F, 0.002F, 0F, false, true);
+    private static final Look DEFAULT_LOOK = new Look(0.6F, 0.6F, 0.6F, 0.45F, 0.45F, 0.45F, 0.8F, 1.0F, 0.92F, 0.002F, 0F, false, true);
 
     public record Provider(SpriteSet spriteSet) implements ParticleProvider<SimpleParticleType>
     {

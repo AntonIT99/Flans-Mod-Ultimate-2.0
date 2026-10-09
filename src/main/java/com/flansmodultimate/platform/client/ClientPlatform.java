@@ -27,7 +27,8 @@ import java.util.List;
 /** Version boundary for client frame timing and screen helpers. Client-only. */
 public final class ClientPlatform
 {
-    private ClientPlatform() {}
+    private ClientPlatform()
+    {}
 
     /** Interpolation factor between the previous and current game tick for the frame being rendered. */
     public static float partialTick()
@@ -89,9 +90,7 @@ public final class ClientPlatform
         if (quads.isEmpty())
             quads = model.getQuads(state, null, random, modelData, (RenderType) null);
 
-        return quads.isEmpty()
-            ? model.getParticleIcon(modelData)
-            : quads.get(random.nextInt(quads.size())).getSprite();
+        return quads.isEmpty() ? model.getParticleIcon(modelData) : quads.get(random.nextInt(quads.size())).getSprite();
     }
 
     /** The model's particle sprite, without model data. */

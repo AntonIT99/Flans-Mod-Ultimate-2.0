@@ -11,7 +11,8 @@ import net.minecraft.server.MinecraftServer;
 /** Loader boundary for runtime side, production, loaded-mod, and current-server queries. */
 public final class PlatformEnvironment
 {
-    private PlatformEnvironment() {}
+    private PlatformEnvironment()
+    {}
 
     public static boolean isClient()
     {

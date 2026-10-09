@@ -6,6 +6,8 @@ import com.flansmodultimate.common.types.EnumType;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.SharedConstants;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -25,7 +27,6 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ShieldItem;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -46,13 +47,14 @@ public final class EnchantmentItemRepositorySource
     private static final ResourceLocation OFFHAND = id("tags/item/enchantable/offhand.json");
     private static final ResourceLocation ARMOR = id("tags/item/enchantable/armor.json");
 
-    private EnchantmentItemRepositorySource() {}
+    private EnchantmentItemRepositorySource()
+    {}
 
     public static RepositorySource create()
     {
-        return acceptor -> {
-            PackLocationInfo location = new PackLocationInfo(FlansMod.MOD_ID + ":enchantable_items",
-                Component.literal(DESCRIPTION), PackSource.BUILT_IN, Optional.empty());
+        return acceptor ->
+        {
+            PackLocationInfo location = new PackLocationInfo(FlansMod.MOD_ID + ":enchantable_items", Component.literal(DESCRIPTION), PackSource.BUILT_IN, Optional.empty());
             Pack.ResourcesSupplier resources = new Pack.ResourcesSupplier()
             {
                 @Override
@@ -67,10 +69,8 @@ public final class EnchantmentItemRepositorySource
                     return new Resources(info);
                 }
             };
-            Pack.Metadata metadata = new Pack.Metadata(Component.literal(DESCRIPTION),
-                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of());
-            acceptor.accept(new Pack(location, resources, metadata,
-                new PackSelectionConfig(true, Pack.Position.TOP, false)));
+            Pack.Metadata metadata = new Pack.Metadata(Component.literal(DESCRIPTION), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of());
+            acceptor.accept(new Pack(location, resources, metadata, new PackSelectionConfig(true, Pack.Position.TOP, false)));
         };
     }
 
@@ -114,8 +114,7 @@ public final class EnchantmentItemRepositorySource
         TreeSet<String> armor = new TreeSet<>(itemIds(EnumType.ARMOR));
         armor.add("#minecraft:enchantable/armor");
         armor.addAll(idsMatching(item -> item instanceof ArmorItem));
-        return Map.of(GLOVES, tag(List.copyOf(gloves)), OFFHAND, tag(List.copyOf(offhand)),
-            ARMOR, tag(List.copyOf(armor)));
+        return Map.of(GLOVES, tag(List.copyOf(gloves)), OFFHAND, tag(List.copyOf(offhand)), ARMOR, tag(List.copyOf(armor)));
     }
 
     private static final class Resources implements PackResources
@@ -130,7 +129,7 @@ public final class EnchantmentItemRepositorySource
         }
 
         @Override
-        public IoSupplier<InputStream> getRootResource(String @NotNull ... path)
+        public IoSupplier<InputStream> getRootResource(String @NotNull... path)
         {
             return null;
         }
@@ -143,12 +142,12 @@ public final class EnchantmentItemRepositorySource
         }
 
         @Override
-        public void listResources(@NotNull PackType type, @NotNull String namespace,
-                                  @NotNull String path, @NotNull ResourceOutput output)
+        public void listResources(@NotNull PackType type, @NotNull String namespace, @NotNull String path, @NotNull ResourceOutput output)
         {
             if (type != PackType.SERVER_DATA || !namespace.equals(FlansMod.MOD_ID))
                 return;
-            entries.forEach((location, data) -> {
+            entries.forEach((location, data) ->
+            {
                 if (location.getPath().startsWith(path))
                     output.accept(location, () -> new ByteArrayInputStream(data));
             });
@@ -183,6 +182,7 @@ public final class EnchantmentItemRepositorySource
         }
 
         @Override
-        public void close() {}
+        public void close()
+        {}
     }
 }

@@ -7,7 +7,8 @@ import java.nio.file.Path;
 /** Loader boundary for the standalone Packs Manager mod's directories. */
 public final class PlatformPaths
 {
-    private PlatformPaths() {}
+    private PlatformPaths()
+    {}
 
     public static Path gameDir()
     {

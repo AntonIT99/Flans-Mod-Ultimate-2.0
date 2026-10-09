@@ -12,49 +12,32 @@ import net.minecraft.client.renderer.MultiBufferSource;
 /** Version boundary for emitting vertices, immediate buffers, and the model-view matrix. Client-only. */
 public final class VertexPlatform
 {
-    private VertexPlatform() {}
+    private VertexPlatform()
+    {}
 
     /** Entity-format vertex; position and normal are transformed by {@code pose}. */
-    public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, float x, float y, float z,
-                              float red, float green, float blue, float alpha, float u, float v,
-                              int packedOverlay, int packedLight, float normalX, float normalY, float normalZ)
+    public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int packedOverlay,
+        int packedLight, float normalX, float normalY, float normalZ)
     {
-        consumer.addVertex(pose.pose(), x, y, z)
-            .setColor(red, green, blue, alpha)
-            .setUv(u, v)
-            .setOverlay(packedOverlay)
-            .setLight(packedLight)
-            .setNormal(pose, normalX, normalY, normalZ);
+        consumer.addVertex(pose.pose(), x, y, z).setColor(red, green, blue, alpha).setUv(u, v).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, normalX, normalY, normalZ);
     }
 
     /** Entity-format vertex whose position and normal are already transformed. */
-    public static void vertex(VertexConsumer consumer, float x, float y, float z,
-                              float red, float green, float blue, float alpha, float u, float v,
-                              int packedOverlay, int packedLight, float normalX, float normalY, float normalZ)
+    public static void vertex(VertexConsumer consumer, float x, float y, float z, float red, float green, float blue, float alpha, float u, float v, int packedOverlay, int packedLight, float normalX,
+        float normalY, float normalZ)
     {
-        consumer.addVertex(x, y, z)
-            .setColor(red, green, blue, alpha)
-            .setUv(u, v)
-            .setOverlay(packedOverlay)
-            .setLight(packedLight)
-            .setNormal(normalX, normalY, normalZ);
+        consumer.addVertex(x, y, z).setColor(red, green, blue, alpha).setUv(u, v).setOverlay(packedOverlay).setLight(packedLight).setNormal(normalX, normalY, normalZ);
     }
 
     /** Position-colour-normal vertex, as used by line render types. */
-    public static void lineVertex(VertexConsumer consumer, PoseStack.Pose pose, float x, float y, float z,
-                                  float red, float green, float blue, float alpha,
-                                  float normalX, float normalY, float normalZ)
+    public static void lineVertex(VertexConsumer consumer, PoseStack.Pose pose, float x, float y, float z, float red, float green, float blue, float alpha, float normalX, float normalY, float normalZ)
     {
-        consumer.addVertex(pose.pose(), x, y, z)
-            .setColor(red, green, blue, alpha)
-            .setNormal(pose, normalX, normalY, normalZ);
+        consumer.addVertex(pose.pose(), x, y, z).setColor(red, green, blue, alpha).setNormal(pose, normalX, normalY, normalZ);
     }
 
-    public static void renderModelPart(ModelPart part, PoseStack poseStack, VertexConsumer consumer, int packedLight,
-                                       int packedOverlay, float red, float green, float blue, float alpha)
+    public static void renderModelPart(ModelPart part, PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        int color = Math.round(alpha * 255F) << 24 | Math.round(red * 255F) << 16
-            | Math.round(green * 255F) << 8 | Math.round(blue * 255F);
+        int color = Math.round(alpha * 255F) << 24 | Math.round(red * 255F) << 16 | Math.round(green * 255F) << 8 | Math.round(blue * 255F);
         part.render(poseStack, consumer, packedLight, packedOverlay, color);
     }
 
@@ -92,13 +75,9 @@ public final class VertexPlatform
     }
 
     /** Emits one model cube with a float colour, packed to ARGB by truncation. */
-    public static void compileCube(ModelPart.Cube cube, PoseStack.Pose pose, VertexConsumer consumer, int packedLight, int packedOverlay,
-                                   float red, float green, float blue, float alpha)
+    public static void compileCube(ModelPart.Cube cube, PoseStack.Pose pose, VertexConsumer consumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        int packedColor = ((int)(alpha * 255F) & 0xFF) << 24
-            | ((int)(red * 255F) & 0xFF) << 16
-            | ((int)(green * 255F) & 0xFF) << 8
-            | ((int)(blue * 255F) & 0xFF);
+        int packedColor = ((int) (alpha * 255F) & 0xFF) << 24 | ((int) (red * 255F) & 0xFF) << 16 | ((int) (green * 255F) & 0xFF) << 8 | ((int) (blue * 255F) & 0xFF);
         cube.compile(pose, consumer, packedLight, packedOverlay, packedColor);
     }
 }

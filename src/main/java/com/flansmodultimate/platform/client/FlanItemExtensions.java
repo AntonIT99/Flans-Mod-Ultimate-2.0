@@ -6,5 +6,6 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 public interface FlanItemExtensions extends IClientItemExtensions
 {
     /** Extensions that change nothing. */
-    FlanItemExtensions NONE = new FlanItemExtensions() {};
+    FlanItemExtensions NONE = new FlanItemExtensions()
+    {};
 }

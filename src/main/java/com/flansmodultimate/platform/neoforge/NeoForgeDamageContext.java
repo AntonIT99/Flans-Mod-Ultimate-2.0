@@ -1,9 +1,10 @@
 package com.flansmodultimate.platform.neoforge;
 
 import com.flansmodultimate.platform.damage.MutableDamageContext;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
+
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.common.damagesource.DamageContainer;
 
 public final class NeoForgeDamageContext implements MutableDamageContext
 {

@@ -21,8 +21,7 @@ final class CustomArmorMaterial
     private static final ResourceLocation VANILLA_FALLBACK_LAYER = ResourceLocation.withDefaultNamespace("leather");
 
     private CustomArmorMaterial()
-    {
-    }
+    {}
 
     static Holder<ArmorMaterial> create(ArmorType type)
     {
@@ -30,22 +29,13 @@ final class CustomArmorMaterial
         for (ArmorItem.Type armorType : ArmorItem.Type.values())
             defense.put(armorType, type.getDefaultMinecraftArmorPoints());
 
-        Holder<SoundEvent> equipSound = FlansMod.getSoundEvent(type.getEquipSound())
-            .<Holder<SoundEvent>>map(RegistryEntry::holder)
-            .orElse(SoundEvents.ARMOR_EQUIP_GENERIC);
+        Holder<SoundEvent> equipSound = FlansMod.getSoundEvent(type.getEquipSound()).<Holder<SoundEvent>>map(RegistryEntry::holder).orElse(SoundEvents.ARMOR_EQUIP_GENERIC);
 
-        ArmorMaterial material = new ArmorMaterial(
-            defense,
-            type.getEnchantability(),
-            equipSound,
-            () -> Ingredient.of(Items.IRON_INGOT),
+        ArmorMaterial material = new ArmorMaterial(defense, type.getEnchantability(), equipSound, () -> Ingredient.of(Items.IRON_INGOT),
             // ArmorMaterial requires a valid visual layer during client resource preparation.
             // HumanoidArmorLayerMixin suppresses this fallback for CustomArmorItem instances;
             // the actual legacy model and texture are rendered by CustomArmorLayer.
-            List.of(new ArmorMaterial.Layer(VANILLA_FALLBACK_LAYER)),
-            type.getToughness(),
-            0.0F
-        );
+            List.of(new ArmorMaterial.Layer(VANILLA_FALLBACK_LAYER)), type.getToughness(), 0.0F);
         return Holder.direct(material);
     }
 }

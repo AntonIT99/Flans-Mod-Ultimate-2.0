@@ -26,7 +26,8 @@ class SharedRotationTest
                     // Two parts sharing the angles, as an animated array does; the second reuses the rotation.
                     for (int copy = 0; copy < 2; copy++)
                     {
-                        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 64, 64);
+                        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+                        {}, 0, 0, 64, 64);
                         part.addBox(-1, -2, -3, 2, 4, 6);
                         part.setRotationPoint(3 + copy, -2, 5);
                         part.offsetX = 0.25F;
@@ -45,11 +46,16 @@ class SharedRotationTest
                         expected.mulPose(Axis.YP.rotation(0.4F));
                         expected.translate(part.offsetX, part.offsetY, part.offsetZ);
                         expected.translate(part.rotationPointX * 0.0625F * scale, part.rotationPointY * 0.0625F * scale, part.rotationPointZ * 0.0625F * scale);
-                        if (!oldRotateOrder && angle[1] != 0) expected.mulPose(Axis.YP.rotation(angle[1]));
-                        if (angle[2] != 0) expected.mulPose(Axis.ZP.rotation(oldRotateOrder ? -angle[2] : angle[2]));
-                        if (oldRotateOrder && angle[1] != 0) expected.mulPose(Axis.YP.rotation(-angle[1]));
-                        if (angle[0] != 0) expected.mulPose(Axis.XP.rotation(angle[0]));
-                        if (scale != 1) expected.scale(scale, scale, scale);
+                        if (!oldRotateOrder && angle[1] != 0)
+                            expected.mulPose(Axis.YP.rotation(angle[1]));
+                        if (angle[2] != 0)
+                            expected.mulPose(Axis.ZP.rotation(oldRotateOrder ? -angle[2] : angle[2]));
+                        if (oldRotateOrder && angle[1] != 0)
+                            expected.mulPose(Axis.YP.rotation(-angle[1]));
+                        if (angle[0] != 0)
+                            expected.mulPose(Axis.XP.rotation(angle[0]));
+                        if (scale != 1)
+                            expected.scale(scale, scale, scale);
                         Recording reference = new Recording();
                         for (TexturedPolygon face : part.getRenderPolygons())
                             face.draw(expected.last(), reference, 0, 0, 1, 1, 1, 1);
@@ -66,12 +72,49 @@ class SharedRotationTest
         final List<float[]> vertices = new ArrayList<>();
         // Minecraft 1.21 writes each vertex as a chain; the normal ends it.
         private final float[] pending = new float[8];
-        @Override public VertexConsumer addVertex(float x, float y, float z) { pending[0] = x; pending[1] = y; pending[2] = z; return this; }
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-        @Override public VertexConsumer setUv(float u, float v) { pending[3] = u; pending[4] = v; return this; }
-        @Override public VertexConsumer setUv1(int u, int v) { return this; }
-        @Override public VertexConsumer setUv2(int u, int v) { return this; }
-        @Override public VertexConsumer setNormal(float x, float y, float z)
-        { pending[5] = x; pending[6] = y; pending[7] = z; vertices.add(pending.clone()); return this; }
+        @Override
+        public VertexConsumer addVertex(float x, float y, float z)
+        {
+            pending[0] = x;
+            pending[1] = y;
+            pending[2] = z;
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int r, int g, int b, int a)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v)
+        {
+            pending[3] = u;
+            pending[4] = v;
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float x, float y, float z)
+        {
+            pending[5] = x;
+            pending[6] = y;
+            pending[7] = z;
+            vertices.add(pending.clone());
+            return this;
+        }
     }
 }

@@ -12,10 +12,10 @@ import java.util.UUID;
 /** Version boundary for persistent chunk tickets used by the Teams game mode: Forge ForgeChunkManager or a NeoForge ticket controller. */
 public final class ChunkTicketPlatform
 {
-    private static final TicketController CONTROLLER = new TicketController(
-        ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "teams"));
+    private static final TicketController CONTROLLER = new TicketController(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "teams"));
 
-    private ChunkTicketPlatform() {}
+    private ChunkTicketPlatform()
+    {}
 
     public static void register(RegisterTicketControllersEvent event)
     {

@@ -20,7 +20,9 @@ public final class TrackLinkLodCollector implements VertexConsumer
     public VertexConsumer addVertex(float x, float y, float z)
     {
         float[] vertex = quad[count++ % 4];
-        vertex[0] = x; vertex[1] = y; vertex[2] = z;
+        vertex[0] = x;
+        vertex[1] = y;
+        vertex[2] = z;
         for (int axis = 0; axis < 3; axis++)
         {
             min[axis] = Math.min(min[axis], vertex[axis]);
@@ -29,19 +31,40 @@ public final class TrackLinkLodCollector implements VertexConsumer
         return this;
     }
 
-    @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-    @Override public VertexConsumer setUv(float u, float v)
+    @Override
+    public VertexConsumer setColor(int r, int g, int b, int a)
     {
-        float[] vertex = quad[(count - 1) % 4];
-        vertex[3] = u; vertex[4] = v;
         return this;
     }
-    @Override public VertexConsumer setUv1(int u, int v) { return this; }
-    @Override public VertexConsumer setUv2(int u, int v) { return this; }
-    @Override public VertexConsumer setNormal(float nx, float ny, float nz)
+
+    @Override
+    public VertexConsumer setUv(float u, float v)
     {
         float[] vertex = quad[(count - 1) % 4];
-        vertex[5] = nx; vertex[6] = ny; vertex[7] = nz;
+        vertex[3] = u;
+        vertex[4] = v;
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setUv1(int u, int v)
+    {
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setUv2(int u, int v)
+    {
+        return this;
+    }
+
+    @Override
+    public VertexConsumer setNormal(float nx, float ny, float nz)
+    {
+        float[] vertex = quad[(count - 1) % 4];
+        vertex[5] = nx;
+        vertex[6] = ny;
+        vertex[7] = nz;
         if (count % 4 == 0)
             acceptQuad();
         return this;
@@ -60,8 +83,10 @@ public final class TrackLinkLodCollector implements VertexConsumer
             float[] high = {Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY};
             for (float[] vertex : quad)
             {
-                low[0] = Math.min(low[0], vertex[first]); low[1] = Math.min(low[1], vertex[second]);
-                high[0] = Math.max(high[0], vertex[first]); high[1] = Math.max(high[1], vertex[second]);
+                low[0] = Math.min(low[0], vertex[first]);
+                low[1] = Math.min(low[1], vertex[second]);
+                high[0] = Math.max(high[0], vertex[first]);
+                high[1] = Math.max(high[1], vertex[second]);
             }
             float area = (high[0] - low[0]) * (high[1] - low[1]);
             if (area <= areas[face])
@@ -77,7 +102,9 @@ public final class TrackLinkLodCollector implements VertexConsumer
                     float error = Math.abs(vertex[first] - targetFirst) + Math.abs(vertex[second] - targetSecond);
                     if (error < nearest)
                     {
-                        nearest = error; uv[corner][0] = vertex[3]; uv[corner][1] = vertex[4];
+                        nearest = error;
+                        uv[corner][0] = vertex[3];
+                        uv[corner][1] = vertex[4];
                     }
                 }
             }
@@ -89,7 +116,7 @@ public final class TrackLinkLodCollector implements VertexConsumer
     public float diameter()
     {
         float x = max[0] - min[0], y = max[1] - min[1], z = max[2] - min[2];
-        return (float)Math.sqrt(x * x + y * y + z * z);
+        return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
     public float originRadius()
@@ -97,7 +124,7 @@ public final class TrackLinkLodCollector implements VertexConsumer
         float x = Math.max(Math.abs(min[0]), Math.abs(max[0]));
         float y = Math.max(Math.abs(min[1]), Math.abs(max[1]));
         float z = Math.max(Math.abs(min[2]), Math.abs(max[2]));
-        return (float)Math.sqrt(x * x + y * y + z * z);
+        return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
     public ModelRendererTurbo build(float spacing, int group)
@@ -110,12 +137,12 @@ public final class TrackLinkLodCollector implements VertexConsumer
         // Adjacent link pins can overlap longitudinally, but full boxes would
         // introduce coplanar overlapping faces. Keep the envelope within a
         // single step, centered on the authored geometry. Other axes stay intact.
-        float halfLength = group == 1 ? Math.min((max[0] - min[0]) * 0.5F, spacing / 32F)
-            : spacing * group / 32F;
+        float halfLength = group == 1 ? Math.min((max[0] - min[0]) * 0.5F, spacing / 32F) : spacing * group / 32F;
         float center = (min[0] + max[0]) * 0.5F;
         min[0] = center - halfLength;
         max[0] = center + halfLength;
-        ModelRendererTurbo result = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+        ModelRendererTurbo result = new ModelRendererTurbo(new ModelBase()
+        {}, 0, 0);
         for (int face = 0; face < 6; face++)
         {
             int axis = face / 2, first = (axis + 1) % 3, second = (axis + 2) % 3;
@@ -129,8 +156,7 @@ public final class TrackLinkLodCollector implements VertexConsumer
                 xyz[axis] = face % 2 == 1 ? max[axis] : min[axis];
                 xyz[first] = (corner & 1) == 0 ? min[first] : max[first];
                 xyz[second] = (corner & 2) == 0 ? min[second] : max[second];
-                vertices[i] = new PositionTextureVertex(xyz[0] * 16, xyz[1] * 16, xyz[2] * 16,
-                    textures[face][corner][0], textures[face][corner][1]);
+                vertices[i] = new PositionTextureVertex(xyz[0] * 16, xyz[1] * 16, xyz[2] * 16, textures[face][corner][0], textures[face][corner][1]);
             }
             result.adoptGeometry(vertices, new TexturedPolygon[]{new TexturedPolygon(vertices)});
         }
@@ -138,13 +164,42 @@ public final class TrackLinkLodCollector implements VertexConsumer
     }
 
     // TMT uses the packed vertex entry point; unexpected custom emission is unsupported.
-    public VertexConsumer vertex(double x, double y, double z) { throw new IllegalStateException("Non-TMT vertex"); }
-    public VertexConsumer color(int r, int g, int b, int a) { return this; }
-    public VertexConsumer uv(float u, float v) { return this; }
-    public VertexConsumer overlayCoords(int u, int v) { return this; }
-    public VertexConsumer uv2(int u, int v) { return this; }
-    public VertexConsumer normal(float x, float y, float z) { return this; }
-    public void endVertex() {}
-    public void defaultColor(int r, int g, int b, int a) {}
-    public void unsetDefaultColor() {}
+    public VertexConsumer vertex(double x, double y, double z)
+    {
+        throw new IllegalStateException("Non-TMT vertex");
+    }
+
+    public VertexConsumer color(int r, int g, int b, int a)
+    {
+        return this;
+    }
+
+    public VertexConsumer uv(float u, float v)
+    {
+        return this;
+    }
+
+    public VertexConsumer overlayCoords(int u, int v)
+    {
+        return this;
+    }
+
+    public VertexConsumer uv2(int u, int v)
+    {
+        return this;
+    }
+
+    public VertexConsumer normal(float x, float y, float z)
+    {
+        return this;
+    }
+
+    public void endVertex()
+    {}
+
+    public void defaultColor(int r, int g, int b, int a)
+    {}
+
+    public void unsetDefaultColor()
+    {}
 }

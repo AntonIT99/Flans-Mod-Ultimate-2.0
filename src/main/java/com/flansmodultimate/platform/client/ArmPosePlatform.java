@@ -15,19 +15,16 @@ import net.minecraft.client.model.HumanoidModel;
 public final class ArmPosePlatform
 {
     /** Constructor arguments {@code (twoHanded, transformer)} of the {@code FLANSMODULTIMATE_BOTH_ARMS_AIM} constant. */
-    public static final EnumProxy<HumanoidModel.ArmPose> BOTH_ARMS_AIM = new EnumProxy<>(HumanoidModel.ArmPose.class,
-        true, (IArmPoseTransformer) ModClient::poseBothArmsAim);
+    public static final EnumProxy<HumanoidModel.ArmPose> BOTH_ARMS_AIM = new EnumProxy<>(HumanoidModel.ArmPose.class, true, (IArmPoseTransformer) ModClient::poseBothArmsAim);
     /** Constructor arguments {@code (twoHanded, transformer)} of the {@code FLANSMODULTIMATE_ONE_ARM_AIM} constant. */
-    public static final EnumProxy<HumanoidModel.ArmPose> ONE_ARM_AIM = new EnumProxy<>(HumanoidModel.ArmPose.class,
-        false, (IArmPoseTransformer) ModClient::poseOneArmAim);
+    public static final EnumProxy<HumanoidModel.ArmPose> ONE_ARM_AIM = new EnumProxy<>(HumanoidModel.ArmPose.class, false, (IArmPoseTransformer) ModClient::poseOneArmAim);
     /** Constructor arguments {@code (twoHanded, transformer)} of the {@code FLANSMODULTIMATE_ONE_ARM_THROW} constant. */
-    public static final EnumProxy<HumanoidModel.ArmPose> ONE_ARM_THROW = new EnumProxy<>(HumanoidModel.ArmPose.class,
-        false, (IArmPoseTransformer) ModClient::poseOneArmThrow);
+    public static final EnumProxy<HumanoidModel.ArmPose> ONE_ARM_THROW = new EnumProxy<>(HumanoidModel.ArmPose.class, false, (IArmPoseTransformer) ModClient::poseOneArmThrow);
     /** Constructor arguments {@code (twoHanded, transformer)} of the {@code FLANSMODULTIMATE_BOW_SUPPORT} constant. */
-    public static final EnumProxy<HumanoidModel.ArmPose> BOW_SUPPORT = new EnumProxy<>(HumanoidModel.ArmPose.class,
-        false, (IArmPoseTransformer) ModClient::poseBowSupport);
+    public static final EnumProxy<HumanoidModel.ArmPose> BOW_SUPPORT = new EnumProxy<>(HumanoidModel.ArmPose.class, false, (IArmPoseTransformer) ModClient::poseBowSupport);
 
-    private ArmPosePlatform() {}
+    private ArmPosePlatform()
+    {}
 
     /** The two-handed pose for aiming a gun in each hand. */
     public static HumanoidModel.ArmPose bothArmsAim()

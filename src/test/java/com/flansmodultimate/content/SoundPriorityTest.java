@@ -7,8 +7,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
@@ -37,8 +37,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SoundPriorityTest
 {
-    @TempDir Path root;
-    @AfterEach void reset() { ContentFileCache.configure(null); SoundLengthIndex.clear(); }
+    @TempDir
+    Path root;
+    @AfterEach
+    void reset()
+    {
+        ContentFileCache.configure(null);
+        SoundLengthIndex.clear();
+    }
 
     @Test
     void selectsTheHighestEventDefinitionAndFileIndependently()
@@ -96,7 +102,8 @@ class SoundPriorityTest
         var a = new SoundPriority.Source("pack:a", root.resolve("a"), null);
         var b = new SoundPriority.Source("mod:b", root.resolve("b"), null);
         Map<String, SoundPriority.Source> sources = new LinkedHashMap<>();
-        sources.put(a.id(), a); sources.put(b.id(), b);
+        sources.put(a.id(), a);
+        sources.put(b.id(), b);
         assertEquals(List.of(b, a), SoundPriority.orderedSources(sources, List.of("removed", b.id(), b.id())));
     }
 
@@ -109,8 +116,10 @@ class SoundPriorityTest
         Path audio = source.root().resolve("assets/flansmod/sounds/engine.ogg");
         Path json = source.root().resolve("assets/flansmod/sounds.json");
         FileTime audioTime = Files.getLastModifiedTime(audio), jsonTime = Files.getLastModifiedTime(json);
-        Files.write(audio, new byte[(int)Files.size(audio)]); Files.setLastModifiedTime(audio, audioTime);
-        Files.writeString(json, " ".repeat((int)Files.size(json))); Files.setLastModifiedTime(json, jsonTime);
+        Files.write(audio, new byte[(int) Files.size(audio)]);
+        Files.setLastModifiedTime(audio, audioTime);
+        Files.writeString(json, " ".repeat((int) Files.size(json)));
+        Files.setLastModifiedTime(json, jsonTime);
         var before = ContentFileCache.snapshot(root.resolve("cache"));
         assertEquals(cold, SoundAssetIndex.read(source));
         assertEquals(before, ContentFileCache.snapshot(root.resolve("cache")));
@@ -131,13 +140,15 @@ class SoundPriorityTest
             for (Path file : files.filter(Files::isRegularFile).toList())
             {
                 zip.putNextEntry(new ZipEntry(directory.root().relativize(file).toString().replace('\\', '/')));
-                zip.write(Files.readAllBytes(file)); zip.closeEntry();
+                zip.write(Files.readAllBytes(file));
+                zip.closeEntry();
             }
         }
         var source = new SoundPriority.Source("pack:a", archive, archive);
         var cold = SoundAssetIndex.read(source);
         FileTime time = Files.getLastModifiedTime(archive);
-        Files.write(archive, new byte[(int)Files.size(archive)]); Files.setLastModifiedTime(archive, time);
+        Files.write(archive, new byte[(int) Files.size(archive)]);
+        Files.setLastModifiedTime(archive, time);
         assertEquals(cold, SoundAssetIndex.read(source));
     }
 
@@ -177,8 +188,7 @@ class SoundPriorityTest
         Pack overlay = SoundPriority.createPack(List.of(source), plan, json);
         var location = new PackLocationInfo("packaged:assets", Component.literal("Packaged assets"), PackSource.BUILT_IN, Optional.empty());
         Pack assets = new Pack(location, new PathPackResources.PathResourcesSupplier(source.root()),
-            new Pack.Metadata(location.title(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
-            new PackSelectionConfig(true, Pack.Position.TOP, true));
+            new Pack.Metadata(location.title(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false), new PackSelectionConfig(true, Pack.Position.TOP, true));
         // NeoForge keeps repository source order; the first discovered fixed TOP pack wins.
         PackRepository repository = new PackRepository(acceptor -> acceptor.accept(overlay), acceptor -> acceptor.accept(assets));
         repository.reload();
@@ -232,12 +242,17 @@ class SoundPriorityTest
     {
         ByteBuffer data = ByteBuffer.allocate(87).order(ByteOrder.LITTLE_ENDIAN);
         data.put("OggS".getBytes(StandardCharsets.US_ASCII));
-        data.position(26); data.put((byte)1).put((byte)30);
-        data.put((byte)1).put("vorbis".getBytes(StandardCharsets.US_ASCII));
-        data.position(40); data.putInt(44100);
-        data.position(58); data.put("OggS".getBytes(StandardCharsets.US_ASCII));
-        data.position(64); data.putLong(ticks * 44100L / 20);
-        data.position(84); data.put((byte)1).put((byte)1).put((byte)0);
+        data.position(26);
+        data.put((byte) 1).put((byte) 30);
+        data.put((byte) 1).put("vorbis".getBytes(StandardCharsets.US_ASCII));
+        data.position(40);
+        data.putInt(44100);
+        data.position(58);
+        data.put("OggS".getBytes(StandardCharsets.US_ASCII));
+        data.position(64);
+        data.putLong(ticks * 44100L / 20);
+        data.position(84);
+        data.put((byte) 1).put((byte) 1).put((byte) 0);
         Files.write(file, data.array());
     }
 }

@@ -19,7 +19,8 @@ public final class LevelFilePlatform
     /** Labels the profiler events of region files opened outside a level's own storage. */
     private static final String REGION_PROFILER_LEVEL = "flansmodultimate";
 
-    private LevelFilePlatform() {}
+    private LevelFilePlatform()
+    {}
 
     public static CompoundTag readCompressed(Path file) throws IOException
     {
@@ -43,8 +44,7 @@ public final class LevelFilePlatform
      */
     public static RegionFile openEntityRegion(Path file, Path directory, ResourceLocation dimension) throws IOException
     {
-        RegionStorageInfo info = new RegionStorageInfo(REGION_PROFILER_LEVEL,
-            ResourceKey.create(Registries.DIMENSION, dimension), "entities");
+        RegionStorageInfo info = new RegionStorageInfo(REGION_PROFILER_LEVEL, ResourceKey.create(Registries.DIMENSION, dimension), "entities");
         return new RegionFile(info, file, directory, false);
     }
 }

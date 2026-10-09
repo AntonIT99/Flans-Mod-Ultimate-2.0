@@ -30,8 +30,7 @@ public class FlanModelEntityType extends EntityType<FlanModelEntity>
 
     public FlanModelEntityType(String shortName, FlanModelKind kind, FlanModelShape shape)
     {
-        super(FlanModelEntity::new, MobCategory.MISC, true, false, true, false, ImmutableSet.of(),
-            shape.dimensions(), 1F, 8, 3, FeatureFlags.VANILLA_SET);
+        super(FlanModelEntity::new, MobCategory.MISC, true, false, true, false, ImmutableSet.of(), shape.dimensions(), 1F, 8, 3, FeatureFlags.VANILLA_SET);
         this.shortName = shortName;
         this.kind = kind;
         this.shape = shape;

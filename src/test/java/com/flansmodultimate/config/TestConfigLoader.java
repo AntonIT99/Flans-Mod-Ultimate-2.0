@@ -10,7 +10,8 @@ import java.nio.file.Path;
 /** Loads an in-memory NeoForge config without starting a mod container. */
 final class TestConfigLoader
 {
-    private TestConfigLoader() {}
+    private TestConfigLoader()
+    {}
 
     static void load(ModConfigSpec spec, CommentedConfig config)
     {
@@ -18,8 +19,7 @@ final class TestConfigLoader
         {
             // ILoadedConfig is sealed in NeoForge; its only implementation is package-private.
             Class<?> implementation = Class.forName("net.neoforged.fml.config.LoadedConfig");
-            Constructor<?> constructor = implementation.getDeclaredConstructor(CommentedConfig.class, Path.class,
-                Class.forName("net.neoforged.fml.config.ModConfig"));
+            Constructor<?> constructor = implementation.getDeclaredConstructor(CommentedConfig.class, Path.class, Class.forName("net.neoforged.fml.config.ModConfig"));
             constructor.setAccessible(true);
             spec.acceptConfig((IConfigSpec.ILoadedConfig) constructor.newInstance(config, null, null));
         }

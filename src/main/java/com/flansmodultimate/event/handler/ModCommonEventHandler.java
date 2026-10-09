@@ -1,6 +1,5 @@
 package com.flansmodultimate.event.handler;
 
-import com.flansmodultimate.content.EnchantmentItemRepositorySource;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModBlocks;
 import com.flansmodultimate.apocalyse.ApocalypseDatapackSource;
@@ -9,6 +8,7 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.config.ModCommonConfigSync;
 import com.flansmodultimate.content.ContentManager;
+import com.flansmodultimate.content.EnchantmentItemRepositorySource;
 import com.flansmodultimate.content.ModRepositorySource;
 import com.flansmodultimate.content.PackagedContentRepositorySource;
 import com.flansmodultimate.content.SoundPriority;
@@ -32,10 +32,8 @@ public final class ModCommonEventHandler
     @SubscribeEvent
     public static void registerCapabilities(RegisterCapabilitiesEvent event)
     {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansModBlocks.itemHolderBlockEntity.get(),
-            (blockEntity, direction) -> blockEntity.getItemHandler());
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansModBlocks.paintjobTableBlockEntity.get(),
-            (blockEntity, direction) -> blockEntity.getItemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansModBlocks.itemHolderBlockEntity.get(), (blockEntity, direction) -> blockEntity.getItemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FlansModBlocks.paintjobTableBlockEntity.get(), (blockEntity, direction) -> blockEntity.getItemHandler());
     }
 
     @SubscribeEvent

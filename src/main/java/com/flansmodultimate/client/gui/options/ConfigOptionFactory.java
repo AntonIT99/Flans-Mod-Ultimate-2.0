@@ -28,9 +28,11 @@ import java.util.Map;
  * file, tooltips from the comment already written in the config file, so a new config entry shows up with
  * its documentation without a second description having to be maintained here.
  *
- * <p>Booleans, enums and bounded numbers are editable on screen. Free text and lists are left to the config
+ * <p>
+ * Booleans, enums and bounded numbers are editable on screen. Free text and lists are left to the config
  * file itself. A toggle applies at once; a slider only records its value while it is being dragged, and the
- * options screen applies it once it closes.</p>
+ * options screen applies it once it closes.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ConfigOptionFactory
@@ -42,8 +44,7 @@ public final class ConfigOptionFactory
 
     /** A config section and the options of it that can be edited on screen. */
     public record Section(Component title, List<OptionInstance<?>> options)
-    {
-    }
+    {}
 
     /** Every section of the target's config, in the order the config file declares them. */
     public static List<Section> sections(ConfigTarget target)
@@ -89,8 +90,7 @@ public final class ConfigOptionFactory
     @Nullable
     public static OptionInstance<?> option(ConfigTarget target, ModConfigSpec.ConfigValue<?> value)
     {
-        if ((value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE)
-            && !PlatformEnvironment.isModLoaded("wolffsmodnpcs"))
+        if ((value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE) && !PlatformEnvironment.isModLoaded("wolffsmodnpcs"))
             return null;
         ModConfigSpec.ValueSpec valueSpec = ConfigSpecValues.valueSpec(target.spec(), value.getPath());
         if (valueSpec == null)
@@ -112,34 +112,26 @@ public final class ConfigOptionFactory
         return null;
     }
 
-    private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value,
-                                                         ModConfigSpec.ValueSpec valueSpec, boolean current)
+    private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, boolean current)
     {
-        return OptionInstance.createBoolean(captionKey(value), tooltip(value, valueSpec), current,
-            newValue -> target.set(value, newValue));
+        return OptionInstance.createBoolean(captionKey(value), tooltip(value, valueSpec), current, newValue -> target.set(value, newValue));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static OptionInstance<?> enumOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value,
-                                                ModConfigSpec.ValueSpec valueSpec, Class<?> type, Object current)
+    private static OptionInstance<?> enumOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, Class<?> type, Object current)
     {
         return enumOption(target, value, valueSpec, (Class) type, (Enum) current);
     }
 
-    private static <T extends Enum<T>> OptionInstance<T> enumOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value,
-                                                                    ModConfigSpec.ValueSpec valueSpec, Class<T> type, T current)
+    private static <T extends Enum<T>> OptionInstance<T> enumOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, Class<T> type, T current)
     {
         Codec<T> codec = Codec.STRING.xmap(constant -> Enum.valueOf(type, constant), Enum::name);
-        return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
-            (caption, constant) -> valueLabel(type, constant),
-            new OptionInstance.Enum<>(List.of(type.getEnumConstants()), codec),
-            current,
-            newValue -> target.set(value, newValue));
+        return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec), (caption, constant) -> valueLabel(type, constant), new OptionInstance.Enum<>(List.of(type.getEnumConstants()), codec),
+            current, newValue -> target.set(value, newValue));
     }
 
     @Nullable
-    private static OptionInstance<Integer> intOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value,
-                                                     ModConfigSpec.ValueSpec valueSpec, int current)
+    private static OptionInstance<Integer> intOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, int current)
     {
         ModConfigSpec.Range<Integer> range = valueSpec.getRange();
         if (range == null)
@@ -150,37 +142,28 @@ public final class ConfigOptionFactory
                 value == ModCommonConfig.DRIVEABLE_TRACKING_RANGE || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE
                     ? Component.translatable("options.flansmodultimate.distance.blocks", number)
                     : value == ModClientConfig.GPU_MODEL_CACHE_MEGABYTES
-                    ? number == 0 ? Component.translatable(VALUE_KEY_PREFIX + "automatic")
-                    : Component.translatable("options.flansmodultimate.memory.mebibytes", number)
-                    : Component.literal(String.valueOf(number))),
-            new OptionInstance.IntRange(range.getMin(), range.getMax()),
-            current,
-            newValue -> target.setWhileDragging(value, newValue));
+                        ? number == 0 ? Component.translatable(VALUE_KEY_PREFIX + "automatic") : Component.translatable("options.flansmodultimate.memory.mebibytes", number)
+                        : Component.literal(String.valueOf(number))),
+            new OptionInstance.IntRange(range.getMin(), range.getMax()), current, newValue -> target.setWhileDragging(value, newValue));
     }
 
     @Nullable
-    private static OptionInstance<Double> doubleOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value,
-                                                       ModConfigSpec.ValueSpec valueSpec, double current)
+    private static OptionInstance<Double> doubleOption(ConfigTarget target, ModConfigSpec.ConfigValue<?> value, ModConfigSpec.ValueSpec valueSpec, double current)
     {
         ModConfigSpec.Range<Double> range = valueSpec.getRange();
         if (range == null)
             return null;
 
         double min = range.getMin();
-        boolean distanceMultiplier = value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER
-            || value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
+        boolean distanceMultiplier = value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER || value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
         int stepsCount = distanceMultiplier ? 75 : DOUBLE_SLIDER_STEPS;
         double step = (range.getMax() - min) / stepsCount;
         if (step <= 0)
             return null;
 
         return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
-            (caption, number) -> Options.genericValueLabel(caption,
-                Component.literal(String.format(Locale.ROOT, distanceMultiplier ? "%.2f×" : "%.2f", number))),
-            new OptionInstance.IntRange(0, stepsCount).xmap(
-                steps -> min + steps * step,
-                number -> (int) Math.round((number - min) / step)),
-            current,
+            (caption, number) -> Options.genericValueLabel(caption, Component.literal(String.format(Locale.ROOT, distanceMultiplier ? "%.2f×" : "%.2f", number))),
+            new OptionInstance.IntRange(0, stepsCount).xmap(steps -> min + steps * step, number -> (int) Math.round((number - min) / step)), current,
             newValue -> target.setWhileDragging(value, newValue));
     }
 
@@ -198,10 +181,8 @@ public final class ConfigOptionFactory
     {
         String key = captionKey(value) + ".tooltip";
         if (value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER || value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)
-            return current -> Tooltip.create(Component.translatable(key).append("\n")
-                .append(Component.translatable("options.flansmodultimate.distance.tracking_limit",
-                    value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER
-                        ? ModCommonConfig.driveableTrackingRange() : ModCommonConfig.flanNpcTrackingRange())));
+            return current -> Tooltip.create(Component.translatable(key).append("\n").append(Component.translatable("options.flansmodultimate.distance.tracking_limit",
+                value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER ? ModCommonConfig.driveableTrackingRange() : ModCommonConfig.flanNpcTrackingRange())));
         if (value == ModClientConfig.GPU_MODEL_CACHE_MEGABYTES)
         {
             long video = GpuModelCache.reportedVideoMemoryMegabytes();
@@ -227,8 +208,6 @@ public final class ConfigOptionFactory
         if (name.startsWith("Enum"))
             name = name.substring("Enum".length());
 
-        return Component.translatableWithFallback(
-            VALUE_KEY_PREFIX + name.toLowerCase(Locale.ROOT) + "." + constant.name().toLowerCase(Locale.ROOT),
-            constant.name());
+        return Component.translatableWithFallback(VALUE_KEY_PREFIX + name.toLowerCase(Locale.ROOT) + "." + constant.name().toLowerCase(Locale.ROOT), constant.name());
     }
 }

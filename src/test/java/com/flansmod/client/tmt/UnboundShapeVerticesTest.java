@@ -16,9 +16,9 @@ class UnboundShapeVerticesTest
 {
     private static ModelRendererTurbo wheel()
     {
-        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0, 64, 64);
-        part.addShape3D(0, 0, 0, new Shape2D(new Coord2D[]{new Coord2D(0, 0), new Coord2D(8, 0), new Coord2D(0, 4)}),
-            2, 8, 4, 8, 2, ModelRendererTurbo.MR_FRONT);
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+        {}, 0, 0, 64, 64);
+        part.addShape3D(0, 0, 0, new Shape2D(new Coord2D[]{new Coord2D(0, 0), new Coord2D(8, 0), new Coord2D(0, 4)}), 2, 8, 4, 8, 2, ModelRendererTurbo.MR_FRONT);
         part.setRotationPoint(3, 1, 2);
         return part;
     }
@@ -40,7 +40,8 @@ class UnboundShapeVerticesTest
         Sink cpu = new Sink();
         wheel().render(pose, new Plain(cpu), 0, 0, 1, 1, 1, 1, 1);
         assertEquals(cpu.cpu.size(), cached.cpu.size());
-        for (int i = 0; i < cpu.cpu.size(); i++) assertArrayEquals(cpu.cpu.get(i), cached.cpu.get(i), 1E-5F);
+        for (int i = 0; i < cpu.cpu.size(); i++)
+            assertArrayEquals(cpu.cpu.get(i), cached.cpu.get(i), 1E-5F);
     }
 
     @Test
@@ -80,23 +81,92 @@ class UnboundShapeVerticesTest
 
         // Minecraft 1.21 writes each vertex as a chain; the normal ends it.
         private final float[] pending = new float[8];
-        @Override public VertexConsumer addVertex(float x, float y, float z) { pending[0] = x; pending[1] = y; pending[2] = z; return this; }
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-        @Override public VertexConsumer setUv(float u, float v) { pending[3] = u; pending[4] = v; return this; }
-        @Override public VertexConsumer setUv1(int u, int v) { return this; }
-        @Override public VertexConsumer setUv2(int u, int v) { return this; }
-        @Override public VertexConsumer setNormal(float x, float y, float z)
-        { pending[5] = x; pending[6] = y; pending[7] = z; cpu.add(pending.clone()); return this; }
+        @Override
+        public VertexConsumer addVertex(float x, float y, float z)
+        {
+            pending[0] = x;
+            pending[1] = y;
+            pending[2] = z;
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int r, int g, int b, int a)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v)
+        {
+            pending[3] = u;
+            pending[4] = v;
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float x, float y, float z)
+        {
+            pending[5] = x;
+            pending[6] = y;
+            pending[7] = z;
+            cpu.add(pending.clone());
+            return this;
+        }
     }
 
     /** A plain consumer, so the part takes the CPU path. */
     private record Plain(Sink sink) implements VertexConsumer
     {
-        @Override public VertexConsumer addVertex(float x, float y, float z) { sink.addVertex(x, y, z); return this; }
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-        @Override public VertexConsumer setUv(float u, float v) { sink.setUv(u, v); return this; }
-        @Override public VertexConsumer setUv1(int u, int v) { return this; }
-        @Override public VertexConsumer setUv2(int u, int v) { return this; }
-        @Override public VertexConsumer setNormal(float x, float y, float z) { sink.setNormal(x, y, z); return this; }
+        @Override
+        public VertexConsumer addVertex(float x, float y, float z)
+        {
+            sink.addVertex(x, y, z);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int r, int g, int b, int a)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v)
+        {
+            sink.setUv(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float x, float y, float z)
+        {
+            sink.setNormal(x, y, z);
+            return this;
+        }
     }
 }

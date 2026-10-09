@@ -7,7 +7,8 @@ import java.nio.file.Path;
 /** Loader boundary for the game, config, and mods directories. */
 public final class PlatformPaths
 {
-    private PlatformPaths() {}
+    private PlatformPaths()
+    {}
 
     public static Path gameDir()
     {

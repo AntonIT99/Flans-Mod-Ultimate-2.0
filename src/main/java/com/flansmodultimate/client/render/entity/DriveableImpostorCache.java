@@ -1,8 +1,5 @@
 package com.flansmodultimate.client.render.entity;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-
 import com.flansmod.client.model.ModelDriveable;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
@@ -27,6 +24,8 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
@@ -45,14 +44,16 @@ import java.util.List;
 /**
  * Lazily generated far-distance driveable impostors.
  *
- * <p>Every atlas cell is captured independently and at most one cell is generated
+ * <p>
+ * Every atlas cell is captured independently and at most one cell is generated
  * per client tick. Rendering only requests a cell; it is captured at the start of the
  * next frame, outside level rendering, so neither fog, the current view's lighting nor
  * a shader mod's world and shadow passes can reach the atlas. Until a requested view is
  * ready, callers retain the exact model renderer. The cache is render-thread-only and
  * deliberately excludes entity state:
  * captures use the existing neutral preview renderer so damaged or animated entities
- * cannot contaminate other instances of the same model and paintjob.</p>
+ * cannot contaminate other instances of the same model and paintjob.
+ * </p>
  */
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class DriveableImpostorCache
@@ -108,33 +109,26 @@ public final class DriveableImpostorCache
      * threshold. Returning {@code rendered == false} always means the exact model
      * must be rendered by the caller.
      */
-    public static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue, PoseStack poseStack, MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset, float entityYaw, float entityPitch, float entityRoll, Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor)
+    public static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue,
+        PoseStack poseStack, MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset, float entityYaw, float entityPitch, float entityRoll,
+        Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor)
     {
-        return renderOrPrepare(model, type, sourceTexture, translucent, cull, red, green, blue,
-            poseStack, buffer, packedLight, projectionPixels, cameraDistance, cameraOffset,
-            entityYaw, entityPitch, entityRoll, null, allowImpostor, wasUsingImpostor,
-            1F, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
+        return renderOrPrepare(model, type, sourceTexture, translucent, cull, red, green, blue, poseStack, buffer, packedLight, projectionPixels, cameraDistance, cameraOffset, entityYaw, entityPitch,
+            entityRoll, null, allowImpostor, wasUsingImpostor, 1F, OverlayTexture.NO_OVERLAY, 1F, 1F, 1F, 1F);
     }
 
     /** Neutral-model atlas shared with externally posed instances; tint and damage overlays stay per draw. */
-    public static Result renderPosedOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation texture,
-        boolean translucent, boolean cull, float typeRed, float typeGreen, float typeBlue,
-        PoseStack pose, MultiBufferSource buffers, int light, int overlay, float red, float green, float blue,
-        float alpha, float parentScale, float projectionPixels, double distance, Vec3 localCameraOffset,
-        Quaternionf rotation, Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor)
+    public static Result renderPosedOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation texture, boolean translucent, boolean cull, float typeRed, float typeGreen, float typeBlue,
+        PoseStack pose, MultiBufferSource buffers, int light, int overlay, float red, float green, float blue, float alpha, float parentScale, float projectionPixels, double distance,
+        Vec3 localCameraOffset, Quaternionf rotation, Quaternionf cameraOrientation, boolean allowImpostor, boolean wasUsingImpostor)
     {
-        return renderOrPrepare(model, type, texture, translucent, cull, typeRed, typeGreen, typeBlue,
-            pose, buffers, light, projectionPixels, distance, localCameraOffset,
-            0F, 0F, 0F, rotation, allowImpostor, wasUsingImpostor,
-            parentScale, overlay, red, green, blue, alpha);
+        return renderOrPrepare(model, type, texture, translucent, cull, typeRed, typeGreen, typeBlue, pose, buffers, light, projectionPixels, distance, localCameraOffset, 0F, 0F, 0F, rotation,
+            allowImpostor, wasUsingImpostor, parentScale, overlay, red, green, blue, alpha);
     }
 
-    private static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture,
-        boolean translucent, boolean cull, float red, float green, float blue, PoseStack poseStack,
-        MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset,
-        float entityYaw, float entityPitch, float entityRoll, @Nullable Quaternionf suppliedRotation,
-        boolean allowImpostor, boolean wasUsingImpostor, float parentScale,
-        int overlay, float drawRed, float drawGreen, float drawBlue, float alpha)
+    private static Result renderOrPrepare(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue,
+        PoseStack poseStack, MultiBufferSource buffer, int packedLight, float projectionPixels, double cameraDistance, Vec3 cameraOffset, float entityYaw, float entityPitch, float entityRoll,
+        @Nullable Quaternionf suppliedRotation, boolean allowImpostor, boolean wasUsingImpostor, float parentScale, int overlay, float drawRed, float drawGreen, float drawBlue, float alpha)
     {
         ModClientConfig config = ModClientConfig.get();
         if (config == null || !config.enableDriveableLod || projectionPixels <= 0F || cameraDistance <= 0D)
@@ -151,31 +145,25 @@ public final class DriveableImpostorCache
             return exact;
 
         boolean groundVehicle = type instanceof VehicleType && !type.isFloatOnWater();
-        float sizeDistanceScale = DriveableLodPolicy.distanceScale(radius, groundVehicle,
-            (float)config.groundVehicleLodDistanceFactor);
+        float sizeDistanceScale = DriveableLodPolicy.distanceScale(radius, groundVehicle, (float) config.groundVehicleLodDistanceFactor);
         float minimumDistance = config.driveableImpostorMinimumDistance * sizeDistanceScale;
-        float maximumDistance = config.driveableImpostorMaximumDistance > 0F
-            ? config.driveableImpostorMaximumDistance * sizeDistanceScale : 0F;
-        float impostorThreshold = DriveableLodPolicy.impostorThreshold((float)config.driveableImpostorPixelSize,
-            cameraDistance, minimumDistance, maximumDistance, groundVehicle, settings.resolution());
-        if ((impostorThreshold <= 0F && maximumDistance <= 0F)
-            || cameraDistance < minimumDistance / PREWARM_MULTIPLIER)
+        float maximumDistance = config.driveableImpostorMaximumDistance > 0F ? config.driveableImpostorMaximumDistance * sizeDistanceScale : 0F;
+        float impostorThreshold = DriveableLodPolicy.impostorThreshold((float) config.driveableImpostorPixelSize, cameraDistance, minimumDistance, maximumDistance, groundVehicle,
+            settings.resolution());
+        if ((impostorThreshold <= 0F && maximumDistance <= 0F) || cameraDistance < minimumDistance / PREWARM_MULTIPLIER)
             return exact;
 
         Entry entry = getOrCreate(model, type, sourceTexture, translucent, cull, red, green, blue, bounds);
         if (entry == null || entry.failed)
             return exact;
-        Quaternionf entityRotation = suppliedRotation != null ? suppliedRotation : new Quaternionf()
-            .rotateY(entityYaw * Mth.DEG_TO_RAD)
-            .rotateZ(entityPitch * Mth.DEG_TO_RAD)
-            .rotateX(entityRoll * Mth.DEG_TO_RAD);
-        ViewSelection view = selectView(cameraOffset, entityRotation, bounds.centerX(), bounds.centerY(),
-            bounds.centerZ(), settings.yawAngles());
+        Quaternionf entityRotation = suppliedRotation != null
+            ? suppliedRotation
+            : new Quaternionf().rotateY(entityYaw * Mth.DEG_TO_RAD).rotateZ(entityPitch * Mth.DEG_TO_RAD).rotateX(entityRoll * Mth.DEG_TO_RAD);
+        ViewSelection view = selectView(cameraOffset, entityRotation, bounds.centerX(), bounds.centerY(), bounds.centerZ(), settings.yawAngles());
         int yawIndex = view.yawIndex();
         int pitchIndex = view.pitchIndex();
         int cellIndex = pitchIndex * settings.yawAngles() + yawIndex;
-        boolean withinPrewarmRange = impostorThreshold > 0F
-            && projectedPixels <= impostorThreshold * PREWARM_MULTIPLIER;
+        boolean withinPrewarmRange = impostorThreshold > 0F && projectedPixels <= impostorThreshold * PREWARM_MULTIPLIER;
         if (maximumDistance > 0F)
             withinPrewarmRange |= cameraDistance >= maximumDistance / PREWARM_MULTIPLIER;
         if (!entry.captured[cellIndex] && withinPrewarmRange && pendingEntry == null)
@@ -185,26 +173,19 @@ public final class DriveableImpostorCache
             pendingPitchIndex = pitchIndex;
         }
 
-        if (!entry.captured[cellIndex] || cameraDistance < minimumDistance
-            || !DriveableLodPolicy.withinImageQuality(projectedPixels, settings.resolution(), wasUsingImpostor)
-            || !shouldUseImpostor(projectedPixels, cameraDistance,
-                impostorThreshold, maximumDistance, wasUsingImpostor))
+        if (!entry.captured[cellIndex] || cameraDistance < minimumDistance || !DriveableLodPolicy.withinImageQuality(projectedPixels, settings.resolution(), wasUsingImpostor)
+            || !shouldUseImpostor(projectedPixels, cameraDistance, impostorThreshold, maximumDistance, wasUsingImpostor))
             return exact;
 
-        renderBillboard(entry, view, entityRotation,
-            poseStack, buffer, packedLight, overlay, drawRed, drawGreen, drawBlue, alpha);
+        renderBillboard(entry, view, entityRotation, poseStack, buffer, packedLight, overlay, drawRed, drawGreen, drawBlue, alpha);
         return new Result(true, true, projectedPixels, radius);
     }
 
-    static boolean shouldUseImpostor(float projectedPixels, double cameraDistance,
-                                     float pixelThreshold, float maximumDistance,
-                                     boolean wasUsingImpostor)
+    static boolean shouldUseImpostor(float projectedPixels, double cameraDistance, float pixelThreshold, float maximumDistance, boolean wasUsingImpostor)
     {
         float activePixelThreshold = wasUsingImpostor ? pixelThreshold * HYSTERESIS : pixelThreshold;
-        double activeDistanceThreshold = wasUsingImpostor
-            ? maximumDistance / HYSTERESIS : maximumDistance;
-        return (pixelThreshold > 0F && projectedPixels <= activePixelThreshold)
-            || (maximumDistance > 0F && cameraDistance >= activeDistanceThreshold);
+        double activeDistanceThreshold = wasUsingImpostor ? maximumDistance / HYSTERESIS : maximumDistance;
+        return (pixelThreshold > 0F && projectedPixels <= activePixelThreshold) || (maximumDistance > 0F && cameraDistance >= activeDistanceThreshold);
     }
 
     public static void clear()
@@ -226,7 +207,8 @@ public final class DriveableImpostorCache
     }
 
     @Nullable
-    private static Entry getOrCreate(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue, ModelBounds bounds)
+    private static Entry getOrCreate(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue,
+        ModelBounds bounds)
     {
         long now = net.minecraft.Util.getMillis();
         for (int index = entries.size() - 1; index >= 0; index--)
@@ -252,9 +234,7 @@ public final class DriveableImpostorCache
             release(eldest);
         }
 
-        Entry created = new Entry(model, type, sourceTexture, translucent, cull,
-            red, green, blue, bounds,
-            settings.cellCount(), now);
+        Entry created = new Entry(model, type, sourceTexture, translucent, cull, red, green, blue, bounds, settings.cellCount(), now);
         entries.add(created);
         return created;
     }
@@ -290,8 +270,7 @@ public final class DriveableImpostorCache
         ModelBounds bounds = cachedBounds(model, type);
         if (!bounds.valid())
             return Float.POSITIVE_INFINITY;
-        return bounds.radius() + (float)Math.sqrt(bounds.centerX()*bounds.centerX()
-            + bounds.centerY()*bounds.centerY() + bounds.centerZ()*bounds.centerZ());
+        return bounds.radius() + (float) Math.sqrt(bounds.centerX() * bounds.centerX() + bounds.centerY() * bounds.centerY() + bounds.centerZ() * bounds.centerZ());
     }
 
     /**
@@ -339,8 +318,7 @@ public final class DriveableImpostorCache
             captureBuffer = null;
             entry.failed = true;
             release(entry);
-            FlansLog.log.warn("Disabling generated LOD impostor for model {} and texture {}: {}",
-                entry.model.getClass().getName(), entry.sourceTexture, e.toString());
+            FlansLog.log.warn("Disabling generated LOD impostor for model {} and texture {}: {}", entry.model.getClass().getName(), entry.sourceTexture, e.toString());
         }
     }
 
@@ -357,8 +335,7 @@ public final class DriveableImpostorCache
         try
         {
             float halfExtent = entry.bounds.halfExtent();
-            Matrix4f projection = new Matrix4f().setOrtho(-halfExtent, halfExtent,
-                -halfExtent, halfExtent, -halfExtent * 4F, halfExtent * 4F);
+            Matrix4f projection = new Matrix4f().setOrtho(-halfExtent, halfExtent, -halfExtent, halfExtent, -halfExtent * 4F, halfExtent * 4F);
 
             captureTarget.setClearColor(0F, 0F, 0F, 0F);
             captureTarget.clear(Minecraft.ON_OSX);
@@ -376,8 +353,7 @@ public final class DriveableImpostorCache
             capturePose.translate(-entry.bounds.centerX(), -entry.bounds.centerY(), -entry.bounds.centerZ());
             // Light every cell from above as in the level, rotated into this view, and without fog.
             Matrix4f view = capturePose.last().pose();
-            RenderSystem.setShaderLights(view.transformDirection(new Vector3f(LEVEL_LIGHT_0)),
-                view.transformDirection(new Vector3f(LEVEL_LIGHT_1)));
+            RenderSystem.setShaderLights(view.transformDirection(new Vector3f(LEVEL_LIGHT_0)), view.transformDirection(new Vector3f(LEVEL_LIGHT_1)));
             FogRenderer.setupNoFog();
 
             try (ByteBufferBuilder captureBuilder = new ByteBufferBuilder(256))
@@ -387,18 +363,15 @@ public final class DriveableImpostorCache
                 {
                     PoseStack layerPose = new PoseStack();
                     VertexPlatform.mulPose(layerPose, capturePose.last().pose());
-                    renderNeutralModel(entry.model, entry.type, layerPose,
-                        captureBuffer.getBuffer(renderPass.getRenderType(entry.sourceTexture,
-                            entry.translucent, entry.cull)), LightTexture.FULL_BRIGHT,
-                        entry.red, entry.green, entry.blue, List.of(renderPass));
+                    renderNeutralModel(entry.model, entry.type, layerPose, captureBuffer.getBuffer(renderPass.getRenderType(entry.sourceTexture, entry.translucent, entry.cull)),
+                        LightTexture.FULL_BRIGHT, entry.red, entry.green, entry.blue, List.of(renderPass));
                     captureBuffer.endBatch();
                 }
             }
 
             AtlasCell cell = atlasCell(yawIndex, pitchIndex, settings.yawAngles());
             AtlasPage page = entry.pages[cell.pageIndex()];
-            atlasBlitter.copyFlipped(captureTarget.frameBufferId, page.texture.getId(),
-                settings.resolution(), cell.column(), cell.row());
+            atlasBlitter.copyFlipped(captureTarget.frameBufferId, page.texture.getId(), settings.resolution(), cell.column(), cell.row());
         }
         finally
         {
@@ -414,15 +387,15 @@ public final class DriveableImpostorCache
         }
     }
 
-    private static void renderNeutralModel(ModelDriveable model, DriveableType type, PoseStack poseStack, VertexConsumer vertices, int packedLight, float red, float green, float blue, List<EnumRenderPass> passes)
+    private static void renderNeutralModel(ModelDriveable model, DriveableType type, PoseStack poseStack, VertexConsumer vertices, int packedLight, float red, float green, float blue,
+        List<EnumRenderPass> passes)
     {
         poseStack.pushPose();
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
         float scale = type.getModelScale();
         poseStack.scale(scale, scale, scale);
         for (EnumRenderPass renderPass : passes)
-            model.render(type, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY,
-                red, green, blue, 1F, 1F, renderPass);
+            model.render(type, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
         poseStack.popPose();
     }
 
@@ -438,44 +411,39 @@ public final class DriveableImpostorCache
         int height = settings.resolution() * PAGE_ROWS;
         page.texture = new DynamicTexture(new NativeImage(width, height, true));
         page.texture.setFilter(true, false);
-        page.location = Minecraft.getInstance().getTextureManager()
-            .register("flans_driveable_impostor", page.texture);
+        page.location = Minecraft.getInstance().getTextureManager().register("flans_driveable_impostor", page.texture);
     }
 
     private static void ensureCaptureTarget()
     {
-        if (captureTarget != null && captureTarget.width == settings.resolution()
-            && captureTarget.height == settings.resolution())
+        if (captureTarget != null && captureTarget.width == settings.resolution() && captureTarget.height == settings.resolution())
             return;
         if (captureTarget != null)
             captureTarget.destroyBuffers();
         captureTarget = new TextureTarget(settings.resolution(), settings.resolution(), true, Minecraft.ON_OSX);
     }
 
-    private static void renderBillboard(Entry entry, ViewSelection view, Quaternionf entityRotation,
-        PoseStack poseStack, MultiBufferSource buffer, int packedLight,
-        int overlay, float red, float green, float blue, float alpha)
+    private static void renderBillboard(Entry entry, ViewSelection view, Quaternionf entityRotation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int overlay, float red,
+        float green, float blue, float alpha)
     {
         int resolution = settings.resolution();
         AtlasCell cell = atlasCell(view.yawIndex(), view.pitchIndex(), settings.yawAngles());
         AtlasPage page = entry.pages[cell.pageIndex()];
-        float atlasWidth = (float)resolution * PAGE_COLUMNS;
-        float atlasHeight = (float)resolution * PAGE_ROWS;
+        float atlasWidth = (float) resolution * PAGE_COLUMNS;
+        float atlasHeight = (float) resolution * PAGE_ROWS;
         float inset = 0.5F;
         float u0 = (cell.column() * resolution + inset) / atlasWidth;
         float u1 = ((cell.column() + 1) * resolution - inset) / atlasWidth;
         float v0 = (cell.row() * resolution + inset) / atlasHeight;
         float v1 = ((cell.row() + 1) * resolution - inset) / atlasHeight;
 
-        Vector3f offset = new Vector3f(entry.bounds.centerX(), entry.bounds.centerY(), entry.bounds.centerZ())
-            .rotate(entityRotation);
+        Vector3f offset = new Vector3f(entry.bounds.centerX(), entry.bounds.centerY(), entry.bounds.centerZ()).rotate(entityRotation);
         float halfExtent = entry.bounds.halfExtent();
         poseStack.pushPose();
         poseStack.translate(offset.x(), offset.y(), offset.z());
         poseStack.mulPose(view.billboardRotation(entityRotation));
         PoseStack.Pose pose = poseStack.last();
-        VertexConsumer vertices = buffer.getBuffer(EnumRenderPass.DEFAULT
-            .getRenderType(page.location, true, false));
+        VertexConsumer vertices = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(page.location, true, false));
         vertex(pose, vertices, -halfExtent, -halfExtent, u0, v1, packedLight, overlay, red, green, blue, alpha);
         vertex(pose, vertices, halfExtent, -halfExtent, u1, v1, packedLight, overlay, red, green, blue, alpha);
         vertex(pose, vertices, halfExtent, halfExtent, u1, v0, packedLight, overlay, red, green, blue, alpha);
@@ -483,8 +451,7 @@ public final class DriveableImpostorCache
         poseStack.popPose();
     }
 
-    private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float u, float v,
-        int packedLight, int overlay, float red, float green, float blue, float alpha)
+    private static void vertex(PoseStack.Pose pose, VertexConsumer vertices, float x, float y, float u, float v, int packedLight, int overlay, float red, float green, float blue, float alpha)
     {
         VertexPlatform.vertex(vertices, pose, x, y, 0F, red, green, blue, alpha, u, v, overlay, packedLight, 0F, 1F, 0F);
     }
@@ -508,13 +475,11 @@ public final class DriveableImpostorCache
     static AtlasCell atlasCell(int yawIndex, int pitchIndex, int yawAngles)
     {
         int pagesPerPitch = (yawAngles + PAGE_COLUMNS - 1) / PAGE_COLUMNS;
-        return new AtlasCell(pitchIndex / PAGE_ROWS * pagesPerPitch + yawIndex / PAGE_COLUMNS,
-            yawIndex % PAGE_COLUMNS, pitchIndex % PAGE_ROWS);
+        return new AtlasCell(pitchIndex / PAGE_ROWS * pagesPerPitch + yawIndex / PAGE_COLUMNS, yawIndex % PAGE_COLUMNS, pitchIndex % PAGE_ROWS);
     }
 
     record AtlasCell(int pageIndex, int column, int row)
-    {
-    }
+    {}
 
     /**
      * Selects an atlas view from the camera's position in model space. Looking in
@@ -522,11 +487,9 @@ public final class DriveableImpostorCache
      * of the vehicle appear. The inverse entity rotation also handles pitched and
      * rolled aircraft without relying on the world render pose's Euler angles.
      */
-    static ViewSelection selectView(Vec3 cameraOffset, Quaternionf entityRotation,
-                                    float centerX, float centerY, float centerZ, int yawAngles)
+    static ViewSelection selectView(Vec3 cameraOffset, Quaternionf entityRotation, float centerX, float centerY, float centerZ, int yawAngles)
     {
-        Vector3f localCamera = new Vector3f((float)cameraOffset.x(), (float)cameraOffset.y(),
-            (float)cameraOffset.z());
+        Vector3f localCamera = new Vector3f((float) cameraOffset.x(), (float) cameraOffset.y(), (float) cameraOffset.z());
         new Quaternionf(entityRotation).conjugate().transform(localCamera);
         localCamera.sub(centerX, centerY, centerZ);
         if (!Float.isFinite(localCamera.lengthSquared()) || localCamera.lengthSquared() <= 1.0E-6F)
@@ -543,10 +506,9 @@ public final class DriveableImpostorCache
         }
         // Capturing rotates the model, so its yaw is opposite the model-space
         // azimuth from the model towards the camera.
-        float captureYaw = -(float)Math.toDegrees(Math.atan2(localCamera.x(), localCamera.z()));
-        float capturePitch = (float)Math.toDegrees(Math.atan2(localCamera.y(), horizontal));
-        return new ViewSelection(yawIndex(captureYaw, yawAngles), pitchIndex(capturePitch),
-            captureYaw, capturePitch);
+        float captureYaw = -(float) Math.toDegrees(Math.atan2(localCamera.x(), localCamera.z()));
+        float capturePitch = (float) Math.toDegrees(Math.atan2(localCamera.y(), horizontal));
+        return new ViewSelection(yawIndex(captureYaw, yawAngles), pitchIndex(capturePitch), captureYaw, capturePitch);
     }
 
     record ViewSelection(int yawIndex, int pitchIndex, float viewYaw, float viewPitch)
@@ -558,16 +520,14 @@ public final class DriveableImpostorCache
          */
         Quaternionf billboardRotation(Quaternionf entityRotation)
         {
-            return new Quaternionf(entityRotation)
-                .rotateY(-viewYaw * Mth.DEG_TO_RAD)
-                .rotateX(-viewPitch * Mth.DEG_TO_RAD);
+            return new Quaternionf(entityRotation).rotateY(-viewYaw * Mth.DEG_TO_RAD).rotateX(-viewPitch * Mth.DEG_TO_RAD);
         }
     }
 
     private static float projectedDiameter(float radius, float projectionPixels, double cameraDistance)
     {
         double nearestDistance = Math.max(0.01D, cameraDistance - radius);
-        return (float)(2D * radius * projectionPixels / nearestDistance);
+        return (float) (2D * radius * projectionPixels / nearestDistance);
     }
 
     private static void clearNow()
@@ -612,8 +572,7 @@ public final class DriveableImpostorCache
 
         private int pageCount()
         {
-            return (yawAngles + PAGE_COLUMNS - 1) / PAGE_COLUMNS
-                * ((PITCH_ANGLES + PAGE_ROWS - 1) / PAGE_ROWS);
+            return (yawAngles + PAGE_COLUMNS - 1) / PAGE_COLUMNS * ((PITCH_ANGLES + PAGE_ROWS - 1) / PAGE_ROWS);
         }
     }
 
@@ -639,9 +598,8 @@ public final class DriveableImpostorCache
         private boolean failed;
         private long lastUsedMillis;
 
-        private Entry(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture,
-                      boolean translucent, boolean cull, float red, float green, float blue,
-                      ModelBounds bounds, int cellCount, long lastUsedMillis)
+        private Entry(ModelDriveable model, DriveableType type, ResourceLocation sourceTexture, boolean translucent, boolean cull, float red, float green, float blue, ModelBounds bounds,
+            int cellCount, long lastUsedMillis)
         {
             this.model = model;
             this.type = type;
@@ -657,20 +615,16 @@ public final class DriveableImpostorCache
             this.lastUsedMillis = lastUsedMillis;
         }
 
-        private boolean matches(ModelDriveable otherModel, DriveableType otherType, ResourceLocation otherTexture,
-                                boolean otherTranslucent, boolean otherCull,
-                                float otherRed, float otherGreen, float otherBlue)
+        private boolean matches(ModelDriveable otherModel, DriveableType otherType, ResourceLocation otherTexture, boolean otherTranslucent, boolean otherCull, float otherRed, float otherGreen,
+            float otherBlue)
         {
-            return model == otherModel && type == otherType && sourceTexture.equals(otherTexture)
-                && translucent == otherTranslucent && cull == otherCull
-                && Float.floatToIntBits(red) == Float.floatToIntBits(otherRed)
-                && Float.floatToIntBits(green) == Float.floatToIntBits(otherGreen)
+            return model == otherModel && type == otherType && sourceTexture.equals(otherTexture) && translucent == otherTranslucent && cull == otherCull
+                && Float.floatToIntBits(red) == Float.floatToIntBits(otherRed) && Float.floatToIntBits(green) == Float.floatToIntBits(otherGreen)
                 && Float.floatToIntBits(blue) == Float.floatToIntBits(otherBlue);
         }
     }
 
-    private record ModelBounds(float centerX, float centerY, float centerZ, float radius, float halfExtent,
-                               boolean valid)
+    private record ModelBounds(float centerX, float centerY, float centerZ, float radius, float halfExtent, boolean valid)
     {
         private static final ModelBounds INVALID = new ModelBounds(0F, 0F, 0F, 0F, 0F, false);
     }
@@ -734,8 +688,7 @@ public final class DriveableImpostorCache
 
         private ModelBounds toBounds()
         {
-            if (!Float.isFinite(minX) || !Float.isFinite(minY) || !Float.isFinite(minZ)
-                || !Float.isFinite(maxX) || !Float.isFinite(maxY) || !Float.isFinite(maxZ))
+            if (!Float.isFinite(minX) || !Float.isFinite(minY) || !Float.isFinite(minZ) || !Float.isFinite(maxX) || !Float.isFinite(maxY) || !Float.isFinite(maxZ))
                 return ModelBounds.INVALID;
             float centerX = (minX + maxX) * 0.5F;
             float centerY = (minY + maxY) * 0.5F;

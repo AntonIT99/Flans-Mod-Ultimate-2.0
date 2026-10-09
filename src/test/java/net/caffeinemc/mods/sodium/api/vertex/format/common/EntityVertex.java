@@ -8,5 +8,6 @@ public final class EntityVertex
 {
     public static final VertexFormat FORMAT = DefaultVertexFormat.NEW_ENTITY;
 
-    private EntityVertex() {}
+    private EntityVertex()
+    {}
 }

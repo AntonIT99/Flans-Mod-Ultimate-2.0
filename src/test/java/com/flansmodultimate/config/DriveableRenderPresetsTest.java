@@ -23,12 +23,10 @@ class DriveableRenderPresetsTest
             assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentImpostorPreset());
 
             ModClientConfig.applyLodPreset(ModClientConfig.RenderPreset.ULTRA_QUALITY);
-            assertEquals(new ModClientConfig.LodValues(0.25, 0.5, 1, 0, 0),
-                ModClientConfig.currentLodValues());
+            assertEquals(new ModClientConfig.LodValues(0.25, 0.5, 1, 0, 0), ModClientConfig.currentLodValues());
             assertEquals(ModClientConfig.RenderPreset.QUALITY, ModClientConfig.currentImpostorPreset());
             ModClientConfig.applyImpostorPreset(ModClientConfig.RenderPreset.ULTRA_QUALITY);
-            assertEquals(new ModClientConfig.ImpostorValues(8, 128, 256, 2, 64, 8),
-                ModClientConfig.currentImpostorValues());
+            assertEquals(new ModClientConfig.ImpostorValues(8, 128, 256, 2, 64, 8), ModClientConfig.currentImpostorValues());
             ModClientConfig.applyLodPreset(ModClientConfig.RenderPreset.QUALITY);
             ModClientConfig.applyImpostorPreset(ModClientConfig.RenderPreset.QUALITY);
 
@@ -77,10 +75,8 @@ class DriveableRenderPresetsTest
                 assertEquals(preset, ModClientConfig.currentLodPreset());
                 assertEquals(preset, ModClientConfig.currentImpostorPreset());
             }
-            assertEquals(new ModClientConfig.LodValues(6, 16, 4, 32, 16),
-                ModClientConfig.currentLodValues());
-            assertEquals(new ModClientConfig.ImpostorValues(160, 16, 32, 2, 64, 8),
-                ModClientConfig.currentImpostorValues());
+            assertEquals(new ModClientConfig.LodValues(6, 16, 4, 32, 16), ModClientConfig.currentLodValues());
+            assertEquals(new ModClientConfig.ImpostorValues(160, 16, 32, 2, 64, 8), ModClientConfig.currentImpostorValues());
         }
         finally
         {

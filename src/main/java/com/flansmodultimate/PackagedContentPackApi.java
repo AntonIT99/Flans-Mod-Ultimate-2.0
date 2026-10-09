@@ -1,7 +1,6 @@
 package com.flansmodultimate;
 
 import com.flansmodultimate.content.PackagedContentLoader;
-
 import net.neoforged.fml.ModContainer;
 
 import java.util.Map;
@@ -14,7 +13,8 @@ import java.util.Set;
  */
 public final class PackagedContentPackApi
 {
-    private PackagedContentPackApi() {}
+    private PackagedContentPackApi()
+    {}
 
     /** Registers the module's content packs during its mod constructor. */
     public static synchronized void register(ModContainer context, String modId, String contentRoot, String modelsRoot)

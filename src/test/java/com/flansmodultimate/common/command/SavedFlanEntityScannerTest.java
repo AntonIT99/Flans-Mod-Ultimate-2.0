@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SavedFlanEntityScannerTest
 {
-    @TempDir Path directory;
+    @TempDir
+    Path directory;
 
     @Test
     void readsSavedPlanesWithoutLoadingChunks() throws Exception
@@ -42,17 +43,14 @@ class SavedFlanEntityScannerTest
         CompoundTag root = new CompoundTag();
         root.put("Entities", entities);
         ResourceLocation dimension = ResourceLocation.fromNamespaceAndPath("minecraft", "overworld");
-        try (RegionFile region = LevelFilePlatform.openEntityRegion(regionPath, directory, dimension);
-             DataOutputStream output = region.getChunkDataOutputStream(chunk))
+        try (RegionFile region = LevelFilePlatform.openEntityRegion(regionPath, directory, dimension); DataOutputStream output = region.getChunkDataOutputStream(chunk))
         {
             NbtIo.write(root, output);
         }
 
-        SavedFlanEntityScanner.Result result = SavedFlanEntityScanner.scan(
-            List.of(new SavedFlanEntityScanner.Source(dimension, directory)));
+        SavedFlanEntityScanner.Result result = SavedFlanEntityScanner.scan(List.of(new SavedFlanEntityScanner.Source(dimension, directory)));
 
         assertEquals(0, result.failedChunks());
-        assertEquals(List.of(new SavedFlanEntityScanner.Entry(dimension, "flansmodultimate:plane", "ec665",
-            -4.5D, 80D, 50.25D, -1, 3)), result.entries());
+        assertEquals(List.of(new SavedFlanEntityScanner.Entry(dimension, "flansmodultimate:plane", "ec665", -4.5D, 80D, 50.25D, -1, 3)), result.entries());
     }
 }

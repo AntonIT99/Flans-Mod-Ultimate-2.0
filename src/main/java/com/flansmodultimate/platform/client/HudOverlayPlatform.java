@@ -12,7 +12,8 @@ import net.minecraft.resources.ResourceLocation;
 /** Version boundary for HUD layers: Forge GUI overlays or NeoForge GUI layers. Client-only. */
 public final class HudOverlayPlatform
 {
-    private HudOverlayPlatform() {}
+    private HudOverlayPlatform()
+    {}
 
     /** A HUD layer drawn with the frame partial tick and the scaled screen size. */
     @FunctionalInterface
@@ -60,8 +61,7 @@ public final class HudOverlayPlatform
 
     private static LayeredDraw.Layer wrap(HudLayer layer)
     {
-        return (graphics, deltaTracker) -> layer.render(graphics, deltaTracker.getGameTimeDeltaPartialTick(true),
-            graphics.guiWidth(), graphics.guiHeight());
+        return (graphics, deltaTracker) -> layer.render(graphics, deltaTracker.getGameTimeDeltaPartialTick(true), graphics.guiWidth(), graphics.guiHeight());
     }
 
     /** Whether survival HUD elements, such as health and armor, are drawn. */
@@ -81,5 +81,6 @@ public final class HudOverlayPlatform
     }
 
     /** Reserves the row returned by {@link #leftStatusRowTop}; the vanilla layout needs no bookkeeping. */
-    public static void claimLeftStatusRow() {}
+    public static void claimLeftStatusRow()
+    {}
 }

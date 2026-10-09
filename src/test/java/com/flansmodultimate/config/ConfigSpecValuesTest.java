@@ -28,8 +28,7 @@ class ConfigSpecValuesTest
 
     private enum Flavour
     {
-        MILD,
-        HOT
+        MILD, HOT
     }
 
     private ModConfigSpec spec;

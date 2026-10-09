@@ -14,5 +14,6 @@ public final class PlatformTags
     /** Glass panes. */
     public static final TagKey<Block> GLASS_PANES = Tags.Blocks.GLASS_PANES;
 
-    private PlatformTags() {}
+    private PlatformTags()
+    {}
 }

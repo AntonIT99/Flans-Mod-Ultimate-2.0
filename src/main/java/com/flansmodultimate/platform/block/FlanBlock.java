@@ -29,20 +29,17 @@ public abstract class FlanBlock extends Block
 
     @Override
     @NotNull
-    protected final InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
-                                                     @NotNull Player player, @NotNull BlockHitResult hit)
+    protected final InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit)
     {
         return interact(state, level, pos, player, InteractionHand.MAIN_HAND);
     }
 
     @Override
     @NotNull
-    protected final ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level,
-                                                    @NotNull BlockPos pos, @NotNull Player player,
-                                                    @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
+    protected final ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player,
+        @NotNull InteractionHand hand, @NotNull BlockHitResult hit)
     {
         InteractionResult result = interact(state, level, pos, player, hand);
-        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.sidedSuccess(level.isClientSide);
+        return result == InteractionResult.PASS ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.sidedSuccess(level.isClientSide);
     }
 }

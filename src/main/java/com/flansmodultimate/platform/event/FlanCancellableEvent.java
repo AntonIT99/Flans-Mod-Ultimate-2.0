@@ -9,5 +9,4 @@ import net.neoforged.bus.api.ICancellableEvent;
  * Post them through {@code PlatformEvents.postCancellable}.
  */
 public abstract class FlanCancellableEvent extends Event implements ICancellableEvent
-{
-}
+{}

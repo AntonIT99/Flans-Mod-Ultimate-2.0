@@ -24,12 +24,12 @@ import java.util.function.Supplier;
  */
 public final class ItemAttributes
 {
-    private ItemAttributes() {}
+    private ItemAttributes()
+    {}
 
     public enum Operation
     {
-        ADD_VALUE,
-        ADD_MULTIPLIED_TOTAL
+        ADD_VALUE, ADD_MULTIPLIED_TOTAL
     }
 
     /** Modifiers an item adds on top of its vanilla ones. */
@@ -37,20 +37,23 @@ public final class ItemAttributes
     {
         private final List<Entry> entries = new ArrayList<>();
 
-        private record Entry(Holder<Attribute> attribute, AttributeModifier modifier) {}
+        private record Entry(Holder<Attribute> attribute, AttributeModifier modifier)
+        {}
 
-        private Modifiers() {}
+        private Modifiers()
+        {}
 
         /**
-         * @param idPath     1.21 modifier id, in the Flan's Mod Ultimate namespace
-         * @param legacyUuid 1.20.1 modifier UUID; only requested on 1.20.1
-         * @param legacyName 1.20.1 modifier name
+         * @param idPath
+         *            1.21 modifier id, in the Flan's Mod Ultimate namespace
+         * @param legacyUuid
+         *            1.20.1 modifier UUID; only requested on 1.20.1
+         * @param legacyName
+         *            1.20.1 modifier name
          */
-        public void add(Holder<Attribute> attribute, String idPath, Supplier<UUID> legacyUuid, String legacyName,
-                        double amount, Operation operation)
+        public void add(Holder<Attribute> attribute, String idPath, Supplier<UUID> legacyUuid, String legacyName, double amount, Operation operation)
         {
-            AttributeModifier.Operation modernOperation = operation == Operation.ADD_VALUE
-                ? AttributeModifier.Operation.ADD_VALUE : AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
+            AttributeModifier.Operation modernOperation = operation == Operation.ADD_VALUE ? AttributeModifier.Operation.ADD_VALUE : AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL;
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, idPath);
             entries.add(new Entry(attribute, new AttributeModifier(id, amount, modernOperation)));
         }

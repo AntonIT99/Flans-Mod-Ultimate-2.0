@@ -8,7 +8,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import net.neoforged.fml.ModList;
 
 import java.io.IOException;
@@ -50,10 +49,11 @@ final class ModernAssetAliases
         static final View EMPTY = new View(Map.of(), Map.of(), Set.of());
     }
 
-    record Assets(Map<String, String> textures, Map<String, JsonObject> models,
-                          Map<String, JsonObject> blockstates, Set<String> metadata) {}
+    record Assets(Map<String, String> textures, Map<String, JsonObject> models, Map<String, JsonObject> blockstates, Set<String> metadata)
+    {}
 
-    private ModernAssetAliases() {}
+    private ModernAssetAliases()
+    {}
 
     static View forPack(Path path)
     {
@@ -72,9 +72,7 @@ final class ModernAssetAliases
             var modFile = ModList.get().getModFileById(FlansMod.MOD_ID).getFile();
             Path builtinAssets = modFile.findResource("assets", FlansMod.FLANSMOD_ID);
             inputs.add(new Input(builtinAssets, true));
-            cachedAssets.add(PackAssetIndex.modern(builtinAssets,
-                Files.isRegularFile(modFile.getFilePath()) ? modFile.getFilePath() : null,
-                modFile.getFilePath()));
+            cachedAssets.add(PackAssetIndex.modern(builtinAssets, Files.isRegularFile(modFile.getFilePath()) ? modFile.getFilePath() : null, modFile.getFilePath()));
             for (IContentProvider provider : providers)
             {
                 if (!provider.shouldIndexAssetsForConflicts())
@@ -82,12 +80,14 @@ final class ModernAssetAliases
                 indexed.add(provider);
                 Set<String> entryModels = new HashSet<>();
                 Map<String, String> renamedModels = new HashMap<>();
-                ContentManager.listItems(provider).forEach(config -> {
+                ContentManager.listItems(provider).forEach(config ->
+                {
                     entryModels.add("item/" + config.getShortName());
                     if (!config.getShortName().equals(config.getOriginalShortName()))
                         renamedModels.put("item/" + config.getOriginalShortName(), "item/" + config.getShortName());
                 });
-                ContentManager.listBlocks(provider).forEach(config -> {
+                ContentManager.listBlocks(provider).forEach(config ->
+                {
                     entryModels.add("block/" + config.getShortName());
                     if (!config.getShortName().equals(config.getOriginalShortName()))
                         renamedModels.put("block/" + config.getOriginalShortName(), "block/" + config.getShortName());
@@ -96,7 +96,8 @@ final class ModernAssetAliases
                 inputs.add(new Input(provider.getPath(), provider.isPreprocessed(), entryModels, renamedModels));
             }
             // Each pack's index is independent; the plan below takes them in pack order.
-            cachedAssets.addAll(workers.map(indexed, provider -> {
+            cachedAssets.addAll(workers.map(indexed, provider ->
+            {
                 try
                 {
                     return PackAssetIndex.modern(provider);
@@ -174,7 +175,8 @@ final class ModernAssetAliases
             Map<String, byte[]> json = new LinkedHashMap<>();
             Set<String> hidden = new HashSet<>();
             Set<String> shadowedModels = new HashSet<>();
-            inputs.get(i).renamedModels().forEach((original, renamed) -> {
+            inputs.get(i).renamedModels().forEach((original, renamed) ->
+            {
                 if (!original.equals(renamed) && pack.models().containsKey(original))
                     shadowedModels.add(renamed);
             });
@@ -204,13 +206,13 @@ final class ModernAssetAliases
                     continue;
                 String desired = inputs.get(i).renamedModels().getOrDefault(original, original);
                 Integer owner = registeredModels.get(desired);
-                String alias = !immutable && owner != null && owner != i
-                    ? allocate(desired, reservedModels) : desired;
+                String alias = !immutable && owner != null && owner != i ? allocate(desired, reservedModels) : desired;
                 registeredModels.putIfAbsent(alias, i);
                 modelAliases.put(original, alias);
                 expose("models/" + original + ".json", "models/" + alias + ".json", sources, hidden);
             }
-            inputs.get(i).renamedModels().forEach((original, renamed) -> {
+            inputs.get(i).renamedModels().forEach((original, renamed) ->
+            {
                 if (!pack.models().containsKey(original) && pack.models().containsKey(renamed))
                     modelAliases.put(original, modelAliases.get(renamed));
             });
@@ -295,9 +297,7 @@ final class ModernAssetAliases
             return List.of();
         try (Stream<Path> walk = Files.walk(root))
         {
-            return walk.filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().endsWith(extension))
-                .sorted().toList();
+            return walk.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().endsWith(extension)).sorted().toList();
         }
     }
 
@@ -308,7 +308,7 @@ final class ModernAssetAliases
 
     private static String allocate(String original, Set<String> reserved)
     {
-        for (int suffix = 2; ; suffix++)
+        for (int suffix = 2;; suffix++)
         {
             String candidate = original + "_" + suffix;
             if (reserved.add(candidate))

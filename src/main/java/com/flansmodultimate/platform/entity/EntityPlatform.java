@@ -22,7 +22,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 /** Version boundary for small entity API calls whose names or signatures changed. */
 public final class EntityPlatform
 {
-    private EntityPlatform() {}
+    private EntityPlatform()
+    {}
 
     /** Runs the mob's own spawn initialisation without spawn-group or NBT data. */
     @SuppressWarnings("deprecation") // NeoForge marks this as override-only; this keeps the direct call of 1.20.1.
@@ -57,8 +58,7 @@ public final class EntityPlatform
     /** Explosion knockback after the Blast Protection reduction of 15% per level. */
     public static double explosionKnockback(LivingEntity entity, double knockback)
     {
-        int level = EnchantmentHelper.getEnchantmentLevel(
-            entity.level().registryAccess().holderOrThrow(Enchantments.BLAST_PROTECTION), entity);
+        int level = EnchantmentHelper.getEnchantmentLevel(entity.level().registryAccess().holderOrThrow(Enchantments.BLAST_PROTECTION), entity);
         return knockback * Math.max(0.0, 1.0 - level * 0.15);
     }
 

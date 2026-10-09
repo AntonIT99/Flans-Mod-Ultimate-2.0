@@ -1,8 +1,8 @@
 package com.flansmodultimate.content.warfare44;
 
 import com.flansmodultimate.PackagedContentPackApi;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
 
 @Mod(PacksMod.MOD_ID)
 public class PacksMod

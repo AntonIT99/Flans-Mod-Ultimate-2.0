@@ -18,7 +18,8 @@ public final class KeyContexts
     /** Live everywhere; every vanilla mapping uses it, so it conflicts with every other context. */
     public static final IKeyConflictContext UNIVERSAL = KeyConflictContext.UNIVERSAL;
 
-    private KeyContexts() {}
+    private KeyContexts()
+    {}
 
     /** A conflict context of this mod; {@link #conflictsWith} receives the loader's other context. */
     public interface ModContext extends IKeyConflictContext

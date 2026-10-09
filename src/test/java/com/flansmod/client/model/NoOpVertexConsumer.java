@@ -8,7 +8,8 @@ final class NoOpVertexConsumer implements VertexConsumer
 {
     static final NoOpVertexConsumer INSTANCE = new NoOpVertexConsumer();
 
-    private NoOpVertexConsumer() {}
+    private NoOpVertexConsumer()
+    {}
 
     @Override
     public @NotNull VertexConsumer addVertex(float x, float y, float z)

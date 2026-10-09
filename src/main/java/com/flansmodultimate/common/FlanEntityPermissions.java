@@ -25,20 +25,18 @@ public final class FlanEntityPermissions
     public static final PermissionNode<Boolean> DEPLOYED_GUN_ENTER = node("deployed_gun.enter");
     public static final PermissionNode<Boolean> DEPLOYED_GUN_ATTACK = node("deployed_gun.attack");
 
-    private FlanEntityPermissions() {}
+    private FlanEntityPermissions()
+    {}
 
     private static PermissionNode<Boolean> node(String path)
     {
-        return new PermissionNode<>(FlansMod.MOD_ID, path, PermissionTypes.BOOLEAN,
-            (player, uuid, contexts) -> true);
+        return new PermissionNode<>(FlansMod.MOD_ID, path, PermissionTypes.BOOLEAN, (player, uuid, contexts) -> true);
     }
 
     @SubscribeEvent
     public static void register(PermissionGatherEvent.Nodes event)
     {
-        event.addNodes(DRIVEABLE_PICKUP, DRIVEABLE_ENTER, DRIVEABLE_ATTACK,
-            AA_GUN_PICKUP, AA_GUN_ENTER, AA_GUN_ATTACK,
-            DEPLOYED_GUN_PICKUP, DEPLOYED_GUN_ENTER, DEPLOYED_GUN_ATTACK);
+        event.addNodes(DRIVEABLE_PICKUP, DRIVEABLE_ENTER, DRIVEABLE_ATTACK, AA_GUN_PICKUP, AA_GUN_ENTER, AA_GUN_ATTACK, DEPLOYED_GUN_PICKUP, DEPLOYED_GUN_ENTER, DEPLOYED_GUN_ATTACK);
     }
 
     public static boolean allows(Player player, PermissionNode<Boolean> node)
