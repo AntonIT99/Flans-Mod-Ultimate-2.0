@@ -1,8 +1,6 @@
 package com.flansmodultimate.content;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Files;
@@ -16,10 +14,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ContentCacheTest
 {
-    @TempDir Path root;
+    @TempDir
+    Path root;
 
-    @BeforeEach void configure() { ContentFileCache.configure(root.resolve("cache")); }
-    @AfterEach void reset() { ContentFileCache.configure(null); }
+    @BeforeEach
+    void configure()
+    {
+        ContentFileCache.configure(root.resolve("cache"));
+    }
+
+    @AfterEach
+    void reset()
+    {
+        ContentFileCache.configure(null);
+    }
 
     @Test
     void unchangedGenerationIsReusedWithoutRewritingCacheOrAliasFiles() throws Exception
@@ -85,7 +93,10 @@ class ContentCacheTest
                 Files.createDirectories(texture.getParent());
                 var image = new java.awt.image.BufferedImage(2, 2, java.awt.image.BufferedImage.TYPE_INT_ARGB);
                 image.setRGB(0, 0, source.equals(a) ? 0xffff0000 : 0xff0000ff);
-                try (var out = Files.newOutputStream(texture)) { javax.imageio.ImageIO.write(image, "png", out); }
+                try (var out = Files.newOutputStream(texture))
+                {
+                    javax.imageio.ImageIO.write(image, "png", out);
+                }
                 Path model = provider.getAssetsPath(fs).resolve("models/item/shared.json");
                 Files.createDirectories(model.getParent());
                 Files.writeString(model, "{\"marker\":\"" + (source.equals(a) ? "A" : "B") + "\"}");
@@ -99,9 +110,9 @@ class ContentCacheTest
                 // Simulate unreadable source contents with identical per-file metadata. A warm
                 // load must reuse both indexes, even though both virtual roots print the same path.
                 FileTime textureTime = Files.getLastModifiedTime(texture), modelTime = Files.getLastModifiedTime(model);
-                Files.write(texture, new byte[(int)Files.size(texture)]);
+                Files.write(texture, new byte[(int) Files.size(texture)]);
                 Files.setLastModifiedTime(texture, textureTime);
-                Files.writeString(model, " ".repeat((int)Files.size(model)));
+                Files.writeString(model, " ".repeat((int) Files.size(model)));
                 Files.setLastModifiedTime(model, modelTime);
             }
         }
@@ -122,8 +133,8 @@ class ContentCacheTest
     private static PackagedContentProvider virtualModule(Path physicalSource, java.nio.file.FileSystem fs)
     {
         Path assets = fs.getPath("/assets/flansmod");
-        return new PackagedContentProvider(physicalSource.getFileName().toString(), "module", "module", physicalSource,
-            fs.getPath("/"), assets, fs.getPath("/"), "/", "/assets/flansmod", "/", false, true);
+        return new PackagedContentProvider(physicalSource.getFileName().toString(), "module", "module", physicalSource, fs.getPath("/"), assets, fs.getPath("/"), "/", "/assets/flansmod", "/", false,
+            true);
     }
 
     @Test
@@ -148,7 +159,7 @@ class ContentCacheTest
         assertFalse(selective.get("armor").get("shared").get("_1").isEmpty());
         assertEquals("", selective.get("armor").get("unique").get("_1"));
         FileTime time = Files.getLastModifiedTime(archive);
-        Files.write(archive, new byte[(int)Files.size(archive)]);
+        Files.write(archive, new byte[(int) Files.size(archive)]);
         Files.setLastModifiedTime(archive, time);
         assertEquals(selective, PackAssetIndex.legacy(pack, Map.of("armor", java.util.Set.of("shared"))));
     }
@@ -168,11 +179,44 @@ class ContentCacheTest
         assertFalse(signatures.get("armor").get("uniform").get("_1").isEmpty());
         assertEquals(signatures, PackAssetIndex.legacy(pack));
         FileTime time = Files.getLastModifiedTime(texture);
-        Files.write(texture, new byte[(int)Files.size(texture)]);
+        Files.write(texture, new byte[(int) Files.size(texture)]);
         Files.setLastModifiedTime(texture, time);
         assertEquals(signatures, PackAssetIndex.legacy(pack, Map.of("armor", java.util.Set.of("uniform"))));
         ContentFileCache.configure(root.resolve("cache"), true);
         assertEquals("", PackAssetIndex.legacy(pack, Map.of()).get("armor").get("uniform").get("_1"));
+    }
+
+    @Test
+    void recopiedTexturesReuseTheirPixelSignaturesByContent() throws Exception
+    {
+        ContentPack pack = new ContentPack("pack", root.resolve("pack"));
+        Path texture = pack.getAssetsPath().resolve("armor/uniform_1.png");
+        Files.createDirectories(texture.getParent());
+        var image = new java.awt.image.BufferedImage(2, 2, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, 0xffff0000);
+        javax.imageio.ImageIO.write(image, "png", texture.toFile());
+        Map<String, java.util.Set<String>> uniform = Map.of("armor", java.util.Set.of("uniform"));
+        String decoded = PackAssetIndex.legacy(pack, uniform).get("armor").get("uniform").get("_1");
+
+        // Marks the remembered signature, so that only its reuse, not a new decode, can return the marker.
+        Path entry;
+        try (var entries = Files.list(root.resolve("cache/asset-index")))
+        {
+            entry = entries.filter(file -> file.toString().endsWith(".json")).findFirst().orElseThrow();
+        }
+        Files.writeString(entry, Files.readString(entry).replace(":\"" + decoded + "\"}", ":\"marker\"}"));
+
+        // A build that copies the resources anew keeps the bytes but rewrites every stamp.
+        Files.setLastModifiedTime(texture, FileTime.fromMillis(Files.getLastModifiedTime(texture).toMillis() + 2000));
+        assertEquals("", PackAssetIndex.legacyNames(pack).get("armor").get("uniform").get("_1"));
+        assertEquals("marker", PackAssetIndex.legacy(pack, uniform).get("armor").get("uniform").get("_1"));
+
+        image.setRGB(1, 1, 0xff0000ff);
+        javax.imageio.ImageIO.write(image, "png", texture.toFile());
+        Files.setLastModifiedTime(texture, FileTime.fromMillis(Files.getLastModifiedTime(texture).toMillis() + 4000));
+        String changed = PackAssetIndex.legacy(pack, uniform).get("armor").get("uniform").get("_1");
+        assertNotEquals("marker", changed);
+        assertNotEquals(decoded, changed);
     }
 
     @Test
@@ -184,7 +228,7 @@ class ContentCacheTest
         ModernAssetAliases.Assets cold = PackAssetIndex.modern(assets, null);
         FileTime time = Files.getLastModifiedTime(model);
         // Keeping all metadata equal demonstrates that the warm path never reads/parses source JSON.
-        Files.writeString(model, " ".repeat((int)Files.size(model)));
+        Files.writeString(model, " ".repeat((int) Files.size(model)));
         Files.setLastModifiedTime(model, time);
         ModernAssetAliases.Assets warm = PackAssetIndex.modern(assets, null);
         assertEquals(cold.models(), warm.models());
@@ -232,7 +276,8 @@ class ContentCacheTest
         new ContentProcessingCache(pack, "definitions").remember(true, true, true, true);
         try (var files = Files.list(root.resolve("cache").resolve("generation")))
         {
-            for (Path file : files.toList()) Files.writeString(file, "invalid JSON");
+            for (Path file : files.toList())
+                Files.writeString(file, "invalid JSON");
         }
         assertFalse(new ContentProcessingCache(pack, "definitions").assetsCurrent());
     }
@@ -252,8 +297,7 @@ class ContentCacheTest
     void generationFingerprintIncludesEffectiveValuesBeyondRawDefinitionText()
     {
         ContentPack pack = new ContentPack("pack", root.resolve("pack"));
-        var file = new com.flansmodultimate.common.types.TypeFile("part.txt",
-            com.flansmodultimate.common.types.EnumType.PART, pack, java.util.List.of("Name First"));
+        var file = new com.flansmodultimate.common.types.TypeFile("part.txt", com.flansmodultimate.common.types.EnumType.PART, pack, java.util.List.of("Name First"));
         String before = file.getGenerationInput();
         file.getConfigLines("Name").set(0, "Category name");
         assertNotEquals(before, file.getGenerationInput());
@@ -269,8 +313,7 @@ class ContentCacheTest
         PackAssetIndex.modern(pack.getAssetsPath(), null);
         try (var folders = Files.list(root.resolve("cache")))
         {
-            assertEquals(java.util.Set.of("generation", "asset-index"),
-                folders.map(folder -> folder.getFileName().toString()).collect(java.util.stream.Collectors.toSet()));
+            assertEquals(java.util.Set.of("generation", "asset-index"), folders.map(folder -> folder.getFileName().toString()).collect(java.util.stream.Collectors.toSet()));
         }
         try (var leftovers = Files.walk(root.resolve("cache")))
         {
@@ -329,7 +372,7 @@ class ContentCacheTest
         Map<String, ContentFileCache.Stamp> before = ContentFileCache.snapshot(root.resolve("cache"));
         FileTime time = Files.getLastModifiedTime(archive);
         // A ZIP reader would fail on this data. Equal metadata must select the persisted indexes.
-        Files.write(archive, new byte[(int)Files.size(archive)]);
+        Files.write(archive, new byte[(int) Files.size(archive)]);
         Files.setLastModifiedTime(archive, time);
         assertEquals(legacy, PackAssetIndex.legacy(pack));
         assertEquals(modern, PackAssetIndex.modern(pack));
