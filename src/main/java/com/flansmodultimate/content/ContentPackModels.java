@@ -43,7 +43,8 @@ final class ContentPackModels
         // Recover packs processed by the previous destructive migration before writing a new ID map.
         try (AliasFileManager aliases = new AliasFileManager(ID_ALIAS_FILE, provider))
         {
-            aliases.readFile().ifPresent(previous -> {
+            aliases.readFile().ifPresent(previous ->
+            {
                 for (InfoType config : items)
                     restoreOriginal(jsonItemModelsFolderPath, config, previous);
                 for (InfoType config : blocks)
@@ -88,8 +89,7 @@ final class ContentPackModels
 
         try (Stream<Path> walk = Files.walk(jsonFolderPath))
         {
-            walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(FileUtils.JSON_EXTENSION))
-                .forEach(ContentPackModels::processJsonItemFile);
+            walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(FileUtils.JSON_EXTENSION)).forEach(ContentPackModels::processJsonItemFile);
         }
         catch (IOException e)
         {
@@ -102,7 +102,7 @@ final class ContentPackModels
         try
         {
             // 1) Rename the file itself to lowercase (safe even on case-insensitive FS)
-            jsonFile = FileUtils.renameToLowercase(jsonFile);
+            FileUtils.renameToLowercase(jsonFile);
 
             // Resource references are normalized in the view; custom JSON strings stay authored.
         }
@@ -139,8 +139,7 @@ final class ContentPackModels
     {
         String fileName = ResourceUtils.sanitize(icon) + FileUtils.PNG_EXTENSION;
         Path textures = provider.getAssetsPath().resolve(FOLDER_TEXTURES);
-        return Files.isRegularFile(textures.resolve(FOLDER_TEXTURES_ITEMS).resolve(fileName))
-            || Files.isRegularFile(textures.resolve(FOLDER_TEXTURES_ITEM).resolve(fileName));
+        return Files.isRegularFile(textures.resolve(FOLDER_TEXTURES_ITEMS).resolve(fileName)) || Files.isRegularFile(textures.resolve(FOLDER_TEXTURES_ITEM).resolve(fileName));
     }
 
     private static void writeGeneratedItemModelJson(Path outputFile, ResourceUtils.ModelJson model, InfoType config)
@@ -175,9 +174,7 @@ final class ContentPackModels
             return false;
 
         String parent = model.get("parent").getAsString();
-        return parent.equals("minecraft:item/generated")
-            || parent.equals("minecraft:item/handheld")
-            || parent.startsWith(FlansMod.FLANSMOD_ID + ":block/");
+        return parent.equals("minecraft:item/generated") || parent.equals("minecraft:item/handheld") || parent.startsWith(FlansMod.FLANSMOD_ID + ":block/");
     }
 
     /**
@@ -233,8 +230,7 @@ final class ContentPackModels
 
     private static String canonicalIds(String json, InfoType config)
     {
-        return json.replace(FlansMod.FLANSMOD_ID + ":block/" + config.getShortName() + "\"",
-            FlansMod.FLANSMOD_ID + ":block/" + config.getOriginalShortName() + "\"");
+        return json.replace(FlansMod.FLANSMOD_ID + ":block/" + config.getShortName() + "\"", FlansMod.FLANSMOD_ID + ":block/" + config.getOriginalShortName() + "\"");
     }
 
     private static void restoreOriginal(Path folder, InfoType config, java.util.Map<String, String> previous)
@@ -277,8 +273,7 @@ final class ContentPackModels
         try
         {
             JsonObject existing = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
-            String originalJson = generatedJson.replace(FlansMod.FLANSMOD_ID + ":block/" + config.getShortName(),
-                FlansMod.FLANSMOD_ID + ":block/" + config.getOriginalShortName());
+            String originalJson = generatedJson.replace(FlansMod.FLANSMOD_ID + ":block/" + config.getShortName(), FlansMod.FLANSMOD_ID + ":block/" + config.getOriginalShortName());
             return !existing.equals(JsonParser.parseString(generatedJson)) && !existing.equals(JsonParser.parseString(originalJson));
         }
         catch (IOException | IllegalStateException | JsonSyntaxException e)

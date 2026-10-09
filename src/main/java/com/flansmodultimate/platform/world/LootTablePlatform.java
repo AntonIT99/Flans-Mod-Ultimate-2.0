@@ -12,7 +12,8 @@ import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 /** Version boundary for loot table identifiers: 1.20.1 names tables by id, 1.21 by resource key. */
 public final class LootTablePlatform
 {
-    private LootTablePlatform() {}
+    private LootTablePlatform()
+    {}
 
     public static ResourceLocation id(ResourceKey<LootTable> table)
     {

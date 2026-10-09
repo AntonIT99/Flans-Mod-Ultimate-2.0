@@ -1,7 +1,7 @@
 package com.flansmodultimate.hooks;
 
-import com.flansmodultimate.client.render.KillMessageData;
-import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.client.render.hud.KillMessageData;
+import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
@@ -11,9 +11,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+
 public interface IClientRenderHooks
 {
     FlanItemExtensions customItemExtensions();
@@ -31,6 +30,12 @@ public interface IClientRenderHooks
     void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale);
 
     /**
+     * Draws a glowing tracer beam between two points that fades over a few ticks, from the Labjac Edition's
+     * {@code TracerBeam}. Colours and alpha are fractions from 0 to 1; the width is the core half-width in blocks.
+     */
+    void spawnTracerBeam(Vec3 start, Vec3 end, float red, float green, float blue, float alpha, float width);
+
+    /**
      * Emits a burst of particles scattered around the given point and keeps replacing them as they
      * expire for {@code durationTicks}, so the effect lasts without slowing any particle's animation.
      */
@@ -40,7 +45,8 @@ public interface IClientRenderHooks
      * As {@link #spawnSustainedParticles}, but the waves emitted during the first {@code hotTicks}
      * use {@code hotParticleType}, so an effect can burn as fire before it cools to smoke.
      */
-    void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale);
+    void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks,
+        float lifetimeScale);
 
     /**
      * The staged layers of a detonation that play out over several ticks: the warm afterglow, the
@@ -60,9 +66,11 @@ public interface IClientRenderHooks
      * Muzzle positions measured from the loaded model of {@code type}, in type-file
      * units and convention, for comparison against its authored shoot points.
      *
-     * <p>Model geometry only exists on the client, so a dedicated server returns an
+     * <p>
+     * Model geometry only exists on the client, so a dedicated server returns an
      * empty list. In singleplayer the integrated server reaches the client's own
-     * loaded models through this hook.</p>
+     * loaded models through this hook.
+     * </p>
      */
     List<DerivedMuzzle> deriveMuzzles(DriveableType type);
 

@@ -39,11 +39,7 @@ public class GunBoxBlock extends FlanBlock implements IFlanBlock<GunBoxType>
 
     public GunBoxBlock(GunBoxType type)
     {
-        super(Properties.of()
-            .mapColor(MapColor.WOOD)
-            .strength(2.0F, 4.0F)
-            .sound(SoundType.WOOD)
-        );
+        super(Properties.of().mapColor(MapColor.WOOD).strength(2.0F, 4.0F).sound(SoundType.WOOD));
         configType = type;
     }
 

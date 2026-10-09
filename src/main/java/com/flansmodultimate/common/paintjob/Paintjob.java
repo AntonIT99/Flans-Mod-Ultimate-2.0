@@ -17,11 +17,7 @@ public class Paintjob
 {
     public enum EnumPaintjobRarity
     {
-        UNKNOWN,
-        COMMON,
-        UNCOMMON,
-        RARE,
-        LEGENDARY,
+        UNKNOWN, COMMON, UNCOMMON, RARE, LEGENDARY,
     }
 
     private final PaintableType type;

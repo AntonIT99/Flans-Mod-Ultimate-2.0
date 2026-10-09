@@ -1,11 +1,9 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.common.teams.ITeamBase;
-import com.flansmodultimate.common.teams.ITeamObject;
-import com.flansmodultimate.common.teams.TeamsManager;
-import com.flansmodultimate.common.teams.TeamsMap;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.teams.*;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketBaseEditState;
+import com.flansmodultimate.network.client.teams.PacketBaseEditState;
 import com.flansmodultimate.platform.item.ItemStackData;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,16 +14,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public final class ItemOpStick extends Item
 {
@@ -37,17 +30,16 @@ public final class ItemOpStick extends Item
     /**
      * Where the selected endpoint stands.
      *
-     * <p>Recorded alongside its id so the client can draw the pending link without having to
-     * hunt the world for an object it only knows by id.</p>
+     * <p>
+     * Recorded alongside its id so the client can draw the pending link without having to
+     * hunt the world for an object it only knows by id.
+     * </p>
      */
     private static final String NBT_CONNECTION_POS = "teams_connection_pos";
 
     public enum Mode
     {
-        OWNERSHIP("Ownership"),
-        CONNECTING("Connecting"),
-        MAPPING("Mapping"),
-        DESTRUCTION("Destruction");
+        OWNERSHIP("Ownership"), CONNECTING("Connecting"), MAPPING("Mapping"), DESTRUCTION("Destruction");
 
         private final String displayName;
 
@@ -128,9 +120,7 @@ public final class ItemOpStick extends Item
             tag.putUUID(NBT_CONNECTION, object.getObjectId());
             tag.putBoolean(NBT_CONNECTION_BASE, object instanceof ITeamBase);
             Vec3 position = object.getTeamObjectPosition();
-            tag.putLongArray(NBT_CONNECTION_POS, new long[] {
-                Double.doubleToRawLongBits(position.x), Double.doubleToRawLongBits(position.y), Double.doubleToRawLongBits(position.z)
-            });
+            tag.putLongArray(NBT_CONNECTION_POS, new long[]{Double.doubleToRawLongBits(position.x), Double.doubleToRawLongBits(position.y), Double.doubleToRawLongBits(position.z)});
             ItemStackData.set(stack, tag);
             player.displayClientMessage(Component.literal("First endpoint selected"), false);
             return;
@@ -175,8 +165,7 @@ public final class ItemOpStick extends Item
             player.displayClientMessage(Component.literal("Maps are configured on bases"), false);
             return;
         }
-        List<TeamsMap> maps = TeamsManager.getInstance().getMaps().stream()
-            .filter(map -> map.getDimension().equals(player.level().dimension())).toList();
+        List<TeamsMap> maps = TeamsManager.getInstance().getMaps().stream().filter(map -> map.getDimension().equals(player.level().dimension())).toList();
         if (maps.isEmpty())
         {
             player.displayClientMessage(Component.literal("Create a map first with /teams map add"), false);
@@ -184,7 +173,8 @@ public final class ItemOpStick extends Item
         }
         int current = -1;
         for (int i = 0; i < maps.size(); i++)
-            if (maps.get(i).getShortName().equals(base.getMapId())) current = i;
+            if (maps.get(i).getShortName().equals(base.getMapId()))
+                current = i;
         TeamsMap next = maps.get((current + 1) % maps.size());
         TeamsManager.getInstance().assignBaseToMap(base, next);
         player.displayClientMessage(Component.literal("Base assigned to " + next.getName()), false);
@@ -199,7 +189,8 @@ public final class ItemOpStick extends Item
 
     private static void clearConnection(ItemStack stack)
     {
-        ItemStackData.update(stack, tag -> {
+        ItemStackData.update(stack, tag ->
+        {
             tag.remove(NBT_CONNECTION);
             tag.remove(NBT_CONNECTION_BASE);
             tag.remove(NBT_CONNECTION_POS);
@@ -209,8 +200,10 @@ public final class ItemOpStick extends Item
     /**
      * Where the endpoint waiting to be connected stands, if this stick is holding one.
      *
-     * <p>Empty unless the stick is in connecting mode with a first endpoint chosen, so callers
-     * can use the result directly to decide whether there is a link to show.</p>
+     * <p>
+     * Empty unless the stick is in connecting mode with a first endpoint chosen, so callers
+     * can use the result directly to decide whether there is a link to show.
+     * </p>
      */
     public static Optional<Vec3> getPendingConnection(ItemStack stack)
     {
@@ -220,16 +213,14 @@ public final class ItemOpStick extends Item
         long[] packed = tag.getLongArray(NBT_CONNECTION_POS);
         if (packed.length != 3)
             return Optional.empty();
-        return Optional.of(new Vec3(Double.longBitsToDouble(packed[0]),
-            Double.longBitsToDouble(packed[1]), Double.longBitsToDouble(packed[2])));
+        return Optional.of(new Vec3(Double.longBitsToDouble(packed[0]), Double.longBitsToDouble(packed[1]), Double.longBitsToDouble(packed[2])));
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip,
-                                @NotNull TooltipFlag flag)
+    public void appendHoverText(@NotNull ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag)
     {
-        tooltip.add(Component.translatable(TooltipKeys.OPERATOR_STICK_MODE,
-            Component.translatable("tooltip.flansmodultimate.operator_stick.mode." + getMode(stack).name().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.translatable(TooltipKeys.OPERATOR_STICK_MODE, Component.translatable("tooltip.flansmodultimate.operator_stick.mode." + getMode(stack).name().toLowerCase(Locale.ROOT)))
+            .withStyle(ChatFormatting.YELLOW));
         tooltip.add(Component.translatable(TooltipKeys.OPERATOR_STICK_CHANGE_MODE).withStyle(ChatFormatting.GRAY));
     }
 }

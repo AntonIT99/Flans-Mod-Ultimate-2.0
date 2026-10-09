@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanSpawnEntity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.CustomArmorItem;
@@ -8,11 +7,10 @@ import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsRound;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketFlak;
-import com.flansmodultimate.platform.entity.SpawnDataEntity;
-import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.network.client.effects.PacketFlak;
+import com.flansmodultimate.platform.entity.*;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,17 +18,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -223,8 +214,7 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
             return true;
 
         ShootableType type = getConfigType();
-        PacketHandler.sendToAllAround(new PacketFlak(position(), type.getSmokeParticlesCount(), type.getSmokeParticleType()),
-            position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(position(), type.getSmokeParticlesCount(), type.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(), level.dimension());
 
         double radius = type.getSmokeRadius();
         double radiusSquared = radius * radius;
@@ -249,8 +239,7 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
         for (EquipmentSlot slot : EquipmentSlot.values())
         {
             ItemStack stack = entity.getItemBySlot(slot);
-            if (!stack.isEmpty() && stack.getItem() instanceof CustomArmorItem armour
-                && armour.getConfigType().isSmokeProtection())
+            if (!stack.isEmpty() && stack.getItem() instanceof CustomArmorItem armour && armour.getConfigType().isSmokeProtection())
                 return true;
         }
         return false;
@@ -307,9 +296,7 @@ public abstract class Shootable extends FlanSpawnEntity implements SpawnDataEnti
                     // Check to prevent friendly fire
                     Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();
                     LivingEntity owner = getOwner().orElse(null);
-                    if (currentRound.isPresent()
-                        && owner instanceof ServerPlayer attacker
-                        && entity instanceof ServerPlayer victim
+                    if (currentRound.isPresent() && owner instanceof ServerPlayer attacker && entity instanceof ServerPlayer victim
                         && !Optional.ofNullable(currentRound.get().getGametype()).map(g -> g.canPlayerBeAttacked(victim, attacker)).orElse(false))
                         continue;
                 }

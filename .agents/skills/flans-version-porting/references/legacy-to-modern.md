@@ -13,8 +13,9 @@ Use evidence in this order unless the user specifies otherwise:
 2. `../FlansMod` (1.12.2) is secondary. It is especially useful for changes in
    Forge lifecycle, registries, capabilities, and intermediate rendering APIs.
 3. The current destination branch establishes its architecture and invariants.
-4. `../flans-mod-labjac-edition-ganesha-mk1a-1.7.10` (Labjac Edition Ganesha
-   Mk1A) is optional inspiration, never authority unless explicitly requested.
+4. `../Mr-Monorisu-Brazila-master` is the newest source repository of the Labjac
+   Flan's Mod fork. It is optional inspiration, never authority unless explicitly
+   requested.
 5. `../Flans-Mod-Ultimate-2.0.wiki` documents intended user-visible behavior but
    does not override observed 1.7.10 behavior without evidence of a deliberate
    later change.

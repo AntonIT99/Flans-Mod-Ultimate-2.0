@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * The velocity a shot is actually fired with, which is also the velocity its kinetic damage and
  * penetration are derived from.
  *
- * <p>Precedence, highest first: a per-ammunition override declared by the weapon or the platform
+ * <p>
+ * Precedence, highest first: a per-ammunition override declared by the weapon or the platform
  * carrying it, the round selected from a belt, the ammunition's own {@code MuzzleVelocity}, and
  * finally whatever the weapon itself supplies. Whichever wins is then scaled by the weapon's
  * attachment multiplier.
@@ -46,8 +47,7 @@ class FiredShotVelocityTest
 
         FiredShot firedShot = shot(vehicle, shell, 3F);
         assertEquals(3F, firedShot.getMuzzleVelocity(), 1.0E-4F);
-        assertEquals(ShootingHelper.getKineticPenetratingPower(6800F, 3F),
-            firedShot.getPenetratingPower(), 1.0E-4F,
+        assertEquals(ShootingHelper.getKineticPenetratingPower(6800F, 3F), firedShot.getPenetratingPower(), 1.0E-4F,
             "kinetic penetration must use the firing weapon's velocity when the ammunition declares none");
     }
 
@@ -59,16 +59,13 @@ class FiredShotVelocityTest
         FiredShot firedShot = shot(vehicle, shell, 3F);
 
         assertTrue(shell.isPenetrates());
-        assertEquals(ShootingHelper.getKineticPenetratingPower(6800F, 38.5F),
-            firedShot.getPenetratingPower(), 1.0E-4F);
+        assertEquals(ShootingHelper.getKineticPenetratingPower(6800F, 38.5F), firedShot.getPenetratingPower(), 1.0E-4F);
     }
 
     @Test
     void aKineticRoundBeltAlsoForcesPenetration()
     {
-        BulletType belt = bullet("RoundsPerItem 2", "Penetrates false",
-            "AddRound AP 1 162 0 800 45",
-            "AddRound HE 1 135 16 835 0");
+        BulletType belt = bullet("RoundsPerItem 2", "Penetrates false", "AddRound AP 1 162 0 800 45", "AddRound HE 1 135 16 835 0");
 
         assertTrue(belt.isPenetrates());
     }
@@ -80,8 +77,20 @@ class FiredShotVelocityTest
         assertTrue(vehicle.getAmmoOverrides().asMap().containsKey(AmmoOverrides.key("syntheticShell")));
         BulletType shell = bullet("ShortName syntheticShell", "Mass 6800", "MuzzleVelocity 770");
 
-        assertEquals(49.5F, shot(vehicle, shell, 3F).getMuzzleVelocity(), 1.0E-4F,
-            "the vehicle's own override outranks the ammunition it names");
+        assertEquals(49.5F, shot(vehicle, shell, 3F).getMuzzleVelocity(), 1.0E-4F, "the vehicle's own override outranks the ammunition it names");
+    }
+
+    @Test
+    void anAddonPlatformSuppliesOverridesWithoutBecomingTheProjectileOwner()
+    {
+        VehicleType platform = vehicle("AmmoMuzzleVelocity syntheticShell 990");
+        VehicleType mounted = vehicle("AmmoMuzzleVelocity anotherRound 600");
+        BulletType shell = bullet("ShortName syntheticShell", "Mass 6800", "MuzzleVelocity 770");
+        FireableGun gun = new FireableGun(mounted, 1F, 0F, 3F, EnumSpreadPattern.CIRCLE);
+        assertEquals(49.5F, new FiredShot(gun, shell, null, null, 0, platform).getMuzzleVelocity(), 1.0E-4F);
+        VehicleType overridingGun = vehicle("AmmoMuzzleVelocity syntheticShell 850");
+        FireableGun ownOverride = new FireableGun(overridingGun, 1F, 0F, 3F, EnumSpreadPattern.CIRCLE);
+        assertEquals(42.5F, new FiredShot(ownOverride, shell, null, null, 0, platform).getMuzzleVelocity(), 1.0E-4F);
     }
 
     @Test
@@ -97,9 +106,7 @@ class FiredShotVelocityTest
     void theBeltPositionSelectsTheRoundsVelocity()
     {
         VehicleType vehicle = vehicle("BulletSpeed 3");
-        BulletType belt = bullet("RoundsPerItem 2",
-            "AddRound AP 1 162 0 800 45",
-            "AddRound HE 1 135 16 835 0");
+        BulletType belt = bullet("RoundsPerItem 2", "AddRound AP 1 162 0 800 45", "AddRound HE 1 135 16 835 0");
 
         assertEquals(40F, shot(vehicle, belt, 3F, 0).getMuzzleVelocity(), 1.0E-4F);
         assertEquals(41.75F, shot(vehicle, belt, 3F, 1).getMuzzleVelocity(), 1.0E-4F);
@@ -121,10 +128,8 @@ class FiredShotVelocityTest
         FireableGun gun = new FireableGun(round, 1F, 0F, 0F, EnumSpreadPattern.CIRCLE);
         FiredShot firedShot = new FiredShot(gun, round, null, null, 0);
 
-        assertEquals(0F, firedShot.getMuzzleVelocity(false),
-            "no declared velocity anywhere is what makes a weapon raytrace");
-        assertEquals(BulletType.DEFAULT_BULLET_SPEED, firedShot.getMuzzleVelocity(), 1.0E-4F,
-            "damage still needs a velocity, so the default stands in for it");
+        assertEquals(0F, firedShot.getMuzzleVelocity(false), "no declared velocity anywhere is what makes a weapon raytrace");
+        assertEquals(BulletType.DEFAULT_BULLET_SPEED, firedShot.getMuzzleVelocity(), 1.0E-4F, "damage still needs a velocity, so the default stands in for it");
     }
 
     // ------------------------------------------------------------- fixtures

@@ -21,7 +21,8 @@ public abstract class FlanEntity extends Entity
         defineEntityData(new SynchedDataDefinition(builder));
     }
 
-    protected void defineEntityData(SynchedDataDefinition data) {}
+    protected void defineEntityData(SynchedDataDefinition data)
+    {}
 
     @Override
     public final void lerpTo(double x, double y, double z, float yaw, float pitch, int steps)
@@ -42,5 +43,6 @@ public abstract class FlanEntity extends Entity
         onEntityAdded();
     }
 
-    protected void onEntityAdded() {}
+    protected void onEntityAdded()
+    {}
 }

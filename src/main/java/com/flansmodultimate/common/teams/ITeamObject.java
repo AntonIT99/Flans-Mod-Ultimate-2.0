@@ -12,10 +12,17 @@ import java.util.UUID;
 public interface ITeamObject
 {
     UUID getObjectId();
+
     ResourceKey<Level> getDimension();
+
     Vec3 getTeamObjectPosition();
-    @Nullable UUID getBaseId();
+
+    @Nullable
+    UUID getBaseId();
+
     void setBaseId(@Nullable UUID baseId);
+
     boolean isSpawnPoint();
+
     void destroyTeamObject();
 }

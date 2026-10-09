@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
@@ -18,11 +19,7 @@ import net.minecraft.world.level.ItemLike;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public interface IFlanItem<T extends InfoType> extends ItemLike
 {
@@ -64,7 +61,8 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
     }
 
     /**
-     * @param multiplier factor applied to every displayed value, such as the firing weapon's damage
+     * @param multiplier
+     *            factor applied to every displayed value, such as the firing weapon's damage
      */
     static void appendDamageStats(List<Component> tooltip, DamageStats damageStats, String labelBaseKey, float multiplier)
     {
@@ -95,26 +93,19 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
      */
     static MutableComponent statLine(Component label, String value)
     {
-        return Component.empty()
-            .append(label.copy().withStyle(ChatFormatting.BLUE))
-            .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
+        return Component.empty().append(label.copy().withStyle(ChatFormatting.BLUE)).append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
             .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
     static MutableComponent statLine(Component label, Component value)
     {
-        return Component.empty()
-            .append(label.copy().withStyle(ChatFormatting.BLUE))
-            .append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
-            .append(value.copy().withStyle(ChatFormatting.GRAY));
+        return Component.empty().append(label.copy().withStyle(ChatFormatting.BLUE)).append(Component.literal(": ").withStyle(ChatFormatting.BLUE)).append(value.copy().withStyle(ChatFormatting.GRAY));
     }
 
     /** Indented stat line whose label is localized via a translation key. */
     static MutableComponent indentedStatLine(Component label, String value)
     {
-        return Component.literal("  ").withStyle(ChatFormatting.DARK_AQUA)
-            .append(label.copy().withStyle(ChatFormatting.DARK_AQUA))
-            .append(Component.literal(": ").withStyle(ChatFormatting.DARK_AQUA))
+        return Component.literal("  ").withStyle(ChatFormatting.DARK_AQUA).append(label.copy().withStyle(ChatFormatting.DARK_AQUA)).append(Component.literal(": ").withStyle(ChatFormatting.DARK_AQUA))
             .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
@@ -124,9 +115,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
      */
     static MutableComponent indentedStatLine(String label, String value)
     {
-        return Component.literal("  " + label + ": ")
-            .withStyle(ChatFormatting.DARK_AQUA)
-            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+        return Component.literal("  " + label + ": ").withStyle(ChatFormatting.DARK_AQUA).append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
     /** Modifier line whose label is localized via a translation key. */
@@ -135,8 +124,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         float deltaPercent = (value - 1F) * 100F;
         ChatFormatting color = ((deltaPercent >= 0F && !invertColor) || (deltaPercent < 0F && invertColor)) ? ChatFormatting.GREEN : ChatFormatting.RED;
         String sign = deltaPercent > 0F ? "+" : "";
-        return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% ").withStyle(color)
-            .append(label.copy().withStyle(color));
+        return Component.literal(sign + IFlanItem.formatFloat(deltaPercent) + "% ").withStyle(color).append(label.copy().withStyle(color));
     }
 
     ThreadLocal<Map<Integer, DecimalFormat>> UP_TO_CACHE = ThreadLocal.withInitial(HashMap::new);
@@ -164,8 +152,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         if (decimals < 0)
             throw new IllegalArgumentException("decimals < 0");
 
-        DecimalFormat fmt = UP_TO_CACHE.get()
-            .computeIfAbsent(decimals, IFlanItem::decimalFormatUpTo);
+        DecimalFormat fmt = UP_TO_CACHE.get().computeIfAbsent(decimals, IFlanItem::decimalFormatUpTo);
 
         return fmt.format(f);
     }
@@ -179,13 +166,12 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
      * Renders a mass held in kilograms at whatever scale reads best: anything under a kilogram is
      * shown in grams, so a hand grenade's charge does not appear as "0.06 kg".
      *
-     * @param massKg the mass in kilograms
+     * @param massKg
+     *            the mass in kilograms
      */
     static String formatMassKg(float massKg)
     {
-        return massKg < 1F
-            ? formatFloat(massKg * 1000F, 1) + " g"
-            : formatFloat(massKg, 3) + " kg";
+        return massKg < 1F ? formatFloat(massKg * 1000F, 1) + " g" : formatFloat(massKg, 3) + " kg";
     }
 
     /**
@@ -196,8 +182,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
         if (decimals < 0)
             throw new IllegalArgumentException("decimals < 0");
 
-        DecimalFormat fmt = UP_TO_CACHE.get()
-            .computeIfAbsent(decimals, IFlanItem::decimalFormatUpTo);
+        DecimalFormat fmt = UP_TO_CACHE.get().computeIfAbsent(decimals, IFlanItem::decimalFormatUpTo);
 
         return fmt.format(d);
     }
@@ -228,8 +213,7 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
      */
     static MutableComponent healthLine(String translationKey, float health, float maxHealth)
     {
-        return Component.translatable(translationKey, formatFloat(health, 1), formatFloat(maxHealth, 1))
-            .withStyle(healthColor(health, maxHealth));
+        return Component.translatable(translationKey, formatFloat(health, 1), formatFloat(maxHealth, 1)).withStyle(healthColor(health, maxHealth));
     }
 
     static UUID getOrCreateStackUUID(ItemStack stack, String key)

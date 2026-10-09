@@ -2,6 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.hooks.ClientHooks;
@@ -69,6 +70,8 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         if (!IFlanItem.showDetailedDescriptions())
             return;
         tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_SPEED), IFlanItem.formatFloat(configType.getThrowSpeed() * 10F) + " m/s"));
+        if (configType.isHoldToThrow())
+            tooltipComponents.add(Component.translatable(TooltipKeys.HOLD_TO_THROW).withStyle(ChatFormatting.YELLOW));
         tooltipComponents.add(Component.empty());
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
@@ -90,14 +93,14 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
 
     private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
     {
-        modifiers.add(Attributes.ATTACK_DAMAGE, "grenade_attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID),
-            "Weapon modifier", configType.getMeleeDamage(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.ATTACK_DAMAGE, "grenade_attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(),
+            ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand)
     {
-        return configType.getMeleeDamage() == 0;
+        return configType.isHoldToThrow() || configType.getMeleeDamage() == 0;
     }
 
     @Override
@@ -105,6 +108,29 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
+
+        // A hold-to-throw grenade leaves the hand only when its button is released (see PacketGrenadeThrow)
+        if (!configType.isHoldToThrow() && throwGrenade(level, player, stack, false, false))
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+
+        // Nothing special happened, fall back
+        return InteractionResultHolder.pass(stack);
+    }
+
+    /**
+     * Throws a hold-to-throw grenade whose button the player has just released.
+     *
+     * @param underhand
+     *            true for an underhand toss (use button), false for an overhand throw (attack button)
+     * @return whether a grenade was thrown
+     */
+    public boolean throwByHand(Player player, ItemStack stack, boolean underhand)
+    {
+        return configType.isHoldToThrow() && throwGrenade(player.level(), player, stack, true, underhand);
+    }
+
+    private boolean throwGrenade(Level level, Player player, ItemStack stack, boolean byHand, boolean underhand)
+    {
         PlayerData data = PlayerData.getInstance(player);
 
         // If can throw grenade
@@ -115,7 +141,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
 
             // Spawn the entity server side
             if (!level.isClientSide)
-                level.addFreshEntity(new Grenade(level, configType, player));
+                level.addFreshEntity(byHand ? Grenade.thrownByHand(level, configType, player, underhand) : new Grenade(level, configType, player));
 
             // Consume an item (non-creative)
             if (!player.getAbilities().instabuild)
@@ -135,10 +161,8 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
             }
 
             // We successfully used the item (threw a grenade)
-            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+            return true;
         }
-
-        // Nothing special happened, fall back
-        return InteractionResultHolder.pass(stack);
+        return false;
     }
 }

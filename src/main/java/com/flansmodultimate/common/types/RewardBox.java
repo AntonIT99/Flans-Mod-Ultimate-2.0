@@ -25,7 +25,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.readValuesInLines;
 @NoArgsConstructor
 public final class RewardBox extends InfoType
 {
-    public record Reward(String key, String typeId, String paintName, Paintjob.EnumPaintjobRarity rarity) {}
+    public record Reward(String key, String typeId, String paintName, Paintjob.EnumPaintjobRarity rarity)
+    {}
     private static final Map<String, RewardBox> BOXES = new LinkedHashMap<>();
 
     private final Map<Paintjob.EnumPaintjobRarity, Float> rarityWeights = new EnumMap<>(Paintjob.EnumPaintjobRarity.class);
@@ -35,7 +36,8 @@ public final class RewardBox extends InfoType
     @Override
     public void load(TypeFile file)
     {
-        for (Paintjob.EnumPaintjobRarity rarity : Paintjob.EnumPaintjobRarity.values()) rarityWeights.put(rarity, 1F);
+        for (Paintjob.EnumPaintjobRarity rarity : Paintjob.EnumPaintjobRarity.values())
+            rarityWeights.put(rarity, 1F);
         super.load(file);
     }
 
@@ -84,15 +86,19 @@ public final class RewardBox extends InfoType
     public Reward choose(RandomSource random, Predicate<String> alreadyOwned)
     {
         List<Reward> candidates = rewards.stream().filter(reward -> !alreadyOwned.test(reward.key())).toList();
-        if (candidates.isEmpty()) candidates = rewards;
+        if (candidates.isEmpty())
+            candidates = rewards;
         float total = 0F;
-        for (Reward reward : candidates) total += rarityWeights.getOrDefault(reward.rarity(), 1F);
-        if (total <= 0F) return null;
+        for (Reward reward : candidates)
+            total += rarityWeights.getOrDefault(reward.rarity(), 1F);
+        if (total <= 0F)
+            return null;
         float pick = random.nextFloat() * total;
         for (Reward reward : candidates)
         {
             pick -= rarityWeights.getOrDefault(reward.rarity(), 1F);
-            if (pick <= 0F) return reward;
+            if (pick <= 0F)
+                return reward;
         }
         return candidates.get(candidates.size() - 1);
     }
@@ -100,8 +106,7 @@ public final class RewardBox extends InfoType
     @Nullable
     public static Paintjob resolve(Reward reward)
     {
-        InfoType type = InfoType.getInfoTypes().values().stream()
-            .filter(candidate -> reward.typeId().equalsIgnoreCase(candidate.getOriginalShortName())).findFirst().orElse(null);
+        InfoType type = InfoType.getInfoTypes().values().stream().filter(candidate -> reward.typeId().equalsIgnoreCase(candidate.getOriginalShortName())).findFirst().orElse(null);
         return type instanceof PaintableType paintable ? findPaintjob(paintable, reward.paintName()) : null;
     }
 
@@ -116,7 +121,8 @@ public final class RewardBox extends InfoType
     {
         String sanitizedName = ResourceUtils.sanitize(name);
         for (Paintjob paintjob : type.getPaintjobs().values())
-            if (sanitizedName.equals(paintjob.getTextureName()) || sanitizedName.equals(paintjob.getIcon())) return paintjob;
+            if (sanitizedName.equals(paintjob.getTextureName()) || sanitizedName.equals(paintjob.getIcon()))
+                return paintjob;
         return null;
     }
 
@@ -155,7 +161,13 @@ public final class RewardBox extends InfoType
 
     private static Paintjob.EnumPaintjobRarity parseRarity(String value)
     {
-        try { return Paintjob.EnumPaintjobRarity.valueOf(value.toUpperCase(Locale.ROOT)); }
-        catch (IllegalArgumentException ignored) { return Paintjob.EnumPaintjobRarity.UNKNOWN; }
+        try
+        {
+            return Paintjob.EnumPaintjobRarity.valueOf(value.toUpperCase(Locale.ROOT));
+        }
+        catch (IllegalArgumentException ignored)
+        {
+            return Paintjob.EnumPaintjobRarity.UNKNOWN;
+        }
     }
 }

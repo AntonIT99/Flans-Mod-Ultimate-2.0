@@ -92,8 +92,7 @@ class AAGunTypeTest
     @Test
     void barrelLinesReadWholeAndFractionalPixels()
     {
-        AAGunType type = read("ShortName testAaGun", "NumBarrels 2", "Barrel 0 88 40 0",
-            "Barrel 1 45.25 -3.5 6");
+        AAGunType type = read("ShortName testAaGun", "NumBarrels 2", "Barrel 0 88 40 0", "Barrel 1 45.25 -3.5 6");
         assertEquals(88F, type.getBarrelX()[0]);
         assertEquals(40F, type.getBarrelY()[0]);
         assertEquals(45.25F, type.getBarrelX()[1]);
@@ -118,8 +117,7 @@ class AAGunTypeTest
     @Test
     void realisticHealthUsesMass()
     {
-        AAGunType scaled = read("ShortName testAaGun", "Health 20", "RealMassKg 1000",
-            "UseRealisticVehicleHealth true");
+        AAGunType scaled = read("ShortName testAaGun", "Health 20", "RealMassKg 1000", "UseRealisticVehicleHealth true");
         assertTrue(scaled.isRealisticVehicleHealthEnabled());
         assertEquals(500, scaled.getHealth());
     }

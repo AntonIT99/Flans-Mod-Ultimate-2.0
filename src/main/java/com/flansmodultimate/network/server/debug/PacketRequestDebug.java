@@ -1,0 +1,44 @@
+package com.flansmodultimate.network.server.debug;
+
+import com.flansmodultimate.common.driveables.damage.DriveableDamageDebug;
+import com.flansmodultimate.network.IServerPacket;
+import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.client.debug.PacketAllowDebug;
+import com.flansmodultimate.platform.network.PacketBuffer;
+import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+
+@NoArgsConstructor
+public class PacketRequestDebug implements IServerPacket
+{
+    private boolean enabled = true;
+
+    public PacketRequestDebug(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
+    @Override
+    public void encodeInto(PacketBuffer data)
+    {
+        data.writeBoolean(enabled);
+    }
+
+    @Override
+    public void decodeInto(PacketBuffer data)
+    {
+        enabled = data.readBoolean();
+    }
+
+    @Override
+    public void handleServerSide(@NotNull ServerPlayer player, @NotNull ServerLevel level)
+    {
+        boolean allowed = enabled && player.hasPermissions(2);
+        DriveableDamageDebug.setEnabled(player, allowed);
+        if (allowed)
+            PacketHandler.sendTo(new PacketAllowDebug(), player);
+    }
+}

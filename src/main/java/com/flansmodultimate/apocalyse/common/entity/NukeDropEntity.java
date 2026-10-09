@@ -1,7 +1,7 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
-import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.config.ModApocalypseConfig;
+import com.flansmodultimate.platform.entity.FlanEntity;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
 import org.jetbrains.annotations.NotNull;
 

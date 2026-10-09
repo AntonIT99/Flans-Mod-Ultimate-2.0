@@ -45,37 +45,30 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseLoot
 {
-    private static final String[] JOURNAL_LINES = new String[] {
-        "The sky turned yellow today. The portal brought us somewhere worse than the wasteland.",
-        "If you find the power cubes, do not stand between them unless you are ready to leave.",
-        "The survivors stopped trusting anyone with clean armor. They still trade bullets for food.",
-        "Sulphur pits mark the old roads. Keep water away from the acid and keep moving.",
-        "The skull drones patrol at night. Their boss laughs before the nukes fall."
-    };
+    private static final String[] JOURNAL_LINES = new String[]{"The sky turned yellow today. The portal brought us somewhere worse than the wasteland.",
+        "If you find the power cubes, do not stand between them unless you are ready to leave.", "The survivors stopped trusting anyone with clean armor. They still trade bullets for food.",
+        "Sulphur pits mark the old roads. Keep water away from the acid and keep moving.", "The skull drones patrol at night. Their boss laughs before the nukes fall."};
 
     /** The 1.12.2 research lab notes, as {title, page}. */
-    private static final String[][] SCIENTIST_JOURNAL = new String[][] {
-        {"Research Journal: Entry 1", "We are trying to find ways to disable the AI mechas. Unfortunately, this involves bringing specimens into our lab for testing. I protested to management, but they wouldn't listen, as ever. This will be the death of us, I know it."},
-        {"Research Journal: Entry 2", "The Mechas are almost... evolving... We try something new (today it was EMPs), boot them back up for another test and they've become resistant. Just like that. And I fear that the mechas we have here may be contacting others on the outside."},
-        {"Research Journal: Entry 3", "I lose hope with every passing day. There is no clever way to destroy these Mechas or shut them down. Their programming forms a vast, global, interconnected web. You shut down one and already every other Mecha knows what you did and how to become immune to it"},
-        {"Research Journal: Entry 4", "Finally, we are looking into other approaches, though I must say, I am quite surprised. Management must have gone a bit mad, they've got us looking for a way to travel back in time... back in time! To destroy the first AI Mecha! How absurd!"},
-        {"Research Journal: Entry 5", "The time travel research is slow, but having heard some of the ideas from the others, I think we may actually have a shot. Not that this helps, though. I've been trying to explain stable time loops to management, but they either don't understand, or are just too desperate."},
+    private static final String[][] SCIENTIST_JOURNAL = new String[][]{{"Research Journal: Entry 1",
+        "We are trying to find ways to disable the AI mechas. Unfortunately, this involves bringing specimens into our lab for testing. I protested to management, but they wouldn't listen, as ever. This will be the death of us, I know it."},
+        {"Research Journal: Entry 2",
+            "The Mechas are almost... evolving... We try something new (today it was EMPs), boot them back up for another test and they've become resistant. Just like that. And I fear that the mechas we have here may be contacting others on the outside."},
+        {"Research Journal: Entry 3",
+            "I lose hope with every passing day. There is no clever way to destroy these Mechas or shut them down. Their programming forms a vast, global, interconnected web. You shut down one and already every other Mecha knows what you did and how to become immune to it"},
+        {"Research Journal: Entry 4",
+            "Finally, we are looking into other approaches, though I must say, I am quite surprised. Management must have gone a bit mad, they've got us looking for a way to travel back in time... back in time! To destroy the first AI Mecha! How absurd!"},
+        {"Research Journal: Entry 5",
+            "The time travel research is slow, but having heard some of the ideas from the others, I think we may actually have a shot. Not that this helps, though. I've been trying to explain stable time loops to management, but they either don't understand, or are just too desperate."},
         {"Research Journal: Entry 6", "We actually did it! I cannot believe it, but we sent someone back in time! Admittedly, they ended up walking with Creepersauruses, but nonetheless, we did it!"},
-        {"Research Journal: Entry 7", "They're here! The mechas are here! If you read this, please, go back in time, destroy the creator, stop th..."},
-        {"Time Portal: Instruction Manual", "The Time Portal uses the portal properties of obsidian combined with our state-of-the-art power cubes. Place one in each corner of the obsidian grid to activate the portal."}
-    };
+        {"Research Journal: Entry 7", "They're here! The mechas are here! If you read this, please, go back in time, destroy the creator, stop th..."}, {"Time Portal: Instruction Manual",
+            "The Time Portal uses the portal properties of obsidian combined with our state-of-the-art power cubes. Place one in each corner of the obsidian grid to activate the portal."}};
 
     /** The 1.12.2 brewing-stand pool (legacy potion metadata 8193-8206). */
-    private static final List<Supplier<ItemStack>> BREWING_STAND_POTIONS = List.of(
-        () -> ItemStackData.potion(Items.POTION, Potions.REGENERATION),
-        () -> ItemStackData.potion(Items.POTION, Potions.SWIFTNESS),
-        () -> ItemStackData.potion(Items.POTION, Potions.FIRE_RESISTANCE),
-        () -> ItemStackData.potion(Items.POTION, Potions.HEALING),
-        () -> ItemStackData.potion(Items.POTION, Potions.NIGHT_VISION),
-        () -> ItemStackData.potion(Items.POTION, Potions.STRENGTH),
-        () -> ItemStackData.potion(Items.POTION, Potions.LEAPING),
-        () -> ItemStackData.potion(Items.POTION, Potions.WATER_BREATHING),
-        () -> ItemStackData.potion(Items.POTION, Potions.INVISIBILITY));
+    private static final List<Supplier<ItemStack>> BREWING_STAND_POTIONS = List.of(() -> ItemStackData.potion(Items.POTION, Potions.REGENERATION),
+        () -> ItemStackData.potion(Items.POTION, Potions.SWIFTNESS), () -> ItemStackData.potion(Items.POTION, Potions.FIRE_RESISTANCE), () -> ItemStackData.potion(Items.POTION, Potions.HEALING),
+        () -> ItemStackData.potion(Items.POTION, Potions.NIGHT_VISION), () -> ItemStackData.potion(Items.POTION, Potions.STRENGTH), () -> ItemStackData.potion(Items.POTION, Potions.LEAPING),
+        () -> ItemStackData.potion(Items.POTION, Potions.WATER_BREATHING), () -> ItemStackData.potion(Items.POTION, Potions.INVISIBILITY));
 
     public static ItemStack randomLoot(RandomSource random, boolean gunsOnly)
     {
@@ -168,12 +161,11 @@ public final class ApocalypseLoot
         int ammoCount = 3 + random.nextInt(3);
         for (int i = 0; i < ammoCount; i++)
         {
-            ApocalypseGunHelper.randomGun(random, false)
-                .flatMap(gun -> ApocalypseGunHelper.spareAmmoFor(gun, random))
-                .ifPresent(stack -> {
-                    stack.setCount(1);
-                    putRandomSlot(random, container, stack);
-                });
+            ApocalypseGunHelper.randomGun(random, false).flatMap(gun -> ApocalypseGunHelper.spareAmmoFor(gun, random)).ifPresent(stack ->
+            {
+                stack.setCount(1);
+                putRandomSlot(random, container, stack);
+            });
         }
         List<AttachmentType> attachments = sortedTypes(AttachmentType.class);
         if (!attachments.isEmpty())
@@ -232,9 +224,7 @@ public final class ApocalypseLoot
     public static ItemStack itemHolderLoot(RandomSource random, boolean gunsOnly)
     {
         if (gunsOnly || random.nextInt(3) != 0)
-            return ApocalypseGunHelper.randomGun(random, false)
-                .flatMap(gun -> ApocalypseGunHelper.loadGun(gun, random, true))
-                .orElse(ItemStack.EMPTY);
+            return ApocalypseGunHelper.randomGun(random, false).flatMap(gun -> ApocalypseGunHelper.loadGun(gun, random, true)).orElse(ItemStack.EMPTY);
         if (random.nextBoolean())
             return survivorJournal(random);
         if (random.nextBoolean())
@@ -261,13 +251,8 @@ public final class ApocalypseLoot
 
     private static ItemStack randomFluidBucket(RandomSource random)
     {
-        List<Item> buckets = BuiltInRegistries.FLUID.stream()
-            .filter(fluid -> fluid.isSource(fluid.defaultFluidState()))
-            .map(Fluid::getBucket)
-            .filter(bucket -> bucket != Items.AIR)
-            .distinct()
-            .sorted(Comparator.comparing(bucket -> String.valueOf(BuiltInRegistries.ITEM.getKey(bucket))))
-            .toList();
+        List<Item> buckets = BuiltInRegistries.FLUID.stream().filter(fluid -> fluid.isSource(fluid.defaultFluidState())).map(Fluid::getBucket).filter(bucket -> bucket != Items.AIR).distinct()
+            .sorted(Comparator.comparing(bucket -> String.valueOf(BuiltInRegistries.ITEM.getKey(bucket)))).toList();
         return buckets.isEmpty() ? ItemStack.EMPTY : new ItemStack(buckets.get(random.nextInt(buckets.size())));
     }
 
@@ -283,13 +268,8 @@ public final class ApocalypseLoot
      */
     private static <T extends InfoType> List<T> sortedTypes(Class<T> kind)
     {
-        return InfoType.getInfoTypes().values().stream()
-            .filter(kind::isInstance)
-            .map(kind::cast)
-            .distinct()
-            .filter(type -> ModUtils.getItemStack(type).isPresent())
-            .sorted(Comparator.comparing(InfoType::getShortName, String.CASE_INSENSITIVE_ORDER))
-            .toList();
+        return InfoType.getInfoTypes().values().stream().filter(kind::isInstance).map(kind::cast).distinct().filter(type -> ModUtils.getItemStack(type).isPresent())
+            .sorted(Comparator.comparing(InfoType::getShortName, String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     public static void dressMob(LivingEntity entity, RandomSource random)
@@ -361,7 +341,8 @@ public final class ApocalypseLoot
 
     private static void equipArmor(LivingEntity entity, ArmorType armor)
     {
-        ModUtils.getItemStack(armor).ifPresent(stack -> {
+        ModUtils.getItemStack(armor).ifPresent(stack ->
+        {
             EquipmentSlot slot = armor.getArmorItemType().getSlot();
             if (entity.getItemBySlot(slot).isEmpty())
                 entity.setItemSlot(slot, stack);

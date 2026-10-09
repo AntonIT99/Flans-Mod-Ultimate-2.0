@@ -3,7 +3,7 @@ package com.flansmodultimate.apocalyse.common.entity;
 import com.flansmodultimate.apocalyse.ApocalypseContent;
 import com.flansmodultimate.common.driveables.DriveableInput;
 import com.flansmodultimate.common.driveables.EnumMechaSlotType;
-import com.flansmodultimate.common.driveables.MechaPhysics;
+import com.flansmodultimate.common.driveables.physics.MechaPhysics;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.item.GunItem;
@@ -23,19 +23,19 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.Comparator;
 
 /**
  * A mecha that guards an apocalypse structure with nobody inside it.
  *
- * <p>It reproduces the 1.7.10 guard: acquire the closest player in range, turn the torso
+ * <p>
+ * It reproduces the 1.7.10 guard: acquire the closest player in range, turn the torso
  * onto them, and fire the guns in its hands while the shot is clear, otherwise close the
  * distance. Everything runs through the ordinary mecha control path, so the machine takes
- * damage, loses parts and drops its contents exactly like a piloted one.</p>
+ * damage, loses parts and drops its contents exactly like a piloted one.
+ * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AiMechaEntity extends Mecha
@@ -124,9 +124,11 @@ public class AiMechaEntity extends Mecha
     /**
      * The fire input for one hand this tick.
      *
-     * <p>A semi-automatic weapon only fires as the trigger goes down, so the guard has to let
+     * <p>
+     * A semi-automatic weapon only fires as the trigger goes down, so the guard has to let
      * it back up in between. Anything that fires while held is simply held, which is also what
-     * lets a minigun spin up.</p>
+     * lets a minigun spin up.
+     * </p>
      */
     private int triggerFor(boolean left)
     {
@@ -147,8 +149,10 @@ public class AiMechaEntity extends Mecha
     /**
      * Turns the torso so that the hand guns point down {@code delta}.
      *
-     * <p>The aim is the inverse of the direction the mecha fires along, so the guns hit
-     * whatever the torso is facing without this having to know the yaw convention.</p>
+     * <p>
+     * The aim is the inverse of the direction the mecha fires along, so the guns hit
+     * whatever the torso is facing without this having to know the yaw convention.
+     * </p>
      */
     private void aimAt(Vec3 delta)
     {
@@ -164,9 +168,11 @@ public class AiMechaEntity extends Mecha
     /**
      * Movement input that carries the mecha along {@code delta}.
      *
-     * <p>The wanted direction is projected onto the engine's own forward and strafe axes
+     * <p>
+     * The wanted direction is projected onto the engine's own forward and strafe axes
      * rather than assumed from the torso yaw, so the guard walks where it means to whichever
-     * basis the mecha physics use.</p>
+     * basis the mecha physics use.
+     * </p>
      */
     private int walkToward(Vec3 delta)
     {
@@ -198,18 +204,12 @@ public class AiMechaEntity extends Mecha
     private Entity acquireTarget()
     {
         AABB range = getBoundingBox().inflate(TARGETING_RANGE);
-        return level().getEntities(this, range, this::isValidTarget).stream()
-            .min(Comparator.comparingDouble(this::distanceToSqr))
-            .orElse(null);
+        return level().getEntities(this, range, this::isValidTarget).stream().min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
     }
 
     private boolean isValidTarget(Entity candidate)
     {
-        return candidate instanceof Player player
-            && player.isAlive()
-            && !player.isSpectator()
-            && !player.getAbilities().instabuild
-            && distanceToSqr(player) <= TARGETING_RANGE * TARGETING_RANGE;
+        return candidate instanceof Player player && player.isAlive() && !player.isSpectator() && !player.getAbilities().instabuild && distanceToSqr(player) <= TARGETING_RANGE * TARGETING_RANGE;
     }
 
     private boolean hasClearShot(Vec3 from, Vec3 to)
@@ -232,8 +232,7 @@ public class AiMechaEntity extends Mecha
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount)
     {
-        if (source.is(DamageTypes.PLAYER_ATTACK) && source.getEntity() instanceof Player player
-            && player.onGround() && !player.getAbilities().instabuild)
+        if (source.is(DamageTypes.PLAYER_ATTACK) && source.getEntity() instanceof Player player && player.onGround() && !player.getAbilities().instabuild)
             return false;
         return super.hurt(source, amount);
     }

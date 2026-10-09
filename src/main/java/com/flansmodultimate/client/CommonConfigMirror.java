@@ -3,7 +3,7 @@ package com.flansmodultimate.client;
 import com.flansmodultimate.config.ConfigSpecValues;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketRequestCommonConfig;
+import com.flansmodultimate.network.server.config.PacketRequestCommonConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -11,9 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -26,7 +24,8 @@ public final class CommonConfigMirror
 {
     private static final AtomicReference<@Nullable Snapshot> state = new AtomicReference<>();
 
-    private record Snapshot(Map<String, Object> values, boolean mayEdit) {}
+    private record Snapshot(Map<String, Object> values, boolean mayEdit)
+    {}
 
     /** Asks the server for its common config. The answer arrives asynchronously. */
     public static void request()
@@ -86,7 +85,8 @@ public final class CommonConfigMirror
     public static void expect(List<String> path, Object newValue)
     {
         String key = ConfigSpecValues.joinPath(path);
-        state.updateAndGet(current -> {
+        state.updateAndGet(current ->
+        {
             if (current == null)
                 return null;
             Map<String, Object> updated = new HashMap<>(current.values());

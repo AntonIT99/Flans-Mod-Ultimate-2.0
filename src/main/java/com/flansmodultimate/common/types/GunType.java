@@ -4,14 +4,7 @@ import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.FlanParticles;
-import com.flansmodultimate.common.guns.AmmoOverrides;
-import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.EnumFunction;
-import com.flansmodultimate.common.guns.EnumSpreadPattern;
-import com.flansmodultimate.common.guns.GunRecoil;
-import com.flansmodultimate.common.guns.RemovedAmmo;
-import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.ShotCooldown;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
@@ -34,12 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -59,7 +47,23 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected boolean useFancyRecoil;
 
-    //Recoil Variables
+    // Labjac Edition infantry screen shake, opt-in per gun
+    /** Whether firing punches the shooter's field of view in */
+    @Getter
+    protected boolean hasScreenShake;
+    /** {@code ScreenShakeStyle Sustained} (default) strengthens the punch with sustained fire; {@code Clean} does not */
+    @Getter
+    protected boolean screenShakeUsesSustainedRecoil = true;
+    @Getter
+    protected float screenShakeIntensity = 1F;
+    /** Whether a screen-shaking gun also kicks the camera upwards by {@link #cameraRecoil} */
+    @Getter
+    protected boolean screenShakeCameraKick = true;
+    /** Camera kick strength; defaults to the vertical FancyRecoil value when FancyRecoil is used */
+    @Getter
+    protected float cameraRecoil;
+
+    // Recoil Variables
     /**
      * Base value for Upwards cursor/view recoil
      */
@@ -73,7 +77,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     protected float rndRecoilPitchRange = 0.5F;
     /**
-     * Modifier for setting the yaw divergence when randomizing recoil: randomized yaw recoil in [recoilYaw - rndRecoilYawRange/2, recoilYaw + rndRecoilYawRange/2)
+     * Modifier for setting the yaw divergence when randomizing recoil: randomized yaw recoil in [recoilYaw - rndRecoilYawRange/2, recoilYaw +
+     * rndRecoilYawRange/2)
      */
     protected float rndRecoilYawRange = 0.3F;
 
@@ -118,7 +123,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     protected float recoilCounterCoefficientSneaking = DEFAULT_RECOIL_CONTROL_SNEAKING;
 
-    //Ammo & Reload Variables
+    // Ammo & Reload Variables
     /**
      * The list of bullet types that can be used in this gun
      */
@@ -163,7 +168,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected double bulletsPerReload = 30.0;
 
-    //Projectile Mechanic Variables
+    // Projectile Mechanic Variables
     /**
      * The amount that bullets spread out when fired from this gun
      */
@@ -334,7 +339,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      **/
     protected int hipFireWhileSprinting;
 
-    //Launcher variables
+    // Launcher variables
     @Getter
     protected int canLockOnAngle = 5;
     @Getter
@@ -361,9 +366,11 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected boolean lockOnToLivings;
 
-    //Shields
-	/*A shield is actually a gun without any shoot functionality (similar to knives or binoculars)
-	and a load of shield code on top. This means that guns can have in built shields (think Nerf Stampede) */
+    // Shields
+    /*
+     * A shield is actually a gun without any shoot functionality (similar to knives or binoculars)
+     * and a load of shield code on top. This means that guns can have in built shields (think Nerf Stampede)
+     */
     /**
      * Whether this gun has a shield piece
      */
@@ -391,7 +398,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected float shieldMaxBlockableMeleeDamage = DEFAULT_SHIELD_MAX_BLOCKABLE_MELEE_DAMAGE;
 
-    //Sounds
+    // Sounds
     /**
      * The sound played upon shooting
      */
@@ -461,10 +468,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected String toggleOnSound;
     protected String toggleOffSound;
 
-    //Sound Modifiers
-    /**
-     * Whether to distort the sound or not. Generally only set to false for looping sounds
-     */
+    // Sound Modifiers
+    /** Whether to randomize sound pitch for shots, reloads, and melee swings. */
     @Getter
     protected boolean distortSound = true;
     /**
@@ -499,7 +504,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     protected int distantSoundRange = -1;
 
-    //Looping sounds
+    // Looping sounds
     /**
      * Whether the looping sounds should be used. Automatically set if the player sets any one of the following sounds
      */
@@ -525,7 +530,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected String cooldownSound;
 
-    //Custom Melee Stuff
+    // Custom Melee Stuff
     /**
      * The sound to play upon weapon swing
      */
@@ -561,7 +566,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected boolean useCustomMeleeWhenShoot;
 
-    //Deployable Settings
+    // Deployable Settings
     /**
      * If true, then the bullet does not shoot when right-clicked, but must instead be placed on the ground
      */
@@ -574,8 +579,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /** Dedicated-server-safe counterpart to the client-populated model class name. */
     public String resolveDeployableModelClassName()
     {
-        return StringUtils.isNotBlank(deployableModelClassName)
-            ? deployableModelClassName : findModelClass(deployableModelName, contentPack);
+        return StringUtils.isNotBlank(deployableModelClassName) ? deployableModelClassName : findModelClass(deployableModelName, contentPack);
     }
     @Getter
     protected ResourceLocation deployableTexture;
@@ -601,8 +605,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Nullable
     private Vec3 measuredDeployableMuzzle;
 
-    //Default Scope Settings. Overriden by scope attachments
-    //In many cases, this will simply be iron sights
+    // Default Scope Settings. Overriden by scope attachments
+    // In many cases, this will simply be iron sights
     /**
      * The zoom level of the default scope
      */
@@ -618,6 +622,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected boolean allowNightVision;
+    /** Thermal imaging while looking through the gun's own scope, from the Labjac Edition's {@code HasThermalVision} */
+    protected boolean thermalVision;
 
     /**
      * For adding a bullet casing model to render
@@ -670,7 +676,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected Vector3f muzzleFlashParticlesShoulderOffset = new Vector3f();
 
-    //Attachment settings
+    // Attachment settings
     /**
      * If this is true, then all attachments are allowed. Otherwise, the list is checked.
      */
@@ -705,7 +711,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     @Getter
     protected int numGenericAttachmentSlots;
 
-    //Modifiers
+    // Modifiers
     /**
      * Speeds up or slows down player movement when this item is held
      */
@@ -736,22 +742,22 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     {
         super.read(file);
 
-        //Damage
+        // Damage
         damage = readValue("Damage", damage, file);
         meleeDamage = readValue("MeleeDamage", meleeDamage, file);
         meleeDamageDriveableModifier = readValue("MeleeDamageDriveableModifier", meleeDamageDriveableModifier, file);
 
-        //Reload
+        // Reload
         canForceReload = readValue("CanForceReload", canForceReload, file);
         reloadTime = readValue("ReloadTime", reloadTime, file);
         consumeBulletType = readValue("ConsumeBulletType", consumeBulletType, file);
         bulletsPerReload = readValue("BulletsPerReload", bulletsPerReload, file);
 
-        //Fire Rate
+        // Fire Rate
         shootDelay = readValue("ShootDelay", shootDelay, file);
         roundsPerMin = readValue("RoundsPerMin", roundsPerMin, file);
 
-        //Accuracy
+        // Accuracy
         bulletSpread = readValue("Accuracy", bulletSpread, file);
         bulletSpread = readValue("Spread", bulletSpread, file);
         if (hasValueForConfigField("Dispersion", file))
@@ -763,7 +769,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         adsSpreadModifier = readValue("ADSSpreadModifier", adsSpreadModifier, file);
         adsSpreadModifierShotgun = readValue("ADSSpreadModifierShotgun", adsSpreadModifierShotgun, file);
 
-        //Recoil
+        // Recoil
         recoilPitch = readValue("Recoil", recoilPitch, file);
         recoilCounterCoefficient = readValue("CounterRecoilForce", recoilCounterCoefficient, file);
         recoilCounterCoefficientSneaking = readValue("CounterRecoilForceSneaking", recoilCounterCoefficientSneaking, file);
@@ -780,8 +786,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         recoilSneakingMultiplier = readValue("RecoilSneakingMultiplier", recoilSneakingMultiplier, file);
         recoilSneakingMultiplierYaw = readValue("RecoilSneakingMultiplierYaw", recoilSneakingMultiplierYaw, file);
         readFancyRecoil(file);
+        readScreenShake(file);
 
-        //Ammo
+        // Ammo
         numBullets = readValue("NumBullets", numBullets, file);
         numPrimaryAmmoItems = readValue("NumAmmoSlots", numPrimaryAmmoItems, file);
         numPrimaryAmmoItems = readValue("NumAmmoItemsInGun", numPrimaryAmmoItems, file);
@@ -798,7 +805,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         ammoOverrides = readAmmoOverrides(file);
         removedAmmo = RemovedAmmo.read(file);
 
-        //Lock on settings
+        // Lock on settings
         canLockOnAngle = readValue("CanLockAngle", canLockOnAngle, file);
         lockOnToDriveables = readValue("LockOnToDriveables", lockOnToDriveables, file);
         lockOnToVehicles = readValue("LockOnToVehicles", lockOnToVehicles, file);
@@ -808,7 +815,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         lockOnToLivings = readValue("LockOnToLivings", lockOnToLivings, file);
         maxRangeLockOn = readValue("MaxRangeLockOn", maxRangeLockOn, file);
 
-        //Other settings
+        // Other settings
         knockback = readValue("Knockback", knockback, file);
         walkSpreadModifier = readValue("WalkSpreadModifier", walkSpreadModifier, file);
         walkSpreadModifier = readValue("WalkSpreadMultiplier", walkSpreadModifier, file);
@@ -845,23 +852,22 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         // Melee
         meleeTime = readValue("MeleeTime", meleeTime, file);
-        readFloatValuesInLines("AddNode", file, 6).ifPresent(lines -> lines.forEach(values -> {
+        readFloatValuesInLines("AddNode", file, 6).ifPresent(lines -> lines.forEach(values ->
+        {
             meleePath.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F));
             meleePathAngles.add(new Vector3f(values[3], values[4], values[5]));
         }));
-        readFloatValuesInLines("MeleeDamagePoint", file, 3)
-            .ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
-        readFloatValuesInLines("MeleeDamageOffset", file, 3)
-            .ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
+        readFloatValuesInLines("MeleeDamagePoint", file, 3).ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
+        readFloatValuesInLines("MeleeDamageOffset", file, 3).ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
 
-        //Player modifiers
+        // Player modifiers
         moveSpeedModifier = readValue("MoveSpeedModifier", moveSpeedModifier, file);
         moveSpeedModifier = readValue("Slowness", moveSpeedModifier, file);
         knockbackModifier = readValue("KnockbackReduction", knockbackModifier, file);
         knockbackModifier = readValue("KnockbackModifier", knockbackModifier, file);
         switchDelay = readValue("SwitchDelay", switchDelay, file);
 
-        //Information
+        // Information
         showAttachments = readValue("ShowAttachments", showAttachments, file);
         showDamage = readValue("ShowDamage", showDamage, file);
         showRecoil = readValue("ShowRecoil", showRecoil, file);
@@ -871,7 +877,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         showBulletSpeed = readValue("ShowBulletSpeed", showBulletSpeed, file);
         showMode = readValue("ShowMode", showMode, file);
 
-        //Sounds
+        // Sounds
         distortSound = readValue("DistortSound", distortSound, file);
         shootSoundLength = readValue("SoundLength", shootSoundLength, file);
         idleSoundLength = readValue("IdleSoundLength", idleSoundLength, file);
@@ -898,7 +904,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         meleeHitSound = readSound("MeleeHitSound", meleeHitSound, file);
         shieldHitSound = readSound("ShieldHitSound", shieldHitSound, file);
 
-        //Looping sounds
+        // Looping sounds
         warmupSound = readSound("WarmupSound", warmupSound, file);
         loopedSound = readSound("LoopedSound", loopedSound, file);
         loopedSound = readSound("SpinSound", loopedSound, file);
@@ -934,13 +940,15 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         }
         defaultmode = mode;
 
-        //Overlay and zoom settings
+        // Overlay and zoom settings
         overlayName = readResource("Scope", overlayName, file);
         if (overlayName.equals("none"))
             overlayName = StringUtils.EMPTY;
         zoomFactor = readValue("ZoomLevel", zoomFactor, file);
         fovFactor = readValue("FOVZoomLevel", fovFactor, file);
         allowNightVision = readValue("AllowNightVision", allowNightVision, file);
+        thermalVision = readValue("HasThermalVision", thermalVision, file);
+        thermalVision = readValue("HasThermal", thermalVision, file);
         hasVariableZoom = readValue("HasVariableZoom", hasVariableZoom, file);
         minZoom = readValue("MinZoom", minZoom, file);
         maxZoom = readValue("MaxZoom", maxZoom, file);
@@ -948,7 +956,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         if (maxZoom > 1F && hasVariableZoom)
             secondaryFunction = EnumFunction.ZOOM;
 
-        //Models & Textures
+        // Models & Textures
         deployable = readValue("Deployable", deployable, file);
         deployableModelName = readValue("DeployedModel", deployableModelName, file);
         deployableTextureName = readResource("DeployedTexture", deployableTextureName, file);
@@ -959,7 +967,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         muzzleFlashModelName = readValue("MuzzleFlashModel", muzzleFlashModelName, file);
         hitTextureName = readResource("HitTexture", hitTextureName, file);
 
-        //Particles
+        // Particles
         muzzleFlashParticle = readValue("MuzzleFlashParticle", muzzleFlashParticle, file);
         muzzleFlashParticleSize = readValue("MuzzleFlashParticleSize", muzzleFlashParticleSize, file);
         showMuzzleFlashParticlesFirstPerson = readValue("ShowMuzzleFlashParticleFirstPerson", showMuzzleFlashParticlesFirstPerson, file);
@@ -968,7 +976,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         showMuzzleFlashParticles = readValue("ShowMuzzleFlashParticle", showMuzzleFlashParticles, file);
         useMuzzleFlashDefaults = !file.hasConfigLine("ShowMuzzleFlashParticle");
 
-        //Attachment settings
+        // Attachment settings
         allowAllAttachments = readValue("AllowAllAttachments", allowAllAttachments, file);
         if (hasValueForConfigField("AllowAttachments", file))
             readValuesToList("AllowAttachments", file).forEach(attachment -> allowedAttachments.add(AttachmentType.getAttachment(ResourceUtils.sanitize(attachment))));
@@ -983,8 +991,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         allowAccessoryAttachments = readValue("AllowAccessoryAttachments", allowAccessoryAttachments, file);
         numGenericAttachmentSlots = readValue("NumGenericAttachmentSlots", numGenericAttachmentSlots, file);
 
-        //Shield settings
-        readFloatValues("Shield", file, 7).ifPresent(values -> {
+        // Shield settings
+        readFloatValues("Shield", file, 7).ifPresent(values ->
+        {
             shield = true;
             shieldDamageAbsorption = values[0];
             shieldOrigin = new Vector3f(values[1] / 16F, values[2] / 16F, values[3] / 16F);
@@ -993,7 +1002,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         shieldBlockChance = Mth.clamp(readValue("ShieldBlockChance", shieldBlockChance, file), 0F, 1F);
         shieldMaxBlockableMeleeDamage = readValue("ShieldMaxBlockableMeleeDamage", shieldMaxBlockableMeleeDamage, file);
 
-        //Primary Function
+        // Primary Function
         if (file.hasConfigLine("MeleeDamage") && meleeDamage > 0F && ammo.isEmpty())
             primaryFunction = EnumFunction.MELEE;
         useCustomMeleeWhenShoot = readValue("UseCustomMeleeWhenShoot", useCustomMeleeWhenShoot, file);
@@ -1001,7 +1010,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             primaryFunction = EnumFunction.CUSTOM_MELEE;
         primaryFunction = EnumFunction.get(readValue("PrimaryFunction", primaryFunction.toString(), file));
 
-        //Secondary Function
+        // Secondary Function
         if ((file.hasConfigLine("ZoomLevel") && zoomFactor > 1F) || (maxZoom > 1F && hasVariableZoom))
             secondaryFunction = EnumFunction.ZOOM;
         else if (file.hasConfigLine("FOVZoomLevel") && fovFactor > 1F)
@@ -1020,7 +1029,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             primaryFunction = EnumFunction.SHOOT;
         }
 
-        //Throwing
+        // Throwing
         throwMass = readValue("ThrowMass", throwMass, file);
         throwChargeTime = Math.max(0, readValue("ThrowChargeTime", throwChargeTime, file));
 
@@ -1096,8 +1105,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     {
         CommonConfigSnapshot config = ModCommonConfig.get();
         boolean defaultDisabled = config != null && config.disableSprintHipFireByDefault();
-        return hipFireWhileSprinting != 2
-            && !(hipFireWhileSprinting == 0 && defaultDisabled);
+        return hipFireWhileSprinting != 2 && !(hipFireWhileSprinting == 0 && defaultDisabled);
     }
 
     public String getClickSoundOnEmpty(boolean repeated)
@@ -1138,8 +1146,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     public boolean hasMuzzleFlashModel()
     {
-        return !isBlankModelName(flashModelName)
-            || !isBlankModelName(muzzleFlashModelName);
+        return !isBlankModelName(flashModelName) || !isBlankModelName(muzzleFlashModelName);
     }
 
     /**
@@ -1158,11 +1165,15 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     private void readFancyRecoil(TypeFile file)
     {
-        readValues("FancyRecoil", file, 1).ifPresent(fancyRecoil -> {
+        readValues("FancyRecoil", file, 1).ifPresent(fancyRecoil ->
+        {
             try
             {
                 recoil.read(fancyRecoil);
                 useFancyRecoil = true;
+                // The Labjac Edition takes the camera kick from the vertical FancyRecoil value
+                String vertical = fancyRecoil[0];
+                cameraRecoil = Float.parseFloat(vertical.substring(vertical.indexOf('=') + 1));
             }
             catch (Exception ex)
             {
@@ -1170,6 +1181,15 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
                 logError("Failed to read FancyRecoil '" + String.join(StringUtils.SPACE, fancyRecoil) + "'", file, ex);
             }
         });
+    }
+
+    private void readScreenShake(TypeFile file)
+    {
+        hasScreenShake = readValue("HasScreenShake", hasScreenShake, file);
+        screenShakeUsesSustainedRecoil = !"Clean".equalsIgnoreCase(readValue("ScreenShakeStyle", "Sustained", file));
+        screenShakeIntensity = Math.max(0F, readValue("ScreenShakeIntensity", screenShakeIntensity, file));
+        cameraRecoil = Math.max(0F, readValue("CameraRecoil", cameraRecoil, file));
+        screenShakeCameraKick = readValue("ScreenShakeCameraKick", screenShakeCameraKick, file);
     }
 
     public boolean isAllowAllAttachments()
@@ -1201,6 +1221,12 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public boolean hasZoomOverlay()
     {
         return getOverlay().isPresent();
+    }
+
+    @Override
+    public boolean hasThermalVision()
+    {
+        return thermalVision;
     }
 
     @Override
@@ -1263,8 +1289,10 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      * not a gun item. Guns holding several magazines report the first loaded one,
      * which is also the one they fire next.
      *
-     * <p>Used for the stats a round modifies while it merely sits in the weapon -
-     * recoil and reload time - rather than at the moment it leaves the barrel.</p>
+     * <p>
+     * Used for the stats a round modifies while it merely sits in the weapon -
+     * recoil and reload time - rather than at the moment it leaves the barrel.
+     * </p>
      */
     @Nullable
     public ShootableType getLoadedAmmo(@Nullable ItemStack gunStack)
@@ -1274,8 +1302,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         for (int slot = 0; slot < getNumAmmoItemsInGun(gunStack); slot++)
         {
             ItemStack ammoStack = gunItem.getAmmoItemStack(gunStack, slot, ItemStackData.builtInRegistries());
-            if (ammoStack != null && ammoStack.getItem() instanceof ShootableItem shootableItem
-                && ShootableItem.hasRoundsLeft(ammoStack))
+            if (ammoStack != null && ammoStack.getItem() instanceof ShootableItem shootableItem && ShootableItem.hasRoundsLeft(ammoStack))
                 return shootableItem.getConfigType();
         }
         return null;
@@ -1370,7 +1397,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             attachmentItems.add(itemStack);
     }
 
-    //Attachment getter methods
+    // Attachment getter methods
     public AttachmentType getBarrel(ItemStack gun)
     {
         return getAttachment(gun, GunItem.NBT_BARREL);
@@ -1391,19 +1418,23 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         return getAttachment(gun, GunItem.NBT_GRIP);
     }
 
-    public AttachmentType getGadget(ItemStack gun) {
+    public AttachmentType getGadget(ItemStack gun)
+    {
         return getAttachment(gun, GunItem.NBT_GADGET);
     }
 
-    public AttachmentType getSlide(ItemStack gun) {
+    public AttachmentType getSlide(ItemStack gun)
+    {
         return getAttachment(gun, GunItem.NBT_SLIDE);
     }
 
-    public AttachmentType getPump(ItemStack gun) {
+    public AttachmentType getPump(ItemStack gun)
+    {
         return getAttachment(gun, GunItem.NBT_PUMP);
     }
 
-    public AttachmentType getAccessory(ItemStack gun) {
+    public AttachmentType getAccessory(ItemStack gun)
+    {
         return getAttachment(gun, GunItem.NBT_ACCESSORY);
     }
 
@@ -1412,7 +1443,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         return getAttachment(gun, GunItem.NBT_GENERIC + i);
     }
 
-    //Attachment ItemStack getter methods
+    // Attachment ItemStack getter methods
     public ItemStack getBarrelItemStack(ItemStack gun)
     {
         return getAttachmentItemStack(gun, GunItem.NBT_BARREL);
@@ -1433,19 +1464,23 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         return getAttachmentItemStack(gun, GunItem.NBT_GRIP);
     }
 
-    public ItemStack getGadgetItemStack(ItemStack gun) {
+    public ItemStack getGadgetItemStack(ItemStack gun)
+    {
         return getAttachmentItemStack(gun, GunItem.NBT_GADGET);
     }
 
-    public ItemStack getSlideItemStack(ItemStack gun) {
+    public ItemStack getSlideItemStack(ItemStack gun)
+    {
         return getAttachmentItemStack(gun, GunItem.NBT_SLIDE);
     }
 
-    public ItemStack getPumpItemStack(ItemStack gun) {
+    public ItemStack getPumpItemStack(ItemStack gun)
+    {
         return getAttachmentItemStack(gun, GunItem.NBT_PUMP);
     }
 
-    public ItemStack getAccessoryItemStack(ItemStack gun) {
+    public ItemStack getAccessoryItemStack(ItemStack gun)
+    {
         return getAttachmentItemStack(gun, GunItem.NBT_ACCESSORY);
     }
 
@@ -1599,21 +1634,23 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
                 stackSpread *= attachment.spreadMultiplier;
         }
 
-        switch (enumMovement) {
-            case SPRINTING:
+        switch (enumMovement)
+        {
+            case SPRINTING :
                 stackSpread *= sprintSpreadModifier;
                 break;
-            case WALKING:
+            case WALKING :
                 stackSpread *= walkSpreadModifier;
                 break;
-            case SNEAKING:
+            case SNEAKING :
                 stackSpread *= sneakSpreadModifier;
                 break;
-            default:
+            default :
                 break;
         }
 
-        if (airborne) {
+        if (airborne)
+        {
             stackSpread *= airborneSpreadModifier;
         }
 
@@ -1633,11 +1670,13 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /**
      * What aiming down the sights does to this gun's spread.
      *
-     * <p>Shotguns use their own modifier, because tightening a pellet cone the way a single
+     * <p>
+     * Shotguns use their own modifier, because tightening a pellet cone the way a single
      * bullet's spread tightens would turn every shotgun into a slug gun. A modifier of -1 means
      * the pack did not author one, so the server's configured default applies.
      *
-     * <p>Aim state is player state, so this is a multiplier rather than a spread: the caller
+     * <p>
+     * Aim state is player state, so this is a multiplier rather than a spread: the caller
      * folds it into the shot it is composing and nothing here is stored on the shared type.
      */
     public float getAdsSpreadMultiplier(@Nullable ItemStack stack)
@@ -1673,25 +1712,31 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         stackRecoil *= loadedRecoilMultiplier(stack);
 
-        switch (enumMovement) {
-            case SNEAKING:
-                if (decreaseRecoilPitch != 0) {
+        switch (enumMovement)
+        {
+            case SNEAKING :
+                if (decreaseRecoilPitch != 0)
+                {
                     // backwards compatibility
                     stackRecoil -= decreaseRecoilPitch;
-                } else if (recoilSneakingMultiplier == -1) {
+                }
+                else if (recoilSneakingMultiplier == -1)
+                {
                     // backwards compatibility 2: simulate decreaseRecoilPitch 2
                     stackRecoil = stackRecoil < 0.5F ? 0 : stackRecoil - 0.5F;
-                } else {
+                }
+                else
+                {
                     stackRecoil *= recoilSneakingMultiplier;
                 }
                 break;
-            case SPRINTING:
+            case SPRINTING :
                 stackRecoil *= recoilSprintingMultiplier;
                 break;
-            case WALKING:
+            case WALKING :
                 stackRecoil *= recoilWalkingMultiplier;
                 break;
-            default:
+            default :
                 break;
         }
 
@@ -1701,17 +1746,21 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     /**
      * Yaw recoil while crouched.
      *
-     * <p>{@code DecreaseRecoilYaw} is a divisor, matching its name and the pitch
+     * <p>
+     * {@code DecreaseRecoilYaw} is a divisor, matching its name and the pitch
      * side's {@code DecreaseRecoil}: a gun stating 2 fires with half its yaw
      * recoil while crouched. It has priority over
      * {@code RecoilSneakingMultiplierYaw}, exactly as {@code DecreaseRecoil} has
      * over {@code RecoilSneakingMultiplier}, and a gun that states neither takes
-     * the multiplier's default.</p>
+     * the multiplier's default.
+     * </p>
      *
-     * <p>Anything other than a positive divisor means no legacy value was
+     * <p>
+     * Anything other than a positive divisor means no legacy value was
      * authored, so the modern multiplier applies. This is the whole fix: the
      * divisor used to be tested for being negative, which the parser had already
-     * made impossible, so every authored {@code DecreaseRecoilYaw} was ignored.</p>
+     * made impossible, so every authored {@code DecreaseRecoilYaw} was ignored.
+     * </p>
      */
     static float sneakingYawRecoil(float recoilYaw, float decreaseRecoilYaw, float sneakingMultiplierYaw)
     {
@@ -1730,17 +1779,18 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
         stackRecoilYaw *= loadedRecoilMultiplier(stack);
 
-        switch (enumMovement) {
-            case SNEAKING:
+        switch (enumMovement)
+        {
+            case SNEAKING :
                 stackRecoilYaw = sneakingYawRecoil(stackRecoilYaw, decreaseRecoilYaw, recoilSneakingMultiplierYaw);
                 break;
-            case SPRINTING:
+            case SPRINTING :
                 stackRecoilYaw *= recoilSprintingMultiplierYaw;
                 break;
-            case WALKING:
+            case WALKING :
                 stackRecoilYaw *= recoilWalkingMultiplierYaw;
                 break;
-            case NONE:
+            case NONE :
                 break;
         }
 
@@ -1966,7 +2016,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     public void setToggledOn(ItemStack stack, boolean on)
     {
-        ItemStackData.update(stack, tag -> {
+        ItemStackData.update(stack, tag ->
+        {
             if (on)
                 tag.remove(GunItem.NBT_TOGGLED_OFF);
             else
@@ -1988,6 +2039,24 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public boolean isAttachmentActive(ItemStack stack, @Nullable AttachmentType attachment)
     {
         return attachment != null && (!attachment.isToggleable() || isToggledOn(stack));
+    }
+
+    /**
+     * Whether an entity holding this stack must skip frustum culling, because the weapon or an active attachment
+     * renders parts far outside the holder's bounding box
+     */
+    @Override
+    public boolean isFrustumCullingDisabled(ItemStack stack)
+    {
+        if (disableFrustumCulling && !isPoweredOff(stack))
+            return true;
+
+        for (AttachmentType attachment : getCurrentAttachments(stack))
+        {
+            if (attachment.isDisableFrustumCulling() && isAttachmentActive(stack, attachment))
+                return true;
+        }
+        return false;
     }
 
     public String getToggleSound(ItemStack stack, boolean on)

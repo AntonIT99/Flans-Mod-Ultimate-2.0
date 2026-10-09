@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.content.IContentProvider;
@@ -236,9 +235,7 @@ public class ArmorBoxType extends BlockType
 
             String armorShortName = armors[armorSlot];
             String sourceLine = armorSourceLines[armorSlot];
-            logError("Could not resolve ArmorBox recipe ingredient '" + recipeItem.getItemName()
-                + "' (amount " + recipeItem.getAmount()
-                + ") for armor item '" + armorShortName
+            logError("Could not resolve ArmorBox recipe ingredient '" + recipeItem.getItemName() + "' (amount " + recipeItem.getAmount() + ") for armor item '" + armorShortName
                 + "', skipping ingredient. Source line: " + sourceLine, sourceFile);
         }
 
@@ -250,9 +247,9 @@ public class ArmorBoxType extends BlockType
 
             String armorShortName = armors[armorSlot];
             String sourceLine = armorSourceLines[armorSlot];
-            logError("Could not create ArmorBox output item stack for armor item '" + armorShortName
-                + "' (resolved type '" + armorType.getShortName()
-                + "'), skipping output. Source line: " + sourceLine, sourceFile);
+            logError(
+                "Could not create ArmorBox output item stack for armor item '" + armorShortName + "' (resolved type '" + armorType.getShortName() + "'), skipping output. Source line: " + sourceLine,
+                sourceFile);
         }
     }
 }

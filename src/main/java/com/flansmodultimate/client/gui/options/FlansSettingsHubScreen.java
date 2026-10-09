@@ -42,22 +42,17 @@ public class FlansSettingsHubScreen extends Screen
             CommonConfigMirror.request();
 
         int left = (width - BUTTON_WIDTH) / 2;
-        addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.options.client_settings"),
-                button -> minecraft.setScreen(new FlansOptionsScreen(this, FlansOptionsScreen.Mode.CLIENT)))
-            .bounds(left, FIRST_ROW_TOP, BUTTON_WIDTH, BUTTON_HEIGHT)
-            .build());
+        addRenderableWidget(
+            Button.builder(Component.translatable("gui.flansmodultimate.options.client_settings"), button -> minecraft.setScreen(new FlansOptionsScreen(this, FlansOptionsScreen.Mode.CLIENT)))
+                .bounds(left, FIRST_ROW_TOP, BUTTON_WIDTH, BUTTON_HEIGHT).build());
 
-        Button common = addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.options.common_settings"),
-                button -> minecraft.setScreen(new FlansOptionsScreen(this, FlansOptionsScreen.Mode.COMMON)))
-            .bounds(left, FIRST_ROW_TOP + ROW_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT)
-            .build());
-        common.setTooltip(Tooltip.create(Component.translatable(minecraft != null && minecraft.level != null
-            ? "gui.flansmodultimate.options.common_settings.server_tooltip"
-            : "gui.flansmodultimate.options.common_settings.local_tooltip")));
+        Button common = addRenderableWidget(
+            Button.builder(Component.translatable("gui.flansmodultimate.options.common_settings"), button -> minecraft.setScreen(new FlansOptionsScreen(this, FlansOptionsScreen.Mode.COMMON)))
+                .bounds(left, FIRST_ROW_TOP + ROW_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT).build());
+        common.setTooltip(Tooltip.create(Component.translatable(
+            minecraft != null && minecraft.level != null ? "gui.flansmodultimate.options.common_settings.server_tooltip" : "gui.flansmodultimate.options.common_settings.local_tooltip")));
 
-        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
-            .bounds(left, height - DONE_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT)
-            .build());
+        addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose()).bounds(left, height - DONE_BOTTOM_MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT).build());
     }
 
     @Override

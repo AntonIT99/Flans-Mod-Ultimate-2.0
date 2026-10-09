@@ -2,7 +2,6 @@ package com.flansmodultimate.platform.event;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.debug.RenderDiagnosticsCommand;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.event.handler.ClientEventHandler;
 import net.neoforged.api.distmarker.Dist;
@@ -10,6 +9,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
@@ -24,7 +24,8 @@ import net.minecraft.world.entity.player.Player;
 @EventBusSubscriber(modid = FlansMod.MOD_ID, value = Dist.CLIENT)
 public final class ClientGameEvents
 {
-    private ClientGameEvents() {}
+    private ClientGameEvents()
+    {}
 
     @SubscribeEvent
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event)

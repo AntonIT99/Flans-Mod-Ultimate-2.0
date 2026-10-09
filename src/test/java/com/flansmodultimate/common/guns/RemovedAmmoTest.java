@@ -45,9 +45,7 @@ class RemovedAmmoTest
     @Test
     void theKeyIsRepeatableAndAcceptsSeveralNamesOnOneLine()
     {
-        RemovedAmmo removed = read(
-            "RemoveAmmo firstRound secondRound",
-            "RemoveAmmo thirdRound");
+        RemovedAmmo removed = read("RemoveAmmo firstRound secondRound", "RemoveAmmo thirdRound");
         assertEquals(3, removed.keys().size());
         for (String name : List.of("firstRound", "secondRound", "thirdRound"))
             assertTrue(removed.removes(name), name);

@@ -33,8 +33,7 @@ class RotorcraftGeometryTest
     void aTandemLayoutSweepsTwoDiscs()
     {
         // CH-47 Chinook: two 18.29 m rotors.
-        RealWorldVehicleSpec.Aircraft a =
-            read("RealRotorDiameterM 18.29", "RealRotorCount 2").spec().aircraft();
+        RealWorldVehicleSpec.Aircraft a = read("RealRotorDiameterM 18.29", "RealRotorCount 2").spec().aircraft();
         assertEquals(2, a.effectiveRotorCount());
         assertEquals((float) (2 * Math.PI * 9.145 * 9.145), a.effectiveWingAreaM2(), 1.0E-2F);
         assertEquals(18.29F, a.effectiveWingSpanM(), 1.0E-4F, "span stays one rotor wide");
@@ -44,8 +43,7 @@ class RotorcraftGeometryTest
     void anAuthoredWingWinsOverRotorGeometry()
     {
         // A compound helicopter with real wings must keep them.
-        RealWorldVehicleSpec.Aircraft a = read(
-            "RealRotorDiameterM 16.36", "RealWingSpanM 5.0", "RealWingAreaM2 12.0").spec().aircraft();
+        RealWorldVehicleSpec.Aircraft a = read("RealRotorDiameterM 16.36", "RealWingSpanM 5.0", "RealWingAreaM2 12.0").spec().aircraft();
         assertEquals(5.0F, a.effectiveWingSpanM());
         assertEquals(12.0F, a.effectiveWingAreaM2());
         assertFalse(a.usesRotorGeometry());
@@ -54,29 +52,21 @@ class RotorcraftGeometryTest
     @Test
     void rotorGeometryCompletesTheAircraftProfileOnItsOwn()
     {
-        RealWorldVehicleSpec spec = read(
-            "RealMassKg 9979", "RealMaxSpeedKmh 295", "RealEnginePowerHp 3780",
-            "RealRotorDiameterM 16.36", "RealClimbRateMs 4.5").spec();
-        assertTrue(spec.hasCompleteAircraftProfile(),
-            "a helicopter with no wing keys must still qualify");
+        RealWorldVehicleSpec spec = read("RealMassKg 9979", "RealMaxSpeedKmh 295", "RealEnginePowerHp 3780", "RealRotorDiameterM 16.36", "RealClimbRateMs 4.5").spec();
+        assertTrue(spec.hasCompleteAircraftProfile(), "a helicopter with no wing keys must still qualify");
 
-        RealWorldVehicleSpec noRotor = read(
-            "RealMassKg 9979", "RealMaxSpeedKmh 295", "RealEnginePowerHp 3780").spec();
+        RealWorldVehicleSpec noRotor = read("RealMassKg 9979", "RealMaxSpeedKmh 295", "RealEnginePowerHp 3780").spec();
         assertFalse(noRotor.hasCompleteAircraftProfile());
     }
 
     @Test
     void theResolverDerivesWingLoadingFromTheDisc()
     {
-        ResolvedVehiclePhysics physics = VehiclePhysicsResolver.resolve(
-            EnumVehicleCategory.AIRCRAFT,
-            read("RealMassKg 9979", "RealMaxSpeedKmh 295", "RealEnginePowerHp 3780",
-                 "RealRotorDiameterM 16.36").spec(),
-            null, null);
+        ResolvedVehiclePhysics physics = VehiclePhysicsResolver.resolve(EnumVehicleCategory.AIRCRAFT,
+            read("RealMassKg 9979", "RealMaxSpeedKmh 295", "RealEnginePowerHp 3780", "RealRotorDiameterM 16.36").spec(), null, null);
         assertTrue(physics.hasAircraftProfile());
         float discArea = (float) (Math.PI * 8.18 * 8.18);
-        assertEquals(VehiclePhysicsUnits.wingLoading(9979F, discArea), physics.wingLoadingKgPerM2(), 1.0E-3F,
-            "disc loading is the rotorcraft equivalent of wing loading");
+        assertEquals(VehiclePhysicsUnits.wingLoading(9979F, discArea), physics.wingLoadingKgPerM2(), 1.0E-3F, "disc loading is the rotorcraft equivalent of wing loading");
     }
 
     @Test

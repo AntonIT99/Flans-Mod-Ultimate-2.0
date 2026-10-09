@@ -14,8 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CategoryPropertyModeTest
 {
-    private static final IContentProvider PACK = new ContentPack("test",
-        Path.of("build", "test-packs", "category-property-modes"));
+    private static final IContentProvider PACK = new ContentPack("test", Path.of("build", "test-packs", "category-property-modes"));
 
     @Test
     void omittedModePreservesLegacyAppendBehavior()
@@ -24,8 +23,7 @@ class CategoryPropertyModeTest
 
         file.addCategoryConfigMap(category("AddRound", "Tracer 1 145 0 850 25", null), "belt");
 
-        assertEquals(List.of("Ball 1 147 0 850 30", "Tracer 1 145 0 850 25"),
-            file.getConfigLines("AddRound"));
+        assertEquals(List.of("Ball 1 147 0 850 30", "Tracer 1 145 0 850 25"), file.getConfigLines("AddRound"));
     }
 
     @Test

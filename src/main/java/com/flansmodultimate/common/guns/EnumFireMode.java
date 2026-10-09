@@ -2,10 +2,7 @@ package com.flansmodultimate.common.guns;
 
 public enum EnumFireMode
 {
-    SEMIAUTO,
-    FULLAUTO,
-    MINIGUN,
-    BURST;
+    SEMIAUTO, FULLAUTO, MINIGUN, BURST;
 
     public boolean isAutomaticFire()
     {

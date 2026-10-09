@@ -46,12 +46,15 @@ public class FiredShot
     /** Entity which fired the shot. */
     @Setter @Nullable
     private Entity shooter;
+    /** Addon-controlled platform whose live entity is not a Flan driveable. */
+    @Nullable
+    private final InfoType platformType;
 
     /** Constructor for living entities shooting with a gun item in hand */
     public FiredShot(GunType gunType, BulletType bulletType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull LivingEntity shooter)
     {
-        this(withAmmunition(new FireableGun(gunType, gunStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType),
-            bulletType, shooter, shooter, ShootableItem.getRoundsFired(shootableStack));
+        this(withAmmunition(new FireableGun(gunType, gunStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround()), bulletType), bulletType, shooter, shooter,
+            ShootableItem.getRoundsFired(shootableStack));
     }
 
     /** Folds the round's weapon modifiers into the gun before the shot is composed. */
@@ -64,24 +67,35 @@ public class FiredShot
     /** General Constructor */
     public FiredShot(@Nullable FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot)
     {
+        this(fireableGun, bulletType, shooter, attacker, shot, null);
+    }
+
+    /** General shot with an explicit addon platform for fallback ammunition overrides. */
+    public FiredShot(@Nullable FireableGun fireableGun, BulletType bulletType, @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot, @Nullable InfoType platformType)
+    {
         this.fireableGun = fireableGun;
         this.bulletType = bulletType;
         this.attacker = attacker;
         this.shooter = shooter;
         this.shot = shot;
+        this.platformType = platformType;
     }
 
     /**
      * The per-ammunition override that applies to this shot's ammunition, or
      * {@link AmmoOverride#EMPTY} when nothing declares one.
      *
-     * <p>The weapon that actually fired is asked first, because it is the weapon that declared the
+     * <p>
+     * The weapon that actually fired is asked first, because it is the weapon that declared the
      * ammunition. The platform carrying it is the fallback, so a driveable can still restate what a
      * shared round does out of its own mounts without the mounted gun having to know about it.
      */
     public AmmoOverride getAmmoOverride()
     {
         AmmoOverride override = declaredOverride(fireableGun == null ? null : fireableGun.getType());
+
+        if (override == null)
+            override = declaredOverride(platformType);
 
         if (override == null && shooter instanceof IFlanEntity<?> platform)
             override = declaredOverride(platform.getConfigType());
@@ -92,9 +106,7 @@ public class FiredShot
     @Nullable
     private AmmoOverride declaredOverride(@Nullable InfoType weapon)
     {
-        return weapon instanceof IAmmoOverrideUser user
-            ? user.getAmmoOverrides().get(bulletType.getOriginalShortName())
-            : null;
+        return weapon instanceof IAmmoOverrideUser user ? user.getAmmoOverrides().get(bulletType.getOriginalShortName()) : null;
     }
 
     /** Projectile mass in grams for this shot, after any per-weapon override. */
@@ -107,7 +119,8 @@ public class FiredShot
      * Muzzle velocity in blocks per tick for this shot: the value the projectile is actually fired
      * with and the value its kinetic damage and penetration are derived from.
      *
-     * <p>Precedence, highest first: a per-ammunition override declared by the weapon or its platform,
+     * <p>
+     * Precedence, highest first: a per-ammunition override declared by the weapon or its platform,
      * the round selected from an {@code AddRound} belt, the ammunition's own {@code MuzzleVelocity},
      * and finally the velocity the weapon itself supplies. Whatever wins is then scaled by the
      * weapon's attachment multiplier.
@@ -118,9 +131,10 @@ public class FiredShot
     }
 
     /**
-     * @param useDefaultFallback when false, zero is returned if neither the ammunition, the weapon nor an
-     *                           override declares a velocity, which marks the shot as an instant raytrace
-     *                           rather than a projectile entity
+     * @param useDefaultFallback
+     *            when false, zero is returned if neither the ammunition, the weapon nor an
+     *            override declares a velocity, which marks the shot as an instant raytrace
+     *            rather than a projectile entity
      */
     public float getMuzzleVelocity(boolean useDefaultFallback)
     {

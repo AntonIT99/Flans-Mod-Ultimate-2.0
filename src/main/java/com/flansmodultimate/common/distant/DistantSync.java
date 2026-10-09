@@ -5,8 +5,8 @@ import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketDistantContacts;
-import com.flansmodultimate.network.client.PacketDistantExplosion;
+import com.flansmodultimate.network.client.driveable.PacketDistantContacts;
+import com.flansmodultimate.network.client.effects.PacketDistantExplosion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -17,18 +17,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Server side of the far-terrain integration. Players whose client draws far terrain with Distant Horizons
- * ask for it with a {@link com.flansmodultimate.network.server.PacketDistantSubscription}; they are then sent
+ * ask for it with a {@link com.flansmodultimate.network.server.driveable.PacketDistantSubscription}; they are then sent
  * the driveables beyond their entity tracking range and the large explosions beyond the range of explosion
  * particles, so their client can show them on the far terrain. Display data only: nothing here changes
  * gameplay. Runs on the server thread.
@@ -46,8 +39,7 @@ public final class DistantSync
     private static final double MAX_EXTRAPOLATED_SPEED = 20D;
 
     private record Subscription(boolean contacts, boolean explosions)
-    {
-    }
+    {}
 
     private static final Map<UUID, Subscription> subscriptions = new HashMap<>();
     /** Players whose last update listed contacts, who must be told once when there are none left. */
@@ -104,8 +96,9 @@ public final class DistantSync
             if (receivers.isEmpty())
                 continue;
 
-            List<Driveable> driveables = enabled ? new ArrayList<>(level.getEntities(EntityTypeTest.forClass(Driveable.class),
-                driveable -> driveable.isAlive() && driveable.getConfigType() != null)) : List.of();
+            List<Driveable> driveables = enabled
+                ? new ArrayList<>(level.getEntities(EntityTypeTest.forClass(Driveable.class), driveable -> driveable.isAlive() && driveable.getConfigType() != null))
+                : List.of();
             Map<Driveable, PacketDistantContacts.Contact> contacts = new HashMap<>();
             for (ServerPlayer player : receivers)
             {
@@ -166,16 +159,15 @@ public final class DistantSync
             }
         }
 
-        return new PacketDistantContacts.Contact(driveable.getId(), driveable.getShortName(), driveable.getPaintjobId(),
-            position.x, position.y, position.z, (float) velocity.x, (float) velocity.y, (float) velocity.z,
-            driveable.getYaw(), driveable.getPitch(), driveable.getRoll(),
-            destroyed.stream().mapToInt(Integer::intValue).toArray());
+        return new PacketDistantContacts.Contact(driveable.getId(), driveable.getShortName(), driveable.getPaintjobId(), position.x, position.y, position.z, (float) velocity.x, (float) velocity.y,
+            (float) velocity.z, driveable.getYaw(), driveable.getPitch(), driveable.getRoll(), destroyed.stream().mapToInt(Integer::intValue).toArray());
     }
 
     /**
      * Shows a large explosion to subscribed players who were too far away to be sent its particles.
      *
-     * @param particleRange how far the explosion's particles were sent, in blocks
+     * @param particleRange
+     *            how far the explosion's particles were sent, in blocks
      */
     public static void onExplosion(ServerLevel level, Vec3 center, float explosionRadius, float blastRadius, boolean fiery, double particleRange)
     {

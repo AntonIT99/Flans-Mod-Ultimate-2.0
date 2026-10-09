@@ -1,31 +1,25 @@
 package com.flansmodultimate.hooks.client;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmod.client.model.ModelAAGun;
-import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.*;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.effects.GunScreenShake;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.DeployedGun;
+import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.GunItemHandler;
-import com.flansmodultimate.common.types.AAGunType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.IScope;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.IClientGunHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
-import com.flansmodultimate.network.server.PacketDeployedGunInput;
-import com.flansmodultimate.network.server.PacketGunInput;
-import com.flansmodultimate.network.server.PacketGunSwitchDelay;
+import com.flansmodultimate.network.server.gun.*;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,9 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ClientGunHooksImpl implements IClientGunHooks
 {
@@ -83,6 +75,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         while (shootTime <= 0F)
         {
             animations.doShoot(pumpDelay, pumpTime, hammerDelay, hammerAngle, althammerAngle, casingDelay);
+            addScreenShake(gunItem.getConfigType());
 
             if (gunItem.getConfigType().isUseFancyRecoil())
                 ModClient.getPlayerRecoil().addRecoil(gunItem.getConfigType().getRecoil(gunStack));
@@ -97,6 +90,16 @@ public class ClientGunHooksImpl implements IClientGunHooks
         data.setShootTime(hand, shootTime);
 
         DebugHelper.spawnDebugDot(player.getEyePosition(0.0F), 1000, 1F, 1F, 1F);
+    }
+
+    /** Adds the Labjac Edition firing impact of a gun that opts into {@code HasScreenShake}. */
+    private static void addScreenShake(GunType type)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (!type.isHasScreenShake() || config == null || !config.gunScreenShake)
+            return;
+        float cameraKick = type.isScreenShakeCameraKick() ? type.getCameraRecoil() * type.getScreenShakeIntensity() : 0F;
+        GunScreenShake.addShot(type.isScreenShakeUsesSustainedRecoil(), type.getScreenShakeIntensity(), cameraKick);
     }
 
     @Override
@@ -183,11 +186,11 @@ public class ClientGunHooksImpl implements IClientGunHooks
         }
     }
 
-    private static void handleScope(GunItem gunItem, ItemStack gunStack, InteractionHand hand, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
+    private static void handleScope(GunItem gunItem, ItemStack gunStack, InteractionHand hand, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState,
+        boolean dualWield)
     {
         GunType gunType = gunItem.getConfigType();
-        boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom()
-            || gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F;
+        boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom() || gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F;
 
         if (dualWield || !canZoom)
             return;
@@ -423,15 +426,13 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
     private static boolean hasModelBarrel(@Nullable ModelAAGun.BarrelOriginData barrelOriginData, int barrel)
     {
-        return barrelOriginData != null && barrel < barrelOriginData.pivots().length
-            && barrel < barrelOriginData.muzzles().length;
+        return barrelOriginData != null && barrel < barrelOriginData.pivots().length && barrel < barrelOriginData.muzzles().length;
     }
 
     private static Vec3 getAAGunDebugBarrelOrigin(AAGun aaGun, int barrel, boolean sentryShot, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
     {
         if (hasModelBarrel(barrelOriginData, barrel))
-            return aaGun.position().add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel],
-                barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch()));
+            return aaGun.position().add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel], barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch()));
 
         return aaGun.getBarrelOrigin(barrel, sentryShot);
     }

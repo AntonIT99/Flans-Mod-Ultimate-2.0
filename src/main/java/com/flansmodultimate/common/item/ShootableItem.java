@@ -2,6 +2,8 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.item.tooltip.AmmoStatContext;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModClientConfig;
@@ -65,7 +67,8 @@ public abstract class ShootableItem extends Item
     /**
      * Position in the magazine of the round about to be fired, counting from the first one loaded.
      *
-     * <p>This is what selects the round of an {@code AddRound} belt, so it has to count up as the item
+     * <p>
+     * This is what selects the round of an {@code AddRound} belt, so it has to count up as the item
      * empties. Items holding a single round have no belt position and always report zero.
      */
     public static int getRoundsFired(ItemStack stack)
@@ -195,7 +198,7 @@ public abstract class ShootableItem extends Item
         if (maxRounds <= 1)
             return 0x00FF00;
 
-        float fill = Mth.clamp((float)getRoundsRemaining(stack) / maxRounds, 0F, 1F);
+        float fill = Mth.clamp((float) getRoundsRemaining(stack) / maxRounds, 0F, 1F);
         return Mth.hsvToRgb(fill / 3F, 1F, 1F);
     }
 
@@ -212,8 +215,8 @@ public abstract class ShootableItem extends Item
             if (stackCount > 1)
             {
                 int totalRounds = getTotalRounds(stack);
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ROUNDS),
-                    Component.translatable(TooltipKeys.ROUNDS_TOTAL, currentRounds, maxRounds, stackCount, totalRounds)));
+                tooltipComponents
+                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.ROUNDS), Component.translatable(TooltipKeys.ROUNDS_TOTAL, currentRounds, maxRounds, stackCount, totalRounds)));
             }
             else
             {
@@ -231,8 +234,9 @@ public abstract class ShootableItem extends Item
     /**
      * Stack-independent ammunition stats, shared by the item tooltip and the driveable ammo tooltips.
      *
-     * @param context the weapon the round is shown for, whose multipliers and per-ammunition overrides are
-     *                resolved into the values; null to describe the ammunition on its own
+     * @param context
+     *            the weapon the round is shown for, whose multipliers and per-ammunition overrides are
+     *            resolved into the values; null to describe the ammunition on its own
      */
     public void appendAmmoStats(@NotNull List<Component> tooltipComponents, @Nullable AmmoStatContext context)
     {
@@ -263,13 +267,12 @@ public abstract class ShootableItem extends Item
         {
             if (bulletType != null)
             {
-                appendPerRound(tooltipComponents, TooltipKeys.MASS, rounds,
-                    shot -> IFlanItem.formatFloat(projectileMass(bulletType, shot, context)) + " g");
-                appendPerRound(tooltipComponents, TooltipKeys.DAMAGE, rounds, shot -> {
+                appendPerRound(tooltipComponents, TooltipKeys.MASS, rounds, shot -> IFlanItem.formatFloat(projectileMass(bulletType, shot, context)) + " g");
+                appendPerRound(tooltipComponents, TooltipKeys.DAMAGE, rounds, shot ->
+                {
                     float mass = projectileMass(bulletType, shot, context);
                     float velocity = muzzleVelocity(bulletType, shot, context);
-                    return mass > 0F && velocity > 0F
-                        ? IFlanItem.formatFloat(ShootingHelper.getKineticDamage(mass, velocity), 1) : null;
+                    return mass > 0F && velocity > 0F ? IFlanItem.formatFloat(ShootingHelper.getKineticDamage(mass, velocity), 1) : null;
                 });
             }
             else
@@ -287,8 +290,7 @@ public abstract class ShootableItem extends Item
         if (configType.useNewExplosionSystem())
         {
             if (bulletType != null)
-                appendPerRound(tooltipComponents, TooltipKeys.EXPLOSIVE_MASS_TNT, rounds,
-                    shot -> IFlanItem.formatMassKg(explosiveMass(bulletType, shot, context)));
+                appendPerRound(tooltipComponents, TooltipKeys.EXPLOSIVE_MASS_TNT, rounds, shot -> IFlanItem.formatMassKg(explosiveMass(bulletType, shot, context)));
             else
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSIVE_MASS_TNT), IFlanItem.formatMassKg(configType.getExplosiveMass())));
         }
@@ -298,9 +300,7 @@ public abstract class ShootableItem extends Item
             // Pulled from a real Stats object rather than the individual raw getters, so the
             // tooltip shows exactly what FlanExplosion will simulate: the crater cap, and the
             // blast/frag flattening curve for heavy charges, both applied.
-            FlanExplosion.Stats stats = context != null && bulletType != null
-                ? bulletType.getExplosionStatsForShot(context.shot(bulletType, 0))
-                : configType.getExplosionStats(null);
+            FlanExplosion.Stats stats = context != null && bulletType != null ? bulletType.getExplosionStatsForShot(context.shot(bulletType, 0)) : configType.getExplosionStats(null);
 
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_RADIUS), IFlanItem.formatFloat(stats.explosionRadius(), 1)));
             tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_POWER), IFlanItem.formatFloat(stats.explosionPower(), 1)));
@@ -311,8 +311,7 @@ public abstract class ShootableItem extends Item
             {
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_RADIUS), IFlanItem.formatFloat(stats.fragRadius(), 1)));
                 IFlanItem.appendDamageStats(tooltipComponents, stats.fragDamage(), TooltipKeys.EXPLOSION_FRAG_DAMAGE);
-                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_COUNT),
-                    IFlanItem.formatFloat((float) stats.fragmentation().fragmentCount(), 0)));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.EXPLOSION_FRAG_COUNT), IFlanItem.formatFloat((float) stats.fragmentation().fragmentCount(), 0)));
             }
         }
 
@@ -342,7 +341,8 @@ public abstract class ShootableItem extends Item
     }
 
     /** A round of the belt a weapon feeds, with the magazine position its stats are resolved at. */
-    protected record RoundView(String name, int count, int shot) {}
+    protected record RoundView(String name, int count, int shot)
+    {}
 
     protected static List<RoundView> roundViews(BulletType type, @Nullable AmmoStatContext context)
     {

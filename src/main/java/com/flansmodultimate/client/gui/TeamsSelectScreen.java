@@ -1,11 +1,10 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketTeamsState;
-import com.flansmodultimate.network.server.PacketTeamsAction;
+import com.flansmodultimate.network.client.teams.PacketTeamsState;
+import com.flansmodultimate.network.server.teams.PacketTeamsAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,8 +48,7 @@ public final class TeamsSelectScreen extends Screen
             for (int i = 0; i < choices.size(); i++)
             {
                 PacketTeamsState.ClassChoice choice = choices.get(i);
-                Button button = Button.builder(Component.literal(choice.name()), ignored -> chooseClass(choice.id()))
-                    .bounds(left + 9, top + 24 + 24 * i, 73, 20).build();
+                Button button = Button.builder(Component.literal(choice.name()), ignored -> chooseClass(choice.id())).bounds(left + 9, top + 24 + 24 * i, 73, 20).build();
                 button.active = state.getPlayerRank() >= choice.unlockLevel();
                 addRenderableWidget(button);
             }
@@ -62,8 +60,7 @@ public final class TeamsSelectScreen extends Screen
             {
                 PacketTeamsState.TeamChoice choice = choices.get(i);
                 Component label = Component.literal(choice.name()).withStyle(style -> style.withColor(choice.colour()));
-                addRenderableWidget(Button.builder(label, ignored -> chooseTeam(choice.id()))
-                    .bounds(left + 10, top + 24 + 24 * i, 236, 20).build());
+                addRenderableWidget(Button.builder(label, ignored -> chooseTeam(choice.id())).bounds(left + 10, top + 24 + 24 * i, 236, 20).build());
             }
         }
     }

@@ -37,7 +37,8 @@ final class ContentLoadingWorkers implements AutoCloseable
     }
 
     /**
-     * @param configuredThreads threads to use; 0 or less chooses from the processor count
+     * @param configuredThreads
+     *            threads to use; 0 or less chooses from the processor count
      */
     static ContentLoadingWorkers create(int configuredThreads)
     {
@@ -47,7 +48,8 @@ final class ContentLoadingWorkers implements AutoCloseable
 
         AtomicInteger counter = new AtomicInteger();
         ClassLoader classLoader = ContentLoadingWorkers.class.getClassLoader();
-        ForkJoinPool.ForkJoinWorkerThreadFactory factory = forkJoinPool -> {
+        ForkJoinPool.ForkJoinWorkerThreadFactory factory = forkJoinPool ->
+        {
             ForkJoinWorkerThread thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(forkJoinPool);
             thread.setName("Flan content loading " + counter.incrementAndGet());
             thread.setDaemon(true);
@@ -104,17 +106,6 @@ final class ContentLoadingWorkers implements AutoCloseable
             pool.shutdownNow();
     }
 
-    private static RuntimeException rethrow(Throwable cause)
-    {
-        if (cause instanceof CompletionException && cause.getCause() != null)
-            cause = cause.getCause();
-        if (cause instanceof RuntimeException runtimeException)
-            throw runtimeException;
-        if (cause instanceof Error error)
-            throw error;
-        throw new IllegalStateException(cause);
-    }
-
     /** A result that may still be computing. */
     static final class Task<T>
     {
@@ -144,6 +135,17 @@ final class ContentLoadingWorkers implements AutoCloseable
             {
                 throw rethrow(e);
             }
+        }
+
+        private static RuntimeException rethrow(Throwable cause)
+        {
+            if (cause instanceof CompletionException && cause.getCause() != null)
+                cause = cause.getCause();
+            if (cause instanceof RuntimeException runtimeException)
+                throw runtimeException;
+            if (cause instanceof Error error)
+                throw error;
+            throw new IllegalStateException(cause);
         }
     }
 }

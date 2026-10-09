@@ -39,7 +39,8 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event)
     {
-        event.enqueueWork(() -> {
+        event.enqueueWork(() ->
+        {
             ItemBlockRenderTypes.setRenderLayer(ApocalypseContent.sulphuricAcid.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(ApocalypseContent.flowingSulphuricAcid.get(), RenderType.translucent());
         });

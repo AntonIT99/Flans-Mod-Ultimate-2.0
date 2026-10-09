@@ -4,11 +4,7 @@ import java.util.Locale;
 
 public enum EnumMechaToolType
 {
-    PICKAXE,
-    AXE,
-    SHOVEL,
-    SHEARS,
-    SWORD;
+    PICKAXE, AXE, SHOVEL, SHEARS, SWORD;
 
     public static EnumMechaToolType parse(String value)
     {
@@ -18,7 +14,9 @@ public enum EnumMechaToolType
             {
                 return valueOf(value.trim().toUpperCase(Locale.ROOT));
             }
-            catch (IllegalArgumentException ignored) {}
+            catch (IllegalArgumentException ignored)
+            {
+            }
         }
         return SWORD;
     }

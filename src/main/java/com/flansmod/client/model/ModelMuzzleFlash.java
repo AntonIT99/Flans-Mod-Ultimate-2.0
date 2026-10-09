@@ -11,11 +11,9 @@ public abstract class ModelMuzzleFlash extends ModelBase
 {
     /** Flash callers supply an emissive buffer, so include every part regardless of its glow flags. */
     @Override
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight,
-                               int packedOverlay, float red, float green, float blue, float alpha)
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        forEachModelBox(part -> part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, getScale()));
+        forEachModelBox(part -> part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, getScale()));
     }
 
     @Override

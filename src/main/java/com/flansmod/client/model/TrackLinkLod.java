@@ -103,8 +103,7 @@ public final class TrackLinkLod
                 return false;
             for (TexturedPolygon polygon : part.getRenderPolygons())
             {
-                if (polygonIndex >= polygons.size() || polygon != polygons.get(polygonIndex)
-                    || polygon == null || polygon.geometryRevision() != revisions[polygonIndex]
+                if (polygonIndex >= polygons.size() || polygon != polygons.get(polygonIndex) || polygon == null || polygon.geometryRevision() != revisions[polygonIndex]
                     || polygon.isRigidLodGeometry() != rigid[polygonIndex])
                     return false;
                 polygonIndex++;
@@ -115,8 +114,7 @@ public final class TrackLinkLod
 
     private static boolean supported(ModelRendererTurbo part)
     {
-        return part != null && part.getClass() == ModelRendererTurbo.class && part.isVisible()
-            && part.childModels.isEmpty() && !part.glow && !part.glowAdditive && !part.glowNoDepthWrite;
+        return part != null && part.getClass() == ModelRendererTurbo.class && part.isVisible() && part.childModels.isEmpty() && !part.glow && !part.glowAdditive && !part.glowNoDepthWrite;
     }
 
     public boolean select(float projectionPixels, double distance, float modelScale, float threshold, boolean previous)
@@ -125,24 +123,24 @@ public final class TrackLinkLod
     }
 
     /** Merge adjacent links only when their source geometry is a few screen pixels wide. */
-    public int selectGroup(float projectionPixels, double distance, float modelScale, float threshold,
-                           float groupingThreshold, int previousGroup)
+    public int selectGroup(float projectionPixels, double distance, float modelScale, float threshold, float groupingThreshold, int previousGroup)
     {
-        if (simplified == null) return 0;
+        if (simplified == null)
+            return 0;
         float size = diameter * Math.abs(modelScale);
         double nearest = distance - originRadius * Math.abs(modelScale);
-        if (!selectDiameter(size, projectionPixels, nearest, threshold, previousGroup > 0)) return 0;
-        if (groupingThreshold > 0F && quadrupled != null && selectDiameter(size, projectionPixels, nearest,
-            Math.min(threshold, groupingThreshold * 0.5F), previousGroup >= 4)) return 4;
-        if (groupingThreshold > 0F && doubled != null && selectDiameter(size, projectionPixels, nearest,
-            Math.min(threshold, groupingThreshold), previousGroup >= 2)) return 2;
+        if (!selectDiameter(size, projectionPixels, nearest, threshold, previousGroup > 0))
+            return 0;
+        if (groupingThreshold > 0F && quadrupled != null && selectDiameter(size, projectionPixels, nearest, Math.min(threshold, groupingThreshold * 0.5F), previousGroup >= 4))
+            return 4;
+        if (groupingThreshold > 0F && doubled != null && selectDiameter(size, projectionPixels, nearest, Math.min(threshold, groupingThreshold), previousGroup >= 2))
+            return 2;
         return 1;
     }
 
     static boolean selectDiameter(float diameter, float projectionPixels, double distance, float threshold, boolean previous)
     {
-        if (distance < 32D || threshold <= 0F || projectionPixels <= 0F || diameter <= 0F
-            || !Double.isFinite(distance) || !Float.isFinite(diameter) || !Float.isFinite(projectionPixels))
+        if (distance < 32D || threshold <= 0F || projectionPixels <= 0F || diameter <= 0F || !Double.isFinite(distance) || !Float.isFinite(diameter) || !Float.isFinite(projectionPixels))
             return false;
         double pixels = diameter * projectionPixels / Math.max(0.01D, distance - diameter * 0.5D);
         return pixels <= threshold * (previous ? 1.25F : 1F);
@@ -165,22 +163,42 @@ public final class TrackLinkLod
         return simplified;
     }
 
-    public static boolean active() { return ACTIVE_GROUP.get() > 0; }
-    public static int activeGroup() { return ACTIVE_GROUP.get(); }
-    public static void setActive(boolean active) { ACTIVE_GROUP.set(active ? 1 : 0); }
-    public static void setGroup(int group) { ACTIVE_GROUP.set(group); }
+    public static boolean active()
+    {
+        return ACTIVE_GROUP.get() > 0;
+    }
+
+    public static int activeGroup()
+    {
+        return ACTIVE_GROUP.get();
+    }
+
+    public static void setActive(boolean active)
+    {
+        ACTIVE_GROUP.set(active ? 1 : 0);
+    }
+
+    public static void setGroup(int group)
+    {
+        ACTIVE_GROUP.set(group);
+    }
 
     private static void storeTransform(ModelRendererTurbo p, float[] out, int i)
     {
-        out[i] = p.offsetX; out[i + 1] = p.offsetY; out[i + 2] = p.offsetZ;
-        out[i + 3] = p.rotationPointX; out[i + 4] = p.rotationPointY; out[i + 5] = p.rotationPointZ;
-        out[i + 6] = p.rotateAngleX; out[i + 7] = p.rotateAngleY; out[i + 8] = p.rotateAngleZ;
+        out[i] = p.offsetX;
+        out[i + 1] = p.offsetY;
+        out[i + 2] = p.offsetZ;
+        out[i + 3] = p.rotationPointX;
+        out[i + 4] = p.rotationPointY;
+        out[i + 5] = p.rotationPointZ;
+        out[i + 6] = p.rotateAngleX;
+        out[i + 7] = p.rotateAngleY;
+        out[i + 8] = p.rotateAngleZ;
     }
 
     private static boolean sameTransform(ModelRendererTurbo p, float[] v, int i)
     {
-        return p.offsetX == v[i] && p.offsetY == v[i + 1] && p.offsetZ == v[i + 2]
-            && p.rotationPointX == v[i + 3] && p.rotationPointY == v[i + 4] && p.rotationPointZ == v[i + 5]
+        return p.offsetX == v[i] && p.offsetY == v[i + 1] && p.offsetZ == v[i + 2] && p.rotationPointX == v[i + 3] && p.rotationPointY == v[i + 4] && p.rotationPointZ == v[i + 5]
             && p.rotateAngleX == v[i + 6] && p.rotateAngleY == v[i + 7] && p.rotateAngleZ == v[i + 8];
     }
 }

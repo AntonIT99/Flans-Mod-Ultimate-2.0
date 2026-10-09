@@ -28,7 +28,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
 
     /** Static models with no animation */
     protected ModelRendererTurbo[] gunModel = new ModelRendererTurbo[0];
-    protected ModelRendererTurbo[] backpackModel = new ModelRendererTurbo[0]; //For flamethrowers and such like. Rendered on the player's back
+    protected ModelRendererTurbo[] backpackModel = new ModelRendererTurbo[0]; // For flamethrowers and such like. Rendered on the player's back
     /** Static parts only rendered while the weapon is switched on, such as a lightsaber blade or an integrated laser */
     protected ModelRendererTurbo[] toggleModel = new ModelRendererTurbo[0];
 
@@ -64,7 +64,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
      * - Simple counter will loop through each part. Allows flexibility for bullet counter UI design.
      * <p>
      * - Adv counter used for counting mags of more than 10, to reduce texture parts. Divides count into digits.
-     *	 Less flexibility as it requires 10 textures parts at maximum (numbers 0-9).
+     * Less flexibility as it requires 10 textures parts at maximum (numbers 0-9).
      */
     protected ModelRendererTurbo[] bulletCounterModel = new ModelRendererTurbo[0];
     protected ModelRendererTurbo[][] advBulletCounterModel = new ModelRendererTurbo[0][0];
@@ -116,59 +116,59 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     @Getter @Setter
     protected boolean easyArms;
     @Getter @Setter
-    protected Vector3f armScale = new Vector3f(0.8F,0.8F,0.8F);
+    protected Vector3f armScale = new Vector3f(0.8F, 0.8F, 0.8F);
     @Getter @Setter
-    protected Vector3f leftArmPos = new Vector3f(0,0,0);
+    protected Vector3f leftArmPos = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f leftArmRot = new Vector3f(0,0,0);
+    protected Vector3f leftArmRot = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f leftArmScale = new Vector3f(1,1,1);
+    protected Vector3f leftArmScale = new Vector3f(1, 1, 1);
     @Getter @Setter
-    protected Vector3f rightArmPos = new Vector3f(0,0,0);
+    protected Vector3f rightArmPos = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f rightArmRot = new Vector3f(0,0,0);
+    protected Vector3f rightArmRot = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f rightArmScale = new Vector3f(1,1,1);
+    protected Vector3f rightArmScale = new Vector3f(1, 1, 1);
     @Getter @Setter
-    protected Vector3f rightArmReloadPos = new Vector3f(0,0,0);
+    protected Vector3f rightArmReloadPos = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f rightArmReloadRot = new Vector3f(0,0,0);
+    protected Vector3f rightArmReloadRot = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f leftArmReloadPos = new Vector3f(0,0,0);
+    protected Vector3f leftArmReloadPos = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f leftArmReloadRot = new Vector3f(0,0,0);
+    protected Vector3f leftArmReloadRot = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f rightArmChargePos = new Vector3f(0,0,0);
+    protected Vector3f rightArmChargePos = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f rightArmChargeRot = new Vector3f(0,0,0);
+    protected Vector3f rightArmChargeRot = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f leftArmChargePos = new Vector3f(0,0,0);
+    protected Vector3f leftArmChargePos = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f leftArmChargeRot = new Vector3f(0,0,0);
+    protected Vector3f leftArmChargeRot = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f stagedrightArmReloadPos = new Vector3f(0,0,0);
+    protected Vector3f stagedrightArmReloadPos = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f stagedrightArmReloadRot = new Vector3f(0,0,0);
+    protected Vector3f stagedrightArmReloadRot = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f stagedleftArmReloadPos = new Vector3f(0,0,0);
+    protected Vector3f stagedleftArmReloadPos = new Vector3f(0, 0, 0);
     @Getter @Setter
-    protected Vector3f stagedleftArmReloadRot = new Vector3f(0,0,0);
+    protected Vector3f stagedleftArmReloadRot = new Vector3f(0, 0, 0);
     @Getter @Setter
     protected boolean rightHandAmmo;
     @Getter @Setter
     protected boolean leftHandAmmo;
 
     /** Casing and muzzle flash parameters */
-    //  Total distance to translate
+    // Total distance to translate
     @Getter @Setter
     protected Vector3f casingAnimDistance = new Vector3f(0, 0, 16);
-    //  Total range in variance for random motion
+    // Total range in variance for random motion
     @Getter @Setter
     protected Vector3f casingAnimSpread = new Vector3f(2, 4, 4);
-    //  Number of ticks (I guess?) to complete movement
+    // Number of ticks (I guess?) to complete movement
     @Getter @Setter
     protected int casingAnimTime = 20;
-    //  Rotation of the casing, 180 is the total rotation. If you do not understand rotation vectors, like me, just use the standard value here.
+    // Rotation of the casing, 180 is the total rotation. If you do not understand rotation vectors, like me, just use the standard value here.
     @Getter @Setter
     protected Vector3f casingRotateVector = new Vector3f(0.1F, 1F, 0.1F);
     @Getter @Setter
@@ -320,7 +320,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     /** Hand offset when gun is charging */
     @Getter @Setter
     protected Vector3f chargeModifier = new Vector3f(8F, 4F, 4F);
-    /**If true, gun will translate when equipped with a sight attachment */
+    /** If true, gun will translate when equipped with a sight attachment */
     @Getter @Setter
     protected float gunOffset;
     @Getter @Setter
@@ -396,7 +396,7 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
     }
 
     /**
-     * Flips the  Generally only for backwards compatibility
+     * Flips the Generally only for backwards compatibility
      */
     public void flipAll()
     {
@@ -491,7 +491,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         vector.z -= z / 16F;
     }
 
-    public void render(ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void render(ModelRendererTurbo[] models, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo mod : models)
         {
@@ -499,7 +500,8 @@ public class ModelGun extends ModelBase implements IFlanTypeModel<GunType>
         }
     }
 
-    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims, EnumRenderPass renderPass)
+    public void renderCustom(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, GunAnimations anims,
+        EnumRenderPass renderPass)
     {
         // This is a placeholder for custom rendering logic that can be implemented in subclasses or specific instances of ModelGun.
         // It allows for more complex rendering behavior based on the provided GunAnimations object, which can contain information about the current state of the gun's animations.

@@ -16,9 +16,12 @@ public class Angle3D
     /**
      * The constructor to create a new Angle3D.
      *
-     * @param x the x-rotation
-     * @param y the y-rotation
-     * @param z the z-rotation
+     * @param x
+     *            the x-rotation
+     * @param y
+     *            the y-rotation
+     * @param z
+     *            the z-rotation
      */
     public Angle3D(float x, float y, float z)
     {
@@ -30,9 +33,12 @@ public class Angle3D
     /**
      * Adds the given angles to the current angles.
      *
-     * @param x the x-rotation
-     * @param y the y-rotation
-     * @param z the z-rotation
+     * @param x
+     *            the x-rotation
+     * @param y
+     *            the y-rotation
+     * @param z
+     *            the z-rotation
      */
     public void addAngles(float x, float y, float z)
     {
@@ -44,7 +50,8 @@ public class Angle3D
     /**
      * Adds the angles of another Angle3D to the current angles.
      *
-     * @param angles the Angle3D
+     * @param angles
+     *            the Angle3D
      */
     public void addAngles(Angle3D angles)
     {
@@ -56,9 +63,12 @@ public class Angle3D
     /**
      * Multiplies the angles with the given angles.
      *
-     * @param x the x-rotation
-     * @param y the y-rotation
-     * @param z the z-rotation
+     * @param x
+     *            the x-rotation
+     * @param y
+     *            the y-rotation
+     * @param z
+     *            the z-rotation
      */
     public void multiplyAngles(float x, float y, float z)
     {
@@ -70,7 +80,8 @@ public class Angle3D
     /**
      * Multiplies the angles with a given Angle3D.
      *
-     * @param angles the Angle3D
+     * @param angles
+     *            the Angle3D
      */
     public void multiplyAngles(Angle3D angles)
     {
@@ -82,8 +93,10 @@ public class Angle3D
     /**
      * Gets the center angle between two angles.
      *
-     * @param angles1 the first Angle3D
-     * @param angles2 the second Angle3D
+     * @param angles1
+     *            the first Angle3D
+     * @param angles2
+     *            the second Angle3D
      * @return the center Angle3D
      */
     public static Angle3D getCenter(Angle3D angles1, Angle3D angles2)

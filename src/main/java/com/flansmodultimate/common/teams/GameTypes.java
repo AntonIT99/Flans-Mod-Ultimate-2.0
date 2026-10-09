@@ -8,6 +8,9 @@ public final class GameTypes
     public static final GameType CAPTURE_THE_FLAG = new GameTypeCTF();
     public static final GameType ZOMBIES = new GameTypeZombies();
 
-    private GameTypes() {}
-    static void bootstrap() {}
+    private GameTypes()
+    {}
+
+    static void bootstrap()
+    {}
 }

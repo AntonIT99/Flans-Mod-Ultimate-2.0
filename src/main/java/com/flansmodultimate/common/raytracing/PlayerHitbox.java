@@ -69,73 +69,73 @@ public class PlayerHitbox
 
     public PlayerBulletHit raytrace(Vector3f origin, Vector3f motion)
     {
-        //Move to local coords for this hitbox, but don't modify the original vectors.
-        //An affine transform keeps the ray parameter unchanged, so intersect times stay valid in world space
+        // Move to local coords for this hitbox, but don't modify the original vectors.
+        // An affine transform keeps the ray parameter unchanged, so intersect times stay valid in world space
         origin = inverseTransform.transformPosition(new Vector3f(origin));
         motion = inverseTransform.transformDirection(new Vector3f(motion).sub(vel));
 
-        //We now have an AABB starting at o and with dimensions d and our ray in the same coordinate system
-        //We are looking for a point at which the ray enters the box, so we need only consider faces that the ray can see. Partition the space into 3 areas in each axis
+        // We now have an AABB starting at o and with dimensions d and our ray in the same coordinate system
+        // We are looking for a point at which the ray enters the box, so we need only consider faces that the ray can see. Partition the space into 3 areas in each axis
 
-        //X - axis and faces x = o.x and x = o.x + d.x
-        if(motion.x != 0F)
+        // X - axis and faces x = o.x and x = o.x + d.x
+        if (motion.x != 0F)
         {
-            if(origin.x < o.x) //Check face x = o.x
+            if (origin.x < o.x) // Check face x = o.x
             {
                 float intersectTime = (o.x - origin.x) / motion.x;
                 float intersectY = origin.y + motion.y * intersectTime;
                 float intersectZ = origin.z + motion.z * intersectTime;
-                if(intersectY >= o.y && intersectY <= o.y + d.y && intersectZ >= o.z && intersectZ <= o.z + d.z)
+                if (intersectY >= o.y && intersectY <= o.y + d.y && intersectZ >= o.z && intersectZ <= o.z + d.z)
                     return new PlayerBulletHit(this, intersectTime);
             }
-            else if(origin.x > o.x + d.x) //Check face x = o.x + d.x
+            else if (origin.x > o.x + d.x) // Check face x = o.x + d.x
             {
                 float intersectTime = (o.x + d.x - origin.x) / motion.x;
                 float intersectY = origin.y + motion.y * intersectTime;
                 float intersectZ = origin.z + motion.z * intersectTime;
-                if(intersectY >= o.y && intersectY <= o.y + d.y && intersectZ >= o.z && intersectZ <= o.z + d.z)
+                if (intersectY >= o.y && intersectY <= o.y + d.y && intersectZ >= o.z && intersectZ <= o.z + d.z)
                     return new PlayerBulletHit(this, intersectTime);
             }
         }
 
-        //Z - axis and faces z = o.z and z = o.z + d.z
-        if(motion.z != 0F)
+        // Z - axis and faces z = o.z and z = o.z + d.z
+        if (motion.z != 0F)
         {
-            if(origin.z < o.z) //Check face z = o.z
+            if (origin.z < o.z) // Check face z = o.z
             {
                 float intersectTime = (o.z - origin.z) / motion.z;
                 float intersectX = origin.x + motion.x * intersectTime;
                 float intersectY = origin.y + motion.y * intersectTime;
-                if(intersectX >= o.x && intersectX <= o.x + d.x && intersectY >= o.y && intersectY <= o.y + d.y)
+                if (intersectX >= o.x && intersectX <= o.x + d.x && intersectY >= o.y && intersectY <= o.y + d.y)
                     return new PlayerBulletHit(this, intersectTime);
             }
-            else if(origin.z > o.z + d.z) //Check face z = o.z + d.z
+            else if (origin.z > o.z + d.z) // Check face z = o.z + d.z
             {
                 float intersectTime = (o.z + d.z - origin.z) / motion.z;
                 float intersectX = origin.x + motion.x * intersectTime;
                 float intersectY = origin.y + motion.y * intersectTime;
-                if(intersectX >= o.x && intersectX <= o.x + d.x && intersectY >= o.y && intersectY <= o.y + d.y)
+                if (intersectX >= o.x && intersectX <= o.x + d.x && intersectY >= o.y && intersectY <= o.y + d.y)
                     return new PlayerBulletHit(this, intersectTime);
             }
         }
 
-        //Y - axis and faces y = o.y and y = o.y + d.y
-        if(motion.y != 0F)
+        // Y - axis and faces y = o.y and y = o.y + d.y
+        if (motion.y != 0F)
         {
-            if(origin.y < o.y) //Check face y = o.y
+            if (origin.y < o.y) // Check face y = o.y
             {
                 float intersectTime = (o.y - origin.y) / motion.y;
                 float intersectX = origin.x + motion.x * intersectTime;
                 float intersectZ = origin.z + motion.z * intersectTime;
-                if(intersectX >= o.x && intersectX <= o.x + d.x && intersectZ >= o.z && intersectZ <= o.z + d.z)
+                if (intersectX >= o.x && intersectX <= o.x + d.x && intersectZ >= o.z && intersectZ <= o.z + d.z)
                     return new PlayerBulletHit(this, intersectTime);
             }
-            else if(origin.y > o.y + d.y) //Check face x = o.x + d.x
+            else if (origin.y > o.y + d.y) // Check face x = o.x + d.x
             {
                 float intersectTime = (o.y + d.y - origin.y) / motion.y;
                 float intersectX = origin.x + motion.x * intersectTime;
                 float intersectZ = origin.z + motion.z * intersectTime;
-                if(intersectX >= o.x && intersectX <= o.x + d.x && intersectZ >= o.z && intersectZ <= o.z + d.z)
+                if (intersectX >= o.x && intersectX <= o.x + d.x && intersectZ >= o.z && intersectZ <= o.z + d.z)
                     return new PlayerBulletHit(this, intersectTime);
             }
         }
@@ -199,35 +199,35 @@ public class PlayerHitbox
             damageModifier *= ModCommonConfig.get().armshotDamageModifier();
         }
 
-        switch(type)
+        switch (type)
         {
-            case LEGS, BODY, HEAD, LEFTARM, RIGHTARM:
+            case LEGS, BODY, HEAD, LEFTARM, RIGHTARM :
             {
                 Vec3 motBefore = player.getDeltaMovement();
 
                 if (!player.level().isClientSide)
                 {
-                    //Calculate the hit damage
+                    // Calculate the hit damage
                     float hitDamage = ShootingHelper.getDamage(player, bullet, shot) * damageModifier;
-                    //Create a damage source object
+                    // Create a damage source object
                     DamageSource damagesource = shot.getDamageSource(type.equals(EnumHitboxType.HEAD), player.level(), bullet);
 
-                    //When the damage is 0 (such as with Nerf guns) the entityHurt Forge hook is not called, so this hacky thing is here
+                    // When the damage is 0 (such as with Nerf guns) the entityHurt Forge hook is not called, so this hacky thing is here
                     Optional<TeamsRound> currentRound = FlansMod.teamsManager.getCurrentRound();
 
                     if (hitDamage == 0 && currentRound.isPresent())
                         currentRound.get().getGametype().playerAttacked((ServerPlayer) player, damagesource);
 
-                    //Attack the entity!
+                    // Attack the entity!
                     if (player.hurt(damagesource, hitDamage))
                     {
-                        //If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
+                        // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                         player.hurtTime = Math.min(player.hurtTime + 1, player.hurtDuration);
                         player.invulnerableTime = player.hurtDuration / 2;
                     }
                 }
 
-                //Slowdown when shot in the legs
+                // Slowdown when shot in the legs
                 if (type == EnumHitboxType.LEGS)
                     player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 0, true, false));
 
@@ -247,21 +247,21 @@ public class PlayerHitbox
 
                 break;
             }
-            case RIGHTITEM:
+            case RIGHTITEM :
             {
                 ItemStack currentStack = player.getMainHandItem();
                 if (!currentStack.isEmpty() && currentStack.getItem() instanceof GunItem gunItem)
                     penetratingPower -= gunItem.getConfigType().getShieldDamageAbsorption();
                 break;
             }
-            case LEFTITEM:
+            case LEFTITEM :
             {
                 ItemStack currentStack = player.getOffhandItem();
                 if (!currentStack.isEmpty() && currentStack.getItem() instanceof GunItem gunItem)
                     penetratingPower -= gunItem.getConfigType().getShieldDamageAbsorption();
                 break;
             }
-            default:
+            default :
                 break;
         }
 

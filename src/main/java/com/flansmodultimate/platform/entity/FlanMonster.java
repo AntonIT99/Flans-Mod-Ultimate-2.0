@@ -26,7 +26,8 @@ public abstract class FlanMonster extends Monster
         dropEntityDeathLoot(source, recentlyHit);
     }
 
-    protected void dropEntityDeathLoot(DamageSource source, boolean recentlyHit) {}
+    protected void dropEntityDeathLoot(DamageSource source, boolean recentlyHit)
+    {}
 
     @Override
     @SuppressWarnings("deprecation") // NeoForge's vanilla override remains the lifecycle entry point.
@@ -36,8 +37,7 @@ public abstract class FlanMonster extends Monster
     }
 
     @SuppressWarnings("deprecation") // Calls the vanilla superclass implementation from the loader lifecycle.
-    protected SpawnGroupData finalizeEntitySpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-        MobSpawnType spawnType, SpawnGroupData spawnData, CompoundTag dataTag)
+    protected SpawnGroupData finalizeEntitySpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType spawnType, SpawnGroupData spawnData, CompoundTag dataTag)
     {
         return super.finalizeSpawn(level, difficulty, spawnType, spawnData);
     }

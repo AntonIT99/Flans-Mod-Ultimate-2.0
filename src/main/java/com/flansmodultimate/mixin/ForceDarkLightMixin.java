@@ -14,8 +14,10 @@ import net.minecraft.world.level.lighting.SkyLightEngine;
 @Mixin(LightEngine.class)
 public abstract class ForceDarkLightMixin
 {
+    // The (Object) cast is required, and the check can be true: the mixin class is unrelated to SkyLightEngine until merged.
+    @SuppressWarnings({"java:S1905", "ConstantValue"})
     @Inject(method = "getLightValue", at = @At("RETURN"), cancellable = true)
-    private void flansmodultimate$applyForceDark(BlockPos pos, CallbackInfoReturnable<Integer> callback)
+    private void flansmodultimateApplyForceDark(BlockPos pos, CallbackInfoReturnable<Integer> callback)
     {
         if ((Object) this instanceof SkyLightEngine)
             callback.setReturnValue(ModClient.applyForceDarkSkyLight(pos, callback.getReturnValueI()));

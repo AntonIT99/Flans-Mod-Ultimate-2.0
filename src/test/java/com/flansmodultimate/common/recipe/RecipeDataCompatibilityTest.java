@@ -37,13 +37,11 @@ class RecipeDataCompatibilityTest
         assertTrue(RecipeDataCompatibility.hasMissingCounterparts(dataRoot));
         RecipeDataCompatibility.fillMissingCounterparts(dataRoot);
 
-        JsonObject modern = JsonParser.parseString(Files.readString(dataRoot.resolve("flansmod/recipe/nested/crafting.json")))
-            .getAsJsonObject().getAsJsonObject("result");
+        JsonObject modern = JsonParser.parseString(Files.readString(dataRoot.resolve("flansmod/recipe/nested/crafting.json"))).getAsJsonObject().getAsJsonObject("result");
         assertEquals("flansmod:test", modern.get("id").getAsString());
         assertEquals(8, modern.get("count").getAsInt());
         assertFalse(modern.has("item"));
-        JsonObject legacy = JsonParser.parseString(Files.readString(dataRoot.resolve("other/recipes/smelting.json")))
-            .getAsJsonObject();
+        JsonObject legacy = JsonParser.parseString(Files.readString(dataRoot.resolve("other/recipes/smelting.json"))).getAsJsonObject();
         assertEquals("minecraft:iron_ingot", legacy.get("result").getAsString());
         assertTrue(Files.readString(existing).contains("flansmod:new"));
         assertTrue(Files.readString(oldRecipe).contains("\"item\""));
@@ -54,10 +52,8 @@ class RecipeDataCompatibilityTest
     void generatedRecipeKeepsLegacyCountAndCapsModernCount() throws Exception
     {
         ToolType tool = new ToolType();
-        tool.load(new TypeFile("example", EnumType.TOOL, new ContentPack("test", dataRoot), List.of(
-            "ShortName example", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
-        JsonObject recipe = JsonParser.parseString("{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"item\":\"flansmod:example\",\"count\":16}}")
-            .getAsJsonObject();
+        tool.load(new TypeFile("example", EnumType.TOOL, new ContentPack("test", dataRoot), List.of("ShortName example", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
+        JsonObject recipe = JsonParser.parseString("{\"type\":\"minecraft:crafting_shapeless\",\"result\":{\"item\":\"flansmod:example\",\"count\":16}}").getAsJsonObject();
 
         JsonObject legacy = RecipeDataCompatibility.formatGenerated(recipe, tool, RecipeDataCompatibility.Format.LEGACY);
         JsonObject modern = RecipeDataCompatibility.formatGenerated(recipe, tool, RecipeDataCompatibility.Format.MODERN);
@@ -78,8 +74,7 @@ class RecipeDataCompatibilityTest
                 return "example";
             }
         };
-        tool.load(new TypeFile("example", EnumType.TOOL, new ContentPack("test", dataRoot), List.of(
-            "ShortName example", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
+        tool.load(new TypeFile("example", EnumType.TOOL, new ContentPack("test", dataRoot), List.of("ShortName example", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
         var createResult = RecipeJsonGenerator.class.getDeclaredMethod("createResult", com.flansmodultimate.common.types.InfoType.class);
         createResult.setAccessible(true);
         JsonObject output = (JsonObject) createResult.invoke(null, tool);
@@ -107,8 +102,7 @@ class RecipeDataCompatibilityTest
                 return "example";
             }
         };
-        tool.load(new TypeFile("example", EnumType.TOOL, new ContentPack("test", dataRoot), List.of(
-            "ShortName example", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
+        tool.load(new TypeFile("example", EnumType.TOOL, new ContentPack("test", dataRoot), List.of("ShortName example", "RecipeOutput 16", "ShapelessRecipe minecraft:wheat")));
         Path legacy = Files.createDirectories(dataRoot.resolve("recipes")).resolve("example_shapeless.json");
         Path modern = Files.createDirectories(dataRoot.resolve("recipe")).resolve("example_shapeless.json");
 

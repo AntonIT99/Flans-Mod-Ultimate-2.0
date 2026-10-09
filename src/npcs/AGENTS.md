@@ -5,6 +5,11 @@
 - Custom NPCs classes may only be referenced from this module. The main mod treats Custom NPCs
   as optional and must not depend on it.
 - Keep NPC behaviour server-authoritative, and keep client-only code out of common entrypoints.
+- Mixins into Custom NPCs classes use `remap = false`. Custom NPCs is SRG-named in production and
+  Mojang-named in the development dependency, so a vanilla method it overrides is targeted by both
+  names, for example `method = {"tick", "m_8119_"}`.
+- All Custom NPCs entity hooks belong in `EntityNPCInterfaceMixin` and all fallback ranged-AI hooks
+  in `EntityAIRangedAttackMixin`, following the root one-mixin-per-target rule.
 
 ## Flan's Mod Ultimate API
 

@@ -1,11 +1,10 @@
 package com.flansmodultimate.client.teams;
 
-import com.flansmodultimate.client.gui.TeamsScoreScreen;
-import com.flansmodultimate.client.gui.TeamsSelectScreen;
-import com.flansmodultimate.client.gui.TeamsVotingScreen;
-import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.client.gui.*;
+import com.flansmodultimate.network.client.teams.PacketTeamsState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 
@@ -32,8 +31,7 @@ public final class TeamsClientState
     {
         Minecraft minecraft = Minecraft.getInstance();
         Player viewer = minecraft.player;
-        return hasActiveRound() && viewer != null && renderedPlayer != viewer
-            && !isTeamsSpectator(viewer) && isTeamsSpectator(renderedPlayer);
+        return hasActiveRound() && viewer != null && renderedPlayer != viewer && !isTeamsSpectator(viewer) && isTeamsSpectator(renderedPlayer);
     }
 
     /** Enemy tags are hidden in team modes; every active-player tag is hidden in FFA. */
@@ -51,6 +49,22 @@ public final class TeamsClientState
         Optional<String> viewerTeam = findTeam(viewer);
         Optional<String> renderedTeam = findTeam(renderedPlayer);
         return viewerTeam.isPresent() && renderedTeam.isPresent() && !viewerTeam.get().equals(renderedTeam.get());
+    }
+
+    /**
+     * Whether another player is on the local player's side in the running Teams round. Rounds whose scores
+     * are not sorted by team fall back to the vanilla scoreboard team, as the Labjac Edition's thermal strobe did.
+     */
+    public static boolean isTeamMate(Player other)
+    {
+        Player viewer = Minecraft.getInstance().player;
+        if (!hasActiveRound() || viewer == null || other == viewer || isTeamsSpectator(viewer) || isTeamsSpectator(other))
+            return false;
+        if (!snapshot.isSortedByTeam())
+            return viewer.getTeam() != null && viewer.isAlliedTo(other);
+        Optional<String> viewerTeam = findTeam(viewer);
+        Optional<String> otherTeam = findTeam(other);
+        return viewerTeam.isPresent() && viewerTeam.equals(otherTeam);
     }
 
     private static boolean hasActiveRound()
@@ -95,8 +109,7 @@ public final class TeamsClientState
             case SCOREBOARD -> minecraft.setScreen(new TeamsScoreScreen());
             case VOTING -> minecraft.setScreen(new TeamsVotingScreen());
             case CLOSE -> {
-                if (minecraft.screen instanceof TeamsSelectScreen || minecraft.screen instanceof TeamsScoreScreen
-                    || minecraft.screen instanceof TeamsVotingScreen)
+                if (minecraft.screen instanceof TeamsSelectScreen || minecraft.screen instanceof TeamsScoreScreen || minecraft.screen instanceof TeamsVotingScreen)
                     minecraft.setScreen(null);
             }
             case NONE -> {

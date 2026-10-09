@@ -35,8 +35,7 @@ public class PlayerClass extends InfoType
     @Getter
     private String skinOverride = StringUtils.EMPTY;
     /** Client-side location of the SkinOverride texture, before it is checked against the player model. */
-    @Getter
-    @Nullable
+    @Getter @Nullable
     private ResourceLocation skinOverrideTexture;
     private final Map<EquipmentSlot, String> armour = new LinkedHashMap<>();
     private List<StartingItem> startingItems = List.of();
@@ -115,10 +114,8 @@ public class PlayerClass extends InfoType
         String[] parts = definition.itemAndAttachments().split("\\+");
         // Content pack shortnames are resolved first: an unqualified AddItem name means pack content in
         // every legacy pack, and a namespaced id such as "minecraft:stone" is never a shortname anyway.
-        ItemStack stack = ModUtils
-            .getItemStack(InfoType.getInfoType(parts[0], contentPack), definition.amount(), definition.damage())
-            .or(() -> ModUtils.getItemStack(parts[0], definition.amount(), definition.damage()))
-            .orElse(ItemStack.EMPTY);
+        ItemStack stack = ModUtils.getItemStack(InfoType.getInfoType(parts[0], contentPack), definition.amount(), definition.damage())
+            .or(() -> ModUtils.getItemStack(parts[0], definition.amount(), definition.damage())).orElse(ItemStack.EMPTY);
         if (stack.isEmpty())
         {
             FlansLog.log.warn("Unknown starting item '{}' in player class {}", parts[0], originalShortName);
@@ -146,8 +143,7 @@ public class PlayerClass extends InfoType
             }
             gunData.put(GunItem.NBT_ATTACHMENTS, attachments);
             ItemStackData.set(stack, gunData);
-            gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack)
-                .ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
+            gunItem.getConfigType().getDefaultAmmo().flatMap(ModUtils::getItemStack).ifPresent(ammo -> gunItem.setBulletItemStack(stack, ammo, 0, ItemStackData.builtInRegistries()));
         }
         return stack;
     }
@@ -209,5 +205,6 @@ public class PlayerClass extends InfoType
         }
     }
 
-    private record StartingItem(String itemAndAttachments, int amount, int damage) {}
+    private record StartingItem(String itemAndAttachments, int amount, int damage)
+    {}
 }

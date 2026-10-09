@@ -46,9 +46,10 @@ public class Raytracer
      */
     private static final double ENTITY_SEARCH_MARGIN = 10D;
 
-    public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter, float gunPenetration, float bulletHitBoxSize, BulletType type)
+    public static List<BulletHit> raytraceShot(Level level, @Nullable Bullet bullet, @Nullable LivingEntity owner, List<Entity> entitiesToIgnore, Vec3 origin, Vec3 motion, int pingOfShooter,
+        float gunPenetration, float bulletHitBoxSize, BulletType type)
     {
-        //Create a list for all bullet hits
+        // Create a list for all bullet hits
         List<BulletHit> hits = new ArrayList<>();
 
         final Vec3 destination = origin.add(motion);
@@ -58,10 +59,8 @@ public class Raytracer
         // by the largest hull radius instead of widening the search for every entity.
         AABB segment = new AABB(origin, destination);
         AABB search = segment.inflate(Math.min(motion.length(), ENTITY_SEARCH_MARGIN));
-        List<Entity> candidates = new ArrayList<>(ModUtils.queryEntities(level, bullet, search,
-            entity -> !(entity instanceof Driveable)));
-        candidates.addAll(ModUtils.queryEntities(level, bullet,
-            segment.inflate(DriveableType.getMaxBulletDetectionRadius()), Driveable.class, null));
+        List<Entity> candidates = new ArrayList<>(ModUtils.queryEntities(level, bullet, search, entity -> !(entity instanceof Driveable)));
+        candidates.addAll(ModUtils.queryEntities(level, bullet, segment.inflate(DriveableType.getMaxBulletDetectionRadius()), Driveable.class, null));
 
         for (Entity entity : candidates)
         {
@@ -78,10 +77,10 @@ public class Raytracer
 
         hits = raytraceBlock(level, origin, Vec3.ZERO, motion, motion.normalize().scale(0.5), hits, gunPenetration, null, type);
 
-        //We hit something
+        // We hit something
         if (!hits.isEmpty())
         {
-            //Sort the hits according to the intercept position
+            // Sort the hits according to the intercept position
             Collections.sort(hits);
         }
 
@@ -169,7 +168,8 @@ public class Raytracer
         hits.addAll(altStepHits);
     }
 
-    private static void performNormalPlayerHitboxRaytrace(Player player, Vec3 origin, Vec3 motion, double hitBoxSize, List<BulletHit> hits) {
+    private static void performNormalPlayerHitboxRaytrace(Player player, Vec3 origin, Vec3 motion, double hitBoxSize, List<BulletHit> hits)
+    {
 
         // Expand player's AABB
         AABB expanded = player.getBoundingBox().inflate(hitBoxSize, hitBoxSize, hitBoxSize);
@@ -219,8 +219,7 @@ public class Raytracer
         if (entity instanceof AAGun gun)
         {
             Vec3 impact = gun.clipCollisionBox(start, start.add(motion), bulletHitBoxSize);
-            return impact == null ? null : new EntityHit(gun,
-                (float) computeHitLambda(impact.subtract(start), motion), impact);
+            return impact == null ? null : new EntityHit(gun, (float) computeHitLambda(impact.subtract(start), motion), impact);
         }
         final double len2 = motion.lengthSqr();
         final boolean noMotion = len2 <= 1e-9;
@@ -302,9 +301,10 @@ public class Raytracer
         return cand.compareTo(best) <= 0;
     }
 
-    public static List<BulletHit> raytraceBlock(Level level, Vec3 posVec, Vec3 previousHit, Vec3 motion, Vec3 direction, List<BulletHit> hits, float penetration, @Nullable BlockPos oldPos, BulletType type)
+    public static List<BulletHit> raytraceBlock(Level level, Vec3 posVec, Vec3 previousHit, Vec3 motion, Vec3 direction, List<BulletHit> hits, float penetration, @Nullable BlockPos oldPos,
+        BulletType type)
     {
-        //Ray trace the bullet by comparing its next position to its current position
+        // Ray trace the bullet by comparing its next position to its current position
         Vec3 nextPosVec = posVec.add(motion);
 
         BlockHitResult hit = level.clip(new ClipContext(posVec, nextPosVec, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (Entity) null));
@@ -317,9 +317,9 @@ public class Raytracer
 
             if (!pos.equals(oldPos))
             {
-                //Calculate the lambda value of the intercept
+                // Calculate the lambda value of the intercept
                 float lambda = 1;
-                //Try each co-ordinate one at a time.
+                // Try each co-ordinate one at a time.
                 if (motion.x != 0)
                     lambda = (float) (hitVec.x / motion.x);
                 else if (motion.y != 0)
@@ -347,13 +347,17 @@ public class Raytracer
      * and the end position is that eye position extended by {@code dist} blocks along the current
      * view vector. The result is a {@link BlockHitResult} describing the first block hit (or a miss).
      *
-     * @param entity       the living entity from whose perspective the ray trace is performed
-     * @param partialTicks interpolation factor between the previous and current tick (typically render partial ticks);
-     *                     used to smoothly interpolate the eye position and view direction
-     * @param dist         maximum distance, in blocks, that the ray trace will extend from the entity's eyes
-     * @param interact     whether the ray trace should interact with fluids; if {@code true}, the ray
-     *                     can hit fluids ({@link ClipContext.Fluid#ANY}), otherwise fluids are ignored
-     *                     ({@link ClipContext.Fluid#NONE})
+     * @param entity
+     *            the living entity from whose perspective the ray trace is performed
+     * @param partialTicks
+     *            interpolation factor between the previous and current tick (typically render partial ticks);
+     *            used to smoothly interpolate the eye position and view direction
+     * @param dist
+     *            maximum distance, in blocks, that the ray trace will extend from the entity's eyes
+     * @param interact
+     *            whether the ray trace should interact with fluids; if {@code true}, the ray
+     *            can hit fluids ({@link ClipContext.Fluid#ANY}), otherwise fluids are ignored
+     *            ({@link ClipContext.Fluid#NONE})
      * @return the {@link BlockHitResult} for the first block intersected by the ray; if no block is hit,
      *         the result will have type {@link net.minecraft.world.phys.HitResult.Type#MISS}
      */

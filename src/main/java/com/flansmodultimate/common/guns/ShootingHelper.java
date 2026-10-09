@@ -5,39 +5,21 @@ import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.entity.Bullet;
-import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.Grenade;
-import com.flansmodultimate.common.entity.Seat;
-import com.flansmodultimate.common.entity.Shootable;
-import com.flansmodultimate.common.entity.ShootableFactory;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.raytracing.Raytracer;
-import com.flansmodultimate.common.raytracing.hits.BlockHit;
-import com.flansmodultimate.common.raytracing.hits.BulletHit;
-import com.flansmodultimate.common.raytracing.hits.DriveableHit;
-import com.flansmodultimate.common.raytracing.hits.EntityHit;
-import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.raytracing.hits.*;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketBlockHitEffect;
-import com.flansmodultimate.network.client.PacketBulletTrail;
-import com.flansmodultimate.network.client.PacketExplodeParticles;
-import com.flansmodultimate.network.client.PacketFlak;
-import com.flansmodultimate.network.client.PacketHitMarker;
-import com.flansmodultimate.network.client.PacketParticle;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.*;
+import com.flansmodultimate.network.client.gun.PacketHitMarker;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
@@ -59,13 +41,9 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
@@ -83,38 +61,38 @@ public final class ShootingHelper
     public static final double KINETIC_DAMAGE_REFERENCE_MASS_GRAMS = 9D;
 
     /** Call this to fire bullets or grenades from a living entity holding a gun item (Server side) */
-    public static void fireGun(@NotNull Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack, @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull ShootingHandler handler)
+    public static void fireGun(@NotNull Level level, @NotNull LivingEntity shooter, @NotNull GunType gunType, @NotNull ShootableType shootableType, @NotNull ItemStack gunStack,
+        @NotNull ItemStack shootableStack, @Nullable ItemStack otherHandStack, @NotNull ShootingHandler handler)
     {
-        FireableGun fireableGun = new FireableGun(gunType, gunStack, shooter, otherHandStack,
-            ModUtils.getEnumMovement(shooter), !shooter.onGround());
+        FireableGun fireableGun = new FireableGun(gunType, gunStack, shooter, otherHandStack, ModUtils.getEnumMovement(shooter), !shooter.onGround());
 
-        fireWeapon(level, fireableGun, shootableType, gunType.getNumBullets(gunStack, shootableType),
-            shooter.getEyePosition(0.0F), shooter.getLookAngle(), shooter, shooter,
+        fireWeapon(level, fireableGun, shootableType, gunType.getNumBullets(gunStack, shootableType), shooter.getEyePosition(0.0F), shooter.getLookAngle(), shooter, shooter,
             ShootableItem.getRoundsFired(shootableStack), handler);
     }
 
     /** Call this to fire bullets or grenades from a living entity controlling a deployed gun (Server side) */
-    public static void fireGun(@NotNull Level level, @Nullable LivingEntity shooter, @NotNull DeployedGun deployedGun, @NotNull ShootableType shootableType, @NotNull ItemStack shootableStack, @NotNull ShootingHandler handler)
+    public static void fireGun(@NotNull Level level, @Nullable LivingEntity shooter, @NotNull DeployedGun deployedGun, @NotNull ShootableType shootableType, @NotNull ItemStack shootableStack,
+        @NotNull ShootingHandler handler)
     {
         GunType gunType = deployedGun.getConfigType();
 
-        fireWeapon(level, new FireableGun(gunType), shootableType, gunType.getNumBullets(null, shootableType),
-            deployedGun.getShootingOrigin(), deployedGun.getShootingDirection(), deployedGun, shooter,
-            ShootableItem.getRoundsFired(shootableStack), handler);
+        fireWeapon(level, new FireableGun(gunType), shootableType, gunType.getNumBullets(null, shootableType), deployedGun.getShootingOrigin(), deployedGun.getShootingDirection(), deployedGun,
+            shooter, ShootableItem.getRoundsFired(shootableStack), handler);
     }
 
     /**
      * Call this to fire bullets or grenades from any other weapon (Server side).
      *
-     * <p>This is the shared entry point: it decides how many projectiles leave the barrel and hands
+     * <p>
+     * This is the shared entry point: it decides how many projectiles leave the barrel and hands
      * each of them to {@link ShootableFactory}, so a mounted gun or a weapon bank fires exactly what
      * the same weapon fires in a player's hands.
      *
-     * @param shot position in the magazine, which selects the round of a belt
+     * @param shot
+     *            position in the magazine, which selects the round of a belt
      */
-    public static void fireWeapon(@NotNull Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType shootableType,
-                                  int numShots, Vec3 shootingOrigin, Vec3 shootingDirection, @Nullable Entity shooter,
-                                  @Nullable LivingEntity attacker, int shot, @NotNull ShootingHandler handler)
+    public static void fireWeapon(@NotNull Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType shootableType, int numShots, Vec3 shootingOrigin, Vec3 shootingDirection,
+        @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot, @NotNull ShootingHandler handler)
     {
         numShots = Math.max(1, numShots);
         // The one place a weapon and its ammunition meet on this path, so the
@@ -123,14 +101,12 @@ public final class ShootingHelper
 
         if (shootableType instanceof BulletType bulletType)
         {
-            fireBullets(level, new FiredShot(fireableGun, bulletType, shooter, attacker, shot), numShots,
-                shootingOrigin, shootingDirection);
+            fireBullets(level, new FiredShot(fireableGun, bulletType, shooter, attacker, shot), numShots, shootingOrigin, shootingDirection);
         }
         else
         {
             for (int i = 0; i < numShots; i++)
-                level.addFreshEntity(ShootableFactory.createShootable(level, fireableGun, shootableType,
-                    shootingOrigin, shootingDirection, shooter, attacker, shot));
+                level.addFreshEntity(ShootableFactory.createShootable(level, fireableGun, shootableType, shootingOrigin, shootingDirection, shooter, attacker, shot));
         }
 
         handler.onShoot();
@@ -141,18 +117,15 @@ public final class ShootingHelper
      * ordinary shot, a bomb is always an entity and inherits the carrier's world
      * velocity before its configured gravity starts changing its motion.
      */
-    public static void dropWeapon(@NotNull Level level, @NotNull FireableGun fireableGun,
-                                  @NotNull ShootableType shootableType, int numShots, Vec3 origin,
-                                  Vec3 direction, @Nullable Entity shooter, @Nullable LivingEntity attacker,
-                                  int shot, @NotNull ShootingHandler handler)
+    public static void dropWeapon(@NotNull Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType shootableType, int numShots, Vec3 origin, Vec3 direction, @Nullable Entity shooter,
+        @Nullable LivingEntity attacker, int shot, @NotNull ShootingHandler handler)
     {
         numShots = Math.max(1, numShots);
         fireableGun.applyAmmunition(shootableType);
         Vec3 releaseVelocity = shooter == null ? Vec3.ZERO : shooter.getDeltaMovement();
         for (int i = 0; i < numShots; i++)
         {
-            Shootable bomb = ShootableFactory.createShootable(level, fireableGun, shootableType,
-                origin, direction, shooter, attacker, shot);
+            Shootable bomb = ShootableFactory.createShootable(level, fireableGun, shootableType, origin, direction, shooter, attacker, shot);
             bomb.setDeltaMovement(releaseVelocity);
             level.addFreshEntity(bomb);
         }
@@ -169,7 +142,8 @@ public final class ShootingHelper
     /**
      * Spawns one shot per projectile the weapon fires at once.
      *
-     * <p>A weapon is hitscan only when nothing in the chain declares a muzzle velocity: not the
+     * <p>
+     * A weapon is hitscan only when nothing in the chain declares a muzzle velocity: not the
      * ammunition, not a per-ammunition override and not the weapon itself. Anything with a velocity
      * flies as a {@link Bullet} entity at that velocity.
      */
@@ -186,7 +160,8 @@ public final class ShootingHelper
         }
     }
 
-    public record HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot) {}
+    public record HitData(float penetratingPower, float lastHitPenAmount, boolean lastHitHeadshot)
+    {}
 
     public static HitData onHit(Level level, FiredShot shot, BulletHit bulletHit, Vec3 hit, Vec3 shootingMotion, HitData hitData, @Nullable Bullet bullet)
     {
@@ -207,35 +182,33 @@ public final class ShootingHelper
             AtomicBoolean isFriendly = new AtomicBoolean(false);
             driveableHit.getDriveable().setLastAtkEntity(owner);
 
-            playerOwner.ifPresent(serverPlayer ->
-                FlansMod.teamsManager.getCurrentRound().ifPresent(round -> {
-                    Seat[] seats = driveableHit.getDriveable().getSeats();
-                    if (seats == null)
-                        return;
+            playerOwner.ifPresent(serverPlayer -> FlansMod.teamsManager.getCurrentRound().ifPresent(round ->
+            {
+                Seat[] seats = driveableHit.getDriveable().getSeats();
+                if (seats == null)
+                    return;
 
-                    for (Seat seat : seats)
+                for (Seat seat : seats)
+                {
+                    if (seat == null)
+                        continue;
+                    if (seat.getRiddenByEntity() instanceof Player controllingPlayer)
                     {
-                        if (seat == null)
-                            continue;
-                        if (seat.getRiddenByEntity() instanceof Player controllingPlayer)
-                        {
-                            PlayerData dataDriver = PlayerData.getInstance(controllingPlayer);
-                            PlayerData dataAttacker = PlayerData.getInstance(serverPlayer);
-                            Team driverTeam = dataDriver.getTeam();
-                            Team attackerTeam = dataAttacker.getTeam();
-                            if (driverTeam != null && driverTeam.equals(attackerTeam))
-                                isFriendly.set(true);
-                        }
+                        PlayerData dataDriver = PlayerData.getInstance(controllingPlayer);
+                        PlayerData dataAttacker = PlayerData.getInstance(serverPlayer);
+                        Team driverTeam = dataDriver.getTeam();
+                        Team attackerTeam = dataAttacker.getTeam();
+                        if (driverTeam != null && driverTeam.equals(attackerTeam))
+                            isFriendly.set(true);
                     }
                 }
-            ));
+            }));
 
             if (isFriendly.get())
                 penetratingPower = 0F;
             else
             {
-                HitData driveableHitData = driveableHit.getDriveable().bulletHit(
-                    shot, bulletType, driveableHit, hitData);
+                HitData driveableHitData = driveableHit.getDriveable().bulletHit(shot, bulletType, driveableHit, hitData);
                 penetratingPower = driveableHitData.penetratingPower();
                 lastHitPenAmount = driveableHitData.lastHitPenAmount();
                 lastHitHeadshot = driveableHitData.lastHitHeadshot();
@@ -280,7 +253,8 @@ public final class ShootingHelper
 
                 if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
                 {
-                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0), entityHit.getEntity().position(), ModCommonConfig.entityHitParticleRange(), level.dimension());
+                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0),
+                        entityHit.getEntity().position(), ModCommonConfig.entityHitParticleRange(), level.dimension());
                     bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
                     // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
                     living.invulnerableTime = living.hurtDuration / 2;
@@ -308,7 +282,7 @@ public final class ShootingHelper
         if (penetratingPower <= 0F || (bulletType.isExplodeOnImpact()))
             penetratingPower = -1F;
 
-        //Send hit marker, if player is present
+        // Send hit marker, if player is present
         if (!level.isClientSide && showHitMarker && playerOwner.isPresent())
             PacketHandler.sendTo(new PacketHitMarker(lastHitHeadshot, lastHitPenAmount, false), playerOwner.get());
 
@@ -346,7 +320,7 @@ public final class ShootingHelper
         // Impact sound
         playImpactSound(level, pos, state, shot.getBulletType());
 
-        //Particles
+        // Particles
         spawnBlockHitParticles(level, hitResult, shootingMotion, shot.getBulletType(), bullet);
 
         // Bounce / ricochet or stop
@@ -423,7 +397,8 @@ public final class ShootingHelper
 
         Vec3 hitVec = hitResult.getLocation();
         Direction direction = hitResult.getDirection();
-        PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionStats(bullet).explosionRadius(), type.getBlockHitFXScale(), bullet != null ? bullet.getBbWidth() : Shootable.DEFAULT_HITBOX_SIZE), hitVec, ModCommonConfig.blockHitParticleRange(), level.dimension());
+        PacketHandler.sendToAllAround(new PacketBlockHitEffect(hitVec, shootingMotion, pos, direction, type.getExplosionStats(bullet).explosionRadius(), type.getBlockHitFXScale(),
+            bullet != null ? bullet.getBbWidth() : Shootable.DEFAULT_HITBOX_SIZE), hitVec, ModCommonConfig.blockHitParticleRange(), level.dimension());
     }
 
     public static float getDamage(Entity entity, @Nullable Shootable shootable, @Nullable FiredShot firedShot)
@@ -449,10 +424,7 @@ public final class ShootingHelper
             return getKineticDamage(type.getMass(), shootable.getDeltaMovement().length());
 
         // Bombs use their actual entity velocity.
-        if (shootable instanceof Bullet
-            && type instanceof BulletType bulletType
-            && bulletType.getWeaponType() == EnumWeaponType.BOMB
-            && projectileMass > 0F)
+        if (shootable instanceof Bullet && type instanceof BulletType bulletType && bulletType.getWeaponType() == EnumWeaponType.BOMB && projectileMass > 0F)
         {
             return getKineticDamage(projectileMass, shootable.getDeltaMovement().length());
         }
@@ -488,8 +460,7 @@ public final class ShootingHelper
      * Per-round or ammunition velocity takes precedence over the firing weapon, and {@link BulletType} supplies
      * its deterministic default when neither is authored.
      */
-    public static float getMuzzleVelocity(@Nullable BulletType bulletType, int shotsFired,
-                                          @Nullable FireableGun fireableGun)
+    public static float getMuzzleVelocity(@Nullable BulletType bulletType, int shotsFired, @Nullable FireableGun fireableGun)
     {
         if (bulletType == null)
             return 0F;
@@ -501,41 +472,42 @@ public final class ShootingHelper
     /**
      * Canonical kinetic damage formula shared by ordinary entities and normalized-health vehicles.
      *
-     * <p>The legacy square-root-energy term is multiplied by a sixth-root mass progression. This preserves the
+     * <p>
+     * The legacy square-root-energy term is multiplied by a sixth-root mass progression. This preserves the
      * established 9 g infantry-round baseline while making damage proportional to {@code mass^(2/3)} at a fixed
-     * velocity, matching the geometric exponent used by normalized vehicle health.</p>
+     * velocity, matching the geometric exponent used by normalized vehicle health.
+     * </p>
      */
     public static float getKineticDamage(float projectileMassGrams, double velocityBlocksPerTick)
     {
-        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F
-            || !Double.isFinite(velocityBlocksPerTick) || velocityBlocksPerTick <= 0D)
+        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F || !Double.isFinite(velocityBlocksPerTick) || velocityBlocksPerTick <= 0D)
             return 0F;
-        double reference = ModCommonConfig.get() == null
-            ? 5D : ModCommonConfig.get().newDamageSystemDamageReference();
+        double reference = ModCommonConfig.get() == null ? 5D : ModCommonConfig.get().newDamageSystemDamageReference();
         double massProgression = Math.pow(projectileMassGrams / KINETIC_DAMAGE_REFERENCE_MASS_GRAMS, 1D / 6D);
-        double damage = reference * 0.001D * Math.sqrt(projectileMassGrams)
-            * massProgression * velocityBlocksPerTick * 20D;
+        double damage = reference * 0.001D * Math.sqrt(projectileMassGrams) * massProgression * velocityBlocksPerTick * 20D;
         return Double.isFinite(damage) && damage > 0D ? (float) Math.min(damage, Float.MAX_VALUE) : 0F;
     }
 
     /**
      * Canonical kinetic penetration formula, the counterpart of {@link #getKineticDamage} for penetrating power.
      *
-     * <p>Penetrating power is taken as proportional to the cube root of the muzzle kinetic energy. Energy itself
+     * <p>
+     * Penetrating power is taken as proportional to the cube root of the muzzle kinetic energy. Energy itself
      * spans about four orders of magnitude between a pistol round and a tank shell, which would be unusable as a
      * penetration budget; the cube root compresses that into a range where one point of power is worth roughly one
      * unarmoured player, so a pistol round stops in the first target while an anti-materiel round passes through
      * two and a cannon shell through a dozen. The scale is set by
      * {@link ModCommonConfig#kineticPenetrationReference()}.
      *
-     * @param projectileMassGrams   projectile mass in grams
-     * @param velocityBlocksPerTick projectile velocity in blocks per tick (one block = one metre, twenty ticks = one second)
+     * @param projectileMassGrams
+     *            projectile mass in grams
+     * @param velocityBlocksPerTick
+     *            projectile velocity in blocks per tick (one block = one metre, twenty ticks = one second)
      * @return the derived penetrating power, or the legacy default when the inputs are unusable
      */
     public static float getKineticPenetratingPower(float projectileMassGrams, double velocityBlocksPerTick)
     {
-        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F
-            || !Double.isFinite(velocityBlocksPerTick) || velocityBlocksPerTick <= 0D)
+        if (!Float.isFinite(projectileMassGrams) || projectileMassGrams <= 0F || !Double.isFinite(velocityBlocksPerTick) || velocityBlocksPerTick <= 0D)
             return BulletType.DEFAULT_PENETRATING_POWER;
 
         double velocityMetersPerSecond = velocityBlocksPerTick * 20D;
@@ -546,7 +518,8 @@ public final class ShootingHelper
 
     public static float getDamageAffectedByPenetration(float gunDamage, BulletType type, @Nullable Bullet bullet)
     {
-        if (bullet == null || (type.getPlayerPenetrationEffectOnDamage() == 0F && type.getEntityPenetrationEffectOnDamage() == 0F && type.getBlockPenetrationEffectOnDamage() == 0F && type.getPenetrationDecayEffectOnDamage() == 0F))
+        if (bullet == null || (type.getPlayerPenetrationEffectOnDamage() == 0F && type.getEntityPenetrationEffectOnDamage() == 0F && type.getBlockPenetrationEffectOnDamage() == 0F
+            && type.getPenetrationDecayEffectOnDamage() == 0F))
             return gunDamage;
 
         // The power this very bullet was fired with, which for kinetic ammunition depends on its round and gun
@@ -688,7 +661,8 @@ public final class ShootingHelper
     private static void spawnExplosionParticles(Level level, ShootableType type, Vec3 position)
     {
         if (type.getExplodeParticles() > 0)
-            PacketHandler.sendToAllAround(new PacketExplodeParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position, ShootableType.EXPLODE_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketExplodeParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position, ShootableType.EXPLODE_PARTICLES_RANGE,
+                level.dimension());
     }
 
     private static void spawnFlakParticles(Level level, BulletType type, Vec3 position)
@@ -720,7 +694,7 @@ public final class ShootingHelper
 
     /**
      * @return the penetrating power a shot starts with, resolved for the round being fired and for the speed the
-     * firing weapon actually gives it
+     *         firing weapon actually gives it
      */
     public static float getInitialPenetratingPower(FiredShot shot)
     {
@@ -732,7 +706,8 @@ public final class ShootingHelper
         Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getSpreadPattern());
 
         HitData hitData = new HitData(getInitialPenetratingPower(shot), 0F, false);
-        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0, hitData.penetratingPower(), 0F, shot.getBulletType());
+        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0, hitData.penetratingPower(), 0F,
+            shot.getBulletType());
         Vec3 previousHitPos = shootingOrigin;
         Vec3 finalhit = null;
 
@@ -764,7 +739,8 @@ public final class ShootingHelper
             finalhit = shootingOrigin.add(shootingDirection);
         }
 
-        PacketHandler.sendToAllAround(new PacketBulletTrail(shootingOrigin, finalhit, 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), shootingOrigin.x, shootingOrigin.y, shootingOrigin.z, 500F, level.dimension());
+        PacketHandler.sendToAllAround(new PacketBulletTrail(shootingOrigin, finalhit, 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), shootingOrigin.x, shootingOrigin.y, shootingOrigin.z,
+            500F, level.dimension());
     }
 
     public static Vec3 calculateShootingMotionVector(RandomSource random, Vec3 direction, float spread, float speed, EnumSpreadPattern pattern)
@@ -786,38 +762,33 @@ public final class ShootingHelper
 
         switch (pattern)
         {
-            case CIRCLE ->
-            {
+            case CIRCLE -> {
                 double x = Mth.clamp(random.nextGaussian(), -3.0, 3.0) * angularSpread;
                 double y = Mth.clamp(random.nextGaussian(), -3.0, 3.0) * angularSpread;
 
                 Vec3 offset = xAxis.scale(x).add(yAxis.scale(y));
                 perturbedDir = direction.add(offset);
             }
-            case CUBE ->
-            {
+            case CUBE -> {
                 double x = random.nextGaussian() * angularSpread;
                 double y = random.nextGaussian() * angularSpread;
 
                 Vec3 offset = xAxis.scale(x).add(yAxis.scale(y));
                 perturbedDir = direction.add(offset);
             }
-            case HORIZONTAL ->
-            {
+            case HORIZONTAL -> {
                 double x = (random.nextDouble() - random.nextDouble()) * angularSpread;
 
                 Vec3 offset = xAxis.scale(x);
                 perturbedDir = direction.add(offset);
             }
-            case VERTICAL ->
-            {
+            case VERTICAL -> {
                 double y = (random.nextDouble() - random.nextDouble()) * angularSpread;
 
                 Vec3 offset = yAxis.scale(y);
                 perturbedDir = direction.add(offset);
             }
-            case TRIANGLE ->
-            {
+            case TRIANGLE -> {
                 double x = (random.nextDouble() - random.nextDouble()) * angularSpread;
                 double y = (random.nextDouble() - random.nextDouble()) * angularSpread;
 

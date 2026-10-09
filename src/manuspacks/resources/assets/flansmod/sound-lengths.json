@@ -273,13 +273,53 @@
     },
     "lightsaber_idle.ogg": {
       "key": "lightsaber_idle",
-      "size": 18378,
-      "ticks": 14
+      "size": 104397,
+      "ticks": 265
     },
-    "lightsaber_swing.ogg": {
-      "key": "lightsaber_swing",
-      "size": 8109,
+    "lightsaber_swing1.ogg": {
+      "key": "lightsaber_swing1",
+      "size": 9747,
+      "ticks": 12
+    },
+    "lightsaber_swing2.ogg": {
+      "key": "lightsaber_swing2",
+      "size": 12502,
+      "ticks": 17
+    },
+    "lightsaber_swing3.ogg": {
+      "key": "lightsaber_swing3",
+      "size": 8897,
+      "ticks": 10
+    },
+    "lightsaber_swing4.ogg": {
+      "key": "lightsaber_swing4",
+      "size": 11504,
+      "ticks": 15
+    },
+    "lightsaber_swing5.ogg": {
+      "key": "lightsaber_swing5",
+      "size": 5387,
       "ticks": 11
+    },
+    "lightsaber_swing6.ogg": {
+      "key": "lightsaber_swing6",
+      "size": 6787,
+      "ticks": 8
+    },
+    "lightsaber_swing7.ogg": {
+      "key": "lightsaber_swing7",
+      "size": 12923,
+      "ticks": 15
+    },
+    "lightsaber_swing8.ogg": {
+      "key": "lightsaber_swing8",
+      "size": 13438,
+      "ticks": 19
+    },
+    "lightsaber_swing9.ogg": {
+      "key": "lightsaber_swing9",
+      "size": 11704,
+      "ticks": 15
     },
     "lkw_lauf.ogg": {
       "key": "lkw_lauf",

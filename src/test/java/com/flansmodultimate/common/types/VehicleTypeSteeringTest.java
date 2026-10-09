@@ -16,8 +16,7 @@ class VehicleTypeSteeringTest
     @Test
     void categoryRateAppliesOverAnExistingLegacyDefinition()
     {
-        TypeFile file = new TypeFile("steering", EnumType.VEHICLE,
-            new ContentPack("test", Path.of("build", "test-packs", "test")),
+        TypeFile file = new TypeFile("steering", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "test")),
             List.of("Driver 0 0 0", "Tank true", "TurnLeftSpeed 0.35", "TurnRightSpeed 0.35"));
         Category category = new Category(EnumType.VEHICLE, "Test tank");
         category.setProperties(Map.of("RealTurnRateDegPerSec", List.of("12")));
@@ -28,6 +27,7 @@ class VehicleTypeSteeringTest
         assertEquals(12F, type.getRealTurnRateDegPerSec());
         assertEquals(0.35F, type.getTurnLeftModifier());
     }
+
     @Test
     void realRateOverridesLegacySteeringWithoutRequiringAPropulsionProfile()
     {
@@ -45,8 +45,7 @@ class VehicleTypeSteeringTest
     void rollingRateRequiresARealReferenceSpeed()
     {
         assertFalse(vehicle("RealTurnRateDegPerSec 12").usesRealTurnRate(false, false, false));
-        assertTrue(vehicle("RealTurnRateDegPerSec 12", "RealMaxSpeedKmh 38")
-            .usesRealTurnRate(false, false, false));
+        assertTrue(vehicle("RealTurnRateDegPerSec 12", "RealMaxSpeedKmh 38").usesRealTurnRate(false, false, false));
     }
 
     @Test
@@ -65,8 +64,7 @@ class VehicleTypeSteeringTest
         List<String> definition = new ArrayList<>(List.of("Driver 0 0 0"));
         definition.addAll(List.of(lines));
         VehicleType type = new VehicleType();
-        type.read(new TypeFile("steering", EnumType.VEHICLE,
-            new ContentPack("test", Path.of("build", "test-packs", "test")), definition));
+        type.read(new TypeFile("steering", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "test")), definition));
         return type;
     }
 }

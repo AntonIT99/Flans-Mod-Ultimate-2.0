@@ -26,10 +26,13 @@ final class GeneratedTextureFiles
     private static final int VERSION = 2;
     private static final String MANIFEST = ".flansmod_generated_textures.json";
     private static final Gson GSON = new Gson();
-    private record Copy(String source, ContentFileCache.Stamp input, ContentFileCache.Stamp output, boolean owned, String digest) {}
-    private record Manifest(int version, Map<String, Copy> files) {}
+    private record Copy(String source, ContentFileCache.Stamp input, ContentFileCache.Stamp output, boolean owned, String digest)
+    {}
+    private record Manifest(int version, Map<String, Copy> files)
+    {}
 
-    private GeneratedTextureFiles() {}
+    private GeneratedTextureFiles()
+    {}
 
     static void copy(Path source, Path destination)
     {
@@ -47,20 +50,19 @@ final class GeneratedTextureFiles
             {
                 String desired = targetName(input, aliases, armor);
                 String target = desired;
-                for (int suffix = 1; ; suffix++)
+                for (int suffix = 1;; suffix++)
                 {
                     Path output = destination.resolve(target);
                     Copy old = previous.files().get(target);
                     boolean owned = stillOwned(output, old);
-                    if (!planned.contains(target) && (owned || !Files.exists(output)
-                        || !FileUtils.isDifferentFileContent(input, output, true)))
+                    if (!planned.contains(target) && (owned || !Files.exists(output) || !FileUtils.isDifferentFileContent(input, output, true)))
                     {
                         boolean created = !Files.exists(output);
                         Files.createDirectories(output.getParent());
                         if (created || (owned && FileUtils.isDifferentFileContent(input, output, true)))
                             FileUtils.copyAsPng(input, output);
-                        generated.put(target, new Copy(input.getFileName().toString(), ContentFileCache.stamp(input),
-                            ContentFileCache.stamp(output), created || owned, created || owned ? ContentFileCache.digest(output) : null));
+                        generated.put(target, new Copy(input.getFileName().toString(), ContentFileCache.stamp(input), ContentFileCache.stamp(output), created || owned,
+                            created || owned ? ContentFileCache.digest(output) : null));
                         planned.add(target);
                         break;
                     }
@@ -119,8 +121,7 @@ final class GeneratedTextureFiles
 
     private static boolean stillOwned(Path output, Copy copy) throws IOException
     {
-        return copy != null && copy.owned() && Files.isRegularFile(output)
-            && copy.digest() != null && ContentFileCache.digest(output).equals(copy.digest());
+        return copy != null && copy.owned() && Files.isRegularFile(output) && copy.digest() != null && ContentFileCache.digest(output).equals(copy.digest());
     }
 
     private static List<Path> sources(Path directory) throws IOException
@@ -129,8 +130,7 @@ final class GeneratedTextureFiles
             return List.of();
         try (Stream<Path> files = Files.list(directory))
         {
-            return files.filter(Files::isRegularFile)
-                .filter(file -> file.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".png"))
+            return files.filter(Files::isRegularFile).filter(file -> file.getFileName().toString().toLowerCase(java.util.Locale.ROOT).endsWith(".png"))
                 .filter(file -> !FileUtils.isMacOsMetadataPath(file.getFileName().toString())).sorted().toList();
         }
     }
@@ -160,8 +160,7 @@ final class GeneratedTextureFiles
             if (manifest != null && manifest.version() == VERSION && manifest.files() != null)
             {
                 for (String name : manifest.files().keySet())
-                    if (Path.of(name).isAbsolute() || !Path.of(name).getFileName().toString().equals(name)
-                        || name.equals(".") || name.equals(".."))
+                    if (Path.of(name).isAbsolute() || !Path.of(name).getFileName().toString().equals(name) || name.equals(".") || name.equals(".."))
                         return new Manifest(1, Map.of());
                 return manifest;
             }

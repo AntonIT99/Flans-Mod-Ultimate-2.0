@@ -42,9 +42,11 @@ import java.util.EnumSet;
 /**
  * An armed, hostile wasteland survivor, as the 1.12.2 {@code EntitySurvivor}.
  *
- * <p>The legacy survivor was a skeleton underneath: it hunted players and iron golems, and on top
+ * <p>
+ * The legacy survivor was a skeleton underneath: it hunted players and iron golems, and on top
  * of that animals and skull drones, and shot at them with a semi-automatic gun it reloaded from
- * two to five spare magazines. It never targets the Skull Boss, which in turn ignores AI gunfire.</p>
+ * two to five spare magazines. It never targets the Skull Boss, which in turn ignores AI gunfire.
+ * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class SurvivorEntity extends FlanMonster
@@ -63,11 +65,7 @@ public class SurvivorEntity extends FlanMonster
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return FlanMonster.createMonsterAttributes()
-            .add(Attributes.MAX_HEALTH, 20.0D)
-            .add(Attributes.MOVEMENT_SPEED, 0.25D)
-            .add(Attributes.FOLLOW_RANGE, 80.0D)
-            .add(Attributes.ATTACK_DAMAGE, 2.0D);
+        return FlanMonster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 20.0D).add(Attributes.MOVEMENT_SPEED, 0.25D).add(Attributes.FOLLOW_RANGE, 80.0D).add(Attributes.ATTACK_DAMAGE, 2.0D);
     }
 
     @Override
@@ -97,7 +95,8 @@ public class SurvivorEntity extends FlanMonster
 
     @Override
     @Nullable
-    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData, @Nullable CompoundTag dataTag)
+    protected SpawnGroupData finalizeEntitySpawn(@NotNull ServerLevelAccessor level, @NotNull DifficultyInstance difficulty, @NotNull MobSpawnType spawnType, @Nullable SpawnGroupData spawnData,
+        @Nullable CompoundTag dataTag)
     {
         SpawnGroupData result = super.finalizeEntitySpawn(level, difficulty, spawnType, spawnData, dataTag);
         equipDefault(level.getRandom());
@@ -110,7 +109,7 @@ public class SurvivorEntity extends FlanMonster
         ApocalypseLoot.dressMob(this, random);
         gun.stockReserve(random, random.nextInt(4) + 2);
         setDropChance(EquipmentSlot.MAINHAND, 1.0F);
-        for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})
             setDropChance(slot, 0.5F);
     }
 

@@ -35,12 +35,7 @@ public final class EnchantmentModule
     static final ResourceKey<Enchantment> sharpshooterEnchant = key("sharpshooter");
     static final ResourceKey<Enchantment> juggernautEnchant = key("juggernaut");
 
-    private static final EquipmentSlot[] ARMOR_SLOTS = {
-        EquipmentSlot.HEAD,
-        EquipmentSlot.CHEST,
-        EquipmentSlot.LEGS,
-        EquipmentSlot.FEET
-    };
+    private static final EquipmentSlot[] ARMOR_SLOTS = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
     private static ResourceKey<Enchantment> key(String name)
     {
@@ -168,11 +163,7 @@ public final class EnchantmentModule
     {
         if (stack.isEmpty())
             return 0;
-        return stack.getTagEnchantments().entrySet().stream()
-            .filter(entry -> entry.getKey().is(enchantment))
-            .mapToInt(entry -> entry.getIntValue())
-            .findFirst()
-            .orElse(0);
+        return stack.getTagEnchantments().entrySet().stream().filter(entry -> entry.getKey().is(enchantment)).mapToInt(entry -> entry.getIntValue()).findFirst().orElse(0);
     }
 
     private static void damageEquipment(ItemStack stack, @Nullable LivingEntity entity, EquipmentSlot slot, int amount)

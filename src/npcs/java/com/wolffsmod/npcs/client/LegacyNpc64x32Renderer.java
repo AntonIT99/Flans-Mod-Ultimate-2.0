@@ -18,8 +18,8 @@ public final class LegacyNpc64x32Renderer extends RenderCustomNpc
 
         // Custom NPCs keeps a second copy of the layer list when it borrows another entity model.
         LegacyHeadwearLayer64x32 headwear = new LegacyHeadwearLayer64x32(this);
-        replaceHeadwear(this.layers, headwear);
-        replaceHeadwear(this.npclayers, headwear);
+        replaceHeadwear(layers, headwear);
+        replaceHeadwear(npclayers, headwear);
     }
 
     private static void replaceHeadwear(List layers, LegacyHeadwearLayer64x32 replacement)

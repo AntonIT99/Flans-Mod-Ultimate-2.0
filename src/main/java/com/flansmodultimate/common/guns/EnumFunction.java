@@ -4,11 +4,7 @@ import java.util.Locale;
 
 public enum EnumFunction
 {
-    SHOOT,
-    ZOOM,
-    ADS_ZOOM,
-    MELEE,
-    CUSTOM_MELEE,
+    SHOOT, ZOOM, ADS_ZOOM, MELEE, CUSTOM_MELEE,
     /** Hold to charge and release to throw the weapon itself, like a trident. Secondary function only. */
     THROW;
 

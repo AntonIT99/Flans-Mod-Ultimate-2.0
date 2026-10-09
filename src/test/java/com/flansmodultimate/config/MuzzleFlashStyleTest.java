@@ -3,7 +3,7 @@ package com.flansmodultimate.config;
 import com.flansmod.client.model.ModelAttachment;
 import com.flansmod.client.model.ModelGun;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.client.render.MuzzleFlashRenderer;
+import com.flansmodultimate.client.render.effects.MuzzleFlashRenderer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

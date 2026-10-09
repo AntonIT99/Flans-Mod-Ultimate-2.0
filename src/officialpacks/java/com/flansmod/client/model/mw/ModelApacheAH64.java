@@ -3,7 +3,7 @@
 // This file is for Flan's Flying Mod Version 4.0.x+
 
 // Model: ApacheAH64
-// Model Creator: 
+// Model Creator:
 // Created on: 16.07.2020 - 17:02:25
 // Last changed on: 16.07.2020 - 17:02:25
 
@@ -13,10 +13,10 @@ import com.flansmod.client.model.ModelPlane;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 
-public class ModelApacheAH64 extends ModelPlane //Same as Filename
+public class ModelApacheAH64 extends ModelPlane // Same as Filename
 {
-	int textureX = 1024;
-	int textureY = 2048;
+    int textureX = 1024;
+    int textureY = 2048;
 
     public ModelApacheAH64()
     {
@@ -251,19 +251,23 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         bodyModel[29].addShapeBox(0F, -38F, 0F, 2, 2, 21, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 30
         bodyModel[29].setRotationPoint(-100F, -9F, -10.5F);
 
-        bodyModel[30].addShapeBox(0F, -38F, 0F, 2, 5, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 5F, 0.43F, 3.5F, -5F, 0F, 3.5F, -5F, 0F, -3.5F, 5F, 0.43F, -3.5F); // Box 31
+        bodyModel[30].addShapeBox(0F, -38F, 0F, 2, 5, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 5F, 0.43F, 3.5F, -5F, 0F, 3.5F, -5F, 0F, -3.5F, 5F, 0.43F, -3.5F); // Box
+                                                                                                                                                                                // 31
         bodyModel[30].setRotationPoint(-100F, -7F, -10.5F);
 
-        bodyModel[31].addShapeBox(0F, -38F, 0F, 2, 5, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 5F, 0.43F, -3.5F, -5F, 0F, -3.5F, -5F, 0F, 3.5F, 5F, 0.43F, 3.5F); // Box 32
+        bodyModel[31].addShapeBox(0F, -38F, 0F, 2, 5, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 5F, 0.43F, -3.5F, -5F, 0F, -3.5F, -5F, 0F, 3.5F, 5F, 0.43F, 3.5F); // Box
+                                                                                                                                                                                // 32
         bodyModel[31].setRotationPoint(-100F, -7F, 8.5F);
 
         bodyModel[32].addBox(0F, -38F, 0F, 2, 2, 16, 0F); // Box 33
         bodyModel[32].setRotationPoint(-73F, -21F, -8F);
 
-        bodyModel[33].addShapeBox(0F, -38F, 0F, 25, 2, 2, 0F, 0F, 0F, 0F, 0F, 12F, -2.5F, 0F, 12F, 2.5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, -2.5F, 0F, -12F, 2.5F, 0F, 0F, 0F); // Box 34
+        bodyModel[33].addShapeBox(0F, -38F, 0F, 25, 2, 2, 0F, 0F, 0F, 0F, 0F, 12F, -2.5F, 0F, 12F, 2.5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, -2.5F, 0F, -12F, 2.5F, 0F, 0F, 0F); // Box
+                                                                                                                                                                               // 34
         bodyModel[33].setRotationPoint(-98F, -9F, -10.5F);
 
-        bodyModel[34].addShapeBox(0F, -38F, 0F, 25, 2, 2, 0F, 0F, 0F, 0F, 0F, 12F, 2.5F, 0F, 12F, -2.5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 2.5F, 0F, -12F, -2.5F, 0F, 0F, 0F); // Box 35
+        bodyModel[34].addShapeBox(0F, -38F, 0F, 25, 2, 2, 0F, 0F, 0F, 0F, 0F, 12F, 2.5F, 0F, 12F, -2.5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 2.5F, 0F, -12F, -2.5F, 0F, 0F, 0F); // Box
+                                                                                                                                                                               // 35
         bodyModel[34].setRotationPoint(-98F, -9F, 8.5F);
 
         bodyModel[35].addShapeBox(0F, -38F, 0F, 2, 17, 2, 0F, 2F, 0F, -6F, -2F, 0F, -6F, -2F, 0F, 6F, 2F, 0F, 6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 36
@@ -323,10 +327,12 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         bodyModel[53].addShapeBox(0F, -38F, 0F, 9, 2, 16, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0.54F, 0F, 0F, 0.54F, 0F, 0F, 0.54F, 0F, 0F, 0.54F); // Box 54
         bodyModel[53].setRotationPoint(-52F, -26F, -8F);
 
-        bodyModel[54].addShapeBox(0F, -38F, 0F, 9, 20, 2, 0F, -7F, 0F, -5.45F, 0F, 0F, -5.45F, 0F, 0F, 5.45F, -7F, 0F, 5.45F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 55
+        bodyModel[54].addShapeBox(0F, -38F, 0F, 9, 20, 2, 0F, -7F, 0F, -5.45F, 0F, 0F, -5.45F, 0F, 0F, 5.45F, -7F, 0F, 5.45F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                               // 55
         bodyModel[54].setRotationPoint(-52F, -24F, -14F);
 
-        bodyModel[55].addShapeBox(0F, -38F, 0F, 9, 20, 2, 0F, -7F, 0F, 5.45F, 0F, 0F, 5.45F, 0F, 0F, -5.45F, -7F, 0F, -5.45F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 56
+        bodyModel[55].addShapeBox(0F, -38F, 0F, 9, 20, 2, 0F, -7F, 0F, 5.45F, 0F, 0F, 5.45F, 0F, 0F, -5.45F, -7F, 0F, -5.45F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                               // 56
         bodyModel[55].setRotationPoint(-52F, -24F, 12F);
 
         bodyModel[56].addShapeBox(0F, -38F, 0F, 17, 5, 2, 0F, 0F, 2F, 0F, 0F, 6F, 0F, 0F, 6F, 0F, 0F, 2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 57
@@ -531,7 +537,8 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         bodyModel[122].addShapeBox(0F, -38F, 0F, 58, 17, 28, 0F, 0F, 0F, 0F, 0F, -22F, -2F, 0F, -22F, -2F, 0F, 0F, 0F, 0F, 6F, 0F, 0F, 6F, -2F, 0F, 6F, -2F, 0F, 6F, 0F); // Box 124
         bodyModel[122].setRotationPoint(31F, -21F, -14F);
 
-        bodyModel[123].addShapeBox(0F, -38F, 0F, 30, 6, 16, 0F, 0F, 0F, 0F, 0F, -12F, -5F, 0F, -12F, -5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 10F, -5F, 0F, 10F, -5F, 0F, 0F, 0F); // Box 125
+        bodyModel[123].addShapeBox(0F, -38F, 0F, 30, 6, 16, 0F, 0F, 0F, 0F, 0F, -12F, -5F, 0F, -12F, -5F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 10F, -5F, 0F, 10F, -5F, 0F, 0F, 0F); // Box
+                                                                                                                                                                           // 125
         bodyModel[123].setRotationPoint(31F, -24F, -8F);
 
         bodyModel[124].addBox(0F, -38F, 0F, 9, 6, 13, 0F); // Box 126
@@ -578,8 +585,6 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
 
         bodyModel[138].addShapeBox(0F, -38F, 0F, 20, 4, 10, 0F, 0F, 0F, 4F, 0F, 2F, 4F, 0F, 2F, 4F, 0F, 0F, 4F, 0F, 0F, 0F, 0F, -5F, 0F, 0F, -5F, 0F, 0F, 0F, 0F); // Box 161
         bodyModel[138].setRotationPoint(75F, 20F, -5F);
-
-
 
         tailModel = new ModelRendererTurbo[15];
         tailModel[0] = new ModelRendererTurbo(this, 200, 365, textureX, textureY); // Box 156
@@ -643,11 +648,6 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         tailModel[14].addShapeBox(0F, -38F, 0F, 108, 2, 24, 0F, 0F, 0F, 0F, 0F, 5F, -7F, 0F, 5F, -7F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -5F, -9F, 0F, -5F, -9F, 0F, 0F, 0F); // Box 264
         tailModel[14].setRotationPoint(89F, 17F, -12F);
 
-
-
-
-
-
         leftWingModel = new ModelRendererTurbo[41];
         leftWingModel[0] = new ModelRendererTurbo(this, 200, 750, textureX, textureY); // Import Box181
         leftWingModel[1] = new ModelRendererTurbo(this, 200, 805, textureX, textureY); // Import Box182
@@ -691,40 +691,49 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         leftWingModel[39] = new ModelRendererTurbo(this, 200, 1020, textureX, textureY); // Import Box220
         leftWingModel[40] = new ModelRendererTurbo(this, 200, 1010, textureX, textureY); // Import Box221
 
-        leftWingModel[0].addShapeBox(0F, -38F, 0F, 21, 5, 45, 0F, -1F, -2F, 0F, -2F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box181
+        leftWingModel[0].addShapeBox(0F, -38F, 0F, 21, 5, 45, 0F, -1F, -2F, 0F, -2F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import
+                                                                                                                                                                         // Box181
         leftWingModel[0].setRotationPoint(-33F, -4F, -59F);
 
-        leftWingModel[1].addShapeBox(0F, -38F, 0F, 2, 5, 45, 0F, -1F, -3F, 0F, 1F, -2F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, -1F, -1F, 0F, 1F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F); // Import Box182
+        leftWingModel[1].addShapeBox(0F, -38F, 0F, 2, 5, 45, 0F, -1F, -3F, 0F, 1F, -2F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, -1F, -1F, 0F, 1F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F); // Import
+                                                                                                                                                                         // Box182
         leftWingModel[1].setRotationPoint(-35F, -4F, -59F);
 
-        leftWingModel[2].addShapeBox(0F, -38F, 0F, 11, 5, 45, 0F, 2F, -2F, 0F, -11F, -4F, 0F, 0F, -4F, 0F, 0F, 0F, 0F, 2F, 0F, 0F, -11F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box183
+        leftWingModel[2].addShapeBox(0F, -38F, 0F, 11, 5, 45, 0F, 2F, -2F, 0F, -11F, -4F, 0F, 0F, -4F, 0F, 0F, 0F, 0F, 2F, 0F, 0F, -11F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import
+                                                                                                                                                                          // Box183
         leftWingModel[2].setRotationPoint(-12F, -4F, -59F);
 
         leftWingModel[3].addBox(0F, -38F, 0F, 13, 10, 4, 0F); // Import Box184
         leftWingModel[3].setRotationPoint(-30F, 1F, -37F);
 
-        leftWingModel[4].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F); // Import Box185
+        leftWingModel[4].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F); // Import
+                                                                                                                                                                      // Box185
         leftWingModel[4].setRotationPoint(-31F, 1F, -37F);
 
-        leftWingModel[5].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Import Box186
+        leftWingModel[5].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Import
+                                                                                                                                                                      // Box186
         leftWingModel[5].setRotationPoint(-17F, 1F, -37F);
 
-        leftWingModel[6].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Import Box187
+        leftWingModel[6].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Import
+                                                                                                                                                                      // Box187
         leftWingModel[6].setRotationPoint(-17F, 1F, -57F);
 
         leftWingModel[7].addBox(0F, -38F, 0F, 13, 10, 4, 0F); // Import Box188
         leftWingModel[7].setRotationPoint(-30F, 1F, -57F);
 
-        leftWingModel[8].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F); // Import Box189
+        leftWingModel[8].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F); // Import
+                                                                                                                                                                      // Box189
         leftWingModel[8].setRotationPoint(-31F, 1F, -57F);
 
         leftWingModel[9].addBox(0F, -38F, 0F, 13, 14, 2, 0F); // Import Box190
         leftWingModel[9].setRotationPoint(-30F, 11F, -56F);
 
-        leftWingModel[10].addShapeBox(0F, -38F, 0F, 11, 2, 10, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box191
+        leftWingModel[10].addShapeBox(0F, -38F, 0F, 11, 2, 10, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import
+                                                                                                                                                                        // Box191
         leftWingModel[10].setRotationPoint(-29F, 11F, -60F);
 
-        leftWingModel[11].addShapeBox(0F, -38F, 0F, 11, 2, 10, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box192
+        leftWingModel[11].addShapeBox(0F, -38F, 0F, 11, 2, 10, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import
+                                                                                                                                                                        // Box192
         leftWingModel[11].setRotationPoint(-29F, 23.1F, -60F);
 
         leftWingModel[12].addBox(0F, -38F, 0F, 31, 4, 4, 0F); // Import Box193
@@ -733,35 +742,43 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         leftWingModel[13].addTrapezoid(0F, -38F, 0F, 5, 4, 4, 0F, -1.00F, ModelRendererTurbo.MR_RIGHT); // Import Box194
         leftWingModel[13].setRotationPoint(-43F, 13F, -61F);
 
-        leftWingModel[14].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box195
+        leftWingModel[14].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box195
         leftWingModel[14].setRotationPoint(-7F, -23F, -59F);
         leftWingModel[14].rotateAngleX = 0.78539816F;
 
-        leftWingModel[15].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box196
+        leftWingModel[15].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box196
         leftWingModel[15].setRotationPoint(-7F, -23F, -59F);
         leftWingModel[15].rotateAngleX = 2.35619449F;
 
-        leftWingModel[16].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box197
+        leftWingModel[16].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box197
         leftWingModel[16].setRotationPoint(-7F, -23F, -59F);
         leftWingModel[16].rotateAngleX = -2.35619449F;
 
-        leftWingModel[17].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box198
+        leftWingModel[17].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box198
         leftWingModel[17].setRotationPoint(-7F, -23F, -59F);
         leftWingModel[17].rotateAngleX = -0.78539816F;
 
-        leftWingModel[18].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box199
+        leftWingModel[18].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box199
         leftWingModel[18].setRotationPoint(-7F, -23F, -51F);
         leftWingModel[18].rotateAngleX = -0.78539816F;
 
-        leftWingModel[19].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box200
+        leftWingModel[19].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box200
         leftWingModel[19].setRotationPoint(-7F, -23F, -51F);
         leftWingModel[19].rotateAngleX = 2.35619449F;
 
-        leftWingModel[20].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box201
+        leftWingModel[20].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box201
         leftWingModel[20].setRotationPoint(-7F, -23F, -51F);
         leftWingModel[20].rotateAngleX = -2.35619449F;
 
-        leftWingModel[21].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box202
+        leftWingModel[21].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box202
         leftWingModel[21].setRotationPoint(-7F, -23F, -51F);
         leftWingModel[21].rotateAngleX = 0.78539816F;
 
@@ -771,19 +788,23 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         leftWingModel[23].addTrapezoid(0F, -38F, 0F, 5, 4, 4, 0F, -1.00F, ModelRendererTurbo.MR_RIGHT); // Import Box204
         leftWingModel[23].setRotationPoint(-43F, 13F, -53F);
 
-        leftWingModel[24].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box205
+        leftWingModel[24].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box205
         leftWingModel[24].setRotationPoint(-7F, -11F, -51F);
         leftWingModel[24].rotateAngleX = -0.78539816F;
 
-        leftWingModel[25].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box206
+        leftWingModel[25].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box206
         leftWingModel[25].setRotationPoint(-7F, -11F, -51F);
         leftWingModel[25].rotateAngleX = 2.35619449F;
 
-        leftWingModel[26].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box207
+        leftWingModel[26].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box207
         leftWingModel[26].setRotationPoint(-7F, -11F, -51F);
         leftWingModel[26].rotateAngleX = -2.35619449F;
 
-        leftWingModel[27].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box208
+        leftWingModel[27].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box208
         leftWingModel[27].setRotationPoint(-7F, -11F, -51F);
         leftWingModel[27].rotateAngleX = 0.78539816F;
 
@@ -799,37 +820,44 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         leftWingModel[31].addTrapezoid(0F, -38F, 0F, 5, 4, 4, 0F, -1.00F, ModelRendererTurbo.MR_RIGHT); // Import Box212
         leftWingModel[31].setRotationPoint(-43F, 25F, -61F);
 
-        leftWingModel[32].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box213
+        leftWingModel[32].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box213
         leftWingModel[32].setRotationPoint(-7F, -11F, -59F);
         leftWingModel[32].rotateAngleX = 0.78539816F;
 
-        leftWingModel[33].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box214
+        leftWingModel[33].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box214
         leftWingModel[33].setRotationPoint(-7F, -11F, -59F);
         leftWingModel[33].rotateAngleX = -2.35619449F;
 
-        leftWingModel[34].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box215
+        leftWingModel[34].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box215
         leftWingModel[34].setRotationPoint(-7F, -11F, -59F);
         leftWingModel[34].rotateAngleX = 2.35619449F;
 
-        leftWingModel[35].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import Box216
+        leftWingModel[35].addShapeBox(-6F, -0.5F, 2F, 5, 1, 2, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F); // Import
+                                                                                                                                                                      // Box216
         leftWingModel[35].setRotationPoint(-7F, -11F, -59F);
         leftWingModel[35].rotateAngleX = -0.78539816F;
 
-        leftWingModel[36].addShapeBox(0F, -38F, 0F, 35, 1, 7, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box217
+        leftWingModel[36].addShapeBox(0F, -38F, 0F, 35, 1, 7, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import
+                                                                                                                                                                       // Box217
         leftWingModel[36].setRotationPoint(-40F, 11F, -38.5F);
 
-        leftWingModel[37].addShapeBox(0F, -38F, 0F, 35, 2, 9, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import Box218
+        leftWingModel[37].addShapeBox(0F, -38F, 0F, 35, 2, 9, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Import
+                                                                                                                                                                       // Box218
         leftWingModel[37].setRotationPoint(-40F, 12F, -39.5F);
 
         leftWingModel[38].addBox(0F, -38F, 0F, 35, 3, 9, 0F); // Import Box219
         leftWingModel[38].setRotationPoint(-40F, 14F, -39.5F);
 
-        leftWingModel[39].addShapeBox(0F, -38F, 0F, 35, 2, 9, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import Box220
+        leftWingModel[39].addShapeBox(0F, -38F, 0F, 35, 2, 9, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, -1F); // Import
+                                                                                                                                                                       // Box220
         leftWingModel[39].setRotationPoint(-40F, 17F, -39.5F);
 
-        leftWingModel[40].addShapeBox(0F, -38F, 0F, 35, 1, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F); // Import Box221
+        leftWingModel[40].addShapeBox(0F, -38F, 0F, 35, 1, 7, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F); // Import
+                                                                                                                                                                       // Box221
         leftWingModel[40].setRotationPoint(-40F, 19F, -38.5F);
-
 
         rightWingModel = new ModelRendererTurbo[41];
         rightWingModel[0] = new ModelRendererTurbo(this, 200, 915, textureX, textureY); // Box 0
@@ -904,7 +932,8 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         rightWingModel[9].addShapeBox(0F, -38F, 0F, 2, 5, 45, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 1F, -2F, 0F, -1F, -3F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 1F, 0F, 0F, -1F, -1F, 0F); // Box 9
         rightWingModel[9].setRotationPoint(-35F, -4F, 14F);
 
-        rightWingModel[10].addShapeBox(0F, -38F, 0F, 11, 5, 45, 0F, 0F, 0F, 0F, 0F, -4F, 0F, -11F, -4F, 0F, 2F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -11F, 0F, 0F, 2F, 0F, 0F); // Box 10
+        rightWingModel[10].addShapeBox(0F, -38F, 0F, 11, 5, 45, 0F, 0F, 0F, 0F, 0F, -4F, 0F, -11F, -4F, 0F, 2F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -11F, 0F, 0F, 2F, 0F, 0F); // Box
+                                                                                                                                                                            // 10
         rightWingModel[10].setRotationPoint(-12F, -4F, 14F);
 
         rightWingModel[11].addShapeBox(0F, -38F, 0F, 1, 10, 4, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box 11
@@ -1013,8 +1042,6 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         rightWingModel[40].addTrapezoid(0F, -38F, 0F, 5, 4, 4, 0F, -1.00F, ModelRendererTurbo.MR_RIGHT); // Box 40
         rightWingModel[40].setRotationPoint(-43F, 13F, 49F);
 
-
-
         tailWheelModel = new ModelRendererTurbo[6];
         tailWheelModel[0] = new ModelRendererTurbo(this, 200, 1050, textureX, textureY); // Box 280
         tailWheelModel[1] = new ModelRendererTurbo(this, 200, 1065, textureX, textureY); // Box 281
@@ -1040,7 +1067,6 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
 
         tailWheelModel[5].addShapeBox(0F, -38F, 0F, 9, 3, 4, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F); // Box 285
         tailWheelModel[5].setRotationPoint(207F, 23F, -2F);
-
 
         leftWingWheelModel = new ModelRendererTurbo[8];
         leftWingWheelModel[0] = new ModelRendererTurbo(this, 200, 1110, textureX, textureY); // Box 265
@@ -1079,7 +1105,6 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         leftWingWheelModel[7].setRotationPoint(-58F, -15F, -19F);
         leftWingWheelModel[7].rotateAngleZ = 0.48869219F;
 
-
         rightWingWheelModel = new ModelRendererTurbo[8];
         rightWingWheelModel[0] = new ModelRendererTurbo(this, 200, 1175, textureX, textureY); // Box 273
         rightWingWheelModel[1] = new ModelRendererTurbo(this, 200, 1110, textureX, textureY); // Box 274
@@ -1098,25 +1123,28 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         rightWingWheelModel[1].setRotationPoint(-70F, -15F, 16F);
         rightWingWheelModel[1].rotateAngleZ = 0.83775804F;
 
-        rightWingWheelModel[2].addShapeBox(0F, 25F, 0F, 11, 2, 5, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 275
+        rightWingWheelModel[2].addShapeBox(0F, 25F, 0F, 11, 2, 5, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                           // 275
         rightWingWheelModel[2].setRotationPoint(-54F, -30F, 24F);
 
-        rightWingWheelModel[3].addShapeBox(0F, 25F, 0F, 15, 3, 5, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 276
+        rightWingWheelModel[3].addShapeBox(0F, 25F, 0F, 15, 3, 5, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                           // 276
         rightWingWheelModel[3].setRotationPoint(-56F, -28F, 24F);
 
         rightWingWheelModel[4].addBox(0F, 25F, 0F, 15, 5, 5, 0F); // Box 277
         rightWingWheelModel[4].setRotationPoint(-56F, -25F, 24F);
 
-        rightWingWheelModel[5].addShapeBox(0F, 25F, 0F, 15, 3, 5, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F); // Box 278
+        rightWingWheelModel[5].addShapeBox(0F, 25F, 0F, 15, 3, 5, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F, -2F, 0F, 0F); // Box
+                                                                                                                                                                           // 278
         rightWingWheelModel[5].setRotationPoint(-56F, -20F, 24F);
 
-        rightWingWheelModel[6].addShapeBox(0F, 25F, 0F, 11, 2, 5, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F); // Box 279
+        rightWingWheelModel[6].addShapeBox(0F, 25F, 0F, 11, 2, 5, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, 0F); // Box
+                                                                                                                                                                           // 279
         rightWingWheelModel[6].setRotationPoint(-54F, -17F, 24F);
 
         rightWingWheelModel[7].addBox(0F, 25F, 0F, 4, 4, 4, 0F); // Box 286
         rightWingWheelModel[7].setRotationPoint(-70F, -15F, 20F);
         rightWingWheelModel[7].rotateAngleZ = 0.83775804F;
-
 
         heliMainRotorModels = new ModelRendererTurbo[1][18];
         heliMainRotorModels[0][0] = new ModelRendererTurbo(this, 200, 1290, textureX, textureY); // Box 138
@@ -1159,55 +1187,66 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         heliMainRotorModels[0][5].addBox(-10F, -7F, -1F, 1, 7, 2, 0F); // Box 143
         heliMainRotorModels[0][5].setRotationPoint(0F, -77F, 0F);
 
-        heliMainRotorModels[0][6].addShapeBox(1F, -13F, -4F, 16, 6, 8, 0F, 0F, 0F, 0F, 0F, -4F, -1F, 0F, -4F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box 144
+        heliMainRotorModels[0][6].addShapeBox(1F, -13F, -4F, 16, 6, 8, 0F, 0F, 0F, 0F, 0F, -4F, -1F, 0F, -4F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                  // 144
         heliMainRotorModels[0][6].setRotationPoint(0F, -77F, 0F);
 
-        heliMainRotorModels[0][7].addShapeBox(17F, -9F, -3F, 130, 2, 6, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 145
+        heliMainRotorModels[0][7].addShapeBox(17F, -9F, -3F, 130, 2, 6, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                               // 145
         heliMainRotorModels[0][7].setRotationPoint(0F, -77F, 0F);
 
-        heliMainRotorModels[0][8].addShapeBox(17F, -9F, -3F, 130, 2, 6, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 146
+        heliMainRotorModels[0][8].addShapeBox(17F, -9F, -3F, 130, 2, 6, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                               // 146
         heliMainRotorModels[0][8].setRotationPoint(0F, -77F, 0F);
         heliMainRotorModels[0][8].rotateAngleY = -1.57079633F;
 
-        heliMainRotorModels[0][9].addShapeBox(1F, -13F, -4F, 16, 6, 8, 0F, 0F, 0F, 0F, 0F, -4F, -1F, 0F, -4F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box 147
+        heliMainRotorModels[0][9].addShapeBox(1F, -13F, -4F, 16, 6, 8, 0F, 0F, 0F, 0F, 0F, -4F, -1F, 0F, -4F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                  // 147
         heliMainRotorModels[0][9].setRotationPoint(0F, -77F, 0F);
         heliMainRotorModels[0][9].rotateAngleY = -1.57079633F;
 
-        heliMainRotorModels[0][10].addShapeBox(17F, -9F, -3F, 130, 2, 6, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 148
+        heliMainRotorModels[0][10].addShapeBox(17F, -9F, -3F, 130, 2, 6, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                // 148
         heliMainRotorModels[0][10].setRotationPoint(0F, -77F, 0F);
         heliMainRotorModels[0][10].rotateAngleY = (float) -Math.PI;
 
-        heliMainRotorModels[0][11].addShapeBox(1F, -13F, -4F, 16, 6, 8, 0F, 0F, 0F, 0F, 0F, -4F, -1F, 0F, -4F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box 149
+        heliMainRotorModels[0][11].addShapeBox(1F, -13F, -4F, 16, 6, 8, 0F, 0F, 0F, 0F, 0F, -4F, -1F, 0F, -4F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                   // 149
         heliMainRotorModels[0][11].setRotationPoint(0F, -77F, 0F);
         heliMainRotorModels[0][11].rotateAngleY = (float) -Math.PI;
 
-        heliMainRotorModels[0][12].addShapeBox(17F, -9F, -3F, 130, 2, 6, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 150
+        heliMainRotorModels[0][12].addShapeBox(17F, -9F, -3F, 130, 2, 6, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                // 150
         heliMainRotorModels[0][12].setRotationPoint(0F, -77F, 0F);
         heliMainRotorModels[0][12].rotateAngleY = 1.57079633F;
 
-        heliMainRotorModels[0][13].addShapeBox(1F, -13F, -4F, 16, 6, 8, 0F, 0F, 0F, 0F, 0F, -4F, -1F, 0F, -4F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box 151
+        heliMainRotorModels[0][13].addShapeBox(1F, -13F, -4F, 16, 6, 8, 0F, 0F, 0F, 0F, 0F, -4F, -1F, 0F, -4F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, 0F, 0F, -1F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                   // 151
         heliMainRotorModels[0][13].setRotationPoint(0F, -77F, 0F);
         heliMainRotorModels[0][13].rotateAngleY = 1.57079633F;
 
-        heliMainRotorModels[0][14].addShapeBox(17F, -9F, -9F, 124, 2, 6, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 152
+        heliMainRotorModels[0][14].addShapeBox(17F, -9F, -9F, 124, 2, 6, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                    // 152
         heliMainRotorModels[0][14].setRotationPoint(0F, -77F, 0F);
         heliMainRotorModels[0][14].rotateAngleY = (float) -Math.PI;
 
-        heliMainRotorModels[0][15].addShapeBox(17F, -9F, -9F, 124, 2, 6, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 153
+        heliMainRotorModels[0][15].addShapeBox(17F, -9F, -9F, 124, 2, 6, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                    // 153
         heliMainRotorModels[0][15].setRotationPoint(0F, -77F, 0F);
         heliMainRotorModels[0][15].rotateAngleY = -1.57079633F;
 
-        heliMainRotorModels[0][16].addShapeBox(17F, -9F, -9F, 124, 2, 6, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 154
+        heliMainRotorModels[0][16].addShapeBox(17F, -9F, -9F, 124, 2, 6, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                    // 154
         heliMainRotorModels[0][16].setRotationPoint(0F, -77F, 0F);
 
-        heliMainRotorModels[0][17].addShapeBox(17F, -9F, -9F, 124, 2, 6, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box 155
+        heliMainRotorModels[0][17].addShapeBox(17F, -9F, -9F, 124, 2, 6, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -12F, 0F, 0F, -6F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F); // Box
+                                                                                                                                                                                    // 155
         heliMainRotorModels[0][17].rotateAngleY = 1.57079633F;
         heliMainRotorModels[0][17].setRotationPoint(0F, -77F, 0F);
 
-        heliMainRotorOrigins = new Vector3f[] { new Vector3f(0F, 0F / 16F, 0F) };
+        heliMainRotorOrigins = new Vector3f[]{new Vector3f(0F, 0F / 16F, 0F)};
 
-        heliRotorSpeeds = new float[] { 1F };
-
+        heliRotorSpeeds = new float[]{1F};
 
         heliTailRotorModels = new ModelRendererTurbo[1][9];
         heliTailRotorModels[0][0] = new ModelRendererTurbo(this, 200, 1210, textureX, textureY); // Box 172
@@ -1247,14 +1286,13 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
         heliTailRotorModels[0][8].addBox(-35F, -3F, -8F, 25, 4, 2, 0F); // Box 180
         heliTailRotorModels[0][8].setRotationPoint(195F, -89F, -13F);
 
-        //The helicopter rotor origins for rendering. Better than the old propeller rotation point code
+        // The helicopter rotor origins for rendering. Better than the old propeller rotation point code
         // The hub is centred on the parts' pivot (195, -89), i.e. y = 89 after flipAll(). 1.7.10 used 91, which made the rotor orbit.
-        heliTailRotorOrigins = new Vector3f[] { new Vector3f(195F / 16F, 89F / 16F, -13F / 16F) };
+        heliTailRotorOrigins = new Vector3f[]{new Vector3f(195F / 16F, 89F / 16F, -13F / 16F)};
 
         translateAll(0F, 0F, 0F);
 
-
-        //Copy This part into your model
+        // Copy This part into your model
 
         ModelRendererTurbo[][] noseGunModel = new ModelRendererTurbo[3][];
 
@@ -1266,21 +1304,16 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
 
         noseGunModel[0][0].addBox(-5F, 0F, -5F, 10, 2, 10, 0F); // Box 287
 
-
         noseGunModel[0][1].addShapeBox(-1F, 2F, -5F, 5, 10, 2, 0F, -2F, 0F, 0F, 1F, 0F, 0F, 1F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, -1F, -3F, 0F, -1F, -3F, 0F, 0F, 0F, 0F, 0F); // Box 288
-
 
         noseGunModel[0][2].addShapeBox(-1F, 2F, 3F, 5, 10, 2, 0F, -2F, 0F, 0F, 1F, 0F, 0F, 1F, 0F, 0F, -2F, 0F, 0F, 0F, 0F, 0F, -3F, 0F, 0F, -3F, 0F, -1F, 0F, 0F, -1F); // Box 289
 
-
         noseGunModel[0][3].addShapeBox(-5F, 2F, -2F, 10, 6, 4, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -4F, 0F, 0F, -4F, 0F, 0F, -4F, 0F, 0F, -4F, 0F, 0F); // Box 295
 
-
-        for(ModelRendererTurbo noseGunPart : noseGunModel[0])
+        for (ModelRendererTurbo noseGunPart : noseGunModel[0])
             noseGunPart.setRotationPoint(-73F, -15F, 0F);
 
         noseGunModel[1] = new ModelRendererTurbo[0];
-
 
         noseGunModel[2] = new ModelRendererTurbo[5];
         noseGunModel[2][0] = new ModelRendererTurbo(this, 200, 1390, textureX, textureY); // Box 290
@@ -1291,20 +1324,18 @@ public class ModelApacheAH64 extends ModelPlane //Same as Filename
 
         noseGunModel[2][0].addBox(-3F, -3F, -3F, 5, 6, 6, 0F); // Box 290
 
+        noseGunModel[2][1].addShapeBox(-6F, -3F, -3F, 3, 6, 6, 0F, 0F, -1F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -1F, 0F, -1F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -1F); // Box
+                                                                                                                                                                            // 291
 
-        noseGunModel[2][1].addShapeBox(-6F, -3F, -3F, 3, 6, 6, 0F, 0F, -1F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -1F, 0F, -1F, -1F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -1F); // Box 291
+        noseGunModel[2][2].addShapeBox(2F, -3F, -3F, 10, 6, 6, 0F, 0F, 0F, 0F, 0F, -2F, -2F, 0F, -2F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -2F, 0F, -1F, -2F, 0F, 0F, 0F); // Box
+                                                                                                                                                                            // 292
 
-
-        noseGunModel[2][2].addShapeBox(2F, -3F, -3F, 10, 6, 6, 0F, 0F, 0F, 0F, 0F, -2F, -2F, 0F, -2F, -2F, 0F, 0F, 0F, 0F, 0F, 0F, 0F, -1F, -2F, 0F, -1F, -2F, 0F, 0F, 0F); // Box 292
-
-
-        noseGunModel[2][3].addShapeBox(12F, 0F, -1F, 15, 2, 2, 0F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F); // Box 293
-
+        noseGunModel[2][3].addShapeBox(12F, 0F, -1F, 15, 2, 2, 0F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F, -0.25F, 0F, -0.25F,
+            -0.25F, 0F, -0.25F, -0.25F); // Box 293
 
         noseGunModel[2][4].addBox(27F, 0F, -1F, 5, 2, 2, 0F); // Box 294
 
-
-        for(ModelRendererTurbo noseGunPart : noseGunModel[2])
+        for (ModelRendererTurbo noseGunPart : noseGunModel[2])
             noseGunPart.setRotationPoint(-73F, -6F, 0F);
 
         registerGunModel("Gunner", noseGunModel);

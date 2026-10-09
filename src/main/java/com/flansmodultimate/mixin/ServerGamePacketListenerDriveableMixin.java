@@ -1,6 +1,6 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.common.driveables.DriveableCollisionWorld;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +18,7 @@ import net.minecraft.world.entity.Entity;
 public abstract class ServerGamePacketListenerDriveableMixin
 {
     @Inject(method = "noBlocksAround", at = @At("HEAD"), cancellable = true)
-    private void flansmodultimate$standingOnDriveableHull(Entity entity, CallbackInfoReturnable<Boolean> callback)
+    private void flansmodultimateStandingOnDriveableHull(Entity entity, CallbackInfoReturnable<Boolean> callback)
     {
         if (DriveableCollisionWorld.isStandingOnHull(entity))
             callback.setReturnValue(false);

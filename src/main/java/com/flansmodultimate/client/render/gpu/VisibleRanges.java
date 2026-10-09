@@ -1,12 +1,11 @@
 package com.flansmodultimate.client.render.gpu;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.opengl.GL32C;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.opengl.GL32C;
 
 import java.nio.IntBuffer;
 
@@ -34,9 +33,10 @@ final class VisibleRanges
     }
 
     /**
-     * @param bridging draw up to {@link #bridgedGap} size-culled indices between visible ranges, merging them.
-     *                 Some drivers process each range of a multi-draw much like a draw call, while culled parts
-     *                 are below a pixel: drawing a short stretch of them can cost less than another range.
+     * @param bridging
+     *            draw up to {@link #bridgedGap} size-culled indices between visible ranges, merging them.
+     *            Some drivers process each range of a multi-draw much like a draw call, while culled parts
+     *            are below a pixel: drawing a short stretch of them can cost less than another range.
      */
     VisibleRanges(int capacity, boolean bridging)
     {
@@ -71,12 +71,16 @@ final class VisibleRanges
         indices += size;
     }
 
-    boolean allVisible() { return count == 1 && starts[0] == 0 && counts[0] == indices; }
+    boolean allVisible()
+    {
+        return count == 1 && starts[0] == 0 && counts[0] == indices;
+    }
 
     /** The caller binds the mesh and shader first. Native storage is reused by this batch. */
     void draw(VertexBuffer mesh)
     {
-        if (count == 0) return;
+        if (count == 0)
+            return;
         if (allVisible())
         {
             mesh.draw();
@@ -96,7 +100,7 @@ final class VisibleRanges
         for (int i = 0; i < count; i++)
         {
             rangeCounts.put(counts[i]);
-            rangeOffsets.put((long)starts[i] * indexBytes);
+            rangeOffsets.put((long) starts[i] * indexBytes);
         }
         rangeCounts.flip();
         rangeOffsets.flip();

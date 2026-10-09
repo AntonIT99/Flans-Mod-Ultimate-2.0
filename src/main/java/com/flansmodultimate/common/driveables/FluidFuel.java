@@ -22,11 +22,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Which liquids a driveable will burn, and what a bucket of each is worth.
  *
- * <p>Any container that reports Forge's fluid-handler capability can be emptied into a tank,
+ * <p>
+ * Any container that reports Forge's fluid-handler capability can be emptied into a tank,
  * which is how 1.7.10's BuildCraft oil and fuel buckets are supported without depending on
  * BuildCraft at all: its buckets are ordinary {@code BucketItem}s, so Forge already exposes
  * their contents through the standard capability, and the fuel table names the fluids by
- * registry id. A server can add or retune any other mod's liquid fuel the same way.</p>
+ * registry id. A server can add or retune any other mod's liquid fuel the same way.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class FluidFuel
@@ -42,9 +44,11 @@ public final class FluidFuel
     /**
      * One fuel table entry.
      *
-     * <p>{@code path} is matched whole unless the entry ended in {@code *}, in which case it
+     * <p>
+     * {@code path} is matched whole unless the entry ended in {@code *}, in which case it
      * is a prefix. That keeps families such as BuildCraft's ten oil and fuel grades, each with
-     * three heat variants, to one line apiece.</p>
+     * three heat variants, to one line apiece.
+     * </p>
      */
     private record Rule(String namespace, String path, boolean prefix, int fuelPerBucket)
     {

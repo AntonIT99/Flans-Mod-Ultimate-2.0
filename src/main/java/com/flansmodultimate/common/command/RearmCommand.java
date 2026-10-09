@@ -1,14 +1,11 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.common.driveables.DriveableAmmoLoader;
-import com.flansmodultimate.common.driveables.DriveableAmmoLoader.BankReport;
-import com.flansmodultimate.common.driveables.DriveableAmmoLoader.LoadReport;
 import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.MountedGunAmmoLoader;
-import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader;
+import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader.BankReport;
+import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader.LoadReport;
+import com.flansmodultimate.common.driveables.weapons.MountedGunAmmoLoader;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -25,32 +22,32 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Loads a driveable's weapons or a ridden AA/deployed gun in one step.
  *
- * <p>The vehicle equivalent of {@code /defaultammo}: an operator sitting in an aircraft
+ * <p>
+ * The vehicle equivalent of {@code /defaultammo}: an operator sitting in an aircraft
  * should not have to open the inventory and drag seven bombs into it to test a bomb run.
  * Every round comes from the driveable's own definition, so the result is a loadout the
- * driveable can actually fire, and nothing is taken from the player's inventory.</p>
+ * driveable can actually fire, and nothing is taken from the player's inventory.
+ * </p>
  *
- * <p>Ammunition already loaded is left alone, and a partly spent item is topped back up,
+ * <p>
+ * Ammunition already loaded is left alone, and a partly spent item is topped back up,
  * so repeating the command rearms without discarding a loadout chosen by hand. Naming a
  * round explicitly is the one way to overwrite what is loaded; whatever it displaces is
- * handed back to the operator.</p>
+ * handed back to the operator.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class RearmCommand
@@ -67,16 +64,11 @@ public final class RearmCommand
 
     private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name)
     {
-        return Commands.literal(name)
-            .requires(source -> source.hasPermission(2))
-            .executes(context -> rearm(context, null))
-            .then(Commands.argument("ammo", StringArgumentType.word())
-                .suggests(RearmCommand::suggestAmmo)
-                .executes(context -> rearm(context, StringArgumentType.getString(context, "ammo"))));
+        return Commands.literal(name).requires(source -> source.hasPermission(2)).executes(context -> rearm(context, null))
+            .then(Commands.argument("ammo", StringArgumentType.word()).suggests(RearmCommand::suggestAmmo).executes(context -> rearm(context, StringArgumentType.getString(context, "ammo"))));
     }
 
-    private static int rearm(CommandContext<CommandSourceStack> context, @Nullable String ammoName)
-        throws CommandSyntaxException
+    private static int rearm(CommandContext<CommandSourceStack> context, @Nullable String ammoName) throws CommandSyntaxException
     {
         ServerPlayer player = context.getSource().getPlayerOrException();
         Target target = findTarget(player);
@@ -100,8 +92,7 @@ public final class RearmCommand
         LoadReport report = target.load(requested);
         if (report.isEmpty())
         {
-            context.getSource().sendFailure(Component.literal(
-                target.name() + " has no ammunition slots to load"));
+            context.getSource().sendFailure(Component.literal(target.name() + " has no ammunition slots to load"));
             return 0;
         }
 
@@ -136,8 +127,7 @@ public final class RearmCommand
 
     private static Component bankLine(BankReport bank)
     {
-        StringBuilder text = new StringBuilder("  ").append(bank.label())
-            .append(" (").append(bank.slots()).append(bank.slots() == 1 ? " slot): " : " slots): ");
+        StringBuilder text = new StringBuilder("  ").append(bank.label()).append(" (").append(bank.slots()).append(bank.slots() == 1 ? " slot): " : " slots): ");
         if (bank.problem() != null)
             return Component.literal(text.append(bank.problem()).toString()).withStyle(ChatFormatting.RED);
 
@@ -151,17 +141,14 @@ public final class RearmCommand
         if (bank.kept() > 0)
             parts.add(bank.kept() + " left as loaded");
         text.append(String.join(", ", parts)).append(" (").append(bank.ammoName()).append(')');
-        return Component.literal(text.toString())
-            .withStyle(bank.changed() > 0 ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY);
+        return Component.literal(text.toString()).withStyle(bank.changed() > 0 ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY);
     }
 
-    private static CompletableFuture<Suggestions> suggestAmmo(CommandContext<CommandSourceStack> context,
-        SuggestionsBuilder builder)
+    private static CompletableFuture<Suggestions> suggestAmmo(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder)
     {
         Entity executor = context.getSource().getEntity();
         Target target = executor instanceof ServerPlayer player ? findTarget(player) : null;
-        return target == null ? Suggestions.empty()
-            : SharedSuggestionProvider.suggest(target.loadableAmmo().stream().map(ShootableType::getShortName), builder);
+        return target == null ? Suggestions.empty() : SharedSuggestionProvider.suggest(target.loadableAmmo().stream().map(ShootableType::getShortName), builder);
     }
 
     @Nullable
@@ -210,20 +197,31 @@ public final class RearmCommand
     private interface Target
     {
         String name();
+
         IContentProvider contentPack();
+
         LoadReport load(@Nullable ShootableType requested);
+
         Set<ShootableType> loadableAmmo();
+
         void commit();
+
         String suffix();
     }
 
     private record DriveableTarget(DriveableType type, DriveableData data, @Nullable ItemStack stack) implements Target
     {
         @Override
-        public String name() { return type.getName(); }
+        public String name()
+        {
+            return type.getName();
+        }
 
         @Override
-        public IContentProvider contentPack() { return type.getContentPack(); }
+        public IContentProvider contentPack()
+        {
+            return type.getContentPack();
+        }
 
         @Override
         public LoadReport load(@Nullable ShootableType requested)
@@ -278,7 +276,8 @@ public final class RearmCommand
         }
 
         @Override
-        public void commit() {}
+        public void commit()
+        {}
 
         @Override
         public String suffix()
@@ -314,7 +313,8 @@ public final class RearmCommand
         }
 
         @Override
-        public void commit() {}
+        public void commit()
+        {}
 
         @Override
         public String suffix()

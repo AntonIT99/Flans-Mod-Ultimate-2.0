@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.AttachmentType;
 import com.flansmodultimate.common.types.PaintableType;
 import lombok.Getter;

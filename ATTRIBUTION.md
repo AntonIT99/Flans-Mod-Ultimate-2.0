@@ -15,9 +15,9 @@ with the legacy Flan's Mod family of projects described below.
 
 The principal project lineage relevant to Flan's Mod Ultimate 2 is:
 
-**Flan's Mod**  
-→ **Flan's Mod Plus / Flan's Mod Ultimate**  
-→ **Flan's Mod Ultimate Stability Edition**  
+**Flan's Mod**
+→ **Flan's Mod Plus / Flan's Mod Ultimate**
+→ **Flan's Mod Ultimate Stability Edition**
 → **Flan's Mod Ultimate 2**
 
 ### Flan's Mod

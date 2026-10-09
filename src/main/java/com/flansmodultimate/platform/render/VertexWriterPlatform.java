@@ -1,10 +1,9 @@
 package com.flansmodultimate.platform.render;
 
-import org.lwjgl.system.MemoryStack;
-
 import com.flansmodultimate.util.FlansLog;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.system.MemoryStack;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -18,22 +17,23 @@ import java.lang.reflect.Modifier;
  * {@code org.embeddedt.embeddium.api} package and describes formats with its own {@code VertexFormatDescription}.
  * The API is resolved reflectively, so neither renderer is a compile nor a runtime dependency. Client-only.
  *
- * <p>A consumer accepts bulk writes only if the renderer made it a writer and it can take them now. Sodium converts a
+ * <p>
+ * A consumer accepts bulk writes only if the renderer made it a writer and it can take them now. Sodium converts a
  * batch to the buffer's format, through Iris's own serializer for an active shader pack's extended entity format;
- * Embeddium refuses buffers whose format it cannot describe.</p>
+ * Embeddium refuses buffers whose format it cannot describe.
+ * </p>
  */
 public final class VertexWriterPlatform
 {
     /** Candidate APIs on this loader: writer interface, holder of the entity-format token, and the token's field. */
     private static final String[][] WRITERS = {
-        {"net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter",
-            "net.caffeinemc.mods.sodium.api.vertex.format.common.EntityVertex", "FORMAT", "Sodium"},
-        {"org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter",
-            "org.embeddedt.embeddium.api.vertex.format.common.ModelVertex", "FORMAT", "Embeddium"}};
+        {"net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter", "net.caffeinemc.mods.sodium.api.vertex.format.common.EntityVertex", "FORMAT", "Sodium"},
+        {"org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter", "org.embeddedt.embeddium.api.vertex.format.common.ModelVertex", "FORMAT", "Embeddium"}};
     private static final MethodType CAN_USE_TYPE = MethodType.methodType(boolean.class, Object.class);
     private static final MethodType PUSH_TYPE = MethodType.methodType(void.class, Object.class, MemoryStack.class, long.class, int.class);
 
-    private VertexWriterPlatform() {}
+    private VertexWriterPlatform()
+    {}
 
     /** Whether {@code consumer} takes bulk writes of vanilla entity-format vertices right now. */
     public static boolean canWrite(VertexConsumer consumer)
@@ -43,7 +43,7 @@ public final class VertexWriterPlatform
             return false;
         try
         {
-            return (boolean)binding.canUse().invokeExact((Object)consumer);
+            return (boolean) binding.canUse().invokeExact((Object) consumer);
         }
         catch (Throwable ex)
         {
@@ -59,7 +59,7 @@ public final class VertexWriterPlatform
     {
         try
         {
-            Writer.BINDING.push().invokeExact((Object)consumer, stack, pointer, count);
+            Writer.BINDING.push().invokeExact((Object) consumer, stack, pointer, count);
         }
         catch (RuntimeException | Error ex)
         {
@@ -92,9 +92,8 @@ public final class VertexWriterPlatform
         for (Method method : writer.getMethods())
         {
             Class<?>[] parameters = method.getParameterTypes();
-            if (!method.getName().equals("push") || Modifier.isStatic(method.getModifiers()) || parameters.length != 4
-                || parameters[0] != MemoryStack.class || parameters[1] != long.class || parameters[2] != int.class
-                || !parameters[3].isInstance(format))
+            if (!method.getName().equals("push") || Modifier.isStatic(method.getModifiers()) || parameters.length != 4 || parameters[0] != MemoryStack.class || parameters[1] != long.class
+                || parameters[2] != int.class || !parameters[3].isInstance(format))
                 continue;
             MethodHandle push = MethodHandles.insertArguments(lookup.unreflect(method), 4, format).asType(PUSH_TYPE);
             MethodHandle canUse = lookup.findVirtual(writer, "canUseIntrinsics", MethodType.methodType(boolean.class)).asType(CAN_USE_TYPE);
@@ -103,7 +102,8 @@ public final class VertexWriterPlatform
         throw new NoSuchMethodException(writerName + ".push for " + format.getClass().getName());
     }
 
-    record Binding(Class<?> type, MethodHandle canUse, MethodHandle push, String name) {}
+    record Binding(Class<?> type, MethodHandle canUse, MethodHandle push, String name)
+    {}
 
     /** Resolved on first use, once the renderer's classes are loadable. */
     private static final class Writer

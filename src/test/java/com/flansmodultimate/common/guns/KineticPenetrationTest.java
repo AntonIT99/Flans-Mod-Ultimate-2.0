@@ -18,8 +18,7 @@ class KineticPenetrationTest
     void servicePistolRoundMatchesTheLegacyDefault()
     {
         // 8 g at 360 m/s is the anchor the default reference was chosen for
-        assertEquals(BulletType.DEFAULT_PENETRATING_POWER,
-            ShootingHelper.getKineticPenetratingPower(8F, bpt(360D)), 0.01F);
+        assertEquals(BulletType.DEFAULT_PENETRATING_POWER, ShootingHelper.getKineticPenetratingPower(8F, bpt(360D)), 0.01F);
     }
 
     @Test

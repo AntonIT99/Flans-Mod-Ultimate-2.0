@@ -1,7 +1,6 @@
 package com.flansmodultimate.content;
 
 import com.flansmodultimate.util.FlansLog;
-import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.chat.Component;
@@ -51,9 +50,8 @@ public class ModRepositorySource extends FolderRepositorySource
     @Override
     public void loadPacks(@NotNull Consumer<Pack> pOnLoad)
     {
-        java.util.Set<Path> selected = ContentManager.getContentPacks().stream()
-            .filter(provider -> !provider.isPreprocessed())
-            .map(provider -> provider.getPath().toAbsolutePath().normalize()).collect(java.util.stream.Collectors.toSet());
+        java.util.Set<Path> selected = ContentManager.getContentPacks().stream().filter(provider -> !provider.isPreprocessed()).map(provider -> provider.getPath().toAbsolutePath().normalize())
+            .collect(java.util.stream.Collectors.toSet());
         if (packType == PackType.CLIENT_RESOURCES)
             ModernAssetAliases.rebuild(ContentManager.getContentPacks());
 

@@ -18,7 +18,8 @@ import java.util.Optional;
 final class AliasFileManager implements AutoCloseable
 {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private static final Type type = new TypeToken<Map<String, String>>() {}.getType();
+    private static final Type type = new TypeToken<Map<String, String>>()
+    {}.getType();
 
     @Nullable
     private FileSystem fs;

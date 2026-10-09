@@ -1,29 +1,18 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.driveables.PilotGun;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
-import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.FireableGun;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.driveables.weapons.PilotGun;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu.Page;
-import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.item.TooltipKeys;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.PlaneType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.item.tooltip.AmmoStatContext;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.InventoryHelper;
@@ -39,14 +28,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /** 1.7.10-style driveable hub, inventory, fuel and repair interface. */
@@ -64,8 +46,12 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     private int ammoTooltipPageCount;
     private boolean ammoTooltipPagesVisible;
 
-    /** @param pilotGun the bank-mounted driver gun, or null for a passenger seat's gun */
-    private record GunRow(String name, GunType type, @Nullable PilotGun pilotGun) {}
+    /**
+     * @param pilotGun
+     *            the bank-mounted driver gun, or null for a passenger seat's gun
+     */
+    private record GunRow(String name, GunType type, @Nullable PilotGun pilotGun)
+    {}
 
     public DriveableInventoryScreen(DriveableInventoryMenu menu, Inventory inventory, Component title)
     {
@@ -102,25 +88,21 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         for (int index = 0; index < repairParts.size(); index++)
         {
             int capturedIndex = index;
-            repairButtons.add(addRenderableWidget(Button.builder(
-                    Component.translatable("gui.flansmodultimate.driveable.repair"),
-                    ignored -> repairPart(capturedIndex))
-                .bounds(repairLeft() + 9, repairTop() + 23, 45, 20).build()));
+            repairButtons.add(addRenderableWidget(
+                Button.builder(Component.translatable("gui.flansmodultimate.driveable.repair"), ignored -> repairPart(capturedIndex)).bounds(repairLeft() + 9, repairTop() + 23, 45, 20).build()));
         }
         refreshButtons();
     }
 
     private void addPageButton(Page page, int x, int y, String label)
     {
-        Button button = Button.builder(Component.literal(label), ignored -> selectPage(page))
-            .bounds(x, y, 58, 20).build();
+        Button button = Button.builder(Component.literal(label), ignored -> selectPage(page)).bounds(x, y, 58, 20).build();
         pageButtons.put(page, addRenderableWidget(button));
     }
 
     private String missilePageName()
     {
-        return menu.getDriveable() != null && menu.getDriveable().getConfigType() instanceof PlaneType
-            ? "Missiles" : "Shells";
+        return menu.getDriveable() != null && menu.getDriveable().getConfigType() instanceof PlaneType ? "Missiles" : "Shells";
     }
 
     private void selectPage(Page page)
@@ -184,8 +166,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             return false;
         if (minecraft.player.getAbilities().instabuild)
             return true;
-        return InventoryHelper.canConsumeAll(minecraft.player.getInventory(), menu.getDriveable().getConfigType()
-            .getItemsRequired(part, menu.getDriveable().getDriveableData().getEngine()));
+        return InventoryHelper.canConsumeAll(minecraft.player.getInventory(), menu.getDriveable().getConfigType().getItemsRequired(part, menu.getDriveable().getDriveableData().getEngine()));
     }
 
     private void repairPart(int index)
@@ -316,14 +297,11 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             if (ammoIndex < type.getNumPassengerGunners())
             {
                 int currentAmmoIndex = ammoIndex;
-                type.getSeats().stream()
-                    .filter(seat -> seat != null && seat.getGunnerID() == currentAmmoIndex && seat.getGunType() != null)
-                    .findFirst()
-                    .ifPresent(seat -> {
-                        String name = seat.getGunName().isBlank()
-                            ? "Passenger gun " + (seat.getId() + 1) : seat.getGunName();
-                        rows.add(new GunRow(name, seat.getGunType(), null));
-                    });
+                type.getSeats().stream().filter(seat -> seat != null && seat.getGunnerID() == currentAmmoIndex && seat.getGunType() != null).findFirst().ifPresent(seat ->
+                {
+                    String name = seat.getGunName().isBlank() ? "Passenger gun " + (seat.getId() + 1) : seat.getGunName();
+                    rows.add(new GunRow(name, seat.getGunType(), null));
+                });
                 continue;
             }
             int pilotIndex = ammoIndex - type.getNumPassengerGunners();
@@ -351,8 +329,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             ItemStack gunStack = ModUtils.getItemStack(row.type()).orElse(ItemStack.EMPTY);
             if (!gunStack.isEmpty())
                 graphics.renderItem(gunStack, x + 10, itemY);
-            graphics.drawString(font, Component.literal(font.plainSubstrByWidth(row.name(), 55)),
-                x + 53, y + 29 + visible * 19, 0x000000, false);
+            graphics.drawString(font, Component.literal(font.plainSubstrByWidth(row.name(), 55)), x + 53, y + 29 + visible * 19, 0x000000, false);
 
             List<ShootableType> ammo = row.type().getAmmoTypes();
             for (int ammoIndex = 0; ammoIndex < Math.min(3, ammo.size()); ammoIndex++)
@@ -372,12 +349,8 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         List<BulletType> candidates = type.isAcceptAllAmmo()
             ? InfoType.getInfoTypes().values().stream().filter(BulletType.class::isInstance).map(BulletType.class::cast).toList()
             : type.getAmmoTypes();
-        return candidates.stream()
-            .filter(type::isValidAmmo)
-            .filter(ammo -> weaponTypes.contains(ammo.getWeaponType()))
-            .distinct()
-            .sorted(Comparator.comparing(InfoType::getName, String.CASE_INSENSITIVE_ORDER))
-            .toList();
+        return candidates.stream().filter(type::isValidAmmo).filter(ammo -> weaponTypes.contains(ammo.getWeaponType())).distinct()
+            .sorted(Comparator.comparing(InfoType::getName, String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     private void renderLegacyTooltip(GuiGraphics graphics, int mouseX, int mouseY)
@@ -390,17 +363,13 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         List<Component> lines = new ArrayList<>();
         if (menu.getPage() == Page.REPAIR)
             lines.addAll(repairTooltip(mouseX, mouseY));
-        else if (menu.getPage() == Page.MISSILES && mouseX >= x + 10 && mouseX < x + 166
-            && mouseY >= y + 20 && mouseY < y + 90)
+        else if (menu.getPage() == Page.MISSILES && mouseX >= x + 10 && mouseX < x + 166 && mouseY >= y + 20 && mouseY < y + 90)
         {
-            lines.addAll(ammoTooltip("missiles", Component.literal("[" + missilePageName() + "]"),
-                acceptedVehicleAmmo(EnumSet.of(EnumWeaponType.MISSILE, EnumWeaponType.SHELL)), bankContext(true)));
+            lines.addAll(ammoTooltip("missiles", Component.literal("[" + missilePageName() + "]"), acceptedVehicleAmmo(EnumSet.of(EnumWeaponType.MISSILE, EnumWeaponType.SHELL)), bankContext(true)));
         }
-        else if (menu.getPage() == Page.BOMBS && mouseX >= x + 10 && mouseX < x + 166
-            && mouseY >= y + 20 && mouseY < y + 90)
+        else if (menu.getPage() == Page.BOMBS && mouseX >= x + 10 && mouseX < x + 166 && mouseY >= y + 20 && mouseY < y + 90)
         {
-            lines.addAll(ammoTooltip("bombs", Component.literal("[Bombs / Mines]"),
-                acceptedVehicleAmmo(EnumSet.of(EnumWeaponType.BOMB, EnumWeaponType.MINE)), bankContext(false)));
+            lines.addAll(ammoTooltip("bombs", Component.literal("[Bombs / Mines]"), acceptedVehicleAmmo(EnumSet.of(EnumWeaponType.BOMB, EnumWeaponType.MINE)), bankContext(false)));
         }
         else if (menu.getPage() == Page.GUNS && mouseY >= y + 25)
         {
@@ -417,8 +386,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
                 else if (mouseX >= x + 28 && mouseX < x + 46)
                     lines.addAll(ammoTooltip("gun:" + index, Component.literal("[Ammo]"), ammo, gunContext(gun)));
                 else if (mouseX >= x + 110 && ammoIcon < Math.min(3, ammo.size()) && mouseY < y + 25 + row * 19 + 16)
-                    lines.addAll(ammoTooltip("gun:" + index + ":" + ammoIcon, Component.literal(gun.name()),
-                        List.of(ammo.get(ammoIcon)), gunContext(gun)));
+                    lines.addAll(ammoTooltip("gun:" + index + ":" + ammoIcon, Component.literal(gun.name()), List.of(ammo.get(ammoIcon)), gunContext(gun)));
             }
         }
         if (!lines.isEmpty())
@@ -429,8 +397,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
      * Ammunition list tooltip. Holding Shift expands every entry with the same stats as the
      * ammo item's own detailed tooltip; entries that do not fit on screen are paged with Shift + scroll.
      */
-    private List<Component> ammoTooltip(String key, Component header, List<? extends ShootableType> ammo,
-                                        Function<ShootableType, AmmoStatContext> contexts)
+    private List<Component> ammoTooltip(String key, Component header, List<? extends ShootableType> ammo, Function<ShootableType, AmmoStatContext> contexts)
     {
         if (!key.equals(ammoTooltipKey))
         {
@@ -445,8 +412,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             ammo.forEach(type -> lines.add(Component.literal("> ").append(ModUtils.getDisplayName(type))));
             if (!ammo.isEmpty() && minecraft != null)
             {
-                Component keyName = minecraft.options.keyShift.getTranslatedKeyMessage().copy()
-                    .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+                Component keyName = minecraft.options.keyShift.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
                 lines.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));
             }
             return lines;
@@ -478,8 +444,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         ammoTooltipPage = Mth.clamp(ammoTooltipPage, 0, pages.size() - 1);
         lines.addAll(pages.get(ammoTooltipPage));
         if (pages.size() > 1)
-            lines.add(Component.translatable("gui.flansmodultimate.driveable.ammo_page",
-                ammoTooltipPage + 1, pages.size()).withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Component.translatable("gui.flansmodultimate.driveable.ammo_page", ammoTooltipPage + 1, pages.size()).withStyle(ChatFormatting.DARK_GRAY));
         return lines;
     }
 
@@ -509,18 +474,12 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     private List<Component> ammoDetails(ShootableType type, @Nullable AmmoStatContext context, @Nullable String roundName)
     {
         List<Component> block = new ArrayList<>();
-        block.add(Component.literal("> ").append(ModUtils.getDisplayName(type))
-            .append(roundName == null ? "" : " - " + roundName)
-            .withStyle(ChatFormatting.YELLOW));
+        block.add(Component.literal("> ").append(ModUtils.getDisplayName(type)).append(roundName == null ? "" : " - " + roundName).withStyle(ChatFormatting.YELLOW));
 
         List<Component> stats = new ArrayList<>();
         if (type.getRoundsPerItem() > 1)
             stats.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ROUNDS), String.valueOf(type.getRoundsPerItem())));
-        ModUtils.getItemStack(type)
-            .map(ItemStack::getItem)
-            .filter(ShootableItem.class::isInstance)
-            .map(ShootableItem.class::cast)
-            .ifPresent(item -> item.appendAmmoStats(stats, context));
+        ModUtils.getItemStack(type).map(ItemStack::getItem).filter(ShootableItem.class::isInstance).map(ShootableItem.class::cast).ifPresent(item -> item.appendAmmoStats(stats, context));
         stats.forEach(line -> block.add(Component.literal("  ").append(line)));
         return block;
     }
@@ -540,8 +499,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         {
             if (minecraft != null)
             {
-                Component keyName = minecraft.options.keyShift.getTranslatedKeyMessage().copy()
-                    .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
+                Component keyName = minecraft.options.keyShift.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC);
                 lines.add(Component.translatable(TooltipKeys.HOLD_FOR_DETAILS, keyName).withStyle(ChatFormatting.GRAY));
             }
             return lines;
@@ -552,23 +510,20 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             return lines;
 
         boolean bank = row.pilotGun() != null;
-        boolean secondary = bank && driveable.getConfigType().shootPoints(true).stream()
-            .anyMatch(point -> point.getRootPos() == row.pilotGun());
+        boolean secondary = bank && driveable.getConfigType().shootPoints(true).stream().anyMatch(point -> point.getRootPos() == row.pilotGun());
         FireableGun fireable = bank ? driveable.getWeaponBankFireableGun(gun, secondary) : new FireableGun(gun);
         float shootDelay = bank ? driveable.getWeaponBankShootDelay(secondary) : gun.getShootDelay(null);
         EnumFireMode mode = bank ? driveable.getWeaponBankFireMode(secondary) : gun.getFireMode(null);
 
         if (shootDelay > 0F)
             lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RATE), IFlanItem.formatFloat(1200F / shootDelay) + " rpm"));
-        lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MODE),
-            Component.translatable("tooltip.flansmodultimate.fire_mode." + mode.name().toLowerCase(Locale.ROOT))));
+        lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MODE), Component.translatable("tooltip.flansmodultimate.fire_mode." + mode.name().toLowerCase(Locale.ROOT))));
         if (gun.getNumBullets() > 1)
             lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOT), String.valueOf(gun.getNumBullets())));
 
         // The weapon's own velocity is only a fallback for ammunition that declares none; see the ammo tooltip.
         float velocity = fireable.getBulletSpeed() * fireable.getBulletSpeedMultiplier();
-        lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MUZZLE_VELOCITY),
-            velocity != 0F ? IFlanItem.formatFloat(velocity * 20F) + " m/s" : "∞"));
+        lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MUZZLE_VELOCITY), velocity != 0F ? IFlanItem.formatFloat(velocity * 20F) + " m/s" : "∞"));
 
         float dispersion = Mth.RAD_TO_DEG * ShootingHelper.ANGULAR_SPREAD_FACTOR * fireable.getSpread();
         if (dispersion > 0F)
@@ -609,15 +564,15 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         if (row.pilotGun() == null)
             return ammo -> driveable.getPassengerAmmoStatContext(row.type(), ammo);
 
-        boolean secondary = driveable.getConfigType().shootPoints(true).stream()
-            .anyMatch(point -> point.getRootPos() == row.pilotGun());
+        boolean secondary = driveable.getConfigType().shootPoints(true).stream().anyMatch(point -> point.getRootPos() == row.pilotGun());
         return ammo -> driveable.getBankAmmoStatContext(row.type(), secondary, ammo);
     }
 
     /**
      * Resolves shells, missiles, bombs and mines through whichever weapon bank fires their weapon type.
      *
-     * @param launchStats false for dropped ordnance, which has no meaningful muzzle velocity or dispersion
+     * @param launchStats
+     *            false for dropped ordnance, which has no meaningful muzzle velocity or dispersion
      */
     private Function<ShootableType, AmmoStatContext> bankContext(boolean launchStats)
     {
@@ -625,7 +580,8 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         if (driveable == null || driveable.getConfigType() == null)
             return ammo -> null;
         DriveableType type = driveable.getConfigType();
-        return ammo -> {
+        return ammo ->
+        {
             EnumWeaponType weapon = ammo instanceof BulletType bullet ? bullet.getWeaponType() : EnumWeaponType.NONE;
             boolean secondary = type.weaponType(true) == weapon && type.weaponType(false) != weapon;
             return driveable.getBankAmmoStatContext(null, secondary, ammo).withLaunchStats(launchStats);
@@ -656,8 +612,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     {
         List<Component> lines = new ArrayList<>();
         lines.add(Component.literal(part.getType().getName()).withStyle(ChatFormatting.YELLOW));
-        lines.add(Component.translatable("gui.flansmodultimate.driveable.part_health",
-            formatStat(part.getHealth()), formatStat(part.getMaxHealth())).withStyle(ChatFormatting.GRAY));
+        lines.add(Component.translatable("gui.flansmodultimate.driveable.part_health", formatStat(part.getHealth()), formatStat(part.getMaxHealth())).withStyle(ChatFormatting.GRAY));
 
         DriveableType type = menu.getDriveable() == null ? null : menu.getDriveable().getConfigType();
         if (type != null && type.getResolvedArmor() != null)
@@ -668,14 +623,11 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
                 ArmorPlate plate = type.getResolvedArmor().plate(part.getType(), facing).authored();
                 if (!plate.isArmoured())
                     continue;
-                Component facingName = Component.translatable(
-                    "gui.flansmodultimate.driveable.facing." + facing.name().toLowerCase(Locale.ROOT));
+                Component facingName = Component.translatable("gui.flansmodultimate.driveable.facing." + facing.name().toLowerCase(Locale.ROOT));
                 Component line = plate.slopeDeg() != 0F
-                    ? Component.translatable("gui.flansmodultimate.driveable.armor_plate_sloped",
-                        facingName, formatStat(plate.thicknessMm()), formatStat(plate.slopeDeg()),
+                    ? Component.translatable("gui.flansmodultimate.driveable.armor_plate_sloped", facingName, formatStat(plate.thicknessMm()), formatStat(plate.slopeDeg()),
                         formatStat(lineOfSightArmor(plate)))
-                    : Component.translatable("gui.flansmodultimate.driveable.armor_plate",
-                        facingName, formatStat(plate.thicknessMm()));
+                    : Component.translatable("gui.flansmodultimate.driveable.armor_plate", facingName, formatStat(plate.thicknessMm()));
                 if (plate.hasDistinctHeatProtection())
                     line = line.copy().append(" | HEAT " + formatStat(plate.heatThicknessMm()) + " mm");
                 plates.add(Component.literal("  ").append(line).withStyle(ChatFormatting.GRAY));
@@ -688,8 +640,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         }
 
         if (part.getPenetrationResistance() > 0F)
-            lines.add(Component.translatable("gui.flansmodultimate.driveable.penetration_resistance",
-                formatStat(part.getPenetrationResistance())).withStyle(ChatFormatting.GRAY));
+            lines.add(Component.translatable("gui.flansmodultimate.driveable.penetration_resistance", formatStat(part.getPenetrationResistance())).withStyle(ChatFormatting.GRAY));
         return lines;
     }
 
@@ -708,9 +659,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
 
     private static String formatStat(float value)
     {
-        return Math.abs(value - Math.round(value)) < 0.05F
-            ? Integer.toString(Math.round(value))
-            : String.format(Locale.ROOT, "%.1f", value);
+        return Math.abs(value - Math.round(value)) < 0.05F ? Integer.toString(Math.round(value)) : String.format(Locale.ROOT, "%.1f", value);
     }
 
     private void renderFuel(GuiGraphics graphics, int x, int y)
@@ -739,8 +688,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int top = repairTop();
         int end = visibleRepairEnd(parts);
         graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLEREPAIR, left, top, 0, 0, 202, 23);
-        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
-            ? title.getString() : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
+        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null ? title.getString() : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
         graphics.drawString(font, vehicleName + " - Repair", left + 7, top + 7, 0xFFFFFF, false);
         int y = 23;
         for (int index = repairOffset; index < end; index++)
@@ -756,14 +704,12 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             graphics.setColor(1F, 1F, 1F, 1F);
 
             int nameX = broken ? 60 : 10;
-            graphics.drawString(font, Component.literal(font.plainSubstrByWidth(part.getType().getName(), broken ? 48 : 95)),
-                left + nameX, top + y + 6, 0xFFFFFF, false);
+            graphics.drawString(font, Component.literal(font.plainSubstrByWidth(part.getType().getName(), broken ? 48 : 95)), left + nameX, top + y + 6, 0xFFFFFF, false);
             graphics.drawCenteredString(font, Math.round(health * 100F) + "%", left + 148, top + y + 6, 0xFFFFFF);
 
             if (broken && menu.getDriveable() != null)
             {
-                List<ItemStack> required = menu.getDriveable().getConfigType().getItemsRequired(part,
-                    menu.getDriveable().getDriveableData().getEngine());
+                List<ItemStack> required = menu.getDriveable().getConfigType().getItemsRequired(part, menu.getDriveable().getDriveableData().getEngine());
                 for (int item = 0; item < Math.min(7, required.size()); item++)
                 {
                     int itemX = left + 57 + item * 18;
@@ -780,16 +726,14 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
     {
-        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
-            ? title.getString() : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
+        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null ? title.getString() : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
         if (menu.getPage() == Page.REPAIR)
             return;
 
         String pageName = menu.getPage() == Page.MISSILES ? missilePageName() : menu.getPage().getDisplayName();
         String suffix = menu.getPage() == Page.MENU ? "" : " - " + pageName;
         int titleY = menu.getPage() == Page.FUEL ? 25 : 6;
-        graphics.drawString(font, Component.literal(font.plainSubstrByWidth(vehicleName + suffix, 155)),
-            LEGACY_X_OFFSET + 6, titleY, 0x404040, false);
+        graphics.drawString(font, Component.literal(font.plainSubstrByWidth(vehicleName + suffix, 155)), LEGACY_X_OFFSET + 6, titleY, 0x404040, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
     }
 
@@ -799,29 +743,25 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int x = legacyLeft();
         int y = topPos;
         int backY = y + (menu.getPage() == Page.FUEL ? 24 : 5);
-        if (!menu.isPassengerGunMenu() && menu.getPage() != Page.MENU && menu.getPage() != Page.REPAIR
-            && mouseX > x + 161 && mouseX < x + 171 && mouseY > backY && mouseY < backY + 10)
+        if (!menu.isPassengerGunMenu() && menu.getPage() != Page.MENU && menu.getPage() != Page.REPAIR && mouseX > x + 161 && mouseX < x + 171 && mouseY > backY && mouseY < backY + 10)
         {
             selectPage(Page.MENU);
             return true;
         }
         if (menu.getPage() != Page.MENU && menu.getPage() != Page.FUEL && menu.getPage() != Page.REPAIR)
         {
-            if (mouseX > x + 161 && mouseX < x + 171 && mouseY > y + 41 && mouseY < y + 51
-                && menu.getScrollRow() > 0)
+            if (mouseX > x + 161 && mouseX < x + 171 && mouseY > y + 41 && mouseY < y + 51 && menu.getScrollRow() > 0)
             {
                 sendMenuButton(DriveableInventoryMenu.SCROLL_UP_BUTTON);
                 return true;
             }
-            if (mouseX > x + 161 && mouseX < x + 171 && mouseY > y + 53 && mouseY < y + 63
-                && menu.getScrollRow() < menu.getMaxScrollRow())
+            if (mouseX > x + 161 && mouseX < x + 171 && mouseY > y + 53 && mouseY < y + 63 && menu.getScrollRow() < menu.getMaxScrollRow())
             {
                 sendMenuButton(DriveableInventoryMenu.SCROLL_DOWN_BUTTON);
                 return true;
             }
         }
-        if (menu.getPage() == Page.REPAIR && mouseX > repairLeft() + 185 && mouseX < repairLeft() + 195
-            && mouseY > repairTop() + 5 && mouseY < repairTop() + 15)
+        if (menu.getPage() == Page.REPAIR && mouseX > repairLeft() + 185 && mouseX < repairLeft() + 195 && mouseY > repairTop() + 5 && mouseY < repairTop() + 15)
         {
             selectPage(Page.MENU);
             return true;

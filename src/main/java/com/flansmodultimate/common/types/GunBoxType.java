@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.common.recipe.RecipeParser;
 import com.flansmodultimate.content.IContentProvider;
@@ -31,14 +30,14 @@ public class GunBoxType extends BlockType
     protected GunBoxPage currentPage = new GunBoxPage(DEFAULT_PAGE_NAME);
     protected GunBoxEntry currentGunEntry;
 
-    /** Custom GUI variables. Use an unsigned hex code for colors.*/
+    /** Custom GUI variables. Use an unsigned hex code for colors. */
     protected String guiTexturePath;
     @Getter
     protected String gunBoxTextColor = "404040";
     @Getter
     protected String itemListTextColor = "404040";
     @Getter
-    protected String itemTextColor= "404040";
+    protected String itemTextColor = "404040";
     @Getter
     protected String pageTextColor = "FFFFFF";
     @Getter
@@ -100,15 +99,11 @@ public class GunBoxType extends BlockType
                 if (currentPage.getRawEntryCount() >= MAX_GUNS_PER_PAGE)
                     addPage(DEFAULT_PAGE_NAME + " " + (gunPages.size() + 1));
 
-                currentGunEntry = new GunBoxEntry(split[1],
-                    RecipeParser.parseAmountThenItemReferences(split, 2, contentPack, file, "GunBox recipe " + String.join(" ", split)),
-                    contentPack,
-                    file,
-                    String.join(" ", split),
-                    false);
+                currentGunEntry = new GunBoxEntry(split[1], RecipeParser.parseAmountThenItemReferences(split, 2, contentPack, file, "GunBox recipe " + String.join(" ", split)), contentPack, file,
+                    String.join(" ", split), false);
                 currentPage.addEntry(currentGunEntry);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logError("Adding gun to GunBox failed", file, ex);
             }
@@ -130,12 +125,8 @@ public class GunBoxType extends BlockType
                     return;
                 }
 
-                currentGunEntry.addAmmoEntry(new GunBoxEntry(split[1],
-                    RecipeParser.parseAmountThenItemReferences(split, 2, contentPack, file, "GunBox recipe " + String.join(" ", split)),
-                    contentPack,
-                    file,
-                    String.join(" ", split),
-                    true));
+                currentGunEntry.addAmmoEntry(new GunBoxEntry(split[1], RecipeParser.parseAmountThenItemReferences(split, 2, contentPack, file, "GunBox recipe " + String.join(" ", split)), contentPack,
+                    file, String.join(" ", split), true));
             }
             catch (Exception ex)
             {
@@ -203,8 +194,7 @@ public class GunBoxType extends BlockType
 
     public static class GunBoxPage
     {
-        @Setter
-        @Getter
+        @Setter @Getter
         protected String pageName;
         protected final List<GunBoxEntry> entries = new ArrayList<>();
 
@@ -340,9 +330,8 @@ public class GunBoxType extends BlockType
             if (entryType != null && ModUtils.getItemStack(entryType).isEmpty())
             {
                 String entryKind = ammoEntry ? "AddAmmo" : "AddGun";
-                logError("Could not create GunBox output item stack for " + entryKind + " '" + itemShortName
-                    + "' (resolved type '" + entryType.getShortName()
-                    + "'), skipping output. Source line: " + sourceLine, sourceFile);
+                logError("Could not create GunBox output item stack for " + entryKind + " '" + itemShortName + "' (resolved type '" + entryType.getShortName() + "'), skipping output. Source line: "
+                    + sourceLine, sourceFile);
             }
             outputStackValidated = true;
         }
@@ -369,9 +358,7 @@ public class GunBoxType extends BlockType
         private void logMissingRequiredPart(RecipeIngredient recipeItem)
         {
             String entryKind = ammoEntry ? "AddAmmo" : "AddGun";
-            logError("Could not resolve GunBox recipe ingredient '" + recipeItem.getItemName()
-                + "' (amount " + recipeItem.getAmount()
-                + ") for " + entryKind + " '" + itemShortName
+            logError("Could not resolve GunBox recipe ingredient '" + recipeItem.getItemName() + "' (amount " + recipeItem.getAmount() + ") for " + entryKind + " '" + itemShortName
                 + "', skipping ingredient. Source line: " + sourceLine, sourceFile);
         }
 

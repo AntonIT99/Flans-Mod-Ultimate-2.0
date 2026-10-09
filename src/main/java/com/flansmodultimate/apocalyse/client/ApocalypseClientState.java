@@ -6,8 +6,10 @@ import lombok.NoArgsConstructor;
 /**
  * Client-side view of the apocalypse countdown.
  *
- * <p>The server only sends a value once a second, so the client counts the ticks in between
- * itself and the displayed timer runs smoothly instead of stepping.</p>
+ * <p>
+ * The server only sends a value once a second, so the client counts the ticks in between
+ * itself and the displayed timer runs smoothly instead of stepping.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseClientState

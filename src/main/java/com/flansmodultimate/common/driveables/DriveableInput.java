@@ -6,9 +6,11 @@ import lombok.NoArgsConstructor;
 /**
  * Compact input flags shared by driveable controllers and the server runtime.
  *
- * <p>The values deliberately describe intent rather than movement. The server
+ * <p>
+ * The values deliberately describe intent rather than movement. The server
  * remains responsible for applying acceleration, rotation, weapon delays and
- * all other state changes.</p>
+ * all other state changes.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DriveableInput
@@ -50,17 +52,15 @@ public final class DriveableInput
     public static final int CYCLE_SIGHT = 1 << 26;
 
     public static final int VALID_MASK = (1 << 27) - 1;
-    public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND
-        | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE
-        | THROTTLE_INCREASE | THROTTLE_DECREASE;
+    public static final int CONTINUOUS_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | PRIMARY_FIRE | SECONDARY_FIRE | ROLL_LEFT | ROLL_RIGHT | BRAKE | THROTTLE_INCREASE
+        | THROTTLE_DECREASE;
     public static final int EDGE_TRIGGERED_MASK = VALID_MASK & ~CONTINUOUS_MASK;
 
     /**
      * Flight controls a passenger may inherit while an aircraft has no pilot.
      * Weapon and auxiliary controls deliberately stay with their authored seat.
      */
-    public static final int AIRCRAFT_FALLBACK_CONTROL_MASK = FORWARD | BACKWARD | LEFT | RIGHT
-        | ASCEND | DESCEND | ROLL_LEFT | ROLL_RIGHT;
+    public static final int AIRCRAFT_FALLBACK_CONTROL_MASK = FORWARD | BACKWARD | LEFT | RIGHT | ASCEND | DESCEND | ROLL_LEFT | ROLL_RIGHT;
 
     public static int sanitize(int mask)
     {

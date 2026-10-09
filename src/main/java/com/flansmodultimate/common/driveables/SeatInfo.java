@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.common.driveables.optics.VehicleOptics;
+import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.content.IContentProvider;
@@ -66,12 +68,14 @@ public final class SeatInfo
      */
     private List<Vector3f> gunBarrels = List.of();
 
-    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName, @Nullable String gunName)
+    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName,
+        @Nullable String gunName)
     {
         this(id, position, part, driver, minYaw, maxYaw, minPitch, maxPitch, gunTypeShortName, gunName, null);
     }
 
-    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName, @Nullable String gunName, @Nullable IContentProvider contentPack)
+    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName,
+        @Nullable String gunName, @Nullable IContentProvider contentPack)
     {
         this.id = Math.max(0, id);
         this.position = new Vector3f(position.x, position.y, position.z);
@@ -90,12 +94,14 @@ public final class SeatInfo
     /**
      * Clamps an aim yaw into this seat's traverse arc.
      *
-     * <p>The arc is measured from its own centre rather than being wrapped into
+     * <p>
+     * The arc is measured from its own centre rather than being wrapped into
      * [-180, 180) first. A rear-facing arc such as {@code 135 225} straddles
      * that boundary, and wrapping first turns every yaw past 180 into a large
      * negative one, which then clamps to the opposite end of the arc and snaps
      * the gunner around. Working relative to the centre keeps the arc contiguous
-     * wherever it sits, and an arc of at least a full turn stays free.</p>
+     * wherever it sits, and an arc of at least a full turn stays free.
+     * </p>
      */
     public float clampYaw(float yaw)
     {
@@ -115,11 +121,13 @@ public final class SeatInfo
     /**
      * Clamps an aim pitch into this seat's elevation range.
      *
-     * <p>Type files state the pair the gunner's way round: the negative number
+     * <p>
+     * Type files state the pair the gunner's way round: the negative number
      * is how far the weapon depresses and the positive one how far it elevates,
      * which is why {@code -15 25} means fifteen degrees down and twenty-five up.
      * Aim pitch is carried in vanilla view space, where a positive angle points
-     * down, so the authored pair maps to {@code [-maxPitch, -minPitch]}.</p>
+     * down, so the authored pair maps to {@code [-maxPitch, -minPitch]}.
+     * </p>
      */
     public float clampPitch(float pitch)
     {

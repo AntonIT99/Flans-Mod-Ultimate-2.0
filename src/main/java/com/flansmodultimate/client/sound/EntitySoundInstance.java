@@ -1,10 +1,10 @@
 package com.flansmodultimate.client.sound;
 
-import com.flansmodultimate.client.SoundHelper;
-import com.flansmodultimate.common.driveables.DriveableControlPhysics;
+import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModClientConfig;
+import lombok.Setter;
 
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
@@ -21,19 +21,28 @@ import net.minecraft.world.entity.Entity;
  */
 public class EntitySoundInstance extends AbstractTickableSoundInstance
 {
-    private final Entity source;
+    private final Entity emitter;
+    private final float basePitch;
+    @Setter
     private boolean varyPitch;
     private boolean stopRequested;
 
     public EntitySoundInstance(SoundEvent soundEvent, Entity source, float range, boolean looping, boolean varyPitch)
     {
-        super(soundEvent, SoundSource.PLAYERS, RandomSource.create());
-        this.source = source;
+        this(soundEvent, source, SoundHelper.getVolumeFromRange(range, false), 1F, RandomSource.create());
         this.varyPitch = varyPitch;
         this.looping = looping;
+    }
+
+    public EntitySoundInstance(SoundEvent soundEvent, Entity emitter, float volume, float pitch, RandomSource random)
+    {
+        super(soundEvent, SoundSource.PLAYERS, random);
+        this.emitter = emitter;
+        basePitch = pitch;
+        this.volume = volume;
+        this.pitch = pitch;
+        relative = false;
         delay = 0;
-        volume = SoundHelper.getVolumeFromRange(range, false);
-        pitch = 1F;
         attenuation = Attenuation.LINEAR;
         followSource();
     }
@@ -47,17 +56,12 @@ public class EntitySoundInstance extends AbstractTickableSoundInstance
     /** True once the sound has nothing left to follow, so it can be forgotten. */
     public boolean isSourceGone()
     {
-        return source.isRemoved() || !source.isAlive();
+        return emitter.isRemoved() || !emitter.isAlive();
     }
 
     public boolean isSound(String sound)
     {
         return getLocation().getPath().equals(sound);
-    }
-
-    public void setVaryPitch(boolean varyPitch)
-    {
-        this.varyPitch = varyPitch;
     }
 
     @Override
@@ -70,19 +74,19 @@ public class EntitySoundInstance extends AbstractTickableSoundInstance
         }
 
         followSource();
-        if (varyPitch && source instanceof Driveable driveable && driveable.getConfigType() != null)
+        if (varyPitch && emitter instanceof Driveable driveable && driveable.getConfigType() != null)
             pitch = DriveableControlPhysics.engineSoundPitch(driveable.getThrottle(),
-                driveable.getConfigType().getEngineSoundPitchCurve(driveable.getConfigType() instanceof PlaneType
-                    ? ModClientConfig.defaultPlaneEnginePitch() : ModClientConfig.defaultVehicleEnginePitch()),
+                driveable.getConfigType()
+                    .getEngineSoundPitchCurve(driveable.getConfigType() instanceof PlaneType ? ModClientConfig.defaultPlaneEnginePitch() : ModClientConfig.defaultVehicleEnginePitch()),
                 driveable.getEngineSoundReverseSpeedRatio());
         else
-            pitch = 1F;
+            pitch = basePitch;
     }
 
     private void followSource()
     {
-        x = source.getX();
-        y = source.getY();
-        z = source.getZ();
+        x = emitter.getX();
+        y = emitter.getY();
+        z = emitter.getZ();
     }
 }

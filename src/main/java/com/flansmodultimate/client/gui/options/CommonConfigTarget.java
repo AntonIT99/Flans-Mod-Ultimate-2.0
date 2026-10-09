@@ -3,14 +3,12 @@ package com.flansmodultimate.client.gui.options;
 import com.flansmodultimate.client.CommonConfigMirror;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketSetCommonConfigValue;
+import com.flansmodultimate.network.server.config.PacketSetCommonConfigValue;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import net.minecraft.client.Minecraft;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The common config. In a world it belongs to the server: values come from what the server reported and

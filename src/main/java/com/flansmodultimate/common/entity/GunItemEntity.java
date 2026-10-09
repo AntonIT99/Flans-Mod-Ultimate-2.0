@@ -80,7 +80,8 @@ public class GunItemEntity extends ItemEntity
     }
 
     @Override
-    public void tick() {
+    public void tick()
+    {
         super.tick();
 
         Level level = level();
@@ -216,7 +217,8 @@ public class GunItemEntity extends ItemEntity
         // Give the player this entity's stored ammo
         for (ItemStack ammo : ammoStacks)
         {
-            if (ammo != null && !ammo.isEmpty()) {
+            if (ammo != null && !ammo.isEmpty())
+            {
                 player.getInventory().add(ammo);
             }
         }

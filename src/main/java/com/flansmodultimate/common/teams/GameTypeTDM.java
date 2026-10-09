@@ -2,6 +2,7 @@ package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.types.Team;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -52,8 +53,7 @@ public class GameTypeTDM extends GameType
         attackerData.setKills(attackerData.getKills() + 1);
         PlayerStats attackerStats = manager.getStats(attacker);
         attackerStats.recordKill(attacker.distanceTo(victim));
-        int xp = manager.getCurrentLoadoutPool()
-            .map(pool -> pool.getExperienceForKill() + Math.max(0, attackerStats.getKillstreak() - 1) * pool.getExperienceForKillstreakBonus())
+        int xp = manager.getCurrentLoadoutPool().map(pool -> pool.getExperienceForKill() + Math.max(0, attackerStats.getKillstreak() - 1) * pool.getExperienceForKillstreakBonus())
             .orElse(manager.getStats(victim).getRank() * 2 + Math.max(1, (int) (attacker.distanceTo(victim) / 10D)));
         manager.awardExperience(attacker, xp);
         manager.addTeamScore(attackerTeam, 1);

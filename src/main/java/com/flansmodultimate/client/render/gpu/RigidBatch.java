@@ -14,11 +14,16 @@ final class RigidBatch implements RigidGeometryConsumer
     {
         /** Return false for upload throttling/failure; flush pending vanilla data only on a GPU draw. */
         boolean draw(RigidBatch batch, boolean flushPending);
+
         VertexConsumer fallback();
+
         void flushFallback();
+
         void failed(RuntimeException exception);
+
         /** GPU draws are over until the next draw: restore any render state kept open between them. */
-        default void endDraws() {}
+        default void endDraws()
+        {}
     }
 
     final GeometryKey key;
@@ -34,7 +39,10 @@ final class RigidBatch implements RigidGeometryConsumer
     private final int maxVertices;
     private int paletteCount;
     /** Distinct palette entries in the pending batch. */
-    int paletteCount() { return paletteCount; }
+    int paletteCount()
+    {
+        return paletteCount;
+    }
     private long vertexCount;
     /** Pose source shared by every part-composed pose. */
     private static final Object COMPOSED = new Object();
@@ -72,29 +80,25 @@ final class RigidBatch implements RigidGeometryConsumer
     }
 
     @Override
-    public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay,
-                                 float red, float green, float blue, float alpha)
+    public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha)
     {
         submit(geometry, pose, light, overlay, red, green, blue, alpha, true);
     }
 
     @Override
-    public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay,
-                       float red, float green, float blue, float alpha, boolean visible)
+    public void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
     {
         submit(geometry, System.identityHashCode(geometry), geometry.vertexCount(), pose, pose, light, overlay, red, green, blue, alpha, visible);
     }
 
     @Override
-    public void submitComposed(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay,
-                               float red, float green, float blue, float alpha, boolean visible)
+    public void submitComposed(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
     {
         submit(geometry, System.identityHashCode(geometry), geometry.vertexCount(), pose, COMPOSED, light, overlay, red, green, blue, alpha, visible);
     }
 
     @Override
-    public void submitCached(RigidGeometry geometry, int identityHash, int vertexCount, PoseStack.Pose pose, int light,
-                             int overlay, float red, float green, float blue, float alpha, boolean visible)
+    public void submitCached(RigidGeometry geometry, int identityHash, int vertexCount, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
     {
         submit(geometry, identityHash, vertexCount, pose, pose, light, overlay, red, green, blue, alpha, visible);
     }
@@ -104,25 +108,27 @@ final class RigidBatch implements RigidGeometryConsumer
      * the same pose source. Equal values from different stack entries are a coincidence of the current angles
      * (a turret at exactly zero yaw equals its hull) and would otherwise change the mesh as those angles move.
      */
-    private void submit(RigidGeometry geometry, int identityHash, int vertices, PoseStack.Pose pose, Object source,
-                        int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
+    private void submit(RigidGeometry geometry, int identityHash, int vertices, PoseStack.Pose pose, Object source, int light, int overlay, float red, float green, float blue, float alpha,
+        boolean visible)
     {
         // Split before exceeding the per-tick upload cap, so larger merged batches
         // cannot become permanently uncacheable. A single oversized part still falls back.
-        if (key.count != 0 && vertexCount + vertices > maxVertices) flush();
+        if (key.count != 0 && vertexCount + vertices > maxVertices)
+            flush();
         if (RenderDiagnostics.enabled)
         {
             RenderDiagnostics.submittedParts++;
-            if (!visible) RenderDiagnostics.culledParts++;
+            if (!visible)
+                RenderDiagnostics.culledParts++;
         }
         ranges.add(vertices, visible);
-        if (paletteCount != 0 && lastSource == source && lastLight == light && lastOverlay == overlay
-            && lastRed == red && lastGreen == green && lastBlue == blue && lastAlpha == alpha
+        if (paletteCount != 0 && lastSource == source && lastLight == light && lastOverlay == overlay && lastRed == red && lastGreen == green && lastBlue == blue && lastAlpha == alpha
             && matchesLastPalette(pose))
         {
             key.add(geometry, identityHash, paletteCount - 1);
             vertexCount += vertices;
-            if (key.count == key.geometries.length) flush();
+            if (key.count == key.geometries.length)
+                flush();
             return;
         }
         int offset = paletteCount * 16;
@@ -158,12 +164,12 @@ final class RigidBatch implements RigidGeometryConsumer
         lastAlpha = alpha;
         key.add(geometry, identityHash, paletteCount++);
         vertexCount += vertices;
-        if (key.count == key.geometries.length || paletteCount == capacity) flush();
+        if (key.count == key.geometries.length || paletteCount == capacity)
+            flush();
     }
 
     @Override
-    public boolean submitToLastPalette(RigidGeometry geometry, int identityHash, int vertexCount,
-                                       PoseStack.Pose source, boolean visible)
+    public boolean submitToLastPalette(RigidGeometry geometry, int identityHash, int vertexCount, PoseStack.Pose source, boolean visible)
     {
         // Split points stay where submit() would put them, so the mesh layout is the same either way.
         if (paletteCount == 0 || lastSource != source || vertexCount + this.vertexCount > maxVertices)
@@ -171,12 +177,14 @@ final class RigidBatch implements RigidGeometryConsumer
         if (RenderDiagnostics.enabled)
         {
             RenderDiagnostics.submittedParts++;
-            if (!visible) RenderDiagnostics.culledParts++;
+            if (!visible)
+                RenderDiagnostics.culledParts++;
         }
         ranges.add(vertexCount, visible);
         key.add(geometry, identityHash, paletteCount - 1);
         this.vertexCount += vertexCount;
-        if (key.count == key.geometries.length) flush();
+        if (key.count == key.geometries.length)
+            flush();
         return true;
     }
 
@@ -189,28 +197,29 @@ final class RigidBatch implements RigidGeometryConsumer
         Matrix4f m = pose.pose();
         float[] p = poses;
         int o = (paletteCount - 1) * 16;
-        if (p[o + 12] != m.m30() || p[o + 13] != m.m31() || p[o + 14] != m.m32()
-            || p[o] != m.m00() || p[o + 1] != m.m01() || p[o + 2] != m.m02() || p[o + 3] != m.m03()
-            || p[o + 4] != m.m10() || p[o + 5] != m.m11() || p[o + 6] != m.m12() || p[o + 7] != m.m13()
-            || p[o + 8] != m.m20() || p[o + 9] != m.m21() || p[o + 10] != m.m22() || p[o + 11] != m.m23()
-            || p[o + 15] != m.m33())
+        if (p[o + 12] != m.m30() || p[o + 13] != m.m31() || p[o + 14] != m.m32() || p[o] != m.m00() || p[o + 1] != m.m01() || p[o + 2] != m.m02() || p[o + 3] != m.m03() || p[o + 4] != m.m10()
+            || p[o + 5] != m.m11() || p[o + 6] != m.m12() || p[o + 7] != m.m13() || p[o + 8] != m.m20() || p[o + 9] != m.m21() || p[o + 10] != m.m22() || p[o + 11] != m.m23() || p[o + 15] != m.m33())
             return false;
         Matrix3f n = pose.normal();
         float[] q = normals;
         int i = (paletteCount - 1) * 9;
-        return q[i] == n.m00() && q[i + 1] == n.m01() && q[i + 2] == n.m02()
-            && q[i + 3] == n.m10() && q[i + 4] == n.m11() && q[i + 5] == n.m12()
-            && q[i + 6] == n.m20() && q[i + 7] == n.m21() && q[i + 8] == n.m22();
+        return q[i] == n.m00() && q[i + 1] == n.m01() && q[i + 2] == n.m02() && q[i + 3] == n.m10() && q[i + 4] == n.m11() && q[i + 5] == n.m12() && q[i + 6] == n.m20() && q[i + 7] == n.m21()
+            && q[i + 8] == n.m22();
     }
 
     void flush()
     {
-        if (key.count == 0) return;
+        if (key.count == 0)
+            return;
         try
         {
-            if (ranges.count == 0) return;
+            if (ranges.count == 0)
+                return;
             boolean rendered;
-            try { rendered = backend.draw(this, needsBarrier); }
+            try
+            {
+                rendered = backend.draw(this, needsBarrier);
+            }
             catch (RuntimeException exception)
             {
                 backend.failed(exception);
@@ -231,20 +240,20 @@ final class RigidBatch implements RigidGeometryConsumer
                 {
                     for (int i = 0; i < key.count; i++)
                     {
-                        if (!ranges.visible[i]) continue;
-                        if (RenderDiagnostics.enabled) RenderDiagnostics.fallbackVertices += key.geometries[i].vertexCount();
+                        if (!ranges.visible[i])
+                            continue;
+                        if (RenderDiagnostics.enabled)
+                            RenderDiagnostics.fallbackVertices += key.geometries[i].vertexCount();
                         int palette = key.paletteIndices[i];
                         int offset = palette * 16;
                         fallbackPose.pose().set(poses, offset);
                         offset = palette * 8;
                         int normalOffset = palette * 9;
-                        fallbackPose.normal().set(normals[normalOffset], normals[normalOffset + 1], normals[normalOffset + 2],
-                            normals[normalOffset + 3], normals[normalOffset + 4], normals[normalOffset + 5],
-                            normals[normalOffset + 6], normals[normalOffset + 7], normals[normalOffset + 8]);
-                        int light = (int)data[offset + 4] | (int)data[offset + 5] << 16;
-                        int overlay = (int)data[offset + 6] | (int)data[offset + 7] << 16;
-                        key.geometries[i].draw(fallbackPose, fallback, light, overlay,
-                            data[offset], data[offset + 1], data[offset + 2], data[offset + 3]);
+                        fallbackPose.normal().set(normals[normalOffset], normals[normalOffset + 1], normals[normalOffset + 2], normals[normalOffset + 3], normals[normalOffset + 4],
+                            normals[normalOffset + 5], normals[normalOffset + 6], normals[normalOffset + 7], normals[normalOffset + 8]);
+                        int light = (int) data[offset + 4] | (int) data[offset + 5] << 16;
+                        int overlay = (int) data[offset + 6] | (int) data[offset + 7] << 16;
+                        key.geometries[i].draw(fallbackPose, fallback, light, overlay, data[offset], data[offset + 1], data[offset + 2], data[offset + 3]);
                     }
                 }
                 finally
@@ -269,7 +278,8 @@ final class RigidBatch implements RigidGeometryConsumer
     {
         flush();
         backend.endDraws();
-        if (fallback != null) backend.flushFallback();
+        if (fallback != null)
+            backend.flushFallback();
         fallback = null;
         needsBarrier = true;
     }
@@ -279,7 +289,8 @@ final class RigidBatch implements RigidGeometryConsumer
         try
         {
             flush();
-            if (drewGpu && fallback != null) backend.flushFallback();
+            if (drewGpu && fallback != null)
+                backend.flushFallback();
         }
         finally
         {
@@ -297,7 +308,8 @@ final class RigidBatch implements RigidGeometryConsumer
     private VertexConsumer fallback()
     {
         flush();
-        if (fallback == null) fallback = backend.fallback();
+        if (fallback == null)
+            fallback = backend.fallback();
         needsBarrier = true;
         return fallback;
     }

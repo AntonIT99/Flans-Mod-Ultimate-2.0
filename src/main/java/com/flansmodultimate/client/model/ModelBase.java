@@ -105,7 +105,8 @@ public abstract class ModelBase implements IModelBase
         renderToBuffer(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, EnumRenderPass.DEFAULT);
     }
 
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        EnumRenderPass renderPass)
     {
         for (ModelRenderer modelRenderer : boxList)
         {
@@ -119,7 +120,9 @@ public abstract class ModelBase implements IModelBase
             }
         }
     }
-    protected static void addVertex(PoseStack poseStack, VertexConsumer vertexConsumer, float x, float y, float z, float u, float v, float normalX, float normalY, float normalZ, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
+
+    protected static void addVertex(PoseStack poseStack, VertexConsumer vertexConsumer, float x, float y, float z, float u, float v, float normalX, float normalY, float normalZ, int packedLight,
+        int packedOverlay, float red, float green, float blue, float alpha)
     {
         PoseStack.Pose pose = poseStack.last();
         VertexPlatform.vertex(vertexConsumer, pose, x, y, z, red, green, blue, alpha, u, v, packedOverlay, packedLight, normalX, normalY, normalZ);

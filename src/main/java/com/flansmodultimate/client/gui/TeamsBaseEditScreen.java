@@ -1,10 +1,9 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketBaseEditState;
-import com.flansmodultimate.network.server.PacketBaseEditAction;
+import com.flansmodultimate.network.client.teams.PacketBaseEditState;
+import com.flansmodultimate.network.server.teams.PacketBaseEditAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,12 +48,11 @@ public final class TeamsBaseEditScreen extends Screen
         addRenderableWidget(nameField);
         setInitialFocus(nameField);
 
-        String[] owners = { "No Team", "Spectator", "Team 1", "Team 2" };
+        String[] owners = {"No Team", "Spectator", "Team 1", "Team 2"};
         for (int i = 0; i < owners.length; i++)
         {
             int owner = i;
-            Button button = Button.builder(Component.literal(owners[i]), ignored -> selectedOwner = owner)
-                .bounds(left + 6 + 62 * i, top + 38, 58, 20).build();
+            Button button = Button.builder(Component.literal(owners[i]), ignored -> selectedOwner = owner).bounds(left + 6 + 62 * i, top + 38, 58, 20).build();
             ownerButtons.add(button);
             addRenderableWidget(button);
         }
@@ -62,15 +60,20 @@ public final class TeamsBaseEditScreen extends Screen
         for (int i = 0; i < 5; i++)
         {
             int slot = i;
-            Button button = Button.builder(Component.empty(), ignored -> selectMap(slot))
-                .bounds(left + 28, top + 75 + 22 * i, 200, 20).build();
+            Button button = Button.builder(Component.empty(), ignored -> selectMap(slot)).bounds(left + 28, top + 75 + 22 * i, 200, 20).build();
             mapButtons.add(button);
             addRenderableWidget(button);
         }
-        previousPage = addRenderableWidget(Button.builder(Component.literal("<"), ignored -> { page--; refreshButtons(); })
-            .bounds(left + 6, top + 119, 20, 20).build());
-        nextPage = addRenderableWidget(Button.builder(Component.literal(">"), ignored -> { page++; refreshButtons(); })
-            .bounds(left + 230, top + 119, 20, 20).build());
+        previousPage = addRenderableWidget(Button.builder(Component.literal("<"), ignored ->
+        {
+            page--;
+            refreshButtons();
+        }).bounds(left + 6, top + 119, 20, 20).build());
+        nextPage = addRenderableWidget(Button.builder(Component.literal(">"), ignored ->
+        {
+            page++;
+            refreshButtons();
+        }).bounds(left + 230, top + 119, 20, 20).build());
         refreshButtons();
     }
 

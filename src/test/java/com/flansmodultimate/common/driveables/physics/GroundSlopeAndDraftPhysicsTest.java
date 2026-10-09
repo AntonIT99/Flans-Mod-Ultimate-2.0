@@ -2,6 +2,9 @@ package com.flansmodultimate.common.driveables.physics;
 
 import org.junit.jupiter.api.Test;
 
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -63,6 +66,24 @@ class GroundSlopeAndDraftPhysicsTest
     }
 
     // -------------------------------------------------------------- draft
+
+    @Test
+    void draftUsesTheAuthoredKeelRatherThanTheEntityOrigin()
+    {
+        AABB core = new AABB(-2D, -3D, -1D, 2D, 1D, 1D);
+        double bottom = MarineDraftPhysics.hullBottomY(core, 2D, point -> point.add(0D, 67D, 0D));
+        assertEquals(61D, bottom, 1.0E-9D);
+        assertEquals(0D, MarineDraftPhysics.verticalVelocity(0D, bottom, 64D, 3D, 0.25D), 1.0E-9D);
+        assertTrue(MarineDraftPhysics.verticalVelocity(0D, 67D, 64D, 3D, 0.25D) < 0D, "using the origin as the keel would incorrectly sink this correctly floating hull");
+    }
+
+    @Test
+    void aTiltedHullUsesItsLowestCorner()
+    {
+        AABB core = new AABB(-4D, -1D, -2D, 4D, 1D, 2D);
+        double bottom = MarineDraftPhysics.hullBottomY(core, 1D, point -> new Vec3(point.y, 64D + point.x, point.z));
+        assertEquals(60D, bottom, 1.0E-9D);
+    }
 
     @Test
     void aHullSittingTooDeepIsPushedUpAndOneTooHighSettles()

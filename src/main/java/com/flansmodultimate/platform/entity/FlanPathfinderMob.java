@@ -21,6 +21,7 @@ public abstract class FlanPathfinderMob extends PathfinderMob
         dropEntityDeathLoot(source, recentlyHit);
     }
 
-    protected void dropEntityDeathLoot(DamageSource source, boolean recentlyHit) {}
+    protected void dropEntityDeathLoot(DamageSource source, boolean recentlyHit)
+    {}
 
 }

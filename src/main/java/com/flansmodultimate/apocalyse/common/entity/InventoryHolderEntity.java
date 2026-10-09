@@ -1,8 +1,8 @@
 package com.flansmodultimate.apocalyse.common.entity;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
-import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.entity.FlanPathfinderMob;
+import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,9 +32,11 @@ import net.minecraft.world.level.Level;
 /**
  * The stand-in a player leaves behind when the apocalypse takes them.
  *
- * <p>It keeps the belongings they were carrying, wanders the spot they vanished from, and
+ * <p>
+ * It keeps the belongings they were carrying, wanders the spot they vanished from, and
  * hands everything back when it is put down — so returning from the apocalypse means
- * finding, and beating, the shape you left behind.</p>
+ * finding, and beating, the shape you left behind.
+ * </p>
  */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class InventoryHolderEntity extends FlanPathfinderMob
@@ -51,11 +53,7 @@ public class InventoryHolderEntity extends FlanPathfinderMob
 
     public static AttributeSupplier.Builder createAttributes()
     {
-        return Mob.createMobAttributes()
-            .add(Attributes.MAX_HEALTH, 20.0D)
-            .add(Attributes.MOVEMENT_SPEED, 0.25D)
-            .add(Attributes.FOLLOW_RANGE, 24.0D)
-            .add(Attributes.ATTACK_DAMAGE, 2.0D);
+        return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20.0D).add(Attributes.MOVEMENT_SPEED, 0.25D).add(Attributes.FOLLOW_RANGE, 24.0D).add(Attributes.ATTACK_DAMAGE, 2.0D);
     }
 
     /** Creates a stand-in holding a copy of everything {@code player} is carrying. */

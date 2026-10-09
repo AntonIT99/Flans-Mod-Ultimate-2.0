@@ -19,12 +19,13 @@ import net.minecraft.world.entity.LivingEntity;
 
 /**
  * NeoForge game-bus subscribers for events whose type, phase or accessors differ between loaders.
- * They adapt the event and call the shared handlers. The hurt stage runs from {@code LivingEntityDamageMixin}.
+ * They adapt the event and call the shared handlers. The hurt stage runs from {@code LivingEntityWaterWalkingMixin}.
  */
 @EventBusSubscriber(modid = FlansMod.MOD_ID)
 public final class CommonGameEvents
 {
-    private CommonGameEvents() {}
+    private CommonGameEvents()
+    {}
 
     @SubscribeEvent
     public static void onMobFinalizeSpawn(FinalizeSpawnEvent event)

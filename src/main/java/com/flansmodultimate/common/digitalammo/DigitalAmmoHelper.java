@@ -6,7 +6,7 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
+import com.flansmodultimate.network.client.gun.PacketSyncDigitalAmmo;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -34,7 +34,8 @@ public final class DigitalAmmoHelper
 
     public static boolean hasEnoughDigitalAmmo(ServerPlayer player, GunItem gunItem)
     {
-        if (!isDigitalAmmoEnabled()) return false;
+        if (!isDigitalAmmoEnabled())
+            return false;
 
         GunType gunType = gunItem.getConfigType();
         int consumeType = gunType.getConsumeBulletType();
@@ -51,8 +52,10 @@ public final class DigitalAmmoHelper
 
     public static boolean tryReloadFromDigitalAmmo(ServerPlayer player, GunItem gunItem, ItemStack gunStack, List<Integer> ammoSlots)
     {
-        if (!isDigitalAmmoEnabled()) return false;
-        if (ammoSlots == null || ammoSlots.isEmpty()) return false;
+        if (!isDigitalAmmoEnabled())
+            return false;
+        if (ammoSlots == null || ammoSlots.isEmpty())
+            return false;
 
         GunType gunType = gunItem.getConfigType();
         int consumeType = gunType.getConsumeBulletType();
@@ -103,10 +106,12 @@ public final class DigitalAmmoHelper
 
     private static ItemStack createVirtualAmmoStack(ShootableType ammoType, int rounds)
     {
-        if (ammoType == null) return ItemStack.EMPTY;
+        if (ammoType == null)
+            return ItemStack.EMPTY;
 
         ItemStack stack = ModUtils.getItemStack(ammoType).orElse(ItemStack.EMPTY);
-        if (stack.isEmpty()) return ItemStack.EMPTY;
+        if (stack.isEmpty())
+            return ItemStack.EMPTY;
 
         if (stack.getItem() instanceof ShootableItem)
         {
@@ -118,7 +123,8 @@ public final class DigitalAmmoHelper
 
     public static void addAmmoToPlayer(ServerPlayer player, int typeId, int amount)
     {
-        if (!isDigitalAmmoEnabled()) return;
+        if (!isDigitalAmmoEnabled())
+            return;
 
         PlayerBulletStorage.PlayerBulletData bulletData = PlayerBulletStorage.getBulletDataByPlayer(player.getUUID());
         double current = PlayerBulletStorage.getBulletsTypeById(bulletData, typeId);
@@ -131,7 +137,8 @@ public final class DigitalAmmoHelper
 
     public static void setPlayerAmmo(ServerPlayer player, int typeId, int amount)
     {
-        if (!isDigitalAmmoEnabled()) return;
+        if (!isDigitalAmmoEnabled())
+            return;
 
         PlayerBulletStorage.PlayerBulletData bulletData = PlayerBulletStorage.getBulletDataByPlayer(player.getUUID());
         int maxAmount = bulletData.getMaxAmount();

@@ -6,9 +6,9 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelBase;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.client.render.MuzzleFlashRenderer;
+import com.flansmodultimate.client.render.effects.MuzzleFlashRenderer;
 import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.DeployedGunMuzzleGeometry;
+import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.config.ModClientConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -59,16 +59,18 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         poseStack.mulPose(Axis.YP.rotationDegrees(180F - baseYaw));
 
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderBipod(deployedGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderBipod(deployedGun, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale,
+                renderPass);
 
         float aimPitch = getAimPitch(deployedGun, partialTicks);
         float aimWorldYaw = getAimWorldYaw(deployedGun, partialTicks);
         float aimLocalYaw = Mth.wrapDegrees(aimWorldYaw - baseYaw);
-        
+
         poseStack.mulPose(Axis.YP.rotationDegrees(-aimLocalYaw));
 
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
-            model.renderGun(deployedGun, aimPitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, modelScale, renderPass);
+            model.renderGun(deployedGun, aimPitch, poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F,
+                modelScale, renderPass);
 
         renderMuzzleFlash(deployedGun, model, aimPitch, poseStack, buffer, modelScale);
 
@@ -80,16 +82,13 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
             ModelMG.MuzzleOriginData muzzle = model.getModelMuzzleOriginData();
             if (muzzle != null)
             {
-                Vec3 position = deployedGun.position().add(DeployedGunMuzzleGeometry.modelMuzzleOffset(
-                    muzzle.pivot(), muzzle.muzzle(), modelScale, aimWorldYaw, aimPitch));
+                Vec3 position = deployedGun.position().add(DeployedGunMuzzleGeometry.modelMuzzleOffset(muzzle.pivot(), muzzle.muzzle(), modelScale, aimWorldYaw, aimPitch));
                 DebugHelper.spawnDebugDot(position, 2, 1F, 1F, 1F);
             }
         }
     }
 
-    private static void renderMuzzleFlash(@NotNull DeployedGun gun, @NotNull ModelMG model, float aimPitch,
-                                          @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer,
-                                          float modelScale)
+    private static void renderMuzzleFlash(@NotNull DeployedGun gun, @NotNull ModelMG model, float aimPitch, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, float modelScale)
     {
         if (gun.getMuzzleFlashTicks() <= 0)
             return;
@@ -110,8 +109,7 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         ModelBase flash = MuzzleFlashRenderer.select(gun.getConfigType(), false);
         if (flash != null)
         {
-            MuzzleFlashRenderer.render(flash, gun.getConfigType(), gun.getMuzzleFlashFrame(), modelScale * flashScale,
-                poseStack, buffer, OverlayTexture.NO_OVERLAY);
+            MuzzleFlashRenderer.render(flash, gun.getConfigType(), gun.getMuzzleFlashFrame(), modelScale * flashScale, poseStack, buffer, OverlayTexture.NO_OVERLAY);
         }
         poseStack.popPose();
     }
@@ -130,7 +128,8 @@ public class DeployableGunRenderer extends FlanEntityRenderer<DeployedGun>
         float bottom = gun.getConfigType().getBottomViewLimit();
         if (top > bottom)
         {
-            float t = top; top = bottom;
+            float t = top;
+            top = bottom;
             bottom = t;
         }
 

@@ -1,83 +1,21 @@
 package com.flansmodultimate.network;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
-
-import com.flansmodultimate.network.client.PacketAimPoseState;
-import com.flansmodultimate.network.client.PacketAllowDebug;
-import com.flansmodultimate.network.client.PacketApocalypseCountdown;
-import com.flansmodultimate.network.client.PacketBaseEditState;
-import com.flansmodultimate.network.client.PacketBlockHitEffect;
-import com.flansmodultimate.network.client.PacketBulletTrail;
-import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
-import com.flansmodultimate.network.client.PacketCancelSound;
-import com.flansmodultimate.network.client.PacketCommonConfigValues;
-import com.flansmodultimate.network.client.PacketContentFingerprint;
-import com.flansmodultimate.network.client.PacketDebugHitboxes;
-import com.flansmodultimate.network.client.PacketDebugShootPoint;
-import com.flansmodultimate.network.client.PacketDistantContacts;
-import com.flansmodultimate.network.client.PacketDistantExplosion;
-import com.flansmodultimate.network.client.PacketDriveableBankFired;
-import com.flansmodultimate.network.client.PacketDriveableCollisionBypass;
-import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
-import com.flansmodultimate.network.client.PacketDriveableDamage;
-import com.flansmodultimate.network.client.PacketDriveablePassengerFired;
-import com.flansmodultimate.network.client.PacketDriveablePrediction;
-import com.flansmodultimate.network.client.PacketDriveableRenderState;
-import com.flansmodultimate.network.client.PacketDriveableScreenShake;
-import com.flansmodultimate.network.client.PacketExplodeParticles;
-import com.flansmodultimate.network.client.PacketFlak;
-import com.flansmodultimate.network.client.PacketFlanExplosionBlockParticles;
-import com.flansmodultimate.network.client.PacketFlanExplosionParticles;
-import com.flansmodultimate.network.client.PacketFlashBang;
-import com.flansmodultimate.network.client.PacketGunFireModeClient;
-import com.flansmodultimate.network.client.PacketGunMeleeClient;
-import com.flansmodultimate.network.client.PacketGunMuzzleFlash;
-import com.flansmodultimate.network.client.PacketGunPreferredAmmoClient;
-import com.flansmodultimate.network.client.PacketGunReloadClient;
-import com.flansmodultimate.network.client.PacketGunSecondaryModeClient;
-import com.flansmodultimate.network.client.PacketGunShootClient;
-import com.flansmodultimate.network.client.PacketGunShotPose;
-import com.flansmodultimate.network.client.PacketGunToggleClient;
-import com.flansmodultimate.network.client.PacketGunVariableZoomClient;
-import com.flansmodultimate.network.client.PacketHitMarker;
-import com.flansmodultimate.network.client.PacketKillMessage;
-import com.flansmodultimate.network.client.PacketLoadoutState;
-import com.flansmodultimate.network.client.PacketParticle;
-import com.flansmodultimate.network.client.PacketParticles;
-import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.client.PacketPlayerClassSkins;
-import com.flansmodultimate.network.client.PacketSmokeShell;
-import com.flansmodultimate.network.client.PacketSyncCommonConfig;
-import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
-import com.flansmodultimate.network.client.PacketTeamsState;
-import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
-import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
-import com.flansmodultimate.network.server.PacketAimPosePreference;
-import com.flansmodultimate.network.server.PacketBaseEditAction;
-import com.flansmodultimate.network.server.PacketBuyWeapon;
-import com.flansmodultimate.network.server.PacketDeployedGunInput;
-import com.flansmodultimate.network.server.PacketDistantSubscription;
-import com.flansmodultimate.network.server.PacketDriveableInput;
-import com.flansmodultimate.network.server.PacketGunFireMode;
-import com.flansmodultimate.network.server.PacketGunInput;
-import com.flansmodultimate.network.server.PacketGunPreferredAmmo;
-import com.flansmodultimate.network.server.PacketGunReload;
-import com.flansmodultimate.network.server.PacketGunScopedState;
-import com.flansmodultimate.network.server.PacketGunSecondaryMode;
-import com.flansmodultimate.network.server.PacketGunSwitchDelay;
-import com.flansmodultimate.network.server.PacketGunToggle;
-import com.flansmodultimate.network.server.PacketGunVariableZoom;
-import com.flansmodultimate.network.server.PacketLoadoutAction;
-import com.flansmodultimate.network.server.PacketManualGuidance;
-import com.flansmodultimate.network.server.PacketReloadPreferences;
-import com.flansmodultimate.network.server.PacketRequestCommonConfig;
-import com.flansmodultimate.network.server.PacketRequestDebug;
-import com.flansmodultimate.network.server.PacketRequestDismount;
+import com.flansmodultimate.network.client.config.*;
+import com.flansmodultimate.network.client.debug.*;
+import com.flansmodultimate.network.client.driveable.*;
+import com.flansmodultimate.network.client.effects.*;
+import com.flansmodultimate.network.client.gun.*;
+import com.flansmodultimate.network.client.teams.*;
 import com.flansmodultimate.network.server.PacketSelectPaintjob;
-import com.flansmodultimate.network.server.PacketSetCommonConfigValue;
-import com.flansmodultimate.network.server.PacketTeamsAction;
+import com.flansmodultimate.network.server.config.PacketRequestCommonConfig;
+import com.flansmodultimate.network.server.config.PacketSetCommonConfigValue;
+import com.flansmodultimate.network.server.debug.PacketRequestDebug;
+import com.flansmodultimate.network.server.driveable.*;
+import com.flansmodultimate.network.server.gun.*;
+import com.flansmodultimate.network.server.teams.*;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.network.NetworkPlatform;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -90,11 +28,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Loader-neutral packet registry and send API. Gameplay packets implement {@link IPacket};
@@ -126,35 +60,19 @@ public final class PacketHandler
         if (prepared)
             return;
 
-        addClientPackets(
-            PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class,
-            PacketBlockHitEffect.class, PacketBulletTrail.class, PacketCancelGunReloadClient.class,
-            PacketCancelSound.class, PacketCommonConfigValues.class, PacketContentFingerprint.class,
-            PacketDebugHitboxes.class, PacketDebugShootPoint.class, PacketDistantContacts.class, PacketDistantExplosion.class,
-            PacketDriveableBankFired.class, PacketDriveableCrashFireball.class,
-            PacketDriveableCollisionBypass.class, PacketDriveableDamage.class, PacketDriveablePassengerFired.class,
-            PacketDriveablePrediction.class,
-            PacketDriveableRenderState.class, PacketDriveableScreenShake.class,
-            PacketExplodeParticles.class, PacketFlak.class,
-            PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class,
-            PacketGunFireModeClient.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class,
-            PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class,
-            PacketGunShootClient.class, PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class,
-            PacketHitMarker.class,
-            PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class, PacketParticles.class,
-            PacketPlayerClassSkins.class, PacketPlaySound.class, PacketSmokeShell.class,
-            PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketTeamsState.class
-        );
-        addServerPackets(
-            PacketAAGunModelBarrelOrigins.class, PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class,
-            PacketDeployedGunInput.class, PacketDistantSubscription.class, PacketDriveableInput.class, PacketBuyWeapon.class,
-            PacketGunFireMode.class,
-            PacketGunInput.class, PacketGunPreferredAmmo.class, PacketGunReload.class, PacketGunScopedState.class,
-            PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunToggle.class, PacketGunVariableZoom.class,
-            PacketManualGuidance.class, PacketReloadPreferences.class, PacketRequestCommonConfig.class,
-            PacketRequestDebug.class, PacketRequestDismount.class, PacketSelectPaintjob.class,
-            PacketSetCommonConfigValue.class, PacketTeamsAction.class, PacketLoadoutAction.class
-        );
+        addClientPackets(PacketAimPoseState.class, PacketAllowDebug.class, PacketApocalypseCountdown.class, PacketBaseEditState.class, PacketBlockHitEffect.class, PacketBulletTrail.class,
+            PacketCancelGunReloadClient.class, PacketCancelSound.class, PacketCommonConfigValues.class, PacketContentFingerprint.class, PacketDebugHitboxes.class, PacketDebugShootPoint.class,
+            PacketDistantContacts.class, PacketDistantExplosion.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class, PacketDriveableCollisionBypass.class,
+            PacketDriveableDamage.class, PacketDriveablePassengerFired.class, PacketDriveablePrediction.class, PacketDriveableRenderState.class, PacketDriveableScreenShake.class,
+            PacketExplodeParticles.class, PacketFlak.class, PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class, PacketGunFireModeClient.class,
+            PacketGunMeleeClient.class, PacketGunMuzzleFlash.class, PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class, PacketGunShootClient.class,
+            PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class, PacketHitMarker.class, PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class,
+            PacketParticles.class, PacketPlayerClassSkins.class, PacketPlaySound.class, PacketSmokeShell.class, PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketTeamsState.class);
+        addServerPackets(PacketAAGunModelBarrelOrigins.class, PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class, PacketDeployedGunInput.class,
+            PacketDistantSubscription.class, PacketDriveableInput.class, PacketBuyWeapon.class, PacketGrenadeThrow.class, PacketGunFireMode.class, PacketGunInput.class, PacketGunPreferredAmmo.class,
+            PacketGunReload.class, PacketGunScopedState.class, PacketGunSecondaryMode.class, PacketGunSwitchDelay.class, PacketGunToggle.class, PacketGunVariableZoom.class, PacketManualGuidance.class,
+            PacketReloadPreferences.class, PacketRequestCommonConfig.class, PacketRequestDebug.class, PacketRequestDismount.class, PacketSelectPaintjob.class, PacketSetCommonConfigValue.class,
+            PacketTeamsAction.class, PacketLoadoutAction.class);
 
         Comparator<Class<?>> byName = Comparator.comparing(Class::getName, String.CASE_INSENSITIVE_ORDER);
         CLIENT_PACKET_TYPES.sort(byName);

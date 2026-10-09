@@ -1,8 +1,8 @@
 package com.flansmodultimate.network;
 
 import com.flansmodultimate.FlansMod;
-import io.netty.handler.codec.DecoderException;
 import com.flansmodultimate.platform.registry.RegistryEntry;
+import io.netty.handler.codec.DecoderException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -14,10 +14,12 @@ import net.minecraft.sounds.SoundEvent;
 /**
  * Writes one of this mod's sound names as its sound event registry id, and anything else as text.
  *
- * <p>Every content-pack sound is registered as a sound event under the {@code flansmod} namespace,
+ * <p>
+ * Every content-pack sound is registered as a sound event under the {@code flansmod} namespace,
  * and Forge makes the client's sound event ids match the server's while connecting, the same ids
  * vanilla's own sound packets rely on. So the id is safe whatever packs each side has loaded: a
- * sound the client lacks would already have failed the connection's registry check.</p>
+ * sound the client lacks would already have failed the connection's registry check.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SoundNameCodec

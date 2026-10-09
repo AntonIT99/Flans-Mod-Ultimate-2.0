@@ -5,18 +5,22 @@ import org.jetbrains.annotations.Nullable;
 /**
  * The single place where real-world units are converted into Minecraft units.
  *
- * <p>The mod's physical convention, already assumed by the speed readout in
+ * <p>
+ * The mod's physical convention, already assumed by the speed readout in
  * {@code ClientHudOverlays} and by {@code EnumSpeedUnit}, is:
+ *
  * <pre>
  * 1 block  = 1 metre
  * 20 ticks = 1 second
  * </pre>
  *
- * <p>Therefore {@code blocksPerTick = kmh / 3.6 / 20 = kmh / 72}. Nothing else in
+ * <p>
+ * Therefore {@code blocksPerTick = kmh / 3.6 / 20 = kmh / 72}. Nothing else in
  * the codebase may divide by 72; every conversion goes through this class so the
  * global speed scale can never be applied twice or forgotten.
  *
- * <p>Authored real-world values are never mutated by scaling. The scale is a
+ * <p>
+ * Authored real-world values are never mutated by scaling. The scale is a
  * presentation/gameplay factor applied at conversion time only.
  */
 public final class VehiclePhysicsUnits
@@ -46,7 +50,8 @@ public final class VehiclePhysicsUnits
     /** Kilograms per imperial long ton (2240 lb), the displacement unit of most pre-1960 naval sources. */
     public static final double KG_PER_LONG_TON = 1016.0469088D;
 
-    private VehiclePhysicsUnits() {}
+    private VehiclePhysicsUnits()
+    {}
 
     /**
      * Converts mechanical horsepower to kilowatts, so {@code RealEnginePowerHp}
@@ -157,15 +162,16 @@ public final class VehiclePhysicsUnits
      * Factor that brings a speed in blocks per tick under an absolute ceiling
      * expressed in km/h, or exactly one when it is already under.
      *
-     * <p>Scaling a velocity by this preserves its direction, which is what makes
+     * <p>
+     * Scaling a velocity by this preserves its direction, which is what makes
      * it a speed limit rather than a per-axis clamp.
      *
-     * @param capKmh the ceiling; a non-positive or non-finite value means no cap
+     * @param capKmh
+     *            the ceiling; a non-positive or non-finite value means no cap
      */
     public static double speedCapScale(double speedBlocksPerTick, double capKmh)
     {
-        if (!Double.isFinite(capKmh) || capKmh <= 0D || !Double.isFinite(speedBlocksPerTick)
-            || speedBlocksPerTick <= 0D)
+        if (!Double.isFinite(capKmh) || capKmh <= 0D || !Double.isFinite(speedBlocksPerTick) || speedBlocksPerTick <= 0D)
             return 1D;
         double cap = kmhToBlocksPerTick(capKmh);
         return speedBlocksPerTick <= cap ? 1D : cap / speedBlocksPerTick;

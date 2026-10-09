@@ -1,55 +1,29 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.render.KillMessageData;
-import com.flansmodultimate.common.AmbientMobArmor;
-import com.flansmodultimate.common.EnchantmentModule;
-import com.flansmodultimate.common.FlanDamageSources;
-import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.command.DefaultAmmoCommand;
-import com.flansmodultimate.common.command.DigitalAmmoCommand;
-import com.flansmodultimate.common.command.FMParticleCommand;
-import com.flansmodultimate.common.command.FlanEntityCommand;
-import com.flansmodultimate.common.command.GunAttachmentsCommand;
-import com.flansmodultimate.common.command.HitboxDebugCommand;
-import com.flansmodultimate.common.command.RearmCommand;
-import com.flansmodultimate.common.command.ShootPointDebugCommand;
-import com.flansmodultimate.common.command.TeamsCommand;
-import com.flansmodultimate.common.command.TryClassCommand;
-import com.flansmodultimate.common.command.TryTeamCommand;
-import com.flansmodultimate.common.command.VehicleCollisionDebugCommand;
-import com.flansmodultimate.common.command.VehiclePhysicsCommand;
-import com.flansmodultimate.common.command.WorldPhysicsCommand;
+import com.flansmodultimate.api.IEquipmentPolicy;
+import com.flansmodultimate.client.render.hud.KillMessageData;
+import com.flansmodultimate.common.*;
+import com.flansmodultimate.common.command.*;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoStorageHandler;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.distant.DistantSync;
-import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
-import com.flansmodultimate.common.entity.Bullet;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Seat;
-import com.flansmodultimate.common.entity.Shootable;
-import com.flansmodultimate.common.entity.ThrownGun;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionBypass;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.guns.GunArmPoses;
-import com.flansmodultimate.common.item.CustomArmorItem;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.IFlanItem;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsManager;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.Team;
-import com.flansmodultimate.config.ModApocalypseConfig;
-import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.config.ModCommonConfigSync;
+import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.config.*;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketContentFingerprint;
-import com.flansmodultimate.network.client.PacketKillMessage;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.config.PacketContentFingerprint;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.teams.PacketKillMessage;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.world.LootTablePlatform;
@@ -85,10 +59,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -101,26 +72,15 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @EventBusSubscriber(modid = FlansMod.MOD_ID)
 public final class CommonEventHandler
 {
-    private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(
-        LootTablePlatform.id(BuiltInLootTables.ABANDONED_MINESHAFT),
-        LootTablePlatform.id(BuiltInLootTables.VILLAGE_WEAPONSMITH),
-        LootTablePlatform.id(BuiltInLootTables.END_CITY_TREASURE),
-        LootTablePlatform.id(BuiltInLootTables.NETHER_BRIDGE),
-        LootTablePlatform.id(BuiltInLootTables.DESERT_PYRAMID),
-        ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"),
-        ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest")
-    );
+    private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(LootTablePlatform.id(BuiltInLootTables.ABANDONED_MINESHAFT), LootTablePlatform.id(BuiltInLootTables.VILLAGE_WEAPONSMITH),
+        LootTablePlatform.id(BuiltInLootTables.END_CITY_TREASURE), LootTablePlatform.id(BuiltInLootTables.NETHER_BRIDGE), LootTablePlatform.id(BuiltInLootTables.DESERT_PYRAMID),
+        ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"), ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest"));
 
     @Getter
     private static long ticker;
@@ -132,8 +92,7 @@ public final class CommonEventHandler
     /** Marks naturally spawned zombies and skeletons that will receive ambient armor. */
     public static void onMobFinalizeSpawn(Mob mob, MobSpawnType spawnType)
     {
-        if (!(mob instanceof Zombie) && !(mob instanceof AbstractSkeleton)
-            || spawnType != MobSpawnType.NATURAL && spawnType != MobSpawnType.CHUNK_GENERATION)
+        if (!(mob instanceof Zombie) && !(mob instanceof AbstractSkeleton) || spawnType != MobSpawnType.NATURAL && spawnType != MobSpawnType.CHUNK_GENERATION)
             return;
 
         int spawnRate = ModCommonConfig.get().ambientMobArmorSpawnRate();
@@ -172,9 +131,7 @@ public final class CommonEventHandler
     public static void onAnvilUpdate(AnvilUpdateEvent event)
     {
         ItemStack left = event.getLeft();
-        if (left.getItem() instanceof CustomArmorItem armor
-            && armor.getEnchantmentValue() == 0
-            && !event.getRight().isEmpty())
+        if (left.getItem() instanceof CustomArmorItem armor && armor.getEnchantmentValue() == 0 && !event.getRight().isEmpty())
             event.setCanceled(true);
     }
 
@@ -393,9 +350,7 @@ public final class CommonEventHandler
             return true;
         if (manager.getPlayerTeam(player) == Team.SPECTATORS)
             return false;
-        return manager.getCurrentGameType()
-            .map(type -> type.canPlayerPickup(manager, player, item.getItem()))
-            .orElse(true);
+        return manager.getCurrentGameType().map(type -> type.canPlayerPickup(manager, player, item.getItem())).orElse(true);
     }
 
     /** Items whose type declares {@code CanDrop False} cannot be tossed out of the inventory. */
@@ -455,11 +410,10 @@ public final class CommonEventHandler
     {
         boolean cancel = entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat;
 
-        if (!entity.level().isClientSide && entity instanceof ServerPlayer player
-            && FlansMod.teamsManager.getCurrentGameType().map(type -> !type.playerAttacked(player, source)).orElse(false))
+        if (!entity.level().isClientSide && entity instanceof ServerPlayer player && FlansMod.teamsManager.getCurrentGameType().map(type -> !type.playerAttacked(player, source)).orElse(false))
             cancel = true;
 
-        if (!cancel && !entity.level().isClientSide && entity instanceof Player player && tryShieldBlock(player, source, amount))
+        if (!cancel && !entity.level().isClientSide && (!(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponEffects()) && tryShieldBlock(entity, source, amount))
             cancel = true;
         return cancel;
     }
@@ -470,7 +424,7 @@ public final class CommonEventHandler
      * deals no damage at all, but one stronger than the shield's {@code ShieldMaxBlockableMeleeDamage} cannot
      * be blocked.
      */
-    private static boolean tryShieldBlock(Player player, DamageSource source, float amount)
+    private static boolean tryShieldBlock(LivingEntity player, DamageSource source, float amount)
     {
         if (!isShieldBlockable(source) || !isAttackFromFront(player, source))
             return false;
@@ -480,8 +434,7 @@ public final class CommonEventHandler
         float blockChance = 0F;
         for (InteractionHand hand : InteractionHand.values())
         {
-            if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield()
-                && hitStrength <= gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
+            if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield() && hitStrength <= gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
                 blockChance = Math.max(blockChance, gunItem.getConfigType().getShieldBlockChance());
         }
 
@@ -527,21 +480,21 @@ public final class CommonEventHandler
         Entity attacker = source.getEntity();
         if (attacker instanceof LivingEntity living && living.getMainHandItem().getItem() instanceof GunItem gunItem)
             return gunItem.getConfigType().getMeleeDamage(living.getMainHandItem(), false);
+        if (attacker instanceof IEquipmentPolicy policy && policy.flansWeaponEffects())
+            return amount;
         return attacker instanceof LivingEntity living ? (float) living.getAttributeValue(Attributes.ATTACK_DAMAGE) : amount;
     }
 
     /** Melee, thrown guns and vanilla projectiles; Flan's bullets and grenades meet the shield hitbox instead */
     private static boolean isShieldBlockable(DamageSource source)
     {
-        return isMeleeDamage(source) || source.getDirectEntity() instanceof ThrownGun
-            || source.is(DamageTypeTags.IS_PROJECTILE) && !FlanDamageSources.isShootableDamage(source);
+        return isMeleeDamage(source) || source.getDirectEntity() instanceof ThrownGun || source.is(DamageTypeTags.IS_PROJECTILE) && !FlanDamageSources.isShootableDamage(source);
     }
 
     /** A direct hit by a player or mob, or a Flan's custom melee swing */
     private static boolean isMeleeDamage(DamageSource source)
     {
-        return source.is(FlanDamageSources.MELEE) || source.is(DamageTypes.PLAYER_ATTACK)
-            || source.is(DamageTypes.MOB_ATTACK) || source.is(DamageTypes.MOB_ATTACK_NO_AGGRO);
+        return source.is(FlanDamageSources.MELEE) || source.is(DamageTypes.PLAYER_ATTACK) || source.is(DamageTypes.MOB_ATTACK) || source.is(DamageTypes.MOB_ATTACK_NO_AGGRO);
     }
 
     /** Applies Flan damage modifiers once shields and attack cooldown have been handled. */
@@ -557,11 +510,13 @@ public final class CommonEventHandler
         EnchantmentModule.applyOffHandWeaponDamage(damage);
         EnchantmentModule.applyJuggernaut(damage);
 
-        if (entity instanceof Player player)
+        if (!(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponEffects())
         {
-            float absorption = getShieldAbsorption(player);
+            float absorption = getShieldAbsorption(entity);
             // Melee and thrown projectiles are instead blocked outright, or not at all, by ShieldBlockChance
-            if (absorption > 0F && !FlanDamageSources.isShootableDamage(source) && !isShieldBlockable(source) && isAttackFromFront(player, source))
+            // Players' Flan rounds already meet snapshot shield hitboxes. Other living entities use held-shield absorption here.
+            boolean shieldHitboxResolved = entity instanceof Player && FlanDamageSources.isShootableDamage(source);
+            if (absorption > 0F && !shieldHitboxResolved && !isShieldBlockable(source) && isAttackFromFront(entity, source))
             {
                 damage.setAmount(damage.amount() * (1F - absorption));
             }
@@ -579,7 +534,7 @@ public final class CommonEventHandler
         }
     }
 
-    private static float getShieldAbsorption(Player player)
+    private static float getShieldAbsorption(LivingEntity player)
     {
         float absorption = 0F;
         for (InteractionHand hand : InteractionHand.values())
@@ -593,7 +548,7 @@ public final class CommonEventHandler
         return absorption;
     }
 
-    private static boolean isAttackFromFront(Player player, DamageSource source)
+    private static boolean isAttackFromFront(LivingEntity player, DamageSource source)
     {
         Entity attacker = source.getDirectEntity();
         if (attacker == null)
@@ -643,10 +598,8 @@ public final class CommonEventHandler
         if (weapon == null)
             return;
 
-        PacketHandler.sendToDimension(victim.level().dimension(), new PacketKillMessage(new KillMessageData(
-            source.is(FlanDamageSources.HEADSHOT), weapon.getOriginalShortName(),
-            killer.getGameProfile().getName(), teamColour(killer),
-            victim.getGameProfile().getName(), teamColour(victim))));
+        PacketHandler.sendToDimension(victim.level().dimension(), new PacketKillMessage(new KillMessageData(source.is(FlanDamageSources.HEADSHOT), weapon.getOriginalShortName(),
+            killer.getGameProfile().getName(), teamColour(killer), victim.getGameProfile().getName(), teamColour(victim))));
     }
 
     /**
@@ -656,15 +609,13 @@ public final class CommonEventHandler
     @Nullable
     private static InfoType findKillingWeapon(DamageSource source, ServerPlayer killer)
     {
-        if (source.getDirectEntity() instanceof Bullet bullet && bullet.getFiredShot() != null
-            && bullet.getFiredShot().getFireableGun() != null)
+        if (source.getDirectEntity() instanceof Bullet bullet && bullet.getFiredShot() != null && bullet.getFiredShot().getFireableGun() != null)
             return bullet.getFiredShot().getFireableGun().getType();
         if (source.getDirectEntity() instanceof Shootable shootable)
             return shootable.getConfigType();
         if (source.getDirectEntity() instanceof ThrownGun thrownGun)
             return thrownGun.getGunType();
-        if (!FlanDamageSources.isShootableDamage(source) && !source.is(FlanDamageSources.MELEE)
-            && !source.is(FlanDamageSources.EXPLOSION))
+        if (!FlanDamageSources.isShootableDamage(source) && !source.is(FlanDamageSources.MELEE) && !source.is(FlanDamageSources.EXPLOSION))
             return null;
         return killer.getMainHandItem().getItem() instanceof GunItem gunItem ? gunItem.getConfigType() : null;
     }

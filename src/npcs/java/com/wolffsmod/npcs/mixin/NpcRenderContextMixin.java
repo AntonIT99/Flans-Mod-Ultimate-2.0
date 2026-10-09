@@ -12,13 +12,12 @@ import net.minecraft.client.renderer.MultiBufferSource;
 
 /** NeoForge 1.21.1 / Custom NPCs boundary: carry context through the borrowed model's buffer. */
 @Mixin(value = RenderCustomNpc.class, remap = false)
+@SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
 public abstract class NpcRenderContextMixin
 {
-    @ModifyVariable(method = "render(Lnoppes/npcs/entity/EntityCustomNpc;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-        at = @At("HEAD"), argsOnly = true, ordinal = 0)
-    private MultiBufferSource wolffsmodnpcs$worldModelBuffer(MultiBufferSource original, EntityCustomNpc npc,
-        float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light)
+    @ModifyVariable(method = "render(Lnoppes/npcs/entity/EntityCustomNpc;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private MultiBufferSource wolffsmodnpcsWorldModelBuffer(MultiBufferSource original, EntityCustomNpc npc, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light)
     {
-        return NpcRenderBuffers.wrap(original, npc, partialTick, pose, (RenderCustomNpc<?, ?>)(Object)this);
+        return NpcRenderBuffers.wrap(original, npc, partialTick, pose, (RenderCustomNpc<?, ?>) (Object) this);
     }
 }

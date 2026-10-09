@@ -29,20 +29,15 @@ public final class PackagedContentProvider implements IContentProvider
     private final boolean official;
     private final String runId = UUID.randomUUID().toString();
 
-    PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path,
-                            Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,
-                            String archiveContentRoot, String archiveAssetsRoot, String archiveModelsRoot,
-                            boolean archiveBacked, boolean indexAssetsForConflicts)
+    PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path, Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,
+        String archiveContentRoot, String archiveAssetsRoot, String archiveModelsRoot, boolean archiveBacked, boolean indexAssetsForConflicts)
     {
-        this(name, conflictDisplayName, packId, path, developmentContentRoot, developmentAssetsRoot,
-            developmentModelsRoot, archiveContentRoot, archiveAssetsRoot, archiveModelsRoot,
-            archiveBacked, indexAssetsForConflicts, false);
+        this(name, conflictDisplayName, packId, path, developmentContentRoot, developmentAssetsRoot, developmentModelsRoot, archiveContentRoot, archiveAssetsRoot, archiveModelsRoot, archiveBacked,
+            indexAssetsForConflicts, false);
     }
 
-    PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path,
-                            Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,
-                            String archiveContentRoot, String archiveAssetsRoot, String archiveModelsRoot,
-                            boolean archiveBacked, boolean indexAssetsForConflicts, boolean official)
+    PackagedContentProvider(String name, String conflictDisplayName, String packId, Path path, Path developmentContentRoot, Path developmentAssetsRoot, Path developmentModelsRoot,
+        String archiveContentRoot, String archiveAssetsRoot, String archiveModelsRoot, boolean archiveBacked, boolean indexAssetsForConflicts, boolean official)
     {
         this.name = Objects.requireNonNull(name);
         this.conflictDisplayName = Objects.requireNonNull(conflictDisplayName);
@@ -137,8 +132,7 @@ public final class PackagedContentProvider implements IContentProvider
     @Override
     public boolean equals(Object obj)
     {
-        return this == obj || obj instanceof PackagedContentProvider other
-            && path.equals(other.path) && packId.equals(other.packId);
+        return this == obj || obj instanceof PackagedContentProvider other && path.equals(other.path) && packId.equals(other.packId);
     }
 
     @Override

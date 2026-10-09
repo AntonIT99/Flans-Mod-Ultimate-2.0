@@ -1,11 +1,7 @@
 package com.flansmodultimate.client.teams;
 
-import com.flansmodultimate.client.gui.TeamsChooseLoadoutScreen;
-import com.flansmodultimate.client.gui.TeamsLoadoutEditScreen;
-import com.flansmodultimate.client.gui.TeamsLoadoutHubScreen;
-import com.flansmodultimate.client.gui.TeamsMissionResultsScreen;
-import com.flansmodultimate.client.gui.TeamsRewardBoxScreen;
-import com.flansmodultimate.network.client.PacketLoadoutState;
+import com.flansmodultimate.client.gui.*;
+import com.flansmodultimate.network.client.teams.PacketLoadoutState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -37,9 +33,9 @@ public final class LoadoutClientState
             case REWARD_BOX -> minecraft.setScreen(new TeamsRewardBoxScreen());
             case MISSION_RESULTS -> minecraft.setScreen(new TeamsMissionResultsScreen());
             case CLOSE -> {
-                if (minecraft.screen instanceof TeamsLoadoutHubScreen || minecraft.screen instanceof TeamsChooseLoadoutScreen
-                    || minecraft.screen instanceof TeamsLoadoutEditScreen || minecraft.screen instanceof TeamsRewardBoxScreen
-                    || minecraft.screen instanceof TeamsMissionResultsScreen) minecraft.setScreen(null);
+                if (minecraft.screen instanceof TeamsLoadoutHubScreen || minecraft.screen instanceof TeamsChooseLoadoutScreen || minecraft.screen instanceof TeamsLoadoutEditScreen
+                    || minecraft.screen instanceof TeamsRewardBoxScreen || minecraft.screen instanceof TeamsMissionResultsScreen)
+                    minecraft.setScreen(null);
             }
             case NONE -> {
                 // No-op

@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.block;
 
 import com.flansmodultimate.FlansModBlocks;
-
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
 import com.flansmodultimate.common.item.ItemOpStick;
 import com.flansmodultimate.platform.block.FlanEntityBlock;
@@ -53,16 +52,14 @@ public final class TeamSpawnerBlock extends FlanEntityBlock
 
     @NotNull
     @Override
-    public VoxelShape getShape(@NotNull BlockState state, @NotNull net.minecraft.world.level.BlockGetter level,
-                               @NotNull BlockPos pos, @NotNull CollisionContext context)
+    public VoxelShape getShape(@NotNull BlockState state, @NotNull net.minecraft.world.level.BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context)
     {
         return SHAPE;
     }
 
     @NotNull
     @Override
-    public VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull net.minecraft.world.level.BlockGetter level,
-                                        @NotNull BlockPos pos, @NotNull CollisionContext context)
+    public VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull net.minecraft.world.level.BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context)
     {
         return Shapes.empty();
     }

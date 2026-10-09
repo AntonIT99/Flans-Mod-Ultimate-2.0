@@ -24,7 +24,7 @@ public class FlashParticle extends ParticleBase
         zd = vz;
 
         quadSize = 1.0F;
-        
+
         rCol = 1.0F;
         gCol = 1.0F;
         bCol = 1.0F;
@@ -54,7 +54,7 @@ public class FlashParticle extends ParticleBase
     {
         quadSize = scaleMultiplier;
         alpha = 1.0F;
-        
+
         setFrame(Math.min(age, 5));
     }
 

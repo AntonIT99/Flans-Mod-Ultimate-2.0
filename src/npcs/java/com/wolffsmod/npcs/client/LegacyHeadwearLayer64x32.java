@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 
 /** Matches Custom NPCs' headwear behavior with the legacy skin height. */
 @SuppressWarnings("rawtypes")
@@ -25,49 +26,51 @@ public final class LegacyHeadwearLayer64x32 extends LayerInterface implements La
     }
 
     @Override
-    public void render(PoseStack poseStack, MultiBufferSource buffers, int light,
-                       float limbSwing, float limbSwingAmount, float partialTick,
-                       float ageInTicks, float netHeadYaw, float headPitch)
+    public void render(PoseStack poseStack, MultiBufferSource buffers, int light, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch)
     {
-        if (CustomNpcs.HeadWearType != 1 || this.npc.textureLocation == null)
+        if (CustomNpcs.HeadWearType != 1 || npc.textureLocation == null)
             return;
 
         float red = 1F;
         float green = 1F;
         float blue = 1F;
-        if (this.npc.hurtTime <= 0 && this.npc.deathTime <= 0)
+        if (npc.hurtTime <= 0 && npc.deathTime <= 0)
         {
-            int tint = this.npc.display.getTint();
+            int tint = npc.display.getTint();
             red = (tint >> 16 & 0xFF) / 255F;
             green = (tint >> 8 & 0xFF) / 255F;
             blue = (tint & 0xFF) / 255F;
         }
 
-        this.base.head.translateAndRotate(poseStack);
-        Model2DRenderer.textureOverride = this.npc.textureLocation;
+        base.head.translateAndRotate(poseStack);
+        setTextureOverride(npc.textureLocation);
         try
         {
-            VertexConsumer buffer = buffers.getBuffer(RenderType.entityTranslucent(this.npc.textureLocation));
-            this.headwear.render(poseStack, buffer, light, OverlayTexture.NO_OVERLAY,
-                red, green, blue, this.alpha());
+            VertexConsumer buffer = buffers.getBuffer(RenderType.entityTranslucent(npc.textureLocation));
+            headwear.render(poseStack, buffer, light, OverlayTexture.NO_OVERLAY, red, green, blue, alpha());
         }
         finally
         {
-            Model2DRenderer.textureOverride = null;
+            setTextureOverride(null);
         }
     }
 
-    @Override
-    public void rotate(PoseStack poseStack, float limbSwing, float limbSwingAmount,
-                       float partialTick, float ageInTicks, float netHeadYaw, float headPitch)
+    private static void setTextureOverride(ResourceLocation textureLocation)
     {
+        Model2DRenderer.textureOverride = textureLocation;
+    }
+
+    @Override
+    public void rotate(PoseStack poseStack, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch)
+    {
+        // no-op
     }
 
     @Override
     public void preRender(EntityCustomNpc npc)
     {
-        this.base.hat.visible = this.base.head.visible && CustomNpcs.HeadWearType != 1;
-        if (!this.base.hat.visible)
-            this.headwear.config = null;
+        base.hat.visible = base.head.visible && CustomNpcs.HeadWearType != 1;
+        if (!base.hat.visible)
+            headwear.config = null;
     }
 }

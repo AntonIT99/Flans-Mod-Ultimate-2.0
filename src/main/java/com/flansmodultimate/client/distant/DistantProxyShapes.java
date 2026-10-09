@@ -1,11 +1,8 @@
 package com.flansmodultimate.client.distant;
 
-import com.flansmodultimate.common.driveables.CollisionBox;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
+import com.flansmodultimate.common.driveables.collision.DriveableProjectileCollision;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import lombok.AccessLevel;
@@ -15,11 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Builds the simplified shape a driveable is drawn with on the far terrain from its damageable part boxes,
@@ -53,12 +46,14 @@ public final class DistantProxyShapes
      * The shape of a driveable known only from its type and orientation, as for one the client does not track.
      * Turrets are drawn facing forwards.
      *
-     * @param yaw   the driveable's own yaw in degrees, in the legacy model basis
-     * @param pitch the driveable's own pitch in degrees
-     * @param roll  the driveable's own roll in degrees
+     * @param yaw
+     *            the driveable's own yaw in degrees, in the legacy model basis
+     * @param pitch
+     *            the driveable's own pitch in degrees
+     * @param roll
+     *            the driveable's own roll in degrees
      */
-    public static List<DistantBox> forType(DriveableType type, float yaw, float pitch, float roll,
-                                           Set<EnumDriveablePart> destroyed, int argb)
+    public static List<DistantBox> forType(DriveableType type, float yaw, float pitch, float roll, Set<EnumDriveablePart> destroyed, int argb)
     {
         PartTransform transform = (part, local) -> LegacyDriveableCoordinates.modelLocalToWorldDirection(local, yaw, pitch, roll);
         List<DistantBox> boxes = new ArrayList<>();
@@ -81,8 +76,8 @@ public final class DistantProxyShapes
         Vec3 turretOffset = driveable.getCollisionTurretOffset();
         float turretYaw = driveable.getTurretYaw();
         float turretPitch = driveable.getTurretPitch();
-        PartTransform transform = (part, local) -> driveable.modelLocalDirectionToWorld(
-            DriveableProjectileCollision.partPointToHullLocal(local, part, turretYaw, turretPitch, turretPivot, turretOffset));
+        PartTransform transform = (part, local) -> driveable
+            .modelLocalDirectionToWorld(DriveableProjectileCollision.partPointToHullLocal(local, part, turretYaw, turretPitch, turretPivot, turretOffset));
 
         List<DistantBox> boxes = new ArrayList<>();
         for (DriveablePart part : data.getParts().values())
@@ -136,8 +131,7 @@ public final class DistantProxyShapes
         double[] high = {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
         for (int corner = 0; corner < 8; corner++)
         {
-            Vec3 world = transform.toWorld(part, new Vec3((corner & 1) == 0 ? min[0] : max[0],
-                (corner & 2) == 0 ? min[1] : max[1], (corner & 4) == 0 ? min[2] : max[2]));
+            Vec3 world = transform.toWorld(part, new Vec3((corner & 1) == 0 ? min[0] : max[0], (corner & 2) == 0 ? min[1] : max[1], (corner & 4) == 0 ? min[2] : max[2]));
             double[] point = {world.x, world.y, world.z};
             for (int axis = 0; axis < 3; axis++)
             {

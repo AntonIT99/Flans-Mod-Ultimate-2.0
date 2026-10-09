@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.teams;
 
 import com.flansmodultimate.common.types.Team;
+
 import net.minecraft.server.level.ServerPlayer;
 
 /** Free-for-all deathmatch. */
@@ -20,9 +21,8 @@ public final class GameTypeDM extends GameType
     @Override
     public boolean hasWinner(TeamsManager manager, Team team)
     {
-        return manager.getServer().getPlayerList().getPlayers().stream()
-            .anyMatch(player -> manager.getPlayerTeam(player) != Team.SPECTATORS
-                && com.flansmodultimate.common.PlayerData.getInstance(player).getScore() >= manager.getCurrentRound().map(TeamsRound::getScoreLimit).orElse(Integer.MAX_VALUE));
+        return manager.getServer().getPlayerList().getPlayers().stream().anyMatch(player -> manager.getPlayerTeam(player) != Team.SPECTATORS
+            && com.flansmodultimate.common.PlayerData.getInstance(player).getScore() >= manager.getCurrentRound().map(TeamsRound::getScoreLimit).orElse(Integer.MAX_VALUE));
     }
 
     @Override

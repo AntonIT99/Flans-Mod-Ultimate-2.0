@@ -1,8 +1,8 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionBypass;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketDriveableCollisionBypass;
+import com.flansmodultimate.network.client.driveable.PacketDriveableCollisionBypass;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -25,7 +25,8 @@ import java.util.List;
  * Operator control for temporarily passing through driveable collision hulls:
  * for the sender, for chosen players, or for every entity.
  *
- * <p>The optional argument states whether vehicle collision is on, matching the
+ * <p>
+ * The optional argument states whether vehicle collision is on, matching the
  * command's name: {@code false} lets the targets pass through hulls, {@code true}
  * makes hulls solid for them again. Internally that is the inverse bypass flag.
  */
@@ -36,23 +37,14 @@ public final class VehicleCollisionDebugCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(Commands.literal("flandebug")
-            .requires(source -> source.hasPermission(2))
-            .then(Commands.literal("vehiclecollision")
-                .executes(context -> setPlayers(context, List.of(context.getSource().getPlayerOrException()), null))
-                .then(Commands.argument(COLLISION, BoolArgumentType.bool())
-                    .executes(context -> setPlayers(context, List.of(context.getSource().getPlayerOrException()),
-                        bypass(context))))
+        dispatcher.register(Commands.literal("flandebug").requires(source -> source.hasPermission(2))
+            .then(Commands.literal("vehiclecollision").executes(context -> setPlayers(context, List.of(context.getSource().getPlayerOrException()), null))
+                .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setPlayers(context, List.of(context.getSource().getPlayerOrException()), bypass(context))))
                 .then(Commands.literal("player")
-                    .then(Commands.argument("targets", EntityArgument.players())
-                        .executes(context -> setPlayers(context, EntityArgument.getPlayers(context, "targets"), null))
-                        .then(Commands.argument(COLLISION, BoolArgumentType.bool())
-                            .executes(context -> setPlayers(context, EntityArgument.getPlayers(context, "targets"),
-                                bypass(context))))))
-                .then(Commands.literal("all")
-                    .executes(context -> setAll(context, !DriveableCollisionBypass.isAllEntities()))
-                    .then(Commands.argument(COLLISION, BoolArgumentType.bool())
-                        .executes(context -> setAll(context, bypass(context)))))));
+                    .then(Commands.argument("targets", EntityArgument.players()).executes(context -> setPlayers(context, EntityArgument.getPlayers(context, "targets"), null))
+                        .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setPlayers(context, EntityArgument.getPlayers(context, "targets"), bypass(context))))))
+                .then(Commands.literal("all").executes(context -> setAll(context, !DriveableCollisionBypass.isAllEntities()))
+                    .then(Commands.argument(COLLISION, BoolArgumentType.bool()).executes(context -> setAll(context, bypass(context)))))));
     }
 
     /** The bypass state the typed collision state asks for: no collision means bypassing hulls. */
@@ -62,8 +54,7 @@ public final class VehicleCollisionDebugCommand
     }
 
     /** Sets each target's own bypass, or toggles each one individually when {@code bypass} is null. */
-    private static int setPlayers(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets,
-        @Nullable Boolean bypass) throws CommandSyntaxException
+    private static int setPlayers(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets, @Nullable Boolean bypass) throws CommandSyntaxException
     {
         CommandSourceStack source = context.getSource();
         boolean lastState = false;
@@ -91,8 +82,7 @@ public final class VehicleCollisionDebugCommand
     {
         DriveableCollisionBypass.setAllEntities(bypass);
         PacketHandler.sendToAll(new PacketDriveableCollisionBypass(true, bypass));
-        context.getSource().sendSuccess(() -> stateMessage("Vehicle collision " + describe(bypass)
-            + " for all entities", bypass), true);
+        context.getSource().sendSuccess(() -> stateMessage("Vehicle collision " + describe(bypass) + " for all entities", bypass), true);
         return 1;
     }
 

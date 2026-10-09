@@ -67,7 +67,8 @@ public class TypeFile
 
     public void addCategoryConfigMap(Category category, String shortname)
     {
-        category.getPropertiesFor(shortname).forEach((field, value) -> {
+        category.getPropertiesFor(shortname).forEach((field, value) ->
+        {
             String key = field.toLowerCase(Locale.ROOT);
             List<String> categoryValues = value == null ? List.of() : value;
             CategoryPropertyMode mode = category.getPropertyMode(field);

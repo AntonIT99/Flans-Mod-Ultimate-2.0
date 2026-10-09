@@ -53,8 +53,7 @@ class DriveableTypeShootDelayTest
     @Test
     void secondsOutrankRoundsPerMinuteWhichOutrankTheLegacyDelay()
     {
-        VehicleType type = read("Driver 0 0 0", "Primary gun",
-            "ShootDelayPrimarySeconds 0.5", "RoundsPerMinPrimary 600", "ShellDelay 40");
+        VehicleType type = read("Driver 0 0 0", "Primary gun", "ShootDelayPrimarySeconds 0.5", "RoundsPerMinPrimary 600", "ShellDelay 40");
         assertEquals(10F, type.shootDelay(false), 1.0E-6F);
 
         VehicleType byRate = read("Driver 0 0 0", "Primary gun", "RoundsPerMinPrimary 600", "ShellDelay 40");
@@ -75,8 +74,7 @@ class DriveableTypeShootDelayTest
         // The cadence stays on the fastest key by precedence, while the reload
         // takes the slowest of everything stated, so a pack carrying several keys
         // for backwards compatibility reloads at the pace the slowest one implies.
-        VehicleType type = read("Driver 0 0 0", "Primary shell",
-            "RoundsPerMinPrimary 600", "ShellDelay 40", "ReloadTimePrimary 30");
+        VehicleType type = read("Driver 0 0 0", "Primary shell", "RoundsPerMinPrimary 600", "ShellDelay 40", "ReloadTimePrimary 30");
         assertEquals(2F, type.shootDelay(false), 1.0E-6F);
         assertEquals(40F, type.reloadTime(false), 1.0E-6F);
     }

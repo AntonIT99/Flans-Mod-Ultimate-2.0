@@ -31,11 +31,8 @@ class AmmoOverridesTest
     @Test
     void readsEveryScalarKeyAndConvertsVelocityToBlocksPerTick()
     {
-        AmmoOverrides overrides = read(
-            "AmmoMass 44_75APShell 6800",
-            "AmmoMuzzleVelocity 44_75APShell 770",
-            "AmmoExplosiveMassTNTg 44_75APShell 29",
-            "AmmoPenetrationAt100m 44_75APShell 143").overrides();
+        AmmoOverrides overrides = read("AmmoMass 44_75APShell 6800", "AmmoMuzzleVelocity 44_75APShell 770", "AmmoExplosiveMassTNTg 44_75APShell 29", "AmmoPenetrationAt100m 44_75APShell 143")
+            .overrides();
 
         AmmoOverride override = overrides.get("44_75APShell");
         assertNotNull(override);
@@ -60,9 +57,7 @@ class AmmoOverridesTest
     {
         // The whole point of the feature: one weapon restating one shared round must
         // say nothing about the other rounds it accepts.
-        AmmoOverrides overrides = read(
-            "AmmoMass 44_75APShell 6800",
-            "AmmoPenetrationAt100m 44_88APShell 162").overrides();
+        AmmoOverrides overrides = read("AmmoMass 44_75APShell 6800", "AmmoPenetrationAt100m 44_88APShell 162").overrides();
 
         AmmoOverride seventyFive = overrides.get("44_75APShell");
         AmmoOverride eightyEight = overrides.get("44_88APShell");
@@ -77,8 +72,7 @@ class AmmoOverridesTest
     @Test
     void lastDeclarationOfTheSameKeyWins()
     {
-        AmmoOverride override = read("AmmoMass shell 100", "AmmoMass shell 250")
-            .overrides().get("shell");
+        AmmoOverride override = read("AmmoMass shell 100", "AmmoMass shell 250").overrides().get("shell");
         assertNotNull(override);
         assertEquals(250F, override.massGrams());
     }
@@ -86,9 +80,7 @@ class AmmoOverridesTest
     @Test
     void readsAReplacementBeltAndWalksItPeriodically()
     {
-        AmmoOverride override = read(
-            "AddRoundForAmmo belt AP 1 162 0 800 45",
-            "AddRoundForAmmo belt HE 2 135 16 835 0").overrides().get("belt");
+        AmmoOverride override = read("AddRoundForAmmo belt AP 1 162 0 800 45", "AddRoundForAmmo belt HE 2 135 16 835 0").overrides().get("belt");
 
         assertNotNull(override);
         assertTrue(override.hasRounds());
@@ -116,13 +108,8 @@ class AmmoOverridesTest
     @Test
     void malformedLinesWarnAndAreDropped()
     {
-        AmmoOverrides.Result result = read(
-            "AmmoMass 44_75APShell",
-            "AmmoMass 44_88APShell notanumber",
-            "AmmoPenetrationAt100m 44_90APShell -5",
-            "AddRoundForAmmo belt AP",
-            "AddRoundForAmmo belt AP zero 162",
-            "AddRoundForAmmo belt AP 0 162");
+        AmmoOverrides.Result result = read("AmmoMass 44_75APShell", "AmmoMass 44_88APShell notanumber", "AmmoPenetrationAt100m 44_90APShell -5", "AddRoundForAmmo belt AP",
+            "AddRoundForAmmo belt AP zero 162", "AddRoundForAmmo belt AP 0 162");
 
         assertTrue(result.overrides().isEmpty(), "nothing valid was declared");
         assertEquals(6, result.warnings().size());

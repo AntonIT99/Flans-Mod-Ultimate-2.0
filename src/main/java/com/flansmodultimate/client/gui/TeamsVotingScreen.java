@@ -1,11 +1,10 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketTeamsState;
-import com.flansmodultimate.network.server.PacketTeamsAction;
+import com.flansmodultimate.network.client.teams.PacketTeamsState;
+import com.flansmodultimate.network.server.teams.PacketTeamsAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,8 +34,7 @@ public final class TeamsVotingScreen extends Screen
         for (int i = 0; i < count; i++)
         {
             int option = i + 1;
-            addRenderableWidget(Button.builder(Component.translatable("gui.flansmod.teams.vote"), ignored ->
-                PacketHandler.sendToServer(PacketTeamsAction.castVote(option)))
+            addRenderableWidget(Button.builder(Component.translatable("gui.flansmod.teams.vote"), ignored -> PacketHandler.sendToServer(PacketTeamsAction.castVote(option)))
                 .bounds(left + 198, top + 24 + 24 * i, 48, 20).build());
         }
     }

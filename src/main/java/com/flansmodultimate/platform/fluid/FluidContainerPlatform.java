@@ -6,6 +6,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 
@@ -14,14 +15,17 @@ import java.util.function.Predicate;
 /** Loader boundary for looking up item fluid handlers and inspecting their tanks. */
 public final class FluidContainerPlatform
 {
-    private FluidContainerPlatform() {}
+    private FluidContainerPlatform()
+    {}
 
     /**
      * The fluid handler of a single item taken from this stack, or null if it holds no fluid.
      *
-     * <p>The handler works on its own copy of one item, because the loader's bucket wrapper refuses
+     * <p>
+     * The handler works on its own copy of one item, because the loader's bucket wrapper refuses
      * to drain a stack of more than one and replaces the container as it drains. The caller
-     * puts the result back with {@link IFluidHandlerItem#getContainer()}.</p>
+     * puts the result back with {@link IFluidHandlerItem#getContainer()}.
+     * </p>
      */
     @Nullable
     public static IFluidHandlerItem handlerFor(@NotNull ItemStack stack)

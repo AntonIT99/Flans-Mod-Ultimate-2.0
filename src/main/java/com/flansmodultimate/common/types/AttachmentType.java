@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.common.guns.EnumAttachmentType;
 import com.flansmodultimate.common.guns.EnumFireMode;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
@@ -29,7 +28,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Getter
     protected EnumAttachmentType enumAttachmentType = EnumAttachmentType.GENERIC;
 
-    //Attachment Function add-ons
+    // Attachment Function add-ons
     /** This variable controls whether or not bullet sounds should be muffled */
     @Getter
     protected boolean silencer;
@@ -54,7 +53,7 @@ public class AttachmentType extends PaintableType implements IScope
     @Getter
     protected boolean disableMuzzleFlash;
 
-    //Gun behaviour modifiers
+    // Gun behaviour modifiers
     /** These stack between attachments and apply themselves to the gun's default spread */
     @Getter
     protected float spreadMultiplier = 1F;
@@ -87,10 +86,11 @@ public class AttachmentType extends PaintableType implements IScope
     protected String modeOverrideString = StringUtils.EMPTY;
     protected EnumSpreadPattern spreadPattern = null;
 
-    //Underbarrel functions
+    // Underbarrel functions
     /** This variable controls whether the underbarrel is enabled */
     protected boolean secondaryFire;
     /** The list of bullet types that can be used in the secondary mode */
+    @Getter
     protected List<String> secondaryAmmo = new ArrayList<>();
     /** The delay between shots in ticks (1/20ths of seconds) */
     protected float secondaryDamage = 1;
@@ -117,16 +117,18 @@ public class AttachmentType extends PaintableType implements IScope
     /** The number of bullet stacks in the magazine */
     protected int numSecAmmoItems = 1;
 
-    //Scope variables (These variables only come into play for scope attachments)
+    // Scope variables (These variables only come into play for scope attachments)
     /** The zoomLevel of this scope */
     @Getter
     protected float zoomFactor = 1F;
     /** The FOV zoom level of this scope */
     @Getter
     protected float fovFactor = 1F;
-    /** If true, then this scope will active night vision potion effect*/
+    /** If true, then this scope will active night vision potion effect */
     @Getter
     protected boolean hasNightVision;
+    /** Thermal imaging while looking through this scope, from the Labjac Edition's {@code HasThermalVision} */
+    protected boolean thermalVision;
 
     protected float minZoom = 1;
     protected float maxZoom = 4;
@@ -144,20 +146,20 @@ public class AttachmentType extends PaintableType implements IScope
         disableMuzzleFlash = readValue("DisableMuzzleFlash", disableMuzzleFlash, file);
         disableMuzzleFlash = readValue("DisableFlash", disableMuzzleFlash, file);
 
-        //Flashlight settings
+        // Flashlight settings
         flashlight = readValue("Flashlight", flashlight, file);
         flashlightRange = readValue("FlashlightRange", flashlightRange, file);
         flashlightStrength = readValue("FlashlightStrength", flashlightStrength, file);
 
-        //Toggle settings
+        // Toggle settings
         toggleable = readValue("Toggleable", flashlight, file);
         toggleOnSound = readSound("ToggleOnSound", toggleOnSound, file);
         toggleOffSound = readSound("ToggleOffSound", toggleOffSound, file);
 
-        //Mode override
+        // Mode override
         modeOverrideString = readValue("ModeOverride", modeOverrideString, file);
 
-        //Secondary Stuff
+        // Secondary Stuff
         secondaryFire = readValue("SecondaryMode", secondaryFire, file);
 
         String ammo = readValue("SecondaryAmmo", StringUtils.EMPTY, file);
@@ -180,7 +182,7 @@ public class AttachmentType extends PaintableType implements IScope
         secondaryReloadSound = readSound("SecondaryReloadSound", secondaryReloadSound, file);
         toggleSound = readSound("ModeSwitchSound", toggleSound, file);
 
-        //Multipliers
+        // Multipliers
         meleeDamageMultiplier = readValue("MeleeDamageMultiplier", meleeDamageMultiplier, file);
         damageMultiplier = readValue("DamageMultiplier", damageMultiplier, file);
         spreadMultiplier = readValue("SpreadMultiplier", spreadMultiplier, file);
@@ -195,7 +197,7 @@ public class AttachmentType extends PaintableType implements IScope
         moveSpeedMultiplier = readValue("MovementSpeedMultiplier", moveSpeedMultiplier, file);
         moveSpeedMultiplier = readValue("MoveSpeedModifier", moveSpeedMultiplier, file);
 
-        //Scope Variables
+        // Scope Variables
         minZoom = readValue("MinZoom", minZoom, file);
         maxZoom = readValue("MaxZoom", maxZoom, file);
         zoomAugment = readValue("ZoomAugment", zoomAugment, file);
@@ -206,6 +208,8 @@ public class AttachmentType extends PaintableType implements IScope
         overlayName = readResource("ZoomOverlay", overlayName, file);
 
         hasNightVision = readValue("HasNightVision", hasNightVision, file);
+        thermalVision = readValue("HasThermalVision", thermalVision, file);
+        thermalVision = readValue("HasThermal", thermalVision, file);
 
         if (modeOverrideString != null)
             modeOverride = EnumFireMode.getFireMode(modeOverrideString);
@@ -220,6 +224,12 @@ public class AttachmentType extends PaintableType implements IScope
     public boolean hasZoomOverlay()
     {
         return getOverlay().isPresent();
+    }
+
+    @Override
+    public boolean hasThermalVision()
+    {
+        return thermalVision;
     }
 
     @Override
@@ -253,9 +263,11 @@ public class AttachmentType extends PaintableType implements IScope
     }
 
     @Nullable
-    public static AttachmentType getFromNBT(CompoundTag tags) {
+    public static AttachmentType getFromNBT(CompoundTag tags)
+    {
         ItemStack stack = ItemStackData.parseBuiltIn(tags);
-        if (!stack.isEmpty() && stack.getItem() instanceof AttachmentItem attachment) {
+        if (!stack.isEmpty() && stack.getItem() instanceof AttachmentItem attachment)
+        {
             return attachment.getConfigType();
         }
         return null;

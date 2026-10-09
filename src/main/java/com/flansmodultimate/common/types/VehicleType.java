@@ -37,7 +37,8 @@ public class VehicleType extends DriveableType
      */
     private static final float LEGACY_TURRET_ROTATION_TO_AIM_SPEED = 100F / 3F;
 
-    public record SmokePoint(Vector3f position, Vector3f direction, int detonationTime, EnumDriveablePart part) {}
+    public record SmokePoint(Vector3f position, Vector3f direction, int detonationTime, EnumDriveablePart part)
+    {}
 
     protected float turnLeftModifier = 1F;
     protected float turnRightModifier = 1F;
@@ -86,11 +87,9 @@ public class VehicleType extends DriveableType
         applyLegacyTurretRotationSpeed(file);
         turnLeftModifier = readOptionalValue("TurnLeftSpeed", turnLeftModifier, file);
         turnRightModifier = readValue("TurnRightSpeed", turnRightModifier, file);
-        String turnRateKey = file.hasConfigLine("RealTurnRateDegPerSec")
-            ? "RealTurnRateDegPerSec" : "TurnRateDegPerSec";
+        String turnRateKey = file.hasConfigLine("RealTurnRateDegPerSec") ? "RealTurnRateDegPerSec" : "TurnRateDegPerSec";
         float configuredTurnRate = readValue(turnRateKey, 0F, file);
-        realTurnRateDegPerSec = Float.isFinite(configuredTurnRate) && configuredTurnRate > 0F
-            ? configuredTurnRate : 0F;
+        realTurnRateDegPerSec = Float.isFinite(configuredTurnRate) && configuredTurnRate > 0F ? configuredTurnRate : 0F;
         squashMobs = readValue("SquashMobs", squashMobs, file);
         fourWheelDrive = readValue("FourWheelDrive", fourWheelDrive, file);
         tank = readValue("Tank", tank, file);
@@ -140,8 +139,7 @@ public class VehicleType extends DriveableType
     public boolean usesRealTurnRate(boolean forceLegacy, boolean pushed, boolean tracked)
     {
         Float referenceSpeed = getRealWorldSpec().maxSpeedKmh();
-        return !forceLegacy && !pushed && realTurnRateDegPerSec > 0F
-            && (tracked || (referenceSpeed != null && Float.isFinite(referenceSpeed) && referenceSpeed > 0F));
+        return !forceLegacy && !pushed && realTurnRateDegPerSec > 0F && (tracked || (referenceSpeed != null && Float.isFinite(referenceSpeed) && referenceSpeed > 0F));
     }
 
     private void applyLegacyTurretRotationSpeed(TypeFile file)
@@ -158,10 +156,7 @@ public class VehicleType extends DriveableType
             return;
 
         Vector3f aimingSpeed = driver.getAimingSpeed();
-        driver.setAimingSpeed(new Vector3f(
-            legacySpeed * LEGACY_TURRET_ROTATION_TO_AIM_SPEED,
-            aimingSpeed.y,
-            aimingSpeed.z));
+        driver.setAimingSpeed(new Vector3f(legacySpeed * LEGACY_TURRET_ROTATION_TO_AIM_SPEED, aimingSpeed.y, aimingSpeed.z));
     }
 
     /**
@@ -184,8 +179,7 @@ public class VehicleType extends DriveableType
     @Override
     protected LegacyPhysicsHints legacyPhysicsHints()
     {
-        return new LegacyPhysicsHints(tank, fourWheelDrive, maxNegativeThrottle, floatOnWater,
-            false, useRealisticAcceleration);
+        return new LegacyPhysicsHints(tank, fourWheelDrive, maxNegativeThrottle, floatOnWater, false, useRealisticAcceleration);
     }
 
     /** Anything that drives on land clears at least a one-block ledge; boats keep what they declare. */

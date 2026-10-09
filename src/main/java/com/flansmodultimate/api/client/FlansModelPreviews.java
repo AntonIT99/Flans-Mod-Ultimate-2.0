@@ -6,8 +6,8 @@
 package com.flansmodultimate.api.client;
 
 import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.client.render.TypeModelPreview;
-import com.flansmodultimate.client.render.WorldModelPreview;
+import com.flansmodultimate.client.render.preview.TypeModelPreview;
+import com.flansmodultimate.client.render.preview.WorldModelPreview;
 import com.flansmodultimate.common.types.InfoType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -26,18 +26,23 @@ import java.util.Optional;
  * Draws static previews of content-pack models, such as for a GUI, a custom entity or a block
  * entity. Client only, on the render thread.
  *
- * <p>Supports AA guns and driveables. A preview shows the model at rest: turrets and guns face
- * forward, doors are closed and gear is down.</p>
+ * <p>
+ * Supports AA guns and driveables. A preview shows the model at rest: turrets and guns face
+ * forward, doors are closed and gear is down.
+ * </p>
  */
 @ApiStatus.Experimental
 public final class FlansModelPreviews
 {
-    private FlansModelPreviews() {}
+    private FlansModelPreviews()
+    {}
 
     /**
      * Measures the static preview geometry, including model transforms and model scale.
      * Client render thread only; cached until model reload.
-     * @param type definition to measure
+     *
+     * @param type
+     *            definition to measure
      * @return geometry bounds in the same block coordinates as {@link #render}, before resting-height
      *         offsets; empty for missing, unsupported or invalid geometry
      */
@@ -47,7 +52,8 @@ public final class FlansModelPreviews
     }
 
     /**
-     * @param texture the texture to draw with, usually {@link IContentType#getTexture()} or a paintjob's
+     * @param texture
+     *            the texture to draw with, usually {@link IContentType#getTexture()} or a paintjob's
      * @return the render type the type's model is drawn with, honouring the client rendering options
      */
     public static RenderType getRenderType(IContentType type, ResourceLocation texture)
@@ -61,13 +67,13 @@ public final class FlansModelPreviews
      * to stand it on the ground. Every render pass goes to the given buffer, so glowing parts are
      * drawn like the others.
      *
-     * @param red   tint multiplied with the type's own colour, like {@code green}, {@code blue} and {@code alpha}
+     * @param red
+     *            tint multiplied with the type's own colour, like {@code green}, {@code blue} and {@code alpha}
      * @return false when the type has no model to preview
      */
     public static boolean render(IContentType type, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        return type instanceof InfoType infoType
-            && TypeModelPreview.render(infoType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+        return type instanceof InfoType infoType && TypeModelPreview.render(infoType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
     }
 
     /**
@@ -77,27 +83,40 @@ public final class FlansModelPreviews
      * invisibility and extra texture layers. Nonstandard buffer sources retain standard geometry rendering.
      * Orthographic menu previews keep full detail. Mechas retain geometry instead of impostors.
      *
-     * @param entity world instance used for position and weakly held detail history
-     * @param partialTick interpolation fraction between game ticks
-     * @param entityPose snapshot of the renderer's pose before living-model rotation, scaling or offsets
-     * @param renderOffset renderer displacement from the interpolated entity position, in world blocks
-     * @param texture actual body skin, including a custom skin or paintjob
-     * @param poseStack current pose at the model origin, with Y up and facing -Z
-     * @param buffers source used for the ordinary body pass
-     * @param packedLight packed Minecraft light coordinates
-     * @param packedOverlay packed Minecraft overlay coordinates, including damage flashes
-     * @param red red tint multiplied with the definition colour
-     * @param green green tint multiplied with the definition colour
-     * @param blue blue tint multiplied with the definition colour
-     * @param alpha opacity; partially transparent models retain geometry
-     * @param type content definition to draw
+     * @param entity
+     *            world instance used for position and weakly held detail history
+     * @param partialTick
+     *            interpolation fraction between game ticks
+     * @param entityPose
+     *            snapshot of the renderer's pose before living-model rotation, scaling or offsets
+     * @param renderOffset
+     *            renderer displacement from the interpolated entity position, in world blocks
+     * @param texture
+     *            actual body skin, including a custom skin or paintjob
+     * @param poseStack
+     *            current pose at the model origin, with Y up and facing -Z
+     * @param buffers
+     *            source used for the ordinary body pass
+     * @param packedLight
+     *            packed Minecraft light coordinates
+     * @param packedOverlay
+     *            packed Minecraft overlay coordinates, including damage flashes
+     * @param red
+     *            red tint multiplied with the definition colour
+     * @param green
+     *            green tint multiplied with the definition colour
+     * @param blue
+     *            blue tint multiplied with the definition colour
+     * @param alpha
+     *            opacity; partially transparent models retain geometry
+     * @param type
+     *            content definition to draw
      * @return false when the definition has no supported model
      */
-    public static boolean renderWorld(IContentType type, Entity entity, float partialTick,
-        PoseStack.Pose entityPose, Vec3 renderOffset, ResourceLocation texture, PoseStack poseStack,
+    public static boolean renderWorld(IContentType type, Entity entity, float partialTick, PoseStack.Pose entityPose, Vec3 renderOffset, ResourceLocation texture, PoseStack poseStack,
         MultiBufferSource buffers, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
     {
-        return type instanceof InfoType infoType && WorldModelPreview.render(infoType, entity, partialTick,
-            entityPose, renderOffset, texture, poseStack, buffers, packedLight, packedOverlay, red, green, blue, alpha);
+        return type instanceof InfoType infoType
+            && WorldModelPreview.render(infoType, entity, partialTick, entityPose, renderOffset, texture, poseStack, buffers, packedLight, packedOverlay, red, green, blue, alpha);
     }
 }

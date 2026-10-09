@@ -1,0 +1,47 @@
+package com.flansmodultimate.network.client.config;
+
+import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
+import com.flansmodultimate.config.*;
+import com.flansmodultimate.network.IClientPacket;
+import com.flansmodultimate.platform.network.PacketBuffer;
+import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+
+@NoArgsConstructor
+public class PacketSyncCommonConfig implements IClientPacket
+{
+    private CommonConfigSnapshot commonSnapshot;
+    private ApocalypseConfigSnapshot apocalypseSnapshot;
+
+    public PacketSyncCommonConfig(CommonConfigSnapshot commonSnapshot, ApocalypseConfigSnapshot apocalypseSnapshot)
+    {
+        this.commonSnapshot = commonSnapshot;
+        this.apocalypseSnapshot = apocalypseSnapshot;
+    }
+
+    @Override
+    public void encodeInto(PacketBuffer buf)
+    {
+        CommonConfigSnapshot.write(buf, commonSnapshot);
+        ApocalypseConfigSnapshot.write(buf, apocalypseSnapshot);
+    }
+
+    @Override
+    public void decodeInto(PacketBuffer buf)
+    {
+        commonSnapshot = CommonConfigSnapshot.read(buf);
+        apocalypseSnapshot = ApocalypseConfigSnapshot.read(buf);
+    }
+
+    @Override
+    public void handleClientSide(@NotNull Player player, @NotNull Level level)
+    {
+        ModCommonConfig.applyServerSnapshot(commonSnapshot);
+        ModApocalypseConfig.applyServerSnapshot(apocalypseSnapshot);
+        // An open options screen shows server settings, which have just changed under it
+        FlansOptionsScreen.onServerConfigSynced();
+    }
+}

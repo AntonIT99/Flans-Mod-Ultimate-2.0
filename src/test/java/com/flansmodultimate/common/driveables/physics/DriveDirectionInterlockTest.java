@@ -114,14 +114,11 @@ class DriveDirectionInterlockTest
         int reverseTick = -1;
         for (int tick = 0; tick < 20 * 60 && reverseTick < 0; tick++)
         {
-            double transmission = drivetrain.advance(reverse,
-                VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(speed));
+            double transmission = drivetrain.advance(reverse, VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(speed));
             double target = drivetrain.isShifting() ? 0D : reverse;
-            double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(
-                speed, powerW, massKg, terminal, 1D) * transmission;
+            double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(speed, powerW, massKg, terminal, 1D) * transmission;
             // Reverse demand while still rolling forwards works the brake.
-            double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(
-                speed, powerW, massKg, terminal, drivetrain.isShifting() ? 1D : 0D);
+            double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(speed, powerW, massKg, terminal, drivetrain.isShifting() ? 1D : 0D);
             speed = GroundPropulsionPhysics.approach(speed, target, acceleration, deceleration);
             assertTrue(speed >= 0D || drivetrain.getGear() < 0, "no reverse motion before reverse is selected");
             if (stoppedTick < 0 && speed <= 0D)
@@ -133,8 +130,7 @@ class DriveDirectionInterlockTest
         assertTrue(reverseTick > stoppedTick, "and only then reach its reverse speed");
         // Before the interlock reverse speed arrived about four ticks after the
         // stop; it now takes the shift pause plus most of the clutch take-up.
-        assertTrue(reverseTick - stoppedTick >= 10,
-            "reverse must build, not snap; took " + (reverseTick - stoppedTick) + " ticks");
+        assertTrue(reverseTick - stoppedTick >= 10, "reverse must build, not snap; took " + (reverseTick - stoppedTick) + " ticks");
     }
 
     private static DriveDirectionInterlock engagedInReverse()

@@ -34,16 +34,19 @@ final class ContentPackReader
     /** Packs read ahead of the one being registered; the text of each is held until its turn. */
     static final int PACKS_AHEAD = 2;
 
-    private static final Set<String> ALIAS_FILES = Set.of(ID_ALIAS_FILE, ARMOR_TEXTURES_ALIAS_FILE,
-        GUI_TEXTURES_ALIAS_FILE, SKINS_TEXTURES_ALIAS_FILE);
+    private static final Set<String> ALIAS_FILES = Set.of(ID_ALIAS_FILE, ARMOR_TEXTURES_ALIAS_FILE, GUI_TEXTURES_ALIAS_FILE, SKINS_TEXTURES_ALIAS_FILE);
 
     /**
-     * @param typeFiles  the definitions, in the order the pack lists them
-     * @param aliasFiles the alias files present at the root of the pack
+     * @param typeFiles
+     *            the definitions, in the order the pack lists them
+     * @param aliasFiles
+     *            the alias files present at the root of the pack
      */
-    record Result(List<TypeFile> typeFiles, Set<String> aliasFiles) {}
+    record Result(List<TypeFile> typeFiles, Set<String> aliasFiles)
+    {}
 
-    private record Source(Path file, String folderName, @Nullable EnumType type) {}
+    private record Source(Path file, String folderName, @Nullable EnumType type)
+    {}
 
     private final List<IContentProvider> providers;
     private final ContentLoadingWorkers workers;
@@ -105,9 +108,7 @@ final class ContentPackReader
                     aliasFiles.add(name);
             }
 
-            typeFiles = workers.map(sources, source -> readTypeFile(source, provider)).stream()
-                .filter(Objects::nonNull)
-                .toList();
+            typeFiles = workers.map(sources, source -> readTypeFile(source, provider)).stream().filter(Objects::nonNull).toList();
         }
         catch (IOException e)
         {
@@ -121,8 +122,7 @@ final class ContentPackReader
         EnumType type = EnumType.getType(folderName).orElse(null);
         try (Stream<Path> walk = Files.walk(folder))
         {
-            walk.filter(Files::isRegularFile)
-                .filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.TXT_EXTENSION))
+            walk.filter(Files::isRegularFile).filter(p -> p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(FileUtils.TXT_EXTENSION))
                 .forEach(file -> sources.add(new Source(file, folderName, type)));
         }
         catch (IOException | RuntimeException e)
@@ -149,7 +149,7 @@ final class ContentPackReader
 
     private static void stripBomIfPresent(List<String> lines)
     {
-        if (!lines.isEmpty() && !lines.get(0).isEmpty() && lines.get(0).charAt(0) == '﻿')
+        if (!lines.isEmpty() && !lines.get(0).isEmpty() && lines.get(0).charAt(0) == '\uFEFF')
             lines.set(0, lines.get(0).substring(1));
     }
 }

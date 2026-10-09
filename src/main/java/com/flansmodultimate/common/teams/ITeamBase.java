@@ -10,19 +10,33 @@ import java.util.UUID;
 public interface ITeamBase extends ITeamObject
 {
     String getBaseName();
+
     void setBaseName(String name);
+
     int getDefaultOwnerId();
+
     void setDefaultOwnerId(int id);
+
     int getOwnerId();
+
     void setOwnerId(int id);
+
     String getMapId();
+
     void setMapId(String mapId);
+
     Collection<UUID> getObjectIds();
+
     void addObject(UUID objectId);
+
     void removeObject(UUID objectId);
+
     void startRound();
+
     void roundCleanup();
-    @Nullable Flag getFlag();
+
+    @Nullable
+    Flag getFlag();
 
     @Override
     default UUID getBaseId()
@@ -31,7 +45,8 @@ public interface ITeamBase extends ITeamObject
     }
 
     @Override
-    default void setBaseId(@Nullable UUID ignored) {}
+    default void setBaseId(@Nullable UUID ignored)
+    {}
 
     @Override
     default boolean isSpawnPoint()

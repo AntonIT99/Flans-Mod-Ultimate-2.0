@@ -46,8 +46,7 @@ public class BewlrRoutingModel implements BakedModel
                 if (resolved == null)
                     return BewlrRoutingModel.this.delegate;
 
-                BewlrRoutingModel routingModel = resolved instanceof BewlrRoutingModel brm
-                    ? brm : new BewlrRoutingModel(resolved);
+                BewlrRoutingModel routingModel = resolved instanceof BewlrRoutingModel brm ? brm : new BewlrRoutingModel(resolved);
                 routingModel.hasCustomModel = stack.getItem() instanceof ICustomRendereredItem<?>;
                 return routingModel;
             }
@@ -127,8 +126,7 @@ public class BewlrRoutingModel implements BakedModel
     @NotNull
     public BakedModel applyTransform(@NotNull ItemDisplayContext displayContext, @NotNull PoseStack poseStack, boolean leftHand)
     {
-        return hasCustomModel && BooleanUtils.isNotTrue(CustomItemRenderers.SKIP_BEWLR.get()) ?
-            this : delegate.applyTransform(displayContext, poseStack, leftHand);
+        return hasCustomModel && BooleanUtils.isNotTrue(CustomItemRenderers.SKIP_BEWLR.get()) ? this : delegate.applyTransform(displayContext, poseStack, leftHand);
     }
 
     @Override

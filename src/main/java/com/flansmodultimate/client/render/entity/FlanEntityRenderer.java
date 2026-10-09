@@ -15,6 +15,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wolffsmod.api.client.model.IModelBase;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -51,13 +52,14 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
         renderFlanEntity(entity, flanEntity, entityYaw, partialTick, poseStack, buffer, packedLight);
     }
 
-    protected void renderFlanEntity(@NotNull T entity, @NotNull IFlanEntity<?> flanEntity, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
+    protected void renderFlanEntity(@NotNull T entity, @NotNull IFlanEntity<?> flanEntity, float entityYaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer,
+        int packedLight)
     {
         InfoType type = flanEntity.getConfigType();
         if (type == null)
             return;
 
-        IModelBase model = ModelCache.getOrLoadTypeModel(type);
+        IModelBase model = getModel(entity, type);
         if (model == null)
             return;
 
@@ -69,18 +71,27 @@ public class FlanEntityRenderer<T extends Entity> extends EntityRenderer<T>
 
         if (model instanceof ModelBullet modelBullet)
         {
-            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), ModClientConfig.get().useCullingRendering(type)));
+            VertexConsumer vertexConsumer = buffer
+                .getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), ModClientConfig.get().useCullingRendering(type)));
             modelBullet.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
             return;
         }
         if (model instanceof ModelBomb modelBomb)
         {
-            VertexConsumer vertexConsumer = buffer.getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), ModClientConfig.get().useCullingRendering(type)));
+            VertexConsumer vertexConsumer = buffer
+                .getBuffer(EnumRenderPass.DEFAULT.getRenderType(texture, ModClientConfig.get().useTranslucentRendering(type), ModClientConfig.get().useCullingRendering(type)));
             modelBomb.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
             return;
         }
 
         LegacyTransformApplier.renderModel(model, type, texture, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, alpha);
+    }
+
+    /** The model this entity is drawn with; the type's own model unless a subclass picks another. */
+    @Nullable
+    protected IModelBase getModel(@NotNull T entity, @NotNull InfoType type)
+    {
+        return ModelCache.getOrLoadTypeModel(type);
     }
 
     protected float getRed(@NotNull InfoType type)

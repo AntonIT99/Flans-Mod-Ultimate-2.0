@@ -8,8 +8,8 @@ import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunReloadEvent;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketCancelGunReloadClient;
-import com.flansmodultimate.network.client.PacketCancelSound;
+import com.flansmodultimate.network.client.effects.PacketCancelSound;
+import com.flansmodultimate.network.client.gun.PacketCancelGunReloadClient;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.util.InventoryHelper;
 import com.flansmodultimate.util.ModUtils;
@@ -24,16 +24,15 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public record GunReloader(GunItem item)
 {
     /**
      * Returns true if we reloaded or successfully queued a reload
      */
-    public boolean reload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean forceReload, boolean instabuild, boolean combineAmmoOnReload, boolean ammoToUpperInventory, float reloadTime, UUID reloadSoundUUID)
+    public boolean reload(Level level, ServerPlayer player, PlayerData data, ItemStack gunStack, InteractionHand hand, boolean forceReload, boolean instabuild, boolean combineAmmoOnReload,
+        boolean ammoToUpperInventory, float reloadTime, UUID reloadSoundUUID)
     {
         // Deployable guns cannot be reloaded in the inventory
         if (item.getConfigType().isDeployable())
@@ -176,22 +175,19 @@ public record GunReloader(GunItem item)
         ItemStack oldMag = gunItem.getAmmoItemStack(actualGunStack, ammoIndex, level.registryAccess());
 
         // Drop-on-reload when old mag is empty (null-safe)
-        if (!pending.creative()
-            && oldMag != null && !oldMag.isEmpty()
-            && !ShootableItem.hasRoundsLeft(oldMag)
-            && oldMag.getItem() instanceof ShootableItem oldShootable)
+        if (!pending.creative() && oldMag != null && !oldMag.isEmpty() && !ShootableItem.hasRoundsLeft(oldMag) && oldMag.getItem() instanceof ShootableItem oldShootable)
         {
 
             ModUtils.dropItem(level, reloadingEntity, oldShootable.getConfigType().getDropItemOnReload(), oldShootable.getConfigType().getContentPack());
         }
 
         // Return unfinished old mag
-        if (oldMag != null && !oldMag.isEmpty()
-            && ShootableItem.hasRoundsLeft(oldMag))
+        if (oldMag != null && !oldMag.isEmpty() && ShootableItem.hasRoundsLeft(oldMag))
         {
 
             ItemStack toReturn = oldMag.copy();
-            boolean added = InventoryHelper.addItemStackToContainer(inventory, toReturn, pending.creative(), pending.combineAmmoOnReload(), pending.ammoToUpperInventory(), Inventory.getSelectionSize());
+            boolean added = InventoryHelper.addItemStackToContainer(inventory, toReturn, pending.creative(), pending.combineAmmoOnReload(), pending.ammoToUpperInventory(),
+                Inventory.getSelectionSize());
             if (!added)
                 reloadingEntity.spawnAtLocation(toReturn, 0.5F);
         }

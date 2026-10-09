@@ -15,7 +15,8 @@ public class ModelFlash extends ModelBase
             render(flashModel[flashIndex], poseStack, pVertexConsumer, packedLight, packedOverlay, pRed, pGreen, pBlue, pAlpha, scale);
     }
 
-    public void render(ModelRendererTurbo[] flash, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, float scale)
+    public void render(ModelRendererTurbo[] flash, PoseStack poseStack, VertexConsumer pVertexConsumer, int packedLight, int packedOverlay, float pRed, float pGreen, float pBlue, float pAlpha,
+        float scale)
     {
         for (ModelRendererTurbo model : flash)
             if (model != null)
@@ -24,7 +25,7 @@ public class ModelFlash extends ModelBase
 
     protected void flipAll()
     {
-        for(ModelRendererTurbo[] model : flashModel)
+        for (ModelRendererTurbo[] model : flashModel)
         {
             for (ModelRendererTurbo flash : model)
             {

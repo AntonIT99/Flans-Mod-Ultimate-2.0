@@ -11,7 +11,8 @@ import java.util.List;
 /** Stable packet helpers for payload values whose Minecraft codec changes between versions. */
 public final class PacketIO
 {
-    private PacketIO() {}
+    private PacketIO()
+    {}
 
     public static void writeItem(RegistryFriendlyByteBuf buffer, ItemStack stack)
     {
@@ -33,7 +34,8 @@ public final class PacketIO
     {
         int size = buffer.readVarInt();
         List<ItemStack> result = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) result.add(readItem(buffer));
+        for (int i = 0; i < size; i++)
+            result.add(readItem(buffer));
         return result;
     }
 

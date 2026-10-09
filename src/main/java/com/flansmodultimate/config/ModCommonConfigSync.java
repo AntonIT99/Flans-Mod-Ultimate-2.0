@@ -1,9 +1,9 @@
 package com.flansmodultimate.config;
 
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketCommonConfigValues;
-import com.flansmodultimate.network.client.PacketSyncCommonConfig;
-import com.flansmodultimate.network.server.PacketSetCommonConfigValue;
+import com.flansmodultimate.network.client.config.PacketCommonConfigValues;
+import com.flansmodultimate.network.client.config.PacketSyncCommonConfig;
+import com.flansmodultimate.network.server.config.PacketSetCommonConfigValue;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -69,4 +69,3 @@ public final class ModCommonConfigSync
         return new PacketSyncCommonConfig(commonConfig, apocalypseConfig);
     }
 }
-

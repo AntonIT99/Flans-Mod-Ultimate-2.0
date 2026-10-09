@@ -61,8 +61,7 @@ public class Team extends InfoType
     protected void read(TypeFile file)
     {
         super.read(file);
-        readIntValues("TeamColour", file, 3).ifPresent(values ->
-            teamColour = (values[0] << 16) | (values[1] << 8) | values[2]);
+        readIntValues("TeamColour", file, 3).ifPresent(values -> teamColour = (values[0] << 16) | (values[1] << 8) | values[2]);
         textColour = parseFormatting(readValue("TextColour", textColour.getName(), file));
         allowedForRoundsGenerator = readValue("AllowedForRoundsGenerator", allowedForRoundsGenerator, file);
 
@@ -71,10 +70,8 @@ public class Team extends InfoType
         readArmour(file, EquipmentSlot.LEGS, "Legs", "Bottom");
         readArmour(file, EquipmentSlot.FEET, "Shoes", "Boots");
 
-        classIds = readValuesInLines("AddDefaultClass", file, 1).orElse(List.of()).stream()
-            .map(values -> values[0]).toList();
-        List<String> added = readValuesInLines("AddClass", file, 1).orElse(List.of()).stream()
-            .map(values -> values[0]).toList();
+        classIds = readValuesInLines("AddDefaultClass", file, 1).orElse(List.of()).stream().map(values -> values[0]).toList();
+        List<String> added = readValuesInLines("AddClass", file, 1).orElse(List.of()).stream().map(values -> values[0]).toList();
         if (!added.isEmpty())
         {
             java.util.ArrayList<String> all = new java.util.ArrayList<>(classIds);
@@ -102,8 +99,7 @@ public class Team extends InfoType
      */
     public List<PlayerClass> getClasses()
     {
-        return classIds.stream().map(id -> PlayerClass.getPlayerClass(id, contentPack))
-            .filter(java.util.Objects::nonNull).toList();
+        return classIds.stream().map(id -> PlayerClass.getPlayerClass(id, contentPack)).filter(java.util.Objects::nonNull).toList();
     }
 
     public ItemStack getArmour(EquipmentSlot slot)

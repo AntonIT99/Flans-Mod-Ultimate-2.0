@@ -14,7 +14,6 @@ import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackSelectionConfig;
-import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackCompatibility;
@@ -49,8 +48,7 @@ public final class SoundPriority
         PackResources open()
         {
             PackLocationInfo location = new PackLocationInfo(id, Component.literal(id), PackSource.BUILT_IN, Optional.empty());
-            Pack.ResourcesSupplier resources = archive == null ? new PathPackResources.PathResourcesSupplier(root)
-                : new FilePackResources.FileResourcesSupplier(archive);
+            Pack.ResourcesSupplier resources = archive == null ? new PathPackResources.PathResourcesSupplier(root) : new FilePackResources.FileResourcesSupplier(archive);
             return resources.openPrimary(location);
         }
     }
@@ -58,14 +56,13 @@ public final class SoundPriority
     private record State(List<Source> sources, SoundPriorityPlan plan, byte[] json)
     {
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(Object obj)
+        {
             if (this == obj)
                 return true;
             if (!(obj instanceof State other))
                 return false;
-            return Objects.equals(sources, other.sources)
-                && Objects.equals(plan, other.plan)
-                && Arrays.equals(json, other.json);
+            return Objects.equals(sources, other.sources) && Objects.equals(plan, other.plan) && Arrays.equals(json, other.json);
         }
 
         @Override
@@ -78,14 +75,12 @@ public final class SoundPriority
         @NotNull
         public String toString()
         {
-            return "State[sources=" + sources
-                + ", plan=" + plan
-                + ", json=" + Arrays.toString(json)
-                + "]";
+            return "State[sources=" + sources + ", plan=" + plan + ", json=" + Arrays.toString(json) + "]";
         }
     }
 
-    private SoundPriority() {}
+    private SoundPriority()
+    {}
 
     static void initialize(List<IContentProvider> providers)
     {
@@ -96,17 +91,14 @@ public final class SoundPriority
     static void initialize(List<IContentProvider> providers, ContentLoadingWorkers workers)
     {
         Map<String, Source> discovered = new LinkedHashMap<>();
-        for (var module : PackagedContentLoader.getRegisteredModules().stream()
-            .sorted(Comparator.comparing(PackagedContentLoader.RegisteredModule::modId)).toList())
+        for (var module : PackagedContentLoader.getRegisteredModules().stream().sorted(Comparator.comparing(PackagedContentLoader.RegisteredModule::modId)).toList())
         {
             Path archive = ModList.get().getModFileById(module.modId()).getFile().getFilePath();
-            discovered.put("mod:" + module.modId(), new Source("mod:" + module.modId(), module.resourceRoot(),
-                Files.isRegularFile(archive) ? archive : null));
+            discovered.put("mod:" + module.modId(), new Source("mod:" + module.modId(), module.resourceRoot(), Files.isRegularFile(archive) ? archive : null));
         }
         var builtin = ModList.get().getModFileById(FlansMod.MOD_ID).getFile();
         Path builtinRoot = builtin.findResource("assets", FlansMod.FLANSMOD_ID).getParent().getParent();
-        discovered.put("mod:" + FlansMod.MOD_ID, new Source("mod:" + FlansMod.MOD_ID, builtinRoot,
-            Files.isRegularFile(builtin.getFilePath()) ? builtin.getFilePath() : null));
+        discovered.put("mod:" + FlansMod.MOD_ID, new Source("mod:" + FlansMod.MOD_ID, builtinRoot, Files.isRegularFile(builtin.getFilePath()) ? builtin.getFilePath() : null));
         for (IContentProvider provider : providers)
             if (!provider.isPreprocessed())
             {
@@ -133,7 +125,8 @@ public final class SoundPriority
         FlansLog.log.info("Sound source priority (highest first): {}", sources.stream().map(Source::id).toList());
     }
 
-    private record IndexedSource(String id, SoundPriorityPlan.Assets assets, String error) {}
+    private record IndexedSource(String id, SoundPriorityPlan.Assets assets, String error)
+    {}
 
     private static IndexedSource index(Source source)
     {
@@ -169,7 +162,8 @@ public final class SoundPriority
 
     public static RepositorySource repositorySource()
     {
-        return acceptor -> {
+        return acceptor ->
+        {
             State current = state.get();
             if (current == null)
                 return;

@@ -128,7 +128,7 @@
 | `common/digitalammo/DigitalAmmoStorageHandler.java` | Digital ammo storage handler / 数字弹药存储处理 |
 | `common/digitalammo/DigitalAmmoSupplyHandler.java`  | Digital ammo supply handler / 数字弹药补给处理  |
 | `common/digitalammo/PlayerBulletStorage.java`       | Player bullet storage / 玩家弹药存储          |
-| `network/client/PacketSyncDigitalAmmo.java`         | Digital ammo sync packet / 数字弹药同步包      |
+| `network/client/gun/PacketSyncDigitalAmmo.java`     | Digital ammo sync packet / 数字弹药同步包      |
 
 ***
 

@@ -58,8 +58,7 @@ class DriveableTypeImpulseMassTest
     {
         ImpulseMass mass = vehicle("Mass 0.05").getImpulseMass();
         assertEquals(MassSource.FALLBACK, mass.source());
-        assertEquals((float) (ModCommonConfig.DEFAULT_FALLBACK_GROUND_VEHICLE_MASS_TONS * ModCommonConfig.KILOGRAMS_PER_TON),
-            mass.massKg());
+        assertEquals((float) (ModCommonConfig.DEFAULT_FALLBACK_GROUND_VEHICLE_MASS_TONS * ModCommonConfig.KILOGRAMS_PER_TON), mass.massKg());
     }
 
     @Test
@@ -68,8 +67,7 @@ class DriveableTypeImpulseMassTest
         // The modern warfare pack authored its F-22 exactly like this.
         ImpulseMass mass = plane("Mass 2.7").getImpulseMass();
         assertEquals(MassSource.FALLBACK, mass.source());
-        assertEquals((float) (ModCommonConfig.DEFAULT_FALLBACK_AIRCRAFT_MASS_TONS * ModCommonConfig.KILOGRAMS_PER_TON),
-            mass.massKg());
+        assertEquals((float) (ModCommonConfig.DEFAULT_FALLBACK_AIRCRAFT_MASS_TONS * ModCommonConfig.KILOGRAMS_PER_TON), mass.massKg());
     }
 
     @Test
@@ -79,8 +77,7 @@ class DriveableTypeImpulseMassTest
         assertNull(type.getAuthoredMassKg());
         ImpulseMass mass = type.getImpulseMass();
         assertEquals(MassSource.FALLBACK, mass.source());
-        assertEquals((float) (ModCommonConfig.DEFAULT_FALLBACK_AIRCRAFT_MASS_TONS * ModCommonConfig.KILOGRAMS_PER_TON),
-            mass.massKg());
+        assertEquals((float) (ModCommonConfig.DEFAULT_FALLBACK_AIRCRAFT_MASS_TONS * ModCommonConfig.KILOGRAMS_PER_TON), mass.massKg());
     }
 
     @Test
@@ -92,8 +89,7 @@ class DriveableTypeImpulseMassTest
 
         ImpulseMass fallback = aaGun("ShortName testAaGun").getImpulseMass();
         assertEquals(MassSource.FALLBACK, fallback.source());
-        assertEquals((float) (ModCommonConfig.DEFAULT_FALLBACK_AA_GUN_MASS_TONS * ModCommonConfig.KILOGRAMS_PER_TON),
-            fallback.massKg());
+        assertEquals((float) (ModCommonConfig.DEFAULT_FALLBACK_AA_GUN_MASS_TONS * ModCommonConfig.KILOGRAMS_PER_TON), fallback.massKg());
     }
 
     private static VehicleType vehicle(String... lines)

@@ -1,38 +1,29 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.FlansModEntities;
-import com.flansmodultimate.FlansModSounds;
+import com.flansmodultimate.*;
 import com.flansmodultimate.api.IBullet;
 import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.common.guns.EnumSpreadPattern;
-import com.flansmodultimate.common.guns.FireableGun;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.server.PacketManualGuidance;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.server.gun.PacketManualGuidance;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,21 +35,13 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBullet
@@ -275,17 +258,14 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     private boolean canLockOnEntity(Entity entity)
     {
-        return configType != null && (configType.isLockOnToMechas() && entity instanceof Mecha
-            || configType.isLockOnToVehicles() && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
-            || configType.isLockOnToPlanes() && (entity instanceof Plane || ModUtils.isPlaneLike(entity))
-            || configType.isLockOnToPlayers() && entity instanceof Player
+        return configType != null && (configType.isLockOnToMechas() && entity instanceof Mecha || configType.isLockOnToVehicles() && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
+            || configType.isLockOnToPlanes() && (entity instanceof Plane || ModUtils.isPlaneLike(entity)) || configType.isLockOnToPlayers() && entity instanceof Player
             || configType.isLockOnToLivings() && entity instanceof LivingEntity);
     }
 
     private boolean isUsableLockOnTarget(Entity entity)
     {
-        if (!entity.isAlive() || entity == this || firedShot != null
-            && (entity == firedShot.getCausingEntity().orElse(null) || entity == firedShot.getAttacker().orElse(null)))
+        if (!entity.isAlive() || entity == this || firedShot != null && (entity == firedShot.getCausingEntity().orElse(null) || entity == firedShot.getAttacker().orElse(null)))
             return false;
         if (entity instanceof Player player && player.isSpectator())
             return false;
@@ -416,8 +396,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 float damage = gun.getFloat(NBT_FIREABLE_GUN_DAMAGE);
                 float spread = gun.getFloat(NBT_FIREABLE_GUN_SPREAD);
                 float speed = gun.getFloat(NBT_FIREABLE_GUN_SPEED);
-                float speedMultiplier = gun.contains(NBT_FIREABLE_GUN_SPEED_MULTIPLIER)
-                    ? gun.getFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) : 1F;
+                float speedMultiplier = gun.contains(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) ? gun.getFloat(NBT_FIREABLE_GUN_SPEED_MULTIPLIER) : 1F;
                 EnumSpreadPattern spreadPattern = EnumSpreadPattern.valueOf(gun.getString(NBT_FIREABLE_GUN_SPREAD_PATTERN));
 
                 InfoType fireableGunInfoType = InfoType.getInfoType(gun.getString(NBT_FIREABLE_GUN_TYPE_NAME));
@@ -435,7 +414,6 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 shooterUUID = tag.getUUID(NBT_SHOOTER);
                 checkForUUIDs = true;
             }
-
 
             firedShot = new FiredShot(fireableGun, configType, null, null, tag.contains(NBT_SHOT) ? tag.getInt(NBT_SHOT) : 0);
         }
@@ -515,8 +493,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
      */
     protected boolean isLeavingEntityTickingArea(Level level)
     {
-        return level instanceof ServerLevel serverLevel
-            && !serverLevel.isPositionEntityTicking(BlockPos.containing(position().add(velocity)));
+        return level instanceof ServerLevel serverLevel && !serverLevel.isPositionEntityTicking(BlockPos.containing(position().add(velocity)));
     }
 
     /** Bullets are transient: never write them to chunk data, where they would come back frozen after a reload */
@@ -651,7 +628,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     }
 
     @Override
-    protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity) {
+    protected boolean handleEntityInProximityTriggerRange(Level level, Entity entity)
+    {
         if (getConfigType().getDamageToTriggerer() > 0F)
             entity.hurt(firedShot.getDamageSource(level, this), getConfigType().getDamageToTriggerer());
 
@@ -701,7 +679,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         if (StringUtils.isBlank(configType.getSubmunition()))
             return;
 
-        ShootableFactory.createSubmunition(level, firedShot, position(), velocity.normalize()).ifPresent(submunitionEntity -> {
+        ShootableFactory.createSubmunition(level, firedShot, position(), velocity.normalize()).ifPresent(submunitionEntity ->
+        {
             for (int sm = 0; sm < configType.getNumSubmunitions(); sm++)
                 level.addFreshEntity(submunitionEntity);
         });
@@ -713,7 +692,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected void performRaytraceAndApplyHits(Level level)
     {
         Vec3 origin = position();
-        List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir < 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity, pingOfShooter, 0F, getHitboxSize(), configType);
+        List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir < 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity,
+            pingOfShooter, 0F, getHitboxSize(), configType);
 
         if (hits.isEmpty())
             return;
@@ -787,7 +767,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     protected static Vec3 getSurfaceNormal(Direction side)
     {
-        return switch (side) {
+        return switch (side)
+        {
             case DOWN -> new Vec3(0, -1, 0);
             case UP -> new Vec3(0, 1, 0);
             case NORTH -> new Vec3(0, 0, -1);
@@ -1099,7 +1080,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 ownerLook = look;
 
                 if (deltaPos > 1.0 || deltaLook > 0.0001)
-                    PacketHandler.sendToServer(new PacketManualGuidance(getId(), (float) ownerPos.x, (float) ownerPos.y, (float) ownerPos.z, (float) ownerLook.x, (float) ownerLook.y, (float) ownerLook.z));
+                    PacketHandler
+                        .sendToServer(new PacketManualGuidance(getId(), (float) ownerPos.x, (float) ownerPos.y, (float) ownerPos.z, (float) ownerLook.x, (float) ownerLook.y, (float) ownerLook.z));
             }
 
             // SERVER + CLIENT: apply guidance to the missile's motion
@@ -1170,6 +1152,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     {
         playFlybyIfClose(level);
         spawnWaterBubbles(level);
+        spawnTracerBeam();
         spawnParticles();
         clearFire();
     }
@@ -1182,40 +1165,74 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         for (int i = 0; i < 4; i++)
         {
             double bubbleMotion = 0.25;
-            level.addParticle(ParticleTypes.BUBBLE, getX() - velocity.x * bubbleMotion, getY() - velocity.y * bubbleMotion, getZ() - velocity.z * bubbleMotion, velocity.x, velocity.y + 0.1F, velocity.z);
+            level.addParticle(ParticleTypes.BUBBLE, getX() - velocity.x * bubbleMotion, getY() - velocity.y * bubbleMotion, getZ() - velocity.z * bubbleMotion, velocity.x, velocity.y + 0.1F,
+                velocity.z);
         }
+    }
+
+    /**
+     * Whether this is an alternate round of a mixed ammunition belt. Both sides derive it from the shot count
+     * the round was spawned with, so no extra state needs to be synchronised.
+     */
+    public boolean isAlternateRound()
+    {
+        return configType != null && firedShot != null && configType.isAlternateRound(firedShot.getShot());
+    }
+
+    /** Leaves this tick's stretch of the round's 3D tracer beam behind it, from the Labjac Edition. */
+    protected void spawnTracerBeam()
+    {
+        TracerBeam beam = configType.tracerBeamFor(isAlternateRound());
+        if (beam == null)
+            return;
+
+        Vec3 motion = velocity;
+        double speed = motion.length();
+        if (speed < 1.0E-4D)
+        {
+            motion = new Vec3(getX() - xo, getY() - yo, getZ() - zo);
+            speed = motion.length();
+        }
+        if (speed < 1.0E-4D)
+            return;
+
+        float speedScale = TracerBeam.speedScale(speed);
+        double length = beam.length() * speedScale;
+        float width = beam.width() * (1F + (speedScale - 1F) * 0.2F);
+        Vec3 start = position().subtract(motion.scale(length / speed));
+        ClientHooks.RENDER.spawnTracerBeam(start, position(), beam.red(), beam.green(), beam.blue(), beam.alpha(), width);
     }
 
     protected void spawnParticles()
     {
-        if (!configType.isTrailParticles() || ticksInAir <= 1)
+        boolean alternateTrail = configType.isAlternateTrailParticles() && isAlternateRound();
+        if (!(configType.isTrailParticles() || alternateTrail) || ticksInAir <= 1)
             return;
 
+        if (vlsDelay > 0 && StringUtils.isNotBlank(configType.getBoostPhaseParticle()))
+            spawnTrail(configType.getBoostPhaseParticle(), 10);
+        else if (!configType.isVls() || vlsDelay <= 0)
+        {
+            if (alternateTrail)
+                spawnTrail(configType.getAlternateTrailParticleType(), configType.getAlternateTrailParticleCount());
+            else
+                spawnTrail(configType.getTrailParticleType(), 10);
+        }
+    }
+
+    /** Scatters particles along this tick's stretch of the flight path, one tenth of it apart. */
+    private void spawnTrail(String particleType, int count)
+    {
         double dX = (getX() - xo) / 10.0;
         double dY = (getY() - yo) / 10.0;
         double dZ = (getZ() - zo) / 10.0;
-
         float spread = 0.1F;
-
-        if (vlsDelay > 0 && StringUtils.isNotBlank(configType.getBoostPhaseParticle()))
+        for (int i = 0; i < count; i++)
         {
-            for (int i = 0; i < 10; i++)
-            {
-                double x = xo + dX * i + random.nextGaussian() * spread;
-                double y = yo + dY * i + random.nextGaussian() * spread;
-                double z = zo + dZ * i + random.nextGaussian() * spread;
-                ClientHooks.RENDER.spawnParticle(configType.getBoostPhaseParticle(), x, y, z, 0, 0, 0, 1F);
-            }
-        }
-        else if (!configType.isVls() || vlsDelay <= 0)
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                double x = xo + dX * i + random.nextGaussian() * spread;
-                double y = yo + dY * i + random.nextGaussian() * spread;
-                double z = zo + dZ * i + random.nextGaussian() * spread;
-                ClientHooks.RENDER.spawnParticle(configType.getTrailParticleType(), x, y, z, 0, 0, 0, 1F);
-            }
+            double x = xo + dX * i + random.nextGaussian() * spread;
+            double y = yo + dY * i + random.nextGaussian() * spread;
+            double z = zo + dZ * i + random.nextGaussian() * spread;
+            ClientHooks.RENDER.spawnParticle(particleType, x, y, z, 0, 0, 0, 1F);
         }
     }
 
@@ -1231,7 +1248,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         playedFlybySound = true;
         float soundVolume = 10.0F;
         float soundPitch = 1.0F / (random.nextFloat() * 0.4F + 0.8F);
-        FlansMod.getSoundEvent(FlansModSounds.SOUND_BULLETFLYBY).ifPresent(soundEvent ->
-                level.playLocalSound(getX(), getY(), getZ(), soundEvent.get(), SoundSource.HOSTILE, soundVolume, soundPitch, false));
+        FlansMod.getSoundEvent(FlansModSounds.SOUND_BULLETFLYBY)
+            .ifPresent(soundEvent -> level.playLocalSound(getX(), getY(), getZ(), soundEvent.get(), SoundSource.HOSTILE, soundVolume, soundPitch, false));
     }
 }

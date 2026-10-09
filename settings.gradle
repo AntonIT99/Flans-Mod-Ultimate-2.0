@@ -2,6 +2,10 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
     }
+    plugins {
+        id 'name.remal.sonarlint' version version_sonarlint
+        id 'com.diffplug.spotless' version version_spotless
+    }
 }
 
 plugins {

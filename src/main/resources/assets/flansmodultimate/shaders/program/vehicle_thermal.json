@@ -6,6 +6,9 @@
   "samplers": [{"name": "DiffuseSampler"}, {"name": "HeatSampler"}],
   "uniforms": [
     {"name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]},
-    {"name": "OutSize", "type": "float", "count": 2, "values": [1, 1]}
+    {"name": "OutSize", "type": "float", "count": 2, "values": [1, 1]},
+    {"name": "ThermalTime", "type": "float", "count": 1, "values": [0]},
+    {"name": "Palette", "type": "float", "count": 1, "values": [0]},
+    {"name": "Generation", "type": "float", "count": 1, "values": [0]}
   ]
 }

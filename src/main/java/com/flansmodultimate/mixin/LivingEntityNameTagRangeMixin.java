@@ -10,14 +10,14 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityNameTagRangeMixin
 {
-    @ModifyConstant(method = "shouldShowName", constant = @Constant(floatValue = 64F))
-    private float flansmodultimate$normalNameTagRange(float vanillaRange)
+    @ModifyConstant(method = "shouldShowName*", constant = @Constant(floatValue = 64F))
+    private float flansmodultimateNormalNameTagRange(float vanillaRange)
     {
         return ModCommonConfig.nameTagRenderRange(false);
     }
 
-    @ModifyConstant(method = "shouldShowName", constant = @Constant(floatValue = 32F))
-    private float flansmodultimate$sneakingNameTagRange(float vanillaRange)
+    @ModifyConstant(method = "shouldShowName*", constant = @Constant(floatValue = 32F))
+    private float flansmodultimateSneakingNameTagRange(float vanillaRange)
     {
         return ModCommonConfig.nameTagRenderRange(true);
     }

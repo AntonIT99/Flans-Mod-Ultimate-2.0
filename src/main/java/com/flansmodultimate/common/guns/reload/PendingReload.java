@@ -6,15 +6,6 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.UUID;
 
-public record PendingReload(
-        ItemStack gunStack,
-        InteractionHand hand,
-        long applyAtGameTime,
-        List<ReloadPlan> plans,
-        boolean forceReload,
-        boolean creative,
-        boolean combineAmmoOnReload,
-        boolean ammoToUpperInventory,
-        UUID reloadSoundUUID,
-        boolean useDigitalAmmo)
+public record PendingReload(ItemStack gunStack, InteractionHand hand, long applyAtGameTime, List<ReloadPlan> plans, boolean forceReload, boolean creative, boolean combineAmmoOnReload,
+    boolean ammoToUpperInventory, UUID reloadSoundUUID, boolean useDigitalAmmo)
 {}

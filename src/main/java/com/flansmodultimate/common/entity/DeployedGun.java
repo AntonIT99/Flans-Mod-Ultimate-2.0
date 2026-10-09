@@ -4,29 +4,23 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.guns.ShotCooldown;
 import com.flansmodultimate.common.guns.handler.DeployableGunShootingHandler;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.teams.TeamsManager;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.platform.entity.FlanEntity;
-import com.flansmodultimate.platform.entity.SpawnDataEntity;
-import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.platform.entity.*;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,25 +28,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -392,8 +380,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     public boolean hurt(DamageSource source, float amount)
     {
         Entity entity = source.getEntity();
-        if (entity instanceof Player player
-            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ATTACK))
+        if (entity instanceof Player player && !FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ATTACK))
             return false;
         Entity gunner = getFirstPassenger();
 
@@ -406,9 +393,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
             return gunner.hurt(source, amount);
 
         // If unmounted and allowed to break guns: remove it
-        if (FlansMod.teamsManager.isCanBreakGuns()
-            && (!(entity instanceof Player player)
-                || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_PICKUP)))
+        if (FlansMod.teamsManager.isCanBreakGuns() && (!(entity instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_PICKUP)))
             discard();
 
         return true;
@@ -463,13 +448,11 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         // A player operating the gun from its front must move clear of the
         // tripod before mounting, rather than being pulled through it later.
         double yawRad = baseYaw * Mth.DEG_TO_RAD;
-        double rearDot = (player.getX() - getX()) * Math.sin(yawRad)
-            - (player.getZ() - getZ()) * Math.cos(yawRad);
+        double rearDot = (player.getX() - getX()) * Math.sin(yawRad) - (player.getZ() - getZ()) * Math.cos(yawRad);
         if (rearDot < 0D)
         {
             if (player instanceof ServerPlayer serverPlayer)
-                serverPlayer.teleportTo((ServerLevel) level, behind.x, behind.y, behind.z,
-                    baseYaw, player.getXRot());
+                serverPlayer.teleportTo((ServerLevel) level, behind.x, behind.y, behind.z, baseYaw, player.getXRot());
             else
             {
                 player.setPos(behind);
@@ -488,9 +471,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return super.canAddPassenger(passenger)
-            && (!(passenger instanceof Player player)
-                || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ENTER));
+        return super.canAddPassenger(passenger) && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.DEPLOYED_GUN_ENTER));
     }
 
     @Override
@@ -510,7 +491,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
         if (top > bottom)
         {
             float tmp = top;
-            top = bottom; bottom = tmp;
+            top = bottom;
+            bottom = tmp;
         }
         float pitch = Mth.clamp(p.getXRot(), top, bottom);
 
@@ -597,8 +579,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
                     double localZ = z - blockZ;
                     for (AABB box : shape.toAabbs())
                     {
-                        if (box.maxX <= localX - halfWidth || box.minX >= localX + halfWidth
-                            || box.maxZ <= localZ - halfWidth || box.minZ >= localZ + halfWidth)
+                        if (box.maxX <= localX - halfWidth || box.minX >= localX + halfWidth || box.maxZ <= localZ - halfWidth || box.minZ >= localZ + halfWidth)
                             continue;
                         double top = support.getY() + box.maxY;
                         if (top >= gunY - 1D && top <= gunY)
@@ -800,7 +781,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 
     public void fireGun(Level level, LivingEntity gunner)
     {
-        if (level.isClientSide || !gunner.isAlive() || !ShootableItem.hasRoundsLeft(ammo) || reloadTimer > 0 || !ShotCooldown.isReady(shootTimer) || !(ammo.getItem() instanceof ShootableItem shootableItem))
+        if (level.isClientSide || !gunner.isAlive() || !ShootableItem.hasRoundsLeft(ammo) || reloadTimer > 0 || !ShotCooldown.isReady(shootTimer)
+            || !(ammo.getItem() instanceof ShootableItem shootableItem))
             return;
 
         boolean automaticFire = configType.getFireMode(null).isAutomaticFire();
@@ -823,7 +805,8 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
                     }
 
                     if (StringUtils.isNotBlank(configType.getDistantShootSound()))
-                        PacketHandler.sendToDonut(level.dimension(), position(), configType.getGunSoundRange(), configType.getDistantSoundRange(), new PacketPlaySound(position(), configType.getDistantSoundRange(), configType.getDistantShootSound(), false, false, null));
+                        PacketHandler.sendToDonut(level.dimension(), position(), configType.getGunSoundRange(), configType.getDistantSoundRange(),
+                            new PacketPlaySound(position(), configType.getDistantSoundRange(), configType.getDistantShootSound(), false, false, null));
                 }
 
                 shootTimer += shootDelay;
@@ -863,8 +846,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
 
         ammo = newAmmo.copy();
         setHasAmmo(true);
-        float reloadFactor = ammo.getItem() instanceof ShootableItem shootableItem
-            ? shootableItem.getConfigType().getReloadTimeMultiplier() : 1F;
+        float reloadFactor = ammo.getItem() instanceof ShootableItem shootableItem ? shootableItem.getConfigType().getReloadTimeMultiplier() : 1F;
         // Reloading never lets the gun outrun its own rate of fire, so the wait
         // after the round that emptied it is the longer of the two.
         setReloadTimer(Mth.ceil(Math.max(configType.getReloadTime() * reloadFactor, configType.getShootDelay(null))));
@@ -882,8 +864,7 @@ public class DeployedGun extends FlanEntity implements SpawnDataEntity, IFlanEnt
             Vec3 pivot = configType.getMeasuredDeployableMuzzlePivot();
             Vec3 muzzle = configType.getMeasuredDeployableMuzzle();
             if (pivot != null && muzzle != null)
-                return position().add(DeployedGunMuzzleGeometry.modelMuzzleOffset(pivot, muzzle,
-                    configType.getModelScale(), getShootingYaw(), getShootingPitch()));
+                return position().add(DeployedGunMuzzleGeometry.modelMuzzleOffset(pivot, muzzle, configType.getModelScale(), getShootingYaw(), getShootingPitch()));
         }
         return new Vec3(blockPos.getX() + 0.5, blockPos.getY() + configType.getPivotHeight(), blockPos.getZ() + 0.5);
     }

@@ -139,7 +139,7 @@ class ClassLoaderUtilsTest
         assertNotNull(ops, "No transforms stored for " + modelClass);
         assertEquals(1, ops.size());
         assertEquals(TransformOp.EnumKind.TRANSLATE, ops.get(0).kind());
-        assertArrayEquals(new float[] { expectedX, 2F, 0F }, ops.get(0).args());
+        assertArrayEquals(new float[]{expectedX, 2F, 0F}, ops.get(0).args());
     }
 
     private IContentProvider createContentPack(String packName, String className) throws IOException

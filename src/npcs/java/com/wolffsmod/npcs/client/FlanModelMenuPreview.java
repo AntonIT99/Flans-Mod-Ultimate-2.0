@@ -15,7 +15,8 @@ import net.minecraft.world.phys.AABB;
 /** Static model-menu preview; its framing never changes the NPC's saved size or world hitbox. */
 public final class FlanModelMenuPreview
 {
-    private FlanModelMenuPreview() {}
+    private FlanModelMenuPreview()
+    {}
 
     public static void render(GuiCreationScreenInterface screen, GuiGraphics graphics, FlanModelEntity model, int rotation)
     {
@@ -25,16 +26,17 @@ public final class FlanModelMenuPreview
             return;
         float lift = modelType.getShape().modelHeight();
         AABB bounds = FlanModelBounds.of(model);
-        ResourceLocation texture = screen.playerdata.simpleRender ? model.getModelTexture()
-            : ResourceLocation.tryParse(screen.npc.display.getSkinTexture());
+        ResourceLocation texture = screen.playerdata.simpleRender ? model.getModelTexture() : ResourceLocation.tryParse(screen.npc.display.getSkinTexture());
         if (texture == null)
             texture = model.getModelTexture();
         if (texture == null)
             return;
-        int left = screen.guiLeft + 128, right = screen.guiLeft + screen.imageWidth - 12;
-        int top = screen.guiTop + 32, bottom = screen.guiTop + 194;
+        int left = screen.guiLeft + 128;
+        int right = screen.guiLeft + screen.imageWidth - 12;
+        int top = screen.guiTop + 32;
+        int bottom = screen.guiTop + 194;
         Quaternionf orientation = Axis.XP.rotationDegrees(20).mul(Axis.YP.rotationDegrees(rotation));
-        float scale = FlanPreviewFraming.pixelsPerBlock(bounds, orientation, right - left, bottom - top);
+        float scale = FlanPreviewFraming.pixelsPerBlock(bounds, orientation, (right - left), (bottom - top));
         var center = bounds.getCenter();
         graphics.flush();
         graphics.enableScissor(left, top, right, bottom);

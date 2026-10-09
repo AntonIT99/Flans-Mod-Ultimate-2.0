@@ -26,11 +26,8 @@ class DriveableTypeRealWorldPhysicsTest
     void officialMim23HasAnOperableTrackedGroundProfile() throws java.io.IOException
     {
         // Isolate driving directives: crafting and sound registration require Minecraft bootstrap.
-        VehicleType type = vehicle(java.nio.file.Files.readAllLines(java.nio.file.Path.of(
-            "src/officialpacks/resources/flans_content/modernwarfare/definitions/vehicles/MIM23.txt"))
-            .stream().filter(line -> line.matches(
-                "^(Real\\w+|DriveType|MaxThrottle|MaxNegativeThrottle|TurnLeftSpeed|TurnRightSpeed|Tank|Driver) .+"))
-            .toArray(String[]::new));
+        VehicleType type = vehicle(java.nio.file.Files.readAllLines(java.nio.file.Path.of("src/officialpacks/resources/flans_content/modernwarfare/definitions/vehicles/MIM23.txt")).stream()
+            .filter(line -> line.matches("^(Real\\w+|DriveType|MaxThrottle|MaxNegativeThrottle|TurnLeftSpeed|TurnRightSpeed|Tank|Driver) .+")).toArray(String[]::new));
 
         assertTrue(type.getResolvedPhysics().hasGroundPropulsion());
         assertTrue(type.isTank());
@@ -48,11 +45,7 @@ class DriveableTypeRealWorldPhysicsTest
     @Test
     void aLegacyVehicleParsesToPureLegacyPhysics()
     {
-        VehicleType type = vehicle(
-            "MaxThrottle 0.45",
-            "MaxNegativeThrottle 0.25",
-            "TurnLeftSpeed 0.25",
-            "Drag 1.0");
+        VehicleType type = vehicle("MaxThrottle 0.45", "MaxNegativeThrottle 0.25", "TurnLeftSpeed 0.25", "Drag 1.0");
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
         assertNotNull(physics);
         assertEquals(EnumVehiclePhysicsMode.LEGACY, physics.mode());
@@ -74,8 +67,7 @@ class DriveableTypeRealWorldPhysicsTest
         assertEquals(1F, type.getMass(), "the legacy field keeps its legacy value");
         assertTrue(type.getRealWorldSpec().isEmpty());
         assertEquals(EnumVehiclePhysicsMode.LEGACY, type.getResolvedPhysics().mode());
-        assertEquals(0F, type.getResolvedPhysics().massKg(),
-            "a legacy Mass must never be promoted into the real-world model");
+        assertEquals(0F, type.getResolvedPhysics().massKg(), "a legacy Mass must never be promoted into the real-world model");
     }
 
     @Test
@@ -109,11 +101,7 @@ class DriveableTypeRealWorldPhysicsTest
     @Test
     void aCompleteGroundProfileParsesAndActivates()
     {
-        VehicleType type = vehicle(
-            "MaxThrottle 1.0",
-            "RealMassKg 2400",
-            "RealEnginePowerKw 140",
-            "RealMaxSpeedKmh 113");
+        VehicleType type = vehicle("MaxThrottle 1.0", "RealMassKg 2400", "RealEnginePowerKw 140", "RealMaxSpeedKmh 113");
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
         assertEquals(EnumVehiclePhysicsMode.REAL_WORLD_PROFILE, physics.mode());
         assertTrue(physics.hasGroundPropulsion());
@@ -124,13 +112,7 @@ class DriveableTypeRealWorldPhysicsTest
     @Test
     void aCompleteAircraftProfileParsesAndActivates()
     {
-        PlaneType type = plane(
-            "RealMassKg 2890",
-            "RealMaxSpeedKmh 635",
-            "RealEnginePowerKw 993",
-            "RealWingSpanM 11.23",
-            "RealWingAreaM2 22.48",
-            "RealClimbRateMs 17.0");
+        PlaneType type = plane("RealMassKg 2890", "RealMaxSpeedKmh 635", "RealEnginePowerKw 993", "RealWingSpanM 11.23", "RealWingAreaM2 22.48", "RealClimbRateMs 17.0");
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
         assertEquals(EnumVehiclePhysicsMode.REAL_WORLD_PROFILE, physics.mode());
         assertTrue(physics.hasAircraftProfile());
@@ -141,12 +123,7 @@ class DriveableTypeRealWorldPhysicsTest
     @Test
     void newValuesCoexistWithLegacyOnesWithoutTheLegacyOnesBeingReinterpreted()
     {
-        VehicleType type = vehicle(
-            "Mass 1.0",
-            "MaxThrottle 0.45",
-            "RealMassKg 2400",
-            "RealEnginePowerKw 140",
-            "RealMaxSpeedKmh 113");
+        VehicleType type = vehicle("Mass 1.0", "MaxThrottle 0.45", "RealMassKg 2400", "RealEnginePowerKw 140", "RealMaxSpeedKmh 113");
         assertEquals(1F, type.getMass(), "the legacy field is still the legacy field");
         assertEquals(2400F, type.getResolvedPhysics().massKg(), "the new model uses the new field");
         assertTrue(type.getResolvedPhysics().hasGroundPropulsion());
@@ -196,11 +173,7 @@ class DriveableTypeRealWorldPhysicsTest
     void geometryIsDerivedFromTheCoreBoxAndWheelPositionsWithNoNewKeys()
     {
         // The S-100's real core box and hull wheel layout.
-        VehicleType type = vehicle(
-            "SetupPart core 8000 -247 -25 -42 561 86 84",
-            "WheelPosition 0 -150 10 -18",
-            "WheelPosition 1 -150 10 18",
-            "WheelPosition 2 150 10 18",
+        VehicleType type = vehicle("SetupPart core 8000 -247 -25 -42 561 86 84", "WheelPosition 0 -150 10 -18", "WheelPosition 1 -150 10 18", "WheelPosition 2 150 10 18",
             "WheelPosition 3 150 10 -18");
         assertEquals(35.0625F, type.getResolvedPhysics().geometry().lengthM(), 1.0E-3F);
         assertEquals(5.25F, type.getResolvedPhysics().geometry().widthM(), 1.0E-3F);
@@ -219,15 +192,11 @@ class DriveableTypeRealWorldPhysicsTest
     @Test
     void anIncompleteProfileLeavesLegacyPropulsionUntouched()
     {
-        VehicleType type = vehicle(
-            "MaxThrottle 0.45",
-            "RealMassKg 2400",
-            "RealEnginePowerKw 140");
+        VehicleType type = vehicle("MaxThrottle 0.45", "RealMassKg 2400", "RealEnginePowerKw 140");
         assertEquals(0.45F, type.getMaxThrottle());
         assertEquals(EnumVehiclePhysicsMode.LEGACY, type.getResolvedPhysics().mode());
         assertFalse(type.getResolvedPhysics().hasGroundPropulsion());
-        assertEquals(0F, type.getResolvedPhysics().massKg(),
-            "a partial profile must not leak half-derived values into the runtime");
+        assertEquals(0F, type.getResolvedPhysics().massKg(), "a partial profile must not leak half-derived values into the runtime");
     }
 
     // ------------------------------------------------------------ helpers

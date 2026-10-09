@@ -22,8 +22,7 @@ public final class MechaAddonItemRenderer
 {
     public static void renderItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay)
     {
-        if (!(stack.getItem() instanceof MechaAddonItem mechaAddonItem)
-            || !mechaAddonItem.useCustomRenderer(context)
+        if (!(stack.getItem() instanceof MechaAddonItem mechaAddonItem) || !mechaAddonItem.useCustomRenderer(context)
             || !(ModelCache.getOrLoadTypeModel(mechaAddonItem.getConfigType()) instanceof ModelMechaTool model))
         {
             ICustomItemRenderer.renderItemFallback(stack, context, poseStack, buffer, packedLight, packedOverlay);
@@ -44,8 +43,7 @@ public final class MechaAddonItemRenderer
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
-            model.renderAll(poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                packedLight, packedOverlay, red, green, blue, 1F, type.getModelScale(), 0F, renderPass);
+            model.renderAll(poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, packedOverlay, red, green, blue, 1F, type.getModelScale(), 0F, renderPass);
         }
         poseStack.popPose();
     }
@@ -54,32 +52,27 @@ public final class MechaAddonItemRenderer
     {
         switch (context)
         {
-            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND ->
-            {
+            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> {
                 poseStack.translate(-0.15F, 0.1F, -0.1F);
                 poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
                 poseStack.scale(1.1F, 1.1F, 1.1F);
             }
-            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND ->
-            {
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND -> {
                 poseStack.translate(-0.1F, -0.1F, 0F);
                 poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
                 poseStack.scale(0.9F, 0.9F, 0.9F);
             }
-            case GROUND ->
-            {
+            case GROUND -> {
                 poseStack.mulPose(Axis.YP.rotationDegrees(45F));
                 poseStack.scale(1.15F, 1.15F, 1.15F);
             }
-            case GUI ->
-            {
+            case GUI -> {
                 poseStack.mulPose(Axis.XP.rotationDegrees(20F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(-45F));
                 poseStack.scale(0.9F, 0.9F, 0.9F);
             }
             case FIXED -> poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
-            default ->
-            {
+            default -> {
                 // no-op
             }
         }

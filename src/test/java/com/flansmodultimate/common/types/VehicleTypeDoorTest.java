@@ -33,8 +33,7 @@ class VehicleTypeDoorTest
         List<String> definition = new ArrayList<>(List.of("Driver 0 0 0"));
         definition.addAll(List.of(lines));
         VehicleType type = new VehicleType();
-        type.read(new TypeFile("door", EnumType.VEHICLE,
-            new ContentPack("test", Path.of("build", "test-packs", "test")), definition));
+        type.read(new TypeFile("door", EnumType.VEHICLE, new ContentPack("test", Path.of("build", "test-packs", "test")), definition));
         return type;
     }
 }

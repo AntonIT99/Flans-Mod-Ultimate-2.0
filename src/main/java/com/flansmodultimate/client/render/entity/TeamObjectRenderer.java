@@ -1,7 +1,6 @@
 package com.flansmodultimate.client.render.entity;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -52,21 +51,17 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
         PartDefinition root = mesh.getRoot();
 
         PartDefinition poleRoot = root.addOrReplaceChild("pole", CubeListBuilder.create(), PartPose.ZERO);
-        poleRoot.addOrReplaceChild("upper", CubeListBuilder.create().texOffs(0, 16).addBox(-48F, -1F, -1F, 24, 2, 2),
-            PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, RIGHT_ANGLE));
-        poleRoot.addOrReplaceChild("lower", CubeListBuilder.create().texOffs(0, 16).addBox(-24F, -1F, -1F, 24, 2, 2),
-            PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, RIGHT_ANGLE));
+        poleRoot.addOrReplaceChild("upper", CubeListBuilder.create().texOffs(0, 16).addBox(-48F, -1F, -1F, 24, 2, 2), PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, RIGHT_ANGLE));
+        poleRoot.addOrReplaceChild("lower", CubeListBuilder.create().texOffs(0, 16).addBox(-24F, -1F, -1F, 24, 2, 2), PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, RIGHT_ANGLE));
         poleRoot.addOrReplaceChild("base", CubeListBuilder.create().texOffs(0, 20).addBox(-2F, -2F, -2F, 4, 2, 4), PartPose.ZERO);
 
-        root.addOrReplaceChild("flag", CubeListBuilder.create().texOffs(0, 0).addBox(-8F, -16F, 0F, 16, 16, 0),
-            PartPose.offset(8F, 0F, 0F));
+        root.addOrReplaceChild("flag", CubeListBuilder.create().texOffs(0, 0).addBox(-8F, -16F, 0F, 16, 16, 0), PartPose.offset(8F, 0F, 0F));
 
         return LayerDefinition.create(mesh, TEXTURE_WIDTH, TEXTURE_HEIGHT);
     }
 
     @Override
-    public void render(@NotNull T entity, float yaw, float partialTick, @NotNull PoseStack poseStack,
-                       @NotNull MultiBufferSource buffer, int packedLight)
+    public void render(@NotNull T entity, float yaw, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight)
     {
         VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(FlansModTextures.TEXTURE_FLAGPOLE));
         poseStack.pushPose();
@@ -85,8 +80,7 @@ public final class TeamObjectRenderer<T extends Entity> extends EntityRenderer<T
 
             int colour = flagEntity.getColour();
             poseStack.scale(-1F, -1F, 1F);
-            VertexPlatform.renderModelPart(flag, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY,
-                (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F, (colour & 255) / 255F, 1F);
+            VertexPlatform.renderModelPart(flag, poseStack, vertices, packedLight, OverlayTexture.NO_OVERLAY, (colour >> 16 & 255) / 255F, (colour >> 8 & 255) / 255F, (colour & 255) / 255F, 1F);
         }
         else
         {

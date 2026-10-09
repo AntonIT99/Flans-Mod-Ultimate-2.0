@@ -1,7 +1,8 @@
 package com.flansmodultimate.platform.entity;
 
-import net.minecraft.network.syncher.SynchedEntityData;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;

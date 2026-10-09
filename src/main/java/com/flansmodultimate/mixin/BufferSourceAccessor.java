@@ -13,5 +13,5 @@ import java.util.Map;
 public interface BufferSourceAccessor
 {
     @Accessor("startedBuilders")
-    Map<?, BufferBuilder> flansmodultimate$startedBuilders();
+    Map<?, BufferBuilder> flansmodultimateStartedBuilders();
 }

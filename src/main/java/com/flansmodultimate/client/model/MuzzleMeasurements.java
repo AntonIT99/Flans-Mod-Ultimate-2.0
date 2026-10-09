@@ -1,13 +1,11 @@
 package com.flansmodultimate.client.model;
 
-import com.flansmod.client.model.ModelAAGun;
-import com.flansmod.client.model.ModelDriveable;
-import com.flansmod.client.model.ModelVehicle;
+import com.flansmod.client.model.*;
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
-import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
+import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -24,32 +22,41 @@ import java.util.List;
  * seat's {@code GunOrigin}, and the AA gun muzzle offsets that
  * {@link AAGunBarrelGeometry#legacyBarrelFor} turns into {@code Barrel} lines.
  *
- * <p>Takes the few type values it needs as plain inputs rather than a loaded
+ * <p>
+ * Takes the few type values it needs as plain inputs rather than a loaded
  * type, so the {@code /flandebug shootpoint} command and the offline
- * {@code shootPointSync} tooling derive exactly the same values.</p>
+ * {@code shootPointSync} tooling derive exactly the same values.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class MuzzleMeasurements
 {
     /** A passenger seat mounting a gun, and the model part name its gun is registered under. */
-    public record SeatGun(int seatIndex, @NotNull String gunName) {}
+    public record SeatGun(int seatIndex, @NotNull String gunName)
+    {}
 
     /**
      * The type values the derivation reads.
      *
-     * @param planeFacing          whether the type is authored in the plane flight basis
-     * @param modelScale           the type's {@code ModelScale}
-     * @param vehicleGunModelScale the type's {@code VehicleGunModelScale}
-     * @param seatGuns             the passenger seats that mount a gun, by seat index
+     * @param planeFacing
+     *            whether the type is authored in the plane flight basis
+     * @param modelScale
+     *            the type's {@code ModelScale}
+     * @param vehicleGunModelScale
+     *            the type's {@code VehicleGunModelScale}
+     * @param seatGuns
+     *            the passenger seats that mount a gun, by seat index
      */
-    public record DriveableInputs(boolean planeFacing, double modelScale, float vehicleGunModelScale,
-                                  @NotNull List<SeatGun> seatGuns) {}
+    public record DriveableInputs(boolean planeFacing, double modelScale, float vehicleGunModelScale, @NotNull List<SeatGun> seatGuns)
+    {}
 
     /**
      * The muzzles of a driveable model, in type-file units and convention.
      *
-     * <p>The primary barrel comes first, with seat index {@code -1}, then one
-     * entry per seat gun the model registers, as its {@code GunOrigin}.</p>
+     * <p>
+     * The primary barrel comes first, with seat index {@code -1}, then one
+     * entry per seat gun the model registers, as its {@code GunOrigin}.
+     * </p>
      */
     public static List<DerivedMuzzle> deriveMuzzles(@NotNull ModelDriveable model, @NotNull DriveableInputs inputs)
     {
@@ -62,8 +69,7 @@ public final class MuzzleMeasurements
         {
             Vec3 barrel = vehicleModel.getPrimaryBarrelMuzzle();
             if (barrel != null)
-                derived.add(new DerivedMuzzle(-1, "barrel",
-                    LegacyDriveableCoordinates.modelPixelsToTypeFile(barrel.scale(modelScale), inputs.planeFacing())));
+                derived.add(new DerivedMuzzle(-1, "barrel", LegacyDriveableCoordinates.modelPixelsToTypeFile(barrel.scale(modelScale), inputs.planeFacing())));
         }
 
         for (SeatGun seatGun : inputs.seatGuns())
@@ -78,8 +84,7 @@ public final class MuzzleMeasurements
             // measurement holds at every aim.
             Vector3f position = seatGunPointToGunOrigin(muzzle.scale(modelScale), inputs.planeFacing());
             Vec3 pivot = model.getRegisteredGunAimPivot(seatGun.gunName(), gunScale);
-            derived.add(new DerivedMuzzle(seatGun.seatIndex(),
-                "seat " + seatGun.seatIndex() + " (" + seatGun.gunName() + ")", position,
+            derived.add(new DerivedMuzzle(seatGun.seatIndex(), "seat " + seatGun.seatIndex() + " (" + seatGun.gunName() + ")", position,
                 pivot == null ? null : seatGunPointToGunOrigin(pivot.scale(16D * modelScale), inputs.planeFacing())));
         }
         return List.copyOf(derived);
@@ -90,11 +95,11 @@ public final class MuzzleMeasurements
      * {@code hint} when the model's main armament ends in several tubes, or
      * {@code null} when the model has no primary barrel.
      *
-     * @param hint the point, in type-file pixels, the type fires its primary weapon from now
+     * @param hint
+     *            the point, in type-file pixels, the type fires its primary weapon from now
      */
     @Nullable
-    public static DerivedMuzzle derivePrimaryBarrelNear(@NotNull ModelDriveable model, @NotNull DriveableInputs inputs,
-                                                        @NotNull Vector3f hint)
+    public static DerivedMuzzle derivePrimaryBarrelNear(@NotNull ModelDriveable model, @NotNull DriveableInputs inputs, @NotNull Vector3f hint)
     {
         if (!(model instanceof ModelVehicle vehicleModel))
             return null;
@@ -113,8 +118,7 @@ public final class MuzzleMeasurements
         List<Vec3> barrels = vehicleModel.getPrimaryBarrelMuzzles();
         List<DerivedMuzzle> derived = new ArrayList<>();
         for (int barrel = 0; barrel < barrels.size(); barrel++)
-            derived.add(new DerivedMuzzle(-1, barrels.size() == 1 ? "barrel" : "barrel " + barrel,
-                toTypeFile(barrels.get(barrel), inputs)));
+            derived.add(new DerivedMuzzle(-1, barrels.size() == 1 ? "barrel" : "barrel " + barrel, toTypeFile(barrels.get(barrel), inputs)));
         return List.copyOf(derived);
     }
 
@@ -123,28 +127,29 @@ public final class MuzzleMeasurements
      * terms, at rest: two for a twin mount, one for a single gun, none when the
      * model does not register the gun.
      */
-    public static List<Vector3f> deriveSeatGunBarrels(@NotNull ModelDriveable model, @NotNull DriveableInputs inputs,
-                                                      @NotNull SeatGun seatGun)
+    public static List<Vector3f> deriveSeatGunBarrels(@NotNull ModelDriveable model, @NotNull DriveableInputs inputs, @NotNull SeatGun seatGun)
     {
         double modelScale = Math.max(1.0E-4D, inputs.modelScale());
         float gunScale = Math.max(0.001F, inputs.vehicleGunModelScale());
-        return model.getRegisteredGunMuzzles(seatGun.gunName(), gunScale).stream()
-            .map(muzzle -> seatGunPointToGunOrigin(muzzle.scale(modelScale), inputs.planeFacing()))
-            .toList();
+        return model.getRegisteredGunMuzzles(seatGun.gunName(), gunScale).stream().map(muzzle -> seatGunPointToGunOrigin(muzzle.scale(modelScale), inputs.planeFacing())).toList();
     }
 
     /**
      * Each barrel of a multi-barrel mount relative to the point a type fires the
      * mount from, in type-file pixels, or an empty list for fewer than two barrels.
      *
-     * <p>The spread is kept round the authored point rather than moving it: a pack
+     * <p>
+     * The spread is kept round the authored point rather than moving it: a pack
      * trusted as written keeps its muzzle, and a corrected one has already been
      * moved onto the model. A point on one barrel, as a twin authored on its left
      * gun, is that barrel; any other point stands for the whole mount and sits at
-     * the middle of its barrels.</p>
+     * the middle of its barrels.
+     * </p>
      *
-     * @param barrels  each barrel's muzzle, in type-file pixels
-     * @param authored the point the type fires the mount from, in the same terms
+     * @param barrels
+     *            each barrel's muzzle, in type-file pixels
+     * @param authored
+     *            the point the type fires the mount from, in the same terms
      */
     public static List<Vector3f> barrelSpread(@NotNull List<Vector3f> barrels, @NotNull Vector3f authored)
     {
@@ -202,10 +207,10 @@ public final class MuzzleMeasurements
      * turret. A point with no tube near either side is left alone: there is
      * nothing to tell which side is meant.
      *
-     * @param muzzle the point the type fires from, in type-file pixels
+     * @param muzzle
+     *            the point the type fires from, in type-file pixels
      */
-    public static boolean isMirroredMuzzle(@NotNull ModelDriveable model, @NotNull DriveableInputs inputs,
-                                           @NotNull Vector3f muzzle)
+    public static boolean isMirroredMuzzle(@NotNull ModelDriveable model, @NotNull DriveableInputs inputs, @NotNull Vector3f muzzle)
     {
         if (Math.abs(muzzle.z) < CENTRELINE)
             return false;

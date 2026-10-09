@@ -14,8 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class KineticVelocityResolutionTest
 {
-    private static final IContentProvider PACK = new ContentPack("test",
-        Path.of("build", "test-packs", "kinetic-velocity"));
+    private static final IContentProvider PACK = new ContentPack("test", Path.of("build", "test-packs", "kinetic-velocity"));
 
     @Test
     void ammunitionVelocityTakesPrecedenceOverWeaponVelocity()
@@ -38,8 +37,7 @@ class KineticVelocityResolutionTest
     @Test
     void selectedBeltRoundVelocityTakesPrecedence()
     {
-        BulletType bullet = read("RoundsPerItem 2", "AddRound AP 1 162 0 800 45",
-            "AddRound HE 1 135 0.01 835 0");
+        BulletType bullet = read("RoundsPerItem 2", "AddRound AP 1 162 0 800 45", "AddRound HE 1 135 0.01 835 0");
         FireableGun gun = new FireableGun(bullet, 1F, 0F, 20F, EnumSpreadPattern.CIRCLE);
 
         assertEquals(40F, ShootingHelper.getMuzzleVelocity(bullet, 0, gun));

@@ -7,15 +7,14 @@ import java.util.Locale;
 @Getter
 public enum LoadoutSlot
 {
-    PRIMARY("Primary"),
-    SECONDARY("Secondary"),
-    SPECIAL("Special"),
-    MELEE("Melee"),
-    ARMOUR("Armour");
+    PRIMARY("Primary"), SECONDARY("Secondary"), SPECIAL("Special"), MELEE("Melee"), ARMOUR("Armour");
 
     private final String displayName;
 
-    LoadoutSlot(String displayName) { this.displayName = displayName; }
+    LoadoutSlot(String displayName)
+    {
+        this.displayName = displayName;
+    }
 
     public static LoadoutSlot fromConfigKey(String key)
     {

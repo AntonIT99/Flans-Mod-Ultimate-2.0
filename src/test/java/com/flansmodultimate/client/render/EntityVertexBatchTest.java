@@ -12,7 +12,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.lwjgl.system.MemoryStack;
@@ -20,6 +19,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+
+import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,7 +41,8 @@ class EntityVertexBatchTest
     void bulkWritesMatchTheBuilderByteForByteAcrossBatchBoundaries()
     {
         // 30 boxes of 24 vertices need two bulk writes of at most 512 vertices.
-        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+        {}, 0, 0);
         for (int box = 0; box < 30; box++)
             part.addBox(box - 15, box % 4, -box * 0.5F, 3, 2 + box % 3, 4);
         part.rotationPointX = 2F;
@@ -71,7 +73,8 @@ class EntityVertexBatchTest
     @Test
     void consumersThatRefuseBulkWritesStillGetEveryVertex()
     {
-        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase() {}, 0, 0);
+        ModelRendererTurbo part = new ModelRendererTurbo(new ModelBase()
+        {}, 0, 0);
         part.addBox(0, 0, 0, 16, 16, 16);
         BulkRecorder refusing = new BulkRecorder(false);
         assertFalse(VertexWriterPlatform.canWrite(refusing));
@@ -147,10 +150,34 @@ class EntityVertexBatchTest
             return this;
         }
 
-        @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
-        @Override public VertexConsumer setUv(float u, float v) { return this; }
-        @Override public VertexConsumer setUv1(int u, int v) { return this; }
-        @Override public VertexConsumer setUv2(int u, int v) { return this; }
-        @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
+        @Override
+        public VertexConsumer setColor(int r, int g, int b, int a)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v)
+        {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float x, float y, float z)
+        {
+            return this;
+        }
     }
 }

@@ -66,7 +66,8 @@ public abstract class InfoType implements IContentType
     private static final String LOOT_POOL_NAME = "FlansMod";
 
     /** A timer telling the mod when to play a sound again, paired with the sound it plays. */
-    private record SoundTimer(String parameterName, Supplier<String> sound, IntSupplier length, IntConsumer applyLength) {}
+    private record SoundTimer(String parameterName, Supplier<String> sound, IntSupplier length, IntConsumer applyLength)
+    {}
 
     /** Populated while reading a type and cleared once the measured sound lengths have been applied. */
     private final List<SoundTimer> soundTimers = new ArrayList<>();
@@ -137,8 +138,15 @@ public abstract class InfoType implements IContentType
     protected ResourceLocation overlay;
     @Getter
     protected RenderOptions renderOptions;
+    /**
+     * If true, entities holding this item are not frustum culled, so oversized parts such as laser beams stay visible
+     * when the holder itself is off-screen
+     */
+    @Getter
+    protected boolean disableFrustumCulling;
 
-    public record RenderOptions(boolean translucentRendering, boolean additiveBlending, boolean disableCulling) {}
+    public record RenderOptions(boolean translucentRendering, boolean additiveBlending, boolean disableCulling)
+    {}
 
     /**
      * Reads the optional per-ammunition override keys and reports any malformed line
@@ -173,6 +181,14 @@ public abstract class InfoType implements IContentType
             return null;
         Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(FlansMod.FLANSMOD_ID, getShortName()));
         return item == Items.AIR ? null : item;
+    }
+
+    /**
+     * Whether an entity holding this stack must skip frustum culling
+     */
+    public boolean isFrustumCullingDisabled(ItemStack stack)
+    {
+        return disableFrustumCulling;
     }
 
     public Optional<ResourceLocation> getOverlay()
@@ -221,6 +237,7 @@ public abstract class InfoType implements IContentType
         boolean additiveBlending = readValue("AdditiveBlending", false, file);
         boolean disableCulling = readValue("DisableCulling", false, file);
         renderOptions = new RenderOptions(translucentRendering, additiveBlending, disableCulling);
+        disableFrustumCulling = readValue("DisableFrustumCulling", disableFrustumCulling, file);
 
         dungeonChance = readValue("DungeonProbability", dungeonChance, file);
         dungeonChance = readValue("DungeonLootChance", dungeonChance, file);
@@ -237,8 +254,7 @@ public abstract class InfoType implements IContentType
     }
 
     protected void readLine(String[] split, int lineIndex, TypeFile file)
-    {
-    }
+    {}
 
     private void readRecipeDefinitions(TypeFile file)
     {
@@ -313,9 +329,7 @@ public abstract class InfoType implements IContentType
     private static String getRecipeRow(String recipeRow)
     {
         String row = Objects.requireNonNullElse(recipeRow, StringUtils.EMPTY);
-        if (row.regionMatches(true, 0, "Recipe", 0, "Recipe".length())
-            && row.length() > "Recipe".length()
-            && Character.isWhitespace(row.charAt("Recipe".length())))
+        if (row.regionMatches(true, 0, "Recipe", 0, "Recipe".length()) && row.length() > "Recipe".length() && Character.isWhitespace(row.charAt("Recipe".length())))
             return row.substring("Recipe".length() + 1);
         return row;
     }
@@ -415,7 +429,7 @@ public abstract class InfoType implements IContentType
         if (!hasValueForConfigField(key, file))
             return 0;
 
-        String configuredLength = readValue(key, (String)null, file);
+        String configuredLength = readValue(key, (String) null, file);
         if (StringUtils.equalsIgnoreCase(configuredLength, "none"))
             return 0;
         try
@@ -424,8 +438,7 @@ public abstract class InfoType implements IContentType
         }
         catch (NumberFormatException exception)
         {
-            TypeReaderUtils.logError("Incorrect format for '" + key + "': expected an integer but found '"
-                + configuredLength + "'", file);
+            TypeReaderUtils.logError("Incorrect format for '" + key + "': expected an integer but found '" + configuredLength + "'", file);
             return defaultValue;
         }
     }
@@ -434,10 +447,14 @@ public abstract class InfoType implements IContentType
      * Declares that a sound timer plays the given sound, so it can be replaced with the measured
      * length of that sound file once every content pack has been read.
      *
-     * @param parameterName the config parameter the timer is read from, for logging
-     * @param sound         the sound the timer plays, read at resolution time
-     * @param length        reads the configured timer value
-     * @param applyLength   replaces the timer value
+     * @param parameterName
+     *            the config parameter the timer is read from, for logging
+     * @param sound
+     *            the sound the timer plays, read at resolution time
+     * @param length
+     *            reads the configured timer value
+     * @param applyLength
+     *            replaces the timer value
      */
     protected void registerSoundTimer(String parameterName, Supplier<String> sound, IntSupplier length, IntConsumer applyLength)
     {
@@ -470,8 +487,7 @@ public abstract class InfoType implements IContentType
 
             timer.applyLength().accept(measuredLength.getAsInt());
             resolved++;
-            FlansLog.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)",
-                originalShortName, timer.parameterName(), sound, configuredLength, measuredLength.getAsInt());
+            FlansLog.log.debug("{}: {} of sound '{}' changed from {} to the measured {} tick(s)", originalShortName, timer.parameterName(), sound, configuredLength, measuredLength.getAsInt());
         }
 
         soundTimers.clear();
@@ -483,10 +499,10 @@ public abstract class InfoType implements IContentType
         addEffects(key, effects, file, ambient, visible, 250, 0);
     }
 
-    protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible,
-                                     int defaultDuration, int defaultAmplifier)
+    protected static void addEffects(String key, List<MobEffectInstance> effects, TypeFile file, boolean ambient, boolean visible, int defaultDuration, int defaultAmplifier)
     {
-        readValuesInLines(key, file).ifPresent(lines -> lines.forEach(effectValues -> {
+        readValuesInLines(key, file).ifPresent(lines -> lines.forEach(effectValues ->
+        {
             if (effectValues.length > 0)
             {
                 try
@@ -708,17 +724,12 @@ public abstract class InfoType implements IContentType
         if (dungeonChance <= 0 || !type.isHasItem())
             return;
 
-        ModUtils.getItem(this)
-            .map(item -> createDungeonLootEntry(item, FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance))
-            .ifPresent(entry -> addLootEntry(table, entry));
+        ModUtils.getItem(this).map(item -> createDungeonLootEntry(item, FlansMod.DUNGEON_LOOT_CHANCE * dungeonChance)).ifPresent(entry -> addLootEntry(table, entry));
     }
 
     protected LootPoolEntryContainer createDungeonLootEntry(Item item, int weight)
     {
-        return LootItem.lootTableItem(item)
-            .setWeight(weight)
-            .setQuality(1)
-            .build();
+        return LootItem.lootTableItem(item).setWeight(weight).setQuality(1).build();
     }
 
     protected void addLootEntry(LootTable table, LootPoolEntryContainer entry)
@@ -733,12 +744,7 @@ public abstract class InfoType implements IContentType
         LootPool pool = table.getPool(LOOT_POOL_NAME);
         if (pool == null)
         {
-            table.addPool(LootPool.lootPool()
-                .name(LOOT_POOL_NAME)
-                .setRolls(ConstantValue.exactly(1F))
-                .setBonusRolls(ConstantValue.exactly(1F))
-                .add(new ExistingLootEntryBuilder(entry))
-                .build());
+            table.addPool(LootPool.lootPool().name(LOOT_POOL_NAME).setRolls(ConstantValue.exactly(1F)).setBonusRolls(ConstantValue.exactly(1F)).add(new ExistingLootEntryBuilder(entry)).build());
             return;
         }
 
@@ -765,24 +771,12 @@ public abstract class InfoType implements IContentType
             LootPoolEntryContainer[] newEntries = Arrays.copyOf(oldEntries, oldEntries.length + 1);
             newEntries[oldEntries.length] = entry;
 
-            Constructor<LootPool> constructor = LootPool.class.getDeclaredConstructor(
-                LootPoolEntryContainer[].class,
-                LootItemCondition[].class,
-                LootItemFunction[].class,
-                NumberProvider.class,
-                NumberProvider.class,
-                String.class
-            );
+            Constructor<LootPool> constructor = LootPool.class.getDeclaredConstructor(LootPoolEntryContainer[].class, LootItemCondition[].class, LootItemFunction[].class, NumberProvider.class,
+                NumberProvider.class, String.class);
             constructor.setAccessible(true);
 
-            return Optional.of(constructor.newInstance(
-                newEntries,
-                (LootItemCondition[]) conditionsField.get(pool),
-                (LootItemFunction[]) functionsField.get(pool),
-                pool.getRolls(),
-                pool.getBonusRolls(),
-                LOOT_POOL_NAME
-            ));
+            return Optional.of(constructor.newInstance(newEntries, (LootItemCondition[]) conditionsField.get(pool), (LootItemFunction[]) functionsField.get(pool), pool.getRolls(),
+                pool.getBonusRolls(), LOOT_POOL_NAME));
         }
         catch (Exception ex)
         {
@@ -798,10 +792,7 @@ public abstract class InfoType implements IContentType
     private static class LootBuildContext
     {
         private final LootTable table;
-        private final LootPool.Builder builder = LootPool.lootPool()
-            .name(LOOT_POOL_NAME)
-            .setRolls(ConstantValue.exactly(1F))
-            .setBonusRolls(ConstantValue.exactly(1F));
+        private final LootPool.Builder builder = LootPool.lootPool().name(LOOT_POOL_NAME).setRolls(ConstantValue.exactly(1F)).setBonusRolls(ConstantValue.exactly(1F));
         private final List<LootPoolEntryContainer> entries = new ArrayList<>();
         private int entryCount;
 

@@ -22,8 +22,10 @@ import java.util.function.Supplier;
  * sends the values it has, the client sends back the one the player changed, and the server validates that
  * change against its own spec before applying it.
  *
- * <p>Only the types the screen can edit travel: booleans, whole and decimal numbers, and enums, which move
- * as their constant name. Free text and lists stay in the config file.</p>
+ * <p>
+ * Only the types the screen can edit travel: booleans, whole and decimal numbers, and enums, which move
+ * as their constant name. Free text and lists stay in the config file.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ConfigSpecValues
@@ -86,9 +88,8 @@ public final class ConfigSpecValues
      * NeoForge's rejects one and restores the default, so the NeoForge side uses {@code defineListAllowEmpty}.
      * {@code newElement} is the value NeoForge's config screen adds to the list; Forge has no such screen.
      */
-    public static <T> ModConfigSpec.ConfigValue<List<? extends T>> defineList(ModConfigSpec.Builder builder, String path,
-                                                                              List<? extends T> defaultValue, Supplier<T> newElement,
-                                                                              Predicate<Object> elementValidator)
+    public static <T> ModConfigSpec.ConfigValue<List<? extends T>> defineList(ModConfigSpec.Builder builder, String path, List<? extends T> defaultValue, Supplier<T> newElement,
+        Predicate<Object> elementValidator)
     {
         return builder.defineListAllowEmpty(path, defaultValue, newElement, elementValidator);
     }
@@ -151,8 +152,7 @@ public final class ConfigSpecValues
         if (type == Integer.class && value instanceof Number number)
         {
             double numeric = number.doubleValue();
-            return Double.isFinite(numeric) && numeric >= Integer.MIN_VALUE && numeric <= Integer.MAX_VALUE
-                && numeric == Math.rint(numeric) ? number.intValue() : null;
+            return Double.isFinite(numeric) && numeric >= Integer.MIN_VALUE && numeric <= Integer.MAX_VALUE && numeric == Math.rint(numeric) ? number.intValue() : null;
         }
 
         if (type == Double.class && value instanceof Number number)

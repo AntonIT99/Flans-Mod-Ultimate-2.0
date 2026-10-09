@@ -27,7 +27,8 @@ import java.util.function.Consumer;
  */
 public final class ItemStackData
 {
-    private ItemStackData() {}
+    private ItemStackData()
+    {}
 
     public static boolean has(ItemStack stack)
     {
@@ -110,8 +111,7 @@ public final class ItemStackData
     public static ItemStack writtenBook(String title, String author, List<Component> pages)
     {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
-        book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(Filterable.passThrough(title), author, 0,
-            pages.stream().map(Filterable::passThrough).toList(), true));
+        book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(Filterable.passThrough(title), author, 0, pages.stream().map(Filterable::passThrough).toList(), true));
         return book;
     }
 }

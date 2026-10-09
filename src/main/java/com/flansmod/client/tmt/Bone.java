@@ -15,21 +15,24 @@ import java.util.Map;
  * animating your mobs a little bit more easy. However, since you won't work with a
  * graphical interface, creating bones will be different from what you are probably
  * used to.
- * <br /><br />
+ * <br />
+ * <br />
  * First, you will need to instantiate every Bone in the constructor of your model
  * file. The default orientation, when all angles are set to zero, will be in the
  * vector (0, 0, length), meaning it will always point backwards on a regular model.
  * You can also set what its parent node is. If a Bone does not have a parent node,
  * it is assumed it is the root node. Each Bone can only have one parent, but several
  * children. Also, all children will inherit the offset position of the root node.
- * <br /><br />
+ * <br />
+ * <br />
  * The neutral position basically defines in what direction the Bone normally faces
  * when in rest. This will not affect the rotation of any model currently attached
  * to it or the rotation of the child nodes, but will affect the position of the
  * child nodes when recalculating their positions. The length always defines how far
  * each child Bone will be placed, since child Bones are always placed at the end of
  * their parent Bone.
- * <br /><br />
+ * <br />
+ * <br />
  * Once you're ready to render, you can call the prepareDraw method. You only need
  * to apply it to one Bone, since it will always search for the root node to execute
  * the code there. It will then automatically rotate every child Bone and places
@@ -38,10 +41,12 @@ import java.util.Map;
  * rotation for the individual models that you should apply that after you've run
  * setAnglesToModels, since this will override the settings the model originally had.
  * The best way to solve this is to make a separate method to rotate the Bones.
- * <br /><br />
+ * <br />
+ * <br />
  * The following would be an example of a biped with a skeleton. It takes ModelBiped
  * as an example and extends it with a skeleton. First, we have the part that goes
  * in the constructor.
+ *
  * <pre>
  * // First, the origin will be placed. This is where the rest is attached to.
  * skeletonOrigin = new Bone(0, 0, 0, 0);
@@ -67,10 +72,14 @@ import java.util.Map;
  * skeletonLegRight.addModel(bipedRightLeg);
  * skeletonLegLeft.addModel(bipedRightLeg);
  * </pre>
- * <br /><br />
+ *
+ * <br />
+ * <br />
  * After that, you could replace anything in the setRotationAngles method with
  * the following code. It's not a complete code, but you'll get the basics.
- * <br /><br />
+ * <br />
+ * <br />
+ *
  * <pre>
  * skeletonHead.relativeAngles.angleY = f3 / 57.29578F;
  * skeletonHead.relativeAngles.angleX = f4 / 57.29578F;
@@ -83,19 +92,26 @@ import java.util.Map;
  * skeletonLegLeft.relativeAngles.angleX = MathHelper.cos(f * 0.6662F + 3.141593F) * 1.4F * f1;
  * skeletonLegLeft.relativeAngles.angleY = 0.0F;
  * </pre>
- * <br /><br />
+ *
+ * <br />
+ * <br />
  * Finally, in the render method, you could use the following code.
- * <br /><br />
+ * <br />
+ * <br />
+ *
  * <pre>
  * setRotationAngles(f, f1, f2, f3, f4, f5);
  * skeletonOrigin.prepareDraw();
  * skeletonOrigin.setAnglesToModels();
  * </pre>
- * <br /><br />
+ *
+ * <br />
+ * <br />
  * This should generate the same animation of the regular biped. Don't forget to add
  * the individual render methods for each model though, as it won't automatically
  * render them.
- * <br /><br />
+ * <br />
+ * <br />
  *
  * @author GaryCXJk
  */
@@ -121,10 +137,14 @@ public class Bone
     /**
      * Constructor to create a bone.
      *
-     * @param x the x-rotation of the bone
-     * @param y the y-rotation of the bone
-     * @param z the z-rotation of the bone
-     * @param l the length of the bone
+     * @param x
+     *            the x-rotation of the bone
+     * @param y
+     *            the y-rotation of the bone
+     * @param z
+     *            the z-rotation of the bone
+     * @param l
+     *            the length of the bone
      */
     public Bone(float x, float y, float z, float l)
     {
@@ -146,13 +166,20 @@ public class Bone
     /**
      * Constructor to create a bone.
      *
-     * @param xOrig the x-offset of the origin
-     * @param yOrig the y-offset of the origin
-     * @param zOrig the z-offset of the origin
-     * @param xRot  the x-rotation of the bone
-     * @param yRot  the y-rotation of the bone
-     * @param zRot  the z-rotation of the bone
-     * @param l     the length of the bone
+     * @param xOrig
+     *            the x-offset of the origin
+     * @param yOrig
+     *            the y-offset of the origin
+     * @param zOrig
+     *            the z-offset of the origin
+     * @param xRot
+     *            the x-rotation of the bone
+     * @param yRot
+     *            the y-rotation of the bone
+     * @param zRot
+     *            the z-rotation of the bone
+     * @param l
+     *            the length of the bone
      */
     public Bone(float xOrig, float yOrig, float zOrig, float xRot, float yRot, float zRot, float l)
     {
@@ -164,11 +191,16 @@ public class Bone
      * Constructor to create a bone. This attaches the bone to a parent bone, and will
      * calculate its current position relative to the origin.
      *
-     * @param x      the x-rotation of the bone
-     * @param y      the y-rotation of the bone
-     * @param z      the z-rotation of the bone
-     * @param l      the length of the bone
-     * @param parent the parent Bone node this Bone is attached to
+     * @param x
+     *            the x-rotation of the bone
+     * @param y
+     *            the y-rotation of the bone
+     * @param z
+     *            the z-rotation of the bone
+     * @param l
+     *            the length of the bone
+     * @param parent
+     *            the parent Bone node this Bone is attached to
      */
     public Bone(float x, float y, float z, float l, Bone parent)
     {
@@ -189,7 +221,8 @@ public class Bone
      * Attaches the bone to a parent. If the parent is already set, detaches the bone
      * from the previous parent.
      *
-     * @param parent the parent Bone node this Bone is attached to
+     * @param parent
+     *            the parent Bone node this Bone is attached to
      */
     public void attachBone(Bone parent)
     {
@@ -208,9 +241,12 @@ public class Bone
      * always set the parent root Bone, not the current Bone, as its offset
      * is determined by the offset, rotation and length of its parent.
      *
-     * @param x the x-position
-     * @param y the y-position
-     * @param z the z-position
+     * @param x
+     *            the x-position
+     * @param y
+     *            the y-position
+     * @param z
+     *            the z-position
      * @return a Vec3d with the new coordinates of the current bone
      */
     public Vec3 setOffset(float x, float y, float z)
@@ -218,9 +254,9 @@ public class Bone
         if (parentNode != null)
         {
             Vec3 vector = parentNode.setOffset(x, y, z);
-            offsetX = (float)vector.x;
-            offsetY = (float)vector.y;
-            offsetZ = (float)vector.z;
+            offsetX = (float) vector.x;
+            offsetY = (float) vector.y;
+            offsetZ = (float) vector.z;
             return vector;
         }
         offsetX = x;
@@ -262,9 +298,12 @@ public class Bone
      * Sets the current neutral rotation of the bone. This is the same rotation as in
      * the constructor.
      *
-     * @param x the x-rotation of the bone
-     * @param y the y-rotation of the bone
-     * @param z the z-rotation of the bone
+     * @param x
+     *            the x-rotation of the bone
+     * @param y
+     *            the y-rotation of the bone
+     * @param z
+     *            the z-rotation of the bone
      */
     public void setNeutralRotation(float x, float y, float z)
     {
@@ -290,7 +329,8 @@ public class Bone
      * Attaches a model to the bone. Its base rotation will be set to the neutral
      * rotation of the model.
      *
-     * @param model the model to attach
+     * @param model
+     *            the model to attach
      */
     public void addModel(ModelRenderer model)
     {
@@ -302,8 +342,10 @@ public class Bone
      * to the neutral rotation of the Bone, otherwise it's set to the neutral
      * rotation of the model.
      *
-     * @param model   the model to attach
-     * @param inherit whether the model should inherit the Bone's base rotations
+     * @param model
+     *            the model to attach
+     * @param inherit
+     *            whether the model should inherit the Bone's base rotations
      */
     public void addModel(ModelRenderer model, boolean inherit)
     {
@@ -316,9 +358,12 @@ public class Bone
      * rotation of the model. When isUpright is set, the model will be rotated
      * (-PI / 2, 0, 0).
      *
-     * @param model     the model to attach
-     * @param inherit   whether the model should inherit the Bone's base rotations
-     * @param isUpright whether the model is modeled in the upright position
+     * @param model
+     *            the model to attach
+     * @param inherit
+     *            whether the model should inherit the Bone's base rotations
+     * @param isUpright
+     *            whether the model is modeled in the upright position
      */
     public void addModel(ModelRenderer model, boolean inherit, boolean isUpright)
     {
@@ -328,10 +373,14 @@ public class Bone
     /**
      * Attaches a model to the bone with a given base rotation.
      *
-     * @param model the model to attach
-     * @param x     the base x-rotation
-     * @param y     the base y-rotation
-     * @param z     the base z-rotation
+     * @param model
+     *            the model to attach
+     * @param x
+     *            the base x-rotation
+     * @param y
+     *            the base y-rotation
+     * @param z
+     *            the base z-rotation
      */
     public void addModel(ModelRenderer model, float x, float y, float z)
     {
@@ -342,11 +391,16 @@ public class Bone
      * Attaches a model to the bone with a given base rotation. When inherit is
      * true, it will add the Bone's neutral rotation to the given angles.
      *
-     * @param model   the model to attach
-     * @param x       the base x-rotation
-     * @param y       the base y-rotation
-     * @param z       the base z-rotation
-     * @param inherit whether the model should inherit the Bone's base rotations
+     * @param model
+     *            the model to attach
+     * @param x
+     *            the base x-rotation
+     * @param y
+     *            the base y-rotation
+     * @param z
+     *            the base z-rotation
+     * @param inherit
+     *            whether the model should inherit the Bone's base rotations
      */
     public void addModel(ModelRenderer model, float x, float y, float z, boolean inherit)
     {
@@ -358,12 +412,18 @@ public class Bone
      * true, it will add the Bone's neutral rotation to the given angles.
      * When isUpright is set, the model will be rotated (-PI / 2, 0, 0).
      *
-     * @param model     the model to attach
-     * @param x         the base x-rotation
-     * @param y         the base y-rotation
-     * @param z         the base z-rotation
-     * @param inherit   whether the model should inherit the Bone's base rotations
-     * @param isUpright whether the model is modeled in the upright position
+     * @param model
+     *            the model to attach
+     * @param x
+     *            the base x-rotation
+     * @param y
+     *            the base y-rotation
+     * @param z
+     *            the base z-rotation
+     * @param inherit
+     *            whether the model should inherit the Bone's base rotations
+     * @param isUpright
+     *            whether the model is modeled in the upright position
      */
     public void addModel(ModelRenderer model, float x, float y, float z, boolean inherit, boolean isUpright)
     {
@@ -382,7 +442,8 @@ public class Bone
      * it to another Bone. The best thing however is to just keep the model to one
      * bone.
      *
-     * @param model the model to remove from the bone
+     * @param model
+     *            the model to remove from the bone
      */
     public void removeModel(ModelRenderer model)
     {
@@ -538,9 +599,9 @@ public class Bone
             currentModel.rotateAngleX = baseAngles.angleX + absoluteAngles.angleX;
             currentModel.rotateAngleY = baseAngles.angleY + absoluteAngles.angleY;
             currentModel.rotateAngleZ = baseAngles.angleZ + absoluteAngles.angleZ;
-            currentModel.rotationPointX = (float)positionVector.x;
-            currentModel.rotationPointY = (float)positionVector.y;
-            currentModel.rotationPointZ = (float)positionVector.z;
+            currentModel.rotationPointX = (float) positionVector.x;
+            currentModel.rotationPointY = (float) positionVector.y;
+            currentModel.rotationPointZ = (float) positionVector.z;
         }
 
         for (Bone childNode : childNodes)

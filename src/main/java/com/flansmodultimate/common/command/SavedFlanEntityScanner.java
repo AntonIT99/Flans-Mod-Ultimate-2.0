@@ -25,12 +25,15 @@ final class SavedFlanEntityScanner
 {
     private static final Pattern REGION_NAME = Pattern.compile("r\\.(-?\\d+)\\.(-?\\d+)\\.mca");
 
-    record Source(ResourceLocation dimension, Path entitiesDirectory) {}
-    record Entry(ResourceLocation dimension, String id, String type, double x, double y, double z,
-        int chunkX, int chunkZ) {}
-    record Result(List<Entry> entries, int failedChunks) {}
+    record Source(ResourceLocation dimension, Path entitiesDirectory)
+    {}
+    record Entry(ResourceLocation dimension, String id, String type, double x, double y, double z, int chunkX, int chunkZ)
+    {}
+    record Result(List<Entry> entries, int failedChunks)
+    {}
 
-    private SavedFlanEntityScanner() {}
+    private SavedFlanEntityScanner()
+    {}
 
     static Result scan(List<Source> sources)
     {
@@ -97,10 +100,8 @@ final class SavedFlanEntityScanner
             ListTag position = tag.getList("Pos", Tag.TAG_DOUBLE);
             if (position.size() < 3)
                 continue;
-            String type = tag.contains("driveable_type", Tag.TAG_STRING) ? tag.getString("driveable_type")
-                : tag.contains("Type", Tag.TAG_STRING) ? tag.getString("Type") : tag.getString("type");
-            entries.add(new Entry(dimension, id, type, position.getDouble(0), position.getDouble(1),
-                position.getDouble(2), chunk.x, chunk.z));
+            String type = tag.contains("driveable_type", Tag.TAG_STRING) ? tag.getString("driveable_type") : tag.contains("Type", Tag.TAG_STRING) ? tag.getString("Type") : tag.getString("type");
+            entries.add(new Entry(dimension, id, type, position.getDouble(0), position.getDouble(1), position.getDouble(2), chunk.x, chunk.z));
         }
     }
 
@@ -108,8 +109,7 @@ final class SavedFlanEntityScanner
     {
         return switch (id)
         {
-            case "flansmodultimate:vehicle", "flansmodultimate:plane", "flansmodultimate:mecha",
-                "flansmodultimate:deployed_gun", "flansmodultimate:aa_gun" -> true;
+            case "flansmodultimate:vehicle", "flansmodultimate:plane", "flansmodultimate:mecha", "flansmodultimate:deployed_gun", "flansmodultimate:aa_gun" -> true;
             default -> false;
         };
     }

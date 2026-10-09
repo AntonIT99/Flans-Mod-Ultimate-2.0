@@ -1,7 +1,6 @@
 package com.flansmodultimate.common.inventory;
 
 import com.flansmodultimate.FlansModBlocks;
-
 import com.flansmodultimate.FlansModMenus;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import org.jetbrains.annotations.NotNull;
@@ -65,7 +64,8 @@ public class PaintjobTableMenu extends AbstractContainerMenu
     @Override
     public boolean stillValid(@NotNull Player player)
     {
-        return access.evaluate((level, pos) -> {
+        return access.evaluate((level, pos) ->
+        {
             Block block = level.getBlockState(pos).getBlock();
             return block == FlansModBlocks.paintjobTable.get() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= MAX_DISTANCE;
         }, true);
@@ -88,7 +88,8 @@ public class PaintjobTableMenu extends AbstractContainerMenu
     public ItemStack quickMoveStack(@NotNull Player player, int index)
     {
         Slot slot = slots.get(index);
-        if (!slot.hasItem()) return ItemStack.EMPTY;
+        if (!slot.hasItem())
+            return ItemStack.EMPTY;
 
         ItemStack stackInSlot = slot.getItem();
         ItemStack copy = stackInSlot.copy();
@@ -100,8 +101,7 @@ public class PaintjobTableMenu extends AbstractContainerMenu
                 return ItemStack.EMPTY;
         }
         // shift-click from player -> TE (try paintable slot then paintcans)
-        else if (!moveItemStackTo(stackInSlot, 0, 1, false) &&
-            !moveItemStackTo(stackInSlot, 1, 2, false))
+        else if (!moveItemStackTo(stackInSlot, 0, 1, false) && !moveItemStackTo(stackInSlot, 1, 2, false))
         {
             return ItemStack.EMPTY;
         }
@@ -124,4 +124,3 @@ public class PaintjobTableMenu extends AbstractContainerMenu
         return slots.get(1).getItem();
     }
 }
-

@@ -17,7 +17,8 @@ import java.util.function.Consumer;
 /** Loader boundary for menu types and for opening menus whose client side needs extra network data. */
 public final class MenuPlatform
 {
-    private MenuPlatform() {}
+    private MenuPlatform()
+    {}
 
     /** Creates the client-side menu from the extra data written when the menu was opened. */
     @FunctionalInterface
@@ -28,8 +29,7 @@ public final class MenuPlatform
 
     public static <T extends AbstractContainerMenu> MenuType<T> menuType(NetworkMenuFactory<T> factory)
     {
-        IContainerFactory<T> containerFactory = (containerId, inventory, data) ->
-            factory.create(containerId, inventory, data == null ? null : new PacketBuffer(data));
+        IContainerFactory<T> containerFactory = (containerId, inventory, data) -> factory.create(containerId, inventory, data == null ? null : new PacketBuffer(data));
         return new MenuType<>(containerFactory, FeatureFlags.DEFAULT_FLAGS);
     }
 

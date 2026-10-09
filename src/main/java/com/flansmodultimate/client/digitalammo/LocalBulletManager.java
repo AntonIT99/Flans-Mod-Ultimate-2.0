@@ -10,11 +10,13 @@ public final class LocalBulletManager
     private static double[] bullets;
     private static boolean initialized = false;
 
-    private LocalBulletManager() {}
+    private LocalBulletManager()
+    {}
 
     public static void init()
     {
-        if (initialized) return;
+        if (initialized)
+            return;
         bullets = new double[DEFAULT_NUM_TYPES];
         Arrays.fill(bullets, DEFAULT_AMOUNT);
         initialized = true;
@@ -22,7 +24,8 @@ public final class LocalBulletManager
 
     public static double getBullets(int typeId)
     {
-        if (!initialized) init();
+        if (!initialized)
+            init();
         if (typeId < 1 || typeId > bullets.length)
             return 0.0;
         return bullets[typeId - 1];
@@ -30,7 +33,8 @@ public final class LocalBulletManager
 
     public static void setBullets(int typeId, double amount)
     {
-        if (!initialized) init();
+        if (!initialized)
+            init();
         if (typeId < 1 || typeId > bullets.length)
             return;
         bullets[typeId - 1] = amount;
@@ -38,7 +42,8 @@ public final class LocalBulletManager
 
     public static void setAllBullets(double[] values)
     {
-        if (!initialized) init();
+        if (!initialized)
+            init();
         if (values == null)
             return;
         bullets = Arrays.copyOf(values, values.length);
@@ -46,13 +51,15 @@ public final class LocalBulletManager
 
     public static int getNumTypes()
     {
-        if (!initialized) init();
+        if (!initialized)
+            init();
         return bullets.length;
     }
 
     public static double[] getAllBullets()
     {
-        if (!initialized) init();
+        if (!initialized)
+            init();
         return Arrays.copyOf(bullets, bullets.length);
     }
 

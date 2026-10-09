@@ -33,27 +33,22 @@ public class ModelMechaTool extends ModelBase implements IFlanTypeModel<MechaIte
         return MechaItemType.class;
     }
 
-    public void render(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-                       float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void render(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
-        renderPart(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass);
+        renderPart(baseModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderDrill(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-                            float red, float green, float blue, float alpha, float scale, float spinDegrees,
-                            EnumRenderPass renderPass)
+    public void renderDrill(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, float spinDegrees,
+        EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.mulPose(Axis.XP.rotationDegrees(spinDegrees));
-        renderPart(drillModel, poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass);
+        renderPart(drillModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
     }
 
-    public void renderSaw(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-                          float red, float green, float blue, float alpha, float scale, float spinDegrees,
-                          EnumRenderPass renderPass)
+    public void renderSaw(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, float spinDegrees,
+        EnumRenderPass renderPass)
     {
         if (sawModel == null)
             return;
@@ -70,35 +65,28 @@ public class ModelMechaTool extends ModelBase implements IFlanTypeModel<MechaIte
             poseStack.translate(pivotX, pivotY, pivotZ);
             poseStack.mulPose(Axis.YP.rotationDegrees(spinDegrees));
             poseStack.translate(-pivotX, -pivotY, -pivotZ);
-            part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-                red, green, blue, alpha, scale, renderPass);
+            part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
             poseStack.popPose();
         }
     }
 
-    public void renderAll(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-                          float red, float green, float blue, float alpha, float scale, float spinDegrees,
-                          EnumRenderPass renderPass)
+    public void renderAll(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, float spinDegrees,
+        EnumRenderPass renderPass)
     {
-        render(poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, renderPass);
-        renderDrill(poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, spinDegrees, renderPass);
-        renderSaw(poseStack, vertexConsumer, packedLight, packedOverlay,
-            red, green, blue, alpha, scale, spinDegrees, renderPass);
+        render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderDrill(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, spinDegrees, renderPass);
+        renderSaw(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, spinDegrees, renderPass);
     }
 
-    private static void renderPart(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer,
-                                   int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-                                   float scale, EnumRenderPass renderPass)
+    private static void renderPart(ModelRendererTurbo[] parts, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         if (parts == null)
             return;
         for (ModelRendererTurbo part : parts)
         {
             if (part != null)
-                part.render(poseStack, vertexConsumer, packedLight, packedOverlay,
-                    red, green, blue, alpha, scale, renderPass);
+                part.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
     }
 }

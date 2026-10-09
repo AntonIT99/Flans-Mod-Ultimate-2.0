@@ -19,21 +19,23 @@ import java.util.Set;
  * whose riders sit on separate seat entities. Several Flan entities do work in their client tick that has to go on
  * while nobody looks at them:
  * <ul>
- *     <li>Driveables interpolate onto the server state or predict their driver's movement, play their engine loops
- *     and emit damage and configured particles. A frozen driveable also keeps the culling box of where it stopped,
- *     so it could stay hidden after driving into view.</li>
- *     <li>Seats and wheels follow their driveable only in their own tick and ignore their movement packets, so their
- *     interaction and hit boxes would be left behind.</li>
- *     <li>Bullets play flyby sounds, emit trails and send the guidance of manually guided missiles.</li>
- *     <li>Grenades move and emit trail and smoke particles, so smoke thrown behind cover would never rise.</li>
+ * <li>Driveables interpolate onto the server state or predict their driver's movement, play their engine loops
+ * and emit damage and configured particles. A frozen driveable also keeps the culling box of where it stopped,
+ * so it could stay hidden after driving into view.</li>
+ * <li>Seats and wheels follow their driveable only in their own tick and ignore their movement packets, so their
+ * interaction and hit boxes would be left behind.</li>
+ * <li>Bullets play flyby sounds, emit trails and send the guidance of manually guided missiles.</li>
+ * <li>Grenades move and emit trail and smoke particles, so smoke thrown behind cover would never rise.</li>
  * </ul>
  * Bullets and aircraft are exempt from culling as well. EntityCulling samples culling boxes only every few ticks by
  * default and they outrun them, so they would appear late; aircraft are mostly in open sky anyway, where culling
  * rarely saves any drawing. AA guns and deployed guns need nothing: their culling boxes exceed EntityCulling's size
  * limit, and manned ones have a passenger.
  *
- * <p>EntityCulling has no API for these exemptions. Its entity type whitelists are public fields, extended
- * reflectively, so it is neither a compile nor a runtime dependency. Client only.</p>
+ * <p>
+ * EntityCulling has no API for these exemptions. Its entity type whitelists are public fields, extended
+ * reflectively, so it is neither a compile nor a runtime dependency. Client only.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EntityCullingCompat
@@ -51,10 +53,8 @@ public final class EntityCullingCompat
             Object instance = Class.forName(MOD_BASE, true, EntityCullingCompat.class.getClassLoader()).getField("instance").get(null);
             if (instance == null)
                 throw new IllegalStateException("EntityCulling is not initialized");
-            exempt(instance,
-                List.of(FlansModEntities.bulletEntity.get(), FlansModEntities.planeEntity.get(), ApocalypseContent.flyByPlane.get()),
-                List.of(FlansModEntities.vehicleEntity.get(), FlansModEntities.mechaEntity.get(), ApocalypseContent.aiMecha.get(),
-                    FlansModEntities.seatEntity.get(), FlansModEntities.wheelEntity.get(), FlansModEntities.grenadeEntity.get()));
+            exempt(instance, List.of(FlansModEntities.bulletEntity.get(), FlansModEntities.planeEntity.get(), ApocalypseContent.flyByPlane.get()), List.of(FlansModEntities.vehicleEntity.get(),
+                FlansModEntities.mechaEntity.get(), ApocalypseContent.aiMecha.get(), FlansModEntities.seatEntity.get(), FlansModEntities.wheelEntity.get(), FlansModEntities.grenadeEntity.get()));
         }
         catch (ReflectiveOperationException | LinkageError | RuntimeException ex)
         {
@@ -93,7 +93,7 @@ public final class EntityCullingCompat
     {
         try
         {
-            return (Set<Object>)instance.getClass().getField(name).get(instance);
+            return (Set<Object>) instance.getClass().getField(name).get(instance);
         }
         catch (NoSuchFieldException ex)
         {

@@ -169,8 +169,7 @@ class ApiBoundaryTest
     {
         if (className.startsWith(API_PACKAGE + "."))
             return false;
-        return className.startsWith("com.flansmodultimate.") || className.startsWith("com.flansmod.")
-            || className.startsWith("com.wolffsmod.");
+        return className.startsWith("com.flansmodultimate.") || className.startsWith("com.flansmod.") || className.startsWith("com.wolffsmod.");
     }
 
     /** Loads without initialising, so no game bootstrap is needed. */
@@ -187,10 +186,8 @@ class ApiBoundaryTest
             Path directory = Path.of(root.toURI());
             try (Stream<Path> files = Files.walk(directory))
             {
-                files.map(directory::relativize).map(Path::toString)
-                    .filter(name -> name.endsWith(".class") && !name.endsWith("package-info.class"))
-                    .map(name -> API_PACKAGE + "." + name.substring(0, name.length() - 6).replace('\\', '.').replace('/', '.'))
-                    .forEach(names::add);
+                files.map(directory::relativize).map(Path::toString).filter(name -> name.endsWith(".class") && !name.endsWith("package-info.class"))
+                    .map(name -> API_PACKAGE + "." + name.substring(0, name.length() - 6).replace('\\', '.').replace('/', '.')).forEach(names::add);
             }
         }
         List<Class<?>> classes = new ArrayList<>();

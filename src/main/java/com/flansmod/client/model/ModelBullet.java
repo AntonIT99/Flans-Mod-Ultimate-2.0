@@ -22,7 +22,8 @@ public class ModelBullet extends ModelBase
     }
 
     @Override
-    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, EnumRenderPass renderPass)
+    public void renderToBuffer(@NotNull PoseStack poseStack, @NotNull VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         poseStack.translate(0F, 2F, 0F);

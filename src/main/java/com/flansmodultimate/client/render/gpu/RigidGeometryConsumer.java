@@ -9,10 +9,10 @@ public interface RigidGeometryConsumer extends VertexConsumer
     void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha);
 
     /** Keep size-culled geometry in the mesh layout without drawing it. Other sinks may discard it. */
-    default void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay,
-                        float red, float green, float blue, float alpha, boolean visible)
+    default void submit(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
     {
-        if (visible) submit(geometry, pose, light, overlay, red, green, blue, alpha);
+        if (visible)
+            submit(geometry, pose, light, overlay, red, green, blue, alpha);
     }
 
     /**
@@ -26,22 +26,21 @@ public interface RigidGeometryConsumer extends VertexConsumer
      * false, appending nothing, when the caller must submit normally instead. The identity hash and
      * vertex count are the geometry's own, cached by the caller.
      */
-    default boolean submitToLastPalette(RigidGeometry geometry, int identityHash, int vertexCount,
-                                        PoseStack.Pose source, boolean visible)
+    default boolean submitToLastPalette(RigidGeometry geometry, int identityHash, int vertexCount, PoseStack.Pose source, boolean visible)
     {
         return false;
     }
 
-    /** {@link #submit(RigidGeometry, PoseStack.Pose, int, int, float, float, float, float, boolean)} with the
-     *  geometry's identity hash and vertex count cached by the caller, which then need not touch the object. */
-    default void submitCached(RigidGeometry geometry, int identityHash, int vertexCount, PoseStack.Pose pose, int light,
-                              int overlay, float red, float green, float blue, float alpha, boolean visible)
+    /**
+     * {@link #submit(RigidGeometry, PoseStack.Pose, int, int, float, float, float, float, boolean)} with the
+     * geometry's identity hash and vertex count cached by the caller, which then need not touch the object.
+     */
+    default void submitCached(RigidGeometry geometry, int identityHash, int vertexCount, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
     {
         submit(geometry, pose, light, overlay, red, green, blue, alpha, visible);
     }
 
-    default void submitComposed(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay,
-                                float red, float green, float blue, float alpha, boolean visible)
+    default void submitComposed(RigidGeometry geometry, PoseStack.Pose pose, int light, int overlay, float red, float green, float blue, float alpha, boolean visible)
     {
         submit(geometry, pose, light, overlay, red, green, blue, alpha, visible);
     }

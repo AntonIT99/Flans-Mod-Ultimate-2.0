@@ -9,11 +9,11 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.PaintableType;
 import com.flansmodultimate.network.IServerPacket;
 import com.flansmodultimate.platform.item.ItemStackData;
+import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.InventoryHelper;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
-import com.flansmodultimate.platform.network.PacketBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -79,7 +79,6 @@ public class PacketSelectPaintjob implements IServerPacket
         gunType.applyPaintjobToStack(gunStack, pj);
         menu.broadcastChanges();
     }
-
 
     private static Paintjob findApplicablePaintjob(GunType gunType, int id)
     {

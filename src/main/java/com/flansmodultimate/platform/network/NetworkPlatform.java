@@ -5,7 +5,6 @@ import com.flansmodultimate.network.ClientPacketDispatcher;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.network.IPacket;
 import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -34,13 +33,14 @@ import java.util.Map;
  */
 public final class NetworkPlatform
 {
-    public static final String PROTOCOL = "15";
+    public static final String PROTOCOL = "16";
 
     private static final Map<Class<? extends IClientPacket>, Integer> CLIENT_PACKET_IDS = new HashMap<>();
     private static final Map<Class<? extends IServerPacket>, Integer> SERVER_PACKET_IDS = new HashMap<>();
     private static boolean prepared;
 
-    private NetworkPlatform() {}
+    private NetworkPlatform()
+    {}
 
     public static void register(RegisterPayloadHandlersEvent event)
     {
@@ -71,7 +71,8 @@ public final class NetworkPlatform
 
     private static void handleServerPayload(ServerboundPayload payload, IPayloadContext context)
     {
-        context.enqueueWork(() -> {
+        context.enqueueWork(() ->
+        {
             if (context.player() instanceof ServerPlayer sender)
                 payload.packet().handleServerSide(sender, sender.serverLevel());
         });
@@ -98,10 +99,8 @@ public final class NetworkPlatform
     private record ClientboundPayload(IClientPacket packet) implements CustomPacketPayload
     {
         private static final Type<ClientboundPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "clientbound"));
-        private static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPayload> STREAM_CODEC = StreamCodec.ofMember(
-            (payload, buffer) -> encodePacket(buffer, payload.packet, CLIENT_PACKET_IDS),
-            buffer -> new ClientboundPayload(decodePacket(buffer, PacketHandler.clientPacketTypes()))
-        );
+        private static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPayload> STREAM_CODEC = StreamCodec.ofMember((payload, buffer) -> encodePacket(buffer, payload.packet, CLIENT_PACKET_IDS),
+            buffer -> new ClientboundPayload(decodePacket(buffer, PacketHandler.clientPacketTypes())));
 
         @Override
         public Type<? extends CustomPacketPayload> type()
@@ -113,10 +112,8 @@ public final class NetworkPlatform
     private record ServerboundPayload(IServerPacket packet) implements CustomPacketPayload
     {
         private static final Type<ServerboundPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "serverbound"));
-        private static final StreamCodec<RegistryFriendlyByteBuf, ServerboundPayload> STREAM_CODEC = StreamCodec.ofMember(
-            (payload, buffer) -> encodePacket(buffer, payload.packet, SERVER_PACKET_IDS),
-            buffer -> new ServerboundPayload(decodePacket(buffer, PacketHandler.serverPacketTypes()))
-        );
+        private static final StreamCodec<RegistryFriendlyByteBuf, ServerboundPayload> STREAM_CODEC = StreamCodec.ofMember((payload, buffer) -> encodePacket(buffer, payload.packet, SERVER_PACKET_IDS),
+            buffer -> new ServerboundPayload(decodePacket(buffer, PacketHandler.serverPacketTypes())));
 
         @Override
         public Type<? extends CustomPacketPayload> type()

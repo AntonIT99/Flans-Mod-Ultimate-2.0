@@ -22,7 +22,8 @@ public class MechaType extends DriveableType implements IMechaType
         return DriveableKind.MECHA;
     }
 
-    public record LegNode(int rotation, float lowerBound, float upperBound, int speed, int legPart) {}
+    public record LegNode(int rotation, float lowerBound, float upperBound, int speed, int legPart)
+    {}
 
     protected float turnLeftModifier = 1F;
     protected float turnRightModifier = 1F;
@@ -104,7 +105,8 @@ public class MechaType extends DriveableType implements IMechaType
         takeFallDamage = readValue("TakeFallDamage", takeFallDamage, file);
         damageBlocksFromFalling = readValue("DamageBlocksFromFalling", damageBlocksFromFalling, file);
         legSwingLimit = Math.max(0F, readValue("LegSwingLimit", legSwingLimit, file));
-        readValues("LimitHeadTurn", file, 2).ifPresent(values -> {
+        readValues("LimitHeadTurn", file, 2).ifPresent(values ->
+        {
             try
             {
                 limitHeadTurn = "1".equals(values[0]) || Boolean.parseBoolean(values[0]);
@@ -126,8 +128,7 @@ public class MechaType extends DriveableType implements IMechaType
                 continue;
             try
             {
-                legNodes.add(new LegNode(Integer.parseInt(values[0]), Float.parseFloat(values[1]), Float.parseFloat(values[2]),
-                    Integer.parseInt(values[3]), Integer.parseInt(values[4])));
+                legNodes.add(new LegNode(Integer.parseInt(values[0]), Float.parseFloat(values[1]), Float.parseFloat(values[2]), Integer.parseInt(values[3]), Integer.parseInt(values[4])));
             }
             catch (RuntimeException ex)
             {

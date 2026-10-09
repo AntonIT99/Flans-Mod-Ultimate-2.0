@@ -14,9 +14,7 @@ public record RewardBoxInstance(UUID id, String boxId, Origin origin, long award
 
     public enum Origin
     {
-        LEVEL_UP,
-        COMMAND,
-        MIGRATED
+        LEVEL_UP, COMMAND, MIGRATED
     }
 
     public RewardBoxInstance(String boxId, Origin origin)

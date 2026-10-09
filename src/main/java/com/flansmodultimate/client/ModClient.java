@@ -1,50 +1,32 @@
 package com.flansmodultimate.client;
 
-import com.flansmod.client.model.EnumAnimationType;
-import com.flansmod.client.model.GunAnimations;
-import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.*;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.render.InstantBulletRenderer;
-import com.flansmodultimate.client.render.KillMessageFeed;
-import com.flansmodultimate.client.render.MountedCameraView;
-import com.flansmodultimate.client.render.VehicleOpticsClient;
+import com.flansmodultimate.client.render.effects.InstantBulletRenderer;
+import com.flansmodultimate.client.render.hud.*;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
+import com.flansmodultimate.client.sound.SoundHelper;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Mecha;
-import com.flansmodultimate.common.entity.Plane;
-import com.flansmodultimate.common.entity.Seat;
-import com.flansmodultimate.common.entity.Shootable;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.IScope;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketGunScopedState;
+import com.flansmodultimate.network.server.gun.PacketGunScopedState;
 import com.flansmodultimate.platform.client.ArmPosePlatform;
 import com.flansmodultimate.platform.client.ClientPlatform;
-import it.unimi.dsi.fastutil.longs.Long2ByteMap;
-import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
-import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.CameraType;
-import net.minecraft.client.GraphicsStatus;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
+import net.minecraft.client.*;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -53,24 +35,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LightBlock;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+
+import it.unimi.dsi.fastutil.longs.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
@@ -248,8 +224,7 @@ public class ModClient
     private static final DynamicLightUpdates dynamicLights = new DynamicLightUpdates();
     private static ClientLevel lightingLevel;
     /** Immutable-after-publication lookup read by the render/light threads. */
-    private static final AtomicReference<Long2ByteMap> forceDarkSkyLight =
-        new AtomicReference<>(Long2ByteMaps.EMPTY_MAP);
+    private static final AtomicReference<Long2ByteMap> forceDarkSkyLight = new AtomicReference<>(Long2ByteMaps.EMPTY_MAP);
 
     // Gun animations
     /** Gun animation variables for each entity holding a gun. Currently only applicable to the player */
@@ -282,9 +257,7 @@ public class ModClient
             seat.resetClientAim();
         player.setYRot(driveable.getYaw());
         player.setXRot(driveable.getPitch());
-        player.displayClientMessage(Component.translatable(controlModeMouse
-            ? "message.flansmodultimate.driveable_control.mouse"
-            : "message.flansmodultimate.driveable_control.keyboard"), true);
+        player.displayClientMessage(Component.translatable(controlModeMouse ? "message.flansmodultimate.driveable_control.mouse" : "message.flansmodultimate.driveable_control.keyboard"), true);
         return true;
     }
 
@@ -293,8 +266,7 @@ public class ModClient
         if (doneTutorial)
             return;
         doneTutorial = true;
-        player.displayClientMessage(Component.translatable("message.flansmodultimate.driveable_tutorial",
-            inventoryKey, exitKey, controlKey), false);
+        player.displayClientMessage(Component.translatable("message.flansmodultimate.driveable_tutorial", inventoryKey, exitKey, controlKey), false);
     }
 
     @NotNull
@@ -359,8 +331,7 @@ public class ModClient
             // entering scope
             currentScope = desiredScope;
             scopeHand = hand;
-            lastZoomLevel = gunItem.hasVariableZoom(gunStack)
-                ? gunItem.getCurrentVariableZoom(gunStack) : desiredScope.getZoomFactor();
+            lastZoomLevel = gunItem.hasVariableZoom(gunStack) ? gunItem.getCurrentVariableZoom(gunStack) : desiredScope.getZoomFactor();
             lastFOVZoomLevel = desiredScope.getFovFactor();
 
             // save originals
@@ -397,7 +368,7 @@ public class ModClient
         LocalPlayer player = mc.player;
         ClientLevel level = mc.level;
 
-        if (player == null || level  == null)
+        if (player == null || level == null)
         {
             VehicleOpticsClient.reset();
             return;
@@ -455,9 +426,7 @@ public class ModClient
         // Assigning the wrapped value directly creates a 358-degree interpolation
         // jump whenever the mounted camera crosses from +180 to -180 degrees.
         float yaw = player.getYRot() + Mth.wrapDegrees(wrappedYaw - player.getYRot());
-        float pitch = fixedPlaneView
-            ? Mth.clamp(driveable.getEntityFacingPitch(), -89.9F, 89.9F)
-            : seat.getMountedViewPitch();
+        float pitch = fixedPlaneView ? Mth.clamp(driveable.getEntityFacingPitch(), -89.9F, 89.9F) : seat.getMountedViewPitch();
         player.setYRot(yaw);
         player.setXRot(pitch);
         player.yHeadRot += Mth.wrapDegrees(yaw - player.yHeadRot);
@@ -506,15 +475,13 @@ public class ModClient
                 BlockState state = level.getBlockState(pos);
                 if (state.isAir())
                     return 0;
-                return state.is(Blocks.LIGHT) && state.getValue(LightBlock.LEVEL) > 0
-                    ? state.getValue(LightBlock.LEVEL) : -1;
+                return state.is(Blocks.LIGHT) && state.getValue(LightBlock.LEVEL) > 0 ? state.getValue(LightBlock.LEVEL) : -1;
             }
 
             @Override
             public void setLight(long position, int light)
             {
-                level.setBlock(BlockPos.of(position), light == 0 ? Blocks.AIR.defaultBlockState()
-                    : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light), Block.UPDATE_CLIENTS);
+                level.setBlock(BlockPos.of(position), light == 0 ? Blocks.AIR.defaultBlockState() : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light), Block.UPDATE_CLIENTS);
             }
         });
         forceDarkSkyLight.set(darkSkyLight.isEmpty() ? Long2ByteMaps.EMPTY_MAP : Long2ByteMaps.unmodifiable(darkSkyLight));
@@ -701,10 +668,8 @@ public class ModClient
 
     private static boolean isFancyRecoilEnabled(LocalPlayer player)
     {
-        return (player.getMainHandItem().getItem() instanceof GunItem mainHandGunItem
-            && mainHandGunItem.getConfigType().isUseFancyRecoil())
-            || (player.getOffhandItem().getItem() instanceof GunItem offhandGunItem
-            && offhandGunItem.getConfigType().isUseFancyRecoil());
+        return (player.getMainHandItem().getItem() instanceof GunItem mainHandGunItem && mainHandGunItem.getConfigType().isUseFancyRecoil())
+            || (player.getOffhandItem().getItem() instanceof GunItem offhandGunItem && offhandGunItem.getConfigType().isUseFancyRecoil());
     }
 
     private static void computeImpulseForFancyRecoil(LocalPlayer player)
@@ -739,8 +704,7 @@ public class ModClient
         antiRecoilYaw += playerRecoilYaw;
 
         // No anti-recoil if realistic recoil is on, and no anti-recoil if firing and enable sight downward movement is off
-        if (!ModCommonConfig.get().realisticRecoil()
-            && ((!isShooting) || ModCommonConfig.get().enableSightDownwardMovement()))
+        if (!ModCommonConfig.get().realisticRecoil() && ((!isShooting) || ModCommonConfig.get().enableSightDownwardMovement()))
         {
             newPitch = Mth.clamp(newPitch + antiRecoilPitch * 0.2F, -90.0F, 90.0F);
         }
@@ -766,10 +730,8 @@ public class ModClient
 
         if (mainHand.getItem() instanceof GunItem mainHandGunItem && offhand.getItem() instanceof GunItem offhandGunItem)
         {
-            recoilControl = Math.max(
-                    mainHandGunItem.getConfigType().getRecoilControl(mainHand, player.isSprinting(), player.isCrouching()),
-                    offhandGunItem.getConfigType().getRecoilControl(offhand, player.isSprinting(), player.isCrouching())
-            );
+            recoilControl = Math.max(mainHandGunItem.getConfigType().getRecoilControl(mainHand, player.isSprinting(), player.isCrouching()),
+                offhandGunItem.getConfigType().getRecoilControl(offhand, player.isSprinting(), player.isCrouching()));
         }
         else if (mainHand.getItem() instanceof GunItem gunItem)
         {
@@ -816,13 +778,11 @@ public class ModClient
             }
             else if (itemInHand instanceof GunItem gunItem)
             {
-                float desiredZoom = gunItem.hasVariableZoom(stackInHand)
-                    ? gunItem.getCurrentVariableZoom(stackInHand) : currentScope.getZoomFactor();
+                float desiredZoom = gunItem.hasVariableZoom(stackInHand) ? gunItem.getCurrentVariableZoom(stackInHand) : currentScope.getZoomFactor();
                 if (Math.abs(desiredZoom - lastZoomLevel) > 0.0001F)
                 {
                     lastZoomLevel = desiredZoom;
-                    mc.options.sensitivity().set(originalMouseSensitivity
-                        / Math.sqrt(Math.max(0.01F, lastZoomLevel)));
+                    mc.options.sensitivity().set(originalMouseSensitivity / Math.sqrt(Math.max(0.01F, lastZoomLevel)));
                     zoomProgress = Math.min(zoomProgress, 0.9F);
                 }
             }
@@ -832,7 +792,8 @@ public class ModClient
     /**
      * Leaves the scope and restores the options it borrowed.
      *
-     * <p>The server has to hear about every one of these: aim state it is told about but never
+     * <p>
+     * The server has to hear about every one of these: aim state it is told about but never
      * told the end of would leave the player aiming forever as far as the aimed spread and the
      * scope's night vision are concerned.
      */
@@ -899,15 +860,16 @@ public class ModClient
         GunAnimations animations = getGunAnimations(player, hand);
         AttachmentType pump = type.getPump(stack);
 
-        if (shotState != -1
-            && (((1F - Math.abs(animations.getLastPumped())) * modelGun.getBoltCycleDistance() != 0F) || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
+        if (shotState != -1 && (((1F - Math.abs(animations.getLastPumped())) * modelGun.getBoltCycleDistance() != 0F)
+            || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
         {
             ModClient.setShotState(-1);
             SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().soundRange());
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
-        if (anim == EnumAnimationType.CUSTOMRIFLE || anim == EnumAnimationType.SHOTGUN || anim == EnumAnimationType.STRIKER || anim == EnumAnimationType.CUSTOMSHOTGUN || anim == EnumAnimationType.CUSTOMSTRIKER)
+        if (anim == EnumAnimationType.CUSTOMRIFLE || anim == EnumAnimationType.SHOTGUN || anim == EnumAnimationType.STRIKER || anim == EnumAnimationType.CUSTOMSHOTGUN
+            || anim == EnumAnimationType.CUSTOMSTRIKER)
         {
             float clipPosition = GunItemRenderer.getClipPosition(modelGun, stack, animations.getLastReloadAnimationProgress());
             float maxBullets = GunItemRenderer.getNumBulletsInReload(modelGun, animations);
@@ -915,7 +877,8 @@ public class ModClient
             int bulletNum = Mth.floor(ammoPosition);
             float bulletProgress = ammoPosition - bulletNum;
 
-            if ((anim == EnumAnimationType.CUSTOMRIFLE || maxBullets > 1) && type.getNumAmmoItemsInGun(stack) > 1 && StringUtils.isNotBlank(type.getBulletInsert()) && ModClient.getLastBulletReload() != -2)
+            if ((anim == EnumAnimationType.CUSTOMRIFLE || maxBullets > 1) && type.getNumAmmoItemsInGun(stack) > 1 && StringUtils.isNotBlank(type.getBulletInsert())
+                && ModClient.getLastBulletReload() != -2)
             {
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {
@@ -937,6 +900,12 @@ public class ModClient
             }
         }
 
+    }
+
+    /** Whether the local player is fully zoomed through a gun scope that shows thermal imaging. */
+    public static boolean isThermalScoped()
+    {
+        return currentScope != null && zoomProgress > 0.8F && currentScope.hasThermalVision();
     }
 
     /** The field of view after the scope, sight-zoom and vehicle-optics zoom, from the frame's base field of view. */

@@ -62,39 +62,16 @@ public final class DigitalAmmoCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(Commands.literal("digitalammo")
-            .requires(source -> source.hasPermission(2))
+        dispatcher.register(Commands.literal("digitalammo").requires(source -> source.hasPermission(2))
             .then(Commands.literal("set")
                 .then(Commands.argument("player", EntityArgument.players())
-                    .then(Commands.argument("type", IntegerArgumentType.integer(1))
-                        .then(Commands.argument("amount", IntegerArgumentType.integer(0))
-                            .executes(DigitalAmmoCommand::setAmmo)
-                        )
-                    )
-                )
-            )
+                    .then(Commands.argument("type", IntegerArgumentType.integer(1)).then(Commands.argument("amount", IntegerArgumentType.integer(0)).executes(DigitalAmmoCommand::setAmmo)))))
             .then(Commands.literal("add")
                 .then(Commands.argument("player", EntityArgument.players())
-                    .then(Commands.argument("type", IntegerArgumentType.integer(1))
-                        .then(Commands.argument("amount", IntegerArgumentType.integer(0))
-                            .executes(DigitalAmmoCommand::addAmmo)
-                        )
-                    )
-                )
-            )
+                    .then(Commands.argument("type", IntegerArgumentType.integer(1)).then(Commands.argument("amount", IntegerArgumentType.integer(0)).executes(DigitalAmmoCommand::addAmmo)))))
             .then(Commands.literal("fill")
-                .then(Commands.argument("player", EntityArgument.players())
-                    .then(Commands.argument("type", StringArgumentType.string())
-                        .executes(DigitalAmmoCommand::fillAmmo)
-                    )
-                )
-            )
-            .then(Commands.literal("get")
-                .then(Commands.argument("player", EntityArgument.players())
-                    .executes(DigitalAmmoCommand::getAmmo)
-                )
-            )
-        );
+                .then(Commands.argument("player", EntityArgument.players()).then(Commands.argument("type", StringArgumentType.string()).executes(DigitalAmmoCommand::fillAmmo))))
+            .then(Commands.literal("get").then(Commands.argument("player", EntityArgument.players()).executes(DigitalAmmoCommand::getAmmo))));
     }
 
     private static int setAmmo(CommandContext<CommandSourceStack> context)
@@ -264,8 +241,9 @@ public final class DigitalAmmoCommand
             for (int i = 1; i <= numTypes; i++)
             {
                 double amount = DigitalAmmoHelper.getPlayerAmmo(player, i);
-                sb.append("Type ").append(i).append(": ").append((int)amount);
-                if (i < numTypes) sb.append(", ");
+                sb.append("Type ").append(i).append(": ").append((int) amount);
+                if (i < numTypes)
+                    sb.append(", ");
             }
             context.getSource().sendSuccess(() -> Component.literal(sb.toString()), false);
         }

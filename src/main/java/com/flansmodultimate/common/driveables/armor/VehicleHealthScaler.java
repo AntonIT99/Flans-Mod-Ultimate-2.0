@@ -1,18 +1,15 @@
 package com.flansmodultimate.common.driveables.armor;
 
-import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** Pure mass^(2/3) health derivation that preserves authored HP only as relative weights. */
 public final class VehicleHealthScaler
 {
-    private VehicleHealthScaler() {}
+    private VehicleHealthScaler()
+    {}
 
     /** Mass-normalized health for a single entity with no per-part allocation. */
     public record SingleResult(boolean requested, boolean enabled, float health, List<String> warnings)
@@ -23,10 +20,7 @@ public final class VehicleHealthScaler
         }
     }
 
-    public record Result(boolean requested, boolean enabled, float totalHp,
-                         Map<EnumDriveablePart, CollisionBox> boxes,
-                         Map<EnumDriveablePart, Float> allocations,
-                         List<String> warnings)
+    public record Result(boolean requested, boolean enabled, float totalHp, Map<EnumDriveablePart, CollisionBox> boxes, Map<EnumDriveablePart, Float> allocations, List<String> warnings)
     {
         public Result
         {
@@ -39,16 +33,14 @@ public final class VehicleHealthScaler
         }
     }
 
-    public static Result resolve(boolean requested, Float massKg,
-                                 Map<EnumDriveablePart, CollisionBox> authoredBoxes, double healthScale)
+    public static Result resolve(boolean requested, Float massKg, Map<EnumDriveablePart, CollisionBox> authoredBoxes, double healthScale)
     {
         Map<EnumDriveablePart, CollisionBox> original = immutableBoxes(authoredBoxes);
         if (!requested)
             return legacy(false, original, List.of());
 
         List<String> warnings = new ArrayList<>();
-        Float totalHp = calculateTotalHp(massKg, healthScale, warnings,
-            "authored hitbox health", "Realistic vehicle health");
+        Float totalHp = calculateTotalHp(massKg, healthScale, warnings, "authored hitbox health", "Realistic vehicle health");
         if (totalHp == null)
             return legacy(true, original, warnings);
 
@@ -81,33 +73,28 @@ public final class VehicleHealthScaler
      * Applies the same mass^(2/3) health curve to a single-health entity such as
      * an AA gun. Invalid inputs retain the authored legacy health.
      */
-    public static SingleResult resolveSingle(boolean requested, Float massKg, float authoredHealth,
-                                             double healthScale)
+    public static SingleResult resolveSingle(boolean requested, Float massKg, float authoredHealth, double healthScale)
     {
         if (!requested)
             return new SingleResult(false, false, authoredHealth, List.of());
 
         List<String> warnings = new ArrayList<>();
-        Float totalHp = calculateTotalHp(massKg, healthScale, warnings,
-            "authored health", "Realistic health");
+        Float totalHp = calculateTotalHp(massKg, healthScale, warnings, "authored health", "Realistic health");
         if (totalHp == null)
             return new SingleResult(true, false, authoredHealth, warnings);
         return new SingleResult(true, true, totalHp, warnings);
     }
 
-    private static Float calculateTotalHp(Float massKg, double healthScale, List<String> warnings,
-                                          String fallbackDescription, String calculationDescription)
+    private static Float calculateTotalHp(Float massKg, double healthScale, List<String> warnings, String fallbackDescription, String calculationDescription)
     {
         if (massKg == null || !Float.isFinite(massKg) || massKg <= 0F)
         {
-            warnings.add("UseRealisticVehicleHealth requires a valid RealMassKg; retaining "
-                + fallbackDescription);
+            warnings.add("UseRealisticVehicleHealth requires a valid RealMassKg; retaining " + fallbackDescription);
             return null;
         }
         if (!Double.isFinite(healthScale) || healthScale <= 0D)
         {
-            warnings.add("realisticVehicleHealthScale must be finite and greater than zero; retaining "
-                + fallbackDescription);
+            warnings.add("realisticVehicleHealthScale must be finite and greater than zero; retaining " + fallbackDescription);
             return null;
         }
 
@@ -120,8 +107,7 @@ public final class VehicleHealthScaler
         return (float) total;
     }
 
-    private static Result legacy(boolean requested, Map<EnumDriveablePart, CollisionBox> boxes,
-                                 List<String> warnings)
+    private static Result legacy(boolean requested, Map<EnumDriveablePart, CollisionBox> boxes, List<String> warnings)
     {
         EnumMap<EnumDriveablePart, Float> allocations = new EnumMap<>(EnumDriveablePart.class);
         float total = 0F;
@@ -140,8 +126,7 @@ public final class VehicleHealthScaler
      * the pack, so it wins; packs that never bothered with per-part health still get a
      * usable split from hitbox volume, and boxes with no size at all share equally.
      */
-    private static Map<EnumDriveablePart, Double> resolveWeights(Map<EnumDriveablePart, CollisionBox> boxes,
-                                                                 List<String> warnings)
+    private static Map<EnumDriveablePart, Double> resolveWeights(Map<EnumDriveablePart, CollisionBox> boxes, List<String> warnings)
     {
         EnumMap<EnumDriveablePart, Double> weights = new EnumMap<>(EnumDriveablePart.class);
         for (Map.Entry<EnumDriveablePart, CollisionBox> entry : boxes.entrySet())
@@ -180,12 +165,10 @@ public final class VehicleHealthScaler
 
     private static CollisionBox copyWithHealth(CollisionBox box, float health)
     {
-        return CollisionBox.inWorldUnits(health, box.getX(), box.getY(), box.getZ(), box.getWidth(),
-            box.getHeight(), box.getDepth(), box.getPenetrationResistance(), box.getCrewDamageMultiplier());
+        return CollisionBox.inWorldUnits(health, box.getX(), box.getY(), box.getZ(), box.getWidth(), box.getHeight(), box.getDepth(), box.getPenetrationResistance(), box.getCrewDamageMultiplier());
     }
 
-    private static Map<EnumDriveablePart, CollisionBox> immutableBoxes(
-        Map<EnumDriveablePart, CollisionBox> source)
+    private static Map<EnumDriveablePart, CollisionBox> immutableBoxes(Map<EnumDriveablePart, CollisionBox> source)
     {
         EnumMap<EnumDriveablePart, CollisionBox> copy = new EnumMap<>(EnumDriveablePart.class);
         if (source != null)

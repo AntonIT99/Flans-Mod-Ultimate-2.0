@@ -1,7 +1,7 @@
 package com.flansmodultimate.hooks.server;
 
-import com.flansmodultimate.client.render.KillMessageData;
-import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.client.render.hud.KillMessageData;
+import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.hooks.IClientRenderHooks;
@@ -12,9 +12,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+
 public final class ClientRenderHooksNoop implements IClientRenderHooks
 {
     @Override
@@ -42,6 +41,12 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
+    public void spawnTracerBeam(Vec3 start, Vec3 end, float red, float green, float blue, float alpha, float width)
+    {
+        /* no-op */
+    }
+
+    @Override
     public void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks)
     {
         /* no-op */
@@ -54,7 +59,8 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
-    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
+    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize,
+        int durationTicks, float lifetimeScale)
     {
         /* no-op */
     }

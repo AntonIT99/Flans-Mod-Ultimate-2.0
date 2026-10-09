@@ -16,7 +16,8 @@ import java.util.stream.IntStream;
 
 public class TypeReaderUtils
 {
-    private TypeReaderUtils() {}
+    private TypeReaderUtils()
+    {}
 
     public static boolean hasValueForConfigField(String key, TypeFile file)
     {
@@ -65,8 +66,7 @@ public class TypeReaderUtils
                         return defaultValue;
                     }
                     if (split.length > 1)
-                        logError("Incorrect format for '" + key + "': expected one value but found " + split.length
-                            + "; using '" + split[0] + "'", file);
+                        logError("Incorrect format for '" + key + "': expected one value but found " + split.length + "; using '" + split[0] + "'", file);
                     return split[0];
                 }
                 else
@@ -363,7 +363,8 @@ public class TypeReaderUtils
 
     public static Optional<int[]> readIntValues(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readValues(key, file, minNumExpectedValues).map(values -> {
+        return readValues(key, file, minNumExpectedValues).map(values ->
+        {
             int[] result = new int[values.length];
 
             for (int i = 0; i < values.length; i++)
@@ -384,7 +385,8 @@ public class TypeReaderUtils
 
     public static Optional<float[]> readFloatValues(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readValues(key, file, minNumExpectedValues).map(values -> {
+        return readValues(key, file, minNumExpectedValues).map(values ->
+        {
             float[] result = new float[values.length];
 
             for (int i = 0; i < values.length; i++)
@@ -405,7 +407,8 @@ public class TypeReaderUtils
 
     public static Optional<double[]> readDoubleValues(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readValues(key, file, minNumExpectedValues).map(values -> {
+        return readValues(key, file, minNumExpectedValues).map(values ->
+        {
             double[] result = new double[values.length];
 
             for (int i = 0; i < values.length; i++)
@@ -426,7 +429,8 @@ public class TypeReaderUtils
 
     public static Optional<boolean[]> readBooleanValues(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readValues(key, file, minNumExpectedValues).map(values -> {
+        return readValues(key, file, minNumExpectedValues).map(values ->
+        {
             boolean[] result = new boolean[values.length];
 
             for (int i = 0; i < values.length; i++)
@@ -469,7 +473,8 @@ public class TypeReaderUtils
 
     public static Optional<List<String[]>> readValuesInLines(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readLines(key, file).map(lines -> lines.stream().map(TypeReaderUtils::splitValues).filter(split -> {
+        return readLines(key, file).map(lines -> lines.stream().map(TypeReaderUtils::splitValues).filter(split ->
+        {
             if (split.length < minNumExpectedValues)
             {
                 logError(incorrectFormatWrongNumberOfValues(key, split, minNumExpectedValues), file);
@@ -552,7 +557,8 @@ public class TypeReaderUtils
 
     public static Optional<List<int[]>> readIntValuesInLines(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values -> {
+        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values ->
+        {
             int[] result = new int[values.length];
 
             for (int i = 0; i < values.length; i++)
@@ -573,7 +579,8 @@ public class TypeReaderUtils
 
     public static Optional<List<float[]>> readFloatValuesInLines(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values -> {
+        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values ->
+        {
             float[] result = new float[values.length];
 
             for (int i = 0; i < values.length; i++)
@@ -594,7 +601,8 @@ public class TypeReaderUtils
 
     public static Optional<List<double[]>> readDoubleValuesInLines(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values -> {
+        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values ->
+        {
             double[] result = new double[values.length];
 
             for (int i = 0; i < values.length; i++)
@@ -615,7 +623,8 @@ public class TypeReaderUtils
 
     public static Optional<List<boolean[]>> readBooleanValuesInLines(String key, TypeFile file, int minNumExpectedValues)
     {
-        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values -> {
+        return readValuesInLines(key, file, minNumExpectedValues).map(lines -> lines.stream().map(values ->
+        {
             boolean[] result = new boolean[values.length];
 
             for (int i = 0; i < values.length; i++)
@@ -636,11 +645,7 @@ public class TypeReaderUtils
     @Nullable
     private static String lastNonNull(List<String> list)
     {
-        return IntStream.iterate(list.size() - 1, i -> i >= 0, i -> i - 1)
-            .mapToObj(list::get)
-            .filter(StringUtils::isNotBlank)
-            .findFirst()
-            .orElse(null);
+        return IntStream.iterate(list.size() - 1, i -> i >= 0, i -> i - 1).mapToObj(list::get).filter(StringUtils::isNotBlank).findFirst().orElse(null);
     }
 
     public static void logError(String s, TypeFile file)

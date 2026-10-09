@@ -1,8 +1,8 @@
 package com.flansmodultimate.tooling.shootpoints;
 
 import com.flansmod.common.vector.Vector3f;
-import com.flansmodultimate.common.driveables.DerivedMuzzle;
-import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
+import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
+import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.tooling.shootpoints.Finding.Action;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +27,7 @@ class ShootPointPlannerTest
 
     private static List<Finding> plan(DefinitionFile file, DerivedMuzzle... derived)
     {
-        return ShootPointPlanner.planDriveable("test", file, ShootPointPlanner.readDriveable(file), List.of(derived),
-            false, true);
+        return ShootPointPlanner.planDriveable("test", file, ShootPointPlanner.readDriveable(file), List.of(derived), false, true);
     }
 
     private static DerivedMuzzle barrel(float x, float y, float z)
@@ -129,13 +128,11 @@ class ShootPointPlannerTest
     @Test
     void anAuthoredGunOriginIsRewrittenInPlace()
     {
-        DefinitionFile file = parse("Passenger 1 0 30 0 turret -360 360 -10 60 MG34 mg\nGunOrigin 1 0 0 0\n"
-            + "GunOrigin 1 5 5 5\n");
+        DefinitionFile file = parse("Passenger 1 0 30 0 turret -360 360 -10 60 MG34 mg\nGunOrigin 1 0 0 0\n" + "GunOrigin 1 5 5 5\n");
 
         plan(file, new DerivedMuzzle(1, "seat 1 (mg)", new Vector3f(20F, 12F, -3F)));
 
-        assertEquals("Passenger 1 0 30 0 turret -360 360 -10 60 MG34 mg\nGunOrigin 1 0 0 0\nGunOrigin 1 20 12 -3\n",
-            text(file));
+        assertEquals("Passenger 1 0 30 0 turret -360 360 -10 60 MG34 mg\nGunOrigin 1 0 0 0\nGunOrigin 1 20 12 -3\n", text(file));
     }
 
     @Test
@@ -167,8 +164,7 @@ class ShootPointPlannerTest
         Vec3 first = new Vec3(1.25D, 1.4375D, -0.5D);
         Vec3 second = new Vec3(1.25D, 1.4375D, 0.5D);
 
-        List<Finding> findings = ShootPointPlanner.planAAGun("test", file, ShootPointPlanner.readAAGun(file),
-            List.of(first, second));
+        List<Finding> findings = ShootPointPlanner.planAAGun("test", file, ShootPointPlanner.readAAGun(file), List.of(first, second));
 
         Vector3f line0 = AAGunBarrelGeometry.legacyBarrelFor(first, false);
         Vector3f line1 = AAGunBarrelGeometry.legacyBarrelFor(second, false);
@@ -188,15 +184,13 @@ class ShootPointPlannerTest
     void modelNamesResolveAsTheGameResolvesThem()
     {
         assertEquals("com.flansmod.client.model.W44.ModelTiger", ShootPointSync.modelClassName("W44.Tiger"));
-        assertEquals("com.flansmod.client.model.Manus_WW2.AAGun.ModelFlak88",
-            ShootPointSync.modelClassName("Manus_WW2.AAGun.Flak88"));
+        assertEquals("com.flansmod.client.model.Manus_WW2.AAGun.ModelFlak88", ShootPointSync.modelClassName("Manus_WW2.AAGun.Flak88"));
         assertEquals("com.flansmod.client.model.ModelJeep", ShootPointSync.modelClassName("Jeep"));
         assertNull(ShootPointSync.modelClassName("none"));
     }
 
     private static String join(Vector3f line)
     {
-        return DefinitionFile.formatNumber(line.x, 2) + " " + DefinitionFile.formatNumber(line.y, 2) + " "
-            + DefinitionFile.formatNumber(line.z, 2);
+        return DefinitionFile.formatNumber(line.x, 2) + " " + DefinitionFile.formatNumber(line.y, 2) + " " + DefinitionFile.formatNumber(line.z, 2);
     }
 }

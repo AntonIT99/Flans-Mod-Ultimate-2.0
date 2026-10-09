@@ -2,15 +2,11 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Grenade;
-import com.flansmodultimate.common.entity.Parachute;
-import com.flansmodultimate.common.entity.Seat;
-import com.flansmodultimate.common.entity.Wheel;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
 import com.flansmodultimate.common.types.ToolType;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketFlak;
+import com.flansmodultimate.network.client.effects.PacketFlak;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -25,13 +21,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.List;
 
@@ -218,9 +210,7 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         LivingEntity chosen = user;
         Vec3 delta = end.subtract(start);
 
-        AABB searchBox = user.getBoundingBox()
-            .expandTowards(delta)
-            .inflate(1.0D);
+        AABB searchBox = user.getBoundingBox().expandTowards(delta).inflate(1.0D);
 
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, user, start, end, searchBox, e -> e instanceof LivingEntity living && living != user);
         if (hit != null && hit.getEntity() instanceof LivingEntity living)
@@ -251,16 +241,14 @@ public class ToolItem extends Item implements IFlanItem<ToolType>
         }
 
         AABB proxySearch = new AABB(start, end).inflate(1D);
-        EntityHitResult fallback = ProjectileUtil.getEntityHitResult(level, user, start, end, proxySearch,
-            entity -> entity instanceof Driveable || entity instanceof Seat || entity instanceof Wheel);
+        EntityHitResult fallback = ProjectileUtil.getEntityHitResult(level, user, start, end, proxySearch, entity -> entity instanceof Driveable || entity instanceof Seat || entity instanceof Wheel);
         if (fallback == null)
             return best;
 
         Driveable fallbackDriveable = getDriveable(fallback.getEntity());
         if (fallbackDriveable == null)
             return best;
-        float fallbackTime = motion.lengthSqr() <= 1.0E-8D ? 0F
-            : (float) (start.distanceTo(fallback.getLocation()) / motion.length());
+        float fallbackTime = motion.lengthSqr() <= 1.0E-8D ? 0F : (float) (start.distanceTo(fallback.getLocation()) / motion.length());
         return fallbackTime < bestTime ? fallbackDriveable : best;
     }
 

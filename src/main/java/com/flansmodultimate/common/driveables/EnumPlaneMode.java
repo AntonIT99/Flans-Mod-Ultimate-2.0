@@ -4,10 +4,7 @@ import java.util.Locale;
 
 public enum EnumPlaneMode
 {
-    PLANE,
-    VTOL,
-    HELI,
-    SIXDOF;
+    PLANE, VTOL, HELI, SIXDOF;
 
     public static EnumPlaneMode parse(String value)
     {

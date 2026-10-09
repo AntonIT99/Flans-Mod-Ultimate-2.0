@@ -3,9 +3,7 @@ package com.flansmodultimate.common.digitalammo;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -17,7 +15,8 @@ public final class DigitalAmmoStorageHandler
     private static final String NBT_TYPE = "type";
     private static final String NBT_AMOUNT = "amount";
 
-    private DigitalAmmoStorageHandler() {}
+    private DigitalAmmoStorageHandler()
+    {}
 
     private static boolean isDigitalAmmoEnabled()
     {
@@ -99,7 +98,7 @@ public final class DigitalAmmoStorageHandler
 
         if (player instanceof ServerPlayer serverPlayer)
         {
-            com.flansmodultimate.network.client.PacketSyncDigitalAmmo.syncToClient(serverPlayer);
+            com.flansmodultimate.network.client.gun.PacketSyncDigitalAmmo.syncToClient(serverPlayer);
         }
     }
 

@@ -34,8 +34,7 @@ public final class PackagedContentRepositorySource
         {
             if (packType == PackType.CLIENT_RESOURCES)
             {
-                addPack(acceptor, module.modId() + ":assets",
-                    "Official Flan content assets", module.resourceRoot());
+                addPack(acceptor, module.modId() + ":assets", "Official Flan content assets", module.resourceRoot());
                 addEncryptedResourcePack(acceptor, module);
                 continue;
             }
@@ -45,15 +44,13 @@ public final class PackagedContentRepositorySource
                 Path logicalPackRoot = module.contentRoot().resolve(provider.getPackId());
                 if (java.nio.file.Files.isDirectory(logicalPackRoot.resolve("data")))
                 {
-                    addPack(acceptor, module.modId() + ":" + provider.getPackId(),
-                        provider.getName(), logicalPackRoot);
+                    addPack(acceptor, module.modId() + ":" + provider.getPackId(), provider.getName(), logicalPackRoot);
                 }
             }
         }
     }
 
-    private static void addEncryptedResourcePack(Consumer<Pack> acceptor,
-                                                 PackagedContentLoader.RegisteredModule module)
+    private static void addEncryptedResourcePack(Consumer<Pack> acceptor, PackagedContentLoader.RegisteredModule module)
     {
         Path bundlePath = module.resourceRoot().resolve(EncryptedResourcePack.BUNDLE_RESOURCE_PATH);
         if (!java.nio.file.Files.isRegularFile(bundlePath))
@@ -63,8 +60,7 @@ public final class PackagedContentRepositorySource
         // in reverse discovery order. The leading underscore makes this pack sort before ":assets",
         // which places the encrypted overlay after the normal assets in the effective stack.
         String id = encryptedPackId(module.modId());
-        PackLocationInfo location = new PackLocationInfo(id, Component.literal("Optional uncensored Flan content"),
-            PackSource.BUILT_IN, Optional.empty());
+        PackLocationInfo location = new PackLocationInfo(id, Component.literal("Optional uncensored Flan content"), PackSource.BUILT_IN, Optional.empty());
         Pack.ResourcesSupplier resources = new Pack.ResourcesSupplier()
         {
             @Override
@@ -90,8 +86,7 @@ public final class PackagedContentRepositorySource
         return modId + ":_encrypted_assets";
     }
 
-    private static void addPack(Consumer<Pack> acceptor, String id,
-                                String displayName, Path root)
+    private static void addPack(Consumer<Pack> acceptor, String id, String displayName, Path root)
     {
         Pack.ResourcesSupplier resources = new PathPackResources.PathResourcesSupplier(root);
         PackLocationInfo location = new PackLocationInfo(id, Component.literal(displayName), PackSource.BUILT_IN, Optional.empty());
@@ -99,8 +94,7 @@ public final class PackagedContentRepositorySource
         // Logical pack directories contain data but no pack.mcmeta. Supply the
         // metadata here, as the 1.20.1 Pack.Info constructor did, so NeoForge
         // does not silently discard their recipes during repository discovery.
-        Pack.Metadata metadata = new Pack.Metadata(Component.literal(displayName),
-            PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of());
+        Pack.Metadata metadata = new Pack.Metadata(Component.literal(displayName), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of());
         acceptor.accept(new Pack(location, resources, metadata, selection));
     }
 }

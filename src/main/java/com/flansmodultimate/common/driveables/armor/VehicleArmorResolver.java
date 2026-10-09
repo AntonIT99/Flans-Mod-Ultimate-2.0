@@ -1,25 +1,22 @@
 package com.flansmodultimate.common.driveables.armor;
 
-import com.flansmodultimate.common.driveables.DriveableCollisionProfile;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionProfile;
 
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 
 /** Resolves override -> turret semantic -> hull semantic -> unarmoured once per type. */
 public final class VehicleArmorResolver
 {
-    private VehicleArmorResolver() {}
+    private VehicleArmorResolver()
+    {}
 
     public static ResolvedVehicleArmor resolve(VehicleArmorSpec spec, Collection<EnumDriveablePart> parts)
     {
         VehicleArmorSpec source = spec == null ? VehicleArmorSpec.EMPTY : spec;
-        EnumMap<EnumDriveablePart, Map<EnumArmorFacing, ResolvedArmorPlate>> result =
-            new EnumMap<>(EnumDriveablePart.class);
+        EnumMap<EnumDriveablePart, Map<EnumArmorFacing, ResolvedArmorPlate>> result = new EnumMap<>(EnumDriveablePart.class);
         if (parts != null)
         {
             for (EnumDriveablePart part : parts)
@@ -60,16 +57,9 @@ public final class VehicleArmorResolver
         double sine = Math.sin(radians);
         return switch (facing)
         {
-            case FRONT, REAR -> new Vec3(normal.x,
-                normal.y * cosine - normal.z * sine,
-                normal.y * sine + normal.z * cosine).normalize();
-            case LEFT, RIGHT -> new Vec3(
-                normal.x * cosine - normal.y * sine,
-                normal.x * sine + normal.y * cosine,
-                normal.z).normalize();
-            case TOP, BOTTOM -> new Vec3(normal.x,
-                normal.y * cosine - normal.z * sine,
-                normal.y * sine + normal.z * cosine).normalize();
+            case FRONT, REAR -> new Vec3(normal.x, normal.y * cosine - normal.z * sine, normal.y * sine + normal.z * cosine).normalize();
+            case LEFT, RIGHT -> new Vec3(normal.x * cosine - normal.y * sine, normal.x * sine + normal.y * cosine, normal.z).normalize();
+            case TOP, BOTTOM -> new Vec3(normal.x, normal.y * cosine - normal.z * sine, normal.y * sine + normal.z * cosine).normalize();
         };
     }
 }

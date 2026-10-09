@@ -1,7 +1,7 @@
 package com.flansmodultimate.common.driveables.armor;
 
-import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumMap;
@@ -42,8 +42,7 @@ class VehicleHealthScalerTest
     @Test
     void invalidMassFallsBackSafely()
     {
-        VehicleHealthScaler.Result noMass = VehicleHealthScaler.resolve(true, null,
-            Map.of(EnumDriveablePart.CORE, box(100F)), 5D);
+        VehicleHealthScaler.Result noMass = VehicleHealthScaler.resolve(true, null, Map.of(EnumDriveablePart.CORE, box(100F)), 5D);
         assertFalse(noMass.enabled());
         assertEquals(100F, noMass.boxes().get(EnumDriveablePart.CORE).getHealth());
         assertFalse(noMass.warnings().isEmpty());
@@ -107,8 +106,7 @@ class VehicleHealthScalerTest
 
     private static void assertTotal(float mass, float expected)
     {
-        VehicleHealthScaler.Result result = VehicleHealthScaler.resolve(true, mass,
-            Map.of(EnumDriveablePart.CORE, box(1F)), 5D);
+        VehicleHealthScaler.Result result = VehicleHealthScaler.resolve(true, mass, Map.of(EnumDriveablePart.CORE, box(1F)), 5D);
         assertEquals(expected, result.totalHp(), 1.5F);
     }
 

@@ -16,20 +16,26 @@ import java.util.Map;
  * Registry for the content types that have no item of their own: player classes, teams and
  * loadout pools.
  *
- * <p>Types that do have an item are already kept apart by {@code ContentManager}, which gives a
+ * <p>
+ * Types that do have an item are already kept apart by {@code ContentManager}, which gives a
  * colliding shortname an {@code _2} alias so both packs keep a working item. Item-less types used
  * to be stored in a plain map keyed by shortname, so the second pack to define, say, a class named
  * {@code assault} silently replaced the first one and that class became unreachable. This applies
  * the same rule to them: the first definition keeps the plain shortname, later ones are registered
- * under {@code shortname_2}, {@code shortname_3} and so on, and every definition stays reachable.</p>
+ * under {@code shortname_2}, {@code shortname_3} and so on, and every definition stays reachable.
+ * </p>
  *
- * <p>A reference written inside a content pack, such as the {@code AddClass} lines of a team, is
+ * <p>
+ * A reference written inside a content pack, such as the {@code AddClass} lines of a team, is
  * resolved against that pack first, so a pack always sees its own definitions no matter which pack
  * happened to load first. References from outside a pack (commands, saved games, network packets)
- * use the unique name, which is what {@link InfoType#getShortName()} returns.</p>
+ * use the unique name, which is what {@link InfoType#getShortName()} returns.
+ * </p>
  *
- * <p>Two definitions of one shortname inside a single pack are a mistake in that pack rather than a
- * collision between packs, so the later one is dropped with a warning, exactly as items are.</p>
+ * <p>
+ * Two definitions of one shortname inside a single pack are a mistake in that pack rather than a
+ * collision between packs, so the later one is dropped with a warning, exactly as items are.
+ * </p>
  */
 public final class ItemlessTypeRegistry<T extends InfoType>
 {
@@ -55,13 +61,11 @@ public final class ItemlessTypeRegistry<T extends InfoType>
         if (original.isEmpty())
             return StringUtils.EMPTY;
 
-        Map<String, String> packAliases = aliasesByPack.computeIfAbsent(type.getContentPack(),
-            ignored -> new LinkedHashMap<>());
+        Map<String, String> packAliases = aliasesByPack.computeIfAbsent(type.getContentPack(), ignored -> new LinkedHashMap<>());
         String existing = packAliases.get(original);
         if (existing != null)
         {
-            FlansLog.log.warn("Detected conflict for {} id '{}' in same content pack: {} and {}. Ignoring {}",
-                label, original, type, byUniqueName.get(existing), type.getFileName());
+            FlansLog.log.warn("Detected conflict for {} id '{}' in same content pack: {} and {}. Ignoring {}", label, original, type, byUniqueName.get(existing), type.getFileName());
             return StringUtils.EMPTY;
         }
 
@@ -71,8 +75,7 @@ public final class ItemlessTypeRegistry<T extends InfoType>
         if (!unique.equals(original))
         {
             String packName = packName(type);
-            FlansLog.log.warn("Detected conflict for {} id '{}': {} and {}. Creating id alias '{}' in [{}]",
-                label, original, type, byUniqueName.get(original), unique, packName);
+            FlansLog.log.warn("Detected conflict for {} id '{}': {} and {}. Creating id alias '{}' in [{}]", label, original, type, byUniqueName.get(original), unique, packName);
         }
 
         byUniqueName.put(unique, type);

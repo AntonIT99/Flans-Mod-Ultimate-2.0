@@ -2,39 +2,18 @@ package com.flansmodultimate.content;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.common.block.BlockFactory;
-import com.flansmodultimate.common.driveables.ModelMuzzleMeasurement;
+import com.flansmodultimate.common.driveables.weapons.ModelMuzzleMeasurement;
 import com.flansmodultimate.common.item.ItemFactory;
 import com.flansmodultimate.common.sync.ContentFingerprint;
-import com.flansmodultimate.common.types.ArmorBoxType;
-import com.flansmodultimate.common.types.BlockType;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.EnumType;
-import com.flansmodultimate.common.types.GunBoxType;
-import com.flansmodultimate.common.types.IAmmoGroupUser;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.PartType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.common.types.ToolType;
-import com.flansmodultimate.common.types.TypeFile;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.CategoryManager;
 import com.flansmodultimate.config.ContentLoadingConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
-import com.flansmodultimate.util.DynamicReference;
-import com.flansmodultimate.util.FileUtils;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.JavaModelCompiler;
-import com.flansmodultimate.util.LogUtils;
-import com.flansmodultimate.util.ModCachePaths;
-import com.flansmodultimate.util.ResourceUtils;
-import com.flansmodultimate.util.SoundLengthIndex;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.flansmodultimate.util.*;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.*;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -45,17 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -88,8 +57,7 @@ public class ContentManager
 
     private static ContentPackAssets.TextureReferences textureReferences(IContentProvider provider)
     {
-        return new ContentPackAssets.TextureReferences(getArmorTextureReferences().get(provider),
-            getGuiTextureReferences().get(provider), getSkinsTextureReferences().get(provider));
+        return new ContentPackAssets.TextureReferences(getArmorTextureReferences().get(provider), getGuiTextureReferences().get(provider), getSkinsTextureReferences().get(provider));
     }
 
     // Mappings which allow to use aliases for duplicate short names and texture names (also contain unmodified references)
@@ -120,7 +88,8 @@ public class ContentManager
             return typeFolderName + "/" + fileName + " [" + contentPackName + "]";
         }
     }
-    private record MissingModelTexture(ResourceLocation textureId, TextureOrigin origin) {}
+    private record MissingModelTexture(ResourceLocation textureId, TextureOrigin origin)
+    {}
 
     /** Reconciles misplaced standalone content archives and packaged-content mod JARs. */
     public static void reconcileContentPackLocations()
@@ -131,8 +100,7 @@ public class ContentManager
 
         Path gameDir = PlatformPaths.gameDir().toAbsolutePath().normalize();
         Path normalizedFlanFolder = flanFolder.toAbsolutePath().normalize();
-        FileUtils.runWithFileLock(gameDir.resolve(CONTENT_STARTUP_LOCK_FILE), "Flan cache migration",
-            () -> ModCachePaths.migrate(gameDir));
+        FileUtils.runWithFileLock(gameDir.resolve(CONTENT_STARTUP_LOCK_FILE), "Flan cache migration", () -> ModCachePaths.migrate(gameDir));
         boolean isGameDirectory = normalizedFlanFolder.equals(gameDir);
         try
         {
@@ -148,20 +116,15 @@ public class ContentManager
             return;
         }
 
-        ContentPackRelocator.RelocationResult result = ContentPackRelocator.reconcile(
-            PlatformPaths.modsDir(), normalizedFlanFolder,
-            ModCachePaths.root(gameDir).resolve(ContentPackRelocator.CACHE_FILE_NAME)
-        );
+        ContentPackRelocator.RelocationResult result = ContentPackRelocator.reconcile(PlatformPaths.modsDir(), normalizedFlanFolder,
+            ModCachePaths.root(gameDir).resolve(ContentPackRelocator.CACHE_FILE_NAME));
         excludedFlanArchives = result.excludedFromContentLoading();
         result.warnings().forEach(FlansLog.log::warn);
         if (result.movedContentPacks() > 0)
-            FlansLog.log.info("Moved {} misplaced standalone Flan content pack(s) from mods to '{}'.",
-                result.movedContentPacks(), normalizedFlanFolder);
+            FlansLog.log.info("Moved {} misplaced standalone Flan content pack(s) from mods to '{}'.", result.movedContentPacks(), normalizedFlanFolder);
         if (result.restartRequired())
-            FlansLog.log.warn("Moved {} Flan pack mod bundle(s) to '{}'. Restart the game to activate them.",
-                result.movedBundles(), PlatformPaths.modsDir().toAbsolutePath());
-        FlansLog.log.debug("Verified Flan archive locations in {} ms; inspected {} new or changed archive(s).",
-            result.elapsedMillis(), result.inspectedArchives());
+            FlansLog.log.warn("Moved {} Flan pack mod bundle(s) to '{}'. Restart the game to activate them.", result.movedBundles(), PlatformPaths.modsDir().toAbsolutePath());
+        FlansLog.log.debug("Verified Flan archive locations in {} ms; inspected {} new or changed archive(s).", result.elapsedMillis(), result.inspectedArchives());
     }
 
     public static void findContentInFlanFolder()
@@ -172,12 +135,7 @@ public class ContentManager
 
         try
         {
-            contentPacks.addAll(loadFoldersAndJarZipFiles(flanFolder)
-                .entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry -> new ContentPack(entry.getKey(), entry.getValue()))
-                .toList());
+            contentPacks.addAll(loadFoldersAndJarZipFiles(flanFolder).entrySet().stream().sorted(Map.Entry.comparingByKey()).map(entry -> new ContentPack(entry.getKey(), entry.getValue())).toList());
         }
         catch (IOException e)
         {
@@ -234,8 +192,7 @@ public class ContentManager
         long loadStart = System.nanoTime();
         Path tempRoot = flanFolder.getParent().resolve(".flansmod-temp");
         FileUtils.cleanupFlanTempOnStartup(tempRoot);
-        ContentFileCache.configure(ModCachePaths.contentPacks(PlatformPaths.gameDir()),
-            ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds());
+        ContentFileCache.configure(ModCachePaths.contentPacks(PlatformPaths.gameDir()), ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds());
         PartType.clearDefaultEngines();
         ContentFileCache.beginRun();
         // A client's first resource discovery reuses the snapshots, then releases them.
@@ -256,9 +213,11 @@ public class ContentManager
             applyMeasuredMuzzles();
             long end = System.nanoTime();
 
-            FlansLog.log.info("Loaded {} content pack(s) in {} ms using {} thread(s) (packs: {} ms, sounds, references and muzzles: {} ms).",
-                contentPacks.size(), formatMilliseconds(end - loadStart), workers.threads(),
-                formatMilliseconds(postLoadStart - loadStart), formatMilliseconds(end - postLoadStart));
+            if (FlansLog.log.isInfoEnabled())
+            {
+                FlansLog.log.info("Loaded {} content pack(s) in {} ms using {} thread(s) (packs: {} ms, sounds, references and muzzles: {} ms).", contentPacks.size(),
+                    formatMilliseconds(end - loadStart), workers.threads(), formatMilliseconds(postLoadStart - loadStart), formatMilliseconds(end - postLoadStart));
+            }
             keepSnapshots = PlatformEnvironment.isClient();
         }
         finally
@@ -314,14 +273,12 @@ public class ContentManager
                 idAliasNanos = System.nanoTime() - phaseStart;
 
                 phaseStart = System.nanoTime();
-                preLoadAssets = PlatformEnvironment.isClient() &&
-                    (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds() || idAliasNeedsUpdate
-                        || !processingCache.assetsCurrent() || ContentPackAssets.aliasesChanged(provider, textureReferences(provider)));
+                preLoadAssets = PlatformEnvironment.isClient() && (ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds() || idAliasNeedsUpdate || !processingCache.assetsCurrent()
+                    || ContentPackAssets.aliasesChanged(provider, textureReferences(provider)));
                 assetCheckNanos = System.nanoTime() - phaseStart;
 
                 phaseStart = System.nanoTime();
-                preLoadData = ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds() || idAliasNeedsUpdate
-                    || !processingCache.dataCurrent();
+                preLoadData = ContentLoadingConfig.isForceRegenContentPacksAssetsAndIds() || idAliasNeedsUpdate || !processingCache.dataCurrent();
                 dataCheckNanos = System.nanoTime() - phaseStart;
 
                 phaseStart = System.nanoTime();
@@ -335,15 +292,9 @@ public class ContentManager
 
         if (FlansLog.log.isDebugEnabled())
         {
-            FlansLog.log.debug("{}: Post-type checks completed in {} ms (textures: {} ms, id aliases: {} ms, assets: {} ms, data: {} ms, unpack: {} ms, archive close: {} ms)",
-                provider.getName(),
-                formatMilliseconds(postTypeNanos),
-                formatMilliseconds(textureIndexNanos),
-                formatMilliseconds(idAliasNanos),
-                formatMilliseconds(assetCheckNanos),
-                formatMilliseconds(dataCheckNanos),
-                formatMilliseconds(unpackCheckNanos),
-                formatMilliseconds(Math.max(0L, archiveCloseNanos)));
+            FlansLog.log.debug("{}: Post-type checks completed in {} ms (textures: {} ms, id aliases: {} ms, assets: {} ms, data: {} ms, unpack: {} ms, archive close: {} ms)", provider.getName(),
+                formatMilliseconds(postTypeNanos), formatMilliseconds(textureIndexNanos), formatMilliseconds(idAliasNanos), formatMilliseconds(assetCheckNanos), formatMilliseconds(dataCheckNanos),
+                formatMilliseconds(unpackCheckNanos), formatMilliseconds(Math.max(0L, archiveCloseNanos)));
         }
 
         if (preprocessed)
@@ -425,12 +376,8 @@ public class ContentManager
         if (FlansLog.log.isDebugEnabled())
         {
             // Read time is the wait for files the workers may already have read ahead.
-            FlansLog.log.debug("{}: {} types loaded in {} ms (read: {} ms, register: {} ms)",
-                provider.getName(),
-                typeFiles,
-                formatMilliseconds(registerEnd - readStart),
-                formatMilliseconds(readEnd - readStart),
-                formatMilliseconds(registerEnd - readEnd));
+            FlansLog.log.debug("{}: {} types loaded in {} ms (read: {} ms, register: {} ms)", provider.getName(), typeFiles, formatMilliseconds(registerEnd - readStart),
+                formatMilliseconds(readEnd - readStart), formatMilliseconds(registerEnd - readEnd));
         }
     }
 
@@ -469,8 +416,7 @@ public class ContentManager
         }
 
         FlansLog.log.info("Replaced {} configured sound length(s) with the measured length of the sound file in {} ms. "
-            + "Enable debug logging to see them, or set overrideConfiguredSoundLengths to false to keep the configured values.",
-            resolved, System.currentTimeMillis() - startTime);
+            + "Enable debug logging to see them, or set overrideConfiguredSoundLengths to false to keep the configured values.", resolved, System.currentTimeMillis() - startTime);
     }
 
     /**
@@ -583,16 +529,13 @@ public class ContentManager
     {
         try (AliasFileManager fileManager = new AliasFileManager(fileName, provider))
         {
-            fileManager.readFile().ifPresent(map ->
-                    map.forEach((originalShortname, aliasShortname) -> DynamicReference.storeOrUpdate(originalShortname, aliasShortname, references.get(provider))));
+            fileManager.readFile().ifPresent(map -> map.forEach((originalShortname, aliasShortname) -> DynamicReference.storeOrUpdate(originalShortname, aliasShortname, references.get(provider))));
         }
     }
 
     private static void registerConfigs(IContentProvider contentPack, List<TypeFile> readTypeFiles)
     {
-        List<TypeFile> typeFiles = readTypeFiles.stream()
-            .sorted(Comparator.comparingInt((TypeFile typeFile) -> typeFile.getType().getLoadOrder()).thenComparing(TypeFile::getName))
-            .toList();
+        List<TypeFile> typeFiles = readTypeFiles.stream().sorted(Comparator.comparingInt((TypeFile typeFile) -> typeFile.getType().getLoadOrder()).thenComparing(TypeFile::getName)).toList();
         // Fed file by file rather than concatenated first: the hash is the same, without holding
         // a copy of the whole pack's text.
         MessageDigest generationInput = ContentFileCache.newDigest();
@@ -648,8 +591,7 @@ public class ContentManager
                 LogUtils.logErrorWithoutStacktrace(e);
             }
         }
-        generationInput.update(new java.util.TreeMap<>(DynamicReference.getAliasMapping(shortnameReferences.get(contentPack)))
-            .toString().getBytes(StandardCharsets.UTF_8));
+        generationInput.update(new java.util.TreeMap<>(DynamicReference.getAliasMapping(shortnameReferences.get(contentPack))).toString().getBytes(StandardCharsets.UTF_8));
         generationInputs.put(contentPack, HexFormat.of().formatHex(generationInput.digest()));
     }
 
@@ -706,10 +648,8 @@ public class ContentManager
         }
 
         missingTextures.stream()
-            .sorted(Comparator.comparing((MissingModelTexture missing) -> missing.origin().contentPackName())
-                .thenComparing(missing -> missing.origin().typeFolderName())
-                .thenComparing(missing -> missing.origin().fileName())
-                .thenComparing(missing -> missing.textureId().toString()))
+            .sorted(Comparator.comparing((MissingModelTexture missing) -> missing.origin().contentPackName()).thenComparing(missing -> missing.origin().typeFolderName())
+                .thenComparing(missing -> missing.origin().fileName()).thenComparing(missing -> missing.textureId().toString()))
             .forEach(missing -> FlansLog.log.warn("Missing texture {}: {}", missing.textureId(), missing.origin()));
     }
 
@@ -739,13 +679,10 @@ public class ContentManager
             // otherFileOriginal -> the file that registered the original shortname
             // otherFileAlias -> in case another file of the same pack already registered the existing alias
             String otherFileOriginal = registeredItems.get(originalShortname);
-            Optional<String> otherFileAlias = Optional.ofNullable(shortnameReferences.get(provider).get(originalShortname))
-                .map(DynamicReference::get)
-                .map(registeredItems::get);
+            Optional<String> otherFileAlias = Optional.ofNullable(shortnameReferences.get(provider).get(originalShortname)).map(DynamicReference::get).map(registeredItems::get);
 
             // Conflict is in the same Content Pack -> Ignore file
-            Optional<String> conflictingFileInSamePack = Optional.of(otherFileOriginal)
-                .filter(conflictingFile -> contentPackName.equals(TypeFile.getContentPackName(conflictingFile)))
+            Optional<String> conflictingFileInSamePack = Optional.of(otherFileOriginal).filter(conflictingFile -> contentPackName.equals(TypeFile.getContentPackName(conflictingFile)))
                 .or(() -> otherFileAlias.filter(conflictingFile -> contentPackName.equals(TypeFile.getContentPackName(conflictingFile))));
             if (conflictingFileInSamePack.isPresent())
             {
@@ -772,8 +709,7 @@ public class ContentManager
         FlansMod.registerBlock(shortName, config.getType(), () -> BlockFactory.createBlock(config));
     }
 
-    private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets, boolean preLoadData,
-                                               boolean idAliasNeedsUpdate)
+    private static boolean shouldUnpackArchive(IContentProvider provider, boolean preLoadAssets, boolean preLoadData, boolean idAliasNeedsUpdate)
     {
         return provider.isArchive() && (preLoadAssets || preLoadData || idAliasNeedsUpdate);
     }
@@ -791,7 +727,8 @@ public class ContentManager
 
             if (!JavaModelCompiler.isCompilerAvailable())
             {
-                FlansLog.log.warn("Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.", provider.getName());
+                FlansLog.log.warn("Found Java model sources in content pack '{}', but no Java compiler is available. Run Minecraft with a JDK to compile pack model sources automatically.",
+                    provider.getName());
                 return;
             }
 
@@ -808,24 +745,22 @@ public class ContentManager
     @Unmodifiable
     static List<InfoType> listItems(IContentProvider provider)
     {
-        return configs.get(provider).stream()
-            .filter(config -> config.getType().isHasItem())
-            .toList();
+        return configs.get(provider).stream().filter(config -> config.getType().isHasItem()).toList();
     }
 
     @Unmodifiable
     static List<InfoType> listBlocks(IContentProvider provider)
     {
-        return configs.get(provider).stream()
-            .filter(config -> config.getType().isHasBlock())
-            .toList();
+        return configs.get(provider).stream().filter(config -> config.getType().isHasBlock()).toList();
     }
 
     public static String getShortnameAliasInContentPack(String shortname, @Nullable IContentProvider provider)
     {
-        if (provider != null) {
+        if (provider != null)
+        {
             DynamicReference ref = shortnameReferences.get(provider).get(shortname);
-            if (ref != null) {
+            if (ref != null)
+            {
                 return ref.get();
             }
         }

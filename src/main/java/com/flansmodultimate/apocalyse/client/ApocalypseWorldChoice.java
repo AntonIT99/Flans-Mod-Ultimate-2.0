@@ -24,12 +24,14 @@ import java.nio.file.Path;
 /**
  * Where a world stands on the Apocalypse dimension, and how a player's decision is recorded.
  *
- * <p>A world that has the dimension can no longer be opened once the mod is removed, because its
+ * <p>
+ * A world that has the dimension can no longer be opened once the mod is removed, because its
  * {@code level.dat} keeps the dimension, so it is never added without the player choosing it. The
  * decision lives in the world's own data pack lists: the Apocalypse pack listed as enabled means
  * the player chose it, listed as disabled means they declined it. Minecraft already records every
  * available pack a new world did not enable as disabled, so a world created without the Apocalypse
- * is never asked again.</p>
+ * is never asked again.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseWorldChoice
@@ -50,8 +52,8 @@ public final class ApocalypseWorldChoice
     /** Whether a world about to be created with this configuration can be offered the Apocalypse. */
     public static boolean isOffered(WorldDataConfiguration configuration)
     {
-        return isAvailable() && (configuration.dataPacks().getEnabled().contains(ApocalypseDatapackSource.PACK_ID)
-            || configuration.dataPacks().getDisabled().contains(ApocalypseDatapackSource.PACK_ID));
+        return isAvailable()
+            && (configuration.dataPacks().getEnabled().contains(ApocalypseDatapackSource.PACK_ID) || configuration.dataPacks().getDisabled().contains(ApocalypseDatapackSource.PACK_ID));
     }
 
     public static boolean isEnabled(WorldDataConfiguration configuration)
@@ -73,8 +75,7 @@ public final class ApocalypseWorldChoice
         try
         {
             CompoundTag data = LevelFilePlatform.readCompressed(levelData).getCompound(NBT_DATA);
-            if (data.getCompound(NBT_WORLD_GEN_SETTINGS).getCompound(NBT_DIMENSIONS)
-                .contains(ApocalypseContent.APOCALYPSE_LEVEL.location().toString()))
+            if (data.getCompound(NBT_WORLD_GEN_SETTINGS).getCompound(NBT_DIMENSIONS).contains(ApocalypseContent.APOCALYPSE_LEVEL.location().toString()))
                 return false;
             CompoundTag dataPacks = data.getCompound(NBT_DATA_PACKS);
             return !containsString(dataPacks.getList(NBT_ENABLED, Tag.TAG_STRING), ApocalypseDatapackSource.PACK_ID)

@@ -22,18 +22,23 @@ import java.util.Optional;
 /**
  * Entry point for looking up the definitions of the loaded content packs.
  *
- * <p>Content packs are read while Flan's Mod Ultimate is constructed, so every definition is
- * available once registry events fire, on both sides.</p>
+ * <p>
+ * Content packs are read while Flan's Mod Ultimate is constructed, so every definition is
+ * available once registry events fire, on both sides.
+ * </p>
  */
 @ApiStatus.Experimental
 public final class FlansModApi
 {
-    private FlansModApi() {}
+    private FlansModApi()
+    {}
 
     /**
      * Reevaluate player tracking after an addon changes an entity's distance classification.
      * Call on the server thread; pairings are refreshed on the next server tick.
-     * @param level the owning server level
+     *
+     * @param level
+     *            the owning server level
      */
     public static void refreshEntityTracking(ServerLevel level)
     {
@@ -50,7 +55,8 @@ public final class FlansModApi
     }
 
     /**
-     * @param shortName the definition's short name, which is also the path of its item id
+     * @param shortName
+     *            the definition's short name, which is also the path of its item id
      */
     public static Optional<IContentType> getType(String shortName)
     {
@@ -92,8 +98,7 @@ public final class FlansModApi
     public static boolean setGravityFactor(ServerLevel level, double value)
     {
         var server = PlatformEnvironment.currentServer();
-        return server != null && server == level.getServer() && server.isSameThread()
-            && ModCommonConfig.setDimensionFactor(level.dimension().location(), true, value);
+        return server != null && server == level.getServer() && server.isSameThread() && ModCommonConfig.setDimensionFactor(level.dimension().location(), true, value);
     }
 
     /**
@@ -105,23 +110,20 @@ public final class FlansModApi
     public static boolean setDragFactor(ServerLevel level, double value)
     {
         var server = PlatformEnvironment.currentServer();
-        return server != null && server == level.getServer() && server.isSameThread()
-            && ModCommonConfig.setDimensionFactor(level.dimension().location(), false, value);
+        return server != null && server == level.getServer() && server.isSameThread() && ModCommonConfig.setDimensionFactor(level.dimension().location(), false, value);
     }
 
     /** Remove the gravity override for this dimension and restore the factor of one. Server thread only. */
     public static boolean clearGravityFactor(ServerLevel level)
     {
         var server = PlatformEnvironment.currentServer();
-        return server != null && server == level.getServer() && server.isSameThread()
-            && ModCommonConfig.clearDimensionFactor(level.dimension().location(), true);
+        return server != null && server == level.getServer() && server.isSameThread() && ModCommonConfig.clearDimensionFactor(level.dimension().location(), true);
     }
 
     /** Remove the drag override for this dimension and restore the factor of one. Server thread only. */
     public static boolean clearDragFactor(ServerLevel level)
     {
         var server = PlatformEnvironment.currentServer();
-        return server != null && server == level.getServer() && server.isSameThread()
-            && ModCommonConfig.clearDimensionFactor(level.dimension().location(), false);
+        return server != null && server == level.getServer() && server.isSameThread() && ModCommonConfig.clearDimensionFactor(level.dimension().location(), false);
     }
 }

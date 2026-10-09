@@ -1,9 +1,8 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.item.tooltip.*;
 import com.flansmodultimate.common.teams.TeamsManager;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.PlaneType;
@@ -20,18 +19,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.List;
 
@@ -90,9 +85,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
     {
         if (level.isClientSide)
             return null;
-        ItemStack entityStack = sourceStack == null || sourceStack.isEmpty()
-            ? new ItemStack(this)
-            : sourceStack.copyWithCount(1);
+        ItemStack entityStack = sourceStack == null || sourceStack.isEmpty() ? new ItemStack(this) : sourceStack.copyWithCount(1);
         D driveable = createDriveable(level, x, y, z, yaw, placer, entityStack);
         if (driveable == null)
             return null;
@@ -157,8 +150,7 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
             if (totalMaxHealth > 0F)
                 tooltip.add(IFlanItem.healthLine(TooltipKeys.HEALTH, totalHealth, totalMaxHealth));
 
-            long damagedParts = data.getParts().values().stream()
-                .filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
+            long damagedParts = data.getParts().values().stream().filter(part -> part.getMaxHealth() > 0F && part.getHealth() < part.getMaxHealth()).count();
             if (damagedParts > 0)
                 tooltip.add(Component.translatable(TooltipKeys.DAMAGED_PARTS, damagedParts).withStyle(ChatFormatting.RED));
 
@@ -210,5 +202,6 @@ public abstract class DriveableItem<T extends DriveableType, D extends Driveable
         return new Placement(hitPos.getX() + 0.5D, hitPos.getY() + 1D, hitPos.getZ() + 0.5D);
     }
 
-    private record Placement(double x, double y, double z) {}
+    private record Placement(double x, double y, double z)
+    {}
 }

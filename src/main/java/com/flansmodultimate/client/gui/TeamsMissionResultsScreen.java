@@ -1,11 +1,10 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketLoadoutState;
-import com.flansmodultimate.network.server.PacketLoadoutAction;
+import com.flansmodultimate.network.client.teams.PacketLoadoutState;
+import com.flansmodultimate.network.server.teams.PacketLoadoutAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,15 +23,15 @@ public final class TeamsMissionResultsScreen extends Screen
     @Override
     protected void init()
     {
-        addRenderableWidget(Button.builder(Component.literal("Continue"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub()))
-            .bounds(width / 2 - 40, height / 2 + 72, 80, 20)
-            .build());
+        addRenderableWidget(
+            Button.builder(Component.literal("Continue"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub())).bounds(width / 2 - 40, height / 2 + 72, 80, 20).build());
     }
 
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
     {
-        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick); int left = width / 2 - 128;
+        ClientPlatform.renderBackground(this, graphics, mouseX, mouseY, partialTick);
+        int left = width / 2 - 128;
 
         int top = height / 2 - 100;
         graphics.blit(FlansModTextures.TEXTURE_GUI_TEAMSMISSIONRESULTS, left, top, 0, 0, 256, 200, 512, 256);

@@ -35,7 +35,8 @@ public class ItemEntityRenderer<T extends Entity> extends EntityRenderer<T>
         poseStack.pushPose();
         poseStack.translate(0.0D, entity.getBbHeight() * 0.5D, 0.0D);
         poseStack.scale(scale, scale, scale);
-        itemRenderer.renderStatic(stackSupplier.get(), ItemDisplayContext.GROUND, packedLight, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), entity.getId());
+        itemRenderer.renderStatic(stackSupplier.get(), ItemDisplayContext.GROUND, packedLight, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(),
+            entity.getId());
         poseStack.popPose();
     }
 

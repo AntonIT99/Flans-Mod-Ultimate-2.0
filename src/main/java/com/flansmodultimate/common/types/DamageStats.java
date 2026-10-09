@@ -17,47 +17,48 @@ import net.minecraft.world.entity.player.Player;
  * <p>
  * The idea:
  * <ul>
- *     <li>{@code damage} is the generic/base damage value.</li>
- *     <li>{@code damageVsLiving}, {@code damageVsPlayer},
- *         {@code damageVsVehicles}, {@code damageVsPlanes} are optional
- *         overrides for specific target types.</li>
- *     <li>The {@code readXxx} flags indicate which values were explicitly
- *         provided (e.g. parsed from config) and which should be derived
- *         from other values.</li>
+ * <li>{@code damage} is the generic/base damage value.</li>
+ * <li>{@code damageVsLiving}, {@code damageVsPlayer},
+ * {@code damageVsVehicles}, {@code damageVsPlanes} are optional
+ * overrides for specific target types.</li>
+ * <li>The {@code readXxx} flags indicate which values were explicitly
+ * provided (e.g. parsed from config) and which should be derived
+ * from other values.</li>
  * </ul>
  *
  * Typical usage:
  * <ol>
- *     <li>Set any combination of {@code damage}, {@code damageVs*} and
- *         corresponding {@code readDamage*} flags from a config file.</li>
- *     <li>Call {@link #calculate()} once after loading the config.</li>
- *     <li>After that, all {@code damageVs*} fields are guaranteed to be
- *         populated with consistent values (no {@code read*} flags needed
- *         at runtime).</li>
+ * <li>Set any combination of {@code damage}, {@code damageVs*} and
+ * corresponding {@code readDamage*} flags from a config file.</li>
+ * <li>Call {@link #calculate()} once after loading the config.</li>
+ * <li>After that, all {@code damageVs*} fields are guaranteed to be
+ * populated with consistent values (no {@code read*} flags needed
+ * at runtime).</li>
  * </ol>
  *
  * Inheritance rules enforced by {@link #calculate()}:
  * <ul>
- *     <li>If {@code damage} was not explicitly read ({@code readDamage == false}),
- *         it will be derived from the most specific available override in the
- *         following priority order:
- *         <ol>
- *             <li>{@code damageVsLiving}</li>
- *             <li>{@code damageVsVehicles}</li>
- *             <li>{@code damageVsPlayer}</li>
- *             <li>{@code damageVsPlanes}</li>
- *         </ol>
- *     </li>
- *     <li>If {@code damageVsLiving} was not explicitly read, it falls back to {@code damage}.</li>
- *     <li>If {@code damageVsPlayer} was not explicitly read, it falls back to {@code damageVsLiving}.</li>
- *     <li>If {@code damageVsVehicles} was not explicitly read, it falls back to {@code damage}.</li>
- *     <li>If {@code damageVsPlanes} was not explicitly read, it falls back to {@code damageVsVehicles}.</li>
+ * <li>If {@code damage} was not explicitly read ({@code readDamage == false}),
+ * it will be derived from the most specific available override in the
+ * following priority order:
+ * <ol>
+ * <li>{@code damageVsLiving}</li>
+ * <li>{@code damageVsVehicles}</li>
+ * <li>{@code damageVsPlayer}</li>
+ * <li>{@code damageVsPlanes}</li>
+ * </ol>
+ * </li>
+ * <li>If {@code damageVsLiving} was not explicitly read, it falls back to {@code damage}.</li>
+ * <li>If {@code damageVsPlayer} was not explicitly read, it falls back to {@code damageVsLiving}.</li>
+ * <li>If {@code damageVsVehicles} was not explicitly read, it falls back to {@code damage}.</li>
+ * <li>If {@code damageVsPlanes} was not explicitly read, it falls back to {@code damageVsVehicles}.</li>
  * </ul>
  *
  * This chaining allows very compact config definitions while still supporting
  * fine-grained per-target overrides when needed.
  */
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public final class DamageStats
 {

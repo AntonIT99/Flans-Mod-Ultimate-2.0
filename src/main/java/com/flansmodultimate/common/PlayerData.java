@@ -22,12 +22,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class PlayerData
 {
@@ -42,8 +37,10 @@ public class PlayerData
     @Getter @Setter
     private boolean isSecondaryFunctionKeyPressed;
 
-    /** Snapshots for bullet hit detection. Array size is set to number of snapshots required. When a new one is taken,
-     * each snapshot is moved along one place and new one is added at the start, so that when the array fills up, the oldest one is lost */
+    /**
+     * Snapshots for bullet hit detection. Array size is set to number of snapshots required. When a new one is taken,
+     * each snapshot is moved along one place and new one is added at the start, so that when the array fills up, the oldest one is lost
+     */
     @Getter
     private PlayerSnapshot[] snapshots;
 
@@ -84,6 +81,9 @@ public class PlayerData
     /** When remote explosives are thrown they are added to this list. When the player uses a remote, the first one from this list detonates */
     @Getter
     private final List<Grenade> remoteExplosives = new ArrayList<>();
+    private final Map<InteractionHand, UUID> idleSoundIds = new EnumMap<>(InteractionHand.class);
+    private final Map<InteractionHand, Integer> idleSoundDelays = new EnumMap<>(InteractionHand.class);
+
     /** Sound delay parameters */
     @Getter @Setter
     private int loopedSoundDelay;
@@ -117,7 +117,7 @@ public class PlayerData
     @Getter
     private Vector3f[] lastMeleePositions;
 
-    //Teams related fields
+    // Teams related fields
     /** Gametype variables */
     @Getter @Setter
     private int score, kills, deaths;
@@ -155,6 +155,21 @@ public class PlayerData
     private PlayerData(UUID id)
     {
         snapshots = new PlayerSnapshot[PlayerSnapshot.NUM_PLAYER_SNAPSHOTS];
+    }
+
+    public UUID getIdleSoundId(InteractionHand hand)
+    {
+        return idleSoundIds.computeIfAbsent(hand, key -> UUID.randomUUID());
+    }
+
+    public int getIdleSoundDelay(InteractionHand hand)
+    {
+        return idleSoundDelays.getOrDefault(hand, 0);
+    }
+
+    public void setIdleSoundDelay(InteractionHand hand, int delay)
+    {
+        idleSoundDelays.put(hand, delay);
     }
 
     @NotNull
@@ -300,9 +315,9 @@ public class PlayerData
         if (player.level().isClientSide)
             return;
 
-        //Move all snapshots along one place
+        // Move all snapshots along one place
         System.arraycopy(snapshots, 0, snapshots, 1, snapshots.length - 2 + 1);
-        //Take new snapshot
+        // Take new snapshot
         snapshots[0] = new PlayerSnapshot(player);
     }
 
@@ -359,16 +374,13 @@ public class PlayerData
      */
     public boolean shouldCombineAmmoOnReload()
     {
-        return ModCommonConfig.get().combineAmmoOnReload()
-            && (combineAmmoOnReloadPreference == null || combineAmmoOnReloadPreference);
+        return ModCommonConfig.get().combineAmmoOnReload() && (combineAmmoOnReloadPreference == null || combineAmmoOnReloadPreference);
     }
 
     /** Whether a reload by this player puts the unloaded ammo in the upper inventory first. */
     public boolean shouldPutAmmoToUpperInventoryOnReload()
     {
-        return ammoToUpperInventoryOnReloadPreference != null
-            ? ammoToUpperInventoryOnReloadPreference
-            : ModCommonConfig.get().ammoToUpperInventoryOnReload();
+        return ammoToUpperInventoryOnReloadPreference != null ? ammoToUpperInventoryOnReloadPreference : ModCommonConfig.get().ammoToUpperInventoryOnReload();
     }
 
     public void playerKilled()
@@ -382,10 +394,12 @@ public class PlayerData
     }
 
     /**
-     * @param reloadTime how long the reload itself takes, which drives the animation
-     * @param blockTime  how long the player may not shoot for, which is the reload
-     *                   time or the gun's own cadence, whichever is longer: a quick
-     *                   reload must not let a slow gun outrun its rate of fire
+     * @param reloadTime
+     *            how long the reload itself takes, which drives the animation
+     * @param blockTime
+     *            how long the player may not shoot for, which is the reload
+     *            time or the gun's own cadence, whichever is longer: a quick
+     *            reload must not let a slow gun outrun its rate of fire
      */
     public void doGunReload(InteractionHand hand, float reloadTime, float blockTime)
     {
@@ -394,7 +408,7 @@ public class PlayerData
         shootTimeRight = delay;
         shootTimeLeft = delay;
         setReloading(hand, true);
-        setBurstRoundsRemaining(hand,0);
+        setBurstRoundsRemaining(hand, 0);
     }
 
     public void doMelee(Player player, int meleeTime, GunType type)
@@ -402,10 +416,10 @@ public class PlayerData
         meleeLength = meleeTime;
         lastMeleePositions = new Vector3f[type.getMeleePath().size()];
 
-        for(int k = 0; k < type.getMeleeDamagePoints().size(); k++)
+        for (int k = 0; k < type.getMeleeDamagePoints().size(); k++)
         {
             Vector3f meleeDamagePoint = JomlUtils.fromFlansVector(type.getMeleeDamagePoints().get(k));
-            //Do a raytrace from the prev pos to the current pos and attack anything in the way
+            // Do a raytrace from the prev pos to the current pos and attack anything in the way
             Vector3f nextPos = JomlUtils.fromFlansVector(type.getMeleePath().get(0));
             Vector3f nextAngles = JomlUtils.fromFlansVector(type.getMeleePathAngles().get(0));
             RotatedAxes nextAxes = new RotatedAxes(-nextAngles.y, -nextAngles.z, nextAngles.x);
@@ -413,7 +427,8 @@ public class PlayerData
             Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextAxes.findLocalVectorGlobally(meleeDamagePoint));
             nextPosInPlayerCoords.add(nextPos);
 
-            lastMeleePositions[k] = new Vector3f((float) (player.getX() + nextPosInPlayerCoords.x), (float) (player.getEyeY() + nextPosInPlayerCoords.y), (float) (player.getZ() + nextPosInPlayerCoords.z));
+            lastMeleePositions[k] = new Vector3f((float) (player.getX() + nextPosInPlayerCoords.x), (float) (player.getEyeY() + nextPosInPlayerCoords.y),
+                (float) (player.getZ() + nextPosInPlayerCoords.z));
         }
     }
 
