@@ -19,6 +19,8 @@ public final class NpcEquipmentRangedGoal extends Goal
     private float spinSpeed;
     private int charging;
     private int reloading;
+    /** A finished reload loaded nothing; stop cycling reloads until the weapon changes or the goal restarts. */
+    private boolean reloadFailed;
 
     public NpcEquipmentRangedGoal(EntityNPCInterface npc)
     {
@@ -77,6 +79,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         cancelUse();
         spinSpeed = 0F;
         reloading = 0;
+        reloadFailed = false;
         cadence.reset();
         lastWeapon = weapon;
     }
@@ -121,7 +124,12 @@ public final class NpcEquipmentRangedGoal extends Goal
     {
         var flan = NpcEquipment.flan(npc);
         if (flan.isEmpty() || flan.get().throwable() || FlansEquipment.hasLoadedRound(weapon))
+        {
+            reloadFailed = false;
             return false;
+        }
+        if (reloadFailed)
+            return true;
         if (reloading <= 0)
         {
             reloading = Math.max(1, (int) Math.ceil(flan.get().reloadTime()));
@@ -129,7 +137,7 @@ public final class NpcEquipmentRangedGoal extends Goal
                 FlansEquipment.playReloadSound(npc, weapon);
         }
         if (--reloading <= 0)
-            NpcItemAttacks.loadFlanGun(npc);
+            reloadFailed = !NpcItemAttacks.loadFlanGun(npc);
         return true;
     }
 
@@ -153,6 +161,7 @@ public final class NpcEquipmentRangedGoal extends Goal
     {
         cancelUse();
         reloading = 0;
+        reloadFailed = false;
         spinSpeed = 0F;
         npc.getNavigation().stop();
     }

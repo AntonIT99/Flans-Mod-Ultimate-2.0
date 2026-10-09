@@ -1,27 +1,24 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.FlansEquipment;
-import com.flansmodultimate.api.FlansProjectiles;
-import com.flansmodultimate.api.ProjectileParameters;
+import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import noppes.npcs.EventHooks;
+import noppes.npcs.api.event.NpcEvent;
+import noppes.npcs.api.wrapper.ItemStackWrapper;
+import noppes.npcs.entity.EntityNPCInterface;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.projectile.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.Vec3;
-import noppes.npcs.EventHooks;
-import noppes.npcs.api.event.NpcEvent;
-import noppes.npcs.api.wrapper.ItemStackWrapper;
-import noppes.npcs.entity.EntityNPCInterface;
 
 /** Executes equipped items rather than copying NPC projectile/effect settings into synthetic projectiles. */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -77,8 +74,8 @@ public final class NpcItemAttacks
         ItemStack weapon = npc.getMainHandItem();
         Vec3 aim = target.getEyePosition().subtract(npc.getEyePosition());
         if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isPresent())
-            return FlansEquipment.fire(npc, InteractionHand.MAIN_HAND, npc.getEyePosition(), flanDirection(npc, target, weapon, aim),
-                NpcEquipment.enabled(npc, Feature.FLAN_SOUNDS), NpcEquipment.enabled(npc, Feature.SHOOT_PARTICLES));
+            return FlansEquipment.fire(npc, InteractionHand.MAIN_HAND, npc.getEyePosition(), flanDirection(npc, target, weapon, aim), NpcEquipment.enabled(npc, Feature.FLAN_SOUNDS),
+                NpcEquipment.enabled(npc, Feature.SHOOT_PARTICLES));
         if (FlansProjectiles.isGrenade(weapon))
             return grenade(npc, target, weapon);
         if (weapon.getItem() instanceof NpcWeaponAdapter adapter)
@@ -93,16 +90,15 @@ public final class NpcItemAttacks
     public static void launched(EntityNPCInterface npc, LivingEntity target)
     {
         npc.updateClient = true;
-        EventHooks.onNPCRangedLaunched(npc,
-            new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, NpcEquipment.flan(npc).map(properties -> (float) properties.damage()).orElse(0F)));
+        EventHooks.onNPCRangedLaunched(npc, new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, NpcEquipment.flan(npc).map(properties -> (float) properties.damage()).orElse(0F)));
     }
 
     private static Vec3 flanDirection(EntityNPCInterface npc, LivingEntity target, ItemStack weapon, Vec3 direct)
     {
         if (NpcEquipment.flan(npc).map(properties -> properties.speed() <= 0D || properties.throwable()).orElse(true))
             return direct;
-        var shot = FlansEquipment.getLoadedAmmunition(weapon).flatMap(
-            ammo -> FlansProjectiles.prepare(npc, ammo, weapon, null, null, false, new ProjectileParameters(FlansEquipment.getLoadedRoundIndex(weapon), true, 0F, 0F, 1F)));
+        var shot = FlansEquipment.getLoadedAmmunition(weapon)
+            .flatMap(ammo -> FlansProjectiles.prepare(npc, ammo, weapon, null, null, false, new ProjectileParameters(FlansEquipment.getLoadedRoundIndex(weapon), true, 0F, 0F, 1F)));
         return shot.map(value -> ProjectileAim.direction(direct, NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO, value.speed(),
             NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? value.gravity() : 0D, value.drag(), false)).orElse(direct);
     }
@@ -115,9 +111,8 @@ public final class NpcItemAttacks
         if (prepared.isEmpty())
             return false;
         var shot = prepared.get();
-        Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()),
-            NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO, shot.speed(),
-            NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? shot.gravity() : 0D, shot.drag(), false);
+        Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()), NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO,
+            shot.speed(), NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? shot.gravity() : 0D, shot.drag(), false);
         if (shot.launch(npc.getEyePosition(), direction, NpcEquipment.enabled(npc, Feature.FLAN_SOUNDS)).isEmpty())
             return false;
         weapon.shrink(1);
@@ -127,7 +122,9 @@ public final class NpcItemAttacks
 
     public static boolean loadFlanGun(EntityNPCInterface npc)
     {
-        return FlansEquipment.loadMagazine(npc, npc.getMainHandItem(), ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
+        // NPC ammunition is infinite: load from a detached copy large enough to fill every gun slot, never from the projectile slot itself.
+        ItemStack spare = ItemStackWrapper.MCItem(npc.inventory.getProjectile()).copyWithCount(Integer.MAX_VALUE);
+        return FlansEquipment.loadMagazine(npc, npc.getMainHandItem(), spare);
     }
 
     private static boolean bow(EntityNPCInterface npc, LivingEntity target, ItemStack weapon, BowItem bow)
@@ -173,9 +170,8 @@ public final class NpcItemAttacks
         // Vanilla crossbows accept living shooters and preserve charged ammunition, piercing and multishot.
         boolean rocket = CrossbowItem.containsChargedProjectile(weapon, Items.FIREWORK_ROCKET);
         float speed = rocket ? 1.6F : CROSSBOW_VELOCITY;
-        Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()),
-            NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO, speed, !rocket && NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? 0.05D : 0D,
-            rocket ? 1D : 0.99D, false);
+        Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()), NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO, speed,
+            !rocket && NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? 0.05D : 0D, rocket ? 1D : 0.99D, false);
         npc.setXRot((float) -Math.toDegrees(Math.atan2(direction.y, direction.horizontalDistance())));
         npc.setYRot((float) Math.toDegrees(Math.atan2(-direction.x, direction.z)));
         CrossbowItem.performShooting(npc.level(), npc, InteractionHand.MAIN_HAND, weapon, speed, 1F);
@@ -234,9 +230,8 @@ public final class NpcItemAttacks
 
     private static void shoot(Projectile projectile, EntityNPCInterface npc, LivingEntity target, float speed, float spread, double gravity)
     {
-        Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()),
-            NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO, speed, NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? gravity : 0D, 0.99D,
-            false);
+        Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()), NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO, speed,
+            NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? gravity : 0D, 0.99D, false);
         projectile.shoot(direction.x, direction.y, direction.z, speed, spread);
     }
 }
