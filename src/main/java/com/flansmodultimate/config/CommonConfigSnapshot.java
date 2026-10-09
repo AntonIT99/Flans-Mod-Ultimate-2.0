@@ -5,6 +5,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import java.util.ArrayList;
 import java.util.List;
 
+// spotless:off: one value per line keeps the record, the writer and the reader comparable, as the wire format depends on their order
 public record CommonConfigSnapshot(
     int version,
 
@@ -89,7 +90,10 @@ public record CommonConfigSnapshot(
     int smokeParticlesCount,
     double smokeParticlesRange,
 
-    float soundRange,
+    float reloadSoundRange,
+    float gunActionSoundRange,
+    float meleeSoundRange,
+    float grenadeThrowSoundRange,
     float gunFireSoundRange,
     float explosionSoundRange,
     float vehicleSoundRange,
@@ -97,6 +101,10 @@ public record CommonConfigSnapshot(
     float vehicleFlareSoundRange,
     float vehicleLockOnSoundRange,
     float vehicleLockedOnSoundRange,
+    float bulletHitSoundRange,
+    float grenadeStickSoundRange,
+    float grenadeFlashSoundRange,
+    boolean overridePackSoundRanges,
 
     boolean useNewPenetrationSystem,
     boolean enableBlockPenetration,
@@ -237,7 +245,10 @@ public record CommonConfigSnapshot(
         buf.writeVarInt(s.smokeParticlesCount);
         buf.writeDouble(s.smokeParticlesRange);
 
-        buf.writeFloat(s.soundRange);
+        buf.writeFloat(s.reloadSoundRange);
+        buf.writeFloat(s.gunActionSoundRange);
+        buf.writeFloat(s.meleeSoundRange);
+        buf.writeFloat(s.grenadeThrowSoundRange);
         buf.writeFloat(s.gunFireSoundRange);
         buf.writeFloat(s.explosionSoundRange);
         buf.writeFloat(s.vehicleSoundRange);
@@ -245,6 +256,10 @@ public record CommonConfigSnapshot(
         buf.writeFloat(s.vehicleFlareSoundRange);
         buf.writeFloat(s.vehicleLockOnSoundRange);
         buf.writeFloat(s.vehicleLockedOnSoundRange);
+        buf.writeFloat(s.bulletHitSoundRange);
+        buf.writeFloat(s.grenadeStickSoundRange);
+        buf.writeFloat(s.grenadeFlashSoundRange);
+        buf.writeBoolean(s.overridePackSoundRanges);
 
         buf.writeBoolean(s.useNewPenetrationSystem);
         buf.writeBoolean(s.enableBlockPenetration);
@@ -402,6 +417,13 @@ public record CommonConfigSnapshot(
             buf.readFloat(),
             buf.readFloat(),
             buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readFloat(),
+            buf.readBoolean(),
 
             buf.readBoolean(),
             buf.readBoolean(),
@@ -473,3 +495,4 @@ public record CommonConfigSnapshot(
         return lines;
     }
 }
+// spotless:on

@@ -1,10 +1,12 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.config.ModCommonConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,8 +78,7 @@ public class GrenadeType extends ShootableType
     protected boolean stickToEntityAfter;
     @Getter
     protected boolean allowStickSound;
-    @Getter
-    protected int stickSoundRange = 10;
+    protected int stickSoundRange = -1;
     @Getter
     protected String stickSound;
 
@@ -90,8 +91,7 @@ public class GrenadeType extends ShootableType
 
     @Getter
     protected boolean flashSoundEnable;
-    @Getter
-    protected int flashSoundRange = 16;
+    protected int flashSoundRange = -1;
     @Getter
     protected String flashSound;
 
@@ -142,6 +142,16 @@ public class GrenadeType extends ShootableType
      */
     @Getter
     protected int numClips;
+
+    public float getStickSoundRange()
+    {
+        return ModCommonConfig.packSoundRange(stickSoundRange, ModCommonConfig.get().grenadeStickSoundRange());
+    }
+
+    public float getFlashSoundRange()
+    {
+        return ModCommonConfig.packSoundRange(flashSoundRange, ModCommonConfig.get().grenadeFlashSoundRange());
+    }
 
     @Override
     protected void read(TypeFile file)

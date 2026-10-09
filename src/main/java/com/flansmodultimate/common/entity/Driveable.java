@@ -1581,7 +1581,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (configType == null || isGunBank(false) || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET || previousPrimaryShootDelay <= ticksLeft
             || ticksLeft != configType.getReloadSoundTick() || StringUtils.isBlank(configType.getShootReloadSound()))
             return;
-        PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), configType.getShootReloadSound(), false);
+        PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().reloadSoundRange(), configType.getShootReloadSound(), false);
     }
 
     private void applyPlacementEffects()
@@ -1595,9 +1595,9 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         String primarySound = configType.getPlaceSoundPrimary();
         String secondarySound = configType.getPlaceSoundSecondary();
         if (StringUtils.isNotBlank(primarySound))
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), primarySound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), primarySound, false);
         if (StringUtils.isNotBlank(secondarySound) && !secondarySound.equals(primarySound))
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), secondarySound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleSoundRange(), secondarySound, false);
     }
 
     /**
@@ -1992,7 +1992,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         GunType gunType = selection.gunType();
         String sound = gunBankReloadSound(secondary, gunType);
         if (StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, gunType == null ? ModCommonConfig.get().soundRange() : gunType.getReloadSoundRange(), sound, false);
+            PacketPlaySound.sendSoundPacket(this, gunType == null ? ModCommonConfig.get().reloadSoundRange() : gunType.getReloadSoundRange(), sound, false);
     }
 
     /**
@@ -2293,7 +2293,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
         String sound = type.reloadSound(secondary);
         if (StringUtils.isNotBlank(sound))
-            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), sound, false);
+            PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().reloadSoundRange(), sound, false);
     }
 
     /** Keeps a bank's chambered round honest: reloads when what it held is gone. */

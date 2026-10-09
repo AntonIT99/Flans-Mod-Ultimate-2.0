@@ -43,6 +43,5 @@ FlakParticles 2
 // Sounds
 HitSound bullet
 HitSound LargeImpact
-HitSoundRange 15
 HitSoundEnable true
 EntityHitSoundEnable true

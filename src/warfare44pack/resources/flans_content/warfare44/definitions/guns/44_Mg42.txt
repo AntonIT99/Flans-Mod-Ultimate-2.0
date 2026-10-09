@@ -56,7 +56,5 @@ NumGenericAttachmentSlots 1
 // Sounds
 ShootSound Mg42Shoot
 DistortSound False
-GunSoundRange 400
 ReloadSound Stg44Reload
-ReloadSoundRange 5
 EmptyClickSound emptyclick

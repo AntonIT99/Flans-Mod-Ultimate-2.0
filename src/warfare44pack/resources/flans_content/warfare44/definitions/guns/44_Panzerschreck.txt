@@ -42,6 +42,4 @@ Recoil 9
 // Sounds
 ShootSound PanzerschreckShoot
 DistortSound False
-GunSoundRange 400
 ReloadSound PanzerschreckReload
-ReloadSoundRange 5

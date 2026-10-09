@@ -40,6 +40,4 @@ Recoil 7
 // Sounds
 ShootSound MortarShoot
 DistortSound False
-GunSoundRange 400
 ReloadSound PanzerschreckReload
-ReloadSoundRange 5

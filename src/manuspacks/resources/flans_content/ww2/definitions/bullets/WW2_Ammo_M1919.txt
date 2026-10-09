@@ -30,7 +30,6 @@ Mass 11.3
 
 // Sounds
 HitSound MediumImpact
-HitSoundRange 15
 HitSoundEnable true
 EntityHitSoundEnable true
 

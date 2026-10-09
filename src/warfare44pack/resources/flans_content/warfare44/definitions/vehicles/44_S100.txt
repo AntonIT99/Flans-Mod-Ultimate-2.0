@@ -105,13 +105,10 @@ RotatedDriverOffset 0 0 0
 // Sounds
 StartSound PTBoatIdle
 StartSoundLength 17
-StartSoundRange 12
 EngineSound PTBoatMove
 EngineSoundLength 17
-EngineSoundRange 50
 BackSound PTBoatMove
 BackSoundLength 17
-BackSoundRange 25
 PlaceSoundPrimary TankPlace
 ReloadSoundSecondary Mg34Reload
 

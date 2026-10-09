@@ -183,13 +183,10 @@ gunsightZoom 4
 // Sounds
 StartSound TankIdle2
 StartSoundLength 41
-StartSoundRange 12
 EngineSound Engine_MT_M4
 EngineSoundLength 39
-EngineSoundRange 50
 BackSound Engine_MT_M4
 BackSoundLength 39
-BackSoundRange 25
 YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2

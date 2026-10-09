@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -54,27 +55,10 @@ public class ClientGunHooksImpl implements IClientGunHooks
     @Override
     public void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
     {
-        int pumpDelay = 0;
-        int pumpTime = 1;
-        int hammerDelay = 0;
-        int casingDelay = 0;
-        float hammerAngle = 0;
-        float althammerAngle = 0;
-
-        if (ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
-        {
-            pumpDelay = modelGun.getPumpDelay();
-            pumpTime = modelGun.getPumpTime();
-            hammerDelay = modelGun.getHammerDelay();
-            casingDelay = modelGun.getCasingDelay();
-            hammerAngle = modelGun.getHammerAngle();
-            althammerAngle = modelGun.getAlthammerAngle();
-        }
-
         float shootTime = data.getShootTime(hand);
         while (shootTime <= 0F)
         {
-            animations.doShoot(pumpDelay, pumpTime, hammerDelay, hammerAngle, althammerAngle, casingDelay);
+            doShoot(gunItem.getConfigType(), animations);
             addScreenShake(gunItem.getConfigType());
 
             if (gunItem.getConfigType().isUseFancyRecoil())
@@ -90,6 +74,22 @@ public class ClientGunHooksImpl implements IClientGunHooks
         data.setShootTime(hand, shootTime);
 
         DebugHelper.spawnDebugDot(player.getEyePosition(0.0F), 1000, 1F, 1F, 1F);
+    }
+
+    @Override
+    public void animateRemoteShot(LivingEntity shooter, InteractionHand hand)
+    {
+        if (shooter.getItemInHand(hand).getItem() instanceof GunItem gunItem)
+            doShoot(gunItem.getConfigType(), ModClient.getGunAnimations(shooter, hand));
+    }
+
+    /** Starts one shot of the gun's model animation: pump, hammer, casing and muzzle flash. */
+    private static void doShoot(GunType type, GunAnimations animations)
+    {
+        if (ModelCache.getOrLoadTypeModel(type) instanceof ModelGun modelGun)
+            animations.doShoot(modelGun.getPumpDelay(), modelGun.getPumpTime(), modelGun.getHammerDelay(), modelGun.getHammerAngle(), modelGun.getAlthammerAngle(), modelGun.getCasingDelay());
+        else
+            animations.doShoot(0, 1, 0, 0F, 0F, 0);
     }
 
     /** Adds the Labjac Edition firing impact of a gun that opts into {@code HasScreenShake}. */

@@ -863,7 +863,7 @@ public class ModClient
             || (pump != null && (1F - Math.abs(animations.getLastPumped())) * modelGun.getPumpHandleDistance() != 0F)))
         {
             ModClient.setShotState(-1);
-            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().soundRange());
+            SoundHelper.playSoundLocalAndBroadcast(type.getActionSound(), player.position(), ModCommonConfig.get().gunActionSoundRange());
         }
 
         EnumAnimationType anim = modelGun.getAnimationType();
@@ -882,19 +882,19 @@ public class ModClient
                 if (maxBullets == 2 && ModClient.getLastBulletReload() != -1)
                 {
                     int time = (int) (animations.getReloadAnimationTime() / maxBullets);
-                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange(), time);
+                    SoundHelper.playSoundDelayedLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange(), time);
                     ModClient.setLastBulletReload(-1);
                 }
                 else if ((bulletNum == (int) maxBullets || bulletNum == ModClient.lastBulletReload - 1))
                 {
                     ModClient.setLastBulletReload(bulletNum);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange());
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange());
                 }
 
                 if ((ammoPosition < 0.03 && bulletProgress > 0))
                 {
                     ModClient.setLastBulletReload(-2);
-                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().soundRange());
+                    SoundHelper.playSoundLocalAndBroadcast(type.getBulletInsert(), player.position(), ModCommonConfig.get().reloadSoundRange());
                 }
             }
         }

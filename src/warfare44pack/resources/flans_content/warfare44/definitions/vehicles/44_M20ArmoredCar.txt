@@ -91,13 +91,10 @@ DriverYawBeforePitch false
 // Sounds
 StartSound JeepIdle
 StartSoundLength 7
-StartSoundRange 12
 EngineSound JeepMove
 EngineSoundLength 61
-EngineSoundRange 50
 BackSound JeepBack
 BackSoundLength 61
-BackSoundRange 25
 YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2

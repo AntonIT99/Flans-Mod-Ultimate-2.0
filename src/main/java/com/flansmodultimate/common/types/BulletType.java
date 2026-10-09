@@ -6,19 +6,18 @@ import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.explosions.ExplosionScaling;
 import com.flansmodultimate.common.explosions.FlanExplosion;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.TracerBeam;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,8 +70,7 @@ public class BulletType extends ShootableType
 
     @Getter
     protected String hitSound;
-    @Getter
-    protected float hitSoundRange = 64F;
+    protected float hitSoundRange = -1F;
     @Getter
     protected boolean hitSoundEnable;
     @Getter
@@ -223,6 +221,11 @@ public class BulletType extends ShootableType
     @Getter
     protected int alternateTrailParticleCount = 10;
 
+    public float getHitSoundRange()
+    {
+        return ModCommonConfig.packSoundRange(hitSoundRange, ModCommonConfig.get().bulletHitSoundRange());
+    }
+
     @Override
     protected void read(TypeFile file)
     {
@@ -350,8 +353,7 @@ public class BulletType extends ShootableType
         if (roundsPerItem > 1)
         {
             // AddRound [name] [count] [mass in g] [explosive mass in kg TNT equivalent] [muzzle velocity in m/s]
-            readValuesInLines("AddRound", file, 3)
-                .ifPresent(rounds -> rounds.forEach(round -> period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), readRoundStats(round, file)))));
+            readValuesInLines("AddRound", file, 3).ifPresent(rounds -> rounds.forEach(round -> period.add(new RoundEntry(round[0], Integer.parseInt(round[1]), readRoundStats(round, file)))));
             periodLength = period.stream().mapToInt(RoundEntry::count).sum();
         }
 
@@ -620,8 +622,8 @@ public class BulletType extends ShootableType
     @Override
     protected com.flansmodultimate.common.explosions.FragmentationModel.Burst fragmentationFor(float chargeKg, float totalMassGrams)
     {
-        return com.flansmodultimate.common.explosions.FragmentationModel
-            .create(fragType, chargeKg, totalMassGrams, fragMetalMassGrams, fragCount, fragPattern, getBulletSpeed(false) * 20D).withPeak(explosionFragDamage.getDamage());
+        return com.flansmodultimate.common.explosions.FragmentationModel.create(fragType, chargeKg, totalMassGrams, fragMetalMassGrams, fragCount, fragPattern, getBulletSpeed(false) * 20D)
+            .withPeak(explosionFragDamage.getDamage());
     }
 
     public boolean hasDifferentRounds()

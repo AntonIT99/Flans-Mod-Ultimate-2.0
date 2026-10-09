@@ -5,11 +5,7 @@ import com.flansmodultimate.api.IAAGunType;
 import com.flansmodultimate.common.driveables.armor.VehicleHealthScaler;
 import com.flansmodultimate.common.driveables.physics.RealWorldSpecReader;
 import com.flansmodultimate.common.driveables.physics.VehicleImpulsePhysics;
-import com.flansmodultimate.common.guns.AmmoOverrides;
-import com.flansmodultimate.common.guns.EnumSpreadPattern;
-import com.flansmodultimate.common.guns.RemovedAmmo;
-import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.ShotCooldown;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.util.ResourceUtils;
@@ -24,13 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -82,12 +72,12 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     protected float sideViewLimit = 180F;
     /** Maximum yaw and pitch change in degrees per second; zero keeps legacy instant aim. */
     protected float traverseSpeed;
-    protected float[] barrelX = new float[] { 0F };
-    protected float[] barrelY = new float[] { 0F };
-    protected float[] barrelZ = new float[] { 0F };
+    protected float[] barrelX = new float[]{0F};
+    protected float[] barrelY = new float[]{0F};
+    protected float[] barrelZ = new float[]{0F};
     /** Which barrels a {@code Barrel} line places, rather than leaving them at the 0 0 0 default. */
     @Getter(lombok.AccessLevel.NONE)
-    protected boolean[] barrelLineAuthored = new boolean[] { false };
+    protected boolean[] barrelLineAuthored = new boolean[]{false};
     /** Width and height, in blocks, of the entity box that is hit, picked and collided with. */
     protected float hitBoxWidth = DEFAULT_HIT_BOX_SIZE;
     protected float hitBoxHeight = DEFAULT_HIT_BOX_SIZE;
@@ -189,8 +179,7 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
             logError(warning, file);
 
         useRealisticVehicleHealth = readValue("UseRealisticVehicleHealth", false, file);
-        VehicleHealthScaler.SingleResult result = VehicleHealthScaler.resolveSingle(
-            useRealisticVehicleHealth, realMassKg, health, ModCommonConfig.realisticVehicleHealthScale());
+        VehicleHealthScaler.SingleResult result = VehicleHealthScaler.resolveSingle(useRealisticVehicleHealth, realMassKg, health, ModCommonConfig.realisticVehicleHealthScale());
         for (String warning : result.warnings())
             logError(warning, file);
         realisticVehicleHealthEnabled = result.enabled();
@@ -208,20 +197,19 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     {
         // 1.7.10 read whole pixels; fractions are accepted so a line can match a
         // measured muzzle, which rarely falls on the legacy transform's pixel grid.
-        readFloatValuesInLines("Barrel", file, 4).ifPresent(lines -> lines.stream()
-            .filter(values -> values != null && values.length >= 4)
-            .forEach(values -> {
-                int id = (int) values[0];
-                if (id != values[0] || id < 0 || id >= numBarrels)
-                {
-                    logError("Barrel index " + values[0] + " is not a barrel below NumBarrels " + numBarrels, file);
-                    return;
-                }
-                barrelX[id] = values[1];
-                barrelY[id] = values[2];
-                barrelZ[id] = values[3];
-                barrelLineAuthored[id] = true;
-            }));
+        readFloatValuesInLines("Barrel", file, 4).ifPresent(lines -> lines.stream().filter(values -> values != null && values.length >= 4).forEach(values ->
+        {
+            int id = (int) values[0];
+            if (id != values[0] || id < 0 || id >= numBarrels)
+            {
+                logError("Barrel index " + values[0] + " is not a barrel below NumBarrels " + numBarrels, file);
+                return;
+            }
+            barrelX[id] = values[1];
+            barrelY[id] = values[2];
+            barrelZ[id] = values[3];
+            barrelLineAuthored[id] = true;
+        }));
     }
 
     /** Barrel lines as authored, kept while {@code /flandebug} overrides them, by barrel index. */
@@ -236,7 +224,7 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     {
         if (barrel < 0 || barrel >= numBarrels)
             return false;
-        authoredBarrels.computeIfAbsent(barrel, ignored -> new float[] { barrelX[barrel], barrelY[barrel], barrelZ[barrel] });
+        authoredBarrels.computeIfAbsent(barrel, ignored -> new float[]{barrelX[barrel], barrelY[barrel], barrelZ[barrel]});
         barrelX[barrel] = roundBarrelPixels(legacyPixels.x);
         barrelY[barrel] = roundBarrelPixels(legacyPixels.y);
         barrelZ[barrel] = roundBarrelPixels(legacyPixels.z);
@@ -261,7 +249,8 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
 
     public void resetDebugOverrides()
     {
-        authoredBarrels.forEach((barrel, line) -> {
+        authoredBarrels.forEach((barrel, line) ->
+        {
             barrelX[barrel] = line[0];
             barrelY[barrel] = line[1];
             barrelZ[barrel] = line[2];
@@ -336,7 +325,8 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
 
     private void readGunnerPosition(TypeFile file)
     {
-        readIntValues("GunnerPos", file, 3).ifPresent(values -> {
+        readIntValues("GunnerPos", file, 3).ifPresent(values ->
+        {
             gunnerX = values[0];
             gunnerY = values[1];
             gunnerZ = values[2];
@@ -351,7 +341,8 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
     /**
      * {@code RoundsPerMin} overrides the legacy tick delay, matching {@link GunType}.
      *
-     * <p>A gun declaring neither key falls back to one tick, which is the cadence
+     * <p>
+     * A gun declaring neither key falls back to one tick, which is the cadence
      * such a gun has always had: its delay of zero left it ready on every tick.
      * Naming it keeps the firing loop, which charges this value back onto the
      * cooldown, from being handed a delay of nothing.
@@ -363,12 +354,12 @@ public class AAGunType extends InfoType implements IAAGunType, IAmmoGroupUser, I
 
     public float getGunSoundRange()
     {
-        return gunSoundRange > 0 ? gunSoundRange : ModCommonConfig.get().gunFireSoundRange();
+        return ModCommonConfig.packSoundRange(gunSoundRange, ModCommonConfig.get().gunFireSoundRange());
     }
 
     public float getReloadSoundRange()
     {
-        return reloadSoundRange > 0 ? reloadSoundRange : ModCommonConfig.get().soundRange();
+        return ModCommonConfig.packSoundRange(reloadSoundRange, ModCommonConfig.get().reloadSoundRange());
     }
 
     public boolean isSentry()

@@ -199,8 +199,16 @@ public final class SoundHelper
         return Optional.of(soundEvent.get());
     }
 
+    /**
+     * Minecraft fades a sound out linearly over 16 blocks times its volume, so a range of 16 blocks or more
+     * maps to the volume that fades out at that range. Below that the volume stays at full (half when
+     * silenced) instead of shrinking with the range: 1.7.10 played every sound at a fixed volume and used the
+     * range only to decide who hears it, and packs such as Warfare 44 rely on short ranges like
+     * {@code ReloadSoundRange 5} for sounds that should be loud close by.
+     */
     public static float getVolumeFromRange(float range, boolean silenced)
     {
-        return silenced ? range / 32F : range / 16F;
+        float volume = Math.max(1F, range / 16F);
+        return silenced ? volume / 2F : volume;
     }
 }

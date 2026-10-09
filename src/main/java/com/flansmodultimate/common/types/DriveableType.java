@@ -308,22 +308,22 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
 
     public float getStartSoundRange()
     {
-        return startSoundRange > 0 ? startSoundRange : ModCommonConfig.get().vehicleSoundRange();
+        return ModCommonConfig.packSoundRange(startSoundRange, ModCommonConfig.get().vehicleSoundRange());
     }
 
     public float getEngineSoundRange()
     {
-        return engineSoundRange > 0 ? engineSoundRange : ModCommonConfig.get().vehicleSoundRange();
+        return ModCommonConfig.packSoundRange(engineSoundRange, ModCommonConfig.get().vehicleSoundRange());
     }
 
     public float getBackSoundRange()
     {
-        return backSoundRange > 0 ? backSoundRange : ModCommonConfig.get().vehicleSoundRange();
+        return ModCommonConfig.packSoundRange(backSoundRange, ModCommonConfig.get().vehicleSoundRange());
     }
 
     public float getLockedOnSoundRange()
     {
-        return lockedOnSoundRange > 0 ? lockedOnSoundRange : ModCommonConfig.get().vehicleLockedOnSoundRange();
+        return ModCommonConfig.packSoundRange(lockedOnSoundRange, ModCommonConfig.get().vehicleLockedOnSoundRange());
     }
 
     protected boolean lockOnToPlanes;

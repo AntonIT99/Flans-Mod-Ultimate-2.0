@@ -9,6 +9,7 @@ import com.flansmodultimate.hooks.IClientGunHooks;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -24,6 +25,12 @@ public class ClientGunHooksNoop implements IClientGunHooks
 
     @Override
     public void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void animateRemoteShot(LivingEntity shooter, InteractionHand hand)
     {
         /* no-op */
     }

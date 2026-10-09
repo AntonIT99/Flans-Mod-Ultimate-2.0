@@ -1,6 +1,7 @@
 package com.flansmodultimate.network.client.gun;
 
 import com.flansmodultimate.common.guns.GunArmPoses;
+import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.IClientPacket;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-/** A mob fired the gun in one of its hands, which raises that gun for a moment in the dynamic aim pose. */
+/** A mob or another player fired the gun in one of its hands:raises that gun for a moment in the dynamic aim pose and plays its shot animation and muzzle flash model. */
 @NoArgsConstructor
 public class PacketGunShotPose implements IClientPacket
 {
@@ -42,6 +43,12 @@ public class PacketGunShotPose implements IClientPacket
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         if (level.getEntity(entityId) instanceof LivingEntity shooter)
+        {
+            // A player's own shots already reach them through the shooting state and their local shot animation.
+            if (shooter == player)
+                return;
             GunArmPoses.recordShot(shooter, hand);
+            ClientHooks.GUN.animateRemoteShot(shooter, hand);
+        }
     }
 }

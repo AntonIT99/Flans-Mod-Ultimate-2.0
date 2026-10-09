@@ -240,6 +240,8 @@ public class GunItemHandler
 
             playShootSound(level, player, gunStack, lastBullet);
             spawnMuzzleFlashParticles(level, player, gunStack, hand);
+            // Lets the players who see the shooter play this shot's animation and muzzle flash model.
+            PacketHandler.sendToTracking(new PacketGunShotPose(player.getId(), hand), player);
 
             shootTime += shootDelay;
 
@@ -401,20 +403,20 @@ public class GunItemHandler
             data.setLoopedSoundDelay(item.configType.getWarmupSoundLength());
             data.setLoopingSoundActive(true);
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getWarmupSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getWarmupSound(), false);
         }
         else if (data.isShootKeyPressed(hand))
         {
             data.setLoopedSoundDelay(item.configType.getLoopedSoundLength());
             data.setLoopingSoundActive(true);
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getLoopedSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getLoopedSound(), false);
         }
         else if (data.isLoopingSoundActive())
         {
             data.setLoopingSoundActive(false);
             if (!level.isClientSide)
-                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().soundRange(), item.configType.getCooldownSound(), false);
+                PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunActionSoundRange(), item.configType.getCooldownSound(), false);
         }
     }
 

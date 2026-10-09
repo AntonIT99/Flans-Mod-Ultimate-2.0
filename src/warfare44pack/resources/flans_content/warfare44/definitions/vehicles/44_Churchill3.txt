@@ -186,13 +186,10 @@ heliGUI warfare44_scope
 // Sounds
 StartSound TankIdle3
 StartSoundLength 41
-StartSoundRange 12
 EngineSound Engine_MT_M26
 EngineSoundLength 39
-EngineSoundRange 50
 BackSound Engine_MT_M26
 BackSoundLength 39
-BackSoundRange 25
 YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2

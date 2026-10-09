@@ -5,15 +5,17 @@ import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.guns.*;
-import com.flansmodultimate.common.item.AttachmentItem;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -22,9 +24,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -856,10 +855,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             meleePath.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F));
             meleePathAngles.add(new Vector3f(values[3], values[4], values[5]));
         }));
-        readFloatValuesInLines("MeleeDamagePoint", file, 3)
-            .ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
-        readFloatValuesInLines("MeleeDamageOffset", file, 3)
-            .ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
+        readFloatValuesInLines("MeleeDamagePoint", file, 3).ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
+        readFloatValuesInLines("MeleeDamageOffset", file, 3).ifPresent(lines -> lines.forEach(values -> meleeDamagePoints.add(new Vector3f(values[0] / 16F, values[1] / 16F, values[2] / 16F))));
 
         // Player modifiers
         moveSpeedModifier = readValue("MoveSpeedModifier", moveSpeedModifier, file);
@@ -1069,27 +1066,27 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
 
     public float getIdleSoundRange()
     {
-        return idleSoundRange > 0 ? idleSoundRange : ModCommonConfig.get().soundRange();
+        return ModCommonConfig.packSoundRange(idleSoundRange, ModCommonConfig.get().gunActionSoundRange());
     }
 
     public float getMeleeSoundRange()
     {
-        return meleeSoundRange > 0 ? meleeSoundRange : ModCommonConfig.get().soundRange();
+        return ModCommonConfig.packSoundRange(meleeSoundRange, ModCommonConfig.get().meleeSoundRange());
     }
 
     public float getReloadSoundRange()
     {
-        return reloadSoundRange > 0 ? reloadSoundRange : ModCommonConfig.get().soundRange();
+        return ModCommonConfig.packSoundRange(reloadSoundRange, ModCommonConfig.get().reloadSoundRange());
     }
 
     public float getGunSoundRange()
     {
-        return gunSoundRange > 0 ? gunSoundRange : ModCommonConfig.get().gunFireSoundRange();
+        return ModCommonConfig.packSoundRange(gunSoundRange, ModCommonConfig.get().gunFireSoundRange());
     }
 
     public float getDistantSoundRange()
     {
-        return distantSoundRange > 0 ? distantSoundRange : ModCommonConfig.get().gunFireSoundRange() * 1.5F;
+        return ModCommonConfig.packSoundRange(distantSoundRange, ModCommonConfig.get().gunFireSoundRange() * 1.5F);
     }
 
     public boolean canShootUnderwater()

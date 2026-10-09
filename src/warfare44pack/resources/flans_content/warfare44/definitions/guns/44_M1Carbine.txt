@@ -56,7 +56,5 @@ NumGenericAttachmentSlots 1
 // Sounds
 ShootSound M1CarbineShoot
 DistortSound False
-GunSoundRange 400
 ReloadSound M1CarbineReload
-ReloadSoundRange 5
 EmptyClickSound emptyclick

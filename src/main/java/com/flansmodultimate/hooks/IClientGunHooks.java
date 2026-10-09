@@ -8,6 +8,7 @@ import com.flansmodultimate.common.item.GunItem;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -18,6 +19,9 @@ public interface IClientGunHooks
     void meleeGunItem(GunItem gunItem, Player player, InteractionHand hand);
 
     void shootGunItem(GunItem gunItem, Level level, Player player, PlayerData data, GunAnimations animations, ItemStack gunStack, InteractionHand hand);
+
+    /** Plays the shot animation, muzzle flash model included, of a gun fired by a mob or another player. */
+    void animateRemoteShot(LivingEntity shooter, InteractionHand hand);
 
     void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo);
 

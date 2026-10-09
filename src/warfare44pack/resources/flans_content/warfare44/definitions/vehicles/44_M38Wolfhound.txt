@@ -151,13 +151,10 @@ gunsightZoom 3.5
 // Sounds
 StartSound JeepIdle
 StartSoundLength 7
-StartSoundRange 41
 EngineSound Engine_LT_ArmoredCar
 EngineSoundLength 39
-EngineSoundRange 50
 BackSound Engine_LT_ArmoredCar
 BackSoundLength 61
-BackSoundRange 25
 YawSound TurretTraverse1
 YawSoundLength 21
 PitchSound TurretTraverse2

@@ -833,7 +833,7 @@ public class Mecha extends Driveable
         {
             if (pos.distSqr(centre) <= radius * radius && level().getBlockState(pos).is(Blocks.DIAMOND_ORE))
             {
-                PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().soundRange(), detector.getDetectSound(), false);
+                PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().vehicleUtilitySoundRange(), detector.getDetectSound(), false);
                 return;
             }
         }
