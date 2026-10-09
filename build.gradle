@@ -24,6 +24,36 @@ tasks.withType(SonarLint).configureEach {
     ignoreFailures = true
 }
 
+// SonarLint analyses only files changed against origin/master (committed or not, including nested pack repositories)
+// unless -PsonarlintAll is given.
+def sonarlintChangedFiles = null
+def sonarlintGitFiles = { File repo, List<String> args ->
+    def process = (['git', '-C', repo.absolutePath] + args).execute()
+    def output = process.inputStream.text
+    process.waitFor()
+    output.readLines().findAll { it }.collect { new File(repo, it).canonicalFile }
+}
+def sonarlintIsChanged = { File candidate ->
+    if (sonarlintChangedFiles == null)
+    {
+        def changed = [] as Set
+        changed.addAll(sonarlintGitFiles(rootDir, ['diff', '--name-only', 'origin/master']))
+        changed.addAll(sonarlintGitFiles(rootDir, ['ls-files', '--others', '--exclude-standard']))
+        new File(rootDir, 'src').listFiles().findAll { new File(it, '.git').exists() }.each { repo ->
+            changed.addAll(sonarlintGitFiles(repo, ['diff', '--name-only', 'HEAD']))
+            changed.addAll(sonarlintGitFiles(repo, ['ls-files', '--others', '--exclude-standard']))
+        }
+        sonarlintChangedFiles = changed
+    }
+    return sonarlintChangedFiles.contains(candidate.canonicalFile)
+}
+if (!project.hasProperty('sonarlintAll'))
+{
+    tasks.withType(SonarLint).configureEach {
+        include { it.directory || sonarlintIsChanged(it.file) }
+    }
+}
+
 // Code Style with Spotless
 spotless {
     encoding 'UTF-8'

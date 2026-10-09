@@ -121,8 +121,10 @@ checking. They are read-only references: never edit them unless explicitly asked
   `// spotless:on` only for deliberately hand-aligned code. Never reformat files you
   did not otherwise change.
 - SonarLint runs through Gradle with one task per source set (`sonarlintMain`,
-  `sonarlintTest`, `sonarlintPacksmanager`, ...; all are part of `check`). Run the
-  tasks for the source sets you touched. Introduce no new issues in touched code and fix existing ones only when
+  `sonarlintTest`, `sonarlintPacksmanager`, ...). They are on demand only, not part of
+  `check`/`build`, and analyse only files changed against `origin/master` (including
+  uncommitted and nested pack repository changes); add `-PsonarlintAll` for a full scan.
+  `staticAnalysis` runs every source set. Run the tasks for the source sets you touched. Introduce no new issues in touched code and fix existing ones only when
   they are in scope. Notable rules: no `volatile` on non-primitive fields (S3077; use
   `AtomicReference` or similar instead).
 - When code is required but a SonarLint or IntelliJ check flags it, keep the code and add a
