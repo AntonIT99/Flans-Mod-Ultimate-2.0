@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.distant;
 
-import com.flansmodultimate.client.render.VehicleOpticsClient;
+import com.flansmodultimate.client.render.ThermalVision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
@@ -8,19 +8,13 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.network.client.PacketDistantContacts;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Driveables shown as simplified shapes because they are too far away to be drawn as entities: those the
@@ -37,8 +31,7 @@ public final class DistantContactsClient
     private static final int THERMAL_COLOR = 0xFFF2F2F2;
 
     private record Reported(PacketDistantContacts.Contact contact, long receivedTick)
-    {
-    }
+    {}
 
     private static final Map<Integer, Reported> reported = new HashMap<>();
     private static final Map<Integer, Proxy> proxies = new HashMap<>();
@@ -72,8 +65,8 @@ public final class DistantContactsClient
         // Tracked, but too far away to be drawn as entities
         for (Entity entity : level.entitiesForRendering())
         {
-            if (entity instanceof Driveable driveable && driveable.isAlive() && driveable != ownVehicle
-                && driveable.getConfigType() != null && !driveable.shouldRender(camera.x, camera.y, camera.z))
+            if (entity instanceof Driveable driveable && driveable.isAlive() && driveable != ownVehicle && driveable.getConfigType() != null
+                && !driveable.shouldRender(camera.x, camera.y, camera.z))
             {
                 proxies.computeIfAbsent(driveable.getId(), Proxy::new).follow(driveable);
                 live.add(driveable.getId());
@@ -93,14 +86,15 @@ public final class DistantContactsClient
             live.add(id);
         }
 
-        proxies.values().removeIf(proxy -> {
+        proxies.values().removeIf(proxy ->
+        {
             if (live.contains(proxy.id))
                 return false;
             proxy.close();
             return true;
         });
 
-        boolean thermal = VehicleOpticsClient.thermal();
+        boolean thermal = ThermalVision.active();
         for (Proxy proxy : proxies.values())
             proxy.update(terrain, camera, handoff, thermal);
     }
@@ -168,8 +162,7 @@ public final class DistantContactsClient
             // Carry on along the last reported velocity until the next update, but not indefinitely
             PacketDistantContacts.Contact contact = report.contact();
             double age = Math.min(ticks - report.receivedTick() + partialTick, updateInterval * 2D);
-            return new Vec3(contact.x() + contact.velocityX() * age, contact.y() + contact.velocityY() * age,
-                contact.z() + contact.velocityZ() * age);
+            return new Vec3(contact.x() + contact.velocityX() * age, contact.y() + contact.velocityY() * age, contact.z() + contact.velocityZ() * age);
         }
 
         private void update(IDistantTerrain terrain, Vec3 camera, double handoff, boolean thermal)

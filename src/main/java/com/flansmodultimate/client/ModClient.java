@@ -26,14 +26,13 @@ import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.server.PacketGunScopedState;
 import com.flansmodultimate.platform.client.ArmPosePlatform;
 import com.flansmodultimate.platform.client.ClientPlatform;
+import it.unimi.dsi.fastutil.longs.Long2ByteMap;
+import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
+import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.GraphicsStatus;
@@ -60,15 +59,14 @@ import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-
-import it.unimi.dsi.fastutil.longs.Long2ByteMap;
-import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
-import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ModClient
@@ -924,6 +922,12 @@ public class ModClient
             }
         }
 
+    }
+
+    /** Whether the local player is fully zoomed through a gun scope that shows thermal imaging. */
+    public static boolean isThermalScoped()
+    {
+        return currentScope != null && zoomProgress > 0.8F && currentScope.hasThermalVision();
     }
 
     /** The field of view after the scope, sight-zoom and vehicle-optics zoom, from the frame's base field of view. */

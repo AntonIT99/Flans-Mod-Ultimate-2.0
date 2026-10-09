@@ -20,6 +20,13 @@ public final class VehicleOptics
     boolean hasCamera;
     boolean thermalSight;
     boolean showCrosshair;
+    /** Vehicle-wide thermal colour scheme, from the Labjac Edition's {@code ThermalVisionColor} */
+    ThermalPalette thermalPalette = ThermalPalette.WHITE;
+    /**
+     * Vehicle-wide thermal image generation from 1 (roughest) to 3 (clearest), from the Labjac Edition's
+     * {@code ThermalVisionGeneration}. 0, when the key is absent, keeps the clean original Ultimate image.
+     */
+    int thermalGeneration;
     float zoom = 1F;
     Vector3f camera = new Vector3f();
     String fallbackOverlay = "";
@@ -92,6 +99,17 @@ public final class VehicleOptics
             parsed.add(Math.max(1, Integer.parseInt(values[i])) - 1);
         thermalSights.clear();
         thermalSights.addAll(parsed);
+    }
+
+    /** Values of 1 or less select generation 1 and values of 3 or more generation 3, as in the Labjac Edition. */
+    static int generation(String value)
+    {
+        float parsed = Float.parseFloat(value);
+        if (!Float.isFinite(parsed))
+            throw new IllegalArgumentException("Non-finite thermal generation");
+        if (parsed <= 1F)
+            return 1;
+        return parsed >= 3F ? 3 : 2;
     }
 
     static float positive(String value, float minimum)

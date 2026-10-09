@@ -14,10 +14,6 @@ import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ResourceUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -26,6 +22,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -46,6 +45,22 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     protected GunRecoil recoil = new GunRecoil();
     @Getter
     protected boolean useFancyRecoil;
+
+    // Labjac Edition infantry screen shake, opt-in per gun
+    /** Whether firing punches the shooter's field of view in */
+    @Getter
+    protected boolean hasScreenShake;
+    /** {@code ScreenShakeStyle Sustained} (default) strengthens the punch with sustained fire; {@code Clean} does not */
+    @Getter
+    protected boolean screenShakeUsesSustainedRecoil = true;
+    @Getter
+    protected float screenShakeIntensity = 1F;
+    /** Whether a screen-shaking gun also kicks the camera upwards by {@link #cameraRecoil} */
+    @Getter
+    protected boolean screenShakeCameraKick = true;
+    /** Camera kick strength; defaults to the vertical FancyRecoil value when FancyRecoil is used */
+    @Getter
+    protected float cameraRecoil;
 
     // Recoil Variables
     /**
@@ -606,6 +621,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
      */
     @Getter
     protected boolean allowNightVision;
+    /** Thermal imaging while looking through the gun's own scope, from the Labjac Edition's {@code HasThermalVision} */
+    protected boolean thermalVision;
 
     /**
      * For adding a bullet casing model to render
@@ -768,6 +785,7 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         recoilSneakingMultiplier = readValue("RecoilSneakingMultiplier", recoilSneakingMultiplier, file);
         recoilSneakingMultiplierYaw = readValue("RecoilSneakingMultiplierYaw", recoilSneakingMultiplierYaw, file);
         readFancyRecoil(file);
+        readScreenShake(file);
 
         // Ammo
         numBullets = readValue("NumBullets", numBullets, file);
@@ -930,6 +948,8 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
         zoomFactor = readValue("ZoomLevel", zoomFactor, file);
         fovFactor = readValue("FOVZoomLevel", fovFactor, file);
         allowNightVision = readValue("AllowNightVision", allowNightVision, file);
+        thermalVision = readValue("HasThermalVision", thermalVision, file);
+        thermalVision = readValue("HasThermal", thermalVision, file);
         hasVariableZoom = readValue("HasVariableZoom", hasVariableZoom, file);
         minZoom = readValue("MinZoom", minZoom, file);
         maxZoom = readValue("MaxZoom", maxZoom, file);
@@ -1152,6 +1172,9 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
             {
                 recoil.read(fancyRecoil);
                 useFancyRecoil = true;
+                // The Labjac Edition takes the camera kick from the vertical FancyRecoil value
+                String vertical = fancyRecoil[0];
+                cameraRecoil = Float.parseFloat(vertical.substring(vertical.indexOf('=') + 1));
             }
             catch (Exception ex)
             {
@@ -1159,6 +1182,15 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
                 logError("Failed to read FancyRecoil '" + String.join(StringUtils.SPACE, fancyRecoil) + "'", file, ex);
             }
         });
+    }
+
+    private void readScreenShake(TypeFile file)
+    {
+        hasScreenShake = readValue("HasScreenShake", hasScreenShake, file);
+        screenShakeUsesSustainedRecoil = !"Clean".equalsIgnoreCase(readValue("ScreenShakeStyle", "Sustained", file));
+        screenShakeIntensity = Math.max(0F, readValue("ScreenShakeIntensity", screenShakeIntensity, file));
+        cameraRecoil = Math.max(0F, readValue("CameraRecoil", cameraRecoil, file));
+        screenShakeCameraKick = readValue("ScreenShakeCameraKick", screenShakeCameraKick, file);
     }
 
     public boolean isAllowAllAttachments()
@@ -1190,6 +1222,12 @@ public class GunType extends PaintableType implements IScope, IAmmoGroupUser, IA
     public boolean hasZoomOverlay()
     {
         return getOverlay().isPresent();
+    }
+
+    @Override
+    public boolean hasThermalVision()
+    {
+        return thermalVision;
     }
 
     @Override

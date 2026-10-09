@@ -6,9 +6,6 @@ import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.client.ClientPlatform;
-import net.minecraftforge.common.ForgeConfigSpec;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,6 +15,8 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.common.ForgeConfigSpec;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,8 +62,8 @@ public class FlansOptionsScreen extends Screen
     private static final List<QuickSection> QUICK_SECTIONS = List.of(
         new QuickSection("hud",
             List.of(ModClientConfig.SHOW_FLANS_HUD, ModClientConfig.SHOW_AMMO_HUD, ModClientConfig.AMMO_HUD_LAYOUT, ModClientConfig.SHOW_ARMOR_DAMAGE_ABSORPTION_BAR,
-                ModClientConfig.SHOW_SHOOTABLE_DURABILITY_BARS, ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED, ModClientConfig.VEHICLE_SCREEN_SHAKE, ModClientConfig.VEHICLE_HUD_LEFT_X,
-                ModClientConfig.VEHICLE_HUD_LEFT_Y, ModClientConfig.VEHICLE_HUD_RIGHT_X, ModClientConfig.VEHICLE_HUD_RIGHT_Y)),
+                ModClientConfig.SHOW_SHOOTABLE_DURABILITY_BARS, ModClientConfig.SHOW_FLASHES_WHEN_WOUNDED, ModClientConfig.VEHICLE_SCREEN_SHAKE, ModClientConfig.GUN_SCREEN_SHAKE,
+                ModClientConfig.VEHICLE_HUD_LEFT_X, ModClientConfig.VEHICLE_HUD_LEFT_Y, ModClientConfig.VEHICLE_HUD_RIGHT_X, ModClientConfig.VEHICLE_HUD_RIGHT_Y)),
         new QuickSection("crosshair",
             List.of(ModClientConfig.HIDE_CROSSHAIR_FOR_GUNS, ModClientConfig.HIT_MARKER_STYLE, ModClientConfig.FANCY_HIT_MARKER, ModClientConfig.MUZZLE_FLASH_STYLE)),
         new QuickSection("rendering",

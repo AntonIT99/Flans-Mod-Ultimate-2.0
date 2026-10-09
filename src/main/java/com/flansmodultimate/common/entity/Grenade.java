@@ -26,10 +26,6 @@ import com.flansmodultimate.util.JomlUtils;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -41,11 +37,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -58,6 +50,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Optional;
@@ -160,6 +155,17 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         // If this can be remotely detonated, add it to the players detonate list
         if (grenadeType.isRemote() && thrower instanceof Player player)
             PlayerData.getInstance(player).getRemoteExplosives().add(this);
+    }
+
+    /**
+     * A hold-to-throw grenade released by hand, from the Labjac Edition: overhand when the attack button was
+     * held, underhand when the use button was.
+     */
+    public static Grenade thrownByHand(Level level, GrenadeType grenadeType, @NotNull LivingEntity thrower, boolean underhand)
+    {
+        Grenade grenade = new Grenade(level, grenadeType, thrower);
+        grenade.setDeltaMovement(grenadeType.handThrowVelocity(grenade.getDeltaMovement(), underhand));
+        return grenade;
     }
 
     @Override
@@ -547,8 +553,11 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         if (result.getType() == HitResult.Type.BLOCK)
             handleBlockHit(level, posVec, velocity, result);
         else
-            // No hit, just move
+        {
+            // No hit, just move. Scaling by the default drag of 1 changes nothing.
+            velocity = velocity.scale(configType.getGrenadeAirDrag());
             setPos(getX() + velocity.x, getY() + velocity.y, getZ() + velocity.z);
+        }
     }
 
     protected void handleBlockHit(Level level, Vec3 posVec, Vec3 motionVec, BlockHitResult hit)
@@ -611,6 +620,14 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         // Scale by bounciness
         postHitMotVec.mul(configType.getBounciness() / 2F);
+        // Floors and ceilings brake the slide, walls and flight lose speed to drag
+        if (sideHit.getAxis() == Direction.Axis.Y)
+        {
+            postHitMotVec.x *= configType.getGrenadeGroundFriction();
+            postHitMotVec.z *= configType.getGrenadeGroundFriction();
+        }
+        else
+            postHitMotVec.mul(configType.getGrenadeAirDrag());
 
         // Move grenade along path including reflection
         setPos(getX() + preHitMotVec.x + postHitMotVec.x, getY() + preHitMotVec.y + postHitMotVec.y, getZ() + preHitMotVec.z + postHitMotVec.z);
@@ -619,9 +636,17 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
         velocity = new Vec3(postHitMotVec.x / lambda, postHitMotVec.y / lambda, postHitMotVec.z / lambda);
         setDeltaMovement(velocity);
 
+        // A slow enough bounce comes to rest
+        float stopSpeed = configType.getGrenadeStopSpeed();
+        boolean cameToRest = stopSpeed > 0F && velocity.lengthSqr() < stopSpeed * stopSpeed;
+        if (cameToRest)
+            setDeltaMovement(Vec3.ZERO);
+
         // Random spin
         float randomSpinner = 90F;
         angularVelocity = angularVelocity.add(random.nextGaussian() * randomSpinner, random.nextGaussian() * randomSpinner, random.nextGaussian() * randomSpinner);
+        if (cameToRest)
+            angularVelocity = Vec3.ZERO;
 
         // Slow spin based on motion
         angularVelocity = angularVelocity.scale(velocity.lengthSqr());

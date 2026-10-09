@@ -1,19 +1,12 @@
 package com.flansmodultimate.client.model;
 
-import com.flansmod.client.model.ModelBomb;
-import com.flansmod.client.model.ModelBullet;
-import com.flansmod.client.model.ModelCasing;
-import com.flansmod.client.model.ModelDefaultFlash;
-import com.flansmod.client.model.ModelDefaultMuzzleFlash;
-import com.flansmod.client.model.ModelFlash;
-import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.ModelMG;
-import com.flansmod.client.model.ModelMuzzleFlash;
+import com.flansmod.client.model.*;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.common.types.ArmorType;
+import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
@@ -25,10 +18,9 @@ import com.flansmodultimate.util.ModelClassResolver.ModelClassLocation;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.NoSuchFileException;
 import java.util.EnumSet;
@@ -41,8 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ModelCache
 {
     /**
-     * @param contentPackName the content pack the model is loaded for, because the same model class name may
-     *                        resolve to a different class file in every content pack
+     * @param contentPackName
+     *            the content pack the model is loaded for, because the same model class name may
+     *            resolve to a different class file in every content pack
      */
     private record ModelCacheKey(String modelClassName, @Nullable String typeShortName, @Nullable String contentPackName)
     {
@@ -99,28 +92,44 @@ public final class ModelCache
     /**
      * The model for this type if it is already cached, without loading it.
      *
-     * <p>For callers that are not on the render thread. Loading a model fits it to
+     * <p>
+     * For callers that are not on the render thread. Loading a model fits it to
      * its texture, which reads the atlas, so off-thread callers must take what is
-     * already there and do without when there is nothing.</p>
+     * already there and do without when there is nothing.
+     * </p>
      */
     @Nullable
     public static IModelBase getLoadedTypeModel(InfoType type)
     {
-        ModelCacheKey key = new ModelCacheKey(type.getModelClassName(), type.getShortName(),
-            type.getContentPack().getName());
+        ModelCacheKey key = new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName());
         return cache.getOrDefault(key, Optional.empty()).orElse(null);
+    }
+
+    /**
+     * The model of a mixed belt's alternate rounds, from the ammunition's {@code AlternateModel},
+     * or null when it names none.
+     */
+    @Nullable
+    public static IModelBase getOrLoadAlternateBulletModel(BulletType type)
+    {
+        if (StringUtils.isBlank(type.getAlternateModelClassName()))
+            return null;
+        ResourceLocation texture = type.getAlternateTexture() != null ? type.getAlternateTexture() : type.getTexture();
+        return getOrLoadModel(new ModelCacheKey(type.getAlternateModelClassName(), type.getShortName(), type.getContentPack().getName()), type, null, texture);
     }
 
     @Nullable
     public static IModelBase getOrLoadTypeModel(ArmorType type)
     {
-        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName()), type, new ModelDefaultArmor(type.getArmorItemType()), type.getTexture());
+        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName()), type,
+            new ModelDefaultArmor(type.getArmorItemType()), type.getTexture());
     }
 
     @Nullable
     public static ModelMG getOrLoadDeployableGunModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName(), gunType.getContentPack().getName()), gunType, null, gunType.getDeployableTexture()) instanceof ModelMG modelMG)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getDeployableModelClassName(), gunType.getShortName(), gunType.getContentPack().getName()), gunType, null,
+            gunType.getDeployableTexture()) instanceof ModelMG modelMG)
         {
             return modelMG;
         }
@@ -130,7 +139,8 @@ public final class ModelCache
     @Nullable
     public static ModelCasing getOrLoadCasingModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getCasingModelClassName(), null, gunType.getContentPack().getName()), gunType, null, gunType.getCasingTexture()) instanceof ModelCasing modelCasing)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getCasingModelClassName(), null, gunType.getContentPack().getName()), gunType, null,
+            gunType.getCasingTexture()) instanceof ModelCasing modelCasing)
         {
             return modelCasing;
         }
@@ -140,7 +150,8 @@ public final class ModelCache
     @Nullable
     public static ModelFlash getOrLoadFlashModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getFlashModelClassName(), null, gunType.getContentPack().getName()), gunType, null, gunType.getFlashTexture()) instanceof ModelFlash modelFlash)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getFlashModelClassName(), null, gunType.getContentPack().getName()), gunType, null,
+            gunType.getFlashTexture()) instanceof ModelFlash modelFlash)
         {
             return modelFlash;
         }
@@ -150,7 +161,8 @@ public final class ModelCache
     @Nullable
     public static ModelMuzzleFlash getOrLoadMuzzleFlashModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null, gunType.getContentPack().getName()), gunType, new ModelDefaultMuzzleFlash(), null) instanceof ModelMuzzleFlash modelMuzzleFlash)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getMuzzleFlashModelClassName(), null, gunType.getContentPack().getName()), gunType, new ModelDefaultMuzzleFlash(),
+            null) instanceof ModelMuzzleFlash modelMuzzleFlash)
         {
             return modelMuzzleFlash;
         }
@@ -164,8 +176,9 @@ public final class ModelCache
     }
 
     /**
-     * @param texture the texture this model is rendered with, used to correct models declaring a
-     *                texture size that does not match it. Pass {@code null} to skip that correction.
+     * @param texture
+     *            the texture this model is rendered with, used to correct models declaring a
+     *            texture size that does not match it. Pass {@code null} to skip that correction.
      */
     @Nullable
     private static IModelBase getOrLoadModel(ModelCacheKey modelCacheKey, InfoType type, @Nullable IModelBase defaultModel, @Nullable ResourceLocation texture)
@@ -178,7 +191,8 @@ public final class ModelCache
                 return null;
         }
 
-        return cache.computeIfAbsent(modelCacheKey, key -> {
+        return cache.computeIfAbsent(modelCacheKey, key ->
+        {
             IModelBase model = loadModel(key.modelClassName(), type, defaultModel);
             ModelTextureFitter.fitToTexture(model, texture);
             return Optional.ofNullable(model);
@@ -201,8 +215,7 @@ public final class ModelCache
 
     private static List<EnumRenderPass> findShadowRenderPasses(IModelBase model)
     {
-        return renderPassCache.computeIfAbsent(model, ModelCache::findRenderPasses)
-            .stream().filter(EnumRenderPass::castsShadow).toList();
+        return renderPassCache.computeIfAbsent(model, ModelCache::findRenderPasses).stream().filter(EnumRenderPass::castsShadow).toList();
     }
 
     private static List<EnumRenderPass> findRenderPasses(IModelBase model)
@@ -214,7 +227,8 @@ public final class ModelCache
         if (model instanceof ModelGun gun && (gun.isBulletCounterActive() || gun.isAdvBulletCounterActive()))
             passes.add(EnumRenderPass.GLOW_ALPHA);
 
-        model.forEachModelBox(modelRenderer -> {
+        model.forEachModelBox(modelRenderer ->
+        {
             if (modelRenderer instanceof ModelRendererTurbo turbo)
             {
                 if (turbo.glowNoDepthWrite)
@@ -256,8 +270,7 @@ public final class ModelCache
                 model = new ModelDefaultArmor(armorType.getArmorItemType());
             else
             {
-                ModelClassLocation modelLocation = ModelClassResolver.find(type.getContentPack(), modelClassName,
-                    ModClientConfig.get().searchModelsInOtherContentPacks);
+                ModelClassLocation modelLocation = ModelClassResolver.find(type.getContentPack(), modelClassName, ModClientConfig.get().searchModelsInOtherContentPacks);
                 try
                 {
                     // A model class file shipped by the type's own content pack overrides a model class of the
@@ -287,7 +300,8 @@ public final class ModelCache
 
         if (model != null && type.getRenderOptions().additiveBlending())
         {
-            model.forEachModelBox(modelRenderer -> {
+            model.forEachModelBox(modelRenderer ->
+            {
                 if (modelRenderer instanceof ModelRendererTurbo modelRendererTurbo && modelRendererTurbo.glow)
                 {
                     modelRendererTurbo.glowAdditive = true;

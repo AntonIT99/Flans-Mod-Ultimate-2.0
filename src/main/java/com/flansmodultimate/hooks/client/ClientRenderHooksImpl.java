@@ -12,26 +12,17 @@ import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.model.MuzzleMeasurements;
 import com.flansmodultimate.client.particle.ExplosionSpectacle;
 import com.flansmodultimate.client.particle.ParticleHelper;
-import com.flansmodultimate.client.render.InstantBulletRenderer;
-import com.flansmodultimate.client.render.InstantShotTrail;
-import com.flansmodultimate.client.render.KillMessageData;
-import com.flansmodultimate.client.render.KillMessageFeed;
-import com.flansmodultimate.client.render.PlayerSkinOverrides;
-import com.flansmodultimate.client.render.VehicleScreenShake;
+import com.flansmodultimate.client.particle.TracerBeamParticle;
+import com.flansmodultimate.client.render.*;
 import com.flansmodultimate.client.render.item.CustomBewlr;
 import com.flansmodultimate.common.driveables.DerivedMuzzle;
 import com.flansmodultimate.common.driveables.SeatInfo;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
-import com.flansmodultimate.common.types.AAGunType;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.PlaneType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
 import com.flansmodultimate.util.FileUtils;
-
 import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -83,6 +74,12 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     public void spawnParticle(String s, double x, double y, double z, double vx, double vy, double vz, float scale, float lifetimeScale)
     {
         ParticleHelper.spawnFromString(s, x, y, z, vx, vy, vz, scale, lifetimeScale);
+    }
+
+    @Override
+    public void spawnTracerBeam(Vec3 start, Vec3 end, float red, float green, float blue, float alpha, float width)
+    {
+        TracerBeamParticle.spawn(start, end, red, green, blue, alpha, width);
     }
 
     @Override

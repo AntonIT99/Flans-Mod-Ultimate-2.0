@@ -11,26 +11,14 @@ import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.Entity;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.flansmodultimate.util.TypeReaderUtils.*;
 
@@ -401,6 +389,9 @@ public abstract class ShootableType extends InfoType
         despawnTime = readValue("DespawnTime", despawnTime, file);
         explodeOnImpact = readValue("ExplodeOnImpact", explodeOnImpact, file);
         explodeOnImpact = readValue("DetonateOnImpact", explodeOnImpact, file);
+        // The Labjac Edition's names for the same flag
+        explodeOnImpact = readValue("CringeExplodeOnImpact", explodeOnImpact, file);
+        explodeOnImpact = readValue("CringeDetonateOnImpact", explodeOnImpact, file);
         livingProximityTrigger = readValue("LivingProximityTrigger", livingProximityTrigger, file);
         driveableProximityTrigger = readValue("VehicleProximityTrigger", driveableProximityTrigger, file);
         damageToTriggerer = readValue("DamageToTriggerer", damageToTriggerer, file);

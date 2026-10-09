@@ -15,6 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 public final class ClientRenderHooksNoop implements IClientRenderHooks
 {
     @Override
@@ -42,19 +43,27 @@ public final class ClientRenderHooksNoop implements IClientRenderHooks
     }
 
     @Override
+    public void spawnTracerBeam(Vec3 start, Vec3 end, float red, float green, float blue, float alpha, float width)
+    {
+        /* no-op */
+    }
+
+    @Override
     public void launchSmokeShell(double x, double y, double z, double vx, double vy, double vz, int fuseTicks)
     {
         /* no-op */
     }
 
     @Override
-    public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
+    public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks,
+        float lifetimeScale)
     {
         /* no-op */
     }
 
     @Override
-    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
+    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale,
+        int burstSize, int durationTicks, float lifetimeScale)
     {
         /* no-op */
     }

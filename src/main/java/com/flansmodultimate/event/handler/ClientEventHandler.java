@@ -14,19 +14,11 @@ import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
 import com.flansmodultimate.client.input.EnumMouseButton;
+import com.flansmodultimate.client.input.GrenadeThrowInput;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.particle.ParticleHelper;
-import com.flansmodultimate.client.render.ClientHudOverlays;
-import com.flansmodultimate.client.render.CustomRenderType;
-import com.flansmodultimate.client.render.InstantBulletRenderer;
-import com.flansmodultimate.client.render.KillMessageFeed;
-import com.flansmodultimate.client.render.MountedCameraView;
-import com.flansmodultimate.client.render.OpStickConnectionRenderer;
-import com.flansmodultimate.client.render.PlayerSkinOverrides;
-import com.flansmodultimate.client.render.VehicleOpticsClient;
-import com.flansmodultimate.client.render.VehicleScreenShake;
-import com.flansmodultimate.client.render.VehicleThermalRenderer;
+import com.flansmodultimate.client.render.*;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.teams.TeamsClientState;
@@ -48,20 +40,6 @@ import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.client.event.RenderNameTagEvent;
-import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -88,6 +66,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.*;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -108,7 +91,12 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onComputeCameraFov(ViewportEvent.ComputeFov event)
     {
-        event.setFOV(ModClient.cameraFov(event.getFOV(), event.getPartialTick()));
+        double fov = ModClient.cameraFov(event.getFOV(), event.getPartialTick());
+        ModClientConfig config = ModClientConfig.get();
+        // The firing punch narrows the world view only, as 1.7.10 left the hand at its own fixed field of view
+        if (event.usedConfiguredFov() && config != null && config.gunScreenShake)
+            fov = Math.max(1D, fov + GunScreenShake.fovOffset((float) event.getPartialTick()));
+        event.setFOV(fov);
     }
 
     /** Adds the mod's options button to the vanilla options screen and pause menu, as configured. */
@@ -125,11 +113,8 @@ public final class ClientEventHandler
         if (!wanted)
             return;
 
-        List<MenuButtonPlacement.Rect> buttons = event.getListenersList().stream()
-            .filter(Button.class::isInstance)
-            .map(Button.class::cast)
-            .map(button -> new MenuButtonPlacement.Rect(button.getX(), button.getY(), button.getWidth(), button.getHeight()))
-            .toList();
+        List<MenuButtonPlacement.Rect> buttons = event.getListenersList().stream().filter(Button.class::isInstance).map(Button.class::cast)
+            .map(button -> new MenuButtonPlacement.Rect(button.getX(), button.getY(), button.getWidth(), button.getHeight())).toList();
 
         // The pause screen shown while the game is still loading has no menu to hang the button on
         MenuButtonPlacement.Placement placement = MenuButtonPlacement.compute(buttons, screen.width, screen.height);
@@ -144,8 +129,7 @@ public final class ClientEventHandler
         }
 
         event.addListener(Button.builder(Component.translatable("gui.flansmodultimate.options.menu_button"), button -> FlansOptionsScreen.open())
-            .bounds(placement.x(), placement.y(), placement.width(), placement.height())
-            .build());
+            .bounds(placement.x(), placement.y(), placement.width(), placement.height()).build());
     }
 
     @SubscribeEvent
@@ -163,6 +147,18 @@ public final class ClientEventHandler
             event.setRoll(event.getRoll() + (frontView ? -view.roll() : view.roll()));
         }
         applyVehicleScreenShake(event);
+        applyGunScreenShake(event);
+    }
+
+    /** Adds the camera kick of a screen-shaking gun the player just fired. 1.7.10 applied it through view bobbing. */
+    private static void applyGunScreenShake(ViewportEvent.ComputeCameraAngles event)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (config == null || !config.gunScreenShake || !Minecraft.getInstance().options.bobView().get())
+            return;
+        float pitch = GunScreenShake.pitchOffset((float) event.getPartialTick());
+        if (pitch != 0F)
+            event.setPitch(Mth.clamp(event.getPitch() + pitch, -89.9F, 89.9F));
     }
 
     /** Adds the camera kick of a nearby firing driveable on top of whatever angles the view already has. */
@@ -194,6 +190,8 @@ public final class ClientEventHandler
     {
         PacketDriveableDamage.applyPending(Minecraft.getInstance().level);
         GunInputState.tick();
+        GrenadeThrowInput.tick();
+        GunScreenShake.tick();
         ModClient.tick();
         ParticleHelper.tick();
         DistantHorizonsClient.tick();
@@ -271,11 +269,11 @@ public final class ClientEventHandler
             return false;
 
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
-        boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
+        boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player)
+            && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
-        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair()
-            || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
-            || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
+        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair() || ModClient.getCurrentScope() != null
+            || gunConfigHidesCrosshair || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
     }
 
     /** Draws the hit marker where the crosshair is, whether or not the crosshair itself is shown. */
@@ -409,10 +407,17 @@ public final class ClientEventHandler
             return;
         }
 
+        // Hold-to-throw grenades read both buttons themselves in GrenadeThrowInput and throw on release
+        if ((event.isAttack() || event.isUseItem()) && GrenadeThrowInput.isHoldingHoldToThrowGrenade(player))
+        {
+            event.setCanceled(true);
+            event.setSwingHand(false);
+            return;
+        }
+
         // An off-hand gun held alone may aim with the free main hand's button, whose attack is reported for the main hand
         boolean mainHandEmpty = player.getMainHandItem().isEmpty();
-        InteractionHand hand = event.isAttack() && mainHandEmpty && player.getOffhandItem().getItem() instanceof GunItem
-            ? InteractionHand.OFF_HAND : event.getHand();
+        InteractionHand hand = event.isAttack() && mainHandEmpty && player.getOffhandItem().getItem() instanceof GunItem ? InteractionHand.OFF_HAND : event.getHand();
 
         if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && !gunItem.getConfigType().isDeployable())
         {
@@ -465,7 +470,8 @@ public final class ClientEventHandler
      * Whether the player's own preference says to leave the block they are looking at alone while
      * they are armed.
      *
-     * <p>Sneaking is the way through {@link EnumGunBlockInteraction#NO_CONTAINERS}, so a chest can
+     * <p>
+     * Sneaking is the way through {@link EnumGunBlockInteraction#NO_CONTAINERS}, so a chest can
      * still be opened without putting the gun away; that is what {@code GunItem.doesSneakBypassUse}
      * already allows for. {@link EnumGunBlockInteraction#NONE} has no way through on purpose: a
      * player who asked for nothing to be used while armed means it.
@@ -504,6 +510,8 @@ public final class ClientEventHandler
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
         VehicleScreenShake.reset();
+        GunScreenShake.reset();
+        GrenadeThrowInput.reset();
         DistantHorizonsClient.reset();
         ModClient.clearTransientLighting();
         GpuModelCache.clear();
@@ -528,7 +536,8 @@ public final class ClientEventHandler
             return;
 
         float partialTick = event.getPartialTick();
-        Vec3 renderedFeet = new Vec3(Mth.lerp(partialTick, player.xo, player.getX()), Mth.lerp(partialTick, player.yo, player.getY()), Mth.lerp(partialTick, player.zo, player.getZ()));
+        Vec3 renderedFeet = new Vec3(Mth.lerp(partialTick, player.xo, player.getX()), Mth.lerp(partialTick, player.yo, player.getY()),
+            Mth.lerp(partialTick, player.zo, player.getZ()));
         Vec3 seatFeet = seat.getDriveable().getInterpolatedRiderWorldPosition(seat.getSeatIndex(), seat.getPassengerRidingOffset(player), partialTick);
         Vec3 correction = seatFeet.subtract(renderedFeet);
         event.getPoseStack().translate(correction.x, correction.y, correction.z);

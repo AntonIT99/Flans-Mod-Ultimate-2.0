@@ -8,12 +8,11 @@ import com.flansmodultimate.common.item.AttachmentItem;
 import com.flansmodultimate.platform.item.ItemStackData;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,6 +126,8 @@ public class AttachmentType extends PaintableType implements IScope
     /** If true, then this scope will active night vision potion effect */
     @Getter
     protected boolean hasNightVision;
+    /** Thermal imaging while looking through this scope, from the Labjac Edition's {@code HasThermalVision} */
+    protected boolean thermalVision;
 
     protected float minZoom = 1;
     protected float maxZoom = 4;
@@ -206,6 +207,8 @@ public class AttachmentType extends PaintableType implements IScope
         overlayName = readResource("ZoomOverlay", overlayName, file);
 
         hasNightVision = readValue("HasNightVision", hasNightVision, file);
+        thermalVision = readValue("HasThermalVision", thermalVision, file);
+        thermalVision = readValue("HasThermal", thermalVision, file);
 
         if (modeOverrideString != null)
             modeOverride = EnumFireMode.getFireMode(modeOverrideString);
@@ -220,6 +223,12 @@ public class AttachmentType extends PaintableType implements IScope
     public boolean hasZoomOverlay()
     {
         return getOverlay().isPresent();
+    }
+
+    @Override
+    public boolean hasThermalVision()
+    {
+        return thermalVision;
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.mixin.PostChainAccessor;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.platform.render.VertexPlatform;
 import com.flansmodultimate.util.FlansLog;
@@ -11,20 +12,17 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import org.lwjgl.opengl.GL11;
-
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.PostChain;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.lwjgl.opengl.GL11;
 
 /** Depth-tested white-hot FLIR, composed independently of the game's selected post effect. */
 public final class VehicleThermalRenderer
@@ -67,7 +65,7 @@ public final class VehicleThermalRenderer
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES)
             return;
         maskReady = false;
-        if (!VehicleOpticsClient.thermal())
+        if (!ThermalVision.active())
         {
             if (chain != null)
                 reset();
@@ -139,12 +137,13 @@ public final class VehicleThermalRenderer
 
     private static void composite(float partialTick)
     {
-        if (!maskReady || chain == null || !VehicleOpticsClient.thermal())
+        if (!maskReady || chain == null || !ThermalVision.active())
             return;
         maskReady = false;
         RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
         try
         {
+            applyImageSettings();
             chain.process(partialTick);
             // Post passes clear their output; preserve world depth afterwards.
             main.copyDepthFrom(chain.getTempTarget("heat"));
@@ -156,6 +155,21 @@ public final class VehicleThermalRenderer
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.depthMask(true);
             RenderSystem.defaultBlendFunc();
+        }
+    }
+
+    /** Feeds the sight's palette and generation, and the clock for the generations' noise, to the thermal pass. */
+    private static void applyImageSettings()
+    {
+        float time = (Util.getMillis() % 1_000_000L) / 1000F;
+        float palette = ThermalVision.palette().ordinal();
+        float generation = ThermalVision.generation();
+        for (PostPass pass : ((PostChainAccessor) chain).flansmodultimate$passes())
+        {
+            EffectInstance effect = pass.getEffect();
+            effect.safeGetUniform("ThermalTime").set(time);
+            effect.safeGetUniform("Palette").set(palette);
+            effect.safeGetUniform("Generation").set(generation);
         }
     }
 

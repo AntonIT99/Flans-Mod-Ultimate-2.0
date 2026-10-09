@@ -249,4 +249,36 @@ class VehicleOpticsTest
         assertEquals(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT, DriveableInput.sanitize(DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT | (1 << 30)));
         assertEquals(0, DriveableInput.CONTINUOUS_MASK & (DriveableInput.TOGGLE_SCOPE | DriveableInput.CYCLE_SIGHT));
     }
+
+    @Test
+    void thermalPaletteAndGenerationDefaultToTheCleanWhiteImage()
+    {
+        VehicleOptics optics = read("ThermalSight true");
+        assertEquals(ThermalPalette.WHITE, optics.getThermalPalette());
+        assertEquals(0, optics.getThermalGeneration());
+    }
+
+    @Test
+    void thermalPaletteAndGenerationFollowTheLabjacKeys()
+    {
+        VehicleOptics green = read("ThermalVisionColor green", "ThermalVisionGeneration 1");
+        assertEquals(ThermalPalette.GREEN, green.getThermalPalette());
+        assertEquals(1, green.getThermalGeneration());
+
+        VehicleOptics red = read("ThermalVisionColor Red", "thermalVisionGen 2");
+        assertEquals(ThermalPalette.RED, red.getThermalPalette());
+        assertEquals(2, red.getThermalGeneration());
+
+        assertEquals(1, read("ThermalVisionGeneration 0").getThermalGeneration(), "values of 1 or less select generation 1");
+        assertEquals(3, read("ThermalVisionGeneration 7").getThermalGeneration(), "values of 3 or more select generation 3");
+        assertEquals(ThermalPalette.WHITE, read("ThermalVisionColor purple").getThermalPalette());
+        assertTrue(warnings.isEmpty());
+    }
+
+    @Test
+    void aNonNumericThermalGenerationIsReported()
+    {
+        assertEquals(0, read("ThermalVisionGeneration best").getThermalGeneration());
+        assertEquals(1, warnings.size());
+    }
 }

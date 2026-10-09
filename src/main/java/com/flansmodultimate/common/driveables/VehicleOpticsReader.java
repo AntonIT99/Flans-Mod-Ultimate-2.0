@@ -10,7 +10,8 @@ import java.util.function.Consumer;
 /** Reads the Krishna optics syntax in source order, including aliases and repeated last-wins values. */
 public final class VehicleOpticsReader
 {
-    private VehicleOpticsReader() {}
+    private VehicleOpticsReader()
+    {}
 
     public static VehicleOptics read(TypeFile file, List<SeatInfo> seats, Consumer<String> warning)
     {
@@ -20,7 +21,8 @@ public final class VehicleOpticsReader
         for (String line : file.getLines())
         {
             String trimmed = line.trim();
-            if (trimmed.isEmpty() || trimmed.startsWith("//")) continue;
+            if (trimmed.isEmpty() || trimmed.startsWith("//"))
+                continue;
             String[] s = trimmed.split("\\s+");
             String key = s[0].toLowerCase(Locale.ROOT);
             try
@@ -34,6 +36,8 @@ public final class VehicleOpticsReader
                     case "gunsightzoom" -> driver.readZooms(s, 1);
                     case "thermalguis" -> driver.readThermal(s, 1);
                     case "thermalsight" -> driver.thermalSight = Boolean.parseBoolean(s[1]);
+                    case "thermalvisioncolor", "thermalvisioncolour" -> driver.thermalPalette = ThermalPalette.parse(s[1]);
+                    case "thermalvisiongeneration", "thermalvisiongen" -> driver.thermalGeneration = VehicleOptics.generation(s[1]);
                     case "showcrosshair" -> driver.showCrosshair = Boolean.parseBoolean(s[1]);
                     case "hasgunsightpos" -> driver.hasCamera = Boolean.parseBoolean(s[1]);
                     case "gunsightpos" -> driver.camera = vector(s, 1);
@@ -51,7 +55,8 @@ public final class VehicleOpticsReader
                         VehicleOptics optic = seat(seats, s[1]);
                         optic.readOverlays(s, 2);
                         optic.hasScope = true;
-                        if (!optic.opticsMode) optic.seatOverlay = true;
+                        if (!optic.opticsMode)
+                            optic.seatOverlay = true;
                     }
                     case "seatgunsightzoom", "seatgunsightzooms", "passengergunsightzoom" -> seat(seats, s[1]).readZooms(s, 2);
                     case "seatthermalguis", "passengerthermalguis" -> {
@@ -78,7 +83,8 @@ public final class VehicleOpticsReader
             }
         }
         for (SeatInfo seat : seats)
-            if (seat != null) seat.getOptics().fallbackOverlay = passengerOverlay;
+            if (seat != null)
+                seat.getOptics().fallbackOverlay = passengerOverlay;
         return driver;
     }
 
@@ -94,7 +100,8 @@ public final class VehicleOpticsReader
     {
         optic.opticsMode = Boolean.parseBoolean(value);
         optic.hasScope = true;
-        if (optic.opticsMode) optic.seatOverlay = false;
+        if (optic.opticsMode)
+            optic.seatOverlay = false;
     }
 
     private static void setCamera(VehicleOptics optic, String[] s, int offset)

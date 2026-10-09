@@ -1,15 +1,19 @@
 package com.flansmodultimate.client.render.entity;
 
+import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.common.entity.Bullet;
+import com.flansmodultimate.common.types.InfoType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import org.jetbrains.annotations.NotNull;
-
+import com.wolffsmod.api.client.model.IModelBase;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class BulletRenderer extends FlanEntityRenderer<Bullet>
 {
@@ -39,5 +43,29 @@ public class BulletRenderer extends FlanEntityRenderer<Bullet>
         super.render(bullet, entityYaw, partialTicks, poseStack, buffer, bullet.getConfigType().isHasLight() ? LightTexture.FULL_BRIGHT : packedLight);
 
         poseStack.popPose();
+    }
+
+    /** Alternate rounds of a mixed belt use the ammunition's {@code AlternateModel} when it names one. */
+    @Override
+    @Nullable
+    protected IModelBase getModel(@NotNull Bullet bullet, @NotNull InfoType type)
+    {
+        if (bullet.isAlternateRound())
+        {
+            IModelBase alternate = ModelCache.getOrLoadAlternateBulletModel(bullet.getConfigType());
+            if (alternate != null)
+                return alternate;
+        }
+        return super.getModel(bullet, type);
+    }
+
+    /** Alternate rounds of a mixed belt use the ammunition's {@code AlternateTexture} when it names one. */
+    @Override
+    @NotNull
+    public ResourceLocation getTextureLocation(@NotNull Bullet bullet)
+    {
+        if (bullet.isAlternateRound() && bullet.getConfigType() != null && bullet.getConfigType().getAlternateTexture() != null)
+            return bullet.getConfigType().getAlternateTexture();
+        return super.getTextureLocation(bullet);
     }
 }

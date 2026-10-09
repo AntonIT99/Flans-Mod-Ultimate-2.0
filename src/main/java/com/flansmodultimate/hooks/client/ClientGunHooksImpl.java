@@ -8,6 +8,7 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
+import com.flansmodultimate.client.render.GunScreenShake;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
@@ -27,9 +28,6 @@ import com.flansmodultimate.network.server.PacketDeployedGunInput;
 import com.flansmodultimate.network.server.PacketGunInput;
 import com.flansmodultimate.network.server.PacketGunSwitchDelay;
 import com.flansmodultimate.util.ModUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -37,6 +35,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -83,6 +83,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
         while (shootTime <= 0F)
         {
             animations.doShoot(pumpDelay, pumpTime, hammerDelay, hammerAngle, althammerAngle, casingDelay);
+            addScreenShake(gunItem.getConfigType());
 
             if (gunItem.getConfigType().isUseFancyRecoil())
                 ModClient.getPlayerRecoil().addRecoil(gunItem.getConfigType().getRecoil(gunStack));
@@ -97,6 +98,16 @@ public class ClientGunHooksImpl implements IClientGunHooks
         data.setShootTime(hand, shootTime);
 
         DebugHelper.spawnDebugDot(player.getEyePosition(0.0F), 1000, 1F, 1F, 1F);
+    }
+
+    /** Adds the Labjac Edition firing impact of a gun that opts into {@code HasScreenShake}. */
+    private static void addScreenShake(GunType type)
+    {
+        ModClientConfig config = ModClientConfig.get();
+        if (!type.isHasScreenShake() || config == null || !config.gunScreenShake)
+            return;
+        float cameraKick = type.isScreenShakeCameraKick() ? type.getCameraRecoil() * type.getScreenShakeIntensity() : 0F;
+        GunScreenShake.addShot(type.isScreenShakeUsesSustainedRecoil(), type.getScreenShakeIntensity(), cameraKick);
     }
 
     @Override
@@ -183,11 +194,11 @@ public class ClientGunHooksImpl implements IClientGunHooks
         }
     }
 
-    private static void handleScope(GunItem gunItem, ItemStack gunStack, InteractionHand hand, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
+    private static void handleScope(GunItem gunItem, ItemStack gunStack, InteractionHand hand, GunInputState.ButtonState primaryFunctionState,
+        GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
     {
         GunType gunType = gunItem.getConfigType();
-        boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom()
-            || gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F;
+        boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom() || gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F;
 
         if (dualWield || !canZoom)
             return;
@@ -335,7 +346,8 @@ public class ClientGunHooksImpl implements IClientGunHooks
             aaGun.setPrevShootKeyPressed(primaryFunctionState.isPrevPressed());
 
             if (aaGun.isShootKeyPressed() != aaGun.isPrevShootKeyPressed())
-                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed(), pivots(barrelOriginData), muzzles(barrelOriginData)));
+                PacketHandler
+                    .sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed(), pivots(barrelOriginData), muzzles(barrelOriginData)));
         }
     }
 
@@ -423,15 +435,14 @@ public class ClientGunHooksImpl implements IClientGunHooks
 
     private static boolean hasModelBarrel(@Nullable ModelAAGun.BarrelOriginData barrelOriginData, int barrel)
     {
-        return barrelOriginData != null && barrel < barrelOriginData.pivots().length
-            && barrel < barrelOriginData.muzzles().length;
+        return barrelOriginData != null && barrel < barrelOriginData.pivots().length && barrel < barrelOriginData.muzzles().length;
     }
 
     private static Vec3 getAAGunDebugBarrelOrigin(AAGun aaGun, int barrel, boolean sentryShot, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
     {
         if (hasModelBarrel(barrelOriginData, barrel))
-            return aaGun.position().add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel],
-                barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch()));
+            return aaGun.position()
+                .add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel], barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch()));
 
         return aaGun.getBarrelOrigin(barrel, sentryShot);
     }

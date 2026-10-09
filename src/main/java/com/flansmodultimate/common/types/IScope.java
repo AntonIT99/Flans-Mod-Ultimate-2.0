@@ -19,4 +19,10 @@ public interface IScope
     boolean hasZoomOverlay();
 
     ResourceLocation getZoomOverlay();
+
+    /** Whether looking through this scope shows thermal imaging, from the Labjac Edition's {@code HasThermalVision}. */
+    default boolean hasThermalVision()
+    {
+        return false;
+    }
 }

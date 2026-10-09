@@ -14,10 +14,9 @@ import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.platform.PlatformPaths;
 import com.flansmodultimate.util.FlansLog;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.BooleanUtils;
-
-import net.minecraft.client.Minecraft;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,6 +57,7 @@ public final class ModClientConfig
     public final float hitMarkerAlpha;
     public final boolean showFlashesWhenWounded;
     public final boolean vehicleScreenShake;
+    public final boolean gunScreenShake;
     public final boolean enablePlayerClassSkinOverrides;
     public final double driveableRenderDistanceMultiplier;
     public final double flanNpcRenderDistanceMultiplier;
@@ -172,6 +172,7 @@ public final class ModClientConfig
     private static final Supplier<Double> HIT_MARKER_ALPHA;
     public static final ForgeConfigSpec.BooleanValue SHOW_FLASHES_WHEN_WOUNDED;
     public static final ForgeConfigSpec.BooleanValue VEHICLE_SCREEN_SHAKE;
+    public static final ForgeConfigSpec.BooleanValue GUN_SCREEN_SHAKE;
     private static final Supplier<Boolean> ENABLE_PLAYER_CLASS_SKIN_OVERRIDES;
     public static final ForgeConfigSpec.DoubleValue DRIVEABLE_RENDER_DISTANCE_MULTIPLIER;
     public static final ForgeConfigSpec.DoubleValue FLAN_NPC_RENDER_DISTANCE_MULTIPLIER;
@@ -324,6 +325,7 @@ public final class ModClientConfig
         SHOW_FLASHES_WHEN_WOUNDED = builder.comment("Show the red blood overlay flash when the player takes damage").define("showFlashesWhenWounded", true);
         VEHICLE_SCREEN_SHAKE = builder.comment("Shake the camera when a nearby driveable that opts into FancyScreenShake fires its main or coaxial gun")
             .define("vehicleScreenShake", true);
+        GUN_SCREEN_SHAKE = builder.comment("Punch the field of view in and kick the camera when you fire a gun that opts into HasScreenShake").define("gunScreenShake", true);
         ENABLE_PLAYER_CLASS_SKIN_OVERRIDES = builder.comment("""
             Let a Teams player class replace the skin of the players wearing it, when its content pack
             defines a SkinOverride. Overrides are ignored anyway when the texture is missing, is not a
@@ -568,6 +570,7 @@ public final class ModClientConfig
         hitMarkerAlpha = HIT_MARKER_ALPHA.get().floatValue();
         showFlashesWhenWounded = SHOW_FLASHES_WHEN_WOUNDED.get();
         vehicleScreenShake = VEHICLE_SCREEN_SHAKE.get();
+        gunScreenShake = GUN_SCREEN_SHAKE.get();
         enablePlayerClassSkinOverrides = ENABLE_PLAYER_CLASS_SKIN_OVERRIDES.get();
         driveableRenderDistanceMultiplier = DRIVEABLE_RENDER_DISTANCE_MULTIPLIER.get();
         flanNpcRenderDistanceMultiplier = FLAN_NPC_RENDER_DISTANCE_MULTIPLIER.get();

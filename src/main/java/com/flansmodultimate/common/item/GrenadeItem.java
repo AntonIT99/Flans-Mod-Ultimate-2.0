@@ -8,11 +8,6 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.ItemAttributes;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -27,6 +22,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -81,6 +80,8 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
         if (!IFlanItem.showDetailedDescriptions())
             return;
         tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.THROW_SPEED), IFlanItem.formatFloat(configType.getThrowSpeed() * 10F) + " m/s"));
+        if (configType.isHoldToThrow())
+            tooltipComponents.add(Component.translatable(TooltipKeys.HOLD_TO_THROW).withStyle(ChatFormatting.YELLOW));
         tooltipComponents.add(Component.empty());
 
         if (!ClientHooks.TOOLTIPS.isShiftDown())
@@ -109,7 +110,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity)
     {
-        return configType.getMeleeDamage() == 0;
+        return configType.isHoldToThrow() || configType.getMeleeDamage() == 0;
     }
 
     @Override
@@ -117,6 +118,29 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
     public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
+
+        // A hold-to-throw grenade leaves the hand only when its button is released (see PacketGrenadeThrow)
+        if (!configType.isHoldToThrow() && throwGrenade(level, player, stack, false, false))
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+
+        // Nothing special happened, fall back
+        return InteractionResultHolder.pass(stack);
+    }
+
+    /**
+     * Throws a hold-to-throw grenade whose button the player has just released.
+     *
+     * @param underhand
+     *            true for an underhand toss (use button), false for an overhand throw (attack button)
+     * @return whether a grenade was thrown
+     */
+    public boolean throwByHand(Player player, ItemStack stack, boolean underhand)
+    {
+        return configType.isHoldToThrow() && throwGrenade(player.level(), player, stack, true, underhand);
+    }
+
+    private boolean throwGrenade(Level level, Player player, ItemStack stack, boolean byHand, boolean underhand)
+    {
         PlayerData data = PlayerData.getInstance(player);
 
         // If can throw grenade
@@ -127,7 +151,7 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
 
             // Spawn the entity server side
             if (!level.isClientSide)
-                level.addFreshEntity(new Grenade(level, configType, player));
+                level.addFreshEntity(byHand ? Grenade.thrownByHand(level, configType, player, underhand) : new Grenade(level, configType, player));
 
             // Consume an item (non-creative)
             if (!player.getAbilities().instabuild)
@@ -147,10 +171,8 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
             }
 
             // We successfully used the item (threw a grenade)
-            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+            return true;
         }
-
-        // Nothing special happened, fall back
-        return InteractionResultHolder.pass(stack);
+        return false;
     }
 }
