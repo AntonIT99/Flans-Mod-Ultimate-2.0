@@ -39,6 +39,12 @@ public class Vehicle extends Driveable
     protected float leftTrackProgress;
     @Getter
     protected float rightTrackProgress;
+    @Getter
+    private float trackTravelStep;
+    @Getter
+    private float leftTrackStep;
+    @Getter
+    private float rightTrackStep;
     private int throttleDecayDelay;
     private boolean fixedThrottle;
     /** Progressive throttle lever state. Transient, and tracked per side. */
@@ -93,6 +99,23 @@ public class Vehicle extends Driveable
         return true;
     }
 
+    /** Animate completed movement, including observer interpolation and local prediction. */
+    @Override
+    public void tick()
+    {
+        double previousX = getX();
+        double previousZ = getZ();
+        float previousYaw = getYaw();
+        super.tick();
+        VehicleType type = getVehicleType();
+        if (type == null || isRemoved())
+            return;
+        float previousLeftPhase = leftTrackProgress;
+        float previousRightPhase = rightTrackProgress;
+        advanceAnimations(type, getX() - previousX, getZ() - previousZ, Mth.wrapDegrees(getYaw() - previousYaw));
+        tickWalkerStompSounds(type, previousLeftPhase, previousRightPhase);
+    }
+
     @Override
     protected void tickDriveable()
     {
@@ -103,10 +126,6 @@ public class Vehicle extends Driveable
         // probes can reach. Legacy vehicles always used a one-block entity
         // step; using the configured value preserves that behaviour without
         // injecting an upward suspension impulse.
-        float previousLeftPhase = leftTrackProgress;
-        float previousRightPhase = rightTrackProgress;
-        advanceAnimations(type);
-        tickWalkerStompSounds(type, previousLeftPhase, previousRightPhase);
         updateThrottleAndSteering(type);
         applyEpicShipThrottleLimits();
 
@@ -128,7 +147,8 @@ public class Vehicle extends Driveable
 
         float throttleLimit = DriveableControlPhysics.damagedThrottleLimit(getThrottleDamageNerf());
         float effectiveThrottle = Mth.clamp(getThrottle(), -throttleLimit, throttleLimit);
-        if (pushed ? getControllingEntity() == null : !isEngineActive())
+        boolean braking = DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE | DriveableInput.ASCEND);
+        if (braking || (pushed ? getControllingEntity() == null : !isEngineActive()))
             effectiveThrottle = 0F;
         ResolvedVehiclePhysics physics = type.getResolvedPhysics();
         boolean derivedPhysics = !pushed && !ModCommonConfig.forceLegacyVehiclePhysics() && physics.hasGroundPropulsion();
@@ -198,7 +218,7 @@ public class Vehicle extends Driveable
                 : wheelYaw;
             yawDelta = DriveableControlPhysics.realSteeringYawDelta(type.getRealTurnRateDegPerSec(), realTurnControl, tracked, isEngineActive(), signedSpeed, referenceSpeed);
         }
-        if (!isPartIntact(EnumDriveablePart.STEERING))
+        if ((braking && tracked) || !isPartIntact(EnumDriveablePart.STEERING))
             yawDelta = 0F;
         boolean supported = onGround() || hasWheelContact();
 
@@ -238,8 +258,6 @@ public class Vehicle extends Driveable
             else
                 grip = 0.035D;
         }
-        boolean braking = DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE | DriveableInput.ASCEND);
-
         Vec3 velocity;
         if (derivedPhysics)
         {
@@ -299,11 +317,10 @@ public class Vehicle extends Driveable
             float steeringInput = isPartIntact(EnumDriveablePart.STEERING) ? axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) : 0F;
             prevWheelYaw = wheelYaw;
             wheelYaw = DriveableControlPhysics.dampedControl(wheelYaw, steeringInput, 1F);
-            advanceAnimations(type);
         }
     }
 
-    /** The predicted step steers the wheels and advances the tracks itself. */
+    /** The predicted step steers the wheels; the tick then animates its completed movement. */
     @Override
     public boolean supportsClientPrediction()
     {
@@ -343,7 +360,7 @@ public class Vehicle extends Driveable
 
     private void updateThrottleAndSteering(VehicleType type)
     {
-        int input = getInputMask();
+        int input = DriveableControlPhysics.vehicleThrottleInput(getInputMask());
         float throttle = getThrottle();
         boolean canControl = getControllingEntity() != null && (isEngineActive() || type.getPushSpeedKmh() > 0F);
         boolean braking = DriveableInput.isDown(input, DriveableInput.BRAKE | DriveableInput.ASCEND);
@@ -534,59 +551,34 @@ public class Vehicle extends Driveable
         return velocity;
     }
 
-    private void advanceAnimations(VehicleType type)
+    private void advanceAnimations(VehicleType type, double displacementX, double displacementZ, float yawDelta)
     {
         prevWheelAngle = wheelAngle;
+        Vec3 forward = localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
         if (type.isRotateWheels() || type.isTank())
         {
-            Vec3 legacyForward = LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D));
-            Vec3 forward = localDirectionToWorld(legacyForward);
-            Vec3 velocity = getDeltaMovement();
-            wheelAngle = Mth.wrapDegrees(wheelAngle + WheelAnimationPhysics.angularStepDegrees(velocity.x, velocity.z, forward.x, forward.z));
+            wheelAngle = Mth.wrapDegrees(wheelAngle + WheelAnimationPhysics.angularStepDegrees(displacementX, displacementZ, forward.x, forward.z));
         }
-        float travelStep = type.isTank() ? getTrackTravelStep() : getThrottle() * 0.075F;
-        float leftTrackStep = travelStep - wheelYaw * 0.0025F;
-        float rightTrackStep = travelStep + wheelYaw * 0.0025F;
-        boolean leftTrackIntact = isPartIntact(EnumDriveablePart.LEFT_TRACK);
-        boolean rightTrackIntact = isPartIntact(EnumDriveablePart.RIGHT_TRACK);
-        if (type.isTank() && leftTrackIntact != rightTrackIntact)
+        trackTravelStep = TrackAnimationPhysics.travelStep(displacementX, displacementZ, forward.x, forward.z);
+        if (type.isTank())
         {
-            boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING) && axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) != 0F;
-            float survivingTrackStep;
-            if (steeringHeld)
-            {
-                if (rightTrackIntact)
-                    survivingTrackStep = wheelYaw * 0.0025F * 1F;
-                else
-                    survivingTrackStep = wheelYaw * 0.0025F * -1F;
-            }
-            else
-            {
-                survivingTrackStep = travelStep;
-            }
-
-            if (leftTrackIntact)
-                leftTrackProgress += survivingTrackStep;
-            else
-                rightTrackProgress += survivingTrackStep;
+            VehicleGeometry geometry = type.getResolvedPhysics().geometry();
+            Float width = geometry.trackWidthM() != null ? geometry.trackWidthM() : geometry.widthM();
+            TrackAnimationPhysics.Steps steps = TrackAnimationPhysics.steps(trackTravelStep, yawDelta, width == null ? 1D : width, isPartIntact(EnumDriveablePart.LEFT_TRACK),
+                isPartIntact(EnumDriveablePart.RIGHT_TRACK));
+            leftTrackStep = steps.left();
+            rightTrackStep = steps.right();
         }
         else
         {
-            if (!type.isTank() || leftTrackIntact)
-                leftTrackProgress += leftTrackStep;
-            if (!type.isTank() || rightTrackIntact)
-                rightTrackProgress += rightTrackStep;
+            // Non-tank walkers retain their authored throttle-based leg timing.
+            leftTrackStep = getThrottle() * 0.075F - wheelYaw * 0.0025F;
+            rightTrackStep = getThrottle() * 0.075F + wheelYaw * 0.0025F;
         }
+        leftTrackProgress += leftTrackStep;
+        rightTrackProgress += rightTrackStep;
         leftTrackProgress -= Mth.floor(leftTrackProgress);
         rightTrackProgress -= Mth.floor(rightTrackProgress);
-    }
-
-    /** Motion-derived loop travel, also used by fancy links to resolve reverse-running corners. */
-    public float getTrackTravelStep()
-    {
-        Vec3 forward = localDirectionToWorld(LegacyDriveableCoordinates.toLocal(new Vec3(1D, 0D, 0D)));
-        Vec3 velocity = getDeltaMovement();
-        return TrackAnimationPhysics.travelStep(velocity.x, velocity.z, forward.x, forward.z);
     }
 
     private void tickWalkerStompSounds(VehicleType type, float previousLeftPhase, float previousRightPhase)

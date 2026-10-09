@@ -86,6 +86,14 @@ public final class DriveableControlPhysics
         return Float.isFinite(pitch) ? Math.max(0.01F, pitch) : 0.01F;
     }
 
+    /** The ground brake takes priority over both pedals and persistent throttle keys. */
+    public static int vehicleThrottleInput(int input)
+    {
+        if (DriveableInput.isDown(input, DriveableInput.BRAKE | DriveableInput.ASCEND))
+            return input & ~(DriveableInput.FORWARD | DriveableInput.BACKWARD | DriveableInput.THROTTLE_INCREASE | DriveableInput.THROTTLE_DECREASE);
+        return input;
+    }
+
     /** Moves a brake-held throttle lever toward neutral without snapping it there. */
     public static float brakedThrottle(float throttle, float step)
     {

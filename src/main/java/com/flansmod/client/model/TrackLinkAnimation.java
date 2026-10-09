@@ -9,7 +9,8 @@ import net.minecraft.util.Mth;
  * Per-vehicle rotation state for the individual links of a fancy tank track,
  * reproducing 1.7.10's {@code EntityVehicle.animateFancyTracks}.
  *
- * <p>Link positions themselves are stateless: every link advances at the same
+ * <p>
+ * Link positions themselves are stateless: every link advances at the same
  * speed, so their spacing never changes and the shared scroll offset on
  * {@link Vehicle} places them. Only the link <em>angle</em> carries history. Each
  * tick a link eases halfway towards the direction of travel of the path segment
@@ -18,14 +19,13 @@ import net.minecraft.util.Mth;
  * -&pi;. That is what {@code FixTrackLink} / {@code TrackLinkFix} exists for: it
  * names the segment index on which links snap straight to the true angle instead
  * of easing, so the seam is crossed in a single tick. The snap segment shifts by
- * one when the track runs backwards, matching the legacy sign handling.</p>
+ * one when the track runs backwards, matching the legacy sign handling.
+ * </p>
  */
 public final class TrackLinkAnimation
 {
     /** Fraction of the remaining angle a link closes each tick away from the fix segment. */
     private static final float EASE = 0.5F;
-    /** Matches the shared loop phase's differential steering contribution. */
-    private static final float STEERING_SPEED = 0.0025F;
     /** Legacy links started a hundredth of a pixel along the loop rather than exactly on a vertex. */
     private static final float START_OFFSET = 0.01F;
     private static final int MAX_LINKS = 512;
@@ -65,10 +65,8 @@ public final class TrackLinkAnimation
 
         // Only the sign is needed for reverse-running corner fixes. Match the
         // shared motion-derived phase, including coasting with zero throttle.
-        float travel = vehicle.getTrackTravelStep();
-        float steering = vehicle.getWheelYaw();
-        float leftSpeed = travel - steering * STEERING_SPEED;
-        float rightSpeed = travel + steering * STEERING_SPEED;
+        float leftSpeed = vehicle.getLeftTrackStep();
+        float rightSpeed = vehicle.getRightTrackStep();
         int ticks = Mth.clamp(elapsed, 1, 5);
 
         for (int tick = 0; tick < ticks; tick++)
@@ -117,8 +115,7 @@ public final class TrackLinkAnimation
         leftPath = TrackPath.create(type.getLeftTrackPoints());
         rightPath = TrackPath.create(type.getRightTrackPoints());
         float spacing = type.getTrackLinkLength();
-        int count = spacing <= 0F || rightPath.isEmpty() || leftPath.isEmpty()
-            ? 0 : Mth.clamp(Math.round(rightPath.length() / spacing), 1, MAX_LINKS);
+        int count = spacing <= 0F || rightPath.isEmpty() || leftPath.isEmpty() ? 0 : Mth.clamp(Math.round(rightPath.length() / spacing), 1, MAX_LINKS);
         leftAngles = new float[count];
         rightAngles = new float[count];
         return count > 0;

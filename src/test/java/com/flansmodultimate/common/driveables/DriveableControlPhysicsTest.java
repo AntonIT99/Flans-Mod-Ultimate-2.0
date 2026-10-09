@@ -121,6 +121,39 @@ class DriveableControlPhysicsTest
     }
 
     @Test
+    void groundBrakeOverridesPedalsAndLeverWithoutDroppingOtherControls()
+    {
+        int throttleKeys = DriveableInput.FORWARD | DriveableInput.BACKWARD | DriveableInput.THROTTLE_INCREASE | DriveableInput.THROTTLE_DECREASE;
+        int otherControls = DriveableInput.LEFT | DriveableInput.PRIMARY_FIRE;
+        assertEquals(throttleKeys | otherControls, DriveableControlPhysics.vehicleThrottleInput(throttleKeys | otherControls));
+        for (int brake : new int[]{DriveableInput.ASCEND, DriveableInput.BRAKE})
+            assertEquals(brake | otherControls, DriveableControlPhysics.vehicleThrottleInput(brake | throttleKeys | otherControls));
+    }
+
+    @Test
+    void sustainedBrakeReachesNeutralEvenWithThePedalAndLeverHeld()
+    {
+        for (float initial : new float[]{1F, -1F})
+        {
+            float throttle = initial;
+            ThrottleLeverRamp ramp = new ThrottleLeverRamp();
+            int conflictingKeys = initial > 0F ? DriveableInput.FORWARD | DriveableInput.THROTTLE_INCREASE : DriveableInput.BACKWARD | DriveableInput.THROTTLE_DECREASE;
+            for (int tick = 0; tick < 60; tick++)
+            {
+                int input = DriveableControlPhysics.vehicleThrottleInput(DriveableInput.ASCEND | conflictingKeys);
+                assertFalse(DriveableInput.isDown(input, conflictingKeys));
+                int direction = 0;
+                if (throttle != 0F)
+                    direction = throttle > 0F ? -1 : 1;
+                throttle = DriveableControlPhysics.brakedThrottle(throttle,
+                    ThrottleLeverRamp.VEHICLE_LEVER_BASE_STEP * ramp.advance(direction, ThrottleLeverRamp.VEHICLE_MAX_STEP_MULTIPLIER));
+                assertTrue(throttle * initial >= 0F, "braking must not engage the opposite direction");
+            }
+            assertEquals(0F, throttle);
+        }
+    }
+
+    @Test
     void appliesDirectionalAndWaterPropulsionAfterNormalizingInput()
     {
         assertEquals(0.6F, DriveableControlPhysics.directionalPropulsion(1F, 0.6F, 0.4F, 0.2F, false), EPSILON);
