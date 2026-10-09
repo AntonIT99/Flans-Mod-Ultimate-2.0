@@ -22,7 +22,8 @@
       "NpcNameplateMixin",
       "NpcRangedControlsMixin",
       "NpcRenderContextMixin",
-      "NpcTypeControlsMixin"
+      "NpcTypeControlsMixin",
+      "TooltipMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }
