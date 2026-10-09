@@ -29,9 +29,9 @@
         <!-- ========================================================= -->
 
         <setting id="org.eclipse.jdt.core.formatter.lineSplit"
-                 value="180"/>
+                 value="200"/>
         <setting id="org.eclipse.jdt.core.formatter.comment.line_length"
-                 value="180"/>
+                 value="200"/>
 
 
         <!-- ========================================================= -->
