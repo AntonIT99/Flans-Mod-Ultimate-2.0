@@ -3,68 +3,47 @@ package com.flansmodultimate.common.entity;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanEntityPermissions;
-import com.flansmodultimate.common.driveables.AAGunCollisionHelper;
+import com.flansmodultimate.common.driveables.collision.AAGunCollisionHelper;
 import com.flansmodultimate.common.driveables.physics.ExternalImpulseTracker;
-import com.flansmodultimate.common.guns.FireableGun;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingHelper;
-import com.flansmodultimate.common.guns.ShotCooldown;
+import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
+import com.flansmodultimate.common.entity.geometry.AAGunTraverse;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.teams.TeamsManager;
-import com.flansmodultimate.common.types.AAGunType;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.ClientHooks;
-import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.platform.entity.FlanEntity;
-import com.flansmodultimate.platform.entity.SpawnDataEntity;
-import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.platform.entity.*;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.platform.network.PacketIO;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AAGunType>, IMassiveEntity
@@ -235,12 +214,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
     private static boolean isValidModelBarrelVector(Vec3 vector)
     {
-        return vector != null
-            && Double.isFinite(vector.x)
-            && Double.isFinite(vector.y)
-            && Double.isFinite(vector.z)
-            && Math.abs(vector.x) <= 512D
-            && Math.abs(vector.y) <= 512D
+        return vector != null && Double.isFinite(vector.x) && Double.isFinite(vector.y) && Double.isFinite(vector.z) && Math.abs(vector.x) <= 512D && Math.abs(vector.y) <= 512D
             && Math.abs(vector.z) <= 512D;
     }
 
@@ -319,8 +293,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (clientAimLerpSteps <= 0)
             return;
         float divisor = clientAimLerpSteps;
-        clientVisualGunYaw = Mth.wrapDegrees(clientVisualGunYaw
-            + Mth.wrapDegrees(clientTargetGunYaw - clientVisualGunYaw) / divisor);
+        clientVisualGunYaw = Mth.wrapDegrees(clientVisualGunYaw + Mth.wrapDegrees(clientTargetGunYaw - clientVisualGunYaw) / divisor);
         clientVisualGunPitch += (clientTargetGunPitch - clientVisualGunPitch) / divisor;
         --clientAimLerpSteps;
     }
@@ -681,8 +654,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     public boolean hurt(DamageSource source, float amount)
     {
         Entity attacker = source.getEntity();
-        if (attacker instanceof Player player
-            && !FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ATTACK))
+        if (attacker instanceof Player player && !FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ATTACK))
             return false;
         Entity gunner = getFirstPassenger();
 
@@ -744,9 +716,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger)
     {
-        return super.canAddPassenger(passenger)
-            && (!(passenger instanceof Player player)
-                || FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ENTER));
+        return super.canAddPassenger(passenger) && (!(passenger instanceof Player player) || FlanEntityPermissions.allows(player, FlanEntityPermissions.AA_GUN_ENTER));
     }
 
     @Override
@@ -889,8 +859,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
             externalImpulses.settle(current);
             return;
         }
-        Vec3 absorbed = externalImpulses.absorb(current, getImpulseMassKg(),
-            ModCommonConfig.vehicleKnockbackReferenceMassKg());
+        Vec3 absorbed = externalImpulses.absorb(current, getImpulseMassKg(), ModCommonConfig.vehicleKnockbackReferenceMassKg());
         if (absorbed != current)
             setDeltaMovement(absorbed);
     }
@@ -931,9 +900,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     private Optional<Entity> findValidTarget(Level level)
     {
         double range = getConfigType().getTargetRange();
-        return level.getEntities(this, getBoundingBox().inflate(range), this::isValidTarget)
-            .stream()
-            .min(Comparator.comparingDouble(this::distanceToSqr));
+        return level.getEntities(this, getBoundingBox().inflate(range), this::isValidTarget).stream().min(Comparator.comparingDouble(this::distanceToSqr));
     }
 
     private boolean isValidTarget(Entity candidate)
@@ -1025,8 +992,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
                 continue;
 
             attempted = true;
-            if (fireBarrel(level, attacker, barrel, slot, !requireInput)
-                && type.getCountExplodeAfterShoot() != -1 && shotsFired >= type.getCountExplodeAfterShoot())
+            if (fireBarrel(level, attacker, barrel, slot, !requireInput) && type.getCountExplodeAfterShoot() != -1 && shotsFired >= type.getCountExplodeAfterShoot())
             {
                 discard();
                 return false;
@@ -1047,8 +1013,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
 
         // The AA gun declares no velocity of its own, so it hands over the default as a fallback and
         // lets the ammunition's MuzzleVelocity win.
-        FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getBulletSpread(),
-            BulletType.DEFAULT_BULLET_SPEED, type.getSpreadPattern());
+        FireableGun fireableGun = new FireableGun(type, type.getDamage(), type.getBulletSpread(), BulletType.DEFAULT_BULLET_SPEED, type.getSpreadPattern());
         fireableGun.applyAmmunition(bulletType);
         FiredShot firedShot = new FiredShot(fireableGun, bulletType, this, attacker, ShootableItem.getRoundsFired(ammoStack));
 
@@ -1135,7 +1100,8 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
     /**
      * Whether every barrel has run dry.
      *
-     * <p>A multi-barrel mount is worked as one weapon, so the crew reloads it in
+     * <p>
+     * A multi-barrel mount is worked as one weapon, so the crew reloads it in
      * one go once nothing is left to fire. Reloading the moment a single barrel
      * emptied would stand the whole mount down while its other barrels still had
      * rounds in them, which is the opposite of what a second barrel is for.
@@ -1225,8 +1191,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         if (onGround())
             setDeltaMovement(motion.x * 0.5D, 0D, motion.z * 0.5D);
         else
-            setDeltaMovement(motion.multiply(ModPhysics.dragRetention(0.5D, level()),
-                ModPhysics.dragRetention(0.98D, level()), ModPhysics.dragRetention(0.5D, level())));
+            setDeltaMovement(motion.multiply(ModPhysics.dragRetention(0.5D, level()), ModPhysics.dragRetention(0.98D, level()), ModPhysics.dragRetention(0.5D, level())));
     }
 
     private int ammoSlotForBarrel(int barrel)
@@ -1293,8 +1258,7 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
             return position().add(authoredBarrelOffset(type, barrel, sentryShot, pivot, getGunYaw(), getGunPitch()));
         }
         if (barrel < pivots.length && barrel < muzzles.length)
-            return position().add(AAGunBarrelGeometry.modelBarrelOffset(pivots[barrel], muzzles[barrel],
-                getGunYaw(), getGunPitch()));
+            return position().add(AAGunBarrelGeometry.modelBarrelOffset(pivots[barrel], muzzles[barrel], getGunYaw(), getGunPitch()));
         return position().add(authoredBarrelOffset(type, barrel, sentryShot, null, getGunYaw(), getGunPitch()));
     }
 
@@ -1312,19 +1276,15 @@ public class AAGun extends FlanEntity implements SpawnDataEntity, IFlanEntity<AA
         return position().add(authoredBarrelOffset(type, barrel, sentryShot, modelPivot, getGunYaw(), getGunPitch()));
     }
 
-    private static Vec3 authoredBarrelOffset(AAGunType type, int barrel, boolean sentryShot,
-                                             @Nullable Vec3 modelPivot, float gunYaw, float gunPitch)
+    private static Vec3 authoredBarrelOffset(AAGunType type, int barrel, boolean sentryShot, @Nullable Vec3 modelPivot, float gunYaw, float gunPitch)
     {
-        Vec3 lift = sentryShot && type.isSentry()
-            ? new Vec3(0D, AAGunBarrelGeometry.SENTRY_ORIGIN_Y_OFFSET, 0D) : Vec3.ZERO;
+        Vec3 lift = sentryShot && type.isSentry() ? new Vec3(0D, AAGunBarrelGeometry.SENTRY_ORIGIN_Y_OFFSET, 0D) : Vec3.ZERO;
         if (modelPivot != null)
         {
-            Vec3 rest = AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
-                type.getBarrelZ()[barrel], gunYaw, 0F).add(lift);
+            Vec3 rest = AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel], type.getBarrelZ()[barrel], gunYaw, 0F).add(lift);
             return AAGunBarrelGeometry.pitchAboutModelPivot(rest, modelPivot, gunYaw, gunPitch);
         }
-        return AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel],
-            type.getBarrelZ()[barrel], gunYaw, gunPitch).add(lift);
+        return AAGunBarrelGeometry.legacyBarrelOffset(type.getBarrelX()[barrel], type.getBarrelY()[barrel], type.getBarrelZ()[barrel], gunYaw, gunPitch).add(lift);
     }
 
     public Vec3 getShootingDirection()

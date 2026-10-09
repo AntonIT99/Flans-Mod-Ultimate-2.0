@@ -1,6 +1,6 @@
 package com.flansmodultimate.common.raytracing;
 
-import com.flansmodultimate.common.driveables.PlaneRiderRotation;
+import com.flansmodultimate.common.driveables.physics.PlaneRiderRotation;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.guns.GunArmPoses;
@@ -16,13 +16,9 @@ import org.joml.Vector3f;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.*;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -579,8 +575,8 @@ public class PlayerSnapshot
         if (!gunType.isShield())
             return;
 
-        Matrix4f transform = new Matrix4f(armTransform).rotateX(-Mth.PI / 2F).rotateY(Mth.PI).translate((leftHand ? -1F : 1F) / 16F, 0.125F, -0.625F).rotateY(Mth.PI / 2F)
-            .translate(-0.08F, -0.12F, 0F);
+        Matrix4f transform = new Matrix4f(armTransform).rotateX(-Mth.PI / 2F).rotateY(Mth.PI).translate((leftHand ? -1F : 1F) / 16F, 0.125F, -0.625F).rotateY(Mth.PI / 2F).translate(-0.08F, -0.12F,
+            0F);
 
         com.flansmod.common.vector.Vector3f thirdPersonOffset = gunType.getAnimationConfig().getThirdPersonOffset();
         if (thirdPersonOffset != null)
@@ -629,8 +625,8 @@ public class PlayerSnapshot
     /** Vanilla arm poses plus this mod's gun aiming poses (AIM also covers drawing a bow) */
     private enum ArmPose
     {
-        EMPTY(false), ITEM(false), BLOCK(false), AIM(true), ONE_AIM(false), BOTH_AIM(true), THROW_SPEAR(false), THROW(false), SUPPORT(false), CROSSBOW_CHARGE(true), CROSSBOW_HOLD(
-            true), SPYGLASS(false), TOOT_HORN(false), BRUSH(false);
+        EMPTY(false), ITEM(false), BLOCK(false), AIM(true), ONE_AIM(false), BOTH_AIM(true), THROW_SPEAR(false), THROW(false), SUPPORT(false), CROSSBOW_CHARGE(true), CROSSBOW_HOLD(true), SPYGLASS(
+            false), TOOT_HORN(false), BRUSH(false);
 
         private final boolean twoHanded;
 

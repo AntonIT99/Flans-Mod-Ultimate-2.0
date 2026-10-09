@@ -1,8 +1,6 @@
 package com.flansmodultimate.common.entity;
 
-import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.FlansModEntities;
-import com.flansmodultimate.FlansModSounds;
+import com.flansmodultimate.*;
 import com.flansmodultimate.api.IBullet;
 import com.flansmodultimate.api.IContentType;
 import com.flansmodultimate.common.guns.*;
@@ -11,25 +9,24 @@ import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.Raytracer;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.BulletHitEvent;
 import com.flansmodultimate.event.BulletLockOnEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.server.PacketManualGuidance;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.server.gun.PacketManualGuidance;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import com.flansmodultimate.util.FlansLog;
 import com.flansmodultimate.util.ModUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -38,17 +35,11 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.phys.*;
 
 import java.util.*;
 
@@ -267,10 +258,9 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
     private boolean canLockOnEntity(Entity entity)
     {
-        return configType != null
-            && (configType.isLockOnToMechas() && entity instanceof Mecha || configType.isLockOnToVehicles() && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
-                || configType.isLockOnToPlanes() && (entity instanceof Plane || ModUtils.isPlaneLike(entity)) || configType.isLockOnToPlayers() && entity instanceof Player
-                || configType.isLockOnToLivings() && entity instanceof LivingEntity);
+        return configType != null && (configType.isLockOnToMechas() && entity instanceof Mecha || configType.isLockOnToVehicles() && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
+            || configType.isLockOnToPlanes() && (entity instanceof Plane || ModUtils.isPlaneLike(entity)) || configType.isLockOnToPlayers() && entity instanceof Player
+            || configType.isLockOnToLivings() && entity instanceof LivingEntity);
     }
 
     private boolean isUsableLockOnTarget(Entity entity)
@@ -702,8 +692,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
     protected void performRaytraceAndApplyHits(Level level)
     {
         Vec3 origin = position();
-        List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir < 20 ? firedShot.getOwnerEntities() : Collections.emptyList(),
-            origin, velocity, pingOfShooter, 0F, getHitboxSize(), configType);
+        List<BulletHit> hits = Raytracer.raytraceShot(level, this, firedShot.getAttacker().orElse(null), ticksInAir < 20 ? firedShot.getOwnerEntities() : Collections.emptyList(), origin, velocity,
+            pingOfShooter, 0F, getHitboxSize(), configType);
 
         if (hits.isEmpty())
             return;
@@ -720,8 +710,7 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
 
             Vec3 hitPos = origin.add(velocity.scale(bulletHit.getIntersectTime()));
 
-            ShootingHelper.HitData hitData = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity,
-                new ShootingHelper.HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot), this);
+            ShootingHelper.HitData hitData = ShootingHelper.onHit(level, firedShot, bulletHit, hitPos, velocity, new ShootingHelper.HitData(penetratingPower, lastHitPenAmount, lastHitHeadshot), this);
             penetratingPower = hitData.penetratingPower();
             lastHitPenAmount = hitData.lastHitPenAmount();
             lastHitHeadshot = hitData.lastHitHeadshot();
@@ -1091,8 +1080,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
                 ownerLook = look;
 
                 if (deltaPos > 1.0 || deltaLook > 0.0001)
-                    PacketHandler.sendToServer(new PacketManualGuidance(getId(), (float) ownerPos.x, (float) ownerPos.y, (float) ownerPos.z, (float) ownerLook.x,
-                        (float) ownerLook.y, (float) ownerLook.z));
+                    PacketHandler
+                        .sendToServer(new PacketManualGuidance(getId(), (float) ownerPos.x, (float) ownerPos.y, (float) ownerPos.z, (float) ownerLook.x, (float) ownerLook.y, (float) ownerLook.z));
             }
 
             // SERVER + CLIENT: apply guidance to the missile's motion
@@ -1176,8 +1165,8 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         for (int i = 0; i < 4; i++)
         {
             double bubbleMotion = 0.25;
-            level.addParticle(ParticleTypes.BUBBLE, getX() - velocity.x * bubbleMotion, getY() - velocity.y * bubbleMotion, getZ() - velocity.z * bubbleMotion, velocity.x,
-                velocity.y + 0.1F, velocity.z);
+            level.addParticle(ParticleTypes.BUBBLE, getX() - velocity.x * bubbleMotion, getY() - velocity.y * bubbleMotion, getZ() - velocity.z * bubbleMotion, velocity.x, velocity.y + 0.1F,
+                velocity.z);
         }
     }
 

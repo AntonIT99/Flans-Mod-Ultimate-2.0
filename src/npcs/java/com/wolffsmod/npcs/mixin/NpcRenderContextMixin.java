@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 
 /** Forge 1.20.1 / Custom NPCs boundary: carry context through the borrowed model's buffer. */
 @Mixin(value = RenderCustomNpc.class, remap = false)
+@SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
 public abstract class NpcRenderContextMixin
 {
     @ModifyVariable(method = "render(Lnoppes/npcs/entity/EntityCustomNpc;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)

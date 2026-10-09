@@ -5,39 +5,21 @@ import com.flansmodultimate.FlansModSounds;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.entity.Bullet;
-import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.Grenade;
-import com.flansmodultimate.common.entity.Seat;
-import com.flansmodultimate.common.entity.Shootable;
-import com.flansmodultimate.common.entity.ShootableFactory;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.penetration.PenetrableBlock;
 import com.flansmodultimate.common.guns.penetration.PenetrationLoss;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.raytracing.Raytracer;
-import com.flansmodultimate.common.raytracing.hits.BlockHit;
-import com.flansmodultimate.common.raytracing.hits.BulletHit;
-import com.flansmodultimate.common.raytracing.hits.DriveableHit;
-import com.flansmodultimate.common.raytracing.hits.EntityHit;
-import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.raytracing.hits.*;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.content.IContentProvider;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketBlockHitEffect;
-import com.flansmodultimate.network.client.PacketBulletTrail;
-import com.flansmodultimate.network.client.PacketExplodeParticles;
-import com.flansmodultimate.network.client.PacketFlak;
-import com.flansmodultimate.network.client.PacketHitMarker;
-import com.flansmodultimate.network.client.PacketParticle;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.*;
+import com.flansmodultimate.network.client.gun.PacketHitMarker;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
@@ -59,13 +41,9 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
@@ -93,13 +71,13 @@ public final class ShootingHelper
     }
 
     /** Call this to fire bullets or grenades from a living entity controlling a deployed gun (Server side) */
-    public static void fireGun(@NotNull Level level, @Nullable LivingEntity shooter, @NotNull DeployedGun deployedGun, @NotNull ShootableType shootableType,
-        @NotNull ItemStack shootableStack, @NotNull ShootingHandler handler)
+    public static void fireGun(@NotNull Level level, @Nullable LivingEntity shooter, @NotNull DeployedGun deployedGun, @NotNull ShootableType shootableType, @NotNull ItemStack shootableStack,
+        @NotNull ShootingHandler handler)
     {
         GunType gunType = deployedGun.getConfigType();
 
-        fireWeapon(level, new FireableGun(gunType), shootableType, gunType.getNumBullets(null, shootableType), deployedGun.getShootingOrigin(), deployedGun.getShootingDirection(),
-            deployedGun, shooter, ShootableItem.getRoundsFired(shootableStack), handler);
+        fireWeapon(level, new FireableGun(gunType), shootableType, gunType.getNumBullets(null, shootableType), deployedGun.getShootingOrigin(), deployedGun.getShootingDirection(), deployedGun,
+            shooter, ShootableItem.getRoundsFired(shootableStack), handler);
     }
 
     /**
@@ -113,8 +91,8 @@ public final class ShootingHelper
      * @param shot
      *            position in the magazine, which selects the round of a belt
      */
-    public static void fireWeapon(@NotNull Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType shootableType, int numShots, Vec3 shootingOrigin,
-        Vec3 shootingDirection, @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot, @NotNull ShootingHandler handler)
+    public static void fireWeapon(@NotNull Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType shootableType, int numShots, Vec3 shootingOrigin, Vec3 shootingDirection,
+        @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot, @NotNull ShootingHandler handler)
     {
         numShots = Math.max(1, numShots);
         // The one place a weapon and its ammunition meet on this path, so the
@@ -139,8 +117,8 @@ public final class ShootingHelper
      * ordinary shot, a bomb is always an entity and inherits the carrier's world
      * velocity before its configured gravity starts changing its motion.
      */
-    public static void dropWeapon(@NotNull Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType shootableType, int numShots, Vec3 origin, Vec3 direction,
-        @Nullable Entity shooter, @Nullable LivingEntity attacker, int shot, @NotNull ShootingHandler handler)
+    public static void dropWeapon(@NotNull Level level, @NotNull FireableGun fireableGun, @NotNull ShootableType shootableType, int numShots, Vec3 origin, Vec3 direction, @Nullable Entity shooter,
+        @Nullable LivingEntity attacker, int shot, @NotNull ShootingHandler handler)
     {
         numShots = Math.max(1, numShots);
         fireableGun.applyAmmunition(shootableType);
@@ -275,8 +253,7 @@ public final class ShootingHelper
 
                 if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
                 {
-                    PacketHandler.sendToAllAround(
-                        new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0),
+                    PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0),
                         entityHit.getEntity().position(), ModCommonConfig.entityHitParticleRange(), level.dimension());
                     bulletType.getHitEffects().forEach(effect -> living.addEffect(new MobEffectInstance(effect)));
                     // If the attack was allowed, we should remove their immortality cooldown so we can shoot them again. Without this, any rapid fire gun become useless
@@ -684,8 +661,8 @@ public final class ShootingHelper
     private static void spawnExplosionParticles(Level level, ShootableType type, Vec3 position)
     {
         if (type.getExplodeParticles() > 0)
-            PacketHandler.sendToAllAround(new PacketExplodeParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position,
-                ShootableType.EXPLODE_PARTICLES_RANGE, level.dimension());
+            PacketHandler.sendToAllAround(new PacketExplodeParticles(type.getExplodeParticleType(), type.getExplodeParticles(), position), position, ShootableType.EXPLODE_PARTICLES_RANGE,
+                level.dimension());
     }
 
     private static void spawnFlakParticles(Level level, BulletType type, Vec3 position)
@@ -729,8 +706,8 @@ public final class ShootingHelper
         Vec3 shootingVector = calculateShootingMotionVector(level.random, shootingDirection, shot.getSpread(), 500F, shot.getSpreadPattern());
 
         HitData hitData = new HitData(getInitialPenetratingPower(shot), 0F, false);
-        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0,
-            hitData.penetratingPower(), 0F, shot.getBulletType());
+        List<BulletHit> hits = Raytracer.raytraceShot(level, null, shot.getAttacker().orElse(null), shot.getOwnerEntities(), shootingOrigin, shootingVector, 0, hitData.penetratingPower(), 0F,
+            shot.getBulletType());
         Vec3 previousHitPos = shootingOrigin;
         Vec3 finalhit = null;
 
@@ -762,8 +739,8 @@ public final class ShootingHelper
             finalhit = shootingOrigin.add(shootingDirection);
         }
 
-        PacketHandler.sendToAllAround(new PacketBulletTrail(shootingOrigin, finalhit, 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), shootingOrigin.x, shootingOrigin.y,
-            shootingOrigin.z, 500F, level.dimension());
+        PacketHandler.sendToAllAround(new PacketBulletTrail(shootingOrigin, finalhit, 0.05F, 10F, 10F, shot.getBulletType().getTrailTexture()), shootingOrigin.x, shootingOrigin.y, shootingOrigin.z,
+            500F, level.dimension());
     }
 
     public static Vec3 calculateShootingMotionVector(RandomSource random, Vec3 direction, float spread, float speed, EnumSpreadPattern pattern)

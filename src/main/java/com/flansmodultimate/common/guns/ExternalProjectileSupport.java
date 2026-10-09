@@ -1,32 +1,22 @@
 package com.flansmodultimate.common.guns;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.ProjectileParameters;
-import com.flansmodultimate.api.ProjectileShot;
-import com.flansmodultimate.api.ProjectileSources;
+import com.flansmodultimate.api.*;
 import com.flansmodultimate.api.ProjectileSources.Source;
-import com.flansmodultimate.api.WeaponMuzzle;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
-import com.flansmodultimate.common.driveables.PilotGun;
-import com.flansmodultimate.common.driveables.ShootPoint;
-import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
+import com.flansmodultimate.common.driveables.weapons.PilotGun;
+import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.ShootableFactory;
+import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
 import com.flansmodultimate.common.physics.ModPhysics;
-import com.flansmodultimate.common.types.AAGunType;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.GrenadeType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketParticle;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.PacketParticle;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.util.ModUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -37,9 +27,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.IntPredicate;
 
 /** Shared projectile construction for addons, with no client or Custom NPCs class dependencies. */
@@ -58,8 +46,8 @@ public final class ExternalProjectileSupport
         return !stack.isEmpty() && stack.getItem() instanceof ShootableItem item && item.getConfigType() instanceof GrenadeType;
     }
 
-    public static Optional<ProjectileSources> getSources(ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform,
-        boolean secondary, boolean weaponStats)
+    public static Optional<ProjectileSources> getSources(ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary,
+        boolean weaponStats)
     {
         if (!isProjectile(ammunition))
             return Optional.empty();
@@ -68,8 +56,7 @@ public final class ExternalProjectileSupport
         return Optional.of(settingSources(ammo, definition, heldWeapon, platform instanceof InfoType type ? type : null, secondary, weaponStats));
     }
 
-    static ProjectileSources settingSources(ShootableType ammo, InfoType definition, @Nullable ItemStack heldWeapon, @Nullable InfoType platform, boolean secondary,
-        boolean weaponStats)
+    static ProjectileSources settingSources(ShootableType ammo, InfoType definition, @Nullable ItemStack heldWeapon, @Nullable InfoType platform, boolean secondary, boolean weaponStats)
     {
         boolean contentStats = weaponStats && (definition instanceof GunType || definition instanceof AAGunType || definition instanceof DriveableType);
         Source spread = contentStats ? Source.WEAPON : Source.CALLER;
@@ -167,11 +154,10 @@ public final class ExternalProjectileSupport
         return definition instanceof DriveableType driveable && StringUtils.isNotBlank(driveable.shootSound(secondary));
     }
 
-    public static Optional<ProjectileShot> prepare(LivingEntity shooter, ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform,
-        boolean secondary, ProjectileParameters parameters)
+    public static Optional<ProjectileShot> prepare(LivingEntity shooter, ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary,
+        ProjectileParameters parameters)
     {
-        if (!serverThread(shooter) || !isProjectile(ammunition) || !Float.isFinite(parameters.damage()) || !Float.isFinite(parameters.spread())
-            || !Float.isFinite(parameters.speed()))
+        if (!serverThread(shooter) || !isProjectile(ammunition) || !Float.isFinite(parameters.damage()) || !Float.isFinite(parameters.spread()) || !Float.isFinite(parameters.speed()))
             return Optional.empty();
         ShootableType ammo = ((ShootableItem) ammunition.getItem()).getConfigType();
         InfoType definition = weaponDefinition(weapon, platform, heldWeapon, ammo);
@@ -206,8 +192,7 @@ public final class ExternalProjectileSupport
         return heldWeapon != null && heldWeapon.getItem() instanceof GunItem item && item.getConfigType() == gun ? heldWeapon : null;
     }
 
-    static FireableGun resolveWeapon(InfoType definition, @Nullable ItemStack heldWeapon, LivingEntity shooter, @Nullable InfoType platform, boolean secondary,
-        ProjectileParameters parameters)
+    static FireableGun resolveWeapon(InfoType definition, @Nullable ItemStack heldWeapon, LivingEntity shooter, @Nullable InfoType platform, boolean secondary, ProjectileParameters parameters)
     {
         float fallbackSpeed = Math.max(0.01F, parameters.speed());
         if (!parameters.weaponStats())
@@ -217,8 +202,8 @@ public final class ExternalProjectileSupport
         if (definition instanceof AAGunType aa)
             return new FireableGun(aa, aa.getDamage(), aa.getBulletSpread(), fallbackSpeed, aa.getSpreadPattern());
         if (definition instanceof DriveableType driveable)
-            return new FireableGun(driveable, Math.max(0F, secondary ? driveable.getDamageMultiplierSecondary() : driveable.getDamageMultiplierPrimary()),
-                driveable.getBulletSpread(), driveable.getBulletSpeed() > 0F ? driveable.getBulletSpeed() : fallbackSpeed, EnumSpreadPattern.CIRCLE);
+            return new FireableGun(driveable, Math.max(0F, secondary ? driveable.getDamageMultiplierSecondary() : driveable.getDamageMultiplierPrimary()), driveable.getBulletSpread(),
+                driveable.getBulletSpeed() > 0F ? driveable.getBulletSpeed() : fallbackSpeed, EnumSpreadPattern.CIRCLE);
         return fallbackWeapon(definition, parameters);
     }
 
@@ -336,8 +321,7 @@ public final class ExternalProjectileSupport
         for (WeaponMuzzle.Particle particle : particles)
         {
             Vec3 velocity = particle.velocity().yRot((float) Math.toRadians(180F - bodyYaw)).scale(scale);
-            PacketHandler.sendToAllAround(new PacketParticle(particle.name(), origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z, scale), origin, 128D,
-                shooter.level().dimension());
+            PacketHandler.sendToAllAround(new PacketParticle(particle.name(), origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z, scale), origin, 128D, shooter.level().dimension());
         }
     }
 

@@ -1,6 +1,5 @@
 package com.flansmodultimate.common.driveables.physics;
 
-import com.flansmodultimate.common.driveables.LegacyPlanePhysics;
 import com.flansmodultimate.common.physics.ModPhysics;
 
 import net.minecraft.util.Mth;
@@ -13,35 +12,31 @@ public final class HelicopterPhysics
     public static final double GRAVITY = 0.05D;
     private static final double ROTOR_POWER_EFFICIENCY = 0.7D;
 
-    private HelicopterPhysics() {}
+    private HelicopterPhysics()
+    {}
 
-    public record Performance(double maximumLift, double horizontalDrag, double verticalDrag,
-                              double terminalSpeed, double climbSpeed) {}
+    public record Performance(double maximumLift, double horizontalDrag, double verticalDrag, double terminalSpeed, double climbSpeed)
+    {}
 
     /**
      * Lift requires mass, shaft power and rotor geometry together. Speed and climb
      * are independent drag calibrations. Missing groups retain the legacy thrust
      * and Drag values; wing area is never mistaken for a rotor disc.
      */
-    public static Performance resolve(RealWorldVehicleSpec spec, float engineModifier,
-                                      float legacyThrust, float legacyDrag, double speedScale)
+    public static Performance resolve(RealWorldVehicleSpec spec, float engineModifier, float legacyThrust, float legacyDrag, double speedScale)
     {
         double maximumLift = GRAVITY + Math.max(0F, finite(legacyThrust)) * 0.5D;
         double modifier = engineModifier > 0F && Float.isFinite(engineModifier) ? engineModifier : 1D;
-        if (VehiclePhysicsUnits.isUsablePositive(spec.massKg())
-            && VehiclePhysicsUnits.isUsablePositive(spec.enginePowerKw())
-            && VehiclePhysicsUnits.isUsablePositive(spec.aircraft().rotorDiameterM()))
+        if (VehiclePhysicsUnits.isUsablePositive(spec.massKg()) && VehiclePhysicsUnits.isUsablePositive(spec.enginePowerKw()) && VehiclePhysicsUnits.isUsablePositive(spec.aircraft().rotorDiameterM()))
         {
             double radius = spec.aircraft().rotorDiameterM() * 0.5D;
             double area = Math.PI * radius * radius * spec.aircraft().effectiveRotorCount();
-            double power = spec.enginePowerKw() * VehiclePhysicsUnits.WATTS_PER_KILOWATT
-                * modifier * ROTOR_POWER_EFFICIENCY;
+            double power = spec.enginePowerKw() * VehiclePhysicsUnits.WATTS_PER_KILOWATT * modifier * ROTOR_POWER_EFFICIENCY;
             // Ideal actuator-disc power: P = T^(3/2) / sqrt(2 rho A).
             double thrust = Math.pow(power * Math.sqrt(2D * VehiclePhysicsUnits.AIR_DENSITY * area), 2D / 3D);
             maximumLift = GRAVITY * Mth.clamp(thrust / (spec.massKg() * VehiclePhysicsUnits.STANDARD_GRAVITY), 0D, 2.5D);
         }
-        else if (VehiclePhysicsUnits.isUsablePositive(spec.massKg())
-            && VehiclePhysicsUnits.isUsablePositive(spec.engineThrustKn()))
+        else if (VehiclePhysicsUnits.isUsablePositive(spec.massKg()) && VehiclePhysicsUnits.isUsablePositive(spec.engineThrustKn()))
         {
             // Thrust-authored VTOL lift engines need no invented shaft power or disc.
             double thrust = spec.engineThrustKn() * VehiclePhysicsUnits.NEWTONS_PER_KILONEWTON * modifier;
@@ -50,12 +45,9 @@ public final class HelicopterPhysics
         double drag = LegacyPlanePhysics.drag(legacyDrag);
         // Convert legacy velocity multipliers to implicit drag coefficients.
         double horizontal = 1D - (1D - drag) / 5D;
-        double terminal = VehiclePhysicsUnits.isUsablePositive(spec.maxSpeedKmh())
-            ? VehiclePhysicsUnits.kmhToBlocksPerTick(spec.maxSpeedKmh(), speedScale) : 0D;
-        double climb = VehiclePhysicsUnits.isUsablePositive(spec.aircraft().climbRateMs())
-            ? VehiclePhysicsUnits.metresPerSecondToBlocksPerTick(spec.aircraft().climbRateMs(), speedScale) : 0D;
-        return new Performance(maximumLift, 1D / Math.max(0.01D, horizontal) - 1D,
-            1D / Math.max(0.01D, drag) - 1D, terminal, climb);
+        double terminal = VehiclePhysicsUnits.isUsablePositive(spec.maxSpeedKmh()) ? VehiclePhysicsUnits.kmhToBlocksPerTick(spec.maxSpeedKmh(), speedScale) : 0D;
+        double climb = VehiclePhysicsUnits.isUsablePositive(spec.aircraft().climbRateMs()) ? VehiclePhysicsUnits.metresPerSecondToBlocksPerTick(spec.aircraft().climbRateMs(), speedScale) : 0D;
+        return new Performance(maximumLift, 1D / Math.max(0.01D, horizontal) - 1D, 1D / Math.max(0.01D, drag) - 1D, terminal, climb);
     }
 
     /** Smoothly approach the requested rotor-speed fraction without overshooting it. */
@@ -63,16 +55,14 @@ public final class HelicopterPhysics
     {
         float speed = Mth.clamp(finite(current), 0F, 1F);
         float requested = Mth.clamp(finite(target), 0F, 1F);
-        return speed < requested ? Math.min(requested, speed + 1F / 60F)
-            : Math.max(requested, speed - 1F / 100F);
+        return speed < requested ? Math.min(requested, speed + 1F / 60F) : Math.max(requested, speed - 1F / 100F);
     }
 
     public static double lift(Performance performance, float collective, float rotorSpeed, float intactFraction)
     {
         double lever = Mth.clamp(finite(collective), 0F, 1F);
         double hover = Math.min(GRAVITY, performance.maximumLift());
-        double demand = lever <= 0.5D ? hover * lever * 2D
-            : hover + (performance.maximumLift() - hover) * (lever * 2D - 1D);
+        double demand = lever <= 0.5D ? hover * lever * 2D : hover + (performance.maximumLift() - hover) * (lever * 2D - 1D);
         double rpm = Mth.clamp(finite(rotorSpeed), 0F, 1F);
         return demand * rpm * rpm * Mth.clamp(finite(intactFraction), 0F, 1F);
     }
@@ -84,31 +74,25 @@ public final class HelicopterPhysics
     }
 
     /** Tilt redirects lift, with collective-scaled translation and no automatic tilt compensation. */
-    public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance,
-                            float collective, float rotorSpeed, float intactFraction)
+    public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance, float collective, float rotorSpeed, float intactFraction)
     {
         return step(velocity, up, performance, collective, rotorSpeed, intactFraction, 1D, 1D);
     }
 
-    public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance,
-                            float collective, float rotorSpeed, float intactFraction,
-                            double gravityFactor, double dragFactor)
+    public static Vec3 step(Vec3 velocity, Vec3 up, Performance performance, float collective, float rotorSpeed, float intactFraction, double gravityFactor, double dragFactor)
     {
         double gravity = ModPhysics.gravity(GRAVITY, gravityFactor);
         double lift = lift(performance, collective, rotorSpeed, intactFraction);
         // Collective limits translation as well as lift, for fine low-speed handling.
         double lever = horizontalSpeedFraction(collective);
-        Vec3 accelerated = velocity.add(up.x * lift * lever * lever,
-            up.y * lift - gravity, up.z * lift * lever * lever);
+        Vec3 accelerated = velocity.add(up.x * lift * lever * lever, up.y * lift - gravity, up.z * lift * lever * lever);
         double horizontalDrag = performance.horizontalDrag();
         if (performance.terminalSpeed() > 0D)
         {
             // At the published speed, drag balances the available horizontal
             // force while the remaining component supports the helicopter.
-            double levelThrust = Math.sqrt(Math.max(0D,
-                performance.maximumLift() * performance.maximumLift() - gravity * gravity));
-            horizontalDrag = Math.max(0.001D, levelThrust / performance.terminalSpeed())
-                * velocity.horizontalDistance() / performance.terminalSpeed();
+            double levelThrust = Math.sqrt(Math.max(0D, performance.maximumLift() * performance.maximumLift() - gravity * gravity));
+            horizontalDrag = Math.max(0.001D, levelThrust / performance.terminalSpeed()) * velocity.horizontalDistance() / performance.terminalSpeed();
         }
         // Arrest drift when level; fade this assistance out by about 17 degrees
         // of tilt so published full-power cruise remains a force equilibrium.
@@ -116,25 +100,21 @@ public final class HelicopterPhysics
         horizontalDrag = Math.max(horizontalDrag, levelBraking);
         double verticalDrag = Math.max(0.1D, performance.verticalDrag());
         if (performance.climbSpeed() > 0D)
-            verticalDrag = Math.max(0.001D, (up.y * lift < gravity
-                ? gravity : Math.max(0D, performance.maximumLift() - gravity)) / performance.climbSpeed());
+            verticalDrag = Math.max(0.001D, (up.y * lift < gravity ? gravity : Math.max(0D, performance.maximumLift() - gravity)) / performance.climbSpeed());
         // Increase the response rate of slow climb calibrations without changing
         // their equilibrium speed. Apply the same gain to net force and drag.
         double verticalResponse = Math.max(1D, 0.1D / verticalDrag);
         horizontalDrag = ModPhysics.dragForce(horizontalDrag, dragFactor);
         verticalDrag = ModPhysics.dragForce(verticalDrag, dragFactor);
-        Vec3 result = new Vec3(accelerated.x / (1D + horizontalDrag),
-            (velocity.y + (up.y * lift - gravity) * verticalResponse)
-                / (1D + verticalDrag * verticalResponse), accelerated.z / (1D + horizontalDrag));
-        double fullSpeed = performance.terminalSpeed() > 0D ? performance.terminalSpeed()
-            : performance.maximumLift() / Math.max(0.001D, performance.horizontalDrag());
+        Vec3 result = new Vec3(accelerated.x / (1D + horizontalDrag), (velocity.y + (up.y * lift - gravity) * verticalResponse) / (1D + verticalDrag * verticalResponse),
+            accelerated.z / (1D + horizontalDrag));
+        double fullSpeed = performance.terminalSpeed() > 0D ? performance.terminalSpeed() : performance.maximumLift() / Math.max(0.001D, performance.horizontalDrag());
         double targetSpeed = fullSpeed * lever;
         double horizontalSpeed = result.horizontalDistance();
         if (horizontalSpeed > targetSpeed)
         {
             // Bleed excess momentum smoothly when the pilot lowers the lever.
-            double limitedSpeed = Math.min(horizontalSpeed,
-                Math.max(targetSpeed, velocity.horizontalDistance() / 1.12D));
+            double limitedSpeed = Math.min(horizontalSpeed, Math.max(targetSpeed, velocity.horizontalDistance() / 1.12D));
             double scale = limitedSpeed / horizontalSpeed;
             result = new Vec3(result.x * scale, result.y, result.z * scale);
         }

@@ -3,16 +3,10 @@ package com.flansmodultimate.common.guns;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.api.ProjectileParameters;
 import com.flansmodultimate.api.WeaponMuzzle;
-import com.flansmodultimate.common.driveables.DriveablePosition;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
-import com.flansmodultimate.common.driveables.ShootPoint;
-import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
-import com.flansmodultimate.common.types.AAGunType;
-import com.flansmodultimate.common.types.EnumMovement;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.PlaneType;
-import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.weapons.ShootPoint;
+import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
+import com.flansmodultimate.common.types.*;
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.world.item.ItemStack;
@@ -50,8 +44,7 @@ class ExternalProjectileSupportTest
         assertVector(AAGunBarrelGeometry.legacyBarrelOffset(16D, 8D, -4D, 180F, 0F), second.get(0).offset());
         assertEquals(2, ExternalProjectileSupport.getMuzzles(type, false, 0, false).size());
         type.setMeasuredBarrels(new Vec3[]{new Vec3(0D, 8D, 0D), new Vec3(0D, 8D, 0D)}, new Vec3[]{new Vec3(20D, 0D, 4D), new Vec3(20D, 0D, -4D)});
-        assertVector(AAGunBarrelGeometry.modelBarrelOffset(new Vec3(0D, 8D, 0D), new Vec3(20D, 0D, 4D), 180F, 0F),
-            ExternalProjectileSupport.getMuzzles(type, false, 0, true).get(0).offset());
+        assertVector(AAGunBarrelGeometry.modelBarrelOffset(new Vec3(0D, 8D, 0D), new Vec3(20D, 0D, 4D), 180F, 0F), ExternalProjectileSupport.getMuzzles(type, false, 0, true).get(0).offset());
     }
 
     @Test

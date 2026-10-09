@@ -2,20 +2,14 @@ package com.flansmodultimate.common.command;
 
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketParticles;
+import com.flansmodultimate.network.client.effects.PacketParticles;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.*;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.exceptions.*;
 import lombok.NoArgsConstructor;
 
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.*;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.network.chat.Component;
@@ -28,8 +22,7 @@ import java.util.Collection;
 public final class FMParticleCommand
 {
     private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.particle.failed"));
-    private static final DynamicCommandExceptionType ERROR_UNKNOWN = new DynamicCommandExceptionType(
-        name -> Component.translatable("commands.flansmodultimate.fmparticle.unknown", name));
+    private static final DynamicCommandExceptionType ERROR_UNKNOWN = new DynamicCommandExceptionType(name -> Component.translatable("commands.flansmodultimate.fmparticle.unknown", name));
     /** Height above the caller used by the short form. */
     private static final double SHORT_FORM_HEIGHT = 1.0D;
     private static final int SHORT_FORM_COUNT = 1;
@@ -45,33 +38,25 @@ public final class FMParticleCommand
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher
-            .register(
-                Commands.literal("fmparticle").requires(source -> source.hasPermission(2))
-                    .then(
-                        Commands.argument(NAME, StringArgumentType.string()).suggests((context, builder) -> SharedSuggestionProvider.suggest(FlanParticles.suggestions(), builder))
-                            // Short form: a single particle one block above the caller
-                            .executes(context -> sendParticles(context, context.getSource().getPosition().add(0D, SHORT_FORM_HEIGHT, 0D), Vec3.ZERO, 0.0F, SHORT_FORM_COUNT,
-                                DEFAULT_SCALE, allPlayers(context)))
-                            .then(Commands.argument(POS, Vec3Argument.vec3())
-                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3.ZERO, 0.0F, 0, DEFAULT_SCALE, allPlayers(context)))
-                                .then(Commands.argument(DELTA, Vec3Argument.vec3(false))
-                                    .then(Commands.argument(SPEED, FloatArgumentType.floatArg(0.0F))
-                                        .then(Commands.argument(COUNT, IntegerArgumentType.integer(0))
-                                            .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA),
-                                                FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT), DEFAULT_SCALE, allPlayers(context)))
-                                            .then(Commands.argument(SCALE, FloatArgumentType.floatArg(0.0F))
-                                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA),
-                                                    FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT),
-                                                    FloatArgumentType.getFloat(context, SCALE), allPlayers(context)))
-                                                .then(Commands.argument(VIEWERS, EntityArgument.players())
-                                                    .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA),
-                                                        FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT),
-                                                        FloatArgumentType.getFloat(context, SCALE), EntityArgument.getPlayers(context, VIEWERS)))))
-                                            .then(Commands.argument(VIEWERS, EntityArgument.players())
-                                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA),
-                                                    FloatArgumentType.getFloat(context, SPEED), IntegerArgumentType.getInteger(context, COUNT), DEFAULT_SCALE,
-                                                    EntityArgument.getPlayers(context, VIEWERS))))))))));
+        dispatcher.register(Commands.literal("fmparticle").requires(source -> source.hasPermission(2))
+            .then(Commands.argument(NAME, StringArgumentType.string()).suggests((context, builder) -> SharedSuggestionProvider.suggest(FlanParticles.suggestions(), builder))
+                // Short form: a single particle one block above the caller
+                .executes(context -> sendParticles(context, context.getSource().getPosition().add(0D, SHORT_FORM_HEIGHT, 0D), Vec3.ZERO, 0.0F, SHORT_FORM_COUNT, DEFAULT_SCALE, allPlayers(context)))
+                .then(Commands.argument(POS, Vec3Argument.vec3())
+                    .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3.ZERO, 0.0F, 0, DEFAULT_SCALE, allPlayers(context)))
+                    .then(Commands.argument(DELTA, Vec3Argument.vec3(false))
+                        .then(Commands.argument(SPEED, FloatArgumentType.floatArg(0.0F)).then(Commands.argument(COUNT, IntegerArgumentType.integer(0))
+                            .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA), FloatArgumentType.getFloat(context, SPEED),
+                                IntegerArgumentType.getInteger(context, COUNT), DEFAULT_SCALE, allPlayers(context)))
+                            .then(Commands.argument(SCALE, FloatArgumentType.floatArg(0.0F))
+                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA), FloatArgumentType.getFloat(context, SPEED),
+                                    IntegerArgumentType.getInteger(context, COUNT), FloatArgumentType.getFloat(context, SCALE), allPlayers(context)))
+                                .then(Commands.argument(VIEWERS, EntityArgument.players())
+                                    .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA), FloatArgumentType.getFloat(context, SPEED),
+                                        IntegerArgumentType.getInteger(context, COUNT), FloatArgumentType.getFloat(context, SCALE), EntityArgument.getPlayers(context, VIEWERS)))))
+                            .then(Commands.argument(VIEWERS, EntityArgument.players())
+                                .executes(context -> sendParticles(context, Vec3Argument.getVec3(context, POS), Vec3Argument.getVec3(context, DELTA), FloatArgumentType.getFloat(context, SPEED),
+                                    IntegerArgumentType.getInteger(context, COUNT), DEFAULT_SCALE, EntityArgument.getPlayers(context, VIEWERS))))))))));
     }
 
     private static Collection<ServerPlayer> allPlayers(CommandContext<CommandSourceStack> context)

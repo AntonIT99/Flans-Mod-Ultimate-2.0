@@ -1,9 +1,7 @@
 package com.flansmodultimate.client.teams;
 
-import com.flansmodultimate.client.gui.TeamsScoreScreen;
-import com.flansmodultimate.client.gui.TeamsSelectScreen;
-import com.flansmodultimate.client.gui.TeamsVotingScreen;
-import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.client.gui.*;
+import com.flansmodultimate.network.client.teams.PacketTeamsState;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

@@ -1,20 +1,14 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.IContentPack;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.PaintjobVariant;
-import com.wolffsmod.npcs.model.FlanModelEntity;
-import com.wolffsmod.npcs.model.FlanModelEntityType;
-import com.wolffsmod.npcs.model.FlanModelKind;
+import com.flansmodultimate.api.*;
+import com.wolffsmod.npcs.model.*;
 import net.minecraftforge.registries.ForgeRegistries;
 import noppes.npcs.CustomEntities;
 import noppes.npcs.client.gui.model.GuiCreationEntities;
 import noppes.npcs.client.gui.model.GuiCreationScreenInterface;
 import noppes.npcs.shared.client.gui.components.GuiCustomScrollNop;
 import noppes.npcs.shared.common.util.NaturalOrderComparator;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,18 +17,15 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 /** Adds folders to the model picker while retaining Custom NPCs' model selection and save logic. */
-@SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
+// Mixin merges this class into the target, so self-casts are valid.
+@SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference", "DataFlowIssue"})
 @Mixin(value = GuiCreationEntities.class, remap = false)
 public abstract class NpcModelBrowserMixin
 {
-    @Shadow
+    @Shadow @SuppressWarnings("MismatchedCollectionQueryUpdate") // Shadowed target list, populated by the target.
     private List<EntityType<? extends Entity>> types;
     @Shadow
     private GuiCustomScrollNop scroll;

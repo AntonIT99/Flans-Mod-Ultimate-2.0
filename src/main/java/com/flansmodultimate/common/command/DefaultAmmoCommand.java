@@ -1,15 +1,9 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.common.driveables.DriveableAmmoLoader;
 import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Seat;
-import com.flansmodultimate.common.item.AAGunItem;
-import com.flansmodultimate.common.item.DriveableItem;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader;
+import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.util.ModUtils;
 import com.mojang.brigadier.CommandDispatcher;
@@ -27,19 +21,15 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class DefaultAmmoCommand
 {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
     {
-        dispatcher.register(Commands.literal("defaultammo").requires(source -> source.hasPermission(2)).executes(context -> giveDefaultAmmo(context, 1)).then(
-            Commands.argument("amount", IntegerArgumentType.integer(1, 64)).executes(context -> giveDefaultAmmo(context, IntegerArgumentType.getInteger(context, "amount")))));
+        dispatcher.register(Commands.literal("defaultammo").requires(source -> source.hasPermission(2)).executes(context -> giveDefaultAmmo(context, 1))
+            .then(Commands.argument("amount", IntegerArgumentType.integer(1, 64)).executes(context -> giveDefaultAmmo(context, IntegerArgumentType.getInteger(context, "amount")))));
     }
 
     private static int giveDefaultAmmo(CommandContext<CommandSourceStack> context, int amount) throws CommandSyntaxException

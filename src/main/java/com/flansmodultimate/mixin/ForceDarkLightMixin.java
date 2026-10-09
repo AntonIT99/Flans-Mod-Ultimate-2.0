@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LightEngine.class)
 public abstract class ForceDarkLightMixin
 {
-    // The (Object) cast is required: the mixin class itself is unrelated to SkyLightEngine until merged.
-    @SuppressWarnings("java:S1905")
+    // The (Object) cast is required, and the check can be true: the mixin class is unrelated to SkyLightEngine until merged.
+    @SuppressWarnings({"java:S1905", "ConstantValue"})
     @Inject(method = "getLightValue", at = @At("RETURN"), cancellable = true)
     private void flansmodultimateApplyForceDark(BlockPos pos, CallbackInfoReturnable<Integer> callback)
     {

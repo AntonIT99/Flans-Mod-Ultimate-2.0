@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * </p>
  */
 @Mixin(LivingEntity.class)
+@SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
 public abstract class LivingEntityWaterWalkingMixin
 {
     @Inject(method = "canStandOnFluid", at = @At("HEAD"), cancellable = true)

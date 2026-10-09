@@ -1,13 +1,11 @@
 package com.flansmodultimate.common.types;
 
 import com.flansmodultimate.api.EntityTypeProperties.Sound;
-import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EntityTypePropertySupportTest
 {

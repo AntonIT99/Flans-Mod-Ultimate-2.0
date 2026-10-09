@@ -1,14 +1,13 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.PartType;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -39,7 +38,6 @@ public class PartItem extends Item implements IFlanItem<PartType>
         appendContentPackNameAndItemDescription(stack, tooltipComponents);
 
         if (configType.getCategory() == PartType.Category.FUEL)
-            tooltipComponents
-                .add(IFlanItem.statLine(Component.translatable(TooltipKeys.FUEL_STORED), (configType.getFuel() - stack.getDamageValue()) + " / " + configType.getFuel()));
+            tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FUEL_STORED), (configType.getFuel() - stack.getDamageValue()) + " / " + configType.getFuel()));
     }
 }

@@ -1,7 +1,7 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.common.driveables.DriveableCollisionWorld;
-import com.flansmodultimate.common.driveables.DriveableHullLevel;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionWorld;
+import com.flansmodultimate.common.driveables.collision.DriveableHullLevel;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

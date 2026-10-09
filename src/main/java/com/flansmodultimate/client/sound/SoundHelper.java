@@ -2,7 +2,7 @@ package com.flansmodultimate.client.sound;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketRequestPlaySound;
+import com.flansmodultimate.network.server.effects.PacketRequestPlaySound;
 import com.flansmodultimate.platform.registry.RegistryEntry;
 import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
@@ -67,8 +67,7 @@ public final class SoundHelper
         // The sound engine drops a sound once it becomes inaudible, and refuses to start one that is
         // already out of range. Forgetting those lets the owner start the loop again as it comes back
         // into earshot, instead of staying silent for good after driving away once.
-        loopingEntitySounds.values()
-            .removeIf(soundInstance -> soundInstance.isStopped() || soundInstance.isSourceGone() || !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
+        loopingEntitySounds.values().removeIf(soundInstance -> soundInstance.isStopped() || soundInstance.isSourceGone() || !Minecraft.getInstance().getSoundManager().isActive(soundInstance));
     }
 
     /**

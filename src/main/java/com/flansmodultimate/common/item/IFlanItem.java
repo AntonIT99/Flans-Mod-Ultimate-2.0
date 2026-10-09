@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.item;
 
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.DamageStats;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.config.ModClientConfig;
@@ -18,11 +19,7 @@ import net.minecraft.world.level.ItemLike;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public interface IFlanItem<T extends InfoType> extends ItemLike
 {
@@ -102,15 +99,14 @@ public interface IFlanItem<T extends InfoType> extends ItemLike
 
     static MutableComponent statLine(Component label, Component value)
     {
-        return Component.empty().append(label.copy().withStyle(ChatFormatting.BLUE)).append(Component.literal(": ").withStyle(ChatFormatting.BLUE))
-            .append(value.copy().withStyle(ChatFormatting.GRAY));
+        return Component.empty().append(label.copy().withStyle(ChatFormatting.BLUE)).append(Component.literal(": ").withStyle(ChatFormatting.BLUE)).append(value.copy().withStyle(ChatFormatting.GRAY));
     }
 
     /** Indented stat line whose label is localized via a translation key. */
     static MutableComponent indentedStatLine(Component label, String value)
     {
-        return Component.literal("  ").withStyle(ChatFormatting.DARK_AQUA).append(label.copy().withStyle(ChatFormatting.DARK_AQUA))
-            .append(Component.literal(": ").withStyle(ChatFormatting.DARK_AQUA)).append(Component.literal(value).withStyle(ChatFormatting.GRAY));
+        return Component.literal("  ").withStyle(ChatFormatting.DARK_AQUA).append(label.copy().withStyle(ChatFormatting.DARK_AQUA)).append(Component.literal(": ").withStyle(ChatFormatting.DARK_AQUA))
+            .append(Component.literal(value).withStyle(ChatFormatting.GRAY));
     }
 
     /**

@@ -1,28 +1,27 @@
 package com.flansmodultimate.hooks.client;
 
-import com.flansmod.client.model.ModelAAGun;
-import com.flansmod.client.model.ModelAttachment;
-import com.flansmod.client.model.ModelDriveable;
-import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.*;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.model.MuzzleMeasurements;
-import com.flansmodultimate.client.particle.ExplosionSpectacle;
-import com.flansmodultimate.client.particle.ParticleHelper;
-import com.flansmodultimate.client.particle.TracerBeamParticle;
-import com.flansmodultimate.client.render.*;
+import com.flansmodultimate.client.particle.*;
+import com.flansmodultimate.client.render.effects.*;
+import com.flansmodultimate.client.render.hud.KillMessageData;
+import com.flansmodultimate.client.render.hud.KillMessageFeed;
 import com.flansmodultimate.client.render.item.CustomBewlr;
-import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.client.render.layer.PlayerSkinOverrides;
 import com.flansmodultimate.common.driveables.SeatInfo;
+import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.hooks.IClientRenderHooks;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
 import com.flansmodultimate.util.FileUtils;
+
 import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -37,10 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public final class ClientRenderHooksImpl implements IClientRenderHooks
 {
@@ -89,15 +85,14 @@ public final class ClientRenderHooksImpl implements IClientRenderHooks
     }
 
     @Override
-    public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks,
-        float lifetimeScale)
+    public void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale)
     {
         ParticleHelper.spawnSustained(particleType, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
     }
 
     @Override
-    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale,
-        int burstSize, int durationTicks, float lifetimeScale)
+    public void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize,
+        int durationTicks, float lifetimeScale)
     {
         ParticleHelper.spawnSustained(hotParticleType, particleType, hotTicks, x, y, z, spread, drift, scale, burstSize, durationTicks, lifetimeScale);
     }

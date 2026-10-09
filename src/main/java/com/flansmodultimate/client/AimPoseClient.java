@@ -2,12 +2,9 @@ package com.flansmodultimate.client;
 
 import com.flansmodultimate.client.gui.options.ConfigOptionFactory;
 import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.config.EnumAimPose;
-import com.flansmodultimate.config.EnumPlayerAimPose;
-import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.*;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketAimPosePreference;
+import com.flansmodultimate.network.server.gun.PacketAimPosePreference;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

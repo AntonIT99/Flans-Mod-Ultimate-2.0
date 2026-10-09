@@ -4,7 +4,7 @@ import com.flansmodultimate.common.inventory.GunBoxMenu;
 import com.flansmodultimate.common.types.GunBoxType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketBuyWeapon;
+import com.flansmodultimate.network.server.teams.PacketBuyWeapon;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
@@ -232,8 +232,7 @@ public class GunBoxScreen extends AbstractContainerScreen<GunBoxMenu>
 
             if (craftHighlight)
             {
-                getDisplayedCraftEntry().map(GunBoxType.GunBoxEntry::getType)
-                    .ifPresent(type -> PacketHandler.sendToServer(new PacketBuyWeapon(menu.getPos(), type.getShortName())));
+                getDisplayedCraftEntry().map(GunBoxType.GunBoxEntry::getType).ifPresent(type -> PacketHandler.sendToServer(new PacketBuyWeapon(menu.getPos(), type.getShortName())));
                 return true;
             }
         }

@@ -1,13 +1,6 @@
 package com.flansmodultimate.client.render.entity;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmod.client.model.ModelDriveable;
-import com.flansmod.client.model.ModelGun;
-import com.flansmod.client.model.ModelMecha;
-import com.flansmod.client.model.ModelMechaTool;
-import com.flansmod.client.model.ModelVehicle;
-import com.flansmod.client.model.TrackLinkAnimation;
-import com.flansmod.client.model.TrackLinkLod;
+import com.flansmod.client.model.*;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.FlansModTextures;
@@ -16,32 +9,17 @@ import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.model.ModelCache;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.LegacyTransformApplier;
-import com.flansmodultimate.client.render.VehicleThermalRenderer;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
 import com.flansmodultimate.client.render.gpu.RenderDiagnostics;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
-import com.flansmodultimate.common.driveables.DerivedMuzzle;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.DriveableInput;
-import com.flansmodultimate.common.driveables.DriveablePosition;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumMechaSlotType;
-import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
-import com.flansmodultimate.common.driveables.SeatInfo;
-import com.flansmodultimate.common.driveables.ShootPoint;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Mecha;
-import com.flansmodultimate.common.entity.Plane;
-import com.flansmodultimate.common.entity.Vehicle;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.MechaAddonItem;
-import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
+import com.flansmodultimate.common.driveables.weapons.ShootPoint;
+import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.paintjob.Paintjob;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.MechaItemType;
-import com.flansmodultimate.common.types.MechaType;
-import com.flansmodultimate.common.types.PlaneType;
-import com.flansmodultimate.common.types.VehicleType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.render.ShaderPlatform;
@@ -59,9 +37,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
 /** Shared renderer for plane, vehicle and mecha root entities. */
 public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T>
@@ -69,13 +45,13 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     private static final float TRANSITION_PER_TICK = 0.16F;
 
     /** Marker colours for the authored shoot points of each weapon bank, as red, green, blue. */
-    private static final float[] PRIMARY_MARKER = { 0F, 1F, 1F };
-    private static final float[] SECONDARY_MARKER = { 1F, 0.5F, 0F };
-    private static final float[] GUN_ORIGIN_MARKER = { 0F, 1F, 0.25F };
+    private static final float[] PRIMARY_MARKER = {0F, 1F, 1F};
+    private static final float[] SECONDARY_MARKER = {1F, 0.5F, 0F};
+    private static final float[] GUN_ORIGIN_MARKER = {0F, 1F, 0.25F};
     /** A point the shoot-point debug command has moved, so it reads apart from an authored one. */
-    private static final float[] OVERRIDDEN_MARKER = { 1F, 1F, 0F };
+    private static final float[] OVERRIDDEN_MARKER = {1F, 1F, 0F};
     /** A muzzle measured off the model rather than read from the type file. */
-    private static final float[] MEASURED_MARKER = { 1F, 1F, 1F };
+    private static final float[] MEASURED_MARKER = {1F, 1F, 1F};
 
     /** Weak keys avoid retaining entities after a world unload. Render-thread only. */
     private final Map<Driveable, AnimationHistory> animationStates = new WeakHashMap<>();
@@ -93,9 +69,11 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
     /**
      * Draws a driveable through the entity dispatcher for a menu preview.
      *
-     * <p>Both level of detail stages measure the entity in world space against
+     * <p>
+     * Both level of detail stages measure the entity in world space against
      * the game camera. A GUI supplies neither, so they are switched off for the
-     * duration of the call instead of silently culling the whole model.</p>
+     * duration of the call instead of silently culling the whole model.
+     * </p>
      */
     public static void renderPreview(Runnable render)
     {
@@ -167,14 +145,11 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             if (!isRenderingPreview())
                 viewProjectionPixels = projectionPixels;
         }
-        Vec3 cameraOffset = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition()
-            .subtract(driveable.getPosition(partialTick));
+        Vec3 cameraOffset = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().subtract(driveable.getPosition(partialTick));
         double cameraDistance = cameraOffset.length();
 
-        float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle || driveable instanceof Mecha
-            ? 180F - yaw : -yaw;
-        boolean locallyControlled = Minecraft.getInstance().player != null
-            && Minecraft.getInstance().player.getVehicle() == driveable;
+        float entityYawRotation = driveable instanceof Plane || driveable instanceof Vehicle || driveable instanceof Mecha ? 180F - yaw : -yaw;
+        boolean locallyControlled = Minecraft.getInstance().player != null && Minecraft.getInstance().player.getVehicle() == driveable;
         boolean intact = true;
         for (EnumDriveablePart part : type.getHealth().keySet())
         {
@@ -201,11 +176,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 RenderDiagnostics.countShadowDriveable(true);
                 return;
             }
-            lodResult = DriveableImpostorCache.renderOrPrepare(
-                model, type, texture, translucent, cull, red, green, blue,
-                poseStack, buffer, packedLight, projectionPixels, cameraDistance,
-                cameraOffset, entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(),
-                !shadowPass && !(driveable instanceof Mecha) && intact, history.usingImpostor);
+            lodResult = DriveableImpostorCache.renderOrPrepare(model, type, texture, translucent, cull, red, green, blue, poseStack, buffer, packedLight, projectionPixels, cameraDistance,
+                cameraOffset, entityYawRotation, pitch, roll, entityRenderDispatcher.cameraOrientation(), !shadowPass && !(driveable instanceof Mecha) && intact, history.usingImpostor);
             if (!shadowPass)
                 history.usingImpostor = lodResult.usingImpostor();
             if (lodResult.rendered())
@@ -237,20 +209,13 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             leftTrackProgress = wrappedLerp(partialTick, history.previousLeftTrack, history.leftTrack);
             rightTrackProgress = wrappedLerp(partialTick, history.previousRightTrack, history.rightTrack);
         }
-        float legSwing = driveable instanceof Mecha
-            ? wrappedLerp(partialTick, history.previousLegSwing, history.legSwing) : 0F;
-        float legYaw = driveable instanceof Mecha mecha
-            ? Mth.rotLerp(partialTick, mecha.getPrevLegYaw(), mecha.getLegYaw()) : yaw;
+        float legSwing = driveable instanceof Mecha ? wrappedLerp(partialTick, history.previousLegSwing, history.legSwing) : 0F;
+        float legYaw = driveable instanceof Mecha mecha ? Mth.rotLerp(partialTick, mecha.getPrevLegYaw(), mecha.getLegYaw()) : yaw;
 
-        ModelDriveable.RenderState state = new ModelDriveable.RenderState(
-            partialTick, yaw, pitch, roll, throttle, turretYaw, turretPitch,
-            wheelAngle, steering, animationTime, gearProgress, doorProgress, modeProgress,
-            leftTrackProgress, rightTrackProgress, legSwing, legYaw,
-            history.wingTransform, history.wingWheelTransform, history.bodyWheelTransform,
-            history.tailWheelTransform, history.doorTransform, history.door2Transform,
-            history.legAnimation, driveable.getInputMask(), driveable.getDriveableMode(), driveable.isVarFlare(),
-            history.trackLinks
-        );
+        ModelDriveable.RenderState state = new ModelDriveable.RenderState(partialTick, yaw, pitch, roll, throttle, turretYaw, turretPitch, wheelAngle, steering, animationTime, gearProgress,
+            doorProgress, modeProgress, leftTrackProgress, rightTrackProgress, legSwing, legYaw, history.wingTransform, history.wingWheelTransform, history.bodyWheelTransform,
+            history.tailWheelTransform, history.doorTransform, history.door2Transform, history.legAnimation, driveable.getInputMask(), driveable.getDriveableMode(), driveable.isVarFlare(),
+            history.trackLinks);
 
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(entityYawRotation));
@@ -263,23 +228,20 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         // under the same transform instead of scaling every mesh independently.
         poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
-        float minimumPartPixels = preview ? 0F : (float)ModClientConfig.get().minimumDriveablePartPixelSize;
+        float minimumPartPixels = preview ? 0F : (float) ModClientConfig.get().minimumDriveablePartPixelSize;
         if (!preview && !locallyControlled && ModClientConfig.get().enableDriveableLod)
         {
-            float distanceScale = DriveableLodPolicy.distanceScale(lodResult.modelRadius(),
-                type instanceof VehicleType && !type.isFloatOnWater(), (float)ModClientConfig.get().groundVehicleLodDistanceFactor);
-            minimumPartPixels = DriveableLodPolicy.partThreshold(minimumPartPixels,
-                (float)ModClientConfig.get().maximumDriveableLodPartPixelSize,
-                (float)ModClientConfig.get().driveableLodDetailMultiplier, cameraDistance, distanceScale);
+            float distanceScale = DriveableLodPolicy.distanceScale(lodResult.modelRadius(), type instanceof VehicleType && !type.isFloatOnWater(),
+                (float) ModClientConfig.get().groundVehicleLodDistanceFactor);
+            minimumPartPixels = DriveableLodPolicy.partThreshold(minimumPartPixels, (float) ModClientConfig.get().maximumDriveableLodPartPixelSize,
+                (float) ModClientConfig.get().driveableLodDetailMultiplier, cameraDistance, distanceScale);
         }
         int trackLinkGroup = 0;
-        if (!preview && !locallyControlled && ModClientConfig.get().enableDriveableLod
-            && model instanceof ModelVehicle vehicleModel)
+        if (!preview && !locallyControlled && ModClientConfig.get().enableDriveableLod && model instanceof ModelVehicle vehicleModel)
         {
             if (!shadowPass)
                 trackLinkGroup = vehicleModel.selectTrackLinkGroup(type, projectionPixels, modelOriginDistance(poseStack), modelScaleBound(poseStack),
-                    (float)ModClientConfig.get().driveableTrackLinkLodPixelSize,
-                    (float)ModClientConfig.get().driveableTrackLinkGroupingPixelSize, history.trackLinkGroup);
+                    (float) ModClientConfig.get().driveableTrackLinkLodPixelSize, (float) ModClientConfig.get().driveableTrackLinkGroupingPixelSize, history.trackLinkGroup);
             // The shadow view is measured from the sun, so reuse the main pass's choice without touching
             // its hysteresis. A shadow shows only each link's outline, which its envelope keeps.
             else if (ModClientConfig.get().driveableTrackLinkLodPixelSize > 0D && vehicleModel.hasTrackLinkEnvelopes(type))
@@ -298,7 +260,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             // the model's nearest point instead, so the shadow drops no part the view keeps.
             float radius = lodResult.modelRadius();
             double nearest = Math.max(0.5D, Float.isFinite(radius) ? cameraDistance - radius : cameraDistance);
-            ModelRendererTurbo.beginFixedScaleCulling(minimumPartPixels, (float)(projectionPixels / nearest));
+            ModelRendererTurbo.beginFixedScaleCulling(minimumPartPixels, (float) (projectionPixels / nearest));
         }
         else if (useScreenSpaceCulling)
             ModelRendererTurbo.beginScreenSpaceCulling(minimumPartPixels, projectionPixels);
@@ -313,7 +275,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 {
                     model.render(driveable, state, poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, 1F, renderPass);
                 }
-                finally {
+                finally
+                {
                     GpuModelCache.end(consumer);
                 }
             }
@@ -334,13 +297,13 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
     private static double modelOriginDistance(PoseStack pose)
     {
-        return com.flansmodultimate.client.render.WorldModelPose.originDistance(pose);
+        return com.flansmodultimate.client.render.preview.WorldModelPose.originDistance(pose);
     }
 
     /** Includes constructor-time legacy scaling. Gershgorin bounds the largest singular value even with shear. */
     static float modelScaleBound(PoseStack pose)
     {
-        return com.flansmodultimate.client.render.WorldModelPose.scaleBound(pose);
+        return com.flansmodultimate.client.render.preview.WorldModelPose.scaleBound(pose);
     }
 
     @Override
@@ -355,8 +318,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         return paintjob != null && paintjob.getTexture() != null ? paintjob.getTexture() : type.getTexture();
     }
 
-    private static void renderShootPointMarkers(Driveable driveable, DriveableType type, boolean secondary,
-                                                float[] authoredColour)
+    private static void renderShootPointMarkers(Driveable driveable, DriveableType type, boolean secondary, float[] authoredColour)
     {
         for (var point : type.shootPoints(secondary))
         {
@@ -387,8 +349,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         {
             // Follow whichever part the authored point is mounted on, so the
             // measured marker tracks the turret exactly as the real one does.
-            Vec3 position = driveable.getDebugShootOrigin(
-                new ShootPoint(new DriveablePosition(toBlocks(barrel), part), new Vector3f()));
+            Vec3 position = driveable.getDebugShootOrigin(new ShootPoint(new DriveablePosition(toBlocks(barrel), part), new Vector3f()));
             DebugHelper.spawnDebugDot(position, 2, MEASURED_MARKER[0], MEASURED_MARKER[1], MEASURED_MARKER[2]);
         }
 
@@ -415,8 +376,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
      * this re-measures each of its barrels at the seat's live aim, in the same
      * GunOrigin terms.
      */
-    private static List<Vector3f> aimedSeatMuzzles(Driveable driveable, DriveableType type, DerivedMuzzle muzzle,
-                                                   Vector3f restBlocks)
+    private static List<Vector3f> aimedSeatMuzzles(Driveable driveable, DriveableType type, DerivedMuzzle muzzle, Vector3f restBlocks)
     {
         SeatInfo seat = type.getSeat(muzzle.seatIndex());
         if (seat == null || !(ModelCache.getLoadedTypeModel(type) instanceof ModelDriveable model))
@@ -424,11 +384,10 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         List<Vec3> aimed = model.getAimedRegisteredGunMuzzles(driveable, seat, 1F);
         if (aimed.isEmpty())
             return List.of(restBlocks);
-        return aimed.stream().map(barrel -> {
-            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(
-                barrel.scale(Math.max(1.0E-4D, type.getModelScale())), type instanceof PlaneType);
-            return new Vector3f(position.x / 16F,
-                position.y / 16F - (float) Driveable.PASSENGER_GUN_MOUNTED_OFFSET, position.z / 16F);
+        return aimed.stream().map(barrel ->
+        {
+            Vector3f position = LegacyDriveableCoordinates.modelPixelsToTypeFile(barrel.scale(Math.max(1.0E-4D, type.getModelScale())), type instanceof PlaneType);
+            return new Vector3f(position.x / 16F, position.y / 16F - (float) Driveable.PASSENGER_GUN_MOUNTED_OFFSET, position.z / 16F);
         }).toList();
     }
 
@@ -478,7 +437,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
     }
 
-    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderMechaAddons(Driveable driveable, MechaType mechaType, ModelMecha mechaModel, ModelDriveable.RenderState state, AnimationHistory history, PoseStack poseStack,
+        MultiBufferSource buffer, int packedLight)
     {
         DriveableData data = driveable.getDriveableData();
         if (data == null)
@@ -495,25 +455,20 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         }
 
         float armPitch = Mth.clamp(state.turretPitch(), -mechaType.getUpperArmLimit(), mechaType.getLowerArmLimit());
-        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL), true,
-            driveable.isPartIntact(EnumDriveablePart.LEFT_ARM), mechaType, armPitch,
-            DriveableInput.isDown(state.inputMask(), DriveableInput.PRIMARY_FIRE), state.animationTime(),
-            history.leftGunAnimations, poseStack, buffer, packedLight);
-        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL), false,
-            driveable.isPartIntact(EnumDriveablePart.RIGHT_ARM), mechaType, armPitch,
-            DriveableInput.isDown(state.inputMask(), DriveableInput.SECONDARY_FIRE), state.animationTime(),
-            history.rightGunAnimations, poseStack, buffer, packedLight);
+        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL), true, driveable.isPartIntact(EnumDriveablePart.LEFT_ARM), mechaType, armPitch,
+            DriveableInput.isDown(state.inputMask(), DriveableInput.PRIMARY_FIRE), state.animationTime(), history.leftGunAnimations, poseStack, buffer, packedLight);
+        renderHandAddon(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL), false, driveable.isPartIntact(EnumDriveablePart.RIGHT_ARM), mechaType, armPitch,
+            DriveableInput.isDown(state.inputMask(), DriveableInput.SECONDARY_FIRE), state.animationTime(), history.rightGunAnimations, poseStack, buffer, packedLight);
     }
 
-    private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType, float armPitch, boolean active, float animationTime, GunAnimations gunAnimations, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    private static void renderHandAddon(ItemStack stack, boolean leftHand, boolean armIntact, MechaType mechaType, float armPitch, boolean active, float animationTime, GunAnimations gunAnimations,
+        PoseStack poseStack, MultiBufferSource buffer, int packedLight)
     {
         if (!armIntact || stack.isEmpty())
             return;
 
-        com.flansmod.common.vector.Vector3f armOrigin = leftHand
-            ? mechaType.getLeftArmOrigin() : mechaType.getRightArmOrigin();
-        com.flansmod.common.vector.Vector3f handModifier = leftHand
-            ? mechaType.getLeftHandModifier() : mechaType.getRightHandModifier();
+        com.flansmod.common.vector.Vector3f armOrigin = leftHand ? mechaType.getLeftArmOrigin() : mechaType.getRightArmOrigin();
+        com.flansmod.common.vector.Vector3f handModifier = leftHand ? mechaType.getLeftHandModifier() : mechaType.getRightHandModifier();
 
         poseStack.pushPose();
         translateModelVector(poseStack, armOrigin);
@@ -522,14 +477,10 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         double translatedX = handModifier.y;
         double translatedY = -mechaType.getArmLength() - handModifier.x;
         poseStack.translate(translatedX, translatedY, -handModifier.z);
-        poseStack.scale(mechaType.getModelScale() * mechaType.getHeldItemScale(),
-            mechaType.getModelScale() * mechaType.getHeldItemScale(),
-            mechaType.getModelScale() * mechaType.getHeldItemScale());
+        poseStack.scale(mechaType.getModelScale() * mechaType.getHeldItemScale(), mechaType.getModelScale() * mechaType.getHeldItemScale(), mechaType.getModelScale() * mechaType.getHeldItemScale());
         poseStack.mulPose(Axis.ZP.rotationDegrees(-90F));
-        if (stack.getItem() instanceof GunItem gunItem
-            && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun gunModel)
-            GunItemRenderer.renderEmbedded(gunModel, stack, gunAnimations, poseStack, buffer,
-                packedLight, OverlayTexture.NO_OVERLAY);
+        if (stack.getItem() instanceof GunItem gunItem && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun gunModel)
+            GunItemRenderer.renderEmbedded(gunModel, stack, gunAnimations, poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY);
         else
             renderMechaAddon(stack, active ? animationTime * 25F : 0F, poseStack, buffer, packedLight);
         poseStack.popPose();
@@ -555,9 +506,8 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
         LegacyTransformApplier.applyModelTransform(model, type, poseStack);
         for (EnumRenderPass renderPass : ModelCache.getRenderPasses(model))
         {
-            model.renderAll(poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)),
-                packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F,
-                type.getModelScale(), spinDegrees, renderPass);
+            model.renderAll(poseStack, buffer.getBuffer(renderPass.getRenderType(texture, translucent, cull)), packedLight, OverlayTexture.NO_OVERLAY, red, green, blue, 1F, type.getModelScale(),
+                spinDegrees, renderPass);
         }
         poseStack.popPose();
     }
@@ -645,8 +595,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             {
                 var info = type.getSeat(seat);
                 if (info != null && info.getGunType() != null)
-                    driveable.setModelPassengerGunAimPivot(seat,
-                        model.getRegisteredGunAimPivot(info.getGunName()));
+                    driveable.setModelPassengerGunAimPivot(seat, model.getRegisteredGunAimPivot(info.getGunName()));
             }
             passengerPivotType = type;
             passengerPivotModel = model;
@@ -725,21 +674,17 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             DriveableData data = driveable.getDriveableData();
             if (data == null)
                 return;
-            HandAnimationState left = updateHandGunAnimation(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL),
-                leftGunItem, leftGunRounds, leftGunAnimations,
+            HandAnimationState left = updateHandGunAnimation(data.getMechaAddon(EnumMechaSlotType.LEFT_TOOL), leftGunItem, leftGunRounds, leftGunAnimations,
                 DriveableInput.isDown(driveable.getInputMask(), DriveableInput.PRIMARY_FIRE), elapsed, driveable);
             leftGunItem = left.item();
             leftGunRounds = left.rounds();
-            HandAnimationState right = updateHandGunAnimation(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL),
-                rightGunItem, rightGunRounds, rightGunAnimations,
+            HandAnimationState right = updateHandGunAnimation(data.getMechaAddon(EnumMechaSlotType.RIGHT_TOOL), rightGunItem, rightGunRounds, rightGunAnimations,
                 DriveableInput.isDown(driveable.getInputMask(), DriveableInput.SECONDARY_FIRE), elapsed, driveable);
             rightGunItem = right.item();
             rightGunRounds = right.rounds();
         }
 
-        private static HandAnimationState updateHandGunAnimation(ItemStack stack, GunItem previousItem,
-                                                                  int previousRounds, GunAnimations animations,
-                                                                  boolean active, int elapsed, Driveable driveable)
+        private static HandAnimationState updateHandGunAnimation(ItemStack stack, GunItem previousItem, int previousRounds, GunAnimations animations, boolean active, int elapsed, Driveable driveable)
         {
             for (int tick = 0; tick < elapsed; tick++)
                 animations.update();
@@ -749,23 +694,21 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
             int rounds = 0;
             for (int slot = 0; slot < gunItem.getConfigType().getNumAmmoItemsInGun(stack); slot++)
                 rounds += ShootableItem.getRoundsRemaining(gunItem.getAmmoItemStack(stack, slot, driveable.level().registryAccess()));
-            if (previousItem == gunItem && previousRounds >= 0
-                && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun model)
+            if (previousItem == gunItem && previousRounds >= 0 && ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun model)
             {
                 if (rounds < previousRounds)
-                    animations.doShoot(model.getPumpDelay(), model.getPumpTime(), model.getHammerDelay(),
-                        model.getHammerAngle(), model.getAlthammerAngle(), model.getCasingDelay());
+                    animations.doShoot(model.getPumpDelay(), model.getPumpTime(), model.getHammerDelay(), model.getHammerAngle(), model.getAlthammerAngle(), model.getCasingDelay());
                 else if (rounds > previousRounds)
-                    animations.doReload(Math.max(1F, gunItem.getActualReloadTime(stack, driveable.level().registryAccess(), ItemStack.EMPTY)),
-                        model.getPumpDelayAfterReload(), model.getPumpTime(), model.getChargeDelayAfterReload(),
-                        model.getChargeTime(), 1, false);
+                    animations.doReload(Math.max(1F, gunItem.getActualReloadTime(stack, driveable.level().registryAccess(), ItemStack.EMPTY)), model.getPumpDelayAfterReload(), model.getPumpTime(),
+                        model.getChargeDelayAfterReload(), model.getChargeTime(), 1, false);
             }
             if (active)
                 animations.addMinigunBarrelRotationSpeed(0.2F * elapsed);
             return new HandAnimationState(gunItem, rounds);
         }
 
-        private record HandAnimationState(GunItem item, int rounds) {}
+        private record HandAnimationState(GunItem item, int rounds)
+        {}
 
         private void snapTransforms(Driveable driveable, DriveableType type)
         {
@@ -774,24 +717,17 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 boolean folded = driveable.isWingFolded();
                 boolean gearDeployed = driveable.isGearDeployed();
                 boolean doorOpen = driveable.isDoorOpen();
-                wingTransform.snap(folded ? planeType.getWingPos2() : planeType.getWingPos1(),
-                    folded ? planeType.getWingRot2() : planeType.getWingRot1());
-                wingWheelTransform.snap(gearDeployed ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(),
-                    gearDeployed ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2());
-                bodyWheelTransform.snap(gearDeployed ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(),
-                    gearDeployed ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2());
-                tailWheelTransform.snap(gearDeployed ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(),
-                    gearDeployed ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2());
-                doorTransform.snap(doorOpen ? planeType.getDoorPos2() : planeType.getDoorPos1(),
-                    doorOpen ? planeType.getDoorRot2() : planeType.getDoorRot1());
+                wingTransform.snap(folded ? planeType.getWingPos2() : planeType.getWingPos1(), folded ? planeType.getWingRot2() : planeType.getWingRot1());
+                wingWheelTransform.snap(gearDeployed ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(), gearDeployed ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2());
+                bodyWheelTransform.snap(gearDeployed ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(), gearDeployed ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2());
+                tailWheelTransform.snap(gearDeployed ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(), gearDeployed ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2());
+                doorTransform.snap(doorOpen ? planeType.getDoorPos2() : planeType.getDoorPos1(), doorOpen ? planeType.getDoorRot2() : planeType.getDoorRot1());
             }
             else if (type instanceof VehicleType vehicleType)
             {
                 boolean doorOpen = driveable.isDoorOpen();
-                doorTransform.snap(doorOpen ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(),
-                    doorOpen ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1());
-                door2Transform.snap(doorOpen ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(),
-                    doorOpen ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1());
+                doorTransform.snap(doorOpen ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(), doorOpen ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1());
+                door2Transform.snap(doorOpen ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(), doorOpen ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1());
             }
         }
 
@@ -802,30 +738,23 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
                 boolean folded = driveable.isWingFolded();
                 boolean gearDeployed = driveable.isGearDeployed();
                 boolean doorOpen = driveable.isDoorOpen();
-                wingTransform.advance(folded ? planeType.getWingPos2() : planeType.getWingPos1(),
-                    folded ? planeType.getWingRot2() : planeType.getWingRot1(),
-                    planeType.getWingRate(), planeType.getWingRotRate(), elapsed);
-                wingWheelTransform.advance(gearDeployed ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(),
-                    gearDeployed ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2(),
+                wingTransform.advance(folded ? planeType.getWingPos2() : planeType.getWingPos1(), folded ? planeType.getWingRot2() : planeType.getWingRot1(), planeType.getWingRate(),
+                    planeType.getWingRotRate(), elapsed);
+                wingWheelTransform.advance(gearDeployed ? planeType.getWingWheelPos1() : planeType.getWingWheelPos2(), gearDeployed ? planeType.getWingWheelRot1() : planeType.getWingWheelRot2(),
                     planeType.getWingWheelRate(), planeType.getWingWheelRotRate(), elapsed);
-                bodyWheelTransform.advance(gearDeployed ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(),
-                    gearDeployed ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2(),
+                bodyWheelTransform.advance(gearDeployed ? planeType.getBodyWheelPos1() : planeType.getBodyWheelPos2(), gearDeployed ? planeType.getBodyWheelRot1() : planeType.getBodyWheelRot2(),
                     planeType.getBodyWheelRate(), planeType.getBodyWheelRotRate(), elapsed);
-                tailWheelTransform.advance(gearDeployed ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(),
-                    gearDeployed ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2(),
+                tailWheelTransform.advance(gearDeployed ? planeType.getTailWheelPos1() : planeType.getTailWheelPos2(), gearDeployed ? planeType.getTailWheelRot1() : planeType.getTailWheelRot2(),
                     planeType.getTailWheelRate(), planeType.getTailWheelRotRate(), elapsed);
-                doorTransform.advance(doorOpen ? planeType.getDoorPos2() : planeType.getDoorPos1(),
-                    doorOpen ? planeType.getDoorRot2() : planeType.getDoorRot1(),
-                    planeType.getDoorRate(), planeType.getDoorRotRate(), elapsed);
+                doorTransform.advance(doorOpen ? planeType.getDoorPos2() : planeType.getDoorPos1(), doorOpen ? planeType.getDoorRot2() : planeType.getDoorRot1(), planeType.getDoorRate(),
+                    planeType.getDoorRotRate(), elapsed);
             }
             else if (type instanceof VehicleType vehicleType)
             {
                 boolean doorOpen = driveable.isDoorOpen();
-                doorTransform.advance(doorOpen ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(),
-                    doorOpen ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1(),
-                    vehicleType.getDoorRate(), vehicleType.getDoorRotRate(), elapsed);
-                door2Transform.advance(doorOpen ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(),
-                    doorOpen ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1(),
+                doorTransform.advance(doorOpen ? vehicleType.getDoorPos2() : vehicleType.getDoorPos1(), doorOpen ? vehicleType.getDoorRot2() : vehicleType.getDoorRot1(), vehicleType.getDoorRate(),
+                    vehicleType.getDoorRotRate(), elapsed);
+                door2Transform.advance(doorOpen ? vehicleType.getDoor2Pos2() : vehicleType.getDoor2Pos1(), doorOpen ? vehicleType.getDoor2Rot2() : vehicleType.getDoor2Rot1(),
                     vehicleType.getDoor2Rate(), vehicleType.getDoor2RotRate(), elapsed);
             }
         }
@@ -845,8 +774,7 @@ public class DriveableRenderer<T extends Driveable> extends FlanEntityRenderer<T
 
         private static float targetSteering(int inputMask)
         {
-            return ((DriveableInput.isDown(inputMask, DriveableInput.RIGHT) ? 1F : 0F)
-                - (DriveableInput.isDown(inputMask, DriveableInput.LEFT) ? 1F : 0F)) * 20F;
+            return ((DriveableInput.isDown(inputMask, DriveableInput.RIGHT) ? 1F : 0F) - (DriveableInput.isDown(inputMask, DriveableInput.LEFT) ? 1F : 0F)) * 20F;
         }
     }
 }

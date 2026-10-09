@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.item.tooltip.AmmoStatContext;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.BulletType;
 import com.flansmodultimate.hooks.ClientHooks;
 import lombok.Getter;
@@ -102,7 +104,6 @@ public class BulletItem extends ShootableItem implements IFlanItem<BulletType>
 
     private boolean hasLockOn()
     {
-        return configType.isLockOnToLivings() || configType.isLockOnToMechas() || configType.isLockOnToPlanes() || configType.isLockOnToPlayers()
-            || configType.isLockOnToVehicles();
+        return configType.isLockOnToLivings() || configType.isLockOnToMechas() || configType.isLockOnToPlanes() || configType.isLockOnToPlayers() || configType.isLockOnToVehicles();
     }
 }

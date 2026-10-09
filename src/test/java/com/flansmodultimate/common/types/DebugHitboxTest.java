@@ -1,18 +1,21 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveablePart;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import org.junit.jupiter.api.Test;
+
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class DebugHitboxTest
 {
-    @Test void setupPartGeometryRoundTripsForVehiclesAndPlanes()
+    @Test
+    void setupPartGeometryRoundTripsForVehiclesAndPlanes()
     {
         float[] pixels = {-13F, 7F, -29F, 31F, 19F, 67F};
-        for (DriveableType type : new DriveableType[] {new VehicleType(), new PlaneType(), new MechaType()})
+        for (DriveableType type : new DriveableType[]{new VehicleType(), new PlaneType(), new MechaType()})
         {
             CollisionBox box = type.debugHitboxFromPixels(100F, pixels, 9F, 0.5F);
             assertArrayEquals(pixels, type.debugHitboxPixels(box), 0.0001F);
@@ -21,7 +24,8 @@ class DebugHitboxTest
         }
     }
 
-    @Test void resetRestoresOriginalBoxesAfterRepeatedEditsAndRemoval()
+    @Test
+    void resetRestoresOriginalBoxesAfterRepeatedEditsAndRemoval()
     {
         DriveableType type = new VehicleType();
         CollisionBox original = new CollisionBox(100F, 0, 0, 0, 16, 16, 16);
@@ -35,7 +39,8 @@ class DebugHitboxTest
         assertEquals(3L, type.getDebugHitboxRevision());
     }
 
-    @Test void geometryEditsAndRemovalDoNotRepairOrDestroyParts()
+    @Test
+    void geometryEditsAndRemovalDoNotRepairOrDestroyParts()
     {
         CollisionBox box = new CollisionBox(100F, 0, 0, 0, 16, 16, 16);
         DriveablePart part = new DriveablePart(EnumDriveablePart.CORE, box);

@@ -1,14 +1,11 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.common.driveables.DriveableAmmoLoader;
-import com.flansmodultimate.common.driveables.DriveableAmmoLoader.BankReport;
-import com.flansmodultimate.common.driveables.DriveableAmmoLoader.LoadReport;
 import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.MountedGunAmmoLoader;
-import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader;
+import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader.BankReport;
+import com.flansmodultimate.common.driveables.weapons.DriveableAmmoLoader.LoadReport;
+import com.flansmodultimate.common.driveables.weapons.MountedGunAmmoLoader;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.ShootableType;
@@ -25,18 +22,14 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -71,8 +64,8 @@ public final class RearmCommand
 
     private static LiteralArgumentBuilder<CommandSourceStack> commandRoot(String name)
     {
-        return Commands.literal(name).requires(source -> source.hasPermission(2)).executes(context -> rearm(context, null)).then(Commands
-            .argument("ammo", StringArgumentType.word()).suggests(RearmCommand::suggestAmmo).executes(context -> rearm(context, StringArgumentType.getString(context, "ammo"))));
+        return Commands.literal(name).requires(source -> source.hasPermission(2)).executes(context -> rearm(context, null))
+            .then(Commands.argument("ammo", StringArgumentType.word()).suggests(RearmCommand::suggestAmmo).executes(context -> rearm(context, StringArgumentType.getString(context, "ammo"))));
     }
 
     private static int rearm(CommandContext<CommandSourceStack> context, @Nullable String ammoName) throws CommandSyntaxException

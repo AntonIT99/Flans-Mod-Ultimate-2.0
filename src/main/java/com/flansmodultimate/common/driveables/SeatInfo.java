@@ -1,6 +1,8 @@
 package com.flansmodultimate.common.driveables;
 
 import com.flansmod.common.vector.Vector3f;
+import com.flansmodultimate.common.driveables.optics.VehicleOptics;
+import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.content.IContentProvider;
@@ -66,14 +68,14 @@ public final class SeatInfo
      */
     private List<Vector3f> gunBarrels = List.of();
 
-    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch,
-        @Nullable String gunTypeShortName, @Nullable String gunName)
+    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName,
+        @Nullable String gunName)
     {
         this(id, position, part, driver, minYaw, maxYaw, minPitch, maxPitch, gunTypeShortName, gunName, null);
     }
 
-    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch,
-        @Nullable String gunTypeShortName, @Nullable String gunName, @Nullable IContentProvider contentPack)
+    public SeatInfo(int id, Vector3f position, EnumDriveablePart part, boolean driver, float minYaw, float maxYaw, float minPitch, float maxPitch, @Nullable String gunTypeShortName,
+        @Nullable String gunName, @Nullable IContentProvider contentPack)
     {
         this.id = Math.max(0, id);
         this.position = new Vector3f(position.x, position.y, position.z);

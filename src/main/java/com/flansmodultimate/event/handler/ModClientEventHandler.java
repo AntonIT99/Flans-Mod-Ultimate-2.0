@@ -1,10 +1,6 @@
 package com.flansmodultimate.event.handler;
 
-import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.FlansModBlocks;
-import com.flansmodultimate.FlansModEntities;
-import com.flansmodultimate.FlansModItems;
-import com.flansmodultimate.FlansModParticles;
+import com.flansmodultimate.*;
 import com.flansmodultimate.client.EntityCullingCompat;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.gui.ModMenuScreens;
@@ -12,44 +8,16 @@ import com.flansmodultimate.client.gui.options.FlansSettingsHubScreen;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.model.BewlrRoutingModel;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.particle.AfterburnParticle;
-import com.flansmodultimate.client.particle.BigSmokeParticle;
-import com.flansmodultimate.client.particle.BlastPuffParticle;
-import com.flansmodultimate.client.particle.Debris1Particle;
-import com.flansmodultimate.client.particle.FireExplosionParticle;
-import com.flansmodultimate.client.particle.FlareParticle;
-import com.flansmodultimate.client.particle.FlashParticle;
-import com.flansmodultimate.client.particle.FmFlameParticle;
-import com.flansmodultimate.client.particle.FmMuzzleFlashParticle;
-import com.flansmodultimate.client.particle.FmSmokeParticle;
-import com.flansmodultimate.client.particle.FmTracerParticle;
-import com.flansmodultimate.client.particle.LegacyExplodeParticle;
-import com.flansmodultimate.client.particle.RocketExhaustParticle;
-import com.flansmodultimate.client.particle.SmokeBurstParticle;
-import com.flansmodultimate.client.particle.SmokeGrenadeParticle;
-import com.flansmodultimate.client.render.ArmorCapeLayer;
-import com.flansmodultimate.client.render.ClientHudOverlays;
-import com.flansmodultimate.client.render.CustomArmorLayer;
-import com.flansmodultimate.client.render.PlayerSkinOverrides;
-import com.flansmodultimate.client.render.VehicleThermalRenderer;
+import com.flansmodultimate.client.particle.*;
 import com.flansmodultimate.client.render.blockentity.ItemHolderRenderer;
-import com.flansmodultimate.client.render.entity.AAGunRenderer;
-import com.flansmodultimate.client.render.entity.BulletRenderer;
-import com.flansmodultimate.client.render.entity.DeployableGunRenderer;
-import com.flansmodultimate.client.render.entity.DriveableRenderer;
-import com.flansmodultimate.client.render.entity.GrenadeRenderer;
-import com.flansmodultimate.client.render.entity.InvisibleEntityRenderer;
-import com.flansmodultimate.client.render.entity.ParachuteRenderer;
-import com.flansmodultimate.client.render.entity.TeamObjectRenderer;
-import com.flansmodultimate.client.render.entity.ThrownGunRenderer;
+import com.flansmodultimate.client.render.entity.*;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
+import com.flansmodultimate.client.render.hud.ClientHudOverlays;
 import com.flansmodultimate.client.render.item.CustomItemRenderers;
+import com.flansmodultimate.client.render.layer.*;
+import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
 import com.flansmodultimate.common.block.entity.TeamSpawnerBlockEntity;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.ICustomRendereredItem;
-import com.flansmodultimate.common.item.IFlanItem;
-import com.flansmodultimate.common.item.IPaintableItem;
-import com.flansmodultimate.common.item.ItemOpStick;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.TypeFile;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.platform.client.ClientPlatform;
@@ -61,13 +29,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.event.sound.SoundEngineLoadEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -76,9 +38,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.sounds.SoundManager;
@@ -90,9 +50,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -142,8 +100,8 @@ public final class ModClientEventHandler
     @SubscribeEvent
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event)
     {
-        Set<ResourceLocation> customRenderedItemIds = FlansMod.getItems().stream().filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>)
-            .map(RegistryEntry::getId).filter(java.util.Objects::nonNull).collect(Collectors.toUnmodifiableSet());
+        Set<ResourceLocation> customRenderedItemIds = FlansMod.getItems().stream().filter(itemRegistryObject -> itemRegistryObject.get() instanceof ICustomRendereredItem<?>).map(RegistryEntry::getId)
+            .filter(java.util.Objects::nonNull).collect(Collectors.toUnmodifiableSet());
 
         // Wrap all variants in one pass. Large legacy installations can have
         // thousands of registered Flan items, so one full map scan per item is
@@ -248,8 +206,8 @@ public final class ModClientEventHandler
     public static void registerItemColors(RegisterColorHandlersEvent.Item event)
     {
         // A spawner in the inventory belongs to no team yet
-        event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF, FlansModItems.playerSpawnerItem.get(),
-            FlansModItems.itemSpawnerItem.get(), FlansModItems.vehicleSpawnerItem.get());
+        event.register((stack, tintIndex) -> tintIndex == 0 ? TeamSpawnerBlockEntity.UNOWNED_COLOUR : 0xFFFFFFFF, FlansModItems.playerSpawnerItem.get(), FlansModItems.itemSpawnerItem.get(),
+            FlansModItems.vehicleSpawnerItem.get());
 
         event.register((stack, tintIndex) ->
         {

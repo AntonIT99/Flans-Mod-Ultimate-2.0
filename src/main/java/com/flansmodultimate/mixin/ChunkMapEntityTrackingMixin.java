@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ChunkMap.class)
 public abstract class ChunkMapEntityTrackingMixin
 {
-    @Shadow @Final
+    @Shadow @Final @SuppressWarnings("MismatchedCollectionQueryUpdate") // Shadowed target map, populated by the target.
     private Int2ObjectMap<?> entityMap;
     @Shadow @Final
     ServerLevel level;

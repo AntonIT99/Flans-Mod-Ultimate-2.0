@@ -1,6 +1,6 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.client.render.ThermalHotParticles;
+import com.flansmodultimate.client.render.thermal.ThermalHotParticles;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.particles.ParticleOptions;

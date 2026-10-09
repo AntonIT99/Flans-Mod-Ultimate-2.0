@@ -3,8 +3,8 @@ package com.flansmodultimate.client.gui;
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.teams.TeamsClientState;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketTeamsState;
-import com.flansmodultimate.network.server.PacketTeamsAction;
+import com.flansmodultimate.network.client.teams.PacketTeamsState;
+import com.flansmodultimate.network.server.teams.PacketTeamsAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 

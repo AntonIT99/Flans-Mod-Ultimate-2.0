@@ -1,18 +1,19 @@
 package com.flansmodultimate.client.distant;
 
-import com.flansmodultimate.client.render.ThermalVision;
+import com.flansmodultimate.client.render.thermal.ThermalVision;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.network.client.PacketDistantContacts;
+import com.flansmodultimate.network.client.driveable.PacketDistantContacts;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -65,8 +66,7 @@ public final class DistantContactsClient
         // Tracked, but too far away to be drawn as entities
         for (Entity entity : level.entitiesForRendering())
         {
-            if (entity instanceof Driveable driveable && driveable.isAlive() && driveable != ownVehicle && driveable.getConfigType() != null
-                && !driveable.shouldRender(camera.x, camera.y, camera.z))
+            if (entity instanceof Driveable driveable && driveable.isAlive() && driveable != ownVehicle && driveable.getConfigType() != null && !driveable.shouldRender(camera.x, camera.y, camera.z))
             {
                 proxies.computeIfAbsent(driveable.getId(), Proxy::new).follow(driveable);
                 live.add(driveable.getId());

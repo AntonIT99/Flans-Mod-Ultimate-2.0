@@ -5,28 +5,21 @@ import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmodultimate.client.render.EnumRenderPass;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
-import com.flansmodultimate.common.types.ArmorType;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.platform.render.ShaderPlatform;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.LogUtils;
-import com.flansmodultimate.util.ModelClassResolver;
+import com.flansmodultimate.util.*;
 import com.flansmodultimate.util.ModelClassResolver.ModelClassLocation;
 import com.wolffsmod.api.client.model.IModelBase;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.resources.ResourceLocation;
+
 import java.nio.file.NoSuchFileException;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -53,8 +46,8 @@ public final class ModelCache
     {
         GpuModelCache.clear();
         DriveableImpostorCache.clear();
-        com.flansmodultimate.client.render.WorldModelPreview.clear();
-        com.flansmodultimate.client.render.TypeModelPreview.clearBounds();
+        com.flansmodultimate.client.render.preview.WorldModelPreview.clear();
+        com.flansmodultimate.client.render.preview.TypeModelPreview.clearBounds();
         ModelTextureFitter.clear();
         cache.clear();
         renderPassCache.clear();
@@ -121,8 +114,8 @@ public final class ModelCache
     @Nullable
     public static IModelBase getOrLoadTypeModel(ArmorType type)
     {
-        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName()), type,
-            new ModelDefaultArmor(type.getArmorItemType()), type.getTexture());
+        return getOrLoadModel(new ModelCacheKey(type.getModelClassName(), type.getShortName(), type.getContentPack().getName()), type, new ModelDefaultArmor(type.getArmorItemType()),
+            type.getTexture());
     }
 
     @Nullable
@@ -150,8 +143,7 @@ public final class ModelCache
     @Nullable
     public static ModelFlash getOrLoadFlashModel(GunType gunType)
     {
-        if (getOrLoadModel(new ModelCacheKey(gunType.getFlashModelClassName(), null, gunType.getContentPack().getName()), gunType, null,
-            gunType.getFlashTexture()) instanceof ModelFlash modelFlash)
+        if (getOrLoadModel(new ModelCacheKey(gunType.getFlashModelClassName(), null, gunType.getContentPack().getName()), gunType, null, gunType.getFlashTexture()) instanceof ModelFlash modelFlash)
         {
             return modelFlash;
         }

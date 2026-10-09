@@ -2,69 +2,36 @@ package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.api.IEquipmentPolicy;
-import com.flansmodultimate.client.render.KillMessageData;
-import com.flansmodultimate.common.AmbientMobArmor;
-import com.flansmodultimate.common.EnchantmentModule;
-import com.flansmodultimate.common.FlanDamageSources;
-import com.flansmodultimate.common.PlayerData;
-import com.flansmodultimate.common.command.DefaultAmmoCommand;
-import com.flansmodultimate.common.command.DigitalAmmoCommand;
-import com.flansmodultimate.common.command.FMParticleCommand;
-import com.flansmodultimate.common.command.FlanEntityCommand;
-import com.flansmodultimate.common.command.GunAttachmentsCommand;
-import com.flansmodultimate.common.command.HitboxDebugCommand;
-import com.flansmodultimate.common.command.RearmCommand;
-import com.flansmodultimate.common.command.ShootPointDebugCommand;
-import com.flansmodultimate.common.command.TeamsCommand;
-import com.flansmodultimate.common.command.TryClassCommand;
-import com.flansmodultimate.common.command.TryTeamCommand;
-import com.flansmodultimate.common.command.VehicleCollisionDebugCommand;
-import com.flansmodultimate.common.command.VehiclePhysicsCommand;
-import com.flansmodultimate.common.command.WorldPhysicsCommand;
+import com.flansmodultimate.client.render.hud.KillMessageData;
+import com.flansmodultimate.common.*;
+import com.flansmodultimate.common.command.*;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoStorageHandler;
 import com.flansmodultimate.common.digitalammo.DigitalAmmoSupplyHandler;
 import com.flansmodultimate.common.distant.DistantSync;
-import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
-import com.flansmodultimate.common.entity.Bullet;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Seat;
-import com.flansmodultimate.common.entity.Shootable;
-import com.flansmodultimate.common.entity.ThrownGun;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionBypass;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.explosions.CraterCarver;
 import com.flansmodultimate.common.explosions.ExplosionKillAudit;
 import com.flansmodultimate.common.guns.GunArmPoses;
-import com.flansmodultimate.common.item.CustomArmorItem;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.IFlanItem;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.sync.ContentFingerprint;
 import com.flansmodultimate.common.teams.TeamsDeathDrops;
 import com.flansmodultimate.common.teams.TeamsManager;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.Team;
-import com.flansmodultimate.config.ModApocalypseConfig;
-import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.config.ModCommonConfigSync;
+import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.config.*;
 import com.flansmodultimate.content.ContentManager;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketContentFingerprint;
-import com.flansmodultimate.network.client.PacketKillMessage;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.config.PacketContentFingerprint;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.teams.PacketKillMessage;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.damage.MutableDamageContext;
 import com.flansmodultimate.platform.world.LootTablePlatform;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import net.minecraftforge.event.AnvilUpdateEvent;
-import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
+import lombok.*;
+import net.minecraftforge.event.*;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -86,10 +53,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -102,20 +66,14 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mod.EventBusSubscriber(modid = FlansMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class CommonEventHandler
 {
-    private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(LootTablePlatform.id(BuiltInLootTables.ABANDONED_MINESHAFT),
-        LootTablePlatform.id(BuiltInLootTables.VILLAGE_WEAPONSMITH), LootTablePlatform.id(BuiltInLootTables.END_CITY_TREASURE),
-        LootTablePlatform.id(BuiltInLootTables.NETHER_BRIDGE), LootTablePlatform.id(BuiltInLootTables.DESERT_PYRAMID),
+    private static final Set<ResourceLocation> FLANS_LOOT_TABLES = Set.of(LootTablePlatform.id(BuiltInLootTables.ABANDONED_MINESHAFT), LootTablePlatform.id(BuiltInLootTables.VILLAGE_WEAPONSMITH),
+        LootTablePlatform.id(BuiltInLootTables.END_CITY_TREASURE), LootTablePlatform.id(BuiltInLootTables.NETHER_BRIDGE), LootTablePlatform.id(BuiltInLootTables.DESERT_PYRAMID),
         ResourceLocation.fromNamespaceAndPath("lostcities", "chests/lostcitychest"), ResourceLocation.fromNamespaceAndPath("lostcities", "chests/raildungeonchest"));
 
     @Getter
@@ -446,8 +404,7 @@ public final class CommonEventHandler
     {
         boolean cancel = entity.getVehicle() instanceof Driveable || entity.getVehicle() instanceof Seat;
 
-        if (!entity.level().isClientSide && entity instanceof ServerPlayer player
-            && FlansMod.teamsManager.getCurrentGameType().map(type -> !type.playerAttacked(player, source)).orElse(false))
+        if (!entity.level().isClientSide && entity instanceof ServerPlayer player && FlansMod.teamsManager.getCurrentGameType().map(type -> !type.playerAttacked(player, source)).orElse(false))
             cancel = true;
 
         if (!cancel && !entity.level().isClientSide && (!(entity instanceof IEquipmentPolicy policy) || policy.flansWeaponEffects()) && tryShieldBlock(entity, source, amount))
@@ -471,16 +428,14 @@ public final class CommonEventHandler
         float blockChance = 0F;
         for (InteractionHand hand : InteractionHand.values())
         {
-            if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield()
-                && hitStrength <= gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
+            if (player.getItemInHand(hand).getItem() instanceof GunItem gunItem && gunItem.getConfigType().isShield() && hitStrength <= gunItem.getConfigType().getShieldMaxBlockableMeleeDamage())
                 blockChance = Math.max(blockChance, gunItem.getConfigType().getShieldBlockChance());
         }
 
         if (blockChance <= 0F || player.getRandom().nextFloat() >= blockChance)
             return false;
 
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1F,
-            0.8F + player.getRandom().nextFloat() * 0.4F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1F, 0.8F + player.getRandom().nextFloat() * 0.4F);
         playMeleeImpactSound(source, true);
         return true;
     }

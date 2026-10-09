@@ -1,6 +1,6 @@
 package com.flansmodultimate.client.distant;
 
-import com.flansmodultimate.network.client.PacketDistantExplosion;
+import com.flansmodultimate.network.client.effects.PacketDistantExplosion;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -8,9 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Large explosions too far away for their particles, shown as a flash, a fireball and a rising smoke column
@@ -119,8 +117,7 @@ public final class DistantExplosionCues
         }
 
         @Nullable
-        private IDistantBoxGroup show(IDistantTerrain terrain, @Nullable IDistantBoxGroup group, boolean visible, String name,
-                                      DistantBoxStyle style, List<DistantBox> boxes)
+        private IDistantBoxGroup show(IDistantTerrain terrain, @Nullable IDistantBoxGroup group, boolean visible, String name, DistantBoxStyle style, List<DistantBox> boxes)
         {
             if (!visible)
             {
@@ -155,8 +152,8 @@ public final class DistantExplosionCues
 
         private static int argb(double alpha, double red, double green, double blue)
         {
-            return (Mth.clamp((int) Math.round(alpha), 0, 255) << 24) | (Mth.clamp((int) Math.round(red), 0, 255) << 16)
-                | (Mth.clamp((int) Math.round(green), 0, 255) << 8) | Mth.clamp((int) Math.round(blue), 0, 255);
+            return (Mth.clamp((int) Math.round(alpha), 0, 255) << 24) | (Mth.clamp((int) Math.round(red), 0, 255) << 16) | (Mth.clamp((int) Math.round(green), 0, 255) << 8)
+                | Mth.clamp((int) Math.round(blue), 0, 255);
         }
 
         /** Shapes for the current age; the box counts never change, so the groups update in place. */
@@ -166,10 +163,8 @@ public final class DistantExplosionCues
             double heat = Math.min(1D, (double) age / fireTicks);
             double grow = Math.min(1D, age / 6D);
             double fireAlpha = age < fireTicks ? 235D * Math.pow(1D - heat, 0.6D) : 0D;
-            fire = List.of(
-                cube(radius * 0.2D, flash > 0D ? radius * 1.6D * (0.7D + 0.3D * flash) : 0D, argb(255D * flash, 255D, 246D, 227D)),
-                cube(radius * (0.2D + 0.3D * heat), age < fireTicks ? radius * (0.6D + 0.5D * grow) : 0D,
-                    argb(fireAlpha, Mth.lerp(heat, 255D, 150D), Mth.lerp(heat, 214D, 38D), Mth.lerp(heat, 110D, 12D))));
+            fire = List.of(cube(radius * 0.2D, flash > 0D ? radius * 1.6D * (0.7D + 0.3D * flash) : 0D, argb(255D * flash, 255D, 246D, 227D)), cube(radius * (0.2D + 0.3D * heat),
+                age < fireTicks ? radius * (0.6D + 0.5D * grow) : 0D, argb(fireAlpha, Mth.lerp(heat, 255D, 150D), Mth.lerp(heat, 214D, 38D), Mth.lerp(heat, 110D, 12D))));
 
             double life = (double) age / lifetime;
             List<DistantBox> puffs = new ArrayList<>(SMOKE_PUFFS);

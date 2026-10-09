@@ -1,28 +1,18 @@
 package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.EnumWeaponType;
-import com.flansmodultimate.common.driveables.PilotGun;
+import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.ArmorPlate;
 import com.flansmodultimate.common.driveables.armor.EnumArmorFacing;
-import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.FireableGun;
-import com.flansmodultimate.common.guns.FiredShot;
-import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.driveables.weapons.PilotGun;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu.Page;
-import com.flansmodultimate.common.item.AmmoStatContext;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.item.TooltipKeys;
-import com.flansmodultimate.common.types.BulletType;
-import com.flansmodultimate.common.types.DriveableType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.PlaneType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.item.tooltip.AmmoStatContext;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.InventoryHelper;
@@ -38,14 +28,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 /** 1.7.10-style driveable hub, inventory, fuel and repair interface. */
@@ -105,8 +88,8 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         for (int index = 0; index < repairParts.size(); index++)
         {
             int capturedIndex = index;
-            repairButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.flansmodultimate.driveable.repair"), ignored -> repairPart(capturedIndex))
-                .bounds(repairLeft() + 9, repairTop() + 23, 45, 20).build()));
+            repairButtons.add(addRenderableWidget(
+                Button.builder(Component.translatable("gui.flansmodultimate.driveable.repair"), ignored -> repairPart(capturedIndex)).bounds(repairLeft() + 9, repairTop() + 23, 45, 20).build()));
         }
         refreshButtons();
     }
@@ -183,8 +166,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             return false;
         if (minecraft.player.getAbilities().instabuild)
             return true;
-        return InventoryHelper.canConsumeAll(minecraft.player.getInventory(),
-            menu.getDriveable().getConfigType().getItemsRequired(part, menu.getDriveable().getDriveableData().getEngine()));
+        return InventoryHelper.canConsumeAll(minecraft.player.getInventory(), menu.getDriveable().getConfigType().getItemsRequired(part, menu.getDriveable().getDriveableData().getEngine()));
     }
 
     private void repairPart(int index)
@@ -383,8 +365,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
             lines.addAll(repairTooltip(mouseX, mouseY));
         else if (menu.getPage() == Page.MISSILES && mouseX >= x + 10 && mouseX < x + 166 && mouseY >= y + 20 && mouseY < y + 90)
         {
-            lines.addAll(ammoTooltip("missiles", Component.literal("[" + missilePageName() + "]"), acceptedVehicleAmmo(EnumSet.of(EnumWeaponType.MISSILE, EnumWeaponType.SHELL)),
-                bankContext(true)));
+            lines.addAll(ammoTooltip("missiles", Component.literal("[" + missilePageName() + "]"), acceptedVehicleAmmo(EnumSet.of(EnumWeaponType.MISSILE, EnumWeaponType.SHELL)), bankContext(true)));
         }
         else if (menu.getPage() == Page.BOMBS && mouseX >= x + 10 && mouseX < x + 166 && mouseY >= y + 20 && mouseY < y + 90)
         {
@@ -498,8 +479,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         List<Component> stats = new ArrayList<>();
         if (type.getRoundsPerItem() > 1)
             stats.add(IFlanItem.statLine(Component.translatable(TooltipKeys.ROUNDS), String.valueOf(type.getRoundsPerItem())));
-        ModUtils.getItemStack(type).map(ItemStack::getItem).filter(ShootableItem.class::isInstance).map(ShootableItem.class::cast)
-            .ifPresent(item -> item.appendAmmoStats(stats, context));
+        ModUtils.getItemStack(type).map(ItemStack::getItem).filter(ShootableItem.class::isInstance).map(ShootableItem.class::cast).ifPresent(item -> item.appendAmmoStats(stats, context));
         stats.forEach(line -> block.add(Component.literal("  ").append(line)));
         return block;
     }
@@ -537,8 +517,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
 
         if (shootDelay > 0F)
             lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.FIRE_RATE), IFlanItem.formatFloat(1200F / shootDelay) + " rpm"));
-        lines.add(
-            IFlanItem.statLine(Component.translatable(TooltipKeys.MODE), Component.translatable("tooltip.flansmodultimate.fire_mode." + mode.name().toLowerCase(Locale.ROOT))));
+        lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.MODE), Component.translatable("tooltip.flansmodultimate.fire_mode." + mode.name().toLowerCase(Locale.ROOT))));
         if (gun.getNumBullets() > 1)
             lines.add(IFlanItem.statLine(Component.translatable(TooltipKeys.SHOT), String.valueOf(gun.getNumBullets())));
 
@@ -633,8 +612,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     {
         List<Component> lines = new ArrayList<>();
         lines.add(Component.literal(part.getType().getName()).withStyle(ChatFormatting.YELLOW));
-        lines.add(
-            Component.translatable("gui.flansmodultimate.driveable.part_health", formatStat(part.getHealth()), formatStat(part.getMaxHealth())).withStyle(ChatFormatting.GRAY));
+        lines.add(Component.translatable("gui.flansmodultimate.driveable.part_health", formatStat(part.getHealth()), formatStat(part.getMaxHealth())).withStyle(ChatFormatting.GRAY));
 
         DriveableType type = menu.getDriveable() == null ? null : menu.getDriveable().getConfigType();
         if (type != null && type.getResolvedArmor() != null)
@@ -710,9 +688,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int top = repairTop();
         int end = visibleRepairEnd(parts);
         graphics.blit(FlansModTextures.TEXTURE_GUI_DRIVEABLEREPAIR, left, top, 0, 0, 202, 23);
-        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
-            ? title.getString()
-            : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
+        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null ? title.getString() : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
         graphics.drawString(font, vehicleName + " - Repair", left + 7, top + 7, 0xFFFFFF, false);
         int y = 23;
         for (int index = repairOffset; index < end; index++)
@@ -750,9 +726,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY)
     {
-        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null
-            ? title.getString()
-            : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
+        String vehicleName = menu.getDriveable() == null || menu.getDriveable().getConfigType() == null ? title.getString() : ModUtils.getDisplayNameString(menu.getDriveable().getConfigType());
         if (menu.getPage() == Page.REPAIR)
             return;
 
@@ -769,8 +743,7 @@ public final class DriveableInventoryScreen extends AbstractContainerScreen<Driv
         int x = legacyLeft();
         int y = topPos;
         int backY = y + (menu.getPage() == Page.FUEL ? 24 : 5);
-        if (!menu.isPassengerGunMenu() && menu.getPage() != Page.MENU && menu.getPage() != Page.REPAIR && mouseX > x + 161 && mouseX < x + 171 && mouseY > backY
-            && mouseY < backY + 10)
+        if (!menu.isPassengerGunMenu() && menu.getPage() != Page.MENU && menu.getPage() != Page.REPAIR && mouseX > x + 161 && mouseX < x + 171 && mouseY > backY && mouseY < backY + 10)
         {
             selectPage(Page.MENU);
             return true;

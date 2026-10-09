@@ -1,6 +1,6 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.client.render.ArmorCapeLayer;
+import com.flansmodultimate.client.render.layer.ArmorCapeLayer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;

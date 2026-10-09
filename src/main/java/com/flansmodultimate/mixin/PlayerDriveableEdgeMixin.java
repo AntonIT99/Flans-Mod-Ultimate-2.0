@@ -1,6 +1,6 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.common.driveables.DriveableCollisionWorld;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionWorld;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;

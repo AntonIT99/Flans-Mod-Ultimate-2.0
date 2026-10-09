@@ -99,7 +99,7 @@ class DriveableTypeEngineSoundTest
         assertEquals("ignition", type.getEngineStartupSound());
         assertEquals("running", type.getEngineIdleLoopSound());
         assertTrue(type.usesEngineSoundAsIdleLoop());
-        assertEquals(0.65F, com.flansmodultimate.common.driveables.DriveableControlPhysics.engineSoundPitch(0F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS), 1F));
+        assertEquals(0.65F, com.flansmodultimate.common.driveables.physics.DriveableControlPhysics.engineSoundPitch(0F, type.getEngineSoundPitchCurve(VEHICLE_DEFAULTS), 1F));
     }
 
     @Test

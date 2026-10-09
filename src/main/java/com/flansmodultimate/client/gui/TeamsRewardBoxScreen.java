@@ -3,8 +3,8 @@ package com.flansmodultimate.client.gui;
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketLoadoutState;
-import com.flansmodultimate.network.server.PacketLoadoutAction;
+import com.flansmodultimate.network.client.teams.PacketLoadoutState;
+import com.flansmodultimate.network.server.teams.PacketLoadoutAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,15 +49,13 @@ public final class TeamsRewardBoxScreen extends Screen
             row++;
         }
 
-        addRenderableWidget(
-            Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub())).bounds(left + 68, top + 171, 60, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub())).bounds(left + 68, top + 171, 60, 20).build());
     }
 
     /** Opens the oldest box the player still holds of this kind. */
     private static void openFirstUnopened(PacketLoadoutState state, String boxId)
     {
-        state.getBoxes().stream().filter(box -> !box.opened() && boxId.equals(box.boxId())).findFirst()
-            .ifPresent(box -> PacketHandler.sendToServer(PacketLoadoutAction.openBox(box.id())));
+        state.getBoxes().stream().filter(box -> !box.opened() && boxId.equals(box.boxId())).findFirst().ifPresent(box -> PacketHandler.sendToServer(PacketLoadoutAction.openBox(box.id())));
     }
 
     @Override

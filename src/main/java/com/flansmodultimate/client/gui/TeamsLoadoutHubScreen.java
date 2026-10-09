@@ -4,8 +4,8 @@ import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketLoadoutState;
-import com.flansmodultimate.network.server.PacketLoadoutAction;
+import com.flansmodultimate.network.client.teams.PacketLoadoutState;
+import com.flansmodultimate.network.server.teams.PacketLoadoutAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,14 +40,12 @@ public final class TeamsLoadoutHubScreen extends Screen
         for (int i = 0; i < Math.min(5, state.getLoadouts().size()); i++)
         {
             int index = i;
-            Button button = Button.builder(Component.literal("Edit"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.edit(index)))
-                .bounds(left + 12 + 49 * i, top + 117, 36, 20).build();
+            Button button = Button.builder(Component.literal("Edit"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.edit(index))).bounds(left + 12 + 49 * i, top + 117, 36, 20).build();
             button.active = i >= state.getLoadoutUnlockRanks().size() || state.getRank() >= state.getLoadoutUnlockRanks().get(i);
             addRenderableWidget(button);
         }
 
-        addRenderableWidget(
-            Button.builder(Component.literal("Play >>"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.play())).bounds(left + 190, top + 162, 59, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Play >>"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.play())).bounds(left + 190, top + 162, 59, 20).build());
 
         // A slot per box type the pool advertises rather than per box held, so
         // the kinds still to be earned keep their panel with a disabled button.
@@ -63,8 +61,7 @@ public final class TeamsLoadoutHubScreen extends Screen
     /** Opens the oldest box the player still holds of this kind. */
     private static void openFirstUnopened(PacketLoadoutState state, String boxId)
     {
-        state.getBoxes().stream().filter(box -> !box.opened() && boxId.equals(box.boxId())).findFirst()
-            .ifPresent(box -> PacketHandler.sendToServer(PacketLoadoutAction.openBox(box.id())));
+        state.getBoxes().stream().filter(box -> !box.opened() && boxId.equals(box.boxId())).findFirst().ifPresent(box -> PacketHandler.sendToServer(PacketLoadoutAction.openBox(box.id())));
     }
 
     @Override

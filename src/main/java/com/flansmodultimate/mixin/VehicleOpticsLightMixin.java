@@ -1,6 +1,6 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.client.render.ThermalVision;
+import com.flansmodultimate.client.render.thermal.ThermalVision;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;

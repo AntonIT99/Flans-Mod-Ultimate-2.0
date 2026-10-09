@@ -4,7 +4,7 @@ import com.flansmodultimate.client.distant.dh.DhDistantTerrain;
 import com.flansmodultimate.common.distant.DistantRenderRange;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketDistantSubscription;
+import com.flansmodultimate.network.server.driveable.PacketDistantSubscription;
 import com.flansmodultimate.platform.PlatformEnvironment;
 import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;

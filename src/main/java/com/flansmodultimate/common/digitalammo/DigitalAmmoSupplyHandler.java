@@ -2,7 +2,7 @@ package com.flansmodultimate.common.digitalammo;
 
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
+import com.flansmodultimate.network.client.gun.PacketSyncDigitalAmmo;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -11,17 +11,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public final class DigitalAmmoSupplyHandler
 {
     private static final Set<ResourceLocation> supplyBlocks = new HashSet<>();
     private static final Set<UUID> cooldownPlayers = new HashSet<>();
 
-    private DigitalAmmoSupplyHandler() {}
+    private DigitalAmmoSupplyHandler()
+    {}
 
     private static boolean isDigitalAmmoEnabled()
     {
@@ -42,7 +40,8 @@ public final class DigitalAmmoSupplyHandler
         try
         {
             CommonConfigSnapshot config = ModCommonConfig.get();
-            if (config == null || !config.enableDigitalAmmoSystem()) return;
+            if (config == null || !config.enableDigitalAmmoSystem())
+                return;
 
             List<String> blockIds = config.digitalAmmoSupplyBlocks();
             for (String blockId : blockIds)
@@ -80,17 +79,21 @@ public final class DigitalAmmoSupplyHandler
      */
     public static void useSupplyBlock(ServerPlayer player, Level level, BlockPos pos)
     {
-        if (!isDigitalAmmoEnabled()) return;
+        if (!isDigitalAmmoEnabled())
+            return;
 
-        if (level.isClientSide()) return;
+        if (level.isClientSide())
+            return;
 
         BlockState state = level.getBlockState(pos);
         ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
 
-        if (!isSupplyBlock(blockId)) return;
+        if (!isSupplyBlock(blockId))
+            return;
 
         UUID playerId = player.getUUID();
-        if (cooldownPlayers.contains(playerId)) return;
+        if (cooldownPlayers.contains(playerId))
+            return;
 
         cooldownPlayers.add(playerId);
 

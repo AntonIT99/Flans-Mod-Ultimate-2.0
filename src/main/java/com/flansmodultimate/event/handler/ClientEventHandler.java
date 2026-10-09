@@ -1,45 +1,43 @@
 package com.flansmodultimate.event.handler;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.AimPoseClient;
-import com.flansmodultimate.client.CommonConfigMirror;
-import com.flansmodultimate.client.ModClient;
-import com.flansmodultimate.client.ReloadPreferencesSync;
-import com.flansmodultimate.client.debug.DebugColor;
-import com.flansmodultimate.client.debug.DebugHelper;
-import com.flansmodultimate.client.debug.DriveableHitboxRenderer;
-import com.flansmodultimate.client.debug.PlayerHitboxRenderer;
+import com.flansmodultimate.client.*;
+import com.flansmodultimate.client.debug.*;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
 import com.flansmodultimate.client.distant.DistantHorizonsClient;
 import com.flansmodultimate.client.gui.options.FlansOptionsScreen;
 import com.flansmodultimate.client.gui.options.MenuButtonPlacement;
-import com.flansmodultimate.client.input.EnumMouseButton;
-import com.flansmodultimate.client.input.GrenadeThrowInput;
-import com.flansmodultimate.client.input.GunInputState;
-import com.flansmodultimate.client.input.KeyInputHandler;
+import com.flansmodultimate.client.input.*;
 import com.flansmodultimate.client.particle.ParticleHelper;
-import com.flansmodultimate.client.render.*;
+import com.flansmodultimate.client.render.CustomRenderType;
+import com.flansmodultimate.client.render.OpStickConnectionRenderer;
+import com.flansmodultimate.client.render.effects.*;
 import com.flansmodultimate.client.render.entity.DriveableImpostorCache;
 import com.flansmodultimate.client.render.gpu.GpuModelCache;
+import com.flansmodultimate.client.render.hud.*;
+import com.flansmodultimate.client.render.layer.PlayerSkinOverrides;
+import com.flansmodultimate.client.render.thermal.ThermalHotParticles;
+import com.flansmodultimate.client.render.thermal.VehicleThermalRenderer;
 import com.flansmodultimate.client.teams.TeamsClientState;
-import com.flansmodultimate.common.driveables.DriveableCollisionBypass;
-import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionBypass;
+import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.guns.GunArmPoses;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.config.EnumGunBlockInteraction;
-import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.config.ModCommonConfig;
+import com.flansmodultimate.config.*;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketDriveableDamage;
-import com.flansmodultimate.network.server.PacketRequestDismount;
+import com.flansmodultimate.network.client.driveable.PacketDriveableDamage;
+import com.flansmodultimate.network.server.driveable.PacketRequestDismount;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.*;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.Util;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -47,30 +45,19 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.screens.OptionsScreen;
-import net.minecraft.client.gui.screens.PauseScreen;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.*;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.phys.*;
 
 import java.util.List;
 
@@ -108,8 +95,7 @@ public final class ClientEventHandler
             return;
 
         Screen screen = event.getScreen();
-        boolean wanted = screen instanceof OptionsScreen && config.optionsButtonPlacement.inOptionsScreen()
-            || screen instanceof PauseScreen && config.optionsButtonPlacement.inPauseMenu();
+        boolean wanted = screen instanceof OptionsScreen && config.optionsButtonPlacement.inOptionsScreen() || screen instanceof PauseScreen && config.optionsButtonPlacement.inPauseMenu();
         if (!wanted)
             return;
 
@@ -269,11 +255,10 @@ public final class ClientEventHandler
             return false;
 
         // Remove crosshairs for config option, gun config, or if looking down the sights of a gun
-        boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player)
-            && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
+        boolean holdingNonMeleeGun = ModUtils.hasGunItemInHands(player) && !ModUtils.getGunItemsInHands(player).stream().allMatch(gunItem -> gunItem.getConfigType().getPrimaryFunction().isMelee());
         boolean gunConfigHidesCrosshair = ModUtils.getGunItemsInHands(player).stream().anyMatch(gunItem -> !gunItem.getConfigType().shouldShowCrosshair());
-        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair() || ModClient.getCurrentScope() != null
-            || gunConfigHidesCrosshair || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
+        return VehicleOpticsClient.activeSeat() != null && !VehicleOpticsClient.activeSeat().getOptics().isShowCrosshair() || ModClient.getCurrentScope() != null || gunConfigHidesCrosshair
+            || ((ModCommonConfig.get().disableCrosshairForGuns() || ModClientConfig.get().hideCrosshairForGuns) && holdingNonMeleeGun);
     }
 
     /** Draws the hit marker where the crosshair is, whether or not the crosshair itself is shown. */
@@ -505,7 +490,7 @@ public final class ClientEventHandler
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event)
     {
-        com.flansmodultimate.network.client.PacketDebugHitboxes.clearSession();
+        com.flansmodultimate.network.client.debug.PacketDebugHitboxes.clearSession();
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
@@ -537,8 +522,7 @@ public final class ClientEventHandler
             return;
 
         float partialTick = event.getPartialTick();
-        Vec3 renderedFeet = new Vec3(Mth.lerp(partialTick, player.xo, player.getX()), Mth.lerp(partialTick, player.yo, player.getY()),
-            Mth.lerp(partialTick, player.zo, player.getZ()));
+        Vec3 renderedFeet = new Vec3(Mth.lerp(partialTick, player.xo, player.getX()), Mth.lerp(partialTick, player.yo, player.getY()), Mth.lerp(partialTick, player.zo, player.getZ()));
         Vec3 seatFeet = seat.getDriveable().getInterpolatedRiderWorldPosition(seat.getSeatIndex(), seat.getPassengerRidingOffset(player), partialTick);
         Vec3 correction = seatFeet.subtract(renderedFeet);
         event.getPoseStack().translate(correction.x, correction.y, correction.z);

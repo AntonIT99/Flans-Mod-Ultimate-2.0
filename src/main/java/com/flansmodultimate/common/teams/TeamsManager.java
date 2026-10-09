@@ -4,15 +4,10 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Flag;
 import com.flansmodultimate.common.entity.Flagpole;
 import com.flansmodultimate.common.item.IFlanItem;
-import com.flansmodultimate.common.types.LoadoutPool;
-import com.flansmodultimate.common.types.PlayerClass;
-import com.flansmodultimate.common.types.RewardBox;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketLoadoutState;
-import com.flansmodultimate.network.client.PacketPlayerClassSkins;
-import com.flansmodultimate.network.client.PacketTeamsState;
+import com.flansmodultimate.network.client.teams.*;
 import com.flansmodultimate.platform.world.ChunkTicketPlatform;
 import com.flansmodultimate.platform.world.SavedDataPlatform;
 import lombok.Getter;
@@ -20,9 +15,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
 import net.minecraft.server.MinecraftServer;
@@ -37,16 +30,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Authoritative Teams runtime. All mutation occurs on the logical server thread;
@@ -259,8 +243,7 @@ public final class TeamsManager
     {
         if (savedData == null)
             return List.of();
-        return voteOptionIds.stream().map(id -> savedData.rounds.stream().filter(round -> round.getId().equals(id)).findFirst().orElse(null)).filter(java.util.Objects::nonNull)
-            .toList();
+        return voteOptionIds.stream().map(id -> savedData.rounds.stream().filter(round -> round.getId().equals(id)).findFirst().orElse(null)).filter(java.util.Objects::nonNull).toList();
     }
 
     public void setEnabled(boolean enabled)
@@ -556,8 +539,7 @@ public final class TeamsManager
             // The break's own screens belong to the break: take down anything still showing
             // results before the new round's team selection goes up.
             syncLoadouts(player, PacketLoadoutState.OpenScreen.CLOSE, 0, "");
-            syncPlayer(player,
-                getPlayerTeam(player) == null || getPlayerTeam(player) == Team.SPECTATORS ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.CLOSE);
+            syncPlayer(player, getPlayerTeam(player) == null || getPlayerTeam(player) == Team.SPECTATORS ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.CLOSE);
         });
         return true;
     }
@@ -1001,8 +983,8 @@ public final class TeamsManager
         if (type.isEmpty() || !type.get().isAutoBalanceEnabled())
             return false;
         int requestedCount = getPlayersOnTeam(requested).size();
-        int minimum = getCurrentRound().stream().flatMap(round -> round.getTeamIds().stream()).map(Team::getTeam).filter(java.util.Objects::nonNull)
-            .mapToInt(team -> getPlayersOnTeam(team).size()).min().orElse(0);
+        int minimum = getCurrentRound().stream().flatMap(round -> round.getTeamIds().stream()).map(Team::getTeam).filter(java.util.Objects::nonNull).mapToInt(team -> getPlayersOnTeam(team).size())
+            .min().orElse(0);
         return requestedCount > minimum;
     }
 
@@ -1059,8 +1041,7 @@ public final class TeamsManager
         if (roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS) && getCurrentLoadoutPool().isPresent())
             syncLoadouts(player, PacketLoadoutState.OpenScreen.HUB, 0, "");
         else
-            syncPlayer(player,
-                roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS) ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.NONE);
+            syncPlayer(player, roundRunning && (data.getTeam() == null || data.getTeam() == Team.SPECTATORS) ? PacketTeamsState.OpenScreen.TEAM_SELECT : PacketTeamsState.OpenScreen.NONE);
         if (roundRunning)
             getCurrentGameType().ifPresent(type -> type.playerJoined(this, player));
     }
@@ -1238,18 +1219,16 @@ public final class TeamsManager
 
         int teamId = round.getTeamId(PlayerData.getInstance(player).getNewTeam());
 
-        List<ITeamObject> choices = liveObjects.values().stream().filter(ITeamObject::isSpawnPoint).filter(object -> object.getDimension().equals(map.getDimension()))
-            .filter(object ->
-            {
-                Flagpole base = object.getBaseId() == null ? null : liveBases.get(object.getBaseId());
-                return base != null && base.getMapId().equals(map.getShortName()) && (anyTeam || base.getOwnerId() == teamId);
-            }).toList();
+        List<ITeamObject> choices = liveObjects.values().stream().filter(ITeamObject::isSpawnPoint).filter(object -> object.getDimension().equals(map.getDimension())).filter(object ->
+        {
+            Flagpole base = object.getBaseId() == null ? null : liveBases.get(object.getBaseId());
+            return base != null && base.getMapId().equals(map.getShortName()) && (anyTeam || base.getOwnerId() == teamId);
+        }).toList();
 
         if (!choices.isEmpty())
             return Optional.of(choices.get(random.nextInt(choices.size())).getTeamObjectPosition().add(0D, 0.1D, 0D));
 
-        List<Flagpole> bases = liveBases.values().stream().filter(base -> base.getMapId().equals(map.getShortName())).filter(base -> anyTeam || base.getOwnerId() == teamId)
-            .toList();
+        List<Flagpole> bases = liveBases.values().stream().filter(base -> base.getMapId().equals(map.getShortName())).filter(base -> anyTeam || base.getOwnerId() == teamId).toList();
 
         return bases.isEmpty() ? Optional.empty() : Optional.of(bases.get(random.nextInt(bases.size())).position().add(0D, 1D, 0D));
     }
@@ -1549,9 +1528,7 @@ public final class TeamsManager
         rankUpdateTimeTicks = tag.contains(NBT_RANK_UPDATE_TIME) ? Math.max(0, tag.getInt(NBT_RANK_UPDATE_TIME)) : DEFAULT_INTERMISSION_PHASE_TICKS;
         votingTimeTicks = tag.contains(NBT_VOTING_TIME) ? Math.max(0, tag.getInt(NBT_VOTING_TIME)) : DEFAULT_INTERMISSION_PHASE_TICKS;
         motd = tag.contains(NBT_MOTD) ? tag.getString(NBT_MOTD) : DEFAULT_MOTD;
-        autoBalanceIntervalTicks = tag.contains(NBT_AUTO_BALANCE_INTERVAL)
-            ? Math.max(AUTO_BALANCE_WARNING_TICKS + 20, tag.getInt(NBT_AUTO_BALANCE_INTERVAL))
-            : DEFAULT_AUTO_BALANCE_INTERVAL_TICKS;
+        autoBalanceIntervalTicks = tag.contains(NBT_AUTO_BALANCE_INTERVAL) ? Math.max(AUTO_BALANCE_WARNING_TICKS + 20, tag.getInt(NBT_AUTO_BALANCE_INTERVAL)) : DEFAULT_AUTO_BALANCE_INTERVAL_TICKS;
         voteOptionIds.clear();
 
         for (Tag value : tag.getList(NBT_VOTE_OPTIONS, Tag.TAG_COMPOUND))
@@ -1628,9 +1605,7 @@ public final class TeamsManager
                 if (phase.name().equals(name))
                     return phase;
         }
-        boolean legacyVoting = tag.contains(NBT_INTERMISSION_VOTING_PHASE)
-            ? tag.getBoolean(NBT_INTERMISSION_VOTING_PHASE)
-            : !tag.getList(NBT_VOTE_OPTIONS, Tag.TAG_COMPOUND).isEmpty();
+        boolean legacyVoting = tag.contains(NBT_INTERMISSION_VOTING_PHASE) ? tag.getBoolean(NBT_INTERMISSION_VOTING_PHASE) : !tag.getList(NBT_VOTE_OPTIONS, Tag.TAG_COMPOUND).isEmpty();
         if (legacyVoting)
             return IntermissionPhase.VOTING;
         return tag.getInt(NBT_INTERMISSION) > 0 ? IntermissionPhase.SCORES : IntermissionPhase.NONE;

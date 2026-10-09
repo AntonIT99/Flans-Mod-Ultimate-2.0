@@ -1,14 +1,12 @@
 package com.flansmodultimate.apocalyse.common.world;
 
 import com.flansmodultimate.apocalyse.ApocalypseContent;
-import com.flansmodultimate.apocalyse.common.entity.AiMechaEntity;
-import com.flansmodultimate.apocalyse.common.entity.InventoryHolderEntity;
-import com.flansmodultimate.apocalyse.common.entity.NukeDropEntity;
+import com.flansmodultimate.apocalyse.common.entity.*;
 import com.flansmodultimate.common.entity.Mecha;
 import com.flansmodultimate.common.types.PartType;
 import com.flansmodultimate.config.ModApocalypseConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketApocalypseCountdown;
+import com.flansmodultimate.network.client.teams.PacketApocalypseCountdown;
 import com.flansmodultimate.util.FlansLog;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -26,19 +24,18 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Runs the apocalypse itself: the countdown an AI-chip mecha starts, the bombardment while
  * it runs, and the one-way trip it ends with.
  *
- * <p>Placing a mecha whose engine is an AI chip arms the trigger. The machine then spends
+ * <p>
+ * Placing a mecha whose engine is an AI chip arms the trigger. The machine then spends
  * the countdown thrashing on the spot and calling nukes down around itself, and when the
  * timer runs out it disintegrates and takes whoever the configured teleport option covers
- * with it.</p>
+ * with it.
+ * </p>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApocalypseEventManager
@@ -54,17 +51,17 @@ public final class ApocalypseEventManager
     /**
      * Arms the trigger if {@code entity} is a mecha running an AI chip.
      *
-     * <p>Only one apocalypse can be counting down at a time, and never from inside the
-     * apocalypse itself.</p>
+     * <p>
+     * Only one apocalypse can be counting down at a time, and never from inside the
+     * apocalypse itself.
+     * </p>
      */
     public static void onDriveableSpawned(Entity entity)
     {
         // An apocalypse guard is a mecha too, and must never be able to start another one.
-        if (!(entity instanceof Mecha mecha) || entity instanceof AiMechaEntity
-            || !(entity.level() instanceof ServerLevel level))
+        if (!(entity instanceof Mecha mecha) || entity instanceof AiMechaEntity || !(entity.level() instanceof ServerLevel level))
             return;
-        if (!ModApocalypseConfig.apocalypseDimensionEnabled()
-            || level.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL))
+        if (!ModApocalypseConfig.apocalypseDimensionEnabled() || level.dimension().equals(ApocalypseContent.APOCALYPSE_LEVEL))
             return;
         if (mecha.getDriveableData() == null)
             return;
@@ -149,21 +146,18 @@ public final class ApocalypseEventManager
     }
 
     /** Resolves the configured teleport option into the players it actually covers. */
-    private static List<ServerPlayer> selectTravellers(MinecraftServer server, ServerLevel level, Mecha mecha,
-                                                       @Nullable UUID placerId)
+    private static List<ServerPlayer> selectTravellers(MinecraftServer server, ServerLevel level, Mecha mecha, @Nullable UUID placerId)
     {
         ServerPlayer placer = placerId == null ? null : server.getPlayerList().getPlayer(placerId);
         List<ServerPlayer> travellers = new ArrayList<>();
         switch (ModApocalypseConfig.apocalypseTeleportOption())
         {
-            case PLACER_ONLY ->
-            {
+            case PLACER_ONLY -> {
                 if (placer != null && placer.serverLevel() == level)
                     travellers.add(placer);
             }
             case DIM -> travellers.addAll(level.players());
-            case NEARBY ->
-            {
+            case NEARBY -> {
                 for (ServerPlayer player : level.players())
                 {
                     if (player.distanceToSqr(mecha) < NEARBY_RADIUS * NEARBY_RADIUS)
@@ -201,11 +195,9 @@ public final class ApocalypseEventManager
         leaveBelongingsBehind(player);
         ApocalypseSavedData.get(origin).setEntryPoint(player.getUUID(), entryPoint);
 
-        BlockPos arrival = ApocalypseWorldgen
-            .findSafeSurface(target, new BlockPos(entryPoint.getX(), entryPoint.getY(), entryPoint.getZ()), ARRIVAL_SEARCH_RADIUS, target.random)
+        BlockPos arrival = ApocalypseWorldgen.findSafeSurface(target, new BlockPos(entryPoint.getX(), entryPoint.getY(), entryPoint.getZ()), ARRIVAL_SEARCH_RADIUS, target.random)
             .orElseGet(() -> surfaceAbove(target, entryPoint));
-        player.teleportTo(target, arrival.getX() + 0.5D, arrival.getY(), arrival.getZ() + 0.5D,
-            Collections.emptySet(), player.getYRot(), player.getXRot());
+        player.teleportTo(target, arrival.getX() + 0.5D, arrival.getY(), arrival.getZ() + 0.5D, Collections.emptySet(), player.getYRot(), player.getXRot());
         player.setPortalCooldown();
         giveStarterKit(player);
         player.sendSystemMessage(Component.translatable("message.flansmodultimate.apocalypse_begun"));

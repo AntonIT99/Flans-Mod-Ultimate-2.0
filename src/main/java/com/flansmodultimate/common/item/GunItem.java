@@ -4,15 +4,14 @@ import com.flansmodultimate.common.EnchantmentModule;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Plane;
 import com.flansmodultimate.common.entity.Vehicle;
-import com.flansmodultimate.common.guns.EnumFireDecision;
-import com.flansmodultimate.common.guns.EnumFunction;
-import com.flansmodultimate.common.guns.ScopeZoom;
+import com.flansmodultimate.common.guns.*;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketCancelSound;
-import com.flansmodultimate.network.client.PacketGunShootClient;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.PacketCancelSound;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.gun.PacketGunShootClient;
 import com.flansmodultimate.platform.item.ItemAttributes;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
@@ -20,33 +19,22 @@ import com.google.common.collect.Multimap;
 import lombok.Getter;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.*;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
@@ -352,16 +340,15 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             if (configType.isShowRecoil())
             {
                 tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.VERTICAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayVerticalRecoil(stack))));
-                tooltipComponents
-                    .add(IFlanItem.statLine(Component.translatable(TooltipKeys.HORIZONTAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
+                tooltipComponents.add(IFlanItem.statLine(Component.translatable(TooltipKeys.HORIZONTAL_RECOIL), IFlanItem.formatFloat(configType.getDisplayHorizontalRecoil(stack))));
 
                 float sprintingControlValue = configType.getRecoilControl(stack, true, false);
                 float sneakingControlValue = configType.getRecoilControl(stack, false, true);
                 float normalControlValue = configType.getRecoilControl(stack, false, false);
 
                 final float EPS = 0.0001F;
-                boolean isDefault = Math.abs(sprintingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SPRINTING) < EPS
-                    && Math.abs(sneakingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SNEAKING) < EPS && Math.abs(normalControlValue - GunType.DEFAULT_RECOIL_CONTROL) < EPS;
+                boolean isDefault = Math.abs(sprintingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SPRINTING) < EPS && Math.abs(sneakingControlValue - GunType.DEFAULT_RECOIL_CONTROL_SNEAKING) < EPS
+                    && Math.abs(normalControlValue - GunType.DEFAULT_RECOIL_CONTROL) < EPS;
 
                 if (!isDefault)
                 {
@@ -372,9 +359,8 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
                     tooltipComponents.add(Component.translatable(TooltipKeys.RECOIL_CONTROL).append(": ").withStyle(ChatFormatting.BLUE));
                     tooltipComponents.add(Component.literal("  ").append(Component.translatable(TooltipKeys.SPRINTING).withStyle(ChatFormatting.RED)).append(" ")
                         .append(Component.translatable(TooltipKeys.CROUCHING).withStyle(ChatFormatting.GREEN)));
-                    tooltipComponents
-                        .add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED).append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
-                            .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
+                    tooltipComponents.add(Component.literal("  " + sprintingControl).withStyle(ChatFormatting.RED).append(Component.literal(" " + normalControl).withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(" " + sneakingControl).withStyle(ChatFormatting.GREEN)));
                 }
             }
 
@@ -533,13 +519,11 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
             return InteractionResultHolder.consume(stack);
         }
 
-        boolean dualWield = player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof GunItem
-            && player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof GunItem;
+        boolean dualWield = player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof GunItem && player.getItemInHand(InteractionHand.OFF_HAND).getItem() instanceof GunItem;
 
         if (!dualWield)
         {
-            boolean canZoom = configType.getSecondaryFunction().isZoom() || configType.getPrimaryFunction().isZoom() || configType.getZoomFactor() > 1F
-                || configType.getFovFactor() > 1F;
+            boolean canZoom = configType.getSecondaryFunction().isZoom() || configType.getPrimaryFunction().isZoom() || configType.getZoomFactor() > 1F || configType.getFovFactor() > 1F;
 
             if (!canZoom)
                 ClientHooks.PLAYER.swingIfLocalPlayer(player, hand);
@@ -558,10 +542,10 @@ public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRen
     {
         modifiers.add(Attributes.KNOCKBACK_RESISTANCE, "knockback_resistance", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_KNOCKBACK_RESISTANCE_UUID), "Knockback resistance",
             configType.getKnockbackModifier(), ItemAttributes.Operation.ADD_VALUE);
-        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed",
-            configType.getMovementSpeed(stack) - 1F, ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
-        modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier",
-            configType.getMeleeDamage(stack, false), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.MOVEMENT_SPEED, "movement_speed", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_MOVEMENT_SPEED_UUID), "Movement speed", configType.getMovementSpeed(stack) - 1F,
+            ItemAttributes.Operation.ADD_MULTIPLIED_TOTAL);
+        modifiers.add(Attributes.ATTACK_DAMAGE, "attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(stack, false),
+            ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override

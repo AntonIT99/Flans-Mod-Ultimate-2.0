@@ -4,7 +4,7 @@ import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.item.GrenadeItem;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketGrenadeThrow;
+import com.flansmodultimate.network.server.gun.PacketGrenadeThrow;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

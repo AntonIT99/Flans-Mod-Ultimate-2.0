@@ -5,16 +5,21 @@ import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.FlansModParticles;
 import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
+import com.flansmodultimate.common.driveables.damage.*;
 import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.types.PlaneType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketDriveableCrashFireball;
-import com.flansmodultimate.network.client.PacketParticle;
+import com.flansmodultimate.network.client.driveable.PacketDriveableCrashFireball;
+import com.flansmodultimate.network.client.effects.PacketParticle;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -31,12 +36,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /** Server-authoritative flight runtime supporting fixed wing, helicopter, VTOL and six-DOF craft. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -248,8 +249,7 @@ public class Plane extends Driveable
         if (type == null || !type.isHasAirBrake())
             return;
         setAirBrakeDeployed(!isAirBrakeDeployed());
-        player.displayClientMessage(
-            Component.translatable(isAirBrakeDeployed() ? "message.flansmodultimate.driveable.air_brake.on" : "message.flansmodultimate.driveable.air_brake.off"), true);
+        player.displayClientMessage(Component.translatable(isAirBrakeDeployed() ? "message.flansmodultimate.driveable.air_brake.on" : "message.flansmodultimate.driveable.air_brake.off"), true);
     }
 
     /**
@@ -293,8 +293,7 @@ public class Plane extends Driveable
         super.toggleDoor(player);
         PlaneType type = getPlaneType();
         if (type != null && type.isHasDoor())
-            player.displayClientMessage(Component.translatable(isDoorOpen() ? "message.flansmodultimate.driveable.door.open" : "message.flansmodultimate.driveable.door.closed"),
-                true);
+            player.displayClientMessage(Component.translatable(isDoorOpen() ? "message.flansmodultimate.driveable.door.open" : "message.flansmodultimate.driveable.door.closed"), true);
     }
 
     @Override
@@ -312,8 +311,7 @@ public class Plane extends Driveable
         {
             setDriveableMode(Math.floorMod(getDriveableMode() + 1, 2));
             player.displayClientMessage(
-                Component.translatable(getPlaneMode() == EnumPlaneMode.HELI ? "message.flansmodultimate.driveable.mode.hover" : "message.flansmodultimate.driveable.mode.plane"),
-                true);
+                Component.translatable(getPlaneMode() == EnumPlaneMode.HELI ? "message.flansmodultimate.driveable.mode.hover" : "message.flansmodultimate.driveable.mode.plane"), true);
         }
     }
 
@@ -622,8 +620,7 @@ public class Plane extends Driveable
 
         float throttle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
         float thrust = LegacyPlanePhysics.thrust(throttle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater());
-        float drag = Math.max(0F,
-            LegacyPlanePhysics.drag(type.getDrag()) - (float) Math.sqrt(angularYaw * angularYaw + angularPitch * angularPitch + angularRoll * angularRoll) / 100F);
+        float drag = Math.max(0F, LegacyPlanePhysics.drag(type.getDrag()) - (float) Math.sqrt(angularYaw * angularYaw + angularPitch * angularPitch + angularRoll * angularRoll) / 100F);
         // The legacy model carries drag as a per-tick multiplier rather than a
         // force, so the air brake folds into that same multiplier.
         if (isAirBrakeDeployed() && type.isHasAirBrake())
@@ -632,16 +629,13 @@ public class Plane extends Driveable
         Vec3 forward = flightForwardVector();
         double wingAirspeed = LegacyPlanePhysics.forwardAirspeed(current.x, current.y, current.z, forward.x, forward.y, forward.z);
         double newSpeed = type.isNewFlightControl()
-            ? speed
-                + throttle * type.getMaxThrust() / Math.max(1F, type.getMass()) * type.getPropellers().stream().filter(propeller -> isPartIntact(propeller.getPlanePart())).count()
+            ? speed + throttle * type.getMaxThrust() / Math.max(1F, type.getMass()) * type.getPropellers().stream().filter(propeller -> isPartIntact(propeller.getPlanePart())).count()
             : speed + thrust * 2F;
         double correction = Mth.clamp(2D * Math.abs(throttle), 0D, 1.5D);
         Vec3 velocity = current.scale(1D - correction).add(forward.scale(correction * newSpeed));
 
         int intactWings = (isPartIntact(EnumDriveablePart.LEFT_WING) ? 1 : 0) + (isPartIntact(EnumDriveablePart.RIGHT_WING) ? 1 : 0);
-        double lift = type.isNewFlightControl()
-            ? type.getLift() * wingAirspeed * wingAirspeed * 0.5D * type.getWingArea() * intactWings * 0.5D
-            : wingAirspeed * wingAirspeed * intactWings * 0.5D;
+        double lift = type.isNewFlightControl() ? type.getLift() * wingAirspeed * wingAirspeed * 0.5D * type.getWingArea() * intactWings * 0.5D : wingAirspeed * wingAirspeed * intactWings * 0.5D;
         lift *= Math.abs(flightUpVector().y);
         double gravity = ModPhysics.gravity(LegacyPlanePhysics.GRAVITY, level());
         lift = Math.min(lift, LegacyPlanePhysics.GRAVITY);
@@ -653,8 +647,7 @@ public class Plane extends Driveable
         if (isWingFolded())
             velocity = velocity.multiply(ModPhysics.dragRetention(0.98D, level()), 1D, ModPhysics.dragRetention(0.98D, level()));
         if (!hasRider())
-            velocity = velocity.multiply(ModPhysics.dragRetention(emptyDrag(type), level()), ModPhysics.dragRetention(0.98D, level()),
-                ModPhysics.dragRetention(emptyDrag(type), level()));
+            velocity = velocity.multiply(ModPhysics.dragRetention(emptyDrag(type), level()), ModPhysics.dragRetention(0.98D, level()), ModPhysics.dragRetention(emptyDrag(type), level()));
         if (type.isNewFlightControl())
             velocity = applyShootDownSequence(type, velocity);
         applyLegacyTurbulence(type.isNewFlightControl() ? speed : velocity.length(), type.isNewFlightControl());
@@ -820,8 +813,7 @@ public class Plane extends Driveable
 
     private void shootDownParticle(String particle, double x, double y, double z)
     {
-        PacketHandler.sendToAllAround(new PacketParticle(particle, getX() + x, getY() + y, getZ() + z, 0D, 0D, 0D), getX(), getY(), getZ(), SHOOT_DOWN_EFFECT_RANGE,
-            level().dimension());
+        PacketHandler.sendToAllAround(new PacketParticle(particle, getX() + x, getY() + y, getZ() + z, 0D, 0D, 0D), getX(), getY(), getZ(), SHOOT_DOWN_EFFECT_RANGE, level().dimension());
     }
 
     /**
@@ -892,8 +884,8 @@ public class Plane extends Driveable
         double loadFactor = AircraftPerformancePhysics.commandedLoadFactor(forward.y, flightPathY, excessAllowance);
 
         Float wingSpan = physics.source().aircraft().effectiveWingSpanM();
-        double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(), airspeedMs, terminalMs, referenceThrust,
-            wingSpan == null ? 0D : wingSpan, throttleDemand * propellerFraction, loadFactor, ModCommonConfig.dragFactor(level()));
+        double accelerationMs2 = AircraftPerformancePhysics.accelerationMs2(thrustNewtons, physics.massKg(), airspeedMs, terminalMs, referenceThrust, wingSpan == null ? 0D : wingSpan,
+            throttleDemand * propellerFraction, loadFactor, ModCommonConfig.dragFactor(level()));
         accelerationMs2 = Math.max(-VehiclePhysicsConstants.MAX_DERIVED_ACCELERATION_MS2,
             accelerationMs2 - ModPhysics.dragForce(AircraftPerformancePhysics.maneuverDecelerationMs2(airspeedMs, angularYaw, angularPitch, angularRoll), level()));
         if (rolling)
@@ -962,8 +954,7 @@ public class Plane extends Driveable
         if (isWingFolded())
             velocity = velocity.multiply(ModPhysics.dragRetention(0.98D, level()), 1D, ModPhysics.dragRetention(0.98D, level()));
         if (!hasRider())
-            velocity = velocity.multiply(ModPhysics.dragRetention(emptyDrag(type), level()), ModPhysics.dragRetention(0.98D, level()),
-                ModPhysics.dragRetention(emptyDrag(type), level()));
+            velocity = velocity.multiply(ModPhysics.dragRetention(emptyDrag(type), level()), ModPhysics.dragRetention(0.98D, level()), ModPhysics.dragRetention(emptyDrag(type), level()));
         velocity = applyShootDownSequence(type, velocity, true);
         return velocity;
     }
@@ -995,10 +986,10 @@ public class Plane extends Driveable
         float rollControl = (flapPitchRight - flapPitchLeft) * 0.5F;
         float authority = AircraftPerformancePhysics.normalizedControlAuthority(velocity.length(), terminalBlocksPerTick);
         Vec3 forward = flightForwardVector();
-        float levelingAuthority = AircraftPerformancePhysics
-            .normalizedControlAuthority(LegacyPlanePhysics.forwardAirspeed(velocity.x, velocity.y, velocity.z, forward.x, forward.y, forward.z), terminalBlocksPerTick);
-        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.derivedControlRates(authority, flapYaw, pitchControl, rollControl, type.getTurnLeftModifier(),
-            type.getTurnRightModifier(), type.getLookUpModifier(), type.getLookDownModifier(), type.getRollLeftModifier(), type.getRollRightModifier());
+        float levelingAuthority = AircraftPerformancePhysics.normalizedControlAuthority(LegacyPlanePhysics.forwardAirspeed(velocity.x, velocity.y, velocity.z, forward.x, forward.y, forward.z),
+            terminalBlocksPerTick);
+        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.derivedControlRates(authority, flapYaw, pitchControl, rollControl, type.getTurnLeftModifier(), type.getTurnRightModifier(),
+            type.getLookUpModifier(), type.getLookDownModifier(), type.getRollLeftModifier(), type.getRollRightModifier());
         float yawRate = rates.yaw();
         if (applyNavalYaw(type, yawRate))
             return;
@@ -1027,8 +1018,7 @@ public class Plane extends Driveable
         // ever a bias back toward level: the pilot keeps full authority.
         Vec3 adjustedForward = flightForwardVector();
         float pitch = axes.getPitch() + AircraftPerformancePhysics.stallRecoveryPitchDegrees(
-            VehiclePhysicsUnits
-                .blocksPerTickToMetresPerSecond(LegacyPlanePhysics.forwardAirspeed(velocity.x, velocity.y, velocity.z, adjustedForward.x, adjustedForward.y, adjustedForward.z)),
+            VehiclePhysicsUnits.blocksPerTickToMetresPerSecond(LegacyPlanePhysics.forwardAirspeed(velocity.x, velocity.y, velocity.z, adjustedForward.x, adjustedForward.y, adjustedForward.z)),
             physics.referenceSpeedMs(ModCommonConfig.realisticSpeedScale(physics.category()), ModCommonConfig.realisticAircraftReferenceSpeedScale()), axes.getPitch());
         setOrientation(axes.getYaw(), pitch, axes.getRoll());
         angularYaw *= (float) ModPhysics.dragRetention(0.99D, level());
@@ -1049,11 +1039,9 @@ public class Plane extends Driveable
         float thrust = LegacyPlanePhysics.thrust(1F, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), getEngineSpeed(), isUnderWater()) * 2F;
         ResolvedVehiclePhysics resolved = type.getResolvedPhysics();
         RealWorldVehicleSpec spec = ModCommonConfig.forceLegacyPlanePhysics() ? RealWorldVehicleSpec.EMPTY : resolved.source();
-        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(spec, getEngineSpeed(), thrust, type.getDrag(),
-            ModCommonConfig.realisticSpeedScale(resolved.category()));
+        HelicopterPhysics.Performance performance = HelicopterPhysics.resolve(spec, getEngineSpeed(), thrust, type.getDrag(), ModCommonConfig.realisticSpeedScale(resolved.category()));
         applyHelicopterControls(type, rotorFraction, performance);
-        return HelicopterPhysics.step(current, flightUpVector(), performance, throttle, rotorSpeed, rotorFraction, ModCommonConfig.gravityFactor(level()),
-            ModCommonConfig.dragFactor(level()));
+        return HelicopterPhysics.step(current, flightUpVector(), performance, throttle, rotorSpeed, rotorFraction, ModCommonConfig.gravityFactor(level()), ModCommonConfig.dragFactor(level()));
     }
 
     private void applyHelicopterControls(PlaneType type, float rotorFraction, HelicopterPhysics.Performance performance)
@@ -1062,12 +1050,11 @@ public class Plane extends Driveable
         // legacy directional modifiers still describe the pilot's control rates.
         float authority = rotorSpeed * rotorSpeed * rotorFraction * (float) Math.min(1D, performance.maximumLift() / HelicopterPhysics.GRAVITY);
         LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.controlRates(EnumPlaneMode.HELI, 0F, 0F, 0.5F, flapYaw, (flapPitchLeft + flapPitchRight) * 0.5F,
-            (flapPitchRight - flapPitchLeft) * 0.5F, type.getTurnLeftModifier(), type.getTurnRightModifier(), type.getLookUpModifier(), type.getLookDownModifier(),
-            type.getRollLeftModifier(), type.getRollRightModifier());
+            (flapPitchRight - flapPitchLeft) * 0.5F, type.getTurnLeftModifier(), type.getTurnRightModifier(), type.getLookUpModifier(), type.getLookDownModifier(), type.getRollLeftModifier(),
+            type.getRollRightModifier());
         float tailEfficiency = isPartIntact(EnumDriveablePart.TAIL) ? intactPropellerFraction(type.getHeliTailPropellers()) : 0F;
         // Explicit multi-rotor craft without a tail rotor cancel their own torque.
-        boolean needsTail = !type.getHeliTailPropellers().isEmpty()
-            || type.getHeliPropellers().size() == 1 && type.getResolvedPhysics().source().aircraft().effectiveRotorCount() == 1;
+        boolean needsTail = !type.getHeliTailPropellers().isEmpty() || type.getHeliPropellers().size() == 1 && type.getResolvedPhysics().source().aircraft().effectiveRotorCount() == 1;
         float yaw = rates.yaw();
         if (needsTail)
             yaw = yaw * tailEfficiency + 10F * Math.max(0F, getThrottle()) * (1F - tailEfficiency);
@@ -1142,8 +1129,7 @@ public class Plane extends Driveable
                 loss += fraction;
                 Vec3 contact = solid.getCenter().subtract(hub);
                 weightedContact = weightedContact.add(contact.subtract(axis.scale(contact.dot(axis))).scale(fraction));
-                serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), solid.getCenter().x, solid.getCenter().y, solid.getCenter().z, 12, 0.3D, 0.3D, 0.3D,
-                    0.25D);
+                serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), solid.getCenter().x, solid.getCenter().y, solid.getCenter().z, 12, 0.3D, 0.3D, 0.3D, 0.25D);
                 if (RotorStrikePhysics.chops(hardness))
                     breakCollisionBlock(pos, rotorSpeed);
             }
@@ -1204,11 +1190,10 @@ public class Plane extends Driveable
         float yawInput = axis(input, DriveableInput.RIGHT, DriveableInput.LEFT);
         float rollInput = rollInput(input);
         float pitchInput = pitchInput(input);
-        setOrientation(getYaw() + yawInput * type.getTurnRightModifier(), getPitch() + pitchInput * type.getLookDownModifier(),
-            getRoll() + rollInput * type.getRollRightModifier());
+        setOrientation(getYaw() + yawInput * type.getTurnRightModifier(), getPitch() + pitchInput * type.getLookDownModifier(), getRoll() + rollInput * type.getRollRightModifier());
         float poweredThrottle = isEngineActive() && hasWorkingPropeller(type) ? getThrottle() : 0F;
-        double propulsion = DriveableControlPhysics.directionalPropulsion(poweredThrottle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(),
-            isInWater()) + poweredThrottle * getEngineSpeed();
+        double propulsion = DriveableControlPhysics.directionalPropulsion(poweredThrottle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater())
+            + poweredThrottle * getEngineSpeed();
         double thrust = type.getMaxSpeed() * propulsion * intactPropellerFraction(type.getPropellers()) * 0.35D;
         Vec3 desired = flightForwardVector().scale(thrust);
         Vec3 velocity = getDeltaMovement().add(desired.subtract(getDeltaMovement()).scale(0.1D));
@@ -1219,17 +1204,15 @@ public class Plane extends Driveable
     {
         float pitchControl = (flapPitchLeft + flapPitchRight) * 0.5F;
         float rollControl = (flapPitchRight - flapPitchLeft) * 0.5F;
-        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.controlRates(getPlaneMode(), (float) velocity.length(), (float) velocity.horizontalDistance(), getThrottle(),
-            flapYaw, pitchControl, rollControl, type.getTurnLeftModifier(), type.getTurnRightModifier(), type.getLookUpModifier(), type.getLookDownModifier(),
-            type.getRollLeftModifier(), type.getRollRightModifier());
+        LegacyPlanePhysics.ControlRates rates = LegacyPlanePhysics.controlRates(getPlaneMode(), (float) velocity.length(), (float) velocity.horizontalDistance(), getThrottle(), flapYaw, pitchControl,
+            rollControl, type.getTurnLeftModifier(), type.getTurnRightModifier(), type.getLookUpModifier(), type.getLookDownModifier(), type.getRollLeftModifier(), type.getRollRightModifier());
         float yawRate = rates.yaw();
         if (applyNavalYaw(type, yawRate))
             return;
         float pitchRate = rates.pitch();
         Vec3 forward = flightForwardVector();
-        float levelingAuthority = Mth.clamp(
-            (float) (LegacyPlanePhysics.forwardAirspeed(velocity.x, velocity.y, velocity.z, forward.x, forward.y, forward.z) / LegacyPlanePhysics.FULL_CONTROL_AUTHORITY_SPEED), 0F,
-            1F);
+        float levelingAuthority = Mth
+            .clamp((float) (LegacyPlanePhysics.forwardAirspeed(velocity.x, velocity.y, velocity.z, forward.x, forward.y, forward.z) / LegacyPlanePhysics.FULL_CONTROL_AUTHORITY_SPEED), 0F, 1F);
         float rollRate = rates.roll() + passiveRollLevelingRate(type, levelingAuthority);
         if (getPlaneMode() == EnumPlaneMode.PLANE)
         {
@@ -1280,8 +1263,7 @@ public class Plane extends Driveable
         double signedSpeed = length > 1.0E-8D ? (velocity.x * forward.x + velocity.z * forward.z) / length : 0D;
         boolean supported = isSupportedByGround() && isGearDeployed() && !type.getWheelPositions().isEmpty();
         float control = isPartIntact(EnumDriveablePart.STEERING) ? flapYaw : 0F;
-        return DriveableControlPhysics.planeGroundSteeringYawDelta(flightYaw, type.getRealTurnRateDegPerSec(), control, signedSpeed, supported,
-            ModCommonConfig.forceLegacyPlanePhysics());
+        return DriveableControlPhysics.planeGroundSteeringYawDelta(flightYaw, type.getRealTurnRateDegPerSec(), control, signedSpeed, supported, ModCommonConfig.forceLegacyPlanePhysics());
     }
 
     /**
@@ -1323,8 +1305,8 @@ public class Plane extends Driveable
         double powerWatts = physics.effectivePowerWatts(getEngineSpeed());
         double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(speed, powerWatts, physics.massKg(), terminal, EnumDriveType.MARINE.tractionFactor(),
             ModCommonConfig.dragFactor(level()));
-        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(speed, powerWatts, physics.massKg(), terminal,
-            DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE), ModCommonConfig.dragFactor(level()));
+        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(speed, powerWatts, physics.massKg(), terminal, DriveableInput.isDown(getInputMask(), DriveableInput.BRAKE),
+            ModCommonConfig.dragFactor(level()));
         double newSpeed = GroundPropulsionPhysics.approach(speed, target, acceleration, deceleration);
 
         Vec3 travel = heading.scale(astern ? -newSpeed : newSpeed);

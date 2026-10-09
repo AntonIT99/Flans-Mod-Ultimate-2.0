@@ -1,32 +1,19 @@
 package com.flansmodultimate.tooling.shootpoints;
 
-import com.flansmod.client.model.ModelAAGun;
-import com.flansmod.client.model.ModelDriveable;
-import com.flansmod.client.model.ModelVehicle;
+import com.flansmod.client.model.*;
 import com.flansmodultimate.client.model.MuzzleMeasurements;
-import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.tooling.shootpoints.Finding.Action;
 import com.flansmodultimate.tooling.shootpoints.Finding.Kind;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -34,16 +21,20 @@ import java.util.stream.Stream;
  * type files, the way {@code /flandebug shootpoint apply} moves them for one
  * session, and reports the values most worth checking by hand.
  *
- * <p>Run through {@code gradlew shootPointSync [-Pwrite] [-Pfilter=<text>] [-PreportFile=<path>]}.
+ * <p>
+ * Run through {@code gradlew shootPointSync [-Pwrite] [-Pfilter=<text>] [-PreportFile=<path>]}.
  * Without {@code -Pwrite} nothing is written and the report says what would change.
  * The tool never fails the build: a definition it cannot read or measure becomes a
- * report entry instead.</p>
+ * report entry instead.
+ * </p>
  *
- * <p>Arguments: {@code --pack-set <name> <resources dir> <class dirs>} for every source
+ * <p>
+ * Arguments: {@code --pack-set <name> <resources dir> <class dirs>} for every source
  * set holding content packs, then optionally {@code --write}, {@code --filter <text>}
  * and {@code --report <file>}. Every set's classes share one loader, as the modules'
  * classes share the mod class path in game, and a model is resolved as
- * {@code InfoType#findModelClass} resolves it for a pack that ships no class files.</p>
+ * {@code InfoType#findModelClass} resolves it for a pack that ships no class files.
+ * </p>
  */
 public final class ShootPointSync
 {
@@ -52,11 +43,14 @@ public final class ShootPointSync
     /** Findings scoring at least this lead the report. */
     private static final int CHECK_FIRST_SCORE = 15;
 
-    private ShootPointSync() {}
+    private ShootPointSync()
+    {}
 
-    private record PackSet(String name, Path resources, List<Path> classDirs) {}
+    private record PackSet(String name, Path resources, List<Path> classDirs)
+    {}
 
-    private record Options(List<PackSet> sets, boolean write, String filter, Path report) {}
+    private record Options(List<PackSet> sets, boolean write, String filter, Path report)
+    {}
 
     public static void main(String[] args)
     {
@@ -83,8 +77,7 @@ public final class ShootPointSync
             switch (args[i])
             {
                 case "--pack-set" -> {
-                    List<Path> classDirs = Arrays.stream(args[i + 3].split(File.pathSeparator))
-                        .filter(entry -> !entry.isBlank()).map(Paths::get).toList();
+                    List<Path> classDirs = Arrays.stream(args[i + 3].split(File.pathSeparator)).filter(entry -> !entry.isBlank()).map(Paths::get).toList();
                     sets.add(new PackSet(args[i + 1], Paths.get(args[i + 2]), classDirs));
                     i += 3;
                 }
@@ -139,8 +132,7 @@ public final class ShootPointSync
     }
 
     /** @return whether the definition was written back */
-    private static boolean process(String name, Path path, String folder, ClassLoader loader, boolean write,
-                                   List<Finding> findings)
+    private static boolean process(String name, Path path, String folder, ClassLoader loader, boolean write, List<Finding> findings)
     {
         List<Finding> own = new ArrayList<>();
         try
@@ -167,8 +159,7 @@ public final class ShootPointSync
                 if (model instanceof ModelAAGun aaGunModel)
                 {
                     ShootPointPlanner.AAGunDefinition definition = ShootPointPlanner.readAAGun(file);
-                    own.addAll(ShootPointPlanner.planAAGun(name, file, definition,
-                        MuzzleMeasurements.deriveAAGunBarrelOffsets(aaGunModel, definition.numBarrels())));
+                    own.addAll(ShootPointPlanner.planAAGun(name, file, definition, MuzzleMeasurements.deriveAAGunBarrelOffsets(aaGunModel, definition.numBarrels())));
                 }
                 else
                     own.add(Finding.problem(name, Action.SKIPPED, 40, className + " is not an AA gun model"));
@@ -184,13 +175,10 @@ public final class ShootPointSync
                         seatGuns.add(new MuzzleMeasurements.SeatGun(seat.id(), seat.gunName()));
                 }
                 List<DerivedMuzzle> derived = MuzzleMeasurements.deriveMuzzles(driveableModel,
-                    new MuzzleMeasurements.DriveableInputs(planeFacing, definition.modelScale(),
-                        definition.vehicleGunModelScale(), seatGuns));
-                own.addAll(ShootPointPlanner.planDriveable(name, file, definition, derived, planeFacing,
-                    driveableModel instanceof ModelVehicle));
+                    new MuzzleMeasurements.DriveableInputs(planeFacing, definition.modelScale(), definition.vehicleGunModelScale(), seatGuns));
+                own.addAll(ShootPointPlanner.planDriveable(name, file, definition, derived, planeFacing, driveableModel instanceof ModelVehicle));
                 if (own.isEmpty())
-                    own.add(Finding.problem(name, Action.UNCHANGED, 0,
-                        "nothing to measure: no main gun barrel and no registered seat guns"));
+                    own.add(Finding.problem(name, Action.UNCHANGED, 0, "nothing to measure: no main gun barrel and no registered seat guns"));
             }
             else
                 own.add(Finding.problem(name, Action.SKIPPED, 40, className + " is not a driveable model"));
@@ -218,8 +206,7 @@ public final class ShootPointSync
      */
     static String modelClassName(String modelName)
     {
-        if (modelName == null || modelName.isBlank() || modelName.equalsIgnoreCase("null")
-            || modelName.equalsIgnoreCase("none"))
+        if (modelName == null || modelName.isBlank() || modelName.equalsIgnoreCase("null") || modelName.equalsIgnoreCase("none"))
             return null;
         String[] split = modelName.split("\\.");
         if (split.length == 1)
@@ -242,8 +229,7 @@ public final class ShootPointSync
         }
         catch (Exception | LinkageError e)
         {
-            findings.add(Finding.problem(name, Action.FAILED, 50, "model class " + className
-                + " could not be constructed: " + describe(e)));
+            findings.add(Finding.problem(name, Action.FAILED, 50, "model class " + className + " could not be constructed: " + describe(e)));
         }
         return null;
     }
@@ -272,8 +258,7 @@ public final class ShootPointSync
             if (spread <= 1D)
                 continue;
             for (Finding finding : group)
-                finding.flag(5, String.format(Locale.ROOT,
-                    "%d definitions share this model and author this value up to %.1f px apart", group.size(), spread));
+                finding.flag(5, String.format(Locale.ROOT, "%d definitions share this model and author this value up to %.1f px apart", group.size(), spread));
         }
     }
 
@@ -289,28 +274,23 @@ public final class ShootPointSync
             + (options.write() ? ", definitions written." : ", report only: nothing was written. Run with `-Pwrite` to apply.")
             + (options.filter().isEmpty() ? "" : " Filter: `" + options.filter() + "`."));
         out.println();
-        out.println("Values are model pixels in type-file convention; AA gun barrels are `Barrel` line values, "
-            + "with Δ measured between the muzzles they put the round at.");
+        out.println("Values are model pixels in type-file convention; AA gun barrels are `Barrel` line values, " + "with Δ measured between the muzzles they put the round at.");
         out.println();
-        out.println("| Definitions | " + label(options.write(), "Updated", "Would update") + " | "
-            + label(options.write(), "Added", "Would add") + " | Unchanged | Skipped | Failed | Files "
+        out.println("| Definitions | " + label(options.write(), "Updated", "Would update") + " | " + label(options.write(), "Added", "Would add") + " | Unchanged | Skipped | Failed | Files "
             + (options.write() ? "written" : "to write") + " |");
         out.println("|---:|---:|---:|---:|---:|---:|---:|");
-        out.println("| " + definitions + " | " + count(findings, Action.UPDATE) + " | " + count(findings, Action.ADD)
-            + " | " + count(findings, Action.UNCHANGED) + " | " + count(findings, Action.SKIPPED) + " | "
-            + count(findings, Action.FAILED) + " | " + (options.write() ? written : filesToWrite(findings)) + " |");
+        out.println("| " + definitions + " | " + count(findings, Action.UPDATE) + " | " + count(findings, Action.ADD) + " | " + count(findings, Action.UNCHANGED) + " | "
+            + count(findings, Action.SKIPPED) + " | " + count(findings, Action.FAILED) + " | " + (options.write() ? written : filesToWrite(findings)) + " |");
         out.println();
 
         List<Finding> checkFirst = findings.stream().filter(finding -> finding.score >= CHECK_FIRST_SCORE)
-            .sorted(Comparator.comparingInt((Finding finding) -> -finding.score).thenComparing(finding -> finding.definition))
-            .toList();
+            .sorted(Comparator.comparingInt((Finding finding) -> -finding.score).thenComparing(finding -> finding.definition)).toList();
         out.println("## Check first");
         out.println();
         out.println("Authored values are not trusted, so a large move alone scores little. Most of the score comes "
             + "from signs that the measurement itself may be wrong (a gun far from or across the hull from its "
             + "gunner, a muzzle on its pivot, barrels on top of each other, a main gun measured short or off "
-            + "centre) and from values the tool could not place. Higher is more suspicious; everything from "
-            + CHECK_FIRST_SCORE + " up is listed.");
+            + "centre) and from values the tool could not place. Higher is more suspicious; everything from " + CHECK_FIRST_SCORE + " up is listed.");
         out.println();
         if (checkFirst.isEmpty())
             out.println("Nothing scored " + CHECK_FIRST_SCORE + " or more.");
@@ -320,22 +300,17 @@ public final class ShootPointSync
 
         out.println("## Every value");
         out.println();
-        List<Finding> all = findings.stream()
-            .filter(finding -> !(finding.kind == Kind.MODEL && finding.action == Action.UNCHANGED))
-            .sorted(Comparator.comparing((Finding finding) -> finding.definition).thenComparing(finding -> finding.target))
-            .toList();
+        List<Finding> all = findings.stream().filter(finding -> !(finding.kind == Kind.MODEL && finding.action == Action.UNCHANGED))
+            .sorted(Comparator.comparing((Finding finding) -> finding.definition).thenComparing(finding -> finding.target)).toList();
         table(out, all, false);
         out.println();
 
-        List<String> nothing = findings.stream()
-            .filter(finding -> finding.kind == Kind.MODEL && finding.action == Action.UNCHANGED)
-            .map(finding -> finding.definition).sorted().toList();
+        List<String> nothing = findings.stream().filter(finding -> finding.kind == Kind.MODEL && finding.action == Action.UNCHANGED).map(finding -> finding.definition).sorted().toList();
         if (!nothing.isEmpty())
         {
             out.println("## Nothing to measure");
             out.println();
-            out.println("The model has no main gun barrel and no registered seat guns; their shoot points mount "
-                + "their own guns and were left as authored.");
+            out.println("The model has no main gun barrel and no registered seat guns; their shoot points mount " + "their own guns and were left as authored.");
             out.println();
             nothing.forEach(definition -> out.println("- `" + definition + "`"));
         }
@@ -349,24 +324,19 @@ public final class ShootPointSync
         out.println((withScore ? "|---:" : "") + "|---|---|---|---|---|---:|---|");
         for (Finding finding : findings)
         {
-            out.println((withScore ? "| " + finding.score + " " : "")
-                + "| `" + finding.definition + "` | " + finding.target + " | " + finding.action.name().toLowerCase(Locale.ROOT)
-                + " | " + finding.authoredText() + " | " + finding.measuredText() + " | "
-                + (Double.isNaN(finding.deltaPx) ? "" : String.format(Locale.ROOT, "%.1f", finding.deltaPx)) + " | "
+            out.println((withScore ? "| " + finding.score + " " : "") + "| `" + finding.definition + "` | " + finding.target + " | " + finding.action.name().toLowerCase(Locale.ROOT) + " | "
+                + finding.authoredText() + " | " + finding.measuredText() + " | " + (Double.isNaN(finding.deltaPx) ? "" : String.format(Locale.ROOT, "%.1f", finding.deltaPx)) + " | "
                 + String.join("; ", finding.reasons).replace("|", "\\|") + " |");
         }
     }
 
     private static void printSummary(List<Finding> findings, int definitions, int written, boolean write, Path report)
     {
-        System.out.println("shootPointSync: " + definitions + " definitions, " + count(findings, Action.UPDATE)
-            + (write ? " updated, " : " to update, ") + count(findings, Action.ADD) + (write ? " added, " : " to add, ")
-            + count(findings, Action.SKIPPED) + " skipped, " + count(findings, Action.FAILED) + " failed; "
+        System.out.println("shootPointSync: " + definitions + " definitions, " + count(findings, Action.UPDATE) + (write ? " updated, " : " to update, ") + count(findings, Action.ADD)
+            + (write ? " added, " : " to add, ") + count(findings, Action.SKIPPED) + " skipped, " + count(findings, Action.FAILED) + " failed; "
             + (write ? written + " files written" : filesToWrite(findings) + " files would change (run with -Pwrite)"));
-        findings.stream().filter(finding -> finding.score >= CHECK_FIRST_SCORE)
-            .sorted(Comparator.comparingInt(finding -> -finding.score)).limit(10)
-            .forEach(finding -> System.out.println("  [" + finding.score + "] " + finding.definition + " " + finding.target
-                + ": " + String.join("; ", finding.reasons)));
+        findings.stream().filter(finding -> finding.score >= CHECK_FIRST_SCORE).sorted(Comparator.comparingInt(finding -> -finding.score)).limit(10)
+            .forEach(finding -> System.out.println("  [" + finding.score + "] " + finding.definition + " " + finding.target + ": " + String.join("; ", finding.reasons)));
         System.out.println("Report: " + report);
     }
 
@@ -409,8 +379,7 @@ public final class ShootPointSync
             return List.of();
         try (Stream<Path> children = Files.list(folder))
         {
-            return children.filter(path -> Files.isRegularFile(path)
-                && path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".txt")).sorted().toList();
+            return children.filter(path -> Files.isRegularFile(path) && path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".txt")).sorted().toList();
         }
     }
 

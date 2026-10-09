@@ -4,7 +4,7 @@ import com.flansmodultimate.common.inventory.ArmorBoxMenu;
 import com.flansmodultimate.common.types.ArmorBoxType;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.ArmorBoxBuyPacket;
+import com.flansmodultimate.network.server.teams.ArmorBoxBuyPacket;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;

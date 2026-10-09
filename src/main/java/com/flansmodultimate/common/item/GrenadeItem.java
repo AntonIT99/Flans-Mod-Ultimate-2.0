@@ -2,30 +2,30 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.Grenade;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.GrenadeType;
 import com.flansmodultimate.common.types.InfoType;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.platform.item.ItemAttributes;
 import com.google.common.collect.Multimap;
 import lombok.Getter;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -103,8 +103,8 @@ public class GrenadeItem extends ShootableItem implements ICustomRendereredItem<
 
     private void addAttributeModifiers(ItemStack stack, ItemAttributes.Modifiers modifiers)
     {
-        modifiers.add(Attributes.ATTACK_DAMAGE, "grenade_attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier",
-            configType.getMeleeDamage(), ItemAttributes.Operation.ADD_VALUE);
+        modifiers.add(Attributes.ATTACK_DAMAGE, "grenade_attack_damage", () -> IFlanItem.getOrCreateStackUUID(stack, NBT_ATTACK_DAMAGE_UUID), "Weapon modifier", configType.getMeleeDamage(),
+            ItemAttributes.Operation.ADD_VALUE);
     }
 
     @Override

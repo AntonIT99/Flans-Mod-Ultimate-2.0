@@ -1,30 +1,21 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.common.EnchantmentModule;
-import com.flansmodultimate.common.FlanDamageSources;
-import com.flansmodultimate.common.PlayerData;
+import com.flansmodultimate.common.*;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.PlayerShootingHandler;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.guns.reload.GunReloader;
-import com.flansmodultimate.common.raytracing.EnumHitboxType;
-import com.flansmodultimate.common.raytracing.PlayerHitbox;
-import com.flansmodultimate.common.raytracing.PlayerSnapshot;
-import com.flansmodultimate.common.raytracing.RotatedAxes;
-import com.flansmodultimate.common.raytracing.hits.BulletHit;
-import com.flansmodultimate.common.raytracing.hits.EntityHit;
-import com.flansmodultimate.common.raytracing.hits.PlayerBulletHit;
+import com.flansmodultimate.common.raytracing.*;
+import com.flansmodultimate.common.raytracing.hits.*;
 import com.flansmodultimate.common.teams.TeamsManager;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.common.types.Team;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.*;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.gun.*;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.fluid.FluidPlatform;
@@ -35,9 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -108,8 +97,7 @@ public class GunItemHandler
 
         // Do not shoot ammo bags, flags or dropped gun items
         Entity entity = ehr.getEntity();
-        return (entity instanceof Flagpole || entity instanceof Flag || entity instanceof GunItemEntity
-            || entity instanceof Grenade grenade && grenade.getConfigType().isDeployableBag());
+        return (entity instanceof Flagpole || entity instanceof Flag || entity instanceof GunItemEntity || entity instanceof Grenade grenade && grenade.getConfigType().isDeployableBag());
     }
 
     public EnumFireDecision computeFireDecision(PlayerData data, ItemStack gunStack, InteractionHand hand, HolderLookup.Provider registries)
@@ -247,8 +235,8 @@ public class GunItemHandler
             ShootingHandler handler = new PlayerShootingHandler(level, player, hand, gunStack, ammoSlot.stack(), ammoSlot.index());
             boolean lastBullet = isLastBullet(gunStack, level.registryAccess());
 
-            ShootingHelper.fireGun(level, player, item.configType, shootableType, gunStack, shootableStack,
-                (hand == InteractionHand.MAIN_HAND) ? player.getOffhandItem() : player.getMainHandItem(), handler);
+            ShootingHelper.fireGun(level, player, item.configType, shootableType, gunStack, shootableStack, (hand == InteractionHand.MAIN_HAND) ? player.getOffhandItem() : player.getMainHandItem(),
+                handler);
 
             playShootSound(level, player, gunStack, lastBullet);
             spawnMuzzleFlashParticles(level, player, gunStack, hand);
@@ -602,8 +590,7 @@ public class GunItemHandler
 
         Vector3f nextPosInPlayerCoords = new RotatedAxes(player.getYRot() + 90F, player.getXRot(), 0F).findLocalVectorGlobally(nextPosInGunCoords);
 
-        return new Vector3f((float) (player.getX() + nextPosInPlayerCoords.x), (float) (player.getEyeY() + nextPosInPlayerCoords.y),
-            (float) (player.getZ() + nextPosInPlayerCoords.z));
+        return new Vector3f((float) (player.getX() + nextPosInPlayerCoords.x), (float) (player.getEyeY() + nextPosInPlayerCoords.y), (float) (player.getZ() + nextPosInPlayerCoords.z));
     }
 
     private List<BulletHit> collectHits(Level level, Player attacker, PlayerData attackerData, MeleeSegment segment, int pointIdx, Vector3f dPos)
@@ -652,15 +639,15 @@ public class GunItemHandler
         PlayerSnapshot snapshot = selectSnapshot(attacker, otherData);
         if (snapshot != null)
         {
-            List<BulletHit> playerHits = snapshot
-                .raytrace(attackerData.getLastMeleePositions()[pointIdx] == null ? JomlUtils.fromVec3(segment.end) : attackerData.getLastMeleePositions()[pointIdx], dPos);
+            List<BulletHit> playerHits = snapshot.raytrace(attackerData.getLastMeleePositions()[pointIdx] == null ? JomlUtils.fromVec3(segment.end) : attackerData.getLastMeleePositions()[pointIdx],
+                dPos);
             outHits.addAll(playerHits);
             return;
         }
 
         Optional<Vec3> clip = otherPlayer.getBoundingBox().clip(segment.start, segment.end);
-        clip.ifPresent(hit -> outHits.add(new PlayerBulletHit(new PlayerHitbox(otherPlayer, new Matrix4f(), new Vector3f(), new Vector3f(), new Vector3f(), EnumHitboxType.BODY),
-            (float) segment.lambdaAt(hit))));
+        clip.ifPresent(
+            hit -> outHits.add(new PlayerBulletHit(new PlayerHitbox(otherPlayer, new Matrix4f(), new Vector3f(), new Vector3f(), new Vector3f(), EnumHitboxType.BODY), (float) segment.lambdaAt(hit))));
     }
 
     private PlayerSnapshot selectSnapshot(Player attacker, PlayerData otherData)
@@ -732,8 +719,7 @@ public class GunItemHandler
             attackedPlayer.invulnerableTime = attackedPlayer.hurtDuration / 2;
 
         ClientHooks.RENDER.spawnDebugDot(new Vec3(attackerData.getLastMeleePositions()[pointIdx].x + dPos.x * hit.getIntersectTime(),
-            attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()),
-            1000, 1F, 0F, 0F);
+            attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
     }
 
     private void applyEntityHit(Level level, Player attacker, PlayerData attackerData, ItemStack itemstack, double swingDistance, EntityHit hit, int pointIdx, Vector3f dPos)
@@ -746,8 +732,7 @@ public class GunItemHandler
             living.invulnerableTime = living.hurtDuration / 2;
 
         ClientHooks.RENDER.spawnDebugDot(new Vec3(attackerData.getLastMeleePositions()[pointIdx].x + dPos.x * hit.getIntersectTime(),
-            attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()),
-            1000, 1F, 0F, 0F);
+            attackerData.getLastMeleePositions()[pointIdx].y + dPos.y * hit.getIntersectTime(), attackerData.getLastMeleePositions()[pointIdx].z + dPos.z * hit.getIntersectTime()), 1000, 1F, 0F, 0F);
     }
 
     private void advanceAndResetIfDone(PlayerData data)
@@ -824,8 +809,7 @@ public class GunItemHandler
             BlockPos mgPos = pos.above();
             BlockPos forwardAbove = mgPos.relative(direction);
 
-            if (!level.isClientSide && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove)
-                && isReplaceableOrAir(level, base.relative(direction)))
+            if (!level.isClientSide && isSolidTop(level, base) && isReplaceableOrAir(level, mgPos) && isReplaceableOrAir(level, forwardAbove) && isReplaceableOrAir(level, base.relative(direction)))
             {
                 // check if an MG already exists at that block position
                 boolean exists = !level.getEntitiesOfClass(DeployedGun.class, new AABB(mgPos)).isEmpty();

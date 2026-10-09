@@ -1,5 +1,6 @@
 package com.flansmodultimate.common.driveables;
 
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 

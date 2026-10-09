@@ -1,6 +1,6 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.common.driveables.DriveableCollisionWorld;
+import com.flansmodultimate.common.driveables.collision.DriveableCollisionWorld;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;

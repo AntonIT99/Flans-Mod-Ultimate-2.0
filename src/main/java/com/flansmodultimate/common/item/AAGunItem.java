@@ -1,8 +1,7 @@
 package com.flansmodultimate.common.item;
 
-import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.Plane;
-import com.flansmodultimate.common.entity.Vehicle;
+import com.flansmodultimate.common.entity.*;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.hooks.ClientHooks;
@@ -21,15 +20,11 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -132,8 +127,8 @@ public class AAGunItem extends Item implements IFlanItem<AAGunType>
             {
                 if (shootableType.useKineticDamageSystem())
                 {
-                    tooltipComponents.add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()),
-                        IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, null), 1)));
+                    tooltipComponents
+                        .add(IFlanItem.indentedStatLine(ModUtils.getItemLocalizedName(shootableType.getShortName()), IFlanItem.formatFloat(configType.getDamageForDisplay(shootableType, null), 1)));
                 }
                 else
                 {

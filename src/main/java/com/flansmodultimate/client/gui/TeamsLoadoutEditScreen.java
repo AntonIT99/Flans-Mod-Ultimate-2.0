@@ -5,8 +5,8 @@ import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.common.item.IFlanItem;
 import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketLoadoutState;
-import com.flansmodultimate.network.server.PacketLoadoutAction;
+import com.flansmodultimate.network.client.teams.PacketLoadoutState;
+import com.flansmodultimate.network.server.teams.PacketLoadoutAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -57,8 +57,7 @@ public final class TeamsLoadoutEditScreen extends Screen
         {
             PacketLoadoutState.Entry choice = choices.get(i);
             int local = i - start;
-            Button button = Button
-                .builder(Component.literal(choice.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setEntry(loadoutIndex, selectedSlot, choice.typeId())))
+            Button button = Button.builder(Component.literal(choice.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setEntry(loadoutIndex, selectedSlot, choice.typeId())))
                 .bounds(left + 91 + (local % 3) * 75, top + 28 + (local / 3) * 25, 70, 20).build();
             button.active = state.getRank() >= choice.unlockRank();
             addRenderableWidget(button);
@@ -89,9 +88,8 @@ public final class TeamsLoadoutEditScreen extends Screen
 
         if (!selectedType.isBlank())
         {
-            addRenderableWidget(
-                Button.builder(Component.literal("Default"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setPaint(loadoutIndex, selectedSlot, "$default")))
-                    .bounds(left + 121, top + 159, 43, 20).build());
+            addRenderableWidget(Button.builder(Component.literal("Default"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setPaint(loadoutIndex, selectedSlot, "$default")))
+                .bounds(left + 121, top + 159, 43, 20).build());
             paint = 1;
         }
 
@@ -100,14 +98,12 @@ public final class TeamsLoadoutEditScreen extends Screen
             if (!selectedType.equalsIgnoreCase(reward.typeId()) || paint >= 4)
                 continue;
             int x = left + 121 + paint * 47;
-            addRenderableWidget(
-                Button.builder(Component.literal(reward.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setPaint(loadoutIndex, selectedSlot, reward.key())))
-                    .bounds(x, top + 159, 43, 20).build());
+            addRenderableWidget(Button.builder(Component.literal(reward.name()), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.setPaint(loadoutIndex, selectedSlot, reward.key())))
+                .bounds(x, top + 159, 43, 20).build());
             paint++;
         }
 
-        addRenderableWidget(
-            Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub())).bounds(left + 246, top + 181, 65, 16).build());
+        addRenderableWidget(Button.builder(Component.literal("Done"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.openHub())).bounds(left + 246, top + 181, 65, 16).build());
     }
 
     private List<PacketLoadoutState.Entry> choices(PacketLoadoutState state)

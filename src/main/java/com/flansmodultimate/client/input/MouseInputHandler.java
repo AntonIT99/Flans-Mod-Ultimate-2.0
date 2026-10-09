@@ -1,14 +1,9 @@
 package com.flansmodultimate.client.input;
 
-import com.flansmodultimate.client.render.MountedCameraView;
-import com.flansmodultimate.client.render.VehicleOpticsClient;
-import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.Driveable;
-import com.flansmodultimate.common.entity.IControllable;
-import com.flansmodultimate.common.entity.Seat;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.flansmodultimate.client.render.hud.MountedCameraView;
+import com.flansmodultimate.client.render.hud.VehicleOpticsClient;
+import com.flansmodultimate.common.entity.*;
+import lombok.*;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -65,10 +60,8 @@ public final class MouseInputHandler
         {
             float yawDelta = Mth.wrapDegrees(player.getYRot() - synchronizedFlightViewYaw);
             float pitchDelta = player.getXRot() - synchronizedFlightViewPitch;
-            flightPitchControl = Mth.clamp(flightPitchControl - pitchDelta * FLIGHT_VIEW_TO_FLAP,
-                -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
-            flightRollControl = Mth.clamp(flightRollControl + yawDelta * FLIGHT_VIEW_TO_FLAP,
-                -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
+            flightPitchControl = Mth.clamp(flightPitchControl - pitchDelta * FLIGHT_VIEW_TO_FLAP, -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
+            flightRollControl = Mth.clamp(flightRollControl + yawDelta * FLIGHT_VIEW_TO_FLAP, -MAX_FLAP_ANGLE, MAX_FLAP_ANGLE);
         }
         flightViewSynchronized = false;
     }
@@ -113,13 +106,15 @@ public final class MouseInputHandler
     /**
      * Turns a rider's free look while it is seated in a driveable.
      *
-     * <p>Vanilla would add the delta to the rider's world yaw and pitch, but
+     * <p>
+     * Vanilla would add the delta to the rider's world yaw and pitch, but
      * the rider looks out of a cockpit that pitches and rolls with the
      * driveable, and the camera composes the seat aim with that orientation.
      * Feeding world angles into a rolled frame is what makes mouse movement
      * point the view somewhere other than where the screen says it should go,
      * so the delta is applied to the seat's own aim instead. The rider's
-     * rotation follows from that aim once per tick.</p>
+     * rotation follows from that aim once per tick.
+     * </p>
      *
      * @return whether the seat consumed the input and vanilla must not turn the rider
      */
@@ -134,20 +129,16 @@ public final class MouseInputHandler
             long now = System.nanoTime();
             // The input already includes vanilla sensitivity. Cap its angular
             // change by elapsed time, so frame rate cannot change traverse speed.
-            double seconds = aaGunTurnId == aaGun.getId()
-                ? Mth.clamp((now - lastAAGunTurnNanos) * 1.0E-9D, 0D, 0.05D)
-                : 1D / 60D;
+            double seconds = aaGunTurnId == aaGun.getId() ? Mth.clamp((now - lastAAGunTurnNanos) * 1.0E-9D, 0D, 0.05D) : 1D / 60D;
             aaGunTurnId = aaGun.getId();
             lastAAGunTurnNanos = now;
             double maxInput = speed * seconds / TURN_DEGREES_PER_UNIT;
-            player.turn(Mth.clamp(yawDelta, -maxInput, maxInput),
-                Mth.clamp(pitchDelta, -maxInput, maxInput));
+            player.turn(Mth.clamp(yawDelta, -maxInput, maxInput), Mth.clamp(pitchDelta, -maxInput, maxInput));
             return true;
         }
         aaGunTurnId = -1;
 
-        if (!(player.getVehicle() instanceof Seat seat) || seat.getRiddenByEntity() != player
-            || seat.getDriveable() == null)
+        if (!(player.getVehicle() instanceof Seat seat) || seat.getRiddenByEntity() != player || seat.getDriveable() == null)
             return false;
 
         // Mouse flight steers the aircraft rather than the view. That mode
@@ -156,8 +147,7 @@ public final class MouseInputHandler
             return false;
 
         float zoom = VehicleOpticsClient.zoom();
-        seat.applyClientAimDelta((float) yawDelta * TURN_DEGREES_PER_UNIT / zoom,
-            (float) pitchDelta * TURN_DEGREES_PER_UNIT / zoom);
+        seat.applyClientAimDelta((float) yawDelta * TURN_DEGREES_PER_UNIT / zoom, (float) pitchDelta * TURN_DEGREES_PER_UNIT / zoom);
         return true;
     }
 
@@ -193,8 +183,7 @@ public final class MouseInputHandler
     /** Adopts the aim the server holds for a seat the local player just took. */
     private static void bindMountedSeatView(Player player, Driveable driveable)
     {
-        if (!(player.getVehicle() instanceof Seat seat) || driveable == null
-            || seat.getDriveable() != driveable || seat.getRiddenByEntity() != player)
+        if (!(player.getVehicle() instanceof Seat seat) || driveable == null || seat.getDriveable() != driveable || seat.getRiddenByEntity() != player)
         {
             viewSeatId = -1;
             return;
@@ -209,9 +198,7 @@ public final class MouseInputHandler
 
     private static boolean isMouseFlightActive(Player player, Driveable driveable)
     {
-        return player.getVehicle() instanceof Seat seat && seat.getDriveable() == driveable
-            && seat.getRiddenByEntity() == player
-            && MountedCameraView.isViewLockedToDriveable(driveable, seat);
+        return player.getVehicle() instanceof Seat seat && seat.getDriveable() == driveable && seat.getRiddenByEntity() == player && MountedCameraView.isViewLockedToDriveable(driveable, seat);
     }
 
     private static float recenter(float control)

@@ -1,33 +1,29 @@
 package com.flansmodultimate.hooks.client;
 
-import com.flansmod.client.model.GunAnimations;
-import com.flansmod.client.model.ModelAAGun;
-import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.*;
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.EnumAimType;
 import com.flansmodultimate.client.input.GunInputState;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.render.GunScreenShake;
+import com.flansmodultimate.client.render.effects.GunScreenShake;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.AAGun;
-import com.flansmodultimate.common.entity.AAGunBarrelGeometry;
 import com.flansmodultimate.common.entity.DeployedGun;
+import com.flansmodultimate.common.entity.geometry.AAGunBarrelGeometry;
 import com.flansmodultimate.common.guns.EnumFunction;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.GunItemHandler;
-import com.flansmodultimate.common.types.AAGunType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.IScope;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.hooks.IClientGunHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketAAGunModelBarrelOrigins;
-import com.flansmodultimate.network.server.PacketDeployedGunInput;
-import com.flansmodultimate.network.server.PacketGunInput;
-import com.flansmodultimate.network.server.PacketGunSwitchDelay;
+import com.flansmodultimate.network.server.gun.*;
 import com.flansmodultimate.util.ModUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -35,12 +31,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ClientGunHooksImpl implements IClientGunHooks
 {
@@ -194,8 +186,8 @@ public class ClientGunHooksImpl implements IClientGunHooks
         }
     }
 
-    private static void handleScope(GunItem gunItem, ItemStack gunStack, InteractionHand hand, GunInputState.ButtonState primaryFunctionState,
-        GunInputState.ButtonState secondaryFunctionState, boolean dualWield)
+    private static void handleScope(GunItem gunItem, ItemStack gunStack, InteractionHand hand, GunInputState.ButtonState primaryFunctionState, GunInputState.ButtonState secondaryFunctionState,
+        boolean dualWield)
     {
         GunType gunType = gunItem.getConfigType();
         boolean canZoom = gunType.getSecondaryFunction().isZoom() || gunType.getPrimaryFunction().isZoom() || gunType.getZoomFactor() > 1F || gunType.getFovFactor() > 1F;
@@ -346,8 +338,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
             aaGun.setPrevShootKeyPressed(primaryFunctionState.isPrevPressed());
 
             if (aaGun.isShootKeyPressed() != aaGun.isPrevShootKeyPressed())
-                PacketHandler
-                    .sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed(), pivots(barrelOriginData), muzzles(barrelOriginData)));
+                PacketHandler.sendToServer(new PacketDeployedGunInput(aaGun, aaGun.isShootKeyPressed(), aaGun.isPrevShootKeyPressed(), pivots(barrelOriginData), muzzles(barrelOriginData)));
         }
     }
 
@@ -441,8 +432,7 @@ public class ClientGunHooksImpl implements IClientGunHooks
     private static Vec3 getAAGunDebugBarrelOrigin(AAGun aaGun, int barrel, boolean sentryShot, @Nullable ModelAAGun.BarrelOriginData barrelOriginData)
     {
         if (hasModelBarrel(barrelOriginData, barrel))
-            return aaGun.position()
-                .add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel], barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch()));
+            return aaGun.position().add(AAGunBarrelGeometry.modelBarrelOffset(barrelOriginData.pivots()[barrel], barrelOriginData.muzzles()[barrel], aaGun.getGunYaw(), aaGun.getGunPitch()));
 
         return aaGun.getBarrelOrigin(barrel, sentryShot);
     }

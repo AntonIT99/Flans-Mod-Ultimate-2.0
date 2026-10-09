@@ -3,12 +3,10 @@ package com.flansmod.client.model;
 import com.flansmod.client.tmt.ModelRendererTurbo;
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.common.driveables.CollisionBox;
-import com.flansmodultimate.common.driveables.DriveableData;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.SeatInfo;
-import com.flansmodultimate.common.driveables.ShootPoint;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.driveables.physics.TrackAnimationPhysics;
+import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.common.types.VehicleType;
@@ -20,10 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /** Extensible, pass-aware model base for legacy ground vehicles. */
 @SuppressWarnings({"unused", "java:S1104"})
@@ -212,11 +207,10 @@ public class ModelVehicle extends ModelDriveable
             for (int index = 0; index < barrelModel.length; index++)
             {
                 ModelRendererTurbo part = barrelModel[index];
-                double[] box = new double[]{Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
-                    Double.NEGATIVE_INFINITY};
+                double[] box = new double[]{Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
                 if (part != null && part.appendFaceBounds(box))
-                    bounds[index] = new double[]{part.rotationPointX + box[0], part.rotationPointY + box[1], part.rotationPointZ + box[2], part.rotationPointX + box[3],
-                        part.rotationPointY + box[4], part.rotationPointZ + box[5]};
+                    bounds[index] = new double[]{part.rotationPointX + box[0], part.rotationPointY + box[1], part.rotationPointZ + box[2], part.rotationPointX + box[3], part.rotationPointY + box[4],
+                        part.rotationPointZ + box[5]};
             }
             barrelPartBounds = bounds;
         }
@@ -401,34 +395,32 @@ public class ModelVehicle extends ModelDriveable
     @Override
     protected Vec3 toTurretPose(Driveable driveable, Vec3 modelPixels, float turretYaw)
     {
-        Vec3 point = new Vec3(modelPixels.x * turretScale.x, modelPixels.y * turretScale.y, modelPixels.z * turretScale.z).add(turretTrans.x * 16D, turretTrans.y * 16D,
-            turretTrans.z * 16D);
+        Vec3 point = new Vec3(modelPixels.x * turretScale.x, modelPixels.y * turretScale.y, modelPixels.z * turretScale.z).add(turretTrans.x * 16D, turretTrans.y * 16D, turretTrans.z * 16D);
         Vector3f origin = driveable.getConfigType() == null ? null : driveable.getConfigType().getTurretOrigin();
         Vec3 pivot = origin == null ? Vec3.ZERO : new Vec3(origin.x * 16D, origin.y * 16D, -origin.z * 16D);
         return rotateY(point.subtract(pivot), -turretYaw * Mth.DEG_TO_RAD).add(pivot);
     }
 
     @Override
-    public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void render(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         if (driveable.isPartIntact(EnumDriveablePart.CORE))
             super.render(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         float wheelSpin = -state.wheelAngle();
         float steering = -state.steeringAngle() * 3F * Mth.DEG_TO_RAD;
-        renderWheelIfIntact(driveable, EnumDriveablePart.BACK_LEFT_WHEEL, leftBackWheelModel, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
-            blue, alpha, scale, renderPass);
-        renderWheelIfIntact(driveable, EnumDriveablePart.BACK_RIGHT_WHEEL, rightBackWheelModel, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
-            blue, alpha, scale, renderPass);
-        renderWheelIfIntact(driveable, EnumDriveablePart.FRONT_LEFT_WHEEL, leftFrontWheelModel, wheelSpin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red,
-            green, blue, alpha, scale, renderPass);
-        renderWheelIfIntact(driveable, EnumDriveablePart.FRONT_RIGHT_WHEEL, rightFrontWheelModel, wheelSpin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red,
-            green, blue, alpha, scale, renderPass);
-        renderWheelIfIntact(driveable, EnumDriveablePart.FRONT_WHEEL, frontWheelModel, wheelSpin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
-            alpha, scale, renderPass);
-        renderWheelIfIntact(driveable, EnumDriveablePart.BACK_WHEEL, backWheelModel, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
+        renderWheelIfIntact(driveable, EnumDriveablePart.BACK_LEFT_WHEEL, leftBackWheelModel, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
+        renderWheelIfIntact(driveable, EnumDriveablePart.BACK_RIGHT_WHEEL, rightBackWheelModel, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
+        renderWheelIfIntact(driveable, EnumDriveablePart.FRONT_LEFT_WHEEL, leftFrontWheelModel, wheelSpin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
             scale, renderPass);
+        renderWheelIfIntact(driveable, EnumDriveablePart.FRONT_RIGHT_WHEEL, rightFrontWheelModel, wheelSpin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
+            scale, renderPass);
+        renderWheelIfIntact(driveable, EnumDriveablePart.FRONT_WHEEL, frontWheelModel, wheelSpin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
+        renderWheelIfIntact(driveable, EnumDriveablePart.BACK_WHEEL, backWheelModel, wheelSpin, 0F, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
         if (driveable.isPartIntact(trackPartForDrawnSide(driveable.getConfigType(), true, true)))
         {
@@ -457,22 +449,19 @@ public class ModelVehicle extends ModelDriveable
         if (driveable.isPartIntact(EnumDriveablePart.TURRET))
             renderTurret(driveable, state, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (driveable.isPartIntact(EnumDriveablePart.HARVESTER))
-            renderAround(drillHeadModel, drillHeadOrigin, Axis.XP, state.animationTime() * (24F + 48F * Math.abs(state.throttle())), poseStack, vertexConsumer, packedLight,
-                packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderAround(drillHeadModel, drillHeadOrigin, Axis.XP, state.animationTime() * (24F + 48F * Math.abs(state.throttle())), poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
+                blue, alpha, scale, renderPass);
         if (driveable.isPartIntact(EnumDriveablePart.CORE) && driveable.getConfigType() instanceof VehicleType vehicleType)
         {
-            renderDoor(doorAnimModel, doorAttach, state.doorTransform(), state.partialTick(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
-                renderPass);
-            renderDoor(door2AnimModel, door2Attach, state.door2Transform(), state.partialTick(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
-                scale, renderPass);
+            renderDoor(doorAnimModel, doorAttach, state.doorTransform(), state.partialTick(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderDoor(door2AnimModel, door2Attach, state.door2Transform(), state.partialTick(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         }
-        renderRegisteredGuns(driveable, state, GunMountFilter.BODY, GunYawConvention.VEHICLE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
-            renderPass);
+        renderRegisteredGuns(driveable, state, GunMountFilter.BODY, GunYawConvention.VEHICLE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     @Override
-    public void render(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
-        float alpha, float scale, EnumRenderPass renderPass)
+    public void render(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
+        float scale, EnumRenderPass renderPass)
     {
         super.render(driveableType, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderPart(leftBackWheelModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
@@ -514,8 +503,8 @@ public class ModelVehicle extends ModelDriveable
     }
 
     /** Draw the same stationary track frame that a newly placed vehicle uses. */
-    private void renderTrackPreview(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderTrackPreview(DriveableType driveableType, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         int configuredFrames = driveableType == null ? Integer.MAX_VALUE : driveableType.getAnimFrames() + 1;
         int leftFrame = frameIndex(leftAnimTrackModel.length, configuredFrames, 0F);
@@ -527,14 +516,12 @@ public class ModelVehicle extends ModelDriveable
 
         // Older content models expose the three animation frames as separate
         // fields instead of the frame matrices above.
-        renderPart(selectFrame(0, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
-            scale, renderPass);
-        renderPart(selectFrame(0, rightAnimTrackModel1, rightAnimTrackModel2, rightAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
-            scale, renderPass);
+        renderPart(selectFrame(0, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderPart(selectFrame(0, rightAnimTrackModel1, rightAnimTrackModel2, rightAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    public void renderTurret(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    public void renderTurret(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         Vector3f turretOrigin = driveable.getConfigType() == null ? null : driveable.getConfigType().getTurretOrigin();
@@ -545,21 +532,18 @@ public class ModelVehicle extends ModelDriveable
         poseStack.scale(turretScale.x, turretScale.y, turretScale.z);
         poseStack.translate(turretTrans.x, turretTrans.y, turretTrans.z);
         renderPart(turretModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderWithRotation(barrelModel, 0F, 0F, -state.turretPitch() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
-            renderPass);
+        renderWithRotation(barrelModel, 0F, 0F, -state.turretPitch() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderAmmo(driveable, -state.turretPitch() * Mth.DEG_TO_RAD, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
 
-        renderAround(barrelSpecModel, barrelAttach, Axis.ZP, -state.turretPitch(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
-            renderPass);
+        renderAround(barrelSpecModel, barrelAttach, Axis.ZP, -state.turretPitch(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderRecoilingBarrel(driveable, state.turretPitch(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         renderIT1(driveable, state.partialTick(), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        renderRegisteredGuns(driveable, state, GunMountFilter.TURRET, GunYawConvention.VEHICLE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
-            scale, renderPass);
+        renderRegisteredGuns(driveable, state, GunMountFilter.TURRET, GunYawConvention.VEHICLE, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         poseStack.popPose();
     }
 
-    private void renderAmmo(Driveable driveable, float pitchRadians, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderAmmo(Driveable driveable, float pitchRadians, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         DriveableData data = driveable.getDriveableData();
         int missileSlots = data == null ? 0 : data.getNumMissileSlots();
@@ -572,8 +556,8 @@ public class ModelVehicle extends ModelDriveable
         }
     }
 
-    private void renderRecoilingBarrel(Driveable driveable, float pitchDegrees, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red,
-        float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderRecoilingBarrel(Driveable driveable, float pitchDegrees, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
+        float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (animBarrelModel == null || animBarrelModel.length == 0)
             return;
@@ -586,8 +570,8 @@ public class ModelVehicle extends ModelDriveable
         poseStack.popPose();
     }
 
-    private void renderIT1(Driveable driveable, float partialTick, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
-        float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderIT1(Driveable driveable, float partialTick, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         float armAngle = Mth.rotLerp(partialTick, driveable.getPrevIT1ArmAngle(), driveable.getIT1ArmAngle());
         float railAngle = Mth.rotLerp(partialTick, driveable.getPrevIT1RailAngle(), driveable.getIT1RailAngle());
@@ -597,8 +581,7 @@ public class ModelVehicle extends ModelDriveable
         translateIT1Point(poseStack, drakonArmAttach);
         poseStack.mulPose(Axis.ZP.rotationDegrees(armAngle));
         renderPart(drakonArmModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
-        poseStack.translate(value(drakonRailAttach, 0) - value(drakonArmAttach, 0), value(drakonRailAttach, 1) - value(drakonArmAttach, 1),
-            value(drakonRailAttach, 2) - value(drakonArmAttach, 2));
+        poseStack.translate(value(drakonRailAttach, 0) - value(drakonArmAttach, 0), value(drakonRailAttach, 1) - value(drakonArmAttach, 1), value(drakonRailAttach, 2) - value(drakonArmAttach, 2));
         poseStack.mulPose(Axis.ZP.rotationDegrees(railAngle));
         renderPart(drakonRailModel, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (driveable.isCanFireIT1())
@@ -618,8 +601,8 @@ public class ModelVehicle extends ModelDriveable
         poseStack.popPose();
     }
 
-    private void renderIT1Preview(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha,
-        float scale, EnumRenderPass renderPass)
+    private void renderIT1Preview(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        EnumRenderPass renderPass)
     {
         poseStack.pushPose();
         translateIT1Point(poseStack, drakonArmAttach);
@@ -753,8 +736,8 @@ public class ModelVehicle extends ModelDriveable
         return count == 0 ? null : total / count;
     }
 
-    private void renderTrackFrame(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red,
-        float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderTrackFrame(Driveable driveable, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
+        float alpha, float scale, EnumRenderPass renderPass)
     {
         int configuredFrames = driveable.getConfigType() == null ? Integer.MAX_VALUE : driveable.getConfigType().getAnimFrames() + 1;
         float leftPhase = TrackAnimationPhysics.framePhase(state.leftTrackProgress());
@@ -772,26 +755,26 @@ public class ModelVehicle extends ModelDriveable
         int legacyFrameLeft = Mth.clamp((int) Math.floor(leftPhase * 3F), 0, 2);
         int legacyFrameRight = Mth.clamp((int) Math.floor(rightPhase * 3F), 0, 2);
         if (driveable.isPartIntact(trackPartForDrawnSide(type, true, true)))
-            renderPart(selectFrame(legacyFrameLeft, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red,
-                green, blue, alpha, scale, renderPass);
+            renderPart(selectFrame(legacyFrameLeft, leftAnimTrackModel1, leftAnimTrackModel2, leftAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
+                scale, renderPass);
         if (driveable.isPartIntact(trackPartForDrawnSide(type, false, true)))
-            renderPart(selectFrame(legacyFrameRight, rightAnimTrackModel1, rightAnimTrackModel2, rightAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red,
-                green, blue, alpha, scale, renderPass);
+            renderPart(selectFrame(legacyFrameRight, rightAnimTrackModel1, rightAnimTrackModel2, rightAnimTrackModel3), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
+                scale, renderPass);
     }
 
-    private void renderFancyTracks(Driveable driveable, VehicleType type, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderFancyTracks(Driveable driveable, VehicleType type, RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red,
+        float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         ensureTrackPaths(type);
         // A live vehicle carries eased per-link angles that FixTrackLink steers
         // without them the links fall back to the static pose.
         TrackLinkAnimation links = state.trackLinks() != null && state.trackLinks().isActive() ? state.trackLinks() : null;
         if (driveable.isPartIntact(trackPartForDrawnSide(type, true, false)))
-            renderFancyTrackPath(type, leftTrackPath, state.leftTrackProgress() * leftTrackPath.length(), links == null ? null : links.angles(true), poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderFancyTrackPath(type, leftTrackPath, state.leftTrackProgress() * leftTrackPath.length(), links == null ? null : links.angles(true), poseStack, vertexConsumer, packedLight,
+                packedOverlay, red, green, blue, alpha, scale, renderPass);
         if (driveable.isPartIntact(trackPartForDrawnSide(type, false, false)))
-            renderFancyTrackPath(type, rightTrackPath, state.rightTrackProgress() * rightTrackPath.length(), links == null ? null : links.angles(false), poseStack, vertexConsumer,
-                packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
+            renderFancyTrackPath(type, rightTrackPath, state.rightTrackProgress() * rightTrackPath.length(), links == null ? null : links.angles(false), poseStack, vertexConsumer, packedLight,
+                packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
     private void ensureTrackPaths(DriveableType type)
@@ -813,8 +796,8 @@ public class ModelVehicle extends ModelDriveable
         return Mth.sqrt(squared) * MODEL_SCALE;
     }
 
-    private void renderFancyTrackPath(DriveableType type, TrackPath path, float movement, @Nullable float[] linkAngles, PoseStack poseStack, VertexConsumer vertexConsumer,
-        int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderFancyTrackPath(DriveableType type, TrackPath path, float movement, @Nullable float[] linkAngles, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
+        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         float spacing = type.getTrackLinkLength();
         if (fancyTrackModel == null || fancyTrackModel.length == 0 || path.isEmpty() || spacing <= 0F)
@@ -855,8 +838,8 @@ public class ModelVehicle extends ModelDriveable
         }
     }
 
-    private void renderDoor(ModelRendererTurbo[] parts, Vector3f attachment, AnimatedTransform transform, float partialTick, PoseStack poseStack, VertexConsumer vertexConsumer,
-        int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderDoor(ModelRendererTurbo[] parts, Vector3f attachment, AnimatedTransform transform, float partialTick, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
+        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (parts == null || parts.length == 0)
             return;
@@ -871,37 +854,37 @@ public class ModelVehicle extends ModelDriveable
         poseStack.popPose();
     }
 
-    private void renderLegs(RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
-        float alpha, float scale, EnumRenderPass renderPass)
+    private void renderLegs(RenderState state, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        EnumRenderPass renderPass)
     {
         float speed = legSpeedChange ? Math.abs(state.throttle()) : 1F;
         float phase = state.leftTrackProgress() * Mth.TWO_PI * legMoveSpeed;
         float steer = Mth.clamp(state.steeringAngle() / 20F, -1F, 1F) * legSteerAmount;
-        renderWithRotation(leftFrontLegModel, 0F, 0F, Mth.sin(phase + Mth.PI) * speed * legMaxMove * (1F + steer), poseStack, vertexConsumer, packedLight, packedOverlay, red,
-            green, blue, alpha, scale, renderPass);
-        renderWithRotation(rightFrontLegModel, 0F, 0F, Mth.sin(phase) * speed * legMaxMove * (1F - steer), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue,
-            alpha, scale, renderPass);
-        renderWithRotation(leftBackLegModel, 0F, 0F, Mth.sin(phase + Mth.HALF_PI) * speed * legMaxMove * (1F + steer), poseStack, vertexConsumer, packedLight, packedOverlay, red,
-            green, blue, alpha, scale, renderPass);
-        renderWithRotation(rightBackLegModel, 0F, 0F, Mth.sin(phase + Mth.PI + Mth.HALF_PI) * speed * legMaxMove * (1F - steer), poseStack, vertexConsumer, packedLight,
-            packedOverlay, red, green, blue, alpha, scale, renderPass);
+        renderWithRotation(leftFrontLegModel, 0F, 0F, Mth.sin(phase + Mth.PI) * speed * legMaxMove * (1F + steer), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
+            scale, renderPass);
+        renderWithRotation(rightFrontLegModel, 0F, 0F, Mth.sin(phase) * speed * legMaxMove * (1F - steer), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale,
+            renderPass);
+        renderWithRotation(leftBackLegModel, 0F, 0F, Mth.sin(phase + Mth.HALF_PI) * speed * legMaxMove * (1F + steer), poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha,
+            scale, renderPass);
+        renderWithRotation(rightBackLegModel, 0F, 0F, Mth.sin(phase + Mth.PI + Mth.HALF_PI) * speed * legMaxMove * (1F - steer), poseStack, vertexConsumer, packedLight, packedOverlay, red, green,
+            blue, alpha, scale, renderPass);
     }
 
-    private void renderWheel(ModelRendererTurbo[] parts, float spin, float steering, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderWheel(ModelRendererTurbo[] parts, float spin, float steering, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green,
+        float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         renderWithRotation(parts, 0F, steering, spin, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    private void renderWheelIfIntact(Driveable driveable, EnumDriveablePart part, ModelRendererTurbo[] models, float spin, float steering, PoseStack poseStack,
-        VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderWheelIfIntact(Driveable driveable, EnumDriveablePart part, ModelRendererTurbo[] models, float spin, float steering, PoseStack poseStack, VertexConsumer vertexConsumer,
+        int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (driveable.isPartIntact(part))
             renderWheel(models, spin, steering, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    private void renderWithRotation(ModelRendererTurbo[][] matrix, float x, float y, float z, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
-        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderWithRotation(ModelRendererTurbo[][] matrix, float x, float y, float z, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red,
+        float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (matrix == null)
             return;
@@ -909,14 +892,14 @@ public class ModelVehicle extends ModelDriveable
             renderWithRotation(row, x, y, z, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass);
     }
 
-    private void renderWithRotation(ModelRendererTurbo[] parts, float x, float y, float z, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
-        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderWithRotation(ModelRendererTurbo[] parts, float x, float y, float z, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red,
+        float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         ModelRendererTurbo.renderRotated(parts, x, y, z, poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha, scale, renderPass, oldRotateOrder);
     }
 
-    private void renderSteeringWheel(float angle, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue,
-        float alpha, float scale, EnumRenderPass renderPass)
+    private void renderSteeringWheel(float angle, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha, float scale,
+        EnumRenderPass renderPass)
     {
         for (ModelRendererTurbo part : steeringWheelModel)
         {
@@ -929,8 +912,8 @@ public class ModelVehicle extends ModelDriveable
         }
     }
 
-    private void renderAround(ModelRendererTurbo[] parts, Vector3f origin, Axis axis, float angleDegrees, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight,
-        int packedOverlay, float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
+    private void renderAround(ModelRendererTurbo[] parts, Vector3f origin, Axis axis, float angleDegrees, PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay,
+        float red, float green, float blue, float alpha, float scale, EnumRenderPass renderPass)
     {
         if (parts == null || parts.length == 0)
             return;

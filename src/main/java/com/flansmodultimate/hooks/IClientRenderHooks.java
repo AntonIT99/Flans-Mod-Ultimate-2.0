@@ -1,7 +1,7 @@
 package com.flansmodultimate.hooks;
 
-import com.flansmodultimate.client.render.KillMessageData;
-import com.flansmodultimate.common.driveables.DerivedMuzzle;
+import com.flansmodultimate.client.render.hud.KillMessageData;
+import com.flansmodultimate.common.driveables.weapons.DerivedMuzzle;
 import com.flansmodultimate.common.types.AAGunType;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.platform.client.FlanItemExtensions;
@@ -11,9 +11,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public interface IClientRenderHooks
 {
@@ -41,15 +39,14 @@ public interface IClientRenderHooks
      * Emits a burst of particles scattered around the given point and keeps replacing them as they
      * expire for {@code durationTicks}, so the effect lasts without slowing any particle's animation.
      */
-    void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks,
-        float lifetimeScale);
+    void spawnSustainedParticles(String particleType, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks, float lifetimeScale);
 
     /**
      * As {@link #spawnSustainedParticles}, but the waves emitted during the first {@code hotTicks}
      * use {@code hotParticleType}, so an effect can burn as fire before it cools to smoke.
      */
-    void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize,
-        int durationTicks, float lifetimeScale);
+    void spawnSustainedParticles(String hotParticleType, String particleType, int hotTicks, double x, double y, double z, double spread, double drift, float scale, int burstSize, int durationTicks,
+        float lifetimeScale);
 
     /**
      * The staged layers of a detonation that play out over several ticks: the warm afterglow, the

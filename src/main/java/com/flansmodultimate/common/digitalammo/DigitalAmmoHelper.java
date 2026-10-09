@@ -6,7 +6,7 @@ import com.flansmodultimate.common.types.GunType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.CommonConfigSnapshot;
 import com.flansmodultimate.config.ModCommonConfig;
-import com.flansmodultimate.network.client.PacketSyncDigitalAmmo;
+import com.flansmodultimate.network.client.gun.PacketSyncDigitalAmmo;
 import com.flansmodultimate.util.ModUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

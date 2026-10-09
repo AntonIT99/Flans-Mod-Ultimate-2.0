@@ -2,8 +2,8 @@ package com.flansmodultimate.client.gui;
 
 import com.flansmodultimate.FlansModTextures;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketBaseEditState;
-import com.flansmodultimate.network.server.PacketBaseEditAction;
+import com.flansmodultimate.network.client.teams.PacketBaseEditState;
+import com.flansmodultimate.network.server.teams.PacketBaseEditAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 

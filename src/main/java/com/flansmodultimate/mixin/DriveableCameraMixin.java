@@ -1,12 +1,12 @@
 package com.flansmodultimate.mixin;
 
 import com.flansmodultimate.client.input.KeyInputHandler;
-import com.flansmodultimate.client.render.MountedCameraView;
-import com.flansmodultimate.client.render.VehicleOpticsClient;
+import com.flansmodultimate.client.render.hud.MountedCameraView;
+import com.flansmodultimate.client.render.hud.VehicleOpticsClient;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.entity.DeployedGun;
-import com.flansmodultimate.common.entity.DeployedGunMuzzleGeometry;
 import com.flansmodultimate.common.entity.Seat;
+import com.flansmodultimate.common.entity.geometry.DeployedGunMuzzleGeometry;
 import com.flansmodultimate.common.types.GunType;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;

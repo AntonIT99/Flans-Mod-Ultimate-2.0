@@ -6,15 +6,17 @@ import com.flansmodultimate.common.FlanParticles;
 import com.flansmodultimate.common.distant.DistantRenderRange;
 import com.flansmodultimate.common.driveables.*;
 import com.flansmodultimate.common.driveables.armor.*;
+import com.flansmodultimate.common.driveables.collision.*;
+import com.flansmodultimate.common.driveables.damage.*;
 import com.flansmodultimate.common.driveables.physics.*;
+import com.flansmodultimate.common.driveables.weapons.PilotGun;
+import com.flansmodultimate.common.driveables.weapons.ShootPoint;
 import com.flansmodultimate.common.explosions.FlanExplosion;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.inventory.DriveableInventoryMenu;
-import com.flansmodultimate.common.item.AmmoStatContext;
-import com.flansmodultimate.common.item.PartItem;
-import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.item.ToolItem;
+import com.flansmodultimate.common.item.*;
+import com.flansmodultimate.common.item.tooltip.AmmoStatContext;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
 import com.flansmodultimate.common.raytracing.hits.BulletHit;
@@ -25,64 +27,48 @@ import com.flansmodultimate.event.GunFiredEvent;
 import com.flansmodultimate.event.PlayerEnterSeatEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.*;
+import com.flansmodultimate.network.client.driveable.*;
+import com.flansmodultimate.network.client.effects.PacketParticle;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
-import com.flansmodultimate.platform.entity.EntityPlatform;
-import com.flansmodultimate.platform.entity.FlanEntity;
-import com.flansmodultimate.platform.entity.SpawnDataEntity;
-import com.flansmodultimate.platform.entity.SynchedDataDefinition;
+import com.flansmodultimate.platform.entity.*;
 import com.flansmodultimate.platform.fluid.FluidContainerPlatform;
 import com.flansmodultimate.platform.item.ItemCapabilities;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.platform.network.PacketBuffer;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.InventoryHelper;
-import com.flansmodultimate.util.ModUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import com.flansmodultimate.util.*;
+import lombok.*;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.*;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Container;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.vehicle.DismountHelper;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -757,8 +743,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     private void updateCurrentAmmoNames()
     {
-        if (level().isClientSide || driveableData == null
-            || !ammoNameCache.needsRefresh(driveableData, driveableData.getInventoryRevision(), loadedOrdnanceSlot[0], loadedOrdnanceSlot[1], tickCount))
+        if (level().isClientSide || driveableData == null || !ammoNameCache.needsRefresh(driveableData, driveableData.getInventoryRevision(), loadedOrdnanceSlot[0], loadedOrdnanceSlot[1], tickCount))
             return;
         entityData.set(DATA_PRIMARY_AMMO_NAME, findCurrentAmmoName(false));
         entityData.set(DATA_SECONDARY_AMMO_NAME, findCurrentAmmoName(true));
@@ -1063,9 +1048,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         }
 
-        ItemStack savedSource = tag.contains(NBT_SOURCE_STACK, Tag.TAG_COMPOUND)
-            ? ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_SOURCE_STACK))
-            : ItemStack.EMPTY;
+        ItemStack savedSource = tag.contains(NBT_SOURCE_STACK, Tag.TAG_COMPOUND) ? ItemStackData.parse(level().registryAccess(), tag.getCompound(NBT_SOURCE_STACK)) : ItemStack.EMPTY;
         initialize(type, savedSource);
         driveableData = new DriveableData(type, tag, level().registryAccess());
         destroyedParts.clear();
@@ -2474,8 +2457,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     public void applyRenderInventoryNetworkState(int paintjobId, int[] slots, ItemStack[] stacks)
     {
-        if (!level().isClientSide || driveableData == null || slots == null || stacks == null || slots.length != stacks.length
-            || slots.length > DriveableData.MAX_RENDER_SYNC_SLOTS)
+        if (!level().isClientSide || driveableData == null || slots == null || stacks == null || slots.length != stacks.length || slots.length > DriveableData.MAX_RENDER_SYNC_SLOTS)
             return;
         driveableData.setPaintjobID(paintjobId);
         entityData.set(DATA_PAINTJOB_ID, paintjobId);
@@ -2702,8 +2684,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         // A ranging gun spots for the main armament, so it borrows the vehicle's ballistics instead of
         // the mounted gun's - still only as the fallback the ammunition may override.
         if (!pureGunType && type.isRangingGun() && type.getBulletSpeed() > 0F)
-            fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(), type.getBulletSpeed(), fireable.getBulletSpeedMultiplier(),
-                fireable.getSpreadPattern());
+            fireable = new FireableGun(fireable.getType(), fireable.getDamage(), fireable.getSpread(), type.getBulletSpeed(), fireable.getBulletSpeedMultiplier(), fireable.getSpreadPattern());
         return fireable;
     }
 
@@ -3095,8 +3076,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             return;
         // The same shot event drives both authored particles and the flash at each fired barrel.
         PacketHandler.sendToAllAround(
-            new PacketDriveableBankFired(getId(), secondary, fired.stream().mapToInt(FiredMuzzle::pointIndex).toArray(), fired.stream().mapToInt(FiredMuzzle::barrel).toArray()),
-            position(), 128D, level().dimension());
+            new PacketDriveableBankFired(getId(), secondary, fired.stream().mapToInt(FiredMuzzle::pointIndex).toArray(), fired.stream().mapToInt(FiredMuzzle::barrel).toArray()), position(), 128D,
+            level().dimension());
     }
 
     /**
@@ -3275,20 +3256,19 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         Vec3 origin = getPassengerShootOrigin(seat, info, barrel);
         Vec3 direction = aimedDirection(seat.getHullAimYaw(), seat.getAimPitch());
         boolean creative = attacker instanceof Player player && player.getAbilities().instabuild;
-        ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType), origin, direction, this, attacker, ShootableItem.getRoundsFired(ammo),
-            () ->
+        ShootingHelper.fireWeapon(level(), fireable, shootableType, gun.getNumBullets(null, shootableType), origin, direction, this, attacker, ShootableItem.getRoundsFired(ammo), () ->
+        {
+            if (!creative)
             {
-                if (!creative)
-                {
-                    Item ammoItem = ammo.getItem();
-                    ShootableItem.consumeRound(ammo);
-                    boolean depleted = !ShootableItem.hasRoundsLeft(ammo);
-                    data.setAmmo(ammoSlot, depleted ? ItemStack.EMPTY : ammo);
-                    if (depleted)
-                        refillWeaponSlot(AmmoBank.AMMO, ammoSlot, ammoItem);
-                    acknowledgeInternalWeaponInventoryChange();
-                }
-            });
+                Item ammoItem = ammo.getItem();
+                ShootableItem.consumeRound(ammo);
+                boolean depleted = !ShootableItem.hasRoundsLeft(ammo);
+                data.setAmmo(ammoSlot, depleted ? ItemStack.EMPTY : ammo);
+                if (depleted)
+                    refillWeaponSlot(AmmoBank.AMMO, ammoSlot, ammoItem);
+                acknowledgeInternalWeaponInventoryChange();
+            }
+        });
         String sound = gun.getShootSound(null, !ShootableItem.hasRoundsLeft(ammo));
         if (StringUtils.isNotBlank(sound))
             PacketPlaySound.sendSoundPacket(this, gun.getGunSoundRange(), sound, true);
@@ -3484,16 +3464,14 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             if (part.getMaxHealth() > 0F && part.getHealth() > 0F && part.getHealth() < part.getMaxHealth() * 0.5F)
             {
                 Vec3 position = randomPointInPart(box);
-                level().addParticle(part.getHealth() < part.getMaxHealth() * 0.25F ? ParticleTypes.LARGE_SMOKE : ParticleTypes.SMOKE, position.x, position.y, position.z, 0D, 0D,
-                    0D);
+                level().addParticle(part.getHealth() < part.getMaxHealth() * 0.25F ? ParticleTypes.LARGE_SMOKE : ParticleTypes.SMOKE, position.x, position.y, position.z, 0D, 0D, 0D);
             }
         }
     }
 
     private Vec3 randomPointInPart(CollisionBox box)
     {
-        return partFrameToWorld(
-            new Vec3(box.getX() + random.nextFloat() * box.getWidth(), box.getY() + random.nextFloat() * box.getHeight(), box.getZ() + random.nextFloat() * box.getDepth()));
+        return partFrameToWorld(new Vec3(box.getX() + random.nextFloat() * box.getWidth(), box.getY() + random.nextFloat() * box.getHeight(), box.getZ() + random.nextFloat() * box.getDepth()));
     }
 
     protected static Vec3 boxCentre(CollisionBox box)
@@ -3511,8 +3489,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         {
             int ordinal = part.getType().ordinal();
             byte flags = (byte) ((part.isOnFire() ? 1 : 0) | (part.isDead() ? 2 : 0));
-            if (!partSyncInitialized || Float.floatToIntBits(syncedPartHealth[ordinal]) != Float.floatToIntBits(part.getHealth())
-                || syncedPartFireTicks[ordinal] != part.getFireTime() || syncedPartFlags[ordinal] != flags)
+            if (!partSyncInitialized || Float.floatToIntBits(syncedPartHealth[ordinal]) != Float.floatToIntBits(part.getHealth()) || syncedPartFireTicks[ordinal] != part.getFireTime()
+                || syncedPartFlags[ordinal] != flags)
             {
                 changed.add(part);
                 syncedPartHealth[ordinal] = part.getHealth();
@@ -3751,16 +3729,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected boolean hasLockOnCapability()
     {
-        return configType != null && (configType.isLockOnToPlanes() || configType.isLockOnToVehicles() || configType.isLockOnToMechas() || configType.isLockOnToPlayers()
-            || configType.isLockOnToLivings());
+        return configType != null
+            && (configType.isLockOnToPlanes() || configType.isLockOnToVehicles() || configType.isLockOnToMechas() || configType.isLockOnToPlayers() || configType.isLockOnToLivings());
     }
 
     protected boolean matchesLockOnCategory(Entity entity)
     {
-        return configType != null
-            && (configType.isLockOnToMechas() && entity instanceof Mecha || configType.isLockOnToVehicles() && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
-                || configType.isLockOnToPlanes() && (entity instanceof Plane || ModUtils.isPlaneLike(entity)) || configType.isLockOnToPlayers() && entity instanceof Player
-                || configType.isLockOnToLivings() && entity instanceof LivingEntity);
+        return configType != null && (configType.isLockOnToMechas() && entity instanceof Mecha || configType.isLockOnToVehicles() && (entity instanceof Vehicle || ModUtils.isVehicleLike(entity))
+            || configType.isLockOnToPlanes() && (entity instanceof Plane || ModUtils.isPlaneLike(entity)) || configType.isLockOnToPlayers() && entity instanceof Player
+            || configType.isLockOnToLivings() && entity instanceof LivingEntity);
     }
 
     protected boolean isValidLockOnTarget(@Nullable Entity target, LivingEntity controller, boolean checkRange)
@@ -3978,8 +3955,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         else if (seat.getSeatInfo() != null && isTurretMountedPart(seat.getSeatInfo().getPart()))
             local = turretPointToLocal(local, Mth.rotLerp(partial, prevTurretYaw, getTurretYaw()),
                 seat.getSeatInfo().getPart() == EnumDriveablePart.BARREL ? Mth.rotLerp(partial, prevTurretPitch, getTurretPitch()) : 0F);
-        return root.add(
-            modelLocalDirectionToWorld(local, Mth.rotLerp(partial, prevYaw, getYaw()), Mth.rotLerp(partial, prevPitch, getPitch()), Mth.rotLerp(partial, prevRoll, getRoll())));
+        return root.add(modelLocalDirectionToWorld(local, Mth.rotLerp(partial, prevYaw, getYaw()), Mth.rotLerp(partial, prevPitch, getPitch()), Mth.rotLerp(partial, prevRoll, getRoll())));
     }
 
     /**
@@ -4372,8 +4348,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** Moves a rider to the next free, intact seat in definition order. */
     public boolean cycleSeat(@NotNull ServerPlayer player, @NotNull Seat current)
     {
-        if (current.getDriveable() != this || current.getRiddenByEntity() != player || seats.length < 2
-            || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
+        if (current.getDriveable() != this || current.getRiddenByEntity() != player || seats.length < 2 || !FlanEntityPermissions.allows(player, FlanEntityPermissions.DRIVEABLE_ENTER))
             return false;
         int targetIndex = SeatCycle.nextAvailable(current.getSeatIndex(), seats.length, index ->
         {
@@ -4525,8 +4500,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         float penetrationRatio = previousPower <= 0F ? 0F : remainingPower / previousPower;
         int shotIndex = shot == null ? 0 : shot.getShot();
         boolean heat = bulletType.isHeat();
-        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(),
-            ModCommonConfig.maxArmorImpactAngleDeg(), heat);
+        ResolvedArmorHit armorHit = configType.getResolvedArmor().resolveHit(hit.getPart(), hit.getFacing(), hit.getLocalProjectileDirection(), ModCommonConfig.maxArmorImpactAngleDeg(), heat);
         float authoredFixedDamage = bulletType.getDamage().getDamageAgainstEntity(this);
         boolean normalizedHealth = configType.getResolvedHealth().enabled();
         float selectedFixedDamage = normalizedHealth ? authoredFixedDamage : authoredFixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
@@ -4535,8 +4509,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         float p100 = shot != null ? shot.getPenetrationAt100m() : bulletType.getPenetrationAt100m(shotIndex);
         float muzzleVelocity = shot != null ? shot.getMuzzleVelocity() : ShootingHelper.getMuzzleVelocity(bulletType, shotIndex, null);
         float projectileMass = shot != null ? shot.getProjectileMass() : bulletType.getMass(shotIndex);
-        VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity,
-            armorHit, p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
+        VehicleProjectileDamageResolver.Result resolvedDamage = VehicleProjectileDamageResolver.resolve(normalizedHealth, projectileMass, selectedFixedDamage, muzzleVelocity, armorHit,
+            p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean armourBlocked = resolvedDamage.penetration().armourGateRequired() && !resolvedDamage.penetration().penetrated();
         if (!level().isClientSide)
         {
@@ -4639,8 +4613,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             CollisionBox box = part.getBox();
             if (box == null || !canHitPart(part.getType()) || !includeDestroyedParts && !isPartHitboxActive(part))
                 continue;
-            DriveableProjectileCollision.LocalHit intersection = DriveableProjectileCollision.trace(partBoxModelLocal(box), localOrigin, localMotion, part.getType(),
-                getTurretYaw(), getTurretPitch(), turretPivot, turretOffset);
+            DriveableProjectileCollision.LocalHit intersection = DriveableProjectileCollision.trace(partBoxModelLocal(box), localOrigin, localMotion, part.getType(), getTurretYaw(), getTurretPitch(),
+                turretPivot, turretOffset);
             if (intersection == null)
                 continue;
             Vec3 worldHit = origin.add(motion.scale(intersection.fraction()));
@@ -4713,8 +4687,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (driveableData == null)
             return Optional.empty();
         Vec3 local = partFrameToModelLocal(worldToModelLocal(worldPoint));
-        return driveableData.getParts().values().stream().filter(part -> part.getBox() != null)
-            .min(Comparator.comparingDouble(part -> distanceSquaredToBox(local, part.getBox().asAabb()))).map(DriveablePart::getType);
+        return driveableData.getParts().values().stream().filter(part -> part.getBox() != null).min(Comparator.comparingDouble(part -> distanceSquaredToBox(local, part.getBox().asAabb())))
+            .map(DriveablePart::getType);
     }
 
     /** Selects the nearest damageable collision surface. */
@@ -4737,8 +4711,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             if (part == null || !part.canReceiveExplosionDamage() || !canHitPart(part.getType()))
                 continue;
             AABB box = partBoxModelLocal(part.getBox());
-            DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(box, hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(),
-                turretPivot, turretOffset);
+            DriveableProjectileCollision.ClosestSurface surface = DriveableProjectileCollision.closestSurface(box, hullLocalPoint, part.getType(), getTurretYaw(), getTurretPitch(), turretPivot,
+                turretOffset);
             Vec3 hullSurface = DriveableProjectileCollision.partPointToHullLocal(surface.position(), part.getType(), getTurretYaw(), getTurretPitch(), turretPivot, turretOffset);
             Vec3 worldSurface = modelLocalToWorld(hullSurface);
             List<Vec3> samples = new ArrayList<>();
@@ -4747,8 +4721,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 Vec3 hullSample = DriveableProjectileCollision.partPointToHullLocal(sample, part.getType(), getTurretYaw(), getTurretPitch(), turretPivot, turretOffset);
                 samples.add(modelLocalToWorld(hullSample));
             }
-            targets.add(new VehicleExplosionTarget(part.getType(), EnumArmorFacing.fromOutwardNormal(partFrameToModelLocal(surface.outwardNormal())), worldSurface,
-                worldPoint.distanceTo(worldSurface), samples));
+            targets.add(new VehicleExplosionTarget(part.getType(), EnumArmorFacing.fromOutwardNormal(partFrameToModelLocal(surface.outwardNormal())), worldSurface, worldPoint.distanceTo(worldSurface),
+                samples));
         }
         targets.sort(Comparator.comparingDouble(VehicleExplosionTarget::distanceMeters).thenComparing(target -> target.part().ordinal()));
         return targets;
@@ -4849,8 +4823,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
 
     protected void refuelFromInventory()
     {
-        if (driveableData == null || configType == null || !FlansMod.teamsManager.isVehiclesNeedFuel() || configType.getFuelTankSize() <= 0F
-            || getFuel() >= configType.getFuelTankSize())
+        if (driveableData == null || configType == null || !FlansMod.teamsManager.isVehiclesNeedFuel() || configType.getFuelTankSize() <= 0F || getFuel() >= configType.getFuelTankSize())
             return;
         PartType engine = driveableData.getEngine();
         if (engine != null && engine.isUseRFPower())
@@ -4998,8 +4971,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
      */
     protected void emitConfiguredParticles()
     {
-        if (!level().isClientSide || configType == null || configType.getEmitters().isEmpty()
-            || !ClientHooks.PLAYER.isLocalPlayerWithinSqr(this, EMITTER_PARTICLE_RANGE * EMITTER_PARTICLE_RANGE))
+        if (!level().isClientSide || configType == null || configType.getEmitters().isEmpty() || !ClientHooks.PLAYER.isLocalPlayerWithinSqr(this, EMITTER_PARTICLE_RANGE * EMITTER_PARTICLE_RANGE))
             return;
         if (configType.isEmittersRequireOccupant() && !hasDriveableOccupant())
             return;
@@ -5020,8 +4992,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             if (health < emitter.getMinHealth() || health > emitter.getMaxHealth())
                 return;
 
-            Vec3 localOrigin = new Vec3(emitter.getOrigin().x + (random.nextFloat() - 0.5F) * emitter.getExtents().x,
-                emitter.getOrigin().y + (random.nextFloat() - 0.5F) * emitter.getExtents().y, emitter.getOrigin().z + (random.nextFloat() - 0.5F) * emitter.getExtents().z);
+            Vec3 localOrigin = new Vec3(emitter.getOrigin().x + (random.nextFloat() - 0.5F) * emitter.getExtents().x, emitter.getOrigin().y + (random.nextFloat() - 0.5F) * emitter.getExtents().y,
+                emitter.getOrigin().z + (random.nextFloat() - 0.5F) * emitter.getExtents().z);
             Vec3 localVelocity = new Vec3(emitter.getVelocityVector().x, emitter.getVelocityVector().y, emitter.getVelocityVector().z);
             localOrigin = rotateLegacyModelVector(localOrigin);
             localVelocity = rotateLegacyModelVector(localVelocity);
@@ -5150,8 +5122,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     {
         if (!canPlayerAccessInventory(player) || driveableData == null || configType == null)
             return false;
-        MenuPlatform.open(player,
-            new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page), ModUtils.getDisplayName(configType)),
+        MenuPlatform.open(player, new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, page), ModUtils.getDisplayName(configType)),
             buffer -> buffer.writeVarInt(getId()).writeVarInt(page.ordinal()).writeVarInt(-1));
         return true;
     }
@@ -5159,18 +5130,15 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     /** Opens only the ammunition slot belonging to the passenger's current gunner seat. */
     public boolean openPassengerGunInventoryMenu(@NotNull ServerPlayer player, @NotNull Seat seat)
     {
-        if (!canPlayerAccessInventory(player) || driveableData == null || configType == null || seat.getDriveable() != this || seat.getRiddenByEntity() != player
-            || seat.isDriverSeat())
+        if (!canPlayerAccessInventory(player) || driveableData == null || configType == null || seat.getDriveable() != this || seat.getRiddenByEntity() != player || seat.isDriverSeat())
             return false;
         SeatInfo info = configType.getSeat(seat.getSeatIndex());
         if (info == null || info.getGunType() == null || info.getGunnerID() < 0 || info.getGunnerID() >= driveableData.getNumAmmoSlots())
             return false;
 
         int seatIndex = seat.getSeatIndex();
-        MenuPlatform.open(player,
-            new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, DriveableInventoryMenu.Page.GUNS, seatIndex),
-                ModUtils.getDisplayName(configType)),
-            buffer -> buffer.writeVarInt(getId()).writeVarInt(DriveableInventoryMenu.Page.GUNS.ordinal()).writeVarInt(seatIndex));
+        MenuPlatform.open(player, new SimpleMenuProvider((containerId, inventory, ignored) -> new DriveableInventoryMenu(containerId, inventory, this, DriveableInventoryMenu.Page.GUNS, seatIndex),
+            ModUtils.getDisplayName(configType)), buffer -> buffer.writeVarInt(getId()).writeVarInt(DriveableInventoryMenu.Page.GUNS.ordinal()).writeVarInt(seatIndex));
         return true;
     }
 
@@ -5298,8 +5266,8 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (configType != null && configType.isExplosionWhenDestroyed() && configType.getDeathExplosionRadius() > 0F)
         {
             createExplosion(new DriveableExplosion(configType.getDeathFireRadius(), configType.getDeathExplosionRadius(), configType.isDeathExplosionBreaksBlocks(),
-                configType.getDeathExplosionDamageVsLiving(), configType.getDeathExplosionDamageVsPlayer(), configType.getDeathExplosionDamageVsPlane(),
-                configType.getDeathExplosionDamageVsVehicle()), position());
+                configType.getDeathExplosionDamageVsLiving(), configType.getDeathExplosionDamageVsPlayer(), configType.getDeathExplosionDamageVsPlane(), configType.getDeathExplosionDamageVsVehicle()),
+                position());
         }
         for (Seat seat : seats)
         {
@@ -5582,8 +5550,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         if (usesTerrainProbes())
         {
             guardTurnAgainstTerrain();
-            velocity = DriveableTerrainProbes.clampHorizontal(velocity, terrainProbes(), this::probeInTerrain,
-                (probe, motion) -> Entity.collideBoundingBox(this, motion, probe, level(), List.of()));
+            velocity = DriveableTerrainProbes.clampHorizontal(velocity, terrainProbes(), this::probeInTerrain, (probe, motion) -> Entity.collideBoundingBox(this, motion, probe, level(), List.of()));
             extremityContact = DriveableTerrainProbes.blocked(requested, velocity);
         }
         setDeltaMovement(velocity);
@@ -5686,8 +5653,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
                 }
             }
             double lift = this instanceof Plane ? ceiling * Math.max(1, submergedFlotationWheels()) : ceiling;
-            Vec3 floating = velocity.add(0D, lift, 0D).multiply(ModPhysics.dragRetention(0.92D, level()), ModPhysics.dragRetention(0.8D, level()),
-                ModPhysics.dragRetention(0.92D, level()));
+            Vec3 floating = velocity.add(0D, lift, 0D).multiply(ModPhysics.dragRetention(0.92D, level()), ModPhysics.dragRetention(0.8D, level()), ModPhysics.dragRetention(0.92D, level()));
             return applyEpicShipFlotation(floating);
         }
         return velocity.add(0D, -Math.max(0D, gravity), 0D);
@@ -5731,8 +5697,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private EpicShipPhysics.Damage epicShipDamage()
     {
         return EpicShipPhysics.damage(epicShipPart(EnumDriveablePart.BUOYANCY), epicShipPart(EnumDriveablePart.BOW), epicShipPart(EnumDriveablePart.STERN),
-            epicShipSide(EnumDriveablePart.LEFT, EnumDriveablePart.PORT), epicShipSide(EnumDriveablePart.RIGHT, EnumDriveablePart.STARBOARD),
-            epicShipPart(EnumDriveablePart.MIDSECTION));
+            epicShipSide(EnumDriveablePart.LEFT, EnumDriveablePart.PORT), epicShipSide(EnumDriveablePart.RIGHT, EnumDriveablePart.STARBOARD), epicShipPart(EnumDriveablePart.MIDSECTION));
     }
 
     private EpicShipPhysics.PartHealth epicShipPart(EnumDriveablePart part)
@@ -6147,8 +6112,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             normal = normal.normalize();
             IMassiveEntity other = (IMassiveEntity) entity;
             double closingSpeed = getDeltaMovement().subtract(entity.getDeltaMovement()).dot(normal);
-            VehicleImpulsePhysics.CollisionImpulse impulse = VehicleImpulsePhysics.collision(selfMass, other.getImpulseMassKg(), closingSpeed,
-                VehiclePhysicsConstants.DRIVEABLE_COLLISION_RESTITUTION);
+            VehicleImpulsePhysics.CollisionImpulse impulse = VehicleImpulsePhysics.collision(selfMass, other.getImpulseMassKg(), closingSpeed, VehiclePhysicsConstants.DRIVEABLE_COLLISION_RESTITUTION);
             if (impulse.isNone())
                 continue;
             setDeltaMovement(getDeltaMovement().add(normal.scale(impulse.selfDelta())));
@@ -6309,8 +6273,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
             Math.abs(getForwardVector().z) * sx + Math.abs(getUpVector().z) * sy + Math.abs(getRightVector().z) * sz).scale(0.5D);
         AABB bounds = new AABB(centre.subtract(extent), centre.add(extent));
         int processed = 0;
-        for (BlockPos pos : BlockPos.betweenClosed(Mth.floor(bounds.minX), Mth.floor(bounds.minY), Mth.floor(bounds.minZ), Mth.floor(bounds.maxX), Mth.floor(bounds.maxY),
-            Mth.floor(bounds.maxZ)))
+        for (BlockPos pos : BlockPos.betweenClosed(Mth.floor(bounds.minX), Mth.floor(bounds.minY), Mth.floor(bounds.minZ), Mth.floor(bounds.maxX), Mth.floor(bounds.maxY), Mth.floor(bounds.maxZ)))
         {
             if (++processed > 128)
                 break;
@@ -6436,8 +6399,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         return distance > 0D && distSq < distance * distance;
     }
 
-    public static Optional<Driveable> spawn(@NotNull Level level, @NotNull DriveableType type, double x, double y, double z, float yaw, @Nullable Player placer,
-        @Nullable ItemStack sourceStack)
+    public static Optional<Driveable> spawn(@NotNull Level level, @NotNull DriveableType type, double x, double y, double z, float yaw, @Nullable Player placer, @Nullable ItemStack sourceStack)
     {
         if (level.isClientSide || !validSpawnCoordinate(x) || !validSpawnCoordinate(y) || !validSpawnCoordinate(z) || !Float.isFinite(yaw))
             return Optional.empty();
@@ -6448,8 +6410,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     @Nullable
-    public static Driveable create(@NotNull Level level, @NotNull DriveableType type, double x, double y, double z, float yaw, @Nullable Player placer,
-        @NotNull ItemStack sourceStack)
+    public static Driveable create(@NotNull Level level, @NotNull DriveableType type, double x, double y, double z, float yaw, @Nullable Player placer, @NotNull ItemStack sourceStack)
     {
         if (type instanceof PlaneType planeType)
             return new Plane(level, planeType, x, y, z, yaw, placer, sourceStack);

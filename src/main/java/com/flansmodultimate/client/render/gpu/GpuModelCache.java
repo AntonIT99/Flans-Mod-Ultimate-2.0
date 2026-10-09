@@ -1,45 +1,26 @@
 package com.flansmodultimate.client.render.gpu;
 
-import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.client.render.CustomRenderType;
-import com.flansmodultimate.client.render.EntityVertexBatch;
-import com.flansmodultimate.client.render.EnumRenderPass;
-import com.flansmodultimate.client.render.VehicleThermalRenderer;
-import com.flansmodultimate.config.ModClientConfig;
-import com.flansmodultimate.mixin.BufferSourceAccessor;
-import com.flansmodultimate.platform.render.ShaderPlatform;
-import com.flansmodultimate.util.FlansLog;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import org.lwjgl.opengl.ATIMeminfo;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL15C;
-import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL31C;
-import org.lwjgl.opengl.GLCapabilities;
-import org.lwjgl.opengl.NVXGPUMemoryInfo;
-import org.lwjgl.system.MemoryUtil;
+import com.flansmodultimate.*;
+import com.flansmodultimate.client.render.*;
+import com.flansmodultimate.client.render.thermal.*;
+import com.flansmodultimate.config.*;
+import com.flansmodultimate.mixin.*;
+import com.flansmodultimate.platform.render.*;
+import com.flansmodultimate.util.*;
+import com.mojang.blaze3d.systems.*;
+import com.mojang.blaze3d.vertex.*;
+import net.minecraftforge.client.event.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.*;
 
-import net.minecraft.client.GraphicsStatus;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.*;
+import net.minecraft.client.renderer.*;
+import net.minecraft.resources.*;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.io.*;
+import java.nio.*;
+import java.util.*;
+import java.util.function.*;
 
 /** Bounded, render-thread-only GPU batches of local rigid geometry with per-draw pose palettes. */
 public final class GpuModelCache

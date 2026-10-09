@@ -1,14 +1,13 @@
 package com.flansmodultimate.mixin;
 
-import com.flansmodultimate.common.driveables.DriveableCollisionWorld;
-import com.flansmodultimate.common.entity.EntityDistancePolicy;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import com.flansmodultimate.common.driveables.collision.*;
+import com.flansmodultimate.common.entity.*;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.*;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.phys.*;
 
 /**
  * Hooks into the vanilla entity base class.

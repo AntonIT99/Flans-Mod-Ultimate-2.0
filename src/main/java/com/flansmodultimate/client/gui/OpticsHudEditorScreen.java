@@ -1,9 +1,8 @@
 package com.flansmodultimate.client.gui;
 
-import org.lwjgl.glfw.GLFW;
-
-import com.flansmodultimate.common.driveables.OpticsHud;
+import com.flansmodultimate.common.driveables.optics.OpticsHud;
 import com.flansmodultimate.common.entity.Seat;
+import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -26,11 +25,15 @@ public final class OpticsHudEditorScreen extends Screen
     @Override
     public void tick()
     {
-        if (minecraft.player == null || minecraft.player.getVehicle() != seat || !seat.isScoped()) onClose();
+        if (minecraft.player == null || minecraft.player.getVehicle() != seat || !seat.isScoped())
+            onClose();
     }
 
     @Override
-    public boolean isPauseScreen() { return false; }
+    public boolean isPauseScreen()
+    {
+        return false;
+    }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
@@ -46,7 +49,8 @@ public final class OpticsHudEditorScreen extends Screen
     public boolean keyPressed(int key, int scanCode, int modifiers)
     {
         OpticsHud hud = seat.getOpticsHud();
-        if (hud == null) return super.keyPressed(key, scanCode, modifiers);
+        if (hud == null)
+            return super.keyPressed(key, scanCode, modifiers);
         int sight = seat.getCurrentSight();
         OpticsHud.Element element = hud.getElements()[selected];
         int step = hasShiftDown() ? 10 : 1;
@@ -63,18 +67,20 @@ public final class OpticsHudEditorScreen extends Screen
                 StringBuilder lines = new StringBuilder();
                 int sourceSeat = seat.getSeatIndex();
                 for (var info : seat.getDriveable().getConfigType().getSeats())
-                    if (info != null && info.getOptics().getHud() == hud) sourceSeat = info.getId();
+                    if (info != null && info.getOptics().getHud() == hud)
+                        sourceSeat = info.getId();
                 for (int i = 0; i < 5; i++)
                 {
                     OpticsHud.Element e = hud.getElements()[i];
                     String prefix = "SeatOptics" + OpticsHud.ELEMENTS[i];
-                    lines.append(String.format(Locale.ROOT, "%sPosSight %d %d %d %d%n%sScaleSight %d %d %.2f%n",
-                        prefix, sourceSeat, sight + 1, e.x(sight), e.y(sight),
-                        prefix, sourceSeat, sight + 1, e.scale(sight)));
+                    lines.append(String.format(Locale.ROOT, "%sPosSight %d %d %d %d%n%sScaleSight %d %d %.2f%n", prefix, sourceSeat, sight + 1, e.x(sight), e.y(sight), prefix, sourceSeat, sight + 1,
+                        e.scale(sight)));
                 }
                 minecraft.keyboardHandler.setClipboard(lines.toString());
             }
-            default -> { return super.keyPressed(key, scanCode, modifiers); }
+            default -> {
+                return super.keyPressed(key, scanCode, modifiers);
+            }
         }
         return true;
     }

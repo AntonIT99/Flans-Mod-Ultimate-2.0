@@ -2,7 +2,7 @@ package com.flansmodultimate.client;
 
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketReloadPreferences;
+import com.flansmodultimate.network.server.gun.PacketReloadPreferences;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

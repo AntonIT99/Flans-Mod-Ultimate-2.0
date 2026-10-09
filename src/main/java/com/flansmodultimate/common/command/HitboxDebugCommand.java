@@ -1,13 +1,13 @@
 package com.flansmodultimate.common.command;
 
-import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.EnumDriveablePart;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.item.DriveableItem;
 import com.flansmodultimate.common.types.DriveableType;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketDebugHitboxes;
+import com.flansmodultimate.network.client.debug.PacketDebugHitboxes;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -15,17 +15,12 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /** Operator-only, session-only SetupPart geometry editor. */
 public final class HitboxDebugCommand
@@ -45,8 +40,7 @@ public final class HitboxDebugCommand
         command.then(Commands.literal("add").then(part().then(Commands.argument("hp", FloatArgumentType.floatArg(0.001F, 1000000F)).then(geometry("add", 0)))));
         command.then(Commands.literal("nudge").then(part().then(geometry("nudge", 0))));
         dispatcher.register(Commands.literal("flandebug").requires(s -> s.hasPermission(2)).then(command));
-        dispatcher.register(Commands.literal("flandebug").requires(s -> s.hasPermission(2))
-            .then(Commands.literal("hitbox").redirect(dispatcher.getRoot().getChild("flandebug").getChild("htibox"))));
+        dispatcher.register(Commands.literal("flandebug").requires(s -> s.hasPermission(2)).then(Commands.literal("hitbox").redirect(dispatcher.getRoot().getChild("flandebug").getChild("htibox"))));
     }
 
     private static com.mojang.brigadier.builder.RequiredArgumentBuilder<CommandSourceStack, String> part()
@@ -66,9 +60,7 @@ public final class HitboxDebugCommand
     private static DriveableType target(ServerPlayer player)
     {
         var vehicle = player.getVehicle();
-        Driveable driveable = vehicle instanceof Driveable d
-            ? d
-            : vehicle instanceof Seat seat ? seat.getDriveable() : vehicle != null && vehicle.getVehicle() instanceof Driveable d ? d : null;
+        Driveable driveable = vehicle instanceof Driveable d ? d : vehicle instanceof Seat seat ? seat.getDriveable() : vehicle != null && vehicle.getVehicle() instanceof Driveable d ? d : null;
         if (driveable != null)
             return driveable.getConfigType();
         for (InteractionHand hand : InteractionHand.values())

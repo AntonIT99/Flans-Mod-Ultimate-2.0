@@ -2,10 +2,10 @@ package com.flansmodultimate.client.debug;
 
 import com.flansmodultimate.client.ModClient;
 import com.flansmodultimate.client.render.CustomRenderType;
-import com.flansmodultimate.common.driveables.CollisionBox;
 import com.flansmodultimate.common.driveables.DriveableData;
 import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.DriveableProjectileCollision;
+import com.flansmodultimate.common.driveables.collision.CollisionBox;
+import com.flansmodultimate.common.driveables.collision.DriveableProjectileCollision;
 import com.flansmodultimate.common.entity.AAGun;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.platform.render.VertexPlatform;
@@ -101,10 +101,8 @@ public final class DriveableHitboxRenderer
             AABB bounds = driveable.partBoxModelLocal(box);
             for (int corner = 0; corner < corners.length; corner++)
             {
-                Vec3 partLocal = new Vec3((corner & 1) == 0 ? bounds.minX : bounds.maxX, (corner & 2) == 0 ? bounds.minY : bounds.maxY,
-                    (corner & 4) == 0 ? bounds.minZ : bounds.maxZ);
-                Vec3 hullLocal = DriveableProjectileCollision.partPointToHullLocal(partLocal, part.getType(), driveable.getTurretYaw(), driveable.getTurretPitch(), turretPivot,
-                    turretOffset);
+                Vec3 partLocal = new Vec3((corner & 1) == 0 ? bounds.minX : bounds.maxX, (corner & 2) == 0 ? bounds.minY : bounds.maxY, (corner & 4) == 0 ? bounds.minZ : bounds.maxZ);
+                Vec3 hullLocal = DriveableProjectileCollision.partPointToHullLocal(partLocal, part.getType(), driveable.getTurretYaw(), driveable.getTurretPitch(), turretPivot, turretOffset);
                 corners[corner] = driveable.modelLocalDirectionToWorld(hullLocal);
             }
 

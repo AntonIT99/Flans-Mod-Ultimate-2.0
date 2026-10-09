@@ -1,22 +1,15 @@
 package com.flansmodultimate.apocalyse.common.util;
 
-import com.flansmodultimate.common.guns.EnumFireMode;
-import com.flansmodultimate.common.guns.EnumSpreadPattern;
-import com.flansmodultimate.common.guns.FireableGun;
-import com.flansmodultimate.common.guns.ShootingHelper;
+import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.guns.handler.ShootingHandler;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.types.EnumMovement;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.ShootableType;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.common.types.*;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.item.ItemStackData;
 import org.apache.commons.lang3.StringUtils;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.Entity;
@@ -24,9 +17,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Gun handling for the Apocalypse's autonomous shooters, ported from the 1.12.2
@@ -201,8 +192,7 @@ public final class ApocalypseGunCombat
         {
             origin = owner.getEyePosition();
             direction = target.getEyePosition().subtract(origin).normalize();
-            direction = direction.add(random.nextFloat() * direction.x * SURVIVOR_AIM_LEAN, random.nextFloat() * direction.y * SURVIVOR_AIM_LEAN,
-                random.nextFloat() * direction.z * SURVIVOR_AIM_LEAN);
+            direction = direction.add(random.nextFloat() * direction.x * SURVIVOR_AIM_LEAN, random.nextFloat() * direction.y * SURVIVOR_AIM_LEAN, random.nextFloat() * direction.z * SURVIVOR_AIM_LEAN);
             fireableGun = new FireableGun(gunType, gunStack, owner, null, EnumMovement.NONE, !owner.onGround());
         }
         if (direction.lengthSqr() < 1.0E-6D)

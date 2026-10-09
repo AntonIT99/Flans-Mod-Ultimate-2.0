@@ -3,15 +3,11 @@ package com.flansmodultimate.common.guns;
 import com.flansmodultimate.api.EquippedArmorProperties;
 import com.flansmodultimate.api.EquippedWeaponProperties;
 import com.flansmodultimate.common.entity.ThrownGun;
-import com.flansmodultimate.common.item.CustomArmorItem;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.ShootableItem;
-import com.flansmodultimate.common.types.EnumMovement;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.item.*;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketGunMuzzleFlash;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.gun.PacketGunMuzzleFlash;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.Nullable;
@@ -61,10 +57,9 @@ public final class EquipmentSupport
             gun.applyAmmunition(ammo);
             speed = new FiredShot(gun, bullet, null, null, loaded == null ? 0 : ShootableItem.getRoundsFired(ammunition)).getMuzzleVelocity(false);
         }
-        return Optional.of(new EquippedWeaponProperties(type.isThrowable() || !type.getAmmoTypes().isEmpty(), type.isThrowable(), type.isShield(), damage,
-            type.getMeleeDamage(preview, false), speed, type.getSpread(preview), type.getNumBullets(preview, ammo), type.getShootDelay(preview),
-            item.getActualReloadTime(preview, ItemStackData.builtInRegistries(), ItemStack.EMPTY), type.getThrowChargeTime(), type.getMeleeTime(),
-            type.getShootSound(preview, false), mode.isAutomaticFire(), mode == EnumFireMode.MINIGUN ? type.getMinigunStartSpeed() : 0F,
+        return Optional.of(new EquippedWeaponProperties(type.isThrowable() || !type.getAmmoTypes().isEmpty(), type.isThrowable(), type.isShield(), damage, type.getMeleeDamage(preview, false), speed,
+            type.getSpread(preview), type.getNumBullets(preview, ammo), type.getShootDelay(preview), item.getActualReloadTime(preview, ItemStackData.builtInRegistries(), ItemStack.EMPTY),
+            type.getThrowChargeTime(), type.getMeleeTime(), type.getShootSound(preview, false), mode.isAutomaticFire(), mode == EnumFireMode.MINIGUN ? type.getMinigunStartSpeed() : 0F,
             mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F));
     }
 
@@ -142,8 +137,8 @@ public final class EquipmentSupport
         FireableGun gun = new FireableGun(type, stack, holder, holder.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND),
             ModUtils.getEnumMovement(holder), !holder.onGround());
         // This shared path retains hitscan when no weapon/ammunition velocity is declared.
-        ShootingHelper.fireWeapon(holder.level(), gun, ammunition, type.getNumBullets(stack, ammunition), origin, direction.normalize(), holder, holder,
-            ShootableItem.getRoundsFired(loaded.stack()), () -> afterShot(holder, hand, stack, item, loaded));
+        ShootingHelper.fireWeapon(holder.level(), gun, ammunition, type.getNumBullets(stack, ammunition), origin, direction.normalize(), holder, holder, ShootableItem.getRoundsFired(loaded.stack()),
+            () -> afterShot(holder, hand, stack, item, loaded));
         if (sounds)
             firingSounds(holder, type, stack, !hasLoadedRound(stack));
         if (particles)

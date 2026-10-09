@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 
 /** Custom NPCs owns label visibility and appearance; only the Flan model's height changes. */
 @Mixin(value = RenderNPCInterface.class, remap = false)
+@SuppressWarnings("DataFlowIssue") // Mixin merges this class into the target, so the self-cast is valid.
 public abstract class NpcNameplateMixin
 {
     @SuppressWarnings("unchecked")

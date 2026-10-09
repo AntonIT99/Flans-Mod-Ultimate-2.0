@@ -3,7 +3,7 @@ package com.flansmodultimate.client.gui;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketGunPreferredAmmo;
+import com.flansmodultimate.network.server.gun.PacketGunPreferredAmmo;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import com.flansmodultimate.util.ModUtils;
 import org.jetbrains.annotations.NotNull;
@@ -15,10 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** Selects which compatible magazine the held gun should prefer on its next reload. */
 public final class GunAmmoSelectScreen extends Screen

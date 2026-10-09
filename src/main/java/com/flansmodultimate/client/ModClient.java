@@ -1,43 +1,33 @@
 package com.flansmodultimate.client;
 
-import com.flansmod.client.model.EnumAnimationType;
-import com.flansmod.client.model.GunAnimations;
-import com.flansmod.client.model.ModelGun;
+import com.flansmod.client.model.*;
 import com.flansmodultimate.client.debug.DebugColor;
 import com.flansmodultimate.client.debug.DebugHelper;
 import com.flansmodultimate.client.input.KeyInputHandler;
 import com.flansmodultimate.client.input.MouseInputHandler;
 import com.flansmodultimate.client.model.ModelCache;
-import com.flansmodultimate.client.render.InstantBulletRenderer;
-import com.flansmodultimate.client.render.KillMessageFeed;
-import com.flansmodultimate.client.render.MountedCameraView;
-import com.flansmodultimate.client.render.VehicleOpticsClient;
+import com.flansmodultimate.client.render.effects.InstantBulletRenderer;
+import com.flansmodultimate.client.render.hud.*;
 import com.flansmodultimate.client.render.item.GunItemRenderer;
 import com.flansmodultimate.client.sound.SoundHelper;
 import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.entity.*;
 import com.flansmodultimate.common.guns.GunRecoil;
 import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.types.AttachmentType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.IScope;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.server.PacketGunScopedState;
+import com.flansmodultimate.network.server.gun.PacketGunScopedState;
 import com.flansmodultimate.platform.client.ArmPosePlatform;
 import com.flansmodultimate.platform.client.ClientPlatform;
-import it.unimi.dsi.fastutil.longs.Long2ByteMap;
-import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
-import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import it.unimi.dsi.fastutil.longs.*;
+import lombok.*;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.CameraType;
-import net.minecraft.client.GraphicsStatus;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
+import net.minecraft.client.*;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -46,26 +36,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LightBlock;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -277,8 +256,7 @@ public class ModClient
             seat.resetClientAim();
         player.setYRot(driveable.getYaw());
         player.setXRot(driveable.getPitch());
-        player.displayClientMessage(
-            Component.translatable(controlModeMouse ? "message.flansmodultimate.driveable_control.mouse" : "message.flansmodultimate.driveable_control.keyboard"), true);
+        player.displayClientMessage(Component.translatable(controlModeMouse ? "message.flansmodultimate.driveable_control.mouse" : "message.flansmodultimate.driveable_control.keyboard"), true);
         return true;
     }
 
@@ -502,8 +480,7 @@ public class ModClient
             @Override
             public void setLight(long position, int light)
             {
-                level.setBlock(BlockPos.of(position), light == 0 ? Blocks.AIR.defaultBlockState() : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light),
-                    Block.UPDATE_CLIENTS);
+                level.setBlock(BlockPos.of(position), light == 0 ? Blocks.AIR.defaultBlockState() : Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, light), Block.UPDATE_CLIENTS);
             }
         });
         forceDarkSkyLight.set(darkSkyLight.isEmpty() ? Long2ByteMaps.EMPTY_MAP : Long2ByteMaps.unmodifiable(darkSkyLight));

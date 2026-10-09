@@ -4,16 +4,15 @@ import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.FlansModEntities;
 import com.flansmodultimate.common.FlanEntityPermissions;
 import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.physics.MechaPhysics;
 import com.flansmodultimate.common.guns.*;
 import com.flansmodultimate.common.inventory.MechaInventoryMenu;
-import com.flansmodultimate.common.item.GunItem;
-import com.flansmodultimate.common.item.MechaAddonItem;
-import com.flansmodultimate.common.item.ShootableItem;
+import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GunFiredEvent;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.entity.EntityPlatform;
 import com.flansmodultimate.platform.entity.SynchedDataDefinition;
@@ -22,12 +21,14 @@ import com.flansmodultimate.platform.menu.MenuPlatform;
 import com.flansmodultimate.util.ModUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -43,17 +44,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.phys.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /** Mecha runtime with server-owned locomotion, addon effects and hand tools. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -538,8 +531,8 @@ public class Mecha extends Driveable
         for (int slot = 0; slot < gunType.getNumAmmoItemsInGun(gunStack); slot++)
         {
             ItemStack stack = gunItem.getAmmoItemStack(gunStack, slot, level().registryAccess());
-            if (stack.getItem() instanceof ShootableItem shootableItem && shootableItem.getConfigType() instanceof BulletType bulletType
-                && gunType.getAmmoTypes().contains(bulletType) && ShootableItem.hasRoundsLeft(stack))
+            if (stack.getItem() instanceof ShootableItem shootableItem && shootableItem.getConfigType() instanceof BulletType bulletType && gunType.getAmmoTypes().contains(bulletType)
+                && ShootableItem.hasRoundsLeft(stack))
                 return new LoadedHandAmmo(slot, stack, bulletType);
         }
         return null;
@@ -684,8 +677,7 @@ public class Mecha extends Driveable
         double reach = Mth.clamp(tool.getReach() * mechaType.getReach(), 1F, 32F);
         Vec3 origin = player.getEyePosition();
         BlockHitResult hit = level().clip(new ClipContext(origin, origin.add(aimDirection().scale(reach)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-        if (hit.getType() != HitResult.Type.BLOCK || !serverLevel.mayInteract(player, hit.getBlockPos())
-            || !player.mayUseItemAt(hit.getBlockPos(), hit.getDirection(), ItemStack.EMPTY))
+        if (hit.getType() != HitResult.Type.BLOCK || !serverLevel.mayInteract(player, hit.getBlockPos()) || !player.mayUseItemAt(hit.getBlockPos(), hit.getDirection(), ItemStack.EMPTY))
             return;
         miningAim = hit.getBlockPos().immutable();
         miningHand = index;
@@ -1085,8 +1077,7 @@ public class Mecha extends Driveable
     {
         if (!canPlayerAccessInventory(player) || getDriveableData() == null || getConfigType() == null)
             return false;
-        MenuPlatform.open(player,
-            new SimpleMenuProvider((containerId, inventory, ignored) -> new MechaInventoryMenu(containerId, inventory, this), ModUtils.getDisplayName(getConfigType())),
+        MenuPlatform.open(player, new SimpleMenuProvider((containerId, inventory, ignored) -> new MechaInventoryMenu(containerId, inventory, this), ModUtils.getDisplayName(getConfigType())),
             buffer -> buffer.writeVarInt(getId()));
         return true;
     }

@@ -3,8 +3,8 @@ package com.flansmodultimate.client.gui;
 import com.flansmodultimate.client.teams.LoadoutClientState;
 import com.flansmodultimate.common.teams.LoadoutSlot;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketLoadoutState;
-import com.flansmodultimate.network.server.PacketLoadoutAction;
+import com.flansmodultimate.network.client.teams.PacketLoadoutState;
+import com.flansmodultimate.network.server.teams.PacketLoadoutAction;
 import com.flansmodultimate.platform.client.ClientPlatform;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,8 +35,7 @@ public final class TeamsChooseLoadoutScreen extends Screen
             button.active = i >= state.getLoadoutUnlockRanks().size() || state.getRank() >= state.getLoadoutUnlockRanks().get(i);
             addRenderableWidget(button);
         }
-        addRenderableWidget(
-            Button.builder(Component.literal("Change Team"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.play())).bounds(width / 2 - 45, top + 140, 90, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Change Team"), ignored -> PacketHandler.sendToServer(PacketLoadoutAction.play())).bounds(width / 2 - 45, top + 140, 90, 20).build());
     }
 
     @Override

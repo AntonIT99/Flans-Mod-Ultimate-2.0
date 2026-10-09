@@ -2,12 +2,8 @@ package com.flansmodultimate.common.types;
 
 import com.flansmod.common.vector.Vector3f;
 import com.flansmodultimate.api.DriveableKind;
-import com.flansmodultimate.common.driveables.DriveablePart;
-import com.flansmodultimate.common.driveables.EnumDriveablePart;
-import com.flansmodultimate.common.driveables.EnumPlaneMode;
-import com.flansmodultimate.common.driveables.Propeller;
-import com.flansmodultimate.common.driveables.physics.EnumVehicleCategory;
-import com.flansmodultimate.common.driveables.physics.LegacyPhysicsHints;
+import com.flansmodultimate.common.driveables.*;
+import com.flansmodultimate.common.driveables.physics.*;
 import com.flansmodultimate.common.recipe.RecipeIngredient;
 import com.flansmodultimate.util.ModUtils;
 import lombok.Getter;
@@ -260,9 +256,8 @@ public class PlaneType extends DriveableType
             }
             try
             {
-                Propeller propeller = new Propeller(Integer.parseInt(values[0]),
-                    new Vector3f(parseLegacyFloat(values[1]) / 16F, parseLegacyFloat(values[2]) / 16F, parseLegacyFloat(values[3]) / 16F), EnumDriveablePart.getPart(values[4]),
-                    values[5], contentPack);
+                Propeller propeller = new Propeller(Integer.parseInt(values[0]), new Vector3f(parseLegacyFloat(values[1]) / 16F, parseLegacyFloat(values[2]) / 16F, parseLegacyFloat(values[3]) / 16F),
+                    EnumDriveablePart.getPart(values[4]), values[5], contentPack);
                 destination.add(propeller);
                 driveableRecipe.add(RecipeIngredient.parse(values[5], 1, contentPack));
             }

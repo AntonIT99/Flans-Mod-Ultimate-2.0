@@ -8,20 +8,19 @@ import com.flansmodultimate.common.physics.ModPhysics;
 import com.flansmodultimate.common.types.VehicleType;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketParticle;
-import com.flansmodultimate.network.client.PacketPlaySound;
-import com.flansmodultimate.network.client.PacketSmokeShell;
+import com.flansmodultimate.network.client.effects.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /** Wheel-, track- and water-capable server vehicle simulation. */
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
@@ -170,8 +169,7 @@ public class Vehicle extends Driveable
         }
         else
         {
-            float propulsion = DriveableControlPhysics.directionalPropulsion(effectiveThrottle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(),
-                isInWater());
+            float propulsion = DriveableControlPhysics.directionalPropulsion(effectiveThrottle, type.getMaxThrottle(), type.getMaxNegativeThrottle(), type.getMaxThrottleInWater(), isInWater());
             targetSpeed = propulsion * getEngineSpeed() * (tracked ? 0.26D : 0.32D) * traction;
             // An authored reverse speed caps legacy propulsion rather than
             // scaling it, so MaxNegativeThrottle is never applied twice.
@@ -183,9 +181,7 @@ public class Vehicle extends Driveable
         if (derivedPhysics)
             targetSpeed *= GroundSlopePhysics.propulsionFactor(getPitch(), Math.signum(normalizedThrottle), physics.powerToWeightKwPerKg(), physics.driveType());
         boolean steeringHeld = isPartIntact(EnumDriveablePart.STEERING) && axis(getInputMask(), DriveableInput.RIGHT, DriveableInput.LEFT) != 0F;
-        float turnControl = singleTrackDrive
-            ? DriveableControlPhysics.singleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld, leftTrackIntact, rightTrackIntact)
-            : wheelYaw;
+        float turnControl = singleTrackDrive ? DriveableControlPhysics.singleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld, leftTrackIntact, rightTrackIntact) : wheelYaw;
         float steeringModifier = turnControl > 0F ? type.getTurnLeftModifier() : type.getTurnRightModifier();
 
         float directionalThrottle;
@@ -205,17 +201,13 @@ public class Vehicle extends Driveable
         double forwardLength = Math.hypot(steeringForward.x, steeringForward.z);
         Vec3 steeringVelocity = getDeltaMovement();
         double signedSpeed = forwardLength > 1.0E-8D ? (steeringVelocity.x * steeringForward.x + steeringVelocity.z * steeringForward.z) / forwardLength : 0D;
-        double velocityScale = tracked
-            ? (isEngineActive() ? 0.04D * Math.max(0F, directionalThrottle) * getEngineSpeed() : 0D)
-            : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
+        double velocityScale = tracked ? (isEngineActive() ? 0.04D * Math.max(0F, directionalThrottle) * getEngineSpeed() : 0D) : DriveableControlPhysics.wheeledSteeringVelocityScale(signedSpeed);
         double steeringScale = 0.1D * Math.max(0F, steeringModifier);
         float yawDelta = (float) Math.toDegrees(turnControl * steeringScale * velocityScale);
         if (type.usesRealTurnRate(ModCommonConfig.forceLegacyVehiclePhysics(), pushed, tracked))
         {
             double referenceSpeed = tracked ? 0D : VehiclePhysicsUnits.kmhToBlocksPerTick(type.getRealWorldSpec().maxSpeedKmh()) * speedScale;
-            float realTurnControl = singleTrackDrive
-                ? DriveableControlPhysics.realSingleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld, leftTrackIntact, rightTrackIntact)
-                : wheelYaw;
+            float realTurnControl = singleTrackDrive ? DriveableControlPhysics.realSingleTrackTurnControl(effectiveThrottle, wheelYaw, steeringHeld, leftTrackIntact, rightTrackIntact) : wheelYaw;
             yawDelta = DriveableControlPhysics.realSteeringYawDelta(type.getRealTurnRateDegPerSec(), realTurnControl, tracked, isEngineActive(), signedSpeed, referenceSpeed);
         }
         if ((braking && tracked) || !isPartIntact(EnumDriveablePart.STEERING))
@@ -278,8 +270,7 @@ public class Vehicle extends Driveable
         if (!ModCommonConfig.forceLegacyVehiclePhysics())
             velocity = enforceSpeedCap(velocity, ModCommonConfig.maxVehicleSpeedKmh());
 
-        velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked, pushed,
-            derivedPhysics && drivetrain.isShifting() ? Math.abs(normalizedThrottle) : 0F);
+        velocity = applyGroundFriction(current, velocity, effectiveThrottle, braking, tracked, pushed, derivedPhysics && drivetrain.isShifting() ? Math.abs(normalizedThrottle) : 0F);
         moveWithCollisions(velocity);
 
         if (tickCount > 20 && verticalCollision && descent < -0.65D && !isInWater())
@@ -457,8 +448,8 @@ public class Vehicle extends Driveable
      *            the normalized driver demand, whose magnitude is how hard the
      *            driver is braking while the gearbox sits in neutral
      */
-    private Vec3 derivedGroundVelocity(ResolvedVehiclePhysics physics, Vec3 current, Vec3 forward, double targetSpeed, float traction, double grip, boolean braking,
-        double speedScale, float yawDelta, float demand)
+    private Vec3 derivedGroundVelocity(ResolvedVehiclePhysics physics, Vec3 current, Vec3 forward, double targetSpeed, float traction, double grip, boolean braking, double speedScale, float yawDelta,
+        float demand)
     {
         Vec3 horizontal = new Vec3(current.x, 0D, current.z);
         double forwardSpeed = horizontal.dot(forward);
@@ -480,10 +471,9 @@ public class Vehicle extends Driveable
             brakeFraction = Math.max(brakeFraction, Float.isFinite(demand) ? Math.abs(demand) : 0D);
         }
         double tractionFactor = physics.driveType().tractionFactor() * (isInWater() ? 0.35D : 1D) * Math.max(0F, traction);
-        double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(forwardSpeed, power, physics.massKg(), terminal, tractionFactor,
-            ModCommonConfig.dragFactor(level())) * transmission;
-        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(forwardSpeed, power, physics.massKg(), terminal, brakeFraction,
-            ModCommonConfig.dragFactor(level()));
+        double acceleration = GroundPropulsionPhysics.accelerationBlocksPerTickSquared(forwardSpeed, power, physics.massKg(), terminal, tractionFactor, ModCommonConfig.dragFactor(level()))
+            * transmission;
+        double deceleration = GroundPropulsionPhysics.decelerationBlocksPerTickSquared(forwardSpeed, power, physics.massKg(), terminal, brakeFraction, ModCommonConfig.dragFactor(level()));
         double newForwardSpeed = GroundPropulsionPhysics.approach(forwardSpeed, targetSpeed, acceleration, deceleration);
         newForwardSpeed = GroundPropulsionPhysics.applyTurningLoss(newForwardSpeed, yawDelta);
 
@@ -646,8 +636,7 @@ public class Vehicle extends Driveable
             Vec3 direction = localDirectionToWorld(localDirection);
             int detonation = Mth.clamp(smoker.detonationTime(), 1, 20 * 60);
             if (detonation == 20)
-                PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_SMOKER, origin.x, origin.y, origin.z, direction.x, direction.y, direction.z), origin, 150D,
-                    level().dimension());
+                PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.FM_SMOKER, origin.x, origin.y, origin.z, direction.x, direction.y, direction.z), origin, 150D, level().dimension());
             else
                 PacketHandler.sendToAllAround(new PacketSmokeShell(origin, direction, detonation), origin, 150D, level().dimension());
         }

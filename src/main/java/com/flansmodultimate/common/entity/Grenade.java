@@ -7,25 +7,22 @@ import com.flansmodultimate.common.PlayerData;
 import com.flansmodultimate.common.guns.ShootingHelper;
 import com.flansmodultimate.common.item.GunItem;
 import com.flansmodultimate.common.raytracing.RotatedAxes;
-import com.flansmodultimate.common.types.GrenadeType;
-import com.flansmodultimate.common.types.GunType;
-import com.flansmodultimate.common.types.InfoType;
-import com.flansmodultimate.common.types.ShootableType;
+import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.config.ModCommonConfig;
 import com.flansmodultimate.event.GrenadeProximityEvent;
 import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.PacketHandler;
-import com.flansmodultimate.network.client.PacketFlak;
-import com.flansmodultimate.network.client.PacketFlashBang;
-import com.flansmodultimate.network.client.PacketPlaySound;
+import com.flansmodultimate.network.client.effects.*;
 import com.flansmodultimate.platform.PlatformEvents;
 import com.flansmodultimate.platform.network.PacketBuffer;
-import com.flansmodultimate.util.FlansLog;
-import com.flansmodultimate.util.JomlUtils;
-import com.flansmodultimate.util.ModUtils;
+import com.flansmodultimate.util.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -39,24 +36,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
@@ -718,8 +705,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
 
         if (stickedEntity == null && !stuck)
         {
-            ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream().findFirst()
-                .ifPresent(entity -> stickedEntity = entity);
+            ModUtils.queryEntities(level, this, getBoundingBox(), entity -> entity != thrower && !(entity instanceof Grenade)).stream().findFirst().ifPresent(entity -> stickedEntity = entity);
         }
 
         if (stickedEntity != null)
@@ -788,9 +774,7 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             if (living == thrower && tickCount < 10)
                 continue;
 
-            float damage = configType.useKineticDamageSystem()
-                ? ShootingHelper.getKineticDamage(configType.getMass(), impactMotion.length())
-                : ShootingHelper.getDamage(living, this, null);
+            float damage = configType.useKineticDamageSystem() ? ShootingHelper.getKineticDamage(configType.getMass(), impactMotion.length()) : ShootingHelper.getDamage(living, this, null);
             living.hurt(getDamageSource(), damage);
         }
     }
@@ -833,8 +817,8 @@ public class Grenade extends Shootable implements IFlanEntity<GrenadeType>
             }
         }
 
-        PacketHandler.sendToAllAround(new PacketFlak(position(), configType.getSmokeParticlesCount(), configType.getSmokeParticleType()), position(),
-            ModCommonConfig.smokeParticlesRange(), level.dimension());
+        PacketHandler.sendToAllAround(new PacketFlak(position(), configType.getSmokeParticlesCount(), configType.getSmokeParticleType()), position(), ModCommonConfig.smokeParticlesRange(),
+            level.dimension());
 
         if (configType.isFlashSoundEnable())
             PacketPlaySound.sendSoundPacket(this, configType.getFlashSoundRange(), configType.getFlashSound(), true);

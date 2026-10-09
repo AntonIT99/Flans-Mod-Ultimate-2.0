@@ -2,6 +2,7 @@ package com.flansmodultimate.common.item;
 
 import com.flansmodultimate.api.IEquipmentPolicy;
 import com.flansmodultimate.common.FlanDamageSources;
+import com.flansmodultimate.common.item.tooltip.TooltipKeys;
 import com.flansmodultimate.common.types.ArmorType;
 import com.flansmodultimate.common.types.ShootableType;
 import com.flansmodultimate.config.ModCommonConfig;
@@ -17,29 +18,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.effect.*;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.ai.attributes.*;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 {
@@ -201,8 +189,7 @@ public class CustomArmorItem extends ArmorItem implements IFlanItem<ArmorType>
 
         Set<MobEffect> desiredNow = new HashSet<>(desiredExtra.keySet());
         desiredNow.addAll(counts.keySet());
-        for (MobEffect effect : new MobEffect[]{MobEffects.NIGHT_VISION, MobEffects.INVISIBILITY, MobEffects.FIRE_RESISTANCE, MobEffects.WATER_BREATHING, MobEffects.HUNGER,
-            MobEffects.REGENERATION})
+        for (MobEffect effect : new MobEffect[]{MobEffects.NIGHT_VISION, MobEffects.INVISIBILITY, MobEffects.FIRE_RESISTANCE, MobEffects.WATER_BREATHING, MobEffects.HUNGER, MobEffects.REGENERATION})
             ensureEffectLevel(entity, effect, counts.getOrDefault(effect, 0));
         applyDesiredExtraEffects(entity, desiredExtra, desiredNow);
     }
