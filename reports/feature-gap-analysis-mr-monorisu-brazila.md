@@ -733,7 +733,8 @@ This is not part of Flan's gameplay. I list it once for completeness and did not
 - Infantry firing screen shake: `HasScreenShake`, `ScreenShakeStyle`, `ScreenShakeIntensity`, `CameraRecoil` and `ScreenShakeCameraKick`, plus the `gunScreenShake` client setting. Explosion shake is still missing.
 - Tracer beams and mixed belts: `TracerBeam*`, `HasAlternateModel`, `AlternateBulletLoad`, `AlternateModel`, `AlternateTexture`, `AlternateTracerBeam*` and `AlternateTrailParticle*`.
 - Hold-to-throw grenades: `HoldToThrow`, the throw-speed multipliers, `GrenadeGroundFriction`, `GrenadeAirDrag`, `GrenadeStopSpeed`, and the `Cringe*OnImpact` aliases.
-- Thermal on gun and attachment scopes (`HasThermalVision`/`HasThermal`), and the vehicle `ThermalVisionColor` and `ThermalVisionGeneration` settings. Hot projectiles, explosions and particles, and the team IFF strobe, are still missing.
+- Thermal on gun and attachment scopes (`HasThermalVision`/`HasThermal`), and the vehicle `ThermalVisionColor` and `ThermalVisionGeneration` settings.
+- Thermal hot coverage: flying rounds, grenades, and hot particles (explosions, fire, muzzle flashes, sparks, tracers, exhaust, Flan's blast smoke), plus the `additionalThermalHotParticles` client setting and the Teams IFF strobe. The thermal finding is now fully covered.
 
 ## Areas requiring deeper audit
 

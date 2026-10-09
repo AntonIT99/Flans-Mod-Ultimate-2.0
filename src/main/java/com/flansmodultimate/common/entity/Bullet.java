@@ -1220,33 +1220,30 @@ public class Bullet extends Shootable implements IFlanEntity<BulletType>, IBulle
         if (!(configType.isTrailParticles() || alternateTrail) || ticksInAir <= 1)
             return;
 
+        if (vlsDelay > 0 && StringUtils.isNotBlank(configType.getBoostPhaseParticle()))
+            spawnTrail(configType.getBoostPhaseParticle(), 10);
+        else if (!configType.isVls() || vlsDelay <= 0)
+        {
+            if (alternateTrail)
+                spawnTrail(configType.getAlternateTrailParticleType(), configType.getAlternateTrailParticleCount());
+            else
+                spawnTrail(configType.getTrailParticleType(), 10);
+        }
+    }
+
+    /** Scatters particles along this tick's stretch of the flight path, one tenth of it apart. */
+    private void spawnTrail(String particleType, int count)
+    {
         double dX = (getX() - xo) / 10.0;
         double dY = (getY() - yo) / 10.0;
         double dZ = (getZ() - zo) / 10.0;
-
         float spread = 0.1F;
-
-        if (vlsDelay > 0 && StringUtils.isNotBlank(configType.getBoostPhaseParticle()))
+        for (int i = 0; i < count; i++)
         {
-            for (int i = 0; i < 10; i++)
-            {
-                double x = xo + dX * i + random.nextGaussian() * spread;
-                double y = yo + dY * i + random.nextGaussian() * spread;
-                double z = zo + dZ * i + random.nextGaussian() * spread;
-                ClientHooks.RENDER.spawnParticle(configType.getBoostPhaseParticle(), x, y, z, 0, 0, 0, 1F);
-            }
-        }
-        else if (!configType.isVls() || vlsDelay <= 0)
-        {
-            String particleType = alternateTrail ? configType.getAlternateTrailParticleType() : configType.getTrailParticleType();
-            int particleCount = alternateTrail ? configType.getAlternateTrailParticleCount() : 10;
-            for (int i = 0; i < particleCount; i++)
-            {
-                double x = xo + dX * i + random.nextGaussian() * spread;
-                double y = yo + dY * i + random.nextGaussian() * spread;
-                double z = zo + dZ * i + random.nextGaussian() * spread;
-                ClientHooks.RENDER.spawnParticle(particleType, x, y, z, 0, 0, 0, 1F);
-            }
+            double x = xo + dX * i + random.nextGaussian() * spread;
+            double y = yo + dY * i + random.nextGaussian() * spread;
+            double z = zo + dZ * i + random.nextGaussian() * spread;
+            ClientHooks.RENDER.spawnParticle(particleType, x, y, z, 0, 0, 0, 1F);
         }
     }
 

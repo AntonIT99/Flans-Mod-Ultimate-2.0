@@ -77,7 +77,7 @@ checking. They are read-only references: never edit them unless explicitly asked
 
 - Follow the project code style: Allman braces (`else`, `catch`, `finally`,
   `while` on new lines), 4-space indents without tabs, 4-space continuation indent,
-  160-column right margin, and no wildcard imports. Import groups, in order:
+  160-column right margin; wildcard imports are allowed. Import groups, in order:
   project/libraries (`com`, `io`, `lombok`, `net.minecraftforge`, `noppes`, `org`),
   then `net.minecraft`, then `javax`/`java`, then static imports last.
 - Declare all class and instance fields before methods; do not place methods between
@@ -99,6 +99,25 @@ checking. They are read-only references: never edit them unless explicitly asked
   they are in scope. Notable rules: no `volatile` on non-primitive fields (S3077; use
   `AtomicReference` or similar instead).
 
+## IntelliJ Inspections
+
+IntelliJ editor warnings are available headlessly through
+`scripts/idea-inspect.ps1`, which runs the local IDE's `inspect.bat` with the shared
+profile `.idea/inspectionProfiles/Project_Default.xml` (works while the IDE is open).
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/idea-inspect.ps1` inspects
+  files with uncommitted changes; `-Path <dir>` inspects a directory instead;
+  `-MinSeverity WARNING` hides weak warnings; `-Json` gives machine-readable output.
+- Output lines are `file:line: [SEVERITY] InspectionId: message`. A run takes one to a few
+  minutes; give it a 10-minute timeout and run it once per task, not after every edit.
+- After editing Java, run it on the changed files, and fix warnings you introduced in touched
+  code. Pre-existing warnings are fixed only when in scope; report remaining ones you chose
+  to leave. Treat `LombokGetterMayBeUsed`-style suggestions per the Lombok rule above.
+- When an inspection conflicts with SonarLint (for example `PointlessBooleanExpression` on
+  `Boolean.TRUE.equals(...)`, which Sonar java:S5411 requires), keep the Sonar-compliant code.
+- If IntelliJ is not installed (`IDEA_HOME` unset and not found), say that this check could
+  not be performed.
+
 ## Build and Validation
 
 Use the Gradle wrapper. Common tasks are `test`, `build`, `runData`, `packsManagerJar`, and
@@ -107,5 +126,5 @@ tests first. Run a full build after loader setup, registries, networking, entiti
 resources, source sets, or packaging changes. Keep `gradlew` executable.
 
 Before completion, review the scoped diff, run relevant checks, `spotlessCheck`,
-SonarLint on touched source sets, and `git diff --check`,
+SonarLint on touched source sets, `scripts/idea-inspect.ps1` on changed Java files, and `git diff --check`,
 and report validation that could not be performed.

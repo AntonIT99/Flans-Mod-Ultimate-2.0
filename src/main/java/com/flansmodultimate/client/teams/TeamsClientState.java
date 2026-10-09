@@ -53,6 +53,22 @@ public final class TeamsClientState
         return viewerTeam.isPresent() && renderedTeam.isPresent() && !viewerTeam.get().equals(renderedTeam.get());
     }
 
+    /**
+     * Whether another player is on the local player's side in the running Teams round. Rounds whose scores
+     * are not sorted by team fall back to the vanilla scoreboard team, as the Labjac Edition's thermal strobe did.
+     */
+    public static boolean isTeamMate(Player other)
+    {
+        Player viewer = Minecraft.getInstance().player;
+        if (!hasActiveRound() || viewer == null || other == viewer || isTeamsSpectator(viewer) || isTeamsSpectator(other))
+            return false;
+        if (!snapshot.isSortedByTeam())
+            return viewer.getTeam() != null && viewer.isAlliedTo(other);
+        Optional<String> viewerTeam = findTeam(viewer);
+        Optional<String> otherTeam = findTeam(other);
+        return viewerTeam.isPresent() && viewerTeam.equals(otherTeam);
+    }
+
     private static boolean hasActiveRound()
     {
         return snapshot != null && snapshot.isEnabled() && snapshot.isRoundRunning();

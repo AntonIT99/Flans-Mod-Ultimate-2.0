@@ -28,6 +28,8 @@
     "LivingEntityNameTagRangeMixin",
     "MountedRiderTurnMixin",
     "NpcRenderDistanceMixin",
+    "ParticleAccessor",
+    "ParticleEngineThermalMixin",
     "PlayerSkinOverrideMixin",
     "PostChainAccessor",
     "SearchRegistryLazyTreesMixin",

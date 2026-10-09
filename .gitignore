@@ -16,6 +16,9 @@ out
 !.idea/codeStyles/
 !.idea/codeStyles/Project.xml
 !.idea/codeStyles/codeStyleConfig.xml
+# Keep shared inspection profile (used by scripts/idea-inspect.ps1)
+!.idea/inspectionProfiles/
+!.idea/inspectionProfiles/Project_Default.xml
 
 # gradle
 build

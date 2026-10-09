@@ -1,6 +1,7 @@
 package com.flansmodultimate.common.guns;
 
 import com.flansmodultimate.common.types.TypeFile;
+
 import net.minecraft.util.Mth;
 
 import static com.flansmodultimate.util.TypeReaderUtils.readFloatValues;
@@ -59,7 +60,7 @@ public record TracerBeam(boolean enabled, float red, float green, float blue, fl
      */
     public static float speedScale(double speed)
     {
-        if (!(speed > SPEED_SCALE_THRESHOLD))
+        if (Double.isNaN(speed) || speed <= SPEED_SCALE_THRESHOLD)
             return 1F;
         return (float) Math.min(3D, Math.sqrt(speed / SPEED_SCALE_THRESHOLD));
     }

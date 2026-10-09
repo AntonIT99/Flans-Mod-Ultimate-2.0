@@ -2,7 +2,9 @@ package com.flansmodultimate.client.render;
 
 import com.flansmodultimate.FlansMod;
 import com.flansmodultimate.client.distant.DistantBoxRenderer;
+import com.flansmodultimate.common.entity.Bullet;
 import com.flansmodultimate.common.entity.Driveable;
+import com.flansmodultimate.common.entity.Grenade;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.mixin.PostChainAccessor;
 import com.flansmodultimate.platform.client.ClientPlatform;
@@ -15,6 +17,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -22,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 /** Depth-tested white-hot FLIR, composed independently of the game's selected post effect. */
@@ -102,15 +106,15 @@ public final class VehicleThermalRenderer
             renderingMask = true;
             Vec3 camera = event.getCamera().getPosition();
             Seat occupied = VehicleOpticsClient.activeSeat();
+            float partialTick = ClientPlatform.partialTick(event);
             for (Entity entity : mc.level.entitiesForRendering())
             {
-                if (!(entity instanceof LivingEntity || entity instanceof Driveable) || entity == mc.player || !entity.isAlive() || entity.isInvisible()
-                    || occupied != null && entity == occupied.getDriveable() || !event.getFrustum().isVisible(entity.getBoundingBox()))
-                    continue;
-                renderEntity(entity, camera, ClientPlatform.partialTick(event), event.getPoseStack(), maskBuffers);
+                if (inMask(entity, occupied, event.getFrustum(), partialTick))
+                    renderEntity(entity, camera, partialTick, event.getPoseStack(), maskBuffers);
             }
             // Driveables too far away to be drawn as entities are just as hot
             DistantBoxRenderer.renderHeatMask(event.getPoseStack(), mask, camera, ClientPlatform.partialTick(event));
+            ThermalHotParticles.renderMask(event.getPoseStack(), mask, camera, event.getCamera().rotation(), event.getFrustum(), partialTick);
             buffers.endBatch();
             renderingMask = false;
             main.bindWrite(false);
@@ -171,6 +175,20 @@ public final class VehicleThermalRenderer
             effect.safeGetUniform("Palette").set(palette);
             effect.safeGetUniform("Generation").set(generation);
         }
+    }
+
+    /**
+     * Whether an entity is drawn hot: living things and driveables, and since the Labjac Edition flying rounds
+     * and grenades, except the viewer, the driveable they look out of, and team-mates between strobe pulses.
+     */
+    private static boolean inMask(Entity entity, @Nullable Seat occupied, Frustum frustum, float partialTick)
+    {
+        boolean hot = entity instanceof LivingEntity || entity instanceof Driveable || entity instanceof Bullet || entity instanceof Grenade;
+        if (!hot || entity == Minecraft.getInstance().player || !entity.isAlive() || entity.isInvisible())
+            return false;
+        if (occupied != null && entity == occupied.getDriveable() || !frustum.isVisible(entity.getBoundingBox()))
+            return false;
+        return !ThermalTeamStrobe.isFriendlyInColdPhase(entity, partialTick);
     }
 
     private static <E extends Entity> void renderEntity(E entity, Vec3 camera, float partial, PoseStack pose, MultiBufferSource buffer)

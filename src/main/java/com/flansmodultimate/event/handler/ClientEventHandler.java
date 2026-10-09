@@ -154,7 +154,7 @@ public final class ClientEventHandler
     private static void applyGunScreenShake(ViewportEvent.ComputeCameraAngles event)
     {
         ModClientConfig config = ModClientConfig.get();
-        if (config == null || !config.gunScreenShake || !Minecraft.getInstance().options.bobView().get())
+        if (config == null || !config.gunScreenShake || !Boolean.TRUE.equals(Minecraft.getInstance().options.bobView().get()))
             return;
         float pitch = GunScreenShake.pitchOffset((float) event.getPartialTick());
         if (pitch != 0F)
@@ -509,6 +509,7 @@ public final class ClientEventHandler
         DriveableCollisionBypass.reset();
         VehicleOpticsClient.reset();
         VehicleThermalRenderer.reset();
+        ThermalHotParticles.reset();
         VehicleScreenShake.reset();
         GunScreenShake.reset();
         GrenadeThrowInput.reset();
