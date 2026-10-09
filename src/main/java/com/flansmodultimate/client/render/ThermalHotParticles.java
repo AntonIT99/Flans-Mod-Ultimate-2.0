@@ -1,12 +1,31 @@
 package com.flansmodultimate.client.render;
 
-import com.flansmodultimate.client.particle.*;
+import com.flansmodultimate.client.particle.AfterburnParticle;
+import com.flansmodultimate.client.particle.BigSmokeParticle;
+import com.flansmodultimate.client.particle.BlastPuffParticle;
+import com.flansmodultimate.client.particle.Debris1Particle;
+import com.flansmodultimate.client.particle.FireExplosionParticle;
+import com.flansmodultimate.client.particle.FlareParticle;
+import com.flansmodultimate.client.particle.FlashParticle;
+import com.flansmodultimate.client.particle.FmFlameParticle;
+import com.flansmodultimate.client.particle.FmMuzzleFlashParticle;
+import com.flansmodultimate.client.particle.FmSmokeParticle;
+import com.flansmodultimate.client.particle.FmTracerParticle;
+import com.flansmodultimate.client.particle.LegacyExplodeParticle;
+import com.flansmodultimate.client.particle.RocketExhaustParticle;
+import com.flansmodultimate.client.particle.SmokeBurstParticle;
+import com.flansmodultimate.client.particle.TracerBeamParticle;
 import com.flansmodultimate.config.ModClientConfig;
 import com.flansmodultimate.mixin.ParticleAccessor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -16,12 +35,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * The particles thermal sights show hot, from the Labjac Edition: explosions, fire, muzzle flashes, sparks,
@@ -38,9 +57,9 @@ import java.util.*;
 public final class ThermalHotParticles
 {
     /** The mod's particles that may be added directly, without a particle type. */
-    private static final Set<Class<?>> HOT_CLASSES = Set.of(AfterburnParticle.class, BigSmokeParticle.class, BlastPuffParticle.class, Debris1Particle.class,
-        FireExplosionParticle.class, FlareParticle.class, FlashParticle.class, FmFlameParticle.class, FmMuzzleFlashParticle.class, FmSmokeParticle.class, FmTracerParticle.class,
-        LegacyExplodeParticle.class, RocketExhaustParticle.class, SmokeBurstParticle.class, TracerBeamParticle.class);
+    private static final Set<Class<?>> HOT_CLASSES = Set.of(AfterburnParticle.class, BigSmokeParticle.class, BlastPuffParticle.class, Debris1Particle.class, FireExplosionParticle.class,
+        FlareParticle.class, FlashParticle.class, FmFlameParticle.class, FmMuzzleFlashParticle.class, FmSmokeParticle.class, FmTracerParticle.class, LegacyExplodeParticle.class,
+        RocketExhaustParticle.class, SmokeBurstParticle.class, TracerBeamParticle.class);
     static final int MAX_TRACKED = 8192;
     static final int MAX_DRAWN = 4096;
     private static final double MAX_DISTANCE_SQ = 256D * 256D;
@@ -95,9 +114,9 @@ public final class ThermalHotParticles
                 continue;
             }
             ParticleAccessor position = (ParticleAccessor) particle;
-            double x = Mth.lerp(partialTick, position.flansmodultimate$xo(), position.flansmodultimate$x());
-            double y = Mth.lerp(partialTick, position.flansmodultimate$yo(), position.flansmodultimate$y());
-            double z = Mth.lerp(partialTick, position.flansmodultimate$zo(), position.flansmodultimate$z());
+            double x = Mth.lerp(partialTick, position.flansmodultimateXo(), position.flansmodultimateX());
+            double y = Mth.lerp(partialTick, position.flansmodultimateYo(), position.flansmodultimateY());
+            double z = Mth.lerp(partialTick, position.flansmodultimateZo(), position.flansmodultimateZ());
             float size = particle instanceof SingleQuadParticle quad ? quad.getQuadSize(partialTick) : 0.1F;
             if (!(size > 0F) || camera.distanceToSqr(x, y, z) > MAX_DISTANCE_SQ || !frustum.isVisible(new AABB(x, y, z, x, y, z).inflate(size)))
                 continue;

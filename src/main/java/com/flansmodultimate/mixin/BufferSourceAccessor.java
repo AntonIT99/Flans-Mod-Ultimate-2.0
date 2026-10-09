@@ -13,5 +13,5 @@ import java.util.Set;
 public interface BufferSourceAccessor
 {
     @Accessor("startedBuffers")
-    Set<BufferBuilder> flansmodultimate$startedBuffers();
+    Set<BufferBuilder> flansmodultimateStartedBuffers();
 }

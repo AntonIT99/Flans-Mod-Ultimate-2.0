@@ -56,6 +56,33 @@ Nested `AGENTS.md` files add rules for their directories.
   Before assuming a `src/` directory is untracked or disposable, check for a nested
   `.git`.
 
+## Mixins
+
+Mixins live in `src/main/java/com/flansmodultimate/mixin` (config
+`src/main/resources/flansmodultimate.mixins.json`) and `src/npcs/java/com/wolffsmod/npcs/mixin`
+(config `src/npcs/resources/wolffsmodnpcs.mixins.json`).
+
+- At most one mixin class per target class, across every source set and mixin config. Add new
+  injections, shadows, and accessors to the existing class for that target instead of creating
+  another. A class with a multi-target `@Mixin({A.class, B.class})` owns all of those targets.
+- Name a new mixin after its target (`EntityMixin`, `EntityRendererMixin`); `*Accessor` is for a
+  class that only declares `@Accessor`/`@Invoker` methods. Older feature-named mixins
+  (for example `NpcArmorControlsMixin`) keep their names.
+- Keep each class's Javadoc listing what it does for its target, so merged hooks stay findable,
+  and group the hooks by feature inside the class.
+- Register every mixin in its config: `mixins` for targets present on both sides, `client` for
+  client-only targets. A mixin whose target is common but that also hooks a client-only member
+  (for example `@OnlyIn(Dist.CLIENT)` methods) stays in `mixins` and marks that injector
+  `require = 0`, with a comment saying why.
+- Prefix handler methods, `@Unique` members, accessor/invoker methods, and methods of
+  interfaces a mixin adds to its target with the mod id, without `$`, so they cannot collide
+  with the target or other mods: `flansmodultimateCollideWithDriveableHulls`,
+  `wolffsmodnpcsShieldCooldown`, and `WOLFFSMODNPCS_DISTANCE_DATA` for `@Unique` constants.
+- IntelliJ and SonarLint misread mixin code. Suppress such false positives with
+  `@SuppressWarnings` on the class or member plus a short reason, for example `DataFlowIssue`
+  on `(Target) (Object) this` casts, `java:S1905` on a required `(Object) this instanceof`
+  cast, or `FieldCanBeLocal` on `@Shadow` fields.
+
 ## External Reference Paths
 
 These sibling directories live outside this repository, next to it in the parent
@@ -77,7 +104,7 @@ checking. They are read-only references: never edit them unless explicitly asked
 
 - Follow the project code style: Allman braces (`else`, `catch`, `finally`,
   `while` on new lines), 4-space indents without tabs, 4-space continuation indent,
-  160-column right margin; wildcard imports are allowed. Import groups, in order:
+  160-column right margin, and no wildcard imports. Import groups, in order:
   project/libraries (`com`, `io`, `lombok`, `net.minecraftforge`, `noppes`, `org`),
   then `net.minecraft`, then `javax`/`java`, then static imports last.
 - Declare all class and instance fields before methods; do not place methods between
@@ -98,6 +125,8 @@ checking. They are read-only references: never edit them unless explicitly asked
   tasks for the source sets you touched. Introduce no new issues in touched code and fix existing ones only when
   they are in scope. Notable rules: no `volatile` on non-primitive fields (S3077; use
   `AtomicReference` or similar instead).
+- When code is required but a SonarLint or IntelliJ check flags it, keep the code and add a
+  narrowly scoped `@SuppressWarnings` with a short reason, so the code is visibly intentional.
 
 ## IntelliJ Inspections
 
@@ -126,5 +155,5 @@ tests first. Run a full build after loader setup, registries, networking, entiti
 resources, source sets, or packaging changes. Keep `gradlew` executable.
 
 Before completion, review the scoped diff, run relevant checks, `spotlessCheck`,
-SonarLint on touched source sets, `scripts/idea-inspect.ps1` on changed Java files, and `git diff --check`,
+SonarLint on touched source sets, and `git diff --check`,
 and report validation that could not be performed.

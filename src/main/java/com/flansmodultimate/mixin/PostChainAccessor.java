@@ -12,5 +12,5 @@ import java.util.List;
 public interface PostChainAccessor
 {
     @Accessor("passes")
-    List<PostPass> flansmodultimate$passes();
+    List<PostPass> flansmodultimatePasses();
 }

@@ -8,14 +8,6 @@ import com.flansmodultimate.common.entity.DeployedGun;
 import com.flansmodultimate.common.entity.DeployedGunMuzzleGeometry;
 import com.flansmodultimate.common.entity.Seat;
 import com.flansmodultimate.common.types.GunType;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
@@ -24,6 +16,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Anchors mounted cameras to their weapon or driveable, and changes only
@@ -57,7 +56,7 @@ public abstract class DriveableCameraMixin
      * </p>
      */
     @Inject(method = "setup", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setPosition(DDD)V", shift = At.Shift.AFTER))
-    private void flansmodultimate$positionMountedCamera(BlockGetter level, Entity cameraEntity, boolean detached, boolean reverse, float partialTick, CallbackInfo callback)
+    private void flansmodultimatePositionMountedCamera(BlockGetter level, Entity cameraEntity, boolean detached, boolean reverse, float partialTick, CallbackInfo callback)
     {
         if (!detached && cameraEntity instanceof Player player && player.getVehicle() instanceof DeployedGun gun)
         {
@@ -111,7 +110,7 @@ public abstract class DriveableCameraMixin
     }
 
     @ModifyConstant(method = "setup", constant = @Constant(doubleValue = 4.0D))
-    private double flansmodultimate$driveableCameraDistance(double vanillaDistance)
+    private double flansmodultimateDriveableCameraDistance(double vanillaDistance)
     {
         Player player = Minecraft.getInstance().player;
         if (player == null)

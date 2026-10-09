@@ -1,5 +1,6 @@
 package com.wolffsmod.npcs.mixin;
 
+import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.properties.NpcTypeCadence;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import noppes.npcs.ai.EntityAIRangedAttack;
@@ -13,18 +14,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Retains Custom NPCs targeting/movement while letting native inherited banks fire at their authored cadence. */
+/**
+ * Custom NPCs' fallback ranged AI. It never fires synthetic shots alongside an authoritative equipped weapon,
+ * and it retains its targeting/movement while letting native inherited banks fire at their authored cadence.
+ */
+@SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
 @Mixin(value = EntityAIRangedAttack.class, remap = false)
-public abstract class NpcTypeRangedTimingMixin
+public abstract class EntityAIRangedAttackMixin
 {
     @Shadow @Final
     private EntityNPCInterface npc;
-    @Shadow
+    @Shadow @SuppressWarnings("FieldCanBeLocal") // Shadowed target state, written for the target.
     private int burstCount;
-    @Shadow
+    @Shadow @SuppressWarnings("FieldCanBeLocal") // Shadowed target state, written for the target.
     private int rangedAttackTime;
-    @Shadow
+    @Shadow @SuppressWarnings("FieldCanBeLocal") // Shadowed target state, written for the target.
     private boolean hasFired;
     @Unique
     private final NpcTypeCadence wolffsmodnpcsCadence = new NpcTypeCadence();
@@ -32,6 +38,13 @@ public abstract class NpcTypeRangedTimingMixin
     private boolean wolffsmodnpcsWasInherited;
     @Unique
     private double wolffsmodnpcsLastInterval = -1D;
+
+    @Inject(method = {"canUse", "m_8036_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsNativeWeaponAI(CallbackInfoReturnable<Boolean> callback)
+    {
+        if (NpcEquipment.weaponAuthority(npc))
+            callback.setReturnValue(false);
+    }
 
     @Inject(method = {"tick", "m_8037_"}, at = @At("HEAD"))
     private void wolffsmodnpcsSelectTiming(CallbackInfo callback)

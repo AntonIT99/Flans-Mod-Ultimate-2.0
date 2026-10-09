@@ -57,17 +57,23 @@ public final class GpuModelCache
     private static final int PALETTE_BINDING = 7;
     /** Each draw writes its palette at the next offset; the buffer is replaced only when the ring wraps. */
     private static final int PALETTE_RING_BYTES = 4 << 20;
-    private static int paletteRing, paletteRingOffset, paletteBlockBytes, uniformOffsetAlignment = 256;
+    private static int paletteRing;
+    private static int paletteRingOffset;
+    private static int paletteBlockBytes;
+    private static int uniformOffsetAlignment = 256;
     private static ByteBuffer paletteBytes;
     private static final long MIB = 1024L * 1024;
     /** Automatic budget bounds, and the budget when the driver does not report its video memory. */
-    static final long MIN_AUTOMATIC_BYTES = 128 * MIB, MAX_AUTOMATIC_BYTES = 512 * MIB, UNKNOWN_MEMORY_BYTES = 128 * MIB;
-    public static final int MIN_CONFIGURED_MEGABYTES = 16, MAX_CONFIGURED_MEGABYTES = 2048;
+    static final long MIN_AUTOMATIC_BYTES = 128 * MIB;
+    static final long MAX_AUTOMATIC_BYTES = 512 * MIB;
+    static final long UNKNOWN_MEMORY_BYTES = 128 * MIB;
+    public static final int MIN_CONFIGURED_MEGABYTES = 16;
+    public static final int MAX_CONFIGURED_MEGABYTES = 2048;
     /** Share of dedicated video memory the automatic budget may take. */
     private static final int VIDEO_MEMORY_SHARE = 16;
     private static final long UPLOAD_BYTES_PER_TICK = 2L * 1024 * 1024;
     /** Bounds the number of buffer objects; even small meshes average well above this per entry. */
-    private static final long BYTES_PER_ENTRY = 32 * 1024;
+    private static final long BYTES_PER_ENTRY = 32L * 1024L;
     private static final int MIN_ENTRIES = 2048;
     private static final MeshCache<Mesh> meshes = new MeshCache<>(MIN_AUTOMATIC_BYTES, MIN_ENTRIES);
     /** Dedicated video memory in KiB: unqueried, or 0 when the driver offers no memory extension. */
@@ -78,7 +84,8 @@ public final class GpuModelCache
     static final long MAX_GROWN_BYTES = 1024 * MIB;
     private static final long FREE_VIDEO_MEMORY_RESERVE_KIB = 512 * 1024;
     private static final long GROWTH_WINDOW_NANOS = 2_000_000_000L;
-    private static final int GROWTH_EVICTIONS = 8, GROWTH_WINDOWS = 2;
+    private static final int GROWTH_EVICTIONS = 8;
+    private static final int GROWTH_WINDOWS = 2;
     /** The automatic budget after growth, or 0 before any. */
     private static long grownBytes;
     private static long growthWindowStart;
@@ -104,21 +111,20 @@ public final class GpuModelCache
         clear();
         try
         {
-            event.registerShader(
-                new ShaderInstance(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "rigid_model"), DefaultVertexFormat.NEW_ENTITY), value ->
+            event.registerShader(new ShaderInstance(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "rigid_model"), DefaultVertexFormat.NEW_ENTITY), value ->
+            {
+                int program = value.getId();
+                int block = GL31C.glGetUniformBlockIndex(program, "PartPalette");
+                int size = block == GL31C.GL_INVALID_INDEX ? 0 : GL31C.glGetActiveUniformBlocki(program, block, GL31C.GL_UNIFORM_BLOCK_DATA_SIZE);
+                if (block == GL31C.GL_INVALID_INDEX || size <= 0 || size > GL11C.glGetInteger(GL31C.GL_MAX_UNIFORM_BLOCK_SIZE))
                 {
-                    int program = value.getId();
-                    int block = GL31C.glGetUniformBlockIndex(program, "PartPalette");
-                    int size = block == GL31C.GL_INVALID_INDEX ? 0 : GL31C.glGetActiveUniformBlocki(program, block, GL31C.GL_UNIFORM_BLOCK_DATA_SIZE);
-                    if (block == GL31C.GL_INVALID_INDEX || size <= 0 || size > GL11C.glGetInteger(GL31C.GL_MAX_UNIFORM_BLOCK_SIZE))
-                    {
-                        FlansLog.log.warn("GPU model shader lacks a usable pose palette block; using standard model rendering");
-                        return;
-                    }
-                    GL31C.glUniformBlockBinding(program, block, PALETTE_BINDING);
-                    paletteBlockBytes = size;
-                    shader = value;
-                });
+                    FlansLog.log.warn("GPU model shader lacks a usable pose palette block; using standard model rendering");
+                    return;
+                }
+                GL31C.glUniformBlockBinding(program, block, PALETTE_BINDING);
+                paletteBlockBytes = size;
+                shader = value;
+            });
         }
         catch (IOException | RuntimeException ex)
         {
@@ -159,8 +165,8 @@ public final class GpuModelCache
                 : videoMemoryKiB == 0
                     ? "automatic, video memory not reported"
                     : "automatic" + (grownBytes > 0 ? ", grown from " + budgetBytes(0, videoMemoryKiB) / MIB + " MiB" : "") + ", " + videoMemoryKiB / 1024 + " MiB video memory";
-        return String.format(java.util.Locale.ROOT, "GPU cache %s; resident %d of %d meshes, %d of %d KiB (%.0f%%, %s)%s.", state, meshes.size(), meshes.maximumEntries(),
-            meshes.bytes() / 1024, meshes.maximumBytes() / 1024, 100D * meshes.bytes() / meshes.maximumBytes(), budget, RenderDiagnostics.peakUsage(meshes.maximumBytes()));
+        return String.format(java.util.Locale.ROOT, "GPU cache %s; resident %d of %d meshes, %d of %d KiB (%.0f%%, %s)%s.", state, meshes.size(), meshes.maximumEntries(), meshes.bytes() / 1024,
+            meshes.maximumBytes() / 1024, 100D * meshes.bytes() / meshes.maximumBytes(), budget, RenderDiagnostics.peakUsage(meshes.maximumBytes()));
     }
 
     /**
@@ -396,8 +402,7 @@ public final class GpuModelCache
     }
 
     /** Compatibility wrapper; hot call sites use begin/end to avoid capturing callbacks. */
-    public static void render(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture, boolean translucent, boolean cull, boolean allowed,
-        Consumer<VertexConsumer> render)
+    public static void render(MultiBufferSource source, EnumRenderPass pass, ResourceLocation texture, boolean translucent, boolean cull, boolean allowed, Consumer<VertexConsumer> render)
     {
         VertexConsumer consumer = begin(source, pass, texture, translucent, cull, allowed);
         try
@@ -417,9 +422,9 @@ public final class GpuModelCache
             contexts.get(depth - 1).batch.suspend();
         RenderType vanilla = pass.getRenderType(texture, translucent, cull);
         ModClientConfig config = ModClientConfig.get();
-        if (!allowed || config == null || !config.enableGpuModelCache || shader == null || failed || pass != EnumRenderPass.DEFAULT
-            || translucent && !config.enableFastTranslucentRendering || source.getClass() != MultiBufferSource.BufferSource.class || VehicleThermalRenderer.isRenderingMask()
-            || Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS || incompatibleRenderer())
+        if (!allowed || config == null || !config.enableGpuModelCache || shader == null || failed || pass != EnumRenderPass.DEFAULT || translucent && !config.enableFastTranslucentRendering
+            || source.getClass() != MultiBufferSource.BufferSource.class || VehicleThermalRenderer.isRenderingMask() || Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS
+            || incompatibleRenderer())
         {
             if (RenderDiagnostics.enabled)
                 RenderDiagnostics.excludedScopes++;
@@ -620,7 +625,7 @@ public final class GpuModelCache
                 return false;
             // Consecutive GPU batches have no intervening buffered vertices. Only
             // initial entry, fallback vertices and reentrant boundaries need this.
-            if (flushPending || !(source instanceof BufferSourceAccessor buffers) || !buffers.flansmodultimate$startedBuffers().isEmpty())
+            if (flushPending || !(source instanceof BufferSourceAccessor buffers) || !buffers.flansmodultimateStartedBuffers().isEmpty())
             {
                 endDraws();
                 source.endBatch();

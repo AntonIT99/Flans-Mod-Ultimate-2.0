@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** Makes only inactive ranged defaults read-only, retaining the ordinary editor save path. */
+@SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
 @Mixin(value = {SubGuiNpcRangeProperties.class, SubGuiNpcProjectiles.class}, remap = false)
 public abstract class NpcRangedControlsMixin extends GuiBasic
 {

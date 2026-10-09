@@ -14,22 +14,23 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 
 /** Applies hull HP after Custom NPCs has loaded the model, then restores the actual saved damage state. */
+@SuppressWarnings("UnresolvedMixinReference")
 @Mixin(value = EntityCustomNpc.class, remap = false)
 public abstract class NpcTypeModelLoadMixin
 {
     @Inject(method = {"readAdditionalSaveData", "m_7378_"}, at = @At("TAIL"))
-    private void wolffsmodnpcsLoadedType(CompoundTag tag, CallbackInfo callback)
+    private void wolffsmodnpcsLoadedType(CompoundTag compound, CallbackInfo callback)
     {
         EntityCustomNpc npc = (EntityCustomNpc) (Object) this;
         if (!npc.level().isClientSide)
         {
             NpcTypeProperties.of(npc).refresh(npc);
             // Old saves use the NPC maximum; inherited saves record the effective maximum separately from stored defaults.
-            if (tag.contains("Health") && (tag.contains(NpcTypeHealth.SAVED_MAXIMUM) || NpcTypeProperties.of(npc).values().containsKey(NpcTypeProperty.HEALTH)))
+            if (compound.contains("Health") && (compound.contains(NpcTypeHealth.SAVED_MAXIMUM) || NpcTypeProperties.of(npc).values().containsKey(NpcTypeProperty.HEALTH)))
             {
                 double bound = Attributes.MAX_HEALTH instanceof RangedAttribute attribute ? attribute.getMaxValue() : Integer.MAX_VALUE;
-                float savedMaximum = tag.contains(NpcTypeHealth.SAVED_MAXIMUM) ? tag.getFloat(NpcTypeHealth.SAVED_MAXIMUM) : (float) Math.min(tag.getInt("MaxHealth"), bound);
-                npc.setHealth(NpcTypeHealth.restore(tag.getFloat("Health"), savedMaximum, npc.getMaxHealth()));
+                float savedMaximum = compound.contains(NpcTypeHealth.SAVED_MAXIMUM) ? compound.getFloat(NpcTypeHealth.SAVED_MAXIMUM) : (float) Math.min(compound.getInt("MaxHealth"), bound);
+                npc.setHealth(NpcTypeHealth.restore(compound.getFloat("Health"), savedMaximum, npc.getMaxHealth()));
             }
         }
     }

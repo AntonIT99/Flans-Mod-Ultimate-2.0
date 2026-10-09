@@ -14,9 +14,18 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.EffectInstance;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.PostPass;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -24,9 +33,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 
 /** Depth-tested white-hot FLIR, composed independently of the game's selected post effect. */
 public final class VehicleThermalRenderer
@@ -168,7 +174,7 @@ public final class VehicleThermalRenderer
         float time = (Util.getMillis() % 1_000_000L) / 1000F;
         float palette = ThermalVision.palette().ordinal();
         float generation = ThermalVision.generation();
-        for (PostPass pass : ((PostChainAccessor) chain).flansmodultimate$passes())
+        for (PostPass pass : ((PostChainAccessor) chain).flansmodultimatePasses())
         {
             EffectInstance effect = pass.getEffect();
             effect.safeGetUniform("ThermalTime").set(time);

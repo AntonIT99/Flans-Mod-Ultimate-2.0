@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** Leaves the stored NPC resistance values intact while equipped armor governs the damage pipeline. */
+@SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(value = SubGuiNpcResistanceProperties.class, remap = false)
 public abstract class NpcArmorControlsMixin extends GuiBasic
 {

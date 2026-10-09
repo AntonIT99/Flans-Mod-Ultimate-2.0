@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import net.minecraft.world.entity.EquipmentSlot;
 
 /** Uses weapon reach/cadence in the existing melee AI, keeping editor values as saved fallbacks. */
+@SuppressWarnings("UnresolvedMixinReference")
 @Mixin(value = EntityAIAttackTarget.class, remap = false)
 public abstract class NpcEquipmentAttackAiMixin
 {
@@ -37,8 +38,6 @@ public abstract class NpcEquipmentAttackAiMixin
     @Redirect(method = {"tick", "m_8037_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/entity/data/DataMelee;getRange()F"))
     private float wolffsmodnpcsMeleeReach(DataMelee melee)
     {
-        return NpcEquipment.weaponAuthority(npc)
-            ? (float) EquipmentAttributes.value(npc.getMainHandItem(), EquipmentSlot.MAINHAND, ForgeMod.ENTITY_REACH.get(), 3D)
-            : melee.getRange();
+        return NpcEquipment.weaponAuthority(npc) ? (float) EquipmentAttributes.value(npc.getMainHandItem(), EquipmentSlot.MAINHAND, ForgeMod.ENTITY_REACH.get(), 3D) : melee.getRange();
     }
 }

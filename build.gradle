@@ -1,3 +1,4 @@
+import name.remal.gradle_plugins.sonarlint.SonarLint
 import net.minecraftforge.gradle.common.util.RunConfig
 import org.codehaus.groovy.runtime.GStringImpl
 
@@ -19,7 +20,7 @@ plugins {
 }
 
 // Keep analysis reports available without failing the build on findings.
-tasks.withType(name.remal.gradle_plugins.sonarlint.SonarLint).configureEach {
+tasks.withType(SonarLint).configureEach {
     ignoreFailures = true
 }
 
@@ -85,6 +86,8 @@ minecraft {
         configureEach {
             workingDirectory runDirectoryPath
             ideaModule "${project.name.replace('.', '_')}.main"
+            // The main module does not depend on the optional mods, but the launch loads all of them.
+            buildAllProjects true
 
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'info'
@@ -248,6 +251,17 @@ file('src').listFiles()
         .findAll { it.isDirectory() && !(it.name in ['main', 'packsmanager', 'test']) && new File(it, 'fmu-module.gradle').isFile() }
         .sort { it.name }
         .each { apply from: new File(it, 'fmu-module.gradle') }
+
+// SonarLint adds every source set to check; keep the expensive analysis opt-in.
+tasks.named('check') {
+    setDependsOn(dependsOn.findAll { !(it instanceof String && it.startsWith('sonarlint')) })
+}
+
+tasks.register('staticAnalysis') {
+    group = 'verification'
+    description = 'Runs SonarLint on all source sets independently of the normal build.'
+    dependsOn tasks.withType(SonarLint)
+}
 
 repositories {
     flatDir { dir 'libs' }

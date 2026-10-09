@@ -5,6 +5,13 @@ import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoice;
 import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoiceScreen;
 import com.flansmodultimate.util.FlansLog;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.world.level.WorldDataConfiguration;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,40 +21,35 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
-import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.world.level.WorldDataConfiguration;
-
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
  * Makes the player decide whether a new world gets the Apocalypse dimension before it is created.
  *
- * <p>Creating the world is held back until the player answers. The answer is applied through the
+ * <p>
+ * Creating the world is held back until the player answers. The answer is applied through the
  * same data pack reload the Data Packs screen uses, so the world is validated and created exactly
- * as if the player had moved the Apocalypse pack there by hand.</p>
+ * as if the player had moved the Apocalypse pack there by hand.
+ * </p>
  */
+@SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(CreateWorldScreen.class)
 public abstract class CreateWorldScreenApocalypseMixin extends Screen
 {
-    @Shadow
-    @Final
+    @Shadow @Final
     WorldCreationUiState uiState;
 
     /** Set while re-entering {@code onCreate} after the player has answered. */
     @Unique
-    private boolean flansmodultimate$answered;
+    private boolean flansmodultimateAnswered;
 
     /** The answer waiting for its data pack reload to finish, or null. */
-    @Unique
-    @Nullable
-    private Boolean flansmodultimate$pendingApocalypse;
+    @Unique @Nullable
+    private Boolean flansmodultimatePendingApocalypse;
 
     protected CreateWorldScreenApocalypseMixin(Component title)
     {
@@ -56,8 +58,7 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
 
     @Shadow
     private void onCreate()
-    {
-    }
+    {}
 
     @Shadow
     @Nullable
@@ -68,23 +69,22 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
 
     @Shadow
     private void tryApplyNewDataPacks(PackRepository repository, boolean shouldConfirm, Consumer<WorldDataConfiguration> callback)
-    {
-    }
+    {}
 
     @Inject(method = "onCreate", at = @At("HEAD"), cancellable = true)
-    private void flansmodultimate$askAboutApocalypse(CallbackInfo callback)
+    private void flansmodultimateAskAboutApocalypse(CallbackInfo callback)
     {
-        if (flansmodultimate$answered)
+        if (flansmodultimateAnswered)
         {
-            flansmodultimate$answered = false;
+            flansmodultimateAnswered = false;
             return;
         }
         if (!ApocalypseWorldChoice.isOffered(uiState.getSettings().dataConfiguration()))
             return;
         callback.cancel();
         Screen createScreen = this;
-        minecraft.setScreen(ApocalypseWorldChoiceScreen.forNewWorld(this::flansmodultimate$applyChoice,
-            () -> minecraft.setScreen(createScreen)));
+        if (minecraft != null)
+            minecraft.setScreen(ApocalypseWorldChoiceScreen.forNewWorld(this::flansmodultimateApplyChoice, () -> Optional.ofNullable(minecraft).ifPresent(m -> m.setScreen(createScreen))));
     }
 
     /**
@@ -93,28 +93,29 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
      * screen's first tick after it is shown once more.
      */
     @Inject(method = "tick", at = @At("HEAD"))
-    private void flansmodultimate$resumeAfterReload(CallbackInfo callback)
+    private void flansmodultimateResumeAfterReload(CallbackInfo callback)
     {
-        Boolean pending = flansmodultimate$pendingApocalypse;
+        Boolean pending = flansmodultimatePendingApocalypse;
         if (pending == null)
             return;
-        flansmodultimate$pendingApocalypse = null;
+        flansmodultimatePendingApocalypse = null;
         // A failed reload returns here with the old packs: the player is back on this screen
         // to try again, and nothing is created with a configuration they did not choose.
         // Created outside the screen tick, as a click on Create would be.
-        if (ApocalypseWorldChoice.isEnabled(uiState.getSettings().dataConfiguration()) == pending)
-            minecraft.tell(this::flansmodultimate$createAnswered);
+        if (BooleanUtils.isTrue(ApocalypseWorldChoice.isEnabled(uiState.getSettings().dataConfiguration()) == pending) && minecraft != null)
+            minecraft.tell(this::flansmodultimateCreateAnswered);
     }
 
     @Unique
-    private void flansmodultimate$applyChoice(boolean withApocalypse)
+    private void flansmodultimateApplyChoice(boolean withApocalypse)
     {
         Screen createScreen = this;
         WorldDataConfiguration configuration = uiState.getSettings().dataConfiguration();
         if (ApocalypseWorldChoice.isEnabled(configuration) == withApocalypse)
         {
-            minecraft.setScreen(createScreen);
-            flansmodultimate$createAnswered();
+            if (minecraft != null)
+                minecraft.setScreen(createScreen);
+            flansmodultimateCreateAnswered();
             return;
         }
 
@@ -122,7 +123,8 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
         if (selection == null)
         {
             FlansLog.log.warn("Could not prepare the data packs to {} the Apocalypse dimension", withApocalypse ? "add" : "remove");
-            minecraft.setScreen(createScreen);
+            if (minecraft != null)
+                minecraft.setScreen(createScreen);
             return;
         }
         PackRepository repository = selection.getSecond();
@@ -131,14 +133,14 @@ public abstract class CreateWorldScreenApocalypseMixin extends Screen
         if (withApocalypse)
             selected.add(ApocalypseDatapackSource.PACK_ID);
         repository.setSelected(selected);
-        flansmodultimate$pendingApocalypse = withApocalypse;
-        tryApplyNewDataPacks(repository, false, ignored -> minecraft.setScreen(createScreen));
+        flansmodultimatePendingApocalypse = withApocalypse;
+        tryApplyNewDataPacks(repository, false, ignored -> Optional.ofNullable(minecraft).ifPresent(m -> m.setScreen(createScreen)));
     }
 
     @Unique
-    private void flansmodultimate$createAnswered()
+    private void flansmodultimateCreateAnswered()
     {
-        flansmodultimate$answered = true;
+        flansmodultimateAnswered = true;
         onCreate();
     }
 }

@@ -27,7 +27,7 @@ public abstract class NpcEditorMenuMixin
     private EntityNPCInterface npc;
 
     @Inject(method = "initGui", at = @At("TAIL"))
-    private void addWolffsModTab(int guiLeft, int guiTop, int width, CallbackInfo callback)
+    private void wolffsmodnpcsAddWolffsModTab(int guiLeft, int guiTop, int width, CallbackInfo callback)
     {
         if (npc == null)
             return;

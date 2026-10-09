@@ -3,6 +3,11 @@ package com.flansmodultimate.mixin;
 import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoice;
 import com.flansmodultimate.apocalyse.client.ApocalypseWorldChoiceScreen;
 import com.flansmodultimate.util.FlansLog;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.AlertScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -10,12 +15,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.AlertScreen;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
-import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
 
@@ -27,23 +26,20 @@ import java.io.IOException;
 @Mixin(WorldOpenFlows.class)
 public abstract class WorldOpenFlowsApocalypseMixin
 {
-    @Shadow
-    @Final
+    @Shadow @Final
     private Minecraft minecraft;
 
     @Inject(method = "loadLevel(Lnet/minecraft/client/gui/screens/Screen;Ljava/lang/String;)V", at = @At("HEAD"), cancellable = true)
-    private void flansmodultimate$askAboutApocalypse(Screen lastScreen, String levelId, CallbackInfo callback)
+    private void flansmodultimateAskAboutApocalypse(Screen lastScreen, String levelId, CallbackInfo callback)
     {
         if (!ApocalypseWorldChoice.needsChoice(minecraft, levelId))
             return;
         callback.cancel();
-        minecraft.setScreen(ApocalypseWorldChoiceScreen.forExistingWorld(
-            withApocalypse -> flansmodultimate$recordAndLoad(lastScreen, levelId, withApocalypse),
-            () -> minecraft.setScreen(lastScreen)));
+        minecraft.setScreen(ApocalypseWorldChoiceScreen.forExistingWorld(withApocalypse -> flansmodultimateRecordAndLoad(lastScreen, levelId, withApocalypse), () -> minecraft.setScreen(lastScreen)));
     }
 
     @Unique
-    private void flansmodultimate$recordAndLoad(Screen lastScreen, String levelId, boolean withApocalypse)
+    private void flansmodultimateRecordAndLoad(Screen lastScreen, String levelId, boolean withApocalypse)
     {
         try
         {
@@ -52,8 +48,7 @@ public abstract class WorldOpenFlowsApocalypseMixin
         catch (IOException | RuntimeException exception)
         {
             FlansLog.log.error("Could not record the Apocalypse choice for world '{}'", levelId, exception);
-            minecraft.setScreen(new AlertScreen(() -> minecraft.setScreen(lastScreen),
-                Component.translatable("gui.flansmodultimate.apocalypse_choice.title"),
+            minecraft.setScreen(new AlertScreen(() -> minecraft.setScreen(lastScreen), Component.translatable("gui.flansmodultimate.apocalypse_choice.title"),
                 Component.translatable("gui.flansmodultimate.apocalypse_choice.save_failed", exception.getMessage())));
             return;
         }

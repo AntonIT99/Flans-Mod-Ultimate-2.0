@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 /** Adds folders to the model picker while retaining Custom NPCs' model selection and save logic. */
+@SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
 @Mixin(value = GuiCreationEntities.class, remap = false)
 public abstract class NpcModelBrowserMixin
 {
@@ -39,33 +40,33 @@ public abstract class NpcModelBrowserMixin
     private GuiCustomScrollNop scroll;
 
     @Unique
-    private static final List<FlanModelKind> wolffsmodnpcs$kinds = List.of(FlanModelKind.AA_GUN, FlanModelKind.MECHA, FlanModelKind.PLANE, FlanModelKind.VEHICLE);
+    private static final List<FlanModelKind> WOLFFSMODNPCS_KINDS = List.of(FlanModelKind.AA_GUN, FlanModelKind.MECHA, FlanModelKind.PLANE, FlanModelKind.VEHICLE);
     @Unique
-    private static final List<String> wolffsmodnpcs$labels = List.of("Flan AA Gun", "Flan Mecha", "Flan Plane", "Flan Vehicle");
+    private static final List<String> WOLFFSMODNPCS_LABELS = List.of("Flan AA Gun", "Flan Mecha", "Flan Plane", "Flan Vehicle");
     @Unique
-    private FlanModelKind wolffsmodnpcs$kind;
+    private FlanModelKind wolffsmodnpcsKind;
     @Unique
-    private IContentPack wolffsmodnpcs$pack;
+    private IContentPack wolffsmodnpcsPack;
     @Unique
-    private List<IContentPack> wolffsmodnpcs$packs = List.of();
+    private List<IContentPack> wolffsmodnpcsPacks = List.of();
     @Unique
-    private List<EntityType<? extends Entity>> wolffsmodnpcs$models = List.of();
+    private List<EntityType<? extends Entity>> wolffsmodnpcsModels = List.of();
     @Unique
-    private FlanModelEntityType wolffsmodnpcs$variantModel;
+    private FlanModelEntityType wolffsmodnpcsVariantModel;
     @Unique
-    private List<PaintjobVariant> wolffsmodnpcs$paintjobs = List.of();
-    @Unique @SuppressWarnings("java:S116") // Mixin fields use a module prefix to avoid collisions in the target class.
-    private Integer wolffsmodnpcs$selectionScrollY;
+    private List<PaintjobVariant> wolffsmodnpcsPaintjobs = List.of();
+    @Unique
+    private Integer wolffsmodnpcsSelectionScrollY;
 
     // Forge production uses SRG names; the development dependency uses Mojang names.
     @Inject(method = {"init", "m_7856_"}, at = @At("TAIL"))
-    private void wolffsmodnpcs$folders(CallbackInfo callback)
+    private void wolffsmodnpcsFolders(CallbackInfo callback)
     {
         List<String> labels = new ArrayList<>();
         List<EntityType<? extends Entity>> models = new ArrayList<>();
-        if (wolffsmodnpcs$kind == null)
+        if (wolffsmodnpcsKind == null)
         {
-            labels.addAll(wolffsmodnpcs$labels);
+            labels.addAll(WOLFFSMODNPCS_LABELS);
             for (EntityType<? extends Entity> type : types)
             {
                 if (!(type instanceof FlanModelEntityType))
@@ -78,27 +79,27 @@ public abstract class NpcModelBrowserMixin
         else
         {
             labels.add("..");
-            if (wolffsmodnpcs$pack == null)
+            if (wolffsmodnpcsPack == null)
             {
-                wolffsmodnpcs$packs = types.stream().filter(type -> type instanceof FlanModelEntityType model && model.getKind() == wolffsmodnpcs$kind)
+                wolffsmodnpcsPacks = types.stream().filter(type -> type instanceof FlanModelEntityType model && model.getKind() == wolffsmodnpcsKind)
                     .map(type -> ((FlanModelEntityType) type).getInfoType()).filter(Objects::nonNull).map(IContentType::getContentPack).distinct()
                     .sorted(Comparator.comparing(IContentPack::getName, String.CASE_INSENSITIVE_ORDER).thenComparing(pack -> pack.getPath().toString())).toList();
-                for (IContentPack pack : wolffsmodnpcs$packs)
+                for (IContentPack pack : wolffsmodnpcsPacks)
                     labels.add(pack.getName());
             }
-            else if (wolffsmodnpcs$variantModel != null)
+            else if (wolffsmodnpcsVariantModel != null)
             {
-                for (PaintjobVariant job : wolffsmodnpcs$paintjobs)
+                for (PaintjobVariant job : wolffsmodnpcsPaintjobs)
                     labels.add(job.id() == 0 ? "Default" : job.name());
             }
             else
             {
                 for (EntityType<? extends Entity> type : types)
                 {
-                    if (type instanceof FlanModelEntityType model && model.getKind() == wolffsmodnpcs$kind)
+                    if (type instanceof FlanModelEntityType model && model.getKind() == wolffsmodnpcsKind)
                     {
                         IContentType definition = model.getInfoType();
-                        if (definition != null && Objects.equals(definition.getContentPack(), wolffsmodnpcs$pack))
+                        if (definition != null && Objects.equals(definition.getContentPack(), wolffsmodnpcsPack))
                         {
                             models.add(type);
                         }
@@ -111,19 +112,19 @@ public abstract class NpcModelBrowserMixin
                     labels.add(type.getDescriptionId());
             }
         }
-        wolffsmodnpcs$models = models;
+        wolffsmodnpcsModels = models;
         // The scroll's equality check ignores ordering; clear first so the row indices stay aligned.
         scroll.setUnsortedList(new ArrayList<>());
         scroll.setUnsortedList(labels);
         GuiCreationScreenInterface screen = (GuiCreationScreenInterface) (Object) this;
         int selected = models.indexOf(screen.entity == null ? CustomEntities.entityCustomNpc : screen.entity.getType());
-        if (wolffsmodnpcs$variantModel != null && screen.entity instanceof FlanModelEntity model && model.getType() == wolffsmodnpcs$variantModel)
+        if (wolffsmodnpcsVariantModel != null && screen.entity instanceof FlanModelEntity model && model.getType() == wolffsmodnpcsVariantModel)
         {
-            for (int i = 0; i < wolffsmodnpcs$paintjobs.size(); i++)
-                if (wolffsmodnpcs$paintjobs.get(i).id() == model.getPaintjobId())
+            for (int i = 0; i < wolffsmodnpcsPaintjobs.size(); i++)
+                if (wolffsmodnpcsPaintjobs.get(i).id() == model.getPaintjobId())
                     selected = i;
         }
-        int offset = wolffsmodnpcs$kind == null ? wolffsmodnpcs$kinds.size() : 1;
+        int offset = wolffsmodnpcsKind == null ? WOLFFSMODNPCS_KINDS.size() : 1;
         scroll.setSelectedIndex(selected < 0 ? -1 : selected + offset);
         wolffsmodnpcsRestoreSelectionScroll();
     }
@@ -131,15 +132,15 @@ public abstract class NpcModelBrowserMixin
     @Unique
     private void wolffsmodnpcsRestoreSelectionScroll()
     {
-        if (wolffsmodnpcs$selectionScrollY != null)
+        if (wolffsmodnpcsSelectionScrollY != null)
         {
-            ((NpcModelScrollAccessor) scroll).wolffsmodnpcs$setScrollY(wolffsmodnpcs$selectionScrollY);
-            wolffsmodnpcs$selectionScrollY = null;
+            ((NpcModelScrollAccessor) scroll).wolffsmodnpcsSetScrollY(wolffsmodnpcsSelectionScrollY);
+            wolffsmodnpcsSelectionScrollY = null;
         }
     }
 
     @Inject(method = "scrollClicked", at = @At("HEAD"), cancellable = true)
-    private void wolffsmodnpcs$navigate(double mouseX, double mouseY, int button, GuiCustomScrollNop clicked, CallbackInfo callback)
+    private void wolffsmodnpcsNavigate(double mouseX, double mouseY, int button, GuiCustomScrollNop clicked, CallbackInfo callback)
     {
         int index = clicked.getSelectedIndex();
         if (index < 0)
@@ -148,24 +149,24 @@ public abstract class NpcModelBrowserMixin
             return;
         }
         boolean navigation = false;
-        if (wolffsmodnpcs$kind == null && index < wolffsmodnpcs$kinds.size())
+        if (wolffsmodnpcsKind == null && index < WOLFFSMODNPCS_KINDS.size())
         {
-            wolffsmodnpcs$kind = wolffsmodnpcs$kinds.get(index);
+            wolffsmodnpcsKind = WOLFFSMODNPCS_KINDS.get(index);
             navigation = true;
         }
-        else if (wolffsmodnpcs$kind != null && index == 0)
+        else if (wolffsmodnpcsKind != null && index == 0)
         {
-            if (wolffsmodnpcs$variantModel != null)
-                wolffsmodnpcs$variantModel = null;
-            else if (wolffsmodnpcs$pack != null)
-                wolffsmodnpcs$pack = null;
+            if (wolffsmodnpcsVariantModel != null)
+                wolffsmodnpcsVariantModel = null;
+            else if (wolffsmodnpcsPack != null)
+                wolffsmodnpcsPack = null;
             else
-                wolffsmodnpcs$kind = null;
+                wolffsmodnpcsKind = null;
             navigation = true;
         }
-        else if (wolffsmodnpcs$kind != null && wolffsmodnpcs$pack == null)
+        else if (wolffsmodnpcsKind != null && wolffsmodnpcsPack == null)
         {
-            wolffsmodnpcs$pack = wolffsmodnpcs$packs.get(index - 1);
+            wolffsmodnpcsPack = wolffsmodnpcsPacks.get(index - 1);
             navigation = true;
         }
         if (navigation)
@@ -176,14 +177,14 @@ public abstract class NpcModelBrowserMixin
             callback.cancel();
             return;
         }
-        int offset = wolffsmodnpcs$kind == null ? wolffsmodnpcs$kinds.size() : 1;
-        if (wolffsmodnpcs$variantModel != null)
+        int offset = wolffsmodnpcsKind == null ? WOLFFSMODNPCS_KINDS.size() : 1;
+        if (wolffsmodnpcsVariantModel != null)
         {
-            wolffsmodnpcs$selectionScrollY = ((NpcModelScrollAccessor) clicked).wolffsmodnpcs$getScrollY();
-            PaintjobVariant job = wolffsmodnpcs$paintjobs.get(index - 1);
+            wolffsmodnpcsSelectionScrollY = ((NpcModelScrollAccessor) clicked).wolffsmodnpcsGetScrollY();
+            PaintjobVariant job = wolffsmodnpcsPaintjobs.get(index - 1);
             GuiCreationScreenInterface screen = (GuiCreationScreenInterface) (Object) this;
-            if (!Objects.equals(screen.playerdata.getEntityName(), ForgeRegistries.ENTITY_TYPES.getKey(wolffsmodnpcs$variantModel)))
-                screen.playerdata.setEntity(ForgeRegistries.ENTITY_TYPES.getKey(wolffsmodnpcs$variantModel));
+            if (!Objects.equals(screen.playerdata.getEntityName(), ForgeRegistries.ENTITY_TYPES.getKey(wolffsmodnpcsVariantModel)))
+                screen.playerdata.setEntity(ForgeRegistries.ENTITY_TYPES.getKey(wolffsmodnpcsVariantModel));
             else
                 screen.playerdata.clearEntity();
             // Custom NPCs saves and synchronizes ExtraData with the selected model and presets.
@@ -194,16 +195,16 @@ public abstract class NpcModelBrowserMixin
             callback.cancel();
             return;
         }
-        EntityType<? extends Entity> selected = wolffsmodnpcs$models.get(index - offset);
-        wolffsmodnpcs$selectionScrollY = ((NpcModelScrollAccessor) clicked).wolffsmodnpcs$getScrollY();
+        EntityType<? extends Entity> selected = wolffsmodnpcsModels.get(index - offset);
+        wolffsmodnpcsSelectionScrollY = ((NpcModelScrollAccessor) clicked).wolffsmodnpcsGetScrollY();
         if (selected instanceof FlanModelEntityType model && model.getInfoType() != null)
         {
             List<PaintjobVariant> jobs = model.getInfoType().getPaintjobVariants();
             if (jobs.stream().anyMatch(job -> job.id() != 0))
             {
-                wolffsmodnpcs$variantModel = model;
-                wolffsmodnpcs$paintjobs = jobs;
-                wolffsmodnpcs$selectionScrollY = null;
+                wolffsmodnpcsVariantModel = model;
+                wolffsmodnpcsPaintjobs = jobs;
+                wolffsmodnpcsSelectionScrollY = null;
                 clicked.clear();
             }
         }

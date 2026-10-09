@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.minecraft.nbt.CompoundTag;
 
 /** Uses Custom NPCs' existing permission-checked stats menu and normal persistence. */
+@SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(value = DataStats.class, remap = false)
 public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
 {
@@ -36,9 +37,9 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     }
 
     @Inject(method = "readToNBT", at = @At("TAIL"))
-    private void wolffsmodnpcsReadWeapons(CompoundTag tag, CallbackInfo callback)
+    private void wolffsmodnpcsReadWeapons(CompoundTag compound, CallbackInfo callback)
     {
-        wolffsmodnpcsOptions.load(tag);
+        wolffsmodnpcsOptions.load(compound);
         wolffsmodnpcsProperties.loaded(Component.STATS);
         wolffsmodnpcsProperties.afterStatsLoad(npc);
     }

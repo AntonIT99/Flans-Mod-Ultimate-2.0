@@ -16,13 +16,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public abstract class VehicleOpticsLightMixin
 {
     @Redirect(method = "updateLightTexture", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;hasEffect(Lnet/minecraft/world/effect/MobEffect;)Z"))
-    private boolean flansmodultimate$opticalNightVision(LocalPlayer player, MobEffect effect)
+    private boolean flansmodultimateOpticalNightVision(LocalPlayer player, MobEffect effect)
     {
         return effect == MobEffects.NIGHT_VISION && ThermalVision.opticalNightVision() || player.hasEffect(effect);
     }
 
     @Redirect(method = "updateLightTexture", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;getNightVisionScale(Lnet/minecraft/world/entity/LivingEntity;F)F"))
-    private float flansmodultimate$opticalNightVisionStrength(LivingEntity player, float partialTick)
+    private float flansmodultimateOpticalNightVisionStrength(LivingEntity player, float partialTick)
     {
         return ThermalVision.opticalNightVision() ? 1F : GameRenderer.getNightVisionScale(player, partialTick);
     }

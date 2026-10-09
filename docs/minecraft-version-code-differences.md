@@ -68,7 +68,7 @@ invalidate content generation or trigger audio remeasurement.
 ### NPC ranged projectile integration on master
 
 Forge 1.20.1 now intercepts Custom NPCs' `EntityNPCInterface.performRangedAttack`
-and its production SRG name `m_6504_` through `NpcRangedAttackMixin`. The module
+and its production SRG name `m_6504_` through `EntityNPCInterfaceMixin`. The module
 uses API 0.6 `FlansProjectiles`, `ProjectileParameters`, `ProjectileShot` and
 `WeaponMuzzle`; no Custom NPCs dependency is added to the main mod. Its settings
 are mixed into `DataStats.readToNBT` and `save`, under `WolffsModWeapons`, and the
@@ -89,7 +89,7 @@ NPC module. Any still-used fallback in a mixed bank or belt remains editable.
 `FlansEntityTypes`/`EntityTypeProperties`. The NPC-specific reversible overlay
 captures all replaced defaults before writes and returns stored defaults from
 `DataStats`, `DataAI` and `DataAdvanced` save methods. Their load hooks invalidate
-only the loaded component's captured defaults. `NpcTypeSyncMixin` extends the
+only the loaded component's captured defaults. `EntityNPCInterfaceMixin` extends the
 existing `writeSpawnData()`/`readSpawnData(CompoundTag)` server-to-client transport
 with switch state and the small set of stored mapped fields; the ordinary sounds
 page does not request stats data itself. No new client-to-server authority is added.
@@ -104,7 +104,7 @@ saved health after resolving hull HP. Health changes preserve the damaged fracti
 and `GuiButtonNop.setDisplay(int)`. It displays converted inherited values and
 keeps focus/button callbacks from writing them back as defaults. Distinct native
 mount values can be displayed together without collapsing them into one weapon.
-`NpcTypeRangedTimingMixin` redirects the ranged goal's `getBurst`/`getBurstDelay`
+`EntityAIRangedAttackMixin` redirects the ranged goal's `getBurst`/`getBurstDelay`
 calls, retaining its targeting and navigation while removing artificial burst
 gaps for inherited native banks. Its fractional cooldown accounts for the goal's
 post-decrement test. Recheck `tick`/`m_8037_`, `stop`/`m_8041_`, field names, NBT
@@ -127,7 +127,7 @@ The NPC module owns vanilla weapon dispatch, charge/reload/cadence, item readout
 and the Custom NPCs-specific `NpcWeaponAdapter` extension.
 
 The installed Custom NPCs build overrides `getDamageAfterArmorAbsorb` to omit
-native armor. `NpcEquipmentMixin` calls its vanilla superclass when equipment
+native armor. `EntityNPCInterfaceMixin` calls its vanilla superclass when equipment
 authority is enabled, bypasses `Resistances.applyResistance` and the knockback
 resistance field, and provides mob armor/shield wear hooks. Check the descriptors
 and SRG aliases against the target Custom NPCs jar; the bytecode contract test
@@ -276,7 +276,7 @@ these module packaging differences when merging master later.
 | `src/main/java/com/flansmod/client/model/TrackLinkLod.java`; `com/flansmodultimate/platform/render/TrackLinkLodCollector.java` | Track-link LOD selection is shared. The platform collector receives Forge's packed `vertex(...)` call on 1.20.1 or NeoForge's `addVertex(...).setUv(...).setNormal(...)` sequence on 1.21.1. Its geometry and envelope rules are the same on both branches. |
 | `src/main/resources/assets/flansmodultimate/shaders/core/rigid_model.vsh` | Minecraft 1.21.1 `fog_distance` takes `(vec3 position, int shape)`. The target calls `fog_distance(position, FogShape)` and removed the old unused model-view uniform; the old call failed at client shader reload. |
 | `src/main/java/com/flansmodultimate/mixin/PlayerDriveableEdgeMixin.java`; `BufferSourceAccessor.java` | The player sneaking-edge hook moved into `canFallAtLeast`, and `MultiBufferSource.BufferSource` now tracks `startedBuilders`. The target injectors/accessor use those 1.21.1 bytecode locations. |
-| `src/main/java/com/flansmodultimate/mixin/DriveableCameraMixin.java`; `SeatedPlayerRendererMixin.java`; `CreateWorldScreenApocalypseMixin.java` | The camera boom constant became a float, player renderer rotations gained a scale parameter, and world creation no longer ticks. The target mixins use the revised constants, method signatures, and screen lifecycle. |
+| `src/main/java/com/flansmodultimate/mixin/DriveableCameraMixin.java`; `PlayerRendererMixin.java`; `CreateWorldScreenApocalypseMixin.java` | The camera boom constant became a float, player renderer rotations gained a scale parameter, and world creation no longer ticks. The target mixins use the revised constants, method signatures, and screen lifecycle. |
 | `src/main/resources/flansmodultimate.mixins.json` | NeoForge 1.21.1 runs official Minecraft names and ModDevGradle does not generate the Forge refmap, so the target omits the stale `refmap` entry. Every mixin class must also appear in the proper common or client roster; source files can compile while unregistered hooks remain inactive. |
 
 ### Additional parity adaptations

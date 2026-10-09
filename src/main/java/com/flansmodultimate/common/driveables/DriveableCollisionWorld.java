@@ -57,9 +57,9 @@ public final class DriveableCollisionWorld
     /** Whether an entity's movement treats driveable hulls as solid at all. */
     public static boolean collidesWithHulls(@Nullable Entity entity)
     {
-        return entity != null && !DriveableCollisionBypass.isEnabled(entity) && !entity.noPhysics && !entity.isSpectator() && !entity.isPassenger()
-            && !(entity instanceof Driveable) && !(entity instanceof AAGun) && !(entity instanceof Seat) && !(entity instanceof Wheel) && !(entity instanceof Shootable)
-            && !(entity instanceof Projectile) && !(entity instanceof AbstractMinecart) && !(entity instanceof HangingEntity) && !(entity instanceof FallingBlockEntity);
+        return entity != null && !DriveableCollisionBypass.isEnabled(entity) && !entity.noPhysics && !entity.isSpectator() && !entity.isPassenger() && !(entity instanceof Driveable)
+            && !(entity instanceof AAGun) && !(entity instanceof Seat) && !(entity instanceof Wheel) && !(entity instanceof Shootable) && !(entity instanceof Projectile)
+            && !(entity instanceof AbstractMinecart) && !(entity instanceof HangingEntity) && !(entity instanceof FallingBlockEntity);
     }
 
     /**
@@ -134,7 +134,7 @@ public final class DriveableCollisionWorld
     @Nullable
     static LevelHulls hulls(@Nullable Level level)
     {
-        return level instanceof DriveableHullLevel access ? access.flansmodultimate$getDriveableHulls() : null;
+        return level instanceof DriveableHullLevel access ? access.flansmodultimateGetDriveableHulls() : null;
     }
 
     /** {@code Entity#collide} with the hulls clipped after the voxel shapes on every axis pass. */
@@ -257,8 +257,7 @@ public final class DriveableCollisionWorld
             for (int index = aaGuns.size() - 1; index >= 0; index--)
             {
                 AAGunCollisionHelper helper = liveAAGun(index);
-                if (helper == null || helper.owner().isPassengerOfSameVehicle(entity)
-                    || !helper.geometry().mayTouch(reach.minX, reach.minY, reach.minZ, reach.maxX, reach.maxY, reach.maxZ))
+                if (helper == null || helper.owner().isPassengerOfSameVehicle(entity) || !helper.geometry().mayTouch(reach.minX, reach.minY, reach.minZ, reach.maxX, reach.maxY, reach.maxZ))
                     continue;
                 if (nearby.isEmpty())
                     nearby = new ArrayList<>(2);
@@ -282,8 +281,7 @@ public final class DriveableCollisionWorld
             for (int index = aaGuns.size() - 1; index >= 0; index--)
             {
                 AAGunCollisionHelper helper = liveAAGun(index);
-                if (helper != null && (entity == null || !helper.owner().isPassengerOfSameVehicle(entity))
-                    && helper.geometry().intersects(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ))
+                if (helper != null && (entity == null || !helper.owner().isPassengerOfSameVehicle(entity)) && helper.geometry().intersects(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ))
                     return true;
             }
             for (int index = helpers.size() - 1; index >= 0; index--)

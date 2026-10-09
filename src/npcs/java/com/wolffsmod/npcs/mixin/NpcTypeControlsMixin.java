@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** Locks only mapped controls after the normal editor has constructed them. */
+@SuppressWarnings({"AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
 @Mixin(value = {GuiNpcStats.class, GuiNPCSoundsMenu.class, SubGuiNpcMeleeProperties.class, SubGuiNpcMovement.class}, remap = false)
 public abstract class NpcTypeControlsMixin extends GuiBasic
 {

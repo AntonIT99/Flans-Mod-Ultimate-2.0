@@ -3,6 +3,8 @@ package com.wolffsmod.npcs.mixin;
 import com.flansmodultimate.api.client.FlansEquipmentRender;
 import com.wolffsmod.npcs.combat.NpcEquipment;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import noppes.npcs.ModelData;
 import noppes.npcs.client.model.animation.AnimationHandler;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -16,17 +18,15 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.LivingEntity;
 
 /** Applies equipment poses after Custom NPCs' animation pipeline has positioned the humanoid model. */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Mixin(value = AnimationHandler.class, remap = false)
 public abstract class NpcEquipmentAnimationMixin
 {
-    private NpcEquipmentAnimationMixin()
-    {}
-
     // Mixin callbacks must match the dependency's complete method signature.
     @SuppressWarnings("java:S107")
     @Inject(method = "animateBipedPost", at = @At("TAIL"))
-    private static void wolffsmodnpcsItemPoses(ModelData data, HumanoidModel<?> model, LivingEntity entity, float limbSwing, float limbSwingAmount, float age, float headYaw,
-        float headPitch, CallbackInfo callback)
+    private static void wolffsmodnpcsItemPoses(ModelData data, HumanoidModel<?> model, LivingEntity entity, float limbSwing, float limbSwingAmount, float age, float headYaw, float headPitch,
+        CallbackInfo callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) entity;
         if (NpcEquipment.enabled(npc, Feature.WEAPON_ANIMATIONS))

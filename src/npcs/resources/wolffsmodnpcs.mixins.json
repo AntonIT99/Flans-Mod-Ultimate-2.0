@@ -4,18 +4,25 @@
   "package": "com.wolffsmod.npcs.mixin",
   "refmap": "wolffsmodnpcs.refmap.json",
   "compatibilityLevel": "JAVA_17",
-  "mixins": ["NpcDistanceMixin", "NpcWeaponSettingsMixin", "NpcRangedAttackMixin", "NpcTypeDataMixin", "NpcTypePropertiesMixin", "NpcTypeModelLoadMixin", "NpcTypeRangedTimingMixin", "NpcTypeSyncMixin", "NpcEquipmentMixin", "NpcEquipmentAttackAiMixin", "NpcEquipmentLegacyRangedMixin"],
+  "mixins": [
+      "EntityAIRangedAttackMixin",
+      "EntityNPCInterfaceMixin",
+      "NpcEquipmentAttackAiMixin",
+      "NpcTypeDataMixin",
+      "NpcTypeModelLoadMixin",
+      "NpcWeaponSettingsMixin"
+  ],
   "client": [
-      "NpcTypeControlsMixin",
       "NpcArmorControlsMixin",
-      "NpcEquipmentAnimationMixin",
-      "NpcRangedControlsMixin",
       "NpcEditorMenuMixin",
+      "NpcEquipmentAnimationMixin",
       "NpcModelBrowserMixin",
-      "NpcModelScrollAccessor",
       "NpcModelPreviewMixin",
+      "NpcModelScrollAccessor",
       "NpcNameplateMixin",
-      "NpcRenderContextMixin"
+      "NpcRangedControlsMixin",
+      "NpcRenderContextMixin",
+      "NpcTypeControlsMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }

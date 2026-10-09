@@ -9,20 +9,20 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ParticleAccessor
 {
     @Accessor("x")
-    double flansmodultimate$x();
+    double flansmodultimateX();
 
     @Accessor("y")
-    double flansmodultimate$y();
+    double flansmodultimateY();
 
     @Accessor("z")
-    double flansmodultimate$z();
+    double flansmodultimateZ();
 
     @Accessor("xo")
-    double flansmodultimate$xo();
+    double flansmodultimateXo();
 
     @Accessor("yo")
-    double flansmodultimate$yo();
+    double flansmodultimateYo();
 
     @Accessor("zo")
-    double flansmodultimate$zo();
+    double flansmodultimateZo();
 }

@@ -16,15 +16,14 @@ public abstract class ParticleEngineThermalMixin
 {
     /** Every particle passes through here, including those the mod adds directly by class. */
     @Inject(method = "add", at = @At("HEAD"))
-    private void flansmodultimate$trackHotParticleByClass(Particle particle, CallbackInfo ci)
+    private void flansmodultimateTrackHotParticleByClass(Particle particle, CallbackInfo ci)
     {
         ThermalHotParticles.trackByClass(particle);
     }
 
     /** Particles created from a particle type are also matched by their type id. */
     @Inject(method = "createParticle", at = @At("RETURN"))
-    private void flansmodultimate$trackHotParticleByType(ParticleOptions options, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-        CallbackInfoReturnable<Particle> cir)
+    private void flansmodultimateTrackHotParticleByType(ParticleOptions options, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, CallbackInfoReturnable<Particle> cir)
     {
         ThermalHotParticles.trackByType(cir.getReturnValue(), options);
     }
