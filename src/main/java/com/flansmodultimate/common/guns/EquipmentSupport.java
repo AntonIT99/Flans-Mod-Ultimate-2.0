@@ -10,6 +10,7 @@ import com.flansmodultimate.network.client.effects.PacketPlaySound;
 import com.flansmodultimate.network.client.gun.PacketGunMuzzleFlash;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
@@ -60,7 +61,19 @@ public final class EquipmentSupport
         return Optional.of(new EquippedWeaponProperties(type.isThrowable() || !type.getAmmoTypes().isEmpty(), type.isThrowable(), type.isShield(), damage, type.getMeleeDamage(preview, false), speed,
             type.getSpread(preview), type.getNumBullets(preview, ammo), type.getShootDelay(preview), item.getActualReloadTime(preview, ItemStackData.builtInRegistries(), ItemStack.EMPTY),
             type.getThrowChargeTime(), type.getMeleeTime(), type.getShootSound(preview, false), mode.isAutomaticFire(), mode == EnumFireMode.MINIGUN ? type.getMinigunStartSpeed() : 0F,
-            mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F));
+            mode == EnumFireMode.MINIGUN ? type.getMinigunMaxSpeed() : 0F, impact(ammo)));
+    }
+
+    private static EquippedWeaponProperties.Impact impact(@Nullable ShootableType ammo)
+    {
+        if (ammo == null)
+            return EquippedWeaponProperties.Impact.NONE;
+        if (!(ammo instanceof com.flansmodultimate.common.types.BulletType bullet))
+            return new EquippedWeaponProperties.Impact(1D, ammo.getHitBoxSize(), ammo.getFallSpeed(), ammo.getExplosionRadius(), "", "", false);
+        // Mirrors ShootingHelper: entity and block impacts are gated separately; blocks fall back to material sounds.
+        String sound = StringUtils.defaultString(bullet.getHitSound());
+        return new EquippedWeaponProperties.Impact(bullet.getKnockbackModifier(), bullet.getHitBoxSize(), bullet.getFallSpeed(), bullet.getExplosionRadius(),
+            bullet.isEntityHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() ? sound : "", bullet.isHitSoundEnable() && sound.isBlank());
     }
 
     public static Optional<EquippedArmorProperties> armor(ItemStack stack)

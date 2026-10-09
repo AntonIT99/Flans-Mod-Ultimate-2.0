@@ -209,6 +209,7 @@ public final class ModCommonConfig
     private static final ForgeConfigSpec.DoubleValue GUN_ACTION_SOUND_RANGE;
     private static final ForgeConfigSpec.DoubleValue MELEE_SOUND_RANGE;
     private static final ForgeConfigSpec.DoubleValue GRENADE_THROW_SOUND_RANGE;
+    private static final ForgeConfigSpec.DoubleValue GUN_LOCK_ON_SOUND_RANGE;
     private static final ForgeConfigSpec.DoubleValue GUN_FIRE_SOUND_RANGE;
     private static final ForgeConfigSpec.DoubleValue EXPLOSION_SOUND_RANGE;
     private static final ForgeConfigSpec.DoubleValue VEHICLE_SOUND_RANGE;
@@ -466,6 +467,7 @@ public final class ModCommonConfig
         MELEE_SOUND_RANGE = builder.comment("Range in blocks for melee swing, hit and shield block sounds. MeleeSoundRange in a content pack can replace it.").defineInRange("meleeSoundRange", 48.0,
             1.0, 4096.0);
         GRENADE_THROW_SOUND_RANGE = builder.comment("Range in blocks for grenade throw sounds.").defineInRange("grenadeThrowSoundRange", 48.0, 1.0, 4096.0);
+        GUN_LOCK_ON_SOUND_RANGE = builder.comment("Range in blocks for the lock-on sound of a hand-held launcher locking onto a target.").defineInRange("gunLockOnSoundRange", 10.0, 1.0, 4096.0);
         GUN_FIRE_SOUND_RANGE = builder.comment("Range in blocks for gun fire sound packets (also determines volume).").defineInRange("gunFireSoundRange", 128.0, 1.0, 4096.0);
         EXPLOSION_SOUND_RANGE = builder.comment("Maximum range in blocks at which explosions are heard. Each explosion is heard at 6 blocks per block of blast radius (at least 48), up to this cap.")
             .defineInRange("explosionSoundRange", 1024.0, 1.0, 4096.0);
@@ -676,9 +678,10 @@ public final class ModCommonConfig
             SMOKE_PARTICLES_COUNT.get(), SMOKE_PARTICLES_RANGE.get(),
 
             RELOAD_SOUND_RANGE.get().floatValue(), GUN_ACTION_SOUND_RANGE.get().floatValue(), MELEE_SOUND_RANGE.get().floatValue(), GRENADE_THROW_SOUND_RANGE.get().floatValue(),
-            GUN_FIRE_SOUND_RANGE.get().floatValue(), EXPLOSION_SOUND_RANGE.get().floatValue(), VEHICLE_SOUND_RANGE.get().floatValue(), VEHICLE_UTILITY_SOUND_RANGE.get().floatValue(),
-            VEHICLE_FLARE_SOUND_RANGE.get().floatValue(), VEHICLE_LOCK_ON_SOUND_RANGE.get().floatValue(), VEHICLE_LOCKED_ON_SOUND_RANGE.get().floatValue(), BULLET_HIT_SOUND_RANGE.get().floatValue(),
-            GRENADE_STICK_SOUND_RANGE.get().floatValue(), GRENADE_FLASH_SOUND_RANGE.get().floatValue(), OVERRIDE_PACK_SOUND_RANGES.get(),
+            GUN_LOCK_ON_SOUND_RANGE.get().floatValue(), GUN_FIRE_SOUND_RANGE.get().floatValue(), EXPLOSION_SOUND_RANGE.get().floatValue(), VEHICLE_SOUND_RANGE.get().floatValue(),
+            VEHICLE_UTILITY_SOUND_RANGE.get().floatValue(), VEHICLE_FLARE_SOUND_RANGE.get().floatValue(), VEHICLE_LOCK_ON_SOUND_RANGE.get().floatValue(),
+            VEHICLE_LOCKED_ON_SOUND_RANGE.get().floatValue(), BULLET_HIT_SOUND_RANGE.get().floatValue(), GRENADE_STICK_SOUND_RANGE.get().floatValue(), GRENADE_FLASH_SOUND_RANGE.get().floatValue(),
+            OVERRIDE_PACK_SOUND_RANGES.get(),
 
             USE_NEW_PENETRATION_SYSTEM.get(), ENABLE_BLOCK_PENETRATION.get(), BLOCK_PENETRATION_MODIFIER.get(), KINETIC_PENETRATION_REFERENCE.get(),
 
@@ -1319,6 +1322,7 @@ public final class ModCommonConfig
         GUN_ACTION_SOUND_RANGE(() -> ModCommonConfig.GUN_ACTION_SOUND_RANGE, QuickSection.SOUNDS),
         MELEE_SOUND_RANGE(() -> ModCommonConfig.MELEE_SOUND_RANGE, QuickSection.SOUNDS),
         GRENADE_THROW_SOUND_RANGE(() -> ModCommonConfig.GRENADE_THROW_SOUND_RANGE, QuickSection.SOUNDS),
+        GUN_LOCK_ON_SOUND_RANGE(() -> ModCommonConfig.GUN_LOCK_ON_SOUND_RANGE, QuickSection.SOUNDS),
         GUN_FIRE_SOUND_RANGE(() -> ModCommonConfig.GUN_FIRE_SOUND_RANGE, QuickSection.SOUNDS),
         EXPLOSION_SOUND_RANGE(() -> ModCommonConfig.EXPLOSION_SOUND_RANGE, QuickSection.SOUNDS),
         VEHICLE_SOUND_RANGE(() -> ModCommonConfig.VEHICLE_SOUND_RANGE, QuickSection.SOUNDS),

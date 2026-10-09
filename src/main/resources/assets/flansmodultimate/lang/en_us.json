@@ -1,4 +1,5 @@
 {
+  "options.flansmodultimate.tooltip.current_value": "Current value: %s",
   "commands.flansmodultimate.attachments.all": "All compatible attachments are allowed for %s.",
   "commands.flansmodultimate.attachments.header": "Explicit attachments allowed for %1$s: %2$s",
   "commands.flansmodultimate.attachments.no_gun": "Hold a Flan's Mod gun in either hand to inspect its allowed attachments.",
@@ -460,6 +461,7 @@
   "options.flansmodultimate.gunActionSoundRange": "Gun Action Sound Range",
   "options.flansmodultimate.meleeSoundRange": "Melee Sound Range",
   "options.flansmodultimate.grenadeThrowSoundRange": "Grenade Throw Sound Range",
+  "options.flansmodultimate.gunLockOnSoundRange": "Launcher Lock-On Sound Range",
   "options.flansmodultimate.useNewPenetrationSystem": "Use New Penetration System",
   "options.flansmodultimate.validateContentReferencesOnWorldLoad": "Validate Content On World Load",
   "options.flansmodultimate.value.aimpose.dynamic": "Dynamic",

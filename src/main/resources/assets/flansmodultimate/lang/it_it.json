@@ -1,4 +1,5 @@
 {
+  "options.flansmodultimate.tooltip.current_value": "Valore attuale: %s",
   "commands.flansmodultimate.npcdistance.none": "Nessun Custom NPC corrisponde al selettore.",
   "commands.flansmodultimate.npcdistance.success": "Abilitazione esplicita delle distanze Flan per %s NPC impostata su %s. I modelli Flan restano inclusi automaticamente.",
   "creativetab.flansmodultimate.aaguns": "FMU: Cannoni antiaerei",

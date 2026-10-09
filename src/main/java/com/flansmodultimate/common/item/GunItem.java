@@ -45,8 +45,6 @@ import java.util.stream.IntStream;
 
 public class GunItem extends Item implements IPaintableItem<GunType>, ICustomRendereredItem<GunType>
 {
-    public static final int LOCK_ON_SOUND_RANGE = 10;
-
     public static final String NBT_AMMO = "ammo";
     public static final String NBT_SECONDARY_AMMO = "secondary_ammo";
     public static final String NBT_PREFERRED_AMMO = "preferred_ammo";

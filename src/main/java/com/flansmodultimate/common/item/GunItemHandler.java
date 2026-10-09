@@ -516,7 +516,7 @@ public class GunItemHandler
         if (!(held.getItem() instanceof GunItem itemGun))
             return;
 
-        PacketPlaySound.sendSoundPacket(player, GunItem.LOCK_ON_SOUND_RANGE, itemGun.configType.getLockOnSound(), false);
+        PacketPlaySound.sendSoundPacket(player, ModCommonConfig.get().gunLockOnSoundRange(), itemGun.configType.getLockOnSound(), false);
 
         if (closestEntity instanceof Driveable driveable && driveable.getConfigType().isHasFlare())
         {

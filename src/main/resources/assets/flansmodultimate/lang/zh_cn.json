@@ -1,4 +1,5 @@
 {
+  "options.flansmodultimate.tooltip.current_value": "当前值：%s",
   "commands.flansmodultimate.npcdistance.none": "选择器未匹配任何 Custom NPC。",
   "commands.flansmodultimate.npcdistance.success": "已将 %s 个 NPC 的 Flan 距离显式启用状态设为 %s。Flan 模型仍自动包含。",
   "creativetab.flansmodultimate.aaguns": "FMU: 防空炮",

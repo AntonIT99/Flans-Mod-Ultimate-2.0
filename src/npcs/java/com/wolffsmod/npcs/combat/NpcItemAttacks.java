@@ -26,7 +26,7 @@ public final class NpcItemAttacks
 {
     // Vanilla's crossbow launch velocity, independent of pi.
     @SuppressWarnings("java:S9133")
-    private static final float CROSSBOW_VELOCITY = 3.15F;
+    public static final float CROSSBOW_VELOCITY = 3.15F;
 
     public static boolean melee(EntityNPCInterface npc, Entity target)
     {

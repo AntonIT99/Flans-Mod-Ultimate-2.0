@@ -12,7 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -206,15 +207,12 @@ public class FlansOptionsScreen extends Screen
 
     private void lockCommonOptions()
     {
-        Tooltip locked = Tooltip.create(Component.translatable("gui.flansmodultimate.options.server_option_locked"));
+        // Their tooltips already carry the locked note, next to the name and value they still show
         for (OptionInstance<?> option : commonOptions)
         {
             AbstractWidget widget = list.findWidget(option);
-            if (widget == null)
-                continue;
-
-            widget.active = false;
-            widget.setTooltip(locked);
+            if (widget != null)
+                widget.active = false;
         }
     }
 

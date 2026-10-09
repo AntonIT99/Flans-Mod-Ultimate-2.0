@@ -10,13 +10,15 @@ import lombok.NoArgsConstructor;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.*;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Turns config entries into the option widgets the options screen shows. Captions come from the language
@@ -111,7 +113,7 @@ public final class ConfigOptionFactory
 
     private static OptionInstance<Boolean> booleanOption(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value, ForgeConfigSpec.ValueSpec valueSpec, boolean current)
     {
-        return OptionInstance.createBoolean(captionKey(value), tooltip(value, valueSpec), current, newValue -> target.set(value, newValue));
+        return OptionInstance.createBoolean(captionKey(value), tooltip(target, value, valueSpec, CommonComponents::optionStatus), current, newValue -> target.set(value, newValue));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -123,8 +125,9 @@ public final class ConfigOptionFactory
     private static <T extends Enum<T>> OptionInstance<T> enumOption(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value, ForgeConfigSpec.ValueSpec valueSpec, Class<T> type, T current)
     {
         Codec<T> codec = Codec.STRING.xmap(constant -> Enum.valueOf(type, constant), Enum::name);
-        return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec), (caption, constant) -> valueLabel(type, constant), new OptionInstance.Enum<>(List.of(type.getEnumConstants()), codec),
-            current, newValue -> target.set(value, newValue));
+        Function<T, Component> valueText = constant -> valueLabel(type, constant);
+        return new OptionInstance<>(captionKey(value), tooltip(target, value, valueSpec, valueText), (caption, constant) -> valueText.apply(constant),
+            new OptionInstance.Enum<>(List.of(type.getEnumConstants()), codec), current, newValue -> target.set(value, newValue));
     }
 
     @Nullable
@@ -134,14 +137,18 @@ public final class ConfigOptionFactory
         if (range == null)
             return null;
 
-        return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
-            (caption, number) -> Options.genericValueLabel(caption,
-                value == ModCommonConfig.DRIVEABLE_TRACKING_RANGE || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE
-                    ? Component.translatable("options.flansmodultimate.distance.blocks", number)
-                    : value == ModClientConfig.GPU_MODEL_CACHE_MEGABYTES
-                        ? number == 0 ? Component.translatable(VALUE_KEY_PREFIX + "automatic") : Component.translatable("options.flansmodultimate.memory.mebibytes", number)
-                        : Component.literal(String.valueOf(number))),
+        Function<Integer, Component> valueText = number -> intValueText(value, number);
+        return new OptionInstance<>(captionKey(value), tooltip(target, value, valueSpec, valueText), (caption, number) -> Options.genericValueLabel(caption, valueText.apply(number)),
             new OptionInstance.IntRange(range.getMin(), range.getMax()), current, newValue -> target.setWhileDragging(value, newValue));
+    }
+
+    private static Component intValueText(ForgeConfigSpec.ConfigValue<?> value, int number)
+    {
+        if (value == ModCommonConfig.DRIVEABLE_TRACKING_RANGE || value == ModCommonConfig.FLAN_NPC_TRACKING_RANGE)
+            return Component.translatable("options.flansmodultimate.distance.blocks", number);
+        if (value != ModClientConfig.GPU_MODEL_CACHE_MEGABYTES)
+            return Component.literal(String.valueOf(number));
+        return number == 0 ? Component.translatable(VALUE_KEY_PREFIX + "automatic") : Component.translatable("options.flansmodultimate.memory.mebibytes", number);
     }
 
     @Nullable
@@ -160,8 +167,8 @@ public final class ConfigOptionFactory
         if (step <= 0)
             return null;
 
-        return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
-            (caption, number) -> Options.genericValueLabel(caption, Component.literal(String.format(Locale.ROOT, distanceMultiplier ? "%.2f×" : "%.2f", number))),
+        Function<Double, Component> valueText = number -> Component.literal(String.format(Locale.ROOT, distanceMultiplier ? "%.2f×" : "%.2f", number));
+        return new OptionInstance<>(captionKey(value), tooltip(target, value, valueSpec, valueText), (caption, number) -> Options.genericValueLabel(caption, valueText.apply(number)),
             new OptionInstance.IntRange(0, stepsCount).xmap(steps -> min + steps * step, number -> (int) Math.round((number - min) / step)), current,
             newValue -> target.setWhileDragging(value, newValue));
     }
@@ -174,8 +181,8 @@ public final class ConfigOptionFactory
     {
         int lowest = (int) Math.ceil(min);
         int highest = Math.max(lowest + 1, (int) Math.min(max, SOUND_RANGE_SLIDER_MAX));
-        return new OptionInstance<>(captionKey(value), tooltip(value, valueSpec),
-            (caption, number) -> Options.genericValueLabel(caption, Component.translatable("options.flansmodultimate.distance.blocks", Math.round(number))),
+        Function<Double, Component> valueText = number -> Component.translatable("options.flansmodultimate.distance.blocks", Math.round(number));
+        return new OptionInstance<>(captionKey(value), tooltip(target, value, valueSpec, valueText), (caption, number) -> Options.genericValueLabel(caption, valueText.apply(number)),
             new OptionInstance.IntRange(lowest, highest).xmap(steps -> (double) steps, number -> (int) Math.round(number)), current, newValue -> target.setWhileDragging(value, newValue));
     }
 
@@ -186,31 +193,57 @@ public final class ConfigOptionFactory
     }
 
     /**
+     * Every tooltip opens with the setting's name and its current value, so a row stays readable when its
+     * label is cut short or a slider is being dragged; the description follows below.
+     */
+    private static <T> OptionInstance.TooltipSupplier<T> tooltip(ConfigTarget target, ForgeConfigSpec.ConfigValue<?> value, ForgeConfigSpec.ValueSpec valueSpec, Function<T, Component> valueText)
+    {
+        Component title = Component.translatable(captionKey(value));
+        Component description = description(value, valueSpec);
+        // Locked server rows still show their tooltip, so it says why they cannot be changed
+        boolean locked = !target.editable();
+        return current ->
+        {
+            MutableComponent text = tooltipHeader(title, valueText.apply(current));
+            if (description != null)
+                text.append("\n\n").append(description);
+            if (locked)
+                text.append("\n\n").append(Component.translatable("gui.flansmodultimate.options.server_option_locked").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+            return Tooltip.create(text);
+        };
+    }
+
+    /** The styled first lines of a setting's tooltip: its name, then its current value. */
+    public static MutableComponent tooltipHeader(Component title, Component value)
+    {
+        return Component.empty().append(title.copy().withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)).append("\n")
+            .append(Component.translatable(KEY_PREFIX + "tooltip.current_value", value.copy().withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
+    }
+
+    /**
      * The language file wins when it describes the entry, otherwise the comment from the config file is
      * shown, which is the same text the player would read when editing the file by hand.
      */
-    private static <T> OptionInstance.TooltipSupplier<T> tooltip(ForgeConfigSpec.ConfigValue<?> value, ForgeConfigSpec.ValueSpec valueSpec)
+    @Nullable
+    private static Component description(ForgeConfigSpec.ConfigValue<?> value, ForgeConfigSpec.ValueSpec valueSpec)
     {
         String key = captionKey(value) + ".tooltip";
         if (value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER || value == ModClientConfig.FLAN_NPC_RENDER_DISTANCE_MULTIPLIER)
-            return current -> Tooltip.create(Component.translatable(key).append("\n").append(Component.translatable("options.flansmodultimate.distance.tracking_limit",
-                value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER ? ModCommonConfig.driveableTrackingRange() : ModCommonConfig.flanNpcTrackingRange())));
+            return Component.translatable(key).append("\n").append(Component.translatable("options.flansmodultimate.distance.tracking_limit",
+                value == ModClientConfig.DRIVEABLE_RENDER_DISTANCE_MULTIPLIER ? ModCommonConfig.driveableTrackingRange() : ModCommonConfig.flanNpcTrackingRange()));
         if (value == ModClientConfig.GPU_MODEL_CACHE_MEGABYTES)
         {
             long video = GpuModelCache.reportedVideoMemoryMegabytes();
             Component automatic = video > 0
                 ? Component.translatable(key + ".automatic", GpuModelCache.automaticBudgetMegabytes(), video)
                 : Component.translatable(key + ".automatic_unreported", GpuModelCache.automaticBudgetMegabytes());
-            return OptionInstance.cachedConstantTooltip(Component.translatable(key).append("\n").append(automatic));
+            return Component.translatable(key).append("\n").append(automatic);
         }
         if (I18n.exists(key))
-            return OptionInstance.cachedConstantTooltip(Component.translatable(key));
+            return Component.translatable(key);
 
         String comment = valueSpec.getComment();
-        if (comment == null || comment.isBlank())
-            return OptionInstance.noTooltip();
-
-        return OptionInstance.cachedConstantTooltip(Component.literal(comment.strip()));
+        return comment == null || comment.isBlank() ? null : Component.literal(comment.strip());
     }
 
     /** Enum constants share their labels between every option using the same enum. */

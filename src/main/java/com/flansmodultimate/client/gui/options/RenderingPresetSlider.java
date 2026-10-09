@@ -1,6 +1,7 @@
 package com.flansmodultimate.client.gui.options;
 
 import com.flansmodultimate.config.ModClientConfig;
+
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
@@ -20,8 +21,7 @@ public final class RenderingPresetSlider extends AbstractSliderButton
 
     public enum Kind
     {
-        LOD("lodPreset"),
-        IMPOSTOR("impostorPreset");
+        LOD("lodPreset"), IMPOSTOR("impostorPreset");
 
         private final String key;
 
@@ -98,27 +98,22 @@ public final class RenderingPresetSlider extends AbstractSliderButton
     protected void updateMessage()
     {
         Component caption = Component.translatable(kind.key);
-        Component preset = Component.translatable("options.flansmodultimate.value.renderpreset."
-            + selected.name().toLowerCase(Locale.ROOT));
+        Component preset = Component.translatable("options.flansmodultimate.value.renderpreset." + selected.name().toLowerCase(Locale.ROOT));
         setMessage(Options.genericValueLabel(caption, preset));
         Component details = kind == Kind.LOD ? lodDetails() : impostorDetails();
-        setTooltip(Tooltip.create(Component.translatable(kind.key + ".tooltip").append("\n\n").append(details)));
+        setTooltip(Tooltip.create(ConfigOptionFactory.tooltipHeader(caption, preset).append("\n\n").append(Component.translatable(kind.key + ".tooltip")).append("\n\n").append(details)));
     }
 
     private Component lodDetails()
     {
         ModClientConfig.LodValues values = ModClientConfig.currentLodValues();
-        return Component.translatable(kind.key + ".values",
-            values.nearPixels(), values.farPixels(), values.detailMultiplier(),
-            values.trackPixels(), values.groupedTrackPixels());
+        return Component.translatable(kind.key + ".values", values.nearPixels(), values.farPixels(), values.detailMultiplier(), values.trackPixels(), values.groupedTrackPixels());
     }
 
     private Component impostorDetails()
     {
         ModClientConfig.ImpostorValues values = ModClientConfig.currentImpostorValues();
-        return Component.translatable(kind.key + ".values",
-            values.pixels(), values.minimumDistance(), values.maximumDistance(),
-            values.qualityMultiplier(), values.resolution(), values.yawAngles());
+        return Component.translatable(kind.key + ".values", values.pixels(), values.minimumDistance(), values.maximumDistance(), values.qualityMultiplier(), values.resolution(), values.yawAngles());
     }
 
     @Override
@@ -128,8 +123,7 @@ public final class RenderingPresetSlider extends AbstractSliderButton
         for (int stop = 0; stop <= LAST_STOP; stop++)
         {
             int x = getX() + 4 + (int) Math.round(position(stop) * (getWidth() - 8));
-            graphics.fill(x, getY() + getHeight() - 3, x + 1, getY() + getHeight() - 1,
-                stop == selected.ordinal() ? SELECTED_TICK_COLOR : TICK_COLOR);
+            graphics.fill(x, getY() + getHeight() - 3, x + 1, getY() + getHeight() - 1, stop == selected.ordinal() ? SELECTED_TICK_COLOR : TICK_COLOR);
         }
     }
 }

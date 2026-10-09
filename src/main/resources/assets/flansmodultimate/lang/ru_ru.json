@@ -1,4 +1,5 @@
 {
+  "options.flansmodultimate.tooltip.current_value": "Текущее значение: %s",
   "commands.flansmodultimate.npcdistance.none": "Селектор не выбрал ни одного Custom NPC.",
   "commands.flansmodultimate.npcdistance.success": "Явное подключение к дальностям Flan для %s NPC: %s. Модели Flan остаются включены автоматически.",
   "creativetab.flansmodultimate.aaguns": "FMU: Зенитные орудия",

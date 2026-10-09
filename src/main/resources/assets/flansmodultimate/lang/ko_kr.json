@@ -1,4 +1,5 @@
 {
+  "options.flansmodultimate.tooltip.current_value": "현재 값: %s",
   "commands.flansmodultimate.npcdistance.none": "선택자와 일치하는 Custom NPC가 없습니다.",
   "commands.flansmodultimate.npcdistance.success": "NPC %s개의 명시적 Flan 거리 참여를 %s(으)로 설정했습니다. Flan 모델은 계속 자동 포함됩니다.",
   "creativetab.flansmodultimate.aaguns": "FMU: 대공포",
