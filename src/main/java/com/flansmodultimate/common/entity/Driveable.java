@@ -170,7 +170,6 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     private static final int CHILD_REPAIR_INTERVAL = 20;
     /** Matches the radius the server used when it still broadcast emitter particles. */
     private static final double EMITTER_PARTICLE_RANGE = 128D;
-    private static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     private static final double MAX_SPAWN_COORDINATE = 29_999_984D;
     private static final double MAX_DISMOUNT_DISTANCE = 12D;
     private static final double DISMOUNT_DISTANCE_STEP = 0.5D;
@@ -1578,7 +1577,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
         int ticksLeft = ShotCooldown.displayTicks(primaryShootDelay);
         // ShootReloadSound is the main gun's shell being worked into the breech. A
         // primary bank of mounted guns reloads with the gun's own sound instead.
-        if (configType == null || isGunBank(false) || configType.getReloadSoundTick() == RELOAD_SOUND_TICK_UNSET || previousPrimaryShootDelay <= ticksLeft
+        if (configType == null || isGunBank(false) || configType.getReloadSoundTick() == DriveableType.RELOAD_SOUND_TICK_UNSET || previousPrimaryShootDelay <= ticksLeft
             || ticksLeft != configType.getReloadSoundTick() || StringUtils.isBlank(configType.getShootReloadSound()))
             return;
         PacketPlaySound.sendSoundPacket(this, ModCommonConfig.get().reloadSoundRange(), configType.getShootReloadSound(), false);
@@ -4541,7 +4540,7 @@ public abstract class Driveable extends FlanEntity implements SpawnDataEntity, I
     }
 
     /** Charge of a HEAT round in kg TNT, recovered from its legacy explosion when it declares no explosive mass. */
-    private static float shapedChargeKg(@Nullable FiredShot shot, BulletType bulletType)
+    public static float shapedChargeKg(@Nullable FiredShot shot, BulletType bulletType)
     {
         float charge = shot != null ? shot.getExplosiveMass() : bulletType.getExplosiveMass();
         if (charge > 0F && Float.isFinite(charge))

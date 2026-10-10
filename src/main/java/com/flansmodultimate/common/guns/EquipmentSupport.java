@@ -7,6 +7,7 @@ import com.flansmodultimate.common.item.*;
 import com.flansmodultimate.common.types.*;
 import com.flansmodultimate.network.PacketHandler;
 import com.flansmodultimate.network.client.effects.PacketPlaySound;
+import com.flansmodultimate.network.client.gun.PacketGunHolderAnimation;
 import com.flansmodultimate.network.client.gun.PacketGunMuzzleFlash;
 import com.flansmodultimate.platform.item.ItemStackData;
 import com.flansmodultimate.util.ModUtils;
@@ -17,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -119,6 +121,39 @@ public final class EquipmentSupport
             reloaded = true;
         }
         return reloaded;
+    }
+
+    /** Raises the gun's aim pose and plays its shot animation for those who see a mob holder, as a native shot does. */
+    public static void animateShot(LivingEntity holder, InteractionHand hand)
+    {
+        if (server(holder) && holder.getItemInHand(hand).getItem() instanceof GunItem)
+            GunArmPoses.onShotFired(holder, hand);
+    }
+
+    /** Plays a mob-held gun's reload animation for those who see the holder. */
+    public static void animateReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
+    {
+        if (server(holder) && !(holder instanceof Player) && Float.isFinite(reloadTicks) && reloadTicks > 0F && holder.getItemInHand(hand).getItem() instanceof GunItem)
+            PacketHandler.sendToTracking(new PacketGunHolderAnimation(holder.getId(), hand, PacketGunHolderAnimation.Kind.RELOAD, reloadTicks), holder);
+    }
+
+    /** Plays a mob-held gun's melee animation for those who see the holder. */
+    public static void animateMelee(LivingEntity holder, InteractionHand hand)
+    {
+        if (server(holder) && !(holder instanceof Player) && holder.getItemInHand(hand).getItem() instanceof GunItem)
+            PacketHandler.sendToTracking(new PacketGunHolderAnimation(holder.getId(), hand, PacketGunHolderAnimation.Kind.MELEE, 0F), holder);
+    }
+
+    /** Plays the held gun's melee sound with its authored range, as a player's gun melee does. */
+    public static boolean meleeSound(LivingEntity holder, InteractionHand hand)
+    {
+        if (!server(holder) || !(holder.getItemInHand(hand).getItem() instanceof GunItem gun))
+            return false;
+        GunType type = gun.getConfigType();
+        if (StringUtils.isBlank(type.getMeleeSound()))
+            return false;
+        PacketPlaySound.sendSoundPacket(holder, type.getMeleeSoundRange(), type.getMeleeSound(), type.isDistortSound());
+        return true;
     }
 
     public static void reloadSound(LivingEntity holder, ItemStack weapon)

@@ -3,6 +3,7 @@ package com.flansmodultimate.common.guns;
 import com.flansmodultimate.api.*;
 import com.flansmodultimate.api.ProjectileSources.Source;
 import com.flansmodultimate.common.FlanParticles;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.LegacyDriveableCoordinates;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.driveables.weapons.ShootPoint;
@@ -310,6 +311,45 @@ public final class ExternalProjectileSupport
         if (StringUtils.isBlank(sound))
             return false;
         PacketPlaySound.sendSoundPacket(shooter, range, sound, distort, silenced);
+        return true;
+    }
+
+    /**
+     * The sound a placed AA gun or driveable bank makes when it starts reloading. A bank of mounted guns uses the gun's
+     * own reload sound before the bank's, like the driveable does; an ordnance bank uses its bank or shared sound.
+     */
+    public static boolean playReloadSound(Entity source, IContentType type, boolean secondary)
+    {
+        if (!serverThread(source))
+            return false;
+        String sound = "";
+        double range = ModCommonConfig.get().reloadSoundRange();
+        if (type instanceof AAGunType aa)
+        {
+            sound = aa.getReloadSound();
+            range = aa.getReloadSoundRange();
+        }
+        else if (type instanceof DriveableType driveable && driveable.weaponType(secondary) == EnumWeaponType.GUN)
+        {
+            GunType gun = driveable.getPilotGunType(secondary);
+            sound = StringUtils.firstNonBlank(gun == null ? null : gun.getReloadSound(null), secondary ? driveable.getReloadSoundSecondary() : driveable.getReloadSoundPrimary(), "");
+            if (gun != null && StringUtils.isNotBlank(gun.getReloadSound(null)))
+                range = gun.getReloadSoundRange();
+        }
+        else if (type instanceof DriveableType driveable)
+            sound = driveable.reloadSound(secondary);
+        if (StringUtils.isBlank(sound))
+            return false;
+        PacketPlaySound.sendSoundPacket(source, range, sound, false);
+        return true;
+    }
+
+    /** The main gun's {@code ShootReloadSound}, a shell being worked into the breech. */
+    public static boolean playChamberSound(Entity source, IContentType type)
+    {
+        if (!serverThread(source) || !(type instanceof DriveableType driveable) || StringUtils.isBlank(driveable.getShootReloadSound()))
+            return false;
+        PacketPlaySound.sendSoundPacket(source, ModCommonConfig.get().reloadSoundRange(), driveable.getShootReloadSound(), false);
         return true;
     }
 

@@ -1,10 +1,10 @@
 package com.flansmodultimate.common.types;
 
+import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.api.IFlanDamageModel;
 import com.flansmodultimate.common.entity.Driveable;
 import com.flansmodultimate.common.entity.Plane;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.world.entity.Entity;
@@ -119,6 +119,17 @@ public final class DamageStats
 
     public float getDamageAgainstEntity(@Nullable Entity entity)
     {
+        if (entity instanceof IFlanDamageModel stand)
+        {
+            // An entity standing in for an AA gun or driveable takes that definition's damage.
+            IContentType model = stand.getFlansDamageModel().orElse(null);
+            if (model instanceof PlaneType)
+                return damageVsPlanes;
+            if (model instanceof DriveableType)
+                return damageVsVehicles;
+            if (model instanceof AAGunType)
+                return damage;
+        }
         if (entity instanceof Player)
             return damageVsPlayer;
         else if (entity instanceof Plane)

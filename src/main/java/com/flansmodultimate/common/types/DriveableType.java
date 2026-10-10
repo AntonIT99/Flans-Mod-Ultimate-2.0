@@ -37,6 +37,8 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 @NoArgsConstructor
 public class DriveableType extends PaintableType implements IDriveableType, IAmmoGroupUser, IAmmoOverrideUser
 {
+    /** {@code VehicleGunReloadTick} value meaning that no chambering sound is timed. */
+    public static final int RELOAD_SOUND_TICK_UNSET = 15_214_541;
     protected VehicleOptics optics = new VehicleOptics();
     /** Legacy default rate applied when a weapon bank states neither a rate nor a delay. */
     private static final float DEFAULT_ROUNDS_PER_MIN = 60F;
@@ -110,7 +112,7 @@ public class DriveableType extends PaintableType implements IDriveableType, IAmm
     protected boolean dropHarvest;
     protected Vector3f harvestBoxSize = new Vector3f();
     protected Vector3f harvestBoxPos = new Vector3f();
-    protected int reloadSoundTick = 15_214_541;
+    protected int reloadSoundTick = RELOAD_SOUND_TICK_UNSET;
     protected float fallDamageFactor = 1F;
     protected int engineStartTime;
     /** Optional engine shortname/item ID that overrides global automatic engine selection. */

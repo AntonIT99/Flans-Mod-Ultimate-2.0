@@ -36,6 +36,18 @@ public class ClientGunHooksNoop implements IClientGunHooks
     }
 
     @Override
+    public void animateRemoteReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
+    {
+        /* no-op */
+    }
+
+    @Override
+    public void animateRemoteMelee(LivingEntity holder, InteractionHand hand)
+    {
+        /* no-op */
+    }
+
+    @Override
     public void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo)
     {
         /* no-op */

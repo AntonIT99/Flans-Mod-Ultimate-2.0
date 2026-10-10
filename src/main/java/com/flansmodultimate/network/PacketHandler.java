@@ -65,7 +65,7 @@ public final class PacketHandler
             PacketDistantContacts.class, PacketDistantExplosion.class, PacketDriveableBankFired.class, PacketDriveableCrashFireball.class, PacketDriveableCollisionBypass.class,
             PacketDriveableDamage.class, PacketDriveablePassengerFired.class, PacketDriveablePrediction.class, PacketDriveableRenderState.class, PacketDriveableScreenShake.class,
             PacketExplodeParticles.class, PacketFlak.class, PacketFlanExplosionBlockParticles.class, PacketFlanExplosionParticles.class, PacketFlashBang.class, PacketGunFireModeClient.class,
-            PacketGunMeleeClient.class, PacketGunMuzzleFlash.class, PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class, PacketGunShootClient.class,
+            PacketGunHolderAnimation.class, PacketGunMeleeClient.class, PacketGunMuzzleFlash.class, PacketGunPreferredAmmoClient.class, PacketGunReloadClient.class, PacketGunSecondaryModeClient.class, PacketGunShootClient.class,
             PacketGunShotPose.class, PacketGunToggleClient.class, PacketGunVariableZoomClient.class, PacketHitMarker.class, PacketKillMessage.class, PacketLoadoutState.class, PacketParticle.class,
             PacketParticles.class, PacketPlayerClassSkins.class, PacketPlaySound.class, PacketSmokeShell.class, PacketSyncCommonConfig.class, PacketSyncDigitalAmmo.class, PacketTeamsState.class);
         addServerPackets(PacketAAGunModelBarrelOrigins.class, PacketAimPosePreference.class, PacketBaseEditAction.class, ArmorBoxBuyPacket.class, PacketDeployedGunInput.class,

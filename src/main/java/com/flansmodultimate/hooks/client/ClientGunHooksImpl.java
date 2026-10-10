@@ -83,6 +83,32 @@ public class ClientGunHooksImpl implements IClientGunHooks
             doShoot(gunItem.getConfigType(), ModClient.getGunAnimations(shooter, hand));
     }
 
+    @Override
+    public void animateRemoteReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
+    {
+        if (!(holder.getItemInHand(hand).getItem() instanceof GunItem gunItem))
+            return;
+        int pumpDelay = 0;
+        int pumpTime = 1;
+        int chargeDelay = 0;
+        int chargeTime = 1;
+        if (ModelCache.getOrLoadTypeModel(gunItem.getConfigType()) instanceof ModelGun modelGun)
+        {
+            pumpDelay = modelGun.getPumpDelayAfterReload();
+            pumpTime = modelGun.getPumpTime();
+            chargeDelay = modelGun.getChargeDelayAfterReload();
+            chargeTime = modelGun.getChargeTime();
+        }
+        ModClient.getGunAnimations(holder, hand).doReload(reloadTicks, pumpDelay, pumpTime, chargeDelay, chargeTime, 1, false);
+    }
+
+    @Override
+    public void animateRemoteMelee(LivingEntity holder, InteractionHand hand)
+    {
+        if (holder.getItemInHand(hand).getItem() instanceof GunItem gunItem)
+            ModClient.getGunAnimations(holder, hand).doMelee(gunItem.getConfigType().getMeleeTime());
+    }
+
     /** Starts one shot of the gun's model animation: pump, hammer, casing and muzzle flash. */
     private static void doShoot(GunType type, GunAnimations animations)
     {

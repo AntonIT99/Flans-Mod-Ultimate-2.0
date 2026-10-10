@@ -122,6 +122,38 @@ public final class FlansProjectiles
     }
 
     /**
+     * Plays the sound an AA gun or driveable bank makes when it begins a reload, with its authored range. A bank of
+     * mounted guns prefers the gun's own reload sound, as the driveable does. Server thread only.
+     *
+     * @param source
+     *            source position and dimension
+     * @param platform
+     *            AA gun or driveable definition
+     * @param secondary
+     *            selected driveable bank; ignored for AA guns
+     * @return whether a sound was declared and sent
+     */
+    public static boolean playReloadSound(Entity source, IContentType platform, boolean secondary)
+    {
+        return ExternalProjectileSupport.playReloadSound(source, platform, secondary);
+    }
+
+    /**
+     * Plays a driveable main gun's chambering sound ({@code ShootReloadSound}), timed by the caller from
+     * {@link ReloadCycle#chamberSoundTick()}. Server thread only.
+     *
+     * @param source
+     *            source position and dimension
+     * @param platform
+     *            driveable definition
+     * @return whether a sound was declared and sent
+     */
+    public static boolean playChamberSound(Entity source, IContentType platform)
+    {
+        return ExternalProjectileSupport.playChamberSound(source, platform);
+    }
+
+    /**
      * Broadcasts authored shooting particles, with a small muzzle flame when none are declared.
      * Server thread only; clients create the particles.
      *

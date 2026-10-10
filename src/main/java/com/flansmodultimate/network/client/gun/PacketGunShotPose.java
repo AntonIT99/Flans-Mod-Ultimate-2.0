@@ -18,11 +18,19 @@ public class PacketGunShotPose implements IClientPacket
 {
     private int entityId;
     private InteractionHand hand;
+    /** Whether the gun model plays its shot animation; the aim pose is raised either way. */
+    private boolean animate = true;
 
     public PacketGunShotPose(int entityId, InteractionHand hand)
     {
+        this(entityId, hand, true);
+    }
+
+    public PacketGunShotPose(int entityId, InteractionHand hand, boolean animate)
+    {
         this.entityId = entityId;
         this.hand = hand;
+        this.animate = animate;
     }
 
     @Override
@@ -30,6 +38,7 @@ public class PacketGunShotPose implements IClientPacket
     {
         data.writeVarInt(entityId);
         data.writeEnum(hand);
+        data.writeBoolean(animate);
     }
 
     @Override
@@ -37,6 +46,7 @@ public class PacketGunShotPose implements IClientPacket
     {
         entityId = data.readVarInt();
         hand = data.readEnum(InteractionHand.class);
+        animate = data.readBoolean();
     }
 
     @Override
@@ -48,7 +58,8 @@ public class PacketGunShotPose implements IClientPacket
             if (shooter == player)
                 return;
             GunArmPoses.recordShot(shooter, hand);
-            ClientHooks.GUN.animateRemoteShot(shooter, hand);
+            if (animate)
+                ClientHooks.GUN.animateRemoteShot(shooter, hand);
         }
     }
 }

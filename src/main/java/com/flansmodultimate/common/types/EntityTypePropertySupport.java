@@ -1,14 +1,17 @@
 package com.flansmodultimate.common.types;
 
-import com.flansmodultimate.api.EntityTypeProperties;
+import com.flansmodultimate.api.*;
 import com.flansmodultimate.api.EntityTypeProperties.Sound;
 import com.flansmodultimate.api.EntityTypeProperties.Weapon;
-import com.flansmodultimate.api.IContentType;
+import com.flansmodultimate.common.driveables.EnumWeaponType;
 import com.flansmodultimate.common.driveables.physics.MechaPhysics;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
 import com.flansmodultimate.common.guns.FireableGun;
+import com.flansmodultimate.common.item.ShootableItem;
 import org.apache.commons.lang3.StringUtils;
+
+import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
 
@@ -42,6 +45,36 @@ public final class EntityTypePropertySupport
         return Optional.of(new EntityTypeProperties(positive(driveable.getTotalHp()), OptionalDouble.empty(), speed, mecha == null ? OptionalDouble.empty() : nonnegative(mecha.getReach()),
             Optional.of(driveable.isWorksUnderWater()), Optional.of(fallDamage), positive(driveable.shootDelay(secondary)), sounds,
             mountedWeapons ? weapons(driveable, secondary) : List.of(platformWeapon(driveable, secondary))));
+    }
+
+    /**
+     * The firing and reloading rhythm a placed AA gun or a driveable bank keeps with this ammunition. An AA gun empties
+     * every ammunition slot before it reloads; a driveable bank reloads after its magazine, the smaller of its declared
+     * reload rounds and what one item holds.
+     */
+    public static Optional<ReloadCycle> reloadCycle(IContentType type, boolean secondary, ItemStack ammunition)
+    {
+        int perItem = Math.max(1, ShootableItem.getMaxRounds(ammunition));
+        float multiplier = ammunition.getItem() instanceof ShootableItem shootable ? shootable.getConfigType().getReloadTimeMultiplier() : 1F;
+        if (type instanceof AAGunType aa)
+        {
+            int barrels = Math.max(1, aa.getNumBarrels());
+            int rounds = perItem * Math.max(1, aa.getAmmoSlotCount());
+            // Firing together spends a round from every barrel per trigger; alternating spends one.
+            int together = aa.isShareAmmo() ? (int) Math.ceil(perItem / (double) barrels) : perItem;
+            int volleys = aa.isFireAlternately() ? rounds : together;
+            return Optional.of(new ReloadCycle(volleys, aa.getShootDelay(), Math.max(aa.getReloadTime() * multiplier, aa.getShootDelay()), OptionalInt.empty()));
+        }
+        if (!(type instanceof DriveableType driveable) || driveable.weaponType(secondary) == EnumWeaponType.NONE)
+            return Optional.empty();
+        boolean gunBank = driveable.weaponType(secondary) == EnumWeaponType.GUN;
+        int declared = driveable.reloadRounds(secondary);
+        int magazine = declared > 0 ? Math.min(declared, perItem) : perItem;
+        // Only a bank of mounted guns slows down for heavy ammunition; ordnance banks chamber at their own pace.
+        double reload = driveable.reloadTime(secondary) * (gunBank ? multiplier : 1F);
+        boolean chamberSound = !gunBank && !secondary && driveable.getReloadSoundTick() != DriveableType.RELOAD_SOUND_TICK_UNSET
+            && StringUtils.isNotBlank(driveable.getShootReloadSound());
+        return Optional.of(new ReloadCycle(magazine, driveable.shootDelay(secondary), reload, chamberSound ? OptionalInt.of(driveable.getReloadSoundTick()) : OptionalInt.empty()));
     }
 
     private static List<Weapon> weapons(DriveableType type, boolean secondary)

@@ -247,11 +247,15 @@ public final class ShootingHelper
             if (owner instanceof Player)
                 lastHitPenAmount = 1F;
 
-            if (!level.isClientSide)
-            {
-                float damage = ShootingHelper.getDamage(entity, bullet, shot);
+            // A stand-in for a driveable meets that driveable's armour instead of soft flesh.
+            Optional<ModelArmourDamage.Result> armoured = ModelArmourDamage.resolve(entity, shot, bulletType, shootingMotion, penetratingPower);
+            boolean armourBlocked = armoured.map(ModelArmourDamage.Result::blocked).orElse(false);
 
-                if (entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
+            if (!level.isClientSide && !armourBlocked)
+            {
+                float damage = armoured.map(ModelArmourDamage.Result::damage).orElseGet(() -> ShootingHelper.getDamage(entity, bullet, shot));
+
+                if (damage > 0F && entity.hurt(shot.getDamageSource(level, bullet), damage) && entity instanceof LivingEntity living)
                 {
                     PacketHandler.sendToAllAround(new PacketParticle(FlanParticles.RED_DUST, entityHit.getEntity().getX(), entityHit.getEntity().getY(), entityHit.getEntity().getZ(), 0, 0, 0),
                         entityHit.getEntity().position(), ModCommonConfig.entityHitParticleRange(), level.dimension());
@@ -261,13 +265,16 @@ public final class ShootingHelper
                 }
             }
 
-            if (bulletType.isSetEntitiesOnFire())
+            if (bulletType.isSetEntitiesOnFire() && !armourBlocked)
                 EntityPlatform.igniteForSeconds(entity, 20);
 
-            penetratingPower -= 1F;
+            float powerBefore = penetratingPower;
+            penetratingPower = armoured.map(ModelArmourDamage.Result::remainingPower).orElse(penetratingPower - 1F);
+            if (armourBlocked)
+                lastHitPenAmount = 0F;
 
             if (bullet != null)
-                bullet.getPenetrationLosses().add(new PenetrationLoss(1F, PenetrationLoss.EnumType.ENTITY));
+                bullet.getPenetrationLosses().add(new PenetrationLoss(Math.max(0F, powerBefore - penetratingPower), PenetrationLoss.EnumType.ENTITY));
 
             ClientHooks.RENDER.spawnDebugDot(hit, 1000, 1F, 1F, 0F);
             showHitMarker = true;

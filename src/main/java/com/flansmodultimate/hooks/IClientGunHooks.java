@@ -23,6 +23,12 @@ public interface IClientGunHooks
     /** Plays the shot animation, muzzle flash model included, of a gun fired by a mob or another player. */
     void animateRemoteShot(LivingEntity shooter, InteractionHand hand);
 
+    /** Plays the reload animation of a gun held by a mob, lasting the given number of ticks. */
+    void animateRemoteReload(LivingEntity holder, InteractionHand hand, float reloadTicks);
+
+    /** Plays the melee animation of a gun swung by a mob. */
+    void animateRemoteMelee(LivingEntity holder, InteractionHand hand);
+
     void reloadGunItem(GunItem gunItem, Player player, InteractionHand hand, float reloadTime, int reloadCount, boolean hasMultipleAmmo);
 
     void cancelReloadGunItem(Player player, InteractionHand hand);

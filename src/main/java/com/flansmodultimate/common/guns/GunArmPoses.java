@@ -245,7 +245,7 @@ public final class GunArmPoses
     {
         recordShot(shooter, hand);
         if (!(shooter instanceof Player))
-            PacketHandler.sendToTracking(new PacketGunShotPose(shooter.getId(), hand), shooter);
+            PacketHandler.sendToTracking(new PacketGunShotPose(shooter.getId(), hand, !(shooter instanceof IEquipmentPolicy policy) || policy.flansGunShotAnimations()), shooter);
     }
 
     /** Server side: tells the player and everyone who sees them their aim pose choice and whether they aim. */

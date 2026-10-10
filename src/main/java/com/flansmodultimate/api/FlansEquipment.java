@@ -59,6 +59,65 @@ public final class FlansEquipment
     }
 
     /**
+     * Raises the held gun's aim pose and plays its shot animation and muzzle flash model for clients that see the holder,
+     * as {@link #fire} does. For a caller that launches its own projectile on behalf of the held gun. Server thread only;
+     * honors {@link IEquipmentPolicy#flansGunShotAnimations()}.
+     *
+     * @param holder
+     *            entity holding the gun
+     * @param hand
+     *            hand holding the gun; nothing happens when it holds no Flan gun
+     */
+    public static void animateShot(LivingEntity holder, InteractionHand hand)
+    {
+        EquipmentSupport.animateShot(holder, hand);
+    }
+
+    /**
+     * Plays the held gun's reload animation for clients that see the holder. Players animate their own reloads, so a player
+     * holder is ignored. Server thread only.
+     *
+     * @param holder
+     *            non-player entity holding the gun
+     * @param hand
+     *            hand holding the gun; nothing happens when it holds no Flan gun
+     * @param reloadTicks
+     *            duration of the animation in ticks; nothing happens when not positive
+     */
+    public static void animateReload(LivingEntity holder, InteractionHand hand, float reloadTicks)
+    {
+        EquipmentSupport.animateReload(holder, hand, reloadTicks);
+    }
+
+    /**
+     * Plays the held gun's melee animation for clients that see the holder. Players animate their own melee, so a player
+     * holder is ignored. Server thread only.
+     *
+     * @param holder
+     *            non-player entity holding the gun
+     * @param hand
+     *            hand holding the gun; nothing happens when it holds no Flan gun
+     */
+    public static void animateMelee(LivingEntity holder, InteractionHand hand)
+    {
+        EquipmentSupport.animateMelee(holder, hand);
+    }
+
+    /**
+     * Plays the held gun's melee sound with its authored range. Server thread only.
+     *
+     * @param holder
+     *            entity holding the gun
+     * @param hand
+     *            hand holding the gun
+     * @return whether the gun declares a melee sound and it was sent
+     */
+    public static boolean playMeleeSound(LivingEntity holder, InteractionHand hand)
+    {
+        return EquipmentSupport.meleeSound(holder, hand);
+    }
+
+    /**
      * Moves compatible spare magazines into empty/spent gun slots and drops authored spent-magazine items. The supplied spare stack is consumed.
      * Call on the server thread after the caller's reload timer expires; incompatible ammunition is unchanged.
      *
