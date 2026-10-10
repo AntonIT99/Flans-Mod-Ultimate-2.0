@@ -11,27 +11,15 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.FilePackResources;
-import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.PathPackResources;
-import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.server.packs.repository.RepositorySource;
+import net.minecraft.server.packs.*;
+import net.minecraft.server.packs.repository.*;
 import net.minecraft.world.flag.FeatureFlagSet;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Sound priority is independent of definition loading, texture aliases, and recipe pack order. */
@@ -77,6 +65,14 @@ public final class SoundPriority
 
     private SoundPriority()
     {}
+
+    /** Measured duration independent of whether type-defined sound timers are overridden. */
+    public static OptionalInt measuredLength(String path)
+    {
+        State current = state.get();
+        Integer length = current == null ? null : current.plan().lengths().get(path);
+        return length != null && length > 0 ? OptionalInt.of(length) : OptionalInt.empty();
+    }
 
     static void initialize(List<IContentProvider> providers)
     {
@@ -166,8 +162,7 @@ public final class SoundPriority
             int format = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
             Pack.Info info = new Pack.Info(Component.literal("Flan sound priority"), format, format, FeatureFlagSet.of(), false);
             Pack.ResourcesSupplier resources = id -> new SoundPriorityPackResources(id, current.sources(), current.plan(), current.json());
-            acceptor.accept(
-                Pack.create(PACK_ID, Component.literal("Flan sound priority"), true, resources, info, PackType.CLIENT_RESOURCES, Pack.Position.TOP, true, PackSource.BUILT_IN));
+            acceptor.accept(Pack.create(PACK_ID, Component.literal("Flan sound priority"), true, resources, info, PackType.CLIENT_RESOURCES, Pack.Position.TOP, true, PackSource.BUILT_IN));
         };
     }
 }

@@ -4,6 +4,7 @@ import com.flansmodultimate.hooks.ClientHooks;
 import com.flansmodultimate.network.*;
 import com.flansmodultimate.platform.network.PacketBuffer;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,12 +19,15 @@ import java.util.Objects;
 import java.util.UUID;
 
 @NoArgsConstructor
+// Packet construction and client dispatch deliberately mirror the established sound transport fields.
+@SuppressWarnings("java:S107")
 public class PacketPlaySound implements IClientPacket
 {
     private static final int FLAG_DISTORT = 1;
     private static final int FLAG_SILENCED = 1 << 1;
     private static final int FLAG_CANCELLABLE = 1 << 2;
     private static final int FLAG_HAS_SOURCE = 1 << 3;
+    private static final int FLAG_ENGINE_PITCH = 1 << 4;
     private static final int NO_SOURCE = -1;
 
     private float posX;
@@ -37,6 +41,8 @@ public class PacketPlaySound implements IClientPacket
     private UUID instanceUUID;
     /** Entity id of the entity who caused the sound, or {@link #NO_SOURCE}. */
     private int sourceId = NO_SOURCE;
+    @Setter
+    private boolean variableEnginePitch;
 
     public PacketPlaySound(Vec3 position, double range, @Nullable String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Entity source)
     {
@@ -71,6 +77,7 @@ public class PacketPlaySound implements IClientPacket
         data.writeFloat(range);
         SoundNameCodec.write(data, sound);
         int flags = (distort ? FLAG_DISTORT : 0) | (silenced ? FLAG_SILENCED : 0) | (cancellable ? FLAG_CANCELLABLE : 0) | (sourceId != NO_SOURCE ? FLAG_HAS_SOURCE : 0);
+        flags |= variableEnginePitch ? FLAG_ENGINE_PITCH : 0;
         data.writeByte(flags);
         if (cancellable)
             data.writeUUID(instanceUUID);
@@ -92,6 +99,7 @@ public class PacketPlaySound implements IClientPacket
         distort = (flags & FLAG_DISTORT) != 0;
         silenced = (flags & FLAG_SILENCED) != 0;
         cancellable = (flags & FLAG_CANCELLABLE) != 0;
+        variableEnginePitch = (flags & FLAG_ENGINE_PITCH) != 0;
         instanceUUID = cancellable ? data.readUUID() : new UUID(data.readLong(), 0L);
         sourceId = (flags & FLAG_HAS_SOURCE) != 0 ? data.readVarInt() : NO_SOURCE;
     }
@@ -100,7 +108,7 @@ public class PacketPlaySound implements IClientPacket
     public void handleClientSide(@NotNull Player player, @NotNull Level level)
     {
         Entity source = sourceId != NO_SOURCE ? level.getEntity(sourceId) : null;
-        ClientHooks.SOUND.playSound(sound, new Vec3(posX, posY, posZ), range, distort, silenced, cancellable, instanceUUID, source);
+        ClientHooks.SOUND.playEngineClip(sound, new Vec3(posX, posY, posZ), range, distort, silenced, cancellable, instanceUUID, source, variableEnginePitch);
     }
 
     public static void sendSoundPacket(Vec3 position, double range, ResourceKey<Level> dimension, String sound, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID,

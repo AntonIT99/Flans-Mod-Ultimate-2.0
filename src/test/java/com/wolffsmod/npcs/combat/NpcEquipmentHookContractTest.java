@@ -2,25 +2,34 @@ package com.wolffsmod.npcs.combat;
 
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipFile;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /** Checks the installed dependency's bytecode without loading Custom NPCs or client classes on the test/server path. */
 class NpcEquipmentHookContractTest
 {
     private static final Path CUSTOM_NPCS = Path.of("libs/CustomNPCs-1.20.1-GBPort-Unofficial-1.20.1.20260711.jar");
     private static final String NPC = "noppes/npcs/entity/EntityNPCInterface";
+
+    @Test
+    void presentationHooksMatchInstalledEntityAndRenderers()
+    {
+        assertDoesNotThrow(() ->
+        {
+            method(read(NPC), "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V", "m_7355_", "playStepSound");
+            ClassNode renderer = read("noppes/npcs/client/renderer/RenderNPCInterface");
+            method(renderer, "(Lnoppes/npcs/entity/EntityNPCInterface;)V", "renderColor");
+            method(renderer, "(Lnoppes/npcs/entity/EntityNPCInterface;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", "render");
+            method(read("noppes/npcs/client/renderer/RenderCustomNpc"),
+                "(Lnoppes/npcs/entity/EntityCustomNpc;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", "render");
+        });
+    }
 
     @Test
     void npcDamageHooksKeepTheExpectedProductionDescriptors() throws IOException
@@ -71,8 +80,8 @@ class NpcEquipmentHookContractTest
     {
         assertDoesNotThrow(() ->
         {
-            method(read("noppes/npcs/client/model/animation/AnimationHandler"),
-                "(Lnoppes/npcs/ModelData;Lnet/minecraft/client/model/HumanoidModel;Lnet/minecraft/world/entity/LivingEntity;FFFFF)V", "animateBipedPost");
+            method(read("noppes/npcs/client/model/animation/AnimationHandler"), "(Lnoppes/npcs/ModelData;Lnet/minecraft/client/model/HumanoidModel;Lnet/minecraft/world/entity/LivingEntity;FFFFF)V",
+                "animateBipedPost");
             ClassNode gui = read("noppes/npcs/client/gui/SubGuiNpcResistanceProperties");
             method(gui, "(Lnoppes/npcs/shared/client/gui/components/GuiSliderNop;)V", "mouseDragged");
             method(gui, "(Lnoppes/npcs/shared/client/gui/components/GuiSliderNop;)V", "mouseReleased");

@@ -1,17 +1,10 @@
 package com.flansmodultimate.platform.network;
 
 import com.flansmodultimate.FlansMod;
-import com.flansmodultimate.network.ClientPacketDispatcher;
-import com.flansmodultimate.network.IClientPacket;
-import com.flansmodultimate.network.IPacket;
-import com.flansmodultimate.network.IServerPacket;
-import com.flansmodultimate.network.PacketHandler;
+import com.flansmodultimate.network.*;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.*;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 import net.minecraft.resources.ResourceKey;
@@ -20,27 +13,23 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /** Forge transport for the loader-neutral packets listed by {@link PacketHandler}. */
 public final class NetworkPlatform
 {
-    public static final String PROTOCOL = "20";
+    public static final String PROTOCOL = "21";
     private static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath(FlansMod.MOD_ID, "main");
-    private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(CHANNEL_ID)
-            .networkProtocolVersion(() -> PROTOCOL)
-            .clientAcceptedVersions(PROTOCOL::equals)
-            .serverAcceptedVersions(PROTOCOL::equals)
-            .simpleChannel();
+    private static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder.named(CHANNEL_ID).networkProtocolVersion(() -> PROTOCOL).clientAcceptedVersions(PROTOCOL::equals)
+        .serverAcceptedVersions(PROTOCOL::equals).simpleChannel();
 
     private static boolean registered;
 
-    private record Entry(Class<? extends IPacket> type, NetworkDirection direction) {}
+    private record Entry(Class<? extends IPacket> type, NetworkDirection direction)
+    {}
 
-    private NetworkPlatform() {}
+    private NetworkPlatform()
+    {}
 
     /** Registers every packet with a deterministic id. Called once from common setup. */
     public static synchronized void register()
@@ -52,9 +41,7 @@ public final class NetworkPlatform
         List<Entry> entries = new ArrayList<>();
         PacketHandler.clientPacketTypes().forEach(type -> entries.add(new Entry(type, NetworkDirection.PLAY_TO_CLIENT)));
         PacketHandler.serverPacketTypes().forEach(type -> entries.add(new Entry(type, NetworkDirection.PLAY_TO_SERVER)));
-        entries.sort(Comparator
-            .comparing((Entry e) -> e.type().getName(), String.CASE_INSENSITIVE_ORDER)
-            .thenComparing(e -> e.direction().name()));
+        entries.sort(Comparator.comparing((Entry e) -> e.type().getName(), String.CASE_INSENSITIVE_ORDER).thenComparing(e -> e.direction().name()));
 
         int nextId = 0;
         for (Entry entry : entries)
@@ -63,12 +50,12 @@ public final class NetworkPlatform
 
     private static <T extends IPacket> void registerOne(Class<T> type, NetworkDirection direction, int id)
     {
-        CHANNEL.messageBuilder(type, id, direction)
-            .encoder((packet, buf) -> packet.encodeInto(new PacketBuffer(buf)))
-            .decoder(buf -> PacketHandler.decode(type, new PacketBuffer(buf)))
-            .consumerMainThread((msg, ctxSup) -> {
+        CHANNEL.messageBuilder(type, id, direction).encoder((packet, buf) -> packet.encodeInto(new PacketBuffer(buf))).decoder(buf -> PacketHandler.decode(type, new PacketBuffer(buf)))
+            .consumerMainThread((msg, ctxSup) ->
+            {
                 NetworkEvent.Context ctx = ctxSup.get();
-                ctx.enqueueWork(() -> {
+                ctx.enqueueWork(() ->
+                {
                     if (ctx.getDirection().getReceptionSide().isServer() && msg instanceof IServerPacket serverPacket)
                     {
                         // Server
@@ -82,8 +69,7 @@ public final class NetworkPlatform
                     }
                 });
                 ctx.setPacketHandled(true);
-            })
-            .add();
+            }).add();
     }
 
     public static void sendToServer(IServerPacket message)

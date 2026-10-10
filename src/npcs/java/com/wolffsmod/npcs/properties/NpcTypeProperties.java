@@ -1,26 +1,23 @@
 package com.wolffsmod.npcs.properties;
 
-import com.flansmodultimate.api.EntityTypeProperties;
-import com.flansmodultimate.api.FlansEntityTypes;
-import com.flansmodultimate.api.IContentType;
-import com.wolffsmod.npcs.combat.NpcRangedAttack;
-import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.flansmodultimate.api.*;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.model.FlanModelKind;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataAI;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Optional;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+
+import java.util.*;
 
 /** Per-NPC inheritance cache. Only the live NPC owns gameplay state; its selected model supplies definitions. */
 public final class NpcTypeProperties
@@ -38,8 +35,9 @@ public final class NpcTypeProperties
     public void refresh(EntityNPCInterface npc)
     {
         NpcWeaponOptions options = ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions();
-        IContentType selected = options.enabled(Feature.TYPE_PROPERTIES) && npc instanceof EntityCustomNpc custom
-            && custom.modelData.getEntity(npc) instanceof FlanModelEntity model ? model.getInfoType() : null;
+        IContentType selected = options.enabled(Feature.TYPE_PROPERTIES) && npc instanceof EntityCustomNpc custom && custom.modelData.getEntity(npc) instanceof FlanModelEntity model
+            ? model.getInfoType()
+            : null;
         boolean nativeAttack = NpcRangedAttack.usesFlanProjectile(options, ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
         int flags = flags(options);
         if (selected != lastType || flags != lastFlags || nativeAttack != lastNative || npc.tickCount >= nextInspection)
@@ -48,14 +46,20 @@ public final class NpcTypeProperties
             lastFlags = flags;
             lastNative = nativeAttack;
             nextInspection = npc.tickCount + 20;
-            type = Optional.ofNullable(selected)
-                    .flatMap(value -> FlansEntityTypes.getProperties(value, options.enabled(Feature.SECONDARY_BANK), options.enabled(Feature.MODEL_MUZZLES)))
-                    .orElse(null);
+            type = Optional.ofNullable(selected).flatMap(value -> FlansEntityTypes.getProperties(value, options.enabled(Feature.SECONDARY_BANK), options.enabled(Feature.MODEL_MUZZLES))).orElse(null);
             double maxHealth = Attributes.MAX_HEALTH instanceof RangedAttribute attribute ? attribute.getMaxValue() : Integer.MAX_VALUE;
             mapped = Optional.ofNullable(type).map(properties -> NpcTypeMapping.create(properties, options, nativeAttack, maxHealth)).orElse(Map.of());
+            // Vehicle engines have their own presentation controller; mecha stomps remain ordinary inherited footsteps.
+            if (FlanModelKind.of(selected) == FlanModelKind.VEHICLE || FlanModelKind.of(selected) == FlanModelKind.PLANE)
+            {
+                Map<NpcTypeProperty, Tag> withoutEngineSteps = new EnumMap<>(NpcTypeProperty.class);
+                withoutEngineSteps.putAll(mapped);
+                withoutEngineSteps.remove(NpcTypeProperty.STEP_SOUND);
+                withoutEngineSteps.remove(NpcTypeProperty.IDLE_SOUND);
+                mapped = Map.copyOf(withoutEngineSteps);
+            }
         }
-        if (overrides.refresh(mapped, property -> NpcTypePropertyAccess.read(npc, property), (property, value) -> NpcTypePropertyAccess.write(npc, property, value))
-            && !npc.level().isClientSide)
+        if (overrides.refresh(mapped, property -> NpcTypePropertyAccess.read(npc, property), (property, value) -> NpcTypePropertyAccess.write(npc, property, value)) && !npc.level().isClientSide)
         {
             npc.updateClient = true;
             npc.updateAI = true;
@@ -114,6 +118,7 @@ public final class NpcTypeProperties
     {
         CompoundTag tag = new CompoundTag();
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().save(tag);
+        NpcPresentation.of(npc).save(tag);
         for (NpcTypeProperty property : NpcTypeProperty.values())
             tag.put(property.name(), overrides.stored(property, key -> NpcTypePropertyAccess.read(npc, key)).copy());
         return tag;
@@ -123,6 +128,7 @@ public final class NpcTypeProperties
     {
         float fraction = NpcTypeHealth.fraction(npc.getHealth(), npc.getMaxHealth());
         ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().load(tag);
+        NpcPresentation.of(npc).load(tag);
         for (Component component : Component.values())
             loaded(component);
         for (NpcTypeProperty property : NpcTypeProperty.values())

@@ -1,30 +1,52 @@
 package com.wolffsmod.npcs.model;
 
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.PaintjobVariant;
+import com.flansmodultimate.api.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Model entity of a Custom NPC that looks like a content-pack AA gun or driveable.
  *
- * <p>Custom NPCs creates it detached from the level, copies the NPC's position and rotation into it
- * and renders it in place of the NPC's body. It carries no behaviour of its own.</p>
+ * <p>
+ * Custom NPCs creates it detached from the level, copies the NPC's position and rotation into it
+ * and renders it in place of the NPC's body. It carries no behaviour of its own.
+ * </p>
  */
 @Getter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-public class FlanModelEntity extends Mob
+public class FlanModelEntity extends Mob implements ILivingVisualEffects
 {
     public static final String PAINTJOB_KEY = "FlanPaintjob";
     private int paintjobId;
+    private boolean hurtFlash = true;
+    private boolean deathRotation = true;
+
+    public void setVisualEffects(boolean hurt, boolean death)
+    {
+        hurtFlash = hurt;
+        deathRotation = death;
+    }
+
+    @Override
+    public boolean flansmodultimateHurtFlash()
+    {
+        return hurtFlash;
+    }
+
+    @Override
+    public boolean flansmodultimateDeathRotation()
+    {
+        return deathRotation;
+    }
 
     @Nullable
     public ResourceLocation getModelTexture()
@@ -32,9 +54,7 @@ public class FlanModelEntity extends Mob
         IContentType definition = getInfoType();
         if (definition == null)
             return null;
-        return definition.getPaintjobVariants().stream()
-            .filter(job -> job.id() == paintjobId && job.texture() != null)
-            .map(PaintjobVariant::texture).findFirst().orElse(definition.getTexture());
+        return definition.getPaintjobVariants().stream().filter(job -> job.id() == paintjobId && job.texture() != null).map(PaintjobVariant::texture).findFirst().orElse(definition.getTexture());
     }
 
     @Override

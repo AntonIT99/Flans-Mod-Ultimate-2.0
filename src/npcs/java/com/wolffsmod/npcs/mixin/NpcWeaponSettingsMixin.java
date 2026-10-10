@@ -2,13 +2,12 @@ package com.wolffsmod.npcs.mixin;
 
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponSettings;
+import com.wolffsmod.npcs.properties.NpcPresentation;
 import com.wolffsmod.npcs.properties.NpcTypeProperties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.entity.data.DataStats;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -30,6 +29,9 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     @Unique
     private final NpcTypeProperties wolffsmodnpcsProperties = new NpcTypeProperties();
 
+    @Unique
+    private final NpcPresentation wolffsmodnpcsPresentation = new NpcPresentation();
+
     @Inject(method = "readToNBT", at = @At("HEAD"))
     private void wolffsmodnpcsRetainHealth(CompoundTag tag, CallbackInfo callback)
     {
@@ -40,6 +42,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     private void wolffsmodnpcsReadWeapons(CompoundTag compound, CallbackInfo callback)
     {
         wolffsmodnpcsOptions.load(compound);
+        wolffsmodnpcsPresentation.load(compound);
         wolffsmodnpcsProperties.loaded(Component.STATS);
         wolffsmodnpcsProperties.afterStatsLoad(npc);
     }
@@ -48,6 +51,7 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     private void wolffsmodnpcsSaveWeapons(CompoundTag tag, CallbackInfoReturnable<CompoundTag> callback)
     {
         wolffsmodnpcsOptions.save(callback.getReturnValue());
+        wolffsmodnpcsPresentation.save(callback.getReturnValue());
         wolffsmodnpcsProperties.saveDefaults(Component.STATS, callback.getReturnValue());
     }
 
@@ -61,5 +65,11 @@ public abstract class NpcWeaponSettingsMixin implements NpcWeaponSettings
     public NpcTypeProperties wolffsmodnpcsTypeProperties()
     {
         return wolffsmodnpcsProperties;
+    }
+
+    @Override
+    public NpcPresentation wolffsmodnpcsPresentation()
+    {
+        return wolffsmodnpcsPresentation;
     }
 }

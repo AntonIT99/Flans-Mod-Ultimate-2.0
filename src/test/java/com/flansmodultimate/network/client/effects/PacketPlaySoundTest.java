@@ -37,6 +37,19 @@ class PacketPlaySoundTest
     }
 
     @Test
+    void enginePitchAndNamespacedSoundSurviveThePacketTransport()
+    {
+        PacketPlaySound original = new PacketPlaySound(Vec3.ZERO, 50D, "minecraft:block.note_block.bass", false, false, true, UUID.randomUUID(), null);
+        original.setVariableEnginePitch(true);
+        byte[] first = encode(original);
+        PacketPlaySound decoded = new PacketPlaySound();
+        decoded.decodeInto(new PacketBuffer(new FriendlyByteBuf(Unpooled.wrappedBuffer(first))));
+        assertArrayEquals(first, encode(decoded));
+        original.setVariableEnginePitch(false);
+        assertTrue(!java.util.Arrays.equals(first, encode(original)));
+    }
+
+    @Test
     void plainSoundsNoLongerCarryAFullInstanceId()
     {
         UUID instance = UUID.randomUUID();

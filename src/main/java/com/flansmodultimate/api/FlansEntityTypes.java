@@ -20,6 +20,45 @@ public final class FlansEntityTypes
     {}
 
     /**
+     * Inspects movement-engine audio independently of living-entity stat inheritance. Either side after content loading.
+     * Mecha stomps retain their footstep cadence and are not engine loops.
+     *
+     * @param type
+     *            selected driveable definition
+     * @return engine sound, effective range and clip duration, or empty for missing audio, mechas and unsupported types
+     */
+    public static Optional<EngineSound> getEngineSound(IContentType type)
+    {
+        return EntityTypePropertySupport.engineSound(type);
+    }
+
+    /**
+     * Inspects a vehicle/plane's idle engine loop, using its idle, start, then movement audio fallback. Either side after content loading.
+     *
+     * @param type
+     *            selected definition
+     * @return audio with effective engine range and measured or authored repeat duration, or empty for unsupported/missing audio
+     */
+    public static Optional<EngineSound> getEngineIdleSound(IContentType type)
+    {
+        return EntityTypePropertySupport.engineIdleSound(type);
+    }
+
+    /**
+     * Evaluates the authored engine pitch curve using normalized movement instead of driveable throttle. Either side after content loading.
+     *
+     * @param type
+     *            selected vehicle/plane definition, or an unsupported type to use the generic vehicle curve
+     * @param movement
+     *            fraction of normal movement speed, clamped to 0–1; reverse uses its positive magnitude
+     * @return pitch multiplier clamped to the sound engine's 0.5–2 range
+     */
+    public static float getEnginePitch(IContentType type, float movement)
+    {
+        return EntityTypePropertySupport.enginePitch(type, movement);
+    }
+
+    /**
      * Read on either logical side after content loading; this does not mutate gameplay state.
      *
      * @param type

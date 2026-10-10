@@ -1,36 +1,29 @@
 package com.wolffsmod.npcs.mixin;
 
-import com.flansmodultimate.api.EquippedArmorProperties;
-import com.flansmodultimate.api.FlansModApi;
-import com.flansmodultimate.api.IEquipmentPolicy;
-import com.flansmodultimate.api.IFlanNpcDistance;
-import com.wolffsmod.npcs.combat.NpcEquipment;
-import com.wolffsmod.npcs.combat.NpcEquipmentRangedGoal;
-import com.wolffsmod.npcs.combat.NpcItemAttacks;
-import com.wolffsmod.npcs.combat.NpcRangedAttack;
+import com.flansmodultimate.api.*;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
-import com.wolffsmod.npcs.properties.NpcTypeProperties;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import com.wolffsmod.npcs.properties.*;
 import noppes.npcs.Resistances;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.*;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Every hook into the Custom NPCs entity base class.
@@ -41,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * <li>Model and switch changes are resolved before the server runs NPC combat and movement.</li>
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
+ * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat.</li>
  * </ul>
  *
  * <p>
@@ -51,7 +45,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 // Mixin inheritance follows the target entity; Minecraft owns entity identity/equality. Once merged, self-casts and
 // instanceof checks on this are valid, and the overrides keep the target signatures.
 @SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
-public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance
+public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -69,9 +63,39 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     @Unique
     private boolean wolffsmodnpcsLastDistanceManaged;
 
+    @Unique
+    private final NpcEngineAudio wolffsmodnpcsEngineAudio = new NpcEngineAudio();
+
     protected EntityNPCInterfaceMixin(EntityType<? extends PathfinderMob> type, Level level)
     {
         super(type, level);
+    }
+
+    // Presentation
+
+    @Override
+    public float flansmodultimateEnginePitch()
+    {
+        return NpcVehicleSounds.pitch((EntityNPCInterface) (Object) this);
+    }
+
+    @Override
+    public boolean flansmodultimateHurtFlash()
+    {
+        return NpcPresentation.of((EntityNPCInterface) (Object) this).isHurtFlash();
+    }
+
+    @Override
+    public boolean flansmodultimateDeathRotation()
+    {
+        return NpcPresentation.of((EntityNPCInterface) (Object) this).isDeathRotation();
+    }
+
+    @Inject(method = {"playStepSound", "m_7355_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsEngineReplacesSteps(BlockPos pos, BlockState state, CallbackInfo callback)
+    {
+        if (NpcPresentation.of((EntityNPCInterface) (Object) this).getVehicleSounds().resolve((EntityNPCInterface) (Object) this, true).isPresent())
+            callback.cancel();
     }
 
     // Equipment
@@ -115,6 +139,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
         if (level().isClientSide)
             return;
+        wolffsmodnpcsEngineAudio.tick(npc);
         wolffsmodnpcsUpdateArmorAttributes();
         if (wolffsmodnpcsShieldCooldown > 0)
             wolffsmodnpcsShieldCooldown--;

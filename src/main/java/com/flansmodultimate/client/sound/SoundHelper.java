@@ -15,6 +15,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -153,7 +154,16 @@ public final class SoundHelper
         pendingSounds.add(new PendingSound(delayTicks, () -> playSoundLocalAndBroadcast(sound, pos, range)));
     }
 
+    // Keep packet sound fields explicit and preserve the established call signature.
+    @SuppressWarnings("java:S107")
     public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Entity source)
+    {
+        playSound(sound, pos, range, distort, silenced, cancellable, instanceUUID, source, false);
+    }
+
+    // Keep packet sound fields explicit and preserve the established call signature.
+    @SuppressWarnings("java:S107")
+    public static void playSound(@Nullable String sound, Vec3 pos, float range, boolean distort, boolean silenced, boolean cancellable, UUID instanceUUID, @Nullable Entity source, boolean enginePitch)
     {
         if (StringUtils.isBlank(sound))
             return;
@@ -168,6 +178,13 @@ public final class SoundHelper
             SoundInstance soundInstance = cancellable && source != null
                 ? new EntitySoundInstance(soundEvent, source, volume, pitch, r)
                 : new SimpleSoundInstance(soundEvent.getLocation(), SoundSource.PLAYERS, volume, pitch, r, false, 0, SoundInstance.Attenuation.LINEAR, pos.x, pos.y, pos.z, false);
+
+            if (soundInstance instanceof EntitySoundInstance following)
+            {
+                following.setExternalEnginePitch(enginePitch);
+                if (enginePitch)
+                    following.tick();
+            }
 
             if (cancellable)
                 cancellableSounds.put(instanceUUID, soundInstance);
@@ -189,6 +206,15 @@ public final class SoundHelper
     {
         if (StringUtils.isBlank(sound))
             return Optional.empty();
+
+        if (sound.contains(":"))
+        {
+            ResourceLocation id = ResourceLocation.tryParse(sound);
+            if (id == null)
+                return Optional.empty();
+            SoundEvent event = BuiltInRegistries.SOUND_EVENT.containsKey(id) ? BuiltInRegistries.SOUND_EVENT.get(id) : SoundEvent.createVariableRangeEvent(id);
+            return Optional.of(event);
+        }
 
         RegistryEntry<SoundEvent> soundEvent = FlansMod.getSoundEvent(sound).orElse(null);
         if (soundEvent == null || soundEvent.getId() == null)

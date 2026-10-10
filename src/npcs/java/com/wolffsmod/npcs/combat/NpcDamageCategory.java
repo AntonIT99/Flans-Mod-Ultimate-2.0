@@ -26,8 +26,7 @@ public enum NpcDamageCategory
             return PROJECTILE;
         if (EXPLOSION_IDS.contains(id) || source.is(DamageTypeTags.IS_EXPLOSION))
             return EXPLOSION;
-        if (MELEE_IDS.contains(id) || source.is(DamageTypeTags.IS_PLAYER_ATTACK)
-            || source.getDirectEntity() instanceof LivingEntity && source.getDirectEntity() == source.getEntity())
+        if (MELEE_IDS.contains(id) || source.getDirectEntity() instanceof LivingEntity && source.getDirectEntity() == source.getEntity())
             return MELEE;
         return OTHER;
     }

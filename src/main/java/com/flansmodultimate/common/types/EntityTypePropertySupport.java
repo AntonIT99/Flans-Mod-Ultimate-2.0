@@ -3,7 +3,9 @@ package com.flansmodultimate.common.types;
 import com.flansmodultimate.api.*;
 import com.flansmodultimate.api.EntityTypeProperties.Sound;
 import com.flansmodultimate.api.EntityTypeProperties.Weapon;
+import com.flansmodultimate.common.driveables.EngineSoundPitch;
 import com.flansmodultimate.common.driveables.EnumWeaponType;
+import com.flansmodultimate.common.driveables.physics.DriveableControlPhysics;
 import com.flansmodultimate.common.driveables.physics.MechaPhysics;
 import com.flansmodultimate.common.driveables.weapons.PilotGun;
 import com.flansmodultimate.common.guns.EnumSpreadPattern;
@@ -20,6 +22,36 @@ public final class EntityTypePropertySupport
 {
     private EntityTypePropertySupport()
     {}
+
+    public static Optional<EngineSound> engineSound(IContentType type)
+    {
+        if (!(type instanceof DriveableType driveable) || type instanceof MechaType || StringUtils.isBlank(driveable.getEngineSound()))
+            return Optional.empty();
+        int length = driveable.getEngineSoundLength();
+        if (length <= 0)
+            length = driveable.getStartSoundLength();
+        return Optional.of(new EngineSound(driveable.getEngineSound(), driveable.getEngineSoundRange(), Math.max(1, length > 0 ? length : 20)));
+    }
+
+    public static Optional<EngineSound> engineIdleSound(IContentType type)
+    {
+        if (!(type instanceof DriveableType driveable) || type instanceof MechaType || StringUtils.isBlank(driveable.getEngineIdleLoopSound()))
+            return Optional.empty();
+        String sound = driveable.getEngineIdleLoopSound();
+        int duration = driveable.getEngineSoundLength();
+        if (sound.equals(driveable.getIdleSound()))
+            duration = driveable.getIdleSoundLength();
+        else if (sound.equals(driveable.getStartSound()))
+            duration = driveable.getStartSoundLength();
+        return Optional.of(new EngineSound(sound, driveable.getEngineSoundRange(), Math.max(1, duration > 0 ? duration : 20)));
+    }
+
+    public static float enginePitch(IContentType type, float movement)
+    {
+        var defaults = type instanceof PlaneType ? new EngineSoundPitch(0.5F, 1F, 1.5F) : new EngineSoundPitch(0.5F, 0.8F, 1.2F);
+        var curve = type instanceof DriveableType driveable ? driveable.getEngineSoundPitchCurve(defaults) : defaults;
+        return Math.min(2F, Math.max(0.5F, DriveableControlPhysics.engineSoundPitch(movement, curve, 1F)));
+    }
 
     public static Optional<EntityTypeProperties> read(IContentType type, boolean secondary)
     {
@@ -72,8 +104,7 @@ public final class EntityTypePropertySupport
         int magazine = declared > 0 ? Math.min(declared, perItem) : perItem;
         // Only a bank of mounted guns slows down for heavy ammunition; ordnance banks chamber at their own pace.
         double reload = driveable.reloadTime(secondary) * (gunBank ? multiplier : 1F);
-        boolean chamberSound = !gunBank && !secondary && driveable.getReloadSoundTick() != DriveableType.RELOAD_SOUND_TICK_UNSET
-            && StringUtils.isNotBlank(driveable.getShootReloadSound());
+        boolean chamberSound = !gunBank && !secondary && driveable.getReloadSoundTick() != DriveableType.RELOAD_SOUND_TICK_UNSET && StringUtils.isNotBlank(driveable.getShootReloadSound());
         return Optional.of(new ReloadCycle(magazine, driveable.shootDelay(secondary), reload, chamberSound ? OptionalInt.of(driveable.getReloadSoundTick()) : OptionalInt.empty()));
     }
 

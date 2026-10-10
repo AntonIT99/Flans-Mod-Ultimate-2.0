@@ -1,5 +1,19 @@
 # Feature Gap Analysis — Flan's Mod NPC Vehicles → NPC module
 
+Implementation follow-up on Forge 1.20.1: the two Display/sounds gaps below are
+now addressed. Wolff's Mod > Display provides independent hurt-flash and death
+rotation switches plus the existing hide-killed-body setting. Wolff's Mod >
+Sounds and Particles > Vehicle Sounds provides idle (default No), movement
+(default Yes), variable pitch (default Yes) and Use Vehicle's Defaults (default
+Yes). Selecting defaults resets custom values from the vehicle definition. Both
+channel editors are always visible and read-only in defaults mode. Custom mode
+reuses the native sound picker with namespace support, range and measured Flan
+lengths or repeat overrides. Cancellable server-timed clips switch between idle
+and movement independently of footsteps; automatic timing accounts for pitch.
+Settings use normal NPC persistence, presets and spawn/update sync. The original
+findings below remain the audit snapshot; GUI appearance and audible behavior
+still require in-game verification.
+
 - **Reference:** `C:\Users\alpha\Documents\Minecraft-Development\Flans-Mod-NPC-Vehicles` (commit `7999bb16`, version 7.1.0, Forge 1.7.10, CustomNPC+ 1.11.1)
 - **Target:** `../src/npcs` of Flan's Mod Ultimate 2.0 (`master` @ `6e9f190a8`, Forge 1.20.1, Custom NPCs 1.20.1 GBPort), together with the public API in `src/main/java/com/flansmodultimate/api` that the module uses
 - **Direction:** reference → target only. Target-only features are left out, such as item-driven equipment combat, paintjob browsing, the 64x32 renderer, inherited type properties and editor read-only locks.
