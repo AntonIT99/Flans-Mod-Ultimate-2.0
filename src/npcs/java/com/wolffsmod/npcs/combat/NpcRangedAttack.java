@@ -1,23 +1,21 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.FlansProjectiles;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.ProjectileParameters;
-import com.flansmodultimate.api.WeaponMuzzle;
+import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import noppes.npcs.EventHooks;
 import noppes.npcs.api.event.NpcEvent;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,8 +33,7 @@ public final class NpcRangedAttack
         if (!usesFlanProjectile(options, ammo))
             return false;
         // A recognized Flan round is handled even when the call originates on the client.
-        if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || npc.isKilled() || target == null || !target.isAlive()
-            || target.level() != npc.level())
+        if (!(npc.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || npc.isKilled() || target == null || !target.isAlive() || target.level() != npc.level())
             return true;
         new Attack(npc, target, ammo, options, highArc, sequence).fire();
         return true;
@@ -44,8 +41,7 @@ public final class NpcRangedAttack
 
     public static boolean usesFlanProjectile(NpcWeaponOptions options, ItemStack ammo)
     {
-        return options.enabled(Feature.PROJECTILES) && ammo != null && FlansProjectiles.isProjectile(ammo)
-            && (!FlansProjectiles.isGrenade(ammo) || options.enabled(Feature.GRENADES));
+        return options.enabled(Feature.PROJECTILES) && ammo != null && FlansProjectiles.isProjectile(ammo) && (!FlansProjectiles.isGrenade(ammo) || options.enabled(Feature.GRENADES));
     }
 
     private static final class Attack
@@ -133,7 +129,7 @@ public final class NpcRangedAttack
             var shot = prepared.get();
             Vec3 direction = ProjectileAim.direction(targetPoint.subtract(origin), targetVelocity, shot.speed(), options.enabled(Feature.BALLISTIC_AIM) ? shot.gravity() : 0D,
                 options.enabled(Feature.BALLISTIC_AIM) ? shot.drag() : 1D, highArc);
-            if (shot.launch(origin, direction, options.enabled(Feature.FLAN_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
+            if (shot.launch(origin, direction, options.enabled(Feature.THROW_SOUNDS) && !soundPlayed && shotIndex == 0).isEmpty())
                 return false;
             playLaunchEffects(muzzle, origin, shotIndex);
             return true;
@@ -141,8 +137,13 @@ public final class NpcRangedAttack
 
         private void playLaunchEffects(WeaponMuzzle muzzle, Vec3 origin, int shotIndex)
         {
-            if (!soundPlayed && options.enabled(Feature.FLAN_SOUNDS))
-                soundPlayed = FlansProjectiles.playShootSound(npc, muzzle.weapon().orElse(definition), held, secondary) || FlansProjectiles.isGrenade(ammo);
+            if (!soundPlayed)
+            {
+                if (FlansProjectiles.isGrenade(ammo))
+                    soundPlayed = options.enabled(Feature.THROW_SOUNDS);
+                else if (options.enabled(Feature.FIRE_SOUNDS))
+                    soundPlayed = FlansProjectiles.playShootSound(npc, muzzle.weapon().orElse(definition), held, secondary);
+            }
             if (shotIndex == 0 && options.enabled(Feature.SHOOT_PARTICLES) && (!FlansProjectiles.isGrenade(ammo) || modelMuzzles))
                 FlansProjectiles.shootParticles(npc, muzzle, origin, npc.yBodyRot, modelScale(npc));
         }

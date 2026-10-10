@@ -12,6 +12,52 @@ import static org.junit.jupiter.api.Assertions.*;
 class NpcPresentationTest
 {
     @Test
+    void flanSelectionResetsVisualsButExplicitChoicesSurviveTicksAndReloads()
+    {
+        NpcPresentation settings = new NpcPresentation();
+        assertTrue(settings.selectModel("wolffsmodnpcs:vehicle_tank", true));
+        assertFalse(settings.isHurtFlash());
+        assertFalse(settings.isDeathRotation());
+        settings.setHurtFlash(true);
+        settings.setDeathRotation(true);
+        assertFalse(settings.selectModel("wolffsmodnpcs:vehicle_tank", true));
+        assertTrue(settings.isHurtFlash());
+        assertTrue(settings.isDeathRotation());
+        CompoundTag root = new CompoundTag();
+        settings.save(root);
+        NpcPresentation restored = new NpcPresentation();
+        restored.load(root);
+        assertFalse(restored.selectModel("wolffsmodnpcs:vehicle_tank", true));
+        assertTrue(restored.isHurtFlash());
+        assertTrue(restored.isDeathRotation());
+        assertTrue(restored.selectModel("wolffsmodnpcs:aa_gun", true));
+        assertFalse(restored.isHurtFlash());
+        assertFalse(restored.isDeathRotation());
+    }
+
+    @Test
+    void oldFlanSavesReceiveNewDefaultsWhileOrdinarySavedChoicesArePreserved()
+    {
+        NpcPresentation settings = new NpcPresentation();
+        settings.load(new CompoundTag());
+        settings.selectModel("wolffsmodnpcs:mecha", true);
+        assertFalse(settings.isHurtFlash());
+        assertFalse(settings.isDeathRotation());
+        settings.selectModel("minecraft:cow", false);
+        assertTrue(settings.isHurtFlash());
+        assertTrue(settings.isDeathRotation());
+        settings.setHurtFlash(false);
+        settings.setDeathRotation(false);
+        CompoundTag saved = new CompoundTag();
+        settings.save(saved);
+        saved.getCompound(NpcPresentation.NBT_KEY).remove("DisplayModel");
+        settings.load(saved);
+        settings.selectModel("minecraft:cow", false);
+        assertFalse(settings.isHurtFlash());
+        assertFalse(settings.isDeathRotation());
+    }
+
+    @Test
     void oldSavesKeepNormalVisualsAndRequestedAudioDefaults()
     {
         NpcPresentation settings = new NpcPresentation();

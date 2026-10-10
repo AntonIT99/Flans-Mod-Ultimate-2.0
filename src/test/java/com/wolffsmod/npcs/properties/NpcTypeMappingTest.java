@@ -7,18 +7,11 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalDouble;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class NpcTypeMappingTest
 {
@@ -46,14 +39,21 @@ class NpcTypeMappingTest
         NpcWeaponOptions options = new NpcWeaponOptions();
         EntityTypeProperties type = type(List.of(weapon(12, 2, 3, "flansmod:fire")));
         options.set(Feature.WEAPON_STATS, false);
-        options.set(Feature.FLAN_SOUNDS, false);
+        options.set(Feature.FIRE_SOUNDS, false);
         var mapped = NpcTypeMapping.create(type, options, true);
         assertTrue(mapped.containsKey(NpcTypeProperty.HEALTH));
         assertTrue(mapped.containsKey(NpcTypeProperty.DELAY_MIN));
         assertFalse(mapped.containsKey(NpcTypeProperty.DAMAGE));
         assertFalse(mapped.containsKey(NpcTypeProperty.SPEED));
         assertFalse(mapped.containsKey(NpcTypeProperty.FIRING_SOUND));
-        assertFalse(mapped.containsKey(NpcTypeProperty.IDLE_SOUND));
+        assertTrue(mapped.containsKey(NpcTypeProperty.IDLE_SOUND));
+        assertTrue(mapped.containsKey(NpcTypeProperty.STEP_SOUND));
+        options.set(Feature.MODEL_SOUNDS, false);
+        var mutedModel = NpcTypeMapping.create(type, options, true);
+        assertFalse(mutedModel.containsKey(NpcTypeProperty.IDLE_SOUND));
+        assertFalse(mutedModel.containsKey(NpcTypeProperty.STEP_SOUND));
+        options.set(Feature.FIRE_SOUNDS, true);
+        assertTrue(NpcTypeMapping.create(type, options, true).containsKey(NpcTypeProperty.FIRING_SOUND));
         options.set(Feature.TYPE_PROPERTIES, false);
         assertTrue(NpcTypeMapping.create(type, options, true).isEmpty());
     }
@@ -93,7 +93,7 @@ class NpcTypeMappingTest
 
     private static EntityTypeProperties type(List<Weapon> weapons)
     {
-        return new EntityTypeProperties(OptionalDouble.of(200), OptionalDouble.of(80), OptionalDouble.of(0.43), OptionalDouble.of(10), Optional.of(true), Optional.of(false),
-            OptionalDouble.of(4.5), Map.of(Sound.IDLE, "flansmod:idle", Sound.STEP, "flansmod:step"), weapons);
+        return new EntityTypeProperties(OptionalDouble.of(200), OptionalDouble.of(80), OptionalDouble.of(0.43), OptionalDouble.of(10), Optional.of(true), Optional.of(false), OptionalDouble.of(4.5),
+            Map.of(Sound.IDLE, "flansmod:idle", Sound.STEP, "flansmod:step"), weapons);
     }
 }

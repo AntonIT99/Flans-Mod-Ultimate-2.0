@@ -133,7 +133,7 @@ public final class NpcEquipmentRangedGoal extends Goal
         if (reloading <= 0)
         {
             reloading = Math.max(1, (int) Math.ceil(flan.get().reloadTime()));
-            if (NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.FLAN_SOUNDS))
+            if (NpcEquipment.enabled(npc, NpcWeaponOptions.Feature.RELOAD_SOUNDS))
                 FlansEquipment.playReloadSound(npc, weapon);
         }
         if (--reloading <= 0)

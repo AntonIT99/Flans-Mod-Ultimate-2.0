@@ -6,15 +6,9 @@ import com.flansmodultimate.api.EntityTypeProperties.Weapon;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 
-import net.minecraft.nbt.ByteTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.OptionalDouble;
+import java.util.*;
 import java.util.function.ToDoubleFunction;
 
 /** Converts type units to the equivalents Custom NPCs can represent, without guessing unrelated fields. */
@@ -43,8 +37,7 @@ public final class NpcTypeMapping
         timing(values, type, nativeProjectile);
         if (options.enabled(Feature.WEAPON_STATS))
             weaponStats(values, type, nativeProjectile);
-        if (options.enabled(Feature.FLAN_SOUNDS))
-            sounds(values, type);
+        sounds(values, type, options);
         return Map.copyOf(values);
     }
 
@@ -73,9 +66,12 @@ public final class NpcTypeMapping
             integer(values, NpcTypeProperty.SHOT_COUNT, common(type, Weapon::projectiles), 1D, 1, 10);
     }
 
-    private static void sounds(Map<NpcTypeProperty, Tag> values, EntityTypeProperties type)
+    private static void sounds(Map<NpcTypeProperty, Tag> values, EntityTypeProperties type, NpcWeaponOptions options)
     {
-        type.sounds().forEach((sound, value) -> values.put(sound == Sound.IDLE ? NpcTypeProperty.IDLE_SOUND : NpcTypeProperty.STEP_SOUND, StringTag.valueOf(value)));
+        if (options.enabled(Feature.MODEL_SOUNDS))
+            type.sounds().forEach((sound, value) -> values.put(sound == Sound.IDLE ? NpcTypeProperty.IDLE_SOUND : NpcTypeProperty.STEP_SOUND, StringTag.valueOf(value)));
+        if (!options.enabled(Feature.FIRE_SOUNDS))
+            return;
         var firingSounds = type.weapons().stream().map(Weapon::firingSound).filter(sound -> !sound.isBlank()).distinct().toList();
         if (firingSounds.size() == 1 && type.weapons().stream().allMatch(weapon -> !weapon.firingSound().isBlank()))
             values.put(NpcTypeProperty.FIRING_SOUND, StringTag.valueOf(firingSounds.get(0)));

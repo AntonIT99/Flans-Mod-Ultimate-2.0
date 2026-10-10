@@ -10,6 +10,7 @@ import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.client.gui.SubGuiNpcRangeProperties;
+import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
 import noppes.npcs.client.gui.util.GuiNPCInterface;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
@@ -46,7 +47,7 @@ public final class NpcRangedControls
             return inherited;
         List<ProjectileSources> sources = sources(npc, options, ammunition);
         ProjectileSources combined = RangedControlLocks.combine(sources);
-        RangedControlLocks locks = RangedControlLocks.create(page, true, combined, options.enabled(Feature.FLAN_SOUNDS));
+        RangedControlLocks locks = RangedControlLocks.create(page, true, combined, options.enabled(FlansProjectiles.isGrenade(ammunition) ? Feature.THROW_SOUNDS : Feature.FIRE_SOUNDS));
         locks = RangedControlLocks.merge(locks, inherited);
         markControls(gui, locks);
         return locks;
@@ -113,7 +114,7 @@ public final class NpcRangedControls
                 label.setTooltip(ReadOnlyTooltips.create(gui, Widget.LABEL, entry.getKey(), entry.getValue()));
             }
         }
-        if (!locks.textFields().isEmpty() || !locks.buttons().isEmpty())
+        if (!(gui instanceof GuiNpcStats) && (!locks.textFields().isEmpty() || !locks.buttons().isEmpty()))
             gui.addLabel(new GuiLabel(1000, "wolffsmodnpcs.weapons.read_only.notice", gui.guiLeft + 5, gui.guiTop - 12, "wolffsmodnpcs.weapons.read_only.notice.help"));
     }
 }

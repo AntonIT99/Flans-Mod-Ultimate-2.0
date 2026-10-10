@@ -13,8 +13,9 @@ public final class NpcWeaponOptions
 
     public enum Feature
     {
-        ITEM_ARMOR(true), ITEM_WEAPONS(true), ARMOR_ANIMATIONS(true), WEAPON_ANIMATIONS(true), TYPE_PROPERTIES(true), PROJECTILES(true), GRENADES(true), MODEL_MUZZLES(
-            true), ALTERNATE_BARRELS(true), WEAPON_STATS(true), FLAN_SOUNDS(true), SHOOT_PARTICLES(true), LEAD_TARGET(true), BALLISTIC_AIM(true), SECONDARY_BANK(false);
+        ITEM_ARMOR(true), ITEM_WEAPONS(true), ARMOR_ANIMATIONS(true), WEAPON_ANIMATIONS(true), TYPE_PROPERTIES(true), PROJECTILES(true), GRENADES(true), MODEL_MUZZLES(true), ALTERNATE_BARRELS(
+            true), WEAPON_STATS(
+                true), FIRE_SOUNDS(true), SHOOT_PARTICLES(true), LEAD_TARGET(true), BALLISTIC_AIM(true), SECONDARY_BANK(false), RELOAD_SOUNDS(true), THROW_SOUNDS(true), MODEL_SOUNDS(true);
 
         private final boolean defaultEnabled;
 
@@ -46,7 +47,18 @@ public final class NpcWeaponOptions
     {
         CompoundTag tag = root.getCompound(NBT_KEY);
         for (Feature feature : Feature.values())
-            set(feature, tag.contains(feature.name(), Tag.TAG_BYTE) ? tag.getBoolean(feature.name()) : feature.defaultEnabled);
+        {
+            boolean fallback = feature.defaultEnabled;
+            // Split the former switch without changing saved NPC audio preferences.
+            if (isSoundFeature(feature) && tag.contains("FLAN_SOUNDS", Tag.TAG_BYTE))
+                fallback = tag.getBoolean("FLAN_SOUNDS");
+            set(feature, tag.contains(feature.name(), Tag.TAG_BYTE) ? tag.getBoolean(feature.name()) : fallback);
+        }
+    }
+
+    private static boolean isSoundFeature(Feature feature)
+    {
+        return feature == Feature.FIRE_SOUNDS || feature == Feature.RELOAD_SOUNDS || feature == Feature.THROW_SOUNDS || feature == Feature.MODEL_SOUNDS;
     }
 
     public void save(CompoundTag root)

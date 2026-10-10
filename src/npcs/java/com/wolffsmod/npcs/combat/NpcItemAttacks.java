@@ -73,9 +73,13 @@ public final class NpcItemAttacks
             return false;
         ItemStack weapon = npc.getMainHandItem();
         Vec3 aim = target.getEyePosition().subtract(npc.getEyePosition());
-        if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isPresent())
-            return FlansEquipment.fire(npc, InteractionHand.MAIN_HAND, npc.getEyePosition(), flanDirection(npc, target, weapon, aim), NpcEquipment.enabled(npc, Feature.FLAN_SOUNDS),
+        var flanWeapon = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
+        if (flanWeapon.isPresent())
+        {
+            Feature soundFeature = flanWeapon.get().throwable() ? Feature.THROW_SOUNDS : Feature.FIRE_SOUNDS;
+            return FlansEquipment.fire(npc, InteractionHand.MAIN_HAND, npc.getEyePosition(), flanDirection(npc, target, weapon, aim), NpcEquipment.enabled(npc, soundFeature),
                 NpcEquipment.enabled(npc, Feature.SHOOT_PARTICLES));
+        }
         if (FlansProjectiles.isGrenade(weapon))
             return grenade(npc, target, weapon);
         if (weapon.getItem() instanceof NpcWeaponAdapter adapter)
@@ -113,7 +117,7 @@ public final class NpcItemAttacks
         var shot = prepared.get();
         Vec3 direction = ProjectileAim.direction(target.getEyePosition().subtract(npc.getEyePosition()), NpcEquipment.enabled(npc, Feature.LEAD_TARGET) ? target.getDeltaMovement() : Vec3.ZERO,
             shot.speed(), NpcEquipment.enabled(npc, Feature.BALLISTIC_AIM) ? shot.gravity() : 0D, shot.drag(), false);
-        if (shot.launch(npc.getEyePosition(), direction, NpcEquipment.enabled(npc, Feature.FLAN_SOUNDS)).isEmpty())
+        if (shot.launch(npc.getEyePosition(), direction, NpcEquipment.enabled(npc, Feature.THROW_SOUNDS)).isEmpty())
             return false;
         weapon.shrink(1);
         npc.setItemSlot(EquipmentSlot.MAINHAND, weapon.isEmpty() ? ItemStack.EMPTY : weapon);
