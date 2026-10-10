@@ -1,23 +1,20 @@
 package com.wolffsmod.npcs.client;
 
 import com.flansmodultimate.api.FlansEquipment;
-import com.wolffsmod.npcs.combat.EquipmentAttributes;
-import com.wolffsmod.npcs.combat.NpcArmorPreview;
-import com.wolffsmod.npcs.combat.NpcEquipment;
+import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
+import com.wolffsmod.npcs.client.ReadOnlyTooltips.Widget;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import net.minecraft.client.gui.components.Tooltip;
+import noppes.npcs.entity.EntityNPCInterface;
+import noppes.npcs.shared.client.gui.components.GuiBasic;
+
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import noppes.npcs.entity.EntityNPCInterface;
-import noppes.npcs.shared.client.gui.components.GuiBasic;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -88,12 +85,12 @@ public final class NpcArmorControls
         slider.sliderValue = Math.max(0F, Math.min(1F, protection));
         slider.startValue = slider.sliderValue;
         slider.setString(String.format(Locale.ROOT, "%.1f%% %s", protection * 100F, id == 0 ? "" : "@ 10 HP"));
-        slider.setTooltip(Tooltip.create(Component.translatable("wolffsmodnpcs.weapons.read_only.item_armor")));
+        slider.setTooltip(ReadOnlyTooltips.create(gui, Widget.SLIDER, id, Reason.ITEM_ARMOR));
         var label = gui.getLabel(id);
         if (label != null)
         {
             label.setColor(0xA0A0A0);
-            label.setTooltip(Tooltip.create(Component.translatable("wolffsmodnpcs.weapons.read_only.item_armor")));
+            label.setTooltip(ReadOnlyTooltips.create(gui, Widget.LABEL, id, Reason.ITEM_ARMOR));
         }
     }
 }

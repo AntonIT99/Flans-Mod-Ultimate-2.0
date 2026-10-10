@@ -1,16 +1,12 @@
 package com.wolffsmod.npcs.client;
 
-import com.flansmodultimate.api.FlansProjectiles;
-import com.flansmodultimate.api.IContentType;
-import com.flansmodultimate.api.ProjectileSources;
+import com.flansmodultimate.api.*;
 import com.flansmodultimate.api.ProjectileSources.Source;
-import com.flansmodultimate.api.WeaponMuzzle;
 import com.wolffsmod.npcs.client.RangedControlLocks.Page;
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
-import com.wolffsmod.npcs.combat.NpcRangedAttack;
-import com.wolffsmod.npcs.combat.NpcWeaponOptions;
+import com.wolffsmod.npcs.client.ReadOnlyTooltips.Widget;
+import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import com.wolffsmod.npcs.combat.NpcWeaponSettings;
 import com.wolffsmod.npcs.model.FlanModelEntity;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.client.gui.SubGuiNpcRangeProperties;
@@ -21,16 +17,11 @@ import noppes.npcs.shared.client.gui.components.GuiBasic;
 import noppes.npcs.shared.client.gui.components.GuiLabel;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /** Client-only presentation of inactive Custom NPCs defaults; it never changes saved statistics. */
 public final class NpcRangedControls
@@ -87,8 +78,8 @@ public final class NpcRangedControls
             muzzles = List.of(new WeaponMuzzle(Vec3.ZERO, Optional.empty(), List.of()));
         ItemStack held = npc.getMainHandItem();
         // Inspect every barrel so an alternating bank never locks a fallback still used by another mount.
-        return muzzles.stream().map(muzzle -> FlansProjectiles
-            .getSources(ammunition, held, muzzle.weapon().orElse(null), definition, secondary, options.enabled(Feature.WEAPON_STATS)).orElse(CALLER_SOURCES)).toList();
+        return muzzles.stream()
+            .map(muzzle -> FlansProjectiles.getSources(ammunition, held, muzzle.weapon().orElse(null), definition, secondary, options.enabled(Feature.WEAPON_STATS)).orElse(CALLER_SOURCES)).toList();
     }
 
     static void markControls(GuiBasic gui, RangedControlLocks locks)
@@ -100,7 +91,7 @@ public final class NpcRangedControls
             {
                 field.setEditable(false);
                 field.setTextColorUneditable(READ_ONLY_COLOR);
-                field.setTooltip(tooltip(reason));
+                field.setTooltip(ReadOnlyTooltips.create(gui, Widget.FIELD, id, reason));
             }
         });
         locks.buttons().forEach((id, reason) ->
@@ -109,7 +100,7 @@ public final class NpcRangedControls
             if (button != null)
             {
                 button.setEnabled(false);
-                button.setTooltip(tooltip(reason));
+                button.setTooltip(ReadOnlyTooltips.create(gui, Widget.BUTTON, id, reason));
             }
         });
         for (Map.Entry<Integer, Reason> entry : locks.labels().entrySet())
@@ -119,15 +110,10 @@ public final class NpcRangedControls
             {
                 label.setColor(READ_ONLY_COLOR);
                 label.setHeight(10);
-                label.setTooltip(tooltip(entry.getValue()));
+                label.setTooltip(ReadOnlyTooltips.create(gui, Widget.LABEL, entry.getKey(), entry.getValue()));
             }
         }
         if (!locks.textFields().isEmpty() || !locks.buttons().isEmpty())
             gui.addLabel(new GuiLabel(1000, "wolffsmodnpcs.weapons.read_only.notice", gui.guiLeft + 5, gui.guiTop - 12, "wolffsmodnpcs.weapons.read_only.notice.help"));
-    }
-
-    private static Tooltip tooltip(Reason reason)
-    {
-        return Tooltip.create(Component.translatable("wolffsmodnpcs.weapons.read_only." + reason.name().toLowerCase(Locale.ROOT)));
     }
 }

@@ -64,6 +64,9 @@ public final class NpcEquipmentControls
             }
         });
         labels.putAll(buttons);
+        // The projectile page labels its stick button (9) with ID 11.
+        if (gui instanceof SubGuiNpcProjectiles && buttons.containsKey(9))
+            labels.put(11, buttons.get(9));
         if (gui instanceof GuiNpcStats && NpcEquipment.enabled(npc, Feature.ITEM_ARMOR))
             armor(gui, npc, buttons, labels);
         RangedControlLocks locks = new RangedControlLocks(fields, buttons, labels);
