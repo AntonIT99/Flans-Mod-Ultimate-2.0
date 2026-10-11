@@ -40,6 +40,7 @@ import static com.flansmodultimate.util.TypeReaderUtils.*;
 public abstract class InfoType implements IContentType
 {
     private static final String KEY_RECIPE = "Recipe";
+    private static final String KEY_SHAPELESS_RECIPE = "ShapelessRecipe";
     private static final String MODEL_CLASS_PREFIX = ".Model";
     private static final String LOOT_POOL_NAME = "FlansMod";
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
@@ -194,11 +195,15 @@ public abstract class InfoType implements IContentType
         contentPack = file.getContentPack();
         type = file.getType();
         read(file);
-        List<String> lines = file.getLines();
-        for (int i = 0; i < lines.size(); i++)
+        // Few types read their lines in order, and the others need none of them split.
+        if (readsLinesInOrder())
         {
-            String[] split = WHITESPACE.split(lines.get(i));
-            readLine(split, i, file);
+            List<String> lines = file.getLines();
+            for (int i = 0; i < lines.size(); i++)
+            {
+                String[] split = WHITESPACE.split(lines.get(i));
+                readLine(split, i, file);
+            }
         }
         if (PlatformEnvironment.isClient())
             readClient(file);
@@ -234,6 +239,12 @@ public abstract class InfoType implements IContentType
         readRecipeDefinitions(file);
     }
 
+    /** Whether {@link #readLine} is to be called for every line; a type overriding it answers {@code true}. */
+    protected boolean readsLinesInOrder()
+    {
+        return false;
+    }
+
     protected void readLine(String[] split, int lineIndex, TypeFile file)
     {}
 
@@ -246,15 +257,14 @@ public abstract class InfoType implements IContentType
         List<String> lines = file.getLines();
         for (int i = 0; i < lines.size(); i++)
         {
-            String line = lines.get(i);
-            if (StringUtils.isBlank(line) || line.trim().startsWith("//"))
+            String line = lines.get(i).trim();
+            // Nearly every line is something else, a comment or blank, and is not worth splitting to find that out.
+            boolean recipe = startsWithKey(line, KEY_RECIPE);
+            if (!recipe && !startsWithKey(line, KEY_SHAPELESS_RECIPE))
                 continue;
 
-            String[] split = WHITESPACE.split(line.trim());
-            if (split.length < 1)
-                continue;
-
-            if (split[0].equalsIgnoreCase(KEY_RECIPE))
+            String[] split = WHITESPACE.split(line);
+            if (recipe)
             {
                 clearRecipeDefinition();
                 recipeTokens.addAll(Arrays.asList(split).subList(1, split.length));
@@ -271,13 +281,27 @@ public abstract class InfoType implements IContentType
                 addToRecipeGrid(recipePattern);
                 i += 3;
             }
-            else if (split[0].equalsIgnoreCase("ShapelessRecipe"))
+            else
             {
                 clearRecipeDefinition();
                 recipeTokens.addAll(Arrays.asList(split).subList(1, split.length));
                 shapeless = true;
             }
         }
+    }
+
+    /** Whether the first whitespace-separated token of a trimmed line is the key, whatever its case. */
+    private static boolean startsWithKey(String trimmedLine, String key)
+    {
+        if (!trimmedLine.regionMatches(true, 0, key, 0, key.length()))
+            return false;
+        return trimmedLine.length() == key.length() || isSeparator(trimmedLine.charAt(key.length()));
+    }
+
+    /** The characters {@link #WHITESPACE} splits on. */
+    private static boolean isSeparator(char c)
+    {
+        return c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r';
     }
 
     private void clearRecipeDefinition()

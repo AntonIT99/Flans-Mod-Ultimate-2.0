@@ -65,6 +65,12 @@ public class GunBoxType extends BlockType
     }
 
     @Override
+    protected boolean readsLinesInOrder()
+    {
+        return true;
+    }
+
+    @Override
     protected void readLine(String[] split, int lineIndex, TypeFile file)
     {
         super.readLine(split, lineIndex, file);

@@ -200,10 +200,12 @@ public class ContentManager
 
         try (ContentLoadingWorkers workers = ContentLoadingWorkers.create(ContentLoadingConfig.getContentLoadingThreads()))
         {
+            // The first definitions are read while the texture names are reserved.
+            ContentPackReader reader = new ContentPackReader(contentPacks, workers);
+            reader.start();
             if (PlatformEnvironment.isClient())
                 legacyTextures.prepare(contentPacks, workers);
 
-            ContentPackReader reader = new ContentPackReader(contentPacks, workers);
             for (IContentProvider provider : contentPacks)
                 loadContentPack(provider, reader);
 
