@@ -36,6 +36,12 @@ public final class FlansProjectiles
         return ExternalProjectileSupport.isGrenade(stack);
     }
 
+    /** @return the rounds one item of this Flan ammunition holds when full, or zero for another item; readable on either side */
+    public static int getRoundsPerItem(ItemStack stack)
+    {
+        return ExternalProjectileSupport.roundsPerItem(stack);
+    }
+
     /**
      * Describes which caller defaults are replaced, without preparing or spawning a projectile.
      * Readable on either side after content loading, including for an editor preview.
@@ -54,8 +60,8 @@ public final class FlansProjectiles
      *            whether content weapon statistics take precedence
      * @return setting sources, or empty for unsupported ammunition
      */
-    public static Optional<ProjectileSources> getSources(ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform,
-        boolean secondary, boolean weaponStats)
+    public static Optional<ProjectileSources> getSources(ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary,
+        boolean weaponStats)
     {
         return ExternalProjectileSupport.getSources(ammunition, heldWeapon, weapon, platform, secondary, weaponStats);
     }
@@ -79,8 +85,8 @@ public final class FlansProjectiles
      *            belt position, weapon-statistics switch and fallback statistics
      * @return resolved shot, or empty for unsupported ammunition, invalid values or a nonserver caller
      */
-    public static Optional<ProjectileShot> prepare(LivingEntity shooter, ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform,
-        boolean secondary, ProjectileParameters parameters)
+    public static Optional<ProjectileShot> prepare(LivingEntity shooter, ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary,
+        ProjectileParameters parameters)
     {
         return ExternalProjectileSupport.prepare(shooter, ammunition, heldWeapon, weapon, platform, secondary, parameters);
     }

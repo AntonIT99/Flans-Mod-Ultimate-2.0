@@ -8,6 +8,8 @@ import com.wolffsmod.npcs.client.ReadOnlyTooltips.Widget;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.properties.NpcTypeProperties;
+import com.wolffsmod.npcs.properties.NpcTypeProperty;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.client.gui.SubGuiNpcRangeProperties;
 import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
@@ -46,7 +48,10 @@ public final class NpcRangedControls
         if (!NpcRangedAttack.usesFlanProjectile(options, ammunition))
             return inherited;
         List<ProjectileSources> sources = sources(npc, options, ammunition);
-        ProjectileSources combined = RangedControlLocks.combine(sources);
+        // Model properties the NPC keeps its own value for drive the shot, so their controls stay editable.
+        ProjectileSources combined = RangedControlLocks.release(RangedControlLocks.combine(sources), NpcTypeProperties.usesOwnValue(npc, NpcTypeProperty.DAMAGE),
+            NpcTypeProperties.usesOwnValue(npc, NpcTypeProperty.ACCURACY), NpcTypeProperties.usesOwnValue(npc, NpcTypeProperty.SPEED),
+            NpcTypeProperties.usesOwnValue(npc, NpcTypeProperty.FIRING_SOUND));
         RangedControlLocks locks = RangedControlLocks.create(page, true, combined, options.enabled(FlansProjectiles.isGrenade(ammunition) ? Feature.THROW_SOUNDS : Feature.FIRE_SOUNDS));
         locks = RangedControlLocks.merge(locks, inherited);
         markControls(gui, locks);

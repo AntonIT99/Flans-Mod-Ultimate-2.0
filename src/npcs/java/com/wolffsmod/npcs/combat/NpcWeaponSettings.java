@@ -11,4 +11,6 @@ public interface NpcWeaponSettings
     NpcTypeProperties wolffsmodnpcsTypeProperties();
 
     NpcPresentation wolffsmodnpcsPresentation();
+
+    NpcCombatSettings wolffsmodnpcsCombat();
 }

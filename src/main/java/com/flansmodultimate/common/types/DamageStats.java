@@ -122,7 +122,7 @@ public final class DamageStats
         if (entity instanceof IFlanDamageModel stand)
         {
             // An entity standing in for an AA gun or driveable takes that definition's damage.
-            IContentType model = stand.getFlansDamageModel().orElse(null);
+            IContentType model = stand.flansmodultimateDamageModel().orElse(null);
             if (model instanceof PlaneType)
                 return damageVsPlanes;
             if (model instanceof DriveableType)

@@ -86,8 +86,20 @@ public final class EntityTypePropertySupport
      */
     public static Optional<ReloadCycle> reloadCycle(IContentType type, boolean secondary, ItemStack ammunition)
     {
-        int perItem = Math.max(1, ShootableItem.getMaxRounds(ammunition));
         float multiplier = ammunition.getItem() instanceof ShootableItem shootable ? shootable.getConfigType().getReloadTimeMultiplier() : 1F;
+        return reloadCycle(type, secondary, ShootableItem.getMaxRounds(ammunition), multiplier);
+    }
+
+    /**
+     * @param roundsPerItem
+     *            rounds one item of the ammunition holds; anything below one counts as one
+     * @param reloadMultiplier
+     *            the ammunition's reload time multiplier
+     */
+    public static Optional<ReloadCycle> reloadCycle(IContentType type, boolean secondary, int roundsPerItem, float reloadMultiplier)
+    {
+        int perItem = Math.max(1, roundsPerItem);
+        float multiplier = Float.isFinite(reloadMultiplier) && reloadMultiplier > 0F ? reloadMultiplier : 1F;
         if (type instanceof AAGunType aa)
         {
             int barrels = Math.max(1, aa.getNumBarrels());

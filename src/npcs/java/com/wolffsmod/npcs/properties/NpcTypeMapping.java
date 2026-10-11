@@ -3,8 +3,10 @@ package com.wolffsmod.npcs.properties;
 import com.flansmodultimate.api.EntityTypeProperties;
 import com.flansmodultimate.api.EntityTypeProperties.Sound;
 import com.flansmodultimate.api.EntityTypeProperties.Weapon;
+import com.flansmodultimate.api.ReloadCycle;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.*;
 
@@ -24,6 +26,16 @@ public final class NpcTypeMapping
 
     public static Map<NpcTypeProperty, Tag> create(EntityTypeProperties type, NpcWeaponOptions options, boolean nativeProjectile, double maxHealth)
     {
+        return create(type, options, nativeProjectile, maxHealth, null);
+    }
+
+    /**
+     * @param cycle
+     *            the reload cycle of the model with the ammunition of the NPC, or null when the NPC follows none; with
+     *            one, the reload becomes the delay and the magazine the burst, as Custom NPCs understands them
+     */
+    public static Map<NpcTypeProperty, Tag> create(EntityTypeProperties type, NpcWeaponOptions options, boolean nativeProjectile, double maxHealth, @Nullable ReloadCycle cycle)
+    {
         Map<NpcTypeProperty, Tag> values = new EnumMap<>(NpcTypeProperty.class);
         if (!options.enabled(Feature.TYPE_PROPERTIES))
             return values;
@@ -34,19 +46,29 @@ public final class NpcTypeMapping
         type.meleeReach().ifPresent(reach -> values.put(NpcTypeProperty.MELEE_REACH, FloatTag.valueOf((float) Math.max(0D, reach))));
         type.worksUnderWater().ifPresent(works -> values.put(NpcTypeProperty.CAN_DROWN, ByteTag.valueOf(!works)));
         type.takesFallDamage().ifPresent(takes -> values.put(NpcTypeProperty.NO_FALL_DAMAGE, ByteTag.valueOf(!takes)));
-        timing(values, type, nativeProjectile);
+        timing(values, type, nativeProjectile, cycle);
         if (options.enabled(Feature.WEAPON_STATS))
             weaponStats(values, type, nativeProjectile);
         sounds(values, type, options);
         return Map.copyOf(values);
     }
 
-    private static void timing(Map<NpcTypeProperty, Tag> values, EntityTypeProperties type, boolean nativeProjectile)
+    private static void timing(Map<NpcTypeProperty, Tag> values, EntityTypeProperties type, boolean nativeProjectile, @Nullable ReloadCycle cycle)
     {
         if (type.shootDelay().isEmpty())
             return;
-        for (NpcTypeProperty property : new NpcTypeProperty[]{NpcTypeProperty.DELAY_MIN, NpcTypeProperty.DELAY_MAX, NpcTypeProperty.BURST_DELAY})
-            integer(values, property, type.shootDelay(), 1D, 1, 9999);
+        integer(values, NpcTypeProperty.BURST_DELAY, type.shootDelay(), 1D, 1, 9999);
+        if (nativeProjectile && cycle != null)
+        {
+            // The NPC fires its magazine one trigger at a time, then waits out the reload.
+            integer(values, NpcTypeProperty.DELAY_MIN, OptionalDouble.of(cycle.reloadTicks()), 1D, 1, 9999);
+            integer(values, NpcTypeProperty.DELAY_MAX, OptionalDouble.of(cycle.reloadTicks()), 1D, 1, 9999);
+            values.put(NpcTypeProperty.BURST, IntTag.valueOf(Math.min(9999, cycle.volleys())));
+            values.put(NpcTypeProperty.SHOT_COUNT, IntTag.valueOf(1));
+            return;
+        }
+        integer(values, NpcTypeProperty.DELAY_MIN, type.shootDelay(), 1D, 1, 9999);
+        integer(values, NpcTypeProperty.DELAY_MAX, type.shootDelay(), 1D, 1, 9999);
         // Each native trigger already emits the bank's barrels and configured pellets.
         if (nativeProjectile)
         {

@@ -16,14 +16,15 @@ import java.util.Optional;
  * <p>
  * With a plane definition the entity takes the ammunition's damage against planes, with another driveable its damage
  * against vehicles, and with an AA gun the ammunition's base damage, as a placed AA gun does. Without a definition the
- * entity takes ordinary living-entity damage. Queried on the server thread whenever Flan damage is resolved.
+ * entity takes ordinary living-entity damage. Read wherever Flan resolves a hit: always on the server thread, and on a
+ * client that follows a round's path, so the answer must be available on both sides.
  * </p>
  */
 @ApiStatus.Experimental
 public interface IFlanDamageModel
 {
     /** @return the AA gun or driveable whose damage profile this entity takes, or empty for living-entity damage */
-    Optional<IContentType> getFlansDamageModel();
+    Optional<IContentType> flansmodultimateDamageModel();
 
     /**
      * Whether kinetic rounds and shaped charges are resolved against the driveable's core armour, on the face the shot
@@ -32,7 +33,7 @@ public interface IFlanDamageModel
      *
      * @return whether the driveable's armour protects this entity
      */
-    default boolean flansModelArmour()
+    default boolean flansmodultimateModelArmour()
     {
         return true;
     }

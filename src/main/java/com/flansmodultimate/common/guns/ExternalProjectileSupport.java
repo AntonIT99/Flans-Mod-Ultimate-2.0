@@ -47,6 +47,11 @@ public final class ExternalProjectileSupport
         return !stack.isEmpty() && stack.getItem() instanceof ShootableItem item && item.getConfigType() instanceof GrenadeType;
     }
 
+    public static int roundsPerItem(ItemStack stack)
+    {
+        return Math.max(0, ShootableItem.getMaxRounds(stack));
+    }
+
     public static Optional<ProjectileSources> getSources(ItemStack ammunition, ItemStack heldWeapon, @Nullable IContentType weapon, @Nullable IContentType platform, boolean secondary,
         boolean weaponStats)
     {

@@ -14,8 +14,9 @@ public final class NpcWeaponOptions
     public enum Feature
     {
         ITEM_ARMOR(true), ITEM_WEAPONS(true), ARMOR_ANIMATIONS(true), WEAPON_ANIMATIONS(true), TYPE_PROPERTIES(true), PROJECTILES(true), GRENADES(true), MODEL_MUZZLES(true), ALTERNATE_BARRELS(
-            true), WEAPON_STATS(
-                true), FIRE_SOUNDS(true), SHOOT_PARTICLES(true), LEAD_TARGET(true), BALLISTIC_AIM(true), SECONDARY_BANK(false), RELOAD_SOUNDS(true), THROW_SOUNDS(true), MODEL_SOUNDS(true);
+            true), WEAPON_STATS(true), FIRE_SOUNDS(true), SHOOT_PARTICLES(true), LEAD_TARGET(true), BALLISTIC_AIM(true), SECONDARY_BANK(false), RELOAD_SOUNDS(true), THROW_SOUNDS(true), MODEL_SOUNDS(
+                true), MELEE_SOUNDS(true), VEHICLE_DAMAGE(true), MODEL_ARMOUR(true), INVULNERABLE(
+                    false), FLAN_DAMAGE_TYPES(true), RELOAD_CYCLE(true), DUAL_WIELD(true), GUN_SHOT_ANIMATION(true), GUN_RELOAD_ANIMATION(true), GUN_MELEE_ANIMATION(true), NATIVE_THROWABLES(true);
 
         private final boolean defaultEnabled;
 
@@ -58,7 +59,7 @@ public final class NpcWeaponOptions
 
     private static boolean isSoundFeature(Feature feature)
     {
-        return feature == Feature.FIRE_SOUNDS || feature == Feature.RELOAD_SOUNDS || feature == Feature.THROW_SOUNDS || feature == Feature.MODEL_SOUNDS;
+        return feature == Feature.FIRE_SOUNDS || feature == Feature.RELOAD_SOUNDS || feature == Feature.THROW_SOUNDS || feature == Feature.MODEL_SOUNDS || feature == Feature.MELEE_SOUNDS;
     }
 
     public void save(CompoundTag root)

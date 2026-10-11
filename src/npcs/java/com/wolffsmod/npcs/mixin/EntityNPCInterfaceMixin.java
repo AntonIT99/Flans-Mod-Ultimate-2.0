@@ -25,6 +25,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.Optional;
+
 /**
  * Every hook into the Custom NPCs entity base class.
  *
@@ -35,6 +37,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * <li>Stored defaults and switches piggyback on Custom NPCs' existing server-to-client spawn/update data.</li>
  * <li>Custom NPCs owns the live entity; detached model entities do not own tracking or culling.</li>
  * <li>Presentation settings control rendering, server-timed idle/movement clips and client engine pitch without changing combat.</li>
+ * <li>Protection: the NPC takes Flan damage as its model would, can be invulnerable or ignore weak hits, resists Flan damage by its kind and
+ * resists knockback while it is a vehicle.</li>
+ * <li>Vanilla throwables in the projectile slot fly as the real thing; held Flan guns animate and sound when swung.</li>
  * </ul>
  *
  * <p>
@@ -45,7 +50,7 @@ import net.minecraft.world.level.block.state.BlockState;
 // Mixin inheritance follows the target entity; Minecraft owns entity identity/equality. Once merged, self-casts and
 // instanceof checks on this are valid, and the overrides keep the target signatures.
 @SuppressWarnings({"java:S110", "java:S2160", "DataFlowIssue", "NullableProblems", "ConstantValue", "AddedMixinMembersNamePattern", "UnresolvedMixinReference"})
-public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource
+public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements IEquipmentPolicy, IFlanNpcDistance, ILivingVisualEffects, IEngineSoundSource, IFlanDamageModel
 {
     @Unique
     private static final String WOLFFSMODNPCS_TYPE_DEFAULTS = "WolffsModTypeDefaults";
@@ -124,6 +129,12 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.WEAPON_ANIMATIONS);
     }
 
+    @Override
+    public boolean flansGunShotAnimations()
+    {
+        return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.GUN_SHOT_ANIMATION);
+    }
+
     @Inject(method = "updateTasks", at = @At("TAIL"))
     private void wolffsmodnpcsItemAI(CallbackInfo callback)
     {
@@ -141,6 +152,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
             return;
         wolffsmodnpcsEngineAudio.tick(npc);
         wolffsmodnpcsUpdateArmorAttributes();
+        NpcProtection.updateKnockback(npc);
         if (wolffsmodnpcsShieldCooldown > 0)
             wolffsmodnpcsShieldCooldown--;
         if (!flansWeaponEffects() || npc.getTarget() == null || !npc.getTarget().isAlive() || wolffsmodnpcsShieldCooldown > 0)
@@ -182,6 +194,8 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     private void wolffsmodnpcsItemMelee(Entity target, CallbackInfoReturnable<Boolean> callback)
     {
         EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        // A held Flan gun is swung whether the item or the editor decides the damage.
+        NpcItemAttacks.meleeFeedback(npc);
         if (NpcEquipment.weaponAuthority(npc))
             callback.setReturnValue(NpcItemAttacks.melee(npc, target));
     }
@@ -217,7 +231,7 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
     @Redirect(method = {"hurt", "m_6469_"}, at = @At(value = "INVOKE", target = "Lnoppes/npcs/Resistances;applyResistance(Lnet/minecraft/world/damagesource/DamageSource;F)F"))
     private float wolffsmodnpcsArmorNotEditor(Resistances resistances, DamageSource source, float amount)
     {
-        return flansArmorEffects() ? amount : resistances.applyResistance(source, amount);
+        return flansArmorEffects() ? amount : NpcProtection.resist((EntityNPCInterface) (Object) this, resistances, source, amount);
     }
 
     @Redirect(method = {"knockback", "m_147240_"}, at = @At(value = "FIELD", target = "Lnoppes/npcs/Resistances;knockback:F", opcode = Opcodes.GETFIELD))
@@ -285,7 +299,34 @@ public abstract class EntityNPCInterfaceMixin extends PathfinderMob implements I
         {
             wolffsmodnpcsRound = wolffsmodnpcsRound >= Integer.MAX_VALUE / 10 - 1 ? 0 : wolffsmodnpcsRound + 1;
             callback.cancel();
+            return;
         }
+        if (NpcThrowables.fire(npc, target, distanceFactor == 1F))
+            callback.cancel();
+    }
+
+    // Protection
+
+    @Override
+    public Optional<IContentType> flansmodultimateDamageModel()
+    {
+        EntityNPCInterface npc = (EntityNPCInterface) (Object) this;
+        if (!NpcEquipment.enabled(npc, Feature.VEHICLE_DAMAGE) || !(npc instanceof EntityCustomNpc custom) || !(custom.modelData.getEntity(npc) instanceof FlanModelEntity model))
+            return Optional.empty();
+        return Optional.ofNullable(model.getInfoType());
+    }
+
+    @Override
+    public boolean flansmodultimateModelArmour()
+    {
+        return NpcEquipment.enabled((EntityNPCInterface) (Object) this, Feature.MODEL_ARMOUR);
+    }
+
+    @Inject(method = {"hurt", "m_6469_"}, at = @At("HEAD"), cancellable = true)
+    private void wolffsmodnpcsIgnoreHit(DamageSource source, float amount, CallbackInfoReturnable<Boolean> callback)
+    {
+        if (!level().isClientSide && NpcProtection.ignores((EntityNPCInterface) (Object) this, source, amount))
+            callback.setReturnValue(false);
     }
 
     // Type properties

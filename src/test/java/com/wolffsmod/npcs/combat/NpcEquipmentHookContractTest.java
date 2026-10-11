@@ -89,6 +89,21 @@ class NpcEquipmentHookContractTest
         });
     }
 
+    @Test
+    void rangedGoalReadsItsBurstItsIntervalAndItsPauseExactlyOnceEach() throws IOException
+    {
+        MethodNode tick = method(read("noppes/npcs/ai/EntityAIRangedAttack"), "()V", "m_8037_", "tick");
+        // The reload cycle counts triggers on the interval read and the burst-end reload on the pause read.
+        for (String getter : List.of("getBurst", "getBurstDelay", "getDelayRNG"))
+        {
+            long calls = 0;
+            for (var instruction : tick.instructions)
+                if (instruction instanceof MethodInsnNode call && call.owner.equals("noppes/npcs/entity/data/DataRanged") && call.name.equals(getter) && call.desc.equals("()I"))
+                    calls++;
+            assertEquals(1, calls, getter);
+        }
+    }
+
     private static boolean invokes(MethodNode method, String owner, String name, String descriptor)
     {
         for (var instruction : method.instructions)

@@ -3,17 +3,12 @@ package com.wolffsmod.npcs.properties;
 import com.wolffsmod.npcs.properties.NpcTypeProperty.Component;
 import org.junit.jupiter.api.Test;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class NpcPropertyOverridesTest
 {
@@ -57,6 +52,51 @@ class NpcPropertyOverridesTest
         overlay.saveDefaults(Component.STATS, save);
         assertEquals(20, save.getInt("minDelay"));
         assertEquals(40, save.getInt("maxDelay"));
+    }
+
+    @Test
+    void anAdoptedValueOutlivesInheritanceAndIsWhatSavesCarry()
+    {
+        Map<NpcTypeProperty, Tag> live = new EnumMap<>(NpcTypeProperty.class);
+        live.put(NpcTypeProperty.HEALTH, IntTag.valueOf(20));
+        live.put(NpcTypeProperty.DAMAGE, IntTag.valueOf(4));
+        NpcPropertyOverrides overlay = new NpcPropertyOverrides();
+        Map<NpcTypeProperty, Tag> model = Map.of(NpcTypeProperty.HEALTH, IntTag.valueOf(200), NpcTypeProperty.DAMAGE, IntTag.valueOf(12));
+        overlay.refresh(model, live::get, live::put);
+        // Importing the model damage, while health stays inherited.
+        overlay.adopt(NpcTypeProperty.DAMAGE, model.get(NpcTypeProperty.DAMAGE), live::get, live::put);
+        overlay.refresh(Map.of(NpcTypeProperty.HEALTH, IntTag.valueOf(200)), live::get, live::put);
+        assertEquals(IntTag.valueOf(12), live.get(NpcTypeProperty.DAMAGE));
+        assertFalse(overlay.values().containsKey(NpcTypeProperty.DAMAGE));
+        CompoundTag save = new CompoundTag();
+        save.putInt("pDamage", 12);
+        save.putInt("MaxHealth", 200);
+        overlay.saveDefaults(Component.STATS, save);
+        assertEquals(12, save.getInt("pDamage"));
+        assertEquals(20, save.getInt("MaxHealth"));
+        // A value that was never inherited is written through as well.
+        live.put(NpcTypeProperty.ACCURACY, IntTag.valueOf(50));
+        overlay.adopt(NpcTypeProperty.ACCURACY, IntTag.valueOf(90), live::get, live::put);
+        assertEquals(IntTag.valueOf(90), live.get(NpcTypeProperty.ACCURACY));
+    }
+
+    @Test
+    void suspendingRestoresEveryDefaultSoThatNewValuesAreNotLostToTheOverlay()
+    {
+        Map<NpcTypeProperty, Tag> live = new EnumMap<>(NpcTypeProperty.class);
+        live.put(NpcTypeProperty.DAMAGE, IntTag.valueOf(4));
+        NpcPropertyOverrides overlay = new NpcPropertyOverrides();
+        Map<NpcTypeProperty, Tag> model = Map.of(NpcTypeProperty.DAMAGE, IntTag.valueOf(12));
+        overlay.refresh(model, live::get, live::put);
+        overlay.suspend(live::put);
+        assertEquals(IntTag.valueOf(4), live.get(NpcTypeProperty.DAMAGE));
+        assertTrue(overlay.values().isEmpty());
+        // An equipment import now writes the saved value rather than the inherited one.
+        live.put(NpcTypeProperty.DAMAGE, IntTag.valueOf(9));
+        assertTrue(overlay.refresh(model, live::get, live::put));
+        assertEquals(IntTag.valueOf(12), live.get(NpcTypeProperty.DAMAGE));
+        overlay.refresh(Map.of(), live::get, live::put);
+        assertEquals(IntTag.valueOf(9), live.get(NpcTypeProperty.DAMAGE));
     }
 
     @Test

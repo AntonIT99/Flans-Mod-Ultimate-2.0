@@ -5,32 +5,20 @@ import com.flansmodultimate.api.FlansEquipment;
 import com.wolffsmod.npcs.client.RangedControlLocks.Reason;
 import com.wolffsmod.npcs.combat.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
-import net.minecraftforge.common.ForgeMod;
 import noppes.npcs.client.gui.*;
 import noppes.npcs.client.gui.mainmenu.GuiNpcStats;
 import noppes.npcs.entity.EntityNPCInterface;
 import noppes.npcs.shared.client.gui.components.GuiBasic;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
 
 /** Item readouts are presentation only: no writes to NPC combat fields, even while the editor saves. */
 public final class NpcEquipmentControls
 {
-    /** Vanilla inaccuracy 1 in Flan spread units, using the conversion Flan thrown weapons apply. */
-    private static final double VANILLA_INACCURACY_SPREAD = 0.0172275D / 0.0025D;
-    /** Arrow, trident and thrown-item hitbox width in blocks. */
-    private static final double VANILLA_HITBOX = 0.5D;
-
     private NpcEquipmentControls()
     {}
 
@@ -88,11 +76,10 @@ public final class NpcEquipmentControls
 
     private static void melee(GuiBasic gui, ItemStack item, Map<Integer, String> readouts, Map<Integer, Reason> buttons)
     {
-        readouts.put(1, number(NpcEquipment.meleeDamage(item) + EnchantmentHelper.getDamageBonus(item, net.minecraft.world.entity.MobType.UNDEFINED)));
-        readouts.put(2, number(EquipmentAttributes.value(item, EquipmentSlot.MAINHAND, ForgeMod.ENTITY_REACH.get(), 3D)));
+        readouts.put(1, number(NpcEquipmentStats.meleeDamage(item)));
+        readouts.put(2, number(NpcEquipmentStats.meleeReach(item)));
         readouts.put(3, Integer.toString(NpcEquipment.meleeDelay(item)));
-        readouts.put(4, number(EquipmentAttributes.value(item, EquipmentSlot.MAINHAND, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_KNOCKBACK, 0D)
-            + EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, item)));
+        readouts.put(4, number(NpcEquipmentStats.meleeKnockback(item)));
         readouts.put(6, Integer.toString(NpcEquipment.fireSeconds(item)));
         buttons.put(5, Reason.ITEM_WEAPON);
         buttons.put(7, Reason.ITEM_WEAPON);
@@ -119,7 +106,7 @@ public final class NpcEquipmentControls
         readouts.put(4, number(NpcEquipment.shotDelay(item) + NpcEquipment.chargeTime(item)));
         readouts.put(5, number(NpcEquipment.shotDelay(item)));
         readouts.put(6, "1");
-        Shot shot = shot(npc, item);
+        NpcEquipmentStats.Shot shot = NpcEquipmentStats.shot(npc, item);
         if (shot != null)
         {
             readouts.put(1, number(Math.max(0, 100D - shot.spread() * 5D)));
@@ -138,7 +125,7 @@ public final class NpcEquipmentControls
             readouts.put(id, nativeValue);
         for (int id : new int[]{1, 4, 5, 6, 7, 8, 9, 10})
             buttons.put(id, Reason.ITEM_WEAPON);
-        Shot shot = shot(npc, npc.getMainHandItem());
+        NpcEquipmentStats.Shot shot = NpcEquipmentStats.shot(npc, npc.getMainHandItem());
         if (shot == null)
         {
             buttons.put(0, Reason.ITEM_WEAPON);
@@ -156,17 +143,7 @@ public final class NpcEquipmentControls
         display(gui, 0, impact.gravity() > 0D ? 1 : 0, buttons, shown);
         // Flan rounds and vanilla projectiles only lose speed to drag.
         display(gui, 1, 0, buttons, shown);
-        display(gui, 3, explosionSize(impact.explosionRadius()), buttons, shown);
-    }
-
-    /** Custom NPCs none/small/medium/large explosion choice nearest to a Flan radius in blocks. */
-    private static int explosionSize(double radius)
-    {
-        if (radius <= 0D)
-            return 0;
-        if (radius < 2D)
-            return 1;
-        return radius < 4D ? 2 : 3;
+        display(gui, 3, NpcEquipmentStats.explosionSize(impact.explosionRadius()), buttons, shown);
     }
 
     private static void display(GuiBasic gui, int id, int value, Map<Integer, Reason> buttons, Set<Integer> shown)
@@ -176,40 +153,6 @@ public final class NpcEquipmentControls
             button.setDisplay(value);
         buttons.put(id, Reason.ITEM_WEAPON);
         shown.add(id);
-    }
-
-    /** Ranged statistics of a Flan gun or a vanilla ranged item; {@code null} when the item's behavior cannot be inspected. */
-    @Nullable
-    private static Shot shot(EntityNPCInterface npc, ItemStack item)
-    {
-        var flan = NpcEquipment.flan(npc);
-        if (flan.isPresent())
-        {
-            EquippedWeaponProperties properties = flan.get();
-            return new Shot(properties.damage(), properties.speed(), properties.spread(), properties.projectiles(), properties.firingSound(), properties.impact());
-        }
-        String arrowHit = SoundEvents.ARROW_HIT.getLocation().toString();
-        if (item.getItem() instanceof BowItem)
-        {
-            int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, item);
-            return vanilla(2D + (power > 0 ? power * 0.5D + 0.5D : 0D), 3D, 1, SoundEvents.ARROW_SHOOT, arrowHit, arrowHit);
-        }
-        if (item.getItem() instanceof CrossbowItem)
-            return vanilla(2D, NpcItemAttacks.CROSSBOW_VELOCITY, EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, item) > 0 ? 3 : 1, SoundEvents.CROSSBOW_SHOOT, arrowHit, arrowHit);
-        if (item.getItem() instanceof TridentItem)
-            return vanilla(8D, 2.5D, 1, SoundEvents.TRIDENT_THROW, SoundEvents.TRIDENT_HIT.getLocation().toString(), SoundEvents.TRIDENT_HIT_GROUND.getLocation().toString());
-        if (item.getItem() instanceof ThrowablePotionItem)
-            return vanilla(0D, 0.5D, 1, SoundEvents.SNOWBALL_THROW, "", SoundEvents.SPLASH_POTION_BREAK.getLocation().toString());
-        if (item.is(Items.SNOWBALL) || item.is(Items.EGG) || item.is(Items.ENDER_PEARL))
-            return vanilla(0D, 1.5D, 1, SoundEvents.SNOWBALL_THROW, "", "");
-        return null;
-    }
-
-    private static Shot vanilla(double damage, double speed, int projectiles, SoundEvent firing, String entityHit, String blockHit)
-    {
-        // Item attacks fire with vanilla inaccuracy 1; express it in Flan spread units like the gun readouts.
-        double spread = VANILLA_INACCURACY_SPREAD;
-        return new Shot(damage, speed, spread, projectiles, firing.getLocation().toString(), new EquippedWeaponProperties.Impact(1D, VANILLA_HITBOX, 1D, 0D, entityHit, blockHit, false));
     }
 
     private static String sound(String sound)
@@ -241,9 +184,6 @@ public final class NpcEquipmentControls
             labels.put(label, Reason.ITEM_ARMOR);
         }
     }
-
-    private record Shot(double damage, double speed, double spread, int projectiles, String firingSound, EquippedWeaponProperties.Impact impact)
-    {}
 
     private static String number(double value)
     {

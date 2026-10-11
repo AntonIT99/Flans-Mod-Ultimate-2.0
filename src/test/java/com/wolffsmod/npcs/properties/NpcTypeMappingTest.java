@@ -3,6 +3,7 @@ package com.wolffsmod.npcs.properties;
 import com.flansmodultimate.api.EntityTypeProperties;
 import com.flansmodultimate.api.EntityTypeProperties.Sound;
 import com.flansmodultimate.api.EntityTypeProperties.Weapon;
+import com.flansmodultimate.api.ReloadCycle;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import org.junit.jupiter.api.Test;
@@ -84,6 +85,28 @@ class NpcTypeMappingTest
             OptionalDouble.empty(), Map.of(), List.of());
         assertEquals(IntTag.valueOf(1024), NpcTypeMapping.create(type, new NpcWeaponOptions(), true).get(NpcTypeProperty.HEALTH));
         assertEquals(IntTag.valueOf(50000), NpcTypeMapping.create(type, new NpcWeaponOptions(), true, 100000).get(NpcTypeProperty.HEALTH));
+    }
+
+    @Test
+    void aReloadCycleBecomesTheDelayAndItsMagazineTheBurst()
+    {
+        NpcWeaponOptions options = new NpcWeaponOptions();
+        EntityTypeProperties type = type(List.of(weapon(12, 2, 3, "flansmod:fire")));
+        var cycle = new ReloadCycle(40, 4.5D, 59.2D, OptionalInt.empty());
+        var mapped = NpcTypeMapping.create(type, options, true, 1024D, cycle);
+        assertEquals(IntTag.valueOf(60), mapped.get(NpcTypeProperty.DELAY_MIN));
+        assertEquals(IntTag.valueOf(60), mapped.get(NpcTypeProperty.DELAY_MAX));
+        assertEquals(IntTag.valueOf(5), mapped.get(NpcTypeProperty.BURST_DELAY));
+        assertEquals(IntTag.valueOf(40), mapped.get(NpcTypeProperty.BURST));
+        assertEquals(IntTag.valueOf(1), mapped.get(NpcTypeProperty.SHOT_COUNT));
+        // Without Flan ammunition Custom NPCs keeps its own burst and the cycle does not apply.
+        var template = NpcTypeMapping.create(type, options, false, 1024D, cycle);
+        assertEquals(IntTag.valueOf(5), template.get(NpcTypeProperty.DELAY_MIN));
+        assertFalse(template.containsKey(NpcTypeProperty.BURST));
+        // Without a cycle the bank fires steadily, one trigger per burst.
+        var steady = NpcTypeMapping.create(type, options, true, 1024D, null);
+        assertEquals(IntTag.valueOf(5), steady.get(NpcTypeProperty.DELAY_MIN));
+        assertEquals(IntTag.valueOf(1), steady.get(NpcTypeProperty.BURST));
     }
 
     private static Weapon weapon(double damage, double spread, double speed, String sound)

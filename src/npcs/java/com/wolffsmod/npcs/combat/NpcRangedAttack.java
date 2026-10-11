@@ -1,8 +1,11 @@
 package com.wolffsmod.npcs.combat;
 
 import com.flansmodultimate.api.*;
+import com.flansmodultimate.api.EntityTypeProperties.Weapon;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import com.wolffsmod.npcs.model.FlanModelEntity;
+import com.wolffsmod.npcs.properties.NpcTypeProperties;
+import com.wolffsmod.npcs.properties.NpcTypeProperty;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import noppes.npcs.EventHooks;
@@ -10,9 +13,11 @@ import noppes.npcs.api.event.NpcEvent;
 import noppes.npcs.api.wrapper.ItemStackWrapper;
 import noppes.npcs.entity.EntityCustomNpc;
 import noppes.npcs.entity.EntityNPCInterface;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -115,15 +120,46 @@ public final class NpcRangedAttack
         private void fireMuzzle(WeaponMuzzle muzzle)
         {
             Vec3 origin = modelMuzzles ? modelOrigin(npc, model, muzzle.offset()) : npc.getEyePosition();
-            for (int shotIndex = 0; shotIndex < shotCount; shotIndex++)
-                fired = launch(muzzle, origin, shotIndex) || fired;
+            Weapon adjusted = adjustedWeapon(muzzle).orElse(null);
+            // A weapon firing with adjusted statistics still throws its own pellets, unless the shot count is adjusted too.
+            int shots = adjusted != null && !own(NpcTypeProperty.SHOT_COUNT) ? Math.max(1, Math.min(128, adjusted.projectiles())) : shotCount;
+            for (int shotIndex = 0; shotIndex < shots; shotIndex++)
+                fired = launch(muzzle, origin, shotIndex, adjusted) || fired;
         }
 
-        private boolean launch(WeaponMuzzle muzzle, Vec3 origin, int shotIndex)
+        private boolean own(NpcTypeProperty property)
         {
-            ProjectileParameters parameters = new ProjectileParameters(sequence * shotCount + shotIndex, options.enabled(Feature.WEAPON_STATS), event.damage,
-                (100F - npc.stats.ranged.getAccuracy()) * 0.2F, Math.max(0.01F, npc.stats.ranged.getSpeed() / 10F));
-            var prepared = FlansProjectiles.prepare(npc, ammo, held, muzzle.weapon().orElse(null), definition, secondary, parameters);
+            return NpcTypeProperties.usesOwnValue(npc, property);
+        }
+
+        /**
+         * The model weapon behind this muzzle, when the NPC keeps its own damage, accuracy or speed instead of the model's.
+         * The shot then uses the NPC's values for those and the weapon's for the rest.
+         */
+        private Optional<Weapon> adjustedWeapon(WeaponMuzzle muzzle)
+        {
+            if (definition == null || !options.enabled(Feature.WEAPON_STATS) || !(own(NpcTypeProperty.DAMAGE) || own(NpcTypeProperty.ACCURACY) || own(NpcTypeProperty.SPEED)))
+                return Optional.empty();
+            List<Weapon> weapons = NpcTypeProperties.of(npc).type().map(EntityTypeProperties::weapons).orElse(List.of());
+            String name = muzzle.weapon().orElse(definition).getShortName();
+            return weapons.stream().filter(weapon -> weapon.name().equals(name)).findFirst().or(() -> weapons.stream().findFirst());
+        }
+
+        private ProjectileParameters parameters(int shotIndex, @Nullable Weapon weapon)
+        {
+            int round = sequence * shotCount + shotIndex;
+            float damage = event.damage;
+            float spread = (100F - npc.stats.ranged.getAccuracy()) * 0.2F;
+            float speed = Math.max(0.01F, npc.stats.ranged.getSpeed() / 10F);
+            if (weapon == null)
+                return new ProjectileParameters(round, options.enabled(Feature.WEAPON_STATS), damage, spread, speed);
+            return new ProjectileParameters(round, false, own(NpcTypeProperty.DAMAGE) ? damage : (float) weapon.damage(), own(NpcTypeProperty.ACCURACY) ? spread : (float) weapon.spread(),
+                own(NpcTypeProperty.SPEED) ? speed : (float) weapon.speed().orElse(speed));
+        }
+
+        private boolean launch(WeaponMuzzle muzzle, Vec3 origin, int shotIndex, @Nullable Weapon adjusted)
+        {
+            var prepared = FlansProjectiles.prepare(npc, ammo, held, muzzle.weapon().orElse(null), definition, secondary, parameters(shotIndex, adjusted));
             if (prepared.isEmpty())
                 return false;
             var shot = prepared.get();
@@ -141,7 +177,7 @@ public final class NpcRangedAttack
             {
                 if (FlansProjectiles.isGrenade(ammo))
                     soundPlayed = options.enabled(Feature.THROW_SOUNDS);
-                else if (options.enabled(Feature.FIRE_SOUNDS))
+                else if (options.enabled(Feature.FIRE_SOUNDS) && !own(NpcTypeProperty.FIRING_SOUND))
                     soundPlayed = FlansProjectiles.playShootSound(npc, muzzle.weapon().orElse(definition), held, secondary);
             }
             if (shotIndex == 0 && options.enabled(Feature.SHOOT_PARTICLES) && (!FlansProjectiles.isGrenade(ammo) || modelMuzzles))
@@ -156,6 +192,9 @@ public final class NpcRangedAttack
                 if (sound != null)
                     npc.playSound(sound, 2F, 1F);
             }
+            // A held Flan gun that fired the round itself, rather than a model's mount, raises and cycles like a native shot.
+            if (!modelMuzzles && !FlansProjectiles.isGrenade(ammo) && FlansEquipment.getWeaponProperties(held, ItemStack.EMPTY).isPresent())
+                FlansEquipment.animateShot(npc, InteractionHand.MAIN_HAND);
             // Native Flan entities have their own hit handling rather than Custom NPCs' IProjectile wrapper.
             EventHooks.onNPCRangedLaunched(npc, event);
         }

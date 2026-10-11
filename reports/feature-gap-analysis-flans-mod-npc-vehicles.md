@@ -14,6 +14,33 @@ Settings use normal NPC persistence, presets and spawn/update sync. The original
 findings below remain the audit snapshot; GUI appearance and audible behavior
 still require in-game verification.
 
+Implementation follow-up on Forge 1.20.1: the Combat gaps below are now
+addressed, each with its own control in the Wolff's Mod tab.
+
+- **Damage vs vehicles/planes:** Protection > Model damage profile gives a Flan
+  model NPC the ammunition's damage against planes or vehicles (base damage for
+  AA guns). Model armour goes beyond the original: kinetic rounds and shaped
+  charges meet the model's hull armour on the side they strike.
+- **Disable All Damage and minimum hits:** Protection > Invulnerable, and minimum
+  projectile, melee and explosion hits.
+- **Flan melee and resistances:** Protection > Recognize Flan damage types.
+- **AA reload cycle and reload sounds:** Firing > Reload cycle, for AA guns and
+  for vehicle, plane and mecha banks, with reload and chambering sounds.
+- **Vehicle knockback immunity:** Protection > Knockback (By model, Immune, Normal).
+- **Off-hand guns:** Equipment > Dual wield.
+- **Gun animations:** the shot animation already existed since `506b79d0e`;
+  Animations now has separate shot, reload and melee switches, Weapon Sounds a
+  melee sound switch, and held guns animate on the template path as well.
+- **Editable stats after import:** Equipment > Model properties (Inherit, Custom
+  or Import per property) and Equipment > Equipment import (melee, ranged, armor).
+- **Vanilla throwables:** Firing > Native throwables, plus fire charges.
+- **Custom NPCs' own weapons:** not applicable. Custom NPCs 1.20.1 ships no weapon
+  items; the equipment import covers any item through its attributes.
+
+Unit tests cover the settings, damage gates, reload cycles, imports and mapping.
+Mixin application, the new editor pages and combat behavior have not been run in
+game and still require in-game verification.
+
 - **Reference:** `C:\Users\alpha\Documents\Minecraft-Development\Flans-Mod-NPC-Vehicles` (commit `7999bb16`, version 7.1.0, Forge 1.7.10, CustomNPC+ 1.11.1)
 - **Target:** `../src/npcs` of Flan's Mod Ultimate 2.0 (`master` @ `6e9f190a8`, Forge 1.20.1, Custom NPCs 1.20.1 GBPort), together with the public API in `src/main/java/com/flansmodultimate/api` that the module uses
 - **Direction:** reference → target only. Target-only features are left out, such as item-driven equipment combat, paintjob browsing, the 64x32 renderer, inherited type properties and editor read-only locks.

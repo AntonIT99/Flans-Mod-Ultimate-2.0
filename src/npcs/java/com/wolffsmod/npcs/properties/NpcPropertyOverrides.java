@@ -44,6 +44,28 @@ public final class NpcPropertyOverrides
         return changed;
     }
 
+    /**
+     * Makes an inherited value the user's own: it is written through and the default it replaced is forgotten, so the
+     * value survives once the property stops being inherited and is what normal saves carry from now on.
+     */
+    public void adopt(NpcTypeProperty property, Tag value, Function<NpcTypeProperty, Tag> read, BiConsumer<NpcTypeProperty, Tag> write)
+    {
+        defaults.remove(property);
+        if (!value.equals(read.apply(property)))
+            write.accept(property, value);
+    }
+
+    /**
+     * Puts every stored default back, so that code writing the user's own values does not write into the overlay and
+     * lose them on the next refresh. The following {@link #refresh} applies the overlay again.
+     */
+    public void suspend(BiConsumer<NpcTypeProperty, Tag> write)
+    {
+        defaults.forEach(write);
+        defaults.clear();
+        values = Map.of();
+    }
+
     public Map<NpcTypeProperty, Tag> values()
     {
         return values;

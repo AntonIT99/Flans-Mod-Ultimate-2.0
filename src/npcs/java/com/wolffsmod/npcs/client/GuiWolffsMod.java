@@ -51,9 +51,10 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private enum Category
     {
-        EQUIPMENT(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.TYPE_PROPERTIES, Feature.WEAPON_STATS), FIRING(Feature.PROJECTILES, Feature.GRENADES, Feature.MODEL_MUZZLES,
-            Feature.ALTERNATE_BARRELS, Feature.SECONDARY_BANK), AIMING(Feature.LEAD_TARGET,
-                Feature.BALLISTIC_AIM), ANIMATIONS(Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS), EFFECTS(Feature.MODEL_SOUNDS, Feature.SHOOT_PARTICLES), DISPLAY;
+        EQUIPMENT(Feature.ITEM_WEAPONS, Feature.ITEM_ARMOR, Feature.DUAL_WIELD, Feature.TYPE_PROPERTIES, Feature.WEAPON_STATS), FIRING(Feature.PROJECTILES, Feature.GRENADES, Feature.NATIVE_THROWABLES,
+            Feature.MODEL_MUZZLES, Feature.ALTERNATE_BARRELS, Feature.SECONDARY_BANK, Feature.RELOAD_CYCLE), AIMING(Feature.LEAD_TARGET, Feature.BALLISTIC_AIM), PROTECTION(Feature.VEHICLE_DAMAGE,
+                Feature.MODEL_ARMOUR, Feature.FLAN_DAMAGE_TYPES, Feature.INVULNERABLE), ANIMATIONS(Feature.WEAPON_ANIMATIONS, Feature.ARMOR_ANIMATIONS, Feature.GUN_SHOT_ANIMATION,
+                    Feature.GUN_RELOAD_ANIMATION, Feature.GUN_MELEE_ANIMATION), EFFECTS(Feature.MODEL_SOUNDS, Feature.SHOOT_PARTICLES), DISPLAY;
         private final Feature[] features;
         Category(Feature... features)
         {
@@ -72,10 +73,12 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     private boolean vehicleSoundsPage;
     private boolean weaponSoundsPage;
     private NpcEngineSettings editingSound;
+    private final CombatPages combat;
 
     public GuiWolffsMod(EntityNPCInterface npc)
     {
         super(npc, MENU_ID);
+        combat = new CombatPages(this, npc);
         Packets.sendServer(new SPacketMenuGet(EnumMenuType.STATS));
     }
 
@@ -88,6 +91,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         else
             initCategory();
         String hint = category == Category.DISPLAY || vehicleSoundsPage ? "wolffsmodnpcs.presentation.hint" : "wolffsmodnpcs.weapons.ammo_hint";
+        if (category != null && combat.active())
+            hint = combat.hint();
         addLabel(new GuiLabel(101, loaded ? hint : "wolffsmodnpcs.weapons.loading", guiLeft + 8, guiTop + 203));
     }
 
@@ -108,14 +113,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void initCategory()
     {
-        String title = vehicleSoundsPage ? "wolffsmodnpcs.presentation.vehicle_sounds" : category.key();
-        if (weaponSoundsPage)
-            title = "wolffsmodnpcs.presentation.weapon_sounds";
-        if (editingSound != null)
-            title = editingSound == sounds().getIdle() ? "wolffsmodnpcs.presentation.edit_idle" : "wolffsmodnpcs.presentation.edit_movement";
-        addLabel(new GuiLabel(100, title, guiLeft + 8, guiTop + 10));
+        addLabel(new GuiLabel(100, pageTitle(), guiLeft + 8, guiTop + 10));
         addButton(new GuiButtonNop(this, BACK_BUTTON_ID, guiLeft + 354, guiTop + 4, 50, 20, new String[]{"gui.back"}, 0));
-        if (category == Category.DISPLAY)
+        if (combat.active())
+            combat.init(loaded);
+        else if (category == Category.DISPLAY)
         {
             NpcPresentation settings = NpcPresentation.of(npc);
             toggle(HURT_FLASH_ID, "hurt_flash", settings.isHurtFlash(), 29);
@@ -130,15 +132,35 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
                 initSoundEditor();
         }
         else if (weaponSoundsPage)
-            initFeatures(Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS);
+            initFeatures(Feature.FIRE_SOUNDS, Feature.RELOAD_SOUNDS, Feature.THROW_SOUNDS, Feature.MELEE_SOUNDS);
         else
+            initSwitches();
+    }
+
+    private String pageTitle()
+    {
+        if (combat.active())
+            return combat.title();
+        if (editingSound != null)
+            return editingSound == sounds().getIdle() ? "wolffsmodnpcs.presentation.edit_idle" : "wolffsmodnpcs.presentation.edit_movement";
+        if (weaponSoundsPage)
+            return "wolffsmodnpcs.presentation.weapon_sounds";
+        return vehicleSoundsPage ? "wolffsmodnpcs.presentation.vehicle_sounds" : category.key();
+    }
+
+    /** A category's switches, followed by the controls and page links that are more than a switch. */
+    private void initSwitches()
+    {
+        initFeatures(category.features);
+        int below = 29 + category.features.length * 21;
+        if (category == Category.EQUIPMENT)
+            combat.initEquipmentLinks(loaded, below + 6);
+        else if (category == Category.PROTECTION)
+            combat.initProtection(loaded, below);
+        else if (category == Category.EFFECTS)
         {
-            initFeatures(category.features);
-            if (category == Category.EFFECTS)
-            {
-                addButton(new GuiButtonNop(this, WEAPON_SOUNDS_ID, guiLeft + 8, guiTop + 80, 160, 20, new String[]{"wolffsmodnpcs.presentation.weapon_sounds"}, 0));
-                addButton(new GuiButtonNop(this, VEHICLE_SOUNDS_ID, guiLeft + 8, guiTop + 104, 160, 20, new String[]{"wolffsmodnpcs.presentation.vehicle_sounds"}, 0));
-            }
+            addButton(new GuiButtonNop(this, WEAPON_SOUNDS_ID, guiLeft + 8, guiTop + 80, 160, 20, new String[]{"wolffsmodnpcs.presentation.weapon_sounds"}, 0));
+            addButton(new GuiButtonNop(this, VEHICLE_SOUNDS_ID, guiLeft + 8, guiTop + 104, 160, 20, new String[]{"wolffsmodnpcs.presentation.vehicle_sounds"}, 0));
         }
     }
 
@@ -237,6 +259,11 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
     @Override
     public void unFocused(GuiTextFieldNop field)
     {
+        if (loaded && combat.unFocused(field))
+        {
+            changed = true;
+            return;
+        }
         if (!loaded || editingSound == null || sounds().isModelDefaults())
             return;
         switch (field.id)
@@ -271,6 +298,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
             ((NpcWeaponSettings) npc.stats).wolffsmodnpcsWeaponOptions().set(Feature.values()[button.id], button.getValue() == 1);
             changed = true;
         }
+        else if (combat.handles(button.id))
+            changed |= combat.buttonEvent(button);
         else if (button.id == ENGINE_SOUND_ID)
         {
             String selection = editingSound.getSound();
@@ -291,6 +320,8 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
 
     private void goBack()
     {
+        if (combat.back())
+            return;
         if (editingSound != null)
             editingSound = null;
         else if (vehicleSoundsPage)
@@ -373,6 +404,7 @@ public class GuiWolffsMod extends GuiNPCInterface2 implements IGuiData, ITextfie
         if (loaded && changed)
         {
             Packets.sendServer(new SPacketMenuSave(EnumMenuType.STATS, npc.stats.save(new CompoundTag())));
+            combat.saved();
             changed = false;
         }
     }

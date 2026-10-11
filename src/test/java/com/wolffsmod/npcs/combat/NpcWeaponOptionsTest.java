@@ -15,7 +15,8 @@ class NpcWeaponOptionsTest
         NpcWeaponOptions options = new NpcWeaponOptions();
         for (Feature feature : Feature.values())
         {
-            if (feature == Feature.SECONDARY_BANK)
+            // Only switches that would change an untouched NPC's behavior against the builder's intent start disabled.
+            if (feature == Feature.SECONDARY_BANK || feature == Feature.INVULNERABLE)
                 assertFalse(options.enabled(feature));
             else
                 assertTrue(options.enabled(feature));
@@ -63,6 +64,10 @@ class NpcWeaponOptionsTest
         assertTrue(options.enabled(Feature.RELOAD_SOUNDS));
         assertFalse(options.enabled(Feature.THROW_SOUNDS));
         assertFalse(options.enabled(Feature.MODEL_SOUNDS));
+        assertFalse(options.enabled(Feature.MELEE_SOUNDS));
+        // The former switch only governed sounds.
+        assertTrue(options.enabled(Feature.RELOAD_CYCLE));
+        assertTrue(options.enabled(Feature.GUN_RELOAD_ANIMATION));
         options.set(Feature.THROW_SOUNDS, true);
         options.save(root);
         assertFalse(root.getCompound(NpcWeaponOptions.NBT_KEY).contains("FLAN_SOUNDS"));

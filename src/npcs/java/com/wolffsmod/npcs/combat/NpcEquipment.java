@@ -1,17 +1,17 @@
 package com.wolffsmod.npcs.combat;
 
-import com.flansmodultimate.api.EquippedWeaponProperties;
-import com.flansmodultimate.api.FlansEquipment;
-import com.flansmodultimate.api.FlansProjectiles;
+import com.flansmodultimate.api.*;
 import com.wolffsmod.npcs.combat.NpcWeaponOptions.Feature;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import net.minecraftforge.common.ToolActions;
+import noppes.npcs.entity.EntityNPCInterface;
+
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraftforge.common.ToolActions;
-import noppes.npcs.entity.EntityNPCInterface;
 
 import java.util.Optional;
 
@@ -40,14 +40,25 @@ public final class NpcEquipment
             return true;
         if (FlansEquipment.getWeaponProperties(stack, ItemStack.EMPTY).map(EquippedWeaponProperties::ranged).orElse(false))
             return true;
-        return stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem || stack.getItem() instanceof TridentItem
-            || stack.getItem() instanceof ThrowablePotionItem || stack.is(Items.SNOWBALL) || stack.is(Items.EGG) || stack.is(Items.ENDER_PEARL)
-            || stack.getItem() instanceof NpcWeaponAdapter;
+        return stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem || stack.getItem() instanceof TridentItem || stack.getItem() instanceof ThrowablePotionItem
+            || stack.is(Items.SNOWBALL) || stack.is(Items.EGG) || stack.is(Items.ENDER_PEARL) || stack.getItem() instanceof NpcWeaponAdapter;
     }
 
     public static Optional<EquippedWeaponProperties> flan(EntityNPCInterface npc)
     {
         return FlansEquipment.getWeaponProperties(npc.getMainHandItem(), noppes.npcs.api.wrapper.ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
+    }
+
+    public static Optional<EquippedWeaponProperties> flan(EntityNPCInterface npc, InteractionHand hand)
+    {
+        return FlansEquipment.getWeaponProperties(npc.getItemInHand(hand), noppes.npcs.api.wrapper.ItemStackWrapper.MCItem(npc.inventory.getProjectile()));
+    }
+
+    /** Whether the off hand holds a second Flan gun that the NPC fires alongside its main-hand weapon. */
+    public static boolean offHandGun(EntityNPCInterface npc)
+    {
+        return enabled(npc, Feature.DUAL_WIELD) && weaponAuthority(npc)
+            && flan(npc, InteractionHand.OFF_HAND).filter(properties -> properties.ranged() && !properties.throwable() && !properties.shield()).isPresent();
     }
 
     public static double meleeDamage(ItemStack stack)

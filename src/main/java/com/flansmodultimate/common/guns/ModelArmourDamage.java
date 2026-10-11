@@ -41,7 +41,7 @@ public final class ModelArmourDamage
     /** @return the resolved hit, or empty when the entity does not stand in for an armoured driveable */
     public static Optional<Result> resolve(Entity target, FiredShot shot, BulletType bulletType, Vec3 motion, float penetratingPower)
     {
-        if (!(target instanceof IFlanDamageModel stand) || !stand.flansModelArmour() || !(stand.getFlansDamageModel().orElse(null) instanceof DriveableType type)
+        if (!(target instanceof IFlanDamageModel stand) || !stand.flansmodultimateModelArmour() || !(stand.flansmodultimateDamageModel().orElse(null) instanceof DriveableType type)
             || motion.lengthSqr() < 1.0E-12D)
             return Optional.empty();
         Vec3 local = localDirection(target, motion.normalize());
@@ -54,8 +54,8 @@ public final class ModelArmourDamage
         float fixedDamage = bulletType.getDamage().getDamageAgainstEntity(target);
         float selectedFixedDamage = normalizedHealth ? fixedDamage : fixedDamage * Mth.clamp(previousPower, 0.1F, 1F);
         float p100 = shot.getPenetrationAt100m();
-        VehicleProjectileDamageResolver.Result resolved = VehicleProjectileDamageResolver.resolve(normalizedHealth, shot.getProjectileMass(), selectedFixedDamage, shot.getMuzzleVelocity(),
-            armour, p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? Driveable.shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
+        VehicleProjectileDamageResolver.Result resolved = VehicleProjectileDamageResolver.resolve(normalizedHealth, shot.getProjectileMass(), selectedFixedDamage, shot.getMuzzleVelocity(), armour,
+            p100 > 0F && Float.isFinite(p100) ? p100 : null, heat ? Driveable.shapedChargeKg(shot, bulletType) : 0F, ModCommonConfig.heatDamageReference());
         boolean blocked = resolved.penetration().armourGateRequired() && !resolved.penetration().penetrated();
         CollisionBox core = type.getHealth().get(EnumDriveablePart.CORE);
         float resistance = core == null ? 1F : Math.max(1F, core.getPenetrationResistance());

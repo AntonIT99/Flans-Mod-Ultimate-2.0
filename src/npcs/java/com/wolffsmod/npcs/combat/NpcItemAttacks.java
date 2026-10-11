@@ -72,14 +72,8 @@ public final class NpcItemAttacks
         if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
             return false;
         ItemStack weapon = npc.getMainHandItem();
-        Vec3 aim = target.getEyePosition().subtract(npc.getEyePosition());
-        var flanWeapon = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
-        if (flanWeapon.isPresent())
-        {
-            Feature soundFeature = flanWeapon.get().throwable() ? Feature.THROW_SOUNDS : Feature.FIRE_SOUNDS;
-            return FlansEquipment.fire(npc, InteractionHand.MAIN_HAND, npc.getEyePosition(), flanDirection(npc, target, weapon, aim), NpcEquipment.enabled(npc, soundFeature),
-                NpcEquipment.enabled(npc, Feature.SHOOT_PARTICLES));
-        }
+        if (FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY).isPresent())
+            return fireFlan(npc, target, InteractionHand.MAIN_HAND);
         if (FlansProjectiles.isGrenade(weapon))
             return grenade(npc, target, weapon);
         if (weapon.getItem() instanceof NpcWeaponAdapter adapter)
@@ -91,15 +85,41 @@ public final class NpcItemAttacks
         return throwable(npc, target, weapon);
     }
 
+    /** Fires the Flan weapon held in either hand with its own ammunition, attachments and sounds. */
+    public static boolean fireFlan(EntityNPCInterface npc, LivingEntity target, InteractionHand hand)
+    {
+        if (npc.level().isClientSide || target == null || !target.isAlive() || target.level() != npc.level())
+            return false;
+        ItemStack weapon = npc.getItemInHand(hand);
+        var flanWeapon = FlansEquipment.getWeaponProperties(weapon, ItemStack.EMPTY);
+        if (flanWeapon.isEmpty())
+            return false;
+        Vec3 aim = target.getEyePosition().subtract(npc.getEyePosition());
+        Feature soundFeature = flanWeapon.get().throwable() ? Feature.THROW_SOUNDS : Feature.FIRE_SOUNDS;
+        return FlansEquipment.fire(npc, hand, npc.getEyePosition(), flanDirection(npc, target, hand, weapon, aim), NpcEquipment.enabled(npc, soundFeature),
+            NpcEquipment.enabled(npc, Feature.SHOOT_PARTICLES));
+    }
+
+    /** A held Flan gun swung in melee plays its melee animation and sound; other items have nothing to add. */
+    public static void meleeFeedback(EntityNPCInterface npc)
+    {
+        if (npc.level().isClientSide || FlansEquipment.getWeaponProperties(npc.getMainHandItem(), ItemStack.EMPTY).isEmpty())
+            return;
+        if (NpcEquipment.enabled(npc, Feature.GUN_MELEE_ANIMATION))
+            FlansEquipment.animateMelee(npc, InteractionHand.MAIN_HAND);
+        if (NpcEquipment.enabled(npc, Feature.MELEE_SOUNDS))
+            FlansEquipment.playMeleeSound(npc, InteractionHand.MAIN_HAND);
+    }
+
     public static void launched(EntityNPCInterface npc, LivingEntity target)
     {
         npc.updateClient = true;
         EventHooks.onNPCRangedLaunched(npc, new NpcEvent.RangedLaunchedEvent(npc.wrappedNPC, target, NpcEquipment.flan(npc).map(properties -> (float) properties.damage()).orElse(0F)));
     }
 
-    private static Vec3 flanDirection(EntityNPCInterface npc, LivingEntity target, ItemStack weapon, Vec3 direct)
+    private static Vec3 flanDirection(EntityNPCInterface npc, LivingEntity target, InteractionHand hand, ItemStack weapon, Vec3 direct)
     {
-        if (NpcEquipment.flan(npc).map(properties -> properties.speed() <= 0D || properties.throwable()).orElse(true))
+        if (NpcEquipment.flan(npc, hand).map(properties -> properties.speed() <= 0D || properties.throwable()).orElse(true))
             return direct;
         var shot = FlansEquipment.getLoadedAmmunition(weapon)
             .flatMap(ammo -> FlansProjectiles.prepare(npc, ammo, weapon, null, null, false, new ProjectileParameters(FlansEquipment.getLoadedRoundIndex(weapon), true, 0F, 0F, 1F)));
@@ -124,11 +144,11 @@ public final class NpcItemAttacks
         return true;
     }
 
-    public static boolean loadFlanGun(EntityNPCInterface npc)
+    public static boolean loadFlanGun(EntityNPCInterface npc, InteractionHand hand)
     {
         // NPC ammunition is infinite: load from a detached copy large enough to fill every gun slot, never from the projectile slot itself.
         ItemStack spare = ItemStackWrapper.MCItem(npc.inventory.getProjectile()).copyWithCount(Integer.MAX_VALUE);
-        return FlansEquipment.loadMagazine(npc, npc.getMainHandItem(), spare);
+        return FlansEquipment.loadMagazine(npc, npc.getItemInHand(hand), spare);
     }
 
     private static boolean bow(EntityNPCInterface npc, LivingEntity target, ItemStack weapon, BowItem bow)
