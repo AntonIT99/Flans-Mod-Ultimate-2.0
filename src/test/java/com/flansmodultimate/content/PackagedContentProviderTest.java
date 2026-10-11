@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,6 +28,25 @@ class PackagedContentProviderTest
         assertEquals(content, provider.getContentRoot(null));
         assertEquals(assets.resolve("textures"), provider.getTextureSourcePath(null));
         assertEquals(models.resolve("com/flansmod/client/model/ModelTest.class"), provider.getModelPath("com.flansmod.client.model.ModelTest", null));
+    }
+
+    @Test
+    void developmentPathsLeaveTheLoaderFileSystemForTheModuleFolder() throws Exception
+    {
+        Path module = Files.createDirectories(tempDir.resolve("module/resources"));
+        Path assets = Files.createDirectories(module.resolve("assets/flansmod"));
+        Path jar = tempDir.resolve("union-stand-in.jar");
+        try (FileSystem fs = FileSystems.newFileSystem(URI.create("jar:" + jar.toUri()), Map.of("create", "true")))
+        {
+            Path virtualAssets = Files.createDirectories(fs.getPath("/assets/flansmod"));
+            Path virtualClasses = Files.createDirectories(fs.getPath("/com/flansmod"));
+
+            assertEquals(assets, PackagedContentLoader.developmentPath(module, virtualAssets, false));
+            // Classes live in another output folder, and production reads the installed JAR.
+            assertEquals(virtualClasses, PackagedContentLoader.developmentPath(module, virtualClasses, false));
+            assertEquals(virtualAssets, PackagedContentLoader.developmentPath(module, virtualAssets, true));
+            assertEquals(assets, PackagedContentLoader.developmentPath(module, assets, false));
+        }
     }
 
     @Test
@@ -73,7 +89,7 @@ class PackagedContentProviderTest
 
     private static PackagedContentProvider provider(Path modulePath, Path content, Path assets, Path models, boolean archiveBacked)
     {
-        return new PackagedContentProvider("Parts (Official)", "Flan's Mod Official Content Packs", "parts", modulePath, content, assets, models, "flans_content/parts",
-            "assets/flansmod", "flans_models", archiveBacked, true);
+        return new PackagedContentProvider("Parts (Official)", "Flan's Mod Official Content Packs", "parts", modulePath, content, assets, models, "flans_content/parts", "assets/flansmod",
+            "flans_models", archiveBacked, true);
     }
 }

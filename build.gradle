@@ -408,6 +408,19 @@ tasks.named('processResources', ProcessResources) {
     filesMatching([modsTomlPath, 'pack.mcmeta']) { expand replaceProperties }
 }
 
+// ForgeGradle copies every resource into the IDE output before each launch, which restamps them
+// all and so invalidates the content caches keyed on those stamps. Files copied as they are, and
+// already there unchanged, are left alone; the expanded ones are always written.
+tasks.matching { it.name == 'copyIntellijResources' }.configureEach { Copy task ->
+    task.eachFile { FileCopyDetails details ->
+        if (details.sourcePath == modsTomlPath || details.sourceName == 'pack.mcmeta')
+            return
+        File target = new File(task.destinationDir, details.relativePath.pathString)
+        if (target.isFile() && target.length() == details.file.length() && target.lastModified() >= details.file.lastModified())
+            details.exclude()
+    }
+}
+
 tasks.named('jar', Jar) {
     // The API package is MIT licensed and ships inside this jar, so its notice must too.
     from('LICENSE-API') { CopySpec spec -> spec.into('META-INF') }
